@@ -1,4 +1,6 @@
 #include <cmath>
+#include "Base/Types.h"
+#include "Base/Result.h"
 
 #include "VehicleTestUtil.h"
 
@@ -16,16 +18,16 @@ namespace
     }
 
     // 클립 이름의 {side} 를 두 방향으로 치환해 애니메이션 라이브러리에서 확인한다
-    void ExpectClipExists(const AnimationLibrary& _anims, const jug::String& _name, const char* _owner)
+    void ExpectClipExists(const AnimationLibrary& _anims, const slug::String& _name, const char* _owner)
     {
         if (_name.empty())
         {
             return;
         }
-        const bool bSided = _name.find("{side}") != jug::String::npos;
+        const bool bSided = _name.find("{side}") != slug::String::npos;
         for (int side = 0; side < (bSided ? 2 : 1); ++side)
         {
-            const jug::String name = bSided ? ResolveSide(_name, side == 0 ? -1 : 1) : _name;
+            const slug::String name = bSided ? ResolveSide(_name, side == 0 ? -1 : 1) : _name;
             EXPECT_TRUE(_anims.IsValid(_anims.Find(name))) << _owner << ": " << name.c_str();
         }
     }
@@ -38,7 +40,7 @@ namespace
 TEST(VehicleDefs, LoadsTheDefsDirectoryWithAllFiveVehiclesAndTheirProjectiles)
 {
     EnemyDefLibrary lib;
-    jug::String     message;
+    slug::String     message;
     ASSERT_TRUE(LoadVehicleLib(lib, &message)) << message.c_str();
     for (const char* name: kVehicleNames)
     {
@@ -248,10 +250,10 @@ TEST(VehicleDefs, AnUnknownBehaviorParameterFailsTheLoadWithTheDefinitionName)
         }
       }
     })";
-    jug::String message;
-    const jug::Result<EnemyDefLibrary> lib = EnemyDefLibrary::Parse(kJson, &message);
+    slug::String message;
+    const slug::Result<EnemyDefLibrary> lib = EnemyDefLibrary::Parse(kJson, &message);
     EXPECT_FALSE(lib);
-    EXPECT_NE(message.find("probe_tank"), jug::String::npos) << message.c_str();
+    EXPECT_NE(message.find("probe_tank"), slug::String::npos) << message.c_str();
 }
 
 TEST(VehicleDefs, EveryVehicleClipNameExistsInTheBakedAnimations)
@@ -307,7 +309,7 @@ TEST(VehicleDefs, NonLoopClipTimingsMatchTheBakedAnimations)
             }
             for (int side = 0; side < (clip.bSided ? 2 : 1); ++side)
             {
-                const jug::String resolved = clip.bSided ? ResolveSide(clip.name, side == 0 ? -1 : 1) : clip.name;
+                const slug::String resolved = clip.bSided ? ResolveSide(clip.name, side == 0 ? -1 : 1) : clip.name;
                 const AnimClip*   pAnim    = anims.GetOrNull(anims.Find(resolved));
                 ASSERT_NE(pAnim, nullptr) << resolved.c_str();
                 EXPECT_EQ(pAnim->GetFrameCount(), clip.frames) << resolved.c_str();

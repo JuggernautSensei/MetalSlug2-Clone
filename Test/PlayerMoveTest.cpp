@@ -1,4 +1,6 @@
 #include "PlayerTestUtil.h"
+#include "Base/Types.h"
+#include "Base/Random.h"
 
 #include "Game/StateFactory.h"
 
@@ -572,19 +574,19 @@ TEST(PlayerJump, WalkingOffALedgeStartsFalling)
 
 namespace
 {
-jug::Vector<InputFrame> MakeNoisyScript(
+slug::Vector<InputFrame> MakeNoisyScript(
     const int      _ticks,
     const uint64_t _seed)
 {
-    jug::RngMt19937         rng { _seed };
-    jug::Vector<InputFrame> frames;
+    slug::RngMt19937         rng { _seed };
+    slug::Vector<InputFrame> frames;
     InputFrame              cur;
     for (int i = 0; i < _ticks; ++i)
     {
         // 8 틱마다 임의의 키를 토글한다
         if (i % 8 == 0)
         {
-            const eAction action = static_cast<eAction>(jug::Random<int>(rng, 0, 6));
+            const eAction action = static_cast<eAction>(slug::Random<int>(rng, 0, 6));
             cur.Set(action, !cur.IsHeld(action));
         }
         frames.push_back(cur);
@@ -593,7 +595,7 @@ jug::Vector<InputFrame> MakeNoisyScript(
 }
 
 uint64_t RunScript(
-    const jug::Vector<InputFrame>& _frames)
+    const slug::Vector<InputFrame>& _frames)
 {
     SandboxConfig config = MakeFlatConfig();
     config.bSpawnTargets = true;
@@ -608,7 +610,7 @@ uint64_t RunScript(
 
 TEST(PlayerDeterminism, SameScriptTwiceGivesIdenticalStateHash)
 {
-    const jug::Vector<InputFrame> script = MakeNoisyScript(1500, 42);
+    const slug::Vector<InputFrame> script = MakeNoisyScript(1500, 42);
     EXPECT_EQ(RunScript(script), RunScript(script));
 }
 

@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include "Base/Types.h"
 
 #include "World/Combat.h"
 
@@ -47,10 +48,10 @@ Aabb Box(
     return Aabb::FromMinMax({ _x0, _y0 }, { _x1, _y1 });
 }
 
-jug::Vector<HitEvent> Resolve(
+slug::Vector<HitEvent> Resolve(
     HitResolver&                _resolver,
-    const jug::Vector<Hitbox>&  _hits,
-    const jug::Vector<Hurtbox>& _hurts)
+    const slug::Vector<Hitbox>&  _hits,
+    const slug::Vector<Hurtbox>& _hurts)
 {
     return _resolver.Resolve(_hits, _hurts);
 }
@@ -106,7 +107,7 @@ TEST(Combat, EnemyBulletHitsPlayer)
 TEST(Combat, NeutralPropsAcceptPlayerHitsButNotEnemyFire)
 {
     HitResolver                resolver;
-    const jug::Vector<Hurtbox> prop = { MakeHurt(eTeam::Neutral, Box(0, 0, 10, 10), 50) };
+    const slug::Vector<Hurtbox> prop = { MakeHurt(eTeam::Neutral, Box(0, 0, 10, 10), 50) };
 
     EXPECT_EQ(Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 10, 10), 1) }, prop).size(), 1u);
     EXPECT_EQ(Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Melee, Box(0, 0, 10, 10), 2) }, prop).size(), 1u);
@@ -116,7 +117,7 @@ TEST(Combat, NeutralPropsAcceptPlayerHitsButNotEnemyFire)
 TEST(Combat, NeutralHazardsHitBothSidesButNotTheirOwner)
 {
     HitResolver                resolver;
-    const jug::Vector<Hurtbox> hurts = {
+    const slug::Vector<Hurtbox> hurts = {
         MakeHurt(eTeam::Player, Box(0, 0, 10, 10), 1),
         MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 2),
         MakeHurt(eTeam::Neutral, Box(0, 0, 10, 10), 3),
@@ -147,7 +148,7 @@ TEST(Combat, KnifeHitsEveryEnemyRegardlessOfKind)
 {
     // 다양한 "적 종류" 를 팀/소유자만 다르게 만들어 본다. 종류에 따른 분기는 존재하지 않아야 한다.
     HitResolver          resolver;
-    jug::Vector<Hurtbox> enemies;
+    slug::Vector<Hurtbox> enemies;
     for (uint32_t i = 0; i < 20; ++i)
     {
         // 서로 겹치지 않게 일렬로 배치 (병사, 차량, 전차, 헬기, 보스 부위 …)
@@ -206,8 +207,8 @@ TEST(Combat, NonPierceHitboxIsConsumedByFirstHitInIndexOrder)
 TEST(Combat, ConsumedBulletDoesNotHitAgainOnLaterFrames)
 {
     HitResolver                resolver;
-    const jug::Vector<Hitbox>  bullet = { MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 10, 10), 77) };
-    const jug::Vector<Hurtbox> target = { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 1) };
+    const slug::Vector<Hitbox>  bullet = { MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 10, 10), 77) };
+    const slug::Vector<Hurtbox> target = { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 1) };
 
     EXPECT_EQ(Resolve(resolver, bullet, target).size(), 1u);
     EXPECT_TRUE(Resolve(resolver, bullet, target).empty());                                             // 같은 id 는 소모됨
@@ -220,8 +221,8 @@ TEST(Combat, ConsumedBulletDoesNotHitAgainOnLaterFrames)
 TEST(Combat, PiercingHitboxHitsEachTargetExactlyOnce)
 {
     HitResolver               resolver;
-    const jug::Vector<Hitbox> laser   = { MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 200, 10), 5, true, 2) };
-    jug::Vector<Hurtbox>      targets = { MakeHurt(eTeam::Enemy, Box(10, 0, 20, 10), 1), MakeHurt(eTeam::Enemy, Box(50, 0, 60, 10), 2) };
+    const slug::Vector<Hitbox> laser   = { MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 200, 10), 5, true, 2) };
+    slug::Vector<Hurtbox>      targets = { MakeHurt(eTeam::Enemy, Box(10, 0, 20, 10), 1), MakeHurt(eTeam::Enemy, Box(50, 0, 60, 10), 2) };
 
     auto events = Resolve(resolver, laser, targets);
     ASSERT_EQ(events.size(), 2u);
@@ -241,10 +242,10 @@ TEST(Combat, PiercingHitboxHitsEachTargetExactlyOnce)
 TEST(Combat, MeleeSwingSharingAnIdHitsEachTargetOncePerSwing)
 {
     HitResolver                resolver;
-    const jug::Vector<Hurtbox> enemy = { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 1) };
+    const slug::Vector<Hurtbox> enemy = { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 1) };
 
     // 칼 휘두르기: 여러 프레임 활성, 비관통이지만 한 번 맞으면 소모
-    const jug::Vector<Hitbox> swing = { MakeHit(eTeam::Player, eHitKind::Melee, Box(0, 0, 10, 10), 31, false, 4) };
+    const slug::Vector<Hitbox> swing = { MakeHit(eTeam::Player, eHitKind::Melee, Box(0, 0, 10, 10), 31, false, 4) };
     int                       total = 0;
     for (int frame = 0; frame < 6; ++frame)
     {
@@ -253,14 +254,14 @@ TEST(Combat, MeleeSwingSharingAnIdHitsEachTargetOncePerSwing)
     EXPECT_EQ(total, 1);
 
     // 다음 휘두르기(새 id) 는 다시 맞는다
-    const jug::Vector<Hitbox> nextSwing = { MakeHit(eTeam::Player, eHitKind::Melee, Box(0, 0, 10, 10), 32, false, 4) };
+    const slug::Vector<Hitbox> nextSwing = { MakeHit(eTeam::Player, eHitKind::Melee, Box(0, 0, 10, 10), 32, false, 4) };
     EXPECT_EQ(Resolve(resolver, nextSwing, enemy).size(), 1u);
 }
 
 TEST(Combat, PierceHitsOnlyOncePerOwnerEvenWithManyHurtboxes)
 {
     HitResolver                resolver;
-    const jug::Vector<Hurtbox> boss   = { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 9), MakeHurt(eTeam::Enemy, Box(5, 0, 15, 10), 9) };   // 같은 owner 의 두 부위
+    const slug::Vector<Hurtbox> boss   = { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 9), MakeHurt(eTeam::Enemy, Box(5, 0, 15, 10), 9) };   // 같은 owner 의 두 부위
     const auto                 events = Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Blast, Box(0, 0, 20, 10), 4, true, 20) }, boss);
     ASSERT_EQ(events.size(), 1u);
     EXPECT_EQ(events[0].hurtboxIndex, 0u);
@@ -270,8 +271,8 @@ TEST(Combat, UntrackedHitboxHitsEveryCall)
 {
     // id 0 = 추적 안 함 (지속 피해 구역 등)
     HitResolver                resolver;
-    const jug::Vector<Hitbox>  zone   = { MakeHit(eTeam::Neutral, eHitKind::Hazard, Box(0, 0, 10, 10), kNoHitId, true, 1, 0) };
-    const jug::Vector<Hurtbox> victim = { MakeHurt(eTeam::Player, Box(0, 0, 10, 10), 1) };
+    const slug::Vector<Hitbox>  zone   = { MakeHit(eTeam::Neutral, eHitKind::Hazard, Box(0, 0, 10, 10), kNoHitId, true, 1, 0) };
+    const slug::Vector<Hurtbox> victim = { MakeHurt(eTeam::Player, Box(0, 0, 10, 10), 1) };
     EXPECT_EQ(Resolve(resolver, zone, victim).size(), 1u);
     EXPECT_EQ(Resolve(resolver, zone, victim).size(), 1u);
     EXPECT_EQ(resolver.GetTrackedHitCount(), 0u);
@@ -280,11 +281,11 @@ TEST(Combat, UntrackedHitboxHitsEveryCall)
 TEST(Combat, EventsAreOrderedByHitboxThenHurtbox)
 {
     HitResolver               resolver;
-    const jug::Vector<Hitbox> hits = {
+    const slug::Vector<Hitbox> hits = {
         MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 100, 10), 1, true),
         MakeHit(eTeam::Player, eHitKind::Melee, Box(0, 0, 100, 10), 2, true),
     };
-    const jug::Vector<Hurtbox> hurts = { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 1), MakeHurt(eTeam::Enemy, Box(20, 0, 30, 10), 2) };
+    const slug::Vector<Hurtbox> hurts = { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 1), MakeHurt(eTeam::Enemy, Box(20, 0, 30, 10), 2) };
 
     const auto events = Resolve(resolver, hits, hurts);
     ASSERT_EQ(events.size(), 4u);
@@ -309,11 +310,11 @@ TEST(Combat, ResolverIsDeterministicAcrossIdenticalRuns)
 {
     auto Run = []() {
         HitResolver           resolver;
-        jug::Vector<uint32_t> log;
+        slug::Vector<uint32_t> log;
         for (int frame = 0; frame < 30; ++frame)
         {
-            jug::Vector<Hitbox>  hits;
-            jug::Vector<Hurtbox> hurts;
+            slug::Vector<Hitbox>  hits;
+            slug::Vector<Hurtbox> hurts;
             for (uint32_t i = 0; i < 8; ++i)
             {
                 const float x = static_cast<float>(frame * 3 + static_cast<int>(i) * 11);

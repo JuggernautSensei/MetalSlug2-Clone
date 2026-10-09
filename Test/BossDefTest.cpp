@@ -1,4 +1,6 @@
 #include <gtest/gtest.h>
+#include "Base/Types.h"
+#include "Base/Result.h"
 
 #include "Game/Enemies/BattleShip.h"
 #include "Game/Enemies/EnemyCommon.h"
@@ -137,7 +139,7 @@ TEST(BossDef, PartOwnersKeepTheEnemyIdAndTheTurretIndex)
 TEST(BossDef, BossClipAndSpriteNamesExistInBakedAssets)
 {
     SLUG_REQUIRE_BAKED(anims);
-    jug::Result<SpriteLibrary> sprites = SpriteLibrary::LoadFromDirectory(jug::FilePath { SLUG_ASSET_DIR } / "Baked");
+    slug::Result<SpriteLibrary> sprites = SpriteLibrary::LoadFromDirectory(slug::FilePath { SLUG_ASSET_DIR } / "Baked");
     ASSERT_TRUE(sprites) << "sprites.json 을 읽지 못했습니다";
 
     const char* kNames[] = {

@@ -1,5 +1,8 @@
 #pragma once
 #include <cmath>
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Result.h"
 #include <filesystem>
 #include <string>
 #include <system_error>
@@ -62,7 +65,7 @@ inline bool LoadBossLibrary(
     {
         return false;
     }
-    jug::Result<EnemyDefLibrary> lib = EnemyDefLibrary::LoadDirectory(dir);
+    slug::Result<EnemyDefLibrary> lib = EnemyDefLibrary::LoadDirectory(dir);
     if (!lib)
     {
         return false;
@@ -94,7 +97,7 @@ public:
     [[nodiscard]] const std::vector<HitEvent>&   PlayerHits() const { return m_playerHits; }
 
     // 플레이어 위치/상태 (다음 Frame 부터 적용)
-    void SetPlayer(const jug::VECTOR2 _feet, const bool _bAlive = true)
+    void SetPlayer(const Vec2 _feet, const bool _bAlive = true)
     {
         m_feet   = _feet;
         m_bAlive = _bAlive;
@@ -123,7 +126,7 @@ public:
 
         m_world.Tick(m_ctx);
         m_projectiles.Step(nullptr, m_combat, kStepSec);
-        const jug::Vector<HitEvent>& events = m_combat.Resolve();
+        const slug::Vector<HitEvent>& events = m_combat.Resolve();
         m_world.OnHitEvents(events);
         m_projectiles.OnHitEvents(events, m_combat);
         for (const HitEvent& ev: events)
@@ -133,7 +136,7 @@ public:
                 m_playerHits.push_back(ev);
             }
         }
-        jug::Vector<EnemyEvent> taken = m_world.TakeEvents();
+        slug::Vector<EnemyEvent> taken = m_world.TakeEvents();
         for (const EnemyEvent& ev: taken)
         {
             m_events.push_back(ev);
@@ -183,7 +186,7 @@ public:
         ev.attacker     = kTestPlayerOwner;
         ev.target       = _target;
         ev.hitId        = 0;
-        m_world.OnHitEvents(jug::Span<const HitEvent> { &ev, 1 });
+        m_world.OnHitEvents(slug::Span<const HitEvent> { &ev, 1 });
         for (const EnemyEvent& e: m_world.TakeEvents())
         {
             m_events.push_back(e);
@@ -193,7 +196,7 @@ public:
     // 여러 틱 동안 _count 개 이벤트 중 Enemy 종류 개수를 세는 대신 현재 적 목록에서 찾는다
     [[nodiscard]] const Enemy* Find(const EnemyHandle _h) const { return m_world.Get(_h); }
 
-    [[nodiscard]] EnemyHandle SpawnAt(const jug::StringView _def, const jug::VECTOR2 _feet, const SpawnParams& _params = {})
+    [[nodiscard]] EnemyHandle SpawnAt(const slug::StringView _def, const Vec2 _feet, const SpawnParams& _params = {})
     {
         return m_world.Spawn(_def, _feet, _params, nullptr);
     }
@@ -205,7 +208,7 @@ private:
     CombatSystem              m_combat      = {};
     ProjectileSystem          m_projectiles = {};
     EnemyContext              m_ctx         = {};
-    jug::VECTOR2              m_feet        = { 0.f, 0.f };
+    Vec2              m_feet        = { 0.f, 0.f };
     bool                      m_bAlive      = true;
     bool                      m_bInvulnerable = true;
     int                       m_tick        = 0;

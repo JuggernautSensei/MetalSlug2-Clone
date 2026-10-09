@@ -3,7 +3,7 @@
 레거시 `DevScene.cpp` 의 하드코딩 이벤트 표를 데이터로 옮긴 포맷. **커밋 대상**(Assets/Baked 와 달리 git 무시 아님).
 첫 스테이지: `Assets/Stage/Stage0.json` (MS2 Mission 4). 스프라이트/애니/지면 이름은 `Assets/Baked/{sprites,anim,manifest}.json` 의 키와 일치해야 한다.
 엔티티 `def` 이름(적/소품/NPC/아이템)은 `Docs/EnemySpecs.md` 와 맞춘다. 이 문서 §9 는 Stage0 이 쓰는 def 목록과 레거시 대응표다.
-엄격 규칙: **알 수 없는 키/타입/enum 값은 로드 오류**(`jug::Result` 실패), `note` 키만 어디서나 허용(무시됨).
+엄격 규칙: **알 수 없는 키/타입/enum 값은 로드 오류**(`Result` 실패), `note` 키만 어디서나 허용(무시됨).
 
 ## 1. 좌표/단위 규칙
 | 항목 | 규칙 |

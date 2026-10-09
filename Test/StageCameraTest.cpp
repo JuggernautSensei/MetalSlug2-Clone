@@ -1,4 +1,6 @@
 #include <algorithm>
+#include "Base/Types.h"
+#include "Base/Result.h"
 #include <cmath>
 
 #include <gtest/gtest.h>
@@ -306,7 +308,7 @@ TEST(StageRunnerCamera, BoundsCurveIsActiveBetweenFromAndUntil)
 
 TEST(StageRunnerCamera, Stage0SlopeMatchesTheLegacyFormula)
 {
-    jug::Result<StageData> result = LoadStageFromFile(jug::FilePath { SLUG_ASSET_DIR } / "Stage" / "Stage0.json");
+    slug::Result<StageData> result = LoadStageFromFile(slug::FilePath { SLUG_ASSET_DIR } / "Stage" / "Stage0.json");
     ASSERT_TRUE(result);
     const StageData   data  = result.Take();
     const BoundsCurve& curve = data.camera.boundsCurves.at(0);

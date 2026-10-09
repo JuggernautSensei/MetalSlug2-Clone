@@ -1,6 +1,6 @@
 #include "World/Physics.h"
 
-#include <JugX/Math.h>
+#include "Base/Math.h"
 
 namespace slug
 {
@@ -44,7 +44,7 @@ namespace
     [[nodiscard]] float FootHalf_(
         const Body& _body)
     {
-        return jug::Max(_body.footHalfWidth, 0.5f);
+        return slug::Max(_body.footHalfWidth, 0.5f);
     }
 
     // _yMin ≤ 지면 높이 ≤ _yMax 인 가장 높은 지지면을 찾는다.
@@ -69,7 +69,7 @@ namespace
             const GroundMap& ground = *_ctx.world.pGround;
 
             const int col0 = FloorToInt(_x - fh);
-            const int col1 = jug::Max(col0, CeilToInt(_x + fh) - 1);
+            const int col1 = slug::Max(col0, CeilToInt(_x + fh) - 1);
             const int rLo  = CeilToInt(_yMin);
             const int rHi  = FloorToInt(_yMax);
             if (rHi >= rLo)
@@ -350,7 +350,7 @@ namespace
         }
 
         const int   dir   = _dx > 0.f ? 1 : -1;
-        const int   steps = jug::Max(1, CeilToInt(jug::Abs(_dx)));
+        const int   steps = slug::Max(1, CeilToInt(slug::Abs(_dx)));
         const float s     = _dx / static_cast<float>(steps);
 
         for (int i = 0; i < steps; ++i)
@@ -361,7 +361,7 @@ namespace
             if (const std::optional<float> snapX = FindLateralBlock_(_ctx, body.position.x, newX, body.position.y, dir, zone))
             {
                 // 벽면에 딱 붙인다 (이미 파고든 경우는 뒤로 밀지 않는다)
-                body.position.x                                                  = dir > 0 ? jug::Max(body.position.x, jug::Min(newX, *snapX)) : jug::Min(body.position.x, jug::Max(newX, *snapX));
+                body.position.x                                                  = dir > 0 ? slug::Max(body.position.x, slug::Min(newX, *snapX)) : slug::Min(body.position.x, slug::Max(newX, *snapX));
                 (dir > 0 ? _ctx.result.bHitWallRight : _ctx.result.bHitWallLeft) = true;
                 body.velocity.x                                                  = 0.f;
                 return;
@@ -392,7 +392,7 @@ namespace
             return;
         }
 
-        const int   steps = jug::Max(1, CeilToInt(jug::Abs(_dy)));
+        const int   steps = slug::Max(1, CeilToInt(slug::Abs(_dy)));
         const float s     = _dy / static_cast<float>(steps);
 
         for (int i = 0; i < steps; ++i)
@@ -463,7 +463,7 @@ namespace
 
                 if (stopFeet != kInf)
                 {
-                    body.position.y = jug::Min(f0, stopFeet);
+                    body.position.y = slug::Min(f0, stopFeet);
                     if (body.velocity.y < 0.f)
                     {
                         body.velocity.y = 0.f;
@@ -519,7 +519,7 @@ MoveResult Physics::Step(
         if (_body.bUseGravity)
         {
             _body.velocity.y += _tuning.gravity * _body.gravityScale * _dt;
-            _body.velocity.y = jug::Min(_body.velocity.y, _tuning.terminalVelocity);
+            _body.velocity.y = slug::Min(_body.velocity.y, _tuning.terminalVelocity);
         }
         MoveY_(ctx, _body.velocity.y * _dt);
     }

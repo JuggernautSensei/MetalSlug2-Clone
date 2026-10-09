@@ -1,17 +1,11 @@
-#include "Core/Error.h"
+#include "Base/Error.h"
 
 namespace slug
 {
 
-jug::StringView ErrorCategory::GetName() const noexcept
+String Error::MakeMessage() const
 {
-    return "slug";
-}
-
-jug::String ErrorCategory::MakeMessage(
-    const int _err) const
-{
-    switch (static_cast<eError>(_err))
+    switch (m_code)
     {
         case eError::Ok: return "ok";
         case eError::SdlInit: return "SDL 초기화 실패";

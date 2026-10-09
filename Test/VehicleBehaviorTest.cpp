@@ -1,4 +1,5 @@
 #include <cmath>
+#include "Base/Math.h"
 #include <vector>
 
 #include "VehicleTestUtil.h"
@@ -40,7 +41,7 @@ namespace
     }
 
     // 플레이어 오른쪽에서 왼쪽을 보고 달리는 지프 (로켓은 플레이어 쪽 = 뒤로 나간다)
-    EnemyHandle SpawnJeepFacingThePlayer(VehicleRig& _rig, const jug::VECTOR2 _player, const float _x)
+    EnemyHandle SpawnJeepFacingThePlayer(VehicleRig& _rig, const Vec2 _player, const float _x)
     {
         _rig.SetPlayer(_player);
         return _rig.Spawn("jeep", { _x, kGround }, Facing(-1));

@@ -1,4 +1,5 @@
 #include "Game/StateFactory.h"
+#include "Base/Types.h"
 
 #include "Game/DemoState.h"
 #include "Game/SandboxState.h"
@@ -9,16 +10,16 @@
 namespace slug
 {
 
-jug::Scoped<IGameState> CreateState(
-    const jug::StringView _name)
+std::unique_ptr<IGameState> CreateState(
+    const slug::StringView _name)
 {
     if (_name == "demo")
     {
-        return jug::Scoped<IGameState> { new DemoState };
+        return std::unique_ptr<IGameState> { new DemoState };
     }
     if (_name == "sandbox")
     {
-        return jug::Scoped<IGameState> { new SandboxState };
+        return std::unique_ptr<IGameState> { new SandboxState };
     }
     if (_name == "proplab")
     {
@@ -27,19 +28,19 @@ jug::Scoped<IGameState> CreateState(
         config.spawnFeet     = { 1500.f, 378.f };
         config.bSpawnTargets = false;
         config.bPropLab      = true;
-        return jug::Scoped<IGameState> { new SandboxState { config } };
+        return std::unique_ptr<IGameState> { new SandboxState { config } };
     }
     if (_name == "enemylab")
     {
         SandboxConfig config;
         config.bEnemyLab = true;   // 보병 8종을 플레이어 앞에 배치 (적 시각 검증)
-        return jug::Scoped<IGameState> { new SandboxState { config } };
+        return std::unique_ptr<IGameState> { new SandboxState { config } };
     }
     if (_name == "vehiclelab")
     {
         SandboxConfig config;
         config.bVehicleLab = true;   // 차량 5종을 화면 안에 배치 (차량 시각 검증)
-        return jug::Scoped<IGameState> { new SandboxState { config } };
+        return std::unique_ptr<IGameState> { new SandboxState { config } };
     }
     if (_name == "bosslab")
     {
@@ -55,24 +56,24 @@ jug::Scoped<IGameState> CreateState(
         config.bBossLab         = true;
         config.bossArena        = Aabb::FromMinMax({ 0.f, 0.f }, { 640.f, 448.f });
         config.bossGroundY      = 378.f;
-        return jug::Scoped<IGameState> { new SandboxState { config } };
+        return std::unique_ptr<IGameState> { new SandboxState { config } };
     }
     if (_name == "stage0")
     {
-        return jug::Scoped<IGameState> { new StageState };
+        return std::unique_ptr<IGameState> { new StageState };
     }
     if (_name == "title")
     {
-        return jug::Scoped<IGameState> { new TitleState };
+        return std::unique_ptr<IGameState> { new TitleState };
     }
     if (_name == "uidemo")
     {
-        return jug::Scoped<IGameState> { new UiDemoState };
+        return std::unique_ptr<IGameState> { new UiDemoState };
     }
     return nullptr;
 }
 
-jug::StringView GetDefaultStateName()
+slug::StringView GetDefaultStateName()
 {
     // 기본 시작 상태 = 타이틀 (타이틀 Start → stage0). App 이 Assets/Baked 가 없으면 "sandbox" 로 대신한다.
     return "title";

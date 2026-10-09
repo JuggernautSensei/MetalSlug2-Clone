@@ -1,8 +1,8 @@
 #pragma once
 #include <cstdint>
 
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "Core/Tuning.h"
 #include "Game/Combat/CombatSystem.h"
@@ -69,7 +69,7 @@ struct SpawnParams
 {
     int         facing     = -1;      // -1 왼쪽 / +1 오른쪽
     int         hp         = -1;      // -1: def 기본값
-    jug::String drop       = {};      // 사망(포로는 구출) 시 줄 아이템 ID. 비면 없음
+    slug::String drop       = {};      // 사망(포로는 구출) 시 줄 아이템 ID. 비면 없음
     int         aiVariant  = 0;       // 행동별 변종 (Soldier: 1 = 제자리 고정 — 걷지 않고 던지기/베기만)
     float       delaySec   = 0.f;     // 이 시간 뒤에 등장 (그 동안은 판정/렌더 없음)
     uint32_t    userTag    = 0;       // 호출자(스테이지)가 붙이는 값. 이벤트에 그대로 실려 나온다. 0 = 없음
@@ -96,10 +96,10 @@ struct EnemyEvent
     EnemyHandle     handle   = {};
     EnemyHandle     other    = {};
     int             defIndex = -1;
-    jug::String     defName  = {};
-    jug::VECTOR2    pos      = { 0.f, 0.f };   // 발 위치
+    slug::String     defName  = {};
+    Vec2    pos      = { 0.f, 0.f };   // 발 위치
     int             score    = 0;
-    jug::String     drop     = {};
+    slug::String     drop     = {};
     uint32_t        userTag  = 0;
     eHitKind        hitKind  = eHitKind::Bullet;   // Died: 마지막으로 맞은 공격 종류
 };
@@ -110,8 +110,8 @@ struct EnemyEvent
 
 struct EnemyPlayerInfo
 {
-    jug::VECTOR2 feet           = { 0.f, 0.f };
-    jug::VECTOR2 center         = { 0.f, 0.f };   // 피격 상자 중심 (조준 목표)
+    Vec2 feet           = { 0.f, 0.f };
+    Vec2 center         = { 0.f, 0.f };   // 피격 상자 중심 (조준 목표)
     Aabb         bodyBox        = {};             // 몸통 (포로 접촉 판정)
     bool         bAlive         = true;
     bool         bInvulnerable  = false;
@@ -150,7 +150,7 @@ struct Enemy
     int            delayTicks = 0;
 
     Body         body      = {};            // body.position = 발
-    jug::VECTOR2 prevFeet  = { 0.f, 0.f };
+    Vec2 prevFeet  = { 0.f, 0.f };
     int          facing    = -1;
     Health       health    = {};
     bool         bActive   = false;
@@ -180,7 +180,7 @@ struct Enemy
     uint32_t meleeHitId    = kNoHitId;
     int      meleeTicksLeft = 0;
     int      meleeWeapon   = -1;
-    jug::VECTOR2 meleeOrigin = { 0.f, 0.f };
+    Vec2 meleeOrigin = { 0.f, 0.f };
 
     // --- 사망 ---
     int      deathPhase = 0;
@@ -196,9 +196,9 @@ struct Enemy
     // --- 인스턴스 정보 ---
     int         aiVariant = 0;
     uint32_t    userTag   = 0;
-    jug::String drop      = {};
+    slug::String drop      = {};
 
-    [[nodiscard]] jug::VECTOR2 GetFeet() const { return body.position; }
+    [[nodiscard]] Vec2 GetFeet() const { return body.position; }
     [[nodiscard]] bool         IsAlive() const { return life == eEnemyLife::Alive; }
 };
 

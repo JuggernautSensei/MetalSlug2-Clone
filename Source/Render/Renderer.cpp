@@ -1,11 +1,14 @@
 #include "Render/Renderer.h"
+#include "Base/Types.h"
+#include "Base/Result.h"
+#include "Base/RGBA.h"
 
 #include <SDL3/SDL.h>
 
-#include <JugX/CoreLogger.h>
-#include <JugX/Math.h>
+#include "Base/Log.h"
+#include "Base/Math.h"
 
-#include "Core/Error.h"
+#include "Base/Error.h"
 
 namespace slug
 {
@@ -15,7 +18,7 @@ Renderer::~Renderer()
     Shutdown();
 }
 
-jug::Result<void> Renderer::Init(
+slug::Result<void> Renderer::Init(
     const char* _title,
     const int   _windowScale)
 {
@@ -24,25 +27,25 @@ jug::Result<void> Renderer::Init(
     m_pWindow = SDL_CreateWindow(_title, kLogicalWidth * scale, kLogicalHeight * scale, SDL_WINDOW_RESIZABLE);
     if (!m_pWindow)
     {
-        JUG_CORE_LOG_ERROR("SDL_CreateWindow 실패: {}", SDL_GetError());
-        return jug::Error { eError::WindowCreate };
+        SLUG_LOG_ERROR("SDL_CreateWindow 실패: {}", SDL_GetError());
+        return slug::Error { eError::WindowCreate };
     }
 
     m_pRenderer = SDL_CreateRenderer(m_pWindow, nullptr);
     if (!m_pRenderer)
     {
-        JUG_CORE_LOG_ERROR("SDL_CreateRenderer 실패: {}", SDL_GetError());
+        SLUG_LOG_ERROR("SDL_CreateRenderer 실패: {}", SDL_GetError());
         SDL_DestroyWindow(m_pWindow);
         m_pWindow = nullptr;
-        return jug::Error { eError::RendererCreate };
+        return slug::Error { eError::RendererCreate };
     }
 
     SDL_SetRenderVSync(m_pRenderer, 1);
     SDL_SetRenderLogicalPresentation(m_pRenderer, kLogicalWidth, kLogicalHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
     SDL_SetRenderDrawBlendMode(m_pRenderer, SDL_BLENDMODE_BLEND);
 
-    JUG_CORE_LOG_INFO("렌더러: {} / 창 {}x{}", SDL_GetRendererName(m_pRenderer), kLogicalWidth * scale, kLogicalHeight * scale);
-    return jug::Error { jug::kOK };
+    SLUG_LOG_INFO("렌더러: {} / 창 {}x{}", SDL_GetRendererName(m_pRenderer), kLogicalWidth * scale, kLogicalHeight * scale);
+    return slug::Error { slug::kOK };
 }
 
 void Renderer::Shutdown()
@@ -60,7 +63,7 @@ void Renderer::Shutdown()
 }
 
 void Renderer::BeginFrame(
-    const jug::RGBA _clearColor)
+    const slug::RGBA _clearColor)
 {
     SDL_SetRenderDrawColor(m_pRenderer, _clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
     SDL_RenderClear(m_pRenderer);
@@ -72,9 +75,9 @@ void Renderer::EndFrame()
 }
 
 void Renderer::FillRect(
-    const jug::VECTOR2 _topLeft,
-    const jug::VECTOR2 _size,
-    const jug::RGBA    _color)
+    const Vec2 _topLeft,
+    const Vec2 _size,
+    const slug::RGBA    _color)
 {
     // 정수 스냅: 서브픽셀 위치로 인한 떨림을 막는다.
     const SDL_FRect rect = { std::floor(_topLeft.x), std::floor(_topLeft.y), std::floor(_size.x), std::floor(_size.y) };
@@ -83,9 +86,9 @@ void Renderer::FillRect(
 }
 
 void Renderer::DrawRect(
-    const jug::VECTOR2 _topLeft,
-    const jug::VECTOR2 _size,
-    const jug::RGBA    _color)
+    const Vec2 _topLeft,
+    const Vec2 _size,
+    const slug::RGBA    _color)
 {
     const SDL_FRect rect = { std::floor(_topLeft.x), std::floor(_topLeft.y), std::floor(_size.x), std::floor(_size.y) };
     SDL_SetRenderDrawColor(m_pRenderer, _color.r, _color.g, _color.b, _color.a);
@@ -93,18 +96,18 @@ void Renderer::DrawRect(
 }
 
 void Renderer::DrawLine(
-    const jug::VECTOR2 _from,
-    const jug::VECTOR2 _to,
-    const jug::RGBA    _color)
+    const Vec2 _from,
+    const Vec2 _to,
+    const slug::RGBA    _color)
 {
     SDL_SetRenderDrawColor(m_pRenderer, _color.r, _color.g, _color.b, _color.a);
     SDL_RenderLine(m_pRenderer, std::floor(_from.x) + 0.5f, std::floor(_from.y) + 0.5f, std::floor(_to.x) + 0.5f, std::floor(_to.y) + 0.5f);
 }
 
 void Renderer::DrawDebugText(
-    const jug::VECTOR2    _topLeft,
-    const jug::StringView _text,
-    const jug::RGBA       _color)
+    const Vec2    _topLeft,
+    const slug::StringView _text,
+    const slug::RGBA       _color)
 {
     SDL_SetRenderDrawColor(m_pRenderer, _color.r, _color.g, _color.b, _color.a);
 
@@ -112,7 +115,7 @@ void Renderer::DrawDebugText(
     float       y = std::floor(_topLeft.y);
 
     // SDL_RenderDebugText 는 NUL 종료 문자열을 받으므로 줄 단위로 잘라서 그린다.
-    jug::String line;
+    slug::String line;
     for (const char c: _text)
     {
         if (c == '\n')
@@ -147,25 +150,25 @@ bool Renderer::IsInitialized() const
     return m_pRenderer != nullptr;
 }
 
-jug::Result<void> Renderer::SaveScreenshotBmp(
-    const jug::FilePath& _path) const
+slug::Result<void> Renderer::SaveScreenshotBmp(
+    const slug::FilePath& _path) const
 {
     SDL_Surface* pSurface = SDL_RenderReadPixels(m_pRenderer, nullptr);
     if (!pSurface)
     {
-        JUG_CORE_LOG_ERROR("SDL_RenderReadPixels 실패: {}", SDL_GetError());
-        return jug::Error { eError::FileRead };
+        SLUG_LOG_ERROR("SDL_RenderReadPixels 실패: {}", SDL_GetError());
+        return slug::Error { eError::FileRead };
     }
 
-    const jug::String pathUtf8 = _path.string();
+    const slug::String pathUtf8 = _path.string();
     const bool        bSaved   = SDL_SaveBMP(pSurface, pathUtf8.c_str());
     SDL_DestroySurface(pSurface);
     if (!bSaved)
     {
-        JUG_CORE_LOG_ERROR("SDL_SaveBMP 실패: {}", SDL_GetError());
-        return jug::Error { eError::FileOpen };
+        SLUG_LOG_ERROR("SDL_SaveBMP 실패: {}", SDL_GetError());
+        return slug::Error { eError::FileOpen };
     }
-    return jug::Error { jug::kOK };
+    return slug::Error { slug::kOK };
 }
 
 }   // namespace slug

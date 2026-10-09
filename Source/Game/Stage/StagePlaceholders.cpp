@@ -1,10 +1,12 @@
 #include "Game/Stage/StagePlaceholders.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include <algorithm>
 #include <cmath>
 #include <string_view>
 
-#include <JugX/CoreLogger.h>
+#include "Base/Log.h"
 
 #include "Audio/AudioSink.h"
 #include "Core/Tuning.h"
@@ -29,7 +31,7 @@ namespace
     struct DefaultSpec
     {
         int          hp   = 1;
-        jug::VECTOR2 size = { 40.f, 40.f };
+        Vec2 size = { 40.f, 40.f };
     };
 
     [[nodiscard]] DefaultSpec GetDefaultSpec_(
@@ -92,10 +94,10 @@ namespace
 // ===========================================
 
 void StagePlaceholders::AddGroundMap(
-    const jug::StringView _name,
+    const slug::StringView _name,
     GroundMap             _map)
 {
-    m_grounds.push_back({ jug::String { _name }, std::move(_map) });
+    m_grounds.push_back({ slug::String { _name }, std::move(_map) });
     if (m_activeGround < 0)
     {
         m_activeGround = 0;
@@ -146,9 +148,9 @@ GroundMap* StagePlaceholders::GetActiveGroundMut()
     return &m_grounds[static_cast<size_t>(m_activeGround)].map;
 }
 
-const jug::String& StagePlaceholders::GetActiveGroundName() const
+const slug::String& StagePlaceholders::GetActiveGroundName() const
 {
-    static const jug::String kNone = "";
+    static const slug::String kNone = "";
     if (m_activeGround < 0 || m_activeGround >= static_cast<int>(m_grounds.size()))
     {
         return kNone;
@@ -178,7 +180,7 @@ void StagePlaceholders::RegisterHurtboxes(
 }
 
 int StagePlaceholders::ApplyEvents(
-    const jug::Span<const HitEvent> _events)
+    const slug::Span<const HitEvent> _events)
 {
     int kills = 0;
     for (const HitEvent& event: _events)
@@ -284,7 +286,7 @@ SpawnId StagePlaceholders::SpawnEntity(
     // 요청 위치는 Feet 이면 발, LegacyCenter 이면 박스 중심이다 (발 = 중심 + 높이/2)
     entity.feet = _request.positionMode == ePositionMode::Feet
         ? _request.position
-        : jug::VECTOR2 { _request.position.x, _request.position.y + entity.size.y * 0.5f };
+        : Vec2 { _request.position.x, _request.position.y + entity.size.y * 0.5f };
 
     m_entities.push_back(entity);
     ++m_spawnCount;
@@ -313,13 +315,13 @@ void StagePlaceholders::ClearEntities(
 
 void StagePlaceholders::SendCommand(
     SpawnId /*_id*/,
-    jug::StringView /*_command*/)
+    slug::StringView /*_command*/)
 {
     // 플레이스홀더는 명령을 해석하지 않는다 (mb_truck startBattle 등은 실제 구현의 몫)
 }
 
 void StagePlaceholders::SetGround(
-    const jug::StringView _name)
+    const slug::StringView _name)
 {
     for (size_t i = 0; i < m_grounds.size(); ++i)
     {
@@ -329,7 +331,7 @@ void StagePlaceholders::SetGround(
             return;
         }
     }
-    JUG_CORE_LOG_WARN("StagePlaceholders: 지면 '{}' 이(가) 없습니다", std::string { _name });
+    SLUG_LOG_WARN("StagePlaceholders: 지면 '{}' 이(가) 없습니다", std::string { _name });
 }
 
 std::optional<float> StagePlaceholders::GetGroundFindY(
@@ -350,9 +352,9 @@ std::optional<float> StagePlaceholders::GetGroundFindY(
     return std::nullopt;
 }
 
-jug::VECTOR2 StagePlaceholders::PlayerFeet() const
+Vec2 StagePlaceholders::PlayerFeet() const
 {
-    return m_pPlayer ? m_pPlayer->GetFeet() : jug::VECTOR2 { 0.f, 0.f };
+    return m_pPlayer ? m_pPlayer->GetFeet() : Vec2 { 0.f, 0.f };
 }
 
 bool StagePlaceholders::PlayerAlive() const
@@ -373,7 +375,7 @@ void StagePlaceholders::SetPlayerInvincible(
 }
 
 void StagePlaceholders::WarpPlayer(
-    const jug::VECTOR2 _feet)
+    const Vec2 _feet)
 {
     if (!m_pPlayer || !m_pTuning)
     {
@@ -386,13 +388,13 @@ void StagePlaceholders::WarpPlayer(
 }
 
 void StagePlaceholders::SetBackdrop(
-    jug::StringView /*_modeId*/)
+    slug::StringView /*_modeId*/)
 {
     // 원경 모드는 StageRunner 가 보관한다 (렌더는 러너의 GetBackdropMode 를 읽는다)
 }
 
 void StagePlaceholders::ShowBanner(
-    const jug::String& _text,
+    const slug::String& _text,
     const float        _seconds)
 {
     if (m_pUi)
@@ -421,7 +423,7 @@ void StagePlaceholders::FadeTo(
 }
 
 void StagePlaceholders::PlayBgm(
-    const jug::StringView _name,
+    const slug::StringView _name,
     const bool            _bLoop)
 {
     if (m_pCtx)
@@ -431,18 +433,18 @@ void StagePlaceholders::PlayBgm(
 }
 
 void StagePlaceholders::EndStage(
-    const jug::StringView _nextState)
+    const slug::StringView _nextState)
 {
     m_bEndRequested = true;
-    m_endStateName  = jug::String { _nextState };
+    m_endStateName  = slug::String { _nextState };
 }
 
 void StagePlaceholders::OnSectionEntered(
     const int          _index,
-    const jug::StringView _id)
+    const slug::StringView _id)
 {
     m_lastSectionIndex = _index;
-    m_lastSectionId    = jug::String { _id };
+    m_lastSectionId    = slug::String { _id };
 }
 
 }   // namespace slug

@@ -1,13 +1,15 @@
 #pragma once
+#include "Base/Types.h"
+#include "Base/Assert.h"
 #include <algorithm>
 #include <tuple>
 #include <type_traits>
 
-#include <JugX/Handle.h>
-#include <JugX/HandleStorage.h>
-#include <JugX/RGBA.h>
-#include <JugX/ResourcePool.h>
-#include <JugX/Vector2.h>
+#include "Base/Handle.h"
+#include "Base/HandleStorage.h"
+#include "Base/RGBA.h"
+#include "Base/ResourcePool.h"
+#include "Base/Math.h"
 
 #include "Render/Animation.h"
 #include "World/Combat.h"
@@ -22,7 +24,7 @@ namespace slug
 // ===========================================
 
 struct EntityTag;
-using Entity = jug::Handle<EntityTag>;
+using Entity = slug::Handle<EntityTag>;
 
 // ===========================================
 //  컴포넌트 (단순 POD 데이터)
@@ -32,8 +34,8 @@ using Entity = jug::Handle<EntityTag>;
 // 위치 + 직전 틱 위치(렌더 보간용) + 바라보는 방향
 struct Transform
 {
-    jug::VECTOR2 position     = { 0.f, 0.f };
-    jug::VECTOR2 prevPosition = { 0.f, 0.f };
+    Vec2 position     = { 0.f, 0.f };
+    Vec2 prevPosition = { 0.f, 0.f };
     int          facing       = 1;   // +1 오른쪽, -1 왼쪽
 };
 
@@ -45,7 +47,7 @@ struct Sprite
     int        sortKey  = 0;
     bool       bVisible = true;
     bool       bFlipX   = false;
-    jug::RGBA  tint     = { 255, 255, 255, 255 };
+    slug::RGBA  tint     = { 255, 255, 255, 255 };
 };
 
 // 소속 팀 (판정의 기본값 제공용)
@@ -78,7 +80,7 @@ public:
     [[nodiscard]] size_t GetEntityCount() const { return m_order.size() - m_pendingDestroy.size(); }
 
     // 생성 순서대로 정렬된 엔티티 목록 (파괴 대기 포함 — 순회 시 IsAlive 확인 권장). ForEach 계열이 이를 대신해 준다.
-    [[nodiscard]] jug::Span<const Entity> GetEntities() const { return m_order; }
+    [[nodiscard]] slug::Span<const Entity> GetEntities() const { return m_order; }
 
     // ----- 컴포넌트 -----
     template<typename C>
@@ -86,7 +88,7 @@ public:
         const Entity _entity,
         const C&     _value = {})
     {
-        JUG_ASSERT(IsAlive(_entity), "죽은 엔티티에 컴포넌트를 추가할 수 없다.\n");
+        SLUG_ASSERT(IsAlive(_entity), "죽은 엔티티에 컴포넌트를 추가할 수 없다.\n");
         return Storage_<C>().InsertOrReplace(_entity, _value);
     }
 
@@ -183,27 +185,27 @@ private:
     };
 
     using ComponentStorages = std::tuple<
-        jug::HandleStorage<Entity, Transform>,
-        jug::HandleStorage<Entity, Body>,
-        jug::HandleStorage<Entity, Sprite>,
-        jug::HandleStorage<Entity, Health>,
-        jug::HandleStorage<Entity, Team>>;
+        slug::HandleStorage<Entity, Transform>,
+        slug::HandleStorage<Entity, Body>,
+        slug::HandleStorage<Entity, Sprite>,
+        slug::HandleStorage<Entity, Health>,
+        slug::HandleStorage<Entity, Team>>;
 
     template<typename C>
-    [[nodiscard]] jug::HandleStorage<Entity, C>& Storage_()
+    [[nodiscard]] slug::HandleStorage<Entity, C>& Storage_()
     {
-        return std::get<jug::HandleStorage<Entity, C>>(m_storages);
+        return std::get<slug::HandleStorage<Entity, C>>(m_storages);
     }
 
     template<typename C>
-    [[nodiscard]] const jug::HandleStorage<Entity, C>& Storage_() const
+    [[nodiscard]] const slug::HandleStorage<Entity, C>& Storage_() const
     {
-        return std::get<jug::HandleStorage<Entity, C>>(m_storages);
+        return std::get<slug::HandleStorage<Entity, C>>(m_storages);
     }
 
-    jug::ResourcePool<Entity, EntityRecord> m_entities       = {};
-    jug::Vector<Entity>                     m_order          = {};   // 생성 순서 (파괴 대기 포함)
-    jug::Vector<Entity>                     m_pendingDestroy = {};
+    slug::ResourcePool<Entity, EntityRecord> m_entities       = {};
+    slug::Vector<Entity>                     m_order          = {};   // 생성 순서 (파괴 대기 포함)
+    slug::Vector<Entity>                     m_pendingDestroy = {};
     ComponentStorages                       m_storages       = {};
 };
 

@@ -1,4 +1,5 @@
 #include "World/Combat.h"
+#include "Base/Types.h"
 
 #include <algorithm>
 
@@ -16,11 +17,11 @@ namespace
     }
 }   // namespace
 
-jug::Vector<HitEvent> HitResolver::Resolve(
-    const jug::Span<const Hitbox>  _hitboxes,
-    const jug::Span<const Hurtbox> _hurtboxes)
+slug::Vector<HitEvent> HitResolver::Resolve(
+    const slug::Span<const Hitbox>  _hitboxes,
+    const slug::Span<const Hurtbox> _hurtboxes)
 {
-    jug::Vector<HitEvent> events;
+    slug::Vector<HitEvent> events;
 
     for (size_t i = 0; i < _hitboxes.size(); ++i)
     {
@@ -67,7 +68,7 @@ jug::Vector<HitEvent> HitResolver::Resolve(
                 const auto it = m_hitRecords.find(hitbox.id);
                 if (it != m_hitRecords.end())
                 {
-                    const jug::Vector<uint64_t>& targets = it->second.targets;
+                    const slug::Vector<uint64_t>& targets = it->second.targets;
                     if (std::find(targets.begin(), targets.end(), targetKey) != targets.end())
                     {
                         continue;   // 같은 공격이 같은 대상을 이미 때림

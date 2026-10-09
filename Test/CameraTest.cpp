@@ -1,4 +1,6 @@
 #include <algorithm>
+#include "Base/Types.h"
+#include "Base/Math.h"
 #include <cmath>
 
 #include <gtest/gtest.h>
@@ -33,7 +35,7 @@ TEST(Camera, OutputIsAlwaysIntegralWhileFollowingFractionalTarget)
     {
         camera.SetTarget({ 320.f + static_cast<float>(i) * 3.37f, 224.f + std::sin(static_cast<float>(i) * 0.05f) * 3.1f });
         camera.Update();
-        const jug::VECTOR2 position = camera.GetPosition();
+        const Vec2 position = camera.GetPosition();
         ASSERT_TRUE(IsIntegral(position.x)) << "tick " << i << " x=" << position.x;
         ASSERT_TRUE(IsIntegral(position.y)) << "tick " << i << " y=" << position.y;
     }
@@ -51,7 +53,7 @@ TEST(Camera, FollowConvergesToTargetWithinDeadzone)
     const CameraTuning& tuning = camera.GetTuning();
     EXPECT_LE(std::abs(camera.GetViewCenter().x - 1500.f), tuning.deadzoneHalf.x + 0.01f);
     // 정지 후에는 더 움직이지 않는다 (정수 스냅이 깜박이지 않음)
-    const jug::VECTOR2 settled = camera.GetPosition();
+    const Vec2 settled = camera.GetPosition();
     for (int i = 0; i < 120; ++i)
     {
         camera.Update();
@@ -79,7 +81,7 @@ TEST(Camera, FollowIsSmoothNotInstantAndNeverOvershoots)
 TEST(Camera, TargetInsideDeadzoneDoesNotMoveTheCamera)
 {
     Camera             camera = MakeLevelCamera();
-    const jug::VECTOR2 start  = camera.GetPosition();
+    const Vec2 start  = camera.GetPosition();
     const float        dz     = camera.GetTuning().deadzoneHalf.x;
 
     for (int i = 0; i < 60; ++i)
@@ -234,8 +236,8 @@ TEST(Camera, WorldScreenRoundTripAndVisibility)
     camera.SetTarget({ 1000.f, 224.f });
     camera.SnapToTarget();
 
-    const jug::VECTOR2 world  = { 1234.5f, 100.25f };
-    const jug::VECTOR2 screen = camera.WorldToScreen(world);
+    const Vec2 world  = { 1234.5f, 100.25f };
+    const Vec2 screen = camera.WorldToScreen(world);
     EXPECT_EQ(camera.ScreenToWorld(screen), world);
     EXPECT_FLOAT_EQ(screen.x, 1234.5f - camera.GetPosition().x);
 
@@ -279,7 +281,7 @@ TEST(Camera, ShakeIsDeterministicDecaysAndStaysInBounds)
         camera.SnapToTarget();
         camera.Shake(6.f, 0.5f);
 
-        jug::Vector<jug::VECTOR2> positions;
+        slug::Vector<Vec2> positions;
         for (int i = 0; i < 60; ++i)
         {
             camera.Update();
@@ -288,8 +290,8 @@ TEST(Camera, ShakeIsDeterministicDecaysAndStaysInBounds)
         return positions;
     };
 
-    const jug::Vector<jug::VECTOR2> a = Run();
-    const jug::Vector<jug::VECTOR2> b = Run();
+    const slug::Vector<Vec2> a = Run();
+    const slug::Vector<Vec2> b = Run();
     ASSERT_EQ(a.size(), b.size());
     bool bMoved = false;
     for (size_t i = 0; i < a.size(); ++i)
@@ -321,7 +323,7 @@ TEST(Camera, DeterministicAcrossIdenticalRuns)
     auto Run = []() {
         Camera camera = MakeLevelCamera();
         camera.SetForwardOnly(true);
-        jug::Vector<jug::VECTOR2> out;
+        slug::Vector<Vec2> out;
         for (int i = 0; i < 600; ++i)
         {
             camera.SetTarget({ 320.f + static_cast<float>(i) * 2.7f, 224.f });

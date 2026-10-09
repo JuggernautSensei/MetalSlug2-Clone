@@ -1,4 +1,5 @@
 #include <cmath>
+#include "Base/Math.h"
 
 #include "Game/Enemies/EnemyCommon.h"
 #include "Game/Enemies/EnemyDefParse.h"
@@ -175,7 +176,7 @@ namespace
                 _e.body.velocity.x = -cfg.runSpeed;
                 if (_e.stateTicks >= cfg.blinkAtTicks && _e.stateTicks < cfg.blinkAtTicks + cfg.blinkForTicks)
                 {
-                    _e.bVisible = (((_e.stateTicks - cfg.blinkAtTicks) / jug::Max(1, cfg.blinkPeriodTicks)) % 2) == 0;
+                    _e.bVisible = (((_e.stateTicks - cfg.blinkAtTicks) / slug::Max(1, cfg.blinkPeriodTicks)) % 2) == 0;
                 }
                 else
                 {

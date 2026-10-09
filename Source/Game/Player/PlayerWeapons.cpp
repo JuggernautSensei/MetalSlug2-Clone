@@ -1,6 +1,6 @@
 #include "Game/Player/PlayerWeapons.h"
 
-#include <JugX/Math.h>
+#include "Base/Math.h"
 
 namespace slug
 {
@@ -59,7 +59,7 @@ bool ShouldFire(
     {
         return true;
     }
-    return _bShotHeld && _tuning.holdRepeatTicks > 0 && _state.ticksSinceShot >= jug::Max(_tuning.fireIntervalTicks, _tuning.holdRepeatTicks);
+    return _bShotHeld && _tuning.holdRepeatTicks > 0 && _state.ticksSinceShot >= slug::Max(_tuning.fireIntervalTicks, _tuning.holdRepeatTicks);
 }
 
 void OnFired(
@@ -90,9 +90,9 @@ BulletSpawn MakeBulletSpawn(
     const eWeapon       _weapon,
     const WeaponTuning& _tuning,
     const uint32_t      _owner,
-    const jug::VECTOR2  _muzzle,
-    const jug::VECTOR2  _sweepFrom,
-    const jug::VECTOR2  _direction)
+    const Vec2  _muzzle,
+    const Vec2  _sweepFrom,
+    const Vec2  _direction)
 {
     BulletSpawn spawn;
     spawn.team      = eTeam::Player;

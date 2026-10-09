@@ -1,7 +1,7 @@
 #pragma once
-#include <JugX/Random.h>
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Random.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "Game/Enemies/EnemyDef.h"
 #include "Game/Enemies/EnemyTypes.h"
@@ -21,8 +21,8 @@ class EnemyWorld;
 
 struct EnemyFxRequest
 {
-    jug::String  clip       = {};   // {side} 는 요청 시점에 치환되어 있다
-    jug::VECTOR2 position   = { 0.f, 0.f };
+    slug::String  clip       = {};   // {side} 는 요청 시점에 치환되어 있다
+    Vec2 position   = { 0.f, 0.f };
     int          layer      = 60;
     int          delayTicks = 0;
 };
@@ -50,7 +50,7 @@ struct EnemyRenderEnv
     const AnimationLibrary& anims;
     const SpriteLibrary*    pSprites;
     const ProjectileSystem& projectiles;
-    jug::VECTOR2            feet;
+    Vec2            feet;
     float                   alpha;
     int                     layer;   // 적 기본 레이어 (EnemyWorld 가 정한다)
 };

@@ -1,4 +1,6 @@
 #include <cmath>
+#include "Base/Types.h"
+#include "Base/Math.h"
 #include <string>
 
 #include "Game/Player/PlayerController.h"
@@ -26,14 +28,14 @@ void TickItems(ItemWorld& _items, const PhysicsWorld& _world, const int _ticks, 
     }
 }
 
-bool IsFruit(const PropDefLibrary& _lib, const jug::String& _name)
+bool IsFruit(const PropDefLibrary& _lib, const slug::String& _name)
 {
     const PropItemGroup* pGroup = _lib.FindGroup("random_fruit");
     if (pGroup == nullptr)
     {
         return false;
     }
-    for (const jug::String& name: pGroup->names)
+    for (const slug::String& name: pGroup->names)
     {
         if (name == _name)
         {
@@ -44,7 +46,7 @@ bool IsFruit(const PropDefLibrary& _lib, const jug::String& _name)
 }
 
 // 플레이어 몸 상자: 발 (x, y) 기준 24x40
-Aabb PlayerBoxAt(const jug::VECTOR2 _feet)
+Aabb PlayerBoxAt(const Vec2 _feet)
 {
     return Aabb::FromBottomCenter(_feet, { 24.f, 40.f });
 }
@@ -183,7 +185,7 @@ TEST(PropItem, ScoreItemCollectedGivesPickupAndPopup)
     items.Spawn("item_letter", { 100.f, 140.f });
     TickItems(items, FloorWorld(ground), 2);
 
-    const jug::Vector<ItemPickup> pickups = items.Collect(PlayerBoxAt({ 100.f, 140.f }));
+    const slug::Vector<ItemPickup> pickups = items.Collect(PlayerBoxAt({ 100.f, 140.f }));
     ASSERT_EQ(pickups.size(), 1u);
     EXPECT_EQ(pickups[0].kind, eItemKind::Score);
     EXPECT_EQ(pickups[0].score, 1100);
@@ -200,12 +202,12 @@ TEST(PropItem, GunItemShowsPickupEffectThenDisappears)
     items.Spawn("gunitem_mg", { 100.f, 140.f });
     TickItems(items, FloorWorld(ground), 60);
 
-    const jug::Vector<ItemPickup> pickups = items.Collect(PlayerBoxAt({ 100.f, 140.f }));
+    const slug::Vector<ItemPickup> pickups = items.Collect(PlayerBoxAt({ 100.f, 140.f }));
     ASSERT_EQ(pickups.size(), 1u);
     EXPECT_EQ(pickups[0].kind, eItemKind::Gun);
     EXPECT_EQ(pickups[0].weapon, eWeapon::Hmg);
     EXPECT_EQ(items.GetCount(), 1u);   // Disappear 연출 중
-    const jug::Vector<ItemFxRequest> fx = items.TakeFx();
+    const slug::Vector<ItemFxRequest> fx = items.TakeFx();
     ASSERT_EQ(fx.size(), 1u);
     EXPECT_EQ(fx[0].clip.c_str(), std::string { "Get_Item_Effect" });
 

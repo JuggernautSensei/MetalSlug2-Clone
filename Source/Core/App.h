@@ -1,7 +1,8 @@
 ﻿#pragma once
-#include <JugX/Application.h>
-#include <JugX/Random.h>
+#include <SDL3/SDL.h>
 
+#include "Base/Random.h"
+#include "Base/Types.h"
 #include "Audio/AudioSystem.h"
 #include "Core/FixedStep.h"
 #include "Core/Input.h"
@@ -17,7 +18,7 @@ namespace slug
 
 // ===========================================
 //  App
-//   JugX Application 파생. 가변 프레임 → 고정 60Hz 시뮬레이션(SimRunner) + 보간 렌더.
+//   SDL 이벤트 루프 소유. 가변 프레임 → 고정 60Hz 시뮬레이션(SimRunner) + 보간 렌더.
 //
 //   명령행:
 //     --state <name>            시작 게임 상태 (기본: StateFactory 의 기본값)
@@ -31,44 +32,46 @@ namespace slug
 //   디버그 키: F1 판정 상자 표시, F2 일시정지, F3 한 틱 진행(일시정지 중), F4 슬로모션(1/4), F5/F6 스테이지 워프(F1 켜진 상태: 다음 섹션 / 보스 아레나), F7~F10 무기 지급(HMG/샷건/로켓/화염, 샌드박스 또는 F1 켜진 스테이지)
 // ===========================================
 
-class App final : public jug::Application
+class App final
 {
 public:
-    App();
-    ~App() override;
-
-protected:
-    void Init() override;
-    void Shutdown() override;
-    void OnEvent(jug::Event& _event) override;
-    void Update(float _deltaTimeSec) override;
+    int Run(int _argc, char** _argv);
 
 private:
-    void OnKeyDown_(const jug::KeyDownEvent& _event);
-    void OnKeyUp_(const jug::KeyUpEvent& _event);
-    void OnFocusLost_(const jug::WindowFocusLostEvent& _event);
+    [[nodiscard]] bool InitSystems_();
+    void               Init_();
+    void               Shutdown_();
+    void               PollEvents_();
+    void               OnKeyDown_(SDL_Scancode _key, bool _bRepeat);
+    void               OnKeyUp_(SDL_Scancode _key);
+    void               OnFocusLost_();
+    void               Update_(float _deltaTimeSec);
 
     void ParseArgs_();
     void Tick_();
     void Render_(float _alpha);
     void SaveRecording_() const;
 
+    bool            m_bRunning   = false;
+    int             m_returnCode = 0;
+    Vector<String>  m_cmdArgs    = {};
+
     Renderer         m_renderer = {};
     SpriteBatch      m_sprites  = {};
     AnimationLibrary m_anims    = {};
-    jug::RngMt19937  m_rng      = jug::RngMt19937 { uint64_t { 1 } };
+    slug::RngMt19937  m_rng      = slug::RngMt19937 { uint64_t { 1 } };
     GameContext      m_ctx      = {};
     AudioSystem      m_audio    = {};
     InputSystem      m_input    = {};
     FixedStepClock   m_clock    = {};
 
-    jug::Scoped<SimRunner> m_pRunner = nullptr;
+    std::unique_ptr<SimRunner> m_pRunner = nullptr;
 
     // 명령행 옵션
-    jug::String   m_stateName   = {};
+    slug::String   m_stateName   = {};
     uint64_t      m_seed        = 1;
-    jug::FilePath m_recordPath  = {};
-    jug::FilePath m_replayPath  = {};
+    slug::FilePath m_recordPath  = {};
+    slug::FilePath m_replayPath  = {};
     bool          m_bReplayHold = false;
     bool          m_bNoAudio    = false;
 
@@ -79,10 +82,10 @@ private:
     bool       m_bPlayback    = false;
 
     // QA 캡처
-    jug::FilePath         m_capturePath      = {};
+    slug::FilePath         m_capturePath      = {};
     int                   m_captureFrame     = 30;
     int                   m_renderFrameCount = 0;
-    jug::Vector<uint64_t> m_captureTicks     = {};
+    slug::Vector<uint64_t> m_captureTicks     = {};
     size_t                m_captureTickHead  = 0;
 
     // 디버그 제어

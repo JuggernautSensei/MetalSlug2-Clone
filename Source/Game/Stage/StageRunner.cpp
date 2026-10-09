@@ -1,11 +1,13 @@
 #include "Game/Stage/StageRunner.h"
+#include "Base/Types.h"
+#include "Base/Random.h"
 
 #include <algorithm>
 #include <cmath>
 #include <cstring>
 
-#include <JugX/Assert.h>
-#include <JugX/Math.h>
+#include "Base/Assert.h"
+#include "Base/Math.h"
 
 #include "World/Constants.h"
 
@@ -45,7 +47,7 @@ StageRunner::StageRunner(
     const StageData& _data,
     IStageHost&      _host,
     Camera&          _camera,
-    jug::RngMt19937& _rng)
+    slug::RngMt19937& _rng)
     : m_pData(&_data)
     , m_pHost(&_host)
     , m_pCamera(&_camera)
@@ -102,7 +104,7 @@ void StageRunner::Begin()
     }
 }
 
-std::optional<jug::VECTOR2> StageRunner::ResolvePlayerStart() const
+std::optional<Vec2> StageRunner::ResolvePlayerStart() const
 {
     const PlayerStart& start = m_pData->player;
     float              y     = start.y;
@@ -119,7 +121,7 @@ std::optional<jug::VECTOR2> StageRunner::ResolvePlayerStart() const
     {
         y += start.halfHeight;
     }
-    return jug::VECTOR2 { start.x, y };
+    return Vec2 { start.x, y };
 }
 
 // ===========================================
@@ -171,8 +173,8 @@ void StageRunner::ApplyCameraLock_()
     }
 }
 
-jug::VECTOR2 StageRunner::ComputeCameraTarget(
-    const jug::VECTOR2 _playerFeet) const
+Vec2 StageRunner::ComputeCameraTarget(
+    const Vec2 _playerFeet) const
 {
     return { _playerFeet.x + m_cameraOffset.x, _playerFeet.y - kStageCameraTargetLift + m_cameraOffset.y };
 }
@@ -213,7 +215,7 @@ void StageRunner::Tick()
     CancelAbortables_();
 
     // 1) 섹션 트리거: 플레이어 x 가 triggerX 를 엄격히 넘으면, 배열 순서대로, 각 1회
-    const jug::VECTOR2 feet = m_pHost->PlayerFeet();
+    const Vec2 feet = m_pHost->PlayerFeet();
     while (m_nextSection < static_cast<int>(m_pData->sections.size()) && feet.x > m_pData->sections[static_cast<size_t>(m_nextSection)].triggerX && !m_bFinished)
     {
         const int index = m_nextSection++;
@@ -255,7 +257,7 @@ void StageRunner::ProcessPending_()
     }
 
     // 지금 실행할 항목을 (due, seq) 순으로 꺼낸다. 실행 중 새로 예약되는 항목은 due > now 이므로 다음 틱 이후이다.
-    jug::Vector<PendingItem> ready;
+    slug::Vector<PendingItem> ready;
     for (size_t i = 0; i < m_pending.size();)
     {
         if (m_pending[i].dueTick <= m_tick)
@@ -329,7 +331,7 @@ bool StageRunner::IsGateSatisfied_(
     const GateState& _gate) const
 {
     const StageAction& action = *_gate.pAction;
-    for (const jug::String& stageId: action.waitFor)
+    for (const slug::String& stageId: action.waitFor)
     {
         const SpawnRecord* pRecord = FindRecord_(stageId);
         if (!pRecord)
@@ -405,7 +407,7 @@ void StageRunner::FireSection_(
 }
 
 void StageRunner::RunActions_(
-    const jug::Vector<StageAction>& _actions,
+    const slug::Vector<StageAction>& _actions,
     const ExecContext&              _ctx)
 {
     for (const StageAction& action: _actions)
@@ -605,7 +607,7 @@ void StageRunner::ExecClear_(
 // ===========================================
 
 StageRunner::SpawnRecord* StageRunner::FindRecord_(
-    const jug::StringView _stageId)
+    const slug::StringView _stageId)
 {
     for (SpawnRecord& record: m_records)
     {
@@ -618,7 +620,7 @@ StageRunner::SpawnRecord* StageRunner::FindRecord_(
 }
 
 const StageRunner::SpawnRecord* StageRunner::FindRecord_(
-    const jug::StringView _stageId) const
+    const slug::StringView _stageId) const
 {
     for (const SpawnRecord& record: m_records)
     {
@@ -630,15 +632,15 @@ const StageRunner::SpawnRecord* StageRunner::FindRecord_(
     return nullptr;
 }
 
-jug::Span<const SpawnId> StageRunner::FindSpawnIds(
-    const jug::StringView _stageId) const
+slug::Span<const SpawnId> StageRunner::FindSpawnIds(
+    const slug::StringView _stageId) const
 {
     const SpawnRecord* pRecord = FindRecord_(_stageId);
-    return pRecord ? jug::Span<const SpawnId> { pRecord->ids } : jug::Span<const SpawnId> {};
+    return pRecord ? slug::Span<const SpawnId> { pRecord->ids } : slug::Span<const SpawnId> {};
 }
 
 bool StageRunner::WasSpawnSkipped(
-    const jug::StringView _stageId) const
+    const slug::StringView _stageId) const
 {
     const SpawnRecord* pRecord = FindRecord_(_stageId);
     return pRecord && pRecord->ids.empty();
@@ -678,7 +680,7 @@ void StageRunner::ExecSpawn_(
         request.pParams      = &_spec.params;
 
         // --- 위치 해소 ---
-        jug::VECTOR2 position = { 0.f, 0.f };
+        Vec2 position = { 0.f, 0.f };
         bool         bSkip    = false;
         if (_spec.bHasCamera)
         {
@@ -687,7 +689,7 @@ void StageRunner::ExecSpawn_(
             int dx = a.dxMin;
             if (a.IsRandomX())
             {
-                dx = jug::Random<int>(*m_pRng, a.dxMin, a.dxMax);
+                dx = slug::Random<int>(*m_pRng, a.dxMin, a.dxMax);
             }
             const float baseX = a.ax == eAnchorX::Left ? view.min.x : (a.ax == eAnchorX::Right ? view.max.x : (view.min.x + view.max.x) * 0.5f);
             const float baseY = a.ay == eAnchorY::Top ? view.min.y : (a.ay == eAnchorY::Bottom ? view.max.y : (view.min.y + view.max.y) * 0.5f);
@@ -770,7 +772,7 @@ void StageRunner::ExecSpawn_(
 // ===========================================
 
 bool StageRunner::WarpToSection(
-    const jug::StringView _id)
+    const slug::StringView _id)
 {
     const int index = m_pData->FindSection(_id);
     return index >= 0 && WarpToSection(index);
@@ -812,7 +814,7 @@ bool StageRunner::WarpToSection(
     // 플레이어: 대상 섹션 triggerX + 1, 지면으로
     const float  targetX = m_pData->sections[static_cast<size_t>(_index)].triggerX + 1.f;
     const Aabb   bounds  = GetEffectiveBounds();
-    jug::VECTOR2 feet    = m_pHost->PlayerFeet();
+    Vec2 feet    = m_pHost->PlayerFeet();
     feet.x               = targetX;
     if (const std::optional<float> ground = m_pHost->GetGroundFindY(targetX, bounds.min.y))
     {
@@ -860,9 +862,9 @@ int StageRunner::GetPendingWaveCount() const
     return count;
 }
 
-jug::Vector<jug::String> StageRunner::GetOpenGateIds() const
+slug::Vector<slug::String> StageRunner::GetOpenGateIds() const
 {
-    jug::Vector<jug::String> ids;
+    slug::Vector<slug::String> ids;
     for (const GateState& gate: m_gates)
     {
         ids.push_back(gate.pAction->gateId);
@@ -912,7 +914,7 @@ uint64_t StageRunner::HashState() const
     {
         MixU64_(hash, static_cast<uint8_t>(c));
     }
-    const jug::VECTOR2 center = m_pCamera->GetViewCenter();
+    const Vec2 center = m_pCamera->GetViewCenter();
     MixFloat_(hash, center.x);
     MixFloat_(hash, center.y);
     return hash;

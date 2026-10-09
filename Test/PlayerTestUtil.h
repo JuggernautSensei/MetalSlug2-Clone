@@ -1,4 +1,8 @@
 #pragma once
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Result.h"
+#include "Base/Random.h"
 #include <cmath>
 
 #include <gtest/gtest.h>
@@ -30,7 +34,7 @@ inline GroundMap MakeFlatGround(
 
 inline SandboxConfig MakeConfig(
     GroundMap          _ground,
-    const jug::VECTOR2 _spawn = { 100.f, 378.f })
+    const Vec2 _spawn = { 100.f, 378.f })
 {
     SandboxConfig config;
     config.bLoadBakedGround = false;
@@ -61,8 +65,8 @@ public:
         m_ctx.pAnims = _pAnims;
 
         m_pState  = new SandboxState { std::move(_config) };
-        m_pRunner = jug::Scoped<SimRunner> {
-            new SimRunner { m_ctx, jug::Scoped<IGameState> { m_pState } }
+        m_pRunner = std::unique_ptr<SimRunner> {
+            new SimRunner { m_ctx, std::unique_ptr<IGameState> { m_pState } }
         };
     }
 
@@ -120,10 +124,10 @@ public:
     [[nodiscard]] float Y() { return Player().GetFeet().y; }
 
 private:
-    jug::RngMt19937        m_rng;
+    slug::RngMt19937        m_rng;
     GameContext            m_ctx     = {};
     SandboxState*          m_pState  = nullptr;
-    jug::Scoped<SimRunner> m_pRunner = nullptr;
+    std::unique_ptr<SimRunner> m_pRunner = nullptr;
     InputFrame             m_frame   = {};
 };
 
@@ -131,7 +135,7 @@ private:
 inline bool LoadBakedAnims(
     AnimationLibrary& _out)
 {
-    jug::Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(jug::FilePath { SLUG_ASSET_DIR } / "Baked");
+    slug::Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(slug::FilePath { SLUG_ASSET_DIR } / "Baked");
     if (!library)
     {
         return false;

@@ -1,4 +1,5 @@
 #include "Game/Enemies/EnemyCommon.h"
+#include "Base/Math.h"
 #include "Game/Enemies/EnemyDefParse.h"
 #include "Game/Enemies/VehicleCommon.h"
 
@@ -177,8 +178,8 @@ namespace
                 {
                     // 로켓: 후방(-바라보는 방향)으로 발사. 발수 홀짝에 따라 머즐이 20px 씩 엇갈린다 (레거시 k = bullet & 1)
                     const float facing = static_cast<float>(_e.facing);
-                    const jug::VECTOR2 back  = { -facing, 0.f };
-                    const jug::VECTOR2 shift = { 20.f * static_cast<float>(_e.counter & 1) * -facing, 0.f };
+                    const Vec2 back  = { -facing, 0.f };
+                    const Vec2 shift = { 20.f * static_cast<float>(_e.counter & 1) * -facing, 0.f };
                     (void)FireWeapon(_e, _def, _env, c.weaponRocket, back, shift);
                 }
                 if (Done_(_e, _def))

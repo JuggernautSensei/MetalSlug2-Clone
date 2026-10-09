@@ -1,4 +1,5 @@
 #include <cmath>
+#include "Base/Types.h"
 
 #include "VehicleTestUtil.h"
 
@@ -50,7 +51,7 @@ namespace
 
         [[nodiscard]] const Shot* First() const
         {
-            const jug::Span<const Shot> shots = ps.GetShots();
+            const slug::Span<const Shot> shots = ps.GetShots();
             return shots.empty() ? nullptr : &shots[0];
         }
     };
@@ -115,7 +116,7 @@ TEST(VehicleProjectile, RollingShotExpiresRollTicksAfterLandingWithItsFlashWhenR
     f.Step(80);
     EXPECT_TRUE(f.ps.GetShots().empty());
     EXPECT_GE(landedAge, 55);
-    const jug::Vector<ShotFx> fx = f.ps.TakeShotFx();
+    const slug::Vector<ShotFx> fx = f.ps.TakeShotFx();
     EXPECT_EQ(fx.size(), 1u) << "수명 종료 연출 1회";
 }
 

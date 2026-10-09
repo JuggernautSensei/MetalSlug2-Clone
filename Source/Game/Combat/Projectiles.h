@@ -1,6 +1,6 @@
 #pragma once
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "Game/Combat/CombatSystem.h"
 #include "World/Combat.h"
@@ -19,17 +19,17 @@ struct BulletSpawn
 {
     eTeam        team      = eTeam::Player;
     uint32_t     owner     = kNoOwner;
-    jug::VECTOR2 position  = { 0.f, 0.f };   // 총구
-    jug::VECTOR2 sweepFrom = { 0.f, 0.f };   // 첫 틱 판정이 훑는 시작점 (몸통 중심): 총구가 표적 뒤로 넘어가도 맞는다
-    jug::VECTOR2 direction = { 1.f, 0.f };   // 단위 벡터
+    Vec2 position  = { 0.f, 0.f };   // 총구
+    Vec2 sweepFrom = { 0.f, 0.f };   // 첫 틱 판정이 훑는 시작점 (몸통 중심): 총구가 표적 뒤로 넘어가도 맞는다
+    Vec2 direction = { 1.f, 0.f };   // 단위 벡터
     float        speed     = 600.f;          // px/s
     int          damage    = 1;
-    jug::VECTOR2 size      = { 14.f, 10.f };
+    Vec2 size      = { 14.f, 10.f };
     float        range     = 400.f;
     bool         bPierce   = false;
     uint8_t      tag       = 0;   // 호출자가 정하는 분류 (예: 무기 종류) — CountBullets 용
     eHitKind     kind      = eHitKind::Bullet;
-    jug::VECTOR2 blastSize = { 0.f, 0.f };   // 착탄/사거리 끝 폭발 상자 (0 = 폭발 없음)
+    Vec2 blastSize = { 0.f, 0.f };   // 착탄/사거리 끝 폭발 상자 (0 = 폭발 없음)
     int          blastDamage = 0;
     int          blastTicks  = 0;
     bool         bTrail      = false;   // 로켓 연기 자국
@@ -37,11 +37,11 @@ struct BulletSpawn
 
 struct Bullet
 {
-    jug::VECTOR2 position   = { 0.f, 0.f };
-    jug::VECTOR2 renderPrev = { 0.f, 0.f };
-    jug::VECTOR2 hitFrom    = { 0.f, 0.f };
-    jug::VECTOR2 velocity   = { 0.f, 0.f };   // px/s
-    jug::VECTOR2 size       = { 14.f, 10.f };
+    Vec2 position   = { 0.f, 0.f };
+    Vec2 renderPrev = { 0.f, 0.f };
+    Vec2 hitFrom    = { 0.f, 0.f };
+    Vec2 velocity   = { 0.f, 0.f };   // px/s
+    Vec2 size       = { 14.f, 10.f };
     float        travelled  = 0.f;
     float        range      = 400.f;
     int          damage     = 1;
@@ -52,7 +52,7 @@ struct Bullet
     bool         bPierce    = false;
     bool         bAlive     = true;
     uint8_t      tag        = 0;
-    jug::VECTOR2 blastSize  = { 0.f, 0.f };
+    Vec2 blastSize  = { 0.f, 0.f };
     int          blastDamage = 0;
     int          blastTicks  = 0;
     bool         bTrail     = false;
@@ -63,21 +63,21 @@ struct BombSpawn
 {
     eTeam        team       = eTeam::Player;
     uint32_t     owner      = kNoOwner;
-    jug::VECTOR2 position   = { 0.f, 0.f };
-    jug::VECTOR2 velocity   = { 0.f, 0.f };   // px/s
+    Vec2 position   = { 0.f, 0.f };
+    Vec2 velocity   = { 0.f, 0.f };   // px/s
     float        gravity    = 900.f;
-    jug::VECTOR2 hitSize    = { 12.f, 12.f };   // 비행 중 표적과 닿는 크기
+    Vec2 hitSize    = { 12.f, 12.f };   // 비행 중 표적과 닿는 크기
     int          damage     = 20;
-    jug::VECTOR2 blastSize  = { 104.f, 72.f };
+    Vec2 blastSize  = { 104.f, 72.f };
     float        blastUp    = 28.f;
     int          blastTicks = 10;
 };
 
 struct Bomb
 {
-    jug::VECTOR2 position   = { 0.f, 0.f };
-    jug::VECTOR2 renderPrev = { 0.f, 0.f };
-    jug::VECTOR2 velocity   = { 0.f, 0.f };
+    Vec2 position   = { 0.f, 0.f };
+    Vec2 renderPrev = { 0.f, 0.f };
+    Vec2 velocity   = { 0.f, 0.f };
     BombSpawn    params     = {};
     bool         bAlive     = true;
 };
@@ -103,13 +103,13 @@ struct ShotSpawn
 {
     eTeam        team            = eTeam::Enemy;
     uint32_t     owner           = kNoOwner;
-    jug::VECTOR2 position        = { 0.f, 0.f };
-    jug::VECTOR2 velocity        = { 0.f, 0.f };   // 초기 속도 px/s
-    jug::VECTOR2 accel           = { 0.f, 0.f };   // 가속도 px/s² (진행 방향 가속 등). maxSpeed > 0 이면 |v| 상한
+    Vec2 position        = { 0.f, 0.f };
+    Vec2 velocity        = { 0.f, 0.f };   // 초기 속도 px/s
+    Vec2 accel           = { 0.f, 0.f };   // 가속도 px/s² (진행 방향 가속 등). maxSpeed > 0 이면 |v| 상한
     float        maxSpeed        = 0.f;
     float        gravity         = 0.f;       // px/s²
     float        maxFallSpeed    = 3000.f;    // px/s
-    jug::VECTOR2 size            = { 20.f, 20.f };
+    Vec2 size            = { 20.f, 20.f };
     int          damage          = 1;
     eHitKind     kind            = eHitKind::Bullet;
     int          lifetimeTicks   = 300;
@@ -127,10 +127,10 @@ struct ShotSpawn
 
 struct Shot
 {
-    jug::VECTOR2 position   = { 0.f, 0.f };
-    jug::VECTOR2 renderPrev = { 0.f, 0.f };
-    jug::VECTOR2 hitFrom    = { 0.f, 0.f };
-    jug::VECTOR2 velocity   = { 0.f, 0.f };
+    Vec2 position   = { 0.f, 0.f };
+    Vec2 renderPrev = { 0.f, 0.f };
+    Vec2 hitFrom    = { 0.f, 0.f };
+    Vec2 velocity   = { 0.f, 0.f };
     ShotSpawn    params     = {};
     uint32_t     hitId      = kNoHitId;
     int          ageTicks   = 0;
@@ -142,7 +142,7 @@ struct Shot
 // 샷이 적중/지형 접촉으로 사라질 때 남기는 연출 요청 (수명 종료/화면 밖 소멸에서는 만들지 않는다)
 struct ShotFx
 {
-    jug::VECTOR2 position = { 0.f, 0.f };
+    Vec2 position = { 0.f, 0.f };
     uint16_t     visual   = 0;
 };
 
@@ -158,7 +158,7 @@ enum class eFxKind : uint8_t
 struct FxRequest
 {
     eFxKind      kind     = eFxKind::BulletImpact;
-    jug::VECTOR2 position = { 0.f, 0.f };
+    Vec2 position = { 0.f, 0.f };
 };
 
 class ProjectileSystem
@@ -174,7 +174,7 @@ public:
     void Step(const GroundMap* _pGround, CombatSystem& _combat, float _dt);
 
     // Resolve 결과를 반영한다: 비관통 탄은 적중 시 소멸. (Step 에서 이미 등록한 hitId 기준)
-    void OnHitEvents(jug::Span<const HitEvent> _events, CombatSystem& _combat);
+    void OnHitEvents(slug::Span<const HitEvent> _events, CombatSystem& _combat);
 
     [[nodiscard]] int CountBullets(uint32_t _owner, uint8_t _tag) const;
     [[nodiscard]] int CountBombs(uint32_t _owner) const;
@@ -183,27 +183,27 @@ public:
     // _keep 밖으로 나간 Shot 을 (연출 없이) 제거한다. 화면 밖 소멸용.
     void CullShots(const Aabb& _keep, CombatSystem& _combat);
 
-    [[nodiscard]] jug::Span<const Bullet> GetBullets() const { return m_bullets; }
-    [[nodiscard]] jug::Span<const Bomb>   GetBombs() const { return m_bombs; }
-    [[nodiscard]] jug::Span<const Blast>  GetBlasts() const { return m_blasts; }
-    [[nodiscard]] jug::Span<const Shot>   GetShots() const { return m_shots; }
+    [[nodiscard]] slug::Span<const Bullet> GetBullets() const { return m_bullets; }
+    [[nodiscard]] slug::Span<const Bomb>   GetBombs() const { return m_bombs; }
+    [[nodiscard]] slug::Span<const Blast>  GetBlasts() const { return m_blasts; }
+    [[nodiscard]] slug::Span<const Shot>   GetShots() const { return m_shots; }
 
     // 이번 틱에 쌓인 이펙트 요청을 비우며 가져간다.
-    [[nodiscard]] jug::Vector<FxRequest> TakeFx();
+    [[nodiscard]] slug::Vector<FxRequest> TakeFx();
 
     // Shot 의 연출 요청 (TakeFx 와 분리되어 있어 기존 호출자에게 영향이 없다)
-    [[nodiscard]] jug::Vector<ShotFx> TakeShotFx();
+    [[nodiscard]] slug::Vector<ShotFx> TakeShotFx();
 
 private:
-    void ExplodeBomb_(Bomb& _bomb, jug::VECTOR2 _at, CombatSystem& _combat);
+    void ExplodeBomb_(Bomb& _bomb, Vec2 _at, CombatSystem& _combat);
     void SpawnBulletBlast_(const Bullet& _bullet, CombatSystem& _combat);
 
-    jug::Vector<Bullet>    m_bullets = {};
-    jug::Vector<Bomb>      m_bombs   = {};
-    jug::Vector<Blast>     m_blasts  = {};
-    jug::Vector<FxRequest> m_fx      = {};
-    jug::Vector<Shot>      m_shots   = {};
-    jug::Vector<ShotFx>    m_shotFx  = {};
+    slug::Vector<Bullet>    m_bullets = {};
+    slug::Vector<Bomb>      m_bombs   = {};
+    slug::Vector<Blast>     m_blasts  = {};
+    slug::Vector<FxRequest> m_fx      = {};
+    slug::Vector<Shot>      m_shots   = {};
+    slug::Vector<ShotFx>    m_shotFx  = {};
 };
 
 }   // namespace slug

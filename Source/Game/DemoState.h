@@ -1,5 +1,5 @@
 #pragma once
-#include <JugX/Vector2.h>
+#include "Base/Math.h"
 
 #include "Game/GameState.h"
 
@@ -18,13 +18,13 @@ public:
     void Render(GameContext& _ctx, float _alpha) override;
     [[nodiscard]] bool IsFinished() const override;
 
-    [[nodiscard]] jug::VECTOR2 GetPosition() const { return m_pos; }
+    [[nodiscard]] Vec2 GetPosition() const { return m_pos; }
 
 private:
     static constexpr float kSpeedPerTick = 2.f;   // 120 px/s @ 60Hz
 
-    jug::VECTOR2 m_prevPos   = { 320.f, 224.f };
-    jug::VECTOR2 m_pos       = { 320.f, 224.f };
+    Vec2 m_prevPos   = { 320.f, 224.f };
+    Vec2 m_pos       = { 320.f, 224.f };
     bool         m_bFinished = false;
 };
 

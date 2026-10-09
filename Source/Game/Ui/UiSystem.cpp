@@ -1,10 +1,12 @@
 #include "Game/Ui/UiSystem.h"
+#include "Base/Types.h"
+#include "Base/Result.h"
 
 #include <algorithm>
 #include <map>
 #include <utility>
 
-#include <JugX/CoreLogger.h>
+#include "Base/Log.h"
 
 namespace slug
 {
@@ -15,25 +17,25 @@ namespace
     // (타이틀 ↔ 스테이지를 오가며 화면 크기 텍스처가 계속 쌓이는 것을 막는다.)
     [[nodiscard]] int LoadStandaloneCached_(
         GameContext&          _ctx,
-        const jug::StringView _name,
-        const jug::StringView _file)
+        const slug::StringView _name,
+        const slug::StringView _file)
     {
-        static std::map<std::pair<const SpriteBatch*, jug::String>, int> s_cache;
+        static std::map<std::pair<const SpriteBatch*, slug::String>, int> s_cache;
 
-        const std::pair<const SpriteBatch*, jug::String> key { _ctx.pSprites, jug::String { _name } };
+        const std::pair<const SpriteBatch*, slug::String> key { _ctx.pSprites, slug::String { _name } };
         if (const auto it = s_cache.find(key); it != s_cache.end())
         {
             return it->second;
         }
 
         int handle = -1;
-        if (const jug::Result<int> loaded = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / jug::FilePath { _file }))
+        if (const slug::Result<int> loaded = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / slug::FilePath { _file }))
         {
             handle = loaded.GetValue();
         }
         else
         {
-            JUG_CORE_LOG_WARN("UI 텍스처를 읽지 못했습니다: {}", _file);
+            SLUG_LOG_WARN("UI 텍스처를 읽지 못했습니다: {}", _file);
         }
         s_cache.emplace(key, handle);
         return handle;
@@ -57,7 +59,7 @@ void UiSystem::Init(
         return;
     }
 
-    if (jug::Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot / "Baked"))
+    if (slug::Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot / "Baked"))
     {
         m_sprites  = library.Take();
         m_bSprites = true;
@@ -65,7 +67,7 @@ void UiSystem::Init(
     }
     else
     {
-        JUG_CORE_LOG_WARN("UI: sprites.json 을 읽지 못해 디버그 폰트로 대체합니다 (Scripts/Bake.ps1 필요)");
+        SLUG_LOG_WARN("UI: sprites.json 을 읽지 못해 디버그 폰트로 대체합니다 (Scripts/Bake.ps1 필요)");
     }
 }
 
@@ -84,7 +86,7 @@ void UiSystem::DrawText(
     GameContext&          _ctx,
     const int             _x,
     const int             _y,
-    const jug::StringView _text,
+    const slug::StringView _text,
     const TextStyle&      _style) const
 {
     if (_ctx.IsHeadless() || !_ctx.pSprites)
@@ -96,7 +98,7 @@ void UiSystem::DrawText(
 
 bool UiSystem::DrawSprite(
     GameContext&          _ctx,
-    const jug::StringView _name,
+    const slug::StringView _name,
     const int             _centerX,
     const int             _centerY,
     const int             _scale,
@@ -124,7 +126,7 @@ bool UiSystem::DrawSprite(
 
 bool UiSystem::DrawStandalone(
     GameContext&          _ctx,
-    const jug::StringView _name,
+    const slug::StringView _name,
     const int             _x,
     const int             _y,
     const uint8_t         _alpha) const

@@ -1,10 +1,12 @@
 #include "Game/Stage/StageWorldHost.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include <algorithm>
 #include <cmath>
 #include <string_view>
 
-#include <JugX/CoreLogger.h>
+#include "Base/Log.h"
 
 #include "Core/Tuning.h"
 #include "Game/Enemies/EnemyWorld.h"
@@ -29,7 +31,7 @@ namespace
     // 배틀십(최종보스): 레거시 SetArena 와 같이 아레나 왼쪽 밖(-300)에서 레일로 들어온다 (SandboxState::SpawnBossLab_ 과 같은 규칙)
     constexpr float kBossEntryOffsetX = 300.f;
 
-    [[nodiscard]] jug::VECTOR2 EnemyFeet_(
+    [[nodiscard]] Vec2 EnemyFeet_(
         const SpawnRequest& _request)
     {
         if (_request.positionMode == ePositionMode::LegacyCenter)
@@ -53,7 +55,7 @@ void StageWorldHost::BindWorld(
 }
 
 void StageWorldHost::BindRects(
-    const jug::Span<const NamedRect> _rects)
+    const slug::Span<const NamedRect> _rects)
 {
     m_rects.clear();
     for (const NamedRect& rect: _rects)
@@ -126,7 +128,7 @@ void StageWorldHost::AddRoute_(
 }
 
 const NamedRect* StageWorldHost::FindRect_(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
     for (const NamedRect& rect: m_rects)
     {
@@ -187,7 +189,7 @@ SpawnId StageWorldHost::SpawnEntity(
         params.drop   = _request.drop;
         params.userTag = id;
 
-        jug::VECTOR2 feet = EnemyFeet_(_request);
+        Vec2 feet = EnemyFeet_(_request);
         if (_request.def == "battleship")
         {
             // 최종보스: params.arena = 아레나 사각형, 등장 위치는 아레나 왼쪽 밖
@@ -227,7 +229,7 @@ SpawnId StageWorldHost::SpawnEntity(
     // 아이템 → PropWorld 가 가진 ItemWorld (이름 또는 random_* 그룹)
     if (m_pProps && _request.kind == eEntityKind::Item)
     {
-        const jug::VECTOR2 feet   = _request.positionMode == ePositionMode::Feet ? _request.position : ItemFeetFromCenter(_request.position);
+        const Vec2 feet   = _request.positionMode == ePositionMode::Feet ? _request.position : ItemFeetFromCenter(_request.position);
         const uint32_t     itemId = m_pProps->SpawnItem(_request.def, feet, false);
         if (itemId != 0)
         {
@@ -297,7 +299,7 @@ void StageWorldHost::ClearEntities(
 
 void StageWorldHost::SendCommand(
     const SpawnId          _id,
-    const jug::StringView  _command)
+    const slug::StringView  _command)
 {
     // 버스(mb_truck) 의 startBattle 은 문 접촉으로 스스로 시작한다 (Bus.cpp). 그 밖의 명령은 아직 없다.
     static bool bWarnedOnce = false;
@@ -308,7 +310,7 @@ void StageWorldHost::SendCommand(
     if (!bWarnedOnce)
     {
         bWarnedOnce = true;
-        JUG_CORE_LOG_WARN("스테이지 명령 '{}' (대상 {}) 은 아직 구현되지 않았습니다", std::string { _command }, _id);
+        SLUG_LOG_WARN("스테이지 명령 '{}' (대상 {}) 은 아직 구현되지 않았습니다", std::string { _command }, _id);
     }
 }
 
@@ -317,7 +319,7 @@ void StageWorldHost::SendCommand(
 // ===========================================
 
 void StageWorldHost::SetGround(
-    const jug::StringView _name)
+    const slug::StringView _name)
 {
     m_placeholders.SetGround(_name);
 }
@@ -329,7 +331,7 @@ std::optional<float> StageWorldHost::GetGroundFindY(
     return m_placeholders.GetGroundFindY(_x, _fromY);
 }
 
-jug::VECTOR2 StageWorldHost::PlayerFeet() const
+Vec2 StageWorldHost::PlayerFeet() const
 {
     return m_placeholders.PlayerFeet();
 }
@@ -355,19 +357,19 @@ void StageWorldHost::SetPlayerInvincible(
 }
 
 void StageWorldHost::WarpPlayer(
-    const jug::VECTOR2 _feet)
+    const Vec2 _feet)
 {
     m_placeholders.WarpPlayer(_feet);
 }
 
 void StageWorldHost::SetBackdrop(
-    const jug::StringView _modeId)
+    const slug::StringView _modeId)
 {
     m_placeholders.SetBackdrop(_modeId);
 }
 
 void StageWorldHost::ShowBanner(
-    const jug::String& _text,
+    const slug::String& _text,
     const float        _seconds)
 {
     m_placeholders.ShowBanner(_text, _seconds);
@@ -381,21 +383,21 @@ void StageWorldHost::FadeTo(
 }
 
 void StageWorldHost::PlayBgm(
-    const jug::StringView _name,
+    const slug::StringView _name,
     const bool            _bLoop)
 {
     m_placeholders.PlayBgm(_name, _bLoop);
 }
 
 void StageWorldHost::EndStage(
-    const jug::StringView _nextState)
+    const slug::StringView _nextState)
 {
     m_placeholders.EndStage(_nextState);
 }
 
 void StageWorldHost::OnSectionEntered(
     const int          _index,
-    const jug::StringView _id)
+    const slug::StringView _id)
 {
     m_placeholders.OnSectionEntered(_index, _id);
 }

@@ -1,4 +1,7 @@
 #include <filesystem>
+#include "Base/Types.h"
+#include "Base/Result.h"
+#include "Base/Random.h"
 
 #include <gtest/gtest.h>
 
@@ -28,7 +31,7 @@ namespace
 
     [[nodiscard]] SoundBank MakeBank()
     {
-        jug::Result<SoundBank> bank = SoundBank::LoadFromJson(kBankJson, "root");
+        slug::Result<SoundBank> bank = SoundBank::LoadFromJson(kBankJson, "root");
         EXPECT_TRUE(static_cast<bool>(bank));
         return bank.Take();
     }
@@ -43,9 +46,9 @@ namespace
         return config;
     }
 
-    jug::FilePath BakedRoot()
+    slug::FilePath BakedRoot()
     {
-        return jug::FilePath { SLUG_ASSET_DIR } / "Baked";
+        return slug::FilePath { SLUG_ASSET_DIR } / "Baked";
     }
 }   // namespace
 
@@ -74,7 +77,7 @@ TEST(AudioBank, MissingBgmKeyDefaultsToSfxAndPathJoinsRoot)
     const SoundEntry* pBomb = bank.Find("PlayerBomb");
     ASSERT_NE(pBomb, nullptr);
     EXPECT_FALSE(pBomb->bBgm);
-    EXPECT_EQ(pBomb->path, jug::FilePath { "root" } / "Audio/PlayerBomb.wav");
+    EXPECT_EQ(pBomb->path, slug::FilePath { "root" } / "Audio/PlayerBomb.wav");
 }
 
 TEST(AudioBank, UnknownNameIsNullAndIndexMinusOne)
@@ -110,7 +113,7 @@ TEST(AudioBank, MissingDirectoryIsError)
 
 TEST(AudioBank, BakedSoundsJsonListsExistingFilesAndExtras)
 {
-    jug::Result<SoundBank> bank = SoundBank::LoadFromDirectory(BakedRoot());
+    slug::Result<SoundBank> bank = SoundBank::LoadFromDirectory(BakedRoot());
     if (!bank)
     {
         GTEST_SKIP() << "Assets/Baked 없음";
@@ -470,7 +473,7 @@ TEST(AudioSystemDry, VolumesClampAndStopBgmIsImmediate)
 TEST(AudioSystemDry, InitFromBakedDirectoryOrError)
 {
     AudioSystem audio;
-    const jug::Result<void> result = audio.InitFromDirectory(BakedRoot(), MakeDryConfig());
+    const slug::Result<void> result = audio.InitFromDirectory(BakedRoot(), MakeDryConfig());
     if (!result)
     {
         GTEST_SKIP() << "Assets/Baked 없음";
@@ -502,7 +505,7 @@ namespace
             ctx.pRng   = &rng;
             ctx.pAudio = _pAudio;
             pState     = new SandboxState { slugtest::MakeFlatConfig() };
-            runner     = jug::Scoped<SimRunner> { new SimRunner { ctx, jug::Scoped<IGameState> { pState } } };
+            runner     = std::unique_ptr<SimRunner> { new SimRunner { ctx, std::unique_ptr<IGameState> { pState } } };
         }
 
         void RunScript(const int _ticks)
@@ -518,10 +521,10 @@ namespace
             }
         }
 
-        jug::RngMt19937        rng;
+        slug::RngMt19937        rng;
         GameContext            ctx;
         SandboxState*          pState = nullptr;
-        jug::Scoped<SimRunner> runner = nullptr;
+        std::unique_ptr<SimRunner> runner = nullptr;
     };
 }   // namespace
 

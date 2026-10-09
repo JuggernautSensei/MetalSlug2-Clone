@@ -1,4 +1,5 @@
 #include <algorithm>
+#include "Base/Math.h"
 #include <cmath>
 
 #include "World/Constants.h"
@@ -55,27 +56,27 @@ namespace
     constexpr int kActTurnRight = 2;
     constexpr int kActShot      = 3;
 
-    [[nodiscard]] jug::VECTOR2 OriginOf_(
+    [[nodiscard]] Vec2 OriginOf_(
         const Enemy&          _e,
         const BattleShipCfg& _c)
     {
         return { _e.body.position.x, _e.body.position.y - _c.originDepth };
     }
 
-    [[nodiscard]] jug::VECTOR2 TurretOriginOf_(
+    [[nodiscard]] Vec2 TurretOriginOf_(
         const Enemy&          _e,
         const BattleShipCfg& _c,
         const int             _i)
     {
-        const jug::VECTOR2 o = OriginOf_(_e, _c);
+        const Vec2 o = OriginOf_(_e, _c);
         return { o.x + _c.turretOffset[_i].x, o.y + _c.turretOffset[_i].y };
     }
 
-    [[nodiscard]] jug::VECTOR2 CannonOriginOf_(
+    [[nodiscard]] Vec2 CannonOriginOf_(
         const Enemy&          _e,
         const BattleShipCfg& _c)
     {
-        const jug::VECTOR2 o = OriginOf_(_e, _c);
+        const Vec2 o = OriginOf_(_e, _c);
         return { o.x + _c.cannonOffset.x, o.y + _c.cannonOffset.y };
     }
 
@@ -184,7 +185,7 @@ namespace
         const BattleShipCfg& _c,
         const EnemyEnv&      _env)
     {
-        const jug::VECTOR2 cannon = CannonOriginOf_(_e, _c);
+        const Vec2 cannon = CannonOriginOf_(_e, _c);
         const float        aim    = std::atan2(_env.ctx.player.center.y - cannon.y, _env.ctx.player.center.x - cannon.x) * kRadToDeg;
         const float        target = std::clamp(aim, _c.cannonAngleMin, _c.cannonAngleMax);
         const float        rate   = (IsEnragedImpl_(_e) ? _c.cannonTrackDegEnraged : _c.cannonTrackDeg) * kStepSec;
@@ -227,9 +228,9 @@ namespace
         }
         const ProjectileDef& proj = _env.lib.GetProjectile(projIndex);
 
-        const jug::VECTOR2 o   = OriginOf_(_e, c);
-        const jug::VECTOR2 pos = { o.x + c.cannonOffset.x + static_cast<float>(_bin - 2) * c.bulletSpread, o.y + c.cannonOffset.y + 10.f };
-        jug::VECTOR2       d   = { _env.ctx.player.center.x - pos.x, std::max(_env.ctx.player.center.y - pos.y, 1.f) };
+        const Vec2 o   = OriginOf_(_e, c);
+        const Vec2 pos = { o.x + c.cannonOffset.x + static_cast<float>(_bin - 2) * c.bulletSpread, o.y + c.cannonOffset.y + 10.f };
+        Vec2       d   = { _env.ctx.player.center.x - pos.x, std::max(_env.ctx.player.center.y - pos.y, 1.f) };
         const float        lim = 1.7f * d.y;
         if (std::abs(d.x) > lim)
         {
@@ -273,8 +274,8 @@ namespace
         const BattleShipCfg& c    = _def.battleShip;
         int*                 t    = Turret_(_e, _i);
         const int            dir  = std::clamp(t[kTurretDir], 0, 2);
-        const jug::VECTOR2   to   = TurretOriginOf_(_e, c, _i);
-        const jug::VECTOR2   muzzle = { to.x + c.turretMuzzle[dir].x, to.y + c.turretMuzzle[dir].y };
+        const Vec2   to   = TurretOriginOf_(_e, c, _i);
+        const Vec2   muzzle = { to.x + c.turretMuzzle[dir].x, to.y + c.turretMuzzle[dir].y };
 
         EnemyFxRequest fx;
         fx.clip       = kDirFxNames[dir];
@@ -326,7 +327,7 @@ namespace
     [[nodiscard]] int DesiredDir_(
         const EnemyEnv&      _env,
         const BattleShipCfg& _c,
-        const jug::VECTOR2   _turretOrigin)
+        const Vec2   _turretOrigin)
     {
         const float dx = _env.ctx.player.feet.x - _turretOrigin.x;
         if (std::abs(dx) <= _c.turretMidDx)
@@ -395,7 +396,7 @@ namespace
         t[kTurretHp]       = 0;
         t[kTurretAction]   = kActNone;
         t[kTurretBusy]     = 0;
-        const jug::VECTOR2 at = TurretOriginOf_(_e, _def.battleShip, _i);
+        const Vec2 at = TurretOriginOf_(_e, _def.battleShip, _i);
         const char*        clips[3] = { "Explosion_Small", "Explosion_Mid", "Explosion_Large" };
         for (const char* clip: clips)
         {
@@ -413,7 +414,7 @@ namespace
         EnemyEnv&       _env,
         const char*     _clip)
     {
-        const jug::VECTOR2 o  = OriginOf_(_e, _def.battleShip);
+        const Vec2 o  = OriginOf_(_e, _def.battleShip);
         const float        dx = kHullMinX + static_cast<float>(Roll(_env, static_cast<int>(kHullMaxX - kHullMinX) + 1));
         const float        dy = kHullMinY + static_cast<float>(Roll(_env, static_cast<int>(kHullMaxY - kHullMinY) + 1));
         EnemyFxRequest     fx;
@@ -652,7 +653,7 @@ namespace
         }
         if (_e.deathTicks == chainEnd)
         {
-            const jug::VECTOR2 o = OriginOf_(_e, c);
+            const Vec2 o = OriginOf_(_e, c);
             EnemyFxRequest     flash;
             flash.clip     = "Explosion_Huge";
             flash.position = { o.x - 30.f, o.y - 50.f };
@@ -678,7 +679,7 @@ namespace
         CombatSystem&   _combat)
     {
         const BattleShipCfg& c = _def.battleShip;
-        const jug::VECTOR2   o = OriginOf_(_e, c);
+        const Vec2   o = OriginOf_(_e, c);
 
         Hurtbox bow;
         bow.box     = c.bow.At(o, 1);
@@ -718,7 +719,7 @@ namespace
         const Enemy&          _e,
         const BattleShipCfg& _c,
         const EnemyRenderEnv& _r,
-        const jug::VECTOR2    _at,
+        const Vec2    _at,
         const int             _sort,
         const bool            _bFront)
     {
@@ -748,7 +749,7 @@ namespace
         const EnemyRenderEnv& _r)
     {
         const BattleShipCfg& c    = _def.battleShip;
-        const jug::VECTOR2   o    = { _r.feet.x, _r.feet.y - c.originDepth };
+        const Vec2   o    = { _r.feet.x, _r.feet.y - c.originDepth };
         const int            sort = static_cast<int>(_r.feet.y);
         const int            layer = _r.layer;
         const int            chainEnd = SecToTicks(c.destroyChainSec);
@@ -770,8 +771,8 @@ namespace
         SubmitNamedPart(_r, "BattleShip_Cannon_Deco", { o.x + 55.f, o.y - 24.f }, kPersistTicks, false, sort, layer);
 
         // 머리 / 캐논 전환
-        const jug::VECTOR2 head   = { o.x + 131.f, o.y + 5.f };
-        const jug::VECTOR2 cannon = { o.x + c.cannonOffset.x, o.y + c.cannonOffset.y };
+        const Vec2 head   = { o.x + 131.f, o.y + 5.f };
+        const Vec2 cannon = { o.x + c.cannonOffset.x, o.y + c.cannonOffset.y };
         const float        angle  = static_cast<float>(_e.ext[kExtAngle]) / 100.f;
         if (state == kHeadOpen)
         {
@@ -814,7 +815,7 @@ namespace
         for (int i = 0; i < kTurretCount; ++i)
         {
             const int*         t  = &_e.ext[kTurretBase + i * kTurretStride];
-            const jug::VECTOR2 to = { o.x + c.turretOffset[i].x, o.y + c.turretOffset[i].y };
+            const Vec2 to = { o.x + c.turretOffset[i].x, o.y + c.turretOffset[i].y };
             if (t[kTurretHp] <= 0)
             {
                 SubmitNamedPart(_r, "BattleShip_Cannon_Destroy_Type5", to, kPersistTicks, false, sort, layer);
@@ -845,7 +846,7 @@ namespace
             {
                 continue;
             }
-            const jug::VECTOR2 p = { shot.renderPrev.x + (shot.position.x - shot.renderPrev.x) * _r.alpha, shot.renderPrev.y + (shot.position.y - shot.renderPrev.y) * _r.alpha };
+            const Vec2 p = { shot.renderPrev.x + (shot.position.x - shot.renderPrev.x) * _r.alpha, shot.renderPrev.y + (shot.position.y - shot.renderPrev.y) * _r.alpha };
             SubmitNamedPart(_r, kBulletNames[std::clamp(static_cast<int>(shot.params.tag), 0, 4)], p, 0, true, static_cast<int>(p.y), kBulletLayer);
         }
     }
@@ -900,12 +901,12 @@ float GetCannonAngle(const Enemy& _e)
     return static_cast<float>(_e.ext[kExtAngle]) / 100.f;
 }
 
-jug::VECTOR2 GetOrigin(const Enemy& _e, const EnemyDef& _def)
+Vec2 GetOrigin(const Enemy& _e, const EnemyDef& _def)
 {
     return OriginOf_(_e, _def.battleShip);
 }
 
-jug::VECTOR2 GetTurretOrigin(const Enemy& _e, const EnemyDef& _def, const int _index)
+Vec2 GetTurretOrigin(const Enemy& _e, const EnemyDef& _def, const int _index)
 {
     return TurretOriginOf_(_e, _def.battleShip, _index);
 }
@@ -946,7 +947,7 @@ void ParseBattleShipCfg(
     c.cannonAngleStart     = _r.Num("cannonAngleStart");
     c.cannonAngleMin       = _r.Num("cannonAngleMin");
     c.cannonAngleMax       = _r.Num("cannonAngleMax");
-    c.cannonOffset         = _r.Vec2("cannonOffset", { 123.f, -149.f });
+    c.cannonOffset         = _r.ReadVec2("cannonOffset", { 123.f, -149.f });
     c.bulletSpeed          = _r.Num("bulletSpeed");
     c.bulletSpread         = _r.Num("bulletSpread");
     c.bulletProjectile     = _r.Str("bulletProjectile");
@@ -956,8 +957,8 @@ void ParseBattleShipCfg(
     c.aft    = _r.Box("aft");
     c.hullBlockDx = _r.Num("hullBlockDx");
 
-    c.turretOffset[0] = _r.Vec2("turret0Offset", { -200.f, -70.f });
-    c.turretOffset[1] = _r.Vec2("turret1Offset", { -100.f, -120.f });
+    c.turretOffset[0] = _r.ReadVec2("turret0Offset", { -200.f, -70.f });
+    c.turretOffset[1] = _r.ReadVec2("turret1Offset", { -100.f, -120.f });
     c.turretBox       = _r.Box("turretBox");
     {
         float muzzle[6] = { -30.f, -30.f, 0.f, -35.f, 30.f, -30.f };

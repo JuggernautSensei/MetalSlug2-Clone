@@ -1,12 +1,15 @@
 #include "Game/SandboxState.h"
+#include "Base/Types.h"
+#include "Base/Result.h"
+#include "Base/RGBA.h"
 
 #include <cmath>
 #include <cstring>
 #include <filesystem>
 #include <format>
 
-#include <JugX/CoreLogger.h>
-#include <JugX/Math.h>
+#include "Base/Log.h"
+#include "Base/Math.h"
 
 #include "Game/Combat/BulletVisual.h"
 #include "Game/Player/PlayerHitboxes.h"
@@ -29,17 +32,17 @@ namespace
         return tuning;
     }
 
-    [[nodiscard]] jug::VECTOR2 Lerp_(
-        const jug::VECTOR2 _a,
-        const jug::VECTOR2 _b,
+    [[nodiscard]] Vec2 Lerp_(
+        const Vec2 _a,
+        const Vec2 _b,
         const float        _t)
     {
         return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
     }
 
-    [[nodiscard]] jug::VECTOR2 ToScreen_(
-        const jug::VECTOR2 _world,
-        const jug::VECTOR2 _camera)
+    [[nodiscard]] Vec2 ToScreen_(
+        const Vec2 _world,
+        const Vec2 _camera)
     {
         return { std::floor(_world.x - _camera.x), std::floor(_world.y - _camera.y) };
     }
@@ -47,12 +50,12 @@ namespace
     void DrawBox_(
         Renderer&          _renderer,
         const Aabb&        _box,
-        const jug::VECTOR2 _camera,
-        const jug::RGBA    _color)
+        const Vec2 _camera,
+        const slug::RGBA    _color)
     {
-        const jug::VECTOR2 topLeft     = ToScreen_(_box.min, _camera);
-        const jug::VECTOR2 bottomRight = ToScreen_(_box.max, _camera);
-        _renderer.DrawRect(topLeft, { jug::Max(1.f, bottomRight.x - topLeft.x), jug::Max(1.f, bottomRight.y - topLeft.y) }, _color);
+        const Vec2 topLeft     = ToScreen_(_box.min, _camera);
+        const Vec2 bottomRight = ToScreen_(_box.max, _camera);
+        _renderer.DrawRect(topLeft, { slug::Max(1.f, bottomRight.x - topLeft.x), slug::Max(1.f, bottomRight.y - topLeft.y) }, _color);
     }
 
 }   // namespace
@@ -99,8 +102,8 @@ void SandboxState::BuildWorld_(
     m_bWatch = false;
     if (m_config.bLoadTuningFile && !_ctx.assetRoot.empty())
     {
-        const jug::FilePath path = GetDefaultTuningPath(_ctx.assetRoot);
-        if (jug::Result<Tuning> loaded = LoadTuning(path))
+        const slug::FilePath path = GetDefaultTuningPath(_ctx.assetRoot);
+        if (slug::Result<Tuning> loaded = LoadTuning(path))
         {
             m_tuning = loaded.Take();
             if (!_ctx.IsHeadless())
@@ -111,7 +114,7 @@ void SandboxState::BuildWorld_(
         }
         else
         {
-            JUG_CORE_LOG_WARN("Tuning.json 을 읽지 못해 기본값을 사용합니다: {}", path.string());
+            SLUG_LOG_WARN("Tuning.json 을 읽지 못해 기본값을 사용합니다: {}", path.string());
         }
     }
 
@@ -121,7 +124,7 @@ void SandboxState::BuildWorld_(
         bool bLoaded = false;
         if (!_ctx.assetRoot.empty())
         {
-            if (jug::Result<GroundMap> ground = GroundMap::Load(_ctx.assetRoot / "Baked" / "Ground" / "Stage0_0.bin"))
+            if (slug::Result<GroundMap> ground = GroundMap::Load(_ctx.assetRoot / "Baked" / "Ground" / "Stage0_0.bin"))
             {
                 m_ground = ground.Take();
                 bLoaded  = true;
@@ -129,7 +132,7 @@ void SandboxState::BuildWorld_(
         }
         if (!bLoaded)
         {
-            JUG_CORE_LOG_WARN("Stage0_0 지면을 읽지 못해 평지를 사용합니다 (Scripts/Bake.ps1 필요)");
+            SLUG_LOG_WARN("Stage0_0 지면을 읽지 못해 평지를 사용합니다 (Scripts/Bake.ps1 필요)");
             m_ground = GroundMap::MakeEmpty(3520, 448);
             m_ground.FillRect(0, 378, 3519, 447, true);
         }
@@ -146,7 +149,7 @@ void SandboxState::BuildWorld_(
 
     // --- 적 정의 (없거나 깨졌으면 적 없이 동작) ---
     {
-        jug::FilePath defsPath = m_config.enemyDefPath;
+        slug::FilePath defsPath = m_config.enemyDefPath;
         if (defsPath.empty() && !_ctx.assetRoot.empty())
         {
             defsPath = EnemyDefLibrary::GetDefaultDirectory(_ctx.assetRoot);   // Defs/*.json 전부 (Enemies / Vehicles ...)
@@ -154,15 +157,15 @@ void SandboxState::BuildWorld_(
         m_enemyLib = {};
         if (!defsPath.empty())
         {
-            jug::String message;
+            slug::String message;
             // 폴더면 *.json 을 모두 합쳐 읽고, 파일이면 그 파일만 읽는다
-            if (jug::Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
+            if (slug::Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
             {
                 m_enemyLib = lib.Take();
             }
             else
             {
-                JUG_CORE_LOG_WARN("적 정의를 읽지 못해 적을 배치하지 않습니다: {}", message);
+                SLUG_LOG_WARN("적 정의를 읽지 못해 적을 배치하지 않습니다: {}", message);
             }
         }
         m_enemies.SetLibrary(&m_enemyLib);
@@ -174,14 +177,14 @@ void SandboxState::BuildWorld_(
     // --- 소품 (PropWorld): 정의 로드 + 검증용 배치 ---
     if (!_ctx.assetRoot.empty())
     {
-        jug::String message;
-        if (jug::Result<PropDefLibrary> lib = PropDefLibrary::Load(_ctx.assetRoot / "Defs" / "Props" / "Props.json", &message))
+        slug::String message;
+        if (slug::Result<PropDefLibrary> lib = PropDefLibrary::Load(_ctx.assetRoot / "Defs" / "Props" / "Props.json", &message))
         {
             m_propDefs = lib.Take();
         }
         else
         {
-            JUG_CORE_LOG_WARN("소품 정의를 읽지 못해 소품을 배치하지 않습니다: {}", message);
+            SLUG_LOG_WARN("소품 정의를 읽지 못해 소품을 배치하지 않습니다: {}", message);
         }
     }
     m_props.Reset(1);
@@ -211,20 +214,20 @@ void SandboxState::BuildWorld_(
 
     if (!_ctx.IsHeadless())
     {
-        if (jug::Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot / "Baked"))
+        if (slug::Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot / "Baked"))
         {
             m_spriteLib = library.Take();
         }
         m_enemies.SetSpriteLibrary(&m_spriteLib);   // 보스 파츠의 정적 스프라이트 (없으면 그 파츠는 생략)
         if (m_config.bBackground && _ctx.pSprites)
         {
-            if (const jug::Result<int> handle = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / "Textures" / "Stage0_Main.png"))
+            if (const slug::Result<int> handle = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / "Textures" / "Stage0_Main.png"))
             {
                 m_bgHandle = handle.GetValue();
             }
             else
             {
-                JUG_CORE_LOG_WARN("Stage0_Main 배경을 읽지 못했습니다");
+                SLUG_LOG_WARN("Stage0_Main 배경을 읽지 못했습니다");
             }
         }
     }
@@ -260,7 +263,7 @@ void SandboxState::RestartGame()
     if (m_config.bVehicleLab)
     {
         // 차량 5종을 카메라(왼쪽 0) 안에 늘어놓는다 (플레이어 x = 100). 헬기는 상공.
-        const jug::VECTOR2 feet = m_player.GetFeet();
+        const Vec2 feet = m_player.GetFeet();
         SpawnParams        left;
         left.facing = -1;
         (void)SpawnEnemy("jeep", { 200.f, feet.y }, left);
@@ -303,15 +306,15 @@ void SandboxState::AddDefaultTargets_()
 
 uint32_t SandboxState::AddTarget(
     const eDummyKind   _kind,
-    const jug::VECTOR2 _feet,
+    const Vec2 _feet,
     const bool         _bShooter)
 {
     return m_targets.Add(_kind, _feet, _bShooter, m_tuning.sandbox);
 }
 
 EnemyHandle SandboxState::SpawnEnemy(
-    const jug::StringView _defName,
-    const jug::VECTOR2    _feet,
+    const slug::StringView _defName,
+    const Vec2    _feet,
     const SpawnParams&    _params)
 {
     const PhysicsWorld world = MakeEnemyPhysicsWorld_();
@@ -327,8 +330,8 @@ void SandboxState::SpawnDebugEnemy_(
     {
         static constexpr const char* kVehicles[] = { "jeep", "btank", "missle_tank", "sarubia", "aparch" };
         constexpr int                kVehicleCount = static_cast<int>(sizeof(kVehicles) / sizeof(kVehicles[0]));
-        const jug::VECTOR2           feet          = m_player.GetFeet();
-        const jug::StringView        name          = kVehicles[m_vehicleCursor % kVehicleCount];
+        const Vec2           feet          = m_player.GetFeet();
+        const slug::StringView        name          = kVehicles[m_vehicleCursor % kVehicleCount];
         m_vehicleCursor                            = (m_vehicleCursor + 1) % kVehicleCount;
         SpawnParams params;
         params.facing = -1;
@@ -344,9 +347,9 @@ void SandboxState::SpawnDebugEnemy_(
         return;
     }
 
-    const jug::StringView name = kSlots[_slot];
-    const jug::VECTOR2     feet = m_player.GetFeet();
-    jug::VECTOR2           at   = { feet.x + _aheadPx, feet.y };
+    const slug::StringView name = kSlots[_slot];
+    const Vec2     feet = m_player.GetFeet();
+    Vec2           at   = { feet.x + _aheadPx, feet.y };
     if (name == "flying_bzk")
     {
         at.y = feet.y - 150.f;   // 낙하산: 공중에서 내려온다
@@ -406,9 +409,9 @@ PhysicsWorld SandboxState::MakePhysicsWorld_() const
     return world;
 }
 
-jug::VECTOR2 SandboxState::GetRespawnFeet_() const
+Vec2 SandboxState::GetRespawnFeet_() const
 {
-    const jug::VECTOR2 cam = m_camera.GetPositionNoShake();
+    const Vec2 cam = m_camera.GetPositionNoShake();
     return { cam.x + m_tuning.player.respawnOffsetX, cam.y - m_tuning.player.respawnDropY };
 }
 
@@ -497,7 +500,7 @@ void SandboxState::Tick(
     m_projectiles.Step(&m_ground, m_combat, kStepSec);
 
     // 4) 판정 해소 → 모든 피해는 HitEvent 로만 적용된다
-    const jug::Vector<HitEvent>& events = m_combat.Resolve();
+    const slug::Vector<HitEvent>& events = m_combat.Resolve();
     m_props.OnHitEvents(events);
     (void)m_props.TakeEvents();   // 소품 이벤트는 아직 소비처가 없다 (스테이지 호스트가 가져간다)   // 소품 이벤트는 아직 소비처가 없다 (스테이지 호스트가 가져간다)
     m_enemies.OnHitEvents(events);
@@ -513,7 +516,7 @@ void SandboxState::Tick(
     m_targets.Tick(m_tuning.sandbox);
 
     // 5) 연출 / 카메라
-    const jug::Vector<FxRequest> fx = m_projectiles.TakeFx();
+    const slug::Vector<FxRequest> fx = m_projectiles.TakeFx();
     RequestSounds_(_ctx, fx);
     m_ui.Tick();
     if (_ctx.pAnims)
@@ -587,7 +590,7 @@ void SandboxState::Tick(
 // 플레이어/폭발 이벤트를 소리 요청으로 바꾼다. 요청은 틱의 결과를 읽기만 하며 시뮬레이션 상태를 바꾸지 않는다.
 void SandboxState::RequestSounds_(
     GameContext&                  _ctx,
-    const jug::Vector<FxRequest>& _fx)
+    const slug::Vector<FxRequest>& _fx)
 {
     IAudioSink&        audio = _ctx.GetAudio();
     const PlayerStats& stats = m_player.GetStats();
@@ -677,8 +680,8 @@ void SandboxState::Render(
     renderer.BeginFrame({ 156, 190, 224, 255 });
 
     // 카메라도 보간한다 (플레이어와 같은 위상으로 움직여야 고주사율에서 상대 떨림이 없다)
-    const jug::VECTOR2 camNow    = m_camera.GetPositionNoShake();
-    const jug::VECTOR2 cameraPos = { std::floor(m_prevCameraPos.x + (camNow.x - m_prevCameraPos.x) * _alpha), std::floor(m_prevCameraPos.y + (camNow.y - m_prevCameraPos.y) * _alpha) };
+    const Vec2 camNow    = m_camera.GetPositionNoShake();
+    const Vec2 cameraPos = { std::floor(m_prevCameraPos.x + (camNow.x - m_prevCameraPos.x) * _alpha), std::floor(m_prevCameraPos.y + (camNow.y - m_prevCameraPos.y) * _alpha) };
 
     if (m_bgHandle >= 0 && _ctx.pSprites)
     {
@@ -695,7 +698,7 @@ void SandboxState::Render(
 
 void SandboxState::DrawWorld_(
     GameContext&       _ctx,
-    const jug::VECTOR2 _cameraPos,
+    const Vec2 _cameraPos,
     const float        _alpha)
 {
     Renderer&               renderer = *_ctx.pRenderer;
@@ -728,8 +731,8 @@ void SandboxState::DrawWorld_(
         }
 
         const Aabb         box   = Aabb::FromBottomCenter(dummy.feet, dummy.size);
-        const jug::RGBA    color = dummy.flashTicks > 0 ? jug::RGBA { 255, 150, 150, 255 } : (dummy.kind == eDummyKind::Bus ? jug::RGBA { 196, 150, 70, 255 } : jug::RGBA { 96, 120, 70, 255 });
-        const jug::VECTOR2 tl    = ToScreen_(box.min, _cameraPos);
+        const slug::RGBA    color = dummy.flashTicks > 0 ? slug::RGBA { 255, 150, 150, 255 } : (dummy.kind == eDummyKind::Bus ? slug::RGBA { 196, 150, 70, 255 } : slug::RGBA { 96, 120, 70, 255 });
+        const Vec2 tl    = ToScreen_(box.min, _cameraPos);
         renderer.FillRect(tl, dummy.size, color);
         renderer.DrawRect(tl, dummy.size, { 20, 20, 20, 255 });
         renderer.DrawDebugText({ tl.x + 4.f, tl.y + 4.f }, std::format("{}\n{}/{}", GetDummyName(dummy.kind), dummy.health.hp, dummy.health.maxHp), { 255, 255, 255, 255 });
@@ -743,7 +746,7 @@ void SandboxState::DrawWorld_(
 
     // --- 플레이어 ---
     {
-        const jug::VECTOR2 feet = Lerp_(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
+        const Vec2 feet = Lerp_(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
         if (m_bRigBound && pAnims)
         {
             const RigState rigState = m_player.MakeRigState();
@@ -763,18 +766,18 @@ void SandboxState::DrawWorld_(
     {
         for (const Bullet& bullet: m_projectiles.GetBullets())
         {
-            const jug::VECTOR2 pos = Lerp_(bullet.renderPrev, bullet.position, _alpha);
+            const Vec2 pos = Lerp_(bullet.renderPrev, bullet.position, _alpha);
             if (bullet.team == eTeam::Player && SubmitPlayerBullet(sprites, pAnims, m_spriteLib, bullet, pos, 30))
             {
                 continue;
             }
-            const jug::RGBA color = bullet.team == eTeam::Player ? jug::RGBA { 255, 240, 120, 255 } : jug::RGBA { 255, 80, 60, 255 };
+            const slug::RGBA color = bullet.team == eTeam::Player ? slug::RGBA { 255, 240, 120, 255 } : slug::RGBA { 255, 80, 60, 255 };
             renderer.FillRect(ToScreen_({ pos.x - bullet.size.x * 0.5f, pos.y - bullet.size.y * 0.5f }, _cameraPos), bullet.size, color);
         }
 
         for (const Bomb& bomb: m_projectiles.GetBombs())
         {
-            const jug::VECTOR2 pos = Lerp_(bomb.renderPrev, bomb.position, _alpha);
+            const Vec2 pos = Lerp_(bomb.renderPrev, bomb.position, _alpha);
             if (pAnims)
             {
                 if (const AnimFrame* pFrame = m_bombAnim.GetFrameData(*pAnims))
@@ -798,11 +801,11 @@ void SandboxState::DrawWorld_(
 
 void SandboxState::DrawDebugBoxes_(
     Renderer&          _renderer,
-    const jug::VECTOR2 _cameraPos) const
+    const Vec2 _cameraPos) const
 {
     for (const Hurtbox& hurtbox: m_combat.GetHurtboxes())
     {
-        DrawBox_(_renderer, hurtbox.box, _cameraPos, hurtbox.bInvulnerable ? jug::RGBA { 120, 200, 255, 255 } : jug::RGBA { 60, 255, 90, 255 });
+        DrawBox_(_renderer, hurtbox.box, _cameraPos, hurtbox.bInvulnerable ? slug::RGBA { 120, 200, 255, 255 } : slug::RGBA { 60, 255, 90, 255 });
     }
     for (const Hitbox& hitbox: m_combat.GetHitboxes())
     {
@@ -813,13 +816,13 @@ void SandboxState::DrawDebugBoxes_(
     const Aabb body = m_player.GetBodyBox();
     DrawBox_(_renderer, body, _cameraPos, { 80, 120, 255, 255 });
 
-    const jug::VECTOR2 feet = m_player.GetFeet();
+    const Vec2 feet = m_player.GetFeet();
     const float        fh   = m_player.GetBody().footHalfWidth;
     _renderer.DrawLine(ToScreen_({ feet.x - fh, feet.y }, _cameraPos), ToScreen_({ feet.x + fh, feet.y }, _cameraPos), { 255, 255, 0, 255 });
     _renderer.DrawLine(ToScreen_({ feet.x, feet.y - 4.f }, _cameraPos), ToScreen_({ feet.x, feet.y + 4.f }, _cameraPos), { 255, 255, 0, 255 });
 
     const Aabb trigger = MakeKnifeTriggerBox(feet, m_player.GetFacing(), body.GetWidth() * 0.5f, m_tuning.knife);
-    DrawBox_(_renderer, trigger, _cameraPos, m_player.IsKnifeTargetInRange() ? jug::RGBA { 255, 220, 40, 255 } : jug::RGBA { 120, 110, 40, 255 });
+    DrawBox_(_renderer, trigger, _cameraPos, m_player.IsKnifeTargetInRange() ? slug::RGBA { 255, 220, 40, 255 } : slug::RGBA { 120, 110, 40, 255 });
 
     // 카메라 왼쪽 벽
     for (const Wall& wall: m_walls)
@@ -840,9 +843,9 @@ void SandboxState::DrawHud_(
     // --- 디버그 오버레이: F1 ---
     if (_ctx.bDebugDraw)
     {
-        const jug::VECTOR2 vel   = p.GetVelocity();
-        const jug::VECTOR2 pos   = p.GetFeet();
-        const jug::String  debug = std::format(
+        const Vec2 vel   = p.GetVelocity();
+        const Vec2 pos   = p.GetFeet();
+        const slug::String  debug = std::format(
             "STATE {} {}  AIM {}  OVL {}\nPOS {:.1f},{:.1f}  VEL {:.0f},{:.0f}  GND {}\nINV {}  KNIFE-RANGE {}  TICK {}  FPS {:.0f}\nF1 BOX  F2 PAUSE  F3 STEP  F4 SLOW  J SHOT  K JUMP  L BOMB",
             GetStateName(p.GetState()),
             p.GetFacing() > 0 ? "R" : "L",

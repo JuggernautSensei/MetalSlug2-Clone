@@ -1,4 +1,6 @@
 #include "Game/Ui/BitmapFont.h"
+#include "Base/Types.h"
+#include "Base/RGBA.h"
 
 #include <SDL3/SDL.h>
 
@@ -11,10 +13,10 @@ namespace slug
 //  배치
 // ===========================================
 
-jug::Vector<int> SplitLineLengths(
-    const jug::StringView _text)
+slug::Vector<int> SplitLineLengths(
+    const slug::StringView _text)
 {
-    jug::Vector<int> lengths;
+    slug::Vector<int> lengths;
     int              current = 0;
     for (const char c: _text)
     {
@@ -33,7 +35,7 @@ jug::Vector<int> SplitLineLengths(
 }
 
 int MeasureTextWidth(
-    const jug::StringView _text,
+    const slug::StringView _text,
     const TextStyle&      _style)
 {
     const int scale = std::max(1, _style.scale);
@@ -46,7 +48,7 @@ int MeasureTextWidth(
 }
 
 int MeasureTextHeight(
-    const jug::StringView _text,
+    const slug::StringView _text,
     const TextStyle&      _style)
 {
     const int scale = std::max(1, _style.scale);
@@ -55,7 +57,7 @@ int MeasureTextHeight(
 }
 
 TextLayout LayoutText(
-    const jug::StringView _text,
+    const slug::StringView _text,
     const int             _x,
     const int             _y,
     const TextStyle&      _style)
@@ -124,7 +126,7 @@ TextLayout LayoutText(
 }
 
 int FitTextScale(
-    const jug::StringView _text,
+    const slug::StringView _text,
     const int             _maxWidth,
     const int             _maxScale,
     const int             _letterSpacing)
@@ -147,7 +149,7 @@ int FitTextScale(
     return best;
 }
 
-jug::RGBA GetFontFallbackColor(
+slug::RGBA GetFontFallbackColor(
     const eFontColor _color)
 {
     switch (_color)
@@ -244,7 +246,7 @@ void BitmapFont::DrawText(
     SpriteBatch&          _sprites,
     const int             _x,
     const int             _y,
-    const jug::StringView _text,
+    const slug::StringView _text,
     const TextStyle&      _style) const
 {
     const TextLayout layout = LayoutText(_text, _x, _y, _style);
@@ -265,7 +267,7 @@ void BitmapFont::DrawText(
         else if (quad.ch != ' ' && pNative)
         {
             // 글리프가 없는 문자: SDL 내장 8x8 폰트를 칸 크기(16*scale)에 맞게 2*scale 배로 그린다.
-            jug::RGBA color = GetFontFallbackColor(_style.color);
+            slug::RGBA color = GetFontFallbackColor(_style.color);
             color.a         = _style.alpha;
 
             const float k = static_cast<float>(scale * 2);
@@ -282,7 +284,7 @@ void BitmapFont::DrawTimeDigits(
     SpriteBatch&          _sprites,
     const int             _centerX,
     const int             _topY,
-    const jug::StringView _digits,
+    const slug::StringView _digits,
     const uint8_t         _alpha) const
 {
     constexpr int kCell = 32;

@@ -1,14 +1,16 @@
 #include "Core/Tuning.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include <cmath>
 #include <format>
 #include <optional>
 #include <string>
 
-#include <JugX/CoreLogger.h>
-#include <JugX/JsonDeserializer.h>
+#include "Base/Log.h"
+#include "Base/Json.h"
 
-#include "Core/Error.h"
+#include "Base/Error.h"
 
 namespace slug
 {
@@ -188,19 +190,19 @@ namespace
     {
     public:
         explicit ReadVisitor(
-            const jug::JsonReader& _root)
+            const slug::JsonReader& _root)
         {
-            m_stack.push_back(_root.IsObject() ? std::optional<jug::JsonReader> { _root } : std::nullopt);
+            m_stack.push_back(_root.IsObject() ? std::optional<slug::JsonReader> { _root } : std::nullopt);
             m_bError = !_root.IsObject();
         }
 
         void Begin(
-            const jug::StringView _key)
+            const slug::StringView _key)
         {
-            std::optional<jug::JsonReader> child;
-            if (const std::optional<jug::JsonReader>& top = m_stack.back(); top && top->HasField(_key))
+            std::optional<slug::JsonReader> child;
+            if (const std::optional<slug::JsonReader>& top = m_stack.back(); top && top->HasField(_key))
             {
-                if (const jug::Result<jug::JsonReader> found = top->FindField(_key); found && found->IsObject())
+                if (const slug::Result<slug::JsonReader> found = top->FindField(_key); found && found->IsObject())
                 {
                     child = found.GetValue();
                 }
@@ -218,7 +220,7 @@ namespace
         }
 
         void Field(
-            const jug::StringView _key,
+            const slug::StringView _key,
             float&                _value)
         {
             double v = 0.0;
@@ -229,7 +231,7 @@ namespace
         }
 
         void Field(
-            const jug::StringView _key,
+            const slug::StringView _key,
             int&                  _value)
         {
             double v = 0.0;
@@ -240,15 +242,15 @@ namespace
         }
 
         void Field(
-            const jug::StringView _key,
+            const slug::StringView _key,
             bool&                 _value)
         {
-            const std::optional<jug::JsonReader>& top = m_stack.back();
+            const std::optional<slug::JsonReader>& top = m_stack.back();
             if (!top || !top->HasField(_key))
             {
                 return;
             }
-            const jug::Result<bool> value = top->ReadField<bool>(_key);
+            const slug::Result<bool> value = top->ReadField<bool>(_key);
             if (!value)
             {
                 m_bError = true;
@@ -258,15 +260,15 @@ namespace
         }
 
         void Field(
-            const jug::StringView _key,
-            jug::VECTOR2&         _value)
+            const slug::StringView _key,
+            Vec2&         _value)
         {
-            const std::optional<jug::JsonReader>& top = m_stack.back();
+            const std::optional<slug::JsonReader>& top = m_stack.back();
             if (!top || !top->HasField(_key))
             {
                 return;
             }
-            const jug::Result<jug::JsonReader> found = top->FindField(_key);
+            const slug::Result<slug::JsonReader> found = top->FindField(_key);
             if (!found || !found->IsArray() || found->GetSize() != 2)
             {
                 m_bError = true;
@@ -275,9 +277,9 @@ namespace
 
             float values[2] = {};
             int   index     = 0;
-            for (const jug::JsonReader item: found->GetArray())
+            for (const slug::JsonReader item: found->GetArray())
             {
-                const jug::Result<double> number = item.Read<double>();
+                const slug::Result<double> number = item.Read<double>();
                 if (!number)
                 {
                     m_bError = true;
@@ -292,15 +294,15 @@ namespace
 
     private:
         bool ReadNumber_(
-            const jug::StringView _key,
+            const slug::StringView _key,
             double&               _out)
         {
-            const std::optional<jug::JsonReader>& top = m_stack.back();
+            const std::optional<slug::JsonReader>& top = m_stack.back();
             if (!top || !top->HasField(_key))
             {
                 return false;
             }
-            const jug::Result<double> value = top->ReadField<double>(_key);
+            const slug::Result<double> value = top->ReadField<double>(_key);
             if (!value)
             {
                 m_bError = true;
@@ -310,7 +312,7 @@ namespace
             return true;
         }
 
-        jug::Vector<std::optional<jug::JsonReader>> m_stack  = {};
+        slug::Vector<std::optional<slug::JsonReader>> m_stack  = {};
         bool                                        m_bError = false;
     };
 
@@ -322,9 +324,9 @@ namespace
     {
     public:
         void Begin(
-            const jug::StringView _key)
+            const slug::StringView _key)
         {
-            m_path.push_back(jug::String { _key });
+            m_path.push_back(slug::String { _key });
         }
 
         void End()
@@ -333,41 +335,41 @@ namespace
         }
 
         void Field(
-            const jug::StringView _key,
+            const slug::StringView _key,
             const float           _value)
         {
             Line_(_key, std::format("{:.4f}", _value));
         }
 
         void Field(
-            const jug::StringView _key,
+            const slug::StringView _key,
             const int             _value)
         {
             Line_(_key, std::to_string(_value));
         }
 
         void Field(
-            const jug::StringView _key,
+            const slug::StringView _key,
             const bool            _value)
         {
             Line_(_key, _value ? "true" : "false");
         }
 
         void Field(
-            const jug::StringView _key,
-            const jug::VECTOR2    _value)
+            const slug::StringView _key,
+            const Vec2    _value)
         {
             Line_(_key, std::format("[{:.4f}, {:.4f}]", _value.x, _value.y));
         }
 
-        [[nodiscard]] const jug::String& GetText() const { return m_text; }
+        [[nodiscard]] const slug::String& GetText() const { return m_text; }
 
     private:
         void Line_(
-            const jug::StringView _key,
-            const jug::String&    _value)
+            const slug::StringView _key,
+            const slug::String&    _value)
         {
-            for (const jug::String& part: m_path)
+            for (const slug::String& part: m_path)
             {
                 m_text += part;
                 m_text += '.';
@@ -378,47 +380,47 @@ namespace
             m_text += '\n';
         }
 
-        jug::Vector<jug::String> m_path = {};
-        jug::String              m_text = {};
+        slug::Vector<slug::String> m_path = {};
+        slug::String              m_text = {};
     };
 
-    [[nodiscard]] jug::Result<Tuning> ParseRoot_(
-        const jug::JsonReader& _root)
+    [[nodiscard]] slug::Result<Tuning> ParseRoot_(
+        const slug::JsonReader& _root)
     {
         Tuning      tuning;
         ReadVisitor visitor { _root };
         Visit_(visitor, tuning);
         if (visitor.HasError())
         {
-            return jug::Error { eError::Parse };
+            return slug::Error { eError::Parse };
         }
         return tuning;
     }
 }   // namespace
 
-jug::Result<Tuning> ParseTuning(
-    const jug::StringView _json)
+slug::Result<Tuning> ParseTuning(
+    const slug::StringView _json)
 {
-    jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::Load(_json, jug::eJsonLoadOption::AllowComments);
+    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::Load(_json, slug::eJsonLoadOption::AllowComments);
     if (!doc)
     {
-        return jug::Error { eError::Parse };
+        return slug::Error { eError::Parse };
     }
     return ParseRoot_(doc->GetReader());
 }
 
-jug::Result<Tuning> LoadTuning(
-    const jug::FilePath& _path)
+slug::Result<Tuning> LoadTuning(
+    const slug::FilePath& _path)
 {
-    jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::LoadFromFile(_path, jug::eJsonLoadOption::AllowComments);
+    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::LoadFromFile(_path, slug::eJsonLoadOption::AllowComments);
     if (!doc)
     {
-        return jug::Error { eError::FileOpen };
+        return slug::Error { eError::FileOpen };
     }
     return ParseRoot_(doc->GetReader());
 }
 
-jug::String DumpTuning(
+slug::String DumpTuning(
     const Tuning& _tuning)
 {
     DumpVisitor visitor;
@@ -426,8 +428,8 @@ jug::String DumpTuning(
     return visitor.GetText();
 }
 
-jug::FilePath GetDefaultTuningPath(
-    const jug::FilePath& _assetRoot)
+slug::FilePath GetDefaultTuningPath(
+    const slug::FilePath& _assetRoot)
 {
     return _assetRoot / "Tuning" / "Tuning.json";
 }
@@ -437,7 +439,7 @@ jug::FilePath GetDefaultTuningPath(
 // ===========================================
 
 void TuningWatcher::Init(
-    jug::FilePath _path,
+    slug::FilePath _path,
     const int     _pollIntervalTicks)
 {
     m_path        = std::move(_path);
@@ -477,15 +479,15 @@ bool TuningWatcher::Poll(
     m_stamp     = stamp;
     m_bHasStamp = true;
 
-    jug::Result<Tuning> loaded = LoadTuning(m_path);
+    slug::Result<Tuning> loaded = LoadTuning(m_path);
     if (!loaded)
     {
-        JUG_CORE_LOG_WARN("Tuning 리로드 실패 (이전 값 유지): {}", m_path.string());
+        SLUG_LOG_WARN("Tuning 리로드 실패 (이전 값 유지): {}", m_path.string());
         return false;
     }
     _out = loaded.Take();
     ++m_reloadCount;
-    JUG_CORE_LOG_INFO("Tuning 리로드: {}", m_path.string());
+    SLUG_LOG_INFO("Tuning 리로드: {}", m_path.string());
     return true;
 }
 

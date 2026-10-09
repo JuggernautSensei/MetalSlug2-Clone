@@ -1,10 +1,13 @@
 #include <cstdint>
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Result.h"
 #include <filesystem>
 #include <fstream>
 
 #include <gtest/gtest.h>
 
-#include "Core/Error.h"
+#include "Base/Error.h"
 #include "World/Geometry.h"
 #include "World/GroundMap.h"
 
@@ -25,12 +28,12 @@ struct Lcg
 };
 
 // 파일 포맷 그대로의 바이트열 생성
-jug::Vector<uint8_t> MakeFile(
+slug::Vector<uint8_t> MakeFile(
     const uint32_t              _w,
     const uint32_t              _h,
-    const jug::Vector<uint8_t>& _bits)
+    const slug::Vector<uint8_t>& _bits)
 {
-    jug::Vector<uint8_t> data = { 'G', 'R', 'N', 'D' };
+    slug::Vector<uint8_t> data = { 'G', 'R', 'N', 'D' };
     for (const uint32_t v: { _w, _h })
     {
         data.push_back(static_cast<uint8_t>(v & 0xFF));
@@ -66,8 +69,8 @@ TEST(GroundMap, MakeFromBitsUsesLsbAsLeftmostPixel)
 
 TEST(GroundMap, LoadFromMemoryParsesHeaderAndBits)
 {
-    const jug::Vector<uint8_t>   file   = MakeFile(9, 2, { 0xFF, 0x01, 0x00, 0x00 });
-    const jug::Result<GroundMap> result = GroundMap::LoadFromMemory(file);
+    const slug::Vector<uint8_t>   file   = MakeFile(9, 2, { 0xFF, 0x01, 0x00, 0x00 });
+    const slug::Result<GroundMap> result = GroundMap::LoadFromMemory(file);
     ASSERT_TRUE(result.HasValue());
 
     const GroundMap& map = result.GetValue();
@@ -82,17 +85,17 @@ TEST(GroundMap, LoadFromMemoryParsesHeaderAndBits)
 
 TEST(GroundMap, LoadFromMemoryRejectsBadMagicTruncationAndHugeSizes)
 {
-    jug::Vector<uint8_t> badMagic = MakeFile(8, 1, { 0xFF });
+    slug::Vector<uint8_t> badMagic = MakeFile(8, 1, { 0xFF });
     badMagic[0]                   = 'X';
     EXPECT_TRUE(GroundMap::LoadFromMemory(badMagic).HasError());
 
-    const jug::Vector<uint8_t> truncated = MakeFile(16, 4, { 0xFF, 0xFF });   // 8바이트 필요
+    const slug::Vector<uint8_t> truncated = MakeFile(16, 4, { 0xFF, 0xFF });   // 8바이트 필요
     EXPECT_TRUE(GroundMap::LoadFromMemory(truncated).HasError());
 
-    const jug::Vector<uint8_t> tooShortHeader = { 'G', 'R', 'N', 'D', 1, 0, 0 };
+    const slug::Vector<uint8_t> tooShortHeader = { 'G', 'R', 'N', 'D', 1, 0, 0 };
     EXPECT_TRUE(GroundMap::LoadFromMemory(tooShortHeader).HasError());
 
-    const jug::Vector<uint8_t> huge = MakeFile(0xFFFFFFFFu, 0xFFFFFFFFu, {});
+    const slug::Vector<uint8_t> huge = MakeFile(0xFFFFFFFFu, 0xFFFFFFFFu, {});
     EXPECT_TRUE(GroundMap::LoadFromMemory(huge).HasError());
 }
 
@@ -100,12 +103,12 @@ TEST(GroundMap, LoadFromFileRoundTripAndMissingFile)
 {
     const std::filesystem::path path = std::filesystem::temp_directory_path() / "slug_groundmap_test.bin";
     {
-        const jug::Vector<uint8_t> file = MakeFile(16, 2, { 0x0F, 0xF0, 0x00, 0x80 });
+        const slug::Vector<uint8_t> file = MakeFile(16, 2, { 0x0F, 0xF0, 0x00, 0x80 });
         std::ofstream              out { path, std::ios::binary };
         out.write(reinterpret_cast<const char*>(file.data()), static_cast<std::streamsize>(file.size()));
     }
 
-    const jug::Result<GroundMap> loaded = GroundMap::Load(path);
+    const slug::Result<GroundMap> loaded = GroundMap::Load(path);
     ASSERT_TRUE(loaded.HasValue());
     EXPECT_TRUE(loaded->IsSolid(0, 0));
     EXPECT_TRUE(loaded->IsSolid(3, 0));
@@ -115,14 +118,14 @@ TEST(GroundMap, LoadFromFileRoundTripAndMissingFile)
     EXPECT_FALSE(loaded->IsSolid(14, 1));
     std::filesystem::remove(path);
 
-    const jug::Result<GroundMap> missing = GroundMap::Load(path);
+    const slug::Result<GroundMap> missing = GroundMap::Load(path);
     ASSERT_TRUE(missing.HasError());
-    EXPECT_TRUE(missing.GetError() == jug::Error { eError::FileOpen });
+    EXPECT_TRUE(missing.GetError() == slug::Error { eError::FileOpen });
 }
 
 TEST(GroundMap, MakeFromRowsBuildsAsciiMap)
 {
-    const jug::StringView rows[] = {
+    const slug::StringView rows[] = {
         "....",
         ".##.",
         "####"
@@ -268,13 +271,13 @@ TEST(GroundMap, SlopeEstimateOnRampAndFlat)
     map.FillRect(100, 100, 119, 119, true);
 
     EXPECT_NEAR(map.EstimateSlope(50, 50, 4, 8), -1.f, 1e-4f);
-    const jug::VECTOR2 normal = map.EstimateNormal(50, 50, 4, 8);
+    const Vec2 normal = map.EstimateNormal(50, 50, 4, 8);
     EXPECT_NEAR(normal.x, -0.70710678f, 1e-4f);
     EXPECT_NEAR(normal.y, -0.70710678f, 1e-4f);
 
     // 평지
     EXPECT_FLOAT_EQ(map.EstimateSlope(110, 100, 4, 8), 0.f);
-    const jug::VECTOR2 flat = map.EstimateNormal(110, 100, 4, 8);
+    const Vec2 flat = map.EstimateNormal(110, 100, 4, 8);
     EXPECT_FLOAT_EQ(flat.x, 0.f);
     EXPECT_FLOAT_EQ(flat.y, -1.f);
 }
@@ -292,13 +295,13 @@ TEST(Geometry, AabbFactoriesAndAccessors)
     EXPECT_FLOAT_EQ(a.max.y, 200.f);
     EXPECT_FLOAT_EQ(a.GetWidth(), 24.f);
     EXPECT_FLOAT_EQ(a.GetHeight(), 40.f);
-    EXPECT_EQ(a.GetBottomCenter(), (jug::VECTOR2 { 100.f, 200.f }));
-    EXPECT_EQ(a.GetCenter(), (jug::VECTOR2 { 100.f, 180.f }));
+    EXPECT_EQ(a.GetBottomCenter(), (Vec2 { 100.f, 200.f }));
+    EXPECT_EQ(a.GetCenter(), (Vec2 { 100.f, 180.f }));
 
     const Aabb b = Aabb::FromCenterSize({ 10.f, 10.f }, { 4.f, 6.f });
-    EXPECT_EQ(b.min, (jug::VECTOR2 { 8.f, 7.f }));
-    EXPECT_EQ(b.max, (jug::VECTOR2 { 12.f, 13.f }));
-    EXPECT_EQ(b.GetSize(), (jug::VECTOR2 { 4.f, 6.f }));
+    EXPECT_EQ(b.min, (Vec2 { 8.f, 7.f }));
+    EXPECT_EQ(b.max, (Vec2 { 12.f, 13.f }));
+    EXPECT_EQ(b.GetSize(), (Vec2 { 4.f, 6.f }));
 }
 
 TEST(Geometry, AabbOverlapIsStrictSoTouchingEdgesDoNotOverlap)
@@ -313,9 +316,9 @@ TEST(Geometry, AabbOverlapIsStrictSoTouchingEdgesDoNotOverlap)
 TEST(Geometry, AabbContainsPointAndBox)
 {
     const Aabb a = Aabb::FromMinMax({ 0.f, 0.f }, { 10.f, 10.f });
-    EXPECT_TRUE(a.Contains(jug::VECTOR2 { 0.f, 0.f }));
-    EXPECT_TRUE(a.Contains(jug::VECTOR2 { 9.99f, 5.f }));
-    EXPECT_FALSE(a.Contains(jug::VECTOR2 { 10.f, 5.f }));
+    EXPECT_TRUE(a.Contains(Vec2 { 0.f, 0.f }));
+    EXPECT_TRUE(a.Contains(Vec2 { 9.99f, 5.f }));
+    EXPECT_FALSE(a.Contains(Vec2 { 10.f, 5.f }));
     EXPECT_TRUE(a.Contains(Aabb::FromMinMax({ 2.f, 2.f }, { 8.f, 8.f })));
     EXPECT_TRUE(a.Contains(a));
     EXPECT_FALSE(a.Contains(Aabb::FromMinMax({ 2.f, 2.f }, { 12.f, 8.f })));
@@ -328,8 +331,8 @@ TEST(Geometry, AabbIntersectionExpandAndTransform)
 
     const std::optional<Aabb> hit = a.Intersection(b);
     ASSERT_TRUE(hit.has_value());
-    EXPECT_EQ(hit->min, (jug::VECTOR2 { 6.f, 4.f }));
-    EXPECT_EQ(hit->max, (jug::VECTOR2 { 10.f, 8.f }));
+    EXPECT_EQ(hit->min, (Vec2 { 6.f, 4.f }));
+    EXPECT_EQ(hit->max, (Vec2 { 10.f, 8.f }));
 
     EXPECT_FALSE(a.Intersection(Aabb::FromMinMax({ 10.f, 0.f }, { 12.f, 5.f })).has_value());
 

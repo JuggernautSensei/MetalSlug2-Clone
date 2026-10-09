@@ -1,4 +1,5 @@
 #include <cmath>
+#include "Base/Math.h"
 
 #include "Game/Enemies/EnemyCommon.h"
 #include "Game/Enemies/EnemyDefParse.h"
@@ -106,7 +107,7 @@ namespace
                 if (ClipReachedFrame(_e, _def, c.fireFrame))
                 {
                     // 머즐 y 는 레거시 rand[0,24) 를 그대로 더한다 (탄 높이 분산)
-                    const jug::VECTOR2 jitter = { 0.f, static_cast<float>(_env.world.Roll(24)) };
+                    const Vec2 jitter = { 0.f, static_cast<float>(_env.world.Roll(24)) };
                     (void)FireWeapon(_e, _def, _env, IsUp_(_e) ? c.weaponUp : c.weaponDown, { 0.f, 0.f }, jitter);
                 }
                 if (_e.clip >= 0 && _e.stateTicks >= _def.GetClip(_e.clip).GetDurationTicks())

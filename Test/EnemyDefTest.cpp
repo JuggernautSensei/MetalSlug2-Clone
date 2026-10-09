@@ -1,5 +1,7 @@
 ﻿#include <cmath>
 #include <fstream>
+#include "Base/Types.h"
+#include "Base/Result.h"
 #include <sstream>
 #include <string>
 
@@ -52,7 +54,7 @@ namespace
 TEST(EnemyDefs, LoadsTheInfantryDefinitionsAndGlobals)
 {
     EnemyDefLibrary lib;
-    jug::String     message;
+    slug::String     message;
     ASSERT_TRUE(LoadEnemyLib(lib, &message)) << message.c_str();
     for (const char* name: kInfantryNames)
     {
@@ -253,8 +255,8 @@ TEST(EnemyDefs, ClipTimingMatchesTheSpecTicks)
 
 TEST(EnemyDefsErrors, RealFileParsesWithoutMessage)
 {
-    jug::String message;
-    const jug::Result<EnemyDefLibrary> lib = EnemyDefLibrary::Parse(ReadDefsText(), &message);
+    slug::String message;
+    const slug::Result<EnemyDefLibrary> lib = EnemyDefLibrary::Parse(ReadDefsText(), &message);
     EXPECT_TRUE(static_cast<bool>(lib)) << message.c_str();
 }
 
@@ -262,18 +264,18 @@ TEST(EnemyDefsErrors, UnknownKeyInADefinitionIsRejected)
 {
     const std::string text = ReplaceOnce(ReadDefsText(), "\"behavior\": \"pow\",", "\"behavior\": \"pow\", \"bogus\": 1,");
     ASSERT_FALSE(text.empty());
-    jug::String message;
+    slug::String message;
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text, &message)));
-    EXPECT_NE(message.find("pow"), jug::String::npos) << message.c_str();
+    EXPECT_NE(message.find("pow"), slug::String::npos) << message.c_str();
 }
 
 TEST(EnemyDefsErrors, MissingRequiredClipIsRejected)
 {
     const std::string text = ReplaceOnce(ReadDefsText(), "\"throw\": { \"name\": \"SD_Throw_Bomb_{side}\"", "\"throwX\": { \"name\": \"SD_Throw_Bomb_{side}\"");
     ASSERT_FALSE(text.empty());
-    jug::String message;
+    slug::String message;
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text, &message)));
-    EXPECT_NE(message.find("soldier_bomb"), jug::String::npos) << message.c_str();
+    EXPECT_NE(message.find("soldier_bomb"), slug::String::npos) << message.c_str();
 }
 
 TEST(EnemyDefsErrors, UnknownBehaviorIsRejected)
@@ -287,9 +289,9 @@ TEST(EnemyDefsErrors, UnusedBehaviorParamIsRejected)
 {
     const std::string text = ReplaceOnce(ReadDefsText(), "\"detect\": 350, \"closeStop\"", "\"detect\": 350, \"zzz\": 1, \"closeStop\"");
     ASSERT_FALSE(text.empty());
-    jug::String message;
+    slug::String message;
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text, &message)));
-    EXPECT_NE(message.find("zzz"), jug::String::npos) << message.c_str();
+    EXPECT_NE(message.find("zzz"), slug::String::npos) << message.c_str();
 }
 
 TEST(EnemyDefsErrors, UnknownWeaponProjectileIsRejected)

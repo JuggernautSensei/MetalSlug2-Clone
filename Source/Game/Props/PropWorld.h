@@ -2,9 +2,9 @@
 #include <array>
 #include <cstdint>
 
-#include <JugX/Random.h>
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Random.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "Game/Combat/CombatSystem.h"
 #include "Game/Props/ItemWorld.h"
@@ -69,9 +69,9 @@ struct PropEvent
     ePropEventKind kind     = ePropEventKind::Damaged;
     PropHandle     id       = kNoProp;
     int            defIndex = -1;
-    jug::VECTOR2   pos      = { 0.f, 0.f };
+    Vec2   pos      = { 0.f, 0.f };
     int            value    = 0;
-    jug::String    name     = {};
+    slug::String    name     = {};
 };
 
 // 상태별 표시 슬롯 (PropInstance::visuals 인덱스)
@@ -90,12 +90,12 @@ struct PropInstance
     PropHandle                 id                    = kNoProp;
     int                        defIndex              = -1;
     int                        variant               = -1;
-    jug::VECTOR2               pos                   = { 0.f, 0.f };   // 스프라이트 중심 (legacyCenter, 변종 dy 반영)
+    Vec2               pos                   = { 0.f, 0.f };   // 스프라이트 중심 (legacyCenter, 변종 dy 반영)
     bool                       bFront                = false;
     float                      cullMargin            = 200.f;
     Health                     health                = {};
     std::array<PropVisual, static_cast<size_t>(ePropVisual::Count)> visuals = {};
-    jug::Vector<PropPart>      parts                 = {};
+    slug::Vector<PropPart>      parts                 = {};
 
     ePropVisual                visual                = ePropVisual::Idle;
     bool                       bVisualBound          = false;
@@ -124,18 +124,18 @@ struct PropInstance
 // 아직 Tick 에서 재생되지 않은 폭발 (EffectList 가 AnimationLibrary 를 필요로 해서 Tick 까지 미룬다)
 struct PropFxRequest
 {
-    jug::String  clip  = {};
-    jug::VECTOR2 pos   = { 0.f, 0.f };
+    slug::String  clip  = {};
+    Vec2 pos   = { 0.f, 0.f };
     int          layer = kPropEffectLayer;
 };
 
 // 파괴 디브리 조각 (중력 1000, 수명 5 s, 충돌 없음)
 struct PropDebrisPiece
 {
-    jug::VECTOR2 pos    = { 0.f, 0.f };
-    jug::VECTOR2 vel    = { 0.f, 0.f };
+    Vec2 pos    = { 0.f, 0.f };
+    Vec2 vel    = { 0.f, 0.f };
     float        ageSec = 0.f;
-    jug::String  clip   = {};
+    slug::String  clip   = {};
     AnimPlayer   anim   = {};
     bool         bBound = false;
 };
@@ -164,11 +164,11 @@ public:
     // ===========================================
 
     // _center = 스프라이트 중심 (legacyCenter). 알 수 없는 def 면 kNoProp.
-    PropHandle Spawn(jug::StringView _defName, jug::VECTOR2 _center, const PropSpawnParams& _params = {});
-    PropHandle SpawnByIndex(int _defIndex, jug::VECTOR2 _center, const PropSpawnParams& _params = {});
+    PropHandle Spawn(slug::StringView _defName, Vec2 _center, const PropSpawnParams& _params = {});
+    PropHandle SpawnByIndex(int _defIndex, Vec2 _center, const PropSpawnParams& _params = {});
 
     // 아이템 (stage 의 item 스폰 / 드롭). _feet = 발(아이템 원점). 반환 0 = 알 수 없는 이름
-    uint32_t SpawnItem(jug::StringView _name, jug::VECTOR2 _feet, bool _bBounce = false);
+    uint32_t SpawnItem(slug::StringView _name, Vec2 _feet, bool _bBounce = false);
 
     // ===========================================
     //  틱 / 판정
@@ -176,15 +176,15 @@ public:
 
     void Tick(const PropTickContext& _ctx);
     void RegisterHurtboxes(CombatSystem& _combat) const;
-    void OnHitEvents(jug::Span<const HitEvent> _events);
+    void OnHitEvents(slug::Span<const HitEvent> _events);
 
     // ===========================================
     //  정적 충돌 출력 (마지막 Tick/OnHitEvents 기준)
     // ===========================================
 
-    [[nodiscard]] jug::Span<const Platform> GetPlatforms() const      { return m_platforms; }
-    [[nodiscard]] jug::Span<const Platform> GetEnemyPlatforms() const { return m_enemyPlatforms; }
-    [[nodiscard]] jug::Span<const Wall>     GetWalls() const          { return m_walls; }
+    [[nodiscard]] slug::Span<const Platform> GetPlatforms() const      { return m_platforms; }
+    [[nodiscard]] slug::Span<const Platform> GetEnemyPlatforms() const { return m_enemyPlatforms; }
+    [[nodiscard]] slug::Span<const Wall>     GetWalls() const          { return m_walls; }
 
     // ===========================================
     //  조회
@@ -196,13 +196,13 @@ public:
     [[nodiscard]] bool IsAlive(PropHandle _handle) const;
     [[nodiscard]] int  GetHp(PropHandle _handle) const;
     [[nodiscard]] const PropInstance* Get(PropHandle _handle) const;
-    [[nodiscard]] jug::Span<const PropInstance> GetProps() const { return m_props; }
+    [[nodiscard]] slug::Span<const PropInstance> GetProps() const { return m_props; }
     [[nodiscard]] size_t GetCount() const { return m_props.size(); }
-    [[nodiscard]] jug::Span<const PropFxRequest>    GetPendingFx() const { return m_pendingFx; }
-    [[nodiscard]] jug::Span<const PropDebrisPiece>  GetDebris() const { return m_debris; }
+    [[nodiscard]] slug::Span<const PropFxRequest>    GetPendingFx() const { return m_pendingFx; }
+    [[nodiscard]] slug::Span<const PropDebrisPiece>  GetDebris() const { return m_debris; }
 
     // 이벤트를 비우며 가져간다
-    [[nodiscard]] jug::Vector<PropEvent> TakeEvents();
+    [[nodiscard]] slug::Vector<PropEvent> TakeEvents();
 
     // 아이템 (습득/조회)
     [[nodiscard]] ItemWorld&       GetItems()       { return m_items; }
@@ -225,16 +225,16 @@ private:
     struct PendingChild
     {
         int          defIndex = -1;
-        jug::VECTOR2 pos      = { 0.f, 0.f };
+        Vec2 pos      = { 0.f, 0.f };
     };
 
     [[nodiscard]] size_t FindIndex_(PropHandle _id) const;   // 없으면 size()
     [[nodiscard]] float  RollFloat_(float _lo, float _hi);
     [[nodiscard]] int    RollInt_(int _n);
 
-    void Destroy_(PropInstance& _inst, const PropDef& _def, jug::VECTOR2 _center);
-    void Detonate_(const PropBurst& _burst, jug::VECTOR2 _center);
-    void QueueDrops_(const PropDef& _def, jug::VECTOR2 _center);
+    void Destroy_(PropInstance& _inst, const PropDef& _def, Vec2 _center);
+    void Detonate_(const PropBurst& _burst, Vec2 _center);
+    void QueueDrops_(const PropDef& _def, Vec2 _center);
     void StartHit_(PropInstance& _inst, const PropDef& _def);
     void UpdateVisual_(PropInstance& _inst, const AnimationLibrary* _pAnims, float _dt);
     [[nodiscard]] ePropVisual ComputeVisual_(const PropInstance& _inst) const;
@@ -242,22 +242,22 @@ private:
     [[nodiscard]] static bool PartActive_(const PropPart& _part, const PropInstance& _inst);
 
     const PropDefLibrary* m_pLibrary = nullptr;
-    jug::Vector<PropInstance>      m_props          = {};
-    jug::Vector<PropEvent>         m_events         = {};
-    jug::Vector<PropFxRequest>     m_pendingFx      = {};
-    jug::Vector<PropDebrisPiece>   m_debris         = {};
-    jug::Vector<PendingChild>      m_pendingChildren = {};
-    jug::Vector<Platform>          m_platforms      = {};
-    jug::Vector<Platform>          m_enemyPlatforms = {};
-    jug::Vector<Wall>              m_walls          = {};
+    slug::Vector<PropInstance>      m_props          = {};
+    slug::Vector<PropEvent>         m_events         = {};
+    slug::Vector<PropFxRequest>     m_pendingFx      = {};
+    slug::Vector<PropDebrisPiece>   m_debris         = {};
+    slug::Vector<PendingChild>      m_pendingChildren = {};
+    slug::Vector<Platform>          m_platforms      = {};
+    slug::Vector<Platform>          m_enemyPlatforms = {};
+    slug::Vector<Wall>              m_walls          = {};
     ItemWorld                      m_items          { nullptr, uint64_t { 1 } };
     EffectList                     m_effects        = {};
-    jug::RngMt19937                m_rng            = jug::RngMt19937 { uint64_t { 1 } };
+    slug::RngMt19937                m_rng            = slug::RngMt19937 { uint64_t { 1 } };
     uint32_t                       m_nextId         = kPropOwnerBase;
 };
 
 // 픽셀맵 패치 적용 (GroundPatch 이벤트를 받은 호스트가 호출). patchMask 의 고체 픽셀을 map 의 같은 위치(좌상단 _topLeft) 에 쓴다.
 // 맵 밖은 무시한다. patchMask 가 공기인 칸도 map 을 공기로 만든다 (파괴 후 지형 교체).
-void ApplyGroundPatch(GroundMap& _map, jug::VECTOR2 _topLeft, const GroundMap& _patchMask);
+void ApplyGroundPatch(GroundMap& _map, Vec2 _topLeft, const GroundMap& _patchMask);
 
 }   // namespace slug

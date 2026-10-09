@@ -2,9 +2,9 @@
 #include <cstdint>
 #include <optional>
 
-#include <JugX/Random.h>
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Random.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "Game/Stage/StageData.h"
 #include "Game/Stage/StageHost.h"
@@ -43,13 +43,13 @@ struct ScreenWalls
 class StageRunner
 {
 public:
-    StageRunner(const StageData& _data, IStageHost& _host, Camera& _camera, jug::RngMt19937& _rng);
+    StageRunner(const StageData& _data, IStageHost& _host, Camera& _camera, slug::RngMt19937& _rng);
 
     // 초기 상태 적용: 지면/원경/BGM/카메라 경계·offset·전진 정책. 틱 카운터와 진행 상태는 초기화된다.
     void Begin();
 
     // 스크립트의 player 항목을 해소한 발 위치 (groundSnap 은 host.GetGroundFindY). 지면을 못 찾으면 nullopt.
-    [[nodiscard]] std::optional<jug::VECTOR2> ResolvePlayerStart() const;
+    [[nodiscard]] std::optional<Vec2> ResolvePlayerStart() const;
 
     // 한 틱 진행. endStage 이후에는 아무 일도 하지 않는다.
     void Tick();
@@ -59,11 +59,11 @@ public:
     // 플레이어를 해당 섹션 triggerX + 1 의 지면으로 옮긴 뒤 카메라를 맞춘다. 대상 섹션 자체는 다음 틱에 정상 발동한다.
     // 이미 지나간 섹션으로는 돌아갈 수 없다(false). 대기 중인 웨이브/게이트/비영구 락은 정리한다.
     bool WarpToSection(int _index);
-    bool WarpToSection(jug::StringView _id);
+    bool WarpToSection(slug::StringView _id);
     bool WarpToBoss();   // id "boss" 섹션, 없으면 마지막 섹션
 
     // --- 카메라 / 플레이어 제약 ---
-    [[nodiscard]] jug::VECTOR2 ComputeCameraTarget(jug::VECTOR2 _playerFeet) const;
+    [[nodiscard]] Vec2 ComputeCameraTarget(Vec2 _playerFeet) const;
     [[nodiscard]] ScreenWalls  MakeScreenWalls() const;
 
     // --- 상태 조회 (UI/디버그/테스트) ---
@@ -74,11 +74,11 @@ public:
     [[nodiscard]] int      GetPendingActionCount() const;   // 예약 큐의 지연 액션 수 (웨이브 제외)
     [[nodiscard]] int      GetPendingWaveCount() const;
     [[nodiscard]] int      GetOpenGateCount() const { return static_cast<int>(m_gates.size()); }
-    [[nodiscard]] jug::Vector<jug::String> GetOpenGateIds() const;
+    [[nodiscard]] slug::Vector<slug::String> GetOpenGateIds() const;
 
-    [[nodiscard]] const jug::String& GetGroundName() const { return m_groundName; }
-    [[nodiscard]] const jug::String& GetBackdropMode() const { return m_backdropMode; }
-    [[nodiscard]] jug::VECTOR2       GetCameraOffset() const { return m_cameraOffset; }
+    [[nodiscard]] const slug::String& GetGroundName() const { return m_groundName; }
+    [[nodiscard]] const slug::String& GetBackdropMode() const { return m_backdropMode; }
+    [[nodiscard]] Vec2       GetCameraOffset() const { return m_cameraOffset; }
     [[nodiscard]] const Aabb&        GetBaseBounds() const { return m_base; }
     [[nodiscard]] Aabb               GetEffectiveBounds() const;   // 최상단 락 사각형 또는 기본 경계
     [[nodiscard]] int                GetLockDepth() const { return static_cast<int>(m_locks.size()); }
@@ -86,8 +86,8 @@ public:
     [[nodiscard]] bool               IsCurveActive(size_t _curveIndex) const;
 
     // 스크립트 spawn id 로 만든 SpawnId 들 (repeat 면 여러 개). 아직 스폰 전이면 빈 span.
-    [[nodiscard]] jug::Span<const SpawnId> FindSpawnIds(jug::StringView _stageId) const;
-    [[nodiscard]] bool                     WasSpawnSkipped(jug::StringView _stageId) const;
+    [[nodiscard]] slug::Span<const SpawnId> FindSpawnIds(slug::StringView _stageId) const;
+    [[nodiscard]] bool                     WasSpawnSkipped(slug::StringView _stageId) const;
 
     [[nodiscard]] int GetSpawnedCount() const { return m_spawnedCount; }
     [[nodiscard]] int GetSkippedCount() const { return m_skippedCount; }
@@ -121,8 +121,8 @@ private:
 
     struct SpawnRecord
     {
-        jug::String           stageId = {};
-        jug::Vector<SpawnId>  ids     = {};   // 비어 있으면 건너뜀(예: groundSnap 실패)
+        slug::String           stageId = {};
+        slug::Vector<SpawnId>  ids     = {};   // 비어 있으면 건너뜀(예: groundSnap 실패)
     };
 
     struct ExecContext
@@ -135,7 +135,7 @@ private:
     [[nodiscard]] static int64_t ToTicks_(float _seconds);
 
     void FireSection_(int _index, bool _bSilent);
-    void RunActions_(const jug::Vector<StageAction>& _actions, const ExecContext& _ctx);
+    void RunActions_(const slug::Vector<StageAction>& _actions, const ExecContext& _ctx);
     void Execute_(const StageAction& _action, const ExecContext& _ctx);
     void ExecSpawn_(const SpawnSpec& _spec, const ExecContext& _ctx, bool _bWave);
     void ExecLock_(const StageAction& _action, const ExecContext& _ctx);
@@ -152,35 +152,35 @@ private:
     void ApplyCameraLock_();
     [[nodiscard]] Aabb CurrentViewRect_() const;
 
-    SpawnRecord*       FindRecord_(jug::StringView _stageId);
-    const SpawnRecord* FindRecord_(jug::StringView _stageId) const;
+    SpawnRecord*       FindRecord_(slug::StringView _stageId);
+    const SpawnRecord* FindRecord_(slug::StringView _stageId) const;
 
     const StageData*  m_pData;
     IStageHost*       m_pHost;
     Camera*           m_pCamera;
-    jug::RngMt19937*  m_pRng;
+    slug::RngMt19937*  m_pRng;
 
     int64_t m_tick        = 0;
     int     m_nextSection = 0;
     bool    m_bFinished   = false;
 
-    jug::Vector<PendingItem> m_pending       = {};
+    slug::Vector<PendingItem> m_pending       = {};
     uint64_t                 m_nextSeq       = 1;
     uint64_t                 m_waveCutoffSeq = 0;   // seq < cutoff 인 웨이브 엔트리는 취소됨
-    jug::Vector<GateState>   m_gates         = {};
+    slug::Vector<GateState>   m_gates         = {};
 
-    jug::Vector<SpawnRecord> m_records      = {};
+    slug::Vector<SpawnRecord> m_records      = {};
     int                      m_spawnedCount = 0;
     int                      m_skippedCount = 0;
 
     // 카메라 상태
     Aabb                   m_base         = {};
-    jug::Vector<LockEntry> m_locks        = {};
-    jug::VECTOR2           m_cameraOffset = { 0.f, 0.f };
-    jug::Vector<uint8_t>   m_curveActive  = {};
+    slug::Vector<LockEntry> m_locks        = {};
+    Vec2           m_cameraOffset = { 0.f, 0.f };
+    slug::Vector<uint8_t>   m_curveActive  = {};
 
-    jug::String m_groundName   = {};
-    jug::String m_backdropMode = {};
+    slug::String m_groundName   = {};
+    slug::String m_backdropMode = {};
 };
 
 }   // namespace slug

@@ -1,7 +1,7 @@
 #pragma once
-#include <JugX/JsonDeserializer.h>
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Json.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "Game/Enemies/EnemyDef.h"
 
@@ -16,11 +16,11 @@ namespace slug
 
 struct ParamEntry
 {
-    jug::String      key   = {};
-    jug::JsonReader  value;
+    slug::String      key   = {};
+    slug::JsonReader  value;
     bool             bUsed = false;
 
-    ParamEntry(jug::String _key, const jug::JsonReader _value)
+    ParamEntry(slug::String _key, const slug::JsonReader _value)
         : key(std::move(_key))
         , value(_value)
     {
@@ -30,41 +30,41 @@ struct ParamEntry
 class DefReader
 {
 public:
-    DefReader(jug::StringView _defName, EnemyDef& _def, jug::Vector<ParamEntry>& _params, jug::String& _error);
+    DefReader(slug::StringView _defName, EnemyDef& _def, slug::Vector<ParamEntry>& _params, slug::String& _error);
 
     // --- 수치 (키는 params) ---
-    [[nodiscard]] float        Num(jug::StringView _key);                         // 필수
-    [[nodiscard]] float        Num(jug::StringView _key, float _default);
-    [[nodiscard]] int          Int(jug::StringView _key);
-    [[nodiscard]] int          Int(jug::StringView _key, int _default);
-    [[nodiscard]] int          Ticks(jug::StringView _key);                       // 초 → 틱 (필수)
-    [[nodiscard]] int          Ticks(jug::StringView _key, float _defaultSec);
-    [[nodiscard]] bool         Bool(jug::StringView _key, bool _default);
-    [[nodiscard]] jug::String  Str(jug::StringView _key);                         // 필수
-    [[nodiscard]] jug::VECTOR2 Vec2(jug::StringView _key, jug::VECTOR2 _default);
-    [[nodiscard]] BoxDef       Box(jug::StringView _key);                         // {w,h,cx,cy} 필수
-    [[nodiscard]] bool         NumArray(jug::StringView _key, float* _pOut, int _count);   // 길이가 정확히 _count 인 배열. 없으면 false(기본값 유지)
-    [[nodiscard]] bool         Has(jug::StringView _key) const;
+    [[nodiscard]] float        Num(slug::StringView _key);                         // 필수
+    [[nodiscard]] float        Num(slug::StringView _key, float _default);
+    [[nodiscard]] int          Int(slug::StringView _key);
+    [[nodiscard]] int          Int(slug::StringView _key, int _default);
+    [[nodiscard]] int          Ticks(slug::StringView _key);                       // 초 → 틱 (필수)
+    [[nodiscard]] int          Ticks(slug::StringView _key, float _defaultSec);
+    [[nodiscard]] bool         Bool(slug::StringView _key, bool _default);
+    [[nodiscard]] slug::String  Str(slug::StringView _key);                         // 필수
+    [[nodiscard]] Vec2 ReadVec2(slug::StringView _key, Vec2 _default);
+    [[nodiscard]] BoxDef       Box(slug::StringView _key);                         // {w,h,cx,cy} 필수
+    [[nodiscard]] bool         NumArray(slug::StringView _key, float* _pOut, int _count);   // 길이가 정확히 _count 인 배열. 없으면 false(기본값 유지)
+    [[nodiscard]] bool         Has(slug::StringView _key) const;
 
     // --- 클립 / 무기 (def 안의 논리 이름 → 인덱스) ---
-    [[nodiscard]] int Clip(jug::StringView _logical);       // 필수
-    [[nodiscard]] int ClipOpt(jug::StringView _logical) const;   // 없으면 -1
-    [[nodiscard]] int Weapon(jug::StringView _name);        // 필수
-    [[nodiscard]] int WeaponOpt(jug::StringView _name) const;
+    [[nodiscard]] int Clip(slug::StringView _logical);       // 필수
+    [[nodiscard]] int ClipOpt(slug::StringView _logical) const;   // 없으면 -1
+    [[nodiscard]] int Weapon(slug::StringView _name);        // 필수
+    [[nodiscard]] int WeaponOpt(slug::StringView _name) const;
 
-    void Fail(jug::StringView _field, jug::StringView _message);
+    void Fail(slug::StringView _field, slug::StringView _message);
     [[nodiscard]] bool HasError() const { return !m_error.empty(); }
 
     // 사용되지 않은 params 키를 오류로 기록한다. 오류가 없으면 true.
     [[nodiscard]] bool Finish();
 
 private:
-    [[nodiscard]] ParamEntry* Find_(jug::StringView _key);
+    [[nodiscard]] ParamEntry* Find_(slug::StringView _key);
 
-    jug::String                m_defName;
+    slug::String                m_defName;
     EnemyDef&                  m_def;
-    jug::Vector<ParamEntry>&   m_params;
-    jug::String&               m_error;
+    slug::Vector<ParamEntry>&   m_params;
+    slug::String&               m_error;
 };
 
 // 행동별 설정 파서. 각 Enemies/<Kind>.cpp 가 구현한다. 실패하면 _reader 에 오류가 기록된다.

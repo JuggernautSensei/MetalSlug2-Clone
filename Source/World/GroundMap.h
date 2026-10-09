@@ -2,9 +2,9 @@
 #include <cstdint>
 #include <optional>
 
-#include <JugX/Result.h>
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Result.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 namespace slug
 {
@@ -41,17 +41,17 @@ public:
     //  생성
     // ===========================================
 
-    [[nodiscard]] static jug::Result<GroundMap> Load(const jug::FilePath& _path);
-    [[nodiscard]] static jug::Result<GroundMap> LoadFromMemory(jug::Span<const uint8_t> _fileData);
+    [[nodiscard]] static slug::Result<GroundMap> Load(const slug::FilePath& _path);
+    [[nodiscard]] static slug::Result<GroundMap> LoadFromMemory(slug::Span<const uint8_t> _fileData);
 
     // 헤더 없이 비트 배열만으로 만든다 (파일 포맷과 동일한 배치). 테스트/절차 생성용.
-    [[nodiscard]] static GroundMap MakeFromBits(int _width, int _height, jug::Span<const uint8_t> _packedBits);
+    [[nodiscard]] static GroundMap MakeFromBits(int _width, int _height, slug::Span<const uint8_t> _packedBits);
 
     // 모두 공기인 맵
     [[nodiscard]] static GroundMap MakeEmpty(int _width, int _height);
 
     // 문자 한 개가 한 픽셀인 ASCII 그림으로 만든다. _solid 문자가 고체. 행 길이가 달라도 최대 폭 기준 (부족분은 공기).
-    [[nodiscard]] static GroundMap MakeFromRows(jug::Span<const jug::StringView> _rows, char _solid = '#');
+    [[nodiscard]] static GroundMap MakeFromRows(slug::Span<const slug::StringView> _rows, char _solid = '#');
 
     GroundMap() = default;
 
@@ -90,7 +90,7 @@ public:
     }
 
     // 연속 좌표의 점이 속한 픽셀 조회
-    [[nodiscard]] bool IsSolidAt(jug::VECTOR2 _point) const;
+    [[nodiscard]] bool IsSolidAt(Vec2 _point) const;
 
     // 닫힌 정수 구간 [x0,x1] x [y0,y1] 안에 고체 픽셀이 하나라도 있는가 (맵 밖 정책 포함)
     [[nodiscard]] bool IsRectSolid(int _x0, int _y0, int _x1, int _y1) const;
@@ -110,7 +110,7 @@ public:
     [[nodiscard]] float EstimateSlope(int _x, int _y, int _halfWidth, int _searchRange) const;
 
     // 위쪽을 향하는 근사 법선 (정규화됨). 평지면 (0, -1).
-    [[nodiscard]] jug::VECTOR2 EstimateNormal(int _x, int _y, int _halfWidth, int _searchRange) const;
+    [[nodiscard]] Vec2 EstimateNormal(int _x, int _y, int _halfWidth, int _searchRange) const;
 
 private:
     [[nodiscard]] bool IsOutOfBoundsSolid_(int _x, int _y) const;
@@ -118,7 +118,7 @@ private:
     int                  m_width  = 0;
     int                  m_height = 0;
     size_t               m_stride = 0;   // 행당 바이트 수
-    jug::Vector<uint8_t> m_bits   = {};
+    slug::Vector<uint8_t> m_bits   = {};
     GroundBoundsPolicy   m_policy = {};
 };
 

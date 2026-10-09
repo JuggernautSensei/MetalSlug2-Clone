@@ -1,4 +1,8 @@
 #include <filesystem>
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Result.h"
+#include "Base/Random.h"
 #include <map>
 
 #include <gtest/gtest.h>
@@ -23,9 +27,9 @@ using namespace slug;
 namespace
 {
     [[nodiscard]] const HudItem* FindItem(
-        const jug::Vector<HudItem>& _items,
+        const slug::Vector<HudItem>& _items,
         const eHudItemKind          _kind,
-        const jug::StringView       _text)
+        const slug::StringView       _text)
     {
         for (const HudItem& item: _items)
         {
@@ -38,7 +42,7 @@ namespace
     }
 
     [[nodiscard]] int CountKind(
-        const jug::Vector<HudItem>& _items,
+        const slug::Vector<HudItem>& _items,
         const eHudItemKind          _kind)
     {
         int count = 0;
@@ -50,18 +54,18 @@ namespace
     }
 
     // 스프라이트 크기 (Baker 산출물과 같다: PlayerStateUI 124x34 등)
-    [[nodiscard]] jug::VECTOR2 SpriteSize(
-        const jug::StringView _name)
+    [[nodiscard]] Vec2 SpriteSize(
+        const slug::StringView _name)
     {
-        static const std::map<jug::String, jug::VECTOR2> kSizes = {
+        static const std::map<slug::String, Vec2> kSizes = {
             { "PlayerStateUI_Bomb", { 124.f, 34.f } },
             { "InfiniteUI_Red", { 40.f, 16.f } },
             { "PressStartUI", { 174.f, 30.f } },
             { "PlayerHPUI", { 106.f, 16.f } },
             { "LEVEL_1", { 96.f, 16.f } },
         };
-        const auto it = kSizes.find(jug::String { _name });
-        return it == kSizes.end() ? jug::VECTOR2 { 0.f, 0.f } : it->second;
+        const auto it = kSizes.find(slug::String { _name });
+        return it == kSizes.end() ? Vec2 { 0.f, 0.f } : it->second;
     }
 
     [[nodiscard]] bool InsideScreen(
@@ -81,7 +85,7 @@ namespace
             case eHudItemKind::Text: return InsideScreen(LayoutText(_item.text, _item.x, _item.y, _item.style).bounds, _layout);
             case eHudItemKind::Sprite:
             {
-                const jug::VECTOR2 size = SpriteSize(_item.text);
+                const Vec2 size = SpriteSize(_item.text);
                 const int          w    = static_cast<int>(size.x) * _item.scale;
                 const int          h    = static_cast<int>(size.y) * _item.scale;
                 return InsideScreen({ _item.x - w / 2, _item.y - h / 2, w, h }, _layout);
@@ -307,7 +311,7 @@ TEST(UiBitmapFont, WithoutSpritesInitFailsGracefully)
 
 TEST(UiBitmapFont, BakedFontStripsAndUiSpritesExistWithExpectedSizes)
 {
-    jug::Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(jug::FilePath { SLUG_ASSET_DIR } / "Baked");
+    slug::Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(slug::FilePath { SLUG_ASSET_DIR } / "Baked");
     if (!library)
     {
         GTEST_SKIP() << "Assets/Baked 없음";
@@ -546,7 +550,7 @@ TEST(UiHud, PistolShowsInfiniteSymbolAndNoAmmoDigits)
 {
     const UiLayout             layout;
     HudModel                   model = MakeModel();
-    const jug::Vector<HudItem> items = BuildHudItems(model, layout);
+    const slug::Vector<HudItem> items = BuildHudItems(model, layout);
 
     EXPECT_NE(FindItem(items, eHudItemKind::Sprite, "InfiniteUI_Red"), nullptr);
     EXPECT_EQ(FindItem(items, eHudItemKind::Text, "0"), nullptr);
@@ -560,7 +564,7 @@ TEST(UiHud, FiniteWeaponShowsAmmoDigitsRightAlignedInsteadOfInfinity)
     model.bInfiniteAmmo  = false;
     model.ammo           = 200;
 
-    const jug::Vector<HudItem> items = BuildHudItems(model, layout);
+    const slug::Vector<HudItem> items = BuildHudItems(model, layout);
     EXPECT_EQ(FindItem(items, eHudItemKind::Sprite, "InfiniteUI_Red"), nullptr);
 
     const HudItem* pAmmo = FindItem(items, eHudItemKind::Text, "200");
@@ -574,7 +578,7 @@ TEST(UiHud, FiniteWeaponShowsAmmoDigitsRightAlignedInsteadOfInfinity)
 TEST(UiHud, BombScoreAndLivesTexts)
 {
     const UiLayout             layout;
-    const jug::Vector<HudItem> items = BuildHudItems(MakeModel(), layout);
+    const slug::Vector<HudItem> items = BuildHudItems(MakeModel(), layout);
 
     const HudItem* pBombs = FindItem(items, eHudItemKind::Text, "10");
     ASSERT_NE(pBombs, nullptr);
@@ -607,7 +611,7 @@ TEST(UiHud, TimerOnlyWhenRequested)
 
     model.bShowTimer   = true;
     model.timerSeconds = 7;
-    const jug::Vector<HudItem> items = BuildHudItems(model, layout);
+    const slug::Vector<HudItem> items = BuildHudItems(model, layout);
     const HudItem*             pTimer = FindItem(items, eHudItemKind::TimeDigits, "07");
     ASSERT_NE(pTimer, nullptr);
     EXPECT_EQ(pTimer->x, layout.timerCenterX);
@@ -641,7 +645,7 @@ TEST(UiHud, PlayerBlockCanBeHiddenAndLevelSpriteOptional)
     EXPECT_TRUE(BuildHudItems(model, layout).empty());
 
     model.levelSprite = "LEVEL_1";
-    const jug::Vector<HudItem> items = BuildHudItems(model, layout);
+    const slug::Vector<HudItem> items = BuildHudItems(model, layout);
     ASSERT_EQ(items.size(), 1u);
     EXPECT_EQ(items[0].text, "LEVEL_1");
     EXPECT_EQ(items[0].x, layout.levelCenterX);
@@ -654,15 +658,15 @@ TEST(UiHud, BossBarFillScalesWithRatioAndFrameDrawsLast)
     model.bShowBoss      = true;
 
     model.bossHpRatio = 1.f;
-    jug::Vector<HudItem> full = BuildHudItems(model, layout);
+    slug::Vector<HudItem> full = BuildHudItems(model, layout);
     model.bossHpRatio = 0.5f;
-    jug::Vector<HudItem> half = BuildHudItems(model, layout);
+    slug::Vector<HudItem> half = BuildHudItems(model, layout);
     model.bossHpRatio = 0.f;
-    jug::Vector<HudItem> empty = BuildHudItems(model, layout);
+    slug::Vector<HudItem> empty = BuildHudItems(model, layout);
 
     // [..., 바탕 Rect, (채움 Rect), PlayerHPUI 틀]
-    const auto rectsOf = [](const jug::Vector<HudItem>& _items) {
-        jug::Vector<HudItem> rects;
+    const auto rectsOf = [](const slug::Vector<HudItem>& _items) {
+        slug::Vector<HudItem> rects;
         for (const HudItem& item: _items)
         {
             if (item.kind == eHudItemKind::Rect)
@@ -672,9 +676,9 @@ TEST(UiHud, BossBarFillScalesWithRatioAndFrameDrawsLast)
         }
         return rects;
     };
-    const jug::Vector<HudItem> fullRects  = rectsOf(full);
-    const jug::Vector<HudItem> halfRects  = rectsOf(half);
-    const jug::Vector<HudItem> emptyRects = rectsOf(empty);
+    const slug::Vector<HudItem> fullRects  = rectsOf(full);
+    const slug::Vector<HudItem> halfRects  = rectsOf(half);
+    const slug::Vector<HudItem> emptyRects = rectsOf(empty);
 
     ASSERT_EQ(fullRects.size(), 2u);
     ASSERT_EQ(halfRects.size(), 2u);
@@ -924,7 +928,7 @@ namespace
             ctx.pRng   = &rng;
             ctx.pAudio = &audio;
             pTitle     = new TitleState { std::move(_config) };
-            runner     = jug::Scoped<SimRunner> { new SimRunner { ctx, jug::Scoped<IGameState> { pTitle } } };
+            runner     = std::unique_ptr<SimRunner> { new SimRunner { ctx, std::unique_ptr<IGameState> { pTitle } } };
         }
 
         void Step(const eAction _action, const bool _bHeld)
@@ -944,11 +948,11 @@ namespace
 
         [[nodiscard]] bool IsStillTitle() const { return runner->GetState() == pTitle; }
 
-        jug::RngMt19937        rng;
+        slug::RngMt19937        rng;
         GameContext            ctx;
         TestAudio              audio;
         TitleState*            pTitle = nullptr;
-        jug::Scoped<SimRunner> runner = nullptr;
+        std::unique_ptr<SimRunner> runner = nullptr;
     };
 
     [[nodiscard]] TitleConfig SandboxTitleConfig()
@@ -1036,7 +1040,7 @@ TEST(UiTitle, AutoSelectionFallsBackToSandboxWhenStage0IsNotRegistered)
     TitleSim sim;   // nextState 비어 있음 → stage0 가 있으면 stage0, 없으면 sandbox
     sim.Idle(20);
     sim.Step(eAction::Start, true);
-    const jug::String& selected = sim.pTitle->GetSelectedStateName();
+    const slug::String& selected = sim.pTitle->GetSelectedStateName();
     EXPECT_TRUE(selected == "stage0" || selected == "sandbox") << selected;
 }
 

@@ -3,8 +3,8 @@
 #include <optional>
 #include <utility>
 
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "Game/Combat/CombatSystem.h"
 #include "Game/Stage/StageData.h"
@@ -66,10 +66,10 @@ class StageWorldHost final : public IStageHost
 public:
     // --- 구성 (StageState 가 로드/재시작 때 호출, 비소유) ---
     void BindWorld(EnemyWorld* _pEnemies, PropWorld* _pProps);
-    void BindRects(jug::Span<const NamedRect> _rects);   // params.arena 이름 해소용 (복사한다)
+    void BindRects(slug::Span<const NamedRect> _rects);   // params.arena 이름 해소용 (복사한다)
 
     // 아래는 StagePlaceholders 와 같은 의미로 위임한다
-    void AddGroundMap(jug::StringView _name, GroundMap _map) { m_placeholders.AddGroundMap(_name, std::move(_map)); }
+    void AddGroundMap(slug::StringView _name, GroundMap _map) { m_placeholders.AddGroundMap(_name, std::move(_map)); }
     void BindPlayer(PlayerController* _pPlayer, const Tuning* _pTuning);
     void BindUi(UiSystem* _pUi) { m_placeholders.BindUi(_pUi); }
     void SetContext(GameContext* _pCtx) { m_placeholders.SetContext(_pCtx); }
@@ -79,17 +79,17 @@ public:
 
     // --- 틱 훅 ---
     void RegisterPlaceholderHurtboxes(CombatSystem& _combat) const { m_placeholders.RegisterHurtboxes(_combat); }
-    int  ApplyPlaceholderEvents(jug::Span<const HitEvent> _events) { return m_placeholders.ApplyEvents(_events); }
+    int  ApplyPlaceholderEvents(slug::Span<const HitEvent> _events) { return m_placeholders.ApplyEvents(_events); }
     void TickPlaceholders() { m_placeholders.Tick(); }
 
     // --- 조회 ---
     [[nodiscard]] const StagePlaceholders&  GetPlaceholders() const { return m_placeholders; }
-    [[nodiscard]] jug::Span<const StageCollider> GetColliders() const { return m_colliders; }
+    [[nodiscard]] slug::Span<const StageCollider> GetColliders() const { return m_colliders; }
     [[nodiscard]] const SpawnRoute*         FindRoute(SpawnId _id) const;
     [[nodiscard]] size_t                    GetRouteCount() const { return m_routes.size(); }
     [[nodiscard]] const GroundMap*          GetActiveGround() const { return m_placeholders.GetActiveGround(); }
     [[nodiscard]] GroundMap*                GetActiveGroundMut() { return m_placeholders.GetActiveGroundMut(); }
-    [[nodiscard]] const jug::String&        GetActiveGroundName() const { return m_placeholders.GetActiveGroundName(); }
+    [[nodiscard]] const slug::String&        GetActiveGroundName() const { return m_placeholders.GetActiveGroundName(); }
     [[nodiscard]] uint64_t                  HashState() const;
     [[nodiscard]] bool                      IsEndRequested() const { return m_placeholders.IsEndRequested(); }
 
@@ -98,24 +98,24 @@ public:
     [[nodiscard]] bool     IsDefeated(SpawnId _id) const override;
     [[nodiscard]] bool     IsDestroyFinished(SpawnId _id) const override;
     void                   ClearEntities(const EntityFilter& _filter) override;
-    void                   SendCommand(SpawnId _id, jug::StringView _command) override;
-    void                   SetGround(jug::StringView _name) override;
+    void                   SendCommand(SpawnId _id, slug::StringView _command) override;
+    void                   SetGround(slug::StringView _name) override;
     [[nodiscard]] std::optional<float> GetGroundFindY(float _x, float _fromY) const override;
-    [[nodiscard]] jug::VECTOR2         PlayerFeet() const override;
+    [[nodiscard]] Vec2         PlayerFeet() const override;
     [[nodiscard]] bool                 PlayerAlive() const override;
     [[nodiscard]] bool                 IsGameOver() const override;
     void                               SetPlayerInvincible(float _seconds) override;
-    void                               WarpPlayer(jug::VECTOR2 _feet) override;
-    void                               SetBackdrop(jug::StringView _modeId) override;
-    void                               ShowBanner(const jug::String& _text, float _seconds) override;
+    void                               WarpPlayer(Vec2 _feet) override;
+    void                               SetBackdrop(slug::StringView _modeId) override;
+    void                               ShowBanner(const slug::String& _text, float _seconds) override;
     void                               FadeTo(eFadeTarget _target, float _seconds) override;
-    void                               PlayBgm(jug::StringView _name, bool _bLoop) override;
-    void                               EndStage(jug::StringView _nextState) override;
-    void                               OnSectionEntered(int _index, jug::StringView _id) override;
+    void                               PlayBgm(slug::StringView _name, bool _bLoop) override;
+    void                               EndStage(slug::StringView _nextState) override;
+    void                               OnSectionEntered(int _index, slug::StringView _id) override;
 
 private:
     [[nodiscard]] SpawnRoute*                FindRouteMut_(SpawnId _id);
-    [[nodiscard]] const NamedRect*           FindRect_(jug::StringView _name) const;
+    [[nodiscard]] const NamedRect*           FindRect_(slug::StringView _name) const;
     [[nodiscard]] SpawnId                    AllocId_();
     void                                     AddRoute_(SpawnId _id, eRouteKind _kind, uint32_t _handle);
 
@@ -123,9 +123,9 @@ private:
     EnemyWorld*                m_pEnemies     = nullptr;
     PropWorld*                 m_pProps       = nullptr;
     PlayerController*          m_pPlayer      = nullptr;
-    jug::Vector<NamedRect>     m_rects        = {};
-    jug::Vector<SpawnRoute>    m_routes       = {};
-    jug::Vector<StageCollider> m_colliders    = {};
+    slug::Vector<NamedRect>     m_rects        = {};
+    slug::Vector<SpawnRoute>    m_routes       = {};
+    slug::Vector<StageCollider> m_colliders    = {};
     SpawnId                    m_nextId       = 1;
 };
 

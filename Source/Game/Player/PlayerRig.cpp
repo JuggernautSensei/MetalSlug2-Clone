@@ -1,9 +1,11 @@
 #include "Game/Player/PlayerRig.h"
+#include "Base/Types.h"
+#include "Base/RGBA.h"
 
 #include <format>
 
-#include <JugX/CoreLogger.h>
-#include <JugX/Math.h>
+#include "Base/Log.h"
+#include "Base/Math.h"
 
 #include "World/Constants.h"
 
@@ -81,15 +83,15 @@ namespace
         }
     }
 
-    [[nodiscard]] jug::String Expand_(
+    [[nodiscard]] slug::String Expand_(
         const char* _pattern,
         const char* _weaponToken,
         const bool  _bRight)
     {
-        jug::String result  = _pattern;
-        const auto  Replace = [&](const jug::StringView _key, const jug::StringView _value) {
+        slug::String result  = _pattern;
+        const auto  Replace = [&](const slug::StringView _key, const slug::StringView _value) {
             const size_t pos = result.find(_key);
-            if (pos != jug::String::npos)
+            if (pos != slug::String::npos)
             {
                 result.replace(pos, _key.size(), _value);
             }
@@ -125,7 +127,7 @@ bool PlayerRig::IsSlotRequired(
     return kSlots[static_cast<size_t>(_slot)].bRequired;
 }
 
-jug::String PlayerRig::ResolveClipName(
+slug::String PlayerRig::ResolveClipName(
     const AnimationLibrary& _library,
     const eRigClip          _slot,
     const eWeapon           _weapon,
@@ -146,7 +148,7 @@ jug::String PlayerRig::ResolveClipName(
             {
                 continue;
             }
-            jug::String name = Expand_(pattern, tokens[t], _facing > 0);
+            slug::String name = Expand_(pattern, tokens[t], _facing > 0);
             if (!_library.Find(name).IsNull())
             {
                 return name;
@@ -174,7 +176,7 @@ PlayerRig::BindReport PlayerRig::Bind(
             for (size_t s = 0; s < kRigClipCount; ++s)
             {
                 const eRigClip    slot = static_cast<eRigClip>(s);
-                const jug::String name = ResolveClipName(_library, slot, static_cast<eWeapon>(w), facing);
+                const slug::String name = ResolveClipName(_library, slot, static_cast<eWeapon>(w), facing);
 
                 Slot& entry = m_tables[w][static_cast<size_t>(side)][s];
                 entry       = {};
@@ -199,7 +201,7 @@ PlayerRig::BindReport PlayerRig::Bind(
 
     if (report.missingRequired > 0)
     {
-        JUG_CORE_LOG_WARN("PlayerRig: 필수 클립 {}개 없음 (폴백 사용). 예: {}", report.missingRequired, report.missingNames.empty() ? jug::String {} : report.missingNames.front());
+        SLUG_LOG_WARN("PlayerRig: 필수 클립 {}개 없음 (폴백 사용). 예: {}", report.missingRequired, report.missingNames.empty() ? slug::String {} : report.missingNames.front());
     }
     return report;
 }
@@ -361,9 +363,9 @@ void PlayerRig::Update(
         if (IsAirTimelineSlot_(lowerSlot))
         {
             const AnimClip& clip   = m_pLibrary->Get(lower.id);
-            const float     length = jug::Max(1.f, ClipTicks_(lower.id));
+            const float     length = slug::Max(1.f, ClipTicks_(lower.id));
             const float     start  = _state.bAirFromJump ? 0.f : 0.4f * length;
-            m_lower.SetNormalizedTime(clip, jug::Clamp((static_cast<float>(_state.airTicks) + start) / length, 0.f, 1.f));
+            m_lower.SetNormalizedTime(clip, slug::Clamp((static_cast<float>(_state.airTicks) + start) / length, 0.f, 1.f));
         }
         else
         {
@@ -395,14 +397,14 @@ void PlayerRig::Update(
     const AnimClip& upperClip = m_pLibrary->Get(upper.id);
     if (IsAirTimelineSlot_(upperSlot))
     {
-        const float length = jug::Max(1.f, ClipTicks_(upper.id));
+        const float length = slug::Max(1.f, ClipTicks_(upper.id));
         const float start  = _state.bAirFromJump ? 0.f : 0.4f * length;
-        m_upper.SetNormalizedTime(upperClip, jug::Clamp((static_cast<float>(_state.airTicks) + start) / length, 0.f, 1.f));
+        m_upper.SetNormalizedTime(upperClip, slug::Clamp((static_cast<float>(_state.airTicks) + start) / length, 0.f, 1.f));
     }
     else if (_state.overlay != eOverlay::None && !bDead && !bVictory)
     {
         // 겹침 동작은 정해진 틱 안에 클립 전체가 재생되도록 속도를 맞춘다.
-        const float speed = ClipTicks_(upper.id) / static_cast<float>(jug::Max(1, _state.overlayDurationTicks));
+        const float speed = ClipTicks_(upper.id) / static_cast<float>(slug::Max(1, _state.overlayDurationTicks));
         m_upper.Update(*m_pLibrary, kStepSec, speed);
     }
     else
@@ -417,17 +419,17 @@ void PlayerRig::Update(
 
 void PlayerRig::Submit(
     SpriteBatch&       _sprites,
-    const jug::VECTOR2 _feet,
+    const Vec2 _feet,
     const int          _layer,
     const int          _sortKey,
-    const jug::RGBA    _tint) const
+    const slug::RGBA    _tint) const
 {
     if (!m_pLibrary)
     {
         return;
     }
 
-    const jug::VECTOR2 origin = GetOrigin(_feet);
+    const Vec2 origin = GetOrigin(_feet);
     SpriteDrawOptions  options;
     options.tint = _tint;
 

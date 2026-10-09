@@ -1,4 +1,5 @@
 #include "Tools/Baker/Baker.h"
+#include "Base/Result.h"
 
 #include <algorithm>
 #include <chrono>
@@ -114,16 +115,16 @@ namespace
         {
         }
 
-        [[nodiscard]] jug::Result<void> Run();
+        [[nodiscard]] slug::Result<void> Run();
 
     private:
-        [[nodiscard]] jug::Result<void> LoadDefinitions_();
+        [[nodiscard]] slug::Result<void> LoadDefinitions_();
         void                            BuildJobs_();
         void                            ProcessJob_(TextureJob& _job);
         void                            MergeUniques_();
-        [[nodiscard]] jug::Result<void> PackAndWriteAtlas_();
-        [[nodiscard]] jug::Result<void> WriteJsons_();
-        [[nodiscard]] jug::Result<void> BakeSounds_();
+        [[nodiscard]] slug::Result<void> PackAndWriteAtlas_();
+        [[nodiscard]] slug::Result<void> WriteJsons_();
+        [[nodiscard]] slug::Result<void> BakeSounds_();
         void                            BakeExtraSounds_(std::error_code& _ec);
         void                            BakeExtraSprites_();
         void                            BakeGrounds_();
@@ -151,22 +152,22 @@ namespace
     //  정의 파일 읽기
     // ===========================================
 
-    jug::Result<void> Baker::LoadDefinitions_()
+    slug::Result<void> Baker::LoadDefinitions_()
     {
         const fs::path dataDir = ResourceDataDir_();
         if (!fs::is_directory(dataDir))
         {
             Log("ERROR: legacy ResourceData not found: {}", dataDir.string());
-            return jug::Error { slug::eError::NotFound };
+            return slug::Error { slug::eError::NotFound };
         }
 
         // --- TextureData.data
         {
-            jug::Result<std::string> text = ReadText(dataDir / "TextureData.data");
+            slug::Result<std::string> text = ReadText(dataDir / "TextureData.data");
             if (!text)
             {
                 Log("ERROR: cannot read TextureData.data");
-                return jug::Error { slug::eError::FileOpen };
+                return slug::Error { slug::eError::FileOpen };
             }
             for (TextureRecord& rec: ParseTextureData(*text, m_state.parseWarnings))
             {
@@ -196,7 +197,7 @@ namespace
 
             for (const fs::path& file: files)
             {
-                jug::Result<std::string> text = ReadText(file);
+                slug::Result<std::string> text = ReadText(file);
                 if (!text)
                 {
                     Log("WARN: cannot read {}", file.string());
@@ -236,7 +237,7 @@ namespace
         {
             for (const fs::path& file: ListFiles_(dataDir / "Sprite", ".sprite"))
             {
-                jug::Result<std::string> text = ReadText(file);
+                slug::Result<std::string> text = ReadText(file);
                 if (!text)
                 {
                     Log("WARN: cannot read {}", file.string());
@@ -286,7 +287,7 @@ namespace
         }
 
         Log("definitions: {} textures, {} animations, {} sprites", m_textures.size(), m_state.anims.size(), m_state.sprites.size());
-        return jug::Error { jug::kOK };
+        return slug::Error { slug::kOK };
     }
 
     void Baker::BuildJobs_()
@@ -364,7 +365,7 @@ namespace
             }
         };
 
-        jug::Result<Image> loaded = LoadBmpFile(m_options.legacyRoot / fs::path(tex.path));
+        slug::Result<Image> loaded = LoadBmpFile(m_options.legacyRoot / fs::path(tex.path));
         if (!loaded)
         {
             fail("cannot load bitmap '" + tex.path + "' (" + loaded.GetError().MakeMessage() + ")");
@@ -620,7 +621,7 @@ namespace
     //  아틀라스 패킹 / 페이지 PNG
     // ===========================================
 
-    jug::Result<void> Baker::PackAndWriteAtlas_()
+    slug::Result<void> Baker::PackAndWriteAtlas_()
     {
         // 이전 실행의 페이지 제거
         {
@@ -644,7 +645,7 @@ namespace
             if (!packed.placements[i].bPlaced)
             {
                 Log("ERROR: image {}x{} does not fit a {}px atlas page", sizes[i].w, sizes[i].h, m_options.pageSize);
-                return jug::Error { slug::eError::InvalidData };
+                return slug::Error { slug::eError::InvalidData };
             }
         }
         m_state.placements = packed.placements;
@@ -681,19 +682,19 @@ namespace
         if (bFailed)
         {
             Log("ERROR: failed to write an atlas page");
-            return jug::Error { slug::eError::FileOpen };
+            return slug::Error { slug::eError::FileOpen };
         }
 
         const double capacity = static_cast<double>(packed.pageCount) * m_options.pageSize * m_options.pageSize;
         Log("atlas: {} unique images ({} frames total), {} page(s) {}x{}, fill {:.1f}%", m_state.uniques.size(), m_state.totalFrames, packed.pageCount, m_options.pageSize, m_options.pageSize, capacity > 0 ? 100.0 * static_cast<double>(m_state.uniquePixels) / capacity : 0.0);
-        return jug::Error { jug::kOK };
+        return slug::Error { slug::kOK };
     }
 
     // ===========================================
     //  JSON 출력
     // ===========================================
 
-    jug::Result<void> Baker::WriteJsons_()
+    slug::Result<void> Baker::WriteJsons_()
     {
         // --- anim.json
         {
@@ -750,7 +751,7 @@ namespace
             }
             w.EndObject();
             w.EndObject();
-            if (jug::Result<void> r = WriteText(m_options.outRoot / "anim.json", w.Str()); !r)
+            if (slug::Result<void> r = WriteText(m_options.outRoot / "anim.json", w.Str()); !r)
             {
                 return r;
             }
@@ -799,7 +800,7 @@ namespace
             }
             w.EndObject();
             w.EndObject();
-            if (jug::Result<void> r = WriteText(m_options.outRoot / "sprites.json", w.Str()); !r)
+            if (slug::Result<void> r = WriteText(m_options.outRoot / "sprites.json", w.Str()); !r)
             {
                 return r;
             }
@@ -826,7 +827,7 @@ namespace
             }
             w.EndObject();
             w.EndObject();
-            if (jug::Result<void> r = WriteText(m_options.outRoot / "sounds.json", w.Str()); !r)
+            if (slug::Result<void> r = WriteText(m_options.outRoot / "sounds.json", w.Str()); !r)
             {
                 return r;
             }
@@ -858,31 +859,31 @@ namespace
             }
             w.EndObject();
             w.EndObject();
-            if (jug::Result<void> r = WriteText(m_options.outRoot / "manifest.json", w.Str()); !r)
+            if (slug::Result<void> r = WriteText(m_options.outRoot / "manifest.json", w.Str()); !r)
             {
                 return r;
             }
         }
 
-        return jug::Error { jug::kOK };
+        return slug::Error { slug::kOK };
     }
 
     // ===========================================
     //  사운드
     // ===========================================
 
-    jug::Result<void> Baker::BakeSounds_()
+    slug::Result<void> Baker::BakeSounds_()
     {
         if (!m_options.Wants("sounds"))
         {
-            return jug::Error { jug::kOK };
+            return slug::Error { slug::kOK };
         }
 
-        jug::Result<std::string> text = ReadText(ResourceDataDir_() / "Sound" / "SoundData.txt");
+        slug::Result<std::string> text = ReadText(ResourceDataDir_() / "Sound" / "SoundData.txt");
         if (!text)
         {
             Log("WARN: SoundData.txt not found; skipping sounds");
-            return jug::Error { jug::kOK };
+            return slug::Error { slug::kOK };
         }
 
         std::error_code ec;
@@ -925,7 +926,7 @@ namespace
         size_t ok = 0;
         for (const SoundOut& s: m_state.sounds) { ok += s.bOk ? 1 : 0; }
         Log("sounds: {} of {} copied", ok, m_state.sounds.size());
-        return jug::Error { jug::kOK };
+        return slug::Error { slug::kOK };
     }
 
     // ===========================================
@@ -996,7 +997,7 @@ namespace
             return;
         }
 
-        jug::Result<Image> loaded = LoadBmpFile(m_options.legacyRoot / fs::path("Dummy/Main_Title.bmp"));
+        slug::Result<Image> loaded = LoadBmpFile(m_options.legacyRoot / fs::path("Dummy/Main_Title.bmp"));
         if (!loaded)
         {
             Log("WARN: Dummy/Main_Title.bmp not found; skipping TitleBackground");
@@ -1095,7 +1096,7 @@ namespace
                 mode = m_textures[it->second].mode;
             }
 
-            jug::Result<Image> loaded = LoadBmpFile(m_options.legacyRoot / fs::path(path));
+            slug::Result<Image> loaded = LoadBmpFile(m_options.legacyRoot / fs::path(path));
             if (!loaded)
             {
                 out.error = "cannot load " + path;
@@ -1134,7 +1135,7 @@ namespace
     //  Run
     // ===========================================
 
-    jug::Result<void> Baker::Run()
+    slug::Result<void> Baker::Run()
     {
         const auto start = std::chrono::steady_clock::now();
 
@@ -1144,7 +1145,7 @@ namespace
             fs::create_directories(m_options.outRoot / sub, ec);
         }
 
-        if (jug::Result<void> r = LoadDefinitions_(); !r)
+        if (slug::Result<void> r = LoadDefinitions_(); !r)
         {
             return r;
         }
@@ -1178,18 +1179,18 @@ namespace
 
         MergeUniques_();
         BakeExtraSprites_();
-        if (jug::Result<void> r = PackAndWriteAtlas_(); !r)
+        if (slug::Result<void> r = PackAndWriteAtlas_(); !r)
         {
             return r;
         }
 
-        if (jug::Result<void> r = BakeSounds_(); !r)
+        if (slug::Result<void> r = BakeSounds_(); !r)
         {
             return r;
         }
         BakeGrounds_();
 
-        if (jug::Result<void> r = WriteJsons_(); !r)
+        if (slug::Result<void> r = WriteJsons_(); !r)
         {
             return r;
         }
@@ -1199,7 +1200,7 @@ namespace
     }
 }   // namespace
 
-jug::Result<void> RunBaker(const BakerOptions& _options)
+slug::Result<void> RunBaker(const BakerOptions& _options)
 {
     Baker baker(_options);
     return baker.Run();

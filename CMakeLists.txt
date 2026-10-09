@@ -16,17 +16,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>")
 
 # ---------------------------------------------------------------------------
-# JugX (ThirdParty) - 테스트/벤치/설치는 사용하지 않음
-# ---------------------------------------------------------------------------
-set(JUGX_BUILD_TESTS      OFF CACHE BOOL "" FORCE)
-set(JUGX_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
-set(JUGX_INSTALL          OFF CACHE BOOL "" FORCE)
-add_subdirectory(ThirdParty/JugX)
-
-# ---------------------------------------------------------------------------
-# 외부 헤더 전용 라이브러리 (vcpkg)
+# 외부 라이브러리 (vcpkg)
 # ---------------------------------------------------------------------------
 find_package(SDL3 CONFIG REQUIRED)
+find_package(yyjson CONFIG REQUIRED)
 find_path(STB_INCLUDE_DIR "stb_image.h" REQUIRED)
 find_path(MINIAUDIO_INCLUDE_DIR "miniaudio.h" REQUIRED)
 
@@ -40,11 +33,16 @@ list(FILTER SLUG_CORE_SOURCES EXCLUDE REGEX "/Source/(Main|Tools/.*)\\.cpp$")
 add_library(SlugCore STATIC ${SLUG_CORE_SOURCES} ${SLUG_CORE_HEADERS})
 target_include_directories(SlugCore PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Source")
 target_include_directories(SlugCore SYSTEM PUBLIC "${STB_INCLUDE_DIR}" "${MINIAUDIO_INCLUDE_DIR}")
-target_link_libraries(SlugCore PUBLIC JugX::JugX SDL3::SDL3)
+target_link_libraries(SlugCore PUBLIC SDL3::SDL3 yyjson::yyjson)
+target_compile_features(SlugCore PUBLIC cxx_std_20)
 target_compile_definitions(SlugCore PUBLIC
     NOMINMAX
     SLUG_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Assets"
 )
+if(WIN32)
+    target_compile_definitions(SlugCore PUBLIC UNICODE _UNICODE)
+endif()
+target_compile_options(SlugCore PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/utf-8;/permissive-;/Zc:preprocessor>)
 target_compile_options(SlugCore PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W4;/MP>)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/Source" FILES ${SLUG_CORE_SOURCES} ${SLUG_CORE_HEADERS})
 

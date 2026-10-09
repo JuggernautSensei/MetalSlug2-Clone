@@ -1,7 +1,8 @@
 #pragma once
-#include <JugX/RGBA.h>
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Handle.h"
+#include "Base/RGBA.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "Core/Tuning.h"
 #include "Game/Player/PlayerTypes.h"
@@ -100,7 +101,7 @@ public:
     struct BindReport
     {
         int                      missingRequired = 0;
-        jug::Vector<jug::String> missingNames    = {};   // "무기/좌우/자리" 형태의 설명
+        slug::Vector<slug::String> missingNames    = {};   // "무기/좌우/자리" 형태의 설명
     };
 
     // 클립 이름 표를 해석한다. 라이브러리는 이후에도 계속 유효해야 한다 (비소유).
@@ -109,7 +110,7 @@ public:
     void Update(const RigState& _state);
 
     // 현재 프레임들을 SpriteBatch 에 제출한다 (_feet = 발 중앙).
-    void Submit(SpriteBatch& _sprites, jug::VECTOR2 _feet, int _layer, int _sortKey, jug::RGBA _tint = { 255, 255, 255, 255 }) const;
+    void Submit(SpriteBatch& _sprites, Vec2 _feet, int _layer, int _sortKey, slug::RGBA _tint = { 255, 255, 255, 255 }) const;
 
     // --- 조회 (테스트/디버그) ---
     [[nodiscard]] bool         IsBound() const { return m_pLibrary != nullptr; }
@@ -119,13 +120,13 @@ public:
     [[nodiscard]] int          GetLowerFrame() const { return m_lower.GetFrame(); }
     [[nodiscard]] bool         IsUpperFinished() const { return m_upper.IsFinished(); }
     [[nodiscard]] float        GetOriginLift() const { return m_originLift; }
-    [[nodiscard]] jug::VECTOR2 GetOrigin(jug::VECTOR2 _feet) const { return { _feet.x, _feet.y - m_originLift }; }
+    [[nodiscard]] Vec2 GetOrigin(Vec2 _feet) const { return { _feet.x, _feet.y - m_originLift }; }
 
     // 슬롯 → AnimId (없으면 null 핸들). 테스트용.
     [[nodiscard]] AnimId GetSlotClip(eWeapon _weapon, int _facing, eRigClip _slot) const;
 
     // 라이브러리에서 해석한 실제 클립 이름 (없으면 빈 문자열)
-    [[nodiscard]] static jug::String ResolveClipName(const AnimationLibrary& _library, eRigClip _slot, eWeapon _weapon, int _facing);
+    [[nodiscard]] static slug::String ResolveClipName(const AnimationLibrary& _library, eRigClip _slot, eWeapon _weapon, int _facing);
 
     // 슬롯이 필수인가 (선택 슬롯은 없어도 폴백이 있다)
     [[nodiscard]] static bool IsSlotRequired(eRigClip _slot);
@@ -133,10 +134,10 @@ public:
 private:
     struct Slot
     {
-        AnimId id       = jug::kNullHandle;
+        AnimId id       = slug::kNullHandle;
         int    baseline = 0;   // 클립 프레임들 중 발 쪽으로 가장 낮은 바닥 (원점 아래 px)
     };
-    using SlotTable = jug::ARRAY<Slot, kRigClipCount>;
+    using SlotTable = slug::ARRAY<Slot, kRigClipCount>;
 
     [[nodiscard]] const SlotTable& GetTable_(eWeapon _weapon, int _facing) const;
     [[nodiscard]] Slot             GetSlot_(const SlotTable& _table, eRigClip _slot) const;
@@ -145,7 +146,7 @@ private:
     const AnimationLibrary* m_pLibrary = nullptr;
     RigTuning               m_tuning   = {};
 
-    jug::ARRAY<jug::ARRAY<SlotTable, 2>, kWeaponCount> m_tables = {};   // [weapon][0 = Left, 1 = Right]
+    slug::ARRAY<slug::ARRAY<SlotTable, 2>, kWeaponCount> m_tables = {};   // [weapon][0 = Left, 1 = Right]
 
     AnimPlayer m_upper     = {};
     AnimPlayer m_lower     = {};

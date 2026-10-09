@@ -1,4 +1,7 @@
 #include <algorithm>
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Random.h"
 #include <cmath>
 #include <cstring>
 #include <string>
@@ -15,7 +18,7 @@ namespace slug
 namespace
 {
 
-// JugX 의 실수 범위 Random 은 내부 오버로드 해석 문제로 쓰지 않는다. [_lo, _hi] 균등 난수 (결정적).
+// 실수 범위 난수는 [_lo, _hi] 균등 분포로 직접 만든다 (결정적).
 template<typename RngT>
 float RandRange(RngT& _rng, const float _lo, const float _hi)
 {
@@ -33,7 +36,7 @@ constexpr float kRollMaxVx      = 49.f;
 constexpr float kRollStopSpeed  = 1.f;
 
 // 발 기준 원점에서 프레임을 바닥 정렬로 그릴 때의 원점 (스프라이트 하단 = 발)
-jug::VECTOR2 BottomAlignedOrigin(const AnimFrame& _frame, const jug::VECTOR2 _feet)
+Vec2 BottomAlignedOrigin(const AnimFrame& _frame, const Vec2 _feet)
 {
     return { _feet.x, _feet.y - static_cast<float>(_frame.h - _frame.pivotY) };
 }
@@ -54,7 +57,7 @@ void ItemWorld::Reset(
     m_items.clear();
     m_popups.clear();
     m_fx.clear();
-    m_rng  = jug::RngMt19937 { _seed };
+    m_rng  = slug::RngMt19937 { _seed };
     m_nextId = kItemIdBase;
 }
 
@@ -66,8 +69,8 @@ void ItemWorld::ClearAll()
 }
 
 uint32_t ItemWorld::Spawn(
-    const jug::StringView _name,
-    const jug::VECTOR2    _feet,
+    const slug::StringView _name,
+    const Vec2    _feet,
     const bool            _bBounce)
 {
     if (m_pLibrary == nullptr)
@@ -76,7 +79,7 @@ uint32_t ItemWorld::Spawn(
     }
 
     // 그룹이면 균등 추첨 (스테이지 시드 RNG)
-    jug::String itemName { _name };
+    slug::String itemName { _name };
     if (const PropItemGroup* pGroup = m_pLibrary->FindGroup(_name))
     {
         const int pick = static_cast<int>(m_rng.Generate() % static_cast<uint64_t>(pGroup->names.size()));
@@ -213,7 +216,7 @@ void ItemWorld::Tick(
 }
 
 void ItemWorld::SpawnPopup_(
-    const jug::VECTOR2 _pos,
+    const Vec2 _pos,
     const int          _score)
 {
     ScorePopup popup;
@@ -222,10 +225,10 @@ void ItemWorld::SpawnPopup_(
     m_popups.push_back(popup);
 }
 
-jug::Vector<ItemPickup> ItemWorld::Collect(
+slug::Vector<ItemPickup> ItemWorld::Collect(
     const Aabb& _playerBox)
 {
-    jug::Vector<ItemPickup> out;
+    slug::Vector<ItemPickup> out;
     if (m_pLibrary == nullptr)
     {
         return out;
@@ -263,16 +266,16 @@ jug::Vector<ItemPickup> ItemWorld::Collect(
         // 무기/보급: 습득 연출(Disappear) 후 짧게 사라진다. Get_Item_Effect 는 PropWorld 가 재생한다.
         item.bPickedUp = true;
         item.pickupSec = kItemPickupHideSec;
-        m_fx.push_back(ItemFxRequest { jug::String { "Get_Item_Effect" }, item.feet });
+        m_fx.push_back(ItemFxRequest { slug::String { "Get_Item_Effect" }, item.feet });
     }
     // 점수 아이템은 바로 제거 (수명 종료로 표시)
     m_items.erase(std::remove_if(m_items.begin(), m_items.end(), [](const PropItem& _i) { return !_i.bPickedUp && _i.ageSec >= kItemLifetimeSec; }), m_items.end());
     return out;
 }
 
-jug::Vector<ItemFxRequest> ItemWorld::TakeFx()
+slug::Vector<ItemFxRequest> ItemWorld::TakeFx()
 {
-    jug::Vector<ItemFxRequest> out = std::move(m_fx);
+    slug::Vector<ItemFxRequest> out = std::move(m_fx);
     m_fx.clear();
     return out;
 }
@@ -376,7 +379,7 @@ void ItemWorld::Submit(
         }
 
         // 자릿수 합계 폭으로 가운데 정렬
-        jug::Vector<AnimFrame> glyphs;
+        slug::Vector<AnimFrame> glyphs;
         int                    width = 0;
         for (const char ch: text)
         {
@@ -392,7 +395,7 @@ void ItemWorld::Submit(
         int cursor = static_cast<int>(popup.pos.x) - width / 2;
         for (const AnimFrame& frame: glyphs)
         {
-            const jug::VECTOR2 origin = { static_cast<float>(cursor + frame.pivotX), popup.pos.y - rise - 32.f + static_cast<float>(frame.pivotY) };
+            const Vec2 origin = { static_cast<float>(cursor + frame.pivotX), popup.pos.y - rise - 32.f + static_cast<float>(frame.pivotY) };
             _sprites.Submit(kPopupRenderLayer, static_cast<int>(popup.pos.y), frame, origin);
             cursor += frame.w;
         }

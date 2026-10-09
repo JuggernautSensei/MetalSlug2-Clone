@@ -1,4 +1,5 @@
 #include "Game/Enemies/EnemyCommon.h"
+#include "Base/Math.h"
 #include "Game/Enemies/EnemyDefParse.h"
 
 namespace slug
@@ -27,7 +28,7 @@ namespace
     constexpr int   kPersistTicks  = 1 << 20; // 이미 끝난 비루프 연출을 마지막 프레임에 머물게 하는 값
 
     // 원점 = 발 - (0, originDepth)
-    [[nodiscard]] jug::VECTOR2 OriginOf_(
+    [[nodiscard]] Vec2 OriginOf_(
         const Enemy&   _e,
         const BusCfg& _c)
     {
@@ -56,7 +57,7 @@ namespace
     void Fx_(
         EnemyEnv&         _env,
         const char*       _clip,
-        const jug::VECTOR2 _at,
+        const Vec2 _at,
         const int         _delayTicks = 0)
     {
         EnemyFxRequest request;
@@ -67,9 +68,9 @@ namespace
     }
 
     // 중심 _c 주변 ±_half 균등 난수 한 점
-    [[nodiscard]] jug::VECTOR2 Scatter_(
+    [[nodiscard]] Vec2 Scatter_(
         EnemyEnv&         _env,
-        const jug::VECTOR2 _c,
+        const Vec2 _c,
         const float       _half)
     {
         const int span = static_cast<int>(_half) * 2 + 1;
@@ -86,11 +87,11 @@ namespace
         const int       _stage)
     {
         const BusCfg&     c      = _def.bus;
-        const jug::VECTOR2 origin = OriginOf_(_e, c);
+        const Vec2 origin = OriginOf_(_e, c);
         if (_stage == kStageCount)
         {
             // 사망: CreateExplosionEffect(pos,(-25,-50),200, S2 M4 L4) 상당
-            const jug::VECTOR2 center = { origin.x - 25.f, origin.y - 50.f };
+            const Vec2 center = { origin.x - 25.f, origin.y - 50.f };
             for (int i = 0; i < 2; ++i)
             {
                 Fx_(_env, "Explosion_Small", Scatter_(_env, center, 100.f), i * 4);
@@ -103,7 +104,7 @@ namespace
             return;
         }
         // 기본 폭발 (1/1/1, 중심 (-50,-50), 균등 ±75)
-        const jug::VECTOR2 center = { origin.x - 50.f, origin.y - 50.f };
+        const Vec2 center = { origin.x - 50.f, origin.y - 50.f };
         Fx_(_env, "Explosion_Small", Scatter_(_env, center, 75.f));
         Fx_(_env, "Explosion_Mid", Scatter_(_env, center, 75.f));
         Fx_(_env, "Explosion_Large", Scatter_(_env, center, 75.f));
@@ -178,7 +179,7 @@ namespace
                 filter.userTag  = _e.id;   // 이 버스가 낸 병사만 센다
                 if (_env.world.CountAlive(filter) < c.soldierAliveMax)
                 {
-                    const jug::VECTOR2 origin = OriginOf_(_e, c);
+                    const Vec2 origin = OriginOf_(_e, c);
                     SpawnParams        params;
                     params.facing     = -1;
                     params.bActivated = true;
@@ -263,7 +264,7 @@ namespace
         const EnemyRenderEnv& _render)
     {
         const BusCfg&     c      = _def.bus;
-        const jug::VECTOR2 origin = { _render.feet.x, _render.feet.y - c.originDepth };
+        const Vec2 origin = { _render.feet.x, _render.feet.y - c.originDepth };
         const int         sortKey = static_cast<int>(_render.feet.y);
         const int         layer   = _render.layer;
         const int         stage   = _e.aux;
@@ -350,7 +351,7 @@ void ParseBusCfg(
     c.soldierIntervalTicks = _r.Ticks("soldierIntervalSec");
     c.soldierAliveMax      = _r.Int("soldierAliveMax");
     c.soldierTotalMax      = _r.Int("soldierTotalMax");
-    c.soldierOffset        = _r.Vec2("soldierOffset", { 0.f, 0.f });
+    c.soldierOffset        = _r.ReadVec2("soldierOffset", { 0.f, 0.f });
     c.soldierDef           = _r.Str("soldierDef");
     c.weaponShell          = _r.Weapon("shell");
 }

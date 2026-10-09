@@ -1,4 +1,7 @@
 #include <cstdint>
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Random.h"
 #include <optional>
 #include <vector>
 
@@ -35,10 +38,10 @@ public:
         : m_rng(uint64_t { 1 })
     {
         m_ctx.pRng       = &m_rng;
-        m_ctx.assetRoot  = jug::FilePath { SLUG_ASSET_DIR };
+        m_ctx.assetRoot  = slug::FilePath { SLUG_ASSET_DIR };
         m_ctx.bDebugDraw = _bDebugDraw;
         m_pState         = new StageState;
-        m_runner         = jug::Scoped<SimRunner> { new SimRunner { m_ctx, jug::Scoped<IGameState> { m_pState } } };
+        m_runner         = std::unique_ptr<SimRunner> { new SimRunner { m_ctx, std::unique_ptr<IGameState> { m_pState } } };
     }
 
     [[nodiscard]] StageState&  State() { return *m_pState; }
@@ -118,7 +121,7 @@ public:
 private:
     // 발 앞 46px 안에 발판보다 위로 솟은 벽(상자 충돌체 wall / 소품 벽)이 있는가
     [[nodiscard]] bool IsWallAhead_(
-        const jug::VECTOR2 _feet) const
+        const Vec2 _feet) const
     {
         constexpr float kRange = 46.f;
         for (const Wall& wall: m_pState->GetProps().GetWalls())
@@ -138,7 +141,7 @@ private:
         return false;
     }
 
-    jug::RngMt19937 m_rng;
+    slug::RngMt19937 m_rng;
     GameContext     m_ctx      = {};
     InputFrame      m_frame    = {};
     StageState*     m_pState   = nullptr;   // m_runner 가 소유한다
@@ -147,7 +150,7 @@ private:
     int             m_stuckTicks = 0;
     int             m_jumpTicks  = 0;
     int             m_backTicks  = 0;
-    jug::Scoped<SimRunner> m_runner = nullptr;   // 가장 마지막에 파괴되어야 OnExit 이 m_ctx 를 본다
+    std::unique_ptr<SimRunner> m_runner = nullptr;   // 가장 마지막에 파괴되어야 OnExit 이 m_ctx 를 본다
 };
 
 // 스테이지 종료 경로 검사용: 실제 정의 라이브러리 + StageWorldHost + StageRunner (JSON 스테이지)
@@ -159,8 +162,8 @@ public:
         , rng(uint64_t { 1 })
         , runner(data, host, camera, rng)
     {
-        jug::String message;
-        enemyLib = EnemyDefLibrary::LoadDirectory(EnemyDefLibrary::GetDefaultDirectory(jug::FilePath { SLUG_ASSET_DIR }), &message).Take();
+        slug::String message;
+        enemyLib = EnemyDefLibrary::LoadDirectory(EnemyDefLibrary::GetDefaultDirectory(slug::FilePath { SLUG_ASSET_DIR }), &message).Take();
         enemies.SetLibrary(&enemyLib);
         props.SetLibrary(&propLib);
 
@@ -191,7 +194,7 @@ public:
     StageData         data;
     StageWorldHost    host;
     Camera            camera;
-    jug::RngMt19937   rng;
+    slug::RngMt19937   rng;
     StageRunner       runner;
     EnemyDefLibrary   enemyLib;
     PropDefLibrary    propLib;
@@ -227,7 +230,7 @@ TEST(StageIntegration, GroundPatchMaskAndApplyClearTheDestroyedHouseFootprint)
 {
     // 집 픽셀맵(Stage0_House_4_PixelMap): 레거시 규칙상 고체(파란 픽셀)가 없고 전부 공기다.
     // 파괴 패치는 발자국 안의 지면을 비워야 하며, 발자국 밖은 그대로 남아야 한다.
-    const std::optional<GroundMap> mask = LoadGroundPatchMask(jug::FilePath { SLUG_ASSET_DIR } / "Baked" / "Textures" / "Stage0_House_4_PixelMap.png");
+    const std::optional<GroundMap> mask = LoadGroundPatchMask(slug::FilePath { SLUG_ASSET_DIR } / "Baked" / "Textures" / "Stage0_House_4_PixelMap.png");
     ASSERT_TRUE(mask.has_value());
     EXPECT_EQ(mask->GetWidth(), 1306);
     EXPECT_EQ(mask->GetHeight(), 751);
@@ -239,7 +242,7 @@ TEST(StageIntegration, GroundPatchMaskAndApplyClearTheDestroyedHouseFootprint)
     EXPECT_FALSE(ground.IsSolid(105, 105));    // 발자국 안: 공기
     EXPECT_TRUE(ground.IsSolid(50, 50));       // 발자국 밖: 그대로 고체
 
-    EXPECT_FALSE(LoadGroundPatchMask(jug::FilePath { SLUG_ASSET_DIR } / "Baked" / "Textures" / "no_such_map.png").has_value());
+    EXPECT_FALSE(LoadGroundPatchMask(slug::FilePath { SLUG_ASSET_DIR } / "Baked" / "Textures" / "no_such_map.png").has_value());
 }
 
 TEST(StageIntegration, SpawnedEnemiesStandOnTheGroundAtTheirScriptedFeet)
@@ -250,7 +253,7 @@ TEST(StageIntegration, SpawnedEnemiesStandOnTheGroundAtTheirScriptedFeet)
     bool bFound = false;
     for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
     {
-        const jug::VECTOR2 feet = enemy.body.position;
+        const Vec2 feet = enemy.body.position;
         if (enemy.life == eEnemyLife::Alive && feet.x > 880.f && feet.x < 920.f)
         {
             bFound = true;
@@ -342,7 +345,7 @@ TEST(StageIntegration, PropRoofCarriesThePlayerAboveTheGround)
     // shop_5 (x 2513, 중심 y 181) 의 지붕 위로 떨어뜨린다
     sim.State().GetPlayer().Reset(Tuning {}, { 2513.f, 60.f });
     sim.Step(240);
-    const jug::VECTOR2 feet = sim.State().GetPlayer().GetFeet();
+    const Vec2 feet = sim.State().GetPlayer().GetFeet();
     EXPECT_TRUE(sim.State().GetPlayer().IsGrounded());
     EXPECT_NEAR(feet.x, 2513.f, 80.f);
     EXPECT_LT(feet.y, 300.f);   // 지면(378)이 아니라 지붕 위

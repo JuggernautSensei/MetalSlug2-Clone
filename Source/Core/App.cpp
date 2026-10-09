@@ -1,10 +1,11 @@
 #include "Core/App.h"
+#include "Base/Types.h"
+#include "Base/Result.h"
+#include "Base/Random.h"
 
 #include <SDL3/SDL.h>
 
-#include <JugX/ConsoleLogger.h>
-#include <JugX/CoreLogger.h>
-#include <JugX/EventDispatcher.h>
+#include "Base/Log.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -37,16 +38,76 @@ namespace
     }
 }   // namespace
 
-App::App()
-    : Application({ .appName = "MyMetalSlug2", .appVersion = "0.1.0", .appIdentifier = "com.mymetalslug2.game", .bInitGamepad = false })
+int App::Run(
+    const int _argc,
+    char**    _argv)
 {
+    m_cmdArgs.reserve(static_cast<size_t>(_argc));
+    for (int i = 0; i < _argc; ++i)
+    {
+        m_cmdArgs.emplace_back(_argv[i]);
+    }
+
+    if (!InitSystems_())
+    {
+        return 1;
+    }
+
+    m_bRunning   = true;
+    m_returnCode = 0;
+    Init_();
+
+    auto lastTime = SteadyClock::now();
+    while (m_bRunning)
+    {
+        PollEvents_();
+        if (!m_bRunning)
+        {
+            break;
+        }
+        const auto now = SteadyClock::now();
+        Update_(std::chrono::duration<float>(now - lastTime).count());
+        lastTime = now;
+    }
+
+    Shutdown_();
+    SDL_Quit();
+    return m_returnCode;
 }
 
-App::~App() = default;
+bool App::InitSystems_()
+{
+    if (!SDL_SetAppMetadata("MyMetalSlug2", "0.1.0", "com.mymetalslug2.game"))
+    {
+        SLUG_LOG_WARN("SDL_SetAppMetadata failed: {}", SDL_GetError());
+    }
+    if (!SDL_Init(SDL_INIT_VIDEO))
+    {
+        SLUG_LOG_FATAL("SDL_Init failed: {}", SDL_GetError());
+        return false;
+    }
+    return true;
+}
+
+void App::PollEvents_()
+{
+    SDL_Event msg {};
+    while (SDL_PollEvent(&msg))
+    {
+        switch (msg.type)
+        {
+            case SDL_EVENT_QUIT: m_bRunning = false; break;
+            case SDL_EVENT_KEY_DOWN: OnKeyDown_(msg.key.scancode, msg.key.repeat); break;
+            case SDL_EVENT_KEY_UP: OnKeyUp_(msg.key.scancode); break;
+            case SDL_EVENT_WINDOW_FOCUS_LOST: OnFocusLost_(); break;
+            default: break;
+        }
+    }
+}
 
 void App::ParseArgs_()
 {
-    const jug::Span<const jug::String> args = GetCommandLineArgs();
+    const const slug::Span<const slug::String> args = m_cmdArgs;
     for (size_t i = 1; i < args.size(); ++i)
     {
         const bool bHasValue = i + 1 < args.size();
@@ -89,13 +150,13 @@ void App::ParseArgs_()
         else if (args[i] == "--hold" && bHasValue)
         {
             // 시작부터 누르고 있는 키 (캡처 검증용): J 사격, K 점프, Up/Down/Left/Right
-            const jug::String name = args[++i];
-            if (name == "J") m_input.OnKeyDown(jug::eKey::J);
-            else if (name == "K") m_input.OnKeyDown(jug::eKey::K);
-            else if (name == "Up") m_input.OnKeyDown(jug::eKey::Up);
-            else if (name == "Down") m_input.OnKeyDown(jug::eKey::Down);
-            else if (name == "Left") m_input.OnKeyDown(jug::eKey::Left);
-            else if (name == "Right") m_input.OnKeyDown(jug::eKey::Right);
+            const slug::String name = args[++i];
+            if (name == "J") m_input.OnKeyDown(SDL_SCANCODE_J);
+            else if (name == "K") m_input.OnKeyDown(SDL_SCANCODE_K);
+            else if (name == "Up") m_input.OnKeyDown(SDL_SCANCODE_UP);
+            else if (name == "Down") m_input.OnKeyDown(SDL_SCANCODE_DOWN);
+            else if (name == "Left") m_input.OnKeyDown(SDL_SCANCODE_LEFT);
+            else if (name == "Right") m_input.OnKeyDown(SDL_SCANCODE_RIGHT);
         }
         else if (args[i] == "--warp" && bHasValue)
         {
@@ -106,12 +167,12 @@ void App::ParseArgs_()
         else if (args[i] == "--capture-ticks" && bHasValue)
         {
             // 쉼표로 구분된 틱 목록 (오름차순으로 정렬해 사용)
-            const jug::String list = args[++i];
+            const slug::String list = args[++i];
             size_t            begin = 0;
             while (begin < list.size())
             {
                 size_t end = list.find(',', begin);
-                if (end == jug::String::npos)
+                if (end == slug::String::npos)
                 {
                     end = list.size();
                 }
@@ -126,21 +187,18 @@ void App::ParseArgs_()
     }
 }
 
-void App::Init()
+void App::Init_()
 {
-    static jug::ConsoleLogger s_logger;
-    jug::SetCoreLogger(&s_logger);
-
-    ParseArgs_();
+        ParseArgs_();
 
     if (!m_replayPath.empty())
     {
-        jug::Result<ReplayData> loaded = LoadReplay(m_replayPath);
+        slug::Result<ReplayData> loaded = LoadReplay(m_replayPath);
         if (!loaded)
         {
-            JUG_CORE_LOG_FATAL("리플레이 로드 실패: {}", loaded.GetError().MakeMessage());
-            SetReturnCode(1);
-            Quit();
+            SLUG_LOG_FATAL("리플레이 로드 실패: {}", loaded.GetError().MakeMessage());
+            m_returnCode = 1;
+            m_bRunning = false;
             return;
         }
         m_playback = loaded.Take();
@@ -154,35 +212,35 @@ void App::Init()
     if (m_stateName.empty())
     {
         // 기본 상태: Baked 에셋이 있으면 타이틀 (타이틀 → stage0), 없으면 샌드박스 (에셋 없이도 동작)
-        const bool bHasBaked = std::filesystem::exists(jug::FilePath { SLUG_ASSET_DIR } / "Baked");
-        m_stateName          = bHasBaked ? jug::String { GetDefaultStateName() } : jug::String { "sandbox" };
+        const bool bHasBaked = std::filesystem::exists(slug::FilePath { SLUG_ASSET_DIR } / "Baked");
+        m_stateName          = bHasBaked ? slug::String { GetDefaultStateName() } : slug::String { "sandbox" };
     }
 
-    if (const jug::Result<void> result = m_renderer.Init("MyMetalSlug2", ChooseWindowScale_()); !result)
+    if (const slug::Result<void> result = m_renderer.Init("MyMetalSlug2", ChooseWindowScale_()); !result)
     {
-        JUG_CORE_LOG_FATAL("렌더러 초기화 실패: {}", result.GetError().MakeMessage());
-        SetReturnCode(1);
-        Quit();
+        SLUG_LOG_FATAL("렌더러 초기화 실패: {}", result.GetError().MakeMessage());
+        m_returnCode = 1;
+        m_bRunning = false;
         return;
     }
 
     // 에셋 로드 (없으면 경고만 하고 계속: 스프라이트 없이도 데모 상태는 동작)
-    const jug::FilePath bakedRoot = jug::FilePath { SLUG_ASSET_DIR } / "Baked";
+    const slug::FilePath bakedRoot = slug::FilePath { SLUG_ASSET_DIR } / "Baked";
     m_sprites.Init(m_renderer.GetNative());
-    if (jug::Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(bakedRoot))
+    if (slug::Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(bakedRoot))
     {
         m_anims = library.Take();
-        if (const jug::Result<void> atlas = m_sprites.LoadAtlasPages(m_anims); !atlas)
+        if (const slug::Result<void> atlas = m_sprites.LoadAtlasPages(m_anims); !atlas)
         {
-            JUG_CORE_LOG_WARN("아틀라스 로드 실패: {}", atlas.GetError().MakeMessage());
+            SLUG_LOG_WARN("아틀라스 로드 실패: {}", atlas.GetError().MakeMessage());
         }
     }
     else
     {
-        JUG_CORE_LOG_WARN("Baked 에셋 없음 ({}): Scripts/Bake.ps1 을 실행하세요", bakedRoot.string());
+        SLUG_LOG_WARN("Baked 에셋 없음 ({}): Scripts/Bake.ps1 을 실행하세요", bakedRoot.string());
     }
 
-    m_rng = jug::RngMt19937 { m_seed };
+    m_rng = slug::RngMt19937 { m_seed };
     m_recording.seed      = m_seed;
     m_recording.stateName = m_stateName;
 
@@ -190,37 +248,37 @@ void App::Init()
     m_ctx.pSprites  = &m_sprites;
     m_ctx.pAnims    = &m_anims;
     m_ctx.pRng      = &m_rng;
-    m_ctx.assetRoot = jug::FilePath { SLUG_ASSET_DIR };
+    m_ctx.assetRoot = slug::FilePath { SLUG_ASSET_DIR };
 
     // 오디오: 실패/--no-audio/캡처 모드에서는 장치 없이(또는 NullAudio 로) 계속한다. 소리는 시뮬레이션에 영향을 주지 않는다.
     {
         AudioConfig audioConfig;
         audioConfig.bEnabled = !m_bNoAudio && m_capturePath.empty();
-        if (const jug::Result<void> audio = m_audio.InitFromDirectory(bakedRoot, audioConfig); audio)
+        if (const slug::Result<void> audio = m_audio.InitFromDirectory(bakedRoot, audioConfig); audio)
         {
             m_ctx.pAudio = &m_audio;
         }
         else
         {
-            JUG_CORE_LOG_WARN("sounds.json 을 읽지 못해 소리 없이 계속합니다: {}", audio.GetError().MakeMessage());
+            SLUG_LOG_WARN("sounds.json 을 읽지 못해 소리 없이 계속합니다: {}", audio.GetError().MakeMessage());
         }
     }
 
-    jug::Scoped<IGameState> pState = CreateState(m_stateName);
+    std::unique_ptr<IGameState> pState = CreateState(m_stateName);
     if (!pState)
     {
-        JUG_CORE_LOG_FATAL("알 수 없는 게임 상태: {}", m_stateName);
-        SetReturnCode(1);
-        Quit();
+        SLUG_LOG_FATAL("알 수 없는 게임 상태: {}", m_stateName);
+        m_returnCode = 1;
+        m_bRunning = false;
         return;
     }
-    m_pRunner = jug::Scoped<SimRunner> { new SimRunner { m_ctx, std::move(pState) } };
+    m_pRunner = std::unique_ptr<SimRunner> { new SimRunner { m_ctx, std::move(pState) } };
 }
 
-void App::Shutdown()
+void App::Shutdown_()
 {
     SaveRecording_();
-    m_pRunner.Reset();
+    m_pRunner.reset();
     m_ctx.pAudio = nullptr;
     m_audio.Shutdown();
     m_sprites.Shutdown();
@@ -233,74 +291,65 @@ void App::SaveRecording_() const
     {
         return;
     }
-    if (const jug::Result<void> result = SaveReplay(m_recordPath, m_recording); !result)
+    if (const slug::Result<void> result = SaveReplay(m_recordPath, m_recording); !result)
     {
-        JUG_CORE_LOG_ERROR("리플레이 저장 실패: {}", result.GetError().MakeMessage());
+        SLUG_LOG_ERROR("리플레이 저장 실패: {}", result.GetError().MakeMessage());
         return;
     }
-    JUG_CORE_LOG_INFO("리플레이 저장: {} ({} 틱)", m_recordPath.string(), m_recording.frames.size());
-}
-
-void App::OnEvent(
-    jug::Event& _event)
-{
-    jug::EventDispatcher dispatcher { _event };
-    dispatcher.Dispatch<jug::KeyDownEvent>(this, &App::OnKeyDown_);
-    dispatcher.Dispatch<jug::KeyUpEvent>(this, &App::OnKeyUp_);
-    dispatcher.Dispatch<jug::WindowFocusLostEvent>(this, &App::OnFocusLost_);
+    SLUG_LOG_INFO("리플레이 저장: {} ({} 틱)", m_recordPath.string(), m_recording.frames.size());
 }
 
 void App::OnKeyDown_(
-    const jug::KeyDownEvent& _event)
+    const SDL_Scancode _key,
+    const bool         _bRepeat)
 {
-    if (_event.IsRepeat())
+    if (_bRepeat)
     {
         return;
     }
 
     // 디버그 키는 시뮬레이션 입력이 아니라 앱 제어이다 (리플레이에 기록되지 않는다).
-    switch (_event.GetKey())
+    switch (_key)
     {
-        case jug::eKey::F1: m_bDebugDraw = !m_bDebugDraw; return;
-        case jug::eKey::F2: m_bPaused = !m_bPaused; return;
-        case jug::eKey::F3: m_bStepOnce = true; return;
-        case jug::eKey::F4: m_bSlowMo = !m_bSlowMo; return;
-        case jug::eKey::F5: if (m_bDebugDraw) { m_pendingWarp = 1; } return;   // 스테이지: 다음 섹션
-        case jug::eKey::F6: if (m_bDebugDraw) { m_pendingWarp = 2; } return;   // 스테이지: 보스 아레나
+        case SDL_SCANCODE_F1: m_bDebugDraw = !m_bDebugDraw; return;
+        case SDL_SCANCODE_F2: m_bPaused = !m_bPaused; return;
+        case SDL_SCANCODE_F3: m_bStepOnce = true; return;
+        case SDL_SCANCODE_F4: m_bSlowMo = !m_bSlowMo; return;
+        case SDL_SCANCODE_F5: if (m_bDebugDraw) { m_pendingWarp = 1; } return;   // 스테이지: 다음 섹션
+        case SDL_SCANCODE_F6: if (m_bDebugDraw) { m_pendingWarp = 2; } return;   // 스테이지: 보스 아레나
         // 숫자키 1..8: 샌드박스 적 디버그 스폰 (보병 정의 8종, 플레이어 앞)
-        case jug::eKey::Num1: m_pendingSpawn = 1; return;
-        case jug::eKey::Num2: m_pendingSpawn = 2; return;
-        case jug::eKey::Num3: m_pendingSpawn = 3; return;
-        case jug::eKey::Num4: m_pendingSpawn = 4; return;
-        case jug::eKey::Num5: m_pendingSpawn = 5; return;
-        case jug::eKey::Num6: m_pendingSpawn = 6; return;
-        case jug::eKey::Num7: m_pendingSpawn = 7; return;
-        case jug::eKey::Num8: m_pendingSpawn = 8; return;
-        case jug::eKey::Num9: m_pendingSpawn = 9; return;   // 차량 5종 순환 (SandboxState::SpawnDebugEnemy_ 의 슬롯 8)
-        case jug::eKey::F7: m_pendingWeapon = 1; return;
-        case jug::eKey::F8: m_pendingWeapon = 2; return;
-        case jug::eKey::F9: m_pendingWeapon = 3; return;
-        case jug::eKey::F10: m_pendingWeapon = 4; return;
+        case SDL_SCANCODE_1: m_pendingSpawn = 1; return;
+        case SDL_SCANCODE_2: m_pendingSpawn = 2; return;
+        case SDL_SCANCODE_3: m_pendingSpawn = 3; return;
+        case SDL_SCANCODE_4: m_pendingSpawn = 4; return;
+        case SDL_SCANCODE_5: m_pendingSpawn = 5; return;
+        case SDL_SCANCODE_6: m_pendingSpawn = 6; return;
+        case SDL_SCANCODE_7: m_pendingSpawn = 7; return;
+        case SDL_SCANCODE_8: m_pendingSpawn = 8; return;
+        case SDL_SCANCODE_9: m_pendingSpawn = 9; return;   // 차량 5종 순환 (SandboxState::SpawnDebugEnemy_ 의 슬롯 8)
+        case SDL_SCANCODE_F7: m_pendingWeapon = 1; return;
+        case SDL_SCANCODE_F8: m_pendingWeapon = 2; return;
+        case SDL_SCANCODE_F9: m_pendingWeapon = 3; return;
+        case SDL_SCANCODE_F10: m_pendingWeapon = 4; return;
         default: break;
     }
 
-    m_input.OnKeyDown(_event.GetKey());
+    m_input.OnKeyDown(_key);
 }
 
 void App::OnKeyUp_(
-    const jug::KeyUpEvent& _event)
+    const SDL_Scancode _key)
 {
-    m_input.OnKeyUp(_event.GetKey());
+    m_input.OnKeyUp(_key);
 }
 
-void App::OnFocusLost_(
-    const jug::WindowFocusLostEvent&)
+void App::OnFocusLost_()
 {
     // 포커스를 잃으면 눌림 상태가 영원히 남지 않도록 비운다.
     m_input.ClearAll();
 }
 
-void App::Update(
+void App::Update_(
     const float _deltaTimeSec)
 {
     m_audio.Update(_deltaTimeSec);   // 끝난 소리 회수 + BGM 페이드 (렌더 프레임 단위)
@@ -366,7 +415,7 @@ void App::Tick_()
         }
         else if (!m_bReplayHold)
         {
-            Quit();
+            m_bRunning = false;
             return;
         }
     }
@@ -385,7 +434,7 @@ void App::Tick_()
     // 디버그 종료 키: Esc (Pause)
     if (!m_bPlayback && m_pRunner->GetHistory().WasPressed(eAction::Pause))
     {
-        Quit();
+        m_bRunning = false;
     }
 }
 
@@ -401,26 +450,26 @@ void App::Render_(
         while (m_captureTickHead < m_captureTicks.size() && m_pRunner->GetTickCount() >= m_captureTicks[m_captureTickHead])
         {
             const uint64_t     tick = m_captureTicks[m_captureTickHead++];
-            const jug::FilePath path = jug::FilePath { std::format("{}_{:05}.bmp", m_capturePath.string(), tick) };
-            if (const jug::Result<void> result = m_renderer.SaveScreenshotBmp(path); !result)
+            const slug::FilePath path = slug::FilePath { std::format("{}_{:05}.bmp", m_capturePath.string(), tick) };
+            if (const slug::Result<void> result = m_renderer.SaveScreenshotBmp(path); !result)
             {
-                JUG_CORE_LOG_ERROR("스크린샷 저장 실패: {}", result.GetError().MakeMessage());
-                SetReturnCode(2);
+                SLUG_LOG_ERROR("스크린샷 저장 실패: {}", result.GetError().MakeMessage());
+                m_returnCode = 2;
             }
         }
         if (m_captureTickHead >= m_captureTicks.size())
         {
-            Quit();
+            m_bRunning = false;
         }
     }
     else if (!m_capturePath.empty() && m_renderFrameCount == m_captureFrame)
     {
-        if (const jug::Result<void> result = m_renderer.SaveScreenshotBmp(m_capturePath); !result)
+        if (const slug::Result<void> result = m_renderer.SaveScreenshotBmp(m_capturePath); !result)
         {
-            JUG_CORE_LOG_ERROR("스크린샷 저장 실패: {}", result.GetError().MakeMessage());
-            SetReturnCode(2);
+            SLUG_LOG_ERROR("스크린샷 저장 실패: {}", result.GetError().MakeMessage());
+            m_returnCode = 2;
         }
-        Quit();
+        m_bRunning = false;
     }
 
     m_renderer.EndFrame();

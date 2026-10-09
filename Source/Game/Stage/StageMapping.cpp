@@ -1,4 +1,6 @@
 #include "Game/Stage/StageMapping.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include <cstdint>
 #include <fstream>
@@ -14,9 +16,9 @@ namespace slug
 
 namespace
 {
-    [[nodiscard]] jug::VECTOR2 ReadVec2_(
+    [[nodiscard]] Vec2 ReadVec2_(
         const ParamValue& _value,
-        const jug::VECTOR2 _default)
+        const Vec2 _default)
     {
         if (!_value.IsArray() || _value.GetSize() < 2)
         {
@@ -101,7 +103,7 @@ Aabb MakeColliderBox(
 }
 
 std::optional<GroundMap> LoadGroundPatchMask(
-    const jug::FilePath& _pngPath)
+    const slug::FilePath& _pngPath)
 {
     std::ifstream file { _pngPath, std::ios::binary | std::ios::ate };
     if (!file)
@@ -146,8 +148,8 @@ std::optional<GroundMap> LoadGroundPatchMask(
     return mask;
 }
 
-jug::VECTOR2 ItemFeetFromCenter(
-    const jug::VECTOR2 _center)
+Vec2 ItemFeetFromCenter(
+    const Vec2 _center)
 {
     return { _center.x, _center.y + 16.f };
 }

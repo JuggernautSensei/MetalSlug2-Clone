@@ -1,4 +1,7 @@
 #include <cmath>
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Random.h"
 
 #include <gtest/gtest.h>
 
@@ -24,10 +27,10 @@ public:
         : m_rng(uint64_t { 1 })
     {
         m_ctx.pRng       = &m_rng;
-        m_ctx.assetRoot  = jug::FilePath { SLUG_ASSET_DIR };
+        m_ctx.assetRoot  = slug::FilePath { SLUG_ASSET_DIR };
         m_ctx.bDebugDraw = _bDebugDraw;
         m_pState         = new StageState;
-        m_runner         = jug::Scoped<SimRunner> { new SimRunner { m_ctx, jug::Scoped<IGameState> { m_pState } } };
+        m_runner         = std::unique_ptr<SimRunner> { new SimRunner { m_ctx, std::unique_ptr<IGameState> { m_pState } } };
     }
 
     [[nodiscard]] StageState& State() { return *m_pState; }
@@ -52,17 +55,17 @@ public:
     }
 
 private:
-    jug::RngMt19937 m_rng;
+    slug::RngMt19937 m_rng;
     GameContext     m_ctx = {};
     InputFrame      m_frame = {};
     StageState*     m_pState = nullptr;   // m_runner 가 소유한다
-    jug::Scoped<SimRunner> m_runner = nullptr;   // 가장 마지막에 파괴되어야 OnExit 이 m_ctx 를 본다
+    std::unique_ptr<SimRunner> m_runner = nullptr;   // 가장 마지막에 파괴되어야 OnExit 이 m_ctx 를 본다
 };
 
 SpawnRequest MakeRequest(
     const char*          _def,
     const eEntityKind    _kind,
-    const jug::VECTOR2   _position)
+    const Vec2   _position)
 {
     SpawnRequest request;
     request.def      = _def;
@@ -192,11 +195,11 @@ TEST(StagePlaceholders, HitsKillAtZeroHpThenTheEntityIsRemovedAfterTheDeathWindo
     EXPECT_NE(id, kInvalidSpawnId);
     EXPECT_FALSE(host.IsDefeated(id));
 
-    const jug::Vector<HitEvent> events = { MakeHit(id, 1) };
+    const slug::Vector<HitEvent> events = { MakeHit(id, 1) };
     EXPECT_EQ(host.ApplyEvents(events), 0);
     EXPECT_FALSE(host.IsDefeated(id));
 
-    const jug::Vector<HitEvent> killing = { MakeHit(id, 5) };
+    const slug::Vector<HitEvent> killing = { MakeHit(id, 5) };
     EXPECT_EQ(host.ApplyEvents(killing), 1);
     EXPECT_TRUE(host.IsDefeated(id));
     EXPECT_FALSE(host.IsDestroyFinished(id));
@@ -218,7 +221,7 @@ TEST(StagePlaceholders, NonHittableKindsAreNeverDefeatedUntilCleared)
     const SpawnId     decor = host.SpawnEntity(MakeRequest("anim_decor", eEntityKind::Decor, { 10.f, 10.f }));
     const SpawnId     item  = host.SpawnEntity(MakeRequest("random_score", eEntityKind::Item, { 20.f, 20.f }));
 
-    const jug::Vector<HitEvent> events = { MakeHit(decor, 99), MakeHit(item, 99) };
+    const slug::Vector<HitEvent> events = { MakeHit(decor, 99), MakeHit(item, 99) };
     EXPECT_EQ(host.ApplyEvents(events), 0);
     EXPECT_FALSE(host.IsDefeated(decor));
     EXPECT_FALSE(host.IsDefeated(item));

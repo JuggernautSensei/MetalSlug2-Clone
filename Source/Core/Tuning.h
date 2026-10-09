@@ -1,9 +1,9 @@
 #pragma once
 #include <cstdint>
 
-#include <JugX/Result.h>
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Result.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 namespace slug
 {
@@ -52,10 +52,10 @@ struct MoveTuning
 
 struct BodyTuning
 {
-    jug::VECTOR2 standSize     = { 20.f, 58.f };   // 물리 몸통 (발 중앙 원점)
-    jug::VECTOR2 crouchSize    = { 20.f, 36.f };
-    jug::VECTOR2 hurtStand     = { 16.f, 54.f };   // 피격 상자 (몸통보다 약간 작게: 플레이어에게 관대)
-    jug::VECTOR2 hurtCrouch    = { 16.f, 32.f };
+    Vec2 standSize     = { 20.f, 58.f };   // 물리 몸통 (발 중앙 원점)
+    Vec2 crouchSize    = { 20.f, 36.f };
+    Vec2 hurtStand     = { 16.f, 54.f };   // 피격 상자 (몸통보다 약간 작게: 플레이어에게 관대)
+    Vec2 hurtCrouch    = { 16.f, 32.f };
     float        footHalfWidth = 4.f;
 };
 
@@ -65,11 +65,11 @@ struct BodyTuning
 
 struct MuzzleSet
 {
-    jug::VECTOR2 forward  = { 44.f, -51.f };
-    jug::VECTOR2 up       = { 0.f, -106.f };
-    jug::VECTOR2 diagUp   = { 40.f, -62.f };
-    jug::VECTOR2 down     = { 2.f, -2.f };
-    jug::VECTOR2 diagDown = { 20.f, -10.f };
+    Vec2 forward  = { 44.f, -51.f };
+    Vec2 up       = { 0.f, -106.f };
+    Vec2 diagUp   = { 40.f, -62.f };
+    Vec2 down     = { 2.f, -2.f };
+    Vec2 diagDown = { 20.f, -10.f };
 };
 
 struct MuzzleTuning
@@ -104,10 +104,10 @@ struct WeaponTuning
     float        projectileSpeed   = 800.f;   // px/s
     int          maxAlive          = 4;       // 동시에 살아 있는 탄 수 상한 (0 = 무제한)
     bool         bPierce           = false;   // 관통
-    jug::VECTOR2 hitSize           = { 14.f, 10.f };
+    Vec2 hitSize           = { 14.f, 10.f };
     float        range             = 420.f;   // 사거리 px
     int          shotOverlayTicks  = 14;      // 사격 상체 동작 길이
-    jug::VECTOR2 blastSize         = { 0.f, 0.f };   // 착탄 폭발 상자 (0 = 폭발 없음)
+    Vec2 blastSize         = { 0.f, 0.f };   // 착탄 폭발 상자 (0 = 폭발 없음)
     int          blastDamage       = 0;
     int          blastTicks        = 0;
 };
@@ -228,14 +228,14 @@ struct BombTuning
     int          maxInFlight   = 3;
     int          throwTicks    = 12;   // 던지기 동작 길이
     int          releaseTick   = 3;    // 동작 시작 후 폭탄이 손을 떠나는 틱
-    jug::VECTOR2 releaseOffset = { 14.f, -36.f };
+    Vec2 releaseOffset = { 14.f, -36.f };
     float        speedX        = 190.f;
     float        speedY        = -300.f;
     float        inheritMoveX  = 0.35f;   // 플레이어 속도 계승 비율
     float        gravity       = 900.f;
-    jug::VECTOR2 hitSize       = { 12.f, 12.f };   // 비행 중 적과 닿는 크기
+    Vec2 hitSize       = { 12.f, 12.f };   // 비행 중 적과 닿는 크기
     int          damage        = 20;
-    jug::VECTOR2 blastSize     = { 110.f, 130.f };
+    Vec2 blastSize     = { 110.f, 130.f };
     float        blastUp       = 40.f;   // 폭발 중심을 착탄점에서 위로 올리는 양
     int          blastTicks    = 10;     // 폭발 판정 유지 틱
 };
@@ -263,7 +263,7 @@ struct PlayerTuning
 
 struct CameraSettings
 {
-    jug::VECTOR2 deadzoneHalf = { 24.f, 16.f };
+    Vec2 deadzoneHalf = { 24.f, 16.f };
     float        smoothTime   = 0.14f;
     float        lookAheadX   = 40.f;   // 진행 방향 앞쪽으로 보는 양
 };
@@ -313,14 +313,14 @@ struct Tuning
 // ===========================================
 
 // JSON 텍스트를 읽는다. 누락된 키는 기본값. 형식이 잘못되면 Error.
-[[nodiscard]] jug::Result<Tuning> ParseTuning(jug::StringView _json);
-[[nodiscard]] jug::Result<Tuning> LoadTuning(const jug::FilePath& _path);
+[[nodiscard]] slug::Result<Tuning> ParseTuning(slug::StringView _json);
+[[nodiscard]] slug::Result<Tuning> LoadTuning(const slug::FilePath& _path);
 
 // 모든 값을 사람이 읽을 수 있는 텍스트로 덤프한다 (동일성 비교/디버그 용)
-[[nodiscard]] jug::String DumpTuning(const Tuning& _tuning);
+[[nodiscard]] slug::String DumpTuning(const Tuning& _tuning);
 
 // 기본 Tuning.json 위치: <assetRoot>/Tuning/Tuning.json
-[[nodiscard]] jug::FilePath GetDefaultTuningPath(const jug::FilePath& _assetRoot);
+[[nodiscard]] slug::FilePath GetDefaultTuningPath(const slug::FilePath& _assetRoot);
 
 // ===========================================
 //  TuningWatcher
@@ -330,17 +330,17 @@ struct Tuning
 class TuningWatcher
 {
 public:
-    void Init(jug::FilePath _path, int _pollIntervalTicks = 60);
+    void Init(slug::FilePath _path, int _pollIntervalTicks = 60);
 
     // 매 틱 호출. 파일이 바뀌어 새로 읽었으면 true 를 반환하고 _out 을 갱신한다.
     // 파싱에 실패하면 _out 은 그대로 두고 false (오류는 로그).
     bool Poll(Tuning& _out);
 
-    [[nodiscard]] const jug::FilePath& GetPath() const { return m_path; }
+    [[nodiscard]] const slug::FilePath& GetPath() const { return m_path; }
     [[nodiscard]] int                  GetReloadCount() const { return m_reloadCount; }
 
 private:
-    jug::FilePath                   m_path        = {};
+    slug::FilePath                   m_path        = {};
     int                             m_interval    = 60;
     int                             m_counter     = 0;
     int                             m_reloadCount = 0;

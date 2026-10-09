@@ -123,11 +123,11 @@ TEST(InputHistory, ConsumedPressIsNotReported)
 TEST(InputSystem, MultipleKeysMapToOneAction)
 {
     InputSystem input;
-    input.OnKeyDown(jug::eKey::A);
+    input.OnKeyDown(SDL_SCANCODE_A);
     EXPECT_TRUE(input.Sample().IsHeld(eAction::Left));
-    input.OnKeyDown(jug::eKey::Left);
-    input.OnKeyUp(jug::eKey::A);
+    input.OnKeyDown(SDL_SCANCODE_LEFT);
+    input.OnKeyUp(SDL_SCANCODE_A);
     EXPECT_TRUE(input.Sample().IsHeld(eAction::Left));
-    input.OnKeyUp(jug::eKey::Left);
+    input.OnKeyUp(SDL_SCANCODE_LEFT);
     EXPECT_FALSE(input.Sample().IsHeld(eAction::Left));
 }

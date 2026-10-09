@@ -1,4 +1,7 @@
 #pragma once
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Result.h"
 #include <cstdint>
 #include <vector>
 
@@ -22,16 +25,16 @@ namespace slugtest
 
 using namespace slug;
 
-inline jug::FilePath VehicleDefsDir()
+inline slug::FilePath VehicleDefsDir()
 {
-    return jug::FilePath { SLUG_ASSET_DIR } / "Defs";
+    return slug::FilePath { SLUG_ASSET_DIR } / "Defs";
 }
 
 inline bool LoadVehicleLib(
     EnemyDefLibrary& _out,
-    jug::String*     _pMessage = nullptr)
+    slug::String*     _pMessage = nullptr)
 {
-    jug::Result<EnemyDefLibrary> lib = EnemyDefLibrary::LoadDirectory(VehicleDefsDir(), _pMessage);
+    slug::Result<EnemyDefLibrary> lib = EnemyDefLibrary::LoadDirectory(VehicleDefsDir(), _pMessage);
     if (!lib)
     {
         return false;
@@ -50,7 +53,7 @@ class VehicleRig
 {
 public:
     explicit VehicleRig(
-        const jug::VECTOR2 _player = { 100.f, 378.f },
+        const Vec2 _player = { 100.f, 378.f },
         const float        _camLeft = 0.f)
         : m_world(&m_lib, 7)
         , m_ground(MakeFlatGround(3000))
@@ -62,7 +65,7 @@ public:
     }
 
     [[nodiscard]] bool               IsLoaded() const { return m_bLoaded; }
-    [[nodiscard]] const jug::String& GetMessage() const { return m_message; }
+    [[nodiscard]] const slug::String& GetMessage() const { return m_message; }
 
     EnemyWorld&              World() { return m_world; }
     EnemyDefLibrary&         Lib() { return m_lib; }
@@ -70,12 +73,12 @@ public:
     ProjectileSystem&        Projectiles() { return m_projectiles; }
     std::vector<EnemyEvent>& Events() { return m_events; }
 
-    void SetPlayer(const jug::VECTOR2 _feet) { m_player = _feet; }
+    void SetPlayer(const Vec2 _feet) { m_player = _feet; }
     void SetView(const float _camLeft) { m_view = Aabb::FromMinSize({ _camLeft, 0.f }, { 640.f, 448.f }); }
 
     EnemyHandle Spawn(
         const char*        _name,
-        const jug::VECTOR2 _feet,
+        const Vec2 _feet,
         const SpawnParams& _params = {})
     {
         const PhysicsWorld world = MakeWorld_();
@@ -93,7 +96,7 @@ public:
             const EnemyContext ctx = MakeCtx_();
             m_world.Tick(ctx);
             m_projectiles.Step(&m_ground, m_combat, kStepSec);
-            const jug::Vector<HitEvent>& events = m_combat.Resolve();
+            const slug::Vector<HitEvent>& events = m_combat.Resolve();
             CountPlayerHits_(events);
             m_world.OnHitEvents(events);
             m_projectiles.OnHitEvents(events, m_combat);
@@ -137,7 +140,7 @@ public:
         hitbox.owner  = _team == eTeam::Player ? kTestPlayerOwner : 2000u;
         hitbox.id     = m_combat.NewHitId();
         m_combat.AddHitbox(hitbox);
-        const jug::Vector<HitEvent>& events = m_combat.Resolve();
+        const slug::Vector<HitEvent>& events = m_combat.Resolve();
         const size_t count = events.size();
         m_world.OnHitEvents(events);
         CollectEvents_();
@@ -225,7 +228,7 @@ private:
         }
     }
 
-    void CountPlayerHits_(const jug::Vector<HitEvent>& _events)
+    void CountPlayerHits_(const slug::Vector<HitEvent>& _events)
     {
         for (const HitEvent& event: _events)
         {
@@ -239,11 +242,11 @@ private:
     EnemyDefLibrary          m_lib        = {};
     int                      m_playerHits = 0;
     int                      m_ticks      = 0;
-    jug::String              m_message    = {};
+    slug::String              m_message    = {};
     bool                     m_bLoaded    = false;
     EnemyWorld               m_world;
     GroundMap                m_ground;
-    jug::VECTOR2             m_player;
+    Vec2             m_player;
     Aabb                     m_view;
     CombatSystem             m_combat      = {};
     ProjectileSystem         m_projectiles = {};

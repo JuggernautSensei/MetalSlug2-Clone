@@ -1,7 +1,7 @@
 #include <cmath>
 #include <string>
 
-#include <JugX/Math.h>
+#include "Base/Math.h"
 
 #include "Game/Enemies/EnemyCommon.h"
 #include "Game/Enemies/EnemyDefParse.h"
@@ -58,7 +58,7 @@ namespace
     }
 
     // 목표 쪽으로 남은 거리의 일부만큼 이동 (duration 틱 안에 도달하는 부드러운 이동)
-    void GlideTo_(Enemy& _e, const jug::VECTOR2 _target, const int _remainingTicks)
+    void GlideTo_(Enemy& _e, const Vec2 _target, const int _remainingTicks)
     {
         if (_remainingTicks <= 1)
         {
@@ -89,8 +89,8 @@ namespace
         {
             case kApproach:
             {
-                const jug::VECTOR2 target = ScreenToWorld(_env, { c.approachX, c.approachY });
-                const jug::VECTOR2 d      = { target.x - _e.body.position.x, target.y - _e.body.position.y };
+                const Vec2 target = ScreenToWorld(_env, { c.approachX, c.approachY });
+                const Vec2 d      = { target.x - _e.body.position.x, target.y - _e.body.position.y };
                 const float        dist2  = d.x * d.x + d.y * d.y;
                 if (dist2 <= c.arriveSq)
                 {
@@ -101,7 +101,7 @@ namespace
                 }
                 // 접근 속도: 기본 speed, 가까워지면 감속 (v = max(minSpeed, v - decel*dt))
                 const float curSpeed = std::sqrt(_e.body.velocity.x * _e.body.velocity.x + _e.body.velocity.y * _e.body.velocity.y);
-                const float speed    = dist2 <= c.decelSq ? jug::Max(c.minSpeed, curSpeed - c.decel * kStepSec) : c.speed;
+                const float speed    = dist2 <= c.decelSq ? slug::Max(c.minSpeed, curSpeed - c.decel * kStepSec) : c.speed;
                 const float len      = std::sqrt(dist2);
                 _e.body.velocity     = { d.x / len * speed, d.y / len * speed };
                 _e.body.position     = { _e.body.position.x + _e.body.velocity.x * kStepSec, _e.body.position.y + _e.body.velocity.y * kStepSec };
@@ -220,7 +220,7 @@ namespace
         const int t = _e.deathTicks;
         if (t % c.chainIntervalTicks == 0 && t / c.chainIntervalTicks < c.chainCount)
         {
-            const jug::VECTOR2 base = { _e.body.position.x - 30.f, _e.body.position.y - 20.f };
+            const Vec2 base = { _e.body.position.x - 30.f, _e.body.position.y - 20.f };
             const auto         jitter = [&]() { return static_cast<float>(_env.world.Roll(100)) - 50.f; };
             RequestFxAt(_env, "Explosion_Small", { base.x + jitter(), base.y + jitter() }, _e.facing);
             RequestFxAt(_env, "Explosion_Mid", { base.x + jitter(), base.y + jitter() }, _e.facing);
@@ -231,7 +231,7 @@ namespace
             RequestFxAt(_env, "Explosion_Large", _e.body.position, _e.facing);
             for (int i = 0; i < 5; ++i)
             {
-                const jug::VECTOR2 at = { _e.body.position.x + static_cast<float>(_env.world.Roll(120)) - 60.f, _e.body.position.y + static_cast<float>(_env.world.Roll(80)) - 80.f };
+                const Vec2 at = { _e.body.position.x + static_cast<float>(_env.world.Roll(120)) - 60.f, _e.body.position.y + static_cast<float>(_env.world.Roll(80)) - 80.f };
                 RequestFxAt(_env, "Metal" + std::to_string(_env.world.Roll(12) + 1), at, _e.facing);
             }
             _e.life = eEnemyLife::Gone;
@@ -262,13 +262,13 @@ void ParseAparchCfg(
     c.decel        = _r.Num("decel");
     c.minSpeed     = _r.Num("minSpeed");
     {
-        const jug::VECTOR2 approach = _r.Vec2("approach", { 445.f, 125.f });
+        const Vec2 approach = _r.ReadVec2("approach", { 445.f, 125.f });
         c.approachX = approach.x;
         c.approachY = approach.y;
-        const jug::VECTOR2 missile  = _r.Vec2("missilePose", { 540.f, 248.f });
+        const Vec2 missile  = _r.ReadVec2("missilePose", { 540.f, 248.f });
         c.missileX  = missile.x;
         c.missileY  = missile.y;
-        const jug::VECTOR2 home     = _r.Vec2("home", { 540.f, 100.f });
+        const Vec2 home     = _r.ReadVec2("home", { 540.f, 100.f });
         c.homeX     = home.x;
         c.homeY     = home.y;
     }
@@ -283,7 +283,7 @@ void ParseAparchCfg(
     c.bombStepTicks        = _r.Ticks("bombStepSec");
     c.bombSteps            = _r.Int("bombSteps");
     {
-        const jug::VECTOR2 drift = _r.Vec2("drift", { 50.f, -70.f });
+        const Vec2 drift = _r.ReadVec2("drift", { 50.f, -70.f });
         c.driftX = drift.x;
         c.driftY = drift.y;
     }

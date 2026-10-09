@@ -1,7 +1,7 @@
 #pragma once
-#include <JugX/Result.h>
-#include <JugX/Scoped.h>
-#include <JugX/Typedef.h>
+#include "Base/Result.h"
+#include <memory>
+#include "Base/Types.h"
 
 #include "Audio/AudioMath.h"
 #include "Audio/AudioSink.h"
@@ -55,16 +55,16 @@ public:
     AudioSystem& operator=(const AudioSystem&) = delete;
 
     // 뱅크를 직접 주입 (테스트/도구). 장치 초기화 실패는 오류가 아니라 dry 모드로 내려간다.
-    [[nodiscard]] jug::Result<void> Init(SoundBank _bank, const AudioConfig& _config);
+    [[nodiscard]] slug::Result<void> Init(SoundBank _bank, const AudioConfig& _config);
     // <bakedRoot>/sounds.json 을 읽는다. 파일이 없으면 오류(호출자가 NullAudio 로 대체 가능).
-    [[nodiscard]] jug::Result<void> InitFromDirectory(const jug::FilePath& _bakedRoot, const AudioConfig& _config);
+    [[nodiscard]] slug::Result<void> InitFromDirectory(const slug::FilePath& _bakedRoot, const AudioConfig& _config);
     void                            Shutdown();
 
     void Update(float _dtSec);
 
     // --- IAudioSink ---
-    void Play(jug::StringView _name, float _volume = 1.f, float _pitchVariation = 0.f) override;
-    void PlayBgm(jug::StringView _name, bool _bLoop = true) override;
+    void Play(slug::StringView _name, float _volume = 1.f, float _pitchVariation = 0.f) override;
+    void PlayBgm(slug::StringView _name, bool _bLoop = true) override;
     void StopBgm() override;
     void FadeOutBgm(float _seconds) override;
     void AllStop() override;
@@ -85,7 +85,7 @@ public:
     [[nodiscard]] int                GetActiveVoiceCount() const { return m_voices.GetActiveCount(); }
     [[nodiscard]] const VoiceAllocator& GetVoices() const { return m_voices; }
     [[nodiscard]] bool               IsBgmPlaying() const { return m_bgmState != eBgmState::Stopped; }
-    [[nodiscard]] const jug::String& GetBgmName() const { return m_bgmName; }
+    [[nodiscard]] const slug::String& GetBgmName() const { return m_bgmName; }
     [[nodiscard]] float              GetBgmGain() const { return m_bgmFade.gain; }
 
 private:
@@ -110,20 +110,20 @@ private:
     SoundBank     m_bank         = {};
     AudioStats    m_stats        = {};
     VoiceAllocator m_voices      = {};
-    jug::Vector<float> m_dryRemaining = {};   // dry 모드 보이스 남은 시간
+    slug::Vector<float> m_dryRemaining = {};   // dry 모드 보이스 남은 시간
     AudioRng      m_rng          = AudioRng {};
-    jug::RbSet<jug::String> m_warnedMissing = {};
+    slug::RbSet<slug::String> m_warnedMissing = {};
 
     float m_masterVolume = 1.f;
     float m_sfxVolume    = 1.f;
     float m_bgmVolume    = 0.6f;
 
     eBgmState   m_bgmState = eBgmState::Stopped;
-    jug::String m_bgmName  = {};
+    slug::String m_bgmName  = {};
     bool        m_bBgmLoop = true;
     BgmFader    m_bgmFade  = {};
 
-    jug::Scoped<Backend> m_pBackend = nullptr;
+    std::unique_ptr<Backend> m_pBackend = nullptr;
 };
 
 }   // namespace slug

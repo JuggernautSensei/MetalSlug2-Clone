@@ -1,4 +1,6 @@
 #include <fstream>
+#include "Base/Types.h"
+#include "Base/Result.h"
 
 #include <gtest/gtest.h>
 
@@ -13,7 +15,7 @@ using namespace slug;
 
 TEST(Tuning, EmptyObjectGivesAllDefaults)
 {
-    jug::Result<Tuning> parsed = ParseTuning("{}");
+    slug::Result<Tuning> parsed = ParseTuning("{}");
     ASSERT_TRUE(parsed.HasValue());
     EXPECT_EQ(DumpTuning(parsed.GetValue()), DumpTuning(Tuning {}));
 }
@@ -26,7 +28,7 @@ TEST(Tuning, PartialOverridesOnlyChangeTheNamedKeys)
         "muzzle": { "stand": { "forward": [31, -33] } },
         "knife": { "range": 40 }
     })";
-    jug::Result<Tuning> parsed = ParseTuning(json);
+    slug::Result<Tuning> parsed = ParseTuning(json);
     ASSERT_TRUE(parsed.HasValue());
 
     const Tuning& t = parsed.GetValue();
@@ -61,29 +63,29 @@ TEST(Tuning, RejectsBrokenJsonAndNonObjects)
 
 TEST(Tuning, IgnoresUnknownKeys)
 {
-    jug::Result<Tuning> parsed = ParseTuning(R"({ "futureSection": { "x": 1 }, "move": { "mystery": 3 } })");
+    slug::Result<Tuning> parsed = ParseTuning(R"({ "futureSection": { "x": 1 }, "move": { "mystery": 3 } })");
     ASSERT_TRUE(parsed.HasValue());
     EXPECT_EQ(DumpTuning(parsed.GetValue()), DumpTuning(Tuning {}));
 }
 
 TEST(Tuning, AllowsCommentsInTheJsonFile)
 {
-    jug::Result<Tuning> parsed = ParseTuning("{ // 주석\n \"move\": { \"runSpeed\": 110 } }");
+    slug::Result<Tuning> parsed = ParseTuning("{ // 주석\n \"move\": { \"runSpeed\": 110 } }");
     ASSERT_TRUE(parsed.HasValue());
     EXPECT_FLOAT_EQ(parsed.GetValue().move.runSpeed, 110.f);
 }
 
 TEST(Tuning, CommittedJsonFileMatchesCodeDefaults)
 {
-    const jug::FilePath path   = GetDefaultTuningPath(jug::FilePath { SLUG_ASSET_DIR });
-    jug::Result<Tuning> loaded = LoadTuning(path);
+    const slug::FilePath path   = GetDefaultTuningPath(slug::FilePath { SLUG_ASSET_DIR });
+    slug::Result<Tuning> loaded = LoadTuning(path);
     ASSERT_TRUE(loaded.HasValue()) << path.string();
     EXPECT_EQ(DumpTuning(loaded.GetValue()), DumpTuning(Tuning {})) << "Assets/Tuning/Tuning.json 과 Tuning.h 기본값이 다릅니다";
 }
 
 TEST(Tuning, MissingFileIsAnError)
 {
-    EXPECT_FALSE(LoadTuning(jug::FilePath { "no/such/Tuning.json" }).HasValue());
+    EXPECT_FALSE(LoadTuning(slug::FilePath { "no/such/Tuning.json" }).HasValue());
 }
 
 // ===========================================
@@ -148,15 +150,15 @@ TEST(Tuning, KnifeKillsAGruntInOneSlash)
 namespace
 {
 void WriteFile_(
-    const jug::FilePath& _path,
-    const jug::String&   _text)
+    const slug::FilePath& _path,
+    const slug::String&   _text)
 {
     std::ofstream out { _path, std::ios::binary | std::ios::trunc };
     out << _text;
 }
 
 void Touch_(
-    const jug::FilePath& _path,
+    const slug::FilePath& _path,
     const int            _seconds)
 {
     std::error_code ec;
@@ -166,9 +168,9 @@ void Touch_(
 
 TEST(TuningWatcher, ReloadsWhenTheFileChangesAndKeepsOldValuesOnBadJson)
 {
-    const jug::FilePath dir = std::filesystem::temp_directory_path() / "slug_tuning_watcher_test";
+    const slug::FilePath dir = std::filesystem::temp_directory_path() / "slug_tuning_watcher_test";
     std::filesystem::create_directories(dir);
-    const jug::FilePath path = dir / "Tuning.json";
+    const slug::FilePath path = dir / "Tuning.json";
     WriteFile_(path, R"({ "move": { "runSpeed": 111 } })");
 
     Tuning        tuning;

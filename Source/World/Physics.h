@@ -1,6 +1,6 @@
 #pragma once
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "World/Constants.h"
 #include "World/Geometry.h"
@@ -34,8 +34,8 @@ struct Wall
 struct PhysicsWorld
 {
     const GroundMap*          pGround   = nullptr;
-    jug::Span<const Platform> platforms = {};
-    jug::Span<const Wall>     walls     = {};
+    slug::Span<const Platform> platforms = {};
+    slug::Span<const Wall>     walls     = {};
 };
 
 // ===========================================
@@ -46,9 +46,9 @@ struct PhysicsWorld
 
 struct Body
 {
-    jug::VECTOR2 position = { 0.f, 0.f };
-    jug::VECTOR2 velocity = { 0.f, 0.f };
-    jug::VECTOR2 size     = { 24.f, 40.f };   // 충돌 상자 크기 (폭, 높이)
+    Vec2 position = { 0.f, 0.f };
+    Vec2 velocity = { 0.f, 0.f };
+    Vec2 size     = { 24.f, 40.f };   // 충돌 상자 크기 (폭, 높이)
 
     // 지면(픽셀)에 서기 위해 사용하는 발 센서의 반폭. 경사에서 몸이 뜨는 정도를 결정한다. (최소 0.5 로 취급)
     float footHalfWidth = 1.f;
@@ -96,7 +96,7 @@ struct MoveResult
 
     // 발 아래 지면의 근사 기울기(dy/dx, 오른쪽으로 내려가면 +)와 위쪽 법선. 픽셀 지면에 서 있을 때만 의미가 있다.
     float        groundSlope  = 0.f;
-    jug::VECTOR2 groundNormal = { 0.f, -1.f };
+    Vec2 groundNormal = { 0.f, -1.f };
 };
 
 // ===========================================

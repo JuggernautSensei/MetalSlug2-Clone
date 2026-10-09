@@ -1,5 +1,6 @@
 #pragma once
-#include <JugX/Vector2.h>
+#include "Base/Math.h"
+#include "Base/Types.h"
 
 #include "Game/Enemies/EnemyBehaviors.h"
 #include "Game/Enemies/EnemyWorld.h"
@@ -40,14 +41,14 @@ void       PrepareBody(Enemy& _e, const EnemyDef& _def);   // size / footHalfWid
 
 // --- 난수 / 이벤트 / 이펙트 ---
 [[nodiscard]] inline int Roll(EnemyEnv& _env, const int _n) { return _env.world.Roll(_n); }
-void                     RequestFx(EnemyEnv& _env, const FxDef& _fx, jug::VECTOR2 _origin, int _facing);
-[[nodiscard]] jug::String ResolveSide(const jug::String& _name, int _facing);
+void                     RequestFx(EnemyEnv& _env, const FxDef& _fx, Vec2 _origin, int _facing);
+[[nodiscard]] slug::String ResolveSide(const slug::String& _name, int _facing);
 
 // --- 공격 ---
 // 무기에서 투사체를 하나 쏜다. _dir 은 aim == Given 일 때의 단위 방향(월드). 쏘았으면 true.
 // _muzzleExtra 는 무기 머즐 위치에 더하는 월드 오프셋 (바주카: 조준 방향으로 50px 앞).
-bool FireWeapon(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, int _weapon, jug::VECTOR2 _dir = { 0.f, 0.f }, jug::VECTOR2 _muzzleExtra = { 0.f, 0.f });
-[[nodiscard]] jug::VECTOR2 GetMuzzleWorld(const Enemy& _e, const EnemyDef& _def, int _weapon);
+bool FireWeapon(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, int _weapon, Vec2 _dir = { 0.f, 0.f }, Vec2 _muzzleExtra = { 0.f, 0.f });
+[[nodiscard]] Vec2 GetMuzzleWorld(const Enemy& _e, const EnemyDef& _def, int _weapon);
 
 // 근접 무기 발동: 무기의 hitboxLifeSec 동안 매 틱 TickMelee 가 Hitbox 를 등록한다.
 void StartMelee(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, int _weapon);
@@ -61,8 +62,8 @@ void TickSoldierDeath(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
 // --- 부가 파츠 렌더 (보스 리그 등) ---
 // 이름은 anim.json 클립을 먼저 찾고(_ticks 만큼 재생, 비루프는 마지막 프레임에 머문다), 없으면 sprites.json 정적 스프라이트.
 // _origin 은 파츠 원점(월드 좌표, 피벗 기준). 이름을 찾지 못하면 아무것도 그리지 않고 false.
-bool SubmitNamedPart(const EnemyRenderEnv& _render, jug::StringView _name, jug::VECTOR2 _origin, int _ticks, bool _bLoop, int _sortKey, int _layer, bool _bFlipX = false);
+bool SubmitNamedPart(const EnemyRenderEnv& _render, slug::StringView _name, Vec2 _origin, int _ticks, bool _bLoop, int _sortKey, int _layer, bool _bFlipX = false);
 // 클립의 전체 길이(틱). 정적 스프라이트/없는 이름은 0.
-[[nodiscard]] int GetNamedPartTicks(const AnimationLibrary& _anims, jug::StringView _name);
+[[nodiscard]] int GetNamedPartTicks(const AnimationLibrary& _anims, slug::StringView _name);
 
 }   // namespace slug

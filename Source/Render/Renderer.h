@@ -1,8 +1,8 @@
 #pragma once
-#include <JugX/Result.h>
-#include <JugX/RGBA.h>
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Result.h"
+#include "Base/RGBA.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 struct SDL_Window;
 struct SDL_Renderer;
@@ -23,27 +23,27 @@ public:
 
     ~Renderer();
 
-    [[nodiscard]] jug::Result<void> Init(const char* _title, int _windowScale);
+    [[nodiscard]] slug::Result<void> Init(const char* _title, int _windowScale);
     void                            Shutdown();
 
-    void BeginFrame(jug::RGBA _clearColor);
+    void BeginFrame(slug::RGBA _clearColor);
     void EndFrame();
 
     // 논리 좌표(픽셀) 기준. 좌표는 정수로 스냅하여 그린다.
-    void FillRect(jug::VECTOR2 _topLeft, jug::VECTOR2 _size, jug::RGBA _color);
-    void DrawRect(jug::VECTOR2 _topLeft, jug::VECTOR2 _size, jug::RGBA _color);
-    void DrawLine(jug::VECTOR2 _from, jug::VECTOR2 _to, jug::RGBA _color);
+    void FillRect(Vec2 _topLeft, Vec2 _size, slug::RGBA _color);
+    void DrawRect(Vec2 _topLeft, Vec2 _size, slug::RGBA _color);
+    void DrawLine(Vec2 _from, Vec2 _to, slug::RGBA _color);
 
     // SDL 내장 8x8 디버그 폰트로 문자열을 그린다 (ASCII). 개행 문자는 줄바꿈.
     static constexpr int kDebugCharSize = 8;
-    void                 DrawDebugText(jug::VECTOR2 _topLeft, jug::StringView _text, jug::RGBA _color);
+    void                 DrawDebugText(Vec2 _topLeft, slug::StringView _text, slug::RGBA _color);
 
     [[nodiscard]] SDL_Window*   GetWindow() const;
     [[nodiscard]] SDL_Renderer* GetNative() const;
     [[nodiscard]] bool          IsInitialized() const;
 
     // 화면(논리 좌표)을 BMP 로 저장한다. 자동 캡처/QA 용.
-    [[nodiscard]] jug::Result<void> SaveScreenshotBmp(const jug::FilePath& _path) const;
+    [[nodiscard]] slug::Result<void> SaveScreenshotBmp(const slug::FilePath& _path) const;
 
 private:
     SDL_Window*   m_pWindow   = nullptr;

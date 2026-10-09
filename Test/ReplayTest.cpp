@@ -1,4 +1,8 @@
 #include <gtest/gtest.h>
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Result.h"
+#include "Base/Random.h"
 
 #include "Core/Replay.h"
 #include "Game/DemoState.h"
@@ -9,9 +13,9 @@ using namespace slug;
 
 namespace
 {
-    jug::Vector<InputFrame> MakeScript()
+    slug::Vector<InputFrame> MakeScript()
     {
-        jug::Vector<InputFrame> frames;
+        slug::Vector<InputFrame> frames;
         for (int i = 0; i < 240; ++i)
         {
             InputFrame frame;
@@ -23,15 +27,15 @@ namespace
         return frames;
     }
 
-    jug::VECTOR2 RunDemo(
-        const jug::Vector<InputFrame>& _frames)
+    Vec2 RunDemo(
+        const slug::Vector<InputFrame>& _frames)
     {
-        jug::RngMt19937 rng { uint64_t { 7 } };
+        slug::RngMt19937 rng { uint64_t { 7 } };
         GameContext     ctx;
         ctx.pRng = &rng;
 
         DemoState* pDemo = new DemoState;
-        SimRunner  runner { ctx, jug::Scoped<IGameState> { pDemo } };
+        SimRunner  runner { ctx, std::unique_ptr<IGameState> { pDemo } };
         runner.Run(_frames);
         return pDemo->GetPosition();
     }
@@ -44,8 +48,8 @@ TEST(Replay, SerializeRoundTrip)
     replay.stateName = "stage0";
     replay.frames    = MakeScript();
 
-    const jug::Vector<uint8_t> bytes  = SerializeReplay(replay);
-    jug::Result<ReplayData>    loaded = DeserializeReplay(bytes);
+    const slug::Vector<uint8_t> bytes  = SerializeReplay(replay);
+    slug::Result<ReplayData>    loaded = DeserializeReplay(bytes);
     ASSERT_TRUE(loaded.HasValue());
 
     const ReplayData& back = loaded.GetValue();
@@ -62,13 +66,13 @@ TEST(Replay, RejectsBadMagicAndTruncation)
 {
     ReplayData replay;
     replay.frames = MakeScript();
-    jug::Vector<uint8_t> bytes = SerializeReplay(replay);
+    slug::Vector<uint8_t> bytes = SerializeReplay(replay);
 
-    jug::Vector<uint8_t> badMagic = bytes;
+    slug::Vector<uint8_t> badMagic = bytes;
     badMagic[0] = 'X';
     EXPECT_FALSE(DeserializeReplay(badMagic).HasValue());
 
-    jug::Vector<uint8_t> truncated(bytes.begin(), bytes.begin() + static_cast<std::ptrdiff_t>(bytes.size() / 2));
+    slug::Vector<uint8_t> truncated(bytes.begin(), bytes.begin() + static_cast<std::ptrdiff_t>(bytes.size() / 2));
     EXPECT_FALSE(DeserializeReplay(truncated).HasValue());
 
     EXPECT_FALSE(DeserializeReplay({}).HasValue());
@@ -76,9 +80,9 @@ TEST(Replay, RejectsBadMagicAndTruncation)
 
 TEST(SimRunner, SameInputsGiveIdenticalResult)
 {
-    const jug::Vector<InputFrame> script = MakeScript();
-    const jug::VECTOR2            a      = RunDemo(script);
-    const jug::VECTOR2            b      = RunDemo(script);
+    const slug::Vector<InputFrame> script = MakeScript();
+    const Vec2            a      = RunDemo(script);
+    const Vec2            b      = RunDemo(script);
     EXPECT_FLOAT_EQ(a.x, b.x);
     EXPECT_FLOAT_EQ(a.y, b.y);
     // 오른쪽 120틱(+240) → 왼쪽 60틱(-120) = +120,  아래 120틱(+240)

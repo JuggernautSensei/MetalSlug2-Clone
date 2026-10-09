@@ -1,6 +1,6 @@
 #pragma once
-#include <JugX/Result.h>
-#include <JugX/Typedef.h>
+#include "Base/Result.h"
+#include "Base/Types.h"
 
 #include "Core/Input.h"
 
@@ -16,15 +16,15 @@ namespace slug
 struct ReplayData
 {
     uint64_t                 seed      = 1;
-    jug::String              stateName = "sandbox";
-    jug::Vector<InputFrame>  frames    = {};
+    slug::String              stateName = "sandbox";
+    slug::Vector<InputFrame>  frames    = {};
 };
 
-[[nodiscard]] jug::Result<void>       SaveReplay(const jug::FilePath& _path, const ReplayData& _replay);
-[[nodiscard]] jug::Result<ReplayData> LoadReplay(const jug::FilePath& _path);
+[[nodiscard]] slug::Result<void>       SaveReplay(const slug::FilePath& _path, const ReplayData& _replay);
+[[nodiscard]] slug::Result<ReplayData> LoadReplay(const slug::FilePath& _path);
 
 // 메모리 직렬화 (테스트용)
-[[nodiscard]] jug::Vector<uint8_t>    SerializeReplay(const ReplayData& _replay);
-[[nodiscard]] jug::Result<ReplayData> DeserializeReplay(jug::Span<const uint8_t> _bytes);
+[[nodiscard]] slug::Vector<uint8_t>    SerializeReplay(const ReplayData& _replay);
+[[nodiscard]] slug::Result<ReplayData> DeserializeReplay(slug::Span<const uint8_t> _bytes);
 
 }   // namespace slug

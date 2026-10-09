@@ -1,9 +1,9 @@
 #pragma once
 #include <cstdint>
 
-#include <JugX/Random.h>
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Random.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "Core/Tuning.h"
 #include "Game/Props/PropDef.h"
@@ -43,27 +43,27 @@ inline constexpr float    kScorePopupLifeSec = 2.8f;
 struct ItemPickup
 {
     uint32_t     id     = 0;
-    jug::String  name   = {};
+    slug::String  name   = {};
     eItemKind    kind   = eItemKind::Score;
     eWeapon      weapon = eWeapon::Pistol;
     eSupplyKind  supply = eSupplyKind::Bomb;
     int          amount = 0;   // 폭탄 개수 (Bomb)
     int          score  = 0;
-    jug::VECTOR2 pos    = { 0.f, 0.f };
+    Vec2 pos    = { 0.f, 0.f };
 };
 
 // 습득/연출 요청 (PropWorld 가 Tick 에서 이펙트로 바꾼다)
 struct ItemFxRequest
 {
-    jug::String  clip = {};
-    jug::VECTOR2 pos  = { 0.f, 0.f };
+    slug::String  clip = {};
+    Vec2 pos  = { 0.f, 0.f };
 };
 
 struct PropItem
 {
     uint32_t     id        = 0;
     int          defIndex  = -1;          // PropDefLibrary::GetItems() 인덱스
-    jug::VECTOR2 feet      = { 0.f, 0.f };
+    Vec2 feet      = { 0.f, 0.f };
     Body         body      = {};
     float        ageSec    = 0.f;
     bool         bBounce   = false;
@@ -78,7 +78,7 @@ struct PropItem
 
 struct ScorePopup
 {
-    jug::VECTOR2 pos     = { 0.f, 0.f };
+    Vec2 pos     = { 0.f, 0.f };
     int          score   = 0;
     float        ageSec  = 0.f;
 };
@@ -93,37 +93,37 @@ public:
 
     // 이름은 아이템 id 또는 그룹(random_*) 이름. _feet = 발(아이템 원점). _bBounce: 공중에서 vy -400, 수평 ±75 (SuppleItem)
     // 알 수 없는 이름이면 0 을 돌려준다.
-    uint32_t Spawn(jug::StringView _name, jug::VECTOR2 _feet, bool _bBounce = false);
+    uint32_t Spawn(slug::StringView _name, Vec2 _feet, bool _bBounce = false);
 
     // _pAnims: 클립 바인딩/재생용 (없으면 애니 진행 없음). _cameraLeft: 이 왼쪽으로 벗어난 아이템은 제거
     void Tick(const PhysicsWorld& _world, float _dt, float _cameraLeft, const AnimationLibrary* _pAnims);
 
     // 플레이어 몸 상자와 겹친 아이템을 습득 처리한다. 반환: 이번 틱 픽업 목록 (ApplyItemPickup 으로 반영)
-    [[nodiscard]] jug::Vector<ItemPickup> Collect(const Aabb& _playerBox);
+    [[nodiscard]] slug::Vector<ItemPickup> Collect(const Aabb& _playerBox);
 
     // 습득 이펙트 요청을 비우며 가져간다
-    [[nodiscard]] jug::Vector<ItemFxRequest> TakeFx();
+    [[nodiscard]] slug::Vector<ItemFxRequest> TakeFx();
 
     // _pFont 가 null 이면 점수 팝업은 그리지 않는다
     void Submit(SpriteBatch& _sprites, const AnimationLibrary& _anims, const SpriteLibrary& _spriteLib, const BitmapFont* _pFont) const;
 
     void ClearAll();
 
-    [[nodiscard]] jug::Span<const PropItem>    GetItems() const { return m_items; }
-    [[nodiscard]] jug::Span<const ScorePopup>  GetPopups() const { return m_popups; }
+    [[nodiscard]] slug::Span<const PropItem>    GetItems() const { return m_items; }
+    [[nodiscard]] slug::Span<const ScorePopup>  GetPopups() const { return m_popups; }
     [[nodiscard]] const PropItem*              Find(uint32_t _id) const;
     [[nodiscard]] size_t                       GetCount() const { return m_items.size(); }
     [[nodiscard]] uint64_t                     HashState() const;
 
 private:
-    void SpawnPopup_(jug::VECTOR2 _pos, int _score);
+    void SpawnPopup_(Vec2 _pos, int _score);
     void BindAnim_(PropItem& _item, const AnimationLibrary& _anims) const;
 
     const PropDefLibrary*          m_pLibrary = nullptr;
-    jug::Vector<PropItem>          m_items    = {};
-    jug::Vector<ScorePopup>        m_popups   = {};
-    jug::Vector<ItemFxRequest>     m_fx       = {};
-    jug::RngMt19937                m_rng      = jug::RngMt19937 { uint64_t { 1 } };
+    slug::Vector<PropItem>          m_items    = {};
+    slug::Vector<ScorePopup>        m_popups   = {};
+    slug::Vector<ItemFxRequest>     m_fx       = {};
+    slug::RngMt19937                m_rng      = slug::RngMt19937 { uint64_t { 1 } };
     uint32_t                       m_nextId   = kItemIdBase;
 };
 

@@ -1,4 +1,7 @@
 #include "PlayerTestUtil.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Random.h"
 
 #include "Game/Player/PlayerHitboxes.h"
 
@@ -230,7 +233,7 @@ TEST(PlayerShot, AimDirectionsShootInThoseDirections)
         sim.Hold(eAction::Shot);
         sim.Step();
         ASSERT_EQ(BulletCount(sim), 1u);
-        const jug::VECTOR2 v = sim.State().GetProjectiles().GetBullets()[0].velocity;
+        const Vec2 v = sim.State().GetProjectiles().GetBullets()[0].velocity;
         EXPECT_EQ(v.x > 0.f, c.signX > 0.f);
         EXPECT_EQ(std::abs(v.x) < 0.01f, c.signX == 0.f);
         EXPECT_EQ(v.y < 0.f, c.signY < 0.f);
@@ -487,15 +490,15 @@ TEST(PlayerKnife, NeverGetsStuckUnderRandomInput)
     Sim sim;
     sim.Step(2);
     sim.State().AddTarget(eDummyKind::Grunt, { 140.f, 378.f });   // 계속 근접 상태
-    const jug::Vector<InputFrame> script = [] {
-        jug::RngMt19937         rng { uint64_t { 7 } };
-        jug::Vector<InputFrame> frames;
+    const slug::Vector<InputFrame> script = [] {
+        slug::RngMt19937         rng { uint64_t { 7 } };
+        slug::Vector<InputFrame> frames;
         InputFrame              cur;
         for (int i = 0; i < 3000; ++i)
         {
             if (i % 3 == 0)
             {
-                const eAction a = static_cast<eAction>(jug::Random<int>(rng, 0, 6));
+                const eAction a = static_cast<eAction>(slug::Random<int>(rng, 0, 6));
                 cur.Set(a, !cur.IsHeld(a));
             }
             frames.push_back(cur);
@@ -541,9 +544,9 @@ TEST(PlayerKnife, KnifeIsMeleeAndHitsEveryTeamItCanHit)
     bulletOnly.accepts = HitKindMask { eHitKind::Bullet };
 
     HitResolver                 resolver;
-    const jug::Vector<Hitbox>   hits   = { swing };
-    const jug::Vector<Hurtbox>  hurts  = { enemy, neutral, bulletOnly };
-    const jug::Vector<HitEvent> events = resolver.Resolve(hits, hurts);
+    const slug::Vector<Hitbox>   hits   = { swing };
+    const slug::Vector<Hurtbox>  hurts  = { enemy, neutral, bulletOnly };
+    const slug::Vector<HitEvent> events = resolver.Resolve(hits, hurts);
     ASSERT_EQ(events.size(), 2u);   // Enemy 와 Neutral 모두 (대상별 특수 처리 없음), 총알 전용 표적은 칼을 받지 않는다
     EXPECT_EQ(events[0].target, 2000u);
     EXPECT_EQ(events[1].target, 2001u);
@@ -691,7 +694,7 @@ struct Harness
     CombatSystem     combat;
     ProjectileSystem projectiles;
     InputHistory     history;
-    jug::VECTOR2     respawnFeet = { 200.f, 200.f };
+    Vec2     respawnFeet = { 200.f, 200.f };
     int              ticks       = 0;
 
     Harness()
@@ -710,7 +713,7 @@ struct Harness
     // _inject 는 이 틱에 추가로 등록할 Hitbox
     bool Tick(
         const InputFrame           _input  = {},
-        const jug::Vector<Hitbox>& _inject = {})
+        const slug::Vector<Hitbox>& _inject = {})
     {
         history.Push(_input);
         combat.BeginTick();
@@ -728,7 +731,7 @@ struct Harness
             combat.AddHitbox(hitbox);
         }
         projectiles.Step(&ground, combat, kStepSec);
-        const jug::Vector<HitEvent>& events = combat.Resolve();
+        const slug::Vector<HitEvent>& events = combat.Resolve();
         const bool                   bDied  = player.OnHitEvents(events);
         projectiles.OnHitEvents(events, combat);
         ++ticks;
@@ -1069,7 +1072,7 @@ TEST(Projectiles, FastBulletDoesNotTunnelThroughAThinTarget)
         combat.BeginTick();
         combat.AddHurtbox(thin);
         projectiles.Step(nullptr, combat, kStepSec);
-        const jug::Vector<HitEvent>& events = combat.Resolve();
+        const slug::Vector<HitEvent>& events = combat.Resolve();
         hits += static_cast<int>(events.size());
         projectiles.OnHitEvents(events, combat);
     }
@@ -1131,7 +1134,7 @@ TEST(Projectiles, PierceHitsEachTargetOnceAndKeepsFlying)
             combat.AddHurtbox(hurt);
         }
         projectiles.Step(nullptr, combat, kStepSec);
-        const jug::Vector<HitEvent>& events = combat.Resolve();
+        const slug::Vector<HitEvent>& events = combat.Resolve();
         for (const HitEvent& event: events)
         {
             (event.target == 10 ? hitsA : hitsB) += 1;

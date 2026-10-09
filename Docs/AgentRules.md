@@ -1,12 +1,12 @@
 # 에이전트 공통 규칙 (MyMetalSlug2)
 
 ## 프로젝트
-- 저장소: `C:\Users\Ahnjiwoo\Desktop\Projects\windowAPIProject(24.02.05)\MyMetalSlug2` (CMake + vcpkg + VS 2026, C++20, 네임스페이스 `slug`, JugX 라이브러리 `ThirdParty/JugX` = 네임스페이스 `jug`, `<JugX/Xxx.h>`, JugX `pch.h` 자동 force-include).
+- 저장소: `C:\Users\Ahnjiwoo\Desktop\Projects\windowAPIProject(24.02.05)\MyMetalSlug2` (CMake + vcpkg + VS 2026, C++20, 네임스페이스 `slug`). 외부 의존은 vcpkg 의 SDL3, yyjson, stb, miniaudio 뿐이며 자체 기반 레이어는 `Source/Base/` (`Types.h`, `Math.h`(`Vec2`), `RGBA.h`, `Error.h`/`Result.h`, `Json.h`, `Handle.h`/`HandleStorage.h`/`ResourcePool.h`, `Random.h`, `EnumFlags.h`, `Log.h`, `Assert.h`). 헤더는 `"Base/Xxx.h"` 로 포함하고 PCH 강제 포함에 기대지 않는다.
 - 전체 계획: `C:\Users\Ahnjiwoo\.claude\plans\zippy-dreaming-beaver.md`. 문서: `Docs/*.md` (AssetFormat, PlayerSpec, EnemySpecs, EnemyDefsSchema, StageFormat).
-- 시뮬레이션은 고정 60Hz(`SimRunner`), 라이브와 헤드리스(`SlugHeadless`, 테스트)가 같은 `IGameState::Tick` 경로. 모든 판정은 `CombatSystem`/`HitResolver` 단일 경로. 좌표는 `jug::VECTOR2` float 월드 픽셀, +y 아래, **엔티티 원점 = 발 중앙**.
+- 시뮬레이션은 고정 60Hz(`SimRunner`), 라이브와 헤드리스(`SlugHeadless`, 테스트)가 같은 `IGameState::Tick` 경로. 모든 판정은 `CombatSystem`/`HitResolver` 단일 경로. 좌표는 `slug::Vec2` float 월드 픽셀, +y 아래, **엔티티 원점 = 발 중앙**.
 
-## 코드 스타일 (JugX 규약, 엄수)
-`#pragma once`; Allman 중괄호, 4칸 들여쓰기, 열 제한 없음; 타입/함수 PascalCase; `enum class eName`(값 PascalCase); 상수 `kName`; 멤버 `m_camelCase`(bool `m_bX`, 포인터 `m_pX`); 함수 매개변수 `_name`; private 메서드는 이름 끝 `_`; POD 구조체 필드는 접두어 없이; `[[nodiscard]]`, `constexpr`, concepts, `std::span`(`jug::Span`) 적극 사용; 컨테이너 접근자 `GetSize()/IsEmpty()`; 에러는 `jug::Result<T>`/`jug::Result<void>` (`Result<void>` 는 `jug::Error` 만 받음: `return jug::Error { eError::X };`, 성공 `return jug::Error { jug::kOK };`; 새 에러 코드는 `Source/Core/Error.h/.cpp` 에 추가 가능); 예외/RTTI 금지(`dynamic_cast` 불가), shared_ptr 그물 금지(값 타입/인덱스/핸들); 전제조건은 `JUG_ASSERT`; 주석은 한글, `// ====` 배너 구분. 포맷은 clang-format 이 있으면(`C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\Llvm\x64\bin\clang-format.exe`) 저장소 `.clang-format` 으로 실행, 없으면 손으로 맞춤. 새 소스는 CRLF/LF 어느 쪽이든 무방(.gitattributes 가 정규화).
+## 코드 스타일 (JugX 를 참고한 규약, 엄수)
+`#pragma once`; Allman 중괄호, 4칸 들여쓰기, 열 제한 없음; 타입/함수 PascalCase; `enum class eName`(값 PascalCase); 상수 `kName`; 멤버 `m_camelCase`(bool `m_bX`, 포인터 `m_pX`); 함수 매개변수 `_name`; private 메서드는 이름 끝 `_`; POD 구조체 필드는 접두어 없이; `[[nodiscard]]`, `constexpr`, concepts, `std::span`(`slug::Span`) 적극 사용; 컨테이너 접근자 `GetSize()/IsEmpty()`; 에러는 `slug::Result<T>`/`slug::Result<void>` (`Result<void>` 는 `slug::Error` 만 받음: `return slug::Error { eError::X };`, 성공 `return slug::Error { slug::kOK };`; 새 에러 코드는 `Source/Base/Error.h/.cpp` 에 추가); 예외/RTTI 금지(`dynamic_cast` 불가), shared_ptr 그물 금지(값 타입/인덱스/핸들, 단일 소유는 `std::unique_ptr`); 전제조건은 `SLUG_ASSERT`; 로그는 `SLUG_LOG_*`; 주석은 한글, 장식용 배너 주석 금지(필요한 경우 짧게 한 줄). 포맷은 clang-format 이 있으면(`C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\Llvm\x64\bin\clang-format.exe`) 저장소 `.clang-format` 으로 실행, 없으면 손으로 맞춤. 새 소스는 CRLF/LF 어느 쪽이든 무방(.gitattributes 가 정규화).
 
 ## 빌드/테스트 (PowerShell 도구 사용)
 - 빌드: `powershell -NoProfile -ExecutionPolicy Bypass -File Scripts/Build.ps1 [-Target <t>] [-Reconfigure]` (전역 뮤텍스로 직렬화됨. 다른 에이전트가 동시에 빌드한다. Bash 도구에서는 스크립트 실행이 막혀 있으므로 PowerShell 도구로 실행). 새 .cpp/테스트 파일을 추가한 직후엔 두 번 빌드해야 glob 이 반영될 수 있음(`-Reconfigure` 로 해결).

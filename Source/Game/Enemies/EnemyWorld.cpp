@@ -1,9 +1,11 @@
 #include "Game/Enemies/EnemyWorld.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include <algorithm>
 #include <cstring>
 
-#include <JugX/CoreLogger.h>
+#include "Base/Log.h"
 
 #include "Game/Enemies/EnemyCommon.h"
 #include "World/Constants.h"
@@ -18,9 +20,9 @@ namespace
     constexpr int   kOverlayLayer    = 16;
     constexpr int   kShotLayer       = 32;      // 기존 탄(30)/폭탄(31) 위
 
-    [[nodiscard]] jug::VECTOR2 Lerp_(
-        const jug::VECTOR2 _a,
-        const jug::VECTOR2 _b,
+    [[nodiscard]] Vec2 Lerp_(
+        const Vec2 _a,
+        const Vec2 _b,
         const float        _t)
     {
         return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
@@ -107,8 +109,8 @@ void EnemyWorld::Reset(
 // ===========================================
 
 EnemyHandle EnemyWorld::Spawn(
-    const jug::StringView _defName,
-    const jug::VECTOR2    _feet,
+    const slug::StringView _defName,
+    const Vec2    _feet,
     const SpawnParams&    _params,
     const PhysicsWorld*   _pSnapWorld)
 {
@@ -121,13 +123,13 @@ EnemyHandle EnemyWorld::Spawn(
 
 EnemyHandle EnemyWorld::SpawnByIndex(
     const int           _defIndex,
-    const jug::VECTOR2  _feet,
+    const Vec2  _feet,
     const SpawnParams&  _params,
     const PhysicsWorld* _pSnapWorld)
 {
     if (!m_pLibrary || _defIndex < 0 || static_cast<size_t>(_defIndex) >= m_pLibrary->GetDefCount())
     {
-        JUG_CORE_LOG_WARN("EnemyWorld::Spawn: 알 수 없는 정의 (index {})", _defIndex);
+        SLUG_LOG_WARN("EnemyWorld::Spawn: 알 수 없는 정의 (index {})", _defIndex);
         return {};
     }
     const uint32_t id = m_nextId++;
@@ -137,7 +139,7 @@ EnemyHandle EnemyWorld::SpawnByIndex(
 
 EnemyHandle EnemyWorld::SpawnDeferred(
     const int           _defIndex,
-    const jug::VECTOR2  _feet,
+    const Vec2  _feet,
     const SpawnParams&  _params)
 {
     const uint32_t id = m_nextId++;
@@ -153,7 +155,7 @@ EnemyHandle EnemyWorld::SpawnDeferred(
 void EnemyWorld::Create_(
     const uint32_t      _id,
     const int           _defIndex,
-    const jug::VECTOR2  _feet,
+    const Vec2  _feet,
     const SpawnParams&  _params,
     const PhysicsWorld* _pSnapWorld)
 {
@@ -222,7 +224,7 @@ void EnemyWorld::RegisterHurtboxes(
 }
 
 void EnemyWorld::OnHitEvents(
-    const jug::Span<const HitEvent> _events)
+    const slug::Span<const HitEvent> _events)
 {
     if (!m_pLibrary)
     {
@@ -299,7 +301,7 @@ void EnemyWorld::Tick(
     // 0) 투사체 적중/지형 접촉 연출 (직전 틱의 Step 결과)
     if (_ctx.pProjectiles)
     {
-        const jug::Vector<ShotFx> shotFx = _ctx.pProjectiles->TakeShotFx();
+        const slug::Vector<ShotFx> shotFx = _ctx.pProjectiles->TakeShotFx();
         for (const ShotFx& fx: shotFx)
         {
             const int projIndex = static_cast<int>(fx.visual) - 1;
@@ -476,7 +478,7 @@ void EnemyWorld::BindAnims(
             {
                 for (int side = 0; side < 2; ++side)
                 {
-                    const jug::String name = ResolveSide(def.clips[c].clip.name, side == 0 ? -1 : 1);
+                    const slug::String name = ResolveSide(def.clips[c].clip.name, side == 0 ? -1 : 1);
                     m_clipIds[d][c][side]  = _anims.Find(name);
                 }
             }
@@ -526,7 +528,7 @@ void EnemyWorld::Submit(
         const EnemyDef&    def  = m_pLibrary->Get(e.defIndex);
         const BehaviorOps& ops  = GetBehaviorOps(e.behavior);
         const int          side = SideIndex_(e.facing);
-        const jug::VECTOR2 feet = Lerp_(e.prevFeet, e.body.position, _alpha);
+        const Vec2 feet = Lerp_(e.prevFeet, e.body.position, _alpha);
 
         // 부가 파츠 (보스 리그 등): 본체 클립과 무관하게 매 틱 그린다
         if (ops.submitParts)
@@ -611,7 +613,7 @@ void EnemyWorld::Submit(
         {
             continue;
         }
-        const jug::VECTOR2 pos = Lerp_(shot.renderPrev, shot.position, _alpha);
+        const Vec2 pos = Lerp_(shot.renderPrev, shot.position, _alpha);
         _sprites.Submit(kShotLayer, static_cast<int>(pos.y), *pFrame, pos);
     }
 
@@ -767,7 +769,7 @@ int EnemyWorld::CountAlive(
 }
 
 int EnemyWorld::CountAlive(
-    const jug::StringView _defName) const
+    const slug::StringView _defName) const
 {
     EnemyFilter filter;
     filter.defIndex = m_pLibrary ? m_pLibrary->FindIndex(_defName) : -1;
@@ -783,9 +785,9 @@ int EnemyWorld::CountAlive(
 //  이벤트 / 정리
 // ===========================================
 
-jug::Vector<EnemyEvent> EnemyWorld::TakeEvents()
+slug::Vector<EnemyEvent> EnemyWorld::TakeEvents()
 {
-    jug::Vector<EnemyEvent> out = std::move(m_events);
+    slug::Vector<EnemyEvent> out = std::move(m_events);
     m_events.clear();
     return out;
 }

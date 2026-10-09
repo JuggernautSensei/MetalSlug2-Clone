@@ -1,9 +1,11 @@
 #include "Core/Replay.h"
+#include "Base/Types.h"
+#include "Base/Result.h"
 
 #include <cstring>
 #include <fstream>
 
-#include "Core/Error.h"
+#include "Base/Error.h"
 
 namespace slug
 {
@@ -15,7 +17,7 @@ namespace
 
     template<typename T>
     void Append_(
-        jug::Vector<uint8_t>& _bytes,
+        slug::Vector<uint8_t>& _bytes,
         const T               _value)
     {
         const size_t offset = _bytes.size();
@@ -27,7 +29,7 @@ namespace
     {
     public:
         explicit Reader(
-            const jug::Span<const uint8_t> _bytes)
+            const slug::Span<const uint8_t> _bytes)
             : m_bytes(_bytes)
         {
         }
@@ -59,15 +61,15 @@ namespace
         }
 
     private:
-        jug::Span<const uint8_t> m_bytes  = {};
+        slug::Span<const uint8_t> m_bytes  = {};
         size_t                   m_offset = 0;
     };
 }   // namespace
 
-jug::Vector<uint8_t> SerializeReplay(
+slug::Vector<uint8_t> SerializeReplay(
     const ReplayData& _replay)
 {
-    jug::Vector<uint8_t> bytes;
+    slug::Vector<uint8_t> bytes;
     bytes.reserve(32 + _replay.stateName.size() + _replay.frames.size() * sizeof(uint16_t));
 
     bytes.insert(bytes.end(), std::begin(kMagic), std::end(kMagic));
@@ -83,15 +85,15 @@ jug::Vector<uint8_t> SerializeReplay(
     return bytes;
 }
 
-jug::Result<ReplayData> DeserializeReplay(
-    const jug::Span<const uint8_t> _bytes)
+slug::Result<ReplayData> DeserializeReplay(
+    const slug::Span<const uint8_t> _bytes)
 {
     Reader reader { _bytes };
 
     char magic[4] = {};
     if (!reader.ReadBytes(magic, sizeof(magic)) || std::memcmp(magic, kMagic, sizeof(kMagic)) != 0)
     {
-        return jug::Error { eError::InvalidData };
+        return slug::Error { eError::InvalidData };
     }
 
     uint32_t version = 0;
@@ -99,77 +101,77 @@ jug::Result<ReplayData> DeserializeReplay(
     uint32_t nameLength = 0;
     if (!reader.Read(version) || version != kVersion || !reader.Read(replay.seed) || !reader.Read(nameLength))
     {
-        return jug::Error { eError::InvalidData };
+        return slug::Error { eError::InvalidData };
     }
 
     constexpr uint32_t kMaxNameLength = 256;
     if (nameLength > kMaxNameLength)
     {
-        return jug::Error { eError::InvalidData };
+        return slug::Error { eError::InvalidData };
     }
     replay.stateName.resize(nameLength);
     if (nameLength > 0 && !reader.ReadBytes(replay.stateName.data(), nameLength))
     {
-        return jug::Error { eError::InvalidData };
+        return slug::Error { eError::InvalidData };
     }
 
     uint32_t frameCount = 0;
     if (!reader.Read(frameCount))
     {
-        return jug::Error { eError::InvalidData };
+        return slug::Error { eError::InvalidData };
     }
 
     constexpr uint32_t kMaxFrames = 60u * 60u * 60u;   // 60분
     if (frameCount > kMaxFrames)
     {
-        return jug::Error { eError::InvalidData };
+        return slug::Error { eError::InvalidData };
     }
     replay.frames.resize(frameCount);
     for (InputFrame& frame: replay.frames)
     {
         if (!reader.Read(frame.held))
         {
-            return jug::Error { eError::InvalidData };
+            return slug::Error { eError::InvalidData };
         }
     }
     return replay;
 }
 
-jug::Result<void> SaveReplay(
-    const jug::FilePath& _path,
+slug::Result<void> SaveReplay(
+    const slug::FilePath& _path,
     const ReplayData&    _replay)
 {
-    const jug::Vector<uint8_t> bytes = SerializeReplay(_replay);
+    const slug::Vector<uint8_t> bytes = SerializeReplay(_replay);
 
     std::ofstream file { _path, std::ios::binary | std::ios::trunc };
     if (!file)
     {
-        return jug::Error { eError::FileOpen };
+        return slug::Error { eError::FileOpen };
     }
     file.write(reinterpret_cast<const char*>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
     if (!file)
     {
-        return jug::Error { eError::FileRead };
+        return slug::Error { eError::FileRead };
     }
-    return jug::Error { jug::kOK };
+    return slug::Error { slug::kOK };
 }
 
-jug::Result<ReplayData> LoadReplay(
-    const jug::FilePath& _path)
+slug::Result<ReplayData> LoadReplay(
+    const slug::FilePath& _path)
 {
     std::ifstream file { _path, std::ios::binary | std::ios::ate };
     if (!file)
     {
-        return jug::Error { eError::FileOpen };
+        return slug::Error { eError::FileOpen };
     }
 
     const std::streamsize size = file.tellg();
     file.seekg(0, std::ios::beg);
 
-    jug::Vector<uint8_t> bytes(static_cast<size_t>(size));
+    slug::Vector<uint8_t> bytes(static_cast<size_t>(size));
     if (size > 0 && !file.read(reinterpret_cast<char*>(bytes.data()), size))
     {
-        return jug::Error { eError::FileRead };
+        return slug::Error { eError::FileRead };
     }
     return DeserializeReplay(bytes);
 }

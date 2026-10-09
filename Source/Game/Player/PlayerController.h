@@ -1,6 +1,6 @@
 #pragma once
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "Core/Input.h"
 #include "Core/Tuning.h"
@@ -26,7 +26,7 @@ struct PlayerContext
     PhysicsWorld      physics      = {};
     CombatSystem*     pCombat      = nullptr;
     ProjectileSystem* pProjectiles = nullptr;
-    jug::VECTOR2      respawnFeet  = { 0.f, 0.f };   // 리스폰 시 나타날 발 위치 (카메라 기준으로 호출자가 계산)
+    Vec2      respawnFeet  = { 0.f, 0.f };   // 리스폰 시 나타날 발 위치 (카메라 기준으로 호출자가 계산)
 };
 
 // 테스트/디버그용 누적 통계
@@ -53,7 +53,7 @@ class PlayerController
 {
 public:
     // 새 게임: 목숨/점수/무기를 초기화하고 _spawnFeet 에 배치한다.
-    void Reset(const Tuning& _tuning, jug::VECTOR2 _spawnFeet);
+    void Reset(const Tuning& _tuning, Vec2 _spawnFeet);
 
     // 스폰 직후 발을 지면에 붙인다 (월드 준비 후 호출). 성공 시 true.
     bool SnapToGround(const PhysicsWorld& _world, float _maxDist);
@@ -61,7 +61,7 @@ public:
     void Tick(const PlayerContext& _ctx, const InputHistory& _input);
 
     // Resolve 결과 반영: 이 플레이어가 맞았으면 사망 처리. 반환: 사망했는가
-    bool OnHitEvents(jug::Span<const HitEvent> _events);
+    bool OnHitEvents(slug::Span<const HitEvent> _events);
     void Kill();   // 직접 사망 처리 (무적/이미 사망이면 무시)
 
     // --- 외부 이벤트 ---
@@ -72,12 +72,12 @@ public:
 
     // --- 조회 ---
     [[nodiscard]] ePlayerState       GetState() const { return m_state; }
-    [[nodiscard]] jug::VECTOR2       GetFeet() const { return m_body.position; }
+    [[nodiscard]] Vec2       GetFeet() const { return m_body.position; }
 
     // 외부 강제 보정 (보스 선체 등): 발 x 가 _minX 보다 작으면 _minX 로 민다 (왼쪽 방향 속도는 0). 벽과 달리 파고든 몸도 밀어낸다.
     void PushFeetX(float _minX);
-    [[nodiscard]] jug::VECTOR2       GetPrevFeet() const { return m_prevFeet; }
-    [[nodiscard]] jug::VECTOR2       GetVelocity() const { return m_body.velocity; }
+    [[nodiscard]] Vec2       GetPrevFeet() const { return m_prevFeet; }
+    [[nodiscard]] Vec2       GetVelocity() const { return m_body.velocity; }
     [[nodiscard]] int                GetFacing() const { return m_facing; }
     [[nodiscard]] bool               IsGrounded() const { return m_body.bGrounded; }
     [[nodiscard]] ePose              GetPose() const { return m_pose; }
@@ -125,8 +125,8 @@ private:
 
     // --- 데이터 ---
     Body         m_body      = {};
-    jug::VECTOR2 m_prevFeet  = { 0.f, 0.f };
-    jug::VECTOR2 m_spawnFeet = { 0.f, 0.f };
+    Vec2 m_prevFeet  = { 0.f, 0.f };
+    Vec2 m_spawnFeet = { 0.f, 0.f };
     MoveResult   m_lastMove  = {};
 
     PlayerInputBuffer m_input  = {};
@@ -169,7 +169,7 @@ private:
     bool                  m_bSlashShown     = false;   // 이번 틱에 칼 동작이 보이는가
     bool                  m_bThrowShown     = false;
     bool                  m_bKnifeEmitted   = false;   // 이번 틱에 칼 판정을 냈는가
-    jug::Vector<uint32_t> m_pendingRelease  = {};      // 다음 틱 시작에 풀 HitId (이번 틱 Resolve 가 끝난 뒤)
+    slug::Vector<uint32_t> m_pendingRelease  = {};      // 다음 틱 시작에 풀 HitId (이번 틱 Resolve 가 끝난 뒤)
 
     // 캐시: 이번 틱에 쓰는 tuning (호출자 소유, 틱 안에서만 유효)
     const Tuning* m_pTuning = nullptr;

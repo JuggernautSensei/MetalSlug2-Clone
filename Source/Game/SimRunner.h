@@ -1,4 +1,5 @@
 #pragma once
+#include "Base/Types.h"
 #include "Game/GameState.h"
 
 namespace slug
@@ -13,14 +14,14 @@ namespace slug
 class SimRunner
 {
 public:
-    SimRunner(GameContext& _ctx, jug::Scoped<IGameState> _pState);
+    SimRunner(GameContext& _ctx, std::unique_ptr<IGameState> _pState);
     ~SimRunner();
 
     SimRunner(const SimRunner&)            = delete;
     SimRunner& operator=(const SimRunner&) = delete;
 
     void Step(InputFrame _input);
-    void Run(jug::Span<const InputFrame> _inputs);
+    void Run(slug::Span<const InputFrame> _inputs);
 
     void Render(float _alpha);
 
@@ -30,10 +31,10 @@ public:
     [[nodiscard]] bool               IsFinished() const;
 
 private:
-    void SwitchState_(jug::Scoped<IGameState> _pNext);
+    void SwitchState_(std::unique_ptr<IGameState> _pNext);
 
     GameContext&              m_ctx;
-    jug::Scoped<IGameState>   m_pState;
+    std::unique_ptr<IGameState>   m_pState;
     InputHistory              m_history   = {};
     uint64_t                  m_tickCount = 0;
 };

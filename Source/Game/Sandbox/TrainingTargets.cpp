@@ -1,4 +1,6 @@
 #include "Game/Sandbox/TrainingTargets.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include <cmath>
 #include <cstring>
@@ -6,7 +8,7 @@
 namespace slug
 {
 
-jug::VECTOR2 GetDummySize(
+Vec2 GetDummySize(
     const eDummyKind _kind)
 {
     switch (_kind)
@@ -49,7 +51,7 @@ void TrainingTargets::Clear()
 
 uint32_t TrainingTargets::Add(
     const eDummyKind     _kind,
-    const jug::VECTOR2   _feet,
+    const Vec2   _feet,
     const bool           _bShooter,
     const SandboxTuning& _tuning)
 {
@@ -98,7 +100,7 @@ void TrainingTargets::RegisterHurtboxes(
 
 void TrainingTargets::TickShooters(
     const SandboxTuning& _tuning,
-    const jug::VECTOR2   _playerFeet,
+    const Vec2   _playerFeet,
     const bool           _bPlayerAlive,
     ProjectileSystem&    _projectiles,
     CombatSystem&        _combat)
@@ -142,7 +144,7 @@ void TrainingTargets::TickShooters(
 }
 
 int TrainingTargets::ApplyEvents(
-    const jug::Span<const HitEvent> _events,
+    const slug::Span<const HitEvent> _events,
     const SandboxTuning&            _tuning)
 {
     (void)_tuning;

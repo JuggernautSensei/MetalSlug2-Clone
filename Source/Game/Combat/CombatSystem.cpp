@@ -1,4 +1,5 @@
 #include "Game/Combat/CombatSystem.h"
+#include "Base/Types.h"
 
 namespace slug
 {
@@ -10,7 +11,7 @@ void CombatSystem::BeginTick()
     m_events.clear();
 }
 
-const jug::Vector<HitEvent>& CombatSystem::Resolve()
+const slug::Vector<HitEvent>& CombatSystem::Resolve()
 {
     m_events = m_resolver.Resolve(m_hitboxes, m_hurtboxes);
     return m_events;

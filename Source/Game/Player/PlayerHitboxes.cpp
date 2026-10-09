@@ -1,6 +1,6 @@
 #include "Game/Player/PlayerHitboxes.h"
 
-#include <JugX/Math.h>
+#include "Base/Math.h"
 
 namespace slug
 {
@@ -23,7 +23,7 @@ namespace
 }   // namespace
 
 Aabb MakeKnifeTriggerBox(
-    const jug::VECTOR2 _feet,
+    const Vec2 _feet,
     const int          _facing,
     const float        _bodyHalfWidth,
     const KnifeTuning& _knife)
@@ -35,7 +35,7 @@ Aabb MakeKnifeTriggerBox(
 }
 
 Aabb MakeKnifeSwingBox(
-    const jug::VECTOR2 _feet,
+    const Vec2 _feet,
     const int          _facing,
     const KnifeTuning& _knife)
 {
@@ -44,8 +44,8 @@ Aabb MakeKnifeSwingBox(
     return Aabb::FromMinMax({ x0, _feet.y - _knife.top }, { x1, _feet.y - _knife.bottom });
 }
 
-jug::VECTOR2 GetMuzzlePosition(
-    const jug::VECTOR2  _feet,
+Vec2 GetMuzzlePosition(
+    const Vec2  _feet,
     const int           _facing,
     const ePose         _pose,
     const eAim          _aim,
@@ -53,7 +53,7 @@ jug::VECTOR2 GetMuzzlePosition(
 {
     const MuzzleSet& set = GetSet_(_pose, _muzzle);
 
-    jug::VECTOR2 local = set.forward;
+    Vec2 local = set.forward;
     switch (_aim)
     {
         case eAim::Up: local = set.up; break;
@@ -65,7 +65,7 @@ jug::VECTOR2 GetMuzzlePosition(
     return { _feet.x + local.x * static_cast<float>(_facing), _feet.y + local.y };
 }
 
-jug::VECTOR2 GetAimDirection(
+Vec2 GetAimDirection(
     const eAim _aim,
     const int  _facing)
 {
@@ -81,8 +81,8 @@ jug::VECTOR2 GetAimDirection(
     return { f, 0.f };
 }
 
-jug::VECTOR2 GetBombReleasePosition(
-    const jug::VECTOR2 _feet,
+Vec2 GetBombReleasePosition(
+    const Vec2 _feet,
     const int          _facing,
     const ePose        _pose,
     const BombTuning&  _bomb)
@@ -91,7 +91,7 @@ jug::VECTOR2 GetBombReleasePosition(
     return { _feet.x + _bomb.releaseOffset.x * static_cast<float>(_facing), _feet.y + _bomb.releaseOffset.y + lowering };
 }
 
-jug::VECTOR2 GetBodySize(
+Vec2 GetBodySize(
     const ePose       _pose,
     const BodyTuning& _body)
 {
@@ -99,11 +99,11 @@ jug::VECTOR2 GetBodySize(
 }
 
 Aabb MakePlayerHurtboxBox(
-    const jug::VECTOR2 _feet,
+    const Vec2 _feet,
     const ePose        _pose,
     const BodyTuning&  _body)
 {
-    const jug::VECTOR2 size = _pose == ePose::Crouch ? _body.hurtCrouch : _body.hurtStand;
+    const Vec2 size = _pose == ePose::Crouch ? _body.hurtCrouch : _body.hurtStand;
     return Aabb::FromBottomCenter(_feet, size);
 }
 

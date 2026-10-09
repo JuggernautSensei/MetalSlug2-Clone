@@ -1,22 +1,23 @@
 #include "Audio/SoundBank.h"
+#include "Base/Types.h"
 
-#include <JugX/JsonDeserializer.h>
+#include "Base/Json.h"
 
-#include "Core/Error.h"
+#include "Base/Error.h"
 
 namespace slug
 {
 
 namespace
 {
-    [[nodiscard]] jug::Result<SoundBank> Parse_(
-        const jug::JsonReader& _root,
-        const jug::FilePath&   _rootDir)
+    [[nodiscard]] slug::Result<SoundBank> Parse_(
+        const slug::JsonReader& _root,
+        const slug::FilePath&   _rootDir)
     {
-        const jug::Result<jug::JsonReader> sounds = _root.FindField("sounds");
+        const slug::Result<slug::JsonReader> sounds = _root.FindField("sounds");
         if (!sounds || !sounds->IsObject())
         {
-            return jug::Error { eError::Parse };
+            return slug::Error { eError::Parse };
         }
 
         SoundBank bank;
@@ -24,53 +25,53 @@ namespace
         {
             if (!json.IsObject())
             {
-                return jug::Error { eError::Parse };
+                return slug::Error { eError::Parse };
             }
 
-            const jug::Result<jug::String> file = json.ReadField<jug::String>("file");
+            const slug::Result<slug::String> file = json.ReadField<slug::String>("file");
             if (!file || file.GetValue().empty())
             {
-                return jug::Error { eError::Parse };
+                return slug::Error { eError::Parse };
             }
 
             SoundEntry entry;
-            entry.name = jug::String { name };
+            entry.name = slug::String { name };
             entry.file = file.GetValue();
             if (json.HasField("bgm"))
             {
-                const jug::Result<bool> bBgm = json.ReadField<bool>("bgm");
+                const slug::Result<bool> bBgm = json.ReadField<bool>("bgm");
                 if (!bBgm)
                 {
-                    return jug::Error { eError::Parse };
+                    return slug::Error { eError::Parse };
                 }
                 entry.bBgm = bBgm.GetValue();
             }
-            entry.path = _rootDir / jug::FilePath { entry.file };
+            entry.path = _rootDir / slug::FilePath { entry.file };
             bank.Add(std::move(entry));
         }
         return bank;
     }
 }   // namespace
 
-jug::Result<SoundBank> SoundBank::LoadFromJson(
-    const jug::StringView _json,
-    const jug::FilePath&  _root)
+slug::Result<SoundBank> SoundBank::LoadFromJson(
+    const slug::StringView _json,
+    const slug::FilePath&  _root)
 {
-    jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::Load(_json);
+    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::Load(_json);
     if (!doc)
     {
-        return jug::Error { eError::Parse };
+        return slug::Error { eError::Parse };
     }
     return Parse_(doc->GetReader(), _root);
 }
 
-jug::Result<SoundBank> SoundBank::LoadFromDirectory(
-    const jug::FilePath& _bakedRoot)
+slug::Result<SoundBank> SoundBank::LoadFromDirectory(
+    const slug::FilePath& _bakedRoot)
 {
-    jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::LoadFromFile(_bakedRoot / "sounds.json");
+    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::LoadFromFile(_bakedRoot / "sounds.json");
     if (!doc)
     {
-        return jug::Error { eError::FileOpen };
+        return slug::Error { eError::FileOpen };
     }
     return Parse_(doc->GetReader(), _bakedRoot);
 }
@@ -88,16 +89,16 @@ void SoundBank::Add(
 }
 
 const SoundEntry* SoundBank::Find(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
     const int index = FindIndex(_name);
     return index < 0 ? nullptr : &m_entries[static_cast<size_t>(index)];
 }
 
 int SoundBank::FindIndex(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
-    const auto it = m_nameToIndex.find(jug::String { _name });
+    const auto it = m_nameToIndex.find(slug::String { _name });
     return it == m_nameToIndex.end() ? -1 : static_cast<int>(it->second);
 }
 

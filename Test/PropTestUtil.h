@@ -1,5 +1,8 @@
 #pragma once
 #include <string>
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Result.h"
 
 #include <gtest/gtest.h>
 
@@ -21,9 +24,9 @@ namespace slugtest
 
 using namespace slug;
 
-inline jug::FilePath PropsJsonPath()
+inline slug::FilePath PropsJsonPath()
 {
-    return jug::FilePath { SLUG_ASSET_DIR } / "Defs" / "Props" / "Props.json";
+    return slug::FilePath { SLUG_ASSET_DIR } / "Defs" / "Props" / "Props.json";
 }
 
 // Props.json 은 저장소에 항상 있으므로 실패하면 테스트가 실패하도록 빈 라이브러리를 돌려준다.
@@ -31,8 +34,8 @@ inline const PropDefLibrary& GetPropLib()
 {
     static const PropDefLibrary lib = []()
     {
-        jug::String                     msg;
-        jug::Result<PropDefLibrary>     loaded = PropDefLibrary::Load(PropsJsonPath(), &msg);
+        slug::String                     msg;
+        slug::Result<PropDefLibrary>     loaded = PropDefLibrary::Load(PropsJsonPath(), &msg);
         if (!loaded)
         {
             ADD_FAILURE() << "Props.json 로드 실패: " << std::string { msg.c_str() };
@@ -48,8 +51,8 @@ inline bool LoadBakedLibs(
     AnimationLibrary& _anims,
     SpriteLibrary&    _sprites)
 {
-    jug::Result<AnimationLibrary> anims = AnimationLibrary::LoadFromDirectory(jug::FilePath { SLUG_ASSET_DIR } / "Baked");
-    jug::Result<SpriteLibrary>    sprites = SpriteLibrary::LoadFromDirectory(jug::FilePath { SLUG_ASSET_DIR } / "Baked");
+    slug::Result<AnimationLibrary> anims = AnimationLibrary::LoadFromDirectory(slug::FilePath { SLUG_ASSET_DIR } / "Baked");
+    slug::Result<SpriteLibrary>    sprites = SpriteLibrary::LoadFromDirectory(slug::FilePath { SLUG_ASSET_DIR } / "Baked");
     if (!anims || !sprites)
     {
         return false;
@@ -87,7 +90,7 @@ inline GroundMap MakeFloorMap(
 
 // 엔진 기본 Body (플레이어 근사: 24x40)
 inline Body MakeBody(
-    const jug::VECTOR2 _feet)
+    const Vec2 _feet)
 {
     Body body;
     body.position = _feet;

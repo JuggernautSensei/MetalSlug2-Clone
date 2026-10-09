@@ -1,9 +1,10 @@
 #include "Game/Player/PlayerController.h"
+#include "Base/Types.h"
 
 #include <bit>
 #include <cstring>
 
-#include <JugX/Math.h>
+#include "Base/Math.h"
 
 #include "Game/Player/PlayerHitboxes.h"
 
@@ -76,7 +77,7 @@ namespace
 
 void PlayerController::Reset(
     const Tuning&      _tuning,
-    const jug::VECTOR2 _spawnFeet)
+    const Vec2 _spawnFeet)
 {
     m_pTuning = &_tuning;
 
@@ -165,7 +166,7 @@ void PlayerController::SetVictory()
 // ===========================================
 
 bool PlayerController::OnHitEvents(
-    const jug::Span<const HitEvent> _events)
+    const slug::Span<const HitEvent> _events)
 {
     for (const HitEvent& event: _events)
     {
@@ -652,9 +653,9 @@ void PlayerController::TickShot_(
         return;
     }
 
-    const jug::VECTOR2 muzzle    = GetMuzzlePosition(m_body.position, m_facing, m_pose, m_aim, tuning.muzzle);
-    const jug::VECTOR2 direction = GetAimDirection(m_aim, m_facing);
-    const jug::VECTOR2 chest     = { m_body.position.x, m_body.position.y - m_body.size.y * 0.6f };
+    const Vec2 muzzle    = GetMuzzlePosition(m_body.position, m_facing, m_pose, m_aim, tuning.muzzle);
+    const Vec2 direction = GetAimDirection(m_aim, m_facing);
+    const Vec2 chest     = { m_body.position.x, m_body.position.y - m_body.size.y * 0.6f };
 
     _ctx.pProjectiles->SpawnBullet(MakeBulletSpawn(m_weapon.weapon, weapon, kPlayerOwnerId, muzzle, chest, direction), *_ctx.pCombat);
     m_shotTicksLeft = weapon.shotOverlayTicks;
@@ -694,7 +695,7 @@ RigState PlayerController::MakeRigState() const
             case eOverlay::None: break;
         }
 
-        const int period = jug::Max(1, m_pTuning->player.blinkPeriodTicks);
+        const int period = slug::Max(1, m_pTuning->player.blinkPeriodTicks);
         if (m_invincibleTicks > 0 && m_state != ePlayerState::Victory)
         {
             rig.bVisible = ((m_invincibleTicks / period) % 2) == 1;

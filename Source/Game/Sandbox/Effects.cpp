@@ -1,4 +1,6 @@
 #include "Game/Sandbox/Effects.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include <algorithm>
 
@@ -7,8 +9,8 @@ namespace slug
 
 void EffectList::Spawn(
     const AnimationLibrary& _library,
-    const jug::StringView   _clipName,
-    const jug::VECTOR2      _position,
+    const slug::StringView   _clipName,
+    const Vec2      _position,
     const int               _layer)
 {
     const AnimId id = _library.Find(_clipName);

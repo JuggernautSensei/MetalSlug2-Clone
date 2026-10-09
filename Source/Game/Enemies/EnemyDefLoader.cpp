@@ -1,11 +1,13 @@
 #include <algorithm>
+#include "Base/Types.h"
+#include "Base/Math.h"
 #include <cmath>
 #include <format>
 
-#include <JugX/CoreLogger.h>
-#include <JugX/JsonDeserializer.h>
+#include "Base/Log.h"
+#include "Base/Json.h"
 
-#include "Core/Error.h"
+#include "Base/Error.h"
 #include "Game/Enemies/EnemyDef.h"
 #include "Game/Enemies/EnemyDefParse.h"
 #include "Render/Animation.h"
@@ -29,48 +31,48 @@ public:
     {
     }
 
-    [[nodiscard]] bool Run(const jug::JsonReader& _root);
-    [[nodiscard]] bool RunMany(jug::Span<const jug::JsonReader> _roots);   // 여러 파일의 defs 를 합쳐서 해석 (상속은 파일 경계를 넘어 가능)
-    [[nodiscard]] bool AddRoot_(const jug::JsonReader& _root);
+    [[nodiscard]] bool Run(const slug::JsonReader& _root);
+    [[nodiscard]] bool RunMany(slug::Span<const slug::JsonReader> _roots);   // 여러 파일의 defs 를 합쳐서 해석 (상속은 파일 경계를 넘어 가능)
+    [[nodiscard]] bool AddRoot_(const slug::JsonReader& _root);
     [[nodiscard]] bool Finish_();
 
-    jug::String error = {};
+    slug::String error = {};
 
 private:
-    using Chain   = jug::Vector<jug::JsonReader>;
-    using Entries = jug::Vector<std::pair<jug::String, jug::JsonReader>>;
+    using Chain   = slug::Vector<slug::JsonReader>;
+    using Entries = slug::Vector<std::pair<slug::String, slug::JsonReader>>;
 
     struct RawDef
     {
-        jug::String     name;
-        jug::JsonReader reader;
+        slug::String     name;
+        slug::JsonReader reader;
     };
 
-    [[nodiscard]] bool BuildChain_(jug::StringView _name, int _depth, Chain& _out);
-    [[nodiscard]] bool CheckKeys_(const Chain& _chain, jug::StringView _defName, jug::Span<const char* const> _allowed);
-    [[nodiscard]] bool CheckObjectKeys_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _object, jug::Span<const char* const> _allowed);
+    [[nodiscard]] bool BuildChain_(slug::StringView _name, int _depth, Chain& _out);
+    [[nodiscard]] bool CheckKeys_(const Chain& _chain, slug::StringView _defName, slug::Span<const char* const> _allowed);
+    [[nodiscard]] bool CheckObjectKeys_(slug::StringView _def, slug::StringView _field, const slug::JsonReader& _object, slug::Span<const char* const> _allowed);
 
-    [[nodiscard]] std::optional<jug::JsonReader> Find_(const Chain& _chain, jug::StringView _key) const;
-    [[nodiscard]] Entries                        Merge_(const Chain& _chain, jug::StringView _key) const;
+    [[nodiscard]] std::optional<slug::JsonReader> Find_(const Chain& _chain, slug::StringView _key) const;
+    [[nodiscard]] Entries                        Merge_(const Chain& _chain, slug::StringView _key) const;
 
-    void Fail_(jug::StringView _def, jug::StringView _field, jug::StringView _msg);
-    [[nodiscard]] bool ReadNum_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _reader, jug::StringView _key, float& _out, bool _bRequired);
-    [[nodiscard]] bool ReadInt_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _reader, jug::StringView _key, int& _out, bool _bRequired);
-    [[nodiscard]] bool ReadBool_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _reader, jug::StringView _key, bool& _out);
-    [[nodiscard]] bool ReadStr_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _reader, jug::StringView _key, jug::String& _out, bool _bRequired);
-    [[nodiscard]] bool ReadVec2_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _reader, jug::StringView _key, jug::VECTOR2& _out);
-    [[nodiscard]] bool ReadBox_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _reader, BoxDef& _out);
-    [[nodiscard]] bool ReadClip_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _reader, ClipDef& _out);
-    [[nodiscard]] bool ReadFx_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _reader, FxDef& _out);
+    void Fail_(slug::StringView _def, slug::StringView _field, slug::StringView _msg);
+    [[nodiscard]] bool ReadNum_(slug::StringView _def, slug::StringView _field, const slug::JsonReader& _reader, slug::StringView _key, float& _out, bool _bRequired);
+    [[nodiscard]] bool ReadInt_(slug::StringView _def, slug::StringView _field, const slug::JsonReader& _reader, slug::StringView _key, int& _out, bool _bRequired);
+    [[nodiscard]] bool ReadBool_(slug::StringView _def, slug::StringView _field, const slug::JsonReader& _reader, slug::StringView _key, bool& _out);
+    [[nodiscard]] bool ReadStr_(slug::StringView _def, slug::StringView _field, const slug::JsonReader& _reader, slug::StringView _key, slug::String& _out, bool _bRequired);
+    [[nodiscard]] bool ReadVec2_(slug::StringView _def, slug::StringView _field, const slug::JsonReader& _reader, slug::StringView _key, Vec2& _out);
+    [[nodiscard]] bool ReadBox_(slug::StringView _def, slug::StringView _field, const slug::JsonReader& _reader, BoxDef& _out);
+    [[nodiscard]] bool ReadClip_(slug::StringView _def, slug::StringView _field, const slug::JsonReader& _reader, ClipDef& _out);
+    [[nodiscard]] bool ReadFx_(slug::StringView _def, slug::StringView _field, const slug::JsonReader& _reader, FxDef& _out);
 
     [[nodiscard]] bool ParseProjectile_(const RawDef& _raw, const Chain& _chain);
     [[nodiscard]] bool ParseEnemy_(const RawDef& _raw, const Chain& _chain);
-    [[nodiscard]] bool ParseWeapon_(const jug::String& _def, const jug::String& _name, const jug::JsonReader& _reader, WeaponDef& _out);
-    [[nodiscard]] bool ParseDeath_(EnemyDef& _def, const jug::JsonReader& _death);
+    [[nodiscard]] bool ParseWeapon_(const slug::String& _def, const slug::String& _name, const slug::JsonReader& _reader, WeaponDef& _out);
+    [[nodiscard]] bool ParseDeath_(EnemyDef& _def, const slug::JsonReader& _death);
 
     EnemyDefLibrary&                m_lib;
-    jug::Vector<RawDef>             m_raw;
-    jug::HashMap<jug::String, int>  m_rawIndex;
+    slug::Vector<RawDef>             m_raw;
+    slug::HashMap<slug::String, int>  m_rawIndex;
 };
 
 namespace
@@ -105,8 +107,8 @@ namespace
     constexpr const char* kHitboxKeys[] = { "note", "w", "h", "cx", "cy", "lifeSec", "damage", "follow" };
 
     [[nodiscard]] bool Contains_(
-        const jug::Span<const char* const> _list,
-        const jug::StringView              _key)
+        const slug::Span<const char* const> _list,
+        const slug::StringView              _key)
     {
         for (const char* pItem: _list)
         {
@@ -120,9 +122,9 @@ namespace
 }   // namespace
 
 void EnemyDefParser::Fail_(
-    const jug::StringView _def,
-    const jug::StringView _field,
-    const jug::StringView _msg)
+    const slug::StringView _def,
+    const slug::StringView _field,
+    const slug::StringView _msg)
 {
     if (error.empty())
     {
@@ -131,10 +133,10 @@ void EnemyDefParser::Fail_(
 }
 
 bool EnemyDefParser::ReadNum_(
-    const jug::StringView  _def,
-    const jug::StringView  _field,
-    const jug::JsonReader& _reader,
-    const jug::StringView  _key,
+    const slug::StringView  _def,
+    const slug::StringView  _field,
+    const slug::JsonReader& _reader,
+    const slug::StringView  _key,
     float&                 _out,
     const bool             _bRequired)
 {
@@ -146,7 +148,7 @@ bool EnemyDefParser::ReadNum_(
         }
         return !_bRequired;
     }
-    const jug::Result<double> value = _reader.ReadField<double>(_key);
+    const slug::Result<double> value = _reader.ReadField<double>(_key);
     if (!value)
     {
         Fail_(_def, std::format("{}.{}", _field, _key), "숫자가 아닙니다");
@@ -157,10 +159,10 @@ bool EnemyDefParser::ReadNum_(
 }
 
 bool EnemyDefParser::ReadInt_(
-    const jug::StringView  _def,
-    const jug::StringView  _field,
-    const jug::JsonReader& _reader,
-    const jug::StringView  _key,
+    const slug::StringView  _def,
+    const slug::StringView  _field,
+    const slug::JsonReader& _reader,
+    const slug::StringView  _key,
     int&                   _out,
     const bool             _bRequired)
 {
@@ -174,17 +176,17 @@ bool EnemyDefParser::ReadInt_(
 }
 
 bool EnemyDefParser::ReadBool_(
-    const jug::StringView  _def,
-    const jug::StringView  _field,
-    const jug::JsonReader& _reader,
-    const jug::StringView  _key,
+    const slug::StringView  _def,
+    const slug::StringView  _field,
+    const slug::JsonReader& _reader,
+    const slug::StringView  _key,
     bool&                  _out)
 {
     if (!_reader.IsObject() || !_reader.HasField(_key))
     {
         return true;
     }
-    const jug::Result<bool> value = _reader.ReadField<bool>(_key);
+    const slug::Result<bool> value = _reader.ReadField<bool>(_key);
     if (!value)
     {
         Fail_(_def, std::format("{}.{}", _field, _key), "true/false 가 아닙니다");
@@ -195,11 +197,11 @@ bool EnemyDefParser::ReadBool_(
 }
 
 bool EnemyDefParser::ReadStr_(
-    const jug::StringView  _def,
-    const jug::StringView  _field,
-    const jug::JsonReader& _reader,
-    const jug::StringView  _key,
-    jug::String&           _out,
+    const slug::StringView  _def,
+    const slug::StringView  _field,
+    const slug::JsonReader& _reader,
+    const slug::StringView  _key,
+    slug::String&           _out,
     const bool             _bRequired)
 {
     if (!_reader.IsObject() || !_reader.HasField(_key))
@@ -210,7 +212,7 @@ bool EnemyDefParser::ReadStr_(
         }
         return !_bRequired;
     }
-    const jug::Result<jug::String> value = _reader.ReadField<jug::String>(_key);
+    const slug::Result<slug::String> value = _reader.ReadField<slug::String>(_key);
     if (!value)
     {
         Fail_(_def, std::format("{}.{}", _field, _key), "문자열이 아닙니다");
@@ -221,17 +223,17 @@ bool EnemyDefParser::ReadStr_(
 }
 
 bool EnemyDefParser::ReadVec2_(
-    const jug::StringView  _def,
-    const jug::StringView  _field,
-    const jug::JsonReader& _reader,
-    const jug::StringView  _key,
-    jug::VECTOR2&          _out)
+    const slug::StringView  _def,
+    const slug::StringView  _field,
+    const slug::JsonReader& _reader,
+    const slug::StringView  _key,
+    Vec2&          _out)
 {
     if (!_reader.IsObject() || !_reader.HasField(_key))
     {
         return true;
     }
-    const jug::Result<jug::JsonReader> array = _reader.FindField(_key);
+    const slug::Result<slug::JsonReader> array = _reader.FindField(_key);
     if (!array || !array->IsArray() || array->GetSize() != 2)
     {
         Fail_(_def, std::format("{}.{}", _field, _key), "[x, y] 배열이 아닙니다");
@@ -239,9 +241,9 @@ bool EnemyDefParser::ReadVec2_(
     }
     float values[2] = {};
     int   i         = 0;
-    for (const jug::JsonReader item: array->GetArray())
+    for (const slug::JsonReader item: array->GetArray())
     {
-        const jug::Result<double> value = item.Read<double>();
+        const slug::Result<double> value = item.Read<double>();
         if (!value)
         {
             Fail_(_def, std::format("{}.{}", _field, _key), "숫자가 아닌 원소가 있습니다");
@@ -254,10 +256,10 @@ bool EnemyDefParser::ReadVec2_(
 }
 
 bool EnemyDefParser::CheckObjectKeys_(
-    const jug::StringView              _def,
-    const jug::StringView              _field,
-    const jug::JsonReader&             _object,
-    const jug::Span<const char* const> _allowed)
+    const slug::StringView              _def,
+    const slug::StringView              _field,
+    const slug::JsonReader&             _object,
+    const slug::Span<const char* const> _allowed)
 {
     if (!_object.IsObject())
     {
@@ -276,9 +278,9 @@ bool EnemyDefParser::CheckObjectKeys_(
 }
 
 bool EnemyDefParser::ReadBox_(
-    const jug::StringView  _def,
-    const jug::StringView  _field,
-    const jug::JsonReader& _reader,
+    const slug::StringView  _def,
+    const slug::StringView  _field,
+    const slug::JsonReader& _reader,
     BoxDef&                _out)
 {
     if (!CheckObjectKeys_(_def, _field, _reader, kBoxKeys))
@@ -298,9 +300,9 @@ bool EnemyDefParser::ReadBox_(
 }
 
 bool EnemyDefParser::ReadClip_(
-    const jug::StringView  _def,
-    const jug::StringView  _field,
-    const jug::JsonReader& _reader,
+    const slug::StringView  _def,
+    const slug::StringView  _field,
+    const slug::JsonReader& _reader,
     ClipDef&               _out)
 {
     if (!CheckObjectKeys_(_def, _field, _reader, kClipKeys))
@@ -317,14 +319,14 @@ bool EnemyDefParser::ReadClip_(
         return false;
     }
     _out.frameUnits = static_cast<int64_t>(std::llround(static_cast<double>(_out.frameSec) * static_cast<double>(kAnimTimeUnitsPerSec)));
-    _out.bSided     = _out.name.find("{side}") != jug::String::npos;
+    _out.bSided     = _out.name.find("{side}") != slug::String::npos;
     return true;
 }
 
 bool EnemyDefParser::ReadFx_(
-    const jug::StringView  _def,
-    const jug::StringView  _field,
-    const jug::JsonReader& _reader,
+    const slug::StringView  _def,
+    const slug::StringView  _field,
+    const slug::JsonReader& _reader,
     FxDef&                 _out)
 {
     if (!CheckObjectKeys_(_def, _field, _reader, kFxKeys))
@@ -339,7 +341,7 @@ bool EnemyDefParser::ReadFx_(
 // ===========================================
 
 bool EnemyDefParser::BuildChain_(
-    const jug::StringView _name,
+    const slug::StringView _name,
     const int             _depth,
     Chain&                _out)
 {
@@ -348,7 +350,7 @@ bool EnemyDefParser::BuildChain_(
         Fail_(_name, "extends", "상속이 너무 깊거나 순환합니다");
         return false;
     }
-    const auto it = m_rawIndex.find(jug::String { _name });
+    const auto it = m_rawIndex.find(slug::String { _name });
     if (it == m_rawIndex.end())
     {
         Fail_(_name, "extends", "존재하지 않는 정의입니다");
@@ -357,7 +359,7 @@ bool EnemyDefParser::BuildChain_(
     const RawDef& raw = m_raw[static_cast<size_t>(it->second)];
     if (raw.reader.HasField("extends"))
     {
-        const jug::Result<jug::String> parent = raw.reader.ReadField<jug::String>("extends");
+        const slug::Result<slug::String> parent = raw.reader.ReadField<slug::String>("extends");
         if (!parent)
         {
             Fail_(raw.name, "extends", "문자열이 아닙니다");
@@ -374,10 +376,10 @@ bool EnemyDefParser::BuildChain_(
 
 bool EnemyDefParser::CheckKeys_(
     const Chain&                       _chain,
-    const jug::StringView              _defName,
-    const jug::Span<const char* const> _allowed)
+    const slug::StringView              _defName,
+    const slug::Span<const char* const> _allowed)
 {
-    for (const jug::JsonReader& reader: _chain)
+    for (const slug::JsonReader& reader: _chain)
     {
         if (!CheckObjectKeys_(_defName, "", reader, _allowed))
         {
@@ -387,15 +389,15 @@ bool EnemyDefParser::CheckKeys_(
     return true;
 }
 
-std::optional<jug::JsonReader> EnemyDefParser::Find_(
+std::optional<slug::JsonReader> EnemyDefParser::Find_(
     const Chain&          _chain,
-    const jug::StringView _key) const
+    const slug::StringView _key) const
 {
     for (size_t i = _chain.size(); i > 0; --i)
     {
         if (_chain[i - 1].HasField(_key))
         {
-            const jug::Result<jug::JsonReader> field = _chain[i - 1].FindField(_key);
+            const slug::Result<slug::JsonReader> field = _chain[i - 1].FindField(_key);
             if (field)
             {
                 return field.GetValue();
@@ -407,16 +409,16 @@ std::optional<jug::JsonReader> EnemyDefParser::Find_(
 
 EnemyDefParser::Entries EnemyDefParser::Merge_(
     const Chain&          _chain,
-    const jug::StringView _key) const
+    const slug::StringView _key) const
 {
     Entries entries;
-    for (const jug::JsonReader& reader: _chain)
+    for (const slug::JsonReader& reader: _chain)
     {
         if (!reader.HasField(_key))
         {
             continue;
         }
-        const jug::Result<jug::JsonReader> field = reader.FindField(_key);
+        const slug::Result<slug::JsonReader> field = reader.FindField(_key);
         if (!field || !field->IsObject())
         {
             continue;   // 형식 오류는 호출자가 Find_ 로 다시 검사한다
@@ -430,7 +432,7 @@ EnemyDefParser::Entries EnemyDefParser::Merge_(
             }
             else
             {
-                entries.emplace_back(jug::String { name }, value);
+                entries.emplace_back(slug::String { name }, value);
             }
         }
     }
@@ -445,7 +447,7 @@ bool EnemyDefParser::ParseProjectile_(
     const RawDef& _raw,
     const Chain&  _chain)
 {
-    const jug::String& name = _raw.name;
+    const slug::String& name = _raw.name;
     if (!CheckKeys_(_chain, name, kProjectileKeys))
     {
         return false;
@@ -454,9 +456,9 @@ bool EnemyDefParser::ParseProjectile_(
     ProjectileDef projectile;
     projectile.name = name;
 
-    const auto Obj = [&](const jug::StringView _key) { return Find_(_chain, _key); };
+    const auto Obj = [&](const slug::StringView _key) { return Find_(_chain, _key); };
 
-    const std::optional<jug::JsonReader> box = Obj("box");
+    const std::optional<slug::JsonReader> box = Obj("box");
     if (!box)
     {
         Fail_(name, "box", "필수 값이 없습니다");
@@ -473,7 +475,7 @@ bool EnemyDefParser::ParseProjectile_(
 
     float lifetime = projectile.lifetimeSec;
     float delay    = 0.f;
-    for (const jug::JsonReader& reader: _chain)
+    for (const slug::JsonReader& reader: _chain)
     {
         if (!ReadInt_(name, "", reader, "damage", projectile.damage, false) || !ReadNum_(name, "", reader, "speed", projectile.speed, false) || !ReadNum_(name, "", reader, "gravity", projectile.gravity, false) || !ReadNum_(name, "", reader, "maxFall", projectile.maxFall, false) || !ReadNum_(name, "", reader, "lifetime", lifetime, false) || !ReadNum_(name, "", reader, "startDelay", delay, false) || !ReadVec2_(name, "", reader, "v0", projectile.v0))
         {
@@ -483,7 +485,7 @@ bool EnemyDefParser::ParseProjectile_(
     projectile.lifetimeSec   = lifetime;
     projectile.startDelaySec = delay;
 
-    if (const std::optional<jug::JsonReader> ramp = Obj("speedRamp"))
+    if (const std::optional<slug::JsonReader> ramp = Obj("speedRamp"))
     {
         if (!CheckObjectKeys_(name, "speedRamp", *ramp, kSpeedRampKeys) || !ReadNum_(name, "speedRamp", *ramp, "from", projectile.rampFrom, false) || !ReadNum_(name, "speedRamp", *ramp, "accel", projectile.rampAccel, true) || !ReadNum_(name, "speedRamp", *ramp, "max", projectile.rampMax, true))
         {
@@ -492,9 +494,9 @@ bool EnemyDefParser::ParseProjectile_(
         projectile.bRamp = true;
     }
 
-    if (const std::optional<jug::JsonReader> onSolid = Obj("onSolid"))
+    if (const std::optional<slug::JsonReader> onSolid = Obj("onSolid"))
     {
-        const jug::Result<jug::String> mode = onSolid->Read<jug::String>();
+        const slug::Result<slug::String> mode = onSolid->Read<slug::String>();
         if (!mode || (mode.GetValue() != "explode" && mode.GetValue() != "none"))
         {
             Fail_(name, "onSolid", "\"explode\" 또는 \"none\" 이어야 합니다");
@@ -503,7 +505,7 @@ bool EnemyDefParser::ParseProjectile_(
         projectile.bExplodeOnSolid = mode.GetValue() == "explode";
     }
 
-    const std::optional<jug::JsonReader> anim = Obj("anim");
+    const std::optional<slug::JsonReader> anim = Obj("anim");
     if (!anim || !CheckObjectKeys_(name, "anim", *anim, kAnimKeys))
     {
         Fail_(name, "anim", "{fly[, begin]} 가 필요합니다");
@@ -515,14 +517,14 @@ bool EnemyDefParser::ParseProjectile_(
         return false;
     }
     {
-        const jug::Result<jug::JsonReader> fly = anim->FindField("fly");
+        const slug::Result<slug::JsonReader> fly = anim->FindField("fly");
         if (!fly || !ReadClip_(name, "anim.fly", fly.GetValue(), projectile.fly))
         {
             return false;
         }
         if (anim->HasField("begin"))
         {
-            const jug::Result<jug::JsonReader> begin = anim->FindField("begin");
+            const slug::Result<slug::JsonReader> begin = anim->FindField("begin");
             if (!begin || !ReadClip_(name, "anim.begin", begin.GetValue(), projectile.begin))
             {
                 return false;
@@ -530,7 +532,7 @@ bool EnemyDefParser::ParseProjectile_(
         }
         if (anim->HasField("land"))
         {
-            const jug::Result<jug::JsonReader> land = anim->FindField("land");
+            const slug::Result<slug::JsonReader> land = anim->FindField("land");
             if (!land || !ReadClip_(name, "anim.land", land.GetValue(), projectile.land))
             {
                 return false;
@@ -538,7 +540,7 @@ bool EnemyDefParser::ParseProjectile_(
         }
     }
 
-    if (const std::optional<jug::JsonReader> explosion = Obj("explosion"))
+    if (const std::optional<slug::JsonReader> explosion = Obj("explosion"))
     {
         if (!CheckObjectKeys_(name, "explosion", *explosion, kExplosionKeys) || !ReadStr_(name, "explosion", *explosion, "fx", projectile.explosion.clip, true) || !ReadVec2_(name, "explosion", *explosion, "offset", projectile.explosion.offset))
         {
@@ -547,7 +549,7 @@ bool EnemyDefParser::ParseProjectile_(
     }
 
     // 구르는 탄 (사루비아 수류탄)
-    for (const jug::JsonReader& reader: _chain)
+    for (const slug::JsonReader& reader: _chain)
     {
         if (!ReadNum_(name, "", reader, "rollSpeed", projectile.rollSpeed, false) || !ReadNum_(name, "", reader, "rollSec", projectile.rollSec, false) || !ReadBool_(name, "", reader, "expireFx", projectile.bExpireFx))
         {
@@ -572,19 +574,19 @@ bool EnemyDefParser::ParseProjectile_(
 // ===========================================
 
 bool EnemyDefParser::ParseWeapon_(
-    const jug::String&     _def,
-    const jug::String&     _name,
-    const jug::JsonReader& _reader,
+    const slug::String&     _def,
+    const slug::String&     _name,
+    const slug::JsonReader& _reader,
     WeaponDef&             _out)
 {
-    const jug::String field = std::format("weapons.{}", _name);
+    const slug::String field = std::format("weapons.{}", _name);
     if (!CheckObjectKeys_(_def, field, _reader, kWeaponKeys))
     {
         return false;
     }
     _out.name = _name;
 
-    jug::String projectileName;
+    slug::String projectileName;
     if (!ReadStr_(_def, field, _reader, "projectile", projectileName, false) || !ReadVec2_(_def, field, _reader, "muzzle", _out.muzzle))
     {
         return false;
@@ -599,7 +601,7 @@ bool EnemyDefParser::ParseWeapon_(
         }
     }
 
-    jug::String aim;
+    slug::String aim;
     if (!ReadStr_(_def, field, _reader, "aim", aim, false))
     {
         return false;
@@ -623,7 +625,7 @@ bool EnemyDefParser::ParseWeapon_(
 
     if (_reader.HasField("tilt"))
     {
-        const jug::Result<jug::JsonReader> tilt = _reader.FindField("tilt");
+        const slug::Result<slug::JsonReader> tilt = _reader.FindField("tilt");
         if (!tilt || !CheckObjectKeys_(_def, field + ".tilt", tilt.GetValue(), kTiltKeys) || !ReadNum_(_def, field + ".tilt", tilt.GetValue(), "threshold", _out.tiltThreshold, true) || !ReadNum_(_def, field + ".tilt", tilt.GetValue(), "dy", _out.tiltDy, true))
         {
             return false;
@@ -631,7 +633,7 @@ bool EnemyDefParser::ParseWeapon_(
     }
     if (_reader.HasField("arc"))
     {
-        const jug::Result<jug::JsonReader> arc = _reader.FindField("arc");
+        const slug::Result<slug::JsonReader> arc = _reader.FindField("arc");
         if (!arc || !CheckObjectKeys_(_def, field + ".arc", arc.GetValue(), kArcKeys) || !ReadNum_(_def, field + ".arc", arc.GetValue(), "minVx", _out.arcMinVx, true) || !ReadNum_(_def, field + ".arc", arc.GetValue(), "maxVx", _out.arcMaxVx, true))
         {
             return false;
@@ -640,7 +642,7 @@ bool EnemyDefParser::ParseWeapon_(
     }
     if (_reader.HasField("muzzleFx"))
     {
-        const jug::Result<jug::JsonReader> fx = _reader.FindField("muzzleFx");
+        const slug::Result<slug::JsonReader> fx = _reader.FindField("muzzleFx");
         if (!fx || !ReadFx_(_def, field + ".muzzleFx", fx.GetValue(), _out.muzzleFx))
         {
             return false;
@@ -648,7 +650,7 @@ bool EnemyDefParser::ParseWeapon_(
     }
     if (_reader.HasField("hitbox"))
     {
-        const jug::Result<jug::JsonReader> hitbox = _reader.FindField("hitbox");
+        const slug::Result<slug::JsonReader> hitbox = _reader.FindField("hitbox");
         if (!hitbox || !CheckObjectKeys_(_def, field + ".hitbox", hitbox.GetValue(), kHitboxKeys))
         {
             return false;
@@ -671,9 +673,9 @@ bool EnemyDefParser::ParseWeapon_(
 
 bool EnemyDefParser::ParseDeath_(
     EnemyDef&              _def,
-    const jug::JsonReader& _death)
+    const slug::JsonReader& _death)
 {
-    const jug::String& name = _def.name;
+    const slug::String& name = _def.name;
     if (!CheckObjectKeys_(name, "death", _death, kDeathKeys))
     {
         return false;
@@ -686,7 +688,7 @@ bool EnemyDefParser::ParseDeath_(
         {
             return true;
         }
-        jug::String logical;
+        slug::String logical;
         if (!ReadStr_(name, "death", _death, _key, logical, true))
         {
             return false;
@@ -711,14 +713,14 @@ bool EnemyDefParser::ParseDeath_(
 
     if (_death.HasField("fx"))
     {
-        const jug::Result<jug::JsonReader> fx = _death.FindField("fx");
+        const slug::Result<slug::JsonReader> fx = _death.FindField("fx");
         if (!fx || !fx->IsArray())
         {
             Fail_(name, "death.fx", "배열이 아닙니다");
             return false;
         }
         int index = 0;
-        for (const jug::JsonReader item: fx->GetArray())
+        for (const slug::JsonReader item: fx->GetArray())
         {
             FxDef def;
             if (!ReadFx_(name, std::format("death.fx[{}]", index++), item, def))
@@ -739,7 +741,7 @@ bool EnemyDefParser::ParseEnemy_(
     const RawDef& _raw,
     const Chain&  _chain)
 {
-    const jug::String& name = _raw.name;
+    const slug::String& name = _raw.name;
     if (!CheckKeys_(_chain, name, kEnemyKeys))
     {
         return false;
@@ -749,10 +751,10 @@ bool EnemyDefParser::ParseEnemy_(
     def.name = name;
 
     // --- 종류 / 행동 / 팀 ---
-    jug::String kind;
-    jug::String behaviorName;
-    jug::String teamName;
-    for (const jug::JsonReader& reader: _chain)
+    slug::String kind;
+    slug::String behaviorName;
+    slug::String teamName;
+    for (const slug::JsonReader& reader: _chain)
     {
         if (!ReadStr_(name, "", reader, "kind", kind, false) || !ReadStr_(name, "", reader, "behavior", behaviorName, false) || !ReadStr_(name, "", reader, "team", teamName, false))
         {
@@ -809,7 +811,7 @@ bool EnemyDefParser::ParseEnemy_(
     // --- 수치 ---
     def.activation.marginPx = m_lib.m_globals.activationMarginPx;
     float ttk               = 0.f;
-    for (const jug::JsonReader& reader: _chain)
+    for (const slug::JsonReader& reader: _chain)
     {
         if (!ReadInt_(name, "", reader, "hp", def.hp, false) || !ReadInt_(name, "", reader, "score", def.score, false) || !ReadNum_(name, "", reader, "ttk", ttk, false))
         {
@@ -828,10 +830,10 @@ bool EnemyDefParser::ParseEnemy_(
     }
     if (ttk > 0.f && std::abs(static_cast<float>(def.hp) - ttk * m_lib.m_globals.dpsRef) > 0.05f * static_cast<float>(def.hp))
     {
-        JUG_CORE_LOG_WARN("{}: hp({}) 가 ttk({}) x dpsRef({}) 와 5% 이상 다릅니다", name, def.hp, ttk, m_lib.m_globals.dpsRef);
+        SLUG_LOG_WARN("{}: hp({}) 가 ttk({}) x dpsRef({}) 와 5% 이상 다릅니다", name, def.hp, ttk, m_lib.m_globals.dpsRef);
     }
 
-    const std::optional<jug::JsonReader> body = Find_(_chain, "body");
+    const std::optional<slug::JsonReader> body = Find_(_chain, "body");
     if (!body || !ReadBox_(name, "body", *body, def.body))
     {
         if (!body)
@@ -841,7 +843,7 @@ bool EnemyDefParser::ParseEnemy_(
         return false;
     }
     def.hurtbox = def.body;
-    if (const std::optional<jug::JsonReader> hurtbox = Find_(_chain, "hurtbox"))
+    if (const std::optional<slug::JsonReader> hurtbox = Find_(_chain, "hurtbox"))
     {
         def.hurtbox = BoxDef {};
         if (!ReadBox_(name, "hurtbox", *hurtbox, def.hurtbox))
@@ -850,9 +852,9 @@ bool EnemyDefParser::ParseEnemy_(
         }
     }
 
-    if (const std::optional<jug::JsonReader> activation = Find_(_chain, "activation"))
+    if (const std::optional<slug::JsonReader> activation = Find_(_chain, "activation"))
     {
-        jug::String mode;
+        slug::String mode;
         if (!CheckObjectKeys_(name, "activation", *activation, kActivationKeys) || !ReadStr_(name, "activation", *activation, "mode", mode, false) || !ReadNum_(name, "activation", *activation, "marginPx", def.activation.marginPx, false) || !ReadBool_(name, "activation", *activation, "latch", def.activation.bLatch))
         {
             return false;
@@ -868,7 +870,7 @@ bool EnemyDefParser::ParseEnemy_(
         }
     }
 
-    if (const std::optional<jug::JsonReader> physics = Find_(_chain, "physics"))
+    if (const std::optional<slug::JsonReader> physics = Find_(_chain, "physics"))
     {
         PhysicsDef& p = def.physics;
         if (!CheckObjectKeys_(name, "physics", *physics, kPhysicsKeys) || !ReadNum_(name, "physics", *physics, "gravity", p.gravity, false) || !ReadNum_(name, "physics", *physics, "maxFall", p.maxFall, false) || !ReadNum_(name, "physics", *physics, "speed", p.speed, false) || !ReadNum_(name, "physics", *physics, "jumpVy", p.jumpVy, false) || !ReadNum_(name, "physics", *physics, "dropSpeed", p.dropSpeed, false) || !ReadNum_(name, "physics", *physics, "footHalfWidth", p.footHalfWidth, false) || !ReadBool_(name, "physics", *physics, "useGravity", p.bGravity))
@@ -898,7 +900,7 @@ bool EnemyDefParser::ParseEnemy_(
         def.weapons.push_back(std::move(weapon));
     }
 
-    if (const std::optional<jug::JsonReader> death = Find_(_chain, "death"))
+    if (const std::optional<slug::JsonReader> death = Find_(_chain, "death"))
     {
         if (!ParseDeath_(def, *death))
         {
@@ -906,7 +908,7 @@ bool EnemyDefParser::ParseEnemy_(
         }
     }
 
-    if (const std::optional<jug::JsonReader> drops = Find_(_chain, "drops"))
+    if (const std::optional<slug::JsonReader> drops = Find_(_chain, "drops"))
     {
         if (!drops->IsArray())
         {
@@ -914,10 +916,10 @@ bool EnemyDefParser::ParseEnemy_(
             return false;
         }
         int index = 0;
-        for (const jug::JsonReader item: drops->GetArray())
+        for (const slug::JsonReader item: drops->GetArray())
         {
             DropDef drop;
-            const jug::String field = std::format("drops[{}]", index++);
+            const slug::String field = std::format("drops[{}]", index++);
             if (!CheckObjectKeys_(name, field, item, kDropKeys) || !ReadStr_(name, field, item, "item", drop.item, true) || !ReadInt_(name, field, item, "count", drop.count, false))
             {
                 return false;
@@ -926,9 +928,9 @@ bool EnemyDefParser::ParseEnemy_(
         }
     }
 
-    if (const std::optional<jug::JsonReader> overlay = Find_(_chain, "overlay"))
+    if (const std::optional<slug::JsonReader> overlay = Find_(_chain, "overlay"))
     {
-        jug::String clip;
+        slug::String clip;
         if (!CheckObjectKeys_(name, "overlay", *overlay, kOverlayKeys) || !ReadStr_(name, "overlay", *overlay, "clip", clip, true) || !ReadVec2_(name, "overlay", *overlay, "offset", def.overlayOffset))
         {
             return false;
@@ -941,7 +943,7 @@ bool EnemyDefParser::ParseEnemy_(
         }
     }
 
-    for (const jug::JsonReader& reader: _chain)
+    for (const slug::JsonReader& reader: _chain)
     {
         if (!ReadBool_(name, "", reader, "noDespawn", def.bNoDespawn) || !ReadBool_(name, "", reader, "human", def.bHuman))
         {
@@ -950,13 +952,13 @@ bool EnemyDefParser::ParseEnemy_(
     }
 
     // --- 행동별 설정 (params) ---
-    jug::Vector<ParamEntry> params;
+    slug::Vector<ParamEntry> params;
     for (auto& [key, reader]: Merge_(_chain, "params"))
     {
         params.emplace_back(key, reader);
     }
     {
-        jug::String message;
+        slug::String message;
         DefReader   reader { name, def, params, message };
         switch (def.behavior)
         {
@@ -995,15 +997,15 @@ bool EnemyDefParser::ParseEnemy_(
 // ===========================================
 
 bool EnemyDefParser::Run(
-    const jug::JsonReader& _root)
+    const slug::JsonReader& _root)
 {
-    return RunMany(jug::Span<const jug::JsonReader> { &_root, 1 });
+    return RunMany(slug::Span<const slug::JsonReader> { &_root, 1 });
 }
 
 bool EnemyDefParser::RunMany(
-    const jug::Span<const jug::JsonReader> _roots)
+    const slug::Span<const slug::JsonReader> _roots)
 {
-    for (const jug::JsonReader& root: _roots)
+    for (const slug::JsonReader& root: _roots)
     {
         if (!AddRoot_(root))
         {
@@ -1014,7 +1016,7 @@ bool EnemyDefParser::RunMany(
 }
 
 bool EnemyDefParser::AddRoot_(
-    const jug::JsonReader& _root)
+    const slug::JsonReader& _root)
 {
     constexpr const char* kRoot = "Enemies.json";
     if (!CheckObjectKeys_(kRoot, "", _root, kRootKeys))
@@ -1035,7 +1037,7 @@ bool EnemyDefParser::AddRoot_(
 
     if (_root.HasField("globals"))
     {
-        const jug::Result<jug::JsonReader> globals = _root.FindField("globals");
+        const slug::Result<slug::JsonReader> globals = _root.FindField("globals");
         EnemyGlobals&                      g       = m_lib.m_globals;
         if (!globals || !CheckObjectKeys_(kRoot, "globals", globals.GetValue(), kGlobalKeys) || !ReadNum_(kRoot, "globals", globals.GetValue(), "dpsRef", g.dpsRef, false) || !ReadNum_(kRoot, "globals", globals.GetValue(), "activationMarginPx", g.activationMarginPx, false) || !ReadNum_(kRoot, "globals", globals.GetValue(), "despawnBehindCameraPx", g.despawnBehindCameraPx, false) || !ReadNum_(kRoot, "globals", globals.GetValue(), "despawnBelowCameraPx", g.despawnBelowCameraPx, false))
         {
@@ -1043,7 +1045,7 @@ bool EnemyDefParser::AddRoot_(
         }
     }
 
-    const jug::Result<jug::JsonReader> defs = _root.FindField("defs");
+    const slug::Result<slug::JsonReader> defs = _root.FindField("defs");
     if (!defs || !defs->IsObject())
     {
         Fail_(kRoot, "defs", "객체가 필요합니다");
@@ -1051,13 +1053,13 @@ bool EnemyDefParser::AddRoot_(
     }
     for (const auto [name, reader]: defs->GetObject())
     {
-        if (m_rawIndex.contains(jug::String { name }))
+        if (m_rawIndex.contains(slug::String { name }))
         {
             Fail_(name, "", "정의 이름이 중복되었습니다");
             return false;
         }
-        m_rawIndex[jug::String { name }] = static_cast<int>(m_raw.size());
-        m_raw.push_back({ jug::String { name }, reader });
+        m_rawIndex[slug::String { name }] = static_cast<int>(m_raw.size());
+        m_raw.push_back({ slug::String { name }, reader });
     }
     return true;
 }
@@ -1084,8 +1086,8 @@ bool EnemyDefParser::Finish_()
                 continue;
             }
 
-            jug::String kind;
-            for (const jug::JsonReader& reader: chain)
+            slug::String kind;
+            for (const slug::JsonReader& reader: chain)
             {
                 if (!ReadStr_(raw.name, "", reader, "kind", kind, false))
                 {
@@ -1120,19 +1122,19 @@ bool EnemyDefParser::Finish_()
 //  EnemyDefLibrary
 // ===========================================
 
-jug::Result<EnemyDefLibrary> EnemyDefLibrary::Parse(
-    const jug::StringView _json,
-    jug::String*          _pMessage)
+slug::Result<EnemyDefLibrary> EnemyDefLibrary::Parse(
+    const slug::StringView _json,
+    slug::String*          _pMessage)
 {
-    jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::Load(_json, jug::eJsonLoadOption::AllowComments);
+    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::Load(_json, slug::eJsonLoadOption::AllowComments);
     if (!doc)
     {
         if (_pMessage)
         {
             *_pMessage = "Enemies.json: JSON 구문 오류";
         }
-        JUG_CORE_LOG_ERROR("Enemies.json: JSON 구문 오류");
-        return jug::Error { eError::Parse };
+        SLUG_LOG_ERROR("Enemies.json: JSON 구문 오류");
+        return slug::Error { eError::Parse };
     }
 
     EnemyDefLibrary library;
@@ -1143,25 +1145,25 @@ jug::Result<EnemyDefLibrary> EnemyDefLibrary::Parse(
         {
             *_pMessage = parser.error;
         }
-        JUG_CORE_LOG_ERROR("적 정의 오류: {}", parser.error);
-        return jug::Error { eError::EnemyDef };
+        SLUG_LOG_ERROR("적 정의 오류: {}", parser.error);
+        return slug::Error { eError::EnemyDef };
     }
     return library;
 }
 
-jug::Result<EnemyDefLibrary> EnemyDefLibrary::Load(
-    const jug::FilePath& _path,
-    jug::String*         _pMessage)
+slug::Result<EnemyDefLibrary> EnemyDefLibrary::Load(
+    const slug::FilePath& _path,
+    slug::String*         _pMessage)
 {
-    jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::LoadFromFile(_path, jug::eJsonLoadOption::AllowComments);
+    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::LoadFromFile(_path, slug::eJsonLoadOption::AllowComments);
     if (!doc)
     {
         if (_pMessage)
         {
             *_pMessage = std::format("{}: 파일을 열 수 없거나 JSON 구문 오류", _path.string());
         }
-        JUG_CORE_LOG_ERROR("적 정의 파일 로드 실패: {}", _path.string());
-        return jug::Error { eError::FileOpen };
+        SLUG_LOG_ERROR("적 정의 파일 로드 실패: {}", _path.string());
+        return slug::Error { eError::FileOpen };
     }
 
     EnemyDefLibrary library;
@@ -1172,17 +1174,17 @@ jug::Result<EnemyDefLibrary> EnemyDefLibrary::Load(
         {
             *_pMessage = parser.error;
         }
-        JUG_CORE_LOG_ERROR("적 정의 오류 ({}): {}", _path.string(), parser.error);
-        return jug::Error { eError::EnemyDef };
+        SLUG_LOG_ERROR("적 정의 오류 ({}): {}", _path.string(), parser.error);
+        return slug::Error { eError::EnemyDef };
     }
     return library;
 }
 
-jug::Result<EnemyDefLibrary> EnemyDefLibrary::LoadDirectory(
-    const jug::FilePath& _dir,
-    jug::String*         _pMessage)
+slug::Result<EnemyDefLibrary> EnemyDefLibrary::LoadDirectory(
+    const slug::FilePath& _dir,
+    slug::String*         _pMessage)
 {
-    jug::Vector<jug::FilePath> files;
+    slug::Vector<slug::FilePath> files;
     std::error_code            ec;
     for (const auto& entry: std::filesystem::directory_iterator(_dir, ec))
     {
@@ -1197,27 +1199,27 @@ jug::Result<EnemyDefLibrary> EnemyDefLibrary::LoadDirectory(
         {
             *_pMessage = std::format("{}: 정의 파일(*.json)을 찾을 수 없습니다", _dir.string());
         }
-        JUG_CORE_LOG_ERROR("적 정의 폴더 로드 실패: {}", _dir.string());
-        return jug::Error { eError::FileOpen };
+        SLUG_LOG_ERROR("적 정의 폴더 로드 실패: {}", _dir.string());
+        return slug::Error { eError::FileOpen };
     }
     std::sort(files.begin(), files.end());
 
     // JsonReader 는 JsonDeserializer 가 살아 있는 동안만 유효하므로 모두 보관한다.
-    jug::Vector<jug::JsonDeserializer> docs;
+    slug::Vector<slug::JsonDeserializer> docs;
     docs.reserve(files.size());
-    jug::Vector<jug::JsonReader> roots;
+    slug::Vector<slug::JsonReader> roots;
     roots.reserve(files.size());
-    for (const jug::FilePath& file: files)
+    for (const slug::FilePath& file: files)
     {
-        jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::LoadFromFile(file, jug::eJsonLoadOption::AllowComments);
+        slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::LoadFromFile(file, slug::eJsonLoadOption::AllowComments);
         if (!doc)
         {
             if (_pMessage)
             {
                 *_pMessage = std::format("{}: 파일을 열 수 없거나 JSON 구문 오류", file.string());
             }
-            JUG_CORE_LOG_ERROR("적 정의 파일 로드 실패: {}", file.string());
-            return jug::Error { eError::FileOpen };
+            SLUG_LOG_ERROR("적 정의 파일 로드 실패: {}", file.string());
+            return slug::Error { eError::FileOpen };
         }
         docs.push_back(doc.Take());
         roots.push_back(docs.back().GetReader());
@@ -1231,49 +1233,49 @@ jug::Result<EnemyDefLibrary> EnemyDefLibrary::LoadDirectory(
         {
             *_pMessage = parser.error;
         }
-        JUG_CORE_LOG_ERROR("적 정의 오류 ({}): {}", _dir.string(), parser.error);
-        return jug::Error { eError::EnemyDef };
+        SLUG_LOG_ERROR("적 정의 오류 ({}): {}", _dir.string(), parser.error);
+        return slug::Error { eError::EnemyDef };
     }
     return library;
 }
 
-jug::FilePath EnemyDefLibrary::GetDefaultPath(
-    const jug::FilePath& _assetRoot)
+slug::FilePath EnemyDefLibrary::GetDefaultPath(
+    const slug::FilePath& _assetRoot)
 {
     return _assetRoot / "Defs" / "Enemies.json";
 }
 
-jug::FilePath EnemyDefLibrary::GetDefaultDirectory(
-    const jug::FilePath& _assetRoot)
+slug::FilePath EnemyDefLibrary::GetDefaultDirectory(
+    const slug::FilePath& _assetRoot)
 {
     return _assetRoot / "Defs";
 }
 
 const EnemyDef* EnemyDefLibrary::Find(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
     const int index = FindIndex(_name);
     return index < 0 ? nullptr : &m_defs[static_cast<size_t>(index)];
 }
 
 int EnemyDefLibrary::FindIndex(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
-    const auto it = m_defIndex.find(jug::String { _name });
+    const auto it = m_defIndex.find(slug::String { _name });
     return it == m_defIndex.end() ? -1 : it->second;
 }
 
 const ProjectileDef* EnemyDefLibrary::FindProjectile(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
     const int index = FindProjectileIndex(_name);
     return index < 0 ? nullptr : &m_projectiles[static_cast<size_t>(index)];
 }
 
 int EnemyDefLibrary::FindProjectileIndex(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
-    const auto it = m_projIndex.find(jug::String { _name });
+    const auto it = m_projIndex.find(slug::String { _name });
     return it == m_projIndex.end() ? -1 : it->second;
 }
 

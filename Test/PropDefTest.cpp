@@ -1,7 +1,8 @@
 #include <iterator>
+#include "Base/Types.h"
 #include <string>
 
-#include <JugX/JsonDeserializer.h>
+#include "Base/Json.h"
 
 #include "PropTestUtil.h"
 
@@ -16,9 +17,9 @@ std::string Wrap(const std::string& _defs)
     return std::string { "{ \"version\": 1, \"defs\": { " } + _defs + " } }";
 }
 
-jug::Result<PropDefLibrary> ParseText(const std::string& _text, jug::String* _pMessage = nullptr)
+slug::Result<PropDefLibrary> ParseText(const std::string& _text, slug::String* _pMessage = nullptr)
 {
-    return PropDefLibrary::Parse(jug::StringView { _text.c_str(), _text.size() }, _pMessage);
+    return PropDefLibrary::Parse(slug::StringView { _text.c_str(), _text.size() }, _pMessage);
 }
 
 }   // namespace
@@ -158,7 +159,7 @@ TEST(PropDef, ClipAndSpriteNamesExistInBakedAssets)
     {
         GTEST_SKIP() << "Assets/Baked 없음: Scripts/Bake.ps1 로 생성한 뒤 다시 실행하세요.";
     }
-    const jug::String missing = GetPropLib().FindMissingAsset(anims, sprites);
+    const slug::String missing = GetPropLib().FindMissingAsset(anims, sprites);
     EXPECT_TRUE(missing.empty()) << std::string { missing.c_str() };
 }
 
@@ -168,7 +169,7 @@ TEST(PropDef, ClipAndSpriteNamesExistInBakedAssets)
 
 TEST(PropDef, RejectsUnknownKeyWithPath)
 {
-    jug::String msg;
+    slug::String msg;
     auto        r = ParseText(Wrap(R"("bad": { "hp": 1, "bogus": 3 })"), &msg);
     EXPECT_FALSE(static_cast<bool>(r));
     EXPECT_NE(std::string { msg.c_str() }.find("bogus"), std::string::npos);
@@ -190,7 +191,7 @@ TEST(PropDef, RejectsMissingHpNegativeHpAndBadVersion)
 
 TEST(PropDef, RejectsVisualWithBothAnimAndSprite)
 {
-    jug::String msg;
+    slug::String msg;
     EXPECT_FALSE(static_cast<bool>(ParseText(Wrap(R"("a": { "hp": 1, "idle": { "anim": "A", "sprite": "B" } })"), &msg)));
     EXPECT_NE(std::string { msg.c_str() }.find("하나"), std::string::npos);
 }
@@ -222,10 +223,10 @@ TEST(PropDef, RejectsGunItemWithoutWeaponAndUnknownKind)
 TEST(PropDef, SpawnParamsParseStageOverrides)
 {
     const PropDefLibrary& lib = GetPropLib();
-    auto doc = jug::JsonDeserializer::Load(R"({ "hp": 30, "sprites": ["A", "B"], "hitbox": { "size": [150, 75], "offset": [0, -200] }, "standBox": { "size": [230, 20], "offset": [35, 55] } })");
+    auto doc = slug::JsonDeserializer::Load(R"({ "hp": 30, "sprites": ["A", "B"], "hitbox": { "size": [150, 75], "offset": [0, -200] }, "standBox": { "size": [230, 20], "offset": [35, 55] } })");
     ASSERT_TRUE(static_cast<bool>(doc));
     PropSpawnParams params;
-    jug::String     err;
+    slug::String     err;
     ASSERT_TRUE(lib.ParseSpawnParams("shop_5", doc->GetReader(), params, err)) << std::string { err.c_str() };
     EXPECT_EQ(params.hp, 30);
     EXPECT_EQ(params.idleSprite.c_str(), std::string { "A" });
@@ -239,14 +240,14 @@ TEST(PropDef, SpawnParamsParseStageOverrides)
 TEST(PropDef, SpawnParamsRejectUnknownKeysAndBadVariant)
 {
     const PropDefLibrary& lib = GetPropLib();
-    auto                  doc = jug::JsonDeserializer::Load(R"({ "playerWaterTrigger": { "size": [1050, 40] } })");
+    auto                  doc = slug::JsonDeserializer::Load(R"({ "playerWaterTrigger": { "size": [1050, 40] } })");
     ASSERT_TRUE(static_cast<bool>(doc));
     PropSpawnParams params;
-    jug::String     err;
+    slug::String     err;
     EXPECT_FALSE(lib.ParseSpawnParams("shop_0", doc->GetReader(), params, err));
     EXPECT_NE(std::string { err.c_str() }.find("playerWaterTrigger"), std::string::npos);
 
-    auto doc2 = jug::JsonDeserializer::Load(R"({ "variant": 1 })");
+    auto doc2 = slug::JsonDeserializer::Load(R"({ "variant": 1 })");
     ASSERT_TRUE(static_cast<bool>(doc2));
     EXPECT_FALSE(lib.ParseSpawnParams("shop_0", doc2->GetReader(), params, err));   // 변종 없는 정의
     EXPECT_FALSE(lib.ParseSpawnParams("nope", doc2->GetReader(), params, err));     // 없는 정의

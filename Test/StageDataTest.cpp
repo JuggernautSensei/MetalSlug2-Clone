@@ -1,8 +1,10 @@
 #include <cmath>
+#include "Base/Types.h"
+#include "Base/Result.h"
 
 #include <gtest/gtest.h>
 
-#include "Core/Error.h"
+#include "Base/Error.h"
 #include "StageTestUtil.h"
 
 using namespace slug;
@@ -209,9 +211,9 @@ TEST(StageData, BoundsCurveResolvesSectionIndicesAndEvaluates)
 TEST(StageDataErrors, InvalidJsonSyntax)
 {
     StageLoadDiagnostics diag;
-    const jug::Result<StageData> result = LoadStageFromJson("{ not json", &diag);
+    const slug::Result<StageData> result = LoadStageFromJson("{ not json", &diag);
     ASSERT_FALSE(result);
-    EXPECT_EQ(result.GetError().GetErrorCode(), static_cast<int>(eError::Parse));
+    EXPECT_EQ(result.GetError().GetCode(), eError::Parse);
     EXPECT_NE(diag.message.find("syntax"), std::string::npos);
 }
 
@@ -330,9 +332,9 @@ TEST(StageDataErrors, GroundAndBackdropInitialMustExist)
 TEST(StageDataErrors, MissingFileIsReported)
 {
     StageLoadDiagnostics diag;
-    const jug::Result<StageData> result = LoadStageFromFile("does/not/exist/Stage.json", &diag);
+    const slug::Result<StageData> result = LoadStageFromFile("does/not/exist/Stage.json", &diag);
     ASSERT_FALSE(result);
-    EXPECT_EQ(result.GetError().GetErrorCode(), static_cast<int>(eError::FileOpen));
+    EXPECT_EQ(result.GetError().GetCode(), eError::FileOpen);
 }
 
 // ===========================================
@@ -342,7 +344,7 @@ TEST(StageDataErrors, MissingFileIsReported)
 TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
 {
     StageLoadDiagnostics diag;
-    jug::Result<StageData> result = LoadStageFromFile(jug::FilePath { SLUG_ASSET_DIR } / "Stage" / "Stage0.json", &diag);
+    slug::Result<StageData> result = LoadStageFromFile(slug::FilePath { SLUG_ASSET_DIR } / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
@@ -384,7 +386,7 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
 
 TEST(StageDataReal, Stage0KeySemantics)
 {
-    jug::Result<StageData> result = LoadStageFromFile(jug::FilePath { SLUG_ASSET_DIR } / "Stage" / "Stage0.json");
+    slug::Result<StageData> result = LoadStageFromFile(slug::FilePath { SLUG_ASSET_DIR } / "Stage" / "Stage0.json");
     ASSERT_TRUE(result);
     const StageData data = result.Take();
 

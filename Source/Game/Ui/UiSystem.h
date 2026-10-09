@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#include <JugX/Typedef.h>
+#include "Base/Types.h"
 
 #include "Game/GameState.h"
 #include "Game/Ui/Banner.h"
@@ -40,11 +40,11 @@ public:
     void DrawFade(GameContext& _ctx);
     void DrawOverlays(GameContext& _ctx);   // 페이드 → 배너 (배너가 가장 위)
 
-    void DrawText(GameContext& _ctx, int _x, int _y, jug::StringView _text, const TextStyle& _style) const;
+    void DrawText(GameContext& _ctx, int _x, int _y, slug::StringView _text, const TextStyle& _style) const;
     // sprites.json 의 정적 스프라이트를 중심 좌표에 _scale 배로 그린다. 없으면 false.
-    bool DrawSprite(GameContext& _ctx, jug::StringView _name, int _centerX, int _centerY, int _scale = 1, uint8_t _alpha = 255) const;
+    bool DrawSprite(GameContext& _ctx, slug::StringView _name, int _centerX, int _centerY, int _scale = 1, uint8_t _alpha = 255) const;
     // 큰 독립 텍스처(예: TitleBackground)를 화면 좌표 (_x,_y) 에 그린다. 텍스처는 SpriteBatch 별로 한 번만 로드한다.
-    bool DrawStandalone(GameContext& _ctx, jug::StringView _name, int _x, int _y, uint8_t _alpha = 255) const;
+    bool DrawStandalone(GameContext& _ctx, slug::StringView _name, int _x, int _y, uint8_t _alpha = 255) const;
 
     // --- 접근 ---
     [[nodiscard]] BannerSystem&         GetBanner() { return m_banner; }
@@ -58,7 +58,7 @@ public:
     [[nodiscard]] bool                  HasSprites() const { return m_bSprites; }
 
     // 편의: 스펙 없이 배너를 바로 띄운다
-    void ShowBanner(jug::StringView _text, float _seconds) { m_banner.Show(MakeBannerSpec(_text, _seconds)); }
+    void ShowBanner(slug::StringView _text, float _seconds) { m_banner.Show(MakeBannerSpec(_text, _seconds)); }
 
 private:
     UiLayout      m_layout  = {};

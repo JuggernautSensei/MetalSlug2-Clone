@@ -1,9 +1,10 @@
 #include "Game/Combat/Projectiles.h"
+#include "Base/Types.h"
 
 #include <algorithm>
 #include <cmath>
 
-#include <JugX/Math.h>
+#include "Base/Math.h"
 
 #include "World/Geometry.h"
 
@@ -15,20 +16,20 @@ namespace
     // 선분 위를 _stepPx 간격으로 훑어 첫 고체 지점을 찾는다. 찾으면 직전의 비고체 지점을 _outLastFree 에 돌려준다.
     [[nodiscard]] bool SegmentHitsGround_(
         const GroundMap&   _ground,
-        const jug::VECTOR2 _from,
-        const jug::VECTOR2 _to,
-        jug::VECTOR2&      _outLastFree)
+        const Vec2 _from,
+        const Vec2 _to,
+        Vec2&      _outLastFree)
     {
         const float dx   = _to.x - _from.x;
         const float dy   = _to.y - _from.y;
         const float dist = std::sqrt(dx * dx + dy * dy);
-        const int   n    = jug::Max(1, CeilToInt(dist / 2.f));
+        const int   n    = slug::Max(1, CeilToInt(dist / 2.f));
 
-        jug::VECTOR2 lastFree = _from;
+        Vec2 lastFree = _from;
         for (int i = 1; i <= n; ++i)
         {
             const float        t = static_cast<float>(i) / static_cast<float>(n);
-            const jug::VECTOR2 p = { _from.x + dx * t, _from.y + dy * t };
+            const Vec2 p = { _from.x + dx * t, _from.y + dy * t };
             if (_ground.IsSolidAt(p))
             {
                 _outLastFree = lastFree;
@@ -40,13 +41,13 @@ namespace
     }
 
     [[nodiscard]] Aabb SweptBox_(
-        const jug::VECTOR2 _a,
-        const jug::VECTOR2 _b,
-        const jug::VECTOR2 _size)
+        const Vec2 _a,
+        const Vec2 _b,
+        const Vec2 _size)
     {
         return Aabb::FromMinMax(
-            { jug::Min(_a.x, _b.x) - _size.x * 0.5f, jug::Min(_a.y, _b.y) - _size.y * 0.5f },
-            { jug::Max(_a.x, _b.x) + _size.x * 0.5f, jug::Max(_a.y, _b.y) + _size.y * 0.5f });
+            { slug::Min(_a.x, _b.x) - _size.x * 0.5f, slug::Min(_a.y, _b.y) - _size.y * 0.5f },
+            { slug::Max(_a.x, _b.x) + _size.x * 0.5f, slug::Max(_a.y, _b.y) + _size.y * 0.5f });
     }
 }   // namespace
 
@@ -112,7 +113,7 @@ void ProjectileSystem::SpawnShot(
 
 void ProjectileSystem::ExplodeBomb_(
     Bomb&              _bomb,
-    const jug::VECTOR2 _at,
+    const Vec2 _at,
     CombatSystem&      _combat)
 {
     _bomb.bAlive = false;
@@ -171,7 +172,7 @@ void ProjectileSystem::Step(
         }
         else if (_pGround)
         {
-            jug::VECTOR2 lastFree;
+            Vec2 lastFree;
             if (SegmentHitsGround_(*_pGround, bullet.renderPrev, bullet.position, lastFree))
             {
                 bullet.bAlive = false;
@@ -231,7 +232,7 @@ void ProjectileSystem::Step(
                     shot.velocity.y *= scale;
                 }
             }
-            shot.velocity.y = jug::Min(shot.velocity.y + params.gravity * _dt, params.maxFallSpeed);
+            shot.velocity.y = slug::Min(shot.velocity.y + params.gravity * _dt, params.maxFallSpeed);
             shot.position.x += shot.velocity.x * _dt;
             shot.position.y += shot.velocity.y * _dt;
         }
@@ -254,14 +255,14 @@ void ProjectileSystem::Step(
         }
         else if (_pGround && (params.bExplodeOnSolid || bRoll) && (shot.position.x != shot.renderPrev.x || shot.position.y != shot.renderPrev.y))
         {
-            jug::VECTOR2 lastFree;
+            Vec2 lastFree;
             if (SegmentHitsGround_(*_pGround, shot.renderPrev, shot.position, lastFree))
             {
                 if (bRoll)
                 {
                     // 착지 (또는 지면을 따라 구르는 중): 이번 틱의 새 x 에서 고체 밖으로 밀어 올려 세우고 수직 속도를 없앤다.
                     // (구간 판정의 마지막 빈 지점을 쓰면 첫 샘플부터 고체인 경우 제자리에 멈춘다)
-                    jug::VECTOR2 standing = shot.position;
+                    Vec2 standing = shot.position;
                     for (int guard = 0; guard < 64 && _pGround->IsSolidAt(standing); ++guard)
                     {
                         standing.y -= 1.f;
@@ -307,9 +308,9 @@ void ProjectileSystem::Step(
     {
         bomb.renderPrev = bomb.position;
         bomb.velocity.y += bomb.params.gravity * _dt;
-        const jug::VECTOR2 next = { bomb.position.x + bomb.velocity.x * _dt, bomb.position.y + bomb.velocity.y * _dt };
+        const Vec2 next = { bomb.position.x + bomb.velocity.x * _dt, bomb.position.y + bomb.velocity.y * _dt };
 
-        jug::VECTOR2 lastFree;
+        Vec2 lastFree;
         if (_pGround && SegmentHitsGround_(*_pGround, bomb.position, next, lastFree))
         {
             bomb.position = lastFree;
@@ -355,7 +356,7 @@ void ProjectileSystem::Step(
 }
 
 void ProjectileSystem::OnHitEvents(
-    const jug::Span<const HitEvent> _events,
+    const slug::Span<const HitEvent> _events,
     CombatSystem&                   _combat)
 {
     for (const HitEvent& event: _events)
@@ -454,16 +455,16 @@ void ProjectileSystem::CullShots(
     std::erase_if(m_shots, [](const Shot& _s) { return !_s.bAlive; });
 }
 
-jug::Vector<ShotFx> ProjectileSystem::TakeShotFx()
+slug::Vector<ShotFx> ProjectileSystem::TakeShotFx()
 {
-    jug::Vector<ShotFx> out;
+    slug::Vector<ShotFx> out;
     out.swap(m_shotFx);
     return out;
 }
 
-jug::Vector<FxRequest> ProjectileSystem::TakeFx()
+slug::Vector<FxRequest> ProjectileSystem::TakeFx()
 {
-    jug::Vector<FxRequest> out;
+    slug::Vector<FxRequest> out;
     out.swap(m_fx);
     return out;
 }

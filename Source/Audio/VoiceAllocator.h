@@ -2,8 +2,8 @@
 #include <algorithm>
 #include <cstdint>
 
-#include <JugX/Assert.h>
-#include <JugX/Typedef.h>
+#include "Base/Assert.h"
+#include "Base/Types.h"
 
 namespace slug
 {
@@ -50,7 +50,7 @@ public:
         if (CountSound(_soundId) >= m_maxPerSound)
         {
             const int oldest = FindOldest_(_soundId);
-            JUG_ASSERT(oldest >= 0, "stealable voice not found");
+            SLUG_ASSERT(oldest >= 0, "stealable voice not found");
             return Take_(oldest, _soundId, true);
         }
 
@@ -149,7 +149,7 @@ private:
         return { _slot, _bStolen };
     }
 
-    jug::Vector<Slot> m_slots       = {};
+    slug::Vector<Slot> m_slots       = {};
     int               m_maxPerSound = 4;
     uint64_t          m_nextSerial  = 1;
 };

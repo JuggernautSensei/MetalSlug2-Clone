@@ -2,10 +2,10 @@
 #include <cstdint>
 #include <optional>
 
-#include <JugX/JsonDeserializer.h>
-#include <JugX/Result.h>
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Json.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "Core/Tuning.h"
 
@@ -54,28 +54,28 @@ enum class eDebrisSet : uint8_t
 
 // 디브리 클립 이름 (Wood1..6 / Metal1..12 / Rock1..3)
 [[nodiscard]] int          GetDebrisClipCount(eDebrisSet _set);
-[[nodiscard]] jug::String  GetDebrisClipName(eDebrisSet _set, int _index);
+[[nodiscard]] slug::String  GetDebrisClipName(eDebrisSet _set, int _index);
 
 struct PropVisual
 {
     eVisualRef   ref  = eVisualRef::None;
-    jug::String  name = {};
+    slug::String  name = {};
 };
 
 struct PropPart
 {
     ePropRole    role  = ePropRole::Hurt;
     ePropWhen    when  = ePropWhen::Intact;
-    jug::VECTOR2 size  = { 0.f, 0.f };
-    jug::VECTOR2 offset = { 0.f, 0.f };   // 중심 기준 오프셋
+    Vec2 size  = { 0.f, 0.f };
+    Vec2 offset = { 0.f, 0.f };   // 중심 기준 오프셋
 };
 
 struct PropExplosion
 {
-    jug::String  clip   = {};   // 예: Explosion_Small
+    slug::String  clip   = {};   // 예: Explosion_Small
     int          count  = 1;
     float        spread = 0.f;            // 중심 기준 ±spread 난수 오프셋 (px)
-    jug::VECTOR2 offset = { 0.f, 0.f };   // 중심 기준 고정 오프셋 (레거시 CreateExplosionEffect(pos, offset, ...))
+    Vec2 offset = { 0.f, 0.f };   // 중심 기준 고정 오프셋 (레거시 CreateExplosionEffect(pos, offset, ...))
 };
 
 struct PropDebris
@@ -87,13 +87,13 @@ struct PropDebris
 // 한 번의 "파괴 연출" 묶음
 struct PropBurst
 {
-    jug::Vector<PropExplosion> explosions = {};
+    slug::Vector<PropExplosion> explosions = {};
     PropDebris                 debris     = {};
 };
 
 struct PropDrop
 {
-    jug::String item    = {};   // 아이템 id 또는 random 그룹 이름
+    slug::String item    = {};   // 아이템 id 또는 random 그룹 이름
     int         count   = 1;
     float       spreadX = 0.f;   // x ± spreadX 난수
     bool        bBounce = false;
@@ -101,8 +101,8 @@ struct PropDrop
 
 struct PropChild
 {
-    jug::String  def    = {};    // 같은 Props.json 의 다른 정의 (예: sign_fall)
-    jug::VECTOR2 offset = { 0.f, 0.f };
+    slug::String  def    = {};    // 같은 Props.json 의 다른 정의 (예: sign_fall)
+    Vec2 offset = { 0.f, 0.f };
 };
 
 struct PropFall
@@ -121,23 +121,23 @@ struct PropSecondary
 
 struct PropGroundPatch
 {
-    jug::String  sprite = {};   // *_PixelMap 스프라이트
-    jug::VECTOR2 size   = { 0.f, 0.f };   // 스프라이트 크기 (검증용, 로드된 스프라이트와 대조)
-    jug::VECTOR2 inset  = { 0.f, 0.f };   // 좌상단 = pos - (size/2 - inset)
+    slug::String  sprite = {};   // *_PixelMap 스프라이트
+    Vec2 size   = { 0.f, 0.f };   // 스프라이트 크기 (검증용, 로드된 스프라이트와 대조)
+    Vec2 inset  = { 0.f, 0.f };   // 좌상단 = pos - (size/2 - inset)
 };
 
 struct PropVariant
 {
-    jug::String           name  = {};
+    slug::String           name  = {};
     float                 dy    = 0.f;   // 스폰 y 보정 (레거시 FinalInit)
     PropVisual            idle  = {};
     PropVisual            hit   = {};
-    jug::Vector<PropPart> parts = {};
+    slug::Vector<PropPart> parts = {};
 };
 
 struct PropDef
 {
-    jug::String name = {};
+    slug::String name = {};
     int         hp   = 0;             // 새 HP (레거시 ×2). 0 이면 피격 불가 (불사)
     float       cullMargin = 200.f;   // 객체 x 가 camLeft - margin 보다 왼쪽이면 제거
     bool        bFront     = false;   // 렌더 레이어: false = background, true = front
@@ -148,8 +148,8 @@ struct PropDef
     PropVisual hit       = {};        // 피격 시 한 번 재생 (Truck_Hit 등)
     int        damagedAtHp = -1;      // hp <= 이 값이면 damaged 를 쓴다 (-1: 없음)
 
-    jug::Vector<PropPart>    parts    = {};
-    jug::Vector<PropVariant> variants = {};   // 비어 있으면 idle/hit/parts 를 그대로 쓴다. 있으면 스폰 시 랜덤 선택
+    slug::Vector<PropPart>    parts    = {};
+    slug::Vector<PropVariant> variants = {};   // 비어 있으면 idle/hit/parts 를 그대로 쓴다. 있으면 스폰 시 랜덤 선택
 
     bool           bRemoveOnDestroy    = false;   // true: 파괴 즉시(연출 종료 시) 제거, 잔해 스프라이트 없음
     float          destroyDurationSec  = 0.5f;    // 파괴 후 IsDestroyFinished 까지 (destroyed 애니가 있으면 그 길이와 max)
@@ -157,8 +157,8 @@ struct PropDef
     PropBurst      onDestroy           = {};
     bool           bHasSecondary       = false;
     PropSecondary  secondary           = {};
-    jug::Vector<PropDrop>  drops       = {};
-    jug::Vector<PropChild> spawns      = {};      // 파괴 시 생성 (간판 등)
+    slug::Vector<PropDrop>  drops       = {};
+    slug::Vector<PropChild> spawns      = {};      // 파괴 시 생성 (간판 등)
     bool           bHasFall            = false;   // 낙하체: hp 없음. 스폰 후 중력 낙하 → 착지 → fall.landed → afterLandSec 뒤 onDestroy 후 제거
     PropFall       fall                = {};
     bool           bHasGroundPatch     = false;
@@ -168,15 +168,15 @@ struct PropDef
 // 스폰 시 인스턴스별 덮어쓰기 (stage JSON 의 params). 알 수 없는 키는 파서가 거부한다.
 struct PropBoxOverride
 {
-    jug::VECTOR2 size   = { 0.f, 0.f };
-    jug::VECTOR2 offset = { 0.f, 0.f };
+    Vec2 size   = { 0.f, 0.f };
+    Vec2 offset = { 0.f, 0.f };
 };
 
 struct PropSpawnParams
 {
     int                          hp            = -1;     // -1: def 값
-    jug::String                  idleSprite    = {};     // sprites[0]
-    jug::String                  destroySprite = {};     // sprites[1]
+    slug::String                  idleSprite    = {};     // sprites[0]
+    slug::String                  destroySprite = {};     // sprites[1]
     std::optional<PropBoxOverride> hitbox      = std::nullopt;     // 첫 Hurt 파츠 덮어쓰기
     std::optional<PropBoxOverride> standBox    = std::nullopt;     // 첫 Platform 파츠 덮어쓰기
     bool                         bExplodeOnDeath = false;   // mob_boat: 2차 폭발 + 제거
@@ -202,7 +202,7 @@ enum class eSupplyKind : uint8_t
 
 struct PropItemDef
 {
-    jug::String name     = {};
+    slug::String name     = {};
     eItemKind   kind     = eItemKind::Score;
     eWeapon     weapon   = eWeapon::Pistol;   // Gun 전용
     eSupplyKind supply   = eSupplyKind::Bomb; // Supply 전용
@@ -216,8 +216,8 @@ struct PropItemDef
 
 struct PropItemGroup
 {
-    jug::String              name  = {};
-    jug::Vector<jug::String> names = {};   // 균등 추첨 대상 아이템 이름
+    slug::String              name  = {};
+    slug::Vector<slug::String> names = {};   // 균등 추첨 대상 아이템 이름
 };
 
 // ===========================================
@@ -227,36 +227,36 @@ struct PropItemGroup
 class PropDefLibrary
 {
 public:
-    [[nodiscard]] static jug::Result<PropDefLibrary> Load(const jug::FilePath& _path, jug::String* _pMessage = nullptr);
-    [[nodiscard]] static jug::Result<PropDefLibrary> Parse(jug::StringView _json, jug::String* _pMessage = nullptr);
+    [[nodiscard]] static slug::Result<PropDefLibrary> Load(const slug::FilePath& _path, slug::String* _pMessage = nullptr);
+    [[nodiscard]] static slug::Result<PropDefLibrary> Parse(slug::StringView _json, slug::String* _pMessage = nullptr);
     PropDefLibrary() = default;
 
-    [[nodiscard]] const PropDef* Find(jug::StringView _name) const;
-    [[nodiscard]] int            FindIndex(jug::StringView _name) const;   // 없으면 -1
-    [[nodiscard]] jug::Span<const PropDef> GetDefs() const { return m_defs; }
+    [[nodiscard]] const PropDef* Find(slug::StringView _name) const;
+    [[nodiscard]] int            FindIndex(slug::StringView _name) const;   // 없으면 -1
+    [[nodiscard]] slug::Span<const PropDef> GetDefs() const { return m_defs; }
 
-    [[nodiscard]] const PropItemDef* FindItem(jug::StringView _name) const;
-    [[nodiscard]] int                FindItemIndex(jug::StringView _name) const;
-    [[nodiscard]] jug::Span<const PropItemDef> GetItems() const { return m_items; }
+    [[nodiscard]] const PropItemDef* FindItem(slug::StringView _name) const;
+    [[nodiscard]] int                FindItemIndex(slug::StringView _name) const;
+    [[nodiscard]] slug::Span<const PropItemDef> GetItems() const { return m_items; }
 
     // random_fruit / random_anime / random_score 같은 그룹. 없으면 null.
-    [[nodiscard]] const PropItemGroup* FindGroup(jug::StringView _name) const;
+    [[nodiscard]] const PropItemGroup* FindGroup(slug::StringView _name) const;
 
     // 스테이지 spawn.params(JSON 객체)를 def 기준으로 해석한다. 알 수 없는 키/형식 오류는 false + _error.
-    [[nodiscard]] bool ParseSpawnParams(jug::StringView _defName, const jug::JsonReader& _params, PropSpawnParams& _out, jug::String& _error) const;
+    [[nodiscard]] bool ParseSpawnParams(slug::StringView _defName, const slug::JsonReader& _params, PropSpawnParams& _out, slug::String& _error) const;
 
     // 정의가 참조하는 클립/스프라이트 이름이 모두 존재하는가. 없으면 첫 누락 이름을 "def: 이름" 형식으로 돌려준다 (정상이면 빈 문자열).
-    [[nodiscard]] jug::String FindMissingAsset(const AnimationLibrary& _anims, const SpriteLibrary& _sprites) const;
+    [[nodiscard]] slug::String FindMissingAsset(const AnimationLibrary& _anims, const SpriteLibrary& _sprites) const;
 
 private:
     friend class PropDefParser;
 
-    jug::Vector<PropDef>                                         m_defs       = {};
-    jug::Vector<PropItemDef>                                     m_items      = {};
-    jug::Vector<PropItemGroup>                                   m_groups     = {};
-    jug::HashMap<jug::String, uint32_t>                          m_defIndex   = {};
-    jug::HashMap<jug::String, uint32_t>                          m_itemIndex  = {};
-    jug::HashMap<jug::String, uint32_t>                          m_groupIndex = {};
+    slug::Vector<PropDef>                                         m_defs       = {};
+    slug::Vector<PropItemDef>                                     m_items      = {};
+    slug::Vector<PropItemGroup>                                   m_groups     = {};
+    slug::HashMap<slug::String, uint32_t>                          m_defIndex   = {};
+    slug::HashMap<slug::String, uint32_t>                          m_itemIndex  = {};
+    slug::HashMap<slug::String, uint32_t>                          m_groupIndex = {};
 };
 
 }   // namespace slug

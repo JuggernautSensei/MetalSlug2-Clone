@@ -1,4 +1,5 @@
 #include <cstdio>
+#include "Base/Result.h"
 #include <cstdlib>
 #include <string>
 
@@ -169,7 +170,7 @@ int main(
     }
 
     Log("SlugBaker: legacy={} out={}", options.legacyRoot.string(), options.outRoot.string());
-    if (const jug::Result<void> result = RunBaker(options); !result)
+    if (const slug::Result<void> result = RunBaker(options); !result)
     {
         Log("FAILED: {}", result.GetError().MakeMessage());
         return 1;

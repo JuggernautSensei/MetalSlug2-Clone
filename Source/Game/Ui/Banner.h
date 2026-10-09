@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#include <JugX/Typedef.h>
+#include "Base/Types.h"
 
 #include "Game/Ui/BitmapFont.h"
 
@@ -16,7 +16,7 @@ namespace slug
 
 struct BannerSpec
 {
-    jug::String text          = {};
+    slug::String text          = {};
     int         fadeInTicks   = 18;
     int         holdTicks     = 84;
     int         fadeOutTicks  = 18;
@@ -29,7 +29,7 @@ struct BannerSpec
 };
 
 // 총 길이(초)로 스펙을 만든다: 페이드 각각 min(0.3s, 총길이/4), 나머지는 유지 (StageFormat 의 banner {text, seconds}).
-[[nodiscard]] BannerSpec MakeBannerSpec(jug::StringView _text, float _seconds);
+[[nodiscard]] BannerSpec MakeBannerSpec(slug::StringView _text, float _seconds);
 
 // 경과 틱 e (Show 직후 0) 에서의 불투명도 [0,1].
 //   e < in           : e / in            (e = 0 에서 0)
@@ -59,7 +59,7 @@ private:
     void Begin_(BannerSpec _spec);
 
     BannerSpec              m_current = {};
-    jug::Vector<BannerSpec> m_queue   = {};
+    slug::Vector<BannerSpec> m_queue   = {};
     int                     m_elapsed = 0;
     bool                    m_bActive = false;
 };

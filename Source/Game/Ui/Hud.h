@@ -1,8 +1,8 @@
 #pragma once
 #include <cstdint>
 
-#include <JugX/RGBA.h>
-#include <JugX/Typedef.h>
+#include "Base/RGBA.h"
+#include "Base/Types.h"
 
 #include "Game/Ui/BitmapFont.h"
 #include "Game/Ui/UiLayout.h"
@@ -39,7 +39,7 @@ struct HudModel
 
     // --- 기타 ---
     bool        bShowPressStart2p = true;   // 2P 칸에 PRESS START 점멸
-    jug::String levelSprite       = {};     // "LEVEL_1" 같은 sprites.json 이름. 비면 표시 안 함
+    slug::String levelSprite       = {};     // "LEVEL_1" 같은 sprites.json 이름. 비면 표시 안 함
     int         uiTick            = 0;      // 점멸용 단조 증가 틱 (UiSystem::GetTick())
 };
 
@@ -63,17 +63,17 @@ enum class eHudItemKind : uint8_t
 struct HudItem
 {
     eHudItemKind kind  = eHudItemKind::Text;
-    jug::String  text  = {};      // Text/TimeDigits: 문자열, Sprite: sprites.json 이름
+    slug::String  text  = {};      // Text/TimeDigits: 문자열, Sprite: sprites.json 이름
     int          x     = 0;
     int          y     = 0;
     int          w     = 0;       // Rect 크기
     int          h     = 0;
     int          scale = 1;       // Sprite 배율
     TextStyle    style = {};      // Text
-    jug::RGBA    color = { 255, 255, 255, 255 };   // Rect
+    slug::RGBA    color = { 255, 255, 255, 255 };   // Rect
 };
 
-[[nodiscard]] jug::Vector<HudItem> BuildHudItems(const HudModel& _model, const UiLayout& _layout);
+[[nodiscard]] slug::Vector<HudItem> BuildHudItems(const HudModel& _model, const UiLayout& _layout);
 
 // 점멸: 켜짐 구간이면 true. 처음 _periodTicks 틱은 켜짐.
 [[nodiscard]] constexpr bool IsBlinkOn(
@@ -84,9 +84,9 @@ struct HudItem
 }
 
 // 점수는 7자리까지만 표시 (레거시와 동일), 탄은 3자리, 폭탄은 2자리
-[[nodiscard]] jug::String FormatScore(int _score);
-[[nodiscard]] jug::String FormatAmmo(int _ammo);
-[[nodiscard]] jug::String FormatBombs(int _bombs);
-[[nodiscard]] jug::String FormatTimer(int _seconds);   // 00..99
+[[nodiscard]] slug::String FormatScore(int _score);
+[[nodiscard]] slug::String FormatAmmo(int _ammo);
+[[nodiscard]] slug::String FormatBombs(int _bombs);
+[[nodiscard]] slug::String FormatTimer(int _seconds);   // 00..99
 
 }   // namespace slug

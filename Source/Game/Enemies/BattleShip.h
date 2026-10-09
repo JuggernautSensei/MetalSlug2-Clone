@@ -1,4 +1,5 @@
 #pragma once
+#include "Base/Math.h"
 #include "Game/Enemies/EnemyBehaviors.h"
 
 namespace slug
@@ -55,8 +56,8 @@ inline constexpr int kTurretAction = 4;   // 0 없음 / 1 왼쪽 회전 / 2 오�
 [[nodiscard]] float GetCannonAngle(const Enemy& _e);   // 도 (화면 좌표: -90 = 위)
 
 // 원점 = 발 - (0, originDepth) 및 포탑 원점 (월드)
-[[nodiscard]] jug::VECTOR2 GetOrigin(const Enemy& _e, const EnemyDef& _def);
-[[nodiscard]] jug::VECTOR2 GetTurretOrigin(const Enemy& _e, const EnemyDef& _def, int _index);
+[[nodiscard]] Vec2 GetOrigin(const Enemy& _e, const EnemyDef& _def);
+[[nodiscard]] Vec2 GetTurretOrigin(const Enemy& _e, const EnemyDef& _def, int _index);
 
 // 포탑 피격 소유자 (보스 ID + 파트 번호). 테스트/도구용
 [[nodiscard]] constexpr uint32_t TurretOwner(const uint32_t _enemyId, const int _index)

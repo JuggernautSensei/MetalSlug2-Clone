@@ -1,12 +1,14 @@
 #include "Game/Enemies/EnemyDef.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include <cmath>
 #include <format>
 
-#include <JugX/CoreLogger.h>
-#include <JugX/JsonDeserializer.h>
+#include "Base/Log.h"
+#include "Base/Json.h"
 
-#include "Core/Error.h"
+#include "Base/Error.h"
 #include "Game/Enemies/EnemyDefParse.h"
 
 namespace slug
@@ -40,7 +42,7 @@ const char* GetBehaviorName(
 }
 
 std::optional<eEnemyBehavior> FindBehavior(
-    const jug::StringView _name)
+    const slug::StringView _name)
 {
     for (int i = 0; i < static_cast<int>(eEnemyBehavior::Count); ++i)
     {
@@ -86,7 +88,7 @@ int ClipDef::GetDurationTicks() const
 }
 
 int EnemyDef::FindClip(
-    const jug::StringView _logicalName) const
+    const slug::StringView _logicalName) const
 {
     for (size_t i = 0; i < clips.size(); ++i)
     {
@@ -99,7 +101,7 @@ int EnemyDef::FindClip(
 }
 
 int EnemyDef::FindWeapon(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
     for (size_t i = 0; i < weapons.size(); ++i)
     {
@@ -116,10 +118,10 @@ int EnemyDef::FindWeapon(
 // ===========================================
 
 DefReader::DefReader(
-    const jug::StringView    _defName,
+    const slug::StringView    _defName,
     EnemyDef&                _def,
-    jug::Vector<ParamEntry>& _params,
-    jug::String&             _error)
+    slug::Vector<ParamEntry>& _params,
+    slug::String&             _error)
     : m_defName(_defName)
     , m_def(_def)
     , m_params(_params)
@@ -128,8 +130,8 @@ DefReader::DefReader(
 }
 
 void DefReader::Fail(
-    const jug::StringView _field,
-    const jug::StringView _message)
+    const slug::StringView _field,
+    const slug::StringView _message)
 {
     if (m_error.empty())
     {
@@ -138,7 +140,7 @@ void DefReader::Fail(
 }
 
 ParamEntry* DefReader::Find_(
-    const jug::StringView _key)
+    const slug::StringView _key)
 {
     for (ParamEntry& entry: m_params)
     {
@@ -152,7 +154,7 @@ ParamEntry* DefReader::Find_(
 }
 
 bool DefReader::Has(
-    const jug::StringView _key) const
+    const slug::StringView _key) const
 {
     for (const ParamEntry& entry: m_params)
     {
@@ -165,7 +167,7 @@ bool DefReader::Has(
 }
 
 float DefReader::Num(
-    const jug::StringView _key)
+    const slug::StringView _key)
 {
     ParamEntry* pEntry = Find_(_key);
     if (!pEntry)
@@ -173,7 +175,7 @@ float DefReader::Num(
         Fail(std::format("params.{}", _key), "필수 값이 없습니다");
         return 0.f;
     }
-    const jug::Result<double> value = pEntry->value.Read<double>();
+    const slug::Result<double> value = pEntry->value.Read<double>();
     if (!value)
     {
         Fail(std::format("params.{}", _key), "숫자가 아닙니다");
@@ -183,40 +185,40 @@ float DefReader::Num(
 }
 
 float DefReader::Num(
-    const jug::StringView _key,
+    const slug::StringView _key,
     const float           _default)
 {
     return Has(_key) ? Num(_key) : _default;
 }
 
 int DefReader::Int(
-    const jug::StringView _key)
+    const slug::StringView _key)
 {
     return static_cast<int>(std::lround(static_cast<double>(Num(_key))));
 }
 
 int DefReader::Int(
-    const jug::StringView _key,
+    const slug::StringView _key,
     const int             _default)
 {
     return Has(_key) ? Int(_key) : _default;
 }
 
 int DefReader::Ticks(
-    const jug::StringView _key)
+    const slug::StringView _key)
 {
     return SecToTicks(Num(_key));
 }
 
 int DefReader::Ticks(
-    const jug::StringView _key,
+    const slug::StringView _key,
     const float           _defaultSec)
 {
     return SecToTicks(Num(_key, _defaultSec));
 }
 
 bool DefReader::Bool(
-    const jug::StringView _key,
+    const slug::StringView _key,
     const bool            _default)
 {
     ParamEntry* pEntry = Find_(_key);
@@ -224,7 +226,7 @@ bool DefReader::Bool(
     {
         return _default;
     }
-    const jug::Result<bool> value = pEntry->value.Read<bool>();
+    const slug::Result<bool> value = pEntry->value.Read<bool>();
     if (!value)
     {
         Fail(std::format("params.{}", _key), "true/false 가 아닙니다");
@@ -233,8 +235,8 @@ bool DefReader::Bool(
     return value.GetValue();
 }
 
-jug::String DefReader::Str(
-    const jug::StringView _key)
+slug::String DefReader::Str(
+    const slug::StringView _key)
 {
     ParamEntry* pEntry = Find_(_key);
     if (!pEntry)
@@ -242,7 +244,7 @@ jug::String DefReader::Str(
         Fail(std::format("params.{}", _key), "필수 값이 없습니다");
         return {};
     }
-    jug::Result<jug::String> value = pEntry->value.Read<jug::String>();
+    slug::Result<slug::String> value = pEntry->value.Read<slug::String>();
     if (!value)
     {
         Fail(std::format("params.{}", _key), "문자열이 아닙니다");
@@ -251,9 +253,9 @@ jug::String DefReader::Str(
     return value.GetValue();
 }
 
-jug::VECTOR2 DefReader::Vec2(
-    const jug::StringView _key,
-    const jug::VECTOR2    _default)
+Vec2 DefReader::ReadVec2(
+    const slug::StringView _key,
+    const Vec2    _default)
 {
     ParamEntry* pEntry = Find_(_key);
     if (!pEntry)
@@ -267,9 +269,9 @@ jug::VECTOR2 DefReader::Vec2(
     }
     float values[2] = {};
     int   i         = 0;
-    for (const jug::JsonReader item: pEntry->value.GetArray())
+    for (const slug::JsonReader item: pEntry->value.GetArray())
     {
-        const jug::Result<double> value = item.Read<double>();
+        const slug::Result<double> value = item.Read<double>();
         if (!value)
         {
             Fail(std::format("params.{}", _key), "숫자가 아닌 원소가 있습니다");
@@ -281,7 +283,7 @@ jug::VECTOR2 DefReader::Vec2(
 }
 
 BoxDef DefReader::Box(
-    const jug::StringView _key)
+    const slug::StringView _key)
 {
     BoxDef      box;
     ParamEntry* pEntry = Find_(_key);
@@ -299,7 +301,7 @@ BoxDef DefReader::Box(
             }
             return;
         }
-        const jug::Result<double> value = pEntry->value.ReadField<double>(_name);
+        const slug::Result<double> value = pEntry->value.ReadField<double>(_name);
         if (!value)
         {
             Fail(std::format("params.{}.{}", _key, _name), "숫자가 아닙니다");
@@ -315,7 +317,7 @@ BoxDef DefReader::Box(
 }
 
 bool DefReader::NumArray(
-    const jug::StringView _key,
+    const slug::StringView _key,
     float*                _pOut,
     const int             _count)
 {
@@ -330,9 +332,9 @@ bool DefReader::NumArray(
         return false;
     }
     int i = 0;
-    for (const jug::JsonReader item: pEntry->value.GetArray())
+    for (const slug::JsonReader item: pEntry->value.GetArray())
     {
-        const jug::Result<double> value = item.Read<double>();
+        const slug::Result<double> value = item.Read<double>();
         if (!value)
         {
             Fail(std::format("params.{}", _key), "숫자가 아닌 원소가 있습니다");
@@ -344,7 +346,7 @@ bool DefReader::NumArray(
 }
 
 int DefReader::Clip(
-    const jug::StringView _logical)
+    const slug::StringView _logical)
 {
     const int index = m_def.FindClip(_logical);
     if (index < 0)
@@ -355,13 +357,13 @@ int DefReader::Clip(
 }
 
 int DefReader::ClipOpt(
-    const jug::StringView _logical) const
+    const slug::StringView _logical) const
 {
     return m_def.FindClip(_logical);
 }
 
 int DefReader::Weapon(
-    const jug::StringView _name)
+    const slug::StringView _name)
 {
     const int index = m_def.FindWeapon(_name);
     if (index < 0)
@@ -372,7 +374,7 @@ int DefReader::Weapon(
 }
 
 int DefReader::WeaponOpt(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
     return m_def.FindWeapon(_name);
 }

@@ -1,4 +1,5 @@
 #include "Game/Combat/BulletVisual.h"
+#include "Base/Math.h"
 
 #include <algorithm>
 #include <cmath>
@@ -38,7 +39,7 @@ bool SubmitPlayerBullet(
     const AnimationLibrary* _pAnims,
     const SpriteLibrary& _spriteLib,
     const Bullet&       _bullet,
-    const jug::VECTOR2  _pos,
+    const Vec2  _pos,
     const int           _layer)
 {
     const eWeapon weapon    = static_cast<eWeapon>(_bullet.tag);

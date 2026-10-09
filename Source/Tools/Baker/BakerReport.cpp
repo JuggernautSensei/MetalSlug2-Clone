@@ -1,4 +1,5 @@
 #include <algorithm>
+#include "Base/Result.h"
 #include <cmath>
 #include <map>
 
@@ -437,7 +438,7 @@ namespace
 //  WriteReports
 // ===========================================
 
-jug::Result<void> WriteReports(
+slug::Result<void> WriteReports(
     const BakerOptions& _options,
     BakeState&          _state)
 {
@@ -591,7 +592,7 @@ jug::Result<void> WriteReports(
         w.EndArray();
 
         w.EndObject();
-        if (jug::Result<void> r = WriteText(reportDir / "pivot_report.json", w.Str()); !r)
+        if (slug::Result<void> r = WriteText(reportDir / "pivot_report.json", w.Str()); !r)
         {
             return r;
         }
@@ -606,7 +607,7 @@ jug::Result<void> WriteReports(
             PlanCategory_(_state, category, plans, legend);
             if (!legend.empty())
             {
-                if (jug::Result<void> r = WriteText(reportDir / (std::string("contact_") + CategoryKey(category) + ".txt"), "index\tanimation\tcategory\tinfo\n" + legend); !r)
+                if (slug::Result<void> r = WriteText(reportDir / (std::string("contact_") + CategoryKey(category) + ".txt"), "index\tanimation\tcategory\tinfo\n" + legend); !r)
                 {
                     return r;
                 }
@@ -785,7 +786,7 @@ jug::Result<void> WriteReports(
             }
         }
 
-        if (jug::Result<void> r = WriteText(reportDir / "bake_summary.txt", s); !r)
+        if (slug::Result<void> r = WriteText(reportDir / "bake_summary.txt", s); !r)
         {
             return r;
         }
@@ -793,7 +794,7 @@ jug::Result<void> WriteReports(
         std::fflush(stdout);
     }
 
-    return jug::Error { jug::kOK };
+    return slug::Error { slug::kOK };
 }
 
 }   // namespace slug::baker

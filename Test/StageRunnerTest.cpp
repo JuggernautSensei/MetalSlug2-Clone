@@ -1,4 +1,6 @@
 #include <cmath>
+#include "Base/Math.h"
+#include "Base/Random.h"
 
 #include <gtest/gtest.h>
 
@@ -54,7 +56,7 @@ TEST(StageRunnerBegin, ResolvesPlayerStartWithGroundSnap)
         seenFromY = _fromY;
         return _x == 100.f ? std::optional<float> { 352.f } : std::nullopt;
     };
-    const std::optional<jug::VECTOR2> start = fx.runner.ResolvePlayerStart();
+    const std::optional<Vec2> start = fx.runner.ResolvePlayerStart();
     ASSERT_TRUE(start.has_value());
     EXPECT_FLOAT_EQ(start->x, 100.f);
     EXPECT_FLOAT_EQ(start->y, 352.f);
@@ -267,7 +269,7 @@ TEST(StageRunnerWave, RandomDxIsSeededInRangeAndFixedDxDoesNotDrawRng)
     RunnerFixture fixed { OneSection(R"J([{"type":"spawnWave","entries":[
         {"delay":1.0,"kind":"enemy","def":"e","camera":{"ax":"left","dx":123,"ay":"top","dy":0}}]}])J") };
     fixed.StepAt(5.f, 70);
-    jug::RngMt19937 fresh { uint64_t { 1 } };
+    slug::RngMt19937 fresh { uint64_t { 1 } };
     EXPECT_EQ(fixed.rng.Generate(), fresh.Generate());
 }
 
@@ -619,7 +621,7 @@ TEST(StageRunnerActions, SimpleActionsAreForwardedToTheHost)
     EXPECT_NE(fx.host.FindEvent("fade:black"), nullptr);
     EXPECT_NE(fx.host.FindEvent("banner:MISSION\nCOMPLETE"), nullptr);
 
-    const jug::VECTOR2 target = fx.runner.ComputeCameraTarget({ 1000.f, 378.f });
+    const Vec2 target = fx.runner.ComputeCameraTarget({ 1000.f, 378.f });
     EXPECT_FLOAT_EQ(target.x, 1050.f);
     EXPECT_FLOAT_EQ(target.y, 378.f - kStageCameraTargetLift - 140.f);
 }

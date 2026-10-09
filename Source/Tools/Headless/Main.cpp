@@ -3,11 +3,12 @@
 //   SlugHeadless --dump-tuning
 // 종료 코드: 0 = 성공, 1 = 인자/로드 오류, 2 = --expect-finished 인데 끝나지 않음
 #include <cstdio>
+#include "Base/Types.h"
+#include "Base/Result.h"
 #include <cstdlib>
 
-#include <JugX/ConsoleLogger.h>
-#include <JugX/CoreLogger.h>
-#include <JugX/Random.h>
+#include "Base/Log.h"
+#include "Base/Random.h"
 
 #include "Core/Replay.h"
 #include "Core/Tuning.h"
@@ -19,17 +20,14 @@ int main(
     int    _argc,
     char** _argv)
 {
-    static jug::ConsoleLogger s_logger;
-    jug::SetCoreLogger(&s_logger);
-
-    jug::FilePath replayPath;
-    jug::String   stateName;
+    slug::FilePath replayPath;
+    slug::String   stateName;
     uint64_t      maxTicks         = 0;
     bool          bExpectFinished = false;
 
     for (int i = 1; i < _argc; ++i)
     {
-        const jug::String arg      = _argv[i];
+        const slug::String arg      = _argv[i];
         const bool        bHasNext = i + 1 < _argc;
         if (arg == "--replay" && bHasNext)
         {
@@ -61,10 +59,10 @@ int main(
         return 1;
     }
 
-    jug::Result<slug::ReplayData> loaded = slug::LoadReplay(replayPath);
+    slug::Result<slug::ReplayData> loaded = slug::LoadReplay(replayPath);
     if (!loaded)
     {
-        JUG_CORE_LOG_ERROR("리플레이 로드 실패: {}", loaded.GetError().MakeMessage());
+        SLUG_LOG_ERROR("리플레이 로드 실패: {}", loaded.GetError().MakeMessage());
         return 1;
     }
     const slug::ReplayData replay = loaded.Take();
@@ -74,25 +72,25 @@ int main(
     }
 
     slug::AnimationLibrary anims;
-    if (jug::Result<slug::AnimationLibrary> library = slug::AnimationLibrary::LoadFromDirectory(jug::FilePath { SLUG_ASSET_DIR } / "Baked"))
+    if (slug::Result<slug::AnimationLibrary> library = slug::AnimationLibrary::LoadFromDirectory(slug::FilePath { SLUG_ASSET_DIR } / "Baked"))
     {
         anims = library.Take();
     }
     else
     {
-        JUG_CORE_LOG_WARN("Baked 에셋 없음: 애니메이션 없이 진행");
+        SLUG_LOG_WARN("Baked 에셋 없음: 애니메이션 없이 진행");
     }
 
-    jug::RngMt19937   rng { replay.seed };
+    slug::RngMt19937   rng { replay.seed };
     slug::GameContext ctx;
     ctx.pAnims    = &anims;
     ctx.pRng      = &rng;
-    ctx.assetRoot = jug::FilePath { SLUG_ASSET_DIR };
+    ctx.assetRoot = slug::FilePath { SLUG_ASSET_DIR };
 
-    jug::Scoped<slug::IGameState> pState = slug::CreateState(stateName);
+    std::unique_ptr<slug::IGameState> pState = slug::CreateState(stateName);
     if (!pState)
     {
-        JUG_CORE_LOG_ERROR("알 수 없는 게임 상태: {}", stateName);
+        SLUG_LOG_ERROR("알 수 없는 게임 상태: {}", stateName);
         return 1;
     }
 

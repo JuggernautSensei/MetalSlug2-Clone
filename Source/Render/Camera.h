@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#include <JugX/Vector2.h>
+#include "Base/Math.h"
 
 #include "World/Constants.h"
 #include "World/Geometry.h"
@@ -15,10 +15,10 @@ namespace slug
 
 struct CameraTuning
 {
-    jug::VECTOR2 viewSize     = { 640.f, 448.f };   // 논리 해상도
-    jug::VECTOR2 deadzoneHalf = { 24.f, 16.f };     // 시점 중심 기준, 목표가 이 안에 있으면 카메라가 움직이지 않는다
+    Vec2 viewSize     = { 640.f, 448.f };   // 논리 해상도
+    Vec2 deadzoneHalf = { 24.f, 16.f };     // 시점 중심 기준, 목표가 이 안에 있으면 카메라가 움직이지 않는다
     float        smoothTime   = 0.18f;              // 임계 감쇠 추적의 근사 도달 시간 (초). 0 이하면 즉시 따라간다
-    jug::VECTOR2 targetOffset = { 0.f, 0.f };       // 목표점을 시점 중심에서 얼마나 벗어나게 볼지 (예: 진행 방향 앞쪽)
+    Vec2 targetOffset = { 0.f, 0.f };       // 목표점을 시점 중심에서 얼마나 벗어나게 볼지 (예: 진행 방향 앞쪽)
 };
 
 // ===========================================
@@ -56,7 +56,7 @@ public:
     // --- 스크립트 연출 (스테이지 러너가 사용) ---
     // 직선 이동: 추적을 멈추고 시점 중심을 _seconds 동안 (고정 스텝 틱 수로) 선형으로 _targetCenter 까지 옮긴다.
     // 이동 중에도 활성 경계는 매 틱 클램프한다. 끝나면 추적이 재개된다. _seconds <= 0 이면 즉시 SnapTo.
-    void               BeginMove(jug::VECTOR2 _targetCenter, float _seconds);
+    void               BeginMove(Vec2 _targetCenter, float _seconds);
     void               CancelMove();
     [[nodiscard]] bool IsMoving() const { return m_bMoving; }
 
@@ -70,12 +70,12 @@ public:
     [[nodiscard]] const Aabb& GetLockBounds() const { return m_lockBounds; }
 
     // --- 추적 ---
-    void                       SetTarget(const jug::VECTOR2 _target) { m_target = _target; }
-    [[nodiscard]] jug::VECTOR2 GetTarget() const { return m_target; }
+    void                       SetTarget(const Vec2 _target) { m_target = _target; }
+    [[nodiscard]] Vec2 GetTarget() const { return m_target; }
 
     // 목표를 즉시 중심으로 맞춘다 (속도 초기화, 데드존 무시). 경계 클램프는 적용된다.
     void SnapToTarget();
-    void SnapTo(jug::VECTOR2 _viewCenter);
+    void SnapTo(Vec2 _viewCenter);
 
     // 고정 스텝 갱신
     void Update(float _dt = kStepSec);
@@ -87,28 +87,28 @@ public:
 
     // --- 출력 ---
     // 정수로 스냅된 시점 좌상단 (월드 좌표). 값은 항상 정수이며 경계 안에 있다.
-    [[nodiscard]] jug::VECTOR2 GetPosition() const;
+    [[nodiscard]] Vec2 GetPosition() const;
 
     // 흔들림 없는 스냅된 위치 (UI/로직용)
-    [[nodiscard]] jug::VECTOR2 GetPositionNoShake() const;
+    [[nodiscard]] Vec2 GetPositionNoShake() const;
 
-    [[nodiscard]] jug::VECTOR2 GetViewCenter() const { return m_center; }   // 내부 실수 상태
+    [[nodiscard]] Vec2 GetViewCenter() const { return m_center; }   // 내부 실수 상태
     [[nodiscard]] Aabb         GetViewRect() const;                         // 스냅된 위치 기준 화면 영역 (월드)
 
-    [[nodiscard]] jug::VECTOR2 WorldToScreen(jug::VECTOR2 _world) const;
-    [[nodiscard]] jug::VECTOR2 ScreenToWorld(jug::VECTOR2 _screen) const;
+    [[nodiscard]] Vec2 WorldToScreen(Vec2 _world) const;
+    [[nodiscard]] Vec2 ScreenToWorld(Vec2 _screen) const;
     [[nodiscard]] bool         IsVisible(const Aabb& _worldBox, float _margin = 0.f) const;
 
 private:
     [[nodiscard]] Aabb         GetActiveBounds_(bool& _bHasBounds) const;
-    [[nodiscard]] jug::VECTOR2 ClampCenter_(jug::VECTOR2 _center) const;
-    [[nodiscard]] jug::VECTOR2 SnapTopLeft_(jug::VECTOR2 _center) const;   // 중심 → 스냅·클램프된 좌상단
+    [[nodiscard]] Vec2 ClampCenter_(Vec2 _center) const;
+    [[nodiscard]] Vec2 SnapTopLeft_(Vec2 _center) const;   // 중심 → 스냅·클램프된 좌상단
 
     CameraTuning m_tuning = {};
 
-    jug::VECTOR2 m_center   = { 320.f, 224.f };   // 시점 중심 (실수 상태)
-    jug::VECTOR2 m_velocity = { 0.f, 0.f };
-    jug::VECTOR2 m_target   = { 320.f, 224.f };
+    Vec2 m_center   = { 320.f, 224.f };   // 시점 중심 (실수 상태)
+    Vec2 m_velocity = { 0.f, 0.f };
+    Vec2 m_target   = { 320.f, 224.f };
 
     Aabb m_bounds       = {};
     bool m_bHasBounds   = false;
@@ -119,8 +119,8 @@ private:
 
     // 직선 이동 / 보류 락
     bool         m_bMoving        = false;
-    jug::VECTOR2 m_moveStart      = { 0.f, 0.f };
-    jug::VECTOR2 m_moveTarget     = { 0.f, 0.f };
+    Vec2 m_moveStart      = { 0.f, 0.f };
+    Vec2 m_moveTarget     = { 0.f, 0.f };
     int          m_moveTotalTicks = 0;
     int          m_moveElapsed    = 0;
     bool         m_bPendingLock   = false;
@@ -131,7 +131,7 @@ private:
     float        m_shakeDuration  = 0.f;
     float        m_shakeTime      = 0.f;
     uint32_t     m_shakeSeed      = 0x9E3779B9u;
-    jug::VECTOR2 m_shakeOffset    = { 0.f, 0.f };
+    Vec2 m_shakeOffset    = { 0.f, 0.f };
 };
 
 }   // namespace slug

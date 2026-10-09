@@ -1,8 +1,8 @@
 #pragma once
 #include <cstdint>
 
-#include <JugX/RGBA.h>
-#include <JugX/Typedef.h>
+#include "Base/RGBA.h"
+#include "Base/Types.h"
 
 #include "Render/Animation.h"
 #include "Render/Renderer.h"
@@ -98,7 +98,7 @@ struct GlyphQuad
 
 struct TextLayout
 {
-    jug::Vector<GlyphQuad> quads  = {};
+    slug::Vector<GlyphQuad> quads  = {};
     int                    width  = 0;   // 가장 넓은 줄의 폭
     int                    height = 0;   // 전체 높이
     int                    lines  = 0;
@@ -106,18 +106,18 @@ struct TextLayout
 };
 
 // 문자열(\n 으로 줄바꿈)을 배치한다. _x, _y: 정렬 기준점(_style.align 에 따라 줄의 왼쪽/중심/오른쪽 x), y 는 첫 줄의 위쪽.
-[[nodiscard]] TextLayout LayoutText(jug::StringView _text, int _x, int _y, const TextStyle& _style);
+[[nodiscard]] TextLayout LayoutText(slug::StringView _text, int _x, int _y, const TextStyle& _style);
 
 // 문자열이 차지하는 크기 (배치 없이)
-[[nodiscard]] jug::Vector<int> SplitLineLengths(jug::StringView _text);
-[[nodiscard]] int              MeasureTextWidth(jug::StringView _text, const TextStyle& _style);
-[[nodiscard]] int              MeasureTextHeight(jug::StringView _text, const TextStyle& _style);
+[[nodiscard]] slug::Vector<int> SplitLineLengths(slug::StringView _text);
+[[nodiscard]] int              MeasureTextWidth(slug::StringView _text, const TextStyle& _style);
+[[nodiscard]] int              MeasureTextHeight(slug::StringView _text, const TextStyle& _style);
 
 // 폭이 _maxWidth 에 들어가는 최대 정수 배율 (1.._maxScale)
-[[nodiscard]] int FitTextScale(jug::StringView _text, int _maxWidth, int _maxScale, int _letterSpacing = 0);
+[[nodiscard]] int FitTextScale(slug::StringView _text, int _maxWidth, int _maxScale, int _letterSpacing = 0);
 
 // 폰트 색상의 대표 RGBA (디버그 폰트 대체 글자 색)
-[[nodiscard]] jug::RGBA GetFontFallbackColor(eFontColor _color);
+[[nodiscard]] slug::RGBA GetFontFallbackColor(eFontColor _color);
 
 // 폰트 색상 → sprites.json 이름
 [[nodiscard]] const char* GetFontSpriteName(eFontColor _color);
@@ -137,10 +137,10 @@ public:
     [[nodiscard]] bool HasSprites() const { return m_bReady; }
 
     // 문자열을 그린다. _y 는 첫 줄 위쪽. 스프라이트 글리프는 SpriteBatch 로, 대체 글자는 Renderer 의 디버그 폰트로 그린다.
-    void DrawText(Renderer& _renderer, SpriteBatch& _sprites, int _x, int _y, jug::StringView _text, const TextStyle& _style) const;
+    void DrawText(Renderer& _renderer, SpriteBatch& _sprites, int _x, int _y, slug::StringView _text, const TextStyle& _style) const;
 
     // 숫자 문자열(0-9)을 TimeNumberUI(32x32) 로 그린다. _centerX 가 폭의 중심. 숫자 이외 문자는 건너뛴다.
-    void DrawTimeDigits(SpriteBatch& _sprites, int _centerX, int _topY, jug::StringView _digits, uint8_t _alpha = 255) const;
+    void DrawTimeDigits(SpriteBatch& _sprites, int _centerX, int _topY, slug::StringView _digits, uint8_t _alpha = 255) const;
 
     // 글리프 프레임 (테스트/도구용). 없으면 빈 프레임.
     [[nodiscard]] AnimFrame GetGlyphFrame(eFontColor _color, bool _bBold, int _glyph) const;

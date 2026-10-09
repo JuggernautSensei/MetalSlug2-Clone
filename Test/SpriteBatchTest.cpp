@@ -1,4 +1,6 @@
 #include <gtest/gtest.h>
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include <SDL3/SDL.h>
 
@@ -102,7 +104,7 @@ TEST(SpriteDest, OddWidthFramesDoNotLoseAPixel)
 
 TEST(SpriteSort, OrdersByLayerThenSortKeyThenSubmission)
 {
-    jug::Vector<SpriteCommand> commands;
+    slug::Vector<SpriteCommand> commands;
     auto                       Add = [&](const int _layer, const int _key, const int _tag) {
         SpriteCommand command;
         command.layer   = _layer;
@@ -139,7 +141,7 @@ TEST(SpriteSort, BatchSubmitAssignsSequenceAndFlushClearsQueue)
     EXPECT_EQ(batch.GetPendingCommands()[0].seq, 0u);
     EXPECT_EQ(batch.GetPendingCommands()[2].seq, 2u);
 
-    batch.Flush(jug::VECTOR2 { 0.f, 0.f });   // 렌더러 없음 → 그리지 않고 큐만 비운다
+    batch.Flush(Vec2 { 0.f, 0.f });   // 렌더러 없음 → 그리지 않고 큐만 비운다
     EXPECT_TRUE(batch.GetPendingCommands().empty());
 }
 
@@ -200,9 +202,9 @@ struct SoftwareTarget
 };
 
 // 4x4 아틀라스: 왼쪽 열은 빨강, 나머지는 초록
-jug::Vector<uint8_t> MakeAtlas4x4()
+slug::Vector<uint8_t> MakeAtlas4x4()
 {
-    jug::Vector<uint8_t> pixels(4 * 4 * 4);
+    slug::Vector<uint8_t> pixels(4 * 4 * 4);
     for (int y = 0; y < 4; ++y)
     {
         for (int x = 0; x < 4; ++x)
@@ -232,13 +234,13 @@ TEST(SpriteBatchSdl, DrawsFrameAtSnappedPositionWithPivot)
 
     SpriteBatch batch;
     batch.Init(target.pRenderer);
-    const jug::Vector<uint8_t> atlas = MakeAtlas4x4();
+    const slug::Vector<uint8_t> atlas = MakeAtlas4x4();
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
     EXPECT_EQ(batch.GetAtlasPageCount(), 1u);
 
     AnimFrame frame = MakeFrame(4, 4, 2, 4);   // 원점 = 프레임 하단 중앙
     target.Clear();
-    batch.DrawFrame(frame, { 10.7f, 20.9f }, jug::VECTOR2 { 0.f, 0.f });
+    batch.DrawFrame(frame, { 10.7f, 20.9f }, Vec2 { 0.f, 0.f });
 
     // 원점 (10,20) → 좌상단 (8,16), 크기 4x4
     EXPECT_EQ(target.PixelRgb(8, 16), kRed);
@@ -260,14 +262,14 @@ TEST(SpriteBatchSdl, FlipXMirrorsPixelsAroundOrigin)
 
     SpriteBatch batch;
     batch.Init(target.pRenderer);
-    const jug::Vector<uint8_t> atlas = MakeAtlas4x4();
+    const slug::Vector<uint8_t> atlas = MakeAtlas4x4();
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
 
     AnimFrame frame = MakeFrame(4, 4, 2, 4);
     target.Clear();
     SpriteDrawOptions options;
     options.bFlipX = true;
-    batch.DrawFrame(frame, { 10.f, 20.f }, jug::VECTOR2 { 0.f, 0.f }, options);
+    batch.DrawFrame(frame, { 10.f, 20.f }, Vec2 { 0.f, 0.f }, options);
 
     // 빨간 열이 오른쪽 끝으로 간다 (8..11 중 11)
     EXPECT_EQ(target.PixelRgb(11, 16), kRed);
@@ -284,7 +286,7 @@ TEST(SpriteBatchSdl, FlushDrawsInSortedOrderLaterOnTop)
 
     SpriteBatch batch;
     batch.Init(target.pRenderer);
-    const jug::Vector<uint8_t> atlas = MakeAtlas4x4();
+    const slug::Vector<uint8_t> atlas = MakeAtlas4x4();
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
 
     // 같은 자리에 겹쳐 그리되 색이 다른 두 프레임: 초록 단색(오른쪽 열) 과 빨강(왼쪽 열)
@@ -296,13 +298,13 @@ TEST(SpriteBatchSdl, FlushDrawsInSortedOrderLaterOnTop)
     // 레이어가 높은 빨강을 먼저 제출해도 초록(레이어 0) 이 아래, 빨강(레이어 1) 이 위
     batch.Submit(1, 0, red, { 5.f, 5.f });
     batch.Submit(0, 0, green, { 5.f, 5.f });
-    batch.Flush(jug::VECTOR2 { 0.f, 0.f });
+    batch.Flush(Vec2 { 0.f, 0.f });
     EXPECT_EQ(target.PixelRgb(5, 5), kRed);
 
     target.Clear();
     batch.Submit(0, 7, red, { 5.f, 5.f });
     batch.Submit(0, 3, green, { 5.f, 5.f });   // sortKey 가 작은 쪽이 아래
-    batch.Flush(jug::VECTOR2 { 0.f, 0.f });
+    batch.Flush(Vec2 { 0.f, 0.f });
     EXPECT_EQ(target.PixelRgb(5, 5), kRed);
 }
 
@@ -319,11 +321,11 @@ TEST(SpriteBatchSdl, EmptyFramesAndMissingPagesAreSkipped)
     target.Clear();
 
     AnimFrame empty = MakeFrame(0, 0, 0, 0);
-    batch.DrawFrame(empty, { 5.f, 5.f }, jug::VECTOR2 { 0.f, 0.f });   // 크래시 없이 무시
+    batch.DrawFrame(empty, { 5.f, 5.f }, Vec2 { 0.f, 0.f });   // 크래시 없이 무시
 
     AnimFrame noPage = MakeFrame(4, 4, 0, 0);
     noPage.atlas     = 3;
-    batch.DrawFrame(noPage, { 5.f, 5.f }, jug::VECTOR2 { 0.f, 0.f });
+    batch.DrawFrame(noPage, { 5.f, 5.f }, Vec2 { 0.f, 0.f });
     EXPECT_EQ(target.PixelRgb(5, 5), kBlack);
 }
 
@@ -337,7 +339,7 @@ TEST(SpriteBatchSdl, RejectsInvalidAtlasData)
 
     SpriteBatch batch;
     batch.Init(target.pRenderer);
-    const jug::Vector<uint8_t> tooSmall(8);
+    const slug::Vector<uint8_t> tooSmall(8);
     EXPECT_TRUE(batch.AddAtlasPageFromRgba(4, 4, tooSmall).HasError());
     EXPECT_TRUE(batch.AddAtlasPageFromRgba(0, 4, tooSmall).HasError());
     EXPECT_TRUE(batch.LoadAtlasPage("this/file/does/not/exist.png").HasError());

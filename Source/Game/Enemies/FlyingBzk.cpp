@@ -1,7 +1,7 @@
 #include <cmath>
 #include <format>
 
-#include <JugX/Math.h>
+#include "Base/Math.h"
 
 #include "Game/Enemies/EnemyCommon.h"
 #include "Game/Enemies/EnemyDefParse.h"
@@ -31,7 +31,7 @@ namespace
 
     [[nodiscard]] bool IsOnScreen_(const Enemy& _e, const EnemyEnv& _env)
     {
-        const jug::VECTOR2 center = { _e.body.position.x, _e.body.position.y - _e.body.size.y * 0.5f };
+        const Vec2 center = { _e.body.position.x, _e.body.position.y - _e.body.size.y * 0.5f };
         return _env.ctx.cameraView.Contains(center);
     }
 
@@ -39,7 +39,7 @@ namespace
     {
         const float dx  = std::abs(_env.ctx.player.center.x - _e.body.position.x);
         const float dy  = _env.ctx.player.center.y - (_e.body.position.y + _cfg.muzzleBase.y);
-        const float deg = dy > 0.f ? std::atan2(dy, jug::Max(dx, 0.001f)) * jug::kRad2Deg : 0.f;
+        const float deg = dy > 0.f ? std::atan2(dy, slug::Max(dx, 0.001f)) * slug::kRad2Deg : 0.f;
         for (int i = 0; i < 5; ++i)
         {
             if (std::abs(deg - _cfg.postureDeg[i]) <= _cfg.windowDeg)
@@ -133,8 +133,8 @@ namespace
         {
             if (ClipReachedFrame(_e, _def, cfg.fireFrame))
             {
-                const float rad = cfg.fireDeg[_e.aux2] * jug::kDeg2Rad;
-                const jug::VECTOR2 dir = { std::cos(rad) * static_cast<float>(_e.facing), std::sin(rad) };
+                const float rad = cfg.fireDeg[_e.aux2] * slug::kDeg2Rad;
+                const Vec2 dir = { std::cos(rad) * static_cast<float>(_e.facing), std::sin(rad) };
                 if (FireWeapon(_e, _def, _env, cfg.weaponRocket, dir, { dir.x * cfg.muzzleDist, dir.y * cfg.muzzleDist }))
                 {
                     ++_e.counter;
@@ -179,7 +179,7 @@ void ParseFlyingBzkCfg(
     (void)_r.NumArray("postureDeg", c.postureDeg, 5);
     (void)_r.NumArray("fireDeg", c.fireDeg, 5);
     c.windowDeg         = _r.Num("windowDeg");
-    c.muzzleBase        = _r.Vec2("muzzleBase", c.muzzleBase);
+    c.muzzleBase        = _r.ReadVec2("muzzleBase", c.muzzleBase);
     c.muzzleDist        = _r.Num("muzzleDist");
     c.landProbe         = _r.Num("landProbe");
     c.landedDef         = _r.Str("landedDef");
@@ -198,7 +198,7 @@ void ParseFlyingBzkCfg(
         c.paraOffset = _def.overlayOffset;
     }
     c.paraDestroy.clip   = _r.Str("paraDestroyFx");
-    c.paraDestroy.offset = _r.Vec2("paraDestroyOffset", c.paraOffset);
+    c.paraDestroy.offset = _r.ReadVec2("paraDestroyOffset", c.paraOffset);
     c.paraDestroy.layer  = 20;
 }
 

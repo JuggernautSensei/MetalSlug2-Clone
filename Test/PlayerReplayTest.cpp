@@ -1,4 +1,7 @@
 #include <filesystem>
+#include "Base/Types.h"
+#include "Base/Result.h"
+#include "Base/Random.h"
 
 #include "PlayerTestUtil.h"
 
@@ -51,16 +54,16 @@ public:
     }
 
 private:
-    jug::Vector<InputFrame> m_frames;
+    slug::Vector<InputFrame> m_frames;
 };
 
-jug::FilePath RepoRoot()
+slug::FilePath RepoRoot()
 {
-    return jug::FilePath { SLUG_ASSET_DIR }.parent_path();
+    return slug::FilePath { SLUG_ASSET_DIR }.parent_path();
 }
 
 void Write(
-    const jug::FilePath& _path,
+    const slug::FilePath& _path,
     const Script&        _script)
 {
     std::filesystem::create_directories(_path.parent_path());
@@ -92,7 +95,7 @@ TEST(PlayerReplay, WriteRegressionAndVisualScripts)
 {
     Write(RepoRoot() / "Test" / "Replays" / "sandbox_regression.rep", MakeRegressionScript());
 
-    const jug::FilePath visual = RepoRoot() / "Captures" / "Visual";
+    const slug::FilePath visual = RepoRoot() / "Captures" / "Visual";
 
     // 달리기: 연속 프레임으로 떨림 확인
     Write(visual / "run.rep", Script { 200 }.Hold(eAction::Right, 10, 200));
@@ -118,11 +121,11 @@ TEST(PlayerReplay, WriteRegressionAndVisualScripts)
 
 TEST(PlayerReplay, RegressionReplayPlaysTheSameWayTwiceAndHitsTheMilestones)
 {
-    const jug::FilePath     path   = RepoRoot() / "Test" / "Replays" / "sandbox_regression.rep";
-    jug::Result<ReplayData> loaded = LoadReplay(path);
+    const slug::FilePath     path   = RepoRoot() / "Test" / "Replays" / "sandbox_regression.rep";
+    slug::Result<ReplayData> loaded = LoadReplay(path);
     ASSERT_TRUE(loaded.HasValue()) << "먼저 PlayerReplay.WriteRegressionAndVisualScripts 가 실행되어야 합니다: " << path.string();
 
-    if (!std::filesystem::exists(jug::FilePath { SLUG_ASSET_DIR } / "Baked" / "Ground" / "Stage0_0.bin"))
+    if (!std::filesystem::exists(slug::FilePath { SLUG_ASSET_DIR } / "Baked" / "Ground" / "Stage0_0.bin"))
     {
         GTEST_SKIP() << "Assets/Baked 없음: Scripts/Bake.ps1 로 생성하세요";
     }
@@ -133,13 +136,13 @@ TEST(PlayerReplay, RegressionReplayPlaysTheSameWayTwiceAndHitsTheMilestones)
     uint64_t hashes[2] = {};
     for (int run = 0; run < 2; ++run)
     {
-        jug::RngMt19937 rng { replay.seed };
+        slug::RngMt19937 rng { replay.seed };
         GameContext     ctx;
         ctx.pRng      = &rng;
-        ctx.assetRoot = jug::FilePath { SLUG_ASSET_DIR };
+        ctx.assetRoot = slug::FilePath { SLUG_ASSET_DIR };
 
         SandboxState* pState = new SandboxState;
-        SimRunner     runner { ctx, jug::Scoped<IGameState> { pState } };
+        SimRunner     runner { ctx, std::unique_ptr<IGameState> { pState } };
         runner.Run(replay.frames);
 
         hashes[run]              = pState->HashState();
@@ -158,7 +161,7 @@ TEST(PlayerReplay, RegressionReplayPlaysTheSameWayTwiceAndHitsTheMilestones)
 TEST(PlayerReplay, HeadlessReplayThroughTheStateFactoryUsesTheSamePath)
 {
     // 상태 이름으로 만든 샌드박스(기본 구성)를 SimRunner 로 돌려도 안전하게 끝까지 간다 (애셋 유무와 무관)
-    jug::RngMt19937 rng { uint64_t { 1 } };
+    slug::RngMt19937 rng { uint64_t { 1 } };
     GameContext     ctx;
     ctx.pRng = &rng;
     SimRunner  runner { ctx, CreateState("sandbox") };

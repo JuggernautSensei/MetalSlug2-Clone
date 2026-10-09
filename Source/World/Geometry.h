@@ -2,8 +2,7 @@
 #include <cmath>
 #include <optional>
 
-#include <JugX/Math.h>
-#include <JugX/Vector2.h>
+#include "Base/Math.h"
 
 namespace slug
 {
@@ -32,19 +31,19 @@ namespace slug
 
 struct Aabb
 {
-    jug::VECTOR2 min = { 0.f, 0.f };
-    jug::VECTOR2 max = { 0.f, 0.f };
+    Vec2 min = { 0.f, 0.f };
+    Vec2 max = { 0.f, 0.f };
 
     [[nodiscard]] static constexpr Aabb FromMinMax(
-        const jug::VECTOR2 _min,
-        const jug::VECTOR2 _max)
+        const Vec2 _min,
+        const Vec2 _max)
     {
         return Aabb { _min, _max };
     }
 
     [[nodiscard]] static constexpr Aabb FromMinSize(
-        const jug::VECTOR2 _min,
-        const jug::VECTOR2 _size)
+        const Vec2 _min,
+        const Vec2 _size)
     {
         return Aabb {
             _min, { _min.x + _size.x, _min.y + _size.y }
@@ -52,10 +51,10 @@ struct Aabb
     }
 
     [[nodiscard]] static constexpr Aabb FromCenterSize(
-        const jug::VECTOR2 _center,
-        const jug::VECTOR2 _size)
+        const Vec2 _center,
+        const Vec2 _size)
     {
-        const jug::VECTOR2 half = { _size.x * 0.5f, _size.y * 0.5f };
+        const Vec2 half = { _size.x * 0.5f, _size.y * 0.5f };
         return Aabb {
             { _center.x - half.x, _center.y - half.y },
             { _center.x + half.x, _center.y + half.y }
@@ -64,8 +63,8 @@ struct Aabb
 
     // 발(하단 중앙) 기준. 캐릭터 원점 규약과 동일하다.
     [[nodiscard]] static constexpr Aabb FromBottomCenter(
-        const jug::VECTOR2 _bottomCenter,
-        const jug::VECTOR2 _size)
+        const Vec2 _bottomCenter,
+        const Vec2 _size)
     {
         return Aabb {
             { _bottomCenter.x - _size.x * 0.5f, _bottomCenter.y - _size.y },
@@ -83,17 +82,17 @@ struct Aabb
         return max.y - min.y;
     }
 
-    [[nodiscard]] constexpr jug::VECTOR2 GetSize() const
+    [[nodiscard]] constexpr Vec2 GetSize() const
     {
         return { max.x - min.x, max.y - min.y };
     }
 
-    [[nodiscard]] constexpr jug::VECTOR2 GetCenter() const
+    [[nodiscard]] constexpr Vec2 GetCenter() const
     {
         return { (min.x + max.x) * 0.5f, (min.y + max.y) * 0.5f };
     }
 
-    [[nodiscard]] constexpr jug::VECTOR2 GetBottomCenter() const
+    [[nodiscard]] constexpr Vec2 GetBottomCenter() const
     {
         return { (min.x + max.x) * 0.5f, max.y };
     }
@@ -112,7 +111,7 @@ struct Aabb
 
     // 점 포함 (min 포함, max 미포함)
     [[nodiscard]] constexpr bool Contains(
-        const jug::VECTOR2 _point) const
+        const Vec2 _point) const
     {
         return _point.x >= min.x && _point.x < max.x && _point.y >= min.y && _point.y < max.y;
     }
@@ -132,8 +131,8 @@ struct Aabb
             return std::nullopt;
         }
         return Aabb {
-            { jug::Max(min.x, _other.min.x), jug::Max(min.y, _other.min.y) },
-            { jug::Min(max.x, _other.max.x), jug::Min(max.y, _other.max.y) }
+            { slug::Max(min.x, _other.min.x), slug::Max(min.y, _other.min.y) },
+            { slug::Min(max.x, _other.max.x), slug::Min(max.y, _other.max.y) }
         };
     }
 
@@ -148,7 +147,7 @@ struct Aabb
     }
 
     [[nodiscard]] constexpr Aabb Expanded(
-        const jug::VECTOR2 _amount) const
+        const Vec2 _amount) const
     {
         return Aabb {
             { min.x - _amount.x, min.y - _amount.y },
@@ -157,7 +156,7 @@ struct Aabb
     }
 
     [[nodiscard]] constexpr Aabb Translated(
-        const jug::VECTOR2 _offset) const
+        const Vec2 _offset) const
     {
         return Aabb {
             { min.x + _offset.x, min.y + _offset.y },
@@ -170,8 +169,8 @@ struct Aabb
         const Aabb& _other) const
     {
         return Aabb {
-            { jug::Min(min.x, _other.min.x), jug::Min(min.y, _other.min.y) },
-            { jug::Max(max.x, _other.max.x), jug::Max(max.y, _other.max.y) }
+            { slug::Min(min.x, _other.min.x), slug::Min(min.y, _other.min.y) },
+            { slug::Max(max.x, _other.max.x), slug::Max(max.y, _other.max.y) }
         };
     }
 
@@ -198,7 +197,7 @@ struct Aabb
 
 struct Circle
 {
-    jug::VECTOR2 center = { 0.f, 0.f };
+    Vec2 center = { 0.f, 0.f };
     float        radius = 0.f;
 
     [[nodiscard]] bool Overlaps(
@@ -213,8 +212,8 @@ struct Circle
     [[nodiscard]] bool Overlaps(
         const Aabb& _box) const
     {
-        const float cx = jug::Clamp(center.x, _box.min.x, _box.max.x);
-        const float cy = jug::Clamp(center.y, _box.min.y, _box.max.y);
+        const float cx = slug::Clamp(center.x, _box.min.x, _box.max.x);
+        const float cy = slug::Clamp(center.y, _box.min.y, _box.max.y);
         const float dx = center.x - cx;
         const float dy = center.y - cy;
         return dx * dx + dy * dy < radius * radius;

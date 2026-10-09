@@ -1,7 +1,7 @@
 #pragma once
-#include <JugX/Random.h>
-#include <JugX/Scoped.h>
-#include <JugX/Typedef.h>
+#include "Base/Random.h"
+#include <memory>
+#include "Base/Types.h"
 
 #include "Audio/AudioSink.h"
 #include "Core/Input.h"
@@ -23,8 +23,8 @@ struct GameContext
     Renderer*         pRenderer = nullptr;
     SpriteBatch*      pSprites  = nullptr;
     AnimationLibrary* pAnims    = nullptr;
-    jug::RngMt19937*  pRng      = nullptr;
-    jug::FilePath     assetRoot = {};   // 보통 <repo>/Assets
+    slug::RngMt19937*  pRng      = nullptr;
+    slug::FilePath     assetRoot = {};   // 보통 <repo>/Assets
     IAudioSink*       pAudio    = nullptr;   // 소리 요청 통로 (null 이면 GetAudio() 가 NullAudio 를 준다). 시뮬레이션 결과에 영향 없음
 
     // 디버그 정보 (App 이 채운다. 시뮬레이션 결과에는 영향이 없다)
@@ -65,7 +65,7 @@ public:
     virtual void Render(GameContext& _ctx, float _alpha)             = 0;
 
     // Tick 중 상태 전환을 요청했다면 다음 상태를 반환한다 (소유권 이전). 없으면 nullptr.
-    [[nodiscard]] virtual jug::Scoped<IGameState> TakeNextState()
+    [[nodiscard]] virtual std::unique_ptr<IGameState> TakeNextState()
     {
         return nullptr;
     }

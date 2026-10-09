@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include <JugX/Math.h>
+#include "Base/Math.h"
 
 namespace slug
 {
@@ -106,7 +106,7 @@ void Camera::Unlock()
 }
 
 void Camera::BeginMove(
-    const jug::VECTOR2 _targetCenter,
+    const Vec2 _targetCenter,
     const float        _seconds)
 {
     const int ticks = static_cast<int>(std::llround(static_cast<double>(_seconds) / static_cast<double>(kStepSec)));
@@ -156,8 +156,8 @@ Aabb Camera::GetActiveBounds_(
     return m_bounds;
 }
 
-jug::VECTOR2 Camera::ClampCenter_(
-    const jug::VECTOR2 _center) const
+Vec2 Camera::ClampCenter_(
+    const Vec2 _center) const
 {
     bool       bHasBounds = false;
     const Aabb bounds     = GetActiveBounds_(bHasBounds);
@@ -166,23 +166,23 @@ jug::VECTOR2 Camera::ClampCenter_(
         return _center;
     }
 
-    const jug::VECTOR2 half   = { m_tuning.viewSize.x * 0.5f, m_tuning.viewSize.y * 0.5f };
-    jug::VECTOR2       result = _center;
+    const Vec2 half   = { m_tuning.viewSize.x * 0.5f, m_tuning.viewSize.y * 0.5f };
+    Vec2       result = _center;
 
     const float minX = bounds.min.x + half.x;
     const float maxX = bounds.max.x - half.x;
-    result.x         = minX > maxX ? (bounds.min.x + bounds.max.x) * 0.5f : jug::Clamp(result.x, minX, maxX);
+    result.x         = minX > maxX ? (bounds.min.x + bounds.max.x) * 0.5f : slug::Clamp(result.x, minX, maxX);
 
     const float minY = bounds.min.y + half.y;
     const float maxY = bounds.max.y - half.y;
-    result.y         = minY > maxY ? (bounds.min.y + bounds.max.y) * 0.5f : jug::Clamp(result.y, minY, maxY);
+    result.y         = minY > maxY ? (bounds.min.y + bounds.max.y) * 0.5f : slug::Clamp(result.y, minY, maxY);
     return result;
 }
 
-jug::VECTOR2 Camera::SnapTopLeft_(
-    const jug::VECTOR2 _center) const
+Vec2 Camera::SnapTopLeft_(
+    const Vec2 _center) const
 {
-    jug::VECTOR2 topLeft = { RoundToInt_(_center.x - m_tuning.viewSize.x * 0.5f), RoundToInt_(_center.y - m_tuning.viewSize.y * 0.5f) };
+    Vec2 topLeft = { RoundToInt_(_center.x - m_tuning.viewSize.x * 0.5f), RoundToInt_(_center.y - m_tuning.viewSize.y * 0.5f) };
 
     bool       bHasBounds = false;
     const Aabb bounds     = GetActiveBounds_(bHasBounds);
@@ -193,14 +193,14 @@ jug::VECTOR2 Camera::SnapTopLeft_(
         const float maxX = std::floor(bounds.max.x - m_tuning.viewSize.x);
         const float minY = std::ceil(bounds.min.y);
         const float maxY = std::floor(bounds.max.y - m_tuning.viewSize.y);
-        topLeft.x        = minX > maxX ? RoundToInt_((bounds.min.x + bounds.max.x - m_tuning.viewSize.x) * 0.5f) : jug::Clamp(topLeft.x, minX, maxX);
-        topLeft.y        = minY > maxY ? RoundToInt_((bounds.min.y + bounds.max.y - m_tuning.viewSize.y) * 0.5f) : jug::Clamp(topLeft.y, minY, maxY);
+        topLeft.x        = minX > maxX ? RoundToInt_((bounds.min.x + bounds.max.x - m_tuning.viewSize.x) * 0.5f) : slug::Clamp(topLeft.x, minX, maxX);
+        topLeft.y        = minY > maxY ? RoundToInt_((bounds.min.y + bounds.max.y - m_tuning.viewSize.y) * 0.5f) : slug::Clamp(topLeft.y, minY, maxY);
     }
     return topLeft;
 }
 
 void Camera::SnapTo(
-    const jug::VECTOR2 _viewCenter)
+    const Vec2 _viewCenter)
 {
     m_center   = ClampCenter_(_viewCenter);
     m_velocity = { 0.f, 0.f };
@@ -237,20 +237,20 @@ void Camera::Update(
     }
     else
     {
-        const jug::VECTOR2 focus = { m_target.x + m_tuning.targetOffset.x, m_target.y + m_tuning.targetOffset.y };
+        const Vec2 focus = { m_target.x + m_tuning.targetOffset.x, m_target.y + m_tuning.targetOffset.y };
 
-        jug::VECTOR2 desired = {
+        Vec2 desired = {
             ApplyDeadzone_(m_center.x, focus.x, m_tuning.deadzoneHalf.x),
             ApplyDeadzone_(m_center.y, focus.y, m_tuning.deadzoneHalf.y)
         };
 
         if (m_bForwardOnly)
         {
-            desired.x = jug::Max(desired.x, m_center.x);
+            desired.x = slug::Max(desired.x, m_center.x);
         }
         if (m_bForwardOnlyY)
         {
-            desired.y = jug::Max(desired.y, m_center.y);
+            desired.y = slug::Max(desired.y, m_center.y);
         }
         desired = ClampCenter_(desired);
 
@@ -273,7 +273,7 @@ void Camera::Update(
     if (m_shakeTime < m_shakeDuration)
     {
         m_shakeTime += _dt;
-        const float k = jug::Max(0.f, 1.f - m_shakeTime / m_shakeDuration);
+        const float k = slug::Max(0.f, 1.f - m_shakeTime / m_shakeDuration);
         const float a = m_shakeAmplitude * k;
 
         auto NextUnit = [this]() {
@@ -312,14 +312,14 @@ void Camera::StopShake()
     m_shakeOffset    = { 0.f, 0.f };
 }
 
-jug::VECTOR2 Camera::GetPositionNoShake() const
+Vec2 Camera::GetPositionNoShake() const
 {
     return SnapTopLeft_(m_center);
 }
 
-jug::VECTOR2 Camera::GetPosition() const
+Vec2 Camera::GetPosition() const
 {
-    jug::VECTOR2 position = SnapTopLeft_(m_center);
+    Vec2 position = SnapTopLeft_(m_center);
     if (m_shakeOffset.x == 0.f && m_shakeOffset.y == 0.f)
     {
         return position;
@@ -337,11 +337,11 @@ jug::VECTOR2 Camera::GetPosition() const
         const float maxY = std::floor(bounds.max.y - m_tuning.viewSize.y);
         if (minX <= maxX)
         {
-            position.x = jug::Clamp(position.x, minX, maxX);
+            position.x = slug::Clamp(position.x, minX, maxX);
         }
         if (minY <= maxY)
         {
-            position.y = jug::Clamp(position.y, minY, maxY);
+            position.y = slug::Clamp(position.y, minY, maxY);
         }
     }
     return position;
@@ -352,17 +352,17 @@ Aabb Camera::GetViewRect() const
     return Aabb::FromMinSize(GetPosition(), m_tuning.viewSize);
 }
 
-jug::VECTOR2 Camera::WorldToScreen(
-    const jug::VECTOR2 _world) const
+Vec2 Camera::WorldToScreen(
+    const Vec2 _world) const
 {
-    const jug::VECTOR2 position = GetPosition();
+    const Vec2 position = GetPosition();
     return { _world.x - position.x, _world.y - position.y };
 }
 
-jug::VECTOR2 Camera::ScreenToWorld(
-    const jug::VECTOR2 _screen) const
+Vec2 Camera::ScreenToWorld(
+    const Vec2 _screen) const
 {
-    const jug::VECTOR2 position = GetPosition();
+    const Vec2 position = GetPosition();
     return { _screen.x + position.x, _screen.y + position.y };
 }
 

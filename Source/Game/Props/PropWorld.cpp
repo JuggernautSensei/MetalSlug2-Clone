@@ -1,4 +1,7 @@
 #include <algorithm>
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Random.h"
 #include <cmath>
 #include <cstring>
 
@@ -11,7 +14,7 @@ namespace slug
 namespace
 {
 
-// JugX 의 실수 범위 Random 은 내부 오버로드 해석 문제로 쓰지 않는다. [_lo, _hi] 균등 난수 (결정적).
+// 실수 범위 난수는 [_lo, _hi] 균등 분포로 직접 만든다 (결정적).
 template<typename RngT>
 float RandRange(RngT& _rng, const float _lo, const float _hi)
 {
@@ -63,7 +66,7 @@ void PropWorld::Reset(
     const uint64_t _seed)
 {
     ClearAll();
-    m_rng    = jug::RngMt19937 { _seed };
+    m_rng    = slug::RngMt19937 { _seed };
     m_nextId = kPropOwnerBase;
     m_items.Reset(_seed);
 }
@@ -152,9 +155,9 @@ int PropWorld::GetHp(
     return pInst != nullptr ? pInst->health.hp : 0;
 }
 
-jug::Vector<PropEvent> PropWorld::TakeEvents()
+slug::Vector<PropEvent> PropWorld::TakeEvents()
 {
-    jug::Vector<PropEvent> out = std::move(m_events);
+    slug::Vector<PropEvent> out = std::move(m_events);
     m_events.clear();
     return out;
 }
@@ -164,8 +167,8 @@ jug::Vector<PropEvent> PropWorld::TakeEvents()
 // ===========================================
 
 PropHandle PropWorld::Spawn(
-    const jug::StringView  _defName,
-    const jug::VECTOR2     _center,
+    const slug::StringView  _defName,
+    const Vec2     _center,
     const PropSpawnParams& _params)
 {
     if (m_pLibrary == nullptr)
@@ -177,7 +180,7 @@ PropHandle PropWorld::Spawn(
 
 PropHandle PropWorld::SpawnByIndex(
     const int              _defIndex,
-    const jug::VECTOR2     _center,
+    const Vec2     _center,
     const PropSpawnParams& _params)
 {
     if (m_pLibrary == nullptr || _defIndex < 0 || static_cast<size_t>(_defIndex) >= m_pLibrary->GetDefs().size())
@@ -257,8 +260,8 @@ PropHandle PropWorld::SpawnByIndex(
 }
 
 uint32_t PropWorld::SpawnItem(
-    const jug::StringView _name,
-    const jug::VECTOR2    _feet,
+    const slug::StringView _name,
+    const Vec2    _feet,
     const bool            _bBounce)
 {
     return m_items.Spawn(_name, _feet, _bBounce);
@@ -308,7 +311,7 @@ void PropWorld::RegisterHurtboxes(
 }
 
 void PropWorld::OnHitEvents(
-    const jug::Span<const HitEvent> _events)
+    const slug::Span<const HitEvent> _events)
 {
     if (m_pLibrary == nullptr)
     {
@@ -373,7 +376,7 @@ void PropWorld::OnHitEvents(
 void PropWorld::Destroy_(
     PropInstance&  _inst,
     const PropDef& _def,
-    const jug::VECTOR2 _center)
+    const Vec2 _center)
 {
     _inst.bDestroyed        = true;
     _inst.destroyTimerSec   = 0.f;
@@ -418,13 +421,13 @@ void PropWorld::Destroy_(
 
 void PropWorld::Detonate_(
     const PropBurst& _burst,
-    const jug::VECTOR2 _center)
+    const Vec2 _center)
 {
     for (const PropExplosion& e: _burst.explosions)
     {
         for (int i = 0; i < e.count; ++i)
         {
-            jug::VECTOR2 p = { _center.x + e.offset.x, _center.y + e.offset.y };
+            Vec2 p = { _center.x + e.offset.x, _center.y + e.offset.y };
             if (e.spread > 0.f)
             {
                 p.x += RollFloat_(-e.spread, e.spread);
@@ -446,14 +449,14 @@ void PropWorld::Detonate_(
 
 void PropWorld::QueueDrops_(
     const PropDef&     _def,
-    const jug::VECTOR2 _center)
+    const Vec2 _center)
 {
     for (const PropDrop& drop: _def.drops)
     {
         for (int i = 0; i < drop.count; ++i)
         {
             const float dx = drop.spreadX > 0.f ? RollFloat_(-drop.spreadX, drop.spreadX) : 0.f;
-            const jug::VECTOR2 feet { _center.x + dx, _center.y };
+            const Vec2 feet { _center.x + dx, _center.y };
             const uint32_t     itemId = m_items.Spawn(drop.item, feet, drop.bBounce);
             if (itemId != 0)
             {
@@ -773,7 +776,7 @@ void PropWorld::Submit(
 
 void ApplyGroundPatch(
     GroundMap&         _map,
-    const jug::VECTOR2 _topLeft,
+    const Vec2 _topLeft,
     const GroundMap&   _patchMask)
 {
     const int x0 = static_cast<int>(std::floor(_topLeft.x));

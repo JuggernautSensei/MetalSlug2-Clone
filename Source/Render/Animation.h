@@ -1,9 +1,10 @@
 #pragma once
 #include <cstdint>
+#include "Base/Assert.h"
 
-#include <JugX/Handle.h>
-#include <JugX/Result.h>
-#include <JugX/Typedef.h>
+#include "Base/Handle.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
 
 namespace slug
 {
@@ -18,7 +19,7 @@ namespace slug
 inline constexpr int64_t kAnimTimeUnitsPerSec = 6'000'000;
 
 struct AnimIdTag;
-using AnimId = jug::Handle<AnimIdTag>;
+using AnimId = slug::Handle<AnimIdTag>;
 
 // ===========================================
 //  AnimFrame / AnimClip
@@ -43,13 +44,13 @@ struct AnimFrame
 
 struct AnimClip
 {
-    jug::String            name          = {};
+    slug::String            name          = {};
     bool                   bLoop         = false;
     int                    loopStart     = 0;      // 루프 시 되돌아갈 프레임
     float                  frameDuration = 0.1f;   // 초, 전 프레임 동일
     int                    cellW         = 0;
     int                    cellH         = 0;
-    jug::Vector<AnimFrame> frames        = {};
+    slug::Vector<AnimFrame> frames        = {};
 
     [[nodiscard]] int GetFrameCount() const
     {
@@ -94,34 +95,34 @@ class AnimationLibrary
 {
 public:
     // Assets/Baked 같은 루트 폴더에서 manifest.json 과 그가 가리키는 anim.json 을 읽는다.
-    [[nodiscard]] static jug::Result<AnimationLibrary> LoadFromDirectory(const jug::FilePath& _bakedRoot);
+    [[nodiscard]] static slug::Result<AnimationLibrary> LoadFromDirectory(const slug::FilePath& _bakedRoot);
 
     // anim.json 텍스트만 파싱한다 (테스트/도구용). 아틀라스 페이지 목록은 비어 있다.
-    [[nodiscard]] static jug::Result<AnimationLibrary> LoadFromJson(jug::StringView _animJson);
+    [[nodiscard]] static slug::Result<AnimationLibrary> LoadFromJson(slug::StringView _animJson);
 
     // 프로그램에서 직접 클립을 추가한다. 같은 이름이 있으면 내용만 교체하고 같은 id 를 돌려준다.
     AnimId AddClip(AnimClip _clip);
 
-    [[nodiscard]] AnimId Find(jug::StringView _name) const;   // 없으면 null 핸들
+    [[nodiscard]] AnimId Find(slug::StringView _name) const;   // 없으면 null 핸들
 
     [[nodiscard]] bool            IsValid(AnimId _id) const;
-    [[nodiscard]] const AnimClip& Get(AnimId _id) const;   // 유효한 id 필요 (JUG_ASSERT)
+    [[nodiscard]] const AnimClip& Get(AnimId _id) const;   // 유효한 id 필요 (SLUG_ASSERT)
     [[nodiscard]] const AnimClip* GetOrNull(AnimId _id) const;
-    [[nodiscard]] const AnimClip* FindClip(jug::StringView _name) const;
+    [[nodiscard]] const AnimClip* FindClip(slug::StringView _name) const;
 
     [[nodiscard]] size_t                    GetClipCount() const { return m_clips.size(); }
-    [[nodiscard]] jug::Span<const AnimClip> GetClips() const { return m_clips; }
+    [[nodiscard]] slug::Span<const AnimClip> GetClips() const { return m_clips; }
 
-    [[nodiscard]] jug::Span<const jug::String> GetAtlasPages() const { return m_atlasPages; }
-    [[nodiscard]] const jug::FilePath&         GetRoot() const { return m_root; }
+    [[nodiscard]] slug::Span<const slug::String> GetAtlasPages() const { return m_atlasPages; }
+    [[nodiscard]] const slug::FilePath&         GetRoot() const { return m_root; }
 
-    void SetAtlasPages(jug::Vector<jug::String> _pages) { m_atlasPages = std::move(_pages); }
+    void SetAtlasPages(slug::Vector<slug::String> _pages) { m_atlasPages = std::move(_pages); }
 
 private:
-    jug::Vector<AnimClip>               m_clips       = {};
-    jug::HashMap<jug::String, uint32_t> m_nameToIndex = {};
-    jug::Vector<jug::String>            m_atlasPages  = {};
-    jug::FilePath                       m_root        = {};
+    slug::Vector<AnimClip>               m_clips       = {};
+    slug::HashMap<slug::String, uint32_t> m_nameToIndex = {};
+    slug::Vector<slug::String>            m_atlasPages  = {};
+    slug::FilePath                       m_root        = {};
 };
 
 // ===========================================
@@ -161,7 +162,7 @@ public:
 private:
     void Settle_(const AnimClip& _clip);   // m_timeUnits 를 클립 규칙(루프/종료)에 맞게 정리하고 m_frame 을 갱신
 
-    AnimId  m_clip      = jug::kNullHandle;
+    AnimId  m_clip      = slug::kNullHandle;
     int64_t m_timeUnits = 0;
     int     m_frame     = 0;
     bool    m_bFinished = false;

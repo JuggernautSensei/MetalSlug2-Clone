@@ -1,4 +1,5 @@
 #include "PlayerTestUtil.h"
+#include "Base/Types.h"
 
 #include "Game/Player/PlayerRig.h"
 
@@ -390,7 +391,7 @@ TEST(PlayerRigFeet, EveryPlayerClipHasSanePivots)
                 continue;
             }
             // 피벗이 프레임 크기의 몇 배씩 벗어나지 않는다 (단, Player_Stand_Idle_Lookup_SG 의 Y 오프셋 오타가 알려진 예외)
-            if (clip.name.find("Idle_Lookup_SG") != jug::String::npos)
+            if (clip.name.find("Idle_Lookup_SG") != slug::String::npos)
             {
                 continue;
             }

@@ -1,6 +1,6 @@
 #pragma once
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "Render/Animation.h"
 #include "Render/SpriteBatch.h"
@@ -16,7 +16,7 @@ namespace slug
 struct Effect
 {
     AnimPlayer   anim     = {};
-    jug::VECTOR2 position = { 0.f, 0.f };
+    Vec2 position = { 0.f, 0.f };
     int          layer    = 0;
 };
 
@@ -26,7 +26,7 @@ public:
     void Clear() { m_effects.clear(); }
 
     // 클립 이름으로 생성한다. 라이브러리에 없으면 무시한다.
-    void Spawn(const AnimationLibrary& _library, jug::StringView _clipName, jug::VECTOR2 _position, int _layer = 50);
+    void Spawn(const AnimationLibrary& _library, slug::StringView _clipName, Vec2 _position, int _layer = 50);
 
     void Update(const AnimationLibrary& _library, float _dt);
     void Submit(const AnimationLibrary& _library, SpriteBatch& _sprites) const;
@@ -34,7 +34,7 @@ public:
     [[nodiscard]] size_t GetCount() const { return m_effects.size(); }
 
 private:
-    jug::Vector<Effect> m_effects = {};
+    slug::Vector<Effect> m_effects = {};
 };
 
 }   // namespace slug

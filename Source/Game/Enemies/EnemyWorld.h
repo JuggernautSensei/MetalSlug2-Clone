@@ -1,7 +1,7 @@
 #pragma once
-#include <JugX/Random.h>
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Random.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "Game/Enemies/EnemyBehaviors.h"
 #include "Game/Enemies/EnemyDef.h"
@@ -47,8 +47,8 @@ public:
     // ===========================================
 
     // _feet = 발 중앙 월드 좌표. _pSnapWorld 가 있으면 발 아래 지면에 붙인다 (최대 16px). 알 수 없는 def 면 null 핸들.
-    EnemyHandle Spawn(jug::StringView _defName, jug::VECTOR2 _feet, const SpawnParams& _params = {}, const PhysicsWorld* _pSnapWorld = nullptr);
-    EnemyHandle SpawnByIndex(int _defIndex, jug::VECTOR2 _feet, const SpawnParams& _params = {}, const PhysicsWorld* _pSnapWorld = nullptr);
+    EnemyHandle Spawn(slug::StringView _defName, Vec2 _feet, const SpawnParams& _params = {}, const PhysicsWorld* _pSnapWorld = nullptr);
+    EnemyHandle SpawnByIndex(int _defIndex, Vec2 _feet, const SpawnParams& _params = {}, const PhysicsWorld* _pSnapWorld = nullptr);
 
     // ===========================================
     //  틱
@@ -56,7 +56,7 @@ public:
 
     void RegisterHurtboxes(CombatSystem& _combat) const;
     void Tick(const EnemyContext& _ctx);
-    void OnHitEvents(jug::Span<const HitEvent> _events);
+    void OnHitEvents(slug::Span<const HitEvent> _events);
 
     // ===========================================
     //  렌더 (SpriteBatch 에 제출만 한다. Flush 는 호출자)
@@ -91,7 +91,7 @@ public:
 
     // 살아 있는(대기 포함) 수
     [[nodiscard]] int CountAlive(const EnemyFilter& _filter = {}) const;
-    [[nodiscard]] int CountAlive(jug::StringView _defName) const;
+    [[nodiscard]] int CountAlive(slug::StringView _defName) const;
 
     template<typename Fn>
     void ForEachAlive(Fn&& _fn) const
@@ -105,7 +105,7 @@ public:
         }
     }
 
-    [[nodiscard]] jug::Span<const Enemy> GetEnemies() const { return m_enemies; }
+    [[nodiscard]] slug::Span<const Enemy> GetEnemies() const { return m_enemies; }
     [[nodiscard]] size_t                 GetCount() const { return m_enemies.size(); }
 
     // ===========================================
@@ -113,7 +113,7 @@ public:
     // ===========================================
 
     // 쌓인 이벤트를 비우며 가져간다 (스폰 순서/발생 순서대로)
-    [[nodiscard]] jug::Vector<EnemyEvent> TakeEvents();
+    [[nodiscard]] slug::Vector<EnemyEvent> TakeEvents();
 
     // 보스 시작 등: 적(Enemy 팀)을 연출 없이 즉시 제거한다. _bIncludeNpc 면 포로도. Removed 이벤트 발생
     void ClearMonsters(bool _bIncludeNpc = false);
@@ -134,7 +134,7 @@ public:
     [[nodiscard]] int  Roll(int _n);                       // [0, _n)
     void               PushEvent(EnemyEvent _event);
     void               RequestFx(EnemyFxRequest _request);
-    EnemyHandle        SpawnDeferred(int _defIndex, jug::VECTOR2 _feet, const SpawnParams& _params);   // 틱이 끝난 뒤에 생성된다
+    EnemyHandle        SpawnDeferred(int _defIndex, Vec2 _feet, const SpawnParams& _params);   // 틱이 끝난 뒤에 생성된다
     void               NoteSuccessor(EnemyHandle _old, EnemyHandle _new);
     [[nodiscard]] EnemyEvent MakeEvent(const Enemy& _e, eEnemyEventKind _kind) const;
 
@@ -149,12 +149,12 @@ private:
     {
         uint32_t     id        = 0;
         int          defIndex  = -1;
-        jug::VECTOR2 feet      = { 0.f, 0.f };
+        Vec2 feet      = { 0.f, 0.f };
         SpawnParams  params    = {};
     };
 
     [[nodiscard]] size_t       FindIndex_(uint32_t _id) const;   // 없으면 size()
-    void                       Create_(uint32_t _id, int _defIndex, jug::VECTOR2 _feet, const SpawnParams& _params, const PhysicsWorld* _pSnapWorld);
+    void                       Create_(uint32_t _id, int _defIndex, Vec2 _feet, const SpawnParams& _params, const PhysicsWorld* _pSnapWorld);
     void                       BeginDying_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
     void                       RemoveGone_();
     void                       FlushFx_(const AnimationLibrary* _pAnims);
@@ -165,20 +165,20 @@ private:
     float                  m_playerMinX  = 0.f;
     bool                   m_bPlayerMinX = false;
 
-    jug::Vector<Enemy>          m_enemies    = {};
-    jug::Vector<EnemyEvent>     m_events     = {};
-    jug::Vector<EnemyFxRequest> m_pendingFx  = {};
-    jug::Vector<DeferredSpawn>  m_deferred   = {};
-    jug::Vector<Successor>      m_successors = {};
+    slug::Vector<Enemy>          m_enemies    = {};
+    slug::Vector<EnemyEvent>     m_events     = {};
+    slug::Vector<EnemyFxRequest> m_pendingFx  = {};
+    slug::Vector<DeferredSpawn>  m_deferred   = {};
+    slug::Vector<Successor>      m_successors = {};
     EffectList                  m_effects    = {};
-    jug::RngMt19937             m_rng        = jug::RngMt19937 { uint64_t { 1 } };
+    slug::RngMt19937             m_rng        = slug::RngMt19937 { uint64_t { 1 } };
     uint32_t                    m_nextId     = kEnemyOwnerBase;
 
     // 렌더 캐시: [defIndex][clipIndex][side(0 Left, 1 Right)]
-    jug::Vector<jug::Vector<std::array<AnimId, 2>>> m_clipIds       = {};
-    jug::Vector<std::array<AnimId, 2>>              m_projFlyIds    = {};
-    jug::Vector<std::array<AnimId, 2>>              m_projBeginIds  = {};
-    jug::Vector<std::array<AnimId, 2>>              m_projLandIds   = {};   // 구르는 탄의 착지 클립
+    slug::Vector<slug::Vector<std::array<AnimId, 2>>> m_clipIds       = {};
+    slug::Vector<std::array<AnimId, 2>>              m_projFlyIds    = {};
+    slug::Vector<std::array<AnimId, 2>>              m_projBeginIds  = {};
+    slug::Vector<std::array<AnimId, 2>>              m_projLandIds   = {};   // 구르는 탄의 착지 클립
     bool                                            m_bAnimsBound   = false;
     size_t                                          m_boundClipCount = 0;
 };

@@ -1,5 +1,5 @@
 #pragma once
-#include <JugX/Typedef.h>
+#include "Base/Types.h"
 
 namespace slug
 {
@@ -59,9 +59,9 @@ public:
     virtual ~IAudioSink() = default;
 
     // 짧은 효과음 (fire-and-forget). _pitchVariation: 0 이면 원음, 0.1 이면 피치 ±10% 안에서 무작위.
-    virtual void Play(jug::StringView _name, float _volume = 1.f, float _pitchVariation = 0.f) = 0;
+    virtual void Play(slug::StringView _name, float _volume = 1.f, float _pitchVariation = 0.f) = 0;
 
-    virtual void PlayBgm(jug::StringView _name, bool _bLoop = true) = 0;
+    virtual void PlayBgm(slug::StringView _name, bool _bLoop = true) = 0;
     virtual void StopBgm()                                          = 0;
     virtual void FadeOutBgm(float _seconds)                         = 0;
     virtual void AllStop()                                          = 0;
@@ -75,8 +75,8 @@ public:
 class NullAudio final : public IAudioSink
 {
 public:
-    void Play(jug::StringView, float = 1.f, float = 0.f) override {}
-    void PlayBgm(jug::StringView, bool = true) override {}
+    void Play(slug::StringView, float = 1.f, float = 0.f) override {}
+    void PlayBgm(slug::StringView, bool = true) override {}
     void StopBgm() override {}
     void FadeOutBgm(float) override {}
     void AllStop() override {}
@@ -105,7 +105,7 @@ enum class eAudioEvent : uint8_t
 struct AudioEvent
 {
     eAudioEvent kind           = eAudioEvent::Play;
-    jug::String name           = {};
+    slug::String name           = {};
     float       volume         = 1.f;   // Play
     float       pitchVariation = 0.f;   // Play
     bool        bLoop          = false; // PlayBgm
@@ -115,15 +115,15 @@ struct AudioEvent
 class TestAudio final : public IAudioSink
 {
 public:
-    void Play(const jug::StringView _name, const float _volume = 1.f, const float _pitchVariation = 0.f) override
+    void Play(const slug::StringView _name, const float _volume = 1.f, const float _pitchVariation = 0.f) override
     {
-        m_events.push_back({ eAudioEvent::Play, jug::String { _name }, _volume, _pitchVariation, false, 0.f });
+        m_events.push_back({ eAudioEvent::Play, slug::String { _name }, _volume, _pitchVariation, false, 0.f });
     }
 
-    void PlayBgm(const jug::StringView _name, const bool _bLoop = true) override
+    void PlayBgm(const slug::StringView _name, const bool _bLoop = true) override
     {
-        m_events.push_back({ eAudioEvent::PlayBgm, jug::String { _name }, 1.f, 0.f, _bLoop, 0.f });
-        m_bgm = jug::String { _name };
+        m_events.push_back({ eAudioEvent::PlayBgm, slug::String { _name }, 1.f, 0.f, _bLoop, 0.f });
+        m_bgm = slug::String { _name };
     }
 
     void StopBgm() override
@@ -144,11 +144,11 @@ public:
     }
 
     // --- 조회 ---
-    [[nodiscard]] const jug::Vector<AudioEvent>& GetEvents() const { return m_events; }
-    [[nodiscard]] const jug::String&             GetCurrentBgm() const { return m_bgm; }
+    [[nodiscard]] const slug::Vector<AudioEvent>& GetEvents() const { return m_events; }
+    [[nodiscard]] const slug::String&             GetCurrentBgm() const { return m_bgm; }
     void                                         Clear() { m_events.clear(); }
 
-    [[nodiscard]] int CountPlays(const jug::StringView _name) const
+    [[nodiscard]] int CountPlays(const slug::StringView _name) const
     {
         int count = 0;
         for (const AudioEvent& e: m_events)
@@ -171,8 +171,8 @@ public:
     [[nodiscard]] int GetPlayCount() const { return CountKind(eAudioEvent::Play); }
 
 private:
-    jug::Vector<AudioEvent> m_events = {};
-    jug::String             m_bgm    = {};
+    slug::Vector<AudioEvent> m_events = {};
+    slug::String             m_bgm    = {};
 };
 
 }   // namespace slug

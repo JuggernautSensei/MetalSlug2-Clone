@@ -1,4 +1,6 @@
 #include "Game/Ui/Hud.h"
+#include "Base/Types.h"
+#include "Base/RGBA.h"
 
 #include <algorithm>
 #include <format>
@@ -12,25 +14,25 @@ namespace slug
 //  포맷
 // ===========================================
 
-jug::String FormatScore(
+slug::String FormatScore(
     const int _score)
 {
     return std::to_string(std::clamp(_score, 0, 9'999'999));
 }
 
-jug::String FormatAmmo(
+slug::String FormatAmmo(
     const int _ammo)
 {
     return std::to_string(std::clamp(_ammo, 0, 999));
 }
 
-jug::String FormatBombs(
+slug::String FormatBombs(
     const int _bombs)
 {
     return std::to_string(std::clamp(_bombs, 0, 99));
 }
 
-jug::String FormatTimer(
+slug::String FormatTimer(
     const int _seconds)
 {
     return std::format("{:02}", std::clamp(_seconds, 0, 99));
@@ -68,7 +70,7 @@ HudModel MakeHudModel(
 namespace
 {
     [[nodiscard]] HudItem MakeText_(
-        jug::String      _text,
+        slug::String      _text,
         const int        _x,
         const int        _y,
         const eTextAlign _align,
@@ -86,7 +88,7 @@ namespace
     }
 
     [[nodiscard]] HudItem MakeSprite_(
-        jug::String _name,
+        slug::String _name,
         const int   _centerX,
         const int   _centerY,
         const int   _scale = 1)
@@ -101,11 +103,11 @@ namespace
     }
 }   // namespace
 
-jug::Vector<HudItem> BuildHudItems(
+slug::Vector<HudItem> BuildHudItems(
     const HudModel& _model,
     const UiLayout& _layout)
 {
-    jug::Vector<HudItem> items;
+    slug::Vector<HudItem> items;
 
     if (_model.bShowPlayer)
     {
@@ -119,7 +121,7 @@ jug::Vector<HudItem> BuildHudItems(
         const int digitsY = _layout.armsPanelY + _layout.digitsDY;
         if (_model.weaponLetter != 0)
         {
-            items.push_back(MakeText_(jug::String(1, _model.weaponLetter), _layout.armsPanelX + _layout.weaponLetterDX, digitsY, eTextAlign::Left, eFontColor::White));
+            items.push_back(MakeText_(slug::String(1, _model.weaponLetter), _layout.armsPanelX + _layout.weaponLetterDX, digitsY, eTextAlign::Left, eFontColor::White));
         }
         if (_model.bInfiniteAmmo)
         {
@@ -179,7 +181,7 @@ jug::Vector<HudItem> BuildHudItems(
         {
             HudItem fill = back;
             fill.w       = fillW;
-            fill.color   = ratio > 0.3f ? jug::RGBA { 60, 200, 255, 255 } : jug::RGBA { 255, 70, 50, 255 };
+            fill.color   = ratio > 0.3f ? slug::RGBA { 60, 200, 255, 255 } : slug::RGBA { 255, 70, 50, 255 };
             items.push_back(fill);
         }
 

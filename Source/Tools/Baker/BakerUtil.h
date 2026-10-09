@@ -10,9 +10,9 @@
 #include <thread>
 #include <vector>
 
-#include <JugX/Result.h>
+#include "Base/Result.h"
 
-#include "Core/Error.h"
+#include "Base/Error.h"
 
 namespace slug::baker
 {
@@ -43,7 +43,7 @@ void Log(
 //  파일 입출력
 // ===========================================
 
-[[nodiscard]] inline jug::Result<void> WriteBytes(
+[[nodiscard]] inline slug::Result<void> WriteBytes(
     const std::filesystem::path& _path,
     const void*                  _pData,
     const size_t                 _size)
@@ -54,24 +54,24 @@ void Log(
     std::ofstream stream(_path, std::ios::binary | std::ios::trunc);
     if (!stream)
     {
-        return jug::Error { slug::eError::FileOpen };
+        return slug::Error { slug::eError::FileOpen };
     }
     stream.write(static_cast<const char*>(_pData), static_cast<std::streamsize>(_size));
     if (!stream)
     {
-        return jug::Error { slug::eError::FileRead };
+        return slug::Error { slug::eError::FileRead };
     }
-    return jug::Error { jug::kOK };
+    return slug::Error { slug::kOK };
 }
 
-[[nodiscard]] inline jug::Result<void> WriteText(
+[[nodiscard]] inline slug::Result<void> WriteText(
     const std::filesystem::path& _path,
     const std::string&           _text)
 {
     return WriteBytes(_path, _text.data(), _text.size());
 }
 
-[[nodiscard]] inline jug::Result<std::string> ReadText(
+[[nodiscard]] inline slug::Result<std::string> ReadText(
     const std::filesystem::path& _path)
 {
     std::ifstream stream(_path, std::ios::binary | std::ios::ate);

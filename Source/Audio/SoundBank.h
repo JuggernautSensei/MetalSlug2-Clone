@@ -1,6 +1,6 @@
 #pragma once
-#include <JugX/Result.h>
-#include <JugX/Typedef.h>
+#include "Base/Result.h"
+#include "Base/Types.h"
 
 namespace slug
 {
@@ -13,30 +13,30 @@ namespace slug
 
 struct SoundEntry
 {
-    jug::String   name = {};
-    jug::String   file = {};   // Baked 루트 기준 상대 경로 ("Audio/PlayerBomb.wav")
+    slug::String   name = {};
+    slug::String   file = {};   // Baked 루트 기준 상대 경로 ("Audio/PlayerBomb.wav")
     bool          bBgm = false;
-    jug::FilePath path = {};   // 루트가 정해진 뒤의 전체 경로
+    slug::FilePath path = {};   // 루트가 정해진 뒤의 전체 경로
 };
 
 class SoundBank
 {
 public:
-    [[nodiscard]] static jug::Result<SoundBank> LoadFromJson(jug::StringView _json, const jug::FilePath& _root = {});
-    [[nodiscard]] static jug::Result<SoundBank> LoadFromDirectory(const jug::FilePath& _bakedRoot);
+    [[nodiscard]] static slug::Result<SoundBank> LoadFromJson(slug::StringView _json, const slug::FilePath& _root = {});
+    [[nodiscard]] static slug::Result<SoundBank> LoadFromDirectory(const slug::FilePath& _bakedRoot);
 
     void Add(SoundEntry _entry);   // 같은 이름이면 교체
 
-    [[nodiscard]] const SoundEntry*           Find(jug::StringView _name) const;
-    [[nodiscard]] int                         FindIndex(jug::StringView _name) const;   // 없으면 -1
+    [[nodiscard]] const SoundEntry*           Find(slug::StringView _name) const;
+    [[nodiscard]] int                         FindIndex(slug::StringView _name) const;   // 없으면 -1
     [[nodiscard]] const SoundEntry&           Get(const int _index) const { return m_entries[static_cast<size_t>(_index)]; }
     [[nodiscard]] size_t                      GetCount() const { return m_entries.size(); }
     [[nodiscard]] bool                        IsEmpty() const { return m_entries.empty(); }
-    [[nodiscard]] jug::Span<const SoundEntry> GetEntries() const { return m_entries; }
+    [[nodiscard]] slug::Span<const SoundEntry> GetEntries() const { return m_entries; }
 
 private:
-    jug::Vector<SoundEntry>             m_entries     = {};
-    jug::HashMap<jug::String, uint32_t> m_nameToIndex = {};
+    slug::Vector<SoundEntry>             m_entries     = {};
+    slug::HashMap<slug::String, uint32_t> m_nameToIndex = {};
 };
 
 }   // namespace slug

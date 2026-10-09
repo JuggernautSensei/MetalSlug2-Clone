@@ -1,7 +1,7 @@
 #include <cmath>
 #include <format>
 
-#include <JugX/Math.h>
+#include "Base/Math.h"
 
 #include "Game/Enemies/EnemyCommon.h"
 #include "Game/Enemies/EnemyDefParse.h"
@@ -112,7 +112,7 @@ namespace
         const float dx = std::abs(_env.ctx.player.center.x - cx);
         const float dy = _env.ctx.player.center.y - cy;
         _bDown         = dy > 0.f;
-        const float deg = std::atan2(std::abs(dy), jug::Max(dx, 0.001f)) * jug::kRad2Deg;
+        const float deg = std::atan2(std::abs(dy), slug::Max(dx, 0.001f)) * slug::kRad2Deg;
         for (int i = 0; i < 4; ++i)
         {
             if (deg < _cfg.angleStep[i])
@@ -243,8 +243,8 @@ namespace
                 if (ClipReachedFrame(_e, _def, cfg.fireFrame))
                 {
                     const float deg = 22.5f * static_cast<float>(_e.aux);
-                    const float rad = deg * jug::kDeg2Rad;
-                    const jug::VECTOR2 dir = { std::cos(rad) * static_cast<float>(_e.facing), std::sin(rad) * (_e.aux2 == 1 ? 1.f : -1.f) };
+                    const float rad = deg * slug::kDeg2Rad;
+                    const Vec2 dir = { std::cos(rad) * static_cast<float>(_e.facing), std::sin(rad) * (_e.aux2 == 1 ? 1.f : -1.f) };
                     FireWeapon(_e, _def, _env, cfg.weaponRocket, dir, { dir.x * cfg.muzzleDist, dir.y * cfg.muzzleDist });
                     --_e.counter;
                 }
@@ -313,7 +313,7 @@ void ParseBzkCfg(
     c.jumpFrame     = _r.Int("jumpFrame");
     c.fireFrame     = _r.Int("fireFrame");
     (void)_r.NumArray("angleStep", c.angleStep, 4);
-    c.muzzleBase    = _r.Vec2("muzzleBase", c.muzzleBase);
+    c.muzzleBase    = _r.ReadVec2("muzzleBase", c.muzzleBase);
     c.muzzleDist    = _r.Num("muzzleDist");
     {
         const BoxDef probe = _r.Box("wallProbe");

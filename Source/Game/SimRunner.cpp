@@ -1,11 +1,12 @@
 #include "Game/SimRunner.h"
+#include "Base/Types.h"
 
 namespace slug
 {
 
 SimRunner::SimRunner(
     GameContext&            _ctx,
-    jug::Scoped<IGameState> _pState)
+    std::unique_ptr<IGameState> _pState)
     : m_ctx(_ctx)
     , m_pState(std::move(_pState))
 {
@@ -36,14 +37,14 @@ void SimRunner::Step(
 
     m_pState->Tick(m_ctx, m_history);
 
-    if (jug::Scoped<IGameState> pNext = m_pState->TakeNextState(); pNext)
+    if (std::unique_ptr<IGameState> pNext = m_pState->TakeNextState(); pNext)
     {
         SwitchState_(std::move(pNext));
     }
 }
 
 void SimRunner::Run(
-    const jug::Span<const InputFrame> _inputs)
+    const slug::Span<const InputFrame> _inputs)
 {
     for (const InputFrame& input: _inputs)
     {
@@ -62,7 +63,7 @@ void SimRunner::Render(
 
 IGameState* SimRunner::GetState() const
 {
-    return m_pState.GetPtr();
+    return m_pState.get();
 }
 
 uint64_t SimRunner::GetTickCount() const
@@ -81,7 +82,7 @@ bool SimRunner::IsFinished() const
 }
 
 void SimRunner::SwitchState_(
-    jug::Scoped<IGameState> _pNext)
+    std::unique_ptr<IGameState> _pNext)
 {
     if (m_pState)
     {

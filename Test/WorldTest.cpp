@@ -1,4 +1,7 @@
 #include <gtest/gtest.h>
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Handle.h"
 
 #include "World/World.h"
 
@@ -6,10 +9,10 @@ using namespace slug;
 
 namespace
 {
-jug::Vector<Entity> Collect(
+slug::Vector<Entity> Collect(
     World& _world)
 {
-    jug::Vector<Entity> result;
+    slug::Vector<Entity> result;
     _world.ForEachEntity([&](const Entity _entity) {
         result.push_back(_entity);
     });
@@ -32,7 +35,7 @@ TEST(World, CreateGivesDistinctLiveEntities)
     EXPECT_TRUE(world.IsAlive(b));
     EXPECT_EQ(world.GetEntityCount(), 2u);
     EXPECT_FALSE(world.IsAlive(Entity {}));   // null 핸들
-    EXPECT_FALSE(world.IsAlive(jug::kNullHandle));
+    EXPECT_FALSE(world.IsAlive(slug::kNullHandle));
 }
 
 TEST(World, DestroyIsDeferredUntilFlush)
@@ -80,7 +83,7 @@ TEST(World, StaleHandleStaysDeadAfterSlotReuse)
     world.FlushDestroyed();
 
     // 슬롯을 재사용하는 새 엔티티들
-    jug::Vector<Entity> fresh;
+    slug::Vector<Entity> fresh;
     for (int i = 0; i < 8; ++i)
     {
         fresh.push_back(world.Create());
@@ -128,7 +131,7 @@ TEST(World, ComponentsOfDestroyedEntityDoNotLeakToReusedSlot)
 TEST(World, ClearInvalidatesEveryOldHandleEvenAfterRecreating)
 {
     World               world;
-    jug::Vector<Entity> old;
+    slug::Vector<Entity> old;
     for (int i = 0; i < 5; ++i)
     {
         old.push_back(world.Create());
@@ -153,7 +156,7 @@ TEST(World, ClearInvalidatesEveryOldHandleEvenAfterRecreating)
 TEST(World, IterationIsCreationOrderAndSurvivesDestroys)
 {
     World               world;
-    jug::Vector<Entity> created;
+    slug::Vector<Entity> created;
     for (int i = 0; i < 6; ++i)
     {
         created.push_back(world.Create());
@@ -167,15 +170,15 @@ TEST(World, IterationIsCreationOrderAndSurvivesDestroys)
     const Entity n1 = world.Create();
     const Entity n2 = world.Create();
 
-    const jug::Vector<Entity> order    = Collect(world);
-    const jug::Vector<Entity> expected = { created[0], created[2], created[3], created[5], n1, n2 };
+    const slug::Vector<Entity> order    = Collect(world);
+    const slug::Vector<Entity> expected = { created[0], created[2], created[3], created[5], n1, n2 };
     EXPECT_EQ(order, expected);
 }
 
 TEST(World, DestroyDuringIterationIsSafeAndDeferred)
 {
     World               world;
-    jug::Vector<Entity> created;
+    slug::Vector<Entity> created;
     for (int i = 0; i < 5; ++i)
     {
         const Entity e = world.Create();
@@ -223,7 +226,7 @@ TEST(World, ForEachVisitsOnlyEntitiesWithAllRequestedComponents)
     (void)world.Add<Transform>(onlyT);
     (void)world.Add<Health>(onlyH, Health::Make(1));
 
-    jug::Vector<Entity> seen;
+    slug::Vector<Entity> seen;
     world.ForEach<Transform, Health>([&](const Entity _entity, Transform&, Health&) {
         seen.push_back(_entity);
     });
@@ -275,7 +278,7 @@ TEST(World, ComponentAddGetHasRemove)
     Body& body    = world.Add<Body>(e);
     body.position = { 10.f, 20.f };
     EXPECT_TRUE(world.Has<Body>(e));
-    EXPECT_EQ(world.Get<Body>(e).position, (jug::VECTOR2 { 10.f, 20.f }));
+    EXPECT_EQ(world.Get<Body>(e).position, (Vec2 { 10.f, 20.f }));
 
     world.Remove<Body>(e);
     EXPECT_FALSE(world.Has<Body>(e));
@@ -316,14 +319,14 @@ TEST(World, RandomCreateDestroySequencesProduceIdenticalOrders)
 {
     auto Run = []() {
         World               world;
-        jug::Vector<Entity> live;
+        slug::Vector<Entity> live;
         uint32_t            state = 99u;
         auto                Next  = [&]() {
             state = state * 1664525u + 1013904223u;
             return state >> 8;
         };
 
-        jug::Vector<uint32_t> trace;
+        slug::Vector<uint32_t> trace;
         for (int step = 0; step < 400; ++step)
         {
             const uint32_t roll = Next() % 10;

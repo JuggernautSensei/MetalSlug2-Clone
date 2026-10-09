@@ -1,12 +1,15 @@
 #include "Render/Animation.h"
+#include "Base/Types.h"
+#include "Base/Assert.h"
+#include "Base/Handle.h"
 
 #include <cmath>
 
-#include <JugX/CoreLogger.h>
-#include <JugX/JsonDeserializer.h>
-#include <JugX/Math.h>
+#include "Base/Log.h"
+#include "Base/Json.h"
+#include "Base/Math.h"
 
-#include "Core/Error.h"
+#include "Base/Error.h"
 
 namespace slug
 {
@@ -26,11 +29,11 @@ namespace
     // ===========================================
 
     [[nodiscard]] bool ReadInt_(
-        const jug::JsonReader& _object,
-        const jug::StringView  _key,
+        const slug::JsonReader& _object,
+        const slug::StringView  _key,
         int&                   _out)
     {
-        const jug::Result<double> value = _object.ReadField<double>(_key);
+        const slug::Result<double> value = _object.ReadField<double>(_key);
         if (!value)
         {
             return false;
@@ -40,81 +43,81 @@ namespace
     }
 
     [[nodiscard]] bool ReadOptionalInt_(
-        const jug::JsonReader& _object,
-        const jug::StringView  _key,
+        const slug::JsonReader& _object,
+        const slug::StringView  _key,
         int&                   _out)
     {
         return !_object.HasField(_key) || ReadInt_(_object, _key, _out);
     }
 
-    [[nodiscard]] jug::Result<AnimFrame> ParseFrame_(
-        const jug::JsonReader& _json)
+    [[nodiscard]] slug::Result<AnimFrame> ParseFrame_(
+        const slug::JsonReader& _json)
     {
         if (!_json.IsObject())
         {
-            return jug::Error { eError::Parse };
+            return slug::Error { eError::Parse };
         }
 
         AnimFrame frame;
         if (!ReadInt_(_json, "atlas", frame.atlas) || !ReadInt_(_json, "x", frame.x) || !ReadInt_(_json, "y", frame.y) || !ReadInt_(_json, "w", frame.w) || !ReadInt_(_json, "h", frame.h) || !ReadInt_(_json, "pivotX", frame.pivotX) || !ReadInt_(_json, "pivotY", frame.pivotY))
         {
-            return jug::Error { eError::Parse };
+            return slug::Error { eError::Parse };
         }
         if (frame.atlas < 0 || frame.w < 0 || frame.h < 0)
         {
-            return jug::Error { eError::InvalidData };
+            return slug::Error { eError::InvalidData };
         }
         return frame;
     }
 
-    [[nodiscard]] jug::Result<AnimClip> ParseClip_(
-        const jug::StringView  _name,
-        const jug::JsonReader& _json)
+    [[nodiscard]] slug::Result<AnimClip> ParseClip_(
+        const slug::StringView  _name,
+        const slug::JsonReader& _json)
     {
         if (!_json.IsObject())
         {
-            return jug::Error { eError::Parse };
+            return slug::Error { eError::Parse };
         }
 
         AnimClip clip;
-        clip.name = jug::String { _name };
+        clip.name = slug::String { _name };
 
         if (_json.HasField("loop"))
         {
-            const jug::Result<bool> bLoop = _json.ReadField<bool>("loop");
+            const slug::Result<bool> bLoop = _json.ReadField<bool>("loop");
             if (!bLoop)
             {
-                return jug::Error { eError::Parse };
+                return slug::Error { eError::Parse };
             }
             clip.bLoop = bLoop.GetValue();
         }
 
         if (!ReadOptionalInt_(_json, "loopStart", clip.loopStart) || !ReadOptionalInt_(_json, "cellW", clip.cellW) || !ReadOptionalInt_(_json, "cellH", clip.cellH))
         {
-            return jug::Error { eError::Parse };
+            return slug::Error { eError::Parse };
         }
 
-        const jug::Result<double> duration = _json.ReadField<double>("frameDuration");
+        const slug::Result<double> duration = _json.ReadField<double>("frameDuration");
         if (!duration)
         {
-            return jug::Error { eError::Parse };
+            return slug::Error { eError::Parse };
         }
         clip.frameDuration = static_cast<float>(duration.GetValue());
         if (!(clip.frameDuration > 0.f))
         {
-            return jug::Error { eError::InvalidData };
+            return slug::Error { eError::InvalidData };
         }
 
-        const jug::Result<jug::JsonReader> frames = _json.FindField("frames");
+        const slug::Result<slug::JsonReader> frames = _json.FindField("frames");
         if (!frames || !frames->IsArray())
         {
-            return jug::Error { eError::Parse };
+            return slug::Error { eError::Parse };
         }
 
         clip.frames.reserve(frames->GetSize());
-        for (const jug::JsonReader frameJson: frames->GetArray())
+        for (const slug::JsonReader frameJson: frames->GetArray())
         {
-            jug::Result<AnimFrame> frame = ParseFrame_(frameJson);
+            slug::Result<AnimFrame> frame = ParseFrame_(frameJson);
             if (!frame)
             {
                 return frame.GetError();
@@ -124,39 +127,39 @@ namespace
 
         if (clip.frames.empty())
         {
-            return jug::Error { eError::InvalidData };
+            return slug::Error { eError::InvalidData };
         }
 
         // 레거시 데이터에는 OptionIndex 가 프레임 수를 넘는 항목이 있다 (Baker 리포트 LoopStartOutOfRange).
         // 거부하면 라이브러리 전체가 로드되지 않으므로 마지막 프레임으로 클램프한다.
         if (clip.loopStart < 0 || clip.loopStart >= clip.GetFrameCount())
         {
-            clip.loopStart = jug::Clamp(clip.loopStart, 0, clip.GetFrameCount() - 1);
+            clip.loopStart = slug::Clamp(clip.loopStart, 0, clip.GetFrameCount() - 1);
         }
         return clip;
     }
 
-    [[nodiscard]] jug::Result<AnimationLibrary> ParseAnimDocument_(
-        const jug::JsonReader& _root)
+    [[nodiscard]] slug::Result<AnimationLibrary> ParseAnimDocument_(
+        const slug::JsonReader& _root)
     {
         if (!_root.IsObject())
         {
-            return jug::Error { eError::Parse };
+            return slug::Error { eError::Parse };
         }
 
-        const jug::Result<jug::JsonReader> animations = _root.FindField("animations");
+        const slug::Result<slug::JsonReader> animations = _root.FindField("animations");
         if (!animations || !animations->IsObject())
         {
-            return jug::Error { eError::Parse };
+            return slug::Error { eError::Parse };
         }
 
         AnimationLibrary library;
         for (const auto [name, clipJson]: animations->GetObject())
         {
-            jug::Result<AnimClip> clip = ParseClip_(name, clipJson);
+            slug::Result<AnimClip> clip = ParseClip_(name, clipJson);
             if (!clip)
             {
-                JUG_CORE_LOG_ERROR("애니메이션 '{}' 파싱 실패: {}", name, clip.GetError().MakeMessage());
+                SLUG_LOG_ERROR("애니메이션 '{}' 파싱 실패: {}", name, clip.GetError().MakeMessage());
                 return clip.GetError();
             }
             (void)library.AddClip(clip.Take());
@@ -164,26 +167,26 @@ namespace
         return library;
     }
 
-    [[nodiscard]] jug::Result<jug::Vector<jug::String>> ParseAtlasPages_(
-        const jug::JsonReader& _manifest)
+    [[nodiscard]] slug::Result<slug::Vector<slug::String>> ParseAtlasPages_(
+        const slug::JsonReader& _manifest)
     {
-        jug::Vector<jug::String> pages;
+        slug::Vector<slug::String> pages;
         if (!_manifest.HasField("atlasPages"))
         {
             return pages;
         }
 
-        const jug::Result<jug::JsonReader> list = _manifest.FindField("atlasPages");
+        const slug::Result<slug::JsonReader> list = _manifest.FindField("atlasPages");
         if (!list || !list->IsArray())
         {
-            return jug::Error { eError::Parse };
+            return slug::Error { eError::Parse };
         }
-        for (const jug::JsonReader item: list->GetArray())
+        for (const slug::JsonReader item: list->GetArray())
         {
-            jug::Result<jug::String> page = item.Read<jug::String>();
+            slug::Result<slug::String> page = item.Read<slug::String>();
             if (!page)
             {
-                return jug::Error { eError::Parse };
+                return slug::Error { eError::Parse };
             }
             pages.push_back(page.GetValue());
         }
@@ -204,57 +207,57 @@ int64_t AnimClip::GetFrameDurationUnits() const
 //  AnimationLibrary
 // ===========================================
 
-jug::Result<AnimationLibrary> AnimationLibrary::LoadFromJson(
-    const jug::StringView _animJson)
+slug::Result<AnimationLibrary> AnimationLibrary::LoadFromJson(
+    const slug::StringView _animJson)
 {
-    jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::Load(_animJson);
+    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::Load(_animJson);
     if (!doc)
     {
-        return jug::Error { eError::Parse };
+        return slug::Error { eError::Parse };
     }
     return ParseAnimDocument_(doc->GetReader());
 }
 
-jug::Result<AnimationLibrary> AnimationLibrary::LoadFromDirectory(
-    const jug::FilePath& _bakedRoot)
+slug::Result<AnimationLibrary> AnimationLibrary::LoadFromDirectory(
+    const slug::FilePath& _bakedRoot)
 {
     // --- manifest.json ---
-    jug::Result<jug::JsonDeserializer> manifestDoc = jug::JsonDeserializer::LoadFromFile(_bakedRoot / "manifest.json");
+    slug::Result<slug::JsonDeserializer> manifestDoc = slug::JsonDeserializer::LoadFromFile(_bakedRoot / "manifest.json");
     if (!manifestDoc)
     {
-        return jug::Error { eError::FileOpen };
+        return slug::Error { eError::FileOpen };
     }
-    const jug::JsonReader manifest = manifestDoc->GetReader();
+    const slug::JsonReader manifest = manifestDoc->GetReader();
     if (!manifest.IsObject())
     {
-        return jug::Error { eError::Parse };
+        return slug::Error { eError::Parse };
     }
 
-    jug::String animFile = "anim.json";
+    slug::String animFile = "anim.json";
     if (manifest.HasField("animations"))
     {
-        jug::Result<jug::String> name = manifest.ReadField<jug::String>("animations");
+        slug::Result<slug::String> name = manifest.ReadField<slug::String>("animations");
         if (!name)
         {
-            return jug::Error { eError::Parse };
+            return slug::Error { eError::Parse };
         }
         animFile = name.GetValue();
     }
 
-    jug::Result<jug::Vector<jug::String>> pages = ParseAtlasPages_(manifest);
+    slug::Result<slug::Vector<slug::String>> pages = ParseAtlasPages_(manifest);
     if (!pages)
     {
         return pages.GetError();
     }
 
     // --- anim.json ---
-    jug::Result<jug::JsonDeserializer> animDoc = jug::JsonDeserializer::LoadFromFile(_bakedRoot / animFile);
+    slug::Result<slug::JsonDeserializer> animDoc = slug::JsonDeserializer::LoadFromFile(_bakedRoot / animFile);
     if (!animDoc)
     {
-        return jug::Error { eError::FileOpen };
+        return slug::Error { eError::FileOpen };
     }
 
-    jug::Result<AnimationLibrary> library = ParseAnimDocument_(animDoc->GetReader());
+    slug::Result<AnimationLibrary> library = ParseAnimDocument_(animDoc->GetReader());
     if (!library)
     {
         return library.GetError();
@@ -282,12 +285,12 @@ AnimId AnimationLibrary::AddClip(
 }
 
 AnimId AnimationLibrary::Find(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
-    const auto it = m_nameToIndex.find(jug::String { _name });
+    const auto it = m_nameToIndex.find(slug::String { _name });
     if (it == m_nameToIndex.end())
     {
-        return jug::kNullHandle;
+        return slug::kNullHandle;
     }
     return AnimId { it->second, 0 };
 }
@@ -301,7 +304,7 @@ bool AnimationLibrary::IsValid(
 const AnimClip& AnimationLibrary::Get(
     const AnimId _id) const
 {
-    JUG_ASSERT(IsValid(_id), "유효하지 않은 AnimId 이다.\n");
+    SLUG_ASSERT(IsValid(_id), "유효하지 않은 AnimId 이다.\n");
     return m_clips[_id.GetIndex()];
 }
 
@@ -312,7 +315,7 @@ const AnimClip* AnimationLibrary::GetOrNull(
 }
 
 const AnimClip* AnimationLibrary::FindClip(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
     return GetOrNull(Find(_name));
 }
@@ -376,7 +379,7 @@ void AnimPlayer::Settle_(
     {
         if (_clip.bLoop)
         {
-            const int     loopStart      = jug::Clamp(_clip.loopStart, 0, count - 1);
+            const int     loopStart      = slug::Clamp(_clip.loopStart, 0, count - 1);
             const int64_t loopStartUnits = durationUnits * loopStart;
             const int64_t loopLenUnits   = totalUnits - loopStartUnits;
             m_timeUnits                  = loopStartUnits + (m_timeUnits - loopStartUnits) % loopLenUnits;
@@ -408,7 +411,7 @@ void AnimPlayer::SetNormalizedTime(
     }
     else
     {
-        t = jug::Clamp(t, 0.0, 1.0);
+        t = slug::Clamp(t, 0.0, 1.0);
     }
 
     m_bFinished = false;

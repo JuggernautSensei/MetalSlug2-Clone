@@ -1,4 +1,7 @@
 #include <cmath>
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Result.h"
 #include <iterator>
 #include <string>
 
@@ -22,7 +25,7 @@ void HitN(PropWorld& _world, const PropHandle _id, const int _times, const int _
     for (int i = 0; i < _times; ++i)
     {
         const HitEvent ev = MakeHit(_id, _damage, _kind);
-        _world.OnHitEvents(jug::Span<const HitEvent> { &ev, 1 });
+        _world.OnHitEvents(slug::Span<const HitEvent> { &ev, 1 });
     }
 }
 
@@ -39,7 +42,7 @@ void TickN(PropWorld& _world, const int _ticks, const PropTickContext* _pCtx = n
     }
 }
 
-bool HasEvent(const jug::Vector<PropEvent>& _events, const ePropEventKind _kind)
+bool HasEvent(const slug::Vector<PropEvent>& _events, const ePropEventKind _kind)
 {
     for (const PropEvent& ev: _events)
     {
@@ -51,7 +54,7 @@ bool HasEvent(const jug::Vector<PropEvent>& _events, const ePropEventKind _kind)
     return false;
 }
 
-int CountEvents(const jug::Vector<PropEvent>& _events, const ePropEventKind _kind)
+int CountEvents(const slug::Vector<PropEvent>& _events, const ePropEventKind _kind)
 {
     int n = 0;
     for (const PropEvent& ev: _events)
@@ -62,12 +65,12 @@ int CountEvents(const jug::Vector<PropEvent>& _events, const ePropEventKind _kin
 }
 
 // 판정 전체 경로: 소품 Hurtbox 등록 → Hitbox 1개 → Resolve → OnHitEvents
-const jug::Vector<HitEvent>* ResolveHitbox(CombatSystem& _combat, PropWorld& _world, const Hitbox& _hitbox)
+const slug::Vector<HitEvent>* ResolveHitbox(CombatSystem& _combat, PropWorld& _world, const Hitbox& _hitbox)
 {
     _combat.BeginTick();
     _world.RegisterHurtboxes(_combat);
     _combat.AddHitbox(_hitbox);
-    const jug::Vector<HitEvent>& events = _combat.Resolve();
+    const slug::Vector<HitEvent>& events = _combat.Resolve();
     _world.OnHitEvents(events);
     return &events;
 }
@@ -126,7 +129,7 @@ TEST(PropWorld, KnifeDoesNotHitTrucks)
         knife.owner  = 1;
         knife.id     = 1;
         CombatSystem combat;
-        const jug::Vector<HitEvent>* pEvents = ResolveHitbox(combat, world, knife);
+        const slug::Vector<HitEvent>* pEvents = ResolveHitbox(combat, world, knife);
         EXPECT_TRUE(pEvents->empty());
     }
     EXPECT_FALSE(world.IsDestroyed(truck));
@@ -219,12 +222,12 @@ TEST(PropWorld, PlayerHitboxResolvesToPropEvent)
     hb.damage = 2;
     hb.owner = 1;
     hb.id    = combat.NewHitId();
-    const jug::Vector<HitEvent>* pEvents = ResolveHitbox(combat, world, hb);
+    const slug::Vector<HitEvent>* pEvents = ResolveHitbox(combat, world, hb);
 
     ASSERT_EQ(pEvents->size(), 1u);
     EXPECT_EQ((*pEvents)[0].target, shop);
     EXPECT_EQ(world.GetHp(shop), 10);
-    const jug::Vector<PropEvent> events = world.TakeEvents();
+    const slug::Vector<PropEvent> events = world.TakeEvents();
     EXPECT_TRUE(HasEvent(events, ePropEventKind::Damaged));
 }
 
@@ -241,7 +244,7 @@ TEST(PropWorld, EnemyHitboxDoesNotHitProps)
     hb.damage = 99;
     hb.owner  = 9;
     hb.id     = combat.NewHitId();
-    const jug::Vector<HitEvent>* pEvents = ResolveHitbox(combat, world, hb);
+    const slug::Vector<HitEvent>* pEvents = ResolveHitbox(combat, world, hb);
     EXPECT_TRUE(pEvents->empty());
     EXPECT_EQ(world.GetHp(shop), 12);
 }
@@ -369,7 +372,7 @@ TEST(PropWorld, MobBoatDropsSixItemsAndBurstsOnDeath)
     HitN(world, boat, 1, 60);
     EXPECT_TRUE(world.IsDestroyed(boat));
 
-    const jug::Vector<PropEvent> events = world.TakeEvents();
+    const slug::Vector<PropEvent> events = world.TakeEvents();
     EXPECT_EQ(CountEvents(events, ePropEventKind::DropSpawned), 6);
     EXPECT_EQ(world.GetItems().GetCount(), 6u);
     EXPECT_EQ(world.GetDebris().size(), 3u);   // onDestroy 목재 3
@@ -388,7 +391,7 @@ TEST(PropWorld, ExplodeOnDeathBoatBurstsAfterTwoSecondsThenRemoved)
     EXPECT_EQ(world.GetCount(), 1u);   // 아직 2 s 전
     TickN(world, 15);
     EXPECT_EQ(world.GetCount(), 0u);   // 2차 폭발 후 제거
-    const jug::Vector<PropEvent> events = world.TakeEvents();
+    const slug::Vector<PropEvent> events = world.TakeEvents();
     EXPECT_TRUE(HasEvent(events, ePropEventKind::SecondaryBurst));
     EXPECT_TRUE(HasEvent(events, ePropEventKind::Removed));
     EXPECT_EQ(world.GetDebris().size(), 8u);   // 3 + 5 (5 s 수명 이내)
@@ -429,7 +432,7 @@ TEST(PropWorld, ShopFiveSpawnsSignThatFallsToGroundAndDetonates)
 TEST(PropWorld, GroundHouseDamageStagesAndGroundPatch)
 {
     PropWorld world { &GetPropLib(), 5 };
-    const jug::VECTOR2 center { 9830.f, 1269.f };
+    const Vec2 center { 9830.f, 1269.f };
     const PropHandle   house = world.Spawn("ground_house", center);
 
     HitN(world, house, 6, 2);   // 12 dmg → HP 12 (damagedAtHp)
@@ -440,7 +443,7 @@ TEST(PropWorld, GroundHouseDamageStagesAndGroundPatch)
 
     HitN(world, house, 6, 2);
     EXPECT_TRUE(world.IsDestroyed(house));
-    const jug::Vector<PropEvent> events = world.TakeEvents();
+    const slug::Vector<PropEvent> events = world.TakeEvents();
     bool bPatch = false;
     for (const PropEvent& ev: events)
     {
@@ -459,7 +462,7 @@ TEST(PropWorld, GroundHouseDamageStagesAndGroundPatch)
 TEST(PropWorld, ApplyGroundPatchWritesOnlyPatchRegion)
 {
     GroundMap map = GroundMap::MakeEmpty(10, 10);
-    const GroundMap patch = GroundMap::MakeFromRows(std::array<jug::StringView, 3> { "###", "###", "###" });
+    const GroundMap patch = GroundMap::MakeFromRows(std::array<slug::StringView, 3> { "###", "###", "###" });
     ApplyGroundPatch(map, { 2.f, 2.f }, patch);
     EXPECT_TRUE(map.IsSolid(2, 2));
     EXPECT_TRUE(map.IsSolid(4, 4));
@@ -515,7 +518,7 @@ TEST(PropWorld, CullingRemovesPropsBehindCameraWithEvents)
     ctx.cameraLeft = 1500.f;   // 1274 < 1300 → 제거, 트럭(1810)은 남는다
     world.Tick(ctx);
     EXPECT_EQ(world.GetCount(), 1u);
-    const jug::Vector<PropEvent> events = world.TakeEvents();
+    const slug::Vector<PropEvent> events = world.TakeEvents();
     EXPECT_EQ(CountEvents(events, ePropEventKind::Culled), 1);
     EXPECT_EQ(CountEvents(events, ePropEventKind::Removed), 1);
 }
@@ -548,9 +551,9 @@ TEST(PropWorld, HashChangesWithDamageAndIsStableWithoutIt)
 
 TEST(PropWorld, SubmitQueuesSpritesOnLayersFromDefinitions)
 {
-    jug::Result<SpriteLibrary> spriteLib = SpriteLibrary::LoadFromJson(R"({"version":1,"sprites":{"TestBox":{"atlas":0,"x":0,"y":0,"w":10,"h":10,"pivotX":5,"pivotY":5}}})");
+    slug::Result<SpriteLibrary> spriteLib = SpriteLibrary::LoadFromJson(R"({"version":1,"sprites":{"TestBox":{"atlas":0,"x":0,"y":0,"w":10,"h":10,"pivotX":5,"pivotY":5}}})");
     ASSERT_TRUE(static_cast<bool>(spriteLib));
-    jug::Result<PropDefLibrary> defs = PropDefLibrary::Parse(R"({ "version": 1, "defs": {
+    slug::Result<PropDefLibrary> defs = PropDefLibrary::Parse(R"({ "version": 1, "defs": {
         "box":   { "hp": 4, "idle": { "sprite": "TestBox" }, "parts": [ { "role": "hurt", "size": [10, 10] } ] },
         "front": { "hp": 0, "layer": "front", "idle": { "sprite": "TestBox" } } } })");
     ASSERT_TRUE(static_cast<bool>(defs));
@@ -563,7 +566,7 @@ TEST(PropWorld, SubmitQueuesSpritesOnLayersFromDefinitions)
     const SpriteLibrary sprites = spriteLib.Take();
     SpriteBatch      batch;
     world.Submit(batch, anims, sprites);
-    const jug::Vector<SpriteCommand>& cmds = batch.GetPendingCommands();
+    const slug::Vector<SpriteCommand>& cmds = batch.GetPendingCommands();
     ASSERT_EQ(cmds.size(), 2u);
     EXPECT_EQ(cmds[0].layer, kPropLayerBack);
     EXPECT_EQ(cmds[1].layer, kPropLayerFront);

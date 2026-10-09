@@ -1,5 +1,10 @@
 #pragma once
-#include <JugX/KeyCode.h>
+#include <cstddef>
+#include <cstdint>
+
+#include <SDL3/SDL_scancode.h>
+
+#include "Base/Types.h"
 
 namespace slug
 {
@@ -59,8 +64,8 @@ struct InputFrame
 class InputSystem
 {
 public:
-    void OnKeyDown(jug::eKey _key);
-    void OnKeyUp(jug::eKey _key);
+    void OnKeyDown(SDL_Scancode _key);
+    void OnKeyUp(SDL_Scancode _key);
     void ClearAll();
 
     [[nodiscard]] InputFrame Sample() const;
@@ -68,9 +73,9 @@ public:
 private:
     static constexpr size_t kKeyCapacity = 512;
 
-    [[nodiscard]] bool IsKeyDown_(jug::eKey _key) const;
+    [[nodiscard]] bool IsKeyDown_(SDL_Scancode _key) const;
 
-    jug::ARRAY<bool, kKeyCapacity> m_keyDown = {};
+    slug::ARRAY<bool, kKeyCapacity> m_keyDown = {};
 };
 
 // ===========================================
@@ -101,8 +106,8 @@ public:
 private:
     [[nodiscard]] const InputFrame& GetAgo_(size_t _ago) const;
 
-    jug::ARRAY<InputFrame, kCapacity> m_frames          = {};
-    jug::ARRAY<uint16_t, kCapacity>   m_consumedPresses = {};   // 스텝별 소비된 눌림 마스크
+    slug::ARRAY<InputFrame, kCapacity> m_frames          = {};
+    slug::ARRAY<uint16_t, kCapacity>   m_consumedPresses = {};   // 스텝별 소비된 눌림 마스크
     size_t                            m_head            = 0;
     size_t                            m_count           = 0;
 };

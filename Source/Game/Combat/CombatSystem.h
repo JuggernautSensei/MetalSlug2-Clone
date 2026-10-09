@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <JugX/Typedef.h>
+#include "Base/Types.h"
 
 #include "World/Combat.h"
 
@@ -25,7 +25,7 @@ public:
     void AddHitbox(const Hitbox& _hitbox) { m_hitboxes.push_back(_hitbox); }
 
     // 등록된 모든 판정을 해소한다. 반환 참조는 다음 BeginTick/Resolve 전까지 유효.
-    const jug::Vector<HitEvent>& Resolve();
+    const slug::Vector<HitEvent>& Resolve();
 
     // 새 공격 인스턴스 ID (0 은 "추적 안 함" 이므로 1 부터)
     [[nodiscard]] uint32_t NewHitId() { return ++m_nextHitId; }
@@ -35,16 +35,16 @@ public:
     // 규칙은 HitResolver 와 동일 (팀 표 / 무적 / 받는 종류 / 겹침 / 자기 자신 제외).
     [[nodiscard]] bool HasTargetIn(eTeam _attackerTeam, eHitKind _kind, const Aabb& _box, uint32_t _ignoreOwner = kNoOwner) const;
 
-    [[nodiscard]] jug::Span<const Hurtbox>     GetHurtboxes() const { return m_hurtboxes; }
-    [[nodiscard]] jug::Span<const Hitbox>      GetHitboxes() const { return m_hitboxes; }
-    [[nodiscard]] const jug::Vector<HitEvent>& GetEvents() const { return m_events; }
+    [[nodiscard]] slug::Span<const Hurtbox>     GetHurtboxes() const { return m_hurtboxes; }
+    [[nodiscard]] slug::Span<const Hitbox>      GetHitboxes() const { return m_hitboxes; }
+    [[nodiscard]] const slug::Vector<HitEvent>& GetEvents() const { return m_events; }
     [[nodiscard]] HitResolver&                 GetResolver() { return m_resolver; }
 
 private:
     HitResolver           m_resolver  = {};
-    jug::Vector<Hitbox>   m_hitboxes  = {};
-    jug::Vector<Hurtbox>  m_hurtboxes = {};
-    jug::Vector<HitEvent> m_events    = {};
+    slug::Vector<Hitbox>   m_hitboxes  = {};
+    slug::Vector<Hurtbox>  m_hurtboxes = {};
+    slug::Vector<HitEvent> m_events    = {};
     uint32_t              m_nextHitId = 0;
 };
 

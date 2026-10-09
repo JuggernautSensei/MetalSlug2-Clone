@@ -1,4 +1,7 @@
 #include "Game/Stage/StageData.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Assert.h"
 
 #include <cmath>
 #include <format>
@@ -7,9 +10,9 @@
 #include <sstream>
 #include <utility>
 
-#include <JugX/JsonDeserializer.h>
+#include "Base/Json.h"
 
-#include "Core/Error.h"
+#include "Base/Error.h"
 
 namespace slug
 {
@@ -37,7 +40,7 @@ ParamValue ParamValue::MakeNumber(
 }
 
 ParamValue ParamValue::MakeString(
-    jug::String _value)
+    slug::String _value)
 {
     ParamValue value;
     value.m_type   = eType::String;
@@ -62,15 +65,15 @@ ParamValue ParamValue::MakeObject()
 void ParamValue::PushBack(
     ParamValue _value)
 {
-    JUG_ASSERT(m_type == eType::Array, "PushBack requires an array value");
+    SLUG_ASSERT(m_type == eType::Array, "PushBack requires an array value");
     m_items.push_back(std::move(_value));
 }
 
 void ParamValue::Set(
-    jug::String _key,
+    slug::String _key,
     ParamValue  _value)
 {
-    JUG_ASSERT(m_type == eType::Object, "Set requires an object value");
+    SLUG_ASSERT(m_type == eType::Object, "Set requires an object value");
     for (size_t i = 0; i < m_keys.size(); ++i)
     {
         if (m_keys[i] == _key)
@@ -107,9 +110,9 @@ int ParamValue::AsInt(
     return m_type == eType::Number ? static_cast<int>(std::llround(m_number)) : _default;
 }
 
-const jug::String& ParamValue::AsString() const
+const slug::String& ParamValue::AsString() const
 {
-    static const jug::String kEmpty;
+    static const slug::String kEmpty;
     return m_type == eType::String ? m_string : kEmpty;
 }
 
@@ -129,7 +132,7 @@ const ParamValue& ParamValue::At(
 }
 
 const ParamValue* ParamValue::Find(
-    const jug::StringView _key) const
+    const slug::StringView _key) const
 {
     if (m_type != eType::Object)
     {
@@ -146,7 +149,7 @@ const ParamValue* ParamValue::Find(
 }
 
 bool ParamValue::GetBool(
-    const jug::StringView _key,
+    const slug::StringView _key,
     const bool            _bDefault) const
 {
     const ParamValue* pValue = Find(_key);
@@ -154,7 +157,7 @@ bool ParamValue::GetBool(
 }
 
 float ParamValue::GetFloat(
-    const jug::StringView _key,
+    const slug::StringView _key,
     const float           _default) const
 {
     const ParamValue* pValue = Find(_key);
@@ -162,27 +165,27 @@ float ParamValue::GetFloat(
 }
 
 int ParamValue::GetInt(
-    const jug::StringView _key,
+    const slug::StringView _key,
     const int             _default) const
 {
     const ParamValue* pValue = Find(_key);
     return pValue ? pValue->AsInt(_default) : _default;
 }
 
-jug::String ParamValue::GetString(
-    const jug::StringView _key,
-    const jug::StringView _default) const
+slug::String ParamValue::GetString(
+    const slug::StringView _key,
+    const slug::StringView _default) const
 {
     const ParamValue* pValue = Find(_key);
-    return (pValue && pValue->IsString()) ? pValue->m_string : jug::String { _default };
+    return (pValue && pValue->IsString()) ? pValue->m_string : slug::String { _default };
 }
 
-jug::VECTOR2 ParamValue::GetVec2(
-    const jug::StringView _key,
-    const jug::VECTOR2    _default) const
+Vec2 ParamValue::GetVec2(
+    const slug::StringView _key,
+    const Vec2    _default) const
 {
     const ParamValue* pValue = Find(_key);
-    jug::VECTOR2      out    = _default;
+    Vec2      out    = _default;
     if (pValue && pValue->TryGetVec2(out))
     {
         return out;
@@ -191,7 +194,7 @@ jug::VECTOR2 ParamValue::GetVec2(
 }
 
 bool ParamValue::TryGetVec2(
-    jug::VECTOR2& _out) const
+    Vec2& _out) const
 {
     if (m_type != eType::Array || m_items.size() != 2 || !m_items[0].IsNumber() || !m_items[1].IsNumber())
     {
@@ -236,8 +239,8 @@ float BoundsCurve::EvaluateTop(
         {
             if (_playerX <= top[i].x)
             {
-                const jug::VECTOR2 a = top[i - 1];
-                const jug::VECTOR2 b = top[i];
+                const Vec2 a = top[i - 1];
+                const Vec2 b = top[i];
                 const float        t = (_playerX - a.x) / (b.x - a.x);
                 result               = a.y + (b.y - a.y) * t;
                 break;
@@ -255,7 +258,7 @@ Aabb BoundsCurve::EvaluateBounds(
 }
 
 int StageData::FindSection(
-    const jug::StringView _id) const
+    const slug::StringView _id) const
 {
     for (size_t i = 0; i < sections.size(); ++i)
     {
@@ -268,7 +271,7 @@ int StageData::FindSection(
 }
 
 const NamedRect* StageData::FindRect(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
     for (const NamedRect& rect: rects)
     {
@@ -281,7 +284,7 @@ const NamedRect* StageData::FindRect(
 }
 
 const BackdropMode* StageData::FindBackdrop(
-    const jug::StringView _id) const
+    const slug::StringView _id) const
 {
     for (const BackdropMode& mode: backdrops)
     {
@@ -294,9 +297,9 @@ const BackdropMode* StageData::FindBackdrop(
 }
 
 bool StageData::HasGroundMap(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
-    for (const jug::String& map: groundMaps)
+    for (const slug::String& map: groundMaps)
     {
         if (map == _name)
         {
@@ -310,7 +313,7 @@ namespace
 {
     template<typename F>
     void ForEachAction_(
-        const jug::Vector<StageAction>& _actions,
+        const slug::Vector<StageAction>& _actions,
         F&&                             _fn)
     {
         for (const StageAction& action: _actions)
@@ -420,9 +423,9 @@ const char* GetActionTypeName(
 
 namespace
 {
-    using jug::JsonReader;
-    using jug::String;
-    using jug::StringView;
+    using slug::JsonReader;
+    using slug::String;
+    using slug::StringView;
 
     template<typename E>
     struct EnumEntry
@@ -635,7 +638,7 @@ namespace
         bool GetInt_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, int& _out, bool* _pFound = nullptr);
         bool GetBool_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, bool& _out, bool* _pFound = nullptr);
         bool GetString_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, String& _out, bool* _pFound = nullptr);
-        bool GetVec2_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, jug::VECTOR2& _out, bool* _pFound = nullptr);
+        bool GetVec2_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, Vec2& _out, bool* _pFound = nullptr);
         bool GetObject_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, std::optional<JsonReader>& _out);
         bool GetArray_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, std::optional<JsonReader>& _out);
 
@@ -681,17 +684,17 @@ namespace
         bool ParseSpawn_(const JsonReader& _obj, const String& _where, eSpawnContext _context, SpawnSpec& _out);
         bool ParseCameraAnchor_(const JsonReader& _obj, const String& _where, CameraAnchor& _out);
         bool ParseAction_(const JsonReader& _obj, const String& _where, StageAction& _out);
-        bool ParseActionList_(const JsonReader& _array, const String& _where, jug::Vector<StageAction>& _out);
+        bool ParseActionList_(const JsonReader& _array, const String& _where, slug::Vector<StageAction>& _out);
 
         // --- 교차 검증 ---
         bool Validate_();
-        bool CollectIds_(const jug::Vector<StageAction>& _actions, const String& _where);
-        bool CheckRefs_(const jug::Vector<StageAction>& _actions, const String& _where);
+        bool CollectIds_(const slug::Vector<StageAction>& _actions, const String& _where);
+        bool CheckRefs_(const slug::Vector<StageAction>& _actions, const String& _where);
 
         StageData&               m_out;
         String                   m_error;
-        jug::Vector<String>      m_spawnIds;
-        jug::Vector<String>      m_gateIds;
+        slug::Vector<String>      m_spawnIds;
+        slug::Vector<String>      m_gateIds;
     };
 
     // ===========================================
@@ -725,7 +728,7 @@ namespace
             }
             return true;
         }
-        const jug::Result<JsonReader> found = _obj.FindField(_key);
+        const slug::Result<JsonReader> found = _obj.FindField(_key);
         _out                                = found.GetValue();
         return true;
     }
@@ -868,7 +871,7 @@ namespace
         const String&     _where,
         const StringView  _key,
         const bool        _bRequired,
-        jug::VECTOR2&     _out,
+        Vec2&     _out,
         bool*             _pFound)
     {
         std::optional<JsonReader> field;
@@ -1699,7 +1702,7 @@ namespace
     bool Parser::ParseActionList_(
         const JsonReader&         _array,
         const String&             _where,
-        jug::Vector<StageAction>& _out)
+        slug::Vector<StageAction>& _out)
     {
         if (!_array.IsArray())
         {
@@ -2050,7 +2053,7 @@ namespace
     // ===========================================
 
     bool Parser::CollectIds_(
-        const jug::Vector<StageAction>& _actions,
+        const slug::Vector<StageAction>& _actions,
         const String&                   _where)
     {
         int index = 0;
@@ -2111,7 +2114,7 @@ namespace
     }
 
     bool Parser::CheckRefs_(
-        const jug::Vector<StageAction>& _actions,
+        const slug::Vector<StageAction>& _actions,
         const String&                   _where)
     {
         const auto HasSpawnId = [this](const String& _id) {
@@ -2191,7 +2194,7 @@ namespace
         return true;
     }
 
-    [[nodiscard]] jug::Result<StageData> MakeFailure_(
+    [[nodiscard]] slug::Result<StageData> MakeFailure_(
         StageLoadDiagnostics* _pDiag,
         const String&         _message,
         const eError          _code)
@@ -2200,7 +2203,7 @@ namespace
         {
             _pDiag->message = _message;
         }
-        return jug::Error { _code };
+        return slug::Error { _code };
     }
 }   // namespace
 
@@ -2208,8 +2211,8 @@ namespace
 //  로더 진입점
 // ===========================================
 
-jug::Result<StageData> LoadStageFromJson(
-    const jug::StringView  _json,
+slug::Result<StageData> LoadStageFromJson(
+    const slug::StringView  _json,
     StageLoadDiagnostics*  _pDiag)
 {
     if (_pDiag)
@@ -2217,7 +2220,7 @@ jug::Result<StageData> LoadStageFromJson(
         _pDiag->message.clear();
     }
 
-    jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::Load(_json, jug::eJsonLoadOption::AllowBOM);
+    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::Load(_json, slug::eJsonLoadOption::AllowBOM);
     if (!doc)
     {
         return MakeFailure_(_pDiag, "JSON syntax error", eError::Parse);
@@ -2232,8 +2235,8 @@ jug::Result<StageData> LoadStageFromJson(
     return data;
 }
 
-jug::Result<StageData> LoadStageFromFile(
-    const jug::FilePath&  _path,
+slug::Result<StageData> LoadStageFromFile(
+    const slug::FilePath&  _path,
     StageLoadDiagnostics* _pDiag)
 {
     std::ifstream file { _path, std::ios::binary };
@@ -2243,7 +2246,7 @@ jug::Result<StageData> LoadStageFromFile(
     }
     std::ostringstream buffer;
     buffer << file.rdbuf();
-    const jug::String text = buffer.str();
+    const slug::String text = buffer.str();
     return LoadStageFromJson(text, _pDiag);
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#include <JugX/Typedef.h>
+#include "Base/Types.h"
 
 #include "Audio/AudioSink.h"
 #include "Game/Ui/BitmapFont.h"
@@ -38,9 +38,9 @@ enum class eFlowPhase : uint8_t
 
 struct ScreenFlowConfig
 {
-    jug::String bannerText      = {};
+    slug::String bannerText      = {};
     eFontColor  bannerColor     = eFontColor::Yellow;
-    jug::String sfx             = {};     // 배너 시작 시 효과음 (비면 없음)
+    slug::String sfx             = {};     // 배너 시작 시 효과음 (비면 없음)
     float       bgmFadeSeconds  = 1.f;    // Start() 시 BGM 페이드 아웃
     int         delayTicks      = 0;
     int         bannerTicks     = 120;

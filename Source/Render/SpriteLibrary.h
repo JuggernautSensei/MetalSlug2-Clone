@@ -1,6 +1,6 @@
 #pragma once
-#include <JugX/Result.h>
-#include <JugX/Typedef.h>
+#include "Base/Result.h"
+#include "Base/Types.h"
 
 #include "Render/Animation.h"
 
@@ -16,9 +16,9 @@ namespace slug
 
 struct SpriteInfo
 {
-    jug::String name        = {};
+    slug::String name        = {};
     bool        bStandalone = false;
-    jug::String file        = {};
+    slug::String file        = {};
     int         width       = 0;
     int         height      = 0;
     AnimFrame   frame       = {};   // bStandalone == false 일 때만 유효
@@ -27,16 +27,16 @@ struct SpriteInfo
 class SpriteLibrary
 {
 public:
-    [[nodiscard]] static jug::Result<SpriteLibrary> LoadFromJson(jug::StringView _json);
-    [[nodiscard]] static jug::Result<SpriteLibrary> LoadFromDirectory(const jug::FilePath& _bakedRoot);
+    [[nodiscard]] static slug::Result<SpriteLibrary> LoadFromJson(slug::StringView _json);
+    [[nodiscard]] static slug::Result<SpriteLibrary> LoadFromDirectory(const slug::FilePath& _bakedRoot);
 
     void                            AddSprite(SpriteInfo _info);
-    [[nodiscard]] const SpriteInfo* Find(jug::StringView _name) const;
+    [[nodiscard]] const SpriteInfo* Find(slug::StringView _name) const;
     [[nodiscard]] size_t            GetCount() const { return m_sprites.size(); }
 
 private:
-    jug::Vector<SpriteInfo>             m_sprites     = {};
-    jug::HashMap<jug::String, uint32_t> m_nameToIndex = {};
+    slug::Vector<SpriteInfo>             m_sprites     = {};
+    slug::HashMap<slug::String, uint32_t> m_nameToIndex = {};
 };
 
 }   // namespace slug

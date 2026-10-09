@@ -8,29 +8,29 @@ namespace
     struct KeyBinding
     {
         eAction    action;
-        jug::eKey  key;
+        SDL_Scancode  key;
     };
 
     // 기본 조작: 기존 게임과 동일(A/D/W/S, J 사격, K 점프, L 폭탄) + 방향키/Z/X/C 대체키
     constexpr KeyBinding kBindings[] = {
-        { eAction::Left, jug::eKey::A },
-        { eAction::Left, jug::eKey::Left },
-        { eAction::Right, jug::eKey::D },
-        { eAction::Right, jug::eKey::Right },
-        { eAction::Up, jug::eKey::W },
-        { eAction::Up, jug::eKey::Up },
-        { eAction::Down, jug::eKey::S },
-        { eAction::Down, jug::eKey::Down },
-        { eAction::Shot, jug::eKey::J },
-        { eAction::Shot, jug::eKey::Z },
-        { eAction::Jump, jug::eKey::K },
-        { eAction::Jump, jug::eKey::X },
-        { eAction::Bomb, jug::eKey::L },
-        { eAction::Bomb, jug::eKey::C },
-        { eAction::Pause, jug::eKey::Escape },
-        { eAction::Start, jug::eKey::Return },
-        { eAction::Start, jug::eKey::KpEnter },
-        { eAction::Start, jug::eKey::Space },
+        { eAction::Left, SDL_SCANCODE_A },
+        { eAction::Left, SDL_SCANCODE_LEFT },
+        { eAction::Right, SDL_SCANCODE_D },
+        { eAction::Right, SDL_SCANCODE_RIGHT },
+        { eAction::Up, SDL_SCANCODE_W },
+        { eAction::Up, SDL_SCANCODE_UP },
+        { eAction::Down, SDL_SCANCODE_S },
+        { eAction::Down, SDL_SCANCODE_DOWN },
+        { eAction::Shot, SDL_SCANCODE_J },
+        { eAction::Shot, SDL_SCANCODE_Z },
+        { eAction::Jump, SDL_SCANCODE_K },
+        { eAction::Jump, SDL_SCANCODE_X },
+        { eAction::Bomb, SDL_SCANCODE_L },
+        { eAction::Bomb, SDL_SCANCODE_C },
+        { eAction::Pause, SDL_SCANCODE_ESCAPE },
+        { eAction::Start, SDL_SCANCODE_RETURN },
+        { eAction::Start, SDL_SCANCODE_KP_ENTER },
+        { eAction::Start, SDL_SCANCODE_SPACE },
     };
 }   // namespace
 
@@ -39,7 +39,7 @@ namespace
 // ===========================================
 
 void InputSystem::OnKeyDown(
-    const jug::eKey _key)
+    const SDL_Scancode _key)
 {
     const size_t index = static_cast<size_t>(_key);
     if (index < kKeyCapacity)
@@ -49,7 +49,7 @@ void InputSystem::OnKeyDown(
 }
 
 void InputSystem::OnKeyUp(
-    const jug::eKey _key)
+    const SDL_Scancode _key)
 {
     const size_t index = static_cast<size_t>(_key);
     if (index < kKeyCapacity)
@@ -64,7 +64,7 @@ void InputSystem::ClearAll()
 }
 
 bool InputSystem::IsKeyDown_(
-    const jug::eKey _key) const
+    const SDL_Scancode _key) const
 {
     const size_t index = static_cast<size_t>(_key);
     return index < kKeyCapacity && m_keyDown[index];

@@ -1,10 +1,11 @@
 #include "Game/Enemies/EnemyCommon.h"
+#include "Base/Types.h"
 
 #include <algorithm>
 #include <cmath>
 #include <format>
 
-#include <JugX/Math.h>
+#include "Base/Math.h"
 
 namespace slug
 {
@@ -187,16 +188,16 @@ bool FloorAhead(
 //  이펙트
 // ===========================================
 
-jug::String ResolveSide(
-    const jug::String& _name,
+slug::String ResolveSide(
+    const slug::String& _name,
     const int          _facing)
 {
     const size_t pos = _name.find("{side}");
-    if (pos == jug::String::npos)
+    if (pos == slug::String::npos)
     {
         return _name;
     }
-    jug::String result = _name;
+    slug::String result = _name;
     result.replace(pos, 6, _facing < 0 ? "Left" : "Right");
     return result;
 }
@@ -204,7 +205,7 @@ jug::String ResolveSide(
 void RequestFx(
     EnemyEnv&         _env,
     const FxDef&      _fx,
-    const jug::VECTOR2 _origin,
+    const Vec2 _origin,
     const int         _facing)
 {
     if (_fx.clip.empty())
@@ -223,7 +224,7 @@ void RequestFx(
 //  공격
 // ===========================================
 
-jug::VECTOR2 GetMuzzleWorld(
+Vec2 GetMuzzleWorld(
     const Enemy&    _e,
     const EnemyDef& _def,
     const int       _weapon)
@@ -237,8 +238,8 @@ bool FireWeapon(
     const EnemyDef& _def,
     EnemyEnv&       _env,
     const int       _weapon,
-    const jug::VECTOR2 _dir,
-    const jug::VECTOR2 _muzzleExtra)
+    const Vec2 _dir,
+    const Vec2 _muzzleExtra)
 {
     if (_weapon < 0 || !_env.ctx.pProjectiles || !_env.ctx.pCombat || !_env.ctx.player.bAlive)
     {
@@ -251,11 +252,11 @@ bool FireWeapon(
     }
     const ProjectileDef& proj   = _env.lib.GetProjectile(weapon.projectile);
     const float          facing = static_cast<float>(_e.facing < 0 ? -1 : 1);
-    const jug::VECTOR2   base   = GetMuzzleWorld(_e, _def, _weapon);
-    const jug::VECTOR2   muzzle = { base.x + _muzzleExtra.x, base.y + _muzzleExtra.y };
+    const Vec2   base   = GetMuzzleWorld(_e, _def, _weapon);
+    const Vec2   muzzle = { base.x + _muzzleExtra.x, base.y + _muzzleExtra.y };
 
     // 방향
-    jug::VECTOR2 dir = weapon.aim == eWeaponAim::Given ? _dir : jug::VECTOR2 { facing, 0.f };
+    Vec2 dir = weapon.aim == eWeaponAim::Given ? _dir : Vec2 { facing, 0.f };
     if (weapon.tiltThreshold > 0.f)
     {
         const float dy = _env.ctx.player.center.y - muzzle.y;
@@ -325,7 +326,7 @@ bool FireWeapon(
         }
         const float dx   = tx - muzzle.x;
         const float sign = std::abs(dx) < 1.f ? facing : (dx < 0.f ? -1.f : 1.f);
-        const float vx   = jug::Clamp(std::abs(dx) / t, weapon.arcMinVx, weapon.arcMaxVx);
+        const float vx   = slug::Clamp(std::abs(dx) / t, weapon.arcMinVx, weapon.arcMaxVx);
         spawn.velocity   = { vx * sign, vy0 };
     }
 
@@ -374,7 +375,7 @@ void TickMelee(
     }
 
     const WeaponDef& weapon = _def.weapons[static_cast<size_t>(_e.meleeWeapon)];
-    const jug::VECTOR2 origin = weapon.bHitboxFollows ? _e.body.position : _e.meleeOrigin;
+    const Vec2 origin = weapon.bHitboxFollows ? _e.body.position : _e.meleeOrigin;
 
     Hitbox hitbox;
     hitbox.box     = weapon.hitbox.At(origin, _e.facing);
@@ -497,7 +498,7 @@ void TickSoldierDeath(
         ++_e.deathTicks;
         const int blinkAt  = SecToTicks(death.blinkAtSec);
         const int blinkFor = SecToTicks(death.blinkForSec);
-        const int period   = jug::Max(1, SecToTicks(death.blinkPeriodSec));
+        const int period   = slug::Max(1, SecToTicks(death.blinkPeriodSec));
         if (_e.deathTicks >= blinkAt && _e.deathTicks < blinkAt + blinkFor)
         {
             _e.bVisible = (((_e.deathTicks - blinkAt) / period) % 2) == 0;
@@ -519,8 +520,8 @@ void TickSoldierDeath(
 
 bool SubmitNamedPart(
     const EnemyRenderEnv& _render,
-    const jug::StringView _name,
-    const jug::VECTOR2    _origin,
+    const slug::StringView _name,
+    const Vec2    _origin,
     const int             _ticks,
     const bool            _bLoop,
     const int             _sortKey,
@@ -569,7 +570,7 @@ bool SubmitNamedPart(
 
 int GetNamedPartTicks(
     const AnimationLibrary& _anims,
-    const jug::StringView   _name)
+    const slug::StringView   _name)
 {
     const AnimClip* pClip = _anims.FindClip(_name);
     if (!pClip)

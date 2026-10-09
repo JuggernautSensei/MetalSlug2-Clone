@@ -1,8 +1,8 @@
 #pragma once
 #include <cstdint>
 
-#include <JugX/EnumFlags.h>
-#include <JugX/Typedef.h>
+#include "Base/EnumFlags.h"
+#include "Base/Types.h"
 
 #include "World/Geometry.h"
 
@@ -31,7 +31,7 @@ enum class eHitKind : uint8_t
     Count
 };
 
-using HitKindMask = jug::IndexedFlags<eHitKind>;
+using HitKindMask = slug::IndexedFlags<eHitKind>;
 
 inline constexpr uint32_t kNoOwner = 0;
 inline constexpr uint32_t kNoHitId = 0;
@@ -73,7 +73,7 @@ struct Hurtbox
     Aabb        box           = {};
     eTeam       team          = eTeam::Enemy;
     uint32_t    owner         = kNoOwner;        // 피격 엔티티
-    HitKindMask accepts       = jug::kAllFlag;   // 받아들이는 공격 종류 (기본: 전부)
+    HitKindMask accepts       = slug::kAllFlag;   // 받아들이는 공격 종류 (기본: 전부)
     bool        bInvulnerable = false;
 };
 
@@ -82,7 +82,7 @@ struct Hurtbox
 {
     if (_bMeleeable)
     {
-        return jug::kAllFlag;
+        return slug::kAllFlag;
     }
     return HitKindMask { eHitKind::Bullet, eHitKind::Blast };
 }
@@ -116,7 +116,7 @@ struct HitEvent
 class HitResolver
 {
 public:
-    [[nodiscard]] jug::Vector<HitEvent> Resolve(jug::Span<const Hitbox> _hitboxes, jug::Span<const Hurtbox> _hurtboxes);
+    [[nodiscard]] slug::Vector<HitEvent> Resolve(slug::Span<const Hitbox> _hitboxes, slug::Span<const Hurtbox> _hurtboxes);
 
     // 공격 인스턴스가 끝났을 때 호출하여 기록을 지운다.
     void Release(uint32_t _hitId);
@@ -128,10 +128,10 @@ private:
     struct HitRecord
     {
         bool                  bConsumed = false;   // 비관통 공격이 이미 적중함
-        jug::Vector<uint64_t> targets   = {};      // 이미 맞은 대상 키 (owner 또는 hurtbox 인덱스)
+        slug::Vector<uint64_t> targets   = {};      // 이미 맞은 대상 키 (owner 또는 hurtbox 인덱스)
     };
 
-    jug::HashMap<uint32_t, HitRecord> m_hitRecords = {};
+    slug::HashMap<uint32_t, HitRecord> m_hitRecords = {};
 };
 
 // ===========================================

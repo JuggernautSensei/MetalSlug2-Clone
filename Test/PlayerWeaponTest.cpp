@@ -1,4 +1,5 @@
 #include "PlayerTestUtil.h"
+#include "Base/Math.h"
 #include "PropTestUtil.h"
 
 #include <algorithm>
@@ -40,7 +41,7 @@ namespace
         const eWeapon _weapon)
     {
         const WeaponTuning& weapon = _tuning.weapons.Get(_weapon);
-        return jug::Max(weapon.fireIntervalTicks, weapon.holdRepeatTicks);
+        return slug::Max(weapon.fireIntervalTicks, weapon.holdRepeatTicks);
     }
 }   // namespace
 
@@ -200,7 +201,7 @@ TEST(PlayerWeapon, ProjectileBlastAppearsOnRangeEndOnlyWithBlastSize)
         spawn.direction   = { 1.f, 0.f };
         spawn.speed       = 300.f;
         spawn.range       = 60.f;
-        spawn.blastSize   = bBlast ? jug::VECTOR2 { 96.f, 96.f } : jug::VECTOR2 { 0.f, 0.f };
+        spawn.blastSize   = bBlast ? Vec2 { 96.f, 96.f } : Vec2 { 0.f, 0.f };
         spawn.blastDamage = 15;
         spawn.blastTicks  = 6;
 
@@ -316,7 +317,7 @@ TEST(PlayerWeapon, AimStatesFireEveryWeaponInTheExpectedDirection)
             sim.Step();
 
             ASSERT_GE(BulletsOf(sim), 1u) << aim.name << " weapon " << raw;
-            const jug::VECTOR2 v = sim.State().GetProjectiles().GetBullets()[0].velocity;
+            const Vec2 v = sim.State().GetProjectiles().GetBullets()[0].velocity;
             EXPECT_EQ(v.x > 0.f, aim.signX > 0.f) << aim.name << " weapon " << raw;
             EXPECT_EQ(std::abs(v.x) < 0.01f, aim.signX == 0.f) << aim.name << " weapon " << raw;
             EXPECT_EQ(v.y < 0.f, aim.signY < 0.f) << aim.name << " weapon " << raw;

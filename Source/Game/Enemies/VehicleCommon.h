@@ -1,6 +1,6 @@
 #pragma once
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "Game/Enemies/EnemyCommon.h"
 
@@ -20,9 +20,9 @@ void BeginVehicleDeath(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, int _des
 void TickVehicleDeath(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
 
 // 월드 좌표 _at 에 일회성 연출을 요청한다 (오프셋 없음, {side} 는 _facing 으로 치환)
-void RequestFxAt(EnemyEnv& _env, jug::StringView _clip, jug::VECTOR2 _at, int _facing, int _layer = 60, float _delaySec = 0.f);
+void RequestFxAt(EnemyEnv& _env, slug::StringView _clip, Vec2 _at, int _facing, int _layer = 60, float _delaySec = 0.f);
 
 // 화면 좌표(카메라 왼쪽 위 기준, 픽셀) → 월드 좌표
-[[nodiscard]] jug::VECTOR2 ScreenToWorld(const EnemyEnv& _env, jug::VECTOR2 _screen);
+[[nodiscard]] Vec2 ScreenToWorld(const EnemyEnv& _env, Vec2 _screen);
 
 }   // namespace slug

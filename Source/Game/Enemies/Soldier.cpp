@@ -1,4 +1,5 @@
 #include <cmath>
+#include "Base/Types.h"
 
 #include "Game/Enemies/EnemyCommon.h"
 #include "Game/Enemies/EnemyDefParse.h"
@@ -502,7 +503,7 @@ void ParseSoldierCfg(
 {
     SoldierCfg& c = _def.soldier;
 
-    const jug::String ai = _r.Str("ai");
+    const slug::String ai = _r.Str("ai");
     if (ai == "bomb")
     {
         c.ai = eSoldierAi::Bomb;

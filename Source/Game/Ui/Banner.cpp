@@ -1,4 +1,5 @@
 #include "Game/Ui/Banner.h"
+#include "Base/Types.h"
 
 #include <algorithm>
 #include <cmath>
@@ -7,7 +8,7 @@ namespace slug
 {
 
 BannerSpec MakeBannerSpec(
-    const jug::StringView _text,
+    const slug::StringView _text,
     const float           _seconds)
 {
     constexpr int kTicksPerSec = 60;
@@ -16,7 +17,7 @@ BannerSpec MakeBannerSpec(
     const int fade  = std::min(18, total / 4);   // 0.3초 또는 총길이의 1/4 중 작은 쪽
 
     BannerSpec spec;
-    spec.text         = jug::String { _text };
+    spec.text         = slug::String { _text };
     spec.fadeInTicks  = fade;
     spec.fadeOutTicks = fade;
     spec.holdTicks    = total - 2 * fade;

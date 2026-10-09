@@ -1,11 +1,12 @@
 #pragma once
+#include "Base/Handle.h"
 #include <cstdint>
 #include <optional>
 
-#include <JugX/Random.h>
-#include <JugX/Scoped.h>
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Random.h"
+#include <memory>
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "Core/Tuning.h"
 #include "Game/Combat/CombatSystem.h"
@@ -57,7 +58,7 @@ public:
     void Tick(GameContext& _ctx, const InputHistory& _input) override;
     void Render(GameContext& _ctx, float _alpha) override;
 
-    [[nodiscard]] jug::Scoped<IGameState> TakeNextState() override;
+    [[nodiscard]] std::unique_ptr<IGameState> TakeNextState() override;
     [[nodiscard]] bool                    IsFinished() const override;
 
     // --- 테스트/도구용 접근자 ---
@@ -91,7 +92,7 @@ private:
     // 지면 패치 마스크 캐시 (GroundPatch 이벤트의 스프라이트 이름별, 실패도 기록한다)
     struct PatchMask
     {
-        jug::String name    = {};
+        slug::String name    = {};
         bool        bLoaded = false;
         GroundMap   mask    = {};
     };
@@ -106,38 +107,38 @@ private:
     void UpdateWalls_();
     [[nodiscard]] PhysicsWorld MakePhysicsWorld_() const;        // 플레이어: 지면 + 벽 + 발판
     [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;   // 적: 지면 + 벽(화면 벽 제외) + 발판 (적 전용 바닥 포함)
-    [[nodiscard]] jug::VECTOR2 GetRespawnFeet_() const;
+    [[nodiscard]] Vec2 GetRespawnFeet_() const;
 
     void ConsumeEnemyEvents_(GameContext& _ctx);
     void ConsumePropEvents_(GameContext& _ctx);
-    void ApplyGroundPatch_(GameContext& _ctx, const jug::String& _sprite, jug::VECTOR2 _topLeft);
-    [[nodiscard]] const GroundMap* FindPatchMask_(GameContext& _ctx, const jug::String& _sprite);
-    void RequestSounds_(GameContext& _ctx, const jug::Vector<FxRequest>& _fx);
+    void ApplyGroundPatch_(GameContext& _ctx, const slug::String& _sprite, Vec2 _topLeft);
+    [[nodiscard]] const GroundMap* FindPatchMask_(GameContext& _ctx, const slug::String& _sprite);
+    void RequestSounds_(GameContext& _ctx, const slug::Vector<FxRequest>& _fx);
 
-    void DrawBackdrop_(GameContext& _ctx, jug::VECTOR2 _cameraPos);
-    void DrawWorld_(GameContext& _ctx, jug::VECTOR2 _cameraPos, float _alpha);
-    void DrawDebugBoxes_(Renderer& _renderer, jug::VECTOR2 _cameraPos) const;
-    void DrawHud_(GameContext& _ctx, jug::VECTOR2 _cameraPos);
+    void DrawBackdrop_(GameContext& _ctx, Vec2 _cameraPos);
+    void DrawWorld_(GameContext& _ctx, Vec2 _cameraPos, float _alpha);
+    void DrawDebugBoxes_(Renderer& _renderer, Vec2 _cameraPos) const;
+    void DrawHud_(GameContext& _ctx, Vec2 _cameraPos);
 
     StageData                  m_data    = {};
     bool                       m_bLoaded = false;
     bool                       m_bFailed = false;   // 로드 실패: 바로 종료하고 타이틀로 보낸다
     bool                       m_bTakenNext = false;
-    jug::FilePath              m_assetRoot = {};
+    slug::FilePath              m_assetRoot = {};
     std::optional<StageRunner> m_runner  = std::nullopt;
-    jug::RngMt19937            m_rng     = jug::RngMt19937 { 0x57A6E0ull };
+    slug::RngMt19937            m_rng     = slug::RngMt19937 { 0x57A6E0ull };
 
     StageWorldHost    m_host   = {};
     Tuning            m_tuning = {};
     Camera            m_camera = {};
-    jug::VECTOR2      m_prevCameraPos = { 0.f, 0.f };
-    jug::VECTOR2      m_startFeet     = { 0.f, 0.f };
+    Vec2      m_prevCameraPos = { 0.f, 0.f };
+    Vec2      m_startFeet     = { 0.f, 0.f };
 
     // 물리 입력 저장소 (UpdateWalls_ 가 매 틱 채운다. 스팬은 이 벡터들을 가리킨다)
-    jug::Vector<Wall>     m_walls         = {};   // 플레이어 벽 (화면 벽 + 소품 벽 + 충돌체 벽)
-    jug::Vector<Wall>     m_enemyWalls    = {};   // 적 벽 (화면 벽 제외)
-    jug::Vector<Platform> m_playerPlatforms = {};   // 플레이어 발판 (소품)
-    jug::Vector<Platform> m_enemyPlatforms  = {};   // 적 발판 (소품 + 적 전용 바닥)
+    slug::Vector<Wall>     m_walls         = {};   // 플레이어 벽 (화면 벽 + 소품 벽 + 충돌체 벽)
+    slug::Vector<Wall>     m_enemyWalls    = {};   // 적 벽 (화면 벽 제외)
+    slug::Vector<Platform> m_playerPlatforms = {};   // 플레이어 발판 (소품)
+    slug::Vector<Platform> m_enemyPlatforms  = {};   // 적 발판 (소품 + 적 전용 바닥)
 
     // 정의 라이브러리 (월드보다 먼저 선언되어야 한다)
     EnemyDefLibrary  m_enemyLib = {};
@@ -152,14 +153,14 @@ private:
     EffectList       m_effects     = {};
     AnimPlayer       m_bombAnim    = {};
 
-    jug::Vector<PatchMask> m_patchMasks = {};
+    slug::Vector<PatchMask> m_patchMasks = {};
 
     // 렌더 자원 (렌더러가 있을 때만 유효)
     SpriteLibrary m_spriteLib = {};
     int           m_bgHandle  = -1;
-    jug::Vector<int> m_backdropHandles = {};   // m_data.backdrops 와 같은 순서, 독립 파일이 아니면 -1
+    slug::Vector<int> m_backdropHandles = {};   // m_data.backdrops 와 같은 순서, 독립 파일이 아니면 -1
     bool          m_bRigBound = false;
-    AnimId        m_bombClip  = jug::kNullHandle;
+    AnimId        m_bombClip  = slug::kNullHandle;
 
     // UI / 연출 (시뮬레이션 상태가 아니다)
     UiSystem    m_ui         = {};

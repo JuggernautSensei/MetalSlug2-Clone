@@ -1,4 +1,6 @@
 #include <gtest/gtest.h>
+#include "Base/Result.h"
+#include "Base/Handle.h"
 
 #include "Render/Animation.h"
 #include "World/Constants.h"
@@ -70,7 +72,7 @@ int ExpectedLoopFrame(
 
 TEST(AnimationLibrary, ParsesBakedJsonWithFramesAndPivots)
 {
-    const jug::Result<AnimationLibrary> result = AnimationLibrary::LoadFromJson(kSampleJson);
+    const slug::Result<AnimationLibrary> result = AnimationLibrary::LoadFromJson(kSampleJson);
     ASSERT_TRUE(result.HasValue());
     const AnimationLibrary& lib = result.GetValue();
     EXPECT_EQ(lib.GetClipCount(), 2u);
@@ -101,7 +103,7 @@ TEST(AnimationLibrary, ParsesBakedJsonWithFramesAndPivots)
 
 TEST(AnimationLibrary, FindIsStableAndNullForUnknownNames)
 {
-    const jug::Result<AnimationLibrary> result = AnimationLibrary::LoadFromJson(kSampleJson);
+    const slug::Result<AnimationLibrary> result = AnimationLibrary::LoadFromJson(kSampleJson);
     ASSERT_TRUE(result.HasValue());
     const AnimationLibrary& lib = result.GetValue();
 
@@ -109,7 +111,7 @@ TEST(AnimationLibrary, FindIsStableAndNullForUnknownNames)
     EXPECT_NE(lib.Find("Player_Dead"), lib.Find("Player_Stand_Idle_Lower_Right"));
     EXPECT_TRUE(lib.Find("Nope").IsNull());
     EXPECT_EQ(lib.FindClip("Nope"), nullptr);
-    EXPECT_EQ(lib.GetOrNull(jug::kNullHandle), nullptr);
+    EXPECT_EQ(lib.GetOrNull(slug::kNullHandle), nullptr);
     EXPECT_FALSE(lib.IsValid(AnimId { 99, 0 }));
 }
 

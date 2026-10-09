@@ -1,12 +1,16 @@
 #include "Game/Stage/StageState.h"
+#include "Base/Types.h"
+#include "Base/Result.h"
+#include "Base/Random.h"
+#include "Base/RGBA.h"
 
 #include <algorithm>
 #include <cmath>
 #include <filesystem>
 #include <format>
 
-#include <JugX/CoreLogger.h>
-#include <JugX/Math.h>
+#include "Base/Log.h"
+#include "Base/Math.h"
 
 #include "Audio/AudioSink.h"
 #include "Game/Combat/BulletVisual.h"
@@ -32,17 +36,17 @@ namespace
         return tuning;
     }
 
-    [[nodiscard]] jug::VECTOR2 Lerp_(
-        const jug::VECTOR2 _a,
-        const jug::VECTOR2 _b,
+    [[nodiscard]] Vec2 Lerp_(
+        const Vec2 _a,
+        const Vec2 _b,
         const float        _t)
     {
         return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
     }
 
-    [[nodiscard]] jug::VECTOR2 ToScreen_(
-        const jug::VECTOR2 _world,
-        const jug::VECTOR2 _camera)
+    [[nodiscard]] Vec2 ToScreen_(
+        const Vec2 _world,
+        const Vec2 _camera)
     {
         return { std::floor(_world.x - _camera.x), std::floor(_world.y - _camera.y) };
     }
@@ -50,16 +54,16 @@ namespace
     void DrawBox_(
         Renderer&          _renderer,
         const Aabb&        _box,
-        const jug::VECTOR2 _camera,
-        const jug::RGBA    _color)
+        const Vec2 _camera,
+        const slug::RGBA    _color)
     {
-        const jug::VECTOR2 topLeft     = ToScreen_(_box.min, _camera);
-        const jug::VECTOR2 bottomRight = ToScreen_(_box.max, _camera);
-        _renderer.DrawRect(topLeft, { jug::Max(1.f, bottomRight.x - topLeft.x), jug::Max(1.f, bottomRight.y - topLeft.y) }, _color);
+        const Vec2 topLeft     = ToScreen_(_box.min, _camera);
+        const Vec2 bottomRight = ToScreen_(_box.max, _camera);
+        _renderer.DrawRect(topLeft, { slug::Max(1.f, bottomRight.x - topLeft.x), slug::Max(1.f, bottomRight.y - topLeft.y) }, _color);
     }
 
     // 플레이스홀더 상자 색: 피격 번쩍임 > 종류별 기본색
-    [[nodiscard]] jug::RGBA GetPlaceholderColor_(
+    [[nodiscard]] slug::RGBA GetPlaceholderColor_(
         const PlaceholderEntity& _entity)
     {
         if (_entity.flashTicks > 0)
@@ -70,14 +74,14 @@ namespace
         {
             return { 150, 150, 170, 255 };
         }
-        return _entity.kind == eEntityKind::Npc ? jug::RGBA { 120, 170, 230, 255 } : jug::RGBA { 96, 120, 70, 255 };
+        return _entity.kind == eEntityKind::Npc ? slug::RGBA { 120, 170, 230, 255 } : slug::RGBA { 96, 120, 70, 255 };
     }
 
-    [[nodiscard]] jug::String JoinIds_(
-        const jug::Vector<jug::String>& _ids)
+    [[nodiscard]] slug::String JoinIds_(
+        const slug::Vector<slug::String>& _ids)
     {
-        jug::String joined;
-        for (const jug::String& id: _ids)
+        slug::String joined;
+        for (const slug::String& id: _ids)
         {
             if (!joined.empty())
             {
@@ -123,10 +127,10 @@ void StageState::Load_(
     m_assetRoot = _ctx.assetRoot;
 
     StageLoadDiagnostics diag;
-    jug::Result<StageData> data = LoadStageFromFile(_ctx.assetRoot / "Stage" / "Stage0.json", &diag);
+    slug::Result<StageData> data = LoadStageFromFile(_ctx.assetRoot / "Stage" / "Stage0.json", &diag);
     if (!data)
     {
-        JUG_CORE_LOG_ERROR("Stage0.json 을 읽지 못했습니다: {}", diag.message);
+        SLUG_LOG_ERROR("Stage0.json 을 읽지 못했습니다: {}", diag.message);
         m_bFailed = true;
         return;
     }
@@ -136,16 +140,16 @@ void StageState::Load_(
     m_host = StageWorldHost {};
     const int flatWidth  = static_cast<int>(m_data.worldSize.x);
     const int flatHeight = static_cast<int>(m_data.worldSize.y);
-    for (const jug::String& name: m_data.groundMaps)
+    for (const slug::String& name: m_data.groundMaps)
     {
-        const jug::FilePath path = _ctx.assetRoot / "Baked" / "Ground" / (name + ".bin");
-        if (jug::Result<GroundMap> map = GroundMap::Load(path))
+        const slug::FilePath path = _ctx.assetRoot / "Baked" / "Ground" / (name + ".bin");
+        if (slug::Result<GroundMap> map = GroundMap::Load(path))
         {
             m_host.AddGroundMap(name, map.Take());
         }
         else
         {
-            JUG_CORE_LOG_WARN("지면 '{}' 을 읽지 못해 평지를 사용합니다 (Scripts/Bake.ps1 필요)", name);
+            SLUG_LOG_WARN("지면 '{}' 을 읽지 못해 평지를 사용합니다 (Scripts/Bake.ps1 필요)", name);
             GroundMap flat = GroundMap::MakeEmpty(flatWidth, flatHeight);
             flat.FillRect(0, 378, flatWidth - 1, flatHeight - 1, true);
             m_host.AddGroundMap(name, std::move(flat));
@@ -154,39 +158,39 @@ void StageState::Load_(
 
     // --- 튜닝 (Assets/Tuning/Tuning.json, 없으면 기본값) ---
     m_tuning = {};
-    if (jug::Result<Tuning> loaded = LoadTuning(GetDefaultTuningPath(_ctx.assetRoot)))
+    if (slug::Result<Tuning> loaded = LoadTuning(GetDefaultTuningPath(_ctx.assetRoot)))
     {
         m_tuning = loaded.Take();
     }
     else
     {
-        JUG_CORE_LOG_WARN("Tuning.json 을 읽지 못해 기본값을 사용합니다");
+        SLUG_LOG_WARN("Tuning.json 을 읽지 못해 기본값을 사용합니다");
     }
 
     // --- 적 / 소품 정의 (없으면 그 종류는 플레이스홀더로 대신한다) ---
     {
-        jug::String message;
-        const jug::FilePath defsPath = EnemyDefLibrary::GetDefaultDirectory(_ctx.assetRoot);   // Defs/*.json 전부 (Enemies / Vehicles / Boss)
+        slug::String message;
+        const slug::FilePath defsPath = EnemyDefLibrary::GetDefaultDirectory(_ctx.assetRoot);   // Defs/*.json 전부 (Enemies / Vehicles / Boss)
         m_enemyLib = {};
-        if (jug::Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
+        if (slug::Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
         {
             m_enemyLib = lib.Take();
         }
         else
         {
-            JUG_CORE_LOG_WARN("적 정의를 읽지 못해 플레이스홀더로 배치합니다: {}", message);
+            SLUG_LOG_WARN("적 정의를 읽지 못해 플레이스홀더로 배치합니다: {}", message);
         }
         m_enemies.SetLibrary(&m_enemyLib);
     }
     {
-        jug::String message;
-        if (jug::Result<PropDefLibrary> lib = PropDefLibrary::Load(_ctx.assetRoot / "Defs" / "Props" / "Props.json", &message))
+        slug::String message;
+        if (slug::Result<PropDefLibrary> lib = PropDefLibrary::Load(_ctx.assetRoot / "Defs" / "Props" / "Props.json", &message))
         {
             m_propDefs = lib.Take();
         }
         else
         {
-            JUG_CORE_LOG_WARN("소품 정의를 읽지 못해 플레이스홀더로 배치합니다: {}", message);
+            SLUG_LOG_WARN("소품 정의를 읽지 못해 플레이스홀더로 배치합니다: {}", message);
         }
         m_props.SetLibrary(&m_propDefs);
     }
@@ -213,21 +217,21 @@ void StageState::Load_(
 
     if (!_ctx.IsHeadless())
     {
-        if (jug::Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot / "Baked"))
+        if (slug::Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot / "Baked"))
         {
             m_spriteLib = library.Take();
         }
         m_enemies.SetSpriteLibrary(&m_spriteLib);   // 보스 파츠의 정적 스프라이트
         if (_ctx.pSprites)
         {
-            const jug::FilePath bgPath = _ctx.assetRoot / "Baked" / "Textures" / (m_data.background + ".png");
-            if (const jug::Result<int> handle = _ctx.pSprites->LoadStandaloneTexture(bgPath))
+            const slug::FilePath bgPath = _ctx.assetRoot / "Baked" / "Textures" / (m_data.background + ".png");
+            if (const slug::Result<int> handle = _ctx.pSprites->LoadStandaloneTexture(bgPath))
             {
                 m_bgHandle = handle.GetValue();
             }
             else
             {
-                JUG_CORE_LOG_WARN("원경 '{}' 을 읽지 못했습니다", bgPath.string());
+                SLUG_LOG_WARN("원경 '{}' 을 읽지 못했습니다", bgPath.string());
             }
 
             m_backdropHandles.clear();
@@ -236,13 +240,13 @@ void StageState::Load_(
                 int handle = -1;
                 if (const SpriteInfo* pInfo = m_spriteLib.Find(mode.sprite); pInfo && pInfo->bStandalone)
                 {
-                    if (const jug::Result<int> loaded = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / jug::FilePath { pInfo->file }))
+                    if (const slug::Result<int> loaded = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / slug::FilePath { pInfo->file }))
                     {
                         handle = loaded.GetValue();
                     }
                     else
                     {
-                        JUG_CORE_LOG_WARN("원경 스프라이트 '{}' 을 읽지 못했습니다", mode.sprite);
+                        SLUG_LOG_WARN("원경 스프라이트 '{}' 을 읽지 못했습니다", mode.sprite);
                     }
                 }
                 m_backdropHandles.push_back(handle);
@@ -266,7 +270,7 @@ void StageState::Restart_(
     m_projectiles.Clear();
     m_effects.Clear();
     m_patchMasks.clear();
-    m_rng = jug::RngMt19937 { 0x57A6E0ull };
+    m_rng = slug::RngMt19937 { 0x57A6E0ull };
     m_flow.Reset();
     m_endKind = eEndKind::None;
 
@@ -274,7 +278,7 @@ void StageState::Restart_(
     m_runner->Begin();
 
     // 3) 플레이어: 스크립트 시작 위치 (지면 스냅 실패 시 x 만 쓰고 중력에 맡긴다)
-    m_startFeet = m_runner->ResolvePlayerStart().value_or(jug::VECTOR2 { m_data.player.x, 0.f });
+    m_startFeet = m_runner->ResolvePlayerStart().value_or(Vec2 { m_data.player.x, 0.f });
     UpdateWalls_();
     m_player.Reset(m_tuning, m_startFeet);
     m_player.SnapToGround(MakePhysicsWorld_(), 16.f);
@@ -384,7 +388,7 @@ void StageState::Tick(
     m_projectiles.Step(m_host.GetActiveGround(), m_combat, kStepSec);
 
     // 6) 판정 해소 → 모든 피해는 HitEvent 로만 적용된다
-    const jug::Vector<HitEvent>& events = m_combat.Resolve();
+    const slug::Vector<HitEvent>& events = m_combat.Resolve();
     m_props.OnHitEvents(events);
     m_enemies.OnHitEvents(events);
     const int kills = m_host.ApplyPlaceholderEvents(events);
@@ -402,7 +406,7 @@ void StageState::Tick(
     ConsumePropEvents_(_ctx);
 
     // 8) 연출
-    const jug::Vector<FxRequest> fx = m_projectiles.TakeFx();
+    const slug::Vector<FxRequest> fx = m_projectiles.TakeFx();
     RequestSounds_(_ctx, fx);
     m_ui.Tick();
     if (_ctx.pAnims)
@@ -566,9 +570,9 @@ PhysicsWorld StageState::MakeEnemyPhysicsWorld_() const
     return world;
 }
 
-jug::VECTOR2 StageState::GetRespawnFeet_() const
+Vec2 StageState::GetRespawnFeet_() const
 {
-    const jug::VECTOR2 cam = m_camera.GetPositionNoShake();
+    const Vec2 cam = m_camera.GetPositionNoShake();
     return { cam.x + m_tuning.player.respawnOffsetX, cam.y - m_tuning.player.respawnDropY };
 }
 
@@ -632,7 +636,7 @@ void StageState::ConsumePropEvents_(
 
 const GroundMap* StageState::FindPatchMask_(
     GameContext&       _ctx,
-    const jug::String& _sprite)
+    const slug::String& _sprite)
 {
     for (const PatchMask& patch: m_patchMasks)
     {
@@ -645,7 +649,7 @@ const GroundMap* StageState::FindPatchMask_(
     // 처음 요청: Baked/Textures/<sprite>.png 를 읽어 알파 마스크를 만든다 (실패도 캐시한다)
     PatchMask patch;
     patch.name = _sprite;
-    const jug::FilePath path = _ctx.assetRoot / "Baked" / "Textures" / (_sprite + ".png");
+    const slug::FilePath path = _ctx.assetRoot / "Baked" / "Textures" / (_sprite + ".png");
     if (std::optional<GroundMap> mask = LoadGroundPatchMask(path))
     {
         patch.mask    = std::move(*mask);
@@ -653,7 +657,7 @@ const GroundMap* StageState::FindPatchMask_(
     }
     else
     {
-        JUG_CORE_LOG_WARN("지면 패치 마스크 '{}' 을 읽지 못했습니다", path.string());
+        SLUG_LOG_WARN("지면 패치 마스크 '{}' 을 읽지 못했습니다", path.string());
     }
     m_patchMasks.push_back(std::move(patch));
     return m_patchMasks.back().bLoaded ? &m_patchMasks.back().mask : nullptr;
@@ -661,8 +665,8 @@ const GroundMap* StageState::FindPatchMask_(
 
 void StageState::ApplyGroundPatch_(
     GameContext&       _ctx,
-    const jug::String& _sprite,
-    const jug::VECTOR2 _topLeft)
+    const slug::String& _sprite,
+    const Vec2 _topLeft)
 {
     GroundMap* pGround = m_host.GetActiveGroundMut();
     const GroundMap* pMask = FindPatchMask_(_ctx, _sprite);
@@ -675,7 +679,7 @@ void StageState::ApplyGroundPatch_(
 // 플레이어 소리 요청: 틱의 결과를 읽기만 한다 (시뮬레이션 상태를 바꾸지 않는다)
 void StageState::RequestSounds_(
     GameContext&                  _ctx,
-    const jug::Vector<FxRequest>& _fx)
+    const slug::Vector<FxRequest>& _fx)
 {
     IAudioSink&        audio   = _ctx.GetAudio();
     const PlayerStats& stats   = m_player.GetStats();
@@ -758,7 +762,7 @@ bool StageState::IsFinished() const
     return m_runner->IsFinished();
 }
 
-jug::Scoped<IGameState> StageState::TakeNextState()
+std::unique_ptr<IGameState> StageState::TakeNextState()
 {
     if (!IsFinished() || m_bTakenNext)
     {
@@ -790,8 +794,8 @@ void StageState::Render(
     renderer.BeginFrame({ 156, 190, 224, 255 });
 
     // 카메라도 보간한다 (플레이어와 같은 위상)
-    const jug::VECTOR2 camNow    = m_camera.GetPositionNoShake();
-    const jug::VECTOR2 cameraPos = { std::floor(m_prevCameraPos.x + (camNow.x - m_prevCameraPos.x) * _alpha), std::floor(m_prevCameraPos.y + (camNow.y - m_prevCameraPos.y) * _alpha) };
+    const Vec2 camNow    = m_camera.GetPositionNoShake();
+    const Vec2 cameraPos = { std::floor(m_prevCameraPos.x + (camNow.x - m_prevCameraPos.x) * _alpha), std::floor(m_prevCameraPos.y + (camNow.y - m_prevCameraPos.y) * _alpha) };
 
     if (m_bgHandle >= 0 && _ctx.pSprites)
     {
@@ -808,7 +812,7 @@ void StageState::Render(
 
 void StageState::DrawBackdrop_(
     GameContext&       _ctx,
-    const jug::VECTOR2 _cameraPos)
+    const Vec2 _cameraPos)
 {
     const BackdropMode* pMode = m_data.FindBackdrop(m_runner->GetBackdropMode());
     if (!pMode || !_ctx.pSprites)
@@ -859,7 +863,7 @@ void StageState::DrawBackdrop_(
 
 void StageState::DrawWorld_(
     GameContext&       _ctx,
-    const jug::VECTOR2 _cameraPos,
+    const Vec2 _cameraPos,
     const float        _alpha)
 {
     Renderer& renderer = *_ctx.pRenderer;
@@ -879,8 +883,8 @@ void StageState::DrawWorld_(
             continue;
         }
         const Aabb box = entity.GetBox();
-        const jug::VECTOR2 tl = ToScreen_(box.min, _cameraPos);
-        const jug::RGBA color = entity.IsAlive() ? GetPlaceholderColor_(entity) : jug::RGBA { 90, 90, 90, 255 };
+        const Vec2 tl = ToScreen_(box.min, _cameraPos);
+        const slug::RGBA color = entity.IsAlive() ? GetPlaceholderColor_(entity) : slug::RGBA { 90, 90, 90, 255 };
         if (entity.bHittable || !entity.IsAlive())
         {
             renderer.FillRect(tl, entity.size, color);
@@ -904,7 +908,7 @@ void StageState::DrawWorld_(
 
     // --- 플레이어 ---
     {
-        const jug::VECTOR2 feet = Lerp_(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
+        const Vec2 feet = Lerp_(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
         if (m_bRigBound && pAnims)
         {
             const RigState rigState = m_player.MakeRigState();
@@ -924,18 +928,18 @@ void StageState::DrawWorld_(
     {
         for (const Bullet& bullet: m_projectiles.GetBullets())
         {
-            const jug::VECTOR2 pos = Lerp_(bullet.renderPrev, bullet.position, _alpha);
+            const Vec2 pos = Lerp_(bullet.renderPrev, bullet.position, _alpha);
             if (bullet.team == eTeam::Player && SubmitPlayerBullet(sprites, pAnims, m_spriteLib, bullet, pos, 30))
             {
                 continue;
             }
-            const jug::RGBA color = bullet.team == eTeam::Player ? jug::RGBA { 255, 240, 120, 255 } : jug::RGBA { 255, 80, 60, 255 };
+            const slug::RGBA color = bullet.team == eTeam::Player ? slug::RGBA { 255, 240, 120, 255 } : slug::RGBA { 255, 80, 60, 255 };
             renderer.FillRect(ToScreen_({ pos.x - bullet.size.x * 0.5f, pos.y - bullet.size.y * 0.5f }, _cameraPos), bullet.size, color);
         }
 
         for (const Bomb& bomb: m_projectiles.GetBombs())
         {
-            const jug::VECTOR2 pos = Lerp_(bomb.renderPrev, bomb.position, _alpha);
+            const Vec2 pos = Lerp_(bomb.renderPrev, bomb.position, _alpha);
             if (pAnims)
             {
                 if (const AnimFrame* pFrame = m_bombAnim.GetFrameData(*pAnims))
@@ -960,11 +964,11 @@ void StageState::DrawWorld_(
 
 void StageState::DrawDebugBoxes_(
     Renderer&          _renderer,
-    const jug::VECTOR2 _cameraPos) const
+    const Vec2 _cameraPos) const
 {
     for (const Hurtbox& hurtbox: m_combat.GetHurtboxes())
     {
-        DrawBox_(_renderer, hurtbox.box, _cameraPos, hurtbox.bInvulnerable ? jug::RGBA { 120, 200, 255, 255 } : jug::RGBA { 60, 255, 90, 255 });
+        DrawBox_(_renderer, hurtbox.box, _cameraPos, hurtbox.bInvulnerable ? slug::RGBA { 120, 200, 255, 255 } : slug::RGBA { 60, 255, 90, 255 });
     }
     for (const Hitbox& hitbox: m_combat.GetHitboxes())
     {
@@ -974,13 +978,13 @@ void StageState::DrawDebugBoxes_(
     const Aabb body = m_player.GetBodyBox();
     DrawBox_(_renderer, body, _cameraPos, { 80, 120, 255, 255 });
 
-    const jug::VECTOR2 feet = m_player.GetFeet();
+    const Vec2 feet = m_player.GetFeet();
     const float        fh   = m_player.GetBody().footHalfWidth;
     _renderer.DrawLine(ToScreen_({ feet.x - fh, feet.y }, _cameraPos), ToScreen_({ feet.x + fh, feet.y }, _cameraPos), { 255, 255, 0, 255 });
     _renderer.DrawLine(ToScreen_({ feet.x, feet.y - 4.f }, _cameraPos), ToScreen_({ feet.x, feet.y + 4.f }, _cameraPos), { 255, 255, 0, 255 });
 
     const Aabb trigger = MakeKnifeTriggerBox(feet, m_player.GetFacing(), body.GetWidth() * 0.5f, m_tuning.knife);
-    DrawBox_(_renderer, trigger, _cameraPos, m_player.IsKnifeTargetInRange() ? jug::RGBA { 255, 220, 40, 255 } : jug::RGBA { 120, 110, 40, 255 });
+    DrawBox_(_renderer, trigger, _cameraPos, m_player.IsKnifeTargetInRange() ? slug::RGBA { 255, 220, 40, 255 } : slug::RGBA { 120, 110, 40, 255 });
 
     for (const Wall& wall: m_walls)
     {
@@ -998,7 +1002,7 @@ void StageState::DrawDebugBoxes_(
 
 void StageState::DrawHud_(
     GameContext& _ctx,
-    const jug::VECTOR2 /*_cameraPos*/)
+    const Vec2 /*_cameraPos*/)
 {
     Renderer& renderer = *_ctx.pRenderer;
 
@@ -1008,25 +1012,25 @@ void StageState::DrawHud_(
     if (_ctx.bDebugDraw)
     {
         const StagePlaceholders& placeholders = m_host.GetPlaceholders();
-        const jug::String&       lastId       = placeholders.GetLastSectionId();
-        const jug::String        gates        = JoinIds_(m_runner->GetOpenGateIds());
-        const jug::VECTOR2       pos          = m_player.GetFeet();
-        const jug::VECTOR2       vel          = m_player.GetVelocity();
+        const slug::String&       lastId       = placeholders.GetLastSectionId();
+        const slug::String        gates        = JoinIds_(m_runner->GetOpenGateIds());
+        const Vec2       pos          = m_player.GetFeet();
+        const Vec2       vel          = m_player.GetVelocity();
         const std::optional<float> nextX      = m_runner->GetNextTriggerX();
 
-        const jug::String debug = std::format(
+        const slug::String debug = std::format(
             "STAGE {} SECTION {} (#{}/{})  NEXT #{} x>{}  GATES {} [{}]\n"
             "ENEMY {} (SPAWNED {})  PROP {}  ITEM {}  COLL {}  PH {}  SKIPPED {}  LOCK {}  BG {}\n"
             "POS {:.1f},{:.1f}  VEL {:.0f},{:.0f}  GND {}  GROUND {}  TICK {}  FPS {:.0f}\n"
             "F1 BOX  F2 PAUSE  F3 STEP  F4 SLOW  F5 NEXT SECTION  F6 BOSS ARENA",
             m_data.name,
-            lastId.empty() ? jug::String { "-" } : lastId,
+            lastId.empty() ? slug::String { "-" } : lastId,
             placeholders.GetLastSectionIndex(),
             m_data.sections.size(),
             m_runner->GetNextSectionIndex(),
-            nextX ? std::format("{:.0f}", *nextX) : jug::String { "-" },
+            nextX ? std::format("{:.0f}", *nextX) : slug::String { "-" },
             m_runner->GetOpenGateCount(),
-            gates.empty() ? jug::String { "-" } : gates,
+            gates.empty() ? slug::String { "-" } : gates,
             m_enemies.CountAlive(),
             m_runner->GetSpawnedCount(),
             m_props.GetCount(),

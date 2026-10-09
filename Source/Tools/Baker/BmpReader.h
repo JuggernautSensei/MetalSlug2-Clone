@@ -5,9 +5,9 @@
 #include <fstream>
 #include <vector>
 
-#include <JugX/Result.h>
+#include "Base/Result.h"
 
-#include "Core/Error.h"
+#include "Base/Error.h"
 #include "Tools/Baker/Image.h"
 
 namespace slug::baker
@@ -73,7 +73,7 @@ namespace bmp_detail
     };
 }   // namespace bmp_detail
 
-[[nodiscard]] inline jug::Result<Image> DecodeBmp(
+[[nodiscard]] inline slug::Result<Image> DecodeBmp(
     const std::vector<uint8_t>& _file)
 {
     using namespace bmp_detail;
@@ -231,7 +231,7 @@ namespace bmp_detail
     return img;
 }
 
-[[nodiscard]] inline jug::Result<Image> LoadBmpFile(
+[[nodiscard]] inline slug::Result<Image> LoadBmpFile(
     const std::filesystem::path& _path)
 {
     std::ifstream stream(_path, std::ios::binary | std::ios::ate);

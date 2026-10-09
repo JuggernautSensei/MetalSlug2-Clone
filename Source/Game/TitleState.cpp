@@ -1,4 +1,6 @@
 #include "Game/TitleState.h"
+#include "Base/Types.h"
+#include "Base/RGBA.h"
 
 #include "Game/StateFactory.h"
 #include "Game/Ui/Hud.h"
@@ -14,13 +16,13 @@ namespace
     void DrawBackground_(
         Renderer& _renderer)
     {
-        const jug::RGBA top    = { 14, 18, 44, 255 };
-        const jug::RGBA bottom = { 58, 22, 14, 255 };
+        const slug::RGBA top    = { 14, 18, 44, 255 };
+        const slug::RGBA bottom = { 58, 22, 14, 255 };
         for (int y = 0; y < Renderer::kLogicalHeight; y += kGradientBandH)
         {
             const float t     = static_cast<float>(y) / static_cast<float>(Renderer::kLogicalHeight);
             const auto  mix   = [t](const uint8_t _a, const uint8_t _b) { return static_cast<uint8_t>(_a + static_cast<int>((_b - _a) * t)); };
-            const jug::RGBA color = { mix(top.r, bottom.r), mix(top.g, bottom.g), mix(top.b, bottom.b), 255 };
+            const slug::RGBA color = { mix(top.r, bottom.r), mix(top.g, bottom.g), mix(top.b, bottom.b), 255 };
             _renderer.FillRect({ 0.f, static_cast<float>(y) }, { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(kGradientBandH) }, color);
         }
     }
@@ -61,13 +63,13 @@ void TitleState::OnExit(
     _ctx.GetAudio().AllStop();
 }
 
-jug::Scoped<IGameState> TitleState::CreateNext_() const
+std::unique_ptr<IGameState> TitleState::CreateNext_() const
 {
     if (!m_config.nextState.empty())
     {
         return CreateState(m_config.nextState);
     }
-    if (jug::Scoped<IGameState> pStage = CreateState("stage0"))
+    if (std::unique_ptr<IGameState> pStage = CreateState("stage0"))
     {
         return pStage;
     }
@@ -95,13 +97,13 @@ void TitleState::Tick(
     if (bStart && m_tickCount > m_config.inputDelayTicks)
     {
         m_bStarting = true;
-        m_selected  = m_config.nextState.empty() ? jug::String { CreateState("stage0") ? "stage0" : "sandbox" } : m_config.nextState;
+        m_selected  = m_config.nextState.empty() ? slug::String { CreateState("stage0") ? "stage0" : "sandbox" } : m_config.nextState;
         _ctx.GetAudio().Play(sfx::kOk);
         m_ui.GetFade().FadeToBlack(m_config.startFadeTicks);
     }
 }
 
-jug::Scoped<IGameState> TitleState::TakeNextState()
+std::unique_ptr<IGameState> TitleState::TakeNextState()
 {
     return std::move(m_pNext);
 }

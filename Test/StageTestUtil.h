@@ -1,5 +1,9 @@
 #pragma once
 #include <functional>
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Result.h"
+#include "Base/Random.h"
 #include <set>
 #include <string>
 
@@ -39,7 +43,7 @@ class FakeStageHost final : public IStageHost
 public:
     // --- 테스트가 조작하는 값 ---
     int64_t                                              now = 0;
-    jug::VECTOR2                                         playerFeet = { 0.f, 378.f };
+    Vec2                                         playerFeet = { 0.f, 378.f };
     bool                                                 bPlayerAlive = true;
     bool                                                 bGameOver    = false;
     std::function<std::optional<float>(float, float)>    groundFn = [](float, float _fromY) -> std::optional<float> {
@@ -62,7 +66,7 @@ public:
     std::string                endNext;
     std::string                currentGround;
     std::string                currentBackdrop;
-    std::vector<jug::VECTOR2>  warps;
+    std::vector<Vec2>  warps;
     std::vector<std::pair<SpawnId, std::string>> commands;
     std::vector<uint32_t>      clears;
     float                      invincibleSeconds = 0.f;
@@ -92,13 +96,13 @@ public:
         Log_("clear:" + std::to_string(_filter.layerMask));
     }
 
-    void SendCommand(SpawnId _id, jug::StringView _command) override
+    void SendCommand(SpawnId _id, slug::StringView _command) override
     {
         commands.emplace_back(_id, std::string { _command });
         Log_("cmd:" + std::to_string(_id) + ":" + std::string { _command });
     }
 
-    void SetGround(jug::StringView _name) override
+    void SetGround(slug::StringView _name) override
     {
         currentGround = std::string { _name };
         Log_("ground:" + currentGround);
@@ -106,7 +110,7 @@ public:
 
     std::optional<float> GetGroundFindY(float _x, float _fromY) const override { return groundFn(_x, _fromY); }
 
-    jug::VECTOR2 PlayerFeet() const override { return playerFeet; }
+    Vec2 PlayerFeet() const override { return playerFeet; }
     bool         PlayerAlive() const override { return bPlayerAlive; }
     bool         IsGameOver() const override { return bGameOver; }
 
@@ -116,33 +120,33 @@ public:
         Log_("invincible:" + std::to_string(_seconds));
     }
 
-    void WarpPlayer(jug::VECTOR2 _feet) override
+    void WarpPlayer(Vec2 _feet) override
     {
         playerFeet = _feet;
         warps.push_back(_feet);
         Log_("warp");
     }
 
-    void SetBackdrop(jug::StringView _modeId) override
+    void SetBackdrop(slug::StringView _modeId) override
     {
         currentBackdrop = std::string { _modeId };
         Log_("backdrop:" + currentBackdrop);
     }
 
-    void ShowBanner(const jug::String& _text, float _seconds) override { Log_("banner:" + _text + ":" + std::to_string(_seconds)); }
+    void ShowBanner(const slug::String& _text, float _seconds) override { Log_("banner:" + _text + ":" + std::to_string(_seconds)); }
 
     void FadeTo(eFadeTarget _target, float _seconds) override { Log_(std::string { "fade:" } + (_target == eFadeTarget::Black ? "black" : "clear") + ":" + std::to_string(_seconds)); }
 
-    void PlayBgm(jug::StringView _name, bool _bLoop) override { Log_("bgm:" + std::string { _name } + (_bLoop ? ":loop" : ":once")); }
+    void PlayBgm(slug::StringView _name, bool _bLoop) override { Log_("bgm:" + std::string { _name } + (_bLoop ? ":loop" : ":once")); }
 
-    void EndStage(jug::StringView _nextState) override
+    void EndStage(slug::StringView _nextState) override
     {
         bEnded  = true;
         endNext = std::string { _nextState };
         Log_("end:" + endNext);
     }
 
-    void OnSectionEntered(int _index, jug::StringView _id) override
+    void OnSectionEntered(int _index, slug::StringView _id) override
     {
         Log_("section:" + std::to_string(_index) + ":" + std::string { _id });
     }
@@ -208,7 +212,7 @@ inline std::string WrapStage(
 inline StageData MustLoad(const std::string& _json)
 {
     StageLoadDiagnostics diag;
-    jug::Result<StageData> result = LoadStageFromJson(_json, &diag);
+    slug::Result<StageData> result = LoadStageFromJson(_json, &diag);
     if (!result)
     {
         ADD_FAILURE() << "stage load failed: " << diag.message;
@@ -221,7 +225,7 @@ inline StageData MustLoad(const std::string& _json)
 inline std::string LoadError(const std::string& _json)
 {
     StageLoadDiagnostics diag;
-    const jug::Result<StageData> result = LoadStageFromJson(_json, &diag);
+    const slug::Result<StageData> result = LoadStageFromJson(_json, &diag);
     return result ? std::string {} : (diag.message.empty() ? std::string { "<no message>" } : diag.message);
 }
 
@@ -256,7 +260,7 @@ public:
     StageData         data;
     FakeStageHost     host;
     Camera            camera;
-    jug::RngMt19937   rng;
+    slug::RngMt19937   rng;
     StageRunner       runner;
 };
 

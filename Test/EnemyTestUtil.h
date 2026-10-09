@@ -1,4 +1,7 @@
 #pragma once
+#include "Base/Types.h"
+#include "Base/Math.h"
+#include "Base/Result.h"
 #include <vector>
 
 #include "Game/Combat/CombatSystem.h"
@@ -19,16 +22,16 @@ namespace slugtest
 
 using namespace slug;
 
-inline jug::FilePath EnemyDefsPath()
+inline slug::FilePath EnemyDefsPath()
 {
-    return jug::FilePath { SLUG_ASSET_DIR } / "Defs" / "Enemies.json";
+    return slug::FilePath { SLUG_ASSET_DIR } / "Defs" / "Enemies.json";
 }
 
 inline bool LoadEnemyLib(
     EnemyDefLibrary& _out,
-    jug::String*     _pMessage = nullptr)
+    slug::String*     _pMessage = nullptr)
 {
-    jug::Result<EnemyDefLibrary> lib = EnemyDefLibrary::Load(EnemyDefsPath(), _pMessage);
+    slug::Result<EnemyDefLibrary> lib = EnemyDefLibrary::Load(EnemyDefsPath(), _pMessage);
     if (!lib)
     {
         return false;
@@ -39,11 +42,11 @@ inline bool LoadEnemyLib(
 
 // 샌드박스 설정: 평지 + 표적 없음 + 적 정의 파일
 inline SandboxConfig MakeEnemyConfig(
-    const jug::VECTOR2 _spawn = { 100.f, 378.f })
+    const Vec2 _spawn = { 100.f, 378.f })
 {
     SandboxConfig config = MakeFlatConfig();
     config.spawnFeet     = _spawn;
-    config.enemyDefPath  = jug::FilePath { SLUG_ASSET_DIR } / "Defs";   // 정의 폴더 전체 (Enemies.json + Vehicles.json)
+    config.enemyDefPath  = slug::FilePath { SLUG_ASSET_DIR } / "Defs";   // 정의 폴더 전체 (Enemies.json + Vehicles.json)
     return config;
 }
 
@@ -57,7 +60,7 @@ class EnemyRig
 {
 public:
     explicit EnemyRig(
-        const jug::VECTOR2 _player = { 100.f, 378.f },
+        const Vec2 _player = { 100.f, 378.f },
         const float        _camLeft = 0.f)
         : m_world(&m_lib, 7)
         , m_ground(MakeFlatGround(3000))
@@ -69,7 +72,7 @@ public:
     }
 
     [[nodiscard]] bool               IsLoaded() const { return m_bLoaded; }
-    [[nodiscard]] const jug::String& GetMessage() const { return m_message; }
+    [[nodiscard]] const slug::String& GetMessage() const { return m_message; }
 
     EnemyWorld&        World() { return m_world; }
     EnemyDefLibrary&   Lib() { return m_lib; }
@@ -84,7 +87,7 @@ public:
 
     EnemyHandle Spawn(
         const char*        _name,
-        const jug::VECTOR2 _feet,
+        const Vec2 _feet,
         const SpawnParams& _params = {})
     {
         const PhysicsWorld world = MakeWorld_();
@@ -102,7 +105,7 @@ public:
             const EnemyContext ctx = MakeCtx_();
             m_world.Tick(ctx);
             m_projectiles.Step(&m_ground, m_combat, kStepSec);
-            const jug::Vector<HitEvent>& events = m_combat.Resolve();
+            const slug::Vector<HitEvent>& events = m_combat.Resolve();
             CountPlayerHits_(events);
             m_world.OnHitEvents(events);
             CollectEvents_();
@@ -145,7 +148,7 @@ public:
         hitbox.owner  = _team == eTeam::Player ? kTestPlayerOwner : 2000u;
         hitbox.id     = m_combat.NewHitId();
         m_combat.AddHitbox(hitbox);
-        const jug::Vector<HitEvent>& events = m_combat.Resolve();
+        const slug::Vector<HitEvent>& events = m_combat.Resolve();
         const size_t count = events.size();
         m_world.OnHitEvents(events);
         CollectEvents_();
@@ -218,7 +221,7 @@ private:
         }
     }
 
-    void CountPlayerHits_(const jug::Vector<HitEvent>& _events)
+    void CountPlayerHits_(const slug::Vector<HitEvent>& _events)
     {
         for (const HitEvent& event: _events)
         {
@@ -231,11 +234,11 @@ private:
 
     EnemyDefLibrary          m_lib       = {};
     int                      m_playerHits = 0;
-    jug::String              m_message   = {};
+    slug::String              m_message   = {};
     bool                     m_bLoaded   = false;
     EnemyWorld               m_world;
     GroundMap                m_ground;
-    jug::VECTOR2             m_player;
+    Vec2             m_player;
     Aabb                     m_view;
     CombatSystem             m_combat    = {};
     ProjectileSystem         m_projectiles = {};

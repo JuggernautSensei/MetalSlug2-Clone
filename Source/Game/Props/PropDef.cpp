@@ -1,11 +1,13 @@
 #include <format>
+#include "Base/Types.h"
+#include "Base/Math.h"
 #include <initializer_list>
 #include <string_view>
 
-#include <JugX/CoreLogger.h>
-#include <JugX/JsonDeserializer.h>
+#include "Base/Log.h"
+#include "Base/Json.h"
 
-#include "Core/Error.h"
+#include "Base/Error.h"
 #include "Game/Props/PropDef.h"
 #include "Render/Animation.h"
 #include "Render/SpriteLibrary.h"
@@ -29,12 +31,12 @@ int GetDebrisClipCount(
     return 0;
 }
 
-jug::String GetDebrisClipName(
+slug::String GetDebrisClipName(
     const eDebrisSet _set,
     const int        _index)
 {
     const char* prefix = _set == eDebrisSet::Wood ? "Wood" : (_set == eDebrisSet::Metal ? "Metal" : "Rock");
-    return jug::String { std::format("{}{}", prefix, _index + 1) };
+    return slug::String { std::format("{}{}", prefix, _index + 1) };
 }
 
 namespace
@@ -67,27 +69,27 @@ public:
     {
     }
 
-    [[nodiscard]] bool Run(const jug::JsonReader& _root);
+    [[nodiscard]] bool Run(const slug::JsonReader& _root);
 
-    [[nodiscard]] bool ParseParams(const PropDef& _def, const jug::JsonReader& _params, PropSpawnParams& _out);
+    [[nodiscard]] bool ParseParams(const PropDef& _def, const slug::JsonReader& _params, PropSpawnParams& _out);
 
-    jug::String error = {};
+    slug::String error = {};
 
 private:
     bool Fail_(std::string_view _where, std::string_view _field, std::string_view _msg);
-    bool Keys_(const jug::JsonReader& _obj, std::string_view _where, KeyList _allowed);
-    bool Num_(const jug::JsonReader& _obj, std::string_view _where, std::string_view _key, float& _out, bool _bRequired);
-    bool Int_(const jug::JsonReader& _obj, std::string_view _where, std::string_view _key, int& _out, bool _bRequired);
-    bool Bool_(const jug::JsonReader& _obj, std::string_view _where, std::string_view _key, bool& _out);
-    bool Str_(const jug::JsonReader& _obj, std::string_view _where, std::string_view _key, jug::String& _out, bool _bRequired);
-    bool Vec2_(const jug::JsonReader& _obj, std::string_view _where, std::string_view _key, jug::VECTOR2& _out, bool _bRequired);
-    bool Visual_(const jug::JsonReader& _obj, std::string_view _where, std::string_view _key, PropVisual& _out);
-    bool Parts_(const jug::JsonReader& _arr, std::string_view _where, jug::Vector<PropPart>& _out);
-    bool Burst_(const jug::JsonReader& _obj, std::string_view _where, PropBurst& _out, bool _bAllowAfterSec = false);
-    bool Drops_(const jug::JsonReader& _arr, std::string_view _where, jug::Vector<PropDrop>& _out);
-    bool Spawns_(const jug::JsonReader& _arr, std::string_view _where, jug::Vector<PropChild>& _out);
-    bool Def_(std::string_view _name, const jug::JsonReader& _obj);
-    bool Item_(std::string_view _name, const jug::JsonReader& _obj);
+    bool Keys_(const slug::JsonReader& _obj, std::string_view _where, KeyList _allowed);
+    bool Num_(const slug::JsonReader& _obj, std::string_view _where, std::string_view _key, float& _out, bool _bRequired);
+    bool Int_(const slug::JsonReader& _obj, std::string_view _where, std::string_view _key, int& _out, bool _bRequired);
+    bool Bool_(const slug::JsonReader& _obj, std::string_view _where, std::string_view _key, bool& _out);
+    bool Str_(const slug::JsonReader& _obj, std::string_view _where, std::string_view _key, slug::String& _out, bool _bRequired);
+    bool Vec2_(const slug::JsonReader& _obj, std::string_view _where, std::string_view _key, Vec2& _out, bool _bRequired);
+    bool Visual_(const slug::JsonReader& _obj, std::string_view _where, std::string_view _key, PropVisual& _out);
+    bool Parts_(const slug::JsonReader& _arr, std::string_view _where, slug::Vector<PropPart>& _out);
+    bool Burst_(const slug::JsonReader& _obj, std::string_view _where, PropBurst& _out, bool _bAllowAfterSec = false);
+    bool Drops_(const slug::JsonReader& _arr, std::string_view _where, slug::Vector<PropDrop>& _out);
+    bool Spawns_(const slug::JsonReader& _arr, std::string_view _where, slug::Vector<PropChild>& _out);
+    bool Def_(std::string_view _name, const slug::JsonReader& _obj);
+    bool Item_(std::string_view _name, const slug::JsonReader& _obj);
     bool CheckRefs_();
 
     PropDefLibrary& m_lib;
@@ -106,7 +108,7 @@ bool PropDefParser::Fail_(
 }
 
 bool PropDefParser::Keys_(
-    const jug::JsonReader& _obj,
+    const slug::JsonReader& _obj,
     const std::string_view _where,
     const KeyList          _allowed)
 {
@@ -131,7 +133,7 @@ bool PropDefParser::Keys_(
 }
 
 bool PropDefParser::Num_(
-    const jug::JsonReader& _obj,
+    const slug::JsonReader& _obj,
     const std::string_view _where,
     const std::string_view _key,
     float&                 _out,
@@ -141,7 +143,7 @@ bool PropDefParser::Num_(
     {
         return _bRequired ? Fail_(_where, _key, "필수 항목이 없습니다") : true;
     }
-    const jug::Result<double> value = _obj.ReadField<double>(_key);
+    const slug::Result<double> value = _obj.ReadField<double>(_key);
     if (!value)
     {
         return Fail_(_where, _key, "숫자가 필요합니다");
@@ -151,7 +153,7 @@ bool PropDefParser::Num_(
 }
 
 bool PropDefParser::Int_(
-    const jug::JsonReader& _obj,
+    const slug::JsonReader& _obj,
     const std::string_view _where,
     const std::string_view _key,
     int&                   _out,
@@ -175,7 +177,7 @@ bool PropDefParser::Int_(
 }
 
 bool PropDefParser::Bool_(
-    const jug::JsonReader& _obj,
+    const slug::JsonReader& _obj,
     const std::string_view _where,
     const std::string_view _key,
     bool&                  _out)
@@ -184,7 +186,7 @@ bool PropDefParser::Bool_(
     {
         return true;
     }
-    const jug::Result<bool> value = _obj.ReadField<bool>(_key);
+    const slug::Result<bool> value = _obj.ReadField<bool>(_key);
     if (!value)
     {
         return Fail_(_where, _key, "true/false 가 필요합니다");
@@ -194,17 +196,17 @@ bool PropDefParser::Bool_(
 }
 
 bool PropDefParser::Str_(
-    const jug::JsonReader& _obj,
+    const slug::JsonReader& _obj,
     const std::string_view _where,
     const std::string_view _key,
-    jug::String&           _out,
+    slug::String&           _out,
     const bool             _bRequired)
 {
     if (!_obj.HasField(_key))
     {
         return _bRequired ? Fail_(_where, _key, "필수 항목이 없습니다") : true;
     }
-    const jug::Result<jug::String> value = _obj.ReadField<jug::String>(_key);
+    const slug::Result<slug::String> value = _obj.ReadField<slug::String>(_key);
     if (!value)
     {
         return Fail_(_where, _key, "문자열이 필요합니다");
@@ -214,26 +216,26 @@ bool PropDefParser::Str_(
 }
 
 bool PropDefParser::Vec2_(
-    const jug::JsonReader& _obj,
+    const slug::JsonReader& _obj,
     const std::string_view _where,
     const std::string_view _key,
-    jug::VECTOR2&          _out,
+    Vec2&          _out,
     const bool             _bRequired)
 {
     if (!_obj.HasField(_key))
     {
         return _bRequired ? Fail_(_where, _key, "필수 항목이 없습니다") : true;
     }
-    const jug::Result<jug::JsonReader> arr = _obj.FindField(_key);
+    const slug::Result<slug::JsonReader> arr = _obj.FindField(_key);
     if (!arr || !arr->IsArray() || arr->GetSize() != 2)
     {
         return Fail_(_where, _key, "[x, y] 배열이 필요합니다");
     }
     float xy[2] = { 0.f, 0.f };
     int   i     = 0;
-    for (const jug::JsonReader item: arr->GetArray())
+    for (const slug::JsonReader item: arr->GetArray())
     {
-        const jug::Result<double> v = item.Read<double>();
+        const slug::Result<double> v = item.Read<double>();
         if (!v || i >= 2)
         {
             return Fail_(_where, _key, "숫자 배열이 필요합니다");
@@ -245,7 +247,7 @@ bool PropDefParser::Vec2_(
 }
 
 bool PropDefParser::Visual_(
-    const jug::JsonReader& _obj,
+    const slug::JsonReader& _obj,
     const std::string_view _where,
     const std::string_view _key,
     PropVisual&            _out)
@@ -254,7 +256,7 @@ bool PropDefParser::Visual_(
     {
         return true;
     }
-    const jug::Result<jug::JsonReader> v = _obj.FindField(_key);
+    const slug::Result<slug::JsonReader> v = _obj.FindField(_key);
     if (!v || !v->IsObject())
     {
         return Fail_(_where, _key, "{\"anim\": ...} 또는 {\"sprite\": ...} 객체가 필요합니다");
@@ -274,15 +276,15 @@ bool PropDefParser::Visual_(
 }
 
 bool PropDefParser::Parts_(
-    const jug::JsonReader& _arr,
+    const slug::JsonReader& _arr,
     const std::string_view _where,
-    jug::Vector<PropPart>& _out)
+    slug::Vector<PropPart>& _out)
 {
     if (!_arr.IsArray())
     {
         return Fail_(_where, "parts", "배열이 필요합니다");
     }
-    for (const jug::JsonReader item: _arr.GetArray())
+    for (const slug::JsonReader item: _arr.GetArray())
     {
         const std::string where = std::format("{}.parts", _where);
         if (!Keys_(item, where, { "note", "role", "when", "size", "offset" }))
@@ -290,12 +292,12 @@ bool PropDefParser::Parts_(
             return false;
         }
         // role: 문자열 또는 문자열 배열 (예: ["hurt", "wall"] = 같은 상자를 피격과 벽으로 둘 다)
-        jug::Vector<ePropRole> roles;
+        slug::Vector<ePropRole> roles;
         if (!item.HasField("role"))
         {
             return Fail_(where, "role", "필수 항목이 없습니다");
         }
-        const jug::Result<jug::JsonReader> roleField = item.FindField("role");
+        const slug::Result<slug::JsonReader> roleField = item.FindField("role");
         auto                               parseRole = [&](const std::string_view _s) -> bool
         {
             if (_s == "hurt") roles.push_back(ePropRole::Hurt);
@@ -307,9 +309,9 @@ bool PropDefParser::Parts_(
         };
         if (roleField->IsArray())
         {
-            for (const jug::JsonReader r: roleField->GetArray())
+            for (const slug::JsonReader r: roleField->GetArray())
             {
-                const jug::Result<jug::String> s = r.Read<jug::String>();
+                const slug::Result<slug::String> s = r.Read<slug::String>();
                 if (!s || !parseRole(s.GetValue()))
                 {
                     return Fail_(where, "role", "문자열 배열이 필요합니다");
@@ -318,7 +320,7 @@ bool PropDefParser::Parts_(
         }
         else
         {
-            const jug::Result<jug::String> s = roleField->Read<jug::String>();
+            const slug::Result<slug::String> s = roleField->Read<slug::String>();
             if (!s || !parseRole(s.GetValue()))
             {
                 return false;
@@ -328,7 +330,7 @@ bool PropDefParser::Parts_(
         ePropWhen when = ePropWhen::Intact;
         if (item.HasField("when"))
         {
-            const jug::Result<jug::String> w = item.ReadField<jug::String>("when");
+            const slug::Result<slug::String> w = item.ReadField<slug::String>("when");
             if (!w)
             {
                 return Fail_(where, "when", "문자열이 필요합니다");
@@ -340,8 +342,8 @@ bool PropDefParser::Parts_(
             else return Fail_(where, "when", "intact/destroyed/always 중 하나여야 합니다");
         }
 
-        jug::VECTOR2 size   = { 0.f, 0.f };
-        jug::VECTOR2 offset = { 0.f, 0.f };
+        Vec2 size   = { 0.f, 0.f };
+        Vec2 offset = { 0.f, 0.f };
         if (!Vec2_(item, where, "size", size, true) || !Vec2_(item, where, "offset", offset, false))
         {
             return false;
@@ -355,7 +357,7 @@ bool PropDefParser::Parts_(
 }
 
 bool PropDefParser::Burst_(
-    const jug::JsonReader& _obj,
+    const slug::JsonReader& _obj,
     const std::string_view _where,
     PropBurst&             _out,
     const bool             _bAllowAfterSec)
@@ -367,12 +369,12 @@ bool PropDefParser::Burst_(
     }
     if (_obj.HasField("explosions"))
     {
-        const jug::Result<jug::JsonReader> arr = _obj.FindField("explosions");
+        const slug::Result<slug::JsonReader> arr = _obj.FindField("explosions");
         if (!arr || !arr->IsArray())
         {
             return Fail_(_where, "explosions", "배열이 필요합니다");
         }
-        for (const jug::JsonReader item: arr->GetArray())
+        for (const slug::JsonReader item: arr->GetArray())
         {
             const std::string where = std::format("{}.explosions", _where);
             PropExplosion     e;
@@ -385,13 +387,13 @@ bool PropDefParser::Burst_(
     }
     if (_obj.HasField("debris"))
     {
-        const jug::Result<jug::JsonReader> d = _obj.FindField("debris");
+        const slug::Result<slug::JsonReader> d = _obj.FindField("debris");
         const std::string                  where = std::format("{}.debris", _where);
         if (!d || !Keys_(*d, where, { "note", "set", "count" }))
         {
             return false;
         }
-        jug::String set;
+        slug::String set;
         if (!Str_(*d, where, "set", set, true) || !Int_(*d, where, "count", _out.debris.count, true))
         {
             return false;
@@ -407,15 +409,15 @@ bool PropDefParser::Burst_(
 }
 
 bool PropDefParser::Drops_(
-    const jug::JsonReader& _arr,
+    const slug::JsonReader& _arr,
     const std::string_view _where,
-    jug::Vector<PropDrop>& _out)
+    slug::Vector<PropDrop>& _out)
 {
     if (!_arr.IsArray())
     {
         return Fail_(_where, "drops", "배열이 필요합니다");
     }
-    for (const jug::JsonReader item: _arr.GetArray())
+    for (const slug::JsonReader item: _arr.GetArray())
     {
         const std::string where = std::format("{}.drops", _where);
         PropDrop          d;
@@ -429,15 +431,15 @@ bool PropDefParser::Drops_(
 }
 
 bool PropDefParser::Spawns_(
-    const jug::JsonReader& _arr,
+    const slug::JsonReader& _arr,
     const std::string_view _where,
-    jug::Vector<PropChild>& _out)
+    slug::Vector<PropChild>& _out)
 {
     if (!_arr.IsArray())
     {
         return Fail_(_where, "spawns", "배열이 필요합니다");
     }
-    for (const jug::JsonReader item: _arr.GetArray())
+    for (const slug::JsonReader item: _arr.GetArray())
     {
         const std::string where = std::format("{}.spawns", _where);
         PropChild         c;
@@ -452,7 +454,7 @@ bool PropDefParser::Spawns_(
 
 bool PropDefParser::Def_(
     const std::string_view _name,
-    const jug::JsonReader& _obj)
+    const slug::JsonReader& _obj)
 {
     const std::string where { _name };
     if (!Keys_(_obj, where, { "note", "hp", "cullMargin", "layer", "idle", "damaged", "damagedAtHp", "destroyed", "hit", "parts", "variants", "remove", "destroyDuration", "onDamaged", "onDestroy", "secondary", "drops", "spawns", "fall", "groundPatch" }))
@@ -460,7 +462,7 @@ bool PropDefParser::Def_(
         return false;
     }
     PropDef def;
-    def.name = jug::String { _name };
+    def.name = slug::String { _name };
     if (!Int_(_obj, where, "hp", def.hp, true) || !Num_(_obj, where, "cullMargin", def.cullMargin, false) || !Int_(_obj, where, "damagedAtHp", def.damagedAtHp, false) || !Num_(_obj, where, "destroyDuration", def.destroyDurationSec, false) || !Bool_(_obj, where, "remove", def.bRemoveOnDestroy))
     {
         return false;
@@ -471,7 +473,7 @@ bool PropDefParser::Def_(
     }
     if (_obj.HasField("layer"))
     {
-        jug::String layer;
+        slug::String layer;
         if (!Str_(_obj, where, "layer", layer, true))
         {
             return false;
@@ -490,12 +492,12 @@ bool PropDefParser::Def_(
     }
     if (_obj.HasField("variants"))
     {
-        const jug::Result<jug::JsonReader> arr = _obj.FindField("variants");
+        const slug::Result<slug::JsonReader> arr = _obj.FindField("variants");
         if (!arr || !arr->IsArray() || arr->GetSize() == 0)
         {
             return Fail_(where, "variants", "1개 이상의 배열이 필요합니다");
         }
-        for (const jug::JsonReader item: arr->GetArray())
+        for (const slug::JsonReader item: arr->GetArray())
         {
             const std::string where2 = std::format("{}.variants", where);
             PropVariant       v;
@@ -526,7 +528,7 @@ bool PropDefParser::Def_(
     }
     if (_obj.HasField("secondary"))
     {
-        const jug::Result<jug::JsonReader> s = _obj.FindField("secondary");
+        const slug::Result<slug::JsonReader> s = _obj.FindField("secondary");
         const std::string                  where2 = where + ".secondary";
         if (!s || !Num_(*s, where2, "afterSec", def.secondary.afterSec, false) || !Burst_(*s, where2, def.secondary.burst, true))
         {
@@ -544,7 +546,7 @@ bool PropDefParser::Def_(
     }
     if (_obj.HasField("fall"))
     {
-        const jug::Result<jug::JsonReader> f = _obj.FindField("fall");
+        const slug::Result<slug::JsonReader> f = _obj.FindField("fall");
         const std::string                  where2 = where + ".fall";
         if (!f || !Keys_(*f, where2, { "note", "gravity", "landed", "afterLandSec", "halfHeight" }) || !Num_(*f, where2, "gravity", def.fall.gravity, false) || !Num_(*f, where2, "afterLandSec", def.fall.afterLandSec, false) || !Num_(*f, where2, "halfHeight", def.fall.halfHeight, false) || !Visual_(*f, where2, "landed", def.fall.landed))
         {
@@ -554,7 +556,7 @@ bool PropDefParser::Def_(
     }
     if (_obj.HasField("groundPatch"))
     {
-        const jug::Result<jug::JsonReader> g = _obj.FindField("groundPatch");
+        const slug::Result<slug::JsonReader> g = _obj.FindField("groundPatch");
         const std::string                  where2 = where + ".groundPatch";
         if (!g || !Keys_(*g, where2, { "note", "sprite", "size", "inset" }) || !Str_(*g, where2, "sprite", def.groundPatch.sprite, true) || !Vec2_(*g, where2, "size", def.groundPatch.size, true) || !Vec2_(*g, where2, "inset", def.groundPatch.inset, true))
         {
@@ -573,7 +575,7 @@ bool PropDefParser::Def_(
 
 bool PropDefParser::Item_(
     const std::string_view _name,
-    const jug::JsonReader& _obj)
+    const slug::JsonReader& _obj)
 {
     const std::string where = std::format("items.{}", std::string { _name });
     if (!Keys_(_obj, where, { "note", "kind", "weapon", "supply", "amount", "score", "roll", "visual", "begin", "pickup" }))
@@ -581,9 +583,9 @@ bool PropDefParser::Item_(
         return false;
     }
     PropItemDef item;
-    item.name = jug::String { _name };
+    item.name = slug::String { _name };
 
-    jug::String kind;
+    slug::String kind;
     if (!Str_(_obj, where, "kind", kind, true))
     {
         return false;
@@ -593,7 +595,7 @@ bool PropDefParser::Item_(
     else if (kind == "score") item.kind = eItemKind::Score;
     else return Fail_(where, "kind", "gun/supply/score 중 하나여야 합니다");
 
-    jug::String weapon;
+    slug::String weapon;
     if (Str_(_obj, where, "weapon", weapon, false) && _obj.HasField("weapon"))
     {
         if (weapon == "hmg") item.weapon = eWeapon::Hmg;
@@ -602,7 +604,7 @@ bool PropDefParser::Item_(
         else if (weapon == "flame") item.weapon = eWeapon::Flame;
         else return Fail_(where, "weapon", "hmg/shotgun/rocket/flame 중 하나여야 합니다");
     }
-    jug::String supply;
+    slug::String supply;
     if (Str_(_obj, where, "supply", supply, false) && _obj.HasField("supply"))
     {
         if (supply == "bomb") item.supply = eSupplyKind::Bomb;
@@ -666,7 +668,7 @@ bool PropDefParser::CheckRefs_()
 }
 
 bool PropDefParser::Run(
-    const jug::JsonReader& _root)
+    const slug::JsonReader& _root)
 {
     if (!Keys_(_root, "Props.json", { "note", "version", "defs", "items", "groups" }))
     {
@@ -685,7 +687,7 @@ bool PropDefParser::Run(
     // 그룹은 아이템보다 먼저 이름만 등록한다 (드롭 검사는 뒤에서). 아이템 본체는 아래에서 읽는다.
     if (_root.HasField("defs"))
     {
-        const jug::Result<jug::JsonReader> defs = _root.FindField("defs");
+        const slug::Result<slug::JsonReader> defs = _root.FindField("defs");
         if (!defs || !defs->IsObject())
         {
             return Fail_("Props.json", "defs", "객체가 필요합니다");
@@ -700,7 +702,7 @@ bool PropDefParser::Run(
     }
     if (_root.HasField("items"))
     {
-        const jug::Result<jug::JsonReader> items = _root.FindField("items");
+        const slug::Result<slug::JsonReader> items = _root.FindField("items");
         if (!items || !items->IsObject())
         {
             return Fail_("Props.json", "items", "객체가 필요합니다");
@@ -715,7 +717,7 @@ bool PropDefParser::Run(
     }
     if (_root.HasField("groups"))
     {
-        const jug::Result<jug::JsonReader> groups = _root.FindField("groups");
+        const slug::Result<slug::JsonReader> groups = _root.FindField("groups");
         if (!groups || !groups->IsObject())
         {
             return Fail_("Props.json", "groups", "객체가 필요합니다");
@@ -723,14 +725,14 @@ bool PropDefParser::Run(
         for (const auto [key, value]: groups->GetObject())
         {
             PropItemGroup group;
-            group.name = jug::String { std::string_view { key } };
+            group.name = slug::String { std::string_view { key } };
             if (!value.IsArray())
             {
                 return Fail_("groups", std::string_view { key }, "아이템 이름 배열이 필요합니다");
             }
-            for (const jug::JsonReader item: value.GetArray())
+            for (const slug::JsonReader item: value.GetArray())
             {
-                const jug::Result<jug::String> name = item.Read<jug::String>();
+                const slug::Result<slug::String> name = item.Read<slug::String>();
                 if (!name)
                 {
                     return Fail_("groups", std::string_view { key }, "문자열 배열이 필요합니다");
@@ -754,7 +756,7 @@ bool PropDefParser::Run(
 
 bool PropDefParser::ParseParams(
     const PropDef&         _def,
-    const jug::JsonReader& _params,
+    const slug::JsonReader& _params,
     PropSpawnParams&       _out)
 {
     const std::string where { _def.name.c_str() };
@@ -772,15 +774,15 @@ bool PropDefParser::ParseParams(
     }
     if (_params.HasField("sprites"))
     {
-        const jug::Result<jug::JsonReader> arr = _params.FindField("sprites");
+        const slug::Result<slug::JsonReader> arr = _params.FindField("sprites");
         if (!arr || !arr->IsArray() || arr->GetSize() < 1 || arr->GetSize() > 2)
         {
             return Fail_(where, "sprites", "[idle] 또는 [idle, destroyed] 배열이 필요합니다");
         }
         int i = 0;
-        for (const jug::JsonReader item: arr->GetArray())
+        for (const slug::JsonReader item: arr->GetArray())
         {
-            const jug::Result<jug::String> s = item.Read<jug::String>();
+            const slug::Result<slug::String> s = item.Read<slug::String>();
             if (!s)
             {
                 return Fail_(where, "sprites", "문자열 배열이 필요합니다");
@@ -795,7 +797,7 @@ bool PropDefParser::ParseParams(
         {
             continue;
         }
-        const jug::Result<jug::JsonReader> box = _params.FindField(boxKey);
+        const slug::Result<slug::JsonReader> box = _params.FindField(boxKey);
         if (!box || !Keys_(*box, std::format("{}.{}", where, boxKey), { "note", "size", "offset" }))
         {
             return false;
@@ -829,19 +831,19 @@ bool PropDefParser::ParseParams(
 //  PropDefLibrary
 // ===========================================
 
-jug::Result<PropDefLibrary> PropDefLibrary::Parse(
-    const jug::StringView _json,
-    jug::String*          _pMessage)
+slug::Result<PropDefLibrary> PropDefLibrary::Parse(
+    const slug::StringView _json,
+    slug::String*          _pMessage)
 {
-    jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::Load(_json, jug::eJsonLoadOption::AllowComments);
+    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::Load(_json, slug::eJsonLoadOption::AllowComments);
     if (!doc)
     {
         if (_pMessage)
         {
             *_pMessage = "Props.json: JSON 구문 오류";
         }
-        JUG_CORE_LOG_ERROR("Props.json: JSON 구문 오류");
-        return jug::Error { eError::Parse };
+        SLUG_LOG_ERROR("Props.json: JSON 구문 오류");
+        return slug::Error { eError::Parse };
     }
     PropDefLibrary library;
     PropDefParser  parser { library };
@@ -851,25 +853,25 @@ jug::Result<PropDefLibrary> PropDefLibrary::Parse(
         {
             *_pMessage = parser.error;
         }
-        JUG_CORE_LOG_ERROR("소품 정의 오류: {}", parser.error);
-        return jug::Error { eError::PropDefInvalid };
+        SLUG_LOG_ERROR("소품 정의 오류: {}", parser.error);
+        return slug::Error { eError::PropDefInvalid };
     }
     return library;
 }
 
-jug::Result<PropDefLibrary> PropDefLibrary::Load(
-    const jug::FilePath& _path,
-    jug::String*         _pMessage)
+slug::Result<PropDefLibrary> PropDefLibrary::Load(
+    const slug::FilePath& _path,
+    slug::String*         _pMessage)
 {
-    jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::LoadFromFile(_path, jug::eJsonLoadOption::AllowComments);
+    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::LoadFromFile(_path, slug::eJsonLoadOption::AllowComments);
     if (!doc)
     {
         if (_pMessage)
         {
             *_pMessage = std::format("{}: 파일을 열 수 없거나 JSON 구문 오류", _path.string());
         }
-        JUG_CORE_LOG_ERROR("소품 정의 파일 로드 실패: {}", _path.string());
-        return jug::Error { eError::FileOpen };
+        SLUG_LOG_ERROR("소품 정의 파일 로드 실패: {}", _path.string());
+        return slug::Error { eError::FileOpen };
     }
     PropDefLibrary library;
     PropDefParser  parser { library };
@@ -879,57 +881,57 @@ jug::Result<PropDefLibrary> PropDefLibrary::Load(
         {
             *_pMessage = parser.error;
         }
-        JUG_CORE_LOG_ERROR("소품 정의 오류 ({}): {}", _path.string(), parser.error);
-        return jug::Error { eError::PropDefInvalid };
+        SLUG_LOG_ERROR("소품 정의 오류 ({}): {}", _path.string(), parser.error);
+        return slug::Error { eError::PropDefInvalid };
     }
     return library;
 }
 
 const PropDef* PropDefLibrary::Find(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
     const int index = FindIndex(_name);
     return index < 0 ? nullptr : &m_defs[static_cast<size_t>(index)];
 }
 
 int PropDefLibrary::FindIndex(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
-    const auto it = m_defIndex.find(jug::String { _name });
+    const auto it = m_defIndex.find(slug::String { _name });
     return it == m_defIndex.end() ? -1 : static_cast<int>(it->second);
 }
 
 const PropItemDef* PropDefLibrary::FindItem(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
     const int index = FindItemIndex(_name);
     return index < 0 ? nullptr : &m_items[static_cast<size_t>(index)];
 }
 
 int PropDefLibrary::FindItemIndex(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
-    const auto it = m_itemIndex.find(jug::String { _name });
+    const auto it = m_itemIndex.find(slug::String { _name });
     return it == m_itemIndex.end() ? -1 : static_cast<int>(it->second);
 }
 
 const PropItemGroup* PropDefLibrary::FindGroup(
-    const jug::StringView _name) const
+    const slug::StringView _name) const
 {
-    const auto it = m_groupIndex.find(jug::String { _name });
+    const auto it = m_groupIndex.find(slug::String { _name });
     return it == m_groupIndex.end() ? nullptr : &m_groups[it->second];
 }
 
 bool PropDefLibrary::ParseSpawnParams(
-    const jug::StringView  _defName,
-    const jug::JsonReader& _params,
+    const slug::StringView  _defName,
+    const slug::JsonReader& _params,
     PropSpawnParams&       _out,
-    jug::String&           _error) const
+    slug::String&           _error) const
 {
     const PropDef* pDef = Find(_defName);
     if (!pDef)
     {
-        _error = jug::String { std::format("{}: 정의가 없습니다", std::string { _defName }) };
+        _error = slug::String { std::format("{}: 정의가 없습니다", std::string { _defName }) };
         return false;
     }
     PropDefLibrary scratch;   // 파서는 라이브러리를 변경하지 않는다 (파라미터 해석만 사용)
@@ -943,27 +945,27 @@ bool PropDefLibrary::ParseSpawnParams(
     return true;
 }
 
-jug::String PropDefLibrary::FindMissingAsset(
+slug::String PropDefLibrary::FindMissingAsset(
     const AnimationLibrary& _anims,
     const SpriteLibrary&    _sprites) const
 {
-    auto missing = [&](const PropVisual& _v, const std::string& _where) -> jug::String
+    auto missing = [&](const PropVisual& _v, const std::string& _where) -> slug::String
     {
         if (_v.ref == eVisualRef::Anim && !_anims.IsValid(_anims.Find(_v.name)))
         {
-            return jug::String { std::format("{}: 클립 '{}'", _where, std::string { _v.name.c_str() }) };
+            return slug::String { std::format("{}: 클립 '{}'", _where, std::string { _v.name.c_str() }) };
         }
         if (_v.ref == eVisualRef::Sprite && _sprites.Find(_v.name) == nullptr)
         {
-            return jug::String { std::format("{}: 스프라이트 '{}'", _where, std::string { _v.name.c_str() }) };
+            return slug::String { std::format("{}: 스프라이트 '{}'", _where, std::string { _v.name.c_str() }) };
         }
         return {};
     };
-    auto checkBurst = [&](const PropBurst& _b, const std::string& _where) -> jug::String
+    auto checkBurst = [&](const PropBurst& _b, const std::string& _where) -> slug::String
     {
         for (const PropExplosion& e: _b.explosions)
         {
-            jug::String m = missing(PropVisual { eVisualRef::Anim, e.clip }, _where);
+            slug::String m = missing(PropVisual { eVisualRef::Anim, e.clip }, _where);
             if (!m.empty())
             {
                 return m;
@@ -971,7 +973,7 @@ jug::String PropDefLibrary::FindMissingAsset(
         }
         for (int i = 0; _b.debris.count > 0 && i < GetDebrisClipCount(_b.debris.set); ++i)
         {
-            jug::String m = missing(PropVisual { eVisualRef::Anim, GetDebrisClipName(_b.debris.set, i) }, _where);
+            slug::String m = missing(PropVisual { eVisualRef::Anim, GetDebrisClipName(_b.debris.set, i) }, _where);
             if (!m.empty())
             {
                 return m;
@@ -983,7 +985,7 @@ jug::String PropDefLibrary::FindMissingAsset(
     for (const PropDef& def: m_defs)
     {
         const std::string w { def.name.c_str() };
-        jug::String       m;
+        slug::String       m;
         for (const PropVisual* v: { &def.idle, &def.damaged, &def.destroyed, &def.hit, &def.fall.landed })
         {
             if (!(m = missing(*v, w)).empty())
@@ -1010,17 +1012,17 @@ jug::String PropDefLibrary::FindMissingAsset(
             const SpriteInfo* pSprite = _sprites.Find(def.groundPatch.sprite);
             if (pSprite == nullptr)
             {
-                return jug::String { std::format("{}: 스프라이트 '{}'", w, std::string { def.groundPatch.sprite.c_str() }) };
+                return slug::String { std::format("{}: 스프라이트 '{}'", w, std::string { def.groundPatch.sprite.c_str() }) };
             }
             if (static_cast<float>(pSprite->width) != def.groundPatch.size.x || static_cast<float>(pSprite->height) != def.groundPatch.size.y)
             {
-                return jug::String { std::format("{}: groundPatch 크기가 스프라이트와 다릅니다", w) };
+                return slug::String { std::format("{}: groundPatch 크기가 스프라이트와 다릅니다", w) };
             }
         }
     }
     for (const PropItemDef& item: m_items)
     {
-        jug::String m;
+        slug::String m;
         for (const PropVisual* v: { &item.visual, &item.begin, &item.pickup })
         {
             if (!(m = missing(*v, std::format("item {}", std::string { item.name.c_str() }))).empty())

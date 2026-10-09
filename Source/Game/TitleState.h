@@ -1,5 +1,5 @@
 #pragma once
-#include <JugX/Typedef.h>
+#include "Base/Types.h"
 
 #include "Game/GameState.h"
 #include "Game/Ui/UiSystem.h"
@@ -16,7 +16,7 @@ namespace slug
 
 struct TitleConfig
 {
-    jug::String nextState      = {};    // 비면 자동 선택 (stage0 → sandbox)
+    slug::String nextState      = {};    // 비면 자동 선택 (stage0 → sandbox)
     int         fadeInTicks    = 24;    // 처음 화면이 밝아지는 시간
     int         startFadeTicks = 24;    // 시작 입력 후 암전 시간
     int         inputDelayTicks = 12;   // 진입 직후 이 틱 동안은 시작 입력을 무시 (이전 장면의 눌림 방지)
@@ -34,24 +34,24 @@ public:
     void Tick(GameContext& _ctx, const InputHistory& _input) override;
     void Render(GameContext& _ctx, float _alpha) override;
 
-    [[nodiscard]] jug::Scoped<IGameState> TakeNextState() override;
+    [[nodiscard]] std::unique_ptr<IGameState> TakeNextState() override;
 
     // --- 테스트/도구용 ---
     [[nodiscard]] bool                     IsStarting() const { return m_bStarting; }
     [[nodiscard]] int                      GetTickCount() const { return m_tickCount; }
-    [[nodiscard]] const jug::String&       GetSelectedStateName() const { return m_selected; }
+    [[nodiscard]] const slug::String&       GetSelectedStateName() const { return m_selected; }
     [[nodiscard]] const UiSystem&          GetUi() const { return m_ui; }
 
 private:
-    [[nodiscard]] jug::Scoped<IGameState> CreateNext_() const;
+    [[nodiscard]] std::unique_ptr<IGameState> CreateNext_() const;
 
     TitleConfig m_config = {};
     UiSystem    m_ui     = {};
 
     int         m_tickCount = 0;
     bool        m_bStarting = false;
-    jug::String m_selected  = {};
-    jug::Scoped<IGameState> m_pNext = nullptr;
+    slug::String m_selected  = {};
+    std::unique_ptr<IGameState> m_pNext = nullptr;
 };
 
 }   // namespace slug

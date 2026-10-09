@@ -1,5 +1,5 @@
 #pragma once
-#include <JugX/Typedef.h>
+#include "Base/Types.h"
 
 #include "Core/Input.h"
 #include "Core/Tuning.h"
@@ -47,7 +47,7 @@ public:
 private:
     static constexpr int kNever = 1'000'000;
 
-    jug::ARRAY<int, kActionCount> m_ticksSincePress = {};
+    slug::ARRAY<int, kActionCount> m_ticksSincePress = {};
 };
 
 }   // namespace slug

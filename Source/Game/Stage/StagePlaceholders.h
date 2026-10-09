@@ -2,8 +2,8 @@
 #include <cstdint>
 #include <optional>
 
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "Game/Combat/CombatSystem.h"
 #include "Game/Stage/StageHost.h"
@@ -36,11 +36,11 @@ inline constexpr int      kPlaceholderKillScore  = 100;   // 처치 점수 (플�
 struct PlaceholderEntity
 {
     SpawnId      id         = kInvalidSpawnId;
-    jug::String  def        = {};
+    slug::String  def        = {};
     eEntityKind  kind       = eEntityKind::Enemy;
     eStageLayer  layer      = eStageLayer::Monster;
-    jug::VECTOR2 feet       = { 0.f, 0.f };   // 발 중앙 (상자는 발 중앙 기준으로 그린다)
-    jug::VECTOR2 size       = { 40.f, 75.f };
+    Vec2 feet       = { 0.f, 0.f };   // 발 중앙 (상자는 발 중앙 기준으로 그린다)
+    Vec2 size       = { 40.f, 75.f };
     Health       health     = {};
     bool         bHittable  = true;            // Hurtbox 를 가지는가 (enemy/npc/prop)
     int          flashTicks = 0;               // 피격 번쩍임 남은 틱
@@ -54,7 +54,7 @@ class StagePlaceholders final : public IStageHost
 {
 public:
     // --- 구성 (StageState 가 로드 시 호출) ---
-    void AddGroundMap(jug::StringView _name, GroundMap _map);
+    void AddGroundMap(slug::StringView _name, GroundMap _map);
     void BindPlayer(PlayerController* _pPlayer, const Tuning* _pTuning);   // 비소유. 둘 다 호스트보다 오래 산다
     void BindUi(UiSystem* _pUi);                                          // 비소유
     void SetContext(GameContext* _pCtx) { m_pCtx = _pCtx; }                 // 오디오 요청용 (틱 동안만 유효)
@@ -64,18 +64,18 @@ public:
 
     // --- 틱 훅 (StageState 가 순서대로 호출) ---
     void RegisterHurtboxes(CombatSystem& _combat) const;   // 살아 있는 엔티티의 Hurtbox (플레이어 Tick 전)
-    int  ApplyEvents(jug::Span<const HitEvent> _events);   // Resolve 결과 반영. 반환: 이번 틱 처치 수
+    int  ApplyEvents(slug::Span<const HitEvent> _events);   // Resolve 결과 반영. 반환: 이번 틱 처치 수
     void Tick();                                          // 번쩍임/사망 연출 타이머, 제거
 
     // --- 조회 (렌더/디버그/테스트) ---
-    [[nodiscard]] jug::Span<const PlaceholderEntity> GetEntities() const { return m_entities; }
+    [[nodiscard]] slug::Span<const PlaceholderEntity> GetEntities() const { return m_entities; }
     [[nodiscard]] const GroundMap*                   GetActiveGround() const;
     [[nodiscard]] GroundMap*                         GetActiveGroundMut();          // 지면 패치(GroundPatch) 적용용
-    [[nodiscard]] const jug::String&                 GetActiveGroundName() const;
-    [[nodiscard]] const jug::String&                 GetLastSectionId() const { return m_lastSectionId; }
+    [[nodiscard]] const slug::String&                 GetActiveGroundName() const;
+    [[nodiscard]] const slug::String&                 GetLastSectionId() const { return m_lastSectionId; }
     [[nodiscard]] int                                GetLastSectionIndex() const { return m_lastSectionIndex; }
     [[nodiscard]] bool                               IsEndRequested() const { return m_bEndRequested; }
-    [[nodiscard]] const jug::String&                 GetEndStateName() const { return m_endStateName; }
+    [[nodiscard]] const slug::String&                 GetEndStateName() const { return m_endStateName; }
     [[nodiscard]] bool                               IsPlayerInvincible() const { return m_invincibleTicks > 0; }
     [[nodiscard]] int                                GetSpawnCount() const { return m_spawnCount; }
     [[nodiscard]] uint64_t                           HashState() const;
@@ -85,34 +85,34 @@ public:
     [[nodiscard]] bool     IsDefeated(SpawnId _id) const override;
     [[nodiscard]] bool     IsDestroyFinished(SpawnId _id) const override;
     void                   ClearEntities(const EntityFilter& _filter) override;
-    void                   SendCommand(SpawnId _id, jug::StringView _command) override;
-    void                   SetGround(jug::StringView _name) override;
+    void                   SendCommand(SpawnId _id, slug::StringView _command) override;
+    void                   SetGround(slug::StringView _name) override;
     [[nodiscard]] std::optional<float> GetGroundFindY(float _x, float _fromY) const override;
-    [[nodiscard]] jug::VECTOR2         PlayerFeet() const override;
+    [[nodiscard]] Vec2         PlayerFeet() const override;
     [[nodiscard]] bool                 PlayerAlive() const override;
     [[nodiscard]] bool                 IsGameOver() const override;
     void                               SetPlayerInvincible(float _seconds) override;
-    void                               WarpPlayer(jug::VECTOR2 _feet) override;
-    void                               SetBackdrop(jug::StringView _modeId) override;
-    void                               ShowBanner(const jug::String& _text, float _seconds) override;
+    void                               WarpPlayer(Vec2 _feet) override;
+    void                               SetBackdrop(slug::StringView _modeId) override;
+    void                               ShowBanner(const slug::String& _text, float _seconds) override;
     void                               FadeTo(eFadeTarget _target, float _seconds) override;
-    void                               PlayBgm(jug::StringView _name, bool _bLoop) override;
-    void                               EndStage(jug::StringView _nextState) override;
-    void                               OnSectionEntered(int _index, jug::StringView _id) override;
+    void                               PlayBgm(slug::StringView _name, bool _bLoop) override;
+    void                               EndStage(slug::StringView _nextState) override;
+    void                               OnSectionEntered(int _index, slug::StringView _id) override;
 
 private:
     struct NamedGround
     {
-        jug::String name = {};
+        slug::String name = {};
         GroundMap   map  = {};
     };
 
     [[nodiscard]] PlaceholderEntity* FindAlive_(SpawnId _id);
     [[nodiscard]] const PlaceholderEntity* Find_(SpawnId _id) const;
 
-    jug::Vector<NamedGround>      m_grounds        = {};
+    slug::Vector<NamedGround>      m_grounds        = {};
     int                           m_activeGround   = -1;
-    jug::Vector<PlaceholderEntity> m_entities      = {};
+    slug::Vector<PlaceholderEntity> m_entities      = {};
     uint32_t                      m_lastOwner      = kPlaceholderOwnerBase;
     int                           m_spawnCount     = 0;
     int                           m_invincibleTicks = 0;
@@ -122,10 +122,10 @@ private:
     UiSystem*         m_pUi     = nullptr;
     GameContext*      m_pCtx    = nullptr;
 
-    jug::String m_lastSectionId  = {};
+    slug::String m_lastSectionId  = {};
     int         m_lastSectionIndex = -1;
     bool        m_bEndRequested  = false;
-    jug::String m_endStateName   = {};
+    slug::String m_endStateName   = {};
 };
 
 }   // namespace slug

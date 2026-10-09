@@ -2,9 +2,9 @@
 #include <cstdint>
 #include <optional>
 
-#include <JugX/Result.h>
-#include <JugX/Typedef.h>
-#include <JugX/Vector2.h>
+#include "Base/Result.h"
+#include "Base/Types.h"
+#include "Base/Math.h"
 
 #include "World/Combat.h"
 #include "World/Geometry.h"
@@ -39,7 +39,7 @@ enum class eEnemyBehavior : uint8_t
 };
 
 [[nodiscard]] const char*                    GetBehaviorName(eEnemyBehavior _behavior);
-[[nodiscard]] std::optional<eEnemyBehavior> FindBehavior(jug::StringView _name);
+[[nodiscard]] std::optional<eEnemyBehavior> FindBehavior(slug::StringView _name);
 
 // 애니메이션 시간 단위 (Render/Animation.h 의 kAnimTimeUnitsPerSec / 60). 한 틱 = 100,000 단위.
 inline constexpr int64_t kAnimUnitsPerTick = 100'000;
@@ -59,7 +59,7 @@ struct BoxDef
     float cx = 0.f;
     float cy = 0.f;
 
-    [[nodiscard]] Aabb At(const jug::VECTOR2 _feet, const int _facing) const
+    [[nodiscard]] Aabb At(const Vec2 _feet, const int _facing) const
     {
         const float cxWorld = _feet.x + cx * static_cast<float>(_facing < 0 ? -1 : 1);
         return Aabb::FromCenterSize({ cxWorld, _feet.y + cy }, { w, h });
@@ -71,7 +71,7 @@ struct BoxDef
 // 클립 타이밍 (anim.json 과 같아야 한다 — 테스트가 검증). 시뮬레이션이 애니메이션 라이브러리 없이도 같은 타이밍으로 돌도록 JSON 에 둔다.
 struct ClipDef
 {
-    jug::String name      = {};      // "SD_Idle_{side}" — {side} 는 Left/Right 로 치환
+    slug::String name      = {};      // "SD_Idle_{side}" — {side} 는 Left/Right 로 치환
     int         frames    = 1;
     float       frameSec  = 0.1f;
     bool        bLoop     = false;
@@ -94,15 +94,15 @@ struct ClipDef
 
 struct NamedClip
 {
-    jug::String name = {};   // 논리 이름 ("idle", "throw", ...)
+    slug::String name = {};   // 논리 이름 ("idle", "throw", ...)
     ClipDef     clip = {};
 };
 
 // 일회성 이펙트 요청 정의 (애니메이션 이름 + 오프셋(발 기준, 좌향이면 x 미러) + 지연)
 struct FxDef
 {
-    jug::String  clip     = {};
-    jug::VECTOR2 offset   = { 0.f, 0.f };
+    slug::String  clip     = {};
+    Vec2 offset   = { 0.f, 0.f };
     float        delaySec = 0.f;
     int          layer    = 60;
 };
@@ -113,15 +113,15 @@ struct FxDef
 
 struct ProjectileDef
 {
-    jug::String  name            = {};
-    jug::VECTOR2 size            = { 20.f, 20.f };
+    slug::String  name            = {};
+    Vec2 size            = { 20.f, 20.f };
     int          damage          = 1;
     float        speed           = 0.f;   // 일정 속도 (방향 벡터에 곱한다). 0 이면 v0 / speedRamp 를 쓴다
     bool         bRamp           = false;   // 선형 가속: 0 → rampMax (진행 방향)
     float        rampFrom        = 0.f;
     float        rampAccel       = 0.f;
     float        rampMax         = 0.f;
-    jug::VECTOR2 v0              = { 0.f, 0.f };   // 포물선 초기 속도 (x 는 바라보는 방향 부호가 곱해진다)
+    Vec2 v0              = { 0.f, 0.f };   // 포물선 초기 속도 (x 는 바라보는 방향 부호가 곱해진다)
     float        gravity         = 0.f;
     float        maxFall         = 3000.f;
     float        lifetimeSec     = 5.f;
@@ -145,9 +145,9 @@ enum class eWeaponAim : uint8_t
 
 struct WeaponDef
 {
-    jug::String  name            = {};
+    slug::String  name            = {};
     int          projectile      = -1;   // EnemyDefLibrary::GetProjectile 인덱스 (-1 = 투사체 없음)
-    jug::VECTOR2 muzzle          = { 0.f, 0.f };   // 발 기준, 좌향이면 x 미러
+    Vec2 muzzle          = { 0.f, 0.f };   // 발 기준, 좌향이면 x 미러
     eWeaponAim   aim             = eWeaponAim::Facing;
     float        tiltThreshold   = 0.f;   // > 0 이면 |dy| 가 이 값을 넘을 때 방향에 tiltDy 만큼 y 기울임
     float        tiltDy          = 0.f;
@@ -182,12 +182,12 @@ struct DeathDef
     float blinkForSec    = 1.f;
     float blinkPeriodSec = 0.1f;
     float removeAtSec    = 3.f;
-    jug::Vector<FxDef> fx = {};   // 사망 순간 이펙트 (디브리 등)
+    slug::Vector<FxDef> fx = {};   // 사망 순간 이펙트 (디브리 등)
 };
 
 struct DropDef
 {
-    jug::String item  = {};
+    slug::String item  = {};
     int         count = 1;
 };
 
@@ -260,7 +260,7 @@ struct BzkCfg
     int   jumpFrame     = 3;        // HJump 클립 안에서 도약 프레임
     int   fireFrame     = 1;
     float angleStep[4]  = { 11.25f, 33.75f, 56.25f, 78.75f };   // 각도 구간 경계 (도, 수평 기준)
-    jug::VECTOR2 muzzleBase = { 0.f, -63.f };
+    Vec2 muzzleBase = { 0.f, -63.f };
     float muzzleDist    = 50.f;
     float wallProbeW    = 50.f;
     float wallProbeH    = 50.f;
@@ -299,10 +299,10 @@ struct FlyingBzkCfg
     float postureDeg[5]  = { 0.f, 25.f, 50.f, 75.f, 90.f };   // 자세 중심 각도 (수평에서 아래로)
     float windowDeg      = 10.f;
     float fireDeg[5]     = { 0.f, 22.5f, 45.f, 67.5f, 90.f };
-    jug::VECTOR2 muzzleBase = { 0.f, -63.f };
+    Vec2 muzzleBase = { 0.f, -63.f };
     float muzzleDist     = 50.f;
     float landProbe      = 1.f;     // 발 아래 이 거리 안에 지면이 있으면 착지로 본다
-    jug::String landedDef = {};     // 착지 시 변신할 def 이름
+    slug::String landedDef = {};     // 착지 시 변신할 def 이름
 
     int clipReady[5] = { -1, -1, -1, -1, -1 };
     int clipShot[5]  = { -1, -1, -1, -1, -1 };
@@ -311,7 +311,7 @@ struct FlyingBzkCfg
 
     // 낙하산 (몸 위에 겹쳐 그리는 오버레이) / 파괴 이펙트
     int          clipPara = -1;
-    jug::VECTOR2 paraOffset = { -5.f, -87.5f };
+    Vec2 paraOffset = { -5.f, -87.5f };
     FxDef        paraDestroy = {};
 };
 
@@ -485,8 +485,8 @@ struct BusCfg
     int      soldierIntervalTicks = 300;     // 이후 5 s 간격
     int      soldierAliveMax    = 2;         // 동시 생존 투하 병사
     int      soldierTotalMax    = 8;         // 누적 투하 병사
-    jug::VECTOR2 soldierOffset  = { -150.f, -40.f };   // 원점 기준 투하 위치
-    jug::String  soldierDef     = {};        // 투하 병사 정의 (soldier_bomb)
+    Vec2 soldierOffset  = { -150.f, -40.f };   // 원점 기준 투하 위치
+    slug::String  soldierDef     = {};        // 투하 병사 정의 (soldier_bomb)
     int      weaponShell        = -1;        // 포탄 무기 (Given 이 아닌 Facing + arc)
 };
 
@@ -516,18 +516,18 @@ struct BattleShipCfg
     float    cannonAngleStart = -60.f;
     float    cannonAngleMin   = -135.f;
     float    cannonAngleMax   = -45.f;
-    jug::VECTOR2 cannonOffset = { 123.f, -149.f };   // 원점 기준 포 중심
+    Vec2 cannonOffset = { 123.f, -149.f };   // 원점 기준 포 중심
     float    bulletSpeed      = 300.f;
     float    bulletSpread     = 37.f;        // 발사 위치 (idx - 2) * spread
-    jug::String bulletProjectile = {};       // 투사체 정의 이름 (battleship_bullet). 발사 때 라이브러리에서 찾는다
+    slug::String bulletProjectile = {};       // 투사체 정의 이름 (battleship_bullet). 발사 때 라이브러리에서 찾는다
     BoxDef   bow              = {};          // 피격 상자 (원점 기준)
     BoxDef   bridge           = {};
     BoxDef   aft              = {};
     float    hullBlockDx      = 270.f;       // 파괴 전: 플레이어 x 는 선체 x + 이 값 이상
     // 포탑 (2기)
-    jug::VECTOR2 turretOffset[2] = { { -200.f, -70.f }, { -100.f, -120.f } };
+    Vec2 turretOffset[2] = { { -200.f, -70.f }, { -100.f, -120.f } };
     BoxDef   turretBox        = {};          // 포탑 원점 기준 피격 상자
-    jug::VECTOR2 turretMuzzle[3] = { { -30.f, -30.f }, { 0.f, -35.f }, { 30.f, -30.f } };   // LEFT / MID / RIGHT
+    Vec2 turretMuzzle[3] = { { -30.f, -30.f }, { 0.f, -35.f }, { 30.f, -30.f } };   // LEFT / MID / RIGHT
     int      turretHp         = 40;
     float    turretCoolSec    = 2.4f;        // 격앙 1.4 s
     float    turretCoolEnragedSec = 1.4f;
@@ -539,7 +539,7 @@ struct BattleShipCfg
     float    turretRandomSec  = 0.5f;       // 발사 후 추가 랜덤 [0, 이 값)
     float    turretArcMinVx   = 40.f;
     float    turretArcMaxVx   = 450.f;
-    jug::String turretProjectile = {};       // 포탑 포탄 정의 이름 (btank_shell)
+    slug::String turretProjectile = {};       // 포탑 포탄 정의 이름 (btank_shell)
     // 격앙 / 파괴
     int      enragedSmallTicks = 60;         // 격앙 중 선체 소폭발 주기 (1 s)
     float    destroyChainSec  = 2.8f;
@@ -553,7 +553,7 @@ struct BattleShipCfg
 
 struct EnemyDef
 {
-    jug::String    name     = {};
+    slug::String    name     = {};
     eEnemyBehavior behavior = eEnemyBehavior::Soldier;
     eTeam          team     = eTeam::Enemy;
     int            hp       = 1;
@@ -564,14 +564,14 @@ struct EnemyDef
     ActivationDef activation = {};
     PhysicsDef    physics   = {};
 
-    jug::Vector<NamedClip> clips   = {};
-    jug::Vector<WeaponDef> weapons = {};
+    slug::Vector<NamedClip> clips   = {};
+    slug::Vector<WeaponDef> weapons = {};
     DeathDef               death   = {};
-    jug::Vector<DropDef>   drops   = {};
+    slug::Vector<DropDef>   drops   = {};
 
     // 몸 위에 겹쳐 그리는 오버레이 클립 (선택): 낙하산 등. clips 인덱스, -1 = 없음
     int          overlayClip   = -1;
-    jug::VECTOR2 overlayOffset = { 0.f, 0.f };
+    Vec2 overlayOffset = { 0.f, 0.f };
 
     // 행동별 설정 (behavior 에 해당하는 것만 의미가 있다)
     SoldierCfg   soldier   = {};
@@ -595,8 +595,8 @@ struct EnemyDef
     bool bHuman = false;
 
     [[nodiscard]] const ClipDef& GetClip(const int _index) const { return clips[static_cast<size_t>(_index)].clip; }
-    [[nodiscard]] int            FindClip(jug::StringView _logicalName) const;
-    [[nodiscard]] int            FindWeapon(jug::StringView _name) const;
+    [[nodiscard]] int            FindClip(slug::StringView _logicalName) const;
+    [[nodiscard]] int            FindWeapon(slug::StringView _name) const;
 };
 
 struct EnemyGlobals
@@ -617,40 +617,40 @@ class EnemyDefLibrary
 {
 public:
     // 오류 시 사유(정의 이름/필드 포함)를 _pMessage 에 채우고 로그로도 남긴다.
-    [[nodiscard]] static jug::Result<EnemyDefLibrary> Parse(jug::StringView _json, jug::String* _pMessage = nullptr);
-    [[nodiscard]] static jug::Result<EnemyDefLibrary> Load(const jug::FilePath& _path, jug::String* _pMessage = nullptr);
+    [[nodiscard]] static slug::Result<EnemyDefLibrary> Parse(slug::StringView _json, slug::String* _pMessage = nullptr);
+    [[nodiscard]] static slug::Result<EnemyDefLibrary> Load(const slug::FilePath& _path, slug::String* _pMessage = nullptr);
 
     // 폴더 안의 모든 *.json 을 이름순으로 합쳐서 로드한다 (Enemies.json, Vehicles.json, Props.json, Boss.json ...).
     // 정의 이름은 파일 간에도 유일해야 하고, base 상속은 파일 경계를 넘을 수 있다.
-    [[nodiscard]] static jug::Result<EnemyDefLibrary> LoadDirectory(const jug::FilePath& _dir, jug::String* _pMessage = nullptr);
+    [[nodiscard]] static slug::Result<EnemyDefLibrary> LoadDirectory(const slug::FilePath& _dir, slug::String* _pMessage = nullptr);
 
     // <assetRoot>/Defs/Enemies.json
-    [[nodiscard]] static jug::FilePath GetDefaultPath(const jug::FilePath& _assetRoot);
+    [[nodiscard]] static slug::FilePath GetDefaultPath(const slug::FilePath& _assetRoot);
 
     // <assetRoot>/Defs
-    [[nodiscard]] static jug::FilePath GetDefaultDirectory(const jug::FilePath& _assetRoot);
+    [[nodiscard]] static slug::FilePath GetDefaultDirectory(const slug::FilePath& _assetRoot);
 
-    [[nodiscard]] const EnemyDef* Find(jug::StringView _name) const;
-    [[nodiscard]] int             FindIndex(jug::StringView _name) const;   // 없으면 -1
+    [[nodiscard]] const EnemyDef* Find(slug::StringView _name) const;
+    [[nodiscard]] int             FindIndex(slug::StringView _name) const;   // 없으면 -1
     [[nodiscard]] const EnemyDef& Get(const int _index) const { return m_defs[static_cast<size_t>(_index)]; }
 
-    [[nodiscard]] const ProjectileDef* FindProjectile(jug::StringView _name) const;
-    [[nodiscard]] int                  FindProjectileIndex(jug::StringView _name) const;
+    [[nodiscard]] const ProjectileDef* FindProjectile(slug::StringView _name) const;
+    [[nodiscard]] int                  FindProjectileIndex(slug::StringView _name) const;
     [[nodiscard]] const ProjectileDef& GetProjectile(const int _index) const { return m_projectiles[static_cast<size_t>(_index)]; }
 
     [[nodiscard]] size_t                         GetDefCount() const { return m_defs.size(); }
     [[nodiscard]] size_t                         GetProjectileCount() const { return m_projectiles.size(); }
-    [[nodiscard]] jug::Span<const EnemyDef>      GetDefs() const { return m_defs; }
-    [[nodiscard]] jug::Span<const ProjectileDef> GetProjectiles() const { return m_projectiles; }
+    [[nodiscard]] slug::Span<const EnemyDef>      GetDefs() const { return m_defs; }
+    [[nodiscard]] slug::Span<const ProjectileDef> GetProjectiles() const { return m_projectiles; }
     [[nodiscard]] const EnemyGlobals&            GetGlobals() const { return m_globals; }
 
 private:
     friend class EnemyDefParser;
 
-    jug::Vector<EnemyDef>               m_defs        = {};
-    jug::Vector<ProjectileDef>          m_projectiles = {};
-    jug::HashMap<jug::String, int>      m_defIndex    = {};
-    jug::HashMap<jug::String, int>      m_projIndex   = {};
+    slug::Vector<EnemyDef>               m_defs        = {};
+    slug::Vector<ProjectileDef>          m_projectiles = {};
+    slug::HashMap<slug::String, int>      m_defIndex    = {};
+    slug::HashMap<slug::String, int>      m_projIndex   = {};
     EnemyGlobals                        m_globals     = {};
 };
 

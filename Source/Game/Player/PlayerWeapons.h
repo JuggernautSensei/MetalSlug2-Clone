@@ -1,4 +1,5 @@
 #pragma once
+#include "Base/Math.h"
 #include "Core/Tuning.h"
 #include "Game/Combat/Projectiles.h"
 #include "Game/Player/PlayerTypes.h"
@@ -45,6 +46,6 @@ void OnFired(WeaponState& _state);
 [[nodiscard]] eWeapon WeaponFromDebugSlot(int _slot);
 
 // 탄 생성 정보
-[[nodiscard]] BulletSpawn MakeBulletSpawn(eWeapon _weapon, const WeaponTuning& _tuning, uint32_t _owner, jug::VECTOR2 _muzzle, jug::VECTOR2 _sweepFrom, jug::VECTOR2 _direction);
+[[nodiscard]] BulletSpawn MakeBulletSpawn(eWeapon _weapon, const WeaponTuning& _tuning, uint32_t _owner, Vec2 _muzzle, Vec2 _sweepFrom, Vec2 _direction);
 
 }   // namespace slug

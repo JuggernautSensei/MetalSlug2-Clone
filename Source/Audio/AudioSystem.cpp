@@ -1,4 +1,6 @@
 #include "Audio/AudioSystem.h"
+#include "Base/Types.h"
+#include "Base/Result.h"
 
 // ===========================================
 //  miniaudio 구현부 (프로젝트에서 MINIAUDIO_IMPLEMENTATION 은 이 파일 하나뿐)
@@ -12,13 +14,12 @@
 #include <miniaudio.h>
 
 #undef STB_VORBIS_HEADER_ONLY
-#include <stb_vorbis.c>
 
 #include <algorithm>
 
-#include <JugX/CoreLogger.h>
+#include "Base/Log.h"
 
-#include "Core/Error.h"
+#include "Base/Error.h"
 
 namespace slug
 {
@@ -31,8 +32,8 @@ struct AudioSystem::Backend
 {
     ma_engine             engine        = {};
     bool                  bEngine       = false;
-    jug::Vector<ma_sound> voices        = {};
-    jug::Vector<char>     voiceInit     = {};   // 슬롯의 ma_sound 가 초기화되어 있는가
+    slug::Vector<ma_sound> voices        = {};
+    slug::Vector<char>     voiceInit     = {};   // 슬롯의 ma_sound 가 초기화되어 있는가
     ma_sound              bgm           = {};
     bool                  bBgmInit      = false;
 
@@ -79,7 +80,7 @@ namespace
     // 플랫폼 경로 → miniaudio 파일 열기 (Windows 는 와이드 경로로 UTF-8/ANSI 변환 문제를 피한다)
     [[nodiscard]] ma_result InitSoundFromFile_(
         ma_engine*            _pEngine,
-        const jug::FilePath&  _path,
+        const slug::FilePath&  _path,
         const ma_uint32       _flags,
         ma_sound*             _pSound)
     {
@@ -92,7 +93,7 @@ namespace
 
     [[nodiscard]] ma_result RegisterFile_(
         ma_engine*           _pEngine,
-        const jug::FilePath& _path,
+        const slug::FilePath& _path,
         const ma_uint32      _flags)
     {
 #if defined(_WIN32)
@@ -120,7 +121,7 @@ AudioSystem::~AudioSystem()
     Shutdown();
 }
 
-jug::Result<void> AudioSystem::Init(
+slug::Result<void> AudioSystem::Init(
     SoundBank          _bank,
     const AudioConfig& _config)
 {
@@ -140,16 +141,16 @@ jug::Result<void> AudioSystem::Init(
 
     if (!_config.bEnabled)
     {
-        return jug::Error { jug::kOK };
+        return slug::Error { slug::kOK };
     }
 
     // 장치 시도. 실패해도 오류가 아니라 dry 모드로 계속한다.
-    jug::Scoped<Backend> pBackend { new Backend };
+    std::unique_ptr<Backend> pBackend { new Backend };
     const ma_engine_config engineConfig = ma_engine_config_init();
     if (const ma_result result = ma_engine_init(&engineConfig, &pBackend->engine); result != MA_SUCCESS)
     {
-        JUG_CORE_LOG_WARN("오디오 장치를 열 수 없어 소리 없이 계속합니다 ({})", ma_result_description(result));
-        return jug::Error { jug::kOK };
+        SLUG_LOG_WARN("오디오 장치를 열 수 없어 소리 없이 계속합니다 ({})", ma_result_description(result));
+        return slug::Error { slug::kOK };
     }
     pBackend->bEngine = true;
     pBackend->voices.resize(static_cast<size_t>(m_voices.GetCapacity()));
@@ -170,25 +171,25 @@ jug::Result<void> AudioSystem::Init(
         else
         {
             ++m_stats.loadFailed;
-            JUG_CORE_LOG_WARN("효과음 로드 실패 {} ({}): {}", entry.name, entry.file, ma_result_description(result));
+            SLUG_LOG_WARN("효과음 로드 실패 {} ({}): {}", entry.name, entry.file, ma_result_description(result));
         }
     }
 
     m_stats.preloaded = preloaded;
     m_pBackend        = std::move(pBackend);
     m_bDevice         = true;
-    JUG_CORE_LOG_INFO("오디오: 효과음 {} 개 로드, BGM 스트리밍, 동시 {} 음", preloaded, m_voices.GetCapacity());
-    return jug::Error { jug::kOK };
+    SLUG_LOG_INFO("오디오: 효과음 {} 개 로드, BGM 스트리밍, 동시 {} 음", preloaded, m_voices.GetCapacity());
+    return slug::Error { slug::kOK };
 }
 
-jug::Result<void> AudioSystem::InitFromDirectory(
-    const jug::FilePath& _bakedRoot,
+slug::Result<void> AudioSystem::InitFromDirectory(
+    const slug::FilePath& _bakedRoot,
     const AudioConfig&   _config)
 {
-    jug::Result<SoundBank> bank = SoundBank::LoadFromDirectory(_bakedRoot);
+    slug::Result<SoundBank> bank = SoundBank::LoadFromDirectory(_bakedRoot);
     if (!bank)
     {
-        return jug::Error { bank.GetError() };
+        return slug::Error { bank.GetError() };
     }
     return Init(bank.Take(), _config);
 }
@@ -200,7 +201,7 @@ void AudioSystem::Shutdown()
         return;
     }
     AllStop();
-    m_pBackend.Reset();
+    m_pBackend.reset();
     m_bDevice      = false;
     m_bInitialized = false;
 }
@@ -267,7 +268,7 @@ void AudioSystem::Update(
 // ===========================================
 
 void AudioSystem::Play(
-    const jug::StringView _name,
+    const slug::StringView _name,
     const float           _volume,
     const float           _pitchVariation)
 {
@@ -281,9 +282,9 @@ void AudioSystem::Play(
     if (index < 0)
     {
         ++m_stats.missing;
-        if (m_warnedMissing.insert(jug::String { _name }).second)
+        if (m_warnedMissing.insert(slug::String { _name }).second)
         {
-            JUG_CORE_LOG_TRACE("알 수 없는 효과음 요청: {}", _name);
+            SLUG_LOG_TRACE("알 수 없는 효과음 요청: {}", _name);
         }
         return;
     }
@@ -332,7 +333,7 @@ void AudioSystem::Play(
 }
 
 void AudioSystem::PlayBgm(
-    const jug::StringView _name,
+    const slug::StringView _name,
     const bool            _bLoop)
 {
     if (!m_bInitialized)
@@ -354,7 +355,7 @@ void AudioSystem::PlayBgm(
     }
 
     StopBgm_();
-    m_bgmName  = jug::String { _name };
+    m_bgmName  = slug::String { _name };
     m_bBgmLoop = _bLoop;
     m_bgmFade.Reset();
     m_bgmState = eBgmState::Playing;

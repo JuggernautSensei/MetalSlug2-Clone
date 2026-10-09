@@ -1,4 +1,5 @@
 #include <bit>
+#include "Base/Types.h"
 #include <cmath>
 
 #include <gtest/gtest.h>
@@ -614,7 +615,7 @@ TEST(Physics, OneWayPlatformPassesFromBelowAndLandsFromAbove)
     oneWay.bOneWay = true;
 
     PhysicsWorld world = WorldOf(map);
-    world.platforms    = jug::Span<const Platform> { &oneWay, 1 };
+    world.platforms    = slug::Span<const Platform> { &oneWay, 1 };
 
     Body body       = StandingOn(world, 150.f, 100.f);
     body.velocity.y = -kJumpSpeed;
@@ -646,7 +647,7 @@ TEST(Physics, OneWayPlatformDoesNotCatchBodiesThatAreBelowTheTop)
     oneWay.bOneWay = true;
 
     PhysicsWorld world = WorldOf(map);
-    world.platforms    = jug::Span<const Platform> { &oneWay, 1 };
+    world.platforms    = slug::Span<const Platform> { &oneWay, 1 };
 
     // 발이 이미 윗면보다 아래(80)에 있는 채 낙하/점프 정점에 있는 경우
     Body body = MakeBody(150.f, 80.f);
@@ -666,7 +667,7 @@ TEST(Physics, OneWayPlatformDoesNotBlockWalkingSideways)
     oneWay.bOneWay = true;
 
     PhysicsWorld world = WorldOf(map);
-    world.platforms    = jug::Span<const Platform> { &oneWay, 1 };
+    world.platforms    = slug::Span<const Platform> { &oneWay, 1 };
 
     Body body = StandingOn(world, 100.f, 100.f);
     for (int i = 0; i < 90; ++i)
@@ -684,7 +685,7 @@ TEST(Physics, DropThroughLetsBodyFallOffOneWayPlatform)
     oneWay.bOneWay = true;
 
     PhysicsWorld world = WorldOf(map);
-    world.platforms    = jug::Span<const Platform> { &oneWay, 1 };
+    world.platforms    = slug::Span<const Platform> { &oneWay, 1 };
 
     Body body = StandingOn(world, 150.f, 60.f);
     for (int i = 0; i < 5; ++i)
@@ -711,7 +712,7 @@ TEST(Physics, SolidPlatformSupportsBlocksSidesAndBumpsHead)
     solid.bOneWay = false;
 
     PhysicsWorld world = WorldOf(map);
-    world.platforms    = jug::Span<const Platform> { &solid, 1 };
+    world.platforms    = slug::Span<const Platform> { &solid, 1 };
 
     // 옆에서 막힘
     Body body = StandingOn(world, 100.f, 100.f);
@@ -736,7 +737,7 @@ TEST(Physics, SolidPlatformSupportsBlocksSidesAndBumpsHead)
     Platform hanging;
     hanging.box         = Aabb::FromMinMax({ 300.f, 20.f }, { 360.f, 40.f });
     PhysicsWorld world2 = WorldOf(map);
-    world2.platforms    = jug::Span<const Platform> { &hanging, 1 };
+    world2.platforms    = slug::Span<const Platform> { &hanging, 1 };
     Body jumper         = StandingOn(world2, 330.f, 100.f);
     jumper.velocity.y   = -kJumpSpeed;
     bool bCeiling       = false;
@@ -755,7 +756,7 @@ TEST(Physics, WalkingOffPlatformEdgeFallsToGround)
     solid.box = Aabb::FromMinMax({ 100.f, 60.f }, { 160.f, 100.f });
 
     PhysicsWorld world = WorldOf(map);
-    world.platforms    = jug::Span<const Platform> { &solid, 1 };
+    world.platforms    = slug::Span<const Platform> { &solid, 1 };
 
     Body body = StandingOn(world, 130.f, 60.f);
     ASSERT_FLOAT_EQ(body.position.y, 60.f);
@@ -777,7 +778,7 @@ TEST(Physics, WallBoxBlocksAndCanBeStoodOn)
     wall.box = Aabb::FromMinMax({ 200.f, 0.f }, { 210.f, 100.f });
 
     PhysicsWorld world = WorldOf(map);
-    world.walls        = jug::Span<const Wall> { &wall, 1 };
+    world.walls        = slug::Span<const Wall> { &wall, 1 };
 
     Body body = StandingOn(world, 100.f, 100.f);
     bool bHit = false;
@@ -840,7 +841,7 @@ Snapshot Capture(
 }
 
 // 램프, 낭떠러지, 원웨이, 벽이 섞인 시나리오를 입력 스크립트로 600스텝 돌린다
-jug::Vector<Snapshot> RunScenario()
+slug::Vector<Snapshot> RunScenario()
 {
     GroundMap map = MakeRamp45(50, 90, 100);
     map.FillRect(260, 100, 330, 199, false);   // 구덩이
@@ -850,10 +851,10 @@ jug::Vector<Snapshot> RunScenario()
     oneWay.bOneWay = true;
 
     PhysicsWorld world = WorldOf(map);
-    world.platforms    = jug::Span<const Platform> { &oneWay, 1 };
+    world.platforms    = slug::Span<const Platform> { &oneWay, 1 };
 
     Body                  body = MakeBody(20.f, 100.f);
-    jug::Vector<Snapshot> history;
+    slug::Vector<Snapshot> history;
     for (int i = 0; i < 600; ++i)
     {
         float vx = 0.f;
@@ -878,8 +879,8 @@ jug::Vector<Snapshot> RunScenario()
 
 TEST(Physics, SameInputsProduceBitIdenticalResultsAfter600Steps)
 {
-    const jug::Vector<Snapshot> a = RunScenario();
-    const jug::Vector<Snapshot> b = RunScenario();
+    const slug::Vector<Snapshot> a = RunScenario();
+    const slug::Vector<Snapshot> b = RunScenario();
     ASSERT_EQ(a.size(), 600u);
     ASSERT_EQ(a.size(), b.size());
     for (size_t i = 0; i < a.size(); ++i)
@@ -891,7 +892,7 @@ TEST(Physics, SameInputsProduceBitIdenticalResultsAfter600Steps)
 TEST(Physics, ScenarioActuallyMovesTheBody)
 {
     // 결정성 테스트가 "아무 것도 안 하는" 시나리오로 통과하지 않도록 최소한의 움직임을 확인
-    const jug::Vector<Snapshot> history = RunScenario();
+    const slug::Vector<Snapshot> history = RunScenario();
     const float                 endX    = std::bit_cast<float>(history.back().x);
     EXPECT_GT(endX, 100.f);
 }
