@@ -20,6 +20,12 @@ jug::Scoped<IGameState> CreateState(
     {
         return jug::Scoped<IGameState> { new SandboxState };
     }
+    if (_name == "enemylab")
+    {
+        SandboxConfig config;
+        config.bEnemyLab = true;   // 보병 8종을 플레이어 앞에 배치 (적 시각 검증)
+        return jug::Scoped<IGameState> { new SandboxState { config } };
+    }
     if (_name == "stage0")
     {
         return jug::Scoped<IGameState> { new StageState };

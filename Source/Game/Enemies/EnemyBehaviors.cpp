@@ -1,0 +1,28 @@
+#include "Game/Enemies/EnemyBehaviors.h"
+
+namespace slug
+{
+
+// ===========================================
+//  행동 종류 → Ops 테이블
+//   새 적 종류: EnemyDef.h 의 eEnemyBehavior 에 값을 추가하고 여기에 한 줄을 더한다.
+// ===========================================
+
+const BehaviorOps& GetBehaviorOps(
+    const eEnemyBehavior _behavior)
+{
+    switch (_behavior)
+    {
+        case eEnemyBehavior::Soldier: return kSoldierOps;
+        case eEnemyBehavior::Bzk: return kBzkOps;
+        case eEnemyBehavior::Hang: return kHangOps;
+        case eEnemyBehavior::FlyingBzk: return kFlyingBzkOps;
+        case eEnemyBehavior::Shielder: return kShielderOps;
+        case eEnemyBehavior::Pow: return kPowOps;
+        case eEnemyBehavior::Count: break;
+    }
+    static const BehaviorOps kEmpty {};
+    return kEmpty;
+}
+
+}   // namespace slug

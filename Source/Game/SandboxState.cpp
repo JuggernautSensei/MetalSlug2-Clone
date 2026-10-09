@@ -214,6 +214,13 @@ void SandboxState::RestartGame()
     {
         AddDefaultTargets_();
     }
+    if (m_config.bEnemyLab)
+    {
+        for (int slot = 0; slot < 8; ++slot)
+        {
+            SpawnDebugEnemy_(slot, 200.f + 50.f * static_cast<float>(slot));
+        }
+    }
 }
 
 void SandboxState::AddDefaultTargets_()
@@ -250,9 +257,10 @@ EnemyHandle SandboxState::SpawnEnemy(
 }
 
 void SandboxState::SpawnDebugEnemy_(
-    const int _slot)
+    const int   _slot,
+    const float _aheadPx)
 {
-    // 숫자키 1..8 → 보병 정의 8종 (플레이어 앞 180 px)
+    // 숫자키 1..8 → 보병 정의 8종 (플레이어 앞 _aheadPx)
     static constexpr const char* kSlots[] = { "soldier_bomb", "soldier_sword", "soldier_missile", "soldier_bzk", "soldier_hang", "flying_bzk", "shielder", "pow" };
     constexpr int                kSlotCount = static_cast<int>(sizeof(kSlots) / sizeof(kSlots[0]));
     if (_slot < 0 || _slot >= kSlotCount)
@@ -262,7 +270,7 @@ void SandboxState::SpawnDebugEnemy_(
 
     const jug::StringView name = kSlots[_slot];
     const jug::VECTOR2     feet = m_player.GetFeet();
-    jug::VECTOR2           at   = { feet.x + 180.f, feet.y };
+    jug::VECTOR2           at   = { feet.x + _aheadPx, feet.y };
     if (name == "flying_bzk")
     {
         at.y = feet.y - 150.f;   // 낙하산: 공중에서 내려온다

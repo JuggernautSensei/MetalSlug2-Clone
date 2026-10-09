@@ -56,6 +56,8 @@ void ProjectileSystem::Clear()
     m_bombs.clear();
     m_blasts.clear();
     m_fx.clear();
+    m_shots.clear();
+    m_shotFx.clear();
 }
 
 void ProjectileSystem::SpawnBullet(
@@ -88,6 +90,20 @@ void ProjectileSystem::SpawnBomb(
     bomb.velocity   = _spawn.velocity;
     bomb.params     = _spawn;
     m_bombs.push_back(bomb);
+}
+
+void ProjectileSystem::SpawnShot(
+    const ShotSpawn& _spawn,
+    CombatSystem&    _combat)
+{
+    Shot shot;
+    shot.position   = _spawn.position;
+    shot.renderPrev = _spawn.position;
+    shot.hitFrom    = _spawn.position;
+    shot.velocity   = _spawn.velocity;
+    shot.params     = _spawn;
+    shot.hitId      = _combat.NewHitId();
+    m_shots.push_back(shot);
 }
 
 void ProjectileSystem::ExplodeBomb_(
@@ -155,6 +171,65 @@ void ProjectileSystem::Step(
     }
     std::erase_if(m_bullets, [](const Bullet& _b) { return !_b.bAlive; });
 
+    // --- 샷 (적 투사체: 중력/가속/점화 대기) ---
+    for (Shot& shot: m_shots)
+    {
+        const ShotSpawn& params = shot.params;
+        shot.renderPrev         = shot.position;
+        ++shot.ageTicks;
+
+        if (shot.ageTicks > params.startDelayTicks)
+        {
+            shot.velocity.x += params.accel.x * _dt;
+            shot.velocity.y += params.accel.y * _dt;
+            if (params.maxSpeed > 0.f)
+            {
+                const float speed = std::sqrt(shot.velocity.x * shot.velocity.x + shot.velocity.y * shot.velocity.y);
+                if (speed > params.maxSpeed)
+                {
+                    const float scale = params.maxSpeed / speed;
+                    shot.velocity.x *= scale;
+                    shot.velocity.y *= scale;
+                }
+            }
+            shot.velocity.y = jug::Min(shot.velocity.y + params.gravity * _dt, params.maxFallSpeed);
+            shot.position.x += shot.velocity.x * _dt;
+            shot.position.y += shot.velocity.y * _dt;
+        }
+
+        if (shot.ageTicks > params.lifetimeTicks)
+        {
+            shot.bAlive = false;
+        }
+        else if (_pGround && params.bExplodeOnSolid && (shot.position.x != shot.renderPrev.x || shot.position.y != shot.renderPrev.y))
+        {
+            jug::VECTOR2 lastFree;
+            if (SegmentHitsGround_(*_pGround, shot.renderPrev, shot.position, lastFree))
+            {
+                shot.bAlive = false;
+                m_shotFx.push_back({ lastFree, params.visual });
+            }
+        }
+
+        if (!shot.bAlive)
+        {
+            _combat.ReleaseHitId(shot.hitId);
+            continue;
+        }
+
+        Hitbox hitbox;
+        hitbox.box     = SweptBox_(shot.hitFrom, shot.position, params.size);
+        hitbox.team    = params.team;
+        hitbox.kind    = params.kind;
+        hitbox.damage  = params.damage;
+        hitbox.bPierce = false;
+        hitbox.owner   = params.owner;
+        hitbox.id      = shot.hitId;
+        _combat.AddHitbox(hitbox);
+        shot.hitFrom = shot.position;
+    }
+    std::erase_if(m_shots, [](const Shot& _s) { return !_s.bAlive; });
+
     // --- 폭탄 ---
     for (Bomb& bomb: m_bombs)
     {
@@ -217,6 +292,16 @@ void ProjectileSystem::OnHitEvents(
         {
             continue;
         }
+        for (Shot& shot: m_shots)
+        {
+            if (shot.hitId == event.hitId && shot.bAlive)
+            {
+                shot.bAlive = false;
+                m_shotFx.push_back({ shot.position, shot.params.visual });
+                _combat.ReleaseHitId(shot.hitId);
+                break;
+            }
+        }
         for (Bullet& bullet: m_bullets)
         {
             if (bullet.hitId == event.hitId && !bullet.bPierce && bullet.bAlive)
@@ -229,6 +314,7 @@ void ProjectileSystem::OnHitEvents(
         }
     }
     std::erase_if(m_bullets, [](const Bullet& _b) { return !_b.bAlive; });
+    std::erase_if(m_shots, [](const Shot& _s) { return !_s.bAlive; });
 }
 
 int ProjectileSystem::CountBullets(
@@ -258,6 +344,42 @@ int ProjectileSystem::CountBombs(
         }
     }
     return count;
+}
+
+int ProjectileSystem::CountShots(
+    const uint32_t _owner) const
+{
+    int count = 0;
+    for (const Shot& shot: m_shots)
+    {
+        if (shot.bAlive && shot.params.owner == _owner)
+        {
+            ++count;
+        }
+    }
+    return count;
+}
+
+void ProjectileSystem::CullShots(
+    const Aabb&   _keep,
+    CombatSystem& _combat)
+{
+    for (Shot& shot: m_shots)
+    {
+        if (shot.bAlive && !_keep.Contains(shot.position))
+        {
+            shot.bAlive = false;
+            _combat.ReleaseHitId(shot.hitId);
+        }
+    }
+    std::erase_if(m_shots, [](const Shot& _s) { return !_s.bAlive; });
+}
+
+jug::Vector<ShotFx> ProjectileSystem::TakeShotFx()
+{
+    jug::Vector<ShotFx> out;
+    out.swap(m_shotFx);
+    return out;
 }
 
 jug::Vector<FxRequest> ProjectileSystem::TakeFx()

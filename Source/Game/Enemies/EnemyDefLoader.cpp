@@ -1,0 +1,1157 @@
+#include <algorithm>
+#include <cmath>
+#include <format>
+
+#include <JugX/CoreLogger.h>
+#include <JugX/JsonDeserializer.h>
+
+#include "Core/Error.h"
+#include "Game/Enemies/EnemyDef.h"
+#include "Game/Enemies/EnemyDefParse.h"
+#include "Render/Animation.h"
+
+namespace slug
+{
+
+// ===========================================
+//  EnemyDefParser
+//   Enemies.json → EnemyDefLibrary. 알 수 없는 키/값은 오류이며, 메시지에는 항상 정의 이름과 필드 경로가 들어간다.
+//   `extends` 로 부모 정의를 상속한다 (스칼라/객체는 자식 우선, clips/weapons/params 는 키 단위로 덮어씀).
+//   `abstract: true` 정의는 상속 전용이라 라이브러리에 들어가지 않는다.
+//   투사체 정의(kind:"projectile")를 먼저 읽고 적 정의를 읽는다 (무기가 투사체를 이름으로 참조하므로).
+// ===========================================
+
+class EnemyDefParser
+{
+public:
+    explicit EnemyDefParser(EnemyDefLibrary& _library)
+        : m_lib(_library)
+    {
+    }
+
+    [[nodiscard]] bool Run(const jug::JsonReader& _root);
+
+    jug::String error = {};
+
+private:
+    using Chain   = jug::Vector<jug::JsonReader>;
+    using Entries = jug::Vector<std::pair<jug::String, jug::JsonReader>>;
+
+    struct RawDef
+    {
+        jug::String     name;
+        jug::JsonReader reader;
+    };
+
+    [[nodiscard]] bool BuildChain_(jug::StringView _name, int _depth, Chain& _out);
+    [[nodiscard]] bool CheckKeys_(const Chain& _chain, jug::StringView _defName, jug::Span<const char* const> _allowed);
+    [[nodiscard]] bool CheckObjectKeys_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _object, jug::Span<const char* const> _allowed);
+
+    [[nodiscard]] std::optional<jug::JsonReader> Find_(const Chain& _chain, jug::StringView _key) const;
+    [[nodiscard]] Entries                        Merge_(const Chain& _chain, jug::StringView _key) const;
+
+    void Fail_(jug::StringView _def, jug::StringView _field, jug::StringView _msg);
+    [[nodiscard]] bool ReadNum_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _reader, jug::StringView _key, float& _out, bool _bRequired);
+    [[nodiscard]] bool ReadInt_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _reader, jug::StringView _key, int& _out, bool _bRequired);
+    [[nodiscard]] bool ReadBool_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _reader, jug::StringView _key, bool& _out);
+    [[nodiscard]] bool ReadStr_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _reader, jug::StringView _key, jug::String& _out, bool _bRequired);
+    [[nodiscard]] bool ReadVec2_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _reader, jug::StringView _key, jug::VECTOR2& _out);
+    [[nodiscard]] bool ReadBox_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _reader, BoxDef& _out);
+    [[nodiscard]] bool ReadClip_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _reader, ClipDef& _out);
+    [[nodiscard]] bool ReadFx_(jug::StringView _def, jug::StringView _field, const jug::JsonReader& _reader, FxDef& _out);
+
+    [[nodiscard]] bool ParseProjectile_(const RawDef& _raw, const Chain& _chain);
+    [[nodiscard]] bool ParseEnemy_(const RawDef& _raw, const Chain& _chain);
+    [[nodiscard]] bool ParseWeapon_(const jug::String& _def, const jug::String& _name, const jug::JsonReader& _reader, WeaponDef& _out);
+    [[nodiscard]] bool ParseDeath_(EnemyDef& _def, const jug::JsonReader& _death);
+
+    EnemyDefLibrary&                m_lib;
+    jug::Vector<RawDef>             m_raw;
+    jug::HashMap<jug::String, int>  m_rawIndex;
+};
+
+namespace
+{
+    constexpr const char* kRootKeys[] = { "note", "version", "globals", "defs" };
+    constexpr const char* kGlobalKeys[] = { "note", "dpsRef", "activationMarginPx", "despawnBehindCameraPx", "despawnBelowCameraPx" };
+    constexpr const char* kEnemyKeys[] = {
+        "note", "extends", "abstract", "kind", "behavior", "team", "hp", "ttk", "score", "body", "hurtbox", "activation", "physics",
+        "clips", "weapons", "params", "death", "drops", "overlay"
+    };
+    constexpr const char* kProjectileKeys[] = {
+        "note", "extends", "abstract", "kind", "team", "lethal", "box", "damage", "speed", "speedRamp", "startDelay", "v0", "gravity", "maxFall",
+        "lifetime", "onSolid", "anim", "explosion"
+    };
+    constexpr const char* kKnownKinds[] = { "walker", "vehicle", "turret", "flyer", "boss", "prop", "npc", "item", "projectile", "effect", "debris" };
+    constexpr const char* kActivationKeys[] = { "note", "mode", "marginPx", "latch" };
+    constexpr const char* kPhysicsKeys[] = { "note", "gravity", "maxFall", "speed", "jumpVy", "dropSpeed", "footHalfWidth", "useGravity" };
+    constexpr const char* kWeaponKeys[] = { "note", "projectile", "muzzle", "aim", "tilt", "arc", "muzzleFx", "hitbox" };
+    constexpr const char* kDeathKeys[] = {
+        "note", "bomb", "slash", "stand1", "stand2", "fall", "land", "jump", "fallAt1", "fallAt2", "blinkAtSec", "blinkForSec", "blinkPeriodSec", "removeAtSec", "fx"
+    };
+    constexpr const char* kClipKeys[] = { "note", "name", "frames", "sec", "loop" };
+    constexpr const char* kBoxKeys[] = { "note", "w", "h", "cx", "cy" };
+    constexpr const char* kFxKeys[] = { "note", "clip", "offset", "delay", "layer" };
+    constexpr const char* kSpeedRampKeys[] = { "note", "from", "accel", "max" };
+    constexpr const char* kAnimKeys[] = { "note", "begin", "fly" };
+    constexpr const char* kExplosionKeys[] = { "note", "fx", "offset" };
+    constexpr const char* kDropKeys[] = { "note", "item", "count" };
+    constexpr const char* kOverlayKeys[] = { "note", "clip", "offset" };
+    constexpr const char* kTiltKeys[] = { "note", "threshold", "dy" };
+    constexpr const char* kArcKeys[] = { "note", "minVx", "maxVx" };
+    constexpr const char* kHitboxKeys[] = { "note", "w", "h", "cx", "cy", "lifeSec", "damage", "follow" };
+
+    [[nodiscard]] bool Contains_(
+        const jug::Span<const char* const> _list,
+        const jug::StringView              _key)
+    {
+        for (const char* pItem: _list)
+        {
+            if (_key == pItem)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+}   // namespace
+
+void EnemyDefParser::Fail_(
+    const jug::StringView _def,
+    const jug::StringView _field,
+    const jug::StringView _msg)
+{
+    if (error.empty())
+    {
+        error = _field.empty() ? std::format("{}: {}", _def, _msg) : std::format("{}: {}: {}", _def, _field, _msg);
+    }
+}
+
+bool EnemyDefParser::ReadNum_(
+    const jug::StringView  _def,
+    const jug::StringView  _field,
+    const jug::JsonReader& _reader,
+    const jug::StringView  _key,
+    float&                 _out,
+    const bool             _bRequired)
+{
+    if (!_reader.IsObject() || !_reader.HasField(_key))
+    {
+        if (_bRequired)
+        {
+            Fail_(_def, std::format("{}.{}", _field, _key), "필수 값이 없습니다");
+        }
+        return !_bRequired;
+    }
+    const jug::Result<double> value = _reader.ReadField<double>(_key);
+    if (!value)
+    {
+        Fail_(_def, std::format("{}.{}", _field, _key), "숫자가 아닙니다");
+        return false;
+    }
+    _out = static_cast<float>(value.GetValue());
+    return true;
+}
+
+bool EnemyDefParser::ReadInt_(
+    const jug::StringView  _def,
+    const jug::StringView  _field,
+    const jug::JsonReader& _reader,
+    const jug::StringView  _key,
+    int&                   _out,
+    const bool             _bRequired)
+{
+    float value = static_cast<float>(_out);
+    if (!ReadNum_(_def, _field, _reader, _key, value, _bRequired))
+    {
+        return false;
+    }
+    _out = static_cast<int>(std::lround(static_cast<double>(value)));
+    return true;
+}
+
+bool EnemyDefParser::ReadBool_(
+    const jug::StringView  _def,
+    const jug::StringView  _field,
+    const jug::JsonReader& _reader,
+    const jug::StringView  _key,
+    bool&                  _out)
+{
+    if (!_reader.IsObject() || !_reader.HasField(_key))
+    {
+        return true;
+    }
+    const jug::Result<bool> value = _reader.ReadField<bool>(_key);
+    if (!value)
+    {
+        Fail_(_def, std::format("{}.{}", _field, _key), "true/false 가 아닙니다");
+        return false;
+    }
+    _out = value.GetValue();
+    return true;
+}
+
+bool EnemyDefParser::ReadStr_(
+    const jug::StringView  _def,
+    const jug::StringView  _field,
+    const jug::JsonReader& _reader,
+    const jug::StringView  _key,
+    jug::String&           _out,
+    const bool             _bRequired)
+{
+    if (!_reader.IsObject() || !_reader.HasField(_key))
+    {
+        if (_bRequired)
+        {
+            Fail_(_def, std::format("{}.{}", _field, _key), "필수 값이 없습니다");
+        }
+        return !_bRequired;
+    }
+    const jug::Result<jug::String> value = _reader.ReadField<jug::String>(_key);
+    if (!value)
+    {
+        Fail_(_def, std::format("{}.{}", _field, _key), "문자열이 아닙니다");
+        return false;
+    }
+    _out = value.GetValue();
+    return true;
+}
+
+bool EnemyDefParser::ReadVec2_(
+    const jug::StringView  _def,
+    const jug::StringView  _field,
+    const jug::JsonReader& _reader,
+    const jug::StringView  _key,
+    jug::VECTOR2&          _out)
+{
+    if (!_reader.IsObject() || !_reader.HasField(_key))
+    {
+        return true;
+    }
+    const jug::Result<jug::JsonReader> array = _reader.FindField(_key);
+    if (!array || !array->IsArray() || array->GetSize() != 2)
+    {
+        Fail_(_def, std::format("{}.{}", _field, _key), "[x, y] 배열이 아닙니다");
+        return false;
+    }
+    float values[2] = {};
+    int   i         = 0;
+    for (const jug::JsonReader item: array->GetArray())
+    {
+        const jug::Result<double> value = item.Read<double>();
+        if (!value)
+        {
+            Fail_(_def, std::format("{}.{}", _field, _key), "숫자가 아닌 원소가 있습니다");
+            return false;
+        }
+        values[i++] = static_cast<float>(value.GetValue());
+    }
+    _out = { values[0], values[1] };
+    return true;
+}
+
+bool EnemyDefParser::CheckObjectKeys_(
+    const jug::StringView              _def,
+    const jug::StringView              _field,
+    const jug::JsonReader&             _object,
+    const jug::Span<const char* const> _allowed)
+{
+    if (!_object.IsObject())
+    {
+        Fail_(_def, _field, "객체가 필요합니다");
+        return false;
+    }
+    for (const auto [key, value]: _object.GetObject())
+    {
+        if (!Contains_(_allowed, key))
+        {
+            Fail_(_def, _field, std::format("알 수 없는 키 '{}'", key));
+            return false;
+        }
+    }
+    return true;
+}
+
+bool EnemyDefParser::ReadBox_(
+    const jug::StringView  _def,
+    const jug::StringView  _field,
+    const jug::JsonReader& _reader,
+    BoxDef&                _out)
+{
+    if (!CheckObjectKeys_(_def, _field, _reader, kBoxKeys))
+    {
+        return false;
+    }
+    if (!ReadNum_(_def, _field, _reader, "w", _out.w, true) || !ReadNum_(_def, _field, _reader, "h", _out.h, true) || !ReadNum_(_def, _field, _reader, "cx", _out.cx, false) || !ReadNum_(_def, _field, _reader, "cy", _out.cy, false))
+    {
+        return false;
+    }
+    if (!(_out.w > 0.f) || !(_out.h > 0.f))
+    {
+        Fail_(_def, _field, "w, h 는 0 보다 커야 합니다");
+        return false;
+    }
+    return true;
+}
+
+bool EnemyDefParser::ReadClip_(
+    const jug::StringView  _def,
+    const jug::StringView  _field,
+    const jug::JsonReader& _reader,
+    ClipDef&               _out)
+{
+    if (!CheckObjectKeys_(_def, _field, _reader, kClipKeys))
+    {
+        return false;
+    }
+    if (!ReadStr_(_def, _field, _reader, "name", _out.name, true) || !ReadInt_(_def, _field, _reader, "frames", _out.frames, true) || !ReadNum_(_def, _field, _reader, "sec", _out.frameSec, true) || !ReadBool_(_def, _field, _reader, "loop", _out.bLoop))
+    {
+        return false;
+    }
+    if (_out.name.empty() || _out.frames < 1 || !(_out.frameSec > 0.f))
+    {
+        Fail_(_def, _field, "name 이 비었거나 frames < 1 또는 sec <= 0 입니다");
+        return false;
+    }
+    _out.frameUnits = static_cast<int64_t>(std::llround(static_cast<double>(_out.frameSec) * static_cast<double>(kAnimTimeUnitsPerSec)));
+    _out.bSided     = _out.name.find("{side}") != jug::String::npos;
+    return true;
+}
+
+bool EnemyDefParser::ReadFx_(
+    const jug::StringView  _def,
+    const jug::StringView  _field,
+    const jug::JsonReader& _reader,
+    FxDef&                 _out)
+{
+    if (!CheckObjectKeys_(_def, _field, _reader, kFxKeys))
+    {
+        return false;
+    }
+    return ReadStr_(_def, _field, _reader, "clip", _out.clip, true) && ReadVec2_(_def, _field, _reader, "offset", _out.offset) && ReadNum_(_def, _field, _reader, "delay", _out.delaySec, false) && ReadInt_(_def, _field, _reader, "layer", _out.layer, false);
+}
+
+// ===========================================
+//  상속 체인
+// ===========================================
+
+bool EnemyDefParser::BuildChain_(
+    const jug::StringView _name,
+    const int             _depth,
+    Chain&                _out)
+{
+    if (_depth > 8)
+    {
+        Fail_(_name, "extends", "상속이 너무 깊거나 순환합니다");
+        return false;
+    }
+    const auto it = m_rawIndex.find(jug::String { _name });
+    if (it == m_rawIndex.end())
+    {
+        Fail_(_name, "extends", "존재하지 않는 정의입니다");
+        return false;
+    }
+    const RawDef& raw = m_raw[static_cast<size_t>(it->second)];
+    if (raw.reader.HasField("extends"))
+    {
+        const jug::Result<jug::String> parent = raw.reader.ReadField<jug::String>("extends");
+        if (!parent)
+        {
+            Fail_(raw.name, "extends", "문자열이 아닙니다");
+            return false;
+        }
+        if (!BuildChain_(parent.GetValue(), _depth + 1, _out))
+        {
+            return false;
+        }
+    }
+    _out.push_back(raw.reader);
+    return true;
+}
+
+bool EnemyDefParser::CheckKeys_(
+    const Chain&                       _chain,
+    const jug::StringView              _defName,
+    const jug::Span<const char* const> _allowed)
+{
+    for (const jug::JsonReader& reader: _chain)
+    {
+        if (!CheckObjectKeys_(_defName, "", reader, _allowed))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+std::optional<jug::JsonReader> EnemyDefParser::Find_(
+    const Chain&          _chain,
+    const jug::StringView _key) const
+{
+    for (size_t i = _chain.size(); i > 0; --i)
+    {
+        if (_chain[i - 1].HasField(_key))
+        {
+            const jug::Result<jug::JsonReader> field = _chain[i - 1].FindField(_key);
+            if (field)
+            {
+                return field.GetValue();
+            }
+        }
+    }
+    return std::nullopt;
+}
+
+EnemyDefParser::Entries EnemyDefParser::Merge_(
+    const Chain&          _chain,
+    const jug::StringView _key) const
+{
+    Entries entries;
+    for (const jug::JsonReader& reader: _chain)
+    {
+        if (!reader.HasField(_key))
+        {
+            continue;
+        }
+        const jug::Result<jug::JsonReader> field = reader.FindField(_key);
+        if (!field || !field->IsObject())
+        {
+            continue;   // 형식 오류는 호출자가 Find_ 로 다시 검사한다
+        }
+        for (const auto [name, value]: field->GetObject())
+        {
+            const auto found = std::find_if(entries.begin(), entries.end(), [&](const auto& _e) { return _e.first == name; });
+            if (found != entries.end())
+            {
+                found->second = value;
+            }
+            else
+            {
+                entries.emplace_back(jug::String { name }, value);
+            }
+        }
+    }
+    return entries;
+}
+
+// ===========================================
+//  투사체
+// ===========================================
+
+bool EnemyDefParser::ParseProjectile_(
+    const RawDef& _raw,
+    const Chain&  _chain)
+{
+    const jug::String& name = _raw.name;
+    if (!CheckKeys_(_chain, name, kProjectileKeys))
+    {
+        return false;
+    }
+
+    ProjectileDef projectile;
+    projectile.name = name;
+
+    const auto Obj = [&](const jug::StringView _key) { return Find_(_chain, _key); };
+
+    const std::optional<jug::JsonReader> box = Obj("box");
+    if (!box)
+    {
+        Fail_(name, "box", "필수 값이 없습니다");
+        return false;
+    }
+    {
+        BoxDef boxDef;
+        if (!ReadBox_(name, "box", *box, boxDef))
+        {
+            return false;
+        }
+        projectile.size = { boxDef.w, boxDef.h };
+    }
+
+    float lifetime = projectile.lifetimeSec;
+    float delay    = 0.f;
+    for (const jug::JsonReader& reader: _chain)
+    {
+        if (!ReadInt_(name, "", reader, "damage", projectile.damage, false) || !ReadNum_(name, "", reader, "speed", projectile.speed, false) || !ReadNum_(name, "", reader, "gravity", projectile.gravity, false) || !ReadNum_(name, "", reader, "maxFall", projectile.maxFall, false) || !ReadNum_(name, "", reader, "lifetime", lifetime, false) || !ReadNum_(name, "", reader, "startDelay", delay, false) || !ReadVec2_(name, "", reader, "v0", projectile.v0))
+        {
+            return false;
+        }
+    }
+    projectile.lifetimeSec   = lifetime;
+    projectile.startDelaySec = delay;
+
+    if (const std::optional<jug::JsonReader> ramp = Obj("speedRamp"))
+    {
+        if (!CheckObjectKeys_(name, "speedRamp", *ramp, kSpeedRampKeys) || !ReadNum_(name, "speedRamp", *ramp, "from", projectile.rampFrom, false) || !ReadNum_(name, "speedRamp", *ramp, "accel", projectile.rampAccel, true) || !ReadNum_(name, "speedRamp", *ramp, "max", projectile.rampMax, true))
+        {
+            return false;
+        }
+        projectile.bRamp = true;
+    }
+
+    if (const std::optional<jug::JsonReader> onSolid = Obj("onSolid"))
+    {
+        const jug::Result<jug::String> mode = onSolid->Read<jug::String>();
+        if (!mode || (mode.GetValue() != "explode" && mode.GetValue() != "none"))
+        {
+            Fail_(name, "onSolid", "\"explode\" 또는 \"none\" 이어야 합니다");
+            return false;
+        }
+        projectile.bExplodeOnSolid = mode.GetValue() == "explode";
+    }
+
+    const std::optional<jug::JsonReader> anim = Obj("anim");
+    if (!anim || !CheckObjectKeys_(name, "anim", *anim, kAnimKeys))
+    {
+        Fail_(name, "anim", "{fly[, begin]} 가 필요합니다");
+        return false;
+    }
+    if (!anim->HasField("fly"))
+    {
+        Fail_(name, "anim.fly", "필수 값이 없습니다");
+        return false;
+    }
+    {
+        const jug::Result<jug::JsonReader> fly = anim->FindField("fly");
+        if (!fly || !ReadClip_(name, "anim.fly", fly.GetValue(), projectile.fly))
+        {
+            return false;
+        }
+        if (anim->HasField("begin"))
+        {
+            const jug::Result<jug::JsonReader> begin = anim->FindField("begin");
+            if (!begin || !ReadClip_(name, "anim.begin", begin.GetValue(), projectile.begin))
+            {
+                return false;
+            }
+        }
+    }
+
+    if (const std::optional<jug::JsonReader> explosion = Obj("explosion"))
+    {
+        if (!CheckObjectKeys_(name, "explosion", *explosion, kExplosionKeys) || !ReadStr_(name, "explosion", *explosion, "fx", projectile.explosion.clip, true) || !ReadVec2_(name, "explosion", *explosion, "offset", projectile.explosion.offset))
+        {
+            return false;
+        }
+    }
+
+    const bool bMoves = projectile.speed > 0.f || projectile.bRamp || projectile.v0.x != 0.f || projectile.v0.y != 0.f || projectile.gravity != 0.f;
+    if (!bMoves)
+    {
+        Fail_(name, "speed", "speed / speedRamp / v0 / gravity 중 하나는 있어야 합니다 (움직이지 않는 투사체)");
+        return false;
+    }
+
+    m_lib.m_projIndex[name] = static_cast<int>(m_lib.m_projectiles.size());
+    m_lib.m_projectiles.push_back(std::move(projectile));
+    return true;
+}
+
+// ===========================================
+//  무기 / 사망
+// ===========================================
+
+bool EnemyDefParser::ParseWeapon_(
+    const jug::String&     _def,
+    const jug::String&     _name,
+    const jug::JsonReader& _reader,
+    WeaponDef&             _out)
+{
+    const jug::String field = std::format("weapons.{}", _name);
+    if (!CheckObjectKeys_(_def, field, _reader, kWeaponKeys))
+    {
+        return false;
+    }
+    _out.name = _name;
+
+    jug::String projectileName;
+    if (!ReadStr_(_def, field, _reader, "projectile", projectileName, false) || !ReadVec2_(_def, field, _reader, "muzzle", _out.muzzle))
+    {
+        return false;
+    }
+    if (!projectileName.empty())
+    {
+        _out.projectile = m_lib.FindProjectileIndex(projectileName);
+        if (_out.projectile < 0)
+        {
+            Fail_(_def, field + ".projectile", std::format("'{}' 투사체 정의가 없습니다", projectileName));
+            return false;
+        }
+    }
+
+    jug::String aim;
+    if (!ReadStr_(_def, field, _reader, "aim", aim, false))
+    {
+        return false;
+    }
+    if (!aim.empty())
+    {
+        if (aim == "facing")
+        {
+            _out.aim = eWeaponAim::Facing;
+        }
+        else if (aim == "given")
+        {
+            _out.aim = eWeaponAim::Given;
+        }
+        else
+        {
+            Fail_(_def, field + ".aim", "\"facing\" 또는 \"given\" 이어야 합니다");
+            return false;
+        }
+    }
+
+    if (_reader.HasField("tilt"))
+    {
+        const jug::Result<jug::JsonReader> tilt = _reader.FindField("tilt");
+        if (!tilt || !CheckObjectKeys_(_def, field + ".tilt", tilt.GetValue(), kTiltKeys) || !ReadNum_(_def, field + ".tilt", tilt.GetValue(), "threshold", _out.tiltThreshold, true) || !ReadNum_(_def, field + ".tilt", tilt.GetValue(), "dy", _out.tiltDy, true))
+        {
+            return false;
+        }
+    }
+    if (_reader.HasField("arc"))
+    {
+        const jug::Result<jug::JsonReader> arc = _reader.FindField("arc");
+        if (!arc || !CheckObjectKeys_(_def, field + ".arc", arc.GetValue(), kArcKeys) || !ReadNum_(_def, field + ".arc", arc.GetValue(), "minVx", _out.arcMinVx, true) || !ReadNum_(_def, field + ".arc", arc.GetValue(), "maxVx", _out.arcMaxVx, true))
+        {
+            return false;
+        }
+        _out.bArc = true;
+    }
+    if (_reader.HasField("muzzleFx"))
+    {
+        const jug::Result<jug::JsonReader> fx = _reader.FindField("muzzleFx");
+        if (!fx || !ReadFx_(_def, field + ".muzzleFx", fx.GetValue(), _out.muzzleFx))
+        {
+            return false;
+        }
+    }
+    if (_reader.HasField("hitbox"))
+    {
+        const jug::Result<jug::JsonReader> hitbox = _reader.FindField("hitbox");
+        if (!hitbox || !CheckObjectKeys_(_def, field + ".hitbox", hitbox.GetValue(), kHitboxKeys))
+        {
+            return false;
+        }
+        BoxDef box;
+        if (!ReadNum_(_def, field + ".hitbox", hitbox.GetValue(), "w", box.w, true) || !ReadNum_(_def, field + ".hitbox", hitbox.GetValue(), "h", box.h, true) || !ReadNum_(_def, field + ".hitbox", hitbox.GetValue(), "cx", box.cx, false) || !ReadNum_(_def, field + ".hitbox", hitbox.GetValue(), "cy", box.cy, false) || !ReadNum_(_def, field + ".hitbox", hitbox.GetValue(), "lifeSec", _out.hitboxLifeSec, true) || !ReadInt_(_def, field + ".hitbox", hitbox.GetValue(), "damage", _out.hitboxDamage, false) || !ReadBool_(_def, field + ".hitbox", hitbox.GetValue(), "follow", _out.bHitboxFollows))
+        {
+            return false;
+        }
+        _out.hitbox   = box;
+        _out.bHitbox  = true;
+    }
+    if (_out.projectile < 0 && !_out.bHitbox)
+    {
+        Fail_(_def, field, "projectile 또는 hitbox 가 필요합니다");
+        return false;
+    }
+    return true;
+}
+
+bool EnemyDefParser::ParseDeath_(
+    EnemyDef&              _def,
+    const jug::JsonReader& _death)
+{
+    const jug::String& name = _def.name;
+    if (!CheckObjectKeys_(name, "death", _death, kDeathKeys))
+    {
+        return false;
+    }
+
+    DeathDef& death = _def.death;
+
+    const auto Clip = [&](const char* _key, int& _out) {
+        if (!_death.HasField(_key))
+        {
+            return true;
+        }
+        jug::String logical;
+        if (!ReadStr_(name, "death", _death, _key, logical, true))
+        {
+            return false;
+        }
+        _out = _def.FindClip(logical);
+        if (_out < 0)
+        {
+            Fail_(name, std::format("death.{}", _key), std::format("'{}' 클립이 clips 에 없습니다", logical));
+            return false;
+        }
+        return true;
+    };
+
+    if (!Clip("bomb", death.clipBomb) || !Clip("slash", death.clipSlash) || !Clip("stand1", death.clipStand1) || !Clip("stand2", death.clipStand2) || !Clip("fall", death.clipFall) || !Clip("land", death.clipLand) || !Clip("jump", death.clipJump))
+    {
+        return false;
+    }
+    if (!ReadInt_(name, "death", _death, "fallAt1", death.fallAt1, false) || !ReadInt_(name, "death", _death, "fallAt2", death.fallAt2, false) || !ReadNum_(name, "death", _death, "blinkAtSec", death.blinkAtSec, false) || !ReadNum_(name, "death", _death, "blinkForSec", death.blinkForSec, false) || !ReadNum_(name, "death", _death, "blinkPeriodSec", death.blinkPeriodSec, false) || !ReadNum_(name, "death", _death, "removeAtSec", death.removeAtSec, false))
+    {
+        return false;
+    }
+
+    if (_death.HasField("fx"))
+    {
+        const jug::Result<jug::JsonReader> fx = _death.FindField("fx");
+        if (!fx || !fx->IsArray())
+        {
+            Fail_(name, "death.fx", "배열이 아닙니다");
+            return false;
+        }
+        int index = 0;
+        for (const jug::JsonReader item: fx->GetArray())
+        {
+            FxDef def;
+            if (!ReadFx_(name, std::format("death.fx[{}]", index++), item, def))
+            {
+                return false;
+            }
+            death.fx.push_back(std::move(def));
+        }
+    }
+    return true;
+}
+
+// ===========================================
+//  적
+// ===========================================
+
+bool EnemyDefParser::ParseEnemy_(
+    const RawDef& _raw,
+    const Chain&  _chain)
+{
+    const jug::String& name = _raw.name;
+    if (!CheckKeys_(_chain, name, kEnemyKeys))
+    {
+        return false;
+    }
+
+    EnemyDef def;
+    def.name = name;
+
+    // --- 종류 / 행동 / 팀 ---
+    jug::String kind;
+    jug::String behaviorName;
+    jug::String teamName;
+    for (const jug::JsonReader& reader: _chain)
+    {
+        if (!ReadStr_(name, "", reader, "kind", kind, false) || !ReadStr_(name, "", reader, "behavior", behaviorName, false) || !ReadStr_(name, "", reader, "team", teamName, false))
+        {
+            return false;
+        }
+    }
+    if (kind.empty())
+    {
+        Fail_(name, "kind", "필수 값이 없습니다");
+        return false;
+    }
+    {
+        bool bKnown = false;
+        for (const char* pKind: kKnownKinds)
+        {
+            bKnown = bKnown || kind == pKind;
+        }
+        if (!bKnown)
+        {
+            Fail_(name, "kind", std::format("알 수 없는 종류 '{}'", kind));
+            return false;
+        }
+    }
+    if (behaviorName.empty())
+    {
+        Fail_(name, "behavior", "필수 값이 없습니다");
+        return false;
+    }
+    const std::optional<eEnemyBehavior> behavior = FindBehavior(behaviorName);
+    if (!behavior)
+    {
+        Fail_(name, "behavior", std::format("알 수 없는 행동 '{}'", behaviorName));
+        return false;
+    }
+    def.behavior = *behavior;
+    if (teamName.empty())
+    {
+        teamName = kind == "npc" ? "neutral" : "enemy";
+    }
+    if (teamName == "enemy")
+    {
+        def.team = eTeam::Enemy;
+    }
+    else if (teamName == "neutral")
+    {
+        def.team = eTeam::Neutral;
+    }
+    else
+    {
+        Fail_(name, "team", std::format("알 수 없는 팀 '{}' (enemy / neutral)", teamName));
+        return false;
+    }
+
+    // --- 수치 ---
+    def.activation.marginPx = m_lib.m_globals.activationMarginPx;
+    float ttk               = 0.f;
+    for (const jug::JsonReader& reader: _chain)
+    {
+        if (!ReadInt_(name, "", reader, "hp", def.hp, false) || !ReadInt_(name, "", reader, "score", def.score, false) || !ReadNum_(name, "", reader, "ttk", ttk, false))
+        {
+            return false;
+        }
+    }
+    if (!Find_(_chain, "hp"))
+    {
+        Fail_(name, "hp", "필수 값이 없습니다");
+        return false;
+    }
+    if (def.hp < 1)
+    {
+        Fail_(name, "hp", "1 이상이어야 합니다");
+        return false;
+    }
+    if (ttk > 0.f && std::abs(static_cast<float>(def.hp) - ttk * m_lib.m_globals.dpsRef) > 0.05f * static_cast<float>(def.hp))
+    {
+        JUG_CORE_LOG_WARN("{}: hp({}) 가 ttk({}) x dpsRef({}) 와 5% 이상 다릅니다", name, def.hp, ttk, m_lib.m_globals.dpsRef);
+    }
+
+    const std::optional<jug::JsonReader> body = Find_(_chain, "body");
+    if (!body || !ReadBox_(name, "body", *body, def.body))
+    {
+        if (!body)
+        {
+            Fail_(name, "body", "필수 값이 없습니다");
+        }
+        return false;
+    }
+    def.hurtbox = def.body;
+    if (const std::optional<jug::JsonReader> hurtbox = Find_(_chain, "hurtbox"))
+    {
+        def.hurtbox = BoxDef {};
+        if (!ReadBox_(name, "hurtbox", *hurtbox, def.hurtbox))
+        {
+            return false;
+        }
+    }
+
+    if (const std::optional<jug::JsonReader> activation = Find_(_chain, "activation"))
+    {
+        jug::String mode;
+        if (!CheckObjectKeys_(name, "activation", *activation, kActivationKeys) || !ReadStr_(name, "activation", *activation, "mode", mode, false) || !ReadNum_(name, "activation", *activation, "marginPx", def.activation.marginPx, false) || !ReadBool_(name, "activation", *activation, "latch", def.activation.bLatch))
+        {
+            return false;
+        }
+        if (mode == "always")
+        {
+            def.activation.bAlways = true;
+        }
+        else if (!mode.empty() && mode != "screen")
+        {
+            Fail_(name, "activation.mode", "\"screen\" 또는 \"always\" 이어야 합니다");
+            return false;
+        }
+    }
+
+    if (const std::optional<jug::JsonReader> physics = Find_(_chain, "physics"))
+    {
+        PhysicsDef& p = def.physics;
+        if (!CheckObjectKeys_(name, "physics", *physics, kPhysicsKeys) || !ReadNum_(name, "physics", *physics, "gravity", p.gravity, false) || !ReadNum_(name, "physics", *physics, "maxFall", p.maxFall, false) || !ReadNum_(name, "physics", *physics, "speed", p.speed, false) || !ReadNum_(name, "physics", *physics, "jumpVy", p.jumpVy, false) || !ReadNum_(name, "physics", *physics, "dropSpeed", p.dropSpeed, false) || !ReadNum_(name, "physics", *physics, "footHalfWidth", p.footHalfWidth, false) || !ReadBool_(name, "physics", *physics, "useGravity", p.bGravity))
+        {
+            return false;
+        }
+    }
+
+    // --- 클립 / 무기 ---
+    for (const auto& [logical, reader]: Merge_(_chain, "clips"))
+    {
+        NamedClip clip;
+        clip.name = logical;
+        if (!ReadClip_(name, std::format("clips.{}", logical), reader, clip.clip))
+        {
+            return false;
+        }
+        def.clips.push_back(std::move(clip));
+    }
+    for (const auto& [weaponName, reader]: Merge_(_chain, "weapons"))
+    {
+        WeaponDef weapon;
+        if (!ParseWeapon_(name, weaponName, reader, weapon))
+        {
+            return false;
+        }
+        def.weapons.push_back(std::move(weapon));
+    }
+
+    if (const std::optional<jug::JsonReader> death = Find_(_chain, "death"))
+    {
+        if (!ParseDeath_(def, *death))
+        {
+            return false;
+        }
+    }
+
+    if (const std::optional<jug::JsonReader> drops = Find_(_chain, "drops"))
+    {
+        if (!drops->IsArray())
+        {
+            Fail_(name, "drops", "배열이 아닙니다");
+            return false;
+        }
+        int index = 0;
+        for (const jug::JsonReader item: drops->GetArray())
+        {
+            DropDef drop;
+            const jug::String field = std::format("drops[{}]", index++);
+            if (!CheckObjectKeys_(name, field, item, kDropKeys) || !ReadStr_(name, field, item, "item", drop.item, true) || !ReadInt_(name, field, item, "count", drop.count, false))
+            {
+                return false;
+            }
+            def.drops.push_back(std::move(drop));
+        }
+    }
+
+    if (const std::optional<jug::JsonReader> overlay = Find_(_chain, "overlay"))
+    {
+        jug::String clip;
+        if (!CheckObjectKeys_(name, "overlay", *overlay, kOverlayKeys) || !ReadStr_(name, "overlay", *overlay, "clip", clip, true) || !ReadVec2_(name, "overlay", *overlay, "offset", def.overlayOffset))
+        {
+            return false;
+        }
+        def.overlayClip = def.FindClip(clip);
+        if (def.overlayClip < 0)
+        {
+            Fail_(name, "overlay.clip", std::format("'{}' 클립이 clips 에 없습니다", clip));
+            return false;
+        }
+    }
+
+    // --- 행동별 설정 (params) ---
+    jug::Vector<ParamEntry> params;
+    for (auto& [key, reader]: Merge_(_chain, "params"))
+    {
+        params.emplace_back(key, reader);
+    }
+    {
+        jug::String message;
+        DefReader   reader { name, def, params, message };
+        switch (def.behavior)
+        {
+            case eEnemyBehavior::Soldier: ParseSoldierCfg(reader, def); break;
+            case eEnemyBehavior::Bzk: ParseBzkCfg(reader, def); break;
+            case eEnemyBehavior::Hang: ParseHangCfg(reader, def); break;
+            case eEnemyBehavior::FlyingBzk: ParseFlyingBzkCfg(reader, def); break;
+            case eEnemyBehavior::Shielder: ParseShielderCfg(reader, def); break;
+            case eEnemyBehavior::Pow: ParsePowCfg(reader, def); break;
+            case eEnemyBehavior::Count: break;
+        }
+        if (!reader.Finish())
+        {
+            if (error.empty())
+            {
+                error = message;
+            }
+            return false;
+        }
+    }
+
+    m_lib.m_defIndex[name] = static_cast<int>(m_lib.m_defs.size());
+    m_lib.m_defs.push_back(std::move(def));
+    return true;
+}
+
+// ===========================================
+//  Run
+// ===========================================
+
+bool EnemyDefParser::Run(
+    const jug::JsonReader& _root)
+{
+    constexpr const char* kRoot = "Enemies.json";
+    if (!CheckObjectKeys_(kRoot, "", _root, kRootKeys))
+    {
+        return false;
+    }
+
+    float version = 1.f;
+    if (!ReadNum_(kRoot, "", _root, "version", version, false))
+    {
+        return false;
+    }
+    if (version != 1.f)
+    {
+        Fail_(kRoot, "version", "지원하지 않는 버전입니다 (1 만 지원)");
+        return false;
+    }
+
+    if (_root.HasField("globals"))
+    {
+        const jug::Result<jug::JsonReader> globals = _root.FindField("globals");
+        EnemyGlobals&                      g       = m_lib.m_globals;
+        if (!globals || !CheckObjectKeys_(kRoot, "globals", globals.GetValue(), kGlobalKeys) || !ReadNum_(kRoot, "globals", globals.GetValue(), "dpsRef", g.dpsRef, false) || !ReadNum_(kRoot, "globals", globals.GetValue(), "activationMarginPx", g.activationMarginPx, false) || !ReadNum_(kRoot, "globals", globals.GetValue(), "despawnBehindCameraPx", g.despawnBehindCameraPx, false) || !ReadNum_(kRoot, "globals", globals.GetValue(), "despawnBelowCameraPx", g.despawnBelowCameraPx, false))
+        {
+            return false;
+        }
+    }
+
+    const jug::Result<jug::JsonReader> defs = _root.FindField("defs");
+    if (!defs || !defs->IsObject())
+    {
+        Fail_(kRoot, "defs", "객체가 필요합니다");
+        return false;
+    }
+    for (const auto [name, reader]: defs->GetObject())
+    {
+        if (m_rawIndex.contains(jug::String { name }))
+        {
+            Fail_(name, "", "정의 이름이 중복되었습니다");
+            return false;
+        }
+        m_rawIndex[jug::String { name }] = static_cast<int>(m_raw.size());
+        m_raw.push_back({ jug::String { name }, reader });
+    }
+
+    // 1 패스: 투사체 / 2 패스: 적 (abstract 는 건너뜀)
+    for (int pass = 0; pass < 2; ++pass)
+    {
+        for (const RawDef& raw: m_raw)
+        {
+            Chain chain;
+            if (!BuildChain_(raw.name, 0, chain))
+            {
+                return false;
+            }
+            bool bAbstract = false;
+            if (!ReadBool_(raw.name, "", raw.reader, "abstract", bAbstract))
+            {
+                return false;
+            }
+            if (bAbstract)
+            {
+                continue;
+            }
+
+            jug::String kind;
+            for (const jug::JsonReader& reader: chain)
+            {
+                if (!ReadStr_(raw.name, "", reader, "kind", kind, false))
+                {
+                    return false;
+                }
+            }
+            const bool bProjectile = kind == "projectile";
+            if (bProjectile != (pass == 0))
+            {
+                continue;
+            }
+            if (!(bProjectile ? ParseProjectile_(raw, chain) : ParseEnemy_(raw, chain)))
+            {
+                return false;
+            }
+        }
+    }
+
+    // 교차 검증: 변신 대상 def 존재
+    for (const EnemyDef& def: m_lib.m_defs)
+    {
+        if (def.behavior == eEnemyBehavior::FlyingBzk && m_lib.FindIndex(def.flyingBzk.landedDef) < 0)
+        {
+            Fail_(def.name, "params.landedDef", std::format("'{}' 정의가 없습니다", def.flyingBzk.landedDef));
+            return false;
+        }
+    }
+    return true;
+}
+
+// ===========================================
+//  EnemyDefLibrary
+// ===========================================
+
+jug::Result<EnemyDefLibrary> EnemyDefLibrary::Parse(
+    const jug::StringView _json,
+    jug::String*          _pMessage)
+{
+    jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::Load(_json, jug::eJsonLoadOption::AllowComments);
+    if (!doc)
+    {
+        if (_pMessage)
+        {
+            *_pMessage = "Enemies.json: JSON 구문 오류";
+        }
+        JUG_CORE_LOG_ERROR("Enemies.json: JSON 구문 오류");
+        return jug::Error { eError::Parse };
+    }
+
+    EnemyDefLibrary library;
+    EnemyDefParser  parser { library };
+    if (!parser.Run(doc->GetReader()))
+    {
+        if (_pMessage)
+        {
+            *_pMessage = parser.error;
+        }
+        JUG_CORE_LOG_ERROR("적 정의 오류: {}", parser.error);
+        return jug::Error { eError::EnemyDef };
+    }
+    return library;
+}
+
+jug::Result<EnemyDefLibrary> EnemyDefLibrary::Load(
+    const jug::FilePath& _path,
+    jug::String*         _pMessage)
+{
+    jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::LoadFromFile(_path, jug::eJsonLoadOption::AllowComments);
+    if (!doc)
+    {
+        if (_pMessage)
+        {
+            *_pMessage = std::format("{}: 파일을 열 수 없거나 JSON 구문 오류", _path.string());
+        }
+        JUG_CORE_LOG_ERROR("적 정의 파일 로드 실패: {}", _path.string());
+        return jug::Error { eError::FileOpen };
+    }
+
+    EnemyDefLibrary library;
+    EnemyDefParser  parser { library };
+    if (!parser.Run(doc->GetReader()))
+    {
+        if (_pMessage)
+        {
+            *_pMessage = parser.error;
+        }
+        JUG_CORE_LOG_ERROR("적 정의 오류 ({}): {}", _path.string(), parser.error);
+        return jug::Error { eError::EnemyDef };
+    }
+    return library;
+}
+
+jug::FilePath EnemyDefLibrary::GetDefaultPath(
+    const jug::FilePath& _assetRoot)
+{
+    return _assetRoot / "Defs" / "Enemies.json";
+}
+
+const EnemyDef* EnemyDefLibrary::Find(
+    const jug::StringView _name) const
+{
+    const int index = FindIndex(_name);
+    return index < 0 ? nullptr : &m_defs[static_cast<size_t>(index)];
+}
+
+int EnemyDefLibrary::FindIndex(
+    const jug::StringView _name) const
+{
+    const auto it = m_defIndex.find(jug::String { _name });
+    return it == m_defIndex.end() ? -1 : it->second;
+}
+
+const ProjectileDef* EnemyDefLibrary::FindProjectile(
+    const jug::StringView _name) const
+{
+    const int index = FindProjectileIndex(_name);
+    return index < 0 ? nullptr : &m_projectiles[static_cast<size_t>(index)];
+}
+
+int EnemyDefLibrary::FindProjectileIndex(
+    const jug::StringView _name) const
+{
+    const auto it = m_projIndex.find(jug::String { _name });
+    return it == m_projIndex.end() ? -1 : it->second;
+}
+
+}   // namespace slug

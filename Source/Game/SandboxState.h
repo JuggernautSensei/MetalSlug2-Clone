@@ -39,6 +39,7 @@ struct SandboxConfig
     Tuning                tuning           = {};     // bLoadTuningFile == false 일 때 사용
     bool                  bBackground      = true;   // Stage0_Main 배경 (렌더러가 있을 때만)
     jug::FilePath         enemyDefPath     = {};     // 적 정의 JSON. 비면 <assetRoot>/Defs/Enemies.json (없으면 적 없이 동작)
+    bool                  bEnemyLab        = false;  // 적 검증용: 보병 정의 8종을 플레이어 앞에 배치 (상태 이름 "enemylab")
 };
 
 // ===========================================
@@ -95,7 +96,7 @@ private:
     [[nodiscard]] PhysicsWorld MakePhysicsWorld_() const;
     [[nodiscard]] jug::VECTOR2 GetRespawnFeet_() const;
     [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;   // 적용: 지면 + 플랫폼 (카메라 왼쪽 벽 제외)
-    void                       SpawnDebugEnemy_(int _slot);       // 숫자키 1..8 (보병 정의 8종, 플레이어 앞)
+    void                       SpawnDebugEnemy_(int _slot, float _aheadPx = 180.f);   // 숫자키 1..8 (보병 정의 8종, 플레이어 앞)
 
     void DrawWorld_(GameContext& _ctx, jug::VECTOR2 _cameraPos, float _alpha);
     void DrawDebugBoxes_(Renderer& _renderer, jug::VECTOR2 _cameraPos) const;

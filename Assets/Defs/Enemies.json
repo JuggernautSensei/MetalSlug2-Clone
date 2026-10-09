@@ -1,0 +1,339 @@
+{
+  "version": 1,
+  "note": "적 정의 (Docs/EnemyDefsSchema.md, 수치 근거 Docs/EnemySpecs.md). 클립 name 의 {side} 는 Left/Right. 시간 sec 는 프레임 길이(초).",
+  "globals": { "dpsRef": 10, "activationMarginPx": 150, "despawnBehindCameraPx": 200, "despawnBelowCameraPx": 300 },
+  "defs": {
+
+    "human_base": {
+      "abstract": true,
+      "note": "병사류 공통: 몸통 40x75, 사망 연출(SD_Die_*). 하위 정의가 clips/params 를 더한다.",
+      "kind": "walker",
+      "hp": 1,
+      "score": 100,
+      "body": { "w": 40, "h": 75, "cx": 0, "cy": -37.5 },
+      "activation": { "marginPx": 150, "latch": true },
+      "clips": {
+        "dieBomb":   { "name": "SD_Die_Bomb_{side}",    "frames": 8,  "sec": 0.08, "loop": true },
+        "dieSlash":  { "name": "SD_Die_Slash_{side}",   "frames": 12, "sec": 0.08 },
+        "dieStand1": { "name": "SD_Die_Stand_1_{side}", "frames": 11, "sec": 0.08 },
+        "dieStand2": { "name": "SD_Die_Stand_2_{side}", "frames": 10, "sec": 0.1 },
+        "dieFall":   { "name": "SD_Die_Fall_{side}",    "frames": 4,  "sec": 0.1 },
+        "dieLand":   { "name": "SD_Die_Land_{side}",    "frames": 7,  "sec": 0.1 },
+        "dieJump":   { "name": "SD_Die_Jump_{side}",    "frames": 10, "sec": 0.08 }
+      },
+      "death": {
+        "bomb": "dieBomb", "slash": "dieSlash", "stand1": "dieStand1", "stand2": "dieStand2",
+        "fall": "dieFall", "land": "dieLand", "jump": "dieJump",
+        "fallAt1": 10, "fallAt2": 8,
+        "blinkAtSec": 2.0, "blinkForSec": 1.0, "blinkPeriodSec": 0.1, "removeAtSec": 3.0
+      }
+    },
+
+    "soldier_base": {
+      "abstract": true,
+      "extends": "human_base",
+      "note": "보병(Soldier) 공통 몸/클립. AI 는 하위 정의(bomb/sword/missile)가 정한다.",
+      "behavior": "soldier",
+      "physics": { "gravity": 1000, "maxFall": 3000, "speed": 100, "jumpVy": -450, "dropSpeed": 100, "footHalfWidth": 4 },
+      "clips": {
+        "idle":     { "name": "SD_Idle_{side}",      "frames": 6,  "sec": 0.1, "loop": true },
+        "move":     { "name": "SD_Move_{side}",      "frames": 12, "sec": 0.08, "loop": true },
+        "moveDown": { "name": "SD_MoveDown_{side}",  "frames": 9,  "sec": 0.07 },
+        "fall":     { "name": "SD_Jump_{side}",      "frames": 5,  "sec": 0.1 },
+        "hJump":    { "name": "SD_MoveJump_{side}",  "frames": 6,  "sec": 0.08 },
+        "land":     { "name": "SD_Land_{side}",      "frames": 3,  "sec": 0.08 }
+      },
+      "params": {
+        "cooldown": 1.0,
+        "dropDy": 50,
+        "jumpDy": 100,
+        "wallProbe": { "w": 40, "h": 50, "cx": 25, "cy": -37.5 }
+      }
+    },
+
+    "soldier_bomb": {
+      "extends": "soldier_base",
+      "note": "SWORD/BOMB_THROWER: 폭탄 투척 (EnemySpecs 1.1)",
+      "params": { "ai": "bomb", "detect": 350, "closeStop": 200, "fireFrame": 10 },
+      "clips": { "throw": { "name": "SD_Throw_Bomb_{side}", "frames": 14, "sec": 0.08 } },
+      "weapons": { "attack": { "projectile": "soldier_bomb_proj", "muzzle": [0, -37], "aim": "facing" } }
+    },
+
+    "soldier_sword": {
+      "extends": "soldier_base",
+      "note": "SWORD_MAN: 칼 베기 + 점프 베기 (EnemySpecs 1.1)",
+      "params": { "ai": "sword", "detect": 350, "jumpAttack": 150, "swordNear": 100, "slashFrame": 9, "jumpSlashFrame": 2, "jumpReadySec": 0.5 },
+      "clips": {
+        "slash":         { "name": "SD_Slash_{side}",           "frames": 23, "sec": 0.08 },
+        "jumpSlashReady":{ "name": "SD_Jump_Slash_Ready_{side}", "frames": 2,  "sec": 0.12 },
+        "jumpSlash":     { "name": "SD_Jump_Slash_{side}",      "frames": 5,  "sec": 0.08 },
+        "jumpSlashLand": { "name": "SD_Jump_Slash_Land_{side}", "frames": 14, "sec": 0.08 }
+      },
+      "weapons": {
+        "slash":     { "hitbox": { "w": 60, "h": 50, "cx": 35, "cy": -37, "lifeSec": 0.4,  "damage": 1, "follow": false } },
+        "jumpSlash": { "hitbox": { "w": 70, "h": 70, "cx": 35, "cy": -37, "lifeSec": 0.25, "damage": 1, "follow": true } }
+      }
+    },
+
+    "soldier_missile": {
+      "extends": "soldier_base",
+      "note": "MISSLE_THROWER: 미사일 투척 (EnemySpecs 1.1)",
+      "params": { "ai": "missile", "detect": 400, "fireFrame": 10 },
+      "clips": { "throw": { "name": "SD_Throw_Missle_{side}", "frames": 18, "sec": 0.08 } },
+      "weapons": { "attack": { "projectile": "soldier_missile_proj", "muzzle": [0, -62], "aim": "facing", "tilt": { "threshold": 25, "dy": 0.1 } } }
+    },
+
+    "soldier_bzk": {
+      "extends": "human_base",
+      "note": "바주카 병사 (EnemySpecs 1.2). 낙하산 바주카 착지 시 변신 대상.",
+      "behavior": "bzk",
+      "score": 100,
+      "physics": { "gravity": 800, "maxFall": 3000, "speed": 100, "jumpVy": -350, "dropSpeed": 100, "footHalfWidth": 4 },
+      "clips": {
+        "idle":         { "name": "Bazuka_Idle_{side}",         "frames": 6,  "sec": 0.1,  "loop": true },
+        "move":         { "name": "Bazuka_Move_{side}",         "frames": 11, "sec": 0.08, "loop": true },
+        "hJump":        { "name": "Bazuka_Jump_Forward_{side}", "frames": 8,  "sec": 0.1 },
+        "standUp":      { "name": "Bazuka_Stand_Up_{side}",     "frames": 5,  "sec": 0.08 },
+        "aimUp":        { "name": "Bazuka_Aiming_Up_{side}",    "frames": 3,  "sec": 0.1 },
+        "aimDown":      { "name": "Bazuka_Aiming_Down_{side}",  "frames": 3,  "sec": 0.1 },
+        "recoverUp":    { "name": "Bazuka_Up_Recover_{side}",   "frames": 3,  "sec": 0.1 },
+        "recoverDown":  { "name": "Bazuka_Down_Recover_{side}", "frames": 3,  "sec": 0.1 },
+        "ready":        { "name": "Bazuka_Shot_Ready_{side}",   "frames": 1,  "sec": 0.08 },
+        "shot":         { "name": "Bazuka_Shot_{side}",         "frames": 2,  "sec": 0.08 },
+        "readyUp0":     { "name": "Bazuka_Shot_Ready_Up0_{side}",   "frames": 1, "sec": 0.08 },
+        "readyUp1":     { "name": "Bazuka_Shot_Ready_Up1_{side}",   "frames": 1, "sec": 0.08 },
+        "readyUp2":     { "name": "Bazuka_Shot_Ready_Up2_{side}",   "frames": 1, "sec": 0.08 },
+        "readyUp3":     { "name": "Bazuka_Shot_Ready_Up3_{side}",   "frames": 1, "sec": 0.08 },
+        "readyDown0":   { "name": "Bazuka_Shot_Ready_Down0_{side}", "frames": 1, "sec": 0.08 },
+        "readyDown1":   { "name": "Bazuka_Shot_Ready_Down1_{side}", "frames": 1, "sec": 0.08 },
+        "readyDown2":   { "name": "Bazuka_Shot_Ready_Down2_{side}", "frames": 1, "sec": 0.08 },
+        "readyDown3":   { "name": "Bazuka_Shot_Ready_Down3_{side}", "frames": 1, "sec": 0.08 },
+        "shotUp0":      { "name": "Bazuka_Shot_Up0_{side}",     "frames": 2,  "sec": 0.08 },
+        "shotUp1":      { "name": "Bazuka_Shot_Up1_{side}",     "frames": 2,  "sec": 0.08 },
+        "shotUp2":      { "name": "Bazuka_Shot_Up2_{side}",     "frames": 2,  "sec": 0.08 },
+        "shotUp3":      { "name": "Bazuka_Shot_Up3_{side}",     "frames": 2,  "sec": 0.08 },
+        "shotDown0":    { "name": "Bazuka_Shot_Down0_{side}",   "frames": 2,  "sec": 0.08 },
+        "shotDown1":    { "name": "Bazuka_Shot_Down1_{side}",   "frames": 2,  "sec": 0.08 },
+        "shotDown2":    { "name": "Bazuka_Shot_Down2_{side}",   "frames": 2,  "sec": 0.08 },
+        "shotDown3":    { "name": "Bazuka_Shot_Down3_{side}",   "frames": 2,  "sec": 0.08 }
+      },
+      "params": {
+        "cooldown": 1.0,
+        "detect": 400,
+        "bullets": 2,
+        "readySec": 1.0,
+        "jumpFrame": 3,
+        "fireFrame": 1,
+        "angleStep": [11.25, 33.75, 56.25, 78.75],
+        "muzzleBase": [0, -63],
+        "muzzleDist": 50,
+        "wallProbe": { "w": 50, "h": 50, "cx": 30, "cy": -37.5 }
+      },
+      "weapons": {
+        "rocket": { "projectile": "bazuka_proj", "muzzle": [0, -63], "aim": "given", "muzzleFx": { "clip": "Bazuka_Shot_Effect", "offset": [0, 0] } }
+      }
+    },
+
+    "soldier_hang": {
+      "extends": "human_base",
+      "note": "매달린 병사 (EnemySpecs 1.3). 중력 없이 매달려 있고 사망 시에만 떨어진다.",
+      "behavior": "hang",
+      "score": 100,
+      "physics": { "gravity": 800, "maxFall": 3000, "speed": 0, "jumpVy": 0, "dropSpeed": 0, "footHalfWidth": 4, "useGravity": false },
+      "clips": {
+        "idle":  { "name": "SD_Hang_Idle_{side}",       "frames": 1,  "sec": 0.08, "loop": true },
+        "throw": { "name": "SD_Hang_Throw_Bomb_{side}", "frames": 11, "sec": 0.08 }
+      },
+      "params": { "detectX": 500, "throwDelaySec": 2.0, "fireFrame": 9 },
+      "weapons": {
+        "bomb": { "projectile": "soldier_bomb_proj", "muzzle": [0, -57], "aim": "facing" }
+      }
+    },
+
+    "flying_bzk": {
+      "extends": "human_base",
+      "note": "낙하산 바주카 (EnemySpecs 1.4). 발이 지면에 닿으면 soldier_bzk 로 변신.",
+      "behavior": "flying_bzk",
+      "kind": "flyer",
+      "score": 100,
+      "physics": { "gravity": 800, "maxFall": 3000, "speed": 0, "jumpVy": 0, "dropSpeed": 0, "footHalfWidth": 4, "useGravity": false },
+      "clips": {
+        "ready0": { "name": "Bazuka_Fly_Shot_Ready_0_{side}", "frames": 1, "sec": 0.08 },
+        "ready1": { "name": "Bazuka_Fly_Shot_Ready_1_{side}", "frames": 1, "sec": 0.08 },
+        "ready2": { "name": "Bazuka_Fly_Shot_Ready_2_{side}", "frames": 1, "sec": 0.08 },
+        "ready3": { "name": "Bazuka_Fly_Shot_Ready_3_{side}", "frames": 1, "sec": 0.08 },
+        "ready4": { "name": "Bazuka_Fly_Shot_Ready_4_{side}", "frames": 1, "sec": 0.08 },
+        "shot0":  { "name": "Bazuka_Fly_Shot_0_{side}",      "frames": 2, "sec": 0.08 },
+        "shot1":  { "name": "Bazuka_Fly_Shot_1_{side}",      "frames": 2, "sec": 0.08 },
+        "shot2":  { "name": "Bazuka_Fly_Shot_2_{side}",      "frames": 2, "sec": 0.08 },
+        "shot3":  { "name": "Bazuka_Fly_Shot_3_{side}",      "frames": 2, "sec": 0.08 },
+        "shot4":  { "name": "Bazuka_Fly_Shot_4_{side}",      "frames": 2, "sec": 0.08 },
+        "para":   { "name": "Bazuka_Para_Idle",              "frames": 9, "sec": 0.08, "loop": true }
+      },
+      "overlay": { "clip": "para", "offset": [-5, -50] },
+      "params": {
+        "descendSpeed": 40,
+        "driftSpeed": 20,
+        "driftFlipSec": 0.8,
+        "flipPercent": 50,
+        "fireIntervalSec": 1.6,
+        "maxShots": 3,
+        "fireFrame": 1,
+        "postureDeg": [0, 25, 50, 75, 90],
+        "fireDeg": [0, 22.5, 45, 67.5, 90],
+        "windowDeg": 10,
+        "muzzleBase": [0, -63],
+        "muzzleDist": 50,
+        "landProbe": 1,
+        "landedDef": "soldier_bzk",
+        "paraDestroyFx": "Bazuka_Para_Destroy",
+        "paraDestroyOffset": [-5, -50]
+      },
+      "weapons": {
+        "rocket": { "projectile": "bazuka_proj", "muzzle": [0, -63], "aim": "given", "muzzleFx": { "clip": "Bazuka_Shot_Effect", "offset": [0, 0] } }
+      }
+    },
+
+    "shielder": {
+      "extends": "human_base",
+      "note": "방패병 (EnemySpecs 1.5). 방패는 총알만 막는다 (칼/폭발 통과).",
+      "behavior": "shielder",
+      "score": 100,
+      "physics": { "gravity": 1000, "maxFall": 3000, "speed": 100, "jumpVy": -450, "dropSpeed": 100, "footHalfWidth": 4 },
+      "clips": {
+        "idle":           { "name": "Shield_Idle_{side}",           "frames": 6,  "sec": 0.1,  "loop": true },
+        "move":           { "name": "Shield_Move_{side}",           "frames": 12, "sec": 0.1,  "loop": true },
+        "moveStop":       { "name": "Shield_Move_Stop_{side}",      "frames": 4,  "sec": 0.08 },
+        "fall":           { "name": "Shield_Jump_{side}",           "frames": 7,  "sec": 0.08 },
+        "shotStart":      { "name": "Shield_Shot_Ready_{side}",     "frames": 5,  "sec": 0.08 },
+        "shotReady":      { "name": "Shield_Shot_Idle_{side}",      "frames": 1,  "sec": 0.08, "loop": true },
+        "shot":           { "name": "Shield_Shot_{side}",           "frames": 6,  "sec": 0.08 },
+        "shotEnd":        { "name": "Shield_Shot_End_{side}",       "frames": 5,  "sec": 0.08 },
+        "shotStartUp":    { "name": "Shield_Shot_Ready_Up_{side}",  "frames": 4,  "sec": 0.08 },
+        "shotReadyUp":    { "name": "Shield_Shot_Idle_Up_{side}",   "frames": 1,  "sec": 0.08, "loop": true },
+        "shotUp":         { "name": "Shield_Shot_Up_{side}",        "frames": 6,  "sec": 0.08 },
+        "shotEndUp":      { "name": "Shield_Shot_End_Up_{side}",    "frames": 4,  "sec": 0.08 },
+        "shotStartDown":  { "name": "Shield_Shot_Ready_Down_{side}","frames": 5,  "sec": 0.08 },
+        "shotReadyDown":  { "name": "Shield_Shot_Idle_Down_{side}", "frames": 1,  "sec": 0.08, "loop": true },
+        "shotDown":       { "name": "Shield_Shot_Down_{side}",      "frames": 6,  "sec": 0.08 },
+        "shotEndDown":    { "name": "Shield_Shot_End_Down_{side}",  "frames": 5,  "sec": 0.08 },
+        "lookUpStart":    { "name": "Shield_LookUp_Start_{side}",   "frames": 3,  "sec": 0.08 },
+        "lookUpIdle":     { "name": "Shield_LookUp_Idle_{side}",    "frames": 6,  "sec": 0.1,  "loop": true },
+        "lookUpEnd":      { "name": "Shield_LookUp_End_{side}",     "frames": 3,  "sec": 0.08 },
+        "lookDownStart":  { "name": "Shield_LookDown_Start_{side}", "frames": 3,  "sec": 0.08 },
+        "lookDownIdle":   { "name": "Shield_LookDown_Idle_{side}",  "frames": 6,  "sec": 0.1,  "loop": true },
+        "lookDownEnd":    { "name": "Shield_LookDown_End_{side}",   "frames": 3,  "sec": 0.08 },
+        "defence":        { "name": "Shield_Defence_{side}",        "frames": 4,  "sec": 0.1 },
+        "defenceUp":      { "name": "Shield_Defence_Up_{side}",     "frames": 4,  "sec": 0.1 },
+        "defenceDown":    { "name": "Shield_Defence_Down_{side}",   "frames": 4,  "sec": 0.1 }
+      },
+      "params": {
+        "cooldown": 1.0,
+        "detect": 250,
+        "guard": 50,
+        "levelDy": 50,
+        "upDy": 100,
+        "moveDy": 100,
+        "bullets": 3,
+        "startSec": 0.5,
+        "readySec": 0.333,
+        "moveMaxSec": 2.0,
+        "fireFrame": 1,
+        "edgeProbeDist": 24,
+        "edgeProbeDrop": 12,
+        "defenceSec": 0.4,
+        "wallProbe": { "w": 40, "h": 50, "cx": 25, "cy": -37.5 },
+        "shieldFront": { "w": 16, "h": 50, "cx": 26, "cy": -37.5 },
+        "shieldUp": { "w": 40, "h": 24, "cx": 0, "cy": -88 },
+        "shieldDown": { "w": 40, "h": 20, "cx": 0, "cy": -10 }
+      },
+      "weapons": {
+        "forward": { "projectile": "shielder_proj", "muzzle": [50, -65], "aim": "facing", "muzzleFx": { "clip": "Shield_Proj_Effect_{side}", "offset": [0, 0] } },
+        "up":      { "projectile": "shielder_proj", "muzzle": [0, -97],  "aim": "given",  "muzzleFx": { "clip": "Shield_Proj_Effect_Up", "offset": [0, 0] } },
+        "down":    { "projectile": "shielder_proj", "muzzle": [0, -8],   "aim": "given",  "muzzleFx": { "clip": "Shield_Proj_Effect_Down", "offset": [0, 0] } }
+      }
+    },
+
+    "pow": {
+      "kind": "npc",
+      "behavior": "pow",
+      "note": "포로 (EnemySpecs 4.3). 팀 neutral: 적 탄에 맞지 않는다. 칼/총으로 풀려난다.",
+      "hp": 1,
+      "score": 0,
+      "body": { "w": 50, "h": 80, "cx": 0, "cy": -40 },
+      "activation": { "marginPx": 150, "latch": true },
+      "physics": { "gravity": 1000, "maxFall": 3000, "speed": 75, "jumpVy": -450, "dropSpeed": 100, "footHalfWidth": 4 },
+      "clips": {
+        "stuck":    { "name": "Older_Idle_{side}",   "frames": 8,  "sec": 0.12, "loop": true },
+        "escape":   { "name": "Older_Escape_{side}", "frames": 4,  "sec": 0.1 },
+        "move":     { "name": "Older_Move_{side}",   "frames": 12, "sec": 0.15, "loop": true },
+        "glide":    { "name": "Older_Jump_{side}",   "frames": 7,  "sec": 0.1,  "loop": true },
+        "moveDown": { "name": "Older_MoveDown",      "frames": 13, "sec": 0.05 },
+        "item":     { "name": "Older_Item_{side}",   "frames": 29, "sec": 0.1 },
+        "run":      { "name": "Order_Run_{side}",    "frames": 8,  "sec": 0.1,  "loop": true }
+      },
+      "params": {
+        "walkSpeed": 75,
+        "firstFlipSec": 2.0,
+        "flipMinSec": 1.0,
+        "flipRangeSec": 2.0,
+        "glideMaxFall": 150,
+        "dropDy": 100,
+        "dropMinPatrolSec": 1.0,
+        "itemFrame": 8,
+        "closeNudge": 16,
+        "itemOffsetX": 18,
+        "runSpeed": 200,
+        "blinkAtSec": 2.8,
+        "blinkForSec": 2.0,
+        "blinkPeriodSec": 0.2,
+        "removeAtSec": 4.0,
+        "offscreenMargin": 50,
+        "edgeProbeDist": 20,
+        "edgeProbeDrop": 12
+      }
+    },
+
+    "soldier_bomb_proj": {
+      "kind": "projectile",
+      "note": "병사 폭탄 (포물선, 접촉 시 Enemy_Bomb_Exp)",
+      "box": { "w": 20, "h": 20 },
+      "v0": [200, -500],
+      "gravity": 750,
+      "maxFall": 3000,
+      "anim": { "fly": { "name": "Soldier_Bomb", "frames": 16, "sec": 0.07, "loop": true } },
+      "onSolid": "explode",
+      "explosion": { "fx": "Enemy_Bomb_Exp", "offset": [0, -8] }
+    },
+
+    "soldier_missile_proj": {
+      "kind": "projectile",
+      "note": "병사 미사일 (0 → 400 px/s 가속)",
+      "box": { "w": 40, "h": 20 },
+      "speedRamp": { "from": 0, "accel": 400, "max": 400 },
+      "anim": { "fly": { "name": "SD_Missle_{side}", "frames": 4, "sec": 0.07, "loop": true } },
+      "onSolid": "explode",
+      "explosion": { "fx": "Explosion_Mid", "offset": [0, -35] }
+    },
+
+    "bazuka_proj": {
+      "kind": "projectile",
+      "note": "바주카 탄 (직선 200 px/s, 중력 없음)",
+      "box": { "w": 25, "h": 25 },
+      "speed": 200,
+      "anim": { "fly": { "name": "Bazuka_Projectile", "frames": 4, "sec": 0.08, "loop": true } },
+      "onSolid": "explode",
+      "explosion": { "fx": "Explosion_Mid", "offset": [0, 0] }
+    },
+
+    "shielder_proj": {
+      "kind": "projectile",
+      "note": "방패병 탄 (직선 200 px/s)",
+      "box": { "w": 25, "h": 25 },
+      "speed": 200,
+      "anim": { "fly": { "name": "Shield_Proj", "frames": 2, "sec": 0.08, "loop": true } },
+      "onSolid": "explode",
+      "explosion": { "fx": "Explosion_Small", "offset": [0, 0] }
+    }
+  }
+}
