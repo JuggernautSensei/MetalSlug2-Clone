@@ -136,9 +136,17 @@ TEST(AnimationLibrary, RejectsMalformedData)
     EXPECT_TRUE(AnimationLibrary::LoadFromJson(R"({"animations":{"A":{"frameDuration":0,"frames":[{"atlas":0,"x":0,"y":0,"w":1,"h":1,"pivotX":0,"pivotY":0}]}}})").HasError());
     // 프레임 필드 누락
     EXPECT_TRUE(AnimationLibrary::LoadFromJson(R"({"animations":{"A":{"frameDuration":0.1,"frames":[{"atlas":0,"x":0}]}}})").HasError());
-    // 빈 프레임 목록 / loopStart 범위 초과
+    // 빈 프레임 목록
     EXPECT_TRUE(AnimationLibrary::LoadFromJson(R"({"animations":{"A":{"frameDuration":0.1,"frames":[]}}})").HasError());
-    EXPECT_TRUE(AnimationLibrary::LoadFromJson(R"({"animations":{"A":{"loop":true,"loopStart":3,"frameDuration":0.1,"frames":[{"atlas":0,"x":0,"y":0,"w":1,"h":1,"pivotX":0,"pivotY":0}]}}})").HasError());
+}
+
+TEST(AnimationLibrary, ClampsOutOfRangeLoopStart)
+{
+    // 레거시 데이터의 OptionIndex 가 프레임 수를 넘는 경우: 거부하지 않고 마지막 프레임으로 클램프
+    const char* json = R"({"animations":{"A":{"loop":true,"loopStart":3,"frameDuration":0.1,"frames":[{"atlas":0,"x":0,"y":0,"w":1,"h":1,"pivotX":0,"pivotY":0}]}}})";
+    const auto  lib  = AnimationLibrary::LoadFromJson(json);
+    ASSERT_TRUE(lib.HasValue());
+    EXPECT_EQ(lib->FindClip("A")->loopStart, 0);
 }
 
 TEST(AnimationLibrary, AcceptsIntegerValuedFloatsAndFloatValuedIntegers)

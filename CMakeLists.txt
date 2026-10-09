@@ -72,6 +72,16 @@ if(SLUG_BAKER_SOURCES)
 endif()
 
 # ---------------------------------------------------------------------------
+# 헤드리스 리플레이 검증 도구
+# ---------------------------------------------------------------------------
+file(GLOB SLUG_HEADLESS_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Source/Tools/Headless/*.cpp")
+if(SLUG_HEADLESS_SOURCES)
+    add_executable(SlugHeadless ${SLUG_HEADLESS_SOURCES})
+    target_link_libraries(SlugHeadless PRIVATE SlugCore)
+    set_target_properties(SlugHeadless PROPERTIES FOLDER "Tools")
+endif()
+
+# ---------------------------------------------------------------------------
 # 테스트 (GoogleTest)
 # ---------------------------------------------------------------------------
 find_package(GTest CONFIG QUIET)

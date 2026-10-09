@@ -6,13 +6,13 @@
 #include <JugX/CoreLogger.h>
 #include <JugX/EventDispatcher.h>
 
+#include "Game/StateFactory.h"
+
 namespace slug
 {
 
 namespace
 {
-    constexpr float kDemoSpeedPerStep = 2.f;   // 120 px/s @ 60Hz
-
     // 모니터에 들어가는 최대 정수 배율 (최대 3배)
     [[nodiscard]] int ChooseWindowScale_()
     {
@@ -39,22 +39,71 @@ App::App()
 
 App::~App() = default;
 
+void App::ParseArgs_()
+{
+    const jug::Span<const jug::String> args = GetCommandLineArgs();
+    for (size_t i = 1; i < args.size(); ++i)
+    {
+        const bool bHasValue = i + 1 < args.size();
+        if (args[i] == "--state" && bHasValue)
+        {
+            m_stateName = args[++i];
+        }
+        else if (args[i] == "--seed" && bHasValue)
+        {
+            m_seed = std::strtoull(args[++i].c_str(), nullptr, 10);
+        }
+        else if (args[i] == "--record" && bHasValue)
+        {
+            m_recordPath = args[++i];
+        }
+        else if (args[i] == "--replay" && bHasValue)
+        {
+            m_replayPath = args[++i];
+        }
+        else if (args[i] == "--replay-hold")
+        {
+            m_bReplayHold = true;
+        }
+        else if (args[i] == "--capture" && bHasValue)
+        {
+            m_capturePath = args[++i];
+        }
+        else if (args[i] == "--capture-frame" && bHasValue)
+        {
+            m_captureFrame = std::atoi(args[++i].c_str());
+        }
+    }
+}
+
 void App::Init()
 {
     static jug::ConsoleLogger s_logger;
     jug::SetCoreLogger(&s_logger);
 
-    const jug::Span<const jug::String> args = GetCommandLineArgs();
-    for (size_t i = 1; i < args.size(); ++i)
+    ParseArgs_();
+
+    if (!m_replayPath.empty())
     {
-        if (args[i] == "--capture" && i + 1 < args.size())
+        jug::Result<ReplayData> loaded = LoadReplay(m_replayPath);
+        if (!loaded)
         {
-            m_capturePath = args[++i];
+            JUG_CORE_LOG_FATAL("리플레이 로드 실패: {}", loaded.GetError().MakeMessage());
+            SetReturnCode(1);
+            Quit();
+            return;
         }
-        else if (args[i] == "--capture-frame" && i + 1 < args.size())
+        m_playback = loaded.Take();
+        m_bPlayback = true;
+        m_seed      = m_playback.seed;
+        if (m_stateName.empty())
         {
-            m_captureFrame = std::atoi(args[++i].c_str());
+            m_stateName = m_playback.stateName;
         }
+    }
+    if (m_stateName.empty())
+    {
+        m_stateName = jug::String { GetDefaultStateName() };
     }
 
     if (const jug::Result<void> result = m_renderer.Init("Metal Slug Remake", ChooseWindowScale_()); !result)
@@ -62,12 +111,66 @@ void App::Init()
         JUG_CORE_LOG_FATAL("렌더러 초기화 실패: {}", result.GetError().MakeMessage());
         SetReturnCode(1);
         Quit();
+        return;
     }
+
+    // 에셋 로드 (없으면 경고만 하고 계속: 스프라이트 없이도 데모 상태는 동작)
+    const jug::FilePath bakedRoot = jug::FilePath { SLUG_ASSET_DIR } / "Baked";
+    m_sprites.Init(m_renderer.GetNative());
+    if (jug::Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(bakedRoot))
+    {
+        m_anims = library.Take();
+        if (const jug::Result<void> atlas = m_sprites.LoadAtlasPages(m_anims); !atlas)
+        {
+            JUG_CORE_LOG_WARN("아틀라스 로드 실패: {}", atlas.GetError().MakeMessage());
+        }
+    }
+    else
+    {
+        JUG_CORE_LOG_WARN("Baked 에셋 없음 ({}): Scripts/Bake.ps1 을 실행하세요", bakedRoot.string());
+    }
+
+    m_rng = jug::RngMt19937 { m_seed };
+    m_recording.seed      = m_seed;
+    m_recording.stateName = m_stateName;
+
+    m_ctx.pRenderer = &m_renderer;
+    m_ctx.pSprites  = &m_sprites;
+    m_ctx.pAnims    = &m_anims;
+    m_ctx.pRng      = &m_rng;
+    m_ctx.assetRoot = jug::FilePath { SLUG_ASSET_DIR };
+
+    jug::Scoped<IGameState> pState = CreateState(m_stateName);
+    if (!pState)
+    {
+        JUG_CORE_LOG_FATAL("알 수 없는 게임 상태: {}", m_stateName);
+        SetReturnCode(1);
+        Quit();
+        return;
+    }
+    m_pRunner = jug::Scoped<SimRunner> { new SimRunner { m_ctx, std::move(pState) } };
 }
 
 void App::Shutdown()
 {
+    SaveRecording_();
+    m_pRunner.Reset();
+    m_sprites.Shutdown();
     m_renderer.Shutdown();
+}
+
+void App::SaveRecording_() const
+{
+    if (m_recordPath.empty())
+    {
+        return;
+    }
+    if (const jug::Result<void> result = SaveReplay(m_recordPath, m_recording); !result)
+    {
+        JUG_CORE_LOG_ERROR("리플레이 저장 실패: {}", result.GetError().MakeMessage());
+        return;
+    }
+    JUG_CORE_LOG_INFO("리플레이 저장: {} ({} 틱)", m_recordPath.string(), m_recording.frames.size());
 }
 
 void App::OnEvent(
@@ -106,6 +209,11 @@ void App::OnFocusLost_(
 void App::Update(
     const float _deltaTimeSec)
 {
+    if (!m_pRunner)
+    {
+        return;
+    }
+
     const int steps = m_clock.Advance(_deltaTimeSec);
     for (int i = 0; i < steps; ++i)
     {
@@ -117,31 +225,33 @@ void App::Update(
 
 void App::Tick_()
 {
-    m_history.Push(m_input.Sample());
-    ++m_tickCount;
+    InputFrame frame;
+    if (m_bPlayback)
+    {
+        if (m_playbackHead < m_playback.frames.size())
+        {
+            frame = m_playback.frames[m_playbackHead++];
+        }
+        else if (!m_bReplayHold)
+        {
+            Quit();
+            return;
+        }
+    }
+    else
+    {
+        frame = m_input.Sample();
+    }
 
-    m_prevPos = m_pos;
+    if (!m_recordPath.empty())
+    {
+        m_recording.frames.push_back(frame);
+    }
 
-    jug::VECTOR2 move = { 0.f, 0.f };
-    if (m_history.IsHeld(eAction::Left))
-    {
-        move.x -= kDemoSpeedPerStep;
-    }
-    if (m_history.IsHeld(eAction::Right))
-    {
-        move.x += kDemoSpeedPerStep;
-    }
-    if (m_history.IsHeld(eAction::Up))
-    {
-        move.y -= kDemoSpeedPerStep;
-    }
-    if (m_history.IsHeld(eAction::Down))
-    {
-        move.y += kDemoSpeedPerStep;
-    }
-    m_pos += move;
+    m_pRunner->Step(frame);
 
-    if (m_history.WasPressed(eAction::Pause))
+    // 디버그 종료 키: Esc (Pause)
+    if (!m_bPlayback && m_pRunner->GetHistory().WasPressed(eAction::Pause))
     {
         Quit();
     }
@@ -150,12 +260,8 @@ void App::Tick_()
 void App::Render_(
     const float _alpha)
 {
-    m_renderer.BeginFrame({ 24, 28, 40, 255 });
-
-    // 보간된 위치를 정수로 스냅하여 그린다.
-    const jug::VECTOR2 drawPos = m_prevPos + (m_pos - m_prevPos) * _alpha;
-    m_renderer.FillRect({ drawPos.x - 12.f, drawPos.y - 12.f }, { 24.f, 24.f }, { 240, 200, 60, 255 });
-    m_renderer.DrawRect({ 1.f, 1.f }, { Renderer::kLogicalWidth - 2.f, Renderer::kLogicalHeight - 2.f }, { 90, 100, 130, 255 });
+    // 상태가 BeginFrame 을 부르지 않았을 때를 대비해 기본 클리어는 상태 Render 가 책임진다.
+    m_pRunner->Render(_alpha);
 
     ++m_renderFrameCount;
     if (!m_capturePath.empty() && m_renderFrameCount == m_captureFrame)

@@ -122,9 +122,16 @@ namespace
             clip.frames.push_back(frame.GetValue());
         }
 
-        if (clip.frames.empty() || clip.loopStart < 0 || clip.loopStart >= clip.GetFrameCount())
+        if (clip.frames.empty())
         {
             return jug::Error { eError::InvalidData };
+        }
+
+        // 레거시 데이터에는 OptionIndex 가 프레임 수를 넘는 항목이 있다 (Baker 리포트 LoopStartOutOfRange).
+        // 거부하면 라이브러리 전체가 로드되지 않으므로 마지막 프레임으로 클램프한다.
+        if (clip.loopStart < 0 || clip.loopStart >= clip.GetFrameCount())
+        {
+            clip.loopStart = jug::Clamp(clip.loopStart, 0, clip.GetFrameCount() - 1);
         }
         return clip;
     }
