@@ -68,6 +68,20 @@ struct AnimClip
     {
         return static_cast<float>(static_cast<double>(GetTotalDurationUnits()) / static_cast<double>(kAnimTimeUnitsPerSec));
     }
+
+    // 프레임들 중 원점 아래로 가장 많이 내려오는 바닥 (px, 완전 투명 프레임 제외). 발이 원점에 있지 않은 클립을 지면에 맞출 때 쓴다.
+    [[nodiscard]] int GetFootBaseline() const
+    {
+        int baseline = 0;
+        for (const AnimFrame& frame: frames)
+        {
+            if (!frame.IsEmpty() && frame.h - frame.pivotY > baseline)
+            {
+                baseline = frame.h - frame.pivotY;
+            }
+        }
+        return baseline;
+    }
 };
 
 // ===========================================

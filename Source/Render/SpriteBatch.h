@@ -53,6 +53,18 @@ struct SpriteCommand
 
 void SortSpriteCommands(jug::Vector<SpriteCommand>& _commands);
 
+// 독립 텍스처(큰 배경 등)를 월드의 _texWorldPos 에 놓았을 때, 화면(_viewW x _viewH, 월드 좌상단 _cameraPos)에 보이는 부분.
+// src 는 텍스처 안의 사각형, dst 는 화면 좌표 사각형이다 (둘은 같은 크기). 보이는 부분이 없으면 bVisible = false.
+// 위치는 floor 로 정수 스냅하므로 서브픽셀 카메라/원점에서도 가장자리가 흔들리지 않는다.
+struct TextureViewRects
+{
+    bool    bVisible = false;
+    IntRect src      = {};
+    IntRect dst      = {};
+};
+
+[[nodiscard]] TextureViewRects ComputeTextureView(int _texW, int _texH, jug::VECTOR2 _texWorldPos, jug::VECTOR2 _cameraPos, int _viewW, int _viewH);
+
 // ===========================================
 //  SpriteBatch
 //   아틀라스 PNG 페이지를 SDL_Texture(nearest) 로 올려 두고, 제출된 스프라이트를 정렬해서 그린다.
@@ -77,6 +89,14 @@ public:
     [[nodiscard]] jug::Result<void> AddAtlasPageFromRgba(int _width, int _height, jug::Span<const uint8_t> _rgba);   // 테스트/절차 생성용
     [[nodiscard]] size_t            GetAtlasPageCount() const { return m_pages.size(); }
 
+    // --- 독립 텍스처 (아틀라스에 넣지 않는 큰 배경 등). 반환값은 핸들(로드 순서 인덱스) ---
+    [[nodiscard]] jug::Result<int> LoadStandaloneTexture(const jug::FilePath& _pngPath);
+    [[nodiscard]] jug::Result<int> AddStandaloneTextureFromRgba(int _width, int _height, jug::Span<const uint8_t> _rgba);
+    [[nodiscard]] size_t           GetStandaloneTextureCount() const { return m_textures.size(); }
+
+    // 텍스처의 좌상단을 월드 _texWorldPos 에 놓고 보이는 부분만 그린다.
+    void DrawTexture(int _handle, jug::VECTOR2 _texWorldPos, jug::VECTOR2 _cameraPos, int _viewW, int _viewH, jug::RGBA _tint = { 255, 255, 255, 255 }) const;
+
     // --- 즉시 그리기 ---
     // 프레임 하나를 바로 그린다. 투명 프레임/없는 페이지는 무시한다.
     void DrawFrame(const AnimFrame& _frame, jug::VECTOR2 _worldOrigin, jug::VECTOR2 _cameraPos, const SpriteDrawOptions& _options = {}) const;
@@ -100,6 +120,7 @@ private:
 
     SDL_Renderer*              m_pRenderer = nullptr;
     jug::Vector<Page>          m_pages     = {};
+    jug::Vector<Page>          m_textures  = {};   // 독립 텍스처
     jug::Vector<SpriteCommand> m_commands  = {};
     uint32_t                   m_nextSeq   = 0;
 };

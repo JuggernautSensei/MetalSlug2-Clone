@@ -1,0 +1,481 @@
+#include "Core/Tuning.h"
+
+#include <cmath>
+#include <format>
+#include <optional>
+#include <string>
+
+#include <JugX/CoreLogger.h>
+#include <JugX/JsonDeserializer.h>
+
+#include "Core/Error.h"
+
+namespace slug
+{
+
+namespace
+{
+    // ===========================================
+    //  필드 목록 (파싱과 덤프가 같은 목록을 공유한다 — 키를 한 곳에서만 관리)
+    // ===========================================
+
+    template<typename V, typename W>
+    void VisitWeapon_(
+        V& _v,
+        W& _w)
+    {
+        _v.Field("damage", _w.damage);
+        _v.Field("fireIntervalTicks", _w.fireIntervalTicks);
+        _v.Field("holdRepeatTicks", _w.holdRepeatTicks);
+        _v.Field("ammo", _w.ammo);
+        _v.Field("projectileSpeed", _w.projectileSpeed);
+        _v.Field("maxAlive", _w.maxAlive);
+        _v.Field("pierce", _w.bPierce);
+        _v.Field("hitSize", _w.hitSize);
+        _v.Field("range", _w.range);
+        _v.Field("shotOverlayTicks", _w.shotOverlayTicks);
+    }
+
+    template<typename V, typename S>
+    void VisitMuzzleSet_(
+        V& _v,
+        S& _s)
+    {
+        _v.Field("forward", _s.forward);
+        _v.Field("up", _s.up);
+        _v.Field("diagUp", _s.diagUp);
+        _v.Field("down", _s.down);
+        _v.Field("diagDown", _s.diagDown);
+    }
+
+    template<typename V, typename T>
+    void Visit_(
+        V& _v,
+        T& _t)
+    {
+        _v.Begin("move");
+        _v.Field("runSpeed", _t.move.runSpeed);
+        _v.Field("crouchSpeed", _t.move.crouchSpeed);
+        _v.Field("airSpeed", _t.move.airSpeed);
+        _v.Field("jumpSpeed", _t.move.jumpSpeed);
+        _v.Field("gravity", _t.move.gravity);
+        _v.Field("terminalVelocity", _t.move.terminalVelocity);
+        _v.Field("jumpCutFactor", _t.move.jumpCutFactor);
+        _v.Field("coyoteTicks", _t.move.coyoteTicks);
+        _v.Field("jumpBufferTicks", _t.move.jumpBufferTicks);
+        _v.Field("shotBufferTicks", _t.move.shotBufferTicks);
+        _v.Field("bombBufferTicks", _t.move.bombBufferTicks);
+        _v.Field("maxStepUp", _t.move.maxStepUp);
+        _v.Field("maxSnapDown", _t.move.maxSnapDown);
+        _v.Field("jumpHeadroom", _t.move.jumpHeadroom);
+        _v.End();
+
+        _v.Begin("body");
+        _v.Field("standSize", _t.body.standSize);
+        _v.Field("crouchSize", _t.body.crouchSize);
+        _v.Field("hurtStand", _t.body.hurtStand);
+        _v.Field("hurtCrouch", _t.body.hurtCrouch);
+        _v.Field("footHalfWidth", _t.body.footHalfWidth);
+        _v.End();
+
+        _v.Begin("muzzle");
+        _v.Begin("stand");
+        VisitMuzzleSet_(_v, _t.muzzle.stand);
+        _v.End();
+        _v.Begin("crouch");
+        VisitMuzzleSet_(_v, _t.muzzle.crouch);
+        _v.End();
+        _v.Begin("air");
+        VisitMuzzleSet_(_v, _t.muzzle.air);
+        _v.End();
+        _v.End();
+
+        _v.Begin("weapons");
+        _v.Begin("pistol");
+        VisitWeapon_(_v, _t.weapons.pistol);
+        _v.End();
+        _v.Begin("hmg");
+        VisitWeapon_(_v, _t.weapons.hmg);
+        _v.End();
+        _v.Begin("shotgun");
+        VisitWeapon_(_v, _t.weapons.shotgun);
+        _v.End();
+        _v.Field("hmgPickupAmmo", _t.weapons.hmgPickupAmmo);
+        _v.Field("shotgunPickupAmmo", _t.weapons.shotgunPickupAmmo);
+        _v.End();
+
+        _v.Begin("knife");
+        _v.Field("range", _t.knife.range);
+        _v.Field("damage", _t.knife.damage);
+        _v.Field("reach", _t.knife.reach);
+        _v.Field("back", _t.knife.back);
+        _v.Field("bottom", _t.knife.bottom);
+        _v.Field("top", _t.knife.top);
+        _v.Field("durationTicks", _t.knife.durationTicks);
+        _v.Field("activeFirstTick", _t.knife.activeFirstTick);
+        _v.Field("activeLastTick", _t.knife.activeLastTick);
+        _v.Field("chainWindowTicks", _t.knife.chainWindowTicks);
+        _v.End();
+
+        _v.Begin("bomb");
+        _v.Field("initial", _t.bomb.initial);
+        _v.Field("maxInFlight", _t.bomb.maxInFlight);
+        _v.Field("throwTicks", _t.bomb.throwTicks);
+        _v.Field("releaseTick", _t.bomb.releaseTick);
+        _v.Field("releaseOffset", _t.bomb.releaseOffset);
+        _v.Field("speedX", _t.bomb.speedX);
+        _v.Field("speedY", _t.bomb.speedY);
+        _v.Field("inheritMoveX", _t.bomb.inheritMoveX);
+        _v.Field("gravity", _t.bomb.gravity);
+        _v.Field("hitSize", _t.bomb.hitSize);
+        _v.Field("damage", _t.bomb.damage);
+        _v.Field("blastSize", _t.bomb.blastSize);
+        _v.Field("blastUp", _t.bomb.blastUp);
+        _v.Field("blastTicks", _t.bomb.blastTicks);
+        _v.End();
+
+        _v.Begin("player");
+        _v.Field("lives", _t.player.lives);
+        _v.Field("deathTicks", _t.player.deathTicks);
+        _v.Field("respawnInvincible", _t.player.respawnInvincible);
+        _v.Field("blinkPeriodTicks", _t.player.blinkPeriodTicks);
+        _v.Field("respawnOffsetX", _t.player.respawnOffsetX);
+        _v.Field("respawnDropY", _t.player.respawnDropY);
+        _v.Field("gameOverTicks", _t.player.gameOverTicks);
+        _v.Field("idleActionTicks", _t.player.idleActionTicks);
+        _v.Field("idleActionLength", _t.player.idleActionLength);
+        _v.End();
+
+        _v.Begin("camera");
+        _v.Field("deadzoneHalf", _t.camera.deadzoneHalf);
+        _v.Field("smoothTime", _t.camera.smoothTime);
+        _v.Field("lookAheadX", _t.camera.lookAheadX);
+        _v.End();
+
+        _v.Begin("sandbox");
+        _v.Field("gruntHp", _t.sandbox.gruntHp);
+        _v.Field("jeepHp", _t.sandbox.jeepHp);
+        _v.Field("busHp", _t.sandbox.busHp);
+        _v.Field("dummyRespawnTicks", _t.sandbox.dummyRespawnTicks);
+        _v.Field("shooterIntervalTicks", _t.sandbox.shooterIntervalTicks);
+        _v.Field("enemyBulletSpeed", _t.sandbox.enemyBulletSpeed);
+        _v.Field("enemyBulletDamage", _t.sandbox.enemyBulletDamage);
+        _v.Field("shooterRange", _t.sandbox.shooterRange);
+        _v.End();
+
+        _v.Begin("rig");
+        _v.Field("airBaseline", _t.rig.airBaseline);
+        _v.Field("diagUpVariant", _t.rig.diagUpVariant);
+        _v.End();
+    }
+
+    // ===========================================
+    //  JSON 읽기 방문자: 없는 키는 건너뛰고(기본값 유지), 타입이 틀리면 오류로 기록한다.
+    // ===========================================
+
+    class ReadVisitor
+    {
+    public:
+        explicit ReadVisitor(
+            const jug::JsonReader& _root)
+        {
+            m_stack.push_back(_root.IsObject() ? std::optional<jug::JsonReader> { _root } : std::nullopt);
+            m_bError = !_root.IsObject();
+        }
+
+        void Begin(
+            const jug::StringView _key)
+        {
+            std::optional<jug::JsonReader> child;
+            if (const std::optional<jug::JsonReader>& top = m_stack.back(); top && top->HasField(_key))
+            {
+                if (const jug::Result<jug::JsonReader> found = top->FindField(_key); found && found->IsObject())
+                {
+                    child = found.GetValue();
+                }
+                else
+                {
+                    m_bError = true;
+                }
+            }
+            m_stack.push_back(child);
+        }
+
+        void End()
+        {
+            m_stack.pop_back();
+        }
+
+        void Field(
+            const jug::StringView _key,
+            float&                _value)
+        {
+            double v = 0.0;
+            if (ReadNumber_(_key, v))
+            {
+                _value = static_cast<float>(v);
+            }
+        }
+
+        void Field(
+            const jug::StringView _key,
+            int&                  _value)
+        {
+            double v = 0.0;
+            if (ReadNumber_(_key, v))
+            {
+                _value = static_cast<int>(std::llround(v));
+            }
+        }
+
+        void Field(
+            const jug::StringView _key,
+            bool&                 _value)
+        {
+            const std::optional<jug::JsonReader>& top = m_stack.back();
+            if (!top || !top->HasField(_key))
+            {
+                return;
+            }
+            const jug::Result<bool> value = top->ReadField<bool>(_key);
+            if (!value)
+            {
+                m_bError = true;
+                return;
+            }
+            _value = value.GetValue();
+        }
+
+        void Field(
+            const jug::StringView _key,
+            jug::VECTOR2&         _value)
+        {
+            const std::optional<jug::JsonReader>& top = m_stack.back();
+            if (!top || !top->HasField(_key))
+            {
+                return;
+            }
+            const jug::Result<jug::JsonReader> found = top->FindField(_key);
+            if (!found || !found->IsArray() || found->GetSize() != 2)
+            {
+                m_bError = true;
+                return;
+            }
+
+            float values[2] = {};
+            int   index     = 0;
+            for (const jug::JsonReader item: found->GetArray())
+            {
+                const jug::Result<double> number = item.Read<double>();
+                if (!number)
+                {
+                    m_bError = true;
+                    return;
+                }
+                values[index++] = static_cast<float>(number.GetValue());
+            }
+            _value = { values[0], values[1] };
+        }
+
+        [[nodiscard]] bool HasError() const { return m_bError; }
+
+    private:
+        bool ReadNumber_(
+            const jug::StringView _key,
+            double&               _out)
+        {
+            const std::optional<jug::JsonReader>& top = m_stack.back();
+            if (!top || !top->HasField(_key))
+            {
+                return false;
+            }
+            const jug::Result<double> value = top->ReadField<double>(_key);
+            if (!value)
+            {
+                m_bError = true;
+                return false;
+            }
+            _out = value.GetValue();
+            return true;
+        }
+
+        jug::Vector<std::optional<jug::JsonReader>> m_stack  = {};
+        bool                                        m_bError = false;
+    };
+
+    // ===========================================
+    //  덤프 방문자
+    // ===========================================
+
+    class DumpVisitor
+    {
+    public:
+        void Begin(
+            const jug::StringView _key)
+        {
+            m_path.push_back(jug::String { _key });
+        }
+
+        void End()
+        {
+            m_path.pop_back();
+        }
+
+        void Field(
+            const jug::StringView _key,
+            const float           _value)
+        {
+            Line_(_key, std::format("{:.4f}", _value));
+        }
+
+        void Field(
+            const jug::StringView _key,
+            const int             _value)
+        {
+            Line_(_key, std::to_string(_value));
+        }
+
+        void Field(
+            const jug::StringView _key,
+            const bool            _value)
+        {
+            Line_(_key, _value ? "true" : "false");
+        }
+
+        void Field(
+            const jug::StringView _key,
+            const jug::VECTOR2    _value)
+        {
+            Line_(_key, std::format("[{:.4f}, {:.4f}]", _value.x, _value.y));
+        }
+
+        [[nodiscard]] const jug::String& GetText() const { return m_text; }
+
+    private:
+        void Line_(
+            const jug::StringView _key,
+            const jug::String&    _value)
+        {
+            for (const jug::String& part: m_path)
+            {
+                m_text += part;
+                m_text += '.';
+            }
+            m_text += _key;
+            m_text += " = ";
+            m_text += _value;
+            m_text += '\n';
+        }
+
+        jug::Vector<jug::String> m_path = {};
+        jug::String              m_text = {};
+    };
+
+    [[nodiscard]] jug::Result<Tuning> ParseRoot_(
+        const jug::JsonReader& _root)
+    {
+        Tuning      tuning;
+        ReadVisitor visitor { _root };
+        Visit_(visitor, tuning);
+        if (visitor.HasError())
+        {
+            return jug::Error { eError::Parse };
+        }
+        return tuning;
+    }
+}   // namespace
+
+jug::Result<Tuning> ParseTuning(
+    const jug::StringView _json)
+{
+    jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::Load(_json, jug::eJsonLoadOption::AllowComments);
+    if (!doc)
+    {
+        return jug::Error { eError::Parse };
+    }
+    return ParseRoot_(doc->GetReader());
+}
+
+jug::Result<Tuning> LoadTuning(
+    const jug::FilePath& _path)
+{
+    jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::LoadFromFile(_path, jug::eJsonLoadOption::AllowComments);
+    if (!doc)
+    {
+        return jug::Error { eError::FileOpen };
+    }
+    return ParseRoot_(doc->GetReader());
+}
+
+jug::String DumpTuning(
+    const Tuning& _tuning)
+{
+    DumpVisitor visitor;
+    Visit_(visitor, _tuning);
+    return visitor.GetText();
+}
+
+jug::FilePath GetDefaultTuningPath(
+    const jug::FilePath& _assetRoot)
+{
+    return _assetRoot / "Tuning" / "Tuning.json";
+}
+
+// ===========================================
+//  TuningWatcher
+// ===========================================
+
+void TuningWatcher::Init(
+    jug::FilePath _path,
+    const int     _pollIntervalTicks)
+{
+    m_path        = std::move(_path);
+    m_interval    = _pollIntervalTicks < 1 ? 1 : _pollIntervalTicks;
+    m_counter     = 0;
+    m_reloadCount = 0;
+    m_bHasStamp   = false;
+
+    std::error_code ec;
+    const auto      stamp = std::filesystem::last_write_time(m_path, ec);
+    if (!ec)
+    {
+        m_stamp     = stamp;
+        m_bHasStamp = true;
+    }
+}
+
+bool TuningWatcher::Poll(
+    Tuning& _out)
+{
+    if (++m_counter < m_interval)
+    {
+        return false;
+    }
+    m_counter = 0;
+
+    std::error_code ec;
+    const auto      stamp = std::filesystem::last_write_time(m_path, ec);
+    if (ec)
+    {
+        return false;
+    }
+    if (m_bHasStamp && stamp == m_stamp)
+    {
+        return false;
+    }
+    m_stamp     = stamp;
+    m_bHasStamp = true;
+
+    jug::Result<Tuning> loaded = LoadTuning(m_path);
+    if (!loaded)
+    {
+        JUG_CORE_LOG_WARN("Tuning 리로드 실패 (이전 값 유지): {}", m_path.string());
+        return false;
+    }
+    _out = loaded.Take();
+    ++m_reloadCount;
+    JUG_CORE_LOG_INFO("Tuning 리로드: {}", m_path.string());
+    return true;
+}
+
+}   // namespace slug

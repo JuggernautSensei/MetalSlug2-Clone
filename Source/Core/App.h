@@ -24,6 +24,9 @@ namespace slug
 //     --record <path>           플레이한 입력을 리플레이로 저장 (종료 시)
 //     --replay <path>           리플레이 입력으로 시뮬레이션 (끝나면 종료, --replay-hold 면 유지)
 //     --capture <path> [--capture-frame <n>]   n 번째 렌더 프레임을 BMP 로 저장하고 종료
+//     --capture <prefix> --capture-ticks a,b,c  시뮬레이션 틱 a,b,c 를 마친 화면을 <prefix>_<tick>.bmp 로 저장하고 종료
+//                                               (이 모드는 렌더 프레임마다 정확히 1틱만 진행해 결정적으로 캡처한다)
+//   디버그 키: F1 판정 상자 표시, F2 일시정지, F3 한 틱 진행(일시정지 중), F4 슬로모션(1/4)
 // ===========================================
 
 class App final : public jug::Application
@@ -75,6 +78,15 @@ private:
     jug::FilePath m_capturePath      = {};
     int           m_captureFrame     = 30;
     int           m_renderFrameCount = 0;
+    jug::Vector<uint64_t> m_captureTicks = {};
+    size_t        m_captureTickHead  = 0;
+
+    // 디버그 제어
+    bool  m_bPaused     = false;
+    bool  m_bStepOnce   = false;
+    bool  m_bSlowMo     = false;
+    bool  m_bDebugDraw  = false;
+    float m_fps         = 0.f;
 };
 
 }   // namespace slug

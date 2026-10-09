@@ -6,6 +6,9 @@
 #include <JugX/CoreLogger.h>
 #include <JugX/EventDispatcher.h>
 
+#include <algorithm>
+#include <format>
+
 #include "Game/StateFactory.h"
 
 namespace slug
@@ -72,6 +75,26 @@ void App::ParseArgs_()
         else if (args[i] == "--capture-frame" && bHasValue)
         {
             m_captureFrame = std::atoi(args[++i].c_str());
+        }
+        else if (args[i] == "--capture-ticks" && bHasValue)
+        {
+            // 쉼표로 구분된 틱 목록 (오름차순으로 정렬해 사용)
+            const jug::String list = args[++i];
+            size_t            begin = 0;
+            while (begin < list.size())
+            {
+                size_t end = list.find(',', begin);
+                if (end == jug::String::npos)
+                {
+                    end = list.size();
+                }
+                if (end > begin)
+                {
+                    m_captureTicks.push_back(std::strtoull(list.substr(begin, end - begin).c_str(), nullptr, 10));
+                }
+                begin = end + 1;
+            }
+            std::sort(m_captureTicks.begin(), m_captureTicks.end());
         }
     }
 }
@@ -190,6 +213,16 @@ void App::OnKeyDown_(
         return;
     }
 
+    // 디버그 키는 시뮬레이션 입력이 아니라 앱 제어이다 (리플레이에 기록되지 않는다).
+    switch (_event.GetKey())
+    {
+        case jug::eKey::F1: m_bDebugDraw = !m_bDebugDraw; return;
+        case jug::eKey::F2: m_bPaused = !m_bPaused; return;
+        case jug::eKey::F3: m_bStepOnce = true; return;
+        case jug::eKey::F4: m_bSlowMo = !m_bSlowMo; return;
+        default: break;
+    }
+
     m_input.OnKeyDown(_event.GetKey());
 }
 
@@ -214,7 +247,29 @@ void App::Update(
         return;
     }
 
-    const int steps = m_clock.Advance(_deltaTimeSec);
+    if (_deltaTimeSec > 0.f)
+    {
+        m_fps = m_fps <= 0.f ? 1.f / _deltaTimeSec : m_fps * 0.95f + (1.f / _deltaTimeSec) * 0.05f;
+    }
+    m_ctx.fps           = m_fps;
+    m_ctx.bDebugDraw    = m_bDebugDraw;
+    m_ctx.bPaused       = m_bPaused;
+    m_ctx.slowMoDivisor = m_bSlowMo ? 4 : 1;
+
+    int steps = 0;
+    if (!m_captureTicks.empty())
+    {
+        steps = 1;   // 결정적 캡처: 렌더 프레임당 정확히 1틱
+    }
+    else if (m_bPaused)
+    {
+        steps       = m_bStepOnce ? 1 : 0;
+        m_bStepOnce = false;
+    }
+    else
+    {
+        steps = m_clock.Advance(static_cast<double>(_deltaTimeSec) / static_cast<double>(m_ctx.slowMoDivisor));
+    }
     for (int i = 0; i < steps; ++i)
     {
         Tick_();
@@ -264,7 +319,24 @@ void App::Render_(
     m_pRunner->Render(_alpha);
 
     ++m_renderFrameCount;
-    if (!m_capturePath.empty() && m_renderFrameCount == m_captureFrame)
+    if (!m_capturePath.empty() && !m_captureTicks.empty())
+    {
+        while (m_captureTickHead < m_captureTicks.size() && m_pRunner->GetTickCount() >= m_captureTicks[m_captureTickHead])
+        {
+            const uint64_t     tick = m_captureTicks[m_captureTickHead++];
+            const jug::FilePath path = jug::FilePath { std::format("{}_{:05}.bmp", m_capturePath.string(), tick) };
+            if (const jug::Result<void> result = m_renderer.SaveScreenshotBmp(path); !result)
+            {
+                JUG_CORE_LOG_ERROR("스크린샷 저장 실패: {}", result.GetError().MakeMessage());
+                SetReturnCode(2);
+            }
+        }
+        if (m_captureTickHead >= m_captureTicks.size())
+        {
+            Quit();
+        }
+    }
+    else if (!m_capturePath.empty() && m_renderFrameCount == m_captureFrame)
     {
         if (const jug::Result<void> result = m_renderer.SaveScreenshotBmp(m_capturePath); !result)
         {

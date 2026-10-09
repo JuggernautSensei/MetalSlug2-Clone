@@ -1,5 +1,6 @@
 // SlugHeadless: 창 없이 리플레이를 고속 시뮬레이션하고 결과를 출력하는 QA 도구.
 //   SlugHeadless --replay <file> [--state <name>] [--ticks <n>] [--expect-finished]
+//   SlugHeadless --dump-tuning
 // 종료 코드: 0 = 성공, 1 = 인자/로드 오류, 2 = --expect-finished 인데 끝나지 않음
 #include <cstdio>
 #include <cstdlib>
@@ -9,6 +10,7 @@
 #include <JugX/Random.h>
 
 #include "Core/Replay.h"
+#include "Core/Tuning.h"
 #include "Game/SimRunner.h"
 #include "Game/StateFactory.h"
 #include "Render/Animation.h"
@@ -40,6 +42,12 @@ int main(
         else if (arg == "--ticks" && bHasNext)
         {
             maxTicks = std::strtoull(_argv[++i], nullptr, 10);
+        }
+        else if (arg == "--dump-tuning")
+        {
+            // 기본 Tuning 값을 텍스트로 출력하고 종료 (Assets/Tuning/Tuning.json 생성/점검용)
+            std::fputs(slug::DumpTuning(slug::Tuning {}).c_str(), stdout);
+            return 0;
         }
         else if (arg == "--expect-finished")
         {

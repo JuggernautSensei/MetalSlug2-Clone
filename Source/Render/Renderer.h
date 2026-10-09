@@ -1,6 +1,7 @@
 #pragma once
 #include <JugX/Result.h>
 #include <JugX/RGBA.h>
+#include <JugX/Typedef.h>
 #include <JugX/Vector2.h>
 
 struct SDL_Window;
@@ -31,6 +32,11 @@ public:
     // 논리 좌표(픽셀) 기준. 좌표는 정수로 스냅하여 그린다.
     void FillRect(jug::VECTOR2 _topLeft, jug::VECTOR2 _size, jug::RGBA _color);
     void DrawRect(jug::VECTOR2 _topLeft, jug::VECTOR2 _size, jug::RGBA _color);
+    void DrawLine(jug::VECTOR2 _from, jug::VECTOR2 _to, jug::RGBA _color);
+
+    // SDL 내장 8x8 디버그 폰트로 문자열을 그린다 (ASCII). 개행 문자는 줄바꿈.
+    static constexpr int kDebugCharSize = 8;
+    void                 DrawDebugText(jug::VECTOR2 _topLeft, jug::StringView _text, jug::RGBA _color);
 
     [[nodiscard]] SDL_Window*   GetWindow() const;
     [[nodiscard]] SDL_Renderer* GetNative() const;

@@ -92,6 +92,46 @@ void Renderer::DrawRect(
     SDL_RenderRect(m_pRenderer, &rect);
 }
 
+void Renderer::DrawLine(
+    const jug::VECTOR2 _from,
+    const jug::VECTOR2 _to,
+    const jug::RGBA    _color)
+{
+    SDL_SetRenderDrawColor(m_pRenderer, _color.r, _color.g, _color.b, _color.a);
+    SDL_RenderLine(m_pRenderer, std::floor(_from.x) + 0.5f, std::floor(_from.y) + 0.5f, std::floor(_to.x) + 0.5f, std::floor(_to.y) + 0.5f);
+}
+
+void Renderer::DrawDebugText(
+    const jug::VECTOR2    _topLeft,
+    const jug::StringView _text,
+    const jug::RGBA       _color)
+{
+    SDL_SetRenderDrawColor(m_pRenderer, _color.r, _color.g, _color.b, _color.a);
+
+    const float x = std::floor(_topLeft.x);
+    float       y = std::floor(_topLeft.y);
+
+    // SDL_RenderDebugText 는 NUL 종료 문자열을 받으므로 줄 단위로 잘라서 그린다.
+    jug::String line;
+    for (const char c: _text)
+    {
+        if (c == '\n')
+        {
+            SDL_RenderDebugText(m_pRenderer, x, y, line.c_str());
+            line.clear();
+            y += static_cast<float>(kDebugCharSize + 2);
+        }
+        else
+        {
+            line += c;
+        }
+    }
+    if (!line.empty())
+    {
+        SDL_RenderDebugText(m_pRenderer, x, y, line.c_str());
+    }
+}
+
 SDL_Window* Renderer::GetWindow() const
 {
     return m_pWindow;

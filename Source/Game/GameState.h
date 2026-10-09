@@ -25,6 +25,12 @@ struct GameContext
     jug::RngMt19937*  pRng      = nullptr;
     jug::FilePath     assetRoot = {};   // 보통 <repo>/Assets
 
+    // 디버그 정보 (App 이 채운다. 시뮬레이션 결과에는 영향이 없다)
+    float fps           = 0.f;
+    bool  bDebugDraw    = false;   // F1: 판정 상자/지면 탐침 표시
+    bool  bPaused       = false;   // F2
+    int   slowMoDivisor = 1;       // F4: 2 이상이면 느린 재생
+
     [[nodiscard]] bool IsHeadless() const
     {
         return pRenderer == nullptr;
