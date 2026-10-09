@@ -1,3 +1,4 @@
+#include "Core/AssetPath.h"
 #include <cmath>
 #include "Base/Types.h"
 #include "Base/Result.h"
@@ -331,7 +332,7 @@ TEST(StageDataErrors, MissingFileIsReported)
 TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
 {
     StageLoadDiagnostics diag;
-    slug::Result<StageData> result = LoadStageFromFile(slug::FilePath { SLUG_ASSET_DIR } / "Stage" / "Stage0.json", &diag);
+    slug::Result<StageData> result = LoadStageFromFile(slug::FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
@@ -369,7 +370,7 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
 
 TEST(StageDataReal, Stage0KeySemantics)
 {
-    slug::Result<StageData> result = LoadStageFromFile(slug::FilePath { SLUG_ASSET_DIR } / "Stage" / "Stage0.json");
+    slug::Result<StageData> result = LoadStageFromFile(slug::FindAssetRoot() / "Stage" / "Stage0.json");
     ASSERT_TRUE(result);
     const StageData data = result.Take();
 

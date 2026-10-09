@@ -1,4 +1,5 @@
 #pragma once
+#include "Core/AssetPath.h"
 #include "Base/Types.h"
 #include "Base/Math.h"
 #include "Base/Result.h"
@@ -123,7 +124,7 @@ private:
 inline bool LoadBakedAnims(
     AnimationLibrary& _out)
 {
-    slug::Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(slug::FilePath { SLUG_ASSET_DIR } / "Baked");
+    slug::Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(slug::FindAssetRoot() / "Baked");
     if (!library)
     {
         return false;

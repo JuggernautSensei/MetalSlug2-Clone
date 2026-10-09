@@ -1,3 +1,4 @@
+#include "Core/AssetPath.h"
 #include <filesystem>
 #include "Base/Types.h"
 #include "Base/Result.h"
@@ -49,7 +50,7 @@ private:
 
 slug::FilePath RepoRoot()
 {
-    return slug::FilePath { SLUG_ASSET_DIR }.parent_path();
+    return slug::FindAssetRoot().parent_path();
 }
 
 void Write(
@@ -106,7 +107,7 @@ TEST(PlayerReplay, RegressionReplayPlaysTheSameWayTwiceAndHitsTheMilestones)
     slug::Result<ReplayData> loaded = LoadReplay(path);
     ASSERT_TRUE(loaded.HasValue()) << "먼저 PlayerReplay.WriteRegressionAndVisualScripts 가 실행되어야 합니다: " << path.string();
 
-    if (!std::filesystem::exists(slug::FilePath { SLUG_ASSET_DIR } / "Baked" / "Ground" / "Stage0_0.bin"))
+    if (!std::filesystem::exists(slug::FindAssetRoot() / "Baked" / "Ground" / "Stage0_0.bin"))
     {
         GTEST_SKIP() << "Assets/Baked 없음: Scripts/Bake.ps1 로 생성하세요";
     }
@@ -120,7 +121,7 @@ TEST(PlayerReplay, RegressionReplayPlaysTheSameWayTwiceAndHitsTheMilestones)
         slug::RngMt19937 rng { replay.seed };
         GameContext     ctx;
         ctx.pRng      = &rng;
-        ctx.assetRoot = slug::FilePath { SLUG_ASSET_DIR };
+        ctx.assetRoot = slug::FindAssetRoot();
 
         SandboxState* pState = new SandboxState;
         SimRunner     runner { ctx, std::unique_ptr<IGameState> { pState } };

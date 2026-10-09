@@ -1,5 +1,6 @@
 #include <cstdio>
 #include "Base/Result.h"
+#include "Core/AssetPath.h"
 #include <cstdlib>
 #include <string>
 
@@ -19,7 +20,7 @@ void PrintUsage_()
         "usage: SlugBaker --legacy <Resources dir> [--out <dir>] [options]\n"
         "\n"
         "  --legacy <dir>          legacy Resources directory (contains ResourceData/)\n"
-        "  --out <dir>             output root (default: Assets/Baked)\n"
+        "  --out <dir>             output root (default: <Assets>/Baked, Assets found from the exe location)\n"
         "  --only <a,b,..>         partial bake: player enemy effect npc sprites ground sounds\n"
         "  --threshold <B,RG,A>    ground solid thresholds: B>=B, R<=RG, G<=RG, A>=A (default 192,96,128)\n"
         "  --ground-blue-min <n>   ground: minimum blue (default 192)\n"
@@ -46,6 +47,9 @@ int main(
     int    _argc,
     char** _argv)
 {
+#ifdef SLUG_ASSET_DIR
+    slug::SetAssetRootFallback(SLUG_ASSET_DIR);
+#endif
     BakerOptions options;
 
     for (int i = 1; i < _argc; ++i)

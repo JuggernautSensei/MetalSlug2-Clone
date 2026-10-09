@@ -1,4 +1,4 @@
-# 레거시 리소스를 Assets/Baked 로 변환한다 (SlugBaker 빌드 후 실행).
+# 레거시 리소스를 Assets/Baked 로 변환한다 (MyMetalSlug2.sln 의 SlugBaker 프로젝트를 빌드한 뒤 실행).
 # 사용:
 #   powershell -NoProfile -File Scripts/Bake.ps1
 #   powershell -NoProfile -File Scripts/Bake.ps1 -Only player,npc          # 부분 굽기 (빠른 반복용; 출력이 부분적이므로 -Out 을 따로 쓰는 것을 권장)
@@ -31,7 +31,7 @@ if (-not $NoBuild) {
     if ($LASTEXITCODE -ne 0) { Write-Error 'SlugBaker 빌드 실패'; exit $LASTEXITCODE }
 }
 
-$exe = Join-Path $root "Build\vs\bin\$Config\SlugBaker.exe"
+$exe = Join-Path $root "Output\$Config\SlugBaker.exe"
 if (-not (Test-Path $exe)) { Write-Error "SlugBaker.exe 가 없습니다: $exe"; exit 3 }
 
 $bakerArgs = @('--legacy', $Legacy, '--out', $Out)

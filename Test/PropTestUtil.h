@@ -1,4 +1,5 @@
 #pragma once
+#include "Core/AssetPath.h"
 #include <string>
 #include "Base/Types.h"
 #include "Base/Math.h"
@@ -22,7 +23,7 @@ using namespace slug;
 
 inline slug::FilePath PropsJsonPath()
 {
-    return slug::FilePath { SLUG_ASSET_DIR } / "Defs" / "Props" / "Props.json";
+    return slug::FindAssetRoot() / "Defs" / "Props" / "Props.json";
 }
 
 inline const PropDefLibrary& GetPropLib()
@@ -45,8 +46,8 @@ inline bool LoadBakedLibs(
     AnimationLibrary& _anims,
     SpriteLibrary&    _sprites)
 {
-    slug::Result<AnimationLibrary> anims = AnimationLibrary::LoadFromDirectory(slug::FilePath { SLUG_ASSET_DIR } / "Baked");
-    slug::Result<SpriteLibrary>    sprites = SpriteLibrary::LoadFromDirectory(slug::FilePath { SLUG_ASSET_DIR } / "Baked");
+    slug::Result<AnimationLibrary> anims = AnimationLibrary::LoadFromDirectory(slug::FindAssetRoot() / "Baked");
+    slug::Result<SpriteLibrary>    sprites = SpriteLibrary::LoadFromDirectory(slug::FindAssetRoot() / "Baked");
     if (!anims || !sprites)
     {
         return false;

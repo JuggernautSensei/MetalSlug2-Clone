@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{B2C60EE7-F63D-68CA-B03D-0439FFE6C63D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tools">
+      <UniqueIdentifier>{D4AA13B1-1635-307C-FA4B-28D1D922C834}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tools\Baker">
+      <UniqueIdentifier>{D7D24A22-218D-7EA5-084A-34E56EDFD67C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Source\Tools\Baker\Baker.cpp">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Tools\Baker\BakerReport.cpp">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Tools\Baker\Main.cpp">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Tools\Baker\StbImpl.cpp">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source\Tools\Baker\AnimMath.h">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Tools\Baker\Baker.h">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Tools\Baker\BakerData.h">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Tools\Baker\BakerUtil.h">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Tools\Baker\BmpReader.h">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Tools\Baker\Ground.h">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Tools\Baker\Image.h">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Tools\Baker\JsonWriter.h">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Tools\Baker\LegacyParser.h">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Tools\Baker\Packer.h">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Tools\Baker\PngWriter.h">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

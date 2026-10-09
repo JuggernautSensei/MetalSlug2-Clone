@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "Core/AssetPath.h"
 #include "Tools/Baker/Ground.h"
 #include "Tools/Baker/Image.h"
 #include "Tools/Baker/LegacyParser.h"
@@ -15,7 +16,7 @@ namespace slug::baker
 struct BakerOptions
 {
     std::filesystem::path legacyRoot;
-    std::filesystem::path outRoot = "Assets/Baked";
+    std::filesystem::path outRoot = slug::FindAssetRoot() / "Baked";
     std::set<std::string> only;
     int                   pageSize       = 2048;
     int                   padding        = 1;            // 아틀라스 사각형 사이/가장자리 투명 간격

@@ -1,9 +1,8 @@
-Build/
+Output/
+Intermediate/
 .vs/
+vcpkg_installed/
+Captures/
+Assets/Baked/
 *.user
 *.suo
-CMakeUserPresets.json
-vcpkg_installed/
-Assets/Baked/
-Captures/
-cmake_test_discovery_*.json

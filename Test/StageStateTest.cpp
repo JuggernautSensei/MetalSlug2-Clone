@@ -1,3 +1,4 @@
+#include "Core/AssetPath.h"
 #include <cmath>
 #include "Base/Types.h"
 #include "Base/Math.h"
@@ -22,7 +23,7 @@ public:
         : m_rng(uint64_t { 1 })
     {
         m_ctx.pRng       = &m_rng;
-        m_ctx.assetRoot  = slug::FilePath { SLUG_ASSET_DIR };
+        m_ctx.assetRoot  = slug::FindAssetRoot();
         m_ctx.bDebugDraw = _bDebugDraw;
         m_pState         = new StageState;
         m_runner         = std::unique_ptr<SimRunner> { new SimRunner { m_ctx, std::unique_ptr<IGameState> { m_pState } } };

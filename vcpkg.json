@@ -8,14 +8,7 @@
     "sdl3",
     "yyjson",
     "stb",
-    "miniaudio"
-  ],
-  "features": {
-    "test": {
-      "description": "Build unit tests",
-      "dependencies": [
-        "gtest"
-      ]
-    }
-  }
+    "miniaudio",
+    "gtest"
+  ]
 }

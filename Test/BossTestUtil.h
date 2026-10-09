@@ -1,4 +1,5 @@
 #pragma once
+#include "Core/AssetPath.h"
 #include <cmath>
 #include "Base/Types.h"
 #include "Base/Math.h"
@@ -29,7 +30,7 @@ inline constexpr uint32_t kTestPlayerOwner = 1;
 inline std::filesystem::path BossDefsDir()
 {
     static int sCounter = 0;
-    const std::filesystem::path defs = std::filesystem::path { SLUG_ASSET_DIR } / "Defs";
+    const std::filesystem::path defs = slug::FindAssetRoot() / "Defs";
     const std::filesystem::path dir  = std::filesystem::temp_directory_path() / ("slug_boss_test_defs_" + std::to_string(++sCounter));
     std::error_code             ec;
     std::filesystem::create_directories(dir, ec);

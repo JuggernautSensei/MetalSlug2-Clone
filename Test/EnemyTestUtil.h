@@ -1,4 +1,5 @@
 #pragma once
+#include "Core/AssetPath.h"
 #include "Base/Types.h"
 #include "Base/Math.h"
 #include "Base/Result.h"
@@ -18,7 +19,7 @@ using namespace slug;
 
 inline slug::FilePath EnemyDefsPath()
 {
-    return slug::FilePath { SLUG_ASSET_DIR } / "Defs" / "Enemies.json";
+    return slug::FindAssetRoot() / "Defs" / "Enemies.json";
 }
 
 inline bool LoadEnemyLib(
@@ -39,7 +40,7 @@ inline SandboxConfig MakeEnemyConfig(
 {
     SandboxConfig config = MakeFlatConfig();
     config.spawnFeet     = _spawn;
-    config.enemyDefPath  = slug::FilePath { SLUG_ASSET_DIR } / "Defs";
+    config.enemyDefPath  = slug::FindAssetRoot() / "Defs";
     return config;
 }
 

@@ -1,8 +1,4 @@
 @echo off
-rem Opens the generated Visual Studio solution (creates it first if missing).
+rem Opens the Visual Studio solution (MyMetalSlug2.sln) in the repository root.
 cd /d "%~dp0"
-if not exist "Build\vs\MyMetalSlug2.slnx" (
-    set VCPKG_ROOT=C:\vcpkg
-    "C:\Program Files\CMake\bin\cmake.exe" --preset vs
-)
-start "" "Build\vs\MyMetalSlug2.slnx"
+start "" "MyMetalSlug2.sln"

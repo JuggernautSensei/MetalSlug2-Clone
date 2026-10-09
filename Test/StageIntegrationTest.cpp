@@ -1,3 +1,4 @@
+#include "Core/AssetPath.h"
 #include <cstdint>
 #include "Base/Types.h"
 #include "Base/Math.h"
@@ -32,7 +33,7 @@ public:
         : m_rng(uint64_t { 1 })
     {
         m_ctx.pRng       = &m_rng;
-        m_ctx.assetRoot  = slug::FilePath { SLUG_ASSET_DIR };
+        m_ctx.assetRoot  = slug::FindAssetRoot();
         m_ctx.bDebugDraw = _bDebugDraw;
         m_pState         = new StageState;
         m_runner         = std::unique_ptr<SimRunner> { new SimRunner { m_ctx, std::unique_ptr<IGameState> { m_pState } } };
@@ -151,7 +152,7 @@ public:
         , runner(data, host, camera, rng)
     {
         slug::String message;
-        enemyLib = EnemyDefLibrary::LoadDirectory(EnemyDefLibrary::GetDefaultDirectory(slug::FilePath { SLUG_ASSET_DIR }), &message).Take();
+        enemyLib = EnemyDefLibrary::LoadDirectory(EnemyDefLibrary::GetDefaultDirectory(slug::FindAssetRoot()), &message).Take();
         enemies.SetLibrary(&enemyLib);
         props.SetLibrary(&propLib);
 
@@ -210,7 +211,7 @@ TEST(StageIntegration, Stage0UsesRealEnemiesAndPropsInsteadOfPlaceholders)
 
 TEST(StageIntegration, GroundPatchMaskAndApplyClearTheDestroyedHouseFootprint)
 {
-    const std::optional<GroundMap> mask = LoadGroundPatchMask(slug::FilePath { SLUG_ASSET_DIR } / "Baked" / "Textures" / "Stage0_House_4_PixelMap.png");
+    const std::optional<GroundMap> mask = LoadGroundPatchMask(slug::FindAssetRoot() / "Baked" / "Textures" / "Stage0_House_4_PixelMap.png");
     ASSERT_TRUE(mask.has_value());
     EXPECT_EQ(mask->GetWidth(), 1306);
     EXPECT_EQ(mask->GetHeight(), 751);
@@ -222,7 +223,7 @@ TEST(StageIntegration, GroundPatchMaskAndApplyClearTheDestroyedHouseFootprint)
     EXPECT_FALSE(ground.IsSolid(105, 105));    // 발자국 안: 공기
     EXPECT_TRUE(ground.IsSolid(50, 50));       // 발자국 밖: 그대로 고체
 
-    EXPECT_FALSE(LoadGroundPatchMask(slug::FilePath { SLUG_ASSET_DIR } / "Baked" / "Textures" / "no_such_map.png").has_value());
+    EXPECT_FALSE(LoadGroundPatchMask(slug::FindAssetRoot() / "Baked" / "Textures" / "no_such_map.png").has_value());
 }
 
 TEST(StageIntegration, SpawnedEnemiesStandOnTheGroundAtTheirScriptedFeet)

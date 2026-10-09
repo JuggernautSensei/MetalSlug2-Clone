@@ -1,3 +1,4 @@
+#include "Core/AssetPath.h"
 #include <fstream>
 #include "Base/Types.h"
 #include "Base/Result.h"
@@ -73,7 +74,7 @@ TEST(Tuning, AllowsCommentsInTheJsonFile)
 
 TEST(Tuning, CommittedJsonFileMatchesCodeDefaults)
 {
-    const slug::FilePath path   = GetDefaultTuningPath(slug::FilePath { SLUG_ASSET_DIR });
+    const slug::FilePath path   = GetDefaultTuningPath(slug::FindAssetRoot());
     slug::Result<Tuning> loaded = LoadTuning(path);
     ASSERT_TRUE(loaded.HasValue()) << path.string();
     EXPECT_EQ(DumpTuning(loaded.GetValue()), DumpTuning(Tuning {})) << "Assets/Tuning/Tuning.json 과 Tuning.h 기본값이 다릅니다";

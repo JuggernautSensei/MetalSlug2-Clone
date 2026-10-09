@@ -1,3 +1,4 @@
+#include "Core/AssetPath.h"
 #include <cstdio>
 #include "Base/Types.h"
 #include "Base/Result.h"
@@ -16,6 +17,9 @@ int main(
     int    _argc,
     char** _argv)
 {
+#ifdef SLUG_ASSET_DIR
+    slug::SetAssetRootFallback(SLUG_ASSET_DIR);
+#endif
     slug::FilePath replayPath;
     slug::String   stateName;
     uint64_t      maxTicks         = 0;
@@ -67,7 +71,7 @@ int main(
     }
 
     slug::AnimationLibrary anims;
-    if (slug::Result<slug::AnimationLibrary> library = slug::AnimationLibrary::LoadFromDirectory(slug::FilePath { SLUG_ASSET_DIR } / "Baked"))
+    if (slug::Result<slug::AnimationLibrary> library = slug::AnimationLibrary::LoadFromDirectory(slug::FindAssetRoot() / "Baked"))
     {
         anims = library.Take();
     }
@@ -80,7 +84,7 @@ int main(
     slug::GameContext ctx;
     ctx.pAnims    = &anims;
     ctx.pRng      = &rng;
-    ctx.assetRoot = slug::FilePath { SLUG_ASSET_DIR };
+    ctx.assetRoot = slug::FindAssetRoot();
 
     std::unique_ptr<slug::IGameState> pState = slug::CreateState(stateName);
     if (!pState)

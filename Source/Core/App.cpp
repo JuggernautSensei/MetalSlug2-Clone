@@ -1,3 +1,4 @@
+#include "Core/AssetPath.h"
 #include "Core/App.h"
 #include "Base/Types.h"
 #include "Base/Result.h"
@@ -207,7 +208,7 @@ void App::Init_()
     }
     if (m_stateName.empty())
     {
-        const bool bHasBaked = std::filesystem::exists(slug::FilePath { SLUG_ASSET_DIR } / "Baked");
+        const bool bHasBaked = std::filesystem::exists(slug::FindAssetRoot() / "Baked");
         m_stateName          = bHasBaked ? slug::String { GetDefaultStateName() } : slug::String { "sandbox" };
     }
 
@@ -219,7 +220,7 @@ void App::Init_()
         return;
     }
 
-    const slug::FilePath bakedRoot = slug::FilePath { SLUG_ASSET_DIR } / "Baked";
+    const slug::FilePath bakedRoot = slug::FindAssetRoot() / "Baked";
     m_sprites.Init(m_renderer.GetNative());
     if (slug::Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(bakedRoot))
     {
@@ -242,7 +243,7 @@ void App::Init_()
     m_ctx.pSprites  = &m_sprites;
     m_ctx.pAnims    = &m_anims;
     m_ctx.pRng      = &m_rng;
-    m_ctx.assetRoot = slug::FilePath { SLUG_ASSET_DIR };
+    m_ctx.assetRoot = slug::FindAssetRoot();
 
     {
         AudioConfig audioConfig;

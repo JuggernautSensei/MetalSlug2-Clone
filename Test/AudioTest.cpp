@@ -1,3 +1,4 @@
+#include "Core/AssetPath.h"
 #include <filesystem>
 #include "Base/Types.h"
 #include "Base/Result.h"
@@ -47,7 +48,7 @@ namespace
 
     slug::FilePath BakedRoot()
     {
-        return slug::FilePath { SLUG_ASSET_DIR } / "Baked";
+        return slug::FindAssetRoot() / "Baked";
     }
 }
 

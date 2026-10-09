@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- 자동 생성: Scripts/GenerateProjects.ps1 . 직접 고치지 말고 스크립트를 다시 실행할 것. -->
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{A8A1C747-F01F-452B-AC29-33D90D36896A}</ProjectGuid>
+    <RootNamespace>SlugTest</RootNamespace>
+    <ProjectName>SlugTest</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- 솔루션 밖에서 프로젝트만 열어 빌드해도 경로가 맞도록 기본값을 둔다 (sln 빌드 시에는 MSBuild 가 넘겨준 값을 쓴다). -->
+    <SolutionDir Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)..\..\</SolutionDir>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Label="Vcpkg">
+    <!-- vcpkg 매니페스트 모드(저장소 루트 vcpkg.json). VCPKG_ROOT 환경변수가 있으면 우선, 없으면 C:\vcpkg\ . -->
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == '' And '$(VCPKG_ROOT)' != ''">$([MSBuild]::EnsureTrailingSlash('$(VCPKG_ROOT)'))</VcpkgRoot>
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == ''">C:\vcpkg\</VcpkgRoot>
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgTriplet>x64-windows-static-md</VcpkgTriplet>
+  </PropertyGroup>
+  <!-- 전역 vcpkg integrate(vcpkg.user.targets)가 이미 있으면 그쪽이 가져오므로 중복 import 하지 않는다. -->
+  <Import Project="$(VcpkgRoot)scripts\buildsystems\msbuild\vcpkg.props" Condition="Exists('$(VcpkgRoot)scripts\buildsystems\msbuild\vcpkg.props') And !Exists('$(LOCALAPPDATA)\vcpkg\vcpkg.user.targets')" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)Output\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;NOMINMAX;UNICODE;_UNICODE;SLUG_ASSET_DIR="$(SolutionDir.Replace('\', '/'))Assets";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Test;$(SolutionDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>gtest.lib;SDL3-static.lib;yyjson.lib;kernel32.lib;user32.lib;gdi32.lib;winmm.lib;imm32.lib;ole32.lib;oleaut32.lib;version.lib;uuid.lib;advapi32.lib;setupapi.lib;shell32.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;NOMINMAX;UNICODE;_UNICODE;SLUG_ASSET_DIR="$(SolutionDir.Replace('\', '/'))Assets";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Test;$(SolutionDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>gtest.lib;SDL3-static.lib;yyjson.lib;kernel32.lib;user32.lib;gdi32.lib;winmm.lib;imm32.lib;ole32.lib;oleaut32.lib;version.lib;uuid.lib;advapi32.lib;setupapi.lib;shell32.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Test\AnimationTest.cpp" />
+    <ClCompile Include="..\..\Test\AudioTest.cpp" />
+    <ClCompile Include="..\..\Test\BakerTest.cpp" />
+    <ClCompile Include="..\..\Test\BattleShipTest.cpp" />
+    <ClCompile Include="..\..\Test\BossDefTest.cpp" />
+    <ClCompile Include="..\..\Test\BusTest.cpp" />
+    <ClCompile Include="..\..\Test\CameraTest.cpp" />
+    <ClCompile Include="..\..\Test\CombatTest.cpp" />
+    <ClCompile Include="..\..\Test\CoreTest.cpp" />
+    <ClCompile Include="..\..\Test\EnemyDefTest.cpp" />
+    <ClCompile Include="..\..\Test\EnemySandboxTest.cpp" />
+    <ClCompile Include="..\..\Test\EnemyWorldTest.cpp" />
+    <ClCompile Include="..\..\Test\GroundMapTest.cpp" />
+    <ClCompile Include="..\..\Test\Main.cpp" />
+    <ClCompile Include="..\..\Test\PhysicsTest.cpp" />
+    <ClCompile Include="..\..\Test\PlayerCombatTest.cpp" />
+    <ClCompile Include="..\..\Test\PlayerMoveTest.cpp" />
+    <ClCompile Include="..\..\Test\PlayerReplayTest.cpp" />
+    <ClCompile Include="..\..\Test\PlayerRigTest.cpp" />
+    <ClCompile Include="..\..\Test\PlayerWeaponTest.cpp" />
+    <ClCompile Include="..\..\Test\PropDefTest.cpp" />
+    <ClCompile Include="..\..\Test\PropItemTest.cpp" />
+    <ClCompile Include="..\..\Test\PropWorldTest.cpp" />
+    <ClCompile Include="..\..\Test\ReplayTest.cpp" />
+    <ClCompile Include="..\..\Test\SpriteBatchTest.cpp" />
+    <ClCompile Include="..\..\Test\StageCameraTest.cpp" />
+    <ClCompile Include="..\..\Test\StageDataTest.cpp" />
+    <ClCompile Include="..\..\Test\StageIntegrationTest.cpp" />
+    <ClCompile Include="..\..\Test\StageRunnerTest.cpp" />
+    <ClCompile Include="..\..\Test\StageStateTest.cpp" />
+    <ClCompile Include="..\..\Test\TuningTest.cpp" />
+    <ClCompile Include="..\..\Test\UiTest.cpp" />
+    <ClCompile Include="..\..\Test\VehicleBehaviorTest.cpp" />
+    <ClCompile Include="..\..\Test\VehicleDefTest.cpp" />
+    <ClCompile Include="..\..\Test\VehicleProjectileTest.cpp" />
+    <ClCompile Include="..\..\Test\VehicleSandboxTest.cpp" />
+    <ClCompile Include="..\..\Test\WorldTest.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Test\BossTestUtil.h" />
+    <ClInclude Include="..\..\Test\EnemyTestUtil.h" />
+    <ClInclude Include="..\..\Test\PlayerTestUtil.h" />
+    <ClInclude Include="..\..\Test\PropTestUtil.h" />
+    <ClInclude Include="..\..\Test\StageTestUtil.h" />
+    <ClInclude Include="..\..\Test\VehicleTestUtil.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SlugCore\SlugCore.vcxproj">
+      <Project>{ABF44F8E-4D16-463A-9FC7-E2085E9810E3}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(VcpkgRoot)scripts\buildsystems\msbuild\vcpkg.targets" Condition="Exists('$(VcpkgRoot)scripts\buildsystems\msbuild\vcpkg.targets') And !Exists('$(LOCALAPPDATA)\vcpkg\vcpkg.user.targets')" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,4 +1,5 @@
 #pragma once
+#include "Core/AssetPath.h"
 #include "Base/Types.h"
 #include "Base/Math.h"
 #include "Base/Result.h"
@@ -21,7 +22,7 @@ using namespace slug;
 
 inline slug::FilePath VehicleDefsDir()
 {
-    return slug::FilePath { SLUG_ASSET_DIR } / "Defs";
+    return slug::FindAssetRoot() / "Defs";
 }
 
 inline bool LoadVehicleLib(

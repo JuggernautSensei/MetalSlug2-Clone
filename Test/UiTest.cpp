@@ -1,3 +1,4 @@
+#include "Core/AssetPath.h"
 #include <filesystem>
 #include "Base/Types.h"
 #include "Base/Math.h"
@@ -296,7 +297,7 @@ TEST(UiBitmapFont, WithoutSpritesInitFailsGracefully)
 
 TEST(UiBitmapFont, BakedFontStripsAndUiSpritesExistWithExpectedSizes)
 {
-    slug::Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(slug::FilePath { SLUG_ASSET_DIR } / "Baked");
+    slug::Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(slug::FindAssetRoot() / "Baked");
     if (!library)
     {
         GTEST_SKIP() << "Assets/Baked 없음";
