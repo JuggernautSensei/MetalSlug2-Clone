@@ -54,6 +54,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/Source" FILES ${SLUG_CORE_SOURCES
 add_executable(Slug "${CMAKE_CURRENT_SOURCE_DIR}/Source/Main.cpp")
 target_link_libraries(Slug PRIVATE SlugCore)
 set_target_properties(Slug PROPERTIES OUTPUT_NAME "MyMetalSlug2")   # 실행 파일: MyMetalSlug2.exe
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Slug)   # Visual Studio 시작 프로젝트
 if(MSVC)
     # 콘솔 창 없이 실행하되 main() 진입점을 유지한다.
     set_target_properties(Slug PROPERTIES
