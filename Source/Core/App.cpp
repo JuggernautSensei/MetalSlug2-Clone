@@ -259,6 +259,7 @@ void App::Init_()
     m_ctx.pAnims    = &m_anims;
     m_ctx.pRng      = &m_rng;
     m_ctx.assetRoot = slug::FindAssetRoot();
+    m_ctx.debugLives = m_debugLives;
 
     {
         AudioConfig audioConfig;

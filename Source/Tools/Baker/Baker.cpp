@@ -468,6 +468,10 @@ namespace
                 f.pivotX          = pivot.x;
                 f.pivotY          = pivot.y;
                 out.trimmed[static_cast<size_t>(i)] = CropImage(img, bounds);
+                if (ConvertBlackSilhouetteToWhite(out.trimmed[static_cast<size_t>(i)]))
+                {
+                    _job.anomalies.push_back({ "BlackSilhouetteFrame", r.name, "frame " + std::to_string(i) + " is a solid black silhouette; baked as white flash", 0.0 });
+                }
                 magentaPx += CountOpaqueMagenta(out.trimmed[static_cast<size_t>(i)]);
             }
 

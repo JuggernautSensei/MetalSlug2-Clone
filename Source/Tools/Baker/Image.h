@@ -214,6 +214,39 @@ inline void ClearTransparentColor(Image& _image)
     return count;
 }
 
+// 불투명 픽셀의 90% 이상이 순수 검정(RGB 0)인 프레임(레거시 BMP 의 검은 실루엣)을 흰색 플래시로 바꾼다. 바꾸면 true.
+[[nodiscard]] inline bool ConvertBlackSilhouetteToWhite(Image& _image)
+{
+    constexpr uint64_t kMinOpaque = 200;
+    uint64_t           opaque     = 0;
+    uint64_t           black      = 0;
+    uint8_t*           p          = _image.pixels.data();
+    for (size_t i = 0, n = _image.pixels.size(); i < n; i += 4)
+    {
+        if (p[i + 3] == 0)
+        {
+            continue;
+        }
+        ++opaque;
+        if ((p[i] | p[i + 1] | p[i + 2]) == 0)
+        {
+            ++black;
+        }
+    }
+    if (opaque < kMinOpaque || black * 10 < opaque * 9)
+    {
+        return false;
+    }
+    for (size_t i = 0, n = _image.pixels.size(); i < n; i += 4)
+    {
+        if (p[i + 3] != 0 && (p[i] | p[i + 1] | p[i + 2]) == 0)
+        {
+            p[i] = p[i + 1] = p[i + 2] = 255;
+        }
+    }
+    return true;
+}
+
 [[nodiscard]] inline uint64_t HashImage(const Image& _image)
 {
     uint64_t hash = 14695981039346656037ull;

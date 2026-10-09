@@ -127,6 +127,19 @@ TEST(AudioBank, BakedSoundsJsonListsExistingFilesAndExtras)
     EXPECT_NE(bank->Find(sfx::kPickupCoin), nullptr);
 }
 
+TEST(AudioBank, EveryKnownSfxNameResolvesToBakedSound)
+{
+    slug::Result<SoundBank> bank = SoundBank::LoadFromDirectory(BakedRoot());
+    if (!bank)
+    {
+        GTEST_SKIP() << "Assets/Baked 없음";
+    }
+    for (const char* name: sfx::kAll)
+    {
+        EXPECT_NE(bank->Find(name), nullptr) << "sfx 이름이 베이크 사운드에 없음: " << name;
+    }
+}
+
 TEST(AudioVoices, FillsEmptySlotsWithoutStealing)
 {
     VoiceAllocator voices { 3, 3 };

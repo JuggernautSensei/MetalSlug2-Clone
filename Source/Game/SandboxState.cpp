@@ -789,7 +789,14 @@ void SandboxState::DrawHud_(
     Renderer&               renderer = *_ctx.pRenderer;
     const PlayerController& p        = m_player;
 
-    m_ui.DrawHud(_ctx, MakeHudModel(p));
+    // StageState::BuildHudModel 과 같은 규칙: 보스가 살아 있으면 보스 HP 바를 표시한다.
+    HudModel hud = MakeHudModel(p);
+    if (const std::optional<float> ratio = m_enemies.GetBossHpRatio())
+    {
+        hud.bShowBoss   = true;
+        hud.bossHpRatio = *ratio;
+    }
+    m_ui.DrawHud(_ctx, hud);
 
     if (_ctx.bDebugDraw)
     {

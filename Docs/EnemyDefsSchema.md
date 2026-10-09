@@ -26,6 +26,7 @@
 | `score` | int | 처치 점수 |
 | `body` | Box | 이동/지형 충돌 박스 |
 | `hurtboxes` | `[Hurtbox]` | 피격 박스(생략 시 `body` 1개). 다중(보스 3박스) 가능 |
+| `solid` | Box? | 살아 있는 동안만 플레이어/적을 막는 벽 `{w,h,cx,cy}` (발 기준 좌표, Box 와 같은 형식). 사망(Dying 이후) 시 제거. 버스 차체 등 통과 불가 구조물용. 생략 시 벽 없음 |
 | `activation` | obj | `{marginPx, latch:true, mode:"screen"\|"playerXAhead"\|"distance", range?}` (BTank = `playerXAhead:500`, MissleTank = `distance:600 latch:false`) |
 | `physics` | obj | `{gravity, maxFall, speed, jumpVy, stepDownPx:8, ground:"pixel"\|"none"}` |
 | `anim` | map | 논리 이름→클립. 접미 규칙 `{side}`=`Left`/`Right`: `"idle":"SD_Idle_{side}"`. 접미 없는 클립은 그대로 |
