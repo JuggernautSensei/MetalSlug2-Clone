@@ -126,6 +126,7 @@ TEST(PlayerShot, ShotPressedDuringCooldownIsBufferedAndFiresWhenReady)
 {
     Sim sim;
     UnlimitedBullets(sim);
+    sim.Tune().weapons.pistol.fireIntervalTicks = 5;
     sim.Tap(eAction::Shot);   // t0 발사
     sim.Step();               // t1
     sim.Tap(eAction::Shot);   // t2 눌림: 쿨다운 중 (간격 5)
@@ -150,6 +151,8 @@ TEST(PlayerShot, HmgHoldAutoFiresFasterThanPistol)
 {
     Sim pistol;
     Sim hmg;
+    pistol.Tune().weapons.pistol.fireIntervalTicks = 5;
+    pistol.Tune().weapons.pistol.holdRepeatTicks   = 8;
     UnlimitedBullets(pistol);
     UnlimitedBullets(hmg);
     hmg.Player().PickUpWeapon(eWeapon::Hmg, hmg.Tune());
@@ -271,7 +274,9 @@ TEST(PlayerShot, BulletsExpireAtTheirRange)
 {
     Sim sim;
     sim.Tap(eAction::Shot);
-    sim.Step(70);   // 420 px / 600 px/s = 42 틱
+    sim.Step(25);   // 333 px < 사거리 420 px
+    EXPECT_EQ(BulletCount(sim), 1u);
+    sim.Step(15);   // 420 px / 800 px/s = 31.5 틱 이후
     EXPECT_EQ(BulletCount(sim), 0u);
 }
 
@@ -345,7 +350,7 @@ TEST(PlayerKnife, GruntDiesAtTheFirstActiveTick)
     EXPECT_FALSE(Dummy(sim, id).IsAlive());   // activeFirstTick 에 맞는다
 }
 
-TEST(PlayerKnife, SlashDamagesVehicleDummiesThroughTheSameHitResolver)
+TEST(PlayerKnife, VehicleDummiesAreNotKnifedAndTakeThePistolInstead)
 {
     for (const eDummyKind kind: { eDummyKind::Jeep, eDummyKind::Bus })
     {
@@ -355,8 +360,9 @@ TEST(PlayerKnife, SlashDamagesVehicleDummiesThroughTheSameHitResolver)
         const int      hp = Dummy(sim, id).health.hp;
         sim.Tap(eAction::Shot);
         sim.Step(25);
-        EXPECT_EQ(Dummy(sim, id).health.hp, hp - sim.Tune().knife.damage) << GetDummyName(kind);
-        EXPECT_EQ(sim.Player().GetStats().knifeSlashes, 1);
+        EXPECT_EQ(Dummy(sim, id).health.hp, hp - sim.Tune().weapons.pistol.damage) << GetDummyName(kind);
+        EXPECT_EQ(sim.Player().GetStats().knifeSlashes, 0) << GetDummyName(kind);
+        EXPECT_EQ(sim.Player().GetStats().shotsFired, 1) << GetDummyName(kind);
     }
 }
 
@@ -364,7 +370,7 @@ TEST(PlayerKnife, OneSwingHitsATargetOnlyOnceEvenThoughTheWindowIsLong)
 {
     Sim sim;
     sim.Step(2);
-    const uint32_t id = sim.State().AddTarget(eDummyKind::Bus, { sim.X() + 90.f, 378.f });
+    const uint32_t id = sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + 25.f, 378.f });
     sim.Tap(eAction::Shot);
 
     int activeTicks = 0;
@@ -378,7 +384,7 @@ TEST(PlayerKnife, OneSwingHitsATargetOnlyOnceEvenThoughTheWindowIsLong)
     EXPECT_EQ(Dummy(sim, id).hitsTaken, 1);
 }
 
-TEST(PlayerKnife, HeldShotChainsSlashesUntilTheVehicleDies)
+TEST(PlayerKnife, HeldShotOnAVehicleKeepsFiringThePistol)
 {
     Sim sim;
     sim.Step(2);
@@ -386,9 +392,8 @@ TEST(PlayerKnife, HeldShotChainsSlashesUntilTheVehicleDies)
     sim.Hold(eAction::Shot);
     const int killed = sim.StepUntil(120, [&] { return !Dummy(sim, id).IsAlive(); });
     ASSERT_GE(killed, 0);
-    EXPECT_LT(killed, 40);   // 3 번 이어 베어 약 1.5초 안에 쓰러진다
-    EXPECT_GE(sim.Player().GetStats().knifeSlashes, 3);
-    EXPECT_EQ(sim.Player().GetStats().shotsFired, 0);   // 근접 중에는 한 발도 쏘지 않는다
+    EXPECT_EQ(sim.Player().GetStats().knifeSlashes, 0);
+    EXPECT_GE(sim.Player().GetStats().shotsFired, 7);   // 권총 3 x 7 = 21 >= 지프 체력 20
 }
 
 TEST(PlayerKnife, TriggerRangeBoundary)
@@ -437,7 +442,7 @@ TEST(PlayerKnife, WorksWhileCrouchedRunningAndInTheAir)
     {
         Sim sim;   // 앉은 채
         sim.Step(2);
-        sim.State().AddTarget(eDummyKind::Bus, { sim.X() + 80.f, 378.f });
+        sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + 25.f, 378.f });
         sim.Hold(eAction::Down);
         sim.Step(2);
         sim.Tap(eAction::Shot);
@@ -445,7 +450,7 @@ TEST(PlayerKnife, WorksWhileCrouchedRunningAndInTheAir)
     }
     {
         Sim sim;   // 달리는 중
-        sim.State().AddTarget(eDummyKind::Bus, { 200.f, 378.f });
+        sim.State().AddTarget(eDummyKind::Grunt, { 200.f, 378.f });
         sim.Hold(eAction::Right);
         sim.Step(25);
         sim.Tap(eAction::Shot);
@@ -454,7 +459,7 @@ TEST(PlayerKnife, WorksWhileCrouchedRunningAndInTheAir)
     {
         Sim sim;   // 점프 중
         sim.Step(2);
-        sim.State().AddTarget(eDummyKind::Bus, { sim.X() + 80.f, 378.f });
+        sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + 25.f, 378.f });
         sim.Tap(eAction::Jump);
         sim.Step(8);
         ASSERT_FALSE(sim.Player().IsGrounded());
@@ -467,7 +472,7 @@ TEST(PlayerKnife, BombAndKnifeSameTickKnifeWinsAndNoBombIsLost)
 {
     Sim sim;
     sim.Step(2);
-    sim.State().AddTarget(eDummyKind::Bus, { sim.X() + 80.f, 378.f });
+    sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + 25.f, 378.f });
     sim.Hold(eAction::Shot);
     sim.Hold(eAction::Bomb);
     sim.Step();
@@ -481,7 +486,7 @@ TEST(PlayerKnife, NeverGetsStuckUnderRandomInput)
 {
     Sim sim;
     sim.Step(2);
-    sim.State().AddTarget(eDummyKind::Bus, { 140.f, 378.f });   // 계속 근접 상태
+    sim.State().AddTarget(eDummyKind::Grunt, { 140.f, 378.f });   // 계속 근접 상태
     const jug::Vector<InputFrame> script = [] {
         jug::RngMt19937         rng { uint64_t { 7 } };
         jug::Vector<InputFrame> frames;

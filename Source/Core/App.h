@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <JugX/Application.h>
 #include <JugX/Random.h>
 
@@ -53,22 +53,22 @@ private:
     void Render_(float _alpha);
     void SaveRecording_() const;
 
-    Renderer          m_renderer  = {};
-    SpriteBatch       m_sprites   = {};
-    AnimationLibrary  m_anims     = {};
-    jug::RngMt19937   m_rng       = jug::RngMt19937 { uint64_t { 1 } };
-    GameContext       m_ctx       = {};
-    AudioSystem       m_audio     = {};
-    InputSystem       m_input     = {};
-    FixedStepClock    m_clock     = {};
+    Renderer         m_renderer = {};
+    SpriteBatch      m_sprites  = {};
+    AnimationLibrary m_anims    = {};
+    jug::RngMt19937  m_rng      = jug::RngMt19937 { uint64_t { 1 } };
+    GameContext      m_ctx      = {};
+    AudioSystem      m_audio    = {};
+    InputSystem      m_input    = {};
+    FixedStepClock   m_clock    = {};
 
     jug::Scoped<SimRunner> m_pRunner = nullptr;
 
     // 명령행 옵션
-    jug::String   m_stateName  = {};
-    uint64_t      m_seed       = 1;
-    jug::FilePath m_recordPath = {};
-    jug::FilePath m_replayPath = {};
+    jug::String   m_stateName   = {};
+    uint64_t      m_seed        = 1;
+    jug::FilePath m_recordPath  = {};
+    jug::FilePath m_replayPath  = {};
     bool          m_bReplayHold = false;
     bool          m_bNoAudio    = false;
 
@@ -79,21 +79,21 @@ private:
     bool       m_bPlayback    = false;
 
     // QA 캡처
-    jug::FilePath m_capturePath      = {};
-    int           m_captureFrame     = 30;
-    int           m_renderFrameCount = 0;
-    jug::Vector<uint64_t> m_captureTicks = {};
-    size_t        m_captureTickHead  = 0;
+    jug::FilePath         m_capturePath      = {};
+    int                   m_captureFrame     = 30;
+    int                   m_renderFrameCount = 0;
+    jug::Vector<uint64_t> m_captureTicks     = {};
+    size_t                m_captureTickHead  = 0;
 
     // 디버그 제어
-    bool  m_bPaused     = false;
-    bool  m_bStepOnce   = false;
-    bool  m_bSlowMo     = false;
-    bool  m_bDebugDraw  = false;
-    int   m_pendingWarp = 0;   // F5/F6 (F1 켜진 상태): 다음 Update 에서 GameContext::debugWarp 로 전달
+    bool  m_bPaused        = false;
+    bool  m_bStepOnce      = false;
+    bool  m_bSlowMo        = false;
+    bool  m_bDebugDraw     = false;
+    int   m_pendingWarp    = 0;   // F5/F6 (F1 켜진 상태): 다음 Update 에서 GameContext::debugWarp 로 전달
     int   m_startWarpCount = 0;   // --warp N: 시작 시 남은 워프 요청 수 (매 Update 한 번씩 소비)
-    int   m_pendingSpawn = 0;  // 숫자키 1..8 (적 디버그 스폰): 다음 Update 에서 GameContext::debugSpawn 으로 전달
-    float m_fps         = 0.f;
+    int   m_pendingSpawn   = 0;   // 숫자키 1..8 (적 디버그 스폰): 다음 Update 에서 GameContext::debugSpawn 으로 전달
+    float m_fps            = 0.f;
 };
 
 }   // namespace slug

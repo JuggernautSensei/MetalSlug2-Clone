@@ -392,3 +392,37 @@ TEST(EnemyWorld, OneThousandEightHundredTicksAreDeterministic)
     distinct.erase(std::unique(distinct.begin(), distinct.end()), distinct.end());
     EXPECT_GT(distinct.size(), 100u);   // 실제로 상태가 변한다
 }
+
+TEST(EnemyWorld, PowSpawnedHighFallsStraightDownUntilLanding)
+{
+    EnemyRig rig;
+    ASSERT_TRUE(rig.IsLoaded());
+    const EnemyHandle pow = rig.Spawn("pow", { 300.f, 150.f });
+    ASSERT_FALSE(pow.IsNull());
+    int ticks = 0;
+    while (!rig.E(pow)->bGrounded && ticks < 120)
+    {
+        rig.Step(1);
+        EXPECT_FLOAT_EQ(rig.E(pow)->body.position.x, 300.f) << "tick " << ticks;
+        ++ticks;
+    }
+    EXPECT_TRUE(rig.E(pow)->bGrounded);
+    EXPECT_FLOAT_EQ(rig.E(pow)->body.position.y, kGroundY);
+}
+
+TEST(EnemyWorld, PowHitWhileFallingIsNotFreedAndStaysVertical)
+{
+    EnemyRig rig;
+    ASSERT_TRUE(rig.IsLoaded());
+    const EnemyHandle pow = rig.Spawn("pow", { 300.f, 150.f });
+    rig.Step(5);
+    ASSERT_FALSE(rig.E(pow)->bGrounded);
+    EXPECT_EQ(rig.Strike(pow.id, eHitKind::Bullet, 1), 0u);
+    EXPECT_EQ(rig.Strike(pow.id, eHitKind::Melee, 8), 0u);
+    for (int i = 0; i < 120 && !rig.E(pow)->bGrounded; ++i)
+    {
+        rig.Step(1);
+        EXPECT_FLOAT_EQ(rig.E(pow)->body.position.x, 300.f) << "tick " << i;
+    }
+    EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Freed), 0);
+}

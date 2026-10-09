@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <JugX/Typedef.h>
 
 #include "World/Combat.h"

@@ -202,10 +202,11 @@ TEST(PlayerRigPose, ShotSlashAndThrowOverlaysPickTheirClips)
     {
         Sim sim { MakeFlatConfig(), &anims };
         sim.Step(2);
-        sim.State().AddTarget(eDummyKind::Bus, { sim.X() + 80.f, 378.f });
+        sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + 25.f, 378.f });
         sim.Tap(eAction::Shot);
         EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Slash2_DG_Right"));   // 첫 베기: 번갈아 시작 (토글)
         sim.Step(sim.Tune().knife.durationTicks + 2);
+        sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + 25.f, 378.f });
         sim.Tap(eAction::Shot);
         EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Slash1_DG_Right"));
     }

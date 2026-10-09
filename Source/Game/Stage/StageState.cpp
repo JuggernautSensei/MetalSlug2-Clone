@@ -227,6 +227,24 @@ void StageState::Load_(
             {
                 JUG_CORE_LOG_WARN("원경 '{}' 을 읽지 못했습니다", bgPath.string());
             }
+
+            m_backdropHandles.clear();
+            for (const BackdropMode& mode: m_data.backdrops)
+            {
+                int handle = -1;
+                if (const SpriteInfo* pInfo = m_spriteLib.Find(mode.sprite); pInfo && pInfo->bStandalone)
+                {
+                    if (const jug::Result<int> loaded = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / jug::FilePath { pInfo->file }))
+                    {
+                        handle = loaded.GetValue();
+                    }
+                    else
+                    {
+                        JUG_CORE_LOG_WARN("원경 스프라이트 '{}' 을 읽지 못했습니다", mode.sprite);
+                    }
+                }
+                m_backdropHandles.push_back(handle);
+            }
         }
     }
 
@@ -765,21 +783,51 @@ void StageState::DrawBackdrop_(
     GameContext&       _ctx,
     const jug::VECTOR2 _cameraPos)
 {
-    // 화면 좌표의 원경 중심 = (320 + offset.x - parallaxX*camCenterX, 224 + offset.y)  (Docs/StageFormat.md §4)
     const BackdropMode* pMode = m_data.FindBackdrop(m_runner->GetBackdropMode());
     if (!pMode || !_ctx.pSprites)
     {
         return;
     }
     const SpriteInfo* pSprite = m_spriteLib.Find(pMode->sprite);
-    if (!pSprite)
+    if (!pSprite || pSprite->width <= 0)
+    {
+        return;
+    }
+    const size_t modeIndex = static_cast<size_t>(pMode - m_data.backdrops.data());
+    const int    handle    = modeIndex < m_backdropHandles.size() ? m_backdropHandles[modeIndex] : -1;
+    if (pSprite->bStandalone && handle < 0)
     {
         return;
     }
 
-    const float        camCenterX = _cameraPos.x + Renderer::kLogicalWidth * 0.5f;
-    const jug::VECTOR2 screenCenter = { Renderer::kLogicalWidth * 0.5f + pMode->offset.x - pMode->parallaxX * camCenterX, Renderer::kLogicalHeight * 0.5f + pMode->offset.y };
-    _ctx.pSprites->Submit(0, 0, pSprite->frame, { screenCenter.x + _cameraPos.x, screenCenter.y + _cameraPos.y });
+    // 원경 중심 (화면 좌표) = (320 + offset.x - parallaxX*camCenterX, 224 + offset.y), 정수로 내림 (Docs/StageFormat.md §4)
+    const float camCenterX = _cameraPos.x + Renderer::kLogicalWidth * 0.5f;
+    const float centerX    = Renderer::kLogicalWidth * 0.5f + pMode->offset.x - pMode->parallaxX * camCenterX;
+    const float centerY    = Renderer::kLogicalHeight * 0.5f + pMode->offset.y;
+
+    const int pivotX = pSprite->bStandalone ? pSprite->width / 2 : pSprite->frame.pivotX;
+    const int pivotY = pSprite->bStandalone ? pSprite->height / 2 : pSprite->frame.pivotY;
+    const int left   = static_cast<int>(std::floor(centerX)) - pivotX;
+    const int top    = static_cast<int>(std::floor(centerY)) - pivotY;
+
+    // 가로로 반복한다 (스테이지 길이 전체에서 화면이 비지 않도록). 세로는 한 장만 둔다.
+    const int tileW = pSprite->width;
+    int       x     = left % tileW;
+    if (x > 0)
+    {
+        x -= tileW;
+    }
+    for (; x < Renderer::kLogicalWidth; x += tileW)
+    {
+        if (pSprite->bStandalone)
+        {
+            _ctx.pSprites->DrawTexture(handle, { static_cast<float>(x) + _cameraPos.x, static_cast<float>(top) + _cameraPos.y }, _cameraPos, Renderer::kLogicalWidth, Renderer::kLogicalHeight);
+        }
+        else
+        {
+            _ctx.pSprites->Submit(0, 0, pSprite->frame, { static_cast<float>(x + pivotX) + _cameraPos.x, static_cast<float>(top + pivotY) + _cameraPos.y });
+        }
+    }
 }
 
 void StageState::DrawWorld_(

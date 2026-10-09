@@ -76,8 +76,8 @@ TEST(PlayerMove, RunSpeedMatchesTuning)
 TEST(PlayerMove, RunSpeedFeelsLikeMetalSlug)
 {
     // 640x448 에서 메탈슬러그 달리기는 대략 100~130 px/s
-    EXPECT_GE(Tuning {}.move.runSpeed, 100.f);
-    EXPECT_LE(Tuning {}.move.runSpeed, 130.f);
+    EXPECT_GE(Tuning {}.move.runSpeed, 240.f);
+    EXPECT_LE(Tuning {}.move.runSpeed, 260.f);
 }
 
 TEST(PlayerMove, StopsInstantlyOnReleaseAndStateReturnsToIdle)
@@ -320,11 +320,11 @@ TEST(PlayerJump, HeldJumpApexAndAirTimeFeelRight)
     Sim sim;
     sim.Step(2);
     const JumpMeasure held = MeasureJump(sim, true);
-    EXPECT_GE(held.apex, 60.f);
-    EXPECT_LE(held.apex, 85.f);
+    EXPECT_GE(held.apex, 120.f);
+    EXPECT_LE(held.apex, 135.f);
     const float airSec = static_cast<float>(held.ticks) / 60.f;
-    EXPECT_GE(airSec, 0.6f);
-    EXPECT_LE(airSec, 0.8f);
+    EXPECT_GE(airSec, 0.8f);
+    EXPECT_LE(airSec, 0.92f);
 }
 
 TEST(PlayerJump, VariableJumpShortTapIsLowerThanHeld)

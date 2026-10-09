@@ -71,19 +71,19 @@ void Write(
 Script MakeRegressionScript()
 {
     Script s { 900 };
-    s.Hold(eAction::Right, 0, 100);     // 보병(330) 앞까지
-    s.Hold(eAction::Shot, 100, 125);    // 칼 자동 발동
-    s.Hold(eAction::Right, 125, 175);   // 두 번째 보병(400)
-    s.Tap(eAction::Shot, 176);
-    s.Tap(eAction::Shot, 190);
-    s.Hold(eAction::Right, 200, 330);   // 지프(640) 쪽으로
-    s.Hold(eAction::Shot, 300, 420);    // 지프를 칼/총으로
-    s.Tap(eAction::Jump, 440);
-    s.Hold(eAction::Jump, 500, 530);
-    s.Tap(eAction::Bomb, 560);
-    s.Hold(eAction::Down, 600, 650);
-    s.Hold(eAction::Right, 700, 760);
-    s.Tap(eAction::Bomb, 770);
+    s.Hold(eAction::Right, 0, 50);      // 보병(330) 앞까지
+    s.Hold(eAction::Shot, 50, 64);      // 칼 자동 발동
+    s.Hold(eAction::Right, 64, 88);     // 두 번째 보병(400)
+    s.Tap(eAction::Shot, 90);
+    s.Tap(eAction::Shot, 97);
+    s.Hold(eAction::Right, 100, 165);   // 지프(640) 쪽으로
+    s.Hold(eAction::Shot, 150, 210);    // 지프를 총으로
+    s.Tap(eAction::Jump, 220);
+    s.Hold(eAction::Jump, 250, 265);
+    s.Tap(eAction::Bomb, 280);
+    s.Hold(eAction::Down, 300, 325);
+    s.Hold(eAction::Right, 350, 380);
+    s.Tap(eAction::Bomb, 385);
     return s;
 }
 }   // namespace

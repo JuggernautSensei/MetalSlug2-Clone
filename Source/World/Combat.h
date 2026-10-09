@@ -77,6 +77,16 @@ struct Hurtbox
     bool        bInvulnerable = false;
 };
 
+// 칼(Melee)은 사람 대상에만 닿는다. 차량/보스/건물/소품은 총알과 폭탄만 받는다.
+[[nodiscard]] inline HitKindMask AcceptsFor(const bool _bMeleeable)
+{
+    if (_bMeleeable)
+    {
+        return jug::kAllFlag;
+    }
+    return HitKindMask { eHitKind::Bullet, eHitKind::Blast };
+}
+
 struct HitEvent
 {
     uint32_t hitboxIndex  = 0;

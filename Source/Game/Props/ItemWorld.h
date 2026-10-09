@@ -67,6 +67,7 @@ struct PropItem
     Body         body      = {};
     float        ageSec    = 0.f;
     bool         bBounce   = false;
+    float        rollVx    = 0.f;         // 굴림 속도: 착지 후에만 적용 (떨어지는 동안은 수직으로 떨어진다)
     bool         bBegun    = false;       // begin 클립(Item_Mando_Begin) 재생 중
     bool         bPickedUp = false;       // 습득됨: pickupSec 동안 Disappear 연출 후 제거
     float        pickupSec = 0.f;         // 습득 후 남은 연출 시간 (bPickedUp 일 때만 의미)

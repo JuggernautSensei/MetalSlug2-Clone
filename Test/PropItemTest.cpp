@@ -157,6 +157,21 @@ TEST(PropItem, RollingFruitSlowsDownAndStops)
     EXPECT_NE(pItem->feet.x, startX);
 }
 
+TEST(PropItem, RollingFruitFallsStraightDownBeforeItRolls)
+{
+    const GroundMap ground = MakeFloorMap(400, 200, 140);
+    ItemWorld       items { &GetPropLib(), 6 };
+    const uint32_t  id = items.Spawn("item_apple", { 100.f, 40.f });
+    for (int i = 0; i < 120 && !items.Find(id)->body.bGrounded; ++i)
+    {
+        TickItems(items, FloorWorld(ground), 1);
+        EXPECT_FLOAT_EQ(items.Find(id)->feet.x, 100.f) << "tick " << i;
+    }
+    EXPECT_TRUE(items.Find(id)->body.bGrounded);
+    TickItems(items, FloorWorld(ground), 600);
+    EXPECT_NE(items.Find(id)->feet.x, 100.f);
+}
+
 // ===========================================
 //  습득 / 점수 팝업
 // ===========================================

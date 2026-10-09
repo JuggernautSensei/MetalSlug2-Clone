@@ -65,9 +65,9 @@ struct UiLayout
     int bannerLineGap   = 4;     // 줄 간격 (배율 1 기준 px)
 
     // --- 타이틀 ---
-    int titleBackgroundY      = 0;     // TitleBackground(640x360) 위쪽
-    int titlePressStartY      = 404;   // PressStartUI 중심 y
-    int titleHintY            = 430;   // 힌트 문구 위쪽
+    int titleNameY            = 150;   // "MY METAL SLUG 2" 윗줄
+    int titlePressStartY      = 396;   // "PRESS START" 윗줄
+    int titleHintY            = 430;   // 힌트 문구 윗줄
     int titleBlinkTicks       = 30;
     int titleFadeTicks        = 24;    // 시작 시 암전
 };

@@ -214,8 +214,9 @@ void EnemyWorld::RegisterHurtboxes(
         }
         Hurtbox hurtbox;
         hurtbox.box   = def.hurtbox.At(e.body.position, e.facing);
-        hurtbox.team  = def.team;
-        hurtbox.owner = e.id;
+        hurtbox.team    = def.team;
+        hurtbox.owner   = e.id;
+        hurtbox.accepts = AcceptsFor(def.bHuman);
         _combat.AddHurtbox(hurtbox);
     }
 }

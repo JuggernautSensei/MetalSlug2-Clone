@@ -591,6 +591,9 @@ struct EnemyDef
     // true: 카메라 뒤로 밀려나도 정리하지 않는다 (보스 아레나 고정)
     bool bNoDespawn = false;
 
+    // true: 사람 (칼 대상). 차량/보스는 false 라서 칼을 받지 않는다
+    bool bHuman = false;
+
     [[nodiscard]] const ClipDef& GetClip(const int _index) const { return clips[static_cast<size_t>(_index)].clip; }
     [[nodiscard]] int            FindClip(jug::StringView _logicalName) const;
     [[nodiscard]] int            FindWeapon(jug::StringView _name) const;

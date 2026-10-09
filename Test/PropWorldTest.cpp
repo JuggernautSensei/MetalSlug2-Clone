@@ -86,18 +86,18 @@ TEST(PropWorld, UnknownDefSpawnsNothing)
     EXPECT_TRUE(world.IsDestroyed(kNoProp));   // 없는 핸들은 파괴된 것으로 본다
 }
 
-TEST(PropWorld, ShopDestroyedAfterFifteenPistolHits)
+TEST(PropWorld, ShopDestroyedAfterFourPistolHits)
 {
     PropWorld world { &GetPropLib(), 1 };
     const PropHandle shop = world.Spawn("shop_0", { 1274.f, 228.f });
     ASSERT_NE(shop, kNoProp);
     EXPECT_GE(shop, kPropOwnerBase);   // 소품 owner id 범위
 
-    HitN(world, shop, 14, 2);
+    HitN(world, shop, 3, 3);
     EXPECT_FALSE(world.IsDestroyed(shop));
-    EXPECT_EQ(world.GetHp(shop), 2);
+    EXPECT_EQ(world.GetHp(shop), 3);
 
-    HitN(world, shop, 1, 2);
+    HitN(world, shop, 1, 3);
     EXPECT_TRUE(world.IsDestroyed(shop));
     EXPECT_FALSE(world.IsDestroyFinished(shop));   // 파괴 연출 0.5 s 동안은 아직
 
@@ -106,25 +106,56 @@ TEST(PropWorld, ShopDestroyedAfterFifteenPistolHits)
     EXPECT_EQ(world.GetCount(), 1u);   // 상점 잔해는 남는다 (remove 아님)
 }
 
-TEST(PropWorld, KnifeNeedsEightHitsOnTruck)
+TEST(PropWorld, KnifeDoesNotHitTrucks)
 {
     PropWorld world { &GetPropLib(), 1 };
     const PropHandle truck = world.Spawn("truck", { 580.f, 342.f });
     ASSERT_NE(truck, kNoProp);
-    HitN(world, truck, 7, 4, eHitKind::Melee);   // 칼 4 x7 = 28 (HP 30)
+    CombatSystem probe;
+    probe.BeginTick();
+    world.RegisterHurtboxes(probe);
+    ASSERT_FALSE(probe.GetHurtboxes().empty());
+
+    for (const Hurtbox& hb: probe.GetHurtboxes())
+    {
+        Hitbox knife;
+        knife.box    = hb.box;
+        knife.team   = eTeam::Player;
+        knife.kind   = eHitKind::Melee;
+        knife.damage = 8;
+        knife.owner  = 1;
+        knife.id     = 1;
+        CombatSystem combat;
+        const jug::Vector<HitEvent>* pEvents = ResolveHitbox(combat, world, knife);
+        EXPECT_TRUE(pEvents->empty());
+    }
     EXPECT_FALSE(world.IsDestroyed(truck));
-    HitN(world, truck, 1, 4, eHitKind::Melee);   // 8번째에서 파괴
+    EXPECT_EQ(world.GetHp(truck), 9);
+}
+
+TEST(PropWorld, PistolThreeShotsDestroyATruck)
+{
+    PropWorld world { &GetPropLib(), 1 };
+    const PropHandle truck = world.Spawn("truck", { 580.f, 342.f });
+    HitN(world, truck, 2, 3);
+    EXPECT_FALSE(world.IsDestroyed(truck));
+    HitN(world, truck, 1, 3);
     EXPECT_TRUE(world.IsDestroyed(truck));
 }
 
-TEST(PropWorld, BombTwoHitsOnTruck)
+TEST(PropWorld, BombOneHitKillsATruckAndTwoHitsABigHouse)
 {
     PropWorld world { &GetPropLib(), 1 };
     const PropHandle truck = world.Spawn("truck", { 580.f, 342.f });
     HitN(world, truck, 1, 20, eHitKind::Blast);
-    EXPECT_FALSE(world.IsDestroyed(truck));
-    HitN(world, truck, 1, 20, eHitKind::Blast);
     EXPECT_TRUE(world.IsDestroyed(truck));
+
+    const PropHandle house = world.Spawn("big_house", { 2000.f, 342.f });
+    ASSERT_NE(house, kNoProp);
+    HitN(world, house, 1, 20, eHitKind::Blast);
+    EXPECT_FALSE(world.IsDestroyed(house));
+    HitN(world, house, 1, 20, eHitKind::Blast);
+    EXPECT_TRUE(world.IsDestroyed(house));
 }
 
 TEST(PropWorld, FenceDiesToOneHitAndIsRemovedAfterFinish)
@@ -168,7 +199,7 @@ TEST(PropWorld, HurtboxesAreNeutralWithPropOwnerAndNoHazard)
     EXPECT_EQ(hb.team, eTeam::Neutral);
     EXPECT_EQ(hb.owner, shop);
     EXPECT_TRUE(hb.accepts.Has(eHitKind::Bullet));
-    EXPECT_TRUE(hb.accepts.Has(eHitKind::Melee));
+    EXPECT_FALSE(hb.accepts.Has(eHitKind::Melee));
     EXPECT_TRUE(hb.accepts.Has(eHitKind::Blast));
     EXPECT_FALSE(hb.accepts.Has(eHitKind::Hazard));
     EXPECT_FLOAT_EQ(hb.box.min.x, 1274.f - 75.f);
@@ -192,7 +223,7 @@ TEST(PropWorld, PlayerHitboxResolvesToPropEvent)
 
     ASSERT_EQ(pEvents->size(), 1u);
     EXPECT_EQ((*pEvents)[0].target, shop);
-    EXPECT_EQ(world.GetHp(shop), 28);
+    EXPECT_EQ(world.GetHp(shop), 10);
     const jug::Vector<PropEvent> events = world.TakeEvents();
     EXPECT_TRUE(HasEvent(events, ePropEventKind::Damaged));
 }
@@ -212,7 +243,7 @@ TEST(PropWorld, EnemyHitboxDoesNotHitProps)
     hb.id     = combat.NewHitId();
     const jug::Vector<HitEvent>* pEvents = ResolveHitbox(combat, world, hb);
     EXPECT_TRUE(pEvents->empty());
-    EXPECT_EQ(world.GetHp(shop), 30);
+    EXPECT_EQ(world.GetHp(shop), 12);
 }
 
 TEST(PropWorld, ParamHitboxOverrideChangesHurtbox)
@@ -401,13 +432,13 @@ TEST(PropWorld, GroundHouseDamageStagesAndGroundPatch)
     const jug::VECTOR2 center { 9830.f, 1269.f };
     const PropHandle   house = world.Spawn("ground_house", center);
 
-    HitN(world, house, 10, 2);   // 20 dmg → HP 20 (damagedAtHp)
-    EXPECT_EQ(world.GetHp(house), 20);
+    HitN(world, house, 6, 2);   // 12 dmg → HP 12 (damagedAtHp)
+    EXPECT_EQ(world.GetHp(house), 12);
     EXPECT_EQ(world.GetDebris().size(), 5u);   // onDamaged 목재 5
     TickN(world, 1);
     EXPECT_EQ(world.Get(house)->visual, ePropVisual::Damaged);
 
-    HitN(world, house, 10, 2);
+    HitN(world, house, 6, 2);
     EXPECT_TRUE(world.IsDestroyed(house));
     const jug::Vector<PropEvent> events = world.TakeEvents();
     bool bPatch = false;
@@ -422,7 +453,7 @@ TEST(PropWorld, GroundHouseDamageStagesAndGroundPatch)
         }
     }
     EXPECT_TRUE(bPatch);
-    EXPECT_EQ(CountEvents(events, ePropEventKind::Damaged), 20);
+    EXPECT_EQ(CountEvents(events, ePropEventKind::Damaged), 12);
 }
 
 TEST(PropWorld, ApplyGroundPatchWritesOnlyPatchRegion)

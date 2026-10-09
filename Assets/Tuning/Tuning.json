@@ -1,12 +1,12 @@
 {
     "move": {
-        "runSpeed": 120,
-        "crouchSpeed": 60,
-        "airSpeed": 120,
-        "jumpSpeed": 430,
-        "gravity": 1224,
-        "terminalVelocity": 600,
-        "jumpCutFactor": 0.45,
+        "runSpeed": 250,
+        "crouchSpeed": 125,
+        "airSpeed": 250,
+        "jumpSpeed": 600,
+        "gravity": 1400,
+        "terminalVelocity": 1000,
+        "jumpCutFactor": 0.5,
         "coyoteTicks": 4,
         "jumpBufferTicks": 4,
         "shotBufferTicks": 6,
@@ -48,10 +48,10 @@
     "weapons": {
         "pistol": {
             "damage": 3,
-            "fireIntervalTicks": 5,
-            "holdRepeatTicks": 8,
+            "fireIntervalTicks": 4,
+            "holdRepeatTicks": 6,
             "ammo": 0,
-            "projectileSpeed": 600,
+            "projectileSpeed": 800,
             "maxAlive": 4,
             "pierce": false,
             "hitSize": [14, 10],
@@ -126,7 +126,7 @@
     },
     "camera": {
         "deadzoneHalf": [24, 16],
-        "smoothTime": 0.18,
+        "smoothTime": 0.14,
         "lookAheadX": 40
     },
     "sandbox": {

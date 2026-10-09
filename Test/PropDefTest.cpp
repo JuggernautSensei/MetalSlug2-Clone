@@ -79,7 +79,7 @@ TEST(PropDef, ShopDefHasStandBoxReplacedOnlyOnShop5)
     const PropDefLibrary& lib = GetPropLib();
     const PropDef*        s5  = lib.Find("shop_5");
     ASSERT_NE(s5, nullptr);
-    EXPECT_EQ(s5->hp, 30);   // 레거시 15 x2
+    EXPECT_EQ(s5->hp, 12);   // 권총 4발
     ASSERT_EQ(s5->parts.size(), 3u);
     EXPECT_EQ(s5->parts[2].when, ePropWhen::Destroyed);
     EXPECT_EQ(s5->parts[2].size.x, 220.f);
@@ -117,16 +117,16 @@ TEST(PropDef, HouseRoofIsEnemyOnlyPlatform)
         bHasEnemyPlatform = bHasEnemyPlatform || part.role == ePropRole::EnemyPlatform;
     }
     EXPECT_TRUE(bHasEnemyPlatform);
-    EXPECT_EQ(house->hp, 20);
+    EXPECT_EQ(house->hp, 18);   // 권총 6발
 }
 
 TEST(PropDef, DamagedThresholdsAreHalfOfHp)
 {
     const PropDefLibrary& lib = GetPropLib();
-    EXPECT_EQ(lib.Find("ground_house")->hp, 40);
-    EXPECT_EQ(lib.Find("ground_house")->damagedAtHp, 20);
-    EXPECT_EQ(lib.Find("big_house")->hp, 80);
-    EXPECT_EQ(lib.Find("big_house")->damagedAtHp, 40);
+    EXPECT_EQ(lib.Find("ground_house")->hp, 24);
+    EXPECT_EQ(lib.Find("ground_house")->damagedAtHp, 12);
+    EXPECT_EQ(lib.Find("big_house")->hp, 24);
+    EXPECT_EQ(lib.Find("big_house")->damagedAtHp, 12);
     EXPECT_TRUE(lib.Find("ground_house")->bHasGroundPatch);
     EXPECT_EQ(lib.Find("ground_house")->groundPatch.sprite.c_str(), std::string { "Stage0_House_4_PixelMap" });
 }
@@ -135,7 +135,7 @@ TEST(PropDef, BoatHasSecondaryAndTwoDropGroups)
 {
     const PropDef* boat = GetPropLib().Find("mob_boat");
     ASSERT_NE(boat, nullptr);
-    EXPECT_EQ(boat->hp, 60);
+    EXPECT_EQ(boat->hp, 12);
     EXPECT_TRUE(boat->bHasSecondary);
     ASSERT_EQ(boat->drops.size(), 2u);
     EXPECT_EQ(boat->drops[0].count, 3);

@@ -157,6 +157,7 @@ private:
     // 렌더 자원 (렌더러가 있을 때만 유효)
     SpriteLibrary m_spriteLib = {};
     int           m_bgHandle  = -1;
+    jug::Vector<int> m_backdropHandles = {};   // m_data.backdrops 와 같은 순서, 독립 파일이 아니면 -1
     bool          m_bRigBound = false;
     AnimId        m_bombClip  = jug::kNullHandle;
 

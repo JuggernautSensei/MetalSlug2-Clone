@@ -100,7 +100,7 @@ uint32_t ItemWorld::Spawn(
 
     if (def.kind == eItemKind::Score && def.bRoll)
     {
-        item.body.velocity.x = RandRange(m_rng, kRollMinVx, kRollMaxVx);   // 굴러간다
+        item.rollVx = RandRange(m_rng, kRollMinVx, kRollMaxVx);
     }
     if (_bBounce)
     {
@@ -177,6 +177,11 @@ void ItemWorld::Tick(
         const PropItemDef& def = m_pLibrary->GetItems()[static_cast<size_t>(item.defIndex)];
         if (def.kind == eItemKind::Score && def.bRoll && item.body.bGrounded)
         {
+            if (item.rollVx != 0.f)
+            {
+                item.body.velocity.x = item.rollVx;   // 착지하는 순간 굴러간다
+                item.rollVx          = 0.f;
+            }
             // 지면에서 v -= v*dt 로 감속 (정지 임계 이하이면 0)
             item.body.velocity.x -= item.body.velocity.x * _dt;
             if (std::abs(item.body.velocity.x) < kRollStopSpeed)

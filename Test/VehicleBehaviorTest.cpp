@@ -199,19 +199,33 @@ TEST(VehicleBTank, ShellThatPassesOverAStandingPlayerHitsIt)
     EXPECT_GE(rig.PlayerHits(), 1);
 }
 
-TEST(VehicleBTank, KnifeDoesEightPerHitAndTheTankDiesOnTheFifteenth)
+TEST(VehicleBTank, KnifeDoesNotHurtTheTankButBulletsKillItOnTheFifteenth)
 {
     VehicleRig rig({ 100.f, kGround });
     const EnemyHandle h = rig.Spawn("btank", { 400.f, kGround }, Facing(-1));
     rig.Step(2);
+    EXPECT_EQ(rig.Strike(h.id, eHitKind::Melee, 8), 0u);
+    EXPECT_TRUE(rig.E(h)->IsAlive());
     for (int i = 0; i < 14; ++i)
     {
-        (void)rig.Strike(h.id, eHitKind::Melee, 8);
+        (void)rig.Strike(h.id, eHitKind::Bullet, 8);
     }
     EXPECT_TRUE(rig.E(h)->IsAlive());
-    (void)rig.Strike(h.id, eHitKind::Melee, 8);
+    (void)rig.Strike(h.id, eHitKind::Bullet, 8);
     EXPECT_EQ(rig.E(h)->life, eEnemyLife::Dying);
     EXPECT_EQ(rig.SumScore(eEnemyEventKind::Died), 1000);
+}
+
+TEST(VehicleKnife, NoVehicleAcceptsTheKnife)
+{
+    for (const char* pName: { "jeep", "btank", "missle_tank", "sarubia", "aparch" })
+    {
+        VehicleRig rig({ 100.f, kGround });
+        const EnemyHandle h = rig.Spawn(pName, { 400.f, kGround }, Facing(-1));
+        rig.Step(2);
+        EXPECT_EQ(rig.Strike(h.id, eHitKind::Melee, 8), 0u) << pName;
+        EXPECT_TRUE(rig.E(h)->IsAlive()) << pName;
+    }
 }
 
 TEST(VehicleBTank, DestructionRemovesItAfterFourSeconds)

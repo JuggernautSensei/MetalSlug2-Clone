@@ -681,9 +681,10 @@ namespace
         const jug::VECTOR2   o = OriginOf_(_e, c);
 
         Hurtbox bow;
-        bow.box   = c.bow.At(o, 1);
-        bow.team  = _def.team;
-        bow.owner = _e.id;
+        bow.box     = c.bow.At(o, 1);
+        bow.team    = _def.team;
+        bow.owner   = _e.id;
+        bow.accepts = AcceptsFor(_def.bHuman);
         _combat.AddHurtbox(bow);
 
         Hurtbox bridge = bow;
@@ -703,7 +704,8 @@ namespace
             Hurtbox turret;
             turret.box   = c.turretBox.At(TurretOriginOf_(_e, c, i), 1);
             turret.team  = _def.team;
-            turret.owner = MakePartOwner(_e.id, static_cast<uint32_t>(i));
+            turret.owner   = MakePartOwner(_e.id, static_cast<uint32_t>(i));
+            turret.accepts = AcceptsFor(_def.bHuman);
             _combat.AddHurtbox(turret);
         }
     }

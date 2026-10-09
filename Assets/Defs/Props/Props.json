@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "note": "소품/아이템 정의. 스키마는 Docs/PropSpecs.md. 좌표는 스프라이트 중심 기준. HP 는 레거시 x2 (EnemySpecs 5/0.6).",
+  "note": "소품/아이템 정의. 스키마는 Docs/PropSpecs.md. 좌표는 스프라이트 중심 기준. HP 는 권총(damage 3) 발 수 기준: 상점 4발, 트럭 3발, 집 6발, 큰집/지상집/탑 8발, 보트 4발. 폭탄(20)은 1~2발.",
   "defs": {
     "shop_0": {
-      "hp": 30,
+      "hp": 12,
       "idle": { "sprite": "Stage0_Shop_0_0" },
       "destroyed": { "sprite": "Stage0_Shop_0_1" },
       "parts": [
@@ -20,7 +20,7 @@
       }
     },
     "shop_1": {
-      "hp": 30,
+      "hp": 12,
       "idle": { "sprite": "Stage0_Shop_1_0" },
       "destroyed": { "sprite": "Stage0_Shop_1_1" },
       "parts": [
@@ -37,7 +37,7 @@
       }
     },
     "shop_2": {
-      "hp": 30,
+      "hp": 12,
       "idle": { "sprite": "Stage0_Shop_2_0" },
       "destroyed": { "sprite": "Stage0_Shop_2_1" },
       "parts": [
@@ -54,7 +54,7 @@
       }
     },
     "shop_3": {
-      "hp": 30,
+      "hp": 12,
       "idle": { "sprite": "Stage0_Shop_3_0" },
       "destroyed": { "sprite": "Stage0_Shop_3_1" },
       "parts": [
@@ -71,7 +71,7 @@
       }
     },
     "shop_4": {
-      "hp": 30,
+      "hp": 12,
       "idle": { "sprite": "Stage0_Shop_4_0" },
       "destroyed": { "sprite": "Stage0_Shop_4_1" },
       "parts": [
@@ -88,7 +88,7 @@
       }
     },
     "shop_5": {
-      "hp": 30,
+      "hp": 12,
       "idle": { "sprite": "Stage0_Shop_5_0" },
       "destroyed": { "sprite": "Stage0_Shop_5_1" },
       "parts": [
@@ -109,7 +109,7 @@
     },
 
     "truck": {
-      "hp": 30,
+      "hp": 9,
       "remove": true,
       "destroyDuration": 0,
       "variants": [
@@ -158,7 +158,7 @@
     },
 
     "mob_boat": {
-      "hp": 60,
+      "hp": 12,
       "idle": { "sprite": "Mob_Boat_Idle" },
       "destroyed": { "sprite": "Mob_Boat_Destroy" },
       "parts": [ { "role": ["hurt", "wall"], "size": [150, 150], "offset": [0, 25] } ],
@@ -186,7 +186,7 @@
     },
 
     "bridge_deck": {
-      "hp": 20,
+      "hp": 18,
       "destroyed": { "sprite": "Stage0_Bridge_0" },
       "parts": [
         { "role": "hurt", "size": [175, 100], "offset": [25, 0] },
@@ -195,7 +195,7 @@
       "onDestroy": { "debris": { "set": "wood", "count": 5 } }
     },
     "bridge_house": {
-      "hp": 20,
+      "hp": 18,
       "destroyed": { "sprite": "Stage0_Bridge_2" },
       "parts": [
         { "role": "hurt", "size": [150, 100], "offset": [0, 0] },
@@ -204,7 +204,7 @@
       "onDestroy": { "debris": { "set": "wood", "count": 5 } }
     },
     "bridge_house2house": {
-      "hp": 20,
+      "hp": 18,
       "destroyed": { "sprite": "Stage0_Bridge_1" },
       "parts": [
         { "role": "hurt", "size": [150, 100], "offset": [0, -25] },
@@ -213,7 +213,7 @@
       "onDestroy": { "debris": { "set": "wood", "count": 5 } }
     },
     "bridge_block": {
-      "hp": 20,
+      "hp": 18,
       "idle": { "sprite": "Stage0_Block_Idle" },
       "destroyed": { "sprite": "Stage0_Block_Destroy" },
       "parts": [
@@ -225,7 +225,7 @@
     },
 
     "house_upper": {
-      "hp": 20,
+      "hp": 18,
       "idle": { "sprite": "Stage0_House_0_Idle" },
       "destroyed": { "sprite": "Stage0_House_0_Destroy" },
       "parts": [
@@ -242,7 +242,7 @@
       }
     },
     "house_open_window": {
-      "hp": 20,
+      "hp": 18,
       "idle": { "sprite": "Stage0_House_1_Idle" },
       "destroyed": { "sprite": "Stage0_House_1_Destroy" },
       "parts": [
@@ -259,7 +259,7 @@
       }
     },
     "house_cloth": {
-      "hp": 20,
+      "hp": 18,
       "idle": { "sprite": "Stage0_House_2_Idle_0" },
       "destroyed": { "sprite": "Stage0_House_2_Destroy" },
       "parts": [
@@ -276,7 +276,7 @@
       }
     },
     "house_no_cloth": {
-      "hp": 20,
+      "hp": 18,
       "idle": { "sprite": "Stage0_House_2_Idle_1" },
       "destroyed": { "sprite": "Stage0_House_2_Destroy" },
       "parts": [
@@ -293,7 +293,7 @@
       }
     },
     "house_yellow": {
-      "hp": 20,
+      "hp": 18,
       "idle": { "sprite": "Stage0_House_3_Idle" },
       "destroyed": { "sprite": "Stage0_House_3_Destroy" },
       "parts": [
@@ -311,7 +311,7 @@
     },
 
     "ground_mini_house": {
-      "hp": 20,
+      "hp": 18,
       "destroyed": { "sprite": "Stage0_Bridge_3" },
       "parts": [
         { "role": "hurt", "size": [140, 140], "offset": [40, 40] },
@@ -328,10 +328,10 @@
     },
 
     "ground_house": {
-      "hp": 40,
+      "hp": 24,
       "idle": { "sprite": "Stage0_House_4_Idle" },
       "damaged": { "sprite": "Stage0_House_4_Destroy_0" },
-      "damagedAtHp": 20,
+      "damagedAtHp": 12,
       "destroyed": { "sprite": "Stage0_House_4_Destroy_1" },
       "parts": [ { "role": "hurt", "size": [220, 220], "offset": [10, 50] } ],
       "onDamaged": { "debris": { "set": "wood", "count": 5 } },
@@ -347,11 +347,11 @@
     },
 
     "big_house": {
-      "hp": 80,
+      "hp": 24,
       "cullMargin": 150,
       "idle": { "sprite": "Stage0_House_5_Idle" },
       "damaged": { "sprite": "Stage0_House_5_Destroy_0" },
-      "damagedAtHp": 40,
+      "damagedAtHp": 12,
       "destroyed": { "sprite": "Stage0_House_5_Destroy_1" },
       "parts": [
         { "role": "hurt", "size": [310, 120], "offset": [10, 0] },
@@ -371,7 +371,7 @@
     },
 
     "tower": {
-      "hp": 20,
+      "hp": 24,
       "idle": { "sprite": "Stage0_Tower_Idle" },
       "destroyed": { "sprite": "Stage0_Tower_Destroy" },
       "parts": [

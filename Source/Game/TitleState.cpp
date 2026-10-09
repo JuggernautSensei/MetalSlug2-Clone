@@ -6,6 +6,27 @@
 namespace slug
 {
 
+namespace
+{
+
+    constexpr int kGradientBandH = 8;
+
+    void DrawBackground_(
+        Renderer& _renderer)
+    {
+        const jug::RGBA top    = { 14, 18, 44, 255 };
+        const jug::RGBA bottom = { 58, 22, 14, 255 };
+        for (int y = 0; y < Renderer::kLogicalHeight; y += kGradientBandH)
+        {
+            const float t     = static_cast<float>(y) / static_cast<float>(Renderer::kLogicalHeight);
+            const auto  mix   = [t](const uint8_t _a, const uint8_t _b) { return static_cast<uint8_t>(_a + static_cast<int>((_b - _a) * t)); };
+            const jug::RGBA color = { mix(top.r, bottom.r), mix(top.g, bottom.g), mix(top.b, bottom.b), 255 };
+            _renderer.FillRect({ 0.f, static_cast<float>(y) }, { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(kGradientBandH) }, color);
+        }
+    }
+
+}   // namespace
+
 TitleState::TitleState() = default;
 
 TitleState::TitleState(
@@ -93,18 +114,23 @@ void TitleState::Render(
     const UiLayout& layout   = m_ui.GetLayout();
 
     renderer.BeginFrame({ 0, 0, 0, 255 });
-    (void)m_ui.DrawStandalone(_ctx, "TitleBackground", 0, layout.titleBackgroundY);
+    DrawBackground_(renderer);
+
+    constexpr const char* kTitleName = "MY METAL SLUG 2";
+    TextStyle             title;
+    title.color = eFontColor::YellowWhite;
+    title.align = eTextAlign::Center;
+    title.scale = FitTextScale(kTitleName, 600, 3);
+    m_ui.DrawText(_ctx, layout.screenW / 2, layout.titleNameY, kTitleName, title);
 
     // PRESS START: 시작 후에는 빠르게 깜빡인다
     const int  period = m_bStarting ? 4 : layout.titleBlinkTicks;
-    const bool bOn    = IsBlinkOn(m_ui.GetTick(), period);
-    if (bOn)
+    if (IsBlinkOn(m_ui.GetTick(), period))
     {
-        if (!m_ui.DrawSprite(_ctx, "PressStartUI", layout.screenW / 2, layout.titlePressStartY))
-        {
-            // 에셋이 없을 때 (헤드리스 외 비정상 환경) 디버그 폰트로 대체
-            renderer.DrawDebugText({ 252.f, static_cast<float>(layout.titlePressStartY) - 4.f }, "PRESS START", { 255, 255, 255, 255 });
-        }
+        TextStyle start;
+        start.color = eFontColor::White;
+        start.align = eTextAlign::Center;
+        m_ui.DrawText(_ctx, layout.screenW / 2, layout.titlePressStartY, "PRESS START", start);
     }
 
     TextStyle hint;

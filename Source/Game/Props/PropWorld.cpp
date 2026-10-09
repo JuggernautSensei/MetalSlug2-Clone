@@ -284,7 +284,7 @@ bool PropWorld::PartActive_(
 void PropWorld::RegisterHurtboxes(
     CombatSystem& _combat) const
 {
-    const HitKindMask accepts = HitKindMask { eHitKind::Bullet, eHitKind::Melee, eHitKind::Blast };
+    const HitKindMask accepts = AcceptsFor(false);
     for (const PropInstance& inst: m_props)
     {
         if (inst.bRemove)

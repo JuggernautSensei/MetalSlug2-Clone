@@ -107,11 +107,11 @@ TEST(Tuning, JumpFeelNumbersMatchTheDesignTargets)
         ++ticks;
     } while (y < 0.f && ticks < 1000);
 
-    EXPECT_GE(-apex, 60.f);
-    EXPECT_LE(-apex, 85.f);
-    EXPECT_GE(static_cast<float>(ticks) / 60.f, 0.6f);
-    EXPECT_LE(static_cast<float>(ticks) / 60.f, 0.8f);
-    EXPECT_LE(t.move.terminalVelocity, 700.f);
+    EXPECT_GE(-apex, 120.f);
+    EXPECT_LE(-apex, 135.f);
+    EXPECT_GE(static_cast<float>(ticks) / 60.f, 0.8f);
+    EXPECT_LE(static_cast<float>(ticks) / 60.f, 0.92f);
+    EXPECT_LE(t.move.terminalVelocity, 1100.f);
 }
 
 TEST(Tuning, WeaponTablesAreInternallyConsistent)
@@ -135,12 +135,10 @@ TEST(Tuning, WeaponTablesAreInternallyConsistent)
     EXPECT_GT(t.bomb.initial, 0);
 }
 
-TEST(Tuning, KnifeKillsAGruntAndHurtsVehiclesInFewSlashes)
+TEST(Tuning, KnifeKillsAGruntInOneSlash)
 {
     const Tuning t;
     EXPECT_GE(t.knife.damage, t.sandbox.gruntHp);
-    EXPECT_LE((t.sandbox.jeepHp + t.knife.damage - 1) / t.knife.damage, 4);   // 칼 3~4 번이면 지프
-    EXPECT_LE((t.sandbox.busHp + t.knife.damage - 1) / t.knife.damage, 10);
 }
 
 // ===========================================

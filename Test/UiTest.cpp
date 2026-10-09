@@ -333,12 +333,6 @@ TEST(UiBitmapFont, BakedFontStripsAndUiSpritesExistWithExpectedSizes)
         EXPECT_EQ(static_cast<float>(pInfo->frame.h), SpriteSize(name).y) << name;
     }
 
-    const SpriteInfo* pTitle = library->Find("TitleBackground");
-    ASSERT_NE(pTitle, nullptr);
-    EXPECT_TRUE(pTitle->bStandalone);
-    EXPECT_EQ(pTitle->width, 640);
-    EXPECT_EQ(pTitle->height, 360);
-
     BitmapFont font;
     EXPECT_TRUE(font.Init(*library));
     const AnimFrame nine = font.GetTimeDigitFrame(9);
@@ -1058,4 +1052,12 @@ TEST(UiTitle, EntersWithBlackAndFadesIn)
 TEST(UiTitle, IsRegisteredInStateFactory)
 {
     EXPECT_NE(CreateState("title"), nullptr);
+}
+
+TEST(UiTitle, TextLayoutStacksInsideScreen)
+{
+    const UiLayout layout;
+    EXPECT_LT(layout.titleNameY + 32, layout.titlePressStartY);
+    EXPECT_LT(layout.titlePressStartY + 16, layout.titleHintY);
+    EXPECT_LE(layout.titleHintY + 16, 448);
 }

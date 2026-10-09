@@ -27,18 +27,18 @@ inline constexpr size_t kWeaponCount = static_cast<size_t>(eWeapon::Count);
 
 // ===========================================
 //  이동 / 점프
-//   손맛 기준 (640x448): 달리기 ≈ 120 px/s, 점프 정점 ≈ 72 px, 체공 ≈ 0.7 s
+//   손맛 기준 (640x448, 레거시 수치): 달리기 250 px/s, 점프 정점 ≈ 129 px, 체공 ≈ 0.86 s
 // ===========================================
 
 struct MoveTuning
 {
-    float runSpeed         = 120.f;    // px/s, 입력 즉시 최고 속도 (메탈슬러그식 디지털 이동)
-    float crouchSpeed      = 60.f;     // px/s
-    float airSpeed         = 120.f;    // px/s, 공중 제어 100%
-    float jumpSpeed        = 430.f;    // px/s 초속
-    float gravity          = 1224.f;   // px/s²
-    float terminalVelocity = 600.f;    // px/s
-    float jumpCutFactor    = 0.45f;    // 점프 버튼을 떼면 상승 속도에 곱함 (가변 점프 높이)
+    float runSpeed         = 250.f;    // px/s, 입력 즉시 최고 속도 (메탈슬러그식 디지털 이동)
+    float crouchSpeed      = 125.f;    // px/s
+    float airSpeed         = 250.f;    // px/s, 공중 제어 100%
+    float jumpSpeed        = 600.f;    // px/s 초속
+    float gravity          = 1400.f;   // px/s²
+    float terminalVelocity = 1000.f;   // px/s
+    float jumpCutFactor    = 0.5f;     // 점프 버튼을 떼면 상승 속도에 곱함 (가변 점프 높이, 최소 점프 ≈ 32 px)
     int   coyoteTicks      = 4;        // 낭떠러지를 벗어난 뒤에도 점프를 허용하는 틱 수
     int   jumpBufferTicks  = 4;        // 착지 직전에 누른 점프를 기억하는 틱 수
     int   shotBufferTicks  = 6;        // 사격 락 중에 누른 사격을 기억하는 틱 수
@@ -96,10 +96,10 @@ struct MuzzleTuning
 struct WeaponTuning
 {
     int          damage            = 3;
-    int          fireIntervalTicks = 5;       // 연타해도 이보다 빨리 쏠 수 없다
-    int          holdRepeatTicks   = 8;       // 버튼을 누르고 있을 때 반복 간격 (0 = 홀드 연사 없음, 탭만)
+    int          fireIntervalTicks = 4;       // 연타해도 이보다 빨리 쏠 수 없다
+    int          holdRepeatTicks   = 6;       // 버튼을 누르고 있을 때 반복 간격 (0 = 홀드 연사 없음, 탭만)
     int          ammo              = 0;       // 0 = 무한
-    float        projectileSpeed   = 600.f;   // px/s
+    float        projectileSpeed   = 800.f;   // px/s
     int          maxAlive          = 4;       // 동시에 살아 있는 탄 수 상한 (0 = 무제한)
     bool         bPierce           = false;   // 관통
     jug::VECTOR2 hitSize           = { 14.f, 10.f };
@@ -215,7 +215,7 @@ struct PlayerTuning
 struct CameraSettings
 {
     jug::VECTOR2 deadzoneHalf = { 24.f, 16.f };
-    float        smoothTime   = 0.18f;
+    float        smoothTime   = 0.14f;
     float        lookAheadX   = 40.f;   // 진행 방향 앞쪽으로 보는 양
 };
 

@@ -219,7 +219,8 @@ namespace
 
     void RegisterHurtboxes_(const Enemy& _e, const EnemyDef& _def, CombatSystem& _combat)
     {
-        if (_e.state != kStuck)
+        // 떨어지는 중에는 피격되지 않는다: 풀려나면 활강(수평 이동)으로 바뀌므로 착지 후에만 묶인 포로가 된다
+        if (_e.state != kStuck || !_e.bGrounded)
         {
             return;
         }

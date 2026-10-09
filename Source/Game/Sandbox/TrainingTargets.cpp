@@ -89,8 +89,9 @@ void TrainingTargets::RegisterHurtboxes(
         }
         Hurtbox hurtbox;
         hurtbox.box   = Aabb::FromBottomCenter(dummy.feet, dummy.size);
-        hurtbox.team  = eTeam::Enemy;
-        hurtbox.owner = dummy.id;
+        hurtbox.team    = eTeam::Enemy;
+        hurtbox.owner   = dummy.id;
+        hurtbox.accepts = AcceptsFor(dummy.kind == eDummyKind::Grunt);
         _combat.AddHurtbox(hurtbox);
     }
 }

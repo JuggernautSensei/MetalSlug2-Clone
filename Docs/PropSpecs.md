@@ -6,7 +6,7 @@
 
 ## 0. 공통 규약
 - 좌표: **스프라이트 중심(legacyCenter)** 기준. 모든 `offset` 은 중심에서의 오프셋(+y 아래). `size` = 상자 폭/높이.
-- HP: 새 HP = 레거시 x2 (EnemySpecs 0.6). 임계값(`damagedAtHp`) 도 같은 단위 (지면집 레거시 HP≤10 → 새 HP≤20).
+- HP: 권총 damage(3) 기준 원작 체감치. 상점 12(4발), 트럭 9(3발), 보트 12(4발), 집류 18(6발), 지상집/큰집/탑 24(8발). 폭탄(20) 은 1~2발. 임계값(`damagedAtHp`) 은 HP 의 절반 (지상집/큰집 12).
 - JSON 은 엄격: 알 수 없는 키/값, 잘못된 형식, 없는 def/item/group 참조는 로드 실패 (`eError::PropDefInvalid`, 메시지 `"<def>: <필드>: 사유"`). `note` 키는 어디서나 허용된다.
 - 정의 이름/클립/스프라이트 이름은 `Assets/Baked/{anim,sprites}.json` 키와 일치해야 한다 (`PropDefLibrary::FindMissingAsset` 으로 검사).
 
