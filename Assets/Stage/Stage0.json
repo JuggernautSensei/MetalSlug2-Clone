@@ -234,6 +234,7 @@
       "id": "openland_start", "triggerX": 8980,
       "actions": [
         {"type": "setBounds", "rect": [3180, 864, 14094, 1312]},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 9250, "y": 1050, "settle": true, "drop": "gunitem_mg", "note": "개활지 POW (약 700 px 간격, 무기 보급)"},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 9420, "groundSnap": true, "fromY": 1100},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 9660, "groundSnap": true, "fromY": 1100},
         {"type": "spawnWave", "entries": [{"delay": 2.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 5.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}, {"delay": 9.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
@@ -245,6 +246,7 @@
         {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 10098, "y": 1274},
         {"type": "spawn", "kind": "prop", "def": "big_house", "x": 10470, "y": 1257},
         {"type": "spawn", "kind": "prop", "def": "tower", "x": 10808, "y": 1186},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 9950, "y": 1050, "settle": true, "drop": "gunitem_rl", "note": "개활지 POW (로켓)"},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 9975, "groundSnap": true, "fromY": 1100},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 10200, "groundSnap": true, "fromY": 1100},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 10440, "y": 1195},
@@ -260,6 +262,7 @@
         {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 11122, "y": 1274},
         {"type": "spawn", "kind": "prop", "def": "big_house", "x": 11494, "y": 1257},
         {"type": "spawn", "kind": "prop", "def": "tower", "x": 11832, "y": 1186},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 10696, "y": 1050, "settle": true, "drop": "bomb_supple", "note": "개활지 POW (폭탄 보급)"},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 10740, "groundSnap": true, "fromY": 1100},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 10990, "groundSnap": true, "fromY": 1100},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 11200, "groundSnap": true, "fromY": 1100},
@@ -277,6 +280,8 @@
         {"type": "spawn", "kind": "prop", "def": "big_house", "x": 12518, "y": 1257},
         {"type": "spawn", "kind": "prop", "def": "tower", "x": 12856, "y": 1186},
         {"type": "spawn", "kind": "enemy", "def": "btank", "x": 11900, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 11265, "y": 1050, "settle": true, "drop": "gunitem_sg", "note": "개활지 POW (샷건)"},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 11975, "y": 1050, "settle": true, "drop": "gunitem_fs", "note": "개활지 POW (화염방사기)"},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 11760, "groundSnap": true, "fromY": 1100},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 12020, "groundSnap": true, "fromY": 1100},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 12230, "groundSnap": true, "fromY": 1100},
@@ -310,7 +315,12 @@
         {"type": "spawn", "kind": "item", "def": "gunitem_mg", "x": 13574, "y": 1200},
         {"type": "spawn", "kind": "enemy", "def": "bigshiee", "id": "boss", "x": 13950, "groundSnap": true, "fromY": 1100, "params": {"arena": "bossArena", "positionFromArena": true}},
         {"type": "banner", "text": "WARNING", "seconds": 2.5},
-        {"type": "gate", "id": "boss_dead", "waitFor": ["boss"], "until": "destroyFinished", "abortOnGameOver": true, "actions": [{"type": "playerInvincible", "seconds": 10.0}, {"type": "endStage", "next": "title"}]}
+        {"type": "gate", "id": "boss_dead", "waitFor": ["boss"], "until": "destroyFinished", "abortOnGameOver": true, "actions": [{"type": "playerInvincible", "seconds": 10.0}, {"type": "endStage", "next": "title"}]},
+        {"type": "spawnWave", "note": "보스전 보급 POW: 36 s 주기 3갈래 (HMG 12 s / 폭탄 24 s / 탄약 36 s → 12 s 마다 교대). 보스 사망 시 endStage 로 끝난다", "entries": [
+          {"delay": 12.0, "every": 36.0, "times": 20, "kind": "npc", "def": "pow", "settle": true, "drop": "gunitem_mg", "camera": {"ax": "left", "dx": [80, 200], "ay": "top", "dy": -20}},
+          {"delay": 24.0, "every": 36.0, "times": 20, "kind": "npc", "def": "pow", "settle": true, "drop": "bomb_supple", "camera": {"ax": "left", "dx": [80, 200], "ay": "top", "dy": -20}},
+          {"delay": 36.0, "every": 36.0, "times": 20, "kind": "npc", "def": "pow", "settle": true, "drop": "bullet_supple", "camera": {"ax": "left", "dx": [80, 200], "ay": "top", "dy": -20}}
+        ]}
       ]
     }
   ]

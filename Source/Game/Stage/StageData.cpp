@@ -1422,7 +1422,7 @@ namespace
             }
             else if (_context == eSpawnContext::WaveEntry)
             {
-                bKnown = bKnown || key == "delay";
+                bKnown = bKnown || key == "delay" || key == "every" || key == "times";
             }
             if (!bKnown)
             {
@@ -1729,6 +1729,18 @@ namespace
                     if (entry.delay < 0.f)
                     {
                         return Fail_(entryWhere, "'delay' must be >= 0");
+                    }
+                    if (!GetFloat_(json, entryWhere, "every", false, entry.every) || !GetInt_(json, entryWhere, "times", false, entry.times))
+                    {
+                        return false;
+                    }
+                    if (entry.times < 1)
+                    {
+                        return Fail_(entryWhere, "'times' must be >= 1");
+                    }
+                    if (entry.times > 1 && entry.every <= 0.f)
+                    {
+                        return Fail_(entryWhere, "'every' must be > 0 when 'times' > 1");
                     }
                     _out.waveEntries.push_back(std::move(entry));
                 }

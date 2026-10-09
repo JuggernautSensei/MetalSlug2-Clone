@@ -316,6 +316,31 @@ TEST(StageIntegration, BotCanWalkTheWholeStageUpToTheBossArena)
     EXPECT_GE(bestX, 13500.f);
 }
 
+TEST(StageIntegration, BusBodyStopsThePlayerWhileAliveAndTheWreckLetsThePlayerThrough)
+{
+    IntegrationSim sim;
+    constexpr float kBusWallLeft = 2995.f - 200.f;
+    int tick = 0;
+    for (; tick < 40000 && sim.State().GetEnemies().CountAlive("mb_truck") == 0; ++tick)
+    {
+        sim.BotStep(true, true);
+    }
+    ASSERT_EQ(sim.State().GetEnemies().CountAlive("mb_truck"), 1);
+
+    int violations = 0;
+    for (; tick < 40000 && sim.State().GetEnemies().CountAlive("mb_truck") > 0; ++tick)
+    {
+        sim.BotStep(true, true);
+        if (sim.State().GetPlayer().GetFeet().x >= kBusWallLeft)
+        {
+            ++violations;
+        }
+    }
+    EXPECT_EQ(violations, 0);
+    EXPECT_EQ(sim.State().GetEnemies().CountAlive("mb_truck"), 0);
+    EXPECT_TRUE(sim.State().GetEnemies().GetSolidBoxes().empty());
+}
+
 TEST(StageIntegration, SarubiaGateStartsInsideTheLockedScreenSoItCanBeShot)
 {
     IntegrationSim sim(true);
@@ -388,6 +413,80 @@ TEST(StageIntegration, GateOpensOnlyAfterTheSpawnedTargetDies)
     fx.enemies.KillAll(false);
     fx.Step(2);
     EXPECT_EQ(fx.runner.GetOpenGateCount(), 0);
+}
+
+TEST(StageIntegration, TimedWaveEntryRepeatsEveryPeriodForItsTimesOnly)
+{
+    GateFixture fx(slugtest::WrapStage(R"J([{"id":"a","triggerX":0,"actions":[
+        {"type":"spawnWave","entries":[{"delay":0.5,"every":0.5,"times":3,"kind":"enemy","def":"soldier_sword","id":"w","x":400,"y":378}]}]}])J"));
+
+    fx.Step(20);
+    EXPECT_EQ(fx.runner.GetSpawnedCount(), 0);
+    fx.Step(20);   // t = 40 ticks: 첫 발동 (0.5 s)
+    EXPECT_EQ(fx.runner.GetSpawnedCount(), 1);
+    fx.Step(30);   // 두 번째 (1.0 s)
+    EXPECT_EQ(fx.runner.GetSpawnedCount(), 2);
+    fx.Step(30);   // 세 번째 (1.5 s)
+    EXPECT_EQ(fx.runner.GetSpawnedCount(), 3);
+    fx.Step(300);  // times 소진 후 더 나오지 않는다
+    EXPECT_EQ(fx.runner.GetSpawnedCount(), 3);
+}
+
+TEST(StageIntegration, ClearWavesCancelsTheWholeTimedRepeat)
+{
+    GateFixture fx(slugtest::WrapStage(R"J([{"id":"a","triggerX":0,"actions":[
+        {"type":"spawnWave","entries":[{"delay":0.5,"every":0.5,"times":5,"kind":"enemy","def":"soldier_sword","x":400,"y":378}]},
+        {"type":"clear","waves":true,"delay":0.8}]}])J"));
+    fx.Step(200);   // 0.5 s 첫 발동 뒤 0.8 s 에 clear: 나머지 반복은 취소
+    EXPECT_EQ(fx.runner.GetSpawnedCount(), 1);
+    EXPECT_EQ(fx.runner.GetPendingWaveCount(), 0);
+}
+
+TEST(StageIntegration, BossFightSupplyPowsDropOnThePlayersSideAndCanBeRescued)
+{
+    IntegrationSim sim(true);
+    sim.Warp(2);   // F6: 보스 아레나
+    sim.Step(2);
+    ASSERT_GT(sim.State().GetEnemies().CountAlive("bigshiee"), 0);
+
+    constexpr int kPowClose = 5;   // ePowState::kClose (구출 후 아이템 연출)
+    const auto   findPow    = [&]() -> const Enemy* {
+        const Enemy* pFound = nullptr;
+        sim.State().GetEnemies().ForEachAlive([&](const Enemy& _e) {
+            if (_e.behavior == eEnemyBehavior::Pow)
+            {
+                pFound = &_e;
+            }
+        });
+        return pFound;
+    };
+
+    sim.State().GetPlayer().ExtendInvincibility(3000);
+    sim.Step(700);   // 첫 보급 POW 는 12 s (720 틱) 뒤
+    EXPECT_EQ(findPow(), nullptr);
+
+    sim.Step(20);
+    const Enemy* pPow = findPow();
+    ASSERT_NE(pPow, nullptr) << "보스전 보급 POW 가 떨어지지 않았다";
+    const float camLeft = sim.State().GetCamera().GetPositionNoShake().x;
+    EXPECT_GE(pPow->body.position.x, camLeft + 80.f);
+    EXPECT_LE(pPow->body.position.x, camLeft + 200.f);
+
+    // 플레이어를 POW 낙하 경로 아래로 옮기면 공중에서 구출된다
+    const float dropX = pPow->body.position.x;
+    sim.State().GetPlayer().Reset(Tuning {}, { dropX, sim.State().GetPlayer().GetFeet().y });
+    for (int i = 0; i < 240; ++i)
+    {
+        sim.State().GetPlayer().ExtendInvincibility(3000);
+        sim.Step(1);
+        pPow = findPow();
+        if (pPow == nullptr || pPow->state == kPowClose)
+        {
+            break;
+        }
+    }
+    ASSERT_NE(pPow, nullptr);
+    EXPECT_EQ(pPow->state, kPowClose) << "낙하하는 보급 POW 가 플레이어와 겹쳤는데 구출되지 않았다";
 }
 
 TEST(StageIntegration, PropRoofCarriesThePlayerAboveTheGround)

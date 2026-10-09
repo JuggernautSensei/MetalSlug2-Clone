@@ -60,7 +60,7 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
 | type | 필드 | 의미 |
 |---|---|---|
 | `spawn` | §7 | 엔티티 1개(또는 `repeat`) 생성 |
-| `spawnWave` | `entries[]` (= spawn 필드 + 필수 `delay`, 선택 `repeat`) | 지연 스폰 목록. 레거시 `AddWave`. 시각 = 액션 실행 시각 + `delay`. 카메라 기준 좌표는 **발동 시점**의 카메라로 계산 |
+| `spawnWave` | `entries[]` (= spawn 필드 + 필수 `delay`, 선택 `repeat`(공간), 선택 `every`(초)+`times`(횟수, 기본 1, `times>1` 이면 `every>0` 필수)) | 지연 스폰 목록. 레거시 `AddWave`. 시각 = 액션 실행 시각 + `delay`, 이후 `every` 간격으로 `times` 번 발동(시간 반복). 카메라 기준 좌표는 **발동 시점**의 카메라로 계산. `clear waves` 는 반복분까지 전부 취소 |
 | `setBounds` | `rect` | 카메라 경계 교체. 비영구 잠금 중이면 **복원 경계만 갱신** |
 | `lockCamera` | `rect`(배열/이름/`"current"`), `glide?`(초), `permanent?` | 현재 경계를 스택에 저장하고 경계 = rect. `"current"` = 실행 시점의 뷰 영역. `glide`: 카메라 중심을 rect 중심으로 선형 이동(뷰 크기 rect 일 때). `permanent:true`: 해제 불가 + 이후 `setBounds`/`boundsCurves` 무시, 대기 웨이브·열린 게이트는 `clear` 로 정리 |
 | `unlockCamera` | - | 가장 최근 비영구 잠금을 해제하고 경계 복원(없으면 무시) |

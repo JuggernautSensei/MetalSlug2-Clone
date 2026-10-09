@@ -276,6 +276,25 @@ TEST(StageDataErrors, WaveEntryRules)
     EXPECT_NE(LoadError(OneSection(R"J([{"type":"spawnWave","entries":[{"delay":1,"type":"spawn","kind":"enemy","def":"a","x":1,"y":2}]}])J")).find("unknown key 'type'"), std::string::npos);
 }
 
+TEST(StageDataErrors, WaveTimeRepeatRules)
+{
+    EXPECT_NE(LoadError(OneSection(R"J([{"type":"spawnWave","entries":[{"delay":1,"every":2,"times":0,"kind":"enemy","def":"a","x":1,"y":2}]}])J")).find("'times' must be >= 1"), std::string::npos);
+    EXPECT_NE(LoadError(OneSection(R"J([{"type":"spawnWave","entries":[{"delay":1,"times":3,"kind":"enemy","def":"a","x":1,"y":2}]}])J")).find("'every' must be > 0"), std::string::npos);
+}
+
+TEST(StageData, WaveEntryParsesEveryAndTimesWithOneTimeDefault)
+{
+    const StageData data = MustLoad(OneSection(R"J([
+        {"type":"spawnWave","entries":[
+            {"delay":12,"every":36,"times":20,"kind":"npc","def":"pow","x":1,"y":2},
+            {"delay":1,"kind":"enemy","def":"b","x":1,"y":2}]}])J"));
+    const auto& e = FirstAction(data).waveEntries;
+    ASSERT_EQ(e.size(), 2u);
+    EXPECT_FLOAT_EQ(e[0].every, 36.f);
+    EXPECT_EQ(e[0].times, 20);
+    EXPECT_EQ(e[1].times, 1);
+}
+
 TEST(StageDataErrors, ReferenceChecks)
 {
     EXPECT_NE(LoadError(OneSection(R"J([{"type":"lockCamera","rect":"nowhere"}])J")).find("unknown rect 'nowhere'"), std::string::npos);
@@ -328,6 +347,42 @@ TEST(StageDataErrors, MissingFileIsReported)
     EXPECT_EQ(result.GetError().GetCode(), eError::FileOpen);
 }
 
+TEST(StageDataReal, OpenlandPowsAreAboutEvery700PxAndCoverTheWeaponMix)
+{
+    StageLoadDiagnostics diag;
+    slug::Result<StageData> result = LoadStageFromFile(slug::FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    ASSERT_TRUE(result) << diag.message;
+    const StageData data = result.Take();
+
+    std::vector<float> xs;
+    std::vector<std::string> drops;
+    for (const StageSection& section: data.sections)
+    {
+        if (section.id.find("openland_") != 0 || section.id == "openland_4")
+        {
+            continue;
+        }
+        for (const StageAction& action: section.actions)
+        {
+            if (action.type == eActionType::Spawn && action.spawn.kind == eEntityKind::Npc && action.spawn.def == "pow")
+            {
+                xs.push_back(action.spawn.x);
+                drops.push_back(action.spawn.drop);
+            }
+        }
+    }
+    ASSERT_EQ(xs.size(), 5u);
+    EXPECT_GE(xs.front(), 8980.f);
+    EXPECT_LE(xs.back(), 12350.f);
+    for (size_t i = 1; i < xs.size(); ++i)
+    {
+        EXPECT_GE(xs[i] - xs[i - 1], 500.f);
+        EXPECT_LE(xs[i] - xs[i - 1], 800.f);
+    }
+    const std::vector<std::string> expected = { "gunitem_mg", "gunitem_rl", "bomb_supple", "gunitem_sg", "gunitem_fs" };
+    EXPECT_EQ(drops, std::vector<std::string>(expected.begin(), expected.end()));
+}
+
 TEST(StageDataReal, BossArenaHasHmgPickupAndNoHouseInsideIt)
 {
     StageLoadDiagnostics diag;
@@ -367,8 +422,8 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
     const StageData data = result.Take();
 
     EXPECT_EQ(data.sections.size(), 21u);
-    EXPECT_EQ(data.CountSpawns(), 175);
-    EXPECT_EQ(data.CountWaveEntries(), 32);
+    EXPECT_EQ(data.CountSpawns(), 180);      // 개활지 POW 5 추가 (openland_start..openland_3)
+    EXPECT_EQ(data.CountWaveEntries(), 35);  // 보스전 보급 POW 웨이브 3 추가
     EXPECT_EQ(data.CountGates(), 4);
 
     EXPECT_EQ(data.name, "Stage0");

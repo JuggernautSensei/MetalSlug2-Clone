@@ -154,6 +154,10 @@ void StageState::Load_(
     if (slug::Result<Tuning> loaded = LoadTuning(GetDefaultTuningPath(_ctx.assetRoot)))
     {
         m_tuning = loaded.Take();
+        if (_ctx.debugLives > 0)
+        {
+            m_tuning.player.lives = _ctx.debugLives;
+        }
     }
     else
     {
@@ -526,6 +530,13 @@ void StageState::UpdateWalls_()
         {
             m_enemyPlatforms.push_back({ collider.box, true });
         }
+    }
+
+    // 적 def.solid (버스 차체 등): 살아 있는 동안 플레이어/적 벽
+    for (const Aabb& box: m_enemies.GetSolidBoxes())
+    {
+        m_walls.push_back({ box });
+        m_enemyWalls.push_back({ box });
     }
 }
 

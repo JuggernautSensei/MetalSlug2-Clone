@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 
 #include <gtest/gtest.h>
@@ -73,7 +74,34 @@ TEST(BigShiee, EntranceRollsInFromTheRightThenTheFightStarts)
     }
     EXPECT_NEAR(ticks, 150, 3);   // 2.5 s
     EXPECT_EQ(rig.Find(h)->state, bigshiee::kAssault);
-    EXPECT_NEAR(rig.Find(h)->body.position.x, 290.f, 0.5f);   // 아레나 왼쪽 + homeX
+    EXPECT_NEAR(rig.Find(h)->body.position.x, 470.f, 0.5f);   // 아레나 왼쪽 + homeX
+}
+
+TEST(BigShiee, HullStaysClearOfThePlayerWallAcrossTheWholeDrive)
+{
+    BossRig rig;
+    ASSERT_TRUE(rig.IsReady());
+    rig.SetPlayer({ kPlayerX, kGroundY });
+    const EnemyHandle h = SpawnBoss(rig);
+    ASSERT_TRUE(RunUntilFight(rig, h));
+
+    float minX = 1e9f;
+    float maxX = -1e9f;
+    for (int t = 0; t < 1800; ++t)
+    {
+        rig.Frame();
+        const float x = rig.Find(h)->body.position.x;
+        minX = std::min(minX, x);
+        maxX = std::max(maxX, x);
+        // 플레이어 벽은 보스 주행과 무관하게 165 에 고정 (보스 x 가 움직여도 벽은 움직이지 않는다)
+        ASSERT_TRUE(rig.World().HasPlayerMaxX());
+        ASSERT_NEAR(rig.World().GetPlayerMaxX(), 165.f, 0.01f);
+    }
+    EXPECT_GE(minX, 444.f);   // 주행 445..495
+    EXPECT_LE(maxX, 496.f);
+    EXPECT_GT(maxX - minX, 20.f);   // 실제로 주행한다 (30 s 동안 범위 50 px 중 일부)
+    // 선체 프레임 왼쪽 끝 (x - 271) 은 벽 165 보다 오른쪽에 있다. 알파 꼬리 (x - 298) 는 최대 약 27 px 겹칠 수 있다 (허용).
+    EXPECT_GT(minX - 271.f, 165.f);
 }
 
 TEST(BigShiee, EachTurretDiesOnItsOwnAndTheHullKeepsItsHealth)
@@ -163,7 +191,7 @@ TEST(BigShiee, AssaultBurstsFireTracersFromTheTurretsAtThePlayer)
             ASSERT_GT(len, 1.f);
             const float dot = (shot.velocity.x * to.x + shot.velocity.y * to.y) / (vlen * len);
             EXPECT_GT(dot, 0.99f) << "트레이서가 플레이어를 조준하지 않음";
-            EXPECT_NEAR(vlen, 400.f, 0.5f);
+            EXPECT_NEAR(vlen, 230.f, 0.5f);
             ++checked;
         }
     }
@@ -205,13 +233,13 @@ TEST(BigShiee, CannonVolleysAimStreaksAtThePlayerAndShellsLandOnIt)
     {
         blastHits += ev.kind == eHitKind::Blast ? 1 : 0;
     }
-    EXPECT_GE(bigshiee::GetVolleyCount(*rig.Find(h)), 5);   // 3~4 s 간격 → 20 s 에 5~7 볼리
+    EXPECT_GE(bigshiee::GetVolleyCount(*rig.Find(h)), 4);   // 4~5 s 간격 → 20 s 에 4~5 볼리
     EXPECT_GE(shellSpawned, 2);                              // 2 볼리마다 주황 포탄
     EXPECT_GE(blastHits, 1);                                 // 착탄 폭발이 플레이어를 맞힌다
     (void)tracer;
 }
 
-TEST(BigShiee, ShellImpactBlastLandsWithinTheAimJitterOfThePlayer)
+TEST(BigShiee, ShellImpactBlastLandsWhereThePlayerStoodAtLaunch)
 {
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
@@ -248,11 +276,11 @@ TEST(BigShiee, ShellImpactBlastLandsWithinTheAimJitterOfThePlayer)
     }
     ASSERT_TRUE(shellSeen);
     ASSERT_GE(blastTick, 0);
-    EXPECT_GT(blastTick - spawnTick, 60);     // 포탄은 공중에 있다 (약 1.8 s)
-    EXPECT_NEAR(blastX, kPlayerX, 25.f);      // 착탄 지점은 플레이어 x ± 20
+    EXPECT_NEAR(blastTick - spawnTick, 60, 2);   // 포탄 비행 1.0 s
+    EXPECT_NEAR(blastX, kPlayerX, 1.0f);         // 착탄 지점 = 발사 시점 플레이어 발 x (플레이어는 정지)
 }
 
-TEST(BigShiee, ThePlayerBlockKeepsTheStripLeftOfTheHull)
+TEST(BigShiee, ThePlayerWallIsReleasedWhenTheBossDies)
 {
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
@@ -260,9 +288,89 @@ TEST(BigShiee, ThePlayerBlockKeepsTheStripLeftOfTheHull)
     const EnemyHandle h = SpawnBoss(rig);
     ASSERT_TRUE(RunUntilFight(rig, h));
     rig.Frame();
-    ASSERT_TRUE(rig.World().HasPlayerMaxX());
-    EXPECT_NEAR(rig.World().GetPlayerMaxX(), rig.Find(h)->body.position.x - 60.f, 0.01f);
-    EXPECT_NEAR(rig.World().GetPlayerMaxX(), 230.f, 0.5f);   // 띠 폭 = 보스 x - 60 - 0
+    EXPECT_TRUE(rig.World().HasPlayerMaxX());   // 전투 중에는 벽이 걸린다
+
+    rig.Hit(h.id, 1000);
+    rig.Frame();
+    EXPECT_FALSE(rig.World().HasPlayerMaxX());  // 사망 후에는 벽을 걸지 않는다 (스테이지 종료 가능)
+    for (int t = 0; t < 300; ++t)
+    {
+        rig.Frame();
+    }
+    EXPECT_FALSE(rig.World().HasPlayerMaxX());
+}
+
+TEST(BigShiee, CannonVolleysAreSpacedFourToFiveSecondsAndNeverOverlap)
+{
+    BossRig rig;
+    ASSERT_TRUE(rig.IsReady());
+    rig.SetPlayer({ kPlayerX, kGroundY });
+    rig.SetPlayerInvulnerable(false);
+    const EnemyHandle h = SpawnBoss(rig);
+    ASSERT_TRUE(RunUntilFight(rig, h));
+    for (int t = 0; t < 1200 && rig.Find(h)->state != bigshiee::kCannon; ++t)
+    {
+        rig.Frame();
+    }
+    ASSERT_EQ(rig.Find(h)->state, bigshiee::kCannon);
+
+    int last   = bigshiee::GetVolleyCount(*rig.Find(h));
+    int lastAt = -1;
+    int gaps   = 0;
+    for (int t = 0; t < 1800; ++t)
+    {
+        rig.Frame();
+        const int now = bigshiee::GetVolleyCount(*rig.Find(h));
+        if (now != last)
+        {
+            if (lastAt >= 0)
+            {
+                EXPECT_GE(t - lastAt, 240) << "볼리 간격 4 s 미만";
+                EXPECT_LE(t - lastAt, 300) << "볼리 간격 5 s 초과";
+                ++gaps;
+            }
+            lastAt = t;
+            last   = now;
+        }
+    }
+    EXPECT_GE(gaps, 4);
+}
+
+TEST(BigShiee, EnragedCannonVolleysComeOneFifthFaster)
+{
+    BossRig rig;
+    ASSERT_TRUE(rig.IsReady());
+    rig.SetPlayer({ kPlayerX, kGroundY });
+    rig.SetPlayerInvulnerable(false);
+    const EnemyHandle h = SpawnBoss(rig);
+    ASSERT_TRUE(RunUntilFight(rig, h));
+    for (int t = 0; t < 1200 && rig.Find(h)->state != bigshiee::kCannon; ++t)
+    {
+        rig.Frame();
+    }
+    rig.Hit(bigshiee::CannonOwner(h.id), 300);   // 캐논 파괴 = 격앙
+    ASSERT_TRUE(bigshiee::IsEnraged(*rig.Find(h)));
+
+    int last   = bigshiee::GetVolleyCount(*rig.Find(h));
+    int lastAt = -1;
+    int gaps   = 0;
+    for (int t = 0; t < 1800; ++t)
+    {
+        rig.Frame();
+        const int now = bigshiee::GetVolleyCount(*rig.Find(h));
+        if (now != last)
+        {
+            if (lastAt >= 0)
+            {
+                EXPECT_GE(t - lastAt, 192) << "격앙 간격 4 s x0.8 = 3.2 s 미만";
+                EXPECT_LE(t - lastAt, 240) << "격앙 간격 5 s x0.8 = 4 s 초과";
+                ++gaps;
+            }
+            lastAt = t;
+            last   = now;
+        }
+    }
+    EXPECT_GE(gaps, 5);
 }
 
 TEST(BigShiee, CannonDestructionEnragesAndRemovesTheCannonHurtbox)

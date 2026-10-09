@@ -62,6 +62,7 @@ function Walk($actions, [string]$where, $cnt) {
             'spawnWave' {
                 foreach ($e in $a.entries) {
                     $n = 1; if (Has $e 'repeat') { $n = $e.repeat.count }
+                    if (Has $e 'times') { $n = $n * $e.times }
                     $cnt.wave += $n
                     if (-not (Has $e 'delay')) { Err "wave entry without delay ($where)" }
                     if (-not (Has $e 'camera') -and -not (Has $e 'x')) { Err "wave entry without position ($where)" }

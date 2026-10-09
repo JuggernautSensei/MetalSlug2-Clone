@@ -1,4 +1,4 @@
-#include "Core/AssetPath.h"
+﻿#include "Core/AssetPath.h"
 #include <algorithm>
 #include "Base/Types.h"
 #include "Base/Result.h"
@@ -65,7 +65,7 @@ TEST(CameraStageExt, ForwardOnlyYIsOffByDefaultAndBoundsStillWin)
     EXPECT_FLOAT_EQ(camera.GetViewCenter().y, 224.f);
 }
 
-TEST(CameraStageExt, BeginMoveIsLinearAndTickExactThenTrackingResumes)
+TEST(CameraStageExt, BeginMoveIsSmoothstepAndTickExactThenTrackingResumes)
 {
     Camera camera = MakeCamera();
     camera.SnapTo({ 320.f, 224.f });
@@ -73,14 +73,18 @@ TEST(CameraStageExt, BeginMoveIsLinearAndTickExactThenTrackingResumes)
     camera.BeginMove({ 820.f, 424.f }, 0.5f);
     EXPECT_TRUE(camera.IsMoving());
 
-    for (int k = 1; k <= 30; ++k)
+    // 거리 500 은 최대 속도 12px/틱 때문에 63틱이 필요하다 (smoothstep: 출발·도착 속도 0)
+    constexpr int kTicks = 63;
+    for (int k = 1; k <= kTicks; ++k)
     {
         camera.Update();
-        if (k < 30)
+        if (k < kTicks)
         {
+            const float t = static_cast<float>(k) / static_cast<float>(kTicks);
+            const float s = t * t * (3.f - 2.f * t);
             ASSERT_TRUE(camera.IsMoving()) << k;
-            EXPECT_NEAR(camera.GetViewCenter().x, 320.f + 500.f * static_cast<float>(k) / 30.f, 1e-3f) << k;
-            EXPECT_NEAR(camera.GetViewCenter().y, 224.f + 200.f * static_cast<float>(k) / 30.f, 1e-3f) << k;
+            EXPECT_NEAR(camera.GetViewCenter().x, 320.f + 500.f * s, 1e-3f) << k;
+            EXPECT_NEAR(camera.GetViewCenter().y, 224.f + 200.f * s, 1e-3f) << k;
         }
     }
     EXPECT_FALSE(camera.IsMoving());
@@ -102,8 +106,8 @@ TEST(CameraStageExt, BeginMoveWithZeroSecondsSnapsAndMoveRespectsBounds)
     EXPECT_FALSE(camera.IsMoving());
     EXPECT_FLOAT_EQ(camera.GetViewCenter().x, 1500.f);
 
-    camera.BeginMove({ 9000.f, 300.f }, 1.f);   // 경계 밖 목표: 이동 중 매 틱 경계로 클램프
-    for (int i = 0; i < 60; ++i)
+    camera.BeginMove({ 9000.f, 300.f }, 1.f);   // 경계 밖 목표: 이동 중 매 틱 경계로 클램프 (최대 속도 때문에 약 5초)
+    for (int i = 0; i < 300 && camera.IsMoving(); ++i)
     {
         camera.Update();
         ASSERT_LE(camera.GetViewCenter().x, 3680.f + 1e-3f);
@@ -124,7 +128,8 @@ TEST(CameraStageExt, LockWithGlideMovesFirstThenLocksOnArrival)
     {
         camera.Update();
         ASSERT_FALSE(camera.IsLocked()) << k;
-        EXPECT_NEAR(camera.GetViewCenter().x, 2400.f + 390.f * static_cast<float>(k) / 60.f, 1e-2f) << k;
+        const float t = static_cast<float>(k) / 60.f;
+        EXPECT_NEAR(camera.GetViewCenter().x, 2400.f + 390.f * t * t * (3.f - 2.f * t), 1e-2f) << k;
     }
     camera.Update();
     EXPECT_TRUE(camera.IsLocked());
@@ -334,7 +339,11 @@ TEST(StageRunnerCamera, CameraMoveActionReachesTargetThenResumesTracking)
     fx.camera.SnapTo({ 320.f, 224.f });
     fx.StepAt(5.f, 1);
     EXPECT_TRUE(fx.camera.IsMoving());
-    fx.StepAt(5.f, 29);
+    // 거리 680 은 최대 속도 12px/틱 때문에 0.5초보다 길게 걸린다 (도착 시점에 정확히 목표에 선다)
+    for (int i = 0; i < 200 && fx.camera.IsMoving(); ++i)
+    {
+        fx.StepAt(5.f, 1);
+    }
     EXPECT_FALSE(fx.camera.IsMoving());
     EXPECT_FLOAT_EQ(fx.camera.GetViewCenter().x, 1000.f);
     EXPECT_FLOAT_EQ(fx.camera.GetViewCenter().y, 300.f);

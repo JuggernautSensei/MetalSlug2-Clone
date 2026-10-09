@@ -266,6 +266,10 @@ namespace
         const BigShieeCfg& c    = _def.bigShiee;
         const Vec2         from = SourcePos_(_e, c, _source);
         Fx_(_env, _source < 4 ? "BigShiee_Fire_ABCD_1" : "BigShiee_Fire_EFG_1", from);
+        if (_source == kCannonSource)
+        {
+            _e.ext[kExtLastShot] = _e.aux + 1;   // 캐논 발사 플래시 (Gun_Shoot)
+        }
         if (!_env.ctx.pProjectiles || !_env.ctx.pCombat || !_env.ctx.player.bAlive)
         {
             return;
@@ -319,9 +323,12 @@ namespace
         }
         const ProjectileDef& proj = _env.lib.GetProjectile(projIndex);
 
+        // 비행 시간 T 에 발사 높이에서 지면까지 떨어지도록 수직 초속을 구한다: H = vy*T + g*T^2/2 (y 아래 +)
         const float groundY = _e.body.position.y;
         const float g       = proj.gravity;
-        float       vy      = proj.v0.y;
+        const float flight  = std::max(0.1f, c.shellFlightSec);
+        const float vy0     = ((groundY - from.y) - 0.5f * g * flight * flight) / flight;
+        float       vy      = vy0;
         float       y       = from.y;
         int         n       = 0;
         while (n < 600)
@@ -335,15 +342,16 @@ namespace
             }
         }
 
+        // 착탄 = 발사 시점 플레이어 발 x (jitter 0 이면 정확히, 그 밖이면 ± 값)
         const int   jitter = static_cast<int>(c.shellJitter);
-        const float target = _env.ctx.player.feet.x + static_cast<float>(Roll(_env, 2 * jitter + 1) - jitter);
+        const float target = _env.ctx.player.feet.x + (jitter > 0 ? static_cast<float>(Roll(_env, 2 * jitter + 1) - jitter) : 0.f);
         const float vx     = (target - from.x) / (static_cast<float>(n) * kStepSec);
 
         ShotSpawn spawn;
         spawn.team            = eTeam::Enemy;
         spawn.owner           = _e.id;
         spawn.position        = from;
-        spawn.velocity        = { vx, proj.v0.y };
+        spawn.velocity        = { vx, vy0 };
         spawn.gravity         = g;
         spawn.maxFallSpeed    = proj.maxFall;
         spawn.size            = proj.size;
@@ -526,8 +534,18 @@ namespace
                 }
                 ScheduleTracer_(_e, _c, _e.aux + _c.telegraphTicks + k * _c.streakStaggerTicks, src);
             }
-            _e.aux2 = _e.aux + IntervalTicks_(_env, _c, _c.burstTicks, _c.burstTicks, IsEnragedImpl_(_e));
+            // 연사 버스트는 격앙 배율을 받지 않는다 (격앙은 캐논 볼리 간격만 줄인다)
+            _e.aux2 = _e.aux + IntervalTicks_(_env, _c, _c.burstTicks, _c.burstTicks, false);
         }
+    }
+
+    // 트레이서 1발의 수명 (틱). 볼리가 끝나고 이 시간이 지나야 다음 볼리가 허용된다.
+    [[nodiscard]] int TracerLifeTicks_(
+        EnemyEnv&          _env,
+        const BigShieeCfg& _c)
+    {
+        const int idx = _env.lib.FindProjectileIndex(_c.tracerProjectile);
+        return idx < 0 ? 0 : SecToTicks(_env.lib.GetProjectile(idx).lifetimeSec);
     }
 
     void TickCannon_(
@@ -537,6 +555,12 @@ namespace
     {
         if (_e.aux < _e.aux2 || !_env.ctx.player.bAlive)
         {
+            return;
+        }
+        // 한 번에 볼리 하나만 비행한다: 직전 볼리의 트레이서가 모두 사라질 때까지 대기
+        if (_e.aux < _e.ext[kExtVolleyBusy])
+        {
+            _e.aux2 = _e.ext[kExtVolleyBusy];
             return;
         }
         const bool bEnraged = IsEnragedImpl_(_e);
@@ -554,6 +578,7 @@ namespace
             }
             ScheduleTracer_(_e, _c, _e.aux + _c.telegraphTicks + k * _c.streakStaggerTicks, src);
         }
+        _e.ext[kExtVolleyBusy] = _e.aux + _c.telegraphTicks + std::max(0, _c.volleyStreaks - 1) * _c.streakStaggerTicks + TracerLifeTicks_(_env, _c);
         if (_c.shellEvery > 0 && _e.aux3 % _c.shellEvery == 0 && !CannonDead_(_e))
         {
             Enqueue_(_e, PackItem_(_e.aux + _c.telegraphTicks, kKindShell, kCannonSource, 0));
@@ -656,7 +681,8 @@ namespace
             }
         }
 
-        _env.world.RequestPlayerMaxX(_e.body.position.x + c.hullBlockDx);
+        // 플레이어 벽: 아레나 왼쪽 + playerWallX 에 고정 (보스 주행과 무관). 사망 후에는 걸지 않는다 (TickDying_).
+        _env.world.RequestPlayerMaxX(BaseX_(_e) + c.playerWallX);
     }
 
     bool OnHit_(
@@ -732,10 +758,6 @@ namespace
         const int          finish   = SecToTicks(c.destroyFinishSec);
         ++_e.deathTicks;
 
-        if (_e.deathTicks < finish)
-        {
-            _env.world.RequestPlayerMaxX(_e.body.position.x + c.hullBlockDx);
-        }
         if (_e.deathTicks <= chain && _e.deathTicks % step == 0)
         {
             HullExplosion_(_e, _def, _env, "Explosion_Small");
@@ -969,7 +991,7 @@ void ParseBigShieeCfg(
     c.entranceFromX    = _r.Num("entranceFromX");
     c.entranceTicks    = _r.Ticks("entranceSec");
     c.rumbleTicks      = _r.Ticks("rumbleSec");
-    c.hullBlockDx      = _r.Num("hullBlockDx");
+    c.playerWallX      = _r.Num("playerWallX");
 
     c.assaultTicks     = _r.Ticks("assaultSec");
     c.burstTicks       = _r.Ticks("burstSec");
@@ -982,6 +1004,7 @@ void ParseBigShieeCfg(
     c.telegraphTicks   = _r.Ticks("telegraphSec");
     c.streakStaggerTicks = _r.Ticks("streakStaggerSec");
     c.shellJitter      = _r.Num("shellJitter");
+    c.shellFlightSec   = _r.Num("shellFlightSec");
     c.enragedRate      = _r.Num("enragedRate");
     c.streakSpeed      = _r.Num("streakSpeed");
 

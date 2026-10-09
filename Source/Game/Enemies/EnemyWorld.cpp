@@ -632,6 +632,28 @@ EnemyHandle EnemyWorld::ResolveHandle(
     return { id };
 }
 
+slug::Vector<Aabb> EnemyWorld::GetSolidBoxes() const
+{
+    slug::Vector<Aabb> boxes;
+    if (!m_pLibrary)
+    {
+        return boxes;
+    }
+    for (const Enemy& e: m_enemies)
+    {
+        if (e.life != eEnemyLife::Alive)
+        {
+            continue;
+        }
+        const EnemyDef& def = m_pLibrary->Get(e.defIndex);
+        if (!def.solid.IsEmpty())
+        {
+            boxes.push_back(def.solid.At(e.body.position, e.facing));
+        }
+    }
+    return boxes;
+}
+
 bool EnemyWorld::IsDefeated(
     const EnemyHandle _handle) const
 {

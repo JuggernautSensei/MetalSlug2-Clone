@@ -239,6 +239,8 @@ struct WaveEntry
 {
     float     delay = 0.f;   // 초 (액션 실행 시각 기준)
     SpawnSpec spawn = {};
+    float     every = 0.f;  // 시간 반복 주기(초). times > 1 이면 필수 (이전 발동 시각 + every)
+    int       times = 1;    // 시간 반복 횟수 (1 = 한 번). 취소는 clear waves 가 전체 반복을 지운다
 };
 
 struct RectRef

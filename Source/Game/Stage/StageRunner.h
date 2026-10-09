@@ -76,6 +76,7 @@ private:
         const WaveEntry*   pWave            = nullptr;
         int                sectionIndex     = -1;
         bool               bAbortOnGameOver = false;
+        int                repeatsLeft      = 0;   // 웨이브 시간 반복: 남은 재발동 횟수 (seq 는 공유 = clear waves 로 함께 취소)
     };
 
     struct GateState

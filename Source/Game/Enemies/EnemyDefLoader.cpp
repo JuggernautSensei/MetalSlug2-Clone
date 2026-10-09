@@ -71,7 +71,7 @@ namespace
     constexpr const char* kRootKeys[] = { "note", "version", "globals", "defs" };
     constexpr const char* kGlobalKeys[] = { "note", "dpsRef", "activationMarginPx", "despawnBehindCameraPx", "despawnBelowCameraPx" };
     constexpr const char* kEnemyKeys[] = {
-        "note", "extends", "abstract", "kind", "behavior", "team", "hp", "ttk", "score", "body", "hurtbox", "activation", "physics",
+        "note", "extends", "abstract", "kind", "behavior", "team", "hp", "ttk", "score", "body", "hurtbox", "solid", "activation", "physics",
         "clips", "weapons", "params", "death", "drops", "overlay", "noDespawn", "human"
     };
     constexpr const char* kProjectileKeys[] = {
@@ -819,6 +819,13 @@ bool EnemyDefParser::ParseEnemy_(
     {
         def.hurtbox = BoxDef {};
         if (!ReadBox_(name, "hurtbox", *hurtbox, def.hurtbox))
+        {
+            return false;
+        }
+    }
+    if (const std::optional<slug::JsonReader> solid = Find_(_chain, "solid"))
+    {
+        if (!ReadBox_(name, "solid", *solid, def.solid))
         {
             return false;
         }

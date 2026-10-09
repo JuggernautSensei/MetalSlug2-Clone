@@ -440,28 +440,29 @@ inline constexpr int kBigShieeTurretCount = 7;   // 포탑 A..G
 struct BigShieeCfg
 {
     float    originDepth       = 208.f;    // 발(바닥) → 프레임 중심 (아트 높이 416 의 절반)
-    float    homeX             = 290.f;    // 아레나 왼쪽 기준 중심 x (화면 좌표)
-    float    driveMinX         = 205.f;    // 선체 주행 범위 (화면 좌표)
-    float    driveMaxX         = 290.f;
+    float    homeX             = 470.f;    // 아레나 왼쪽 기준 중심 x (화면 좌표). 선체 왼쪽 끝이 플레이어 띠 밖에 머물도록 오른쪽에 둔다
+    float    driveMinX         = 445.f;    // 선체 주행 범위 (화면 좌표) = home ±25
+    float    driveMaxX         = 495.f;
     float    driveSpeed        = 50.f;     // px/s
     int      driveRestTicks    = 180;      // 목표 도착 후 정지 (3 s)
-    float    entranceFromX     = 420.f;    // 등장 시작 = home + 이 값 (오른쪽 화면 밖에서 굴러 들어온다)
+    float    entranceFromX     = 500.f;    // 등장 시작 = home + 이 값 (선체 왼쪽 끝이 화면 오른쪽 밖 640 에서 시작한다)
     int      entranceTicks     = 150;      // 2.5 s
     int      rumbleTicks       = 15;       // 등장 중 기저 폭발 주기
-    float    hullBlockDx       = -60.f;    // 플레이어 x 상한 = 보스 x + 이 값 (플레이어는 보스 왼쪽 띠에 머문다)
+    float    playerWallX       = 165.f;    // 플레이어 x 상한 = 아레나 왼쪽 + 이 값 (고정 벽, 보스 주행과 무관. 등장~전투 중에만 건다)
     int      assaultTicks      = 720;      // 1단계: 포탑 연사 12 s
-    int      burstTicks        = 72;       // 포탑 연사 간격 1.2 s
+    int      burstTicks        = 132;      // 포탑 연사 간격 2.2 s (1 버스트 = 최대 2기 각 트레이서 1발)
     int      burstCount        = 2;        // 한 번에 발사하는 포탑 수
     int      deployTicks       = 240;      // 2단계: 캐논 전개 4 s (클립 4 단계)
-    int      volleyMinTicks    = 180;      // 캐논 단계 볼리 간격 3 s ~ 4 s
-    int      volleyMaxTicks    = 240;
+    int      volleyMinTicks    = 240;      // 캐논 단계 볼리 간격 4 s ~ 5 s (격앙 x0.8)
+    int      volleyMaxTicks    = 300;
     int      volleyStreaks     = 3;        // 볼리당 청록 트레이서 수
     int      shellEvery        = 2;        // N 번째 볼리마다 주황 포탄 1발
-    int      telegraphTicks    = 24;       // 사격 예고 (포탑 Shooting 클립) 0.4 s
-    int      streakStaggerTicks = 6;       // 트레이서 간격 0.1 s
-    float    shellJitter       = 20.f;     // 포탄 착탄 목표 = 플레이어 x ± 이 값
-    float    enragedRate       = 1.3f;     // 격앙 시 발사 빈도 배율 (캐논 파괴 또는 선체 50% 이하)
-    float    streakSpeed       = 400.f;    // 청록 트레이서 속도 px/s
+    int      telegraphTicks    = 54;       // 사격 예고 (포탑 Shooting 클립 + 발사 플래시) 0.9 s
+    int      streakStaggerTicks = 15;      // 트레이서 간격 0.25 s
+    float    shellJitter       = 0.f;      // 포탄 착탄 목표 = 발사 시점 플레이어 발 x (± 이 값, 0 = 정확히)
+    float    shellFlightSec    = 1.f;      // 주황 포탄 비행 시간 (발사 → 착탄)
+    float    enragedRate       = 1.25f;    // 격앙 시 볼리 간격 배율 1/1.25 = x0.8 (캐논 파괴 또는 선체 50% 이하, 캐논 단계만)
+    float    streakSpeed       = 230.f;    // 청록 트레이서 속도 px/s
     int      turretHp          = 60;
     int      cannonHp          = 300;
     Vec2     turretOffset[kBigShieeTurretCount] = {};   // 보스 원점 기준 포탑 중심
@@ -492,6 +493,7 @@ struct EnemyDef
 
     BoxDef        body      = {};
     BoxDef        hurtbox   = {};
+    BoxDef        solid     = {};   // 살아 있는 동안 플레이어/적의 벽 (발 기준, 비면 없음). 사망(Dying 이후) 시 제거
     ActivationDef activation = {};
     PhysicsDef    physics   = {};
 

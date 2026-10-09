@@ -272,6 +272,13 @@ void StageRunner::ProcessPending_()
                 continue;
             }
             ExecSpawn_(item.pWave->spawn, ctx, true);
+            if (item.repeatsLeft > 0 && !m_bFinished)
+            {
+                PendingItem next  = item;
+                next.dueTick      = item.dueTick + ToTicks_(item.pWave->every);
+                next.repeatsLeft  = item.repeatsLeft - 1;
+                m_pending.push_back(next);
+            }
         }
         else if (item.pAction)
         {
@@ -426,7 +433,7 @@ void StageRunner::Execute_(
             for (const WaveEntry& entry: _action.waveEntries)
             {
                 const int64_t delayTicks = ToTicks_(entry.delay);
-                if (delayTicks > 0)
+                if (delayTicks > 0 || entry.times > 1)
                 {
                     PendingItem item;
                     item.dueTick          = m_tick + delayTicks;
@@ -434,6 +441,7 @@ void StageRunner::Execute_(
                     item.pWave            = &entry;
                     item.sectionIndex     = _ctx.sectionIndex;
                     item.bAbortOnGameOver = _ctx.bAbort;
+                    item.repeatsLeft      = entry.times - 1;
                     m_pending.push_back(item);
                 }
                 else

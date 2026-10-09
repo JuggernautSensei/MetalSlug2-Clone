@@ -67,6 +67,9 @@ public:
         }
     }
 
+    // 살아 있는(Alive) 적의 def.solid 상자 (월드 AABB). StageState 가 벽으로 합친다.
+    [[nodiscard]] slug::Vector<Aabb> GetSolidBoxes() const;
+
     [[nodiscard]] slug::Span<const Enemy> GetEnemies() const { return m_enemies; }
     [[nodiscard]] size_t                 GetCount() const { return m_enemies.size(); }
 

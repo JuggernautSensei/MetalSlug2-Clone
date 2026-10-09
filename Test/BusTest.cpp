@@ -322,3 +322,32 @@ TEST(Bus, ShellKillsAnExposedPlayerStandingInItsPath)
     }
     EXPECT_TRUE(bKilledByBus);
 }
+
+TEST(Bus, SolidBoxCoversTheClosedBodyOnlyWhileTheBusIsAlive)
+{
+    BossRig rig;
+    ASSERT_TRUE(rig.IsReady());
+    const EnemyHandle bus = SpawnBus(rig);
+    rig.Run(2);
+
+    const slug::Vector<Aabb> boxes = rig.World().GetSolidBoxes();
+    ASSERT_EQ(boxes.size(), 1u);
+    EXPECT_FLOAT_EQ(boxes[0].min.x, kBusX - 200.f);
+    EXPECT_FLOAT_EQ(boxes[0].max.x, kBusX + 200.f);
+    EXPECT_FLOAT_EQ(boxes[0].min.y, kBusFeetY - 253.f);
+    EXPECT_FLOAT_EQ(boxes[0].max.y, kBusFeetY + 7.f);
+
+    rig.Hit(bus.id, 250);
+    rig.Run(1);
+    EXPECT_TRUE(rig.World().GetSolidBoxes().empty());
+}
+
+TEST(Bus, TheSolidBoxStaysAfterOpeningTheDoor)
+{
+    BossRig rig;
+    ASSERT_TRUE(rig.IsReady());
+    SpawnBus(rig);
+    rig.Run(5);
+    OpenBus(rig);
+    EXPECT_EQ(rig.World().GetSolidBoxes().size(), 1u);
+}

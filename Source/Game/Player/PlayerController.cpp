@@ -353,7 +353,7 @@ void PlayerController::TickMovement_(
     {
         m_facing = m_moveX;
     }
-    const bool  bFiring = _command.bShotHeld || m_shotTicksLeft > 0;
+    const bool  bFiring = _command.bShotHeld || m_shotTicksLeft > 0 || m_throwTick >= 0 || _command.bBombBuffered;
     const float speed   = bCrouch ? (bFiring ? 0.f : move.crouchSpeed) : (bGroundedBefore ? move.runSpeed : move.airSpeed);
     m_body.velocity.x = static_cast<float>(m_moveX) * speed;
 
@@ -435,7 +435,7 @@ void PlayerController::UpdateAim_(
 
     if (bHmg)
     {
-        constexpr float kSweepPerTick = 250.f / 60.f;
+        constexpr float kSweepPerTick = 350.f / 60.f;
         constexpr float kReturnPerTick = 1000.f / 60.f;
         const float     step           = m_shotTicksLeft > 0 || _command.bShotHeld ? kSweepPerTick : kReturnPerTick;
         m_aimDegree += std::clamp(targetDeg - m_aimDegree, -step, step);
@@ -635,7 +635,21 @@ void PlayerController::TickShot_(
     }
     const Vec2 chest     = { m_body.position.x, m_body.position.y - m_body.size.y * 0.6f };
 
-    _ctx.pProjectiles->SpawnBullet(MakeBulletSpawn(m_weapon.weapon, weapon, kPlayerOwnerId, muzzle, chest, direction), *_ctx.pCombat);
+    BulletSpawn spawn = MakeBulletSpawn(m_weapon.weapon, weapon, kPlayerOwnerId, muzzle, chest, direction);
+    _ctx.pProjectiles->SpawnBullet(spawn, *_ctx.pCombat);
+    if (m_weapon.weapon == eWeapon::Flame)
+    {
+        constexpr float kSpeedScale[] = { 0.7f, 1.3f };
+        constexpr float kLift[]       = { -7.f, 7.f };
+        for (int i = 0; i < 2; ++i)
+        {
+            BulletSpawn extra = spawn;
+            extra.speed       = spawn.speed * kSpeedScale[i];
+            extra.position.y += kLift[i];
+            extra.sweepFrom.y += kLift[i];
+            _ctx.pProjectiles->SpawnBullet(extra, *_ctx.pCombat);
+        }
+    }
     m_shotTicksLeft = weapon.shotOverlayTicks;
     ++m_overlaySerial;
     ++m_stats.shotsFired;

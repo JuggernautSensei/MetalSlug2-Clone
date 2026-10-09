@@ -168,6 +168,10 @@ void App::ParseArgs_()
             m_startWarpCount = std::atoi(args[++i].c_str());
             m_bDebugDraw     = true;
         }
+        else if (args[i] == "--life" && bHasValue)
+        {
+            m_debugLives = std::atoi(args[++i].c_str());
+        }
         else if (args[i] == "--warp-boss")
         {
             m_pendingWarp = 2;   // F6 와 같다: 스테이지 보스 아레나
@@ -381,6 +385,7 @@ void App::Update_(
         --m_startWarpCount;
     }
     m_ctx.debugWarp   = m_pendingWarp;
+    m_ctx.debugLives  = m_debugLives;
     m_pendingWarp     = 0;
     m_ctx.debugWeapon = m_pendingWeapon;
     m_pendingWeapon   = 0;

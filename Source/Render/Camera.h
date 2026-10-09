@@ -70,7 +70,13 @@ public:
 private:
     [[nodiscard]] Aabb         GetActiveBounds_(bool& _bHasBounds) const;
     [[nodiscard]] Vec2 ClampCenter_(Vec2 _center) const;
+    [[nodiscard]] Vec2 ClampToRect_(Vec2 _center, const Aabb& _bounds) const;
     [[nodiscard]] Vec2 SnapTopLeft_(Vec2 _center) const;
+    [[nodiscard]] bool GetTargetRect_(Aabb& _rect) const;
+    void               SyncEffectiveBounds_();
+    void               UpdateEffectiveBounds_();
+    void               ApproachEdge_(float& _edge, float& _vel, float _target, float _sign);
+    void               StepX_(float _desiredX, float _focusDeltaX);
 
     CameraTuning m_tuning = {};
 
@@ -80,6 +86,12 @@ private:
     float m_pushSpeed     = 0.f;
     bool  m_bHasPrevFocus = false;
     Vec2 m_target   = { 320.f, 224.f };
+    Aabb  m_effBounds = {};        // 클램프에 실제로 쓰는 영역 (SetBounds/Unlock 은 점진 변화, Lock/SnapTo 는 즉시)
+    Aabb  m_effVel    = {};        // 경계 변별 속도 (px/틱), 제동·가속 상한 적용용
+    bool  m_bHasEff   = false;
+    bool  m_bGlide    = false;     // 큰 간격을 속도 상한이 있는 감쇠 추적으로 따라잡는 중
+    float m_lastDirX  = 1.f;
+    float m_stepY     = 0.f;       // 직전 틱 세로 걸음 (px/틱)
 
     Aabb m_bounds       = {};
     bool m_bHasBounds   = false;
@@ -90,7 +102,9 @@ private:
 
     bool         m_bMoving        = false;
     Vec2 m_moveStart      = { 0.f, 0.f };
-    Vec2 m_moveTarget     = { 0.f, 0.f };
+    Vec2 m_moveStartVel   = { 0.f, 0.f };   // 이동 시작 시점의 속도 (px/틱): 달리던 카메라가 멈칫하지 않도록 이어받는다
+    Vec2 m_moveTarget     = { 0.f, 0.f };   // 이동 도착점 (매 틱 최종 영역으로 다시 클램프)
+    Vec2 m_moveRaw        = { 0.f, 0.f };   // 요청된 원래 도착점
     int          m_moveTotalTicks = 0;
     int          m_moveElapsed    = 0;
     bool         m_bPendingLock   = false;

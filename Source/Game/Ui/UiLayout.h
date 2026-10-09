@@ -60,7 +60,7 @@ struct UiLayout
     int levelCenterY = 432;
 
     int bossBarCenterX = 320;
-    int bossBarTopY    = 388;
+    int bossBarTopY    = 56;    // 상단 HUD 줄 (점수/타이머 y 8..40) 아래 중앙
     int bossBarScale   = 2;
     int bossBarInnerX  = 4;    // 스프라이트 기준 안쪽 채움 영역
     int bossBarInnerY  = 4;

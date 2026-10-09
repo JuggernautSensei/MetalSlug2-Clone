@@ -73,6 +73,7 @@ private:
     bool  m_bSlowMo        = false;
     bool  m_bDebugDraw     = false;
     int   m_pendingWarp    = 0;
+    int   m_debugLives     = 0;
     int   m_startWarpCount = 0;
     int   m_pendingSpawn   = 0;
     int   m_pendingWeapon  = 0;

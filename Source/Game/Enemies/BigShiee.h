@@ -29,6 +29,7 @@ inline constexpr int kExtDriveTarget = 17;   // 선체 주행 목표 (화면 x)
 inline constexpr int kExtDriveRest   = 18;   // 도착 후 정지 틱
 inline constexpr int kExtLastShot    = 19;   // 마지막 캐논 발사 전투 틱 + 1 (0 = 없음)
 inline constexpr int kExtAimBin      = 20;   // 캐논 조준 구간 0..8 (Gun_Aim 프레임)
+inline constexpr int kExtVolleyBusy  = 21;   // 직전 볼리의 마지막 트레이서가 사라지는 전투 틱 (이 전까지 새 볼리 금지)
 
 [[nodiscard]] bool  IsEnraged(const Enemy& _e);
 [[nodiscard]] bool  IsFightStarted(const Enemy& _e);

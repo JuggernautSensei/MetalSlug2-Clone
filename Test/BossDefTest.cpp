@@ -60,18 +60,25 @@ TEST(BossDef, BigShieeConfigMatchesTheTimeline)
     ASSERT_TRUE(rig.IsReady());
     const BigShieeCfg& c = rig.GetLib().Find("bigshiee")->bigShiee;
     EXPECT_FLOAT_EQ(c.originDepth, 208.f);            // 발 → 프레임 중심 (416 / 2)
-    EXPECT_FLOAT_EQ(c.homeX, 290.f);
-    EXPECT_FLOAT_EQ(c.driveMinX, 205.f);
-    EXPECT_FLOAT_EQ(c.driveMaxX, 290.f);
+    EXPECT_FLOAT_EQ(c.homeX, 470.f);                  // 선체 왼쪽 끝 (home - 298) 이 플레이어 벽 165 밖에 있다
+    EXPECT_FLOAT_EQ(c.driveMinX, 445.f);              // 주행 ±25
+    EXPECT_FLOAT_EQ(c.driveMaxX, 495.f);
     EXPECT_EQ(c.entranceTicks, 150);                  // 2.5 s 등장
+    EXPECT_FLOAT_EQ(c.entranceFromX, 500.f);          // 시작 시 선체 왼쪽 끝이 화면 밖 (470+500-298 = 672 > 640)
+    EXPECT_EQ(c.burstTicks, 132);                     // 포탑 연사 2.2 s
     EXPECT_EQ(c.assaultTicks, 720);                   // 포탑 연사 12 s
     EXPECT_EQ(c.deployTicks, 240);                    // 캐논 전개 4 s
-    EXPECT_EQ(c.volleyMinTicks, 180);                 // 볼리 3 s ~ 4 s
-    EXPECT_EQ(c.volleyMaxTicks, 240);
-    EXPECT_EQ(c.telegraphTicks, 24);                  // 사격 예고 0.4 s
+    EXPECT_EQ(c.volleyMinTicks, 240);                 // 볼리 4 s ~ 5 s
+    EXPECT_EQ(c.volleyMaxTicks, 300);
+    EXPECT_FLOAT_EQ(c.enragedRate, 1.25f);            // 격앙 간격 x0.8
+    EXPECT_EQ(c.telegraphTicks, 54);                  // 사격 예고 0.9 s
+    EXPECT_EQ(c.streakStaggerTicks, 15);              // 트레이서 간격 0.25 s
+    EXPECT_FLOAT_EQ(c.streakSpeed, 230.f);
+    EXPECT_FLOAT_EQ(c.shellJitter, 0.f);              // 착탄 = 발사 시점 플레이어 x
+    EXPECT_FLOAT_EQ(c.shellFlightSec, 1.f);
     EXPECT_EQ(c.volleyStreaks, 3);
     EXPECT_EQ(c.shellEvery, 2);
-    EXPECT_FLOAT_EQ(c.hullBlockDx, -60.f);
+    EXPECT_FLOAT_EQ(c.playerWallX, 165.f);            // 플레이어 벽 = 아레나 왼쪽 + 165 (고정)
     EXPECT_EQ(c.turretHp, 60);
     EXPECT_EQ(c.cannonHp, 300);
     EXPECT_FLOAT_EQ(c.turretOffset[0].x, -130.f);
@@ -93,8 +100,11 @@ TEST(BossDef, BigShieeProjectilesCarryTheShellAndTracerNumbers)
     ASSERT_NE(pTracer, nullptr);
     ASSERT_NE(pShell, nullptr);
     ASSERT_NE(pBlast, nullptr);
-    EXPECT_FLOAT_EQ(pShell->v0.y, -300.f);
-    EXPECT_FLOAT_EQ(pShell->gravity, 500.f);
+    EXPECT_FLOAT_EQ(pShell->gravity, 1626.f);         // 발사 높이 272 → 1.0 s 비행 (발사 코드가 vy 를 구한다)
+    EXPECT_FLOAT_EQ(pTracer->size.x, 14.f);           // 트레이서 판정 14x14
+    EXPECT_FLOAT_EQ(pTracer->size.y, 14.f);
+    EXPECT_EQ(SecToTicks(pTracer->lifetimeSec), 96);  // 1.6 s
+    EXPECT_FLOAT_EQ(pShell->size.x, 16.f);
     EXPECT_FLOAT_EQ(pBlast->size.x, 60.f);            // 착탄 판정 60x60
     EXPECT_FLOAT_EQ(pBlast->size.y, 60.f);
     EXPECT_NEAR(SecToTicks(pBlast->lifetimeSec), 18, 1);   // 0.3 s
