@@ -1,0 +1,334 @@
+#include <algorithm>
+#include <cmath>
+
+#include <gtest/gtest.h>
+
+#include "Render/Camera.h"
+
+using namespace slug;
+
+namespace
+{
+bool IsIntegral(
+    const float _value)
+{
+    return _value == std::floor(_value);
+}
+
+// 폭 4000, 높이 448 짜리 가로 스크롤 레벨
+Camera MakeLevelCamera()
+{
+    Camera camera;
+    camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
+    camera.SetTarget({ 320.f, 224.f });
+    camera.SnapToTarget();
+    return camera;
+}
+}   // namespace
+
+TEST(Camera, OutputIsAlwaysIntegralWhileFollowingFractionalTarget)
+{
+    Camera camera = MakeLevelCamera();
+    for (int i = 0; i < 600; ++i)
+    {
+        camera.SetTarget({ 320.f + static_cast<float>(i) * 3.37f, 224.f + std::sin(static_cast<float>(i) * 0.05f) * 3.1f });
+        camera.Update();
+        const jug::VECTOR2 position = camera.GetPosition();
+        ASSERT_TRUE(IsIntegral(position.x)) << "tick " << i << " x=" << position.x;
+        ASSERT_TRUE(IsIntegral(position.y)) << "tick " << i << " y=" << position.y;
+    }
+}
+
+TEST(Camera, FollowConvergesToTargetWithinDeadzone)
+{
+    Camera camera = MakeLevelCamera();
+    camera.SetTarget({ 1500.f, 224.f });
+    for (int i = 0; i < 600; ++i)
+    {
+        camera.Update();
+    }
+
+    const CameraTuning& tuning = camera.GetTuning();
+    EXPECT_LE(std::abs(camera.GetViewCenter().x - 1500.f), tuning.deadzoneHalf.x + 0.01f);
+    // 정지 후에는 더 움직이지 않는다 (정수 스냅이 깜박이지 않음)
+    const jug::VECTOR2 settled = camera.GetPosition();
+    for (int i = 0; i < 120; ++i)
+    {
+        camera.Update();
+    }
+    EXPECT_EQ(camera.GetPosition(), settled);
+}
+
+TEST(Camera, FollowIsSmoothNotInstantAndNeverOvershoots)
+{
+    Camera camera = MakeLevelCamera();
+    camera.SetTarget({ 1000.f, 224.f });
+
+    float previous = camera.GetViewCenter().x;
+    camera.Update();
+    EXPECT_LT(camera.GetViewCenter().x, 1000.f - camera.GetTuning().deadzoneHalf.x);   // 한 틱에 도달하지 않음
+    for (int i = 0; i < 400; ++i)
+    {
+        camera.Update();
+        ASSERT_GE(camera.GetViewCenter().x, previous) << "tick " << i;                             // 단조 증가
+        ASSERT_LE(camera.GetViewCenter().x, 1000.f - camera.GetTuning().deadzoneHalf.x + 0.01f);   // 오버슈트 없음
+        previous = camera.GetViewCenter().x;
+    }
+}
+
+TEST(Camera, TargetInsideDeadzoneDoesNotMoveTheCamera)
+{
+    Camera             camera = MakeLevelCamera();
+    const jug::VECTOR2 start  = camera.GetPosition();
+    const float        dz     = camera.GetTuning().deadzoneHalf.x;
+
+    for (int i = 0; i < 60; ++i)
+    {
+        camera.SetTarget({ 320.f + dz * std::sin(static_cast<float>(i) * 0.3f) * 0.9f, 224.f });
+        camera.Update();
+    }
+    EXPECT_EQ(camera.GetPosition(), start);
+}
+
+TEST(Camera, ClampsToBoundsOnBothEnds)
+{
+    Camera camera = MakeLevelCamera();
+
+    camera.SetTarget({ 100000.f, 224.f });
+    for (int i = 0; i < 2000; ++i)
+    {
+        camera.Update();
+    }
+    EXPECT_FLOAT_EQ(camera.GetPosition().x, 4000.f - 640.f);
+
+    camera.SetTarget({ -100000.f, 224.f });
+    for (int i = 0; i < 4000; ++i)
+    {
+        camera.Update();
+    }
+    EXPECT_FLOAT_EQ(camera.GetPosition().x, 0.f);
+}
+
+TEST(Camera, NeverShowsOutsideBoundsAtAnyTick)
+{
+    Camera camera = MakeLevelCamera();
+    for (int i = 0; i < 1500; ++i)
+    {
+        camera.SetTarget({ static_cast<float>((i * 37) % 5000) - 500.f, static_cast<float>((i * 11) % 700) - 100.f });
+        camera.Update();
+        const Aabb view = camera.GetViewRect();
+        ASSERT_GE(view.min.x, 0.f);
+        ASSERT_GE(view.min.y, 0.f);
+        ASSERT_LE(view.max.x, 4000.f);
+        ASSERT_LE(view.max.y, 448.f);
+    }
+}
+
+TEST(Camera, BoundsSmallerThanViewAreCentered)
+{
+    Camera camera;
+    camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 400.f, 300.f }));
+    camera.SetTarget({ 200.f, 150.f });
+    camera.SnapToTarget();
+    // 뷰(640x448) 가 경계보다 크면 경계 중앙에 놓는다: (400-640)/2 = -120
+    EXPECT_FLOAT_EQ(camera.GetPosition().x, -120.f);
+    EXPECT_FLOAT_EQ(camera.GetPosition().y, -74.f);
+}
+
+TEST(Camera, ForwardOnlyNeverMovesBackward)
+{
+    Camera camera = MakeLevelCamera();
+    camera.SetForwardOnly(true);
+
+    float maxX = camera.GetPositionNoShake().x;
+    for (int i = 0; i < 900; ++i)
+    {
+        // 앞으로 갔다가 뒤로 돌아오는 플레이어
+        const float t = static_cast<float>(i);
+        camera.SetTarget({ 320.f + (i < 400 ? t * 3.f : 1200.f - (t - 400.f) * 3.f), 224.f });
+        camera.Update();
+
+        const float x = camera.GetPositionNoShake().x;
+        ASSERT_GE(x, maxX) << "tick " << i;
+        maxX = std::max(maxX, x);
+    }
+    EXPECT_GT(maxX, 700.f);
+}
+
+TEST(Camera, WithoutForwardOnlyCameraFollowsBackward)
+{
+    Camera camera = MakeLevelCamera();
+    camera.SetTarget({ 2000.f, 224.f });
+    for (int i = 0; i < 600; ++i)
+    {
+        camera.Update();
+    }
+    const float forward = camera.GetPosition().x;
+
+    camera.SetTarget({ 1000.f, 224.f });
+    for (int i = 0; i < 600; ++i)
+    {
+        camera.Update();
+    }
+    EXPECT_LT(camera.GetPosition().x, forward - 500.f);
+}
+
+TEST(Camera, LockConfinesTheViewAndUnlockRestoresFollowing)
+{
+    Camera camera = MakeLevelCamera();
+    camera.SetTarget({ 1000.f, 224.f });
+    camera.SnapToTarget();
+
+    // 보스전: 화면 한 장 크기로 고정
+    const float lockLeft = camera.GetPosition().x;
+    camera.Lock(Aabb::FromMinMax({ lockLeft, 0.f }, { lockLeft + 640.f, 448.f }));
+    EXPECT_TRUE(camera.IsLocked());
+
+    camera.SetTarget({ 3000.f, 224.f });
+    for (int i = 0; i < 600; ++i)
+    {
+        camera.Update();
+        ASSERT_FLOAT_EQ(camera.GetPosition().x, lockLeft);
+    }
+
+    camera.Unlock();
+    for (int i = 0; i < 900; ++i)
+    {
+        camera.Update();
+    }
+    EXPECT_GT(camera.GetPosition().x, lockLeft + 1000.f);
+}
+
+TEST(Camera, LockWinsOverForwardOnly)
+{
+    Camera camera = MakeLevelCamera();
+    camera.SetForwardOnly(true);
+    camera.SetTarget({ 2000.f, 224.f });
+    for (int i = 0; i < 600; ++i)
+    {
+        camera.Update();
+    }
+    ASSERT_GT(camera.GetPosition().x, 1000.f);
+
+    // 이미 지나온 영역으로 락(예: 되돌아간 구간) → 락 경계가 우선
+    camera.Lock(Aabb::FromMinMax({ 100.f, 0.f }, { 740.f, 448.f }));
+    camera.Update();
+    EXPECT_FLOAT_EQ(camera.GetPosition().x, 100.f);
+}
+
+TEST(Camera, SnapToTargetIsImmediateAndClamped)
+{
+    Camera camera = MakeLevelCamera();
+    camera.SetTarget({ 2500.f, 224.f });
+    camera.SnapToTarget();
+    EXPECT_FLOAT_EQ(camera.GetPosition().x, 2500.f - 320.f);
+
+    camera.SetTarget({ 50.f, 224.f });
+    camera.SnapToTarget();
+    EXPECT_FLOAT_EQ(camera.GetPosition().x, 0.f);
+}
+
+TEST(Camera, WorldScreenRoundTripAndVisibility)
+{
+    Camera camera = MakeLevelCamera();
+    camera.SetTarget({ 1000.f, 224.f });
+    camera.SnapToTarget();
+
+    const jug::VECTOR2 world  = { 1234.5f, 100.25f };
+    const jug::VECTOR2 screen = camera.WorldToScreen(world);
+    EXPECT_EQ(camera.ScreenToWorld(screen), world);
+    EXPECT_FLOAT_EQ(screen.x, 1234.5f - camera.GetPosition().x);
+
+    EXPECT_TRUE(camera.IsVisible(Aabb::FromMinMax({ 1000.f, 100.f }, { 1010.f, 110.f })));
+    EXPECT_FALSE(camera.IsVisible(Aabb::FromMinMax({ 3000.f, 100.f }, { 3010.f, 110.f })));
+    // 여유(margin) 를 주면 화면 바로 밖도 포함
+    const Aabb view        = camera.GetViewRect();
+    const Aabb justOutside = Aabb::FromMinMax({ view.max.x + 5.f, 100.f }, { view.max.x + 15.f, 110.f });
+    EXPECT_FALSE(camera.IsVisible(justOutside));
+    EXPECT_TRUE(camera.IsVisible(justOutside, 8.f));
+}
+
+TEST(Camera, TargetOffsetLooksAhead)
+{
+    CameraTuning tuning;
+    tuning.targetOffset = { 80.f, 0.f };
+    Camera camera { tuning };
+    camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
+    camera.SetTarget({ 1000.f, 224.f });
+    camera.SnapToTarget();
+    EXPECT_FLOAT_EQ(camera.GetViewCenter().x, 1080.f);
+}
+
+TEST(Camera, ZeroSmoothTimeFollowsInstantly)
+{
+    CameraTuning tuning;
+    tuning.smoothTime   = 0.f;
+    tuning.deadzoneHalf = { 0.f, 0.f };
+    Camera camera { tuning };
+    camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
+    camera.SetTarget({ 1500.f, 224.f });
+    camera.Update();
+    EXPECT_FLOAT_EQ(camera.GetViewCenter().x, 1500.f);
+}
+
+TEST(Camera, ShakeIsDeterministicDecaysAndStaysInBounds)
+{
+    auto Run = []() {
+        Camera camera = MakeLevelCamera();
+        camera.SetTarget({ 2000.f, 224.f });
+        camera.SnapToTarget();
+        camera.Shake(6.f, 0.5f);
+
+        jug::Vector<jug::VECTOR2> positions;
+        for (int i = 0; i < 60; ++i)
+        {
+            camera.Update();
+            positions.push_back(camera.GetPosition());
+        }
+        return positions;
+    };
+
+    const jug::Vector<jug::VECTOR2> a = Run();
+    const jug::Vector<jug::VECTOR2> b = Run();
+    ASSERT_EQ(a.size(), b.size());
+    bool bMoved = false;
+    for (size_t i = 0; i < a.size(); ++i)
+    {
+        ASSERT_EQ(a[i], b[i]) << i;
+        ASSERT_TRUE(IsIntegral(a[i].x) && IsIntegral(a[i].y));
+        ASSERT_GE(a[i].y, 0.f);   // 위쪽 경계 밖이 보이지 않는다
+        bMoved = bMoved || a[i].x != 1680.f;
+    }
+    EXPECT_TRUE(bMoved);
+    // 0.5초(30틱) 뒤에는 흔들림이 멈춘다
+    EXPECT_FLOAT_EQ(a.back().x, 1680.f);
+    EXPECT_FLOAT_EQ(a.back().y, 0.f);
+}
+
+TEST(Camera, StopShakeRestoresImmediately)
+{
+    Camera camera = MakeLevelCamera();
+    camera.SetTarget({ 2000.f, 224.f });
+    camera.SnapToTarget();
+    camera.Shake(10.f, 5.f);
+    camera.Update();
+    camera.StopShake();
+    EXPECT_EQ(camera.GetPosition(), camera.GetPositionNoShake());
+}
+
+TEST(Camera, DeterministicAcrossIdenticalRuns)
+{
+    auto Run = []() {
+        Camera camera = MakeLevelCamera();
+        camera.SetForwardOnly(true);
+        jug::Vector<jug::VECTOR2> out;
+        for (int i = 0; i < 600; ++i)
+        {
+            camera.SetTarget({ 320.f + static_cast<float>(i) * 2.7f, 224.f });
+            camera.Update();
+            out.push_back(camera.GetPosition());
+        }
+        return out;
+    };
+    EXPECT_EQ(Run(), Run());
+}

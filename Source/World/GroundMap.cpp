@@ -1,0 +1,372 @@
+#include "World/GroundMap.h"
+
+#include <cmath>
+#include <fstream>
+
+#include <JugX/Math.h>
+
+#include "Core/Error.h"
+
+namespace slug
+{
+
+namespace
+{
+    constexpr size_t kHeaderSize = 12;   // magic(4) + width(4) + height(4)
+    constexpr int    kMaxDim     = 1 << 20;
+
+    [[nodiscard]] uint32_t ReadU32Le_(
+        const uint8_t* _p)
+    {
+        return static_cast<uint32_t>(_p[0]) | (static_cast<uint32_t>(_p[1]) << 8) | (static_cast<uint32_t>(_p[2]) << 16) | (static_cast<uint32_t>(_p[3]) << 24);
+    }
+
+    [[nodiscard]] size_t StrideOf_(
+        const int _width)
+    {
+        return (static_cast<size_t>(_width) + 7) / 8;
+    }
+}   // namespace
+
+// ===========================================
+//  생성
+// ===========================================
+
+jug::Result<GroundMap> GroundMap::Load(
+    const jug::FilePath& _path)
+{
+    std::ifstream file { _path, std::ios::binary | std::ios::ate };
+    if (!file)
+    {
+        return jug::Error { eError::FileOpen };
+    }
+
+    const std::streamsize size = file.tellg();
+    if (size < 0)
+    {
+        return jug::Error { eError::FileRead };
+    }
+
+    jug::Vector<uint8_t> data(static_cast<size_t>(size));
+    file.seekg(0, std::ios::beg);
+    if (size > 0 && !file.read(reinterpret_cast<char*>(data.data()), size))
+    {
+        return jug::Error { eError::FileRead };
+    }
+
+    return LoadFromMemory(data);
+}
+
+jug::Result<GroundMap> GroundMap::LoadFromMemory(
+    const jug::Span<const uint8_t> _fileData)
+{
+    if (_fileData.size() < kHeaderSize || _fileData[0] != 'G' || _fileData[1] != 'R' || _fileData[2] != 'N' || _fileData[3] != 'D')
+    {
+        return jug::Error { eError::InvalidData };
+    }
+
+    const uint32_t width  = ReadU32Le_(_fileData.data() + 4);
+    const uint32_t height = ReadU32Le_(_fileData.data() + 8);
+    if (width > static_cast<uint32_t>(kMaxDim) || height > static_cast<uint32_t>(kMaxDim))
+    {
+        return jug::Error { eError::InvalidData };
+    }
+
+    const size_t stride   = StrideOf_(static_cast<int>(width));
+    const size_t dataSize = stride * height;
+    if (_fileData.size() - kHeaderSize < dataSize)
+    {
+        return jug::Error { eError::InvalidData };
+    }
+
+    GroundMap map;
+    map.m_width  = static_cast<int>(width);
+    map.m_height = static_cast<int>(height);
+    map.m_stride = stride;
+    map.m_bits.assign(_fileData.begin() + kHeaderSize, _fileData.begin() + kHeaderSize + dataSize);
+    return map;
+}
+
+GroundMap GroundMap::MakeFromBits(
+    const int                      _width,
+    const int                      _height,
+    const jug::Span<const uint8_t> _packedBits)
+{
+    JUG_ASSERT(_width >= 0 && _height >= 0, "맵 크기는 음수일 수 없다.\n");
+    JUG_ASSERT(_packedBits.size() >= StrideOf_(_width) * static_cast<size_t>(_height), "비트 배열이 맵 크기보다 작다.\n");
+
+    GroundMap map;
+    map.m_width  = _width;
+    map.m_height = _height;
+    map.m_stride = StrideOf_(_width);
+    map.m_bits.assign(_packedBits.begin(), _packedBits.begin() + static_cast<ptrdiff_t>(map.m_stride * static_cast<size_t>(_height)));
+    return map;
+}
+
+GroundMap GroundMap::MakeEmpty(
+    const int _width,
+    const int _height)
+{
+    JUG_ASSERT(_width >= 0 && _height >= 0, "맵 크기는 음수일 수 없다.\n");
+
+    GroundMap map;
+    map.m_width  = _width;
+    map.m_height = _height;
+    map.m_stride = StrideOf_(_width);
+    map.m_bits.assign(map.m_stride * static_cast<size_t>(_height), 0);
+    return map;
+}
+
+GroundMap GroundMap::MakeFromRows(
+    const jug::Span<const jug::StringView> _rows,
+    const char                             _solid)
+{
+    size_t width = 0;
+    for (const jug::StringView row: _rows)
+    {
+        width = jug::Max(width, row.size());
+    }
+
+    GroundMap map = MakeEmpty(static_cast<int>(width), static_cast<int>(_rows.size()));
+    for (size_t y = 0; y < _rows.size(); ++y)
+    {
+        for (size_t x = 0; x < _rows[y].size(); ++x)
+        {
+            if (_rows[y][x] == _solid)
+            {
+                map.SetSolid(static_cast<int>(x), static_cast<int>(y), true);
+            }
+        }
+    }
+    return map;
+}
+
+// ===========================================
+//  편집
+// ===========================================
+
+void GroundMap::SetSolid(
+    const int  _x,
+    const int  _y,
+    const bool _bSolid)
+{
+    if (static_cast<unsigned>(_x) >= static_cast<unsigned>(m_width) || static_cast<unsigned>(_y) >= static_cast<unsigned>(m_height))
+    {
+        return;
+    }
+
+    uint8_t&      byte = m_bits[static_cast<size_t>(_y) * m_stride + static_cast<size_t>(_x >> 3)];
+    const uint8_t mask = static_cast<uint8_t>(1u << (_x & 7));
+    byte               = _bSolid ? static_cast<uint8_t>(byte | mask) : static_cast<uint8_t>(byte & ~mask);
+}
+
+void GroundMap::FillRect(
+    const int  _x0,
+    const int  _y0,
+    const int  _x1,
+    const int  _y1,
+    const bool _bSolid)
+{
+    const int x0 = jug::Max(0, jug::Min(_x0, _x1));
+    const int x1 = jug::Min(m_width - 1, jug::Max(_x0, _x1));
+    const int y0 = jug::Max(0, jug::Min(_y0, _y1));
+    const int y1 = jug::Min(m_height - 1, jug::Max(_y0, _y1));
+    for (int y = y0; y <= y1; ++y)
+    {
+        for (int x = x0; x <= x1; ++x)
+        {
+            SetSolid(x, y, _bSolid);
+        }
+    }
+}
+
+uint64_t GroundMap::CountSolidPixels() const
+{
+    // 행 끝 패딩 비트에 외부 데이터가 1 을 넣었을 수 있으므로 유효 폭만 센다.
+    uint64_t count = 0;
+    for (int y = 0; y < m_height; ++y)
+    {
+        for (int x = 0; x < m_width; ++x)
+        {
+            count += IsSolid(x, y) ? 1u : 0u;
+        }
+    }
+    return count;
+}
+
+// ===========================================
+//  질의
+// ===========================================
+
+bool GroundMap::IsOutOfBoundsSolid_(
+    const int _x,
+    const int _y) const
+{
+    return (_x < 0 && m_policy.bSolidLeft) || (_x >= m_width && m_policy.bSolidRight) || (_y < 0 && m_policy.bSolidTop) || (_y >= m_height && m_policy.bSolidBottom);
+}
+
+bool GroundMap::IsSolidAt(
+    const jug::VECTOR2 _point) const
+{
+    return IsSolid(static_cast<int>(std::floor(_point.x)), static_cast<int>(std::floor(_point.y)));
+}
+
+bool GroundMap::IsRectSolid(
+    const int _x0,
+    const int _y0,
+    const int _x1,
+    const int _y1) const
+{
+    const int x0 = jug::Min(_x0, _x1);
+    const int x1 = jug::Max(_x0, _x1);
+    const int y0 = jug::Min(_y0, _y1);
+    const int y1 = jug::Max(_y0, _y1);
+
+    // 맵 밖에 걸친 부분이 고체 정책이면 즉시 true
+    if ((x0 < 0 && m_policy.bSolidLeft) || (x1 >= m_width && m_policy.bSolidRight) || (y0 < 0 && m_policy.bSolidTop) || (y1 >= m_height && m_policy.bSolidBottom))
+    {
+        return true;
+    }
+
+    const int cx0 = jug::Max(x0, 0);
+    const int cx1 = jug::Min(x1, m_width - 1);
+    const int cy0 = jug::Max(y0, 0);
+    const int cy1 = jug::Min(y1, m_height - 1);
+    if (cx0 > cx1 || cy0 > cy1)
+    {
+        return false;
+    }
+
+    const size_t  b0        = static_cast<size_t>(cx0 >> 3);
+    const size_t  b1        = static_cast<size_t>(cx1 >> 3);
+    const uint8_t firstMask = static_cast<uint8_t>(0xFFu << (cx0 & 7));
+    const uint8_t lastMask  = static_cast<uint8_t>(0xFFu >> (7 - (cx1 & 7)));
+
+    for (int y = cy0; y <= cy1; ++y)
+    {
+        const uint8_t* pRow = m_bits.data() + static_cast<size_t>(y) * m_stride;
+        if (b0 == b1)
+        {
+            if ((pRow[b0] & firstMask & lastMask) != 0)
+            {
+                return true;
+            }
+            continue;
+        }
+
+        if ((pRow[b0] & firstMask) != 0 || (pRow[b1] & lastMask) != 0)
+        {
+            return true;
+        }
+        for (size_t b = b0 + 1; b < b1; ++b)
+        {
+            if (pRow[b] != 0)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+std::optional<int> GroundMap::FindGroundY(
+    const int _x,
+    const int _fromY,
+    const int _maxDist) const
+{
+    if (_maxDist < 0)
+    {
+        return std::nullopt;
+    }
+
+    const int endY = _fromY + _maxDist;
+    for (int y = _fromY; y <= endY; ++y)
+    {
+        if (IsSolid(_x, y))
+        {
+            return y;
+        }
+    }
+    return std::nullopt;
+}
+
+std::optional<int> GroundMap::FindCeilingY(
+    const int _x,
+    const int _fromY,
+    const int _maxDist) const
+{
+    if (_maxDist < 0)
+    {
+        return std::nullopt;
+    }
+
+    const int endY = _fromY - _maxDist;
+    for (int y = _fromY; y >= endY; --y)
+    {
+        if (IsSolid(_x, y))
+        {
+            return y;
+        }
+    }
+    return std::nullopt;
+}
+
+std::optional<int> GroundMap::FindSurfaceUp(
+    const int _x,
+    const int _y,
+    const int _maxStep) const
+{
+    if (!IsSolid(_x, _y))
+    {
+        return std::nullopt;
+    }
+
+    int y = _y;
+    for (int step = 0; step < _maxStep; ++step)
+    {
+        if (!IsSolid(_x, y - 1))
+        {
+            return y;
+        }
+        --y;
+    }
+    if (IsSolid(_x, y - 1))
+    {
+        return std::nullopt;
+    }
+    return y;
+}
+
+float GroundMap::EstimateSlope(
+    const int _x,
+    const int _y,
+    const int _halfWidth,
+    const int _searchRange) const
+{
+    if (_halfWidth <= 0)
+    {
+        return 0.f;
+    }
+
+    const std::optional<int> left  = FindGroundY(_x - _halfWidth, _y - _searchRange, _searchRange * 2);
+    const std::optional<int> right = FindGroundY(_x + _halfWidth, _y - _searchRange, _searchRange * 2);
+    if (!left || !right)
+    {
+        return 0.f;
+    }
+    return static_cast<float>(*right - *left) / static_cast<float>(_halfWidth * 2);
+}
+
+jug::VECTOR2 GroundMap::EstimateNormal(
+    const int _x,
+    const int _y,
+    const int _halfWidth,
+    const int _searchRange) const
+{
+    // 접선 (1, slope) 에 수직이고 위를 향하는 벡터: (slope, -1)
+    const float slope  = EstimateSlope(_x, _y, _halfWidth, _searchRange);
+    const float invLen = 1.f / std::sqrt(slope * slope + 1.f);
+    return { slope * invLen, -invLen };
+}
+
+}   // namespace slug

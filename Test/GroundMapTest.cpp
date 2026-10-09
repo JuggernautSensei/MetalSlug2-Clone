@@ -1,0 +1,365 @@
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
+
+#include <gtest/gtest.h>
+
+#include "Core/Error.h"
+#include "World/Geometry.h"
+#include "World/GroundMap.h"
+
+using namespace slug;
+
+namespace
+{
+// 결정적인 간단한 난수 (테스트 데이터 생성용)
+struct Lcg
+{
+    uint32_t state = 12345u;
+
+    uint32_t Next()
+    {
+        state = state * 1664525u + 1013904223u;
+        return state >> 8;
+    }
+};
+
+// 파일 포맷 그대로의 바이트열 생성
+jug::Vector<uint8_t> MakeFile(
+    const uint32_t              _w,
+    const uint32_t              _h,
+    const jug::Vector<uint8_t>& _bits)
+{
+    jug::Vector<uint8_t> data = { 'G', 'R', 'N', 'D' };
+    for (const uint32_t v: { _w, _h })
+    {
+        data.push_back(static_cast<uint8_t>(v & 0xFF));
+        data.push_back(static_cast<uint8_t>((v >> 8) & 0xFF));
+        data.push_back(static_cast<uint8_t>((v >> 16) & 0xFF));
+        data.push_back(static_cast<uint8_t>((v >> 24) & 0xFF));
+    }
+    data.insert(data.end(), _bits.begin(), _bits.end());
+    return data;
+}
+}   // namespace
+
+// ===========================================
+//  로드 / 포맷
+// ===========================================
+
+TEST(GroundMap, MakeFromBitsUsesLsbAsLeftmostPixel)
+{
+    // 폭 10 → 행당 2바이트. 행0: x=0,2 (byte0=0b101) 와 x=9 (byte1=0b10)
+    const uint8_t   bits[] = { 0b00000101, 0b00000010, 0, 0 };
+    const GroundMap map    = GroundMap::MakeFromBits(10, 2, bits);
+
+    EXPECT_EQ(map.GetWidth(), 10);
+    EXPECT_EQ(map.GetHeight(), 2);
+    EXPECT_TRUE(map.IsSolid(0, 0));
+    EXPECT_FALSE(map.IsSolid(1, 0));
+    EXPECT_TRUE(map.IsSolid(2, 0));
+    EXPECT_FALSE(map.IsSolid(8, 0));
+    EXPECT_TRUE(map.IsSolid(9, 0));
+    EXPECT_FALSE(map.IsSolid(0, 1));
+    EXPECT_EQ(map.CountSolidPixels(), 3u);
+}
+
+TEST(GroundMap, LoadFromMemoryParsesHeaderAndBits)
+{
+    const jug::Vector<uint8_t>   file   = MakeFile(9, 2, { 0xFF, 0x01, 0x00, 0x00 });
+    const jug::Result<GroundMap> result = GroundMap::LoadFromMemory(file);
+    ASSERT_TRUE(result.HasValue());
+
+    const GroundMap& map = result.GetValue();
+    EXPECT_EQ(map.GetWidth(), 9);
+    EXPECT_EQ(map.GetHeight(), 2);
+    for (int x = 0; x < 9; ++x)
+    {
+        EXPECT_TRUE(map.IsSolid(x, 0)) << x;
+        EXPECT_FALSE(map.IsSolid(x, 1)) << x;
+    }
+}
+
+TEST(GroundMap, LoadFromMemoryRejectsBadMagicTruncationAndHugeSizes)
+{
+    jug::Vector<uint8_t> badMagic = MakeFile(8, 1, { 0xFF });
+    badMagic[0]                   = 'X';
+    EXPECT_TRUE(GroundMap::LoadFromMemory(badMagic).HasError());
+
+    const jug::Vector<uint8_t> truncated = MakeFile(16, 4, { 0xFF, 0xFF });   // 8바이트 필요
+    EXPECT_TRUE(GroundMap::LoadFromMemory(truncated).HasError());
+
+    const jug::Vector<uint8_t> tooShortHeader = { 'G', 'R', 'N', 'D', 1, 0, 0 };
+    EXPECT_TRUE(GroundMap::LoadFromMemory(tooShortHeader).HasError());
+
+    const jug::Vector<uint8_t> huge = MakeFile(0xFFFFFFFFu, 0xFFFFFFFFu, {});
+    EXPECT_TRUE(GroundMap::LoadFromMemory(huge).HasError());
+}
+
+TEST(GroundMap, LoadFromFileRoundTripAndMissingFile)
+{
+    const std::filesystem::path path = std::filesystem::temp_directory_path() / "slug_groundmap_test.bin";
+    {
+        const jug::Vector<uint8_t> file = MakeFile(16, 2, { 0x0F, 0xF0, 0x00, 0x80 });
+        std::ofstream              out { path, std::ios::binary };
+        out.write(reinterpret_cast<const char*>(file.data()), static_cast<std::streamsize>(file.size()));
+    }
+
+    const jug::Result<GroundMap> loaded = GroundMap::Load(path);
+    ASSERT_TRUE(loaded.HasValue());
+    EXPECT_TRUE(loaded->IsSolid(0, 0));
+    EXPECT_TRUE(loaded->IsSolid(3, 0));
+    EXPECT_FALSE(loaded->IsSolid(4, 0));
+    EXPECT_TRUE(loaded->IsSolid(12, 0));
+    EXPECT_TRUE(loaded->IsSolid(15, 1));
+    EXPECT_FALSE(loaded->IsSolid(14, 1));
+    std::filesystem::remove(path);
+
+    const jug::Result<GroundMap> missing = GroundMap::Load(path);
+    ASSERT_TRUE(missing.HasError());
+    EXPECT_TRUE(missing.GetError() == jug::Error { eError::FileOpen });
+}
+
+TEST(GroundMap, MakeFromRowsBuildsAsciiMap)
+{
+    const jug::StringView rows[] = {
+        "....",
+        ".##.",
+        "####"
+    };
+    const GroundMap map = GroundMap::MakeFromRows(rows);
+    EXPECT_EQ(map.GetWidth(), 4);
+    EXPECT_EQ(map.GetHeight(), 3);
+    EXPECT_FALSE(map.IsSolid(1, 0));
+    EXPECT_TRUE(map.IsSolid(1, 1));
+    EXPECT_FALSE(map.IsSolid(3, 1));
+    EXPECT_TRUE(map.IsSolid(3, 2));
+}
+
+// ===========================================
+//  질의
+// ===========================================
+
+TEST(GroundMap, OutOfBoundsPolicyDefaultsAndOverrides)
+{
+    GroundMap map = GroundMap::MakeEmpty(10, 10);
+    EXPECT_FALSE(map.IsSolid(-1, 5));   // 왼쪽
+    EXPECT_FALSE(map.IsSolid(10, 5));   // 오른쪽
+    EXPECT_FALSE(map.IsSolid(5, -1));   // 위
+    EXPECT_TRUE(map.IsSolid(5, 10));    // 아래: 고체
+    EXPECT_TRUE(map.IsSolid(-3, 12));   // 아래쪽 바깥이면 가로 위치와 무관하게 고체
+
+    GroundBoundsPolicy policy;
+    policy.bSolidLeft   = true;
+    policy.bSolidBottom = false;
+    map.SetBoundsPolicy(policy);
+    EXPECT_TRUE(map.IsSolid(-1, 5));
+    EXPECT_FALSE(map.IsSolid(5, 10));
+}
+
+TEST(GroundMap, FindGroundYScansDownWithinRange)
+{
+    GroundMap map = GroundMap::MakeEmpty(20, 50);
+    map.FillRect(0, 30, 19, 49, true);
+
+    EXPECT_EQ(map.FindGroundY(5, 0, 100), 30);
+    EXPECT_EQ(map.FindGroundY(5, 30, 0), 30);               // 시작 행 자체가 고체
+    EXPECT_EQ(map.FindGroundY(5, 25, 5), 30);               // 경계 포함
+    EXPECT_FALSE(map.FindGroundY(5, 10, 10).has_value());   // 범위 부족
+    EXPECT_FALSE(map.FindGroundY(5, 10, -1).has_value());
+}
+
+TEST(GroundMap, FindGroundYSeesMapBottomAsSolid)
+{
+    const GroundMap map = GroundMap::MakeEmpty(20, 50);
+    EXPECT_EQ(map.FindGroundY(5, 45, 20), 50);
+    EXPECT_FALSE(map.FindGroundY(5, 10, 20).has_value());
+}
+
+TEST(GroundMap, FindCeilingYScansUp)
+{
+    GroundMap map = GroundMap::MakeEmpty(20, 50);
+    map.FillRect(0, 10, 19, 15, true);
+
+    EXPECT_EQ(map.FindCeilingY(5, 30, 100), 15);   // 가장 가까운(아래쪽) 고체 행
+    EXPECT_FALSE(map.FindCeilingY(5, 30, 10).has_value());
+}
+
+TEST(GroundMap, FindSurfaceUpClimbsOutOfShallowEmbedding)
+{
+    GroundMap map = GroundMap::MakeEmpty(20, 50);
+    map.FillRect(0, 30, 19, 49, true);
+
+    EXPECT_EQ(map.FindSurfaceUp(5, 33, 4), 30);              // 3칸 파묻힘
+    EXPECT_EQ(map.FindSurfaceUp(5, 34, 4), 30);              // 정확히 4칸
+    EXPECT_FALSE(map.FindSurfaceUp(5, 35, 4).has_value());   // 5칸은 너무 깊음
+    EXPECT_FALSE(map.FindSurfaceUp(5, 20, 4).has_value());   // 공기면 해당 없음
+    EXPECT_EQ(map.FindSurfaceUp(5, 30, 4), 30);              // 이미 표면
+}
+
+TEST(GroundMap, IsRectSolidMatchesBruteForce)
+{
+    Lcg       rng;
+    GroundMap map = GroundMap::MakeEmpty(70, 40);   // 폭이 8의 배수가 아니어서 행 끝 패딩을 검증
+    for (int i = 0; i < 160; ++i)
+    {
+        map.SetSolid(static_cast<int>(rng.Next() % 70), static_cast<int>(rng.Next() % 40), true);
+    }
+
+    for (int trial = 0; trial < 600; ++trial)
+    {
+        const int x0 = static_cast<int>(rng.Next() % 100) - 15;
+        const int y0 = static_cast<int>(rng.Next() % 60) - 10;
+        const int x1 = x0 + static_cast<int>(rng.Next() % 25);
+        const int y1 = y0 + static_cast<int>(rng.Next() % 12);
+
+        bool bExpected = false;
+        for (int y = y0; y <= y1 && !bExpected; ++y)
+        {
+            for (int x = x0; x <= x1 && !bExpected; ++x)
+            {
+                bExpected = map.IsSolid(x, y);
+            }
+        }
+        ASSERT_EQ(map.IsRectSolid(x0, y0, x1, y1), bExpected) << "rect " << x0 << "," << y0 << " " << x1 << "," << y1;
+    }
+}
+
+TEST(GroundMap, IsRectSolidHandlesReversedBoundsAndSingleByteRanges)
+{
+    GroundMap map = GroundMap::MakeEmpty(32, 8);
+    map.SetSolid(11, 3, true);
+    EXPECT_TRUE(map.IsRectSolid(11, 3, 11, 3));
+    EXPECT_TRUE(map.IsRectSolid(14, 5, 9, 1));    // 뒤집힌 인자
+    EXPECT_FALSE(map.IsRectSolid(8, 0, 10, 7));   // 같은 바이트 안, 비어 있음
+    EXPECT_TRUE(map.IsRectSolid(8, 0, 11, 7));
+}
+
+TEST(GroundMap, IsRectSolidRespectsOutOfBoundsPolicy)
+{
+    const GroundMap map = GroundMap::MakeEmpty(20, 20);
+    EXPECT_FALSE(map.IsRectSolid(-10, 2, -1, 5));   // 왼쪽 바깥 (비고체)
+    EXPECT_FALSE(map.IsRectSolid(5, -9, 8, -1));    // 위쪽 바깥
+    EXPECT_TRUE(map.IsRectSolid(5, 15, 8, 25));     // 아래쪽에 걸침 → 고체
+    EXPECT_TRUE(map.IsRectSolid(-5, 18, 3, 22));
+}
+
+TEST(GroundMap, EditingPrimitives)
+{
+    GroundMap map = GroundMap::MakeEmpty(16, 16);
+    map.FillRect(2, 2, 5, 4, true);
+    EXPECT_EQ(map.CountSolidPixels(), 12u);
+    map.FillRect(3, 3, 4, 3, false);
+    EXPECT_EQ(map.CountSolidPixels(), 10u);
+    map.SetSolid(100, 100, true);   // 범위 밖은 무시
+    EXPECT_EQ(map.CountSolidPixels(), 10u);
+    map.FillRect(-5, -5, 100, 100, true);   // 자동 클립
+    EXPECT_EQ(map.CountSolidPixels(), 256u);
+}
+
+TEST(GroundMap, SlopeEstimateOnRampAndFlat)
+{
+    // 오른쪽이 높아지는 45° 오르막: 윗면 y = 100 - x
+    GroundMap map = GroundMap::MakeEmpty(120, 120);
+    for (int x = 0; x < 100; ++x)
+    {
+        map.FillRect(x, 100 - x, x, 119, true);
+    }
+    map.FillRect(100, 100, 119, 119, true);
+
+    EXPECT_NEAR(map.EstimateSlope(50, 50, 4, 8), -1.f, 1e-4f);
+    const jug::VECTOR2 normal = map.EstimateNormal(50, 50, 4, 8);
+    EXPECT_NEAR(normal.x, -0.70710678f, 1e-4f);
+    EXPECT_NEAR(normal.y, -0.70710678f, 1e-4f);
+
+    // 평지
+    EXPECT_FLOAT_EQ(map.EstimateSlope(110, 100, 4, 8), 0.f);
+    const jug::VECTOR2 flat = map.EstimateNormal(110, 100, 4, 8);
+    EXPECT_FLOAT_EQ(flat.x, 0.f);
+    EXPECT_FLOAT_EQ(flat.y, -1.f);
+}
+
+// ===========================================
+//  Aabb / Circle
+// ===========================================
+
+TEST(Geometry, AabbFactoriesAndAccessors)
+{
+    const Aabb a = Aabb::FromBottomCenter({ 100.f, 200.f }, { 24.f, 40.f });
+    EXPECT_FLOAT_EQ(a.min.x, 88.f);
+    EXPECT_FLOAT_EQ(a.max.x, 112.f);
+    EXPECT_FLOAT_EQ(a.min.y, 160.f);
+    EXPECT_FLOAT_EQ(a.max.y, 200.f);
+    EXPECT_FLOAT_EQ(a.GetWidth(), 24.f);
+    EXPECT_FLOAT_EQ(a.GetHeight(), 40.f);
+    EXPECT_EQ(a.GetBottomCenter(), (jug::VECTOR2 { 100.f, 200.f }));
+    EXPECT_EQ(a.GetCenter(), (jug::VECTOR2 { 100.f, 180.f }));
+
+    const Aabb b = Aabb::FromCenterSize({ 10.f, 10.f }, { 4.f, 6.f });
+    EXPECT_EQ(b.min, (jug::VECTOR2 { 8.f, 7.f }));
+    EXPECT_EQ(b.max, (jug::VECTOR2 { 12.f, 13.f }));
+    EXPECT_EQ(b.GetSize(), (jug::VECTOR2 { 4.f, 6.f }));
+}
+
+TEST(Geometry, AabbOverlapIsStrictSoTouchingEdgesDoNotOverlap)
+{
+    const Aabb a = Aabb::FromMinMax({ 0.f, 0.f }, { 10.f, 10.f });
+    EXPECT_TRUE(a.Overlaps(Aabb::FromMinMax({ 9.f, 9.f }, { 20.f, 20.f })));
+    EXPECT_FALSE(a.Overlaps(Aabb::FromMinMax({ 10.f, 0.f }, { 20.f, 10.f })));
+    EXPECT_FALSE(a.Overlaps(Aabb::FromMinMax({ 0.f, 10.f }, { 10.f, 20.f })));
+    EXPECT_FALSE(a.Overlaps(Aabb::FromMinMax({ 11.f, 11.f }, { 20.f, 20.f })));
+}
+
+TEST(Geometry, AabbContainsPointAndBox)
+{
+    const Aabb a = Aabb::FromMinMax({ 0.f, 0.f }, { 10.f, 10.f });
+    EXPECT_TRUE(a.Contains(jug::VECTOR2 { 0.f, 0.f }));
+    EXPECT_TRUE(a.Contains(jug::VECTOR2 { 9.99f, 5.f }));
+    EXPECT_FALSE(a.Contains(jug::VECTOR2 { 10.f, 5.f }));
+    EXPECT_TRUE(a.Contains(Aabb::FromMinMax({ 2.f, 2.f }, { 8.f, 8.f })));
+    EXPECT_TRUE(a.Contains(a));
+    EXPECT_FALSE(a.Contains(Aabb::FromMinMax({ 2.f, 2.f }, { 12.f, 8.f })));
+}
+
+TEST(Geometry, AabbIntersectionExpandAndTransform)
+{
+    const Aabb a = Aabb::FromMinMax({ 0.f, 0.f }, { 10.f, 10.f });
+    const Aabb b = Aabb::FromMinMax({ 6.f, 4.f }, { 20.f, 8.f });
+
+    const std::optional<Aabb> hit = a.Intersection(b);
+    ASSERT_TRUE(hit.has_value());
+    EXPECT_EQ(hit->min, (jug::VECTOR2 { 6.f, 4.f }));
+    EXPECT_EQ(hit->max, (jug::VECTOR2 { 10.f, 8.f }));
+
+    EXPECT_FALSE(a.Intersection(Aabb::FromMinMax({ 10.f, 0.f }, { 12.f, 5.f })).has_value());
+
+    EXPECT_EQ(a.Expanded(2.f), Aabb::FromMinMax({ -2.f, -2.f }, { 12.f, 12.f }));
+    EXPECT_EQ(a.Translated({ 5.f, -3.f }), Aabb::FromMinMax({ 5.f, -3.f }, { 15.f, 7.f }));
+    EXPECT_EQ(a.Union(b), Aabb::FromMinMax({ 0.f, 0.f }, { 20.f, 10.f }));
+}
+
+TEST(Geometry, AabbMirrorFlipsAroundAxis)
+{
+    // 오른쪽을 바라보는 칼 히트박스(원점 기준 +10..+40) 를 왼쪽으로 뒤집기
+    const Aabb right = Aabb::FromMinMax({ 110.f, 80.f }, { 140.f, 120.f });
+    const Aabb left  = right.MirroredX(100.f);
+    EXPECT_EQ(left, Aabb::FromMinMax({ 60.f, 80.f }, { 90.f, 120.f }));
+}
+
+TEST(Geometry, CircleOverlaps)
+{
+    const Circle c = {
+        { 0.f, 0.f },
+        5.f
+    };
+    EXPECT_TRUE(c.Overlaps(Circle {
+        { 6.f, 0.f },
+        2.f
+    }));
+    EXPECT_FALSE(c.Overlaps(Circle {
+        { 7.f, 0.f },
+        2.f
+    }));
+    EXPECT_TRUE(c.Overlaps(Aabb::FromMinMax({ 4.f, -1.f }, { 10.f, 1.f })));
+    EXPECT_FALSE(c.Overlaps(Aabb::FromMinMax({ 4.f, 4.f }, { 10.f, 10.f })));   // 모서리 거리 5.66 > 5
+}
