@@ -30,7 +30,7 @@ TEST(PlayerStart, StartsGroundedIdleFacingRightWithThreeLives)
 
 TEST(PlayerStart, DefaultStateNameIsSandbox)
 {
-    EXPECT_EQ(GetDefaultStateName(), "sandbox");
+    EXPECT_EQ(GetDefaultStateName(), "title");
     EXPECT_TRUE(static_cast<bool>(CreateState("sandbox")));
 }
 

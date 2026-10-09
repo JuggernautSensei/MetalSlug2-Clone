@@ -91,6 +91,7 @@ private:
     bool  m_bSlowMo     = false;
     bool  m_bDebugDraw  = false;
     int   m_pendingWarp = 0;   // F5/F6 (F1 켜진 상태): 다음 Update 에서 GameContext::debugWarp 로 전달
+    int   m_startWarpCount = 0;   // --warp N: 시작 시 남은 워프 요청 수 (매 Update 한 번씩 소비)
     int   m_pendingSpawn = 0;  // 숫자키 1..8 (적 디버그 스폰): 다음 Update 에서 GameContext::debugSpawn 으로 전달
     float m_fps         = 0.f;
 };

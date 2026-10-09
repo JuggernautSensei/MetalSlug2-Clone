@@ -144,7 +144,7 @@ TEST(StageStateDebug, F5WarpsToTheNextSectionOnlyWithDebugDraw)
     EXPECT_EQ(sim.Ctx().debugWarp, 0);   // 소비됨
     EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 750.f);
     EXPECT_EQ(sim.State().GetRunner().GetNextSectionIndex(), 2);
-    EXPECT_EQ(sim.State().GetHost().GetLastSectionId(), "street");
+    EXPECT_EQ(sim.State().GetHost().GetPlaceholders().GetLastSectionId(), "street");
 }
 
 TEST(StageStateDebug, WarpRequestIsIgnoredWithoutDebugDraw)

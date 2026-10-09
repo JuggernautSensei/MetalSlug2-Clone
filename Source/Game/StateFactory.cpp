@@ -74,8 +74,8 @@ jug::Scoped<IGameState> CreateState(
 
 jug::StringView GetDefaultStateName()
 {
-    // "stage0" 가 등록되고 Assets/Baked 가 있으면 "title" 로 바꾼다 (타이틀 → stage0). 바꿀 때 Test/PlayerMoveTest.cpp 의 기본 상태 검사도 갱신.
-    return "sandbox";
+    // 기본 시작 상태 = 타이틀 (타이틀 Start → stage0). App 이 Assets/Baked 가 없으면 "sandbox" 로 대신한다.
+    return "title";
 }
 
 }   // namespace slug
