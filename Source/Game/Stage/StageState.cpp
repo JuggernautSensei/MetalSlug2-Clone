@@ -827,7 +827,7 @@ void StageState::DrawWorld_(
 
     for (const PlaceholderEntity& entity: m_host.GetPlaceholderEntities())
     {
-        if (!entity.bHittable && !_ctx.bDebugDraw)
+        if (!_ctx.bDebugDraw)
         {
             continue;
         }
@@ -945,13 +945,24 @@ void StageState::DrawDebugBoxes_(
     }
 }
 
+HudModel StageState::BuildHudModel() const
+{
+    HudModel model = MakeHudModel(m_player);
+    if (const std::optional<float> ratio = m_enemies.GetBossHpRatio())
+    {
+        model.bShowBoss   = true;
+        model.bossHpRatio = *ratio;
+    }
+    return model;
+}
+
 void StageState::DrawHud_(
     GameContext& _ctx,
     const Vec2)
 {
     Renderer& renderer = *_ctx.pRenderer;
 
-    m_ui.DrawHud(_ctx, MakeHudModel(m_player));
+    m_ui.DrawHud(_ctx, BuildHudModel());
 
     if (_ctx.bDebugDraw)
     {

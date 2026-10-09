@@ -439,6 +439,7 @@ struct BattleShipCfg
 {
     float    originDepth      = 132.f;
     float    entranceOffsetX  = -300.f;     // 등장: arena.left + 이 값 에서 레일로 굴러 들어온다
+    int      entranceDelayTicks = 0;        // 등장 대기 (WARNING 배너 중에는 화면 밖에 숨어 있다)
     float    railSlot[3]      = { 30.f, 100.f, 190.f };   // arena.left 기준 (back, home, forward)
     int      homeSlot         = 1;
     float    railMaxSpeed     = 100.f;

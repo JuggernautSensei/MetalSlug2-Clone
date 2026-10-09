@@ -33,7 +33,7 @@
     },
 
     "battleship": {
-      "note": "최종보스 Big Shiee. HP 900 (TTK 90 s). 등장 → 레일 패턴(캐논 / 레일 이동) 반복, 포탑 2기, 격앙(HP<=50%) 시 빨라짐. 파괴 시퀀스 3.6 s 후 IsDestroyFinished.",
+      "note": "최종보스 Big Shiee. HP 900 (TTK 90 s). 등장 → 레일 패턴(캐논 / 레일 이동) 반복, 포탑 2기, 격앙(HP<=50%) 시 빨라짐. 파괴 시퀀스 3.6 s 후 IsDestroyFinished. 슬롯 281/296/311 = 아레나 640 px 안에 선체 전체(꼬리 -279 ~ 선수 +317)가 들어오는 범위(레거시 30/100/190 은 꼬리가 화면 밖으로 잘림). 등장: 배너 2.5 s 동안 화면 밖(-330), 이후 약 2.3 s 레일 진입.",
       "kind": "boss",
       "behavior": "battleship",
       "hp": 900,
@@ -45,12 +45,13 @@
       "body": { "w": 300, "h": 190, "cx": 0, "cy": -95 },
       "params": {
         "originDepth": 132,
-        "entranceOffsetX": -300,
-        "railSlots": [30, 100, 190],
+        "entranceOffsetX": -330,
+        "entranceDelaySec": 2.5,
+        "railSlots": [120, 170, 220],
         "homeSlot": 1,
-        "railMax": 100,
-        "railAccel": 50,
-        "railDecel": 100,
+        "railMax": 500,
+        "railAccel": 500,
+        "railDecel": 500,
         "idleSec": 1.6,
         "idleEnragedSec": 0.8,
         "headOpenSec": 1.44,

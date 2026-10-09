@@ -21,6 +21,7 @@ namespace
     constexpr float kHullMaxY     = 110.f;
     constexpr float kRadToDeg     = 57.29578f;
     constexpr float kDegToRad     = 0.0174533f;
+    constexpr float kWreckHalfW   = 301.f;     // BattleShip_Destroy 602 px 의 절반 (피벗 x)
 
     constexpr const char* kCannonIdleNames[9] = {
         "BattleShip_Cannon_Idle_0", "BattleShip_Cannon_Idle_1", "BattleShip_Cannon_Idle_2", "BattleShip_Cannon_Idle_3", "BattleShip_Cannon_Idle_4",
@@ -452,6 +453,10 @@ namespace
         switch (_e.state)
         {
             case kEntrance:
+                if (_e.stateTicks < c.entranceDelayTicks)
+                {
+                    break;   // WARNING 배너가 끝날 때까지 화면 밖에 숨어 있다
+                }
                 if (RailStep_(_e, c, SlotX_(_e, c, c.homeSlot)))
                 {
                     _e.ext[kExtRailSlot]     = c.homeSlot;
@@ -719,7 +724,10 @@ namespace
 
         if (_e.life == eEnemyLife::Dying && _e.deathTicks >= chainEnd)
         {
-            SubmitNamedPart(_r, "BattleShip_Destroy", { o.x - 30.f, o.y - 52.f }, kPersistTicks, false, sort, layer);
+            // 잔해(602 px)가 아레나 밖으로 잘리지 않도록 가로 위치를 아레나 안으로 클램프 (선체는 슬롯에 따라 이동)
+            const float wreckX = _e.arena.IsEmpty() ? o.x - 30.f
+                                                    : std::clamp(o.x - 30.f, _e.arena.min.x + kWreckHalfW, _e.arena.max.x - kWreckHalfW);
+            SubmitNamedPart(_r, "BattleShip_Destroy", { wreckX, o.y - 52.f }, kPersistTicks, false, sort, layer);
             return;
         }
 
@@ -861,6 +869,7 @@ void ParseBattleShipCfg(
 
     c.originDepth     = _r.Num("originDepth");
     c.entranceOffsetX = _r.Num("entranceOffsetX");
+    c.entranceDelayTicks = _r.Ticks("entranceDelaySec", 0.f);
     (void)_r.NumArray("railSlots", c.railSlot, 3);
     c.homeSlot        = _r.Int("homeSlot");
     c.railMaxSpeed    = _r.Num("railMax");

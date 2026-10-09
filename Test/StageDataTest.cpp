@@ -328,6 +328,37 @@ TEST(StageDataErrors, MissingFileIsReported)
     EXPECT_EQ(result.GetError().GetCode(), eError::FileOpen);
 }
 
+TEST(StageDataReal, BossArenaHasHmgPickupAndNoHouseInsideIt)
+{
+    StageLoadDiagnostics diag;
+    slug::Result<StageData> result = LoadStageFromFile(slug::FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    ASSERT_TRUE(result) << diag.message;
+    const StageData data = result.Take();
+
+    // 보스 섹션: 아레나 왼쪽 +120 바닥에 HMG 픽업 (선체가 들어오기 전에 주울 수 있는 위치)
+    const StageSection& boss = data.sections.back();
+    int hmgCount = 0;
+    for (const StageAction& action: boss.actions)
+    {
+        if (action.type == eActionType::Spawn && action.spawn.kind == eEntityKind::Item && action.spawn.def == "gunitem_mg")
+        {
+            ++hmgCount;
+            EXPECT_FLOAT_EQ(action.spawn.x, 13454.f + 120.f);
+        }
+    }
+    EXPECT_EQ(hmgCount, 1);
+
+    // openland_4: 아레나(13454~14094) 와 겹치던 big_house(13542) 는 제거 (파괴 불가 소품이 선체 뒤에서 탄을 막았다)
+    const StageSection& openland4 = data.sections[static_cast<size_t>(data.FindSection("openland_4"))];
+    for (const StageAction& action: openland4.actions)
+    {
+        if (action.type == eActionType::Spawn)
+        {
+            EXPECT_NE(action.spawn.def, "big_house");
+        }
+    }
+}
+
 TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
 {
     StageLoadDiagnostics diag;

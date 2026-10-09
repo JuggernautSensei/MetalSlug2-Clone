@@ -7,6 +7,7 @@
 
 #include "Base/Log.h"
 
+#include "Game/Enemies/BattleShip.h"
 #include "Game/Enemies/EnemyCommon.h"
 #include "World/Constants.h"
 
@@ -646,6 +647,23 @@ bool EnemyWorld::IsDefeated(
         return false;
     }
     return pEnemy->life != eEnemyLife::Alive;
+}
+
+std::optional<float> EnemyWorld::GetBossHpRatio() const
+{
+    for (const Enemy& e: m_enemies)
+    {
+        if (e.life != eEnemyLife::Alive || e.behavior != eEnemyBehavior::BattleShip || !battleship::IsFightStarted(e))
+        {
+            continue;
+        }
+        if (e.health.maxHp <= 0)
+        {
+            return 0.f;
+        }
+        return std::clamp(static_cast<float>(e.health.hp) / static_cast<float>(e.health.maxHp), 0.f, 1.f);
+    }
+    return std::nullopt;
 }
 
 Health EnemyWorld::GetHealth(

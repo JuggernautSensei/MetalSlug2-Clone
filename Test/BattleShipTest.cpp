@@ -70,13 +70,18 @@ namespace
     }
 }
 
-TEST(BattleShip, EntranceRollsInFromLeftOfTheArenaInAboutFiveSeconds)
+TEST(BattleShip, EntranceWaitsForTheBannerThenRollsInFromOffscreen)
 {
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
     const EnemyHandle ship = SpawnShip(rig);
     rig.Frame();
-    EXPECT_NEAR(rig.Find(ship)->body.position.x, -300.f, 1.f);   // 아레나 왼쪽 밖에서 시작
+    EXPECT_NEAR(rig.Find(ship)->body.position.x, -330.f, 1.f);   // 아레나 왼쪽 밖 (머리 +253 까지 화면 밖)
+
+    // WARNING 배너 2.5 s (150 틱) 동안은 그대로 숨어 있다
+    rig.Run(140);
+    EXPECT_NEAR(rig.Find(ship)->body.position.x, -330.f, 1.f);
+    EXPECT_FALSE(battleship::IsFightStarted(*rig.Find(ship)));
 
     int ticks = 0;
     while (!battleship::IsFightStarted(*rig.Find(ship)) && ticks < 1000)
@@ -84,9 +89,25 @@ TEST(BattleShip, EntranceRollsInFromLeftOfTheArenaInAboutFiveSeconds)
         rig.Frame();
         ++ticks;
     }
-    EXPECT_GE(ticks, 270);   // 4.5 s 이상
-    EXPECT_LE(ticks, 390);   // 6.5 s 이내
-    EXPECT_NEAR(rig.Find(ship)->body.position.x, 100.f, 0.6f);   // 홈 슬롯 = 아레나 왼쪽 + 100
+    const int total = 1 + 140 + ticks;
+    EXPECT_NEAR(total, 270, 30);   // 배너 2.5 s + 레일 진입 약 2 s
+    EXPECT_NEAR(rig.Find(ship)->body.position.x, 170.f, 0.6f);   // 홈 슬롯 = 아레나 왼쪽 + 170
+}
+
+TEST(BattleShip, EverySlotKeepsTheHeadInsideAndLeavesRoomForThePlayer)
+{
+    BossRig rig;
+    ASSERT_TRUE(rig.IsReady());
+    const auto& c     = rig.GetLib().Find("battleship")->battleShip;
+    const float width = BossArena().max.x - BossArena().min.x;   // 640
+    constexpr float kTailLeft     = -279.f;   // BattleShip_Tail: 오프셋 -213 - 피벗 66
+    constexpr float kHeadRightMax = 317.f;    // BattleShip_Head_Swiching_Start: 오프셋 131 + (폭 - 피벗) 최대
+    for (int i = 0; i < 3; ++i)
+    {
+        EXPECT_GE(c.railSlot[i] + kTailLeft, -200.f) << "slot " << i << ": tail clipped too much";
+        EXPECT_LE(c.railSlot[i] + 270.f, width - 120.f) << "slot " << i << ": not enough room for the player";
+        EXPECT_LE(c.railSlot[i] + kHeadRightMax, width) << "slot " << i << ": head clipped";
+    }
 }
 
 TEST(BattleShip, FightStartsOnlyWhenTheEntranceEndsInIdle)
@@ -221,7 +242,7 @@ TEST(BattleShip, EvenPatternMovesTheRailToAnotherSlotAndStops)
     const Enemy* pShip = rig.Find(ship);
     EXPECT_EQ(pShip->state, battleship::kIdle);
     EXPECT_EQ(pShip->ext[battleship::kExtRailSlot], target);
-    const float slotX = BossArena().min.x + (target == 0 ? 30.f : 190.f);
+    const float slotX = BossArena().min.x + rig.GetLib().Find("battleship")->battleShip.railSlot[target];
     EXPECT_NEAR(pShip->body.position.x, slotX, 0.6f);
     EXPECT_NEAR(pShip->body.velocity.x, 0.f, 0.001f);
 }
@@ -471,4 +492,26 @@ TEST(BattleShip, BossBarReadsTheShipHealthThroughTheHandle)
     rig.Hit(ship.id, 100);
     EXPECT_EQ(rig.World().GetHealth(ship).hp, 800);
     EXPECT_EQ(rig.World().GetHealth(EnemyHandle {}).maxHp, 0);   // 빈 핸들
+}
+
+TEST(BattleShip, BossHpRatioIsReportedOnlyWhileTheFightIsOn)
+{
+    BossRig rig;
+    ASSERT_TRUE(rig.IsReady());
+    const EnemyHandle ship = SpawnShip(rig);
+    rig.Run(2);
+    EXPECT_FALSE(rig.World().GetBossHpRatio().has_value());   // 입장 중
+
+    RunUntilFight(rig, ship);
+    ASSERT_TRUE(battleship::IsFightStarted(*rig.Find(ship)));
+    ASSERT_TRUE(rig.World().GetBossHpRatio().has_value());
+    EXPECT_FLOAT_EQ(*rig.World().GetBossHpRatio(), 1.f);
+
+    rig.Hit(ship.id, 450);
+    ASSERT_TRUE(rig.World().GetBossHpRatio().has_value());
+    EXPECT_NEAR(*rig.World().GetBossHpRatio(), 0.5f, 1e-4f);
+
+    rig.Hit(ship.id, 900);
+    rig.Run(2);
+    EXPECT_FALSE(rig.World().GetBossHpRatio().has_value());   // 사망 후 숨김
 }

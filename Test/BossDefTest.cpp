@@ -59,11 +59,15 @@ TEST(BossDef, BattleShipConfigMatchesTheSpec)
     ASSERT_TRUE(rig.IsReady());
     const BattleShipCfg& c = rig.GetLib().Find("battleship")->battleShip;
     EXPECT_FLOAT_EQ(c.originDepth, 132.f);
-    EXPECT_FLOAT_EQ(c.entranceOffsetX, -300.f);
-    EXPECT_FLOAT_EQ(c.railSlot[0], 30.f);    // back
-    EXPECT_FLOAT_EQ(c.railSlot[1], 100.f);   // home
-    EXPECT_FLOAT_EQ(c.railSlot[2], 190.f);   // forward
+    EXPECT_FLOAT_EQ(c.entranceOffsetX, -330.f);
+    EXPECT_EQ(c.entranceDelayTicks, 150);    // 2.5 s (WARNING 배너 동안 숨어 있음)
+    EXPECT_FLOAT_EQ(c.railSlot[0], 120.f);   // back
+    EXPECT_FLOAT_EQ(c.railSlot[1], 170.f);   // home
+    EXPECT_FLOAT_EQ(c.railSlot[2], 220.f);   // forward
     EXPECT_EQ(c.homeSlot, 1);
+    EXPECT_FLOAT_EQ(c.railMaxSpeed, 500.f);
+    EXPECT_FLOAT_EQ(c.railAccel, 500.f);
+    EXPECT_FLOAT_EQ(c.railDecel, 500.f);
     EXPECT_EQ(c.idleTicks, 96);              // 1.6 s
     EXPECT_EQ(c.idleEnragedTicks, 48);       // 0.8 s
     EXPECT_EQ(c.cannonShots, 3);

@@ -60,6 +60,7 @@ public:
     [[nodiscard]] UiSystem&                GetUi() { return m_ui; }
     [[nodiscard]] uint64_t                 GetTickCount() const { return m_tickCount; }
     [[nodiscard]] uint64_t                 HashState() const;
+    [[nodiscard]] HudModel                 BuildHudModel() const;
 
 private:
     enum class eEndKind : uint8_t

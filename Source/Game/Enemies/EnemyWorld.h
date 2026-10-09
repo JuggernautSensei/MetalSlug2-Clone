@@ -1,4 +1,6 @@
 #pragma once
+#include <optional>
+
 #include "Base/Random.h"
 #include "Base/Types.h"
 #include "Base/Math.h"
@@ -46,6 +48,9 @@ public:
 
     [[nodiscard]] int CountAlive(const EnemyFilter& _filter = {}) const;
     [[nodiscard]] int CountAlive(slug::StringView _defName) const;
+
+    // 살아 있고 전투가 시작된 보스(battleship)의 본체 HP 비율 (0..1). 없으면 nullopt.
+    [[nodiscard]] std::optional<float> GetBossHpRatio() const;
 
     template<typename Fn>
     void ForEachAlive(Fn&& _fn) const

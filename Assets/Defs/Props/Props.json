@@ -356,7 +356,8 @@
       "parts": [
         { "role": "hurt", "size": [310, 120], "offset": [10, 0] },
         { "role": "hurt", "size": [240, 240], "offset": [-110, 60] },
-        { "role": "hurt", "size": [240, 240], "offset": [120, 60] }
+        { "role": "hurt", "size": [240, 240], "offset": [120, 60] },
+        { "role": "platform", "size": [300, 10], "offset": [10, -57] }
       ],
       "onDamaged": { "debris": { "set": "wood", "count": 6 } },
       "onDestroy": {

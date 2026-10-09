@@ -421,6 +421,45 @@ TEST(StageIntegration, DebugWarpToTheBossThenBossDeathEndsTheStageThroughTheFlow
     EXPECT_NE(sim.Current(), pStage);
 }
 
+TEST(StageIntegration, BossHpBarShowsOnlyDuringTheBossFightAndHidesAfterDeath)
+{
+    IntegrationSim sim(true);
+    sim.Warp(2);   // F6: 보스 아레나
+    sim.Step(2);
+    EXPECT_FALSE(sim.State().BuildHudModel().bShowBoss);   // 입장 중에는 숨김
+
+    for (int i = 0; i < 1200 && !sim.State().GetEnemies().GetBossHpRatio(); ++i)
+    {
+        sim.Step();
+    }
+    const HudModel start = sim.State().BuildHudModel();
+    ASSERT_TRUE(start.bShowBoss);
+    EXPECT_NEAR(start.bossHpRatio, 1.f, 1e-4f);
+
+    EnemyHandle boss;
+    sim.State().GetEnemies().ForEachAlive([&](const Enemy& _e) {
+        if (_e.behavior == eEnemyBehavior::BattleShip)
+        {
+            boss = EnemyHandle { _e.id };
+        }
+    });
+    ASSERT_FALSE(boss.IsNull());
+
+    HitEvent ev;
+    ev.damage       = 450;
+    ev.kind         = eHitKind::Bullet;
+    ev.attackerTeam = eTeam::Player;
+    ev.attacker     = 1;
+    ev.target       = boss.id;
+    ev.hitId        = 0;
+    sim.State().GetEnemies().OnHitEvents(slug::Span<const HitEvent> { &ev, 1 });
+    EXPECT_NEAR(sim.State().BuildHudModel().bossHpRatio, 0.5f, 0.01f);
+
+    sim.State().GetEnemies().KillAll(true);
+    sim.Step(2);
+    EXPECT_FALSE(sim.State().BuildHudModel().bShowBoss);
+}
+
 TEST(StageIntegration, GameOverRunsTheGameOverFlowAndReturnsToTitle)
 {
     IntegrationSim sim;
