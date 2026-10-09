@@ -13,7 +13,7 @@
       "id": "intro", "triggerX": 0,
       "actions": [
         {"type": "fade", "to": "clear", "seconds": 1.0},
-        {"type": "banner", "text": "MISSION 4\nSTART", "seconds": 2.5},
+        {"type": "banner", "text": "MISSION 4", "seconds": 2.5},
         {"type": "spawn", "kind": "prop", "def": "truck", "x": 580, "y": 342},
         {"type": "spawn", "kind": "prop", "def": "truck", "x": 850, "y": 342},
         {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 386, "y": 341, "anim": "Parker", "layer": "background"},

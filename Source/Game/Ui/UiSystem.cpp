@@ -3,6 +3,7 @@
 #include "Base/Result.h"
 
 #include <algorithm>
+#include <cstdio>
 #include <map>
 #include <utility>
 
@@ -183,25 +184,123 @@ void UiSystem::DrawBanner(
         return;
     }
 
-    const float alpha = m_banner.GetAlpha();
-    if (alpha <= 0.f)
+    // 배너는 원본 미션 폰트(UI_Mission_*)로 그린다. 글자마다 날아오고 날아가는 연출이 있다.
+    const BannerSpec& spec    = m_banner.GetCurrent();
+    const int         elapsed = m_banner.GetElapsedTicks();
+    const int         lineY0  = spec.centerY >= 0 ? spec.centerY : m_layout.missionLine1Y;
+
+    slug::Vector<slug::String> lines;
+    slug::String               current;
+    for (const char c: spec.text)
+    {
+        if (c == '\n')
+        {
+            lines.push_back(current);
+            current.clear();
+        }
+        else
+        {
+            current.push_back(c);
+        }
+    }
+    lines.push_back(current);
+
+    const int  num = std::max(1, m_layout.missionGlyphNum);
+    const int  den = std::max(1, m_layout.missionGlyphDen);
+    slug::RGBA tint = { 255, 255, 255, 255 };
+    if (spec.color == eFontColor::Red)
+    {
+        tint = { 255, 110, 90, 255 };
+    }
+
+    int globalIndex = 0;
+    for (size_t line = 0; line < lines.size(); ++line)
+    {
+        const slug::String& text  = lines[line];
+        const int           lineY = lineY0 + static_cast<int>(line) * m_layout.missionLineStride;
+
+        // 줄 폭: 스프라이트 폭 * 배율 + 간격 (공백은 고정 폭)
+        int width = 0;
+        for (const char c: text)
+        {
+            const slug::String name = MakeMissionGlyphName(c);
+            const SpriteInfo*  pInfo = name.empty() ? nullptr : m_sprites.Find(name);
+            width += pInfo ? (pInfo->frame.w * num / den + m_layout.missionGlyphGap) : (c == ' ' ? m_layout.missionSpaceW : 0);
+        }
+        int x = m_layout.screenW / 2 - width / 2;
+
+        for (const char c: text)
+        {
+            const GlyphPose pose    = ComputeMissionGlyphPose(elapsed, spec.fadeInTicks, spec.holdTicks, spec.fadeOutTicks, globalIndex++);
+            const slug::String name = MakeMissionGlyphName(c);
+            const SpriteInfo*  pInfo = name.empty() ? nullptr : m_sprites.Find(name);
+            if (!pInfo)
+            {
+                x += (c == ' ' ? m_layout.missionSpaceW : 0);
+                continue;
+            }
+            if (pose.alpha > 0)
+            {
+                const int w = pInfo->frame.w * num / den;
+                const int h = pInfo->frame.h * num / den;
+                SpriteDrawOptions options;
+                options.tint   = tint;
+                options.tint.a = pose.alpha;
+                _ctx.pSprites->DrawFrameRect(pInfo->frame, { x + pose.dx, lineY - h / 2 + pose.dy, w, h }, options);
+            }
+            x += pInfo->frame.w * num / den + m_layout.missionGlyphGap;
+        }
+    }
+}
+
+void UiSystem::DrawMissionResults(
+    GameContext& _ctx) const
+{
+    if (_ctx.IsHeadless() || !_ctx.pSprites || !m_results.bBoxVisible)
     {
         return;
     }
 
-    const BannerSpec& spec = m_banner.GetCurrent();
+    const uint8_t a = m_results.boxAlpha;
+    const IntRect box = { m_layout.resultsBoxX, m_layout.resultsBoxY, m_layout.resultsBoxW, m_layout.resultsBoxH };
+    const int     cx  = box.x + box.w / 2;
 
-    TextStyle style;
-    style.color   = spec.color;
-    style.bBold   = spec.bBold;
-    style.align   = eTextAlign::Center;
-    style.lineGap = m_layout.bannerLineGap;
-    style.alpha   = static_cast<uint8_t>(std::clamp(alpha, 0.f, 1.f) * 255.f + 0.5f);
-    style.scale   = FitTextScale(spec.text, m_layout.screenW - 2 * m_layout.bannerMargin, std::min(spec.maxScale, m_layout.bannerMaxScale));
+    // 상자: 어두운 남색 바탕 + 연보라 테두리 (원본 영상 색)
+    _ctx.pRenderer->FillRect({ static_cast<float>(box.x), static_cast<float>(box.y) }, { static_cast<float>(box.w), static_cast<float>(box.h) }, { 12, 10, 60, static_cast<uint8_t>(a * 225 / 255) });
+    const slug::RGBA border = { 180, 170, 240, a };
+    _ctx.pRenderer->FillRect({ static_cast<float>(box.x), static_cast<float>(box.y) }, { static_cast<float>(box.w), 2.f }, border);
+    _ctx.pRenderer->FillRect({ static_cast<float>(box.x), static_cast<float>(box.y + box.h - 2) }, { static_cast<float>(box.w), 2.f }, border);
+    _ctx.pRenderer->FillRect({ static_cast<float>(box.x), static_cast<float>(box.y) }, { 2.f, static_cast<float>(box.h) }, border);
+    _ctx.pRenderer->FillRect({ static_cast<float>(box.x + box.w - 2), static_cast<float>(box.y) }, { 2.f, static_cast<float>(box.h) }, border);
 
-    const int centerY = spec.centerY >= 0 ? spec.centerY : m_layout.bannerCenterY;
-    const int height  = MeasureTextHeight(spec.text, style);
-    m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, m_layout.screenW / 2, centerY - height / 2, spec.text, style);
+    TextStyle white;
+    white.color = eFontColor::White;
+    white.align = eTextAlign::Center;
+    white.alpha = a;
+    m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, m_layout.resultsTitleX, m_layout.resultsTitleY - fontmap::kGlyphSize / 2, "RECAPTURED PRISONER", white);
+
+    TextStyle yellow = white;
+    yellow.color     = eFontColor::Yellow;
+    m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, cx, m_layout.resultsPlayerY - fontmap::kGlyphSize / 2, "1P", yellow);
+
+    char countBuf[8] = {};
+    std::snprintf(countBuf, sizeof(countBuf), "%02d", std::clamp(m_results.rescued, 0, 99));
+    m_font.DrawTimeDigits(*_ctx.pSprites, cx, m_layout.resultsCountTopY, countBuf, a);
+    if (m_results.bCounting)
+    {
+        TextStyle label = white;
+        label.align = eTextAlign::Left;
+        m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, cx + 36, m_layout.resultsCountTopY + 12, "X10000", label);
+    }
+
+    char scoreBuf[16] = {};
+    std::snprintf(scoreBuf, sizeof(scoreBuf), "%d", std::clamp(m_results.bonusScore, 0, 9'999'999));
+    m_font.DrawTimeDigits(*_ctx.pSprites, cx, m_layout.resultsScoreTopY, scoreBuf, a);
+
+    if (m_results.bRankVisible)
+    {
+        m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, cx, m_layout.resultsRankY - fontmap::kGlyphSize / 2, m_results.rankText, yellow);
+    }
 }
 
 void UiSystem::DrawFade(
@@ -222,6 +321,7 @@ void UiSystem::DrawFade(
 void UiSystem::DrawOverlays(
     GameContext& _ctx)
 {
+    DrawMissionResults(_ctx);
     DrawFade(_ctx);
     DrawBanner(_ctx);
 }

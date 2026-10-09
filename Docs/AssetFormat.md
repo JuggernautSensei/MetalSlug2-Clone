@@ -143,10 +143,10 @@ u8    bits[ceil(width/8) * height]   // 행 우선, 각 행은 바이트 경계 
 |---|---|---|---|
 | 46546.png | Parker (NPC), 318x516 | magenta | 파일럿: Parker_Run(행 0), Parker_Stopping(행 1), Parker_Run_2(행 9). 나머지 행은 이름 미정 |
 | 38098.png | Delivery Boy, 288x472 | alpha | 파일럿: Order_Run_Right(+mirror), Order_Stopping, Order_Idle, Order_Recoil, Order_Turn, Order_Run_2 (시트 라벨 기준) |
-| 40204.png | Big Shiee 보스 본체, 4624x3317 | color (153,217,234) | 미작성 (행 피치 ~213px, 루즈 프레임) |
+| 40204.png | Big Shiee 보스 본체, 4624x3317 | color (153,217,234) + (0,255,0) | 작성됨: 124 클립 (`BigShiee_*`), 상세는 `Docs/BigShieeSheet.md` |
 | 53213.png | 그린 탱크, 702x3380 | color (153,217,234) | 미작성 (라벨 글자 사이 행) |
 | 33825.png | 더블데커 버스 (MainTruck 계열), 567x2199 | color white + 녹색 편집 마커 | 미작성 (마커 exclude 필요) |
-| 29720.png | HUD/폰트/GO 표지/MISSION START, 566x1357 | color white + 녹색 마커 | 미작성 |
+| 29720.png | HUD/폰트/GO 표지/MISSION START, 566x1357 | color white/녹색/분홍 배경 | 부분: `UI_Mission_A..Z`, `_1.._9`, `_Excl`, `_Question` (37개, 미션 폰트, `frames` 명시 + `asSprite`). 나머지(GO 표지, 숫자 셋, 게이지)는 미작성 |
 | 143506.png | 타이틀/로고 아트, 1506x1860 | color 2색 | 미작성 (스프라이트 아님, 보류 권장) |
 | 32522.png | 아이템/이펙트/소형 메카 혼합, 1983x19513 | alpha | 미확인 (식별 후 작성) |
 

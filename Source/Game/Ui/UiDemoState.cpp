@@ -41,7 +41,7 @@ void UiDemoState::Tick(
 
     if (m_tick == 10)
     {
-        m_ui.ShowBanner("MISSION 4 START", 3.f);
+        m_ui.ShowBanner("MISSION 4", 3.f);
     }
     else if (m_tick == 260)
     {
@@ -51,9 +51,9 @@ void UiDemoState::Tick(
     }
     else if (m_tick == 420)
     {
-        m_ui.ShowBanner("MISSION 4\nCOMPLETE", 2.f);
+        m_flow.Start(MakeMissionCompleteFlowConfig(16), m_ui, _ctx.GetAudio());   // 구출 16명 결과
     }
-    else if (m_tick == 560)
+    else if (m_tick == 1200)
     {
         m_flow.Start(MakeGameOverFlowConfig(), m_ui, _ctx.GetAudio());
     }
@@ -68,6 +68,7 @@ void UiDemoState::Render(
     (void)m_ui.DrawStandalone(_ctx, "Stage0_Main", -900, -880);
 
     m_ui.DrawHud(_ctx, MakeModel_());
+    m_ui.SetMissionResults(m_flow.GetResultsView());
     m_ui.DrawOverlays(_ctx);
 }
 }

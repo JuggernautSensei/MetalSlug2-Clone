@@ -13,6 +13,7 @@ enum class eFlowPhase : uint8_t
 {
     Idle,
     Delay,
+    Results,      // 구출 결과 상자 (RECAPTURED PRISONER 집계)
     Banner,
     FadeOut,
     Hold,
@@ -26,15 +27,24 @@ struct ScreenFlowConfig
     slug::String sfx             = {};
     float       bgmFadeSeconds  = 1.f;    // Start() 시 BGM 페이드 아웃
     int         delayTicks      = 0;
+    int         resultsTicks    = 0;      // 0 이면 결과 상자 단계를 건너뛴다
+    int         rescuedCount    = 0;      // 구출한 POW 수 (결과 상자 집계용)
     int         bannerTicks     = 120;
     int         fadeTicks       = 40;
     int         holdTicks       = 20;
 
-    [[nodiscard]] int GetTotalTicks() const { return delayTicks + bannerTicks + fadeTicks + holdTicks; }
+    [[nodiscard]] int GetTotalTicks() const { return delayTicks + resultsTicks + bannerTicks + fadeTicks + holdTicks; }
 };
 
+// 구출 수에 따른 등급 문구와 보너스 (영상 기준: 16명 -> 380000, GREAT!)
+[[nodiscard]] slug::StringView MissionRankText(int _rescued);
+[[nodiscard]] int              MissionRankBonus(int _rescued);
+[[nodiscard]] int              MissionBonusScore(int _rescued);   // 구출 x 10000 + 등급 보너스
+[[nodiscard]] int              MissionResultsTicks(int _rescued);
+[[nodiscard]] MissionResultsView MakeMissionResultsView(int _rescued, int _localTicks);
+
 [[nodiscard]] ScreenFlowConfig MakeGameOverFlowConfig();
-[[nodiscard]] ScreenFlowConfig MakeMissionCompleteFlowConfig();
+[[nodiscard]] ScreenFlowConfig MakeMissionCompleteFlowConfig(int _rescued = 0);
 
 class ScreenFlow
 {
@@ -47,6 +57,7 @@ public:
     [[nodiscard]] bool       IsRunning() const { return m_phase != eFlowPhase::Idle && m_phase != eFlowPhase::Done; }
     [[nodiscard]] bool       IsDone() const { return m_phase == eFlowPhase::Done; }
     [[nodiscard]] int        GetElapsedTicks() const { return m_elapsed; }
+    [[nodiscard]] MissionResultsView GetResultsView() const;
 
 private:
     void BeginBanner_(UiSystem& _ui, IAudioSink& _audio);

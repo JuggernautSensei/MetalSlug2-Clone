@@ -19,17 +19,100 @@ ScreenFlowConfig MakeGameOverFlowConfig()
     return config;
 }
 
-ScreenFlowConfig MakeMissionCompleteFlowConfig()
+namespace
+{
+    constexpr int kResultsFadeTicks  = 12;    // 상자 페이드 인
+    constexpr int kTicksPerPow       = 6;     // 구출 수 한 명 집계 간격 (0.1초)
+    constexpr int kRankDelayTicks    = 18;    // 집계 끝 -> 보너스/등급 표시
+    constexpr int kRankHoldTicks     = 150;   // 등급 표시 후 대기 (2.5초)
+    constexpr int kPowBonusScore     = 10000;
+}
+
+slug::StringView MissionRankText(
+    const int _rescued)
+{
+    if (_rescued >= 15)
+    {
+        return "GREAT!";
+    }
+    if (_rescued >= 8)
+    {
+        return "GOOD!";
+    }
+    return {};
+}
+
+int MissionRankBonus(
+    const int _rescued)
+{
+    if (_rescued >= 15)
+    {
+        return 220000;
+    }
+    if (_rescued >= 8)
+    {
+        return 100000;
+    }
+    return 0;
+}
+
+int MissionBonusScore(
+    const int _rescued)
+{
+    const int rescued = std::max(0, _rescued);
+    return rescued * kPowBonusScore + MissionRankBonus(rescued);
+}
+
+int MissionResultsTicks(
+    const int _rescued)
+{
+    return kResultsFadeTicks + std::max(0, _rescued) * kTicksPerPow + kRankDelayTicks + kRankHoldTicks;
+}
+
+MissionResultsView MakeMissionResultsView(
+    const int _rescued,
+    const int _localTicks)
+{
+    const int rescued = std::max(0, _rescued);
+    MissionResultsView view;
+    if (_localTicks < 0 || _localTicks >= MissionResultsTicks(rescued))
+    {
+        return view;
+    }
+
+    view.bBoxVisible = true;
+    view.boxAlpha    = static_cast<uint8_t>(std::min(255, _localTicks * 255 / kResultsFadeTicks));
+
+    const int countEnd = kResultsFadeTicks + rescued * kTicksPerPow;
+    const int rankAt   = countEnd + kRankDelayTicks;
+    if (_localTicks >= kResultsFadeTicks)
+    {
+        view.rescued = std::min(rescued, (_localTicks - kResultsFadeTicks) / kTicksPerPow + 1);
+    }
+    view.bCounting  = _localTicks >= kResultsFadeTicks && _localTicks < countEnd;
+    view.bonusScore = _localTicks < rankAt ? view.rescued * kPowBonusScore : MissionBonusScore(rescued);
+    if (_localTicks >= rankAt && !MissionRankText(rescued).empty())
+    {
+        view.bRankVisible = true;
+        view.rankText     = slug::String { MissionRankText(rescued) };
+    }
+    return view;
+}
+
+ScreenFlowConfig MakeMissionCompleteFlowConfig(
+    const int _rescued)
 {
     ScreenFlowConfig config;
-    config.bannerText     = "MISSION COMPLETE";
+    config.bannerText     = "MISSION 4\nCOMPLETE!";
     config.bannerColor    = eFontColor::Yellow;
     config.sfx            = sfx::kMissionComplete;
     config.bgmFadeSeconds = 0.f;
-    config.delayTicks     = 90;
-    config.bannerTicks    = 240;
-    config.fadeTicks      = 60;
-    config.holdTicks      = 15;
+    config.delayTicks     = 60;
+    config.rescuedCount   = std::max(0, _rescued);
+    config.resultsTicks   = MissionResultsTicks(config.rescuedCount);
+    config.bannerTicks    = 210;
+    config.fadeTicks      = 90;
+    config.holdTicks      = 30;
     return config;
 }
 
@@ -73,6 +156,15 @@ void ScreenFlow::Tick(
     Advance_(_ui, _audio);
 }
 
+MissionResultsView ScreenFlow::GetResultsView() const
+{
+    if (m_phase != eFlowPhase::Results)
+    {
+        return {};
+    }
+    return MakeMissionResultsView(m_config.rescuedCount, m_elapsed - m_config.delayTicks);
+}
+
 void ScreenFlow::BeginBanner_(
     UiSystem&   _ui,
     IAudioSink& _audio)
@@ -103,12 +195,24 @@ void ScreenFlow::Advance_(
     UiSystem&   _ui,
     IAudioSink& _audio)
 {
-    const int bannerStart = m_config.delayTicks;
-    const int fadeStart   = bannerStart + m_config.bannerTicks;
-    const int holdStart   = fadeStart + m_config.fadeTicks;
-    const int doneAt      = holdStart + m_config.holdTicks;
+    const int resultsStart = m_config.delayTicks;
+    const int bannerStart  = resultsStart + m_config.resultsTicks;
+    const int fadeStart    = bannerStart + m_config.bannerTicks;
+    const int holdStart    = fadeStart + m_config.fadeTicks;
+    const int doneAt       = holdStart + m_config.holdTicks;
 
-    if (m_phase == eFlowPhase::Delay && m_elapsed >= bannerStart)
+    if (m_phase == eFlowPhase::Delay && m_elapsed >= resultsStart)
+    {
+        if (m_config.resultsTicks > 0)
+        {
+            m_phase = eFlowPhase::Results;
+        }
+        else
+        {
+            BeginBanner_(_ui, _audio);
+        }
+    }
+    if (m_phase == eFlowPhase::Results && m_elapsed >= bannerStart)
     {
         BeginBanner_(_ui, _audio);
     }

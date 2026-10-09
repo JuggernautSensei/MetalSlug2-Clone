@@ -29,6 +29,29 @@ struct UiLayout
     int timerCenterX = 320;
     int timerTopY    = 8;
 
+    int insertCoinRightX = 612;      // 원본 "INSERT COIN" 오른쪽 끝 (깜빡이지 않음)
+    int insertCoinY      = 8;
+
+    int missionLine1Y     = 144;     // 미션 배너 첫 줄 중심 y (원본 영상 기준, 두 줄이면 두 번째는 +stride)
+    int missionLineStride = 92;
+    int missionGlyphNum   = 5;       // 미션 폰트 배율 = num/den (트림된 글자 약 25px 기준 약 1.67배)
+    int missionGlyphDen   = 3;
+    int missionSpaceW     = 22;      // 공백 폭 (배율 적용 전 px)
+    int missionGlyphGap   = 2;       // 글자 사이 간격 (배율 적용 전 px)
+
+    // 구출 결과 상자 (원본 "RECAPTURED PRISONER", 논리 좌표)
+    int resultsBoxX       = 43;
+    int resultsBoxY       = 100;
+    int resultsBoxW       = 270;
+    int resultsBoxH       = 200;
+    int resultsTitleY     = 81;      // 제목 중심 y
+    int resultsTitleX     = 298;     // 제목 중심 x (상자 중심과 다르다, 원본 영상 그대로)
+    int resultsPlayerY    = 124;     // "1P" 중심 y
+    int resultsCountTopY  = 154;     // 구출 수 숫자 윗변 (TimeNumberUI 32px)
+    int resultsScoreTopY  = 204;     // 보너스 점수 숫자 윗변
+    int resultsRankY      = 251;     // 등급 문구 중심 y
+    int resultsFadeTicks  = 12;
+
     int pressStartCenterX = 494;
     int pressStartCenterY = 24;
     int pressStartBlinkTicks = 30;   // 켜짐/꺼짐 각각의 길이

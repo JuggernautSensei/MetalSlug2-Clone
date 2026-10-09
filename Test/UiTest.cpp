@@ -563,7 +563,7 @@ TEST(UiHud, BombScoreAndLivesTexts)
     EXPECT_EQ(pScore->x, layout.scoreRightX);
     EXPECT_EQ(pScore->style.align, eTextAlign::Right);
 
-    EXPECT_NE(FindItem(items, eHudItemKind::Text, "1UP X3"), nullptr);
+    EXPECT_NE(FindItem(items, eHudItemKind::Text, "1UP=3"), nullptr);
 }
 
 TEST(UiHud, ValuesAreClampedToTheirDigitBudget)
@@ -591,31 +591,55 @@ TEST(UiHud, TimerOnlyWhenRequested)
     EXPECT_EQ(pTimer->x, layout.timerCenterX);
 }
 
-TEST(UiHud, PressStartBlinksWithConfiguredPeriod)
+TEST(UiHud, InsertCoinIsStaticTopRightTextThatNeverBlinks)
 {
     const UiLayout layout;
     HudModel       model = MakeModel();
 
-    model.uiTick = 0;
-    EXPECT_NE(FindItem(BuildHudItems(model, layout), eHudItemKind::Sprite, "PressStartUI"), nullptr);
-    model.uiTick = layout.pressStartBlinkTicks - 1;
-    EXPECT_NE(FindItem(BuildHudItems(model, layout), eHudItemKind::Sprite, "PressStartUI"), nullptr);
-    model.uiTick = layout.pressStartBlinkTicks;
+    for (const int tick: { 0, layout.pressStartBlinkTicks, layout.pressStartBlinkTicks * 3 })
+    {
+        model.uiTick = tick;
+        const slug::Vector<HudItem> items = BuildHudItems(model, layout);
+        const HudItem* pCoin = FindItem(items, eHudItemKind::Text, "INSERT COIN");
+        ASSERT_NE(pCoin, nullptr) << tick;
+        EXPECT_EQ(pCoin->x, layout.insertCoinRightX);
+        EXPECT_EQ(pCoin->y, layout.insertCoinY);
+        EXPECT_EQ(pCoin->style.align, eTextAlign::Right);
+    }
     EXPECT_EQ(FindItem(BuildHudItems(model, layout), eHudItemKind::Sprite, "PressStartUI"), nullptr);
-    model.uiTick = layout.pressStartBlinkTicks * 2;
-    EXPECT_NE(FindItem(BuildHudItems(model, layout), eHudItemKind::Sprite, "PressStartUI"), nullptr);
 
-    model.bShowPressStart2p = false;
-    model.uiTick            = 0;
-    EXPECT_EQ(FindItem(BuildHudItems(model, layout), eHudItemKind::Sprite, "PressStartUI"), nullptr);
+    model.bShowInsertCoin = false;
+    EXPECT_EQ(FindItem(BuildHudItems(model, layout), eHudItemKind::Text, "INSERT COIN"), nullptr);
+}
+
+TEST(UiHud, DisplayTimerCountsDownSlowlyAndNeverGoesNegative)
+{
+    DisplayTimer timer;
+    EXPECT_EQ(timer.GetSeconds(), 60);
+
+    for (int i = 0; i < DisplayTimer::kTicksPerDigit; ++i)
+    {
+        timer.Tick();
+    }
+    EXPECT_EQ(timer.GetSeconds(), 59);   // 6.5초에 한 칸
+
+    for (int i = 0; i < DisplayTimer::kStartSeconds * DisplayTimer::kTicksPerDigit + 100; ++i)
+    {
+        timer.Tick();
+    }
+    EXPECT_EQ(timer.GetSeconds(), 0);
+    EXPECT_EQ(timer.GetRemainingTicks(), 0);
+
+    timer.Reset();
+    EXPECT_EQ(timer.GetSeconds(), 60);
 }
 
 TEST(UiHud, PlayerBlockCanBeHiddenAndLevelSpriteOptional)
 {
     const UiLayout layout;
     HudModel       model = MakeModel();
-    model.bShowPlayer       = false;
-    model.bShowPressStart2p = false;
+    model.bShowPlayer     = false;
+    model.bShowInsertCoin = false;
     EXPECT_TRUE(BuildHudItems(model, layout).empty());
 
     model.levelSprite = "LEVEL_1";
@@ -824,10 +848,12 @@ TEST(UiFlow, PhasesChangeAtExactTicks)
     EXPECT_TRUE(ui.GetFade().IsBlack());
 }
 
-TEST(UiFlow, MissionCompleteWaitsForVictoryPoseThenBanner)
+TEST(UiFlow, MissionCompleteShowsResultsBeforeTheCompleteBanner)
 {
-    const ScreenFlowConfig config = MakeMissionCompleteFlowConfig();
-    EXPECT_EQ(config.bannerText, "MISSION COMPLETE");
+    const ScreenFlowConfig config = MakeMissionCompleteFlowConfig(16);
+    EXPECT_EQ(config.bannerText, "MISSION 4\nCOMPLETE!");
+    EXPECT_EQ(config.resultsTicks, MissionResultsTicks(16));
+    EXPECT_EQ(config.GetTotalTicks(), 60 + 276 + 210 + 90 + 30);
 
     GameContext ctx;
     UiSystem    ui;
@@ -838,16 +864,156 @@ TEST(UiFlow, MissionCompleteWaitsForVictoryPoseThenBanner)
 
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Delay);
     EXPECT_EQ(audio.CountKind(eAudioEvent::StopBgm), 1);   // bgmFadeSeconds == 0 → 즉시 정지
-    for (int tick = 1; tick < config.delayTicks; ++tick)
+    EXPECT_FALSE(flow.GetResultsView().bBoxVisible);
+
+    int t = 0;
+    auto advanceTo = [&](int _tick)
+    {
+        while (t < _tick)
+        {
+            ++t;
+            ui.Tick();
+            flow.Tick(ui, audio);
+        }
+    };
+
+    advanceTo(59);
+    EXPECT_EQ(flow.GetPhase(), eFlowPhase::Delay);
+    EXPECT_FALSE(ui.GetBanner().IsActive());
+
+    advanceTo(60);
+    EXPECT_EQ(flow.GetPhase(), eFlowPhase::Results);
+    EXPECT_FALSE(ui.GetBanner().IsActive());
+    EXPECT_TRUE(flow.GetResultsView().bBoxVisible);
+    EXPECT_EQ(flow.GetResultsView().rescued, 0);
+
+    advanceTo(60 + 12);
+    EXPECT_EQ(flow.GetResultsView().rescued, 1);
+
+    advanceTo(60 + 276 - 1);
+    EXPECT_EQ(flow.GetPhase(), eFlowPhase::Results);
+    EXPECT_TRUE(flow.GetResultsView().bBoxVisible);   // 결과 단계 끝 직전까지 상자 표시
+
+    advanceTo(60 + 276);
+    EXPECT_EQ(flow.GetPhase(), eFlowPhase::Banner);
+    EXPECT_FALSE(flow.GetResultsView().bBoxVisible);
+    EXPECT_TRUE(ui.GetBanner().IsActive());
+    EXPECT_EQ(ui.GetBanner().GetCurrent().text, "MISSION 4\nCOMPLETE!");
+    EXPECT_EQ(audio.CountPlays(sfx::kMissionComplete), 1);
+
+    advanceTo(config.GetTotalTicks());
+    EXPECT_TRUE(flow.IsDone());
+}
+
+TEST(UiFlow, MissionCompleteWithoutPowsStillShowsAnEmptyBox)
+{
+    const ScreenFlowConfig config = MakeMissionCompleteFlowConfig(0);
+    EXPECT_EQ(config.rescuedCount, 0);
+    EXPECT_EQ(config.resultsTicks, MissionResultsTicks(0));
+
+    const MissionResultsView view = MakeMissionResultsView(0, MissionResultsTicks(0) - 1);
+    EXPECT_TRUE(view.bBoxVisible);
+    EXPECT_EQ(view.rescued, 0);
+    EXPECT_EQ(view.bonusScore, 0);
+    EXPECT_FALSE(view.bRankVisible);
+}
+
+TEST(UiResults, RescueTallyCountsUpAndReachesGreatWithSixteen)
+{
+    EXPECT_EQ(MissionBonusScore(16), 380000);   // 영상: 16명, 최종 380000 (GREAT!)
+    EXPECT_EQ(MissionRankText(16), "GREAT!");
+    EXPECT_TRUE(MissionRankText(3).empty());
+    EXPECT_EQ(MissionBonusScore(3), 30000);
+
+    const int countEnd = 12 + 16 * 6;
+    EXPECT_EQ(MakeMissionResultsView(16, 12).rescued, 1);
+    EXPECT_EQ(MakeMissionResultsView(16, 12 + 6 * 7).rescued, 8);
+    const MissionResultsView last = MakeMissionResultsView(16, countEnd - 1);
+    EXPECT_EQ(last.rescued, 16);
+    EXPECT_TRUE(last.bCounting);
+    EXPECT_EQ(last.bonusScore, 16 * 10000);
+    EXPECT_FALSE(last.bRankVisible);
+
+    const MissionResultsView rank = MakeMissionResultsView(16, countEnd + 18);
+    EXPECT_FALSE(rank.bCounting);
+    EXPECT_EQ(rank.bonusScore, 380000);
+    EXPECT_TRUE(rank.bRankVisible);
+    EXPECT_EQ(rank.rankText, "GREAT!");
+
+    EXPECT_FALSE(MakeMissionResultsView(16, MissionResultsTicks(16)).bBoxVisible);
+    EXPECT_FALSE(MakeMissionResultsView(16, -1).bBoxVisible);
+}
+
+TEST(UiResults, ScreenFlowExposesResultsViewOnlyDuringResultsPhase)
+{
+    GameContext ctx;
+    UiSystem    ui;
+    ui.Init(ctx);
+    TestAudio  audio;
+    ScreenFlow flow;
+    flow.Start(MakeMissionCompleteFlowConfig(5), ui, audio);
+    EXPECT_FALSE(flow.GetResultsView().bBoxVisible);   // 지연 단계
+    for (int i = 0; i < 60; ++i)
     {
         ui.Tick();
         flow.Tick(ui, audio);
     }
-    EXPECT_FALSE(ui.GetBanner().IsActive());
-    ui.Tick();
-    flow.Tick(ui, audio);
-    EXPECT_TRUE(ui.GetBanner().IsActive());
-    EXPECT_EQ(audio.CountPlays(sfx::kMissionComplete), 1);
+    EXPECT_EQ(flow.GetPhase(), eFlowPhase::Results);
+    EXPECT_TRUE(flow.GetResultsView().bBoxVisible);
+    EXPECT_EQ(flow.GetResultsView().rescued, 0);
+    for (int i = 0; i < 12; ++i)
+    {
+        ui.Tick();
+        flow.Tick(ui, audio);
+    }
+    EXPECT_EQ(flow.GetResultsView().rescued, 1);
+}
+
+TEST(UiBanner, MissionGlyphNamesMapLettersDigitsAndPunctuation)
+{
+    EXPECT_EQ(MakeMissionGlyphName('A'), "UI_Mission_A");
+    EXPECT_EQ(MakeMissionGlyphName('z'), "UI_Mission_Z");
+    EXPECT_EQ(MakeMissionGlyphName('4'), "UI_Mission_4");
+    EXPECT_EQ(MakeMissionGlyphName('0'), "UI_Mission_O");
+    EXPECT_EQ(MakeMissionGlyphName('!'), "UI_Mission_Excl");
+    EXPECT_EQ(MakeMissionGlyphName('?'), "UI_Mission_Question");
+    EXPECT_TRUE(MakeMissionGlyphName('#').empty());
+    EXPECT_TRUE(MakeMissionGlyphName(' ').empty());
+}
+
+TEST(UiBanner, GlyphPoseFliesInThenSitsThenFliesOut)
+{
+    constexpr int kIn = 18;
+    constexpr int kHold = 100;
+    constexpr int kOut = 18;
+
+    const GlyphPose before = ComputeMissionGlyphPose(-1, kIn, kHold, kOut, 0);
+    EXPECT_EQ(before.alpha, 0);
+
+    const GlyphPose start = ComputeMissionGlyphPose(0, kIn, kHold, kOut, 0);
+    EXPECT_EQ(start.alpha, 0);
+    EXPECT_NE(start.dy, 0);   // 글자 0 은 위에서 내려온다
+
+    const GlyphPose sitting = ComputeMissionGlyphPose(kIn + 10, kIn, kHold, kOut, 0);
+    EXPECT_EQ(sitting.dx, 0);
+    EXPECT_EQ(sitting.dy, 0);
+    EXPECT_EQ(sitting.alpha, 255);
+
+    const GlyphPose gone = ComputeMissionGlyphPose(kIn + kHold + kOut, kIn, kHold, kOut, 0);
+    EXPECT_EQ(gone.alpha, 0);
+
+    const GlyphPose leaving = ComputeMissionGlyphPose(kIn + kHold + kOut / 2, kIn, kHold, kOut, 0);
+    EXPECT_GT(leaving.alpha, 0);
+    EXPECT_LT(leaving.alpha, 255);
+}
+
+TEST(UiBanner, EachGlyphHasItsOwnDirectionAndDelay)
+{
+    const GlyphPose a = ComputeMissionGlyphPose(0, 18, 60, 18, 0);
+    const GlyphPose b = ComputeMissionGlyphPose(0, 18, 60, 18, 2);
+    EXPECT_TRUE(a.dx != b.dx || a.dy != b.dy);
+    const GlyphPose late = ComputeMissionGlyphPose(4, 18, 60, 18, 6);
+    EXPECT_EQ(late.alpha, 0);   // 6번째 글자는 아직 출발 전
 }
 
 TEST(UiFlow, TickBeforeStartAndAfterDoneIsHarmless)

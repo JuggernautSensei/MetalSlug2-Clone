@@ -22,6 +22,7 @@
 #include "Game/Stage/StageData.h"
 #include "Game/Stage/StageRunner.h"
 #include "Game/Stage/StageWorldHost.h"
+#include "Game/Ui/Hud.h"
 #include "Game/Ui/ScreenFlow.h"
 #include "Game/Ui/UiSystem.h"
 #include "Render/Camera.h"
@@ -61,6 +62,7 @@ public:
     [[nodiscard]] uint64_t                 GetTickCount() const { return m_tickCount; }
     [[nodiscard]] uint64_t                 HashState() const;
     [[nodiscard]] HudModel                 BuildHudModel() const;
+    [[nodiscard]] int                      GetRescuedPows() const { return m_rescuedPows; }
 
 private:
     enum class eEndKind : uint8_t
@@ -144,6 +146,10 @@ private:
     PlayerStats m_prevStats  = {};
     eWeapon     m_prevWeapon = eWeapon::Pistol;
     int         m_prevScore  = 0;
+
+    DisplayTimer m_timer          = {};          // 화면 표시용 카운트다운 (사망과 무관)
+    slug::String m_timerSectionId = {};          // 구간이 바뀔 때 타이머를 60 으로 되돌린다
+    int          m_rescuedPows    = 0;           // 구출한 POW 수 (미션 결과 상자)
 
     uint64_t m_tickCount = 0;
 };

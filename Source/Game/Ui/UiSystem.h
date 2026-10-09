@@ -22,6 +22,7 @@ public:
 
     void DrawHud(GameContext& _ctx, const HudModel& _model);
     void DrawBanner(GameContext& _ctx);
+    void DrawMissionResults(GameContext& _ctx) const;
     void DrawFade(GameContext& _ctx);
     void DrawOverlays(GameContext& _ctx);
 
@@ -38,12 +39,14 @@ public:
     [[nodiscard]] bool                  HasSprites() const { return m_bSprites; }
 
     void ShowBanner(slug::StringView _text, float _seconds) { m_banner.Show(MakeBannerSpec(_text, _seconds)); }
+    void SetMissionResults(const MissionResultsView& _view) { m_results = _view; }
 
 private:
     UiLayout      m_layout  = {};
     BitmapFont    m_font    = {};
     SpriteLibrary m_sprites = {};
     BannerSystem  m_banner  = {};
+    MissionResultsView m_results = {};
     FadeController m_fade   = {};
     int           m_tick    = 0;
     bool          m_bSprites = false;

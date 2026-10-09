@@ -262,6 +262,9 @@ void StageState::Restart_(
     m_rng = slug::RngMt19937 { 0x57A6E0ull };
     m_flow.Reset();
     m_endKind = eEndKind::None;
+    m_timer.Reset();
+    m_timerSectionId.clear();
+    m_rescuedPows = 0;
 
     m_runner->Begin();
 
@@ -412,6 +415,12 @@ void StageState::Tick(
 
     m_prevCameraPos = m_camera.GetPositionNoShake();
     m_runner->Tick();
+    if (m_host.GetLastSectionId() != m_timerSectionId)
+    {
+        m_timerSectionId = m_host.GetLastSectionId();
+        m_timer.Reset();
+    }
+    m_timer.Tick();
 
     if (m_endKind == eEndKind::None)
     {
@@ -432,7 +441,11 @@ void StageState::StartFlow_(
     const eEndKind _kind)
 {
     m_endKind = _kind;
-    const ScreenFlowConfig config = _kind == eEndKind::Mission ? MakeMissionCompleteFlowConfig() : MakeGameOverFlowConfig();
+    if (_kind == eEndKind::Mission)
+    {
+        m_player.AddScore(MissionBonusScore(m_rescuedPows));
+    }
+    const ScreenFlowConfig config = _kind == eEndKind::Mission ? MakeMissionCompleteFlowConfig(m_rescuedPows) : MakeGameOverFlowConfig();
     m_flow.Start(config, m_ui, _ctx.GetAudio());
 }
 
@@ -556,6 +569,8 @@ void StageState::ConsumeEnemyEvents_(
             (void)m_props.SpawnItem(event.drop, event.pos, true);
             break;
         case eEnemyEventKind::Freed:
+            ++m_rescuedPows;
+            break;
         case eEnemyEventKind::Transformed:
         case eEnemyEventKind::Removed:
             break;
@@ -953,6 +968,8 @@ HudModel StageState::BuildHudModel() const
         model.bShowBoss   = true;
         model.bossHpRatio = *ratio;
     }
+    model.bShowTimer   = true;
+    model.timerSeconds = m_timer.GetSeconds();
     return model;
 }
 
@@ -1013,6 +1030,7 @@ void StageState::DrawHud_(
         m_ui.DrawText(_ctx, Renderer::kLogicalWidth / 2, 216, "PAUSED", style);
     }
 
+    m_ui.SetMissionResults(m_flow.GetResultsView());
     m_ui.DrawOverlays(_ctx);
 }
 }

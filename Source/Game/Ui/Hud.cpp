@@ -99,7 +99,7 @@ slug::Vector<HudItem> BuildHudItems(
     if (_model.bShowPlayer)
     {
         items.push_back(MakeText_(FormatScore(_model.score), _layout.scoreRightX, _layout.scoreY, eTextAlign::Right, eFontColor::Default));
-        items.push_back(MakeText_(std::format("1UP X{}", std::max(0, _model.lives)), _layout.livesX, _layout.livesY, eTextAlign::Left, eFontColor::White));
+        items.push_back(MakeText_(std::format("1UP={}", std::max(0, _model.lives)), _layout.livesX, _layout.livesY, eTextAlign::Left, eFontColor::White));
 
         items.push_back(MakeSprite_("PlayerStateUI_Bomb", _layout.armsPanelX + 62, _layout.armsPanelY + 17));
 
@@ -129,9 +129,9 @@ slug::Vector<HudItem> BuildHudItems(
         items.push_back(std::move(item));
     }
 
-    if (_model.bShowPressStart2p && IsBlinkOn(_model.uiTick, _layout.pressStartBlinkTicks))
+    if (_model.bShowInsertCoin)
     {
-        items.push_back(MakeSprite_("PressStartUI", _layout.pressStartCenterX, _layout.pressStartCenterY));
+        items.push_back(MakeText_("INSERT COIN", _layout.insertCoinRightX, _layout.insertCoinY, eTextAlign::Right, eFontColor::White));
     }
 
     if (!_model.levelSprite.empty())

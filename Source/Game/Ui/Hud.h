@@ -15,7 +15,7 @@ class PlayerController;
 struct HudModel
 {
     bool bShowPlayer    = true;
-    int  lives          = 0;      // "1UP X<lives>" (남은 목숨 수. 현재 목숨 포함)
+    int  lives          = 0;      // "1UP=<lives>" (남은 목숨 수. 현재 목숨 포함)
     int  score          = 0;
     bool bInfiniteAmmo  = true;
     int  ammo           = 0;      // 유한 무기의 남은 탄
@@ -28,9 +28,39 @@ struct HudModel
     bool  bShowBoss     = false;
     float bossHpRatio   = 1.f;    // 0..1
 
-    bool        bShowPressStart2p = true;
+    bool        bShowInsertCoin   = true;   // 원본 "INSERT COIN" (우상단, 깜빡이지 않음)
     slug::String levelSprite       = {};
     int         uiTick            = 0;      // 점멸용 단조 증가 틱 (UiSystem::GetTick())
+};
+
+// 화면 표시용 60초 카운트다운. 사망과 무관하다 (0 이 되어도 아무 일도 없음).
+// 원본 영상에서 숫자는 1초가 아니라 약 6.5초마다 한 칸씩 줄고, 구간이 바뀌면 60 으로 돌아간다.
+class DisplayTimer
+{
+public:
+    static constexpr int kStartSeconds   = 60;
+    static constexpr int kTicksPerDigit  = 390;   // 6.5초 * 60틱
+
+    void Reset() { m_ticks = kStartSeconds * kTicksPerDigit; }
+    void Tick() { if (m_ticks > 0) { --m_ticks; } }
+
+    [[nodiscard]] int GetSeconds() const { return (m_ticks + kTicksPerDigit - 1) / kTicksPerDigit; }
+    [[nodiscard]] int GetRemainingTicks() const { return m_ticks; }
+
+private:
+    int m_ticks = kStartSeconds * kTicksPerDigit;
+};
+
+// 결과 상자 한 프레임의 표시 상태 (순수 계산, UiSystem 이 그린다)
+struct MissionResultsView
+{
+    bool         bBoxVisible  = false;
+    uint8_t      boxAlpha     = 0;
+    int          rescued      = 0;       // 표시 중인 구출 수
+    bool         bCounting    = false;   // "x10000" 라벨 표시 (집계 중)
+    int          bonusScore   = 0;       // 표시 중인 보너스 점수
+    bool         bRankVisible = false;
+    slug::String rankText     = {};      // "GREAT!" 등
 };
 
 [[nodiscard]] HudModel MakeHudModel(const PlayerController& _player);
