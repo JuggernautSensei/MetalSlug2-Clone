@@ -1,0 +1,163 @@
+#include "Core/Input.h"
+
+namespace slug
+{
+
+namespace
+{
+    struct KeyBinding
+    {
+        eAction    action;
+        jug::eKey  key;
+    };
+
+    // 기본 조작: 기존 게임과 동일(A/D/W/S, J 사격, K 점프, L 폭탄) + 방향키/Z/X/C 대체키
+    constexpr KeyBinding kBindings[] = {
+        { eAction::Left, jug::eKey::A },
+        { eAction::Left, jug::eKey::Left },
+        { eAction::Right, jug::eKey::D },
+        { eAction::Right, jug::eKey::Right },
+        { eAction::Up, jug::eKey::W },
+        { eAction::Up, jug::eKey::Up },
+        { eAction::Down, jug::eKey::S },
+        { eAction::Down, jug::eKey::Down },
+        { eAction::Shot, jug::eKey::J },
+        { eAction::Shot, jug::eKey::Z },
+        { eAction::Jump, jug::eKey::K },
+        { eAction::Jump, jug::eKey::X },
+        { eAction::Bomb, jug::eKey::L },
+        { eAction::Bomb, jug::eKey::C },
+        { eAction::Pause, jug::eKey::Escape },
+    };
+}   // namespace
+
+// ===========================================
+//  InputSystem
+// ===========================================
+
+void InputSystem::OnKeyDown(
+    const jug::eKey _key)
+{
+    const size_t index = static_cast<size_t>(_key);
+    if (index < kKeyCapacity)
+    {
+        m_keyDown[index] = true;
+    }
+}
+
+void InputSystem::OnKeyUp(
+    const jug::eKey _key)
+{
+    const size_t index = static_cast<size_t>(_key);
+    if (index < kKeyCapacity)
+    {
+        m_keyDown[index] = false;
+    }
+}
+
+void InputSystem::ClearAll()
+{
+    m_keyDown.fill(false);
+}
+
+bool InputSystem::IsKeyDown_(
+    const jug::eKey _key) const
+{
+    const size_t index = static_cast<size_t>(_key);
+    return index < kKeyCapacity && m_keyDown[index];
+}
+
+InputFrame InputSystem::Sample() const
+{
+    InputFrame frame;
+    for (const KeyBinding& binding: kBindings)
+    {
+        if (IsKeyDown_(binding.key))
+        {
+            frame.Set(binding.action, true);
+        }
+    }
+    return frame;
+}
+
+// ===========================================
+//  InputHistory
+// ===========================================
+
+void InputHistory::Push(
+    const InputFrame _frame)
+{
+    m_head                    = (m_head + 1) % kCapacity;
+    m_frames[m_head]          = _frame;
+    m_consumedPresses[m_head] = 0;
+    m_count                   = m_count < kCapacity ? m_count + 1 : kCapacity;
+}
+
+void InputHistory::Clear()
+{
+    m_frames.fill({});
+    m_consumedPresses.fill(0);
+    m_head  = 0;
+    m_count = 0;
+}
+
+const InputFrame& InputHistory::GetCurrent() const
+{
+    return m_frames[m_head];
+}
+
+const InputFrame& InputHistory::GetAgo_(
+    const size_t _ago) const
+{
+    return m_frames[(m_head + kCapacity - (_ago % kCapacity)) % kCapacity];
+}
+
+bool InputHistory::IsHeld(
+    const eAction _action) const
+{
+    return GetCurrent().IsHeld(_action);
+}
+
+bool InputHistory::WasPressed(
+    const eAction _action) const
+{
+    return WasPressedWithin(_action, 1);
+}
+
+bool InputHistory::WasReleased(
+    const eAction _action) const
+{
+    return m_count >= 2 && !GetAgo_(0).IsHeld(_action) && GetAgo_(1).IsHeld(_action);
+}
+
+bool InputHistory::WasPressedWithin(
+    const eAction _action,
+    const int     _frames) const
+{
+    const size_t window = static_cast<size_t>(_frames < 1 ? 1 : (_frames > static_cast<int>(kCapacity) - 1 ? static_cast<int>(kCapacity) - 1 : _frames));
+    const uint16_t mask = static_cast<uint16_t>(1u << static_cast<unsigned>(_action));
+
+    for (size_t ago = 0; ago < window && ago < m_count; ++ago)
+    {
+        const size_t index   = (m_head + kCapacity - ago) % kCapacity;
+        const bool   bNow    = (m_frames[index].held & mask) != 0;
+        const bool   bBefore = (ago + 1 < m_count) ? ((m_frames[(index + kCapacity - 1) % kCapacity].held & mask) != 0) : false;
+        if (bNow && !bBefore && (m_consumedPresses[index] & mask) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void InputHistory::ConsumePress(
+    const eAction _action)
+{
+    const uint16_t mask = static_cast<uint16_t>(1u << static_cast<unsigned>(_action));
+    for (size_t ago = 0; ago < kCapacity && ago < m_count; ++ago)
+    {
+        m_consumedPresses[(m_head + kCapacity - ago) % kCapacity] |= mask;
+    }
+}
+
+}   // namespace slug

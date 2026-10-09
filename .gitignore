@@ -1,0 +1,8 @@
+Build/
+.vs/
+*.user
+*.suo
+CMakeUserPresets.json
+vcpkg_installed/
+Assets/Baked/
+Captures/
