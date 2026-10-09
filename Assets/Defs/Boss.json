@@ -19,7 +19,7 @@
       },
       "params": {
         "originDepth": 123,
-        "trigger": { "w": 60, "h": 260, "cx": -215, "cy": 0 },
+        "trigger": { "w": 420, "h": 260, "cx": -335, "cy": 0 },
         "openSec": 3.5,
         "shellFirstSec": 2.0,
         "shellIntervalSec": 3.0,

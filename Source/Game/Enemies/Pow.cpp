@@ -64,6 +64,12 @@ namespace
         }
     }
 
+    // 플레이어 몸통 박스와 겹치는가 (공중 낙하 중에도 구출 접촉으로 쓴다)
+    bool TouchingPlayer_(Enemy& _e, EnemyEnv& _env)
+    {
+        return _env.ctx.player.bAlive && _e.body.GetBox().Overlaps(_env.ctx.player.bodyBox);
+    }
+
     void Init_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
     {
         PrepareBody(_e, _def);
@@ -84,6 +90,11 @@ namespace
             case kStuck:
                 _e.body.velocity.x = 0.f;
                 FacePlayer(_e, _env);
+                // 공중에서 떨어지는 중(착지 전)에도 플레이어와 겹치면 바로 구출
+                if (!_e.bGrounded && TouchingPlayer_(_e, _env))
+                {
+                    Go_(_e, _def, _env, kClose);
+                }
                 break;
 
             case kEscape:
@@ -127,6 +138,11 @@ namespace
             }
 
             case kMoveDown:
+                if (TouchingPlayer_(_e, _env))
+                {
+                    Go_(_e, _def, _env, kClose);
+                    break;
+                }
                 _e.body.velocity.x       = 0.f;
                 _e.body.velocity.y       = _def.physics.dropSpeed;
                 _e.body.dropThroughSteps = 2;
@@ -139,6 +155,11 @@ namespace
                 break;
 
             case kGlide:
+                if (TouchingPlayer_(_e, _env))
+                {
+                    Go_(_e, _def, _env, kClose);
+                    break;
+                }
                 _e.body.velocity.x = static_cast<float>(_e.facing) * cfg.walkSpeed;
                 break;
 

@@ -407,3 +407,32 @@ TEST(EnemyWorld, PowHitWhileFallingIsNotFreedAndStaysVertical)
     }
     EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Freed), 0);
 }
+
+TEST(EnemyWorld, PowFallingIntoPlayerIsRescuedMidAirAndGivesItem)
+{
+    constexpr int kClose = 5;   // ePowState::kClose (구출 후 아이템 연출)
+    EnemyRig      rig({ 300.f, kGroundY });   // 플레이어가 POW 의 낙하 경로 아래에 서 있다
+    ASSERT_TRUE(rig.IsLoaded());
+    SpawnParams params;
+    params.drop = "HM";
+    const EnemyHandle pow = rig.Spawn("pow", { 300.f, 150.f }, params);
+    ASSERT_FALSE(pow.IsNull());
+    ASSERT_FALSE(rig.E(pow)->bGrounded);
+
+    int ticks = 0;
+    while (rig.E(pow)->state != kClose && ticks < 120)
+    {
+        rig.Step(1);
+        ++ticks;
+    }
+    ASSERT_EQ(rig.E(pow)->state, kClose) << "공중에서 플레이어와 겹쳤는데 구출되지 않았다";
+    EXPECT_FALSE(rig.E(pow)->bGrounded) << "착지 전에 구출되어야 한다";
+    EXPECT_LT(rig.E(pow)->body.position.y, kGroundY);
+
+    for (int i = 0; i < 120 && rig.CountEvents(eEnemyEventKind::ItemDropped) == 0; ++i)
+    {
+        rig.Step(1);
+    }
+    EXPECT_GT(rig.CountEvents(eEnemyEventKind::ItemDropped), 0) << "구출 후 아이템이 나오지 않았다";
+    EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Freed), 0);
+}

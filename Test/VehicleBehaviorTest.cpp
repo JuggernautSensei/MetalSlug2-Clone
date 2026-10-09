@@ -395,18 +395,78 @@ TEST(VehicleAparch, BombPatternDropsFollowTheLegacyRhythm)
             drops.push_back(log.ticks[i]);
         }
     }
-    const int kOffsets[] = { 0, 30, 60, 120, 150, 180, 240, 270, 300 };
+    // 레거시: 패턴 진입 시 누적 타이머 2 s 가 이월되어 첫 3발은 연속 프레임에 떨어지고, 이후 0.5 s 간격 묶음이 이어진다
+    const int kOffsets[] = { 0, 1, 2, 29, 59, 89, 149, 179, 209 };
     bool      bFound     = false;
     for (size_t i = 0; i + 9 <= drops.size() && !bFound; ++i)
     {
         bool bAll = true;
         for (size_t j = 0; j < 9; ++j)
         {
-            bAll = bAll && std::abs((drops[i + j] - drops[i]) - kOffsets[j]) <= 2;
+            bAll = bAll && std::abs((drops[i + j] - drops[i]) - kOffsets[j]) <= 1;
         }
         bFound = bAll;
     }
-    EXPECT_TRUE(bFound) << "드롭 리듬 9발 (3 묶음 x 3발)이 연속으로 나와야 한다";
+    EXPECT_TRUE(bFound) << "드롭 리듬 9발 (레거시 burst + 0.5 s 묶음)이 연속으로 나와야 한다";
+}
+
+namespace
+{
+    // 드롭 발사 시점의 스폰 위치가 헬기 기준 (_offsetX, +60) 인지 확인하고 드롭 발수를 누적한다
+    void CheckDropSpawnOffsets_(VehicleRig& _rig, const EnemyHandle _h, const float _offsetX, const int _steps, int& _outDrops)
+    {
+        for (int i = 0; i < _steps; ++i)
+        {
+            _rig.Step(1);
+            const Enemy* pEnemy = _rig.E(_h);
+            ASSERT_NE(pEnemy, nullptr);
+            for (const Shot& shot: _rig.Projectiles().GetShots())
+            {
+                if (shot.params.owner == _h.id && shot.ageTicks == 1 && shot.params.gravity > 0.f)
+                {
+                    EXPECT_NEAR(shot.params.position.x - pEnemy->body.position.x, _offsetX, 0.01f);
+                    EXPECT_NEAR(shot.params.position.y - pEnemy->body.position.y, 60.f, 0.01f);
+                    EXPECT_FLOAT_EQ(shot.params.velocity.x, 0.f);
+                    EXPECT_FLOAT_EQ(shot.params.velocity.y, 0.f);
+                    ++_outDrops;
+                }
+            }
+        }
+    }
+}
+
+TEST(VehicleAparch, BombsSpawnTenPixelsAheadAndSixtyBelowWhenFacingLeft)
+{
+    VehicleRig rig({ 300.f, kGround });
+    const EnemyHandle h = rig.Spawn("aparch", { 445.f, 125.f }, Facing(-1));
+    int drops = 0;
+    CheckDropSpawnOffsets_(rig, h, 10.f, 400, drops);
+    EXPECT_GT(drops, 0);
+}
+
+TEST(VehicleAparch, DropMuzzleMirrorsWithFacing)
+{
+    EnemyDefLibrary lib;
+    ASSERT_TRUE(LoadVehicleLib(lib));
+    const EnemyDef* pDef = lib.Find("aparch");
+    ASSERT_NE(pDef, nullptr);
+    const int drop = pDef->FindWeapon("drop");
+    ASSERT_GE(drop, 0);
+
+    // 스폰은 항상 좌향으로 초기화되므로 우향 케이스는 muzzle 계산 함수에 직접 넣어 검증한다
+    Enemy left;
+    left.facing        = -1;
+    left.body.position = { 445.f, 125.f };
+    Enemy right;
+    right.facing        = 1;
+    right.body.position = { 445.f, 125.f };
+
+    const Vec2 l = GetMuzzleWorld(left, *pDef, drop);
+    const Vec2 r = GetMuzzleWorld(right, *pDef, drop);
+    EXPECT_FLOAT_EQ(l.x, 455.f);
+    EXPECT_FLOAT_EQ(l.y, 185.f);
+    EXPECT_FLOAT_EQ(r.x, 435.f);
+    EXPECT_FLOAT_EQ(r.y, 185.f);
 }
 
 TEST(VehicleAparch, MissilePatternFiresThreeLeftwardMissilesOneSecondApart)

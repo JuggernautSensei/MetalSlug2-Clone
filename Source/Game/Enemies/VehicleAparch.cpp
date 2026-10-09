@@ -114,6 +114,10 @@ namespace
                     const bool bBomb = (_e.aux & 1) == 1;
                     ++_e.aux;
                     _e.counter = 0;
+                    if (bBomb)
+                    {
+                        _e.aux3 = c.idleTicks;   // 레거시: 드롭 진입 시 누적 타이머는 PATTERN_TIME(2 s) 그대로 이월된다
+                    }
                     Go_(_e, _def, bBomb ? kBomb : kMissGun);
                 }
                 break;
@@ -165,16 +169,19 @@ namespace
                 _e.body.velocity = { dx * c.followGain, dy * c.followGain };
                 _e.body.position = { _e.body.position.x + _e.body.velocity.x * kStepSec, _e.body.position.y + _e.body.velocity.y * kStepSec };
 
-                if (_e.stateTicks > 0 && _e.stateTicks % c.bombStepTicks == 0)
+                // 레거시 DROP_MISSLE 과 같은 순서: 타이머 +1 틱, 0.5 s 마다 카운터 +1 (틱당 최대 1회), 홀수(mod 7) 카운터면 투하 후 +1
+                ++_e.aux3;
+                if (_e.aux3 >= c.bombStepTicks)
                 {
+                    _e.aux3 -= c.bombStepTicks;
                     ++_e.counter;
-                    if (((_e.counter % 7) & 1) != 0)
-                    {
-                        (void)FireWeapon(_e, _def, _env, c.weaponDrop);
-                        ++_e.counter;
-                    }
                 }
-                if (_e.stateTicks >= c.bombSteps * c.bombStepTicks)
+                if (((_e.counter % 7) & 1) != 0)
+                {
+                    (void)FireWeapon(_e, _def, _env, c.weaponDrop);
+                    ++_e.counter;
+                }
+                if (_e.counter > c.bombSteps)
                 {
                     Go_(_e, _def, kIdle);
                 }

@@ -49,7 +49,7 @@ TEST(BossDef, BusTimingsAndDropLimitsMatchTheSpec)
     EXPECT_TRUE(c.soldierDef == "soldier_bomb");
     EXPECT_GE(c.weaponShell, 0);
     EXPECT_FLOAT_EQ(c.originDepth, 123.f);
-    EXPECT_FLOAT_EQ(c.trigger.cx, -215.f);
+    EXPECT_FLOAT_EQ(c.trigger.cx, -335.f);
     EXPECT_GT(c.trigger.w, 0.f);
 }
 

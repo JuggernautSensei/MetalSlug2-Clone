@@ -70,7 +70,7 @@
             "shotOverlayTicks": 10
         },
         "shotgun": {
-            "damage": 6,
+            "damage": 14,
             "fireIntervalTicks": 16,
             "holdRepeatTicks": 20,
             "ammo": 30,

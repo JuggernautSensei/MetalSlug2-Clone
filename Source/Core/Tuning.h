@@ -106,7 +106,7 @@ struct WeaponsTuning
         10
     };
     WeaponTuning shotgun = {
-        6,
+        14,
         16,
         20,
         30,

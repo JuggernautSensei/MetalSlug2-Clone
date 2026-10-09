@@ -256,6 +256,51 @@ TEST(StageIntegration, LongWalkThroughTheFirstSectionsWithoutWarpReachesTheStree
     EXPECT_GT(sim.State().GetEnemies().GetCount(), 0u);            // 실제 적이 스폰되어 있다
 }
 
+TEST(StageIntegration, CameraKeepsUpWithThePlayerAlongTheWholeStage)
+{
+    IntegrationSim sim;
+    int worstGap = 0;
+    float worstAt = 0.f;
+    int   lagTicks = 0;
+    int   outTicks = 0;
+    for (int i = 0; i < 40000 && sim.Current() == sim.StagePtr(); ++i)
+    {
+        sim.BotStep(true, true);
+        if (sim.Current() != sim.StagePtr())
+        {
+            break;
+        }
+        const float px  = sim.State().GetPlayer().GetFeet().x;
+        const float cam = sim.State().GetCamera().GetPositionNoShake().x;
+        const bool  bLocked = sim.State().GetCamera().IsLocked();
+        const float py      = sim.State().GetPlayer().GetFeet().y;
+        const float camY    = sim.State().GetCamera().GetPositionNoShake().y;
+        if (py < camY + 20.f || py > camY + 448.f || px < cam || px > cam + 640.f)
+        {
+            if (++outTicks == 30)
+            {
+                std::printf("[cam] player out of view x=%.0f y=%.0f cam=(%.0f,%.0f) section=%d locked=%d\n", px, py, cam, camY, sim.State().GetRunner().GetNextSectionIndex(), bLocked ? 1 : 0);
+            }
+        }
+        else
+        {
+            outTicks = 0;
+        }
+        if (!bLocked && px - cam > 470.f)
+        {
+            if (++lagTicks == 120)
+            {
+                std::printf("[cam] lag at player x=%.0f cam=%.0f section=%d\n", px, cam, sim.State().GetRunner().GetNextSectionIndex());
+            }
+        }
+        else
+        {
+            lagTicks = 0;
+        }
+    }
+    SUCCEED();
+}
+
 TEST(StageIntegration, BotCanWalkTheWholeStageUpToTheBossArena)
 {
     IntegrationSim sim;

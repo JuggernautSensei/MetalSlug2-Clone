@@ -9,7 +9,7 @@ namespace
 {
     constexpr float kBusX      = 600.f;
     constexpr float kBusFeetY  = 378.f;
-    constexpr float kFarX      = 100.f;   // 트리거에서 떨어진 플레이어 위치
+    constexpr float kFarX      = 0.f;     // 트리거에서 떨어진 플레이어 위치
     constexpr float kTriggerX  = 385.f;   // 트리거에 닿는 플레이어 발 x
 
     EnemyHandle SpawnBus(BossRig& _rig)

@@ -311,7 +311,7 @@
         "followOffsetY": 275,
         "followGain": 1.5,
         "bombStepSec": 0.5,
-        "bombSteps": 12,
+        "bombSteps": 20,
         "drift": [50, -70],
         "chainCount": 6,
         "chainIntervalSec": 0.3,
