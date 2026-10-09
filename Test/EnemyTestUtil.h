@@ -43,7 +43,7 @@ inline SandboxConfig MakeEnemyConfig(
 {
     SandboxConfig config = MakeFlatConfig();
     config.spawnFeet     = _spawn;
-    config.enemyDefPath  = EnemyDefsPath();
+    config.enemyDefPath  = jug::FilePath { SLUG_ASSET_DIR } / "Defs";   // 정의 폴더 전체 (Enemies.json + Vehicles.json)
     return config;
 }
 

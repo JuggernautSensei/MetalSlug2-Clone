@@ -1,5 +1,6 @@
 #include "Game/Enemies/EnemyCommon.h"
 
+#include <algorithm>
 #include <cmath>
 #include <format>
 
@@ -288,6 +289,10 @@ bool FireWeapon(
     spawn.startDelayTicks = SecToTicks(proj.startDelaySec);
     spawn.bExplodeOnSolid = proj.bExplodeOnSolid;
     spawn.visual          = static_cast<uint16_t>(weapon.projectile + 1);
+    spawn.rollSpeed       = proj.rollSpeed;   // 구르는 탄 (차량 공용): 착지 후 바라보는 방향으로 굴러간다
+    spawn.rollDirX        = facing;
+    spawn.rollTicks       = proj.rollSpeed > 0.f ? SecToTicks(proj.rollSec) : 0;
+    spawn.bExpireFx       = proj.bExpireFx;
 
     if (proj.speed > 0.f)
     {
@@ -506,6 +511,72 @@ void TickSoldierDeath(
             _e.life = eEnemyLife::Gone;
         }
     }
+}
+
+// ===========================================
+//  부가 파츠 렌더
+// ===========================================
+
+bool SubmitNamedPart(
+    const EnemyRenderEnv& _render,
+    const jug::StringView _name,
+    const jug::VECTOR2    _origin,
+    const int             _ticks,
+    const bool            _bLoop,
+    const int             _sortKey,
+    const int             _layer,
+    const bool            _bFlipX)
+{
+    if (const AnimClip* pClip = _render.anims.FindClip(_name))
+    {
+        if (pClip->frames.empty())
+        {
+            return false;
+        }
+        const int64_t units = pClip->GetFrameDurationUnits();
+        int           index = 0;
+        if (units > 0)
+        {
+            index = static_cast<int>((static_cast<int64_t>(std::max(0, _ticks)) * kAnimUnitsPerTick) / units);
+        }
+        const int count = pClip->GetFrameCount();
+        index           = _bLoop ? index % count : std::min(index, count - 1);
+        const AnimFrame& frame = pClip->frames[static_cast<size_t>(index)];
+        if (frame.IsEmpty())
+        {
+            return false;
+        }
+        SpriteDrawOptions options;
+        options.bFlipX = _bFlipX;
+        _render.sprites.Submit(_layer, _sortKey, frame, _origin, options);
+        return true;
+    }
+    if (_render.pSprites)
+    {
+        if (const SpriteInfo* pSprite = _render.pSprites->Find(_name))
+        {
+            if (!pSprite->bStandalone && !pSprite->frame.IsEmpty())
+            {
+                SpriteDrawOptions options;
+                options.bFlipX = _bFlipX;
+                _render.sprites.Submit(_layer, _sortKey, pSprite->frame, _origin, options);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+int GetNamedPartTicks(
+    const AnimationLibrary& _anims,
+    const jug::StringView   _name)
+{
+    const AnimClip* pClip = _anims.FindClip(_name);
+    if (!pClip)
+    {
+        return 0;
+    }
+    return static_cast<int>(pClip->GetTotalDurationUnits() / kAnimUnitsPerTick);
 }
 
 }   // namespace slug

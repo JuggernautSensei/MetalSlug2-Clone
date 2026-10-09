@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "note": "중간보스/최종보스 정의 (Docs/EnemySpecs.md 3.1 / 3.2). 좌표 params 는 '원점' 기준(원점 = 발 - (0, originDepth)), 방향은 항상 +1(레거시 그대로). 시간은 초. 파츠 클립 이름은 Source/Game/Enemies/BattleShip.cpp, Bus.cpp 의 표가 참조한다.",
+  "defs": {
+
+    "mb_truck": {
+      "note": "버스 중간보스 (MBTruck). HP 250 (TTK 25 s), 8단계 파손. 전투 시작 = 문 접촉. 처치 시 Died 이벤트 (스테이지가 지면 교체).",
+      "kind": "boss",
+      "behavior": "bus",
+      "hp": 250,
+      "ttk": 25,
+      "score": 2000,
+      "noDespawn": true,
+      "activation": { "mode": "always" },
+      "physics": { "useGravity": false },
+      "body": { "w": 180, "h": 260, "cx": 0, "cy": -123 },
+      "weapons": {
+        "shell": { "projectile": "bus_shell", "muzzle": [-150, -253], "aim": "facing", "arc": { "minVx": 80, "maxVx": 420 }, "muzzleFx": { "clip": "BTank_Shot_Effect", "offset": [0, 0] } }
+      },
+      "params": {
+        "originDepth": 123,
+        "trigger": { "w": 60, "h": 260, "cx": -215, "cy": 0 },
+        "openSec": 3.5,
+        "shellFirstSec": 2.0,
+        "shellIntervalSec": 3.0,
+        "soldierFirstSec": 3.0,
+        "soldierIntervalSec": 5.0,
+        "soldierAliveMax": 2,
+        "soldierTotalMax": 8,
+        "soldierOffset": [-150, -40],
+        "soldierDef": "soldier_bomb"
+      }
+    },
+
+    "battleship": {
+      "note": "최종보스 Big Shiee. HP 900 (TTK 90 s). 등장 → 레일 패턴(캐논 / 레일 이동) 반복, 포탑 2기, 격앙(HP<=50%) 시 빨라짐. 파괴 시퀀스 3.6 s 후 IsDestroyFinished.",
+      "kind": "boss",
+      "behavior": "battleship",
+      "hp": 900,
+      "ttk": 90,
+      "score": 10000,
+      "noDespawn": true,
+      "activation": { "mode": "always" },
+      "physics": { "useGravity": false },
+      "body": { "w": 300, "h": 190, "cx": 0, "cy": -95 },
+      "params": {
+        "originDepth": 132,
+        "entranceOffsetX": -300,
+        "railSlots": [30, 100, 190],
+        "homeSlot": 1,
+        "railMax": 100,
+        "railAccel": 50,
+        "railDecel": 100,
+        "idleSec": 1.6,
+        "idleEnragedSec": 0.8,
+        "headOpenSec": 1.44,
+        "cannonStartSec": 1.6,
+        "cannonIdleSec": 1.0,
+        "cannonIdleEnragedSec": 0.6,
+        "cannonShotSec": 0.56,
+        "cannonShots": 3,
+        "cannonShotsEnraged": 5,
+        "cannonEndSec": 1.12,
+        "headCloseSec": 1.68,
+        "cannonTrackDeg": 60,
+        "cannonTrackDegEnraged": 90,
+        "cannonAngleStart": -60,
+        "cannonAngleMin": -135,
+        "cannonAngleMax": -45,
+        "cannonOffset": [123, -149],
+        "bulletSpeed": 300,
+        "bulletSpread": 37,
+        "bulletProjectile": "battleship_bullet",
+        "bow": { "w": 170, "h": 190, "cx": 175, "cy": 40 },
+        "bridge": { "w": 280, "h": 170, "cx": 60, "cy": -90 },
+        "aft": { "w": 300, "h": 110, "cx": -120, "cy": 10 },
+        "hullBlockDx": 270,
+        "turret0Offset": [-200, -70],
+        "turret1Offset": [-100, -120],
+        "turretBox": { "w": 70, "h": 50, "cx": 0, "cy": 5 },
+        "turretMuzzle": [-30, -30, 0, -35, 30, -30],
+        "turretHp": 40,
+        "turretCoolSec": 2.4,
+        "turretCoolEnragedSec": 1.4,
+        "turretFirstStepSec": 1.2,
+        "turretTurnSec": 0.24,
+        "turretShotSec": 1.12,
+        "turretMidDx": 60,
+        "turretAimJitter": 30,
+        "turretRandomSec": 0.5,
+        "turretArcMinVx": 40,
+        "turretArcMaxVx": 450,
+        "turretProjectile": "btank_shell",
+        "enragedSmallSec": 1.0,
+        "destroyChainSec": 2.8,
+        "destroyChainStepSec": 0.12,
+        "destroyFinishSec": 3.6
+      }
+    },
+
+    "bus_shell": {
+      "kind": "projectile",
+      "note": "버스 포탄 (BTankProjectile 과 같은 포물선: v0 (보정 vx, -200), g 500). 피해 즉사.",
+      "box": { "w": 20, "h": 20 },
+      "v0": [0, -200],
+      "gravity": 500,
+      "maxFall": 3000,
+      "anim": { "fly": { "name": "BTank_Proj", "frames": 3, "sec": 0.05, "loop": true } },
+      "onSolid": "explode",
+      "explosion": { "fx": "BTank_Proj_Effect", "offset": [0, 0] }
+    },
+
+    "btank_shell": {
+      "kind": "projectile",
+      "note": "포탑 포탄 (BTank 계열 포물선). 보스 포탑이 발사 시 수평 속도를 계산한다.",
+      "box": { "w": 20, "h": 20 },
+      "v0": [0, -200],
+      "gravity": 500,
+      "maxFall": 3000,
+      "anim": { "fly": { "name": "BTank_Proj", "frames": 3, "sec": 0.05, "loop": true } },
+      "onSolid": "explode",
+      "explosion": { "fx": "BTank_Proj_Effect", "offset": [0, 0] }
+    },
+
+    "battleship_bullet": {
+      "kind": "projectile",
+      "note": "최종보스 캐논 탄 (표적 방향 300 px/s, 중력 없음). 스프라이트 BattleShip_Bullet_{tag}(0..4) 는 발사 코드가 그린다. 소멸 Explosion_Huge.",
+      "box": { "w": 30, "h": 30 },
+      "speed": 300,
+      "anim": { "fly": { "name": "BattleShip_Bullet_0", "frames": 1, "sec": 0.1, "loop": true } },
+      "onSolid": "explode",
+      "explosion": { "fx": "Explosion_Huge", "offset": [0, -20] }
+    }
+  }
+}

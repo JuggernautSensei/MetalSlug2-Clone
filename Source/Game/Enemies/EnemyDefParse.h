@@ -74,5 +74,12 @@ void ParseHangCfg(DefReader& _reader, EnemyDef& _def);
 void ParseFlyingBzkCfg(DefReader& _reader, EnemyDef& _def);
 void ParseShielderCfg(DefReader& _reader, EnemyDef& _def);
 void ParsePowCfg(DefReader& _reader, EnemyDef& _def);
+void ParseBusCfg(DefReader& _reader, EnemyDef& _def);          // Bus.cpp
+void ParseBattleShipCfg(DefReader& _reader, EnemyDef& _def);   // BattleShip.cpp
+void ParseJeepCfg(DefReader& _reader, EnemyDef& _def);          // VehicleJeep.cpp
+void ParseBTankCfg(DefReader& _reader, EnemyDef& _def);         // VehicleBTank.cpp
+void ParseMissleTankCfg(DefReader& _reader, EnemyDef& _def);    // VehicleMissleTank.cpp
+void ParseSarubiaCfg(DefReader& _reader, EnemyDef& _def);       // VehicleSarubia.cpp
+void ParseAparchCfg(DefReader& _reader, EnemyDef& _def);        // VehicleAparch.cpp
 
 }   // namespace slug

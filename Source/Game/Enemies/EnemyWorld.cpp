@@ -98,7 +98,8 @@ void EnemyWorld::Reset(
     m_successors.clear();
     m_effects.Clear();
     m_rng.Reseed(_seed);
-    m_nextId = kEnemyOwnerBase;
+    m_nextId      = kEnemyOwnerBase;
+    m_bPlayerMinX = false;
 }
 
 // ===========================================
@@ -180,6 +181,7 @@ void EnemyWorld::Create_(
     e.aiVariant = _params.aiVariant;
     e.userTag   = _params.userTag;
     e.drop      = _params.drop;
+    e.arena     = _params.arena;
     e.clip      = -1;
     e.bVisible  = true;
 
@@ -231,7 +233,7 @@ void EnemyWorld::OnHitEvents(
         {
             continue;
         }
-        const uint32_t id  = event.target & ~kShieldOwnerBit;
+        const uint32_t id  = event.target & kEnemyIdMask;   // 방패/포탑 파트 비트는 떼고 적 ID 만 본다
         const size_t   idx = FindIndex_(id);
         if (idx >= m_enemies.size())
         {
@@ -290,7 +292,8 @@ void EnemyWorld::Tick(
     {
         return;
     }
-    m_lastCtx = _ctx;
+    m_lastCtx     = _ctx;
+    m_bPlayerMinX = false;   // 보스가 이번 틱에 다시 요청한다 (플레이어는 다음 틱 시작 전의 값을 읽는다)
 
     // 0) 투사체 적중/지형 접촉 연출 (직전 틱의 Step 결과)
     if (_ctx.pProjectiles)
@@ -358,7 +361,7 @@ void EnemyWorld::Tick(
                 e.bActive = true;
             }
             // 정리: 카메라 뒤로 밀려났거나 화면 아래로 떨어졌다
-            if (e.body.position.x < view.min.x - m_pLibrary->GetGlobals().despawnBehindCameraPx || e.body.position.y > view.max.y + m_pLibrary->GetGlobals().despawnBelowCameraPx)
+            if (!def.bNoDespawn && (e.body.position.x < view.min.x - m_pLibrary->GetGlobals().despawnBehindCameraPx || e.body.position.y > view.max.y + m_pLibrary->GetGlobals().despawnBelowCameraPx))
             {
                 e.life = eEnemyLife::Gone;
                 continue;
@@ -480,6 +483,7 @@ void EnemyWorld::BindAnims(
 
         m_projFlyIds.resize(m_pLibrary->GetProjectileCount());
         m_projBeginIds.resize(m_pLibrary->GetProjectileCount());
+        m_projLandIds.resize(m_pLibrary->GetProjectileCount());
         for (size_t p = 0; p < m_pLibrary->GetProjectileCount(); ++p)
         {
             const ProjectileDef& proj = m_pLibrary->GetProjectile(static_cast<int>(p));
@@ -488,6 +492,7 @@ void EnemyWorld::BindAnims(
                 const int facing = side == 0 ? -1 : 1;
                 m_projFlyIds[p][side]   = proj.fly.name.empty() ? AnimId {} : _anims.Find(ResolveSide(proj.fly.name, facing));
                 m_projBeginIds[p][side] = proj.begin.name.empty() ? AnimId {} : _anims.Find(ResolveSide(proj.begin.name, facing));
+                m_projLandIds[p][side]  = proj.land.name.empty() ? AnimId {} : _anims.Find(ResolveSide(proj.land.name, facing));
             }
         }
     }
@@ -513,13 +518,25 @@ void EnemyWorld::Submit(
     // --- 적 / 포로 ---
     for (const Enemy& e: m_enemies)
     {
-        if (!e.bVisible || e.clip < 0 || e.life == eEnemyLife::Pending || e.life == eEnemyLife::Gone)
+        if (!e.bVisible || e.life == eEnemyLife::Pending || e.life == eEnemyLife::Gone)
         {
             continue;
         }
-        const EnemyDef& def  = m_pLibrary->Get(e.defIndex);
-        const int       side = SideIndex_(e.facing);
+        const EnemyDef&    def  = m_pLibrary->Get(e.defIndex);
+        const BehaviorOps& ops  = GetBehaviorOps(e.behavior);
+        const int          side = SideIndex_(e.facing);
         const jug::VECTOR2 feet = Lerp_(e.prevFeet, e.body.position, _alpha);
+
+        // 부가 파츠 (보스 리그 등): 본체 클립과 무관하게 매 틱 그린다
+        if (ops.submitParts)
+        {
+            const EnemyRenderEnv render { _sprites, _anims, m_pSprites, _projectiles, feet, _alpha, kEnemyLayer };
+            ops.submitParts(e, def, render);
+        }
+        if (e.clip < 0)
+        {
+            continue;
+        }
 
         const AnimClip* pClip = _anims.GetOrNull(m_clipIds[static_cast<size_t>(e.defIndex)][static_cast<size_t>(e.clip)][side]);
         if (!pClip)
@@ -561,15 +578,33 @@ void EnemyWorld::Submit(
         {
             continue;
         }
-        const int    side    = shot.velocity.x < 0.f ? 0 : 1;
-        const bool   bBegin  = shot.ageTicks < shot.params.startDelayTicks && _anims.IsValid(m_projBeginIds[static_cast<size_t>(projIndex)][side]);
-        const AnimId clipId  = bBegin ? m_projBeginIds[static_cast<size_t>(projIndex)][side] : m_projFlyIds[static_cast<size_t>(projIndex)][side];
+        // 구르는 탄: 방향은 굴러가는 쪽, 낙하 중에는 begin(낙하) → 착지 시 land → 굴러가며 fly
+        const size_t pIdx     = static_cast<size_t>(projIndex);
+        const bool   bRoll    = shot.params.rollSpeed > 0.f;
+        const int    side     = bRoll ? (shot.params.rollDirX < 0.f ? 0 : 1) : (shot.velocity.x < 0.f ? 0 : 1);
+        const int    landAge  = shot.ageTicks - shot.landedAge;
+        const int    landTicks = m_pLibrary->GetProjectile(projIndex).land.GetDurationTicks();
+        const bool   bLand    = bRoll && shot.bLanded && landAge < landTicks && _anims.IsValid(m_projLandIds[pIdx][side]);
+        const bool   bBegin   = !bLand && (shot.ageTicks < shot.params.startDelayTicks || (bRoll && !shot.bLanded)) && _anims.IsValid(m_projBeginIds[pIdx][side]);
+        const AnimId clipId   = bLand ? m_projLandIds[pIdx][side] : (bBegin ? m_projBeginIds[pIdx][side] : m_projFlyIds[pIdx][side]);
         const AnimClip* pClip = _anims.GetOrNull(clipId);
         if (!pClip)
         {
             continue;
         }
-        const int ticks = bBegin ? shot.ageTicks : std::max(0, shot.ageTicks - shot.params.startDelayTicks);
+        int ticks = std::max(0, shot.ageTicks - shot.params.startDelayTicks);
+        if (bLand)
+        {
+            ticks = landAge;
+        }
+        else if (bBegin)
+        {
+            ticks = shot.ageTicks;
+        }
+        else if (bRoll && shot.bLanded)
+        {
+            ticks = std::max(0, landAge - landTicks);
+        }
         const AnimFrame* pFrame = &pClip->frames[static_cast<size_t>(BakedFrameAt_(*pClip, static_cast<int64_t>(ticks) * kAnimUnitsPerTick))];
         if (pFrame->IsEmpty())
         {
@@ -654,6 +689,40 @@ bool EnemyWorld::IsDefeated(
         return false;
     }
     return pEnemy->life != eEnemyLife::Alive;
+}
+
+Health EnemyWorld::GetHealth(
+    const EnemyHandle _handle) const
+{
+    const Enemy* pEnemy = Get(ResolveHandle(_handle));
+    return pEnemy ? pEnemy->health : Health { 0, 0 };
+}
+
+bool EnemyWorld::IsDestroyFinished(
+    const EnemyHandle _handle) const
+{
+    if (_handle.IsNull())
+    {
+        return true;
+    }
+    const Enemy* pEnemy = Get(ResolveHandle(_handle));
+    if (!pEnemy || pEnemy->life == eEnemyLife::Gone)
+    {
+        return true;
+    }
+    if (pEnemy->life != eEnemyLife::Dying || !m_pLibrary)
+    {
+        return false;
+    }
+    const BehaviorOps& ops = GetBehaviorOps(pEnemy->behavior);
+    return ops.deathDone ? ops.deathDone(*pEnemy, m_pLibrary->Get(pEnemy->defIndex)) : false;
+}
+
+void EnemyWorld::RequestPlayerMinX(
+    const float _minX)
+{
+    m_playerMinX  = m_bPlayerMinX ? std::max(m_playerMinX, _minX) : _minX;
+    m_bPlayerMinX = true;
 }
 
 bool EnemyWorld::IsTagDefeated(

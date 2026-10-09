@@ -24,6 +24,22 @@ namespace slug
 inline constexpr uint32_t kEnemyOwnerBase = 2000;
 inline constexpr uint32_t kShieldOwnerBit = 0x40000000u;
 
+// 보스 부가 파츠(포탑 등) 소유자: 적 ID 의 하위 24비트에 (파트 번호 + 1) << 24 를 얹는다. EnemyWorld 는 kEnemyIdMask 로 적을 찾는다.
+inline constexpr uint32_t kEnemyIdMask = 0x00FFFFFFu;
+[[nodiscard]] constexpr uint32_t MakePartOwner(
+    const uint32_t _enemyId,
+    const uint32_t _partIndex)
+{
+    return (_enemyId & kEnemyIdMask) | ((_partIndex + 1u) << 24);
+}
+// 파트 번호 (파트가 아니면 -1)
+[[nodiscard]] constexpr int GetPartIndex(
+    const uint32_t _owner)
+{
+    const uint32_t part = (_owner >> 24) & 0x3Fu;
+    return part == 0u ? -1 : static_cast<int>(part) - 1;
+}
+
 [[nodiscard]] constexpr bool IsEnemyOwner(
     const uint32_t _owner)
 {
@@ -58,6 +74,7 @@ struct SpawnParams
     float       delaySec   = 0.f;     // 이 시간 뒤에 등장 (그 동안은 판정/렌더 없음)
     uint32_t    userTag    = 0;       // 호출자(스테이지)가 붙이는 값. 이벤트에 그대로 실려 나온다. 0 = 없음
     bool        bActivated = false;   // true: 화면 검사 없이 즉시 활성
+    Aabb        arena      = {};      // 보스 전용 전투 구역 (비면 없음). 가로 기준은 arena.min.x / 바닥은 스폰 발 y
 };
 
 // ===========================================
@@ -150,6 +167,8 @@ struct Enemy
     int aux3       = 0;
     int aux4       = 0;
     bool bTransformed = false;   // 다른 정의로 변신해 사라짐 (Removed 이벤트 없음)
+    int  ext[24]      = {};      // 행동별 확장 정수 (보스 파츠 상태 등: 포탑 HP/방향/타이머). 의미는 각 행동 파일이 정한다 (BattleShip.h 참조)
+    Aabb arena        = {};      // 스폰 시 받은 보스 전투 구역 (비면 없음)
 
     // --- 표시 ---
     int  clip      = -1;   // EnemyDef::clips 인덱스

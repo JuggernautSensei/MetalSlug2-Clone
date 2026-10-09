@@ -108,6 +108,12 @@ struct ShotSpawn
     bool         bExplodeOnSolid = true;   // 픽셀 지면에 닿으면 소멸
     uint16_t     visual          = 0;
     uint8_t      tag             = 0;
+
+    // --- 구르는 탄 (사루비아 수류탄): 지면에 닿으면 착지하고 지면을 따라 구른다 ---
+    float        rollSpeed       = 0.f;    // > 0 이면 착지 후 이 속도(px/s)로 굴러간다. 지형에 닿아도 소멸하지 않는다
+    float        rollDirX        = 1.f;    // 굴러가는 방향 (±1)
+    int          rollTicks       = 0;      // > 0 이면 착지 시점부터 이 틱 뒤에 소멸 (0 = lifetimeTicks 를 그대로 쓴다)
+    bool         bExpireFx       = false;  // 수명 종료 시에도 연출 요청(ShotFx)을 낸다 (시각 전용 폭발). 기본은 조용히 사라진다
 };
 
 struct Shot
@@ -120,6 +126,8 @@ struct Shot
     uint32_t     hitId      = kNoHitId;
     int          ageTicks   = 0;
     bool         bAlive     = true;
+    bool         bLanded    = false;   // 구르는 탄: 착지했는가
+    int          landedAge  = 0;       // 착지한 시점의 ageTicks
 };
 
 // 샷이 적중/지형 접촉으로 사라질 때 남기는 연출 요청 (수명 종료/화면 밖 소멸에서는 만들지 않는다)

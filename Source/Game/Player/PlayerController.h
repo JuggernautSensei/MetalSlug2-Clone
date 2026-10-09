@@ -73,6 +73,9 @@ public:
     // --- 조회 ---
     [[nodiscard]] ePlayerState       GetState() const { return m_state; }
     [[nodiscard]] jug::VECTOR2       GetFeet() const { return m_body.position; }
+
+    // 외부 강제 보정 (보스 선체 등): 발 x 가 _minX 보다 작으면 _minX 로 민다 (왼쪽 방향 속도는 0). 벽과 달리 파고든 몸도 밀어낸다.
+    void PushFeetX(float _minX);
     [[nodiscard]] jug::VECTOR2       GetPrevFeet() const { return m_prevFeet; }
     [[nodiscard]] jug::VECTOR2       GetVelocity() const { return m_body.velocity; }
     [[nodiscard]] int                GetFacing() const { return m_facing; }
@@ -86,6 +89,8 @@ public:
     [[nodiscard]] bool               IsAlive() const { return m_state != ePlayerState::Dead; }
     [[nodiscard]] bool               IsInvincible() const { return m_invincibleTicks > 0 || m_state == ePlayerState::Victory; }
     [[nodiscard]] int                GetInvincibleTicks() const { return m_invincibleTicks; }
+    // 스테이지 playerInvincible 용 (추가형 훅): 남은 틱을 더 긴 쪽으로 늘린다. 음수/0 은 무시.
+    void                            ExtendInvincibility(int _ticks) { m_invincibleTicks = (_ticks > m_invincibleTicks) ? _ticks : m_invincibleTicks; }
     [[nodiscard]] bool               IsGameOver() const { return m_bGameOver; }
     [[nodiscard]] int                GetGameOverTicks() const { return m_gameOverTicks; }
     [[nodiscard]] int                GetDeadTicks() const { return m_deadTicks; }

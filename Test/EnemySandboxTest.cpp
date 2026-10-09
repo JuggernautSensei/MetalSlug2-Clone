@@ -207,7 +207,7 @@ TEST(EnemySandbox, DebugSpawnSlotsSpawnTheEightInfantryKinds)
 TEST(EnemySandbox, DebugSpawnOutOfRangeDoesNothing)
 {
     DirectState d;
-    d.ctx.debugSpawn = 9;
+    d.ctx.debugSpawn = 10;   // 9 는 이제 차량 순환 키 (VehicleSandboxTest 가 검증)
     d.state.Tick(d.ctx, d.input);
     EXPECT_EQ(d.state.GetEnemies().GetCount(), 0u);
 }

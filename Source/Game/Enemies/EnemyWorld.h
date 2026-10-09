@@ -64,6 +64,8 @@ public:
 
     void BindAnims(const AnimationLibrary& _anims);   // 클립 이름 → AnimId 캐시 (Submit 이 필요하면 스스로 호출한다)
     void Submit(SpriteBatch& _sprites, const AnimationLibrary& _anims, const ProjectileSystem& _projectiles, float _alpha);
+    // 보스 파츠가 정적 스프라이트(sprites.json)를 쓸 때 필요하다 (비소유, null 가능). 없으면 그 파츠는 그려지지 않는다.
+    void SetSpriteLibrary(const SpriteLibrary* _pSprites) { m_pSprites = _pSprites; }
 
     // ===========================================
     //  조회
@@ -74,6 +76,14 @@ public:
 
     // 처치(또는 제거) 되었는가. null/낡은 핸들은 true. 변신한 적은 후계자를 따라간다. 대기(delay) 중이면 false.
     [[nodiscard]] bool IsDefeated(EnemyHandle _handle) const;
+    // 체력 (보스 체력바용). 없거나 제거된 핸들은 {0, 0}. 변신한 적은 후계자를 따른다.
+    [[nodiscard]] Health GetHealth(EnemyHandle _handle) const;
+    // 사망 연출이 끝났는가 (보스 파괴 시퀀스 등). null/제거됨 = true. 사망 중이면 행동의 deathDone 에 따른다 (없으면 false).
+    [[nodiscard]] bool IsDestroyFinished(EnemyHandle _handle) const;
+    // 보스 등이 플레이어 발 x 의 하한을 요구한다 (이번 틱에 요청된 값 중 최대). 플레이어 벽/밀어내기에 쓴다. 틱마다 새로 쌓인다.
+    void               RequestPlayerMinX(float _minX);
+    [[nodiscard]] bool HasPlayerMinX() const { return m_bPlayerMinX; }
+    [[nodiscard]] float GetPlayerMinX() const { return m_playerMinX; }
     // 같은 userTag 의 적이 하나도 살아있지 않은가 (대기 중 포함). 게이트용
     [[nodiscard]] bool IsTagDefeated(uint32_t _userTag) const;
     // 변신을 따라간 최신 핸들
@@ -150,7 +160,10 @@ private:
     void                       FlushFx_(const AnimationLibrary* _pAnims);
 
     const EnemyDefLibrary* m_pLibrary = nullptr;
+    const SpriteLibrary*   m_pSprites = nullptr;
     EnemyContext           m_lastCtx  = {};   // 마지막 Tick 의 문맥 사본 (OnHitEvents 가 행동 onHit 에 넘긴다)
+    float                  m_playerMinX  = 0.f;
+    bool                   m_bPlayerMinX = false;
 
     jug::Vector<Enemy>          m_enemies    = {};
     jug::Vector<EnemyEvent>     m_events     = {};
@@ -165,6 +178,7 @@ private:
     jug::Vector<jug::Vector<std::array<AnimId, 2>>> m_clipIds       = {};
     jug::Vector<std::array<AnimId, 2>>              m_projFlyIds    = {};
     jug::Vector<std::array<AnimId, 2>>              m_projBeginIds  = {};
+    jug::Vector<std::array<AnimId, 2>>              m_projLandIds   = {};   // 구르는 탄의 착지 클립
     bool                                            m_bAnimsBound   = false;
     size_t                                          m_boundClipCount = 0;
 };

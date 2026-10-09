@@ -58,4 +58,11 @@ void CancelMelee(Enemy& _e, EnemyEnv& _env);
 void BeginSoldierDeath(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
 void TickSoldierDeath(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
 
+// --- 부가 파츠 렌더 (보스 리그 등) ---
+// 이름은 anim.json 클립을 먼저 찾고(_ticks 만큼 재생, 비루프는 마지막 프레임에 머문다), 없으면 sprites.json 정적 스프라이트.
+// _origin 은 파츠 원점(월드 좌표, 피벗 기준). 이름을 찾지 못하면 아무것도 그리지 않고 false.
+bool SubmitNamedPart(const EnemyRenderEnv& _render, jug::StringView _name, jug::VECTOR2 _origin, int _ticks, bool _bLoop, int _sortKey, int _layer, bool _bFlipX = false);
+// 클립의 전체 길이(틱). 정적 스프라이트/없는 이름은 0.
+[[nodiscard]] int GetNamedPartTicks(const AnimationLibrary& _anims, jug::StringView _name);
+
 }   // namespace slug

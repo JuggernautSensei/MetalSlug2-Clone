@@ -197,17 +197,50 @@ void ProjectileSystem::Step(
             shot.position.y += shot.velocity.y * _dt;
         }
 
-        if (shot.ageTicks > params.lifetimeTicks)
+        // 구르는 탄: 착지 후에는 rollTicks 뒤에 소멸한다 (착지 전에는 lifetimeTicks 가 상한)
+        const bool bRoll = params.rollSpeed > 0.f;
+        if (bRoll && shot.bLanded)
+        {
+            shot.velocity.x = params.rollDirX * params.rollSpeed;
+        }
+        const bool bExpired = (bRoll && shot.bLanded && params.rollTicks > 0) ? (shot.ageTicks - shot.landedAge > params.rollTicks) : (shot.ageTicks > params.lifetimeTicks);
+
+        if (bExpired)
         {
             shot.bAlive = false;
+            if (params.bExpireFx)
+            {
+                m_shotFx.push_back({ shot.position, params.visual });
+            }
         }
-        else if (_pGround && params.bExplodeOnSolid && (shot.position.x != shot.renderPrev.x || shot.position.y != shot.renderPrev.y))
+        else if (_pGround && (params.bExplodeOnSolid || bRoll) && (shot.position.x != shot.renderPrev.x || shot.position.y != shot.renderPrev.y))
         {
             jug::VECTOR2 lastFree;
             if (SegmentHitsGround_(*_pGround, shot.renderPrev, shot.position, lastFree))
             {
-                shot.bAlive = false;
-                m_shotFx.push_back({ lastFree, params.visual });
+                if (bRoll)
+                {
+                    // 착지 (또는 지면을 따라 구르는 중): 이번 틱의 새 x 에서 고체 밖으로 밀어 올려 세우고 수직 속도를 없앤다.
+                    // (구간 판정의 마지막 빈 지점을 쓰면 첫 샘플부터 고체인 경우 제자리에 멈춘다)
+                    jug::VECTOR2 standing = shot.position;
+                    for (int guard = 0; guard < 64 && _pGround->IsSolidAt(standing); ++guard)
+                    {
+                        standing.y -= 1.f;
+                    }
+                    shot.position   = standing;
+                    shot.velocity.y = 0.f;
+                    if (!shot.bLanded)
+                    {
+                        shot.bLanded   = true;
+                        shot.landedAge = shot.ageTicks;
+                        shot.velocity.x = params.rollDirX * params.rollSpeed;
+                    }
+                }
+                else
+                {
+                    shot.bAlive = false;
+                    m_shotFx.push_back({ lastFree, params.visual });
+                }
             }
         }
 

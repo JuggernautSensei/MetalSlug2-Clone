@@ -1,0 +1,322 @@
+{
+  "version": 1,
+  "note": "차량 / 전차 / 헬기 정의 (Docs/EnemySpecs.md §2). 원점 = 발 (헬기는 기체 중심). 연출 offset 은 발 기준 (레거시 중심 기준 offset 에 -(0,F) 를 더한 값). 클립 name 의 {side} 는 Left/Right. HP = TTK x 10 (dpsRef).",
+  "defs": {
+
+    "jeep_proj": {
+      "kind": "projectile",
+      "note": "지프 로켓 (EnemySpecs 2.1): 점화 0.4 s 정지 → 직선 300 px/s. 기울임은 무기 tilt.",
+      "box": { "w": 50, "h": 20 },
+      "speed": 300,
+      "startDelay": 0.4,
+      "anim": {
+        "begin": { "name": "Jeep_Proj_Begin_{side}", "frames": 5, "sec": 0.08 },
+        "fly":   { "name": "Jeep_Proj_{side}",       "frames": 3, "sec": 0.08, "loop": true }
+      },
+      "onSolid": "explode",
+      "explosion": { "fx": "Explosion_Mid", "offset": [0, -35] }
+    },
+
+    "jeep": {
+      "kind": "vehicle",
+      "behavior": "jeep",
+      "note": "이동 로켓 지프 (EnemySpecs 2.1). 화면 가장자리 사이를 오가며 플레이어가 발사 쪽(뒤)에 있을 때 로켓 4발.",
+      "ttk": 8,
+      "hp": 80,
+      "score": 500,
+      "body": { "w": 75, "h": 60, "cx": 0, "cy": -30 },
+      "activation": { "marginPx": 150, "latch": true },
+      "physics": { "gravity": 1000, "maxFall": 3000, "speed": 200, "jumpVy": 0, "dropSpeed": 0, "footHalfWidth": 4 },
+      "clips": {
+        "idle":      { "name": "Jeep_Idle_{side}",       "frames": 2,  "sec": 0.08, "loop": true },
+        "move":      { "name": "Jeep_Move_{side}",       "frames": 8,  "sec": 0.08, "loop": true },
+        "turn":      { "name": "Jeep_Turn_{side}",       "frames": 12, "sec": 0.08 },
+        "aimming":   { "name": "Jeep_Aimming_{side}",    "frames": 12, "sec": 0.08 },
+        "ready":     { "name": "Jeep_Ready_{side}",      "frames": 2,  "sec": 0.08, "loop": true },
+        "shotReady": { "name": "Jeep_Shot_Ready_{side}", "frames": 12, "sec": 0.08 },
+        "shot":      { "name": "Jeep_Shot_{side}",       "frames": 8,  "sec": 0.08 },
+        "reAim":     { "name": "Jeep_ReAimming_{side}",  "frames": 12, "sec": 0.08 },
+        "destroy":   { "name": "Jeep_Destroy_{side}",    "frames": 17, "sec": 0.08 }
+      },
+      "weapons": {
+        "rocket": { "projectile": "jeep_proj", "muzzle": [-51, -88], "aim": "given", "tilt": { "threshold": 50, "dy": 0.1 } }
+      },
+      "death": {
+        "removeAtSec": 1.7,
+        "fx": [
+          { "clip": "Explosion_Huge", "offset": [0, -50], "layer": 10 },
+          { "clip": "Explosion_Huge", "offset": [0, -50], "delay": 1.7 },
+          { "clip": "Metal1", "offset": [-30, -40], "delay": 1.7 },
+          { "clip": "Metal4", "offset": [10, -35], "delay": 1.7 },
+          { "clip": "Metal7", "offset": [-10, -55], "delay": 1.7 },
+          { "clip": "Metal9", "offset": [25, -30], "delay": 1.7 },
+          { "clip": "Metal11", "offset": [-40, -20], "delay": 1.7 }
+        ]
+      },
+      "params": {
+        "speed": 200,
+        "targetTol": 10,
+        "edgeInset": 75,
+        "idleSec": 1.0,
+        "waitSec": 2.0,
+        "bullets": 4,
+        "fireFrame": 1
+      }
+    },
+
+    "vehicle_btank_shell": {
+      "kind": "projectile",
+      "note": "전차 포탄 (EnemySpecs 2.3): v0 (-400 vx, -200 vy), 중력 500, 낙하 상한 500.",
+      "box": { "w": 20, "h": 20 },
+      "v0": [400, -200],
+      "gravity": 500,
+      "maxFall": 500,
+      "anim": { "fly": { "name": "BTank_Proj", "frames": 3, "sec": 0.05, "loop": true } },
+      "onSolid": "explode",
+      "explosion": { "fx": "Explosion_Mid", "offset": [0, -35] }
+    },
+
+    "btank": {
+      "kind": "vehicle",
+      "behavior": "btank",
+      "note": "고정 포탑 전차 (EnemySpecs 2.3). 플레이어가 x-500 을 넘으면 문을 열고 3 s 마다 2연발. 활성은 행동이 직접 켠다 (margin 을 음수로 두어 화면 활성을 끈다).",
+      "ttk": 12,
+      "hp": 120,
+      "score": 1000,
+      "body": { "w": 100, "h": 100, "cx": 0, "cy": -50 },
+      "activation": { "marginPx": -100000, "latch": true },
+      "physics": { "useGravity": false },
+      "clips": {
+        "idle":    { "name": "BTank_Idle",        "frames": 1,  "sec": 0.08 },
+        "open":    { "name": "BTank_Animing_Up",  "frames": 8,  "sec": 0.12 },
+        "fire":    { "name": "BTank_Fire",        "frames": 11, "sec": 0.08 },
+        "destroy": { "name": "BTank_Destory",     "frames": 8,  "sec": 0.12 }
+      },
+      "weapons": {
+        "shell": { "projectile": "vehicle_btank_shell", "muzzle": [80, -95], "aim": "facing", "muzzleFx": { "clip": "BTank_Shot_Effect", "offset": [0, 0] } }
+      },
+      "death": {
+        "removeAtSec": 4.0,
+        "fx": [
+          { "clip": "Explosion_Huge", "offset": [0, -40], "layer": 10 },
+          { "clip": "Metal2", "offset": [-40, -30] },
+          { "clip": "Metal5", "offset": [-10, -60] },
+          { "clip": "Metal8", "offset": [20, -45] },
+          { "clip": "Metal10", "offset": [45, -25] },
+          { "clip": "Metal12", "offset": [-25, -70] }
+        ]
+      },
+      "params": {
+        "activateDx": 500,
+        "idleSec": 3.0,
+        "shotsPerCycle": 2,
+        "fireFrame": 2
+      }
+    },
+
+    "missle_proj_down": {
+      "kind": "projectile",
+      "note": "미사일 전차 직사 (EnemySpecs 2.4): 수평 300, 중력 400, 낙하 중 폭발 없이 지면/플레이어에서 소멸.",
+      "box": { "w": 25, "h": 25 },
+      "v0": [300, 0],
+      "gravity": 400,
+      "anim": { "fly": { "name": "MissleTank_Proj_1", "frames": 7, "sec": 0.1 } },
+      "onSolid": "explode",
+      "explosion": { "fx": "Explosion_Mid", "offset": [0, 0] }
+    },
+
+    "missle_proj_up": {
+      "kind": "projectile",
+      "note": "미사일 전차 곡사 (EnemySpecs 2.4): v0 (300, -200), 중력 400.",
+      "box": { "w": 25, "h": 25 },
+      "v0": [300, -200],
+      "gravity": 400,
+      "anim": { "fly": { "name": "MissleTank_Proj_0", "frames": 12, "sec": 0.1 } },
+      "onSolid": "explode",
+      "explosion": { "fx": "Explosion_Mid", "offset": [0, 0] }
+    },
+
+    "missle_tank": {
+      "kind": "vehicle",
+      "behavior": "missle_tank",
+      "note": "미사일 전차 (EnemySpecs 2.4). 항상 활성(행동이 사거리 600 안에서만 타이머를 돌린다). 원거리 곡사 / 근거리 직사, 준비 2 s 후 5발.",
+      "ttk": 10,
+      "hp": 100,
+      "score": 1000,
+      "body": { "w": 100, "h": 100, "cx": 0, "cy": -50 },
+      "activation": { "mode": "always" },
+      "physics": { "useGravity": false },
+      "clips": {
+        "idleUp":      { "name": "MissleTank_Up_Idle_{side}",        "frames": 2,  "sec": 0.08, "loop": true },
+        "idleDown":    { "name": "MissleTank_Down_Idle_{side}",      "frames": 2,  "sec": 0.08, "loop": true },
+        "aimUp":       { "name": "MissleTank_AimmingUp_{side}",      "frames": 9,  "sec": 0.08 },
+        "aimDown":     { "name": "MissleTank_AimmingDown_{side}",    "frames": 9,  "sec": 0.08 },
+        "readyUp":     { "name": "MissleTank_Up_Ready_Shot_{side}",  "frames": 3,  "sec": 0.08, "loop": true },
+        "readyDown":   { "name": "MissleTank_Down_Ready_Shot_{side}", "frames": 3,  "sec": 0.08, "loop": true },
+        "shotUp":      { "name": "MissleTank_Up_Shot_{side}",        "frames": 7,  "sec": 0.08 },
+        "shotDown":    { "name": "MissleTank_Down_Shot_{side}",      "frames": 7,  "sec": 0.08 },
+        "destroyUp":   { "name": "MissleTank_Up_Destroy_{side}",     "frames": 20, "sec": 0.08 },
+        "destroyDown": { "name": "MissleTank_Down_Destroy_{side}",   "frames": 21, "sec": 0.08 }
+      },
+      "weapons": {
+        "up":   { "projectile": "missle_proj_up",   "muzzle": [50, -180], "aim": "facing", "muzzleFx": { "clip": "MissleTank_Up_Proj_Effect_{side}",   "offset": [0, 0] } },
+        "down": { "projectile": "missle_proj_down", "muzzle": [75, -90],  "aim": "facing", "muzzleFx": { "clip": "MissleTank_Down_Proj_Effect_{side}", "offset": [0, 0] } }
+      },
+      "death": {
+        "removeAtSec": 2.0,
+        "fx": [
+          { "clip": "Explosion_Huge", "offset": [0, -30], "delay": 2.0, "layer": 10 },
+          { "clip": "Metal1", "offset": [-35, -40], "delay": 2.0 },
+          { "clip": "Metal3", "offset": [-10, -60], "delay": 2.0 },
+          { "clip": "Metal5", "offset": [20, -35], "delay": 2.0 },
+          { "clip": "Metal6", "offset": [40, -55], "delay": 2.0 },
+          { "clip": "Metal8", "offset": [-45, -20], "delay": 2.0 },
+          { "clip": "Metal10", "offset": [5, -75], "delay": 2.0 }
+        ]
+      },
+      "params": {
+        "rangeDx": 600,
+        "farDx": 300,
+        "detectSec": 1.0,
+        "readySec": 2.0,
+        "bullets": 5,
+        "fireFrame": 2
+      }
+    },
+
+    "sarubia_grenade": {
+      "kind": "projectile",
+      "note": "사루비아 수류탄 (EnemySpecs 2.5): 수직 낙하(중력 300, 상한 300) → 착지 후 지면을 100 px/s 로 구름 → 착지 후 5 s 에 시각 전용 폭발로 소멸. 플레이어 접촉은 치명.",
+      "box": { "w": 25, "h": 25 },
+      "gravity": 300,
+      "maxFall": 300,
+      "lifetime": 10,
+      "rollSpeed": 100,
+      "rollSec": 5,
+      "expireFx": true,
+      "anim": {
+        "begin": { "name": "Sarubia_Proj_Start",     "frames": 8,  "sec": 0.08 },
+        "land":  { "name": "Sarubia_Proj_Collision", "frames": 6,  "sec": 0.08 },
+        "fly":   { "name": "Sarubia_Proj_{side}",    "frames": 21, "sec": 0.08, "loop": true }
+      },
+      "onSolid": "explode",
+      "explosion": { "fx": "PlayerBombExplosion", "offset": [0, 10] }
+    },
+
+    "sarubia": {
+      "kind": "vehicle",
+      "behavior": "sarubia",
+      "note": "보행 전차, 중간보스 게이트 (EnemySpecs 2.5). 처치 시 게이트 해제는 스테이지가 userTag 로 판단한다.",
+      "ttk": 15,
+      "hp": 150,
+      "score": 2000,
+      "body": { "w": 100, "h": 100, "cx": 0, "cy": -50 },
+      "activation": { "marginPx": 150, "latch": true },
+      "physics": { "gravity": 1000, "maxFall": 3000, "speed": 100, "jumpVy": -450, "dropSpeed": 100, "footHalfWidth": 4 },
+      "clips": {
+        "idle":      { "name": "Sarubia_Idle_{side}",       "frames": 2,  "sec": 0.08, "loop": true },
+        "turn":      { "name": "Sarubia_Turn_{side}",       "frames": 11, "sec": 0.08 },
+        "moveStart": { "name": "Sarubia_Move_Start_{side}", "frames": 6,  "sec": 0.08 },
+        "move":      { "name": "Sarubia_Move_{side}",       "frames": 6,  "sec": 0.08, "loop": true },
+        "moveStop":  { "name": "Sarubia_Move_Stop_{side}",  "frames": 6,  "sec": 0.08 },
+        "shotStart": { "name": "Sarubia_Shot_Start_{side}", "frames": 7,  "sec": 0.08 },
+        "shot":      { "name": "Sarubia_Shot_{side}",       "frames": 12, "sec": 0.08 },
+        "destroy":   { "name": "Sarubia_Destroy_{side}",    "frames": 4,  "sec": 0.12 }
+      },
+      "weapons": {
+        "grenade": { "projectile": "sarubia_grenade", "muzzle": [60, -150], "aim": "facing", "muzzleFx": { "clip": "Sarubia_Proj_Effect_{side}", "offset": [0, 0] } }
+      },
+      "death": {
+        "removeAtSec": 2.0,
+        "fx": [
+          { "clip": "Explosion_Small", "offset": [-25, -90], "layer": 10 },
+          { "clip": "Explosion_Mid",   "offset": [20, -105], "layer": 10 },
+          { "clip": "Explosion_Large", "offset": [0, -100], "layer": 10 },
+          { "clip": "Explosion_Huge",  "offset": [0, -30], "delay": 2.0, "layer": 10 },
+          { "clip": "Metal1", "offset": [-40, -50], "delay": 2.0 },
+          { "clip": "Metal3", "offset": [-15, -80], "delay": 2.0 },
+          { "clip": "Metal5", "offset": [15, -60], "delay": 2.0 },
+          { "clip": "Metal6", "offset": [35, -90], "delay": 2.0 },
+          { "clip": "Metal9", "offset": [-30, -20], "delay": 2.0 },
+          { "clip": "Metal12", "offset": [10, -40], "delay": 2.0 }
+        ]
+      },
+      "params": {
+        "cooldownSec": 2.0,
+        "chaseDx": 500,
+        "stopDx": 400,
+        "moveMaxSec": 2.0,
+        "shotReadySec": 1.5,
+        "fireFrame": 1
+      }
+    },
+
+    "aparch_missile": {
+      "kind": "projectile",
+      "note": "헬기 미사일 (EnemySpecs 2.6): 좌향 300 px/s, 기울임은 무기 tilt.",
+      "box": { "w": 50, "h": 20 },
+      "speed": 300,
+      "anim": { "fly": { "name": "Aparch_Missle_{side}", "frames": 2, "sec": 0.08, "loop": true } },
+      "onSolid": "explode",
+      "explosion": { "fx": "Explosion_Mid", "offset": [0, -35] }
+    },
+
+    "aparch_drop": {
+      "kind": "projectile",
+      "note": "헬기 폭탄 (EnemySpecs 2.6): 정지에서 낙하, 중력 300.",
+      "box": { "w": 30, "h": 40 },
+      "gravity": 300,
+      "anim": { "fly": { "name": "Aparch_DropMissle", "frames": 12, "sec": 0.08, "loop": true } },
+      "onSolid": "explode",
+      "explosion": { "fx": "Explosion_Mid", "offset": [0, -35] }
+    },
+
+    "aparch": {
+      "kind": "vehicle",
+      "behavior": "aparch",
+      "note": "공격 헬기 (EnemySpecs 2.6). 원점 = 기체 중심, 항상 좌향. 활성 margin 400. 사망 시 표류하며 연쇄 폭발.",
+      "ttk": 12,
+      "hp": 120,
+      "score": 2000,
+      "body": { "w": 100, "h": 100, "cx": 0, "cy": 0 },
+      "activation": { "marginPx": 400, "latch": true },
+      "physics": { "useGravity": false },
+      "overlay": { "clip": "flight", "offset": [-18, -54] },
+      "clips": {
+        "idle":     { "name": "Aparch_Idle_Left",     "frames": 1,  "sec": 0.08, "loop": true },
+        "move":     { "name": "Aparch_Move_{side}",     "frames": 6,  "sec": 0.06, "loop": true },
+        "moveStop": { "name": "Aparch_MoveStop_{side}", "frames": 6,  "sec": 0.06 },
+        "destroy":  { "name": "Aparch_Destroy_Left",  "frames": 8,  "sec": 0.06, "loop": true },
+        "flight":   { "name": "Aparch_Flight_Left4",  "frames": 5,  "sec": 0.04, "loop": true }
+      },
+      "weapons": {
+        "missile": { "projectile": "aparch_missile", "muzzle": [30, 50],  "aim": "facing", "tilt": { "threshold": 50, "dy": 0.1 }, "muzzleFx": { "clip": "Aparch_Missle_Effect_{side}", "offset": [0, -5] } },
+        "drop":    { "projectile": "aparch_drop",    "muzzle": [-10, 60], "aim": "facing", "muzzleFx": { "clip": "Aparch_DropMissle_Effect", "offset": [0, 0] } }
+      },
+      "params": {
+        "speed": 300,
+        "decelDist": 100,
+        "arriveDist": 20,
+        "decel": 600,
+        "minSpeed": 50,
+        "approach": [445, 125],
+        "missilePose": [540, 248],
+        "home": [540, 100],
+        "idleSec": 2.0,
+        "gunSec": 1.0,
+        "moveSec": 1.0,
+        "missileIntervalSec": 1.0,
+        "missileShots": 3,
+        "endSec": 1.0,
+        "followOffsetY": 275,
+        "followGain": 1.5,
+        "bombStepSec": 0.5,
+        "bombSteps": 12,
+        "drift": [50, -70],
+        "chainCount": 6,
+        "chainIntervalSec": 0.3,
+        "removeSec": 1.5
+      }
+    }
+  }
+}

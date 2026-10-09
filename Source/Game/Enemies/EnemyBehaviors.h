@@ -5,6 +5,9 @@
 
 #include "Game/Enemies/EnemyDef.h"
 #include "Game/Enemies/EnemyTypes.h"
+#include "Render/Animation.h"
+#include "Render/SpriteBatch.h"
+#include "Render/SpriteLibrary.h"
 #include "World/Physics.h"
 
 namespace slug
@@ -37,6 +40,22 @@ struct EnemyEnv
 };
 
 // ===========================================
+//  EnemyRenderEnv — 부가 파츠 렌더 (BehaviorOps::submitParts) 가 쓰는 묶음
+//   feet 는 보간된 발 위치. pSprites 는 sprites.json (정적 스프라이트) 이며 없을 수 있다.
+// ===========================================
+
+struct EnemyRenderEnv
+{
+    SpriteBatch&            sprites;
+    const AnimationLibrary& anims;
+    const SpriteLibrary*    pSprites;
+    const ProjectileSystem& projectiles;
+    jug::VECTOR2            feet;
+    float                   alpha;
+    int                     layer;   // 적 기본 레이어 (EnemyWorld 가 정한다)
+};
+
+// ===========================================
 //  BehaviorOps — 행동 종류별 함수 테이블 (EnemyBehaviors.cpp 의 GetBehaviorOps)
 //   새 적 종류를 만들려면: eEnemyBehavior 값 추가 → <Kind>.cpp 에 Ops 함수들 구현 → 이 테이블에 한 줄 추가.
 //   null 인 항목은 "아무것도 하지 않음".
@@ -62,6 +81,12 @@ struct BehaviorOps
 
     // Hurtbox 등록 (null 이면 기본: def.hurtbox 하나). 여러 개를 낼 수 있다 (방패 판정 상자는 몸통보다 먼저).
     void (*registerHurtboxes)(const Enemy& _e, const EnemyDef& _def, CombatSystem& _combat) = nullptr;
+
+    // 부가 파츠 렌더 (선택). 본체 클립(e.clip) 과 별도로 매 틱 호출되며 e.clip < 0 이어도 호출된다 (보스 리그/포탑/잔해).
+    void (*submitParts)(const Enemy& _e, const EnemyDef& _def, const EnemyRenderEnv& _render) = nullptr;
+
+    // 사망 연출이 끝났는가 (IsDestroyFinished). null 이면 "사망 상태면 끝" 으로 본다.
+    bool (*deathDone)(const Enemy& _e, const EnemyDef& _def) = nullptr;
 };
 
 [[nodiscard]] const BehaviorOps& GetBehaviorOps(eEnemyBehavior _behavior);
@@ -73,5 +98,12 @@ extern const BehaviorOps kHangOps;
 extern const BehaviorOps kFlyingBzkOps;
 extern const BehaviorOps kShielderOps;
 extern const BehaviorOps kPowOps;
+extern const BehaviorOps kBusOps;
+extern const BehaviorOps kBattleShipOps;
+extern const BehaviorOps kJeepOps;          // VehicleJeep.cpp
+extern const BehaviorOps kBTankOps;         // VehicleBTank.cpp
+extern const BehaviorOps kMissleTankOps;    // VehicleMissleTank.cpp
+extern const BehaviorOps kSarubiaOps;       // VehicleSarubia.cpp
+extern const BehaviorOps kAparchOps;        // VehicleAparch.cpp
 
 }   // namespace slug

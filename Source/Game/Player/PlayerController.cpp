@@ -728,4 +728,17 @@ uint64_t PlayerController::HashState() const
     return hash;
 }
 
+void PlayerController::PushFeetX(
+    const float _minX)
+{
+    if (m_body.position.x < _minX)
+    {
+        m_body.position.x = _minX;
+        if (m_body.velocity.x < 0.f)
+        {
+            m_body.velocity.x = 0.f;
+        }
+    }
+}
+
 }   // namespace slug

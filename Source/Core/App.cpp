@@ -7,6 +7,8 @@
 #include <JugX/EventDispatcher.h>
 
 #include <algorithm>
+#include <cstdlib>
+#include <filesystem>
 #include <format>
 
 #include "Game/StateFactory.h"
@@ -80,6 +82,12 @@ void App::ParseArgs_()
         {
             m_captureFrame = std::atoi(args[++i].c_str());
         }
+        else if (args[i] == "--warp" && bHasValue)
+        {
+            // 스테이지 디버그: 시작하자마자 다음 섹션으로 N 번 워프 (F1 디버그 켜짐)
+            m_startWarpCount = std::atoi(args[++i].c_str());
+            m_bDebugDraw     = true;
+        }
         else if (args[i] == "--capture-ticks" && bHasValue)
         {
             // 쉼표로 구분된 틱 목록 (오름차순으로 정렬해 사용)
@@ -130,7 +138,9 @@ void App::Init()
     }
     if (m_stateName.empty())
     {
-        m_stateName = jug::String { GetDefaultStateName() };
+        // 기본 상태: Baked 에셋이 있으면 타이틀 (타이틀 → stage0), 없으면 샌드박스 (에셋 없이도 동작)
+        const bool bHasBaked = std::filesystem::exists(jug::FilePath { SLUG_ASSET_DIR } / "Baked");
+        m_stateName          = bHasBaked ? jug::String { GetDefaultStateName() } : jug::String { "sandbox" };
     }
 
     if (const jug::Result<void> result = m_renderer.Init("Metal Slug Remake", ChooseWindowScale_()); !result)
@@ -251,6 +261,7 @@ void App::OnKeyDown_(
         case jug::eKey::Num6: m_pendingSpawn = 6; return;
         case jug::eKey::Num7: m_pendingSpawn = 7; return;
         case jug::eKey::Num8: m_pendingSpawn = 8; return;
+        case jug::eKey::Num9: m_pendingSpawn = 9; return;   // 차량 5종 순환 (SandboxState::SpawnDebugEnemy_ 의 슬롯 8)
         default: break;
     }
 
@@ -288,6 +299,11 @@ void App::Update(
     m_ctx.bDebugDraw    = m_bDebugDraw;
     m_ctx.bPaused       = m_bPaused;
     m_ctx.slowMoDivisor = m_bSlowMo ? 4 : 1;
+    if (m_startWarpCount > 0)
+    {
+        m_pendingWarp = 1;   // --warp N: F5 를 N 번 누른 것과 같다 (다음 섹션으로 N 번 워프)
+        --m_startWarpCount;
+    }
     m_ctx.debugWarp     = m_pendingWarp;   // 상태가 소비한다 (스테이지 F5/F6)
     m_pendingWarp       = 0;
     if (m_pendingSpawn > 0)
