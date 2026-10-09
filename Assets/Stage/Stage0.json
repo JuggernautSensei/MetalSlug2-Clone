@@ -1,0 +1,316 @@
+{
+  "version": 1,
+  "name": "Stage0",
+  "title": "MISSION 4",
+  "world": {"size": [14094, 1328], "view": [640, 448], "background": "Stage0_Main"},
+  "bgm": {"name": "Stage1_BGM", "loop": true},
+  "ground": {"initial": "Stage0_0", "maps": ["Stage0_0", "Stage0_1"]},
+  "backdrop": {"initial": "first", "modes": {"first": {"sprite": "Stage0_Background_0", "offset": [249, -64], "parallaxX": 0.15}, "second": {"sprite": "Stage0_Background_0", "offset": [700, -130], "parallaxX": 0.15}, "third": {"sprite": "Stage0_Background_2", "offset": [750, 0], "parallaxX": 0.1}, "fourth": {"sprite": "Stage0_Background_1", "offset": [1100, -30], "parallaxX": 0.1}}},
+  "player": {"x": 100, "groundSnap": true, "fromY": 0, "note": "Legacy start Vec(100,0); the player falls to the ground (same result as groundSnap at x=100)."},
+  "rects": {"bossArena": [13454, 864, 14094, 1312]},
+  "camera": {"policy": "forward", "initialBounds": [0, 0, 3520, 448], "initialOffset": [0, 0], "chaseSpeed": 10, "playerMargin": 14, "boundsCurves": [{"id": "downtown_slope", "source": "playerX", "from": "downtown_start", "until": "openland_start", "left": 3180, "right": 14094, "height": 448, "top": [[6500, 311.75], [8610.7843137, 850]], "round": "trunc"}]},
+  "sections": [
+    {
+      "id": "intro", "legacy": "NONE", "triggerX": 0,
+      "actions": [
+        {"type": "fade", "to": "clear", "seconds": 1.0},
+        {"type": "banner", "text": "MISSION 4\nSTART", "seconds": 2.5},
+        {"type": "spawn", "kind": "prop", "def": "truck", "x": 580, "y": 342},
+        {"type": "spawn", "kind": "prop", "def": "truck", "x": 850, "y": 342},
+        {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 386, "y": 341, "anim": "Parker", "layer": "background"},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 900, "groundSnap": true},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 1060, "groundSnap": true},
+        {"type": "spawnWave", "entries": [{"delay": 7.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+      ]
+    },
+    {
+      "id": "street", "legacy": "START", "triggerX": 750,
+      "actions": [
+        {"type": "spawn", "kind": "prop", "def": "shop_5", "x": 2513, "y": 181, "params": {"hp": 15, "sprites": ["Stage0_Shop_5_0", "Stage0_Shop_5_1"], "hitbox": {"size": [150, 75], "offset": [0, -200]}, "standBox": {"size": [230, 20], "offset": [35, 55]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_4", "x": 2224, "y": 185, "params": {"hp": 15, "sprites": ["Stage0_Shop_4_0", "Stage0_Shop_4_1"], "hitbox": {"size": [200, 75], "offset": [50, -100]}, "standBox": {"size": [250, 20], "offset": [80, 20]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_3", "x": 1906, "y": 230, "params": {"hp": 15, "sprites": ["Stage0_Shop_3_0", "Stage0_Shop_3_1"], "hitbox": {"size": [150, 75], "offset": [50, -100]}, "standBox": {"size": [300, 20], "offset": [30, 10]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_2", "x": 1661, "y": 252, "params": {"hp": 15, "sprites": ["Stage0_Shop_2_0", "Stage0_Shop_2_1"], "hitbox": {"size": [100, 50], "offset": [25, -75]}, "standBox": {"size": [160, 20], "offset": [20, 15]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_1", "x": 1489, "y": 230, "params": {"hp": 15, "sprites": ["Stage0_Shop_1_0", "Stage0_Shop_1_1"], "hitbox": {"size": [150, 75], "offset": [0, -100]}, "standBox": {"size": [220, 20], "offset": [20, 10]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_0", "x": 1274, "y": 228, "params": {"hp": 15, "sprites": ["Stage0_Shop_0_0", "Stage0_Shop_0_1"], "hitbox": {"size": [150, 75], "offset": [0, -100]}, "standBox": {"size": [220, 20], "offset": [30, 10]}}},
+        {"type": "spawn", "kind": "prop", "def": "truck", "x": 1430, "y": 342},
+        {"type": "spawn", "kind": "prop", "def": "truck", "x": 1810, "y": 342},
+        {"type": "spawn", "kind": "prop", "def": "truck", "x": 2200, "y": 342},
+        {"type": "spawn", "kind": "collider", "def": "box_collider", "x": 1119, "y": 350, "size": [137, 90], "collisionLayer": "wall"},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 1325, "y": 140, "settle": true, "drop": "gunitem_mg"},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 1542, "y": 140, "settle": true, "drop": "gunitem_mg"},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 2000, "y": 140, "settle": true, "drop": "gunitem_mg"},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 2350, "y": 140, "settle": true, "drop": "bomb_supple"},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 1420, "groundSnap": true},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 1590, "groundSnap": true},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 1760, "groundSnap": true},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bzk", "x": 2110, "groundSnap": true},
+        {"type": "spawnWave", "entries": [{"delay": 3.5, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}, {"delay": 9.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+      ]
+    },
+    {
+      "id": "bus_create", "legacy": "CREATE_BUS", "triggerX": 2244,
+      "actions": [
+        {"type": "setGround", "name": "Stage0_1", "when": "silent"},
+        {"type": "spawn", "kind": "enemy", "def": "mb_truck", "id": "bus", "x": 2995, "y": 255, "origin": "legacyCenter", "halfHeight": 130},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 2640, "groundSnap": true},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 2790, "groundSnap": true},
+        {"type": "spawnWave", "entries": [{"delay": 4.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+      ]
+    },
+    {
+      "id": "bus_start", "legacy": "BUS_START", "triggerX": 2670,
+      "actions": [
+        {"type": "lockCamera", "rect": [2470, 0, 3110, 448], "glide": 1.0},
+        {"type": "command", "target": "bus", "command": "startBattle"},
+        {"type": "gate", "id": "bus_dead", "waitFor": ["bus"], "actions": [{"type": "unlockCamera"}, {"type": "setGround", "name": "Stage0_1"}]}
+      ]
+    },
+    {
+      "id": "bus_end", "legacy": "BUS_END", "triggerX": 3050,
+      "actions": [
+        {"type": "unlockCamera"},
+        {"type": "spawn", "kind": "collider", "def": "box_collider", "x": 3410, "y": 397, "size": [159, 39], "collisionLayer": "wall"},
+        {"type": "spawn", "kind": "prop", "def": "fence", "x": 3665, "y": 342, "repeat": {"count": 8, "stepX": 64, "stepY": 0}},
+        {"type": "spawn", "kind": "item", "def": "random_fruit", "x": 3375, "y": 200},
+        {"type": "spawn", "kind": "item", "def": "random_anime", "x": 3450, "y": 200},
+        {"type": "spawnWave", "entries": [{"delay": 1.5, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+      ]
+    },
+    {
+      "id": "bridge", "legacy": "BRIDGE", "triggerX": 3300,
+      "actions": [
+        {"type": "cameraMove", "to": [3505, 480], "seconds": 0.5},
+        {"type": "setBounds", "rect": [3180, 256, 6520, 704]},
+        {"type": "spawn", "kind": "collider", "def": "box_collider", "x": 3380, "y": 580, "size": [113, 171], "collisionLayer": "wall"},
+        {"type": "spawn", "kind": "decor", "def": "sprite_decor", "x": 3356, "y": 571, "sprite": "Sewer", "layer": "frontBackground"},
+        {"type": "spawn", "kind": "collider", "def": "box_collider", "x": 4346, "y": 422, "size": [1401, 35], "collisionLayer": "groundExceptPlayer", "cullMargin": 700},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 3900, "y": 382, "settle": true, "drop": "random_score"},
+        {"type": "spawn", "kind": "enemy", "def": "shielder", "x": 3880, "y": 405},
+        {"type": "spawn", "kind": "enemy", "def": "shielder", "x": 4120, "y": 405},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 3900, "groundSnap": true, "fromY": 450},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 4020, "groundSnap": true, "fromY": 450}
+      ]
+    },
+    {
+      "id": "bridge_down", "legacy": "BRIDGE_DOWN", "triggerX": 3700,
+      "actions": [
+        {"type": "setBackdrop", "mode": "second"},
+        {"type": "spawn", "kind": "prop", "def": "mob_boat", "x": 4140, "y": 545, "id": "boat_1", "params": {"explodeOnDeath": true}},
+        {"type": "spawn", "kind": "prop", "def": "fence", "x": 4177, "y": 342, "repeat": {"count": 8, "stepX": 64, "stepY": 0}},
+        {"type": "spawn", "kind": "enemy", "def": "shielder", "x": 4380, "y": 405},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 4560, "y": 405},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 4300, "groundSnap": true, "fromY": 450},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 4480, "groundSnap": true, "fromY": 450},
+        {"type": "spawnWave", "entries": [{"delay": 4.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+      ]
+    },
+    {
+      "id": "bridge_mid", "legacy": "BRIDGE_MID", "triggerX": 4037,
+      "actions": [
+        {"type": "spawn", "kind": "prop", "def": "mob_boat", "x": 4634, "y": 545, "id": "boat_2", "params": {"explodeOnDeath": false}},
+        {"type": "spawn", "kind": "prop", "def": "fence", "x": 4689, "y": 342, "repeat": {"count": 6, "stepX": 64, "stepY": 0}},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 4890, "y": 40, "settle": true, "drop": "gunitem_sg"},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 4700, "y": 405},
+        {"type": "spawn", "kind": "enemy", "def": "shielder", "x": 4860, "y": 405},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 4520, "groundSnap": true, "fromY": 450},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 4830, "groundSnap": true, "fromY": 450},
+        {"type": "spawnWave", "entries": [{"delay": 5.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+      ]
+    },
+    {
+      "id": "bridge_end", "legacy": "BRIDGE_END", "triggerX": 4600,
+      "actions": [
+        {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 5639, "y": 648, "anim": "Stage0_Water", "layer": "background", "cullMargin": 100, "params": {"playerWaterTrigger": {"size": [1050, 40]}}},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 5060, "groundSnap": true},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bzk", "x": 5220, "groundSnap": true},
+        {"type": "spawnWave", "entries": [{"delay": 3.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+      ]
+    },
+    {
+      "id": "river_start", "legacy": "RIVER_START", "triggerX": 5000,
+      "actions": [
+        {"type": "spawn", "kind": "prop", "def": "guard_post", "x": 5800, "y": 541, "layer": "background"},
+        {"type": "spawn", "kind": "item", "def": "item_letter", "x": 5800, "y": 200},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 5770, "y": 471},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 5840, "y": 471},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 5760, "y": 546},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_hang", "x": 5735, "y": 629.5, "facing": "left"},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_hang", "x": 5865, "y": 629.5, "facing": "left"},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 5500, "groundSnap": true},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 5640, "groundSnap": true},
+        {"type": "spawnWave", "entries": [{"delay": 4.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}]}
+      ]
+    },
+    {
+      "id": "river_mid", "legacy": "RIVER_MID", "triggerX": 5600,
+      "actions": [
+        {"type": "setBounds", "rect": [3180, 288, 6520, 736]},
+        {"type": "spawn", "id": "aparch_river", "kind": "enemy", "def": "aparch", "origin": "legacyCenter", "halfHeight": 50, "camera": {"ax": "right", "dx": 250, "ay": "top", "dy": 125}},
+        {"type": "spawn", "kind": "enemy", "def": "jeep", "x": 6000, "groundSnap": true},
+        {"type": "lockCamera", "rect": "current"},
+        {"type": "gate", "id": "aparch_dead", "waitFor": ["aparch_river"], "actions": [{"type": "unlockCamera"}]},
+        {"type": "spawnWave", "entries": [{"delay": 6.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+      ]
+    },
+    {
+      "id": "river_end", "legacy": "RIVER_END", "triggerX": 6220,
+      "actions": [
+        {"type": "setBounds", "rect": [3180, 288, 14094, 736]},
+        {"type": "setCameraOffset", "offset": [50, -140]},
+        {"type": "setBackdrop", "mode": "third"},
+        {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 6470, "y": 659, "anim": "Plane", "layer": "farBackground", "params": {"velocity": [70, -50]}},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 6650, "groundSnap": true},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 6900, "groundSnap": true},
+        {"type": "spawnWave", "entries": [{"delay": 3.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 7.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+      ]
+    },
+    {
+      "id": "downtown_start", "legacy": "DOWNTOWN_START", "triggerX": 6500,
+      "actions": [
+        {"type": "spawn", "kind": "prop", "def": "bridge_deck", "x": 6756, "y": 767},
+        {"type": "spawn", "kind": "prop", "def": "bridge_deck", "x": 7075, "y": 847},
+        {"type": "spawn", "kind": "prop", "def": "bridge_house2house", "x": 7264, "y": 919},
+        {"type": "spawn", "kind": "prop", "def": "bridge_house", "x": 7455, "y": 942},
+        {"type": "spawn", "kind": "prop", "def": "house_upper", "x": 7189, "y": 717},
+        {"type": "spawn", "kind": "prop", "def": "house_open_window", "x": 7396, "y": 755},
+        {"type": "spawn", "kind": "prop", "def": "house_cloth", "x": 7599, "y": 783},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 7200, "y": 340, "settle": true, "drop": "random_score"},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 7430, "y": 340, "settle": true, "drop": "bomb_supple"},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 7865, "y": 340, "settle": true, "drop": "random_score"},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 7189, "y": 705},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 7396, "y": 726},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 7599, "y": 741},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 6980, "groundSnap": true},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bzk", "x": 7300, "groundSnap": true},
+        {"type": "spawnWave", "entries": [{"delay": 4.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 8.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}, {"delay": 13.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}]}
+      ]
+    },
+    {
+      "id": "downtown_mid", "legacy": "DOWNTOWN_MID", "triggerX": 7400,
+      "actions": [
+        {"type": "spawn", "kind": "prop", "def": "bridge_deck", "x": 7716, "y": 1007},
+        {"type": "spawn", "kind": "prop", "def": "bridge_deck", "x": 8356, "y": 1167},
+        {"type": "spawn", "kind": "prop", "def": "bridge_house2house", "x": 7907, "y": 1079},
+        {"type": "spawn", "kind": "prop", "def": "bridge_house2house", "x": 8545, "y": 1240},
+        {"type": "spawn", "kind": "prop", "def": "bridge_house", "x": 8096, "y": 1102},
+        {"type": "spawn", "kind": "prop", "def": "bridge_house", "x": 8736, "y": 1262},
+        {"type": "spawn", "kind": "prop", "def": "house_upper", "x": 7829, "y": 877},
+        {"type": "spawn", "kind": "prop", "def": "house_upper", "x": 8469, "y": 1036},
+        {"type": "spawn", "kind": "prop", "def": "house_open_window", "x": 8035, "y": 915},
+        {"type": "spawn", "kind": "prop", "def": "house_open_window", "x": 8676, "y": 1075},
+        {"type": "spawn", "kind": "prop", "def": "house_cloth", "x": 8238, "y": 943},
+        {"type": "spawn", "kind": "prop", "def": "house_no_cloth", "x": 8878, "y": 1103},
+        {"type": "spawn", "kind": "prop", "def": "house_yellow", "x": 9153, "y": 1118},
+        {"type": "spawn", "kind": "prop", "def": "ground_mini_house", "x": 9532, "y": 1282},
+        {"type": "spawn", "kind": "prop", "def": "ground_house", "x": 9830, "y": 1269},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 8190, "y": 340, "settle": true, "drop": "bullet_supple"},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 8270, "y": 340, "settle": true, "drop": "random_score"},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 8900, "y": 340, "settle": true, "drop": "gunitem_mg"},
+        {"type": "spawn", "kind": "item", "def": "random_anime", "x": 8480, "y": 200},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 7829, "y": 865},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 8035, "y": 886},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 8238, "y": 901},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 8469, "y": 1024},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 8676, "y": 1046},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 7950, "groundSnap": true},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 8150, "groundSnap": true},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bzk", "x": 8240, "groundSnap": true},
+        {"type": "spawnWave", "entries": [{"delay": 3.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 6.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}, {"delay": 10.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 14.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+      ]
+    },
+    {
+      "id": "downtown_end", "legacy": "DOWNTOWN_END", "triggerX": 8700,
+      "actions": [
+        {"type": "setBackdrop", "mode": "fourth"},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 8878, "y": 1061},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 9153, "y": 1076},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 9200, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 9340, "groundSnap": true, "fromY": 1100},
+        {"type": "spawnWave", "entries": [{"delay": 3.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 7.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+      ]
+    },
+    {
+      "id": "openland_start", "legacy": "OPENLAND_START", "triggerX": 8980,
+      "actions": [
+        {"type": "setBounds", "rect": [3180, 864, 14094, 1312]},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 9420, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 9660, "groundSnap": true, "fromY": 1100},
+        {"type": "spawnWave", "entries": [{"delay": 2.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 5.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}, {"delay": 9.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+      ]
+    },
+    {
+      "id": "openland_1", "legacy": "OPENLAND_1", "triggerX": 9450,
+      "actions": [
+        {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 10098, "y": 1274},
+        {"type": "spawn", "kind": "prop", "def": "big_house", "x": 10470, "y": 1257},
+        {"type": "spawn", "kind": "prop", "def": "tower", "x": 10808, "y": 1175},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 9975, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 10200, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 10440, "y": 1204},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 10560, "y": 1204},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 10813, "y": 1075},
+        {"type": "spawn", "kind": "enemy", "def": "missile_tank", "x": 10900, "groundSnap": true, "fromY": 1100},
+        {"type": "spawnWave", "entries": [{"delay": 5.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 9.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+      ]
+    },
+    {
+      "id": "openland_2", "legacy": "OPENLAND_2", "triggerX": 10350,
+      "actions": [
+        {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 11122, "y": 1274},
+        {"type": "spawn", "kind": "prop", "def": "big_house", "x": 11494, "y": 1257},
+        {"type": "spawn", "kind": "prop", "def": "tower", "x": 11832, "y": 1175},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 10740, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 10990, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 11200, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 11250, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 11450, "y": 1204},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 11570, "y": 1204},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 11837, "y": 1075},
+        {"type": "spawnWave", "entries": [{"delay": 2.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 4.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}, {"delay": 7.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}]}
+      ]
+    },
+    {
+      "id": "openland_3", "legacy": "OPENLAND_3", "triggerX": 11350,
+      "actions": [
+        {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 12146, "y": 1274},
+        {"type": "spawn", "kind": "prop", "def": "big_house", "x": 12518, "y": 1257},
+        {"type": "spawn", "kind": "prop", "def": "tower", "x": 12856, "y": 1175},
+        {"type": "spawn", "kind": "enemy", "def": "btank", "x": 11900, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 11760, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 12020, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 12230, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 12280, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 12480, "y": 1204},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 12580, "y": 1204},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 12861, "y": 1075},
+        {"type": "spawnWave", "entries": [{"delay": 4.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 9.0, "kind": "enemy", "def": "aparch", "origin": "legacyCenter", "halfHeight": 50, "camera": {"ax": "right", "dx": 250, "ay": "top", "dy": 125}}]}
+      ]
+    },
+    {
+      "id": "openland_4", "legacy": "OPENLAND_4", "triggerX": 12350, "note": "Legacy only spawns Sarubia + opens the gate if FindGroundY finds ground; the lockCamera/gate pair is skipped together with the spawn.",
+      "actions": [
+        {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 13170, "y": 1274},
+        {"type": "spawn", "kind": "prop", "def": "big_house", "x": 13542, "y": 1257},
+        {"type": "spawn", "kind": "enemy", "def": "sarubia", "x": 12790, "groundSnap": true, "fromY": 1100, "id": "sarubia"},
+        {"type": "lockCamera", "rect": "current"},
+        {"type": "gate", "id": "sarubia_dead", "waitFor": ["sarubia"], "actions": [{"type": "unlockCamera"}]},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bzk", "x": 12950, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 13030, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 13260, "groundSnap": true, "fromY": 1100},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 13310, "groundSnap": true, "fromY": 1100},
+        {"type": "spawnWave", "entries": [{"delay": 8.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+      ]
+    },
+    {
+      "id": "boss", "legacy": "OPENLAND_BOSS", "triggerX": 13500,
+      "actions": [
+        {"type": "clear", "waves": true},
+        {"type": "lockCamera", "rect": "bossArena", "permanent": true},
+        {"type": "clear", "layers": ["monster"]},
+        {"type": "spawn", "kind": "enemy", "def": "battleship", "id": "boss", "x": 13950, "groundSnap": true, "fromY": 1100, "params": {"arena": "bossArena", "positionFromArena": true}},
+        {"type": "banner", "text": "WARNING", "seconds": 2.5},
+        {"type": "gate", "id": "boss_dead", "waitFor": ["boss"], "until": "destroyFinished", "abortOnGameOver": true, "actions": [{"type": "playerInvincible", "seconds": 10.0}, {"type": "banner", "text": "MISSION\nCOMPLETE", "seconds": 4.0, "delay": 1.5}, {"type": "fade", "to": "black", "seconds": 1.0, "delay": 5.5}, {"type": "endStage", "next": "title", "delay": 6.7}]}
+      ]
+    }
+  ]
+}
