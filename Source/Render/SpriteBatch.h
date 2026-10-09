@@ -102,6 +102,9 @@ public:
     void DrawFrame(const AnimFrame& _frame, jug::VECTOR2 _worldOrigin, jug::VECTOR2 _cameraPos, const SpriteDrawOptions& _options = {}) const;
     void DrawFrame(const AnimFrame& _frame, jug::VECTOR2 _worldOrigin, const Camera& _camera, const SpriteDrawOptions& _options = {}) const;
 
+    // UI 용: 프레임(트림된 사각형) 전체를 화면 논리 좌표 _dest 에 늘려 그린다 (피벗/카메라 무시, 정수 배율 확대 텍스트 등).
+    void DrawFrameRect(const AnimFrame& _frame, const IntRect& _dest, const SpriteDrawOptions& _options = {}) const;
+
     // --- 지연 그리기 (정렬 후 Flush) ---
     void Submit(int _layer, int _sortKey, const AnimFrame& _frame, jug::VECTOR2 _worldOrigin, const SpriteDrawOptions& _options = {});
     void Flush(jug::VECTOR2 _cameraPos);   // 정렬 → 그리기 → 큐 비움

@@ -5,11 +5,15 @@
 #include "Core/Tuning.h"
 #include "Game/Combat/CombatSystem.h"
 #include "Game/Combat/Projectiles.h"
+#include "Game/Enemies/EnemyDef.h"
+#include "Game/Enemies/EnemyTypes.h"
+#include "Game/Enemies/EnemyWorld.h"
 #include "Game/GameState.h"
 #include "Game/Player/PlayerController.h"
 #include "Game/Player/PlayerRig.h"
 #include "Game/Sandbox/Effects.h"
 #include "Game/Sandbox/TrainingTargets.h"
+#include "Game/Ui/UiSystem.h"
 #include "Render/Camera.h"
 #include "Render/SpriteLibrary.h"
 #include "World/GroundMap.h"
@@ -34,6 +38,7 @@ struct SandboxConfig
     bool                  bLoadTuningFile  = true;   // Assets/Tuning/Tuning.json 로드 (+ 라이브에서 핫리로드)
     Tuning                tuning           = {};     // bLoadTuningFile == false 일 때 사용
     bool                  bBackground      = true;   // Stage0_Main 배경 (렌더러가 있을 때만)
+    jug::FilePath         enemyDefPath     = {};     // 적 정의 JSON. 비면 <assetRoot>/Defs/Enemies.json (없으면 적 없이 동작)
 };
 
 // ===========================================
@@ -50,6 +55,7 @@ public:
     explicit SandboxState(SandboxConfig _config);
 
     void OnEnter(GameContext& _ctx) override;
+    void OnExit(GameContext& _ctx) override;
     void Tick(GameContext& _ctx, const InputHistory& _input) override;
     void Render(GameContext& _ctx, float _alpha) override;
 
@@ -65,9 +71,16 @@ public:
     [[nodiscard]] PlayerRig&              GetRig() { return m_rig; }
     [[nodiscard]] const PlayerRig&        GetRig() const { return m_rig; }
     [[nodiscard]] uint64_t                GetTickCount() const { return m_tickCount; }
+    [[nodiscard]] UiSystem&               GetUi() { return m_ui; }
+    [[nodiscard]] EnemyWorld&             GetEnemies() { return m_enemies; }
+    [[nodiscard]] const EnemyWorld&       GetEnemies() const { return m_enemies; }
+    [[nodiscard]] const EnemyDefLibrary&  GetEnemyLib() const { return m_enemyLib; }
 
     // 표적을 직접 추가 (테스트). 반환: 소유자 ID
     uint32_t AddTarget(eDummyKind _kind, jug::VECTOR2 _feet, bool _bShooter = false);
+
+    // 적을 직접 스폰 (테스트/도구). 발 위치 아래 지면에 붙인다. 알 수 없는 정의면 null 핸들.
+    EnemyHandle SpawnEnemy(jug::StringView _defName, jug::VECTOR2 _feet, const SpawnParams& _params = {});
 
     // 플레이어와 표적을 처음 상태로 되돌린다
     void RestartGame();
@@ -81,10 +94,13 @@ private:
     void                       UpdateWalls_();
     [[nodiscard]] PhysicsWorld MakePhysicsWorld_() const;
     [[nodiscard]] jug::VECTOR2 GetRespawnFeet_() const;
+    [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;   // 적용: 지면 + 플랫폼 (카메라 왼쪽 벽 제외)
+    void                       SpawnDebugEnemy_(int _slot);       // 숫자키 1..8 (보병 정의 8종, 플레이어 앞)
 
     void DrawWorld_(GameContext& _ctx, jug::VECTOR2 _cameraPos, float _alpha);
     void DrawDebugBoxes_(Renderer& _renderer, jug::VECTOR2 _cameraPos) const;
-    void DrawHud_(GameContext& _ctx) const;
+    void DrawHud_(GameContext& _ctx);
+    void RequestSounds_(GameContext& _ctx, const jug::Vector<FxRequest>& _fx);
 
     SandboxConfig m_config  = {};
     Tuning        m_tuning  = {};
@@ -101,6 +117,8 @@ private:
     CombatSystem     m_combat      = {};
     ProjectileSystem m_projectiles = {};
     TrainingTargets  m_targets     = {};
+    EnemyDefLibrary  m_enemyLib    = {};
+    EnemyWorld       m_enemies     { &m_enemyLib };   // m_enemyLib 보다 뒤에 선언되어야 한다
     EffectList       m_effects     = {};
     AnimPlayer       m_bombAnim    = {};
 
@@ -109,6 +127,13 @@ private:
     int           m_bgHandle  = -1;
     bool          m_bRigBound = false;
     AnimId        m_bombClip  = jug::kNullHandle;
+
+    // UI / 오디오 (시뮬레이션 상태가 아니다: HashState 에 포함되지 않는다)
+    UiSystem    m_ui                 = {};
+    PlayerStats m_prevStats          = {};
+    eWeapon     m_prevWeapon         = eWeapon::Pistol;
+    int         m_prevScore          = 0;
+    bool        m_bGameOverAnnounced = false;
 
     uint64_t m_tickCount = 0;
 };

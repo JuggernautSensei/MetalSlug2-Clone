@@ -68,6 +68,10 @@ void App::ParseArgs_()
         {
             m_bReplayHold = true;
         }
+        else if (args[i] == "--no-audio")
+        {
+            m_bNoAudio = true;
+        }
         else if (args[i] == "--capture" && bHasValue)
         {
             m_capturePath = args[++i];
@@ -163,6 +167,20 @@ void App::Init()
     m_ctx.pRng      = &m_rng;
     m_ctx.assetRoot = jug::FilePath { SLUG_ASSET_DIR };
 
+    // 오디오: 실패/--no-audio/캡처 모드에서는 장치 없이(또는 NullAudio 로) 계속한다. 소리는 시뮬레이션에 영향을 주지 않는다.
+    {
+        AudioConfig audioConfig;
+        audioConfig.bEnabled = !m_bNoAudio && m_capturePath.empty();
+        if (const jug::Result<void> audio = m_audio.InitFromDirectory(bakedRoot, audioConfig); audio)
+        {
+            m_ctx.pAudio = &m_audio;
+        }
+        else
+        {
+            JUG_CORE_LOG_WARN("sounds.json 을 읽지 못해 소리 없이 계속합니다: {}", audio.GetError().MakeMessage());
+        }
+    }
+
     jug::Scoped<IGameState> pState = CreateState(m_stateName);
     if (!pState)
     {
@@ -178,6 +196,8 @@ void App::Shutdown()
 {
     SaveRecording_();
     m_pRunner.Reset();
+    m_ctx.pAudio = nullptr;
+    m_audio.Shutdown();
     m_sprites.Shutdown();
     m_renderer.Shutdown();
 }
@@ -220,6 +240,17 @@ void App::OnKeyDown_(
         case jug::eKey::F2: m_bPaused = !m_bPaused; return;
         case jug::eKey::F3: m_bStepOnce = true; return;
         case jug::eKey::F4: m_bSlowMo = !m_bSlowMo; return;
+        case jug::eKey::F5: if (m_bDebugDraw) { m_pendingWarp = 1; } return;   // 스테이지: 다음 섹션
+        case jug::eKey::F6: if (m_bDebugDraw) { m_pendingWarp = 2; } return;   // 스테이지: 보스 아레나
+        // 숫자키 1..8: 샌드박스 적 디버그 스폰 (보병 정의 8종, 플레이어 앞)
+        case jug::eKey::Num1: m_pendingSpawn = 1; return;
+        case jug::eKey::Num2: m_pendingSpawn = 2; return;
+        case jug::eKey::Num3: m_pendingSpawn = 3; return;
+        case jug::eKey::Num4: m_pendingSpawn = 4; return;
+        case jug::eKey::Num5: m_pendingSpawn = 5; return;
+        case jug::eKey::Num6: m_pendingSpawn = 6; return;
+        case jug::eKey::Num7: m_pendingSpawn = 7; return;
+        case jug::eKey::Num8: m_pendingSpawn = 8; return;
         default: break;
     }
 
@@ -242,6 +273,8 @@ void App::OnFocusLost_(
 void App::Update(
     const float _deltaTimeSec)
 {
+    m_audio.Update(_deltaTimeSec);   // 끝난 소리 회수 + BGM 페이드 (렌더 프레임 단위)
+
     if (!m_pRunner)
     {
         return;
@@ -255,6 +288,13 @@ void App::Update(
     m_ctx.bDebugDraw    = m_bDebugDraw;
     m_ctx.bPaused       = m_bPaused;
     m_ctx.slowMoDivisor = m_bSlowMo ? 4 : 1;
+    m_ctx.debugWarp     = m_pendingWarp;   // 상태가 소비한다 (스테이지 F5/F6)
+    m_pendingWarp       = 0;
+    if (m_pendingSpawn > 0)
+    {
+        m_ctx.debugSpawn = m_pendingSpawn;   // 샌드박스가 소비한다 (적 디버그 스폰)
+        m_pendingSpawn   = 0;
+    }
 
     int steps = 0;
     if (!m_captureTicks.empty())

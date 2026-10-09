@@ -28,6 +28,9 @@ namespace
         { eAction::Bomb, jug::eKey::L },
         { eAction::Bomb, jug::eKey::C },
         { eAction::Pause, jug::eKey::Escape },
+        { eAction::Start, jug::eKey::Return },
+        { eAction::Start, jug::eKey::KpEnter },
+        { eAction::Start, jug::eKey::Space },
     };
 }   // namespace
 

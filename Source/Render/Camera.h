@@ -49,6 +49,26 @@ public:
     void               SetForwardOnly(const bool _bForwardOnly) { m_bForwardOnly = _bForwardOnly; }
     [[nodiscard]] bool IsForwardOnly() const { return m_bForwardOnly; }
 
+    // y 축 전진 전용 (아래로만 내려가고 위로 되돌아가지 않는다). 경계/락 클램프는 예외. 기본 false.
+    void               SetForwardOnlyY(const bool _bForwardOnlyY) { m_bForwardOnlyY = _bForwardOnlyY; }
+    [[nodiscard]] bool IsForwardOnlyY() const { return m_bForwardOnlyY; }
+
+    // --- 스크립트 연출 (스테이지 러너가 사용) ---
+    // 직선 이동: 추적을 멈추고 시점 중심을 _seconds 동안 (고정 스텝 틱 수로) 선형으로 _targetCenter 까지 옮긴다.
+    // 이동 중에도 활성 경계는 매 틱 클램프한다. 끝나면 추적이 재개된다. _seconds <= 0 이면 즉시 SnapTo.
+    void               BeginMove(jug::VECTOR2 _targetCenter, float _seconds);
+    void               CancelMove();
+    [[nodiscard]] bool IsMoving() const { return m_bMoving; }
+
+    // 부드러운 락: 시점 중심을 락 사각형의 중심으로 _glideSeconds 동안 이동시킨 뒤(그동안은 이전 경계 유지) 락을 건다.
+    // _glideSeconds <= 0 이면 Lock() 과 같다. 이동 도중 Unlock() 하면 보류 중인 락은 취소된다.
+    void               LockWithGlide(const Aabb& _lockBounds, float _glideSeconds);
+    [[nodiscard]] bool HasPendingLock() const { return m_bPendingLock; }
+
+    [[nodiscard]] const Aabb& GetBounds() const { return m_bounds; }
+    [[nodiscard]] bool        HasBounds() const { return m_bHasBounds; }
+    [[nodiscard]] const Aabb& GetLockBounds() const { return m_lockBounds; }
+
     // --- 추적 ---
     void                       SetTarget(const jug::VECTOR2 _target) { m_target = _target; }
     [[nodiscard]] jug::VECTOR2 GetTarget() const { return m_target; }
@@ -95,6 +115,16 @@ private:
     Aabb m_lockBounds   = {};
     bool m_bLocked      = false;
     bool m_bForwardOnly = false;
+    bool m_bForwardOnlyY = false;
+
+    // 직선 이동 / 보류 락
+    bool         m_bMoving        = false;
+    jug::VECTOR2 m_moveStart      = { 0.f, 0.f };
+    jug::VECTOR2 m_moveTarget     = { 0.f, 0.f };
+    int          m_moveTotalTicks = 0;
+    int          m_moveElapsed    = 0;
+    bool         m_bPendingLock   = false;
+    Aabb         m_pendingLock    = {};
 
     // 흔들림
     float        m_shakeAmplitude = 0.f;

@@ -101,7 +101,47 @@ void Camera::Lock(
 
 void Camera::Unlock()
 {
-    m_bLocked = false;
+    m_bLocked      = false;
+    m_bPendingLock = false;
+}
+
+void Camera::BeginMove(
+    const jug::VECTOR2 _targetCenter,
+    const float        _seconds)
+{
+    const int ticks = static_cast<int>(std::llround(static_cast<double>(_seconds) / static_cast<double>(kStepSec)));
+    if (ticks <= 0)
+    {
+        CancelMove();
+        SnapTo(_targetCenter);
+        return;
+    }
+    m_bMoving        = true;
+    m_moveStart      = m_center;
+    m_moveTarget     = _targetCenter;
+    m_moveTotalTicks = ticks;
+    m_moveElapsed    = 0;
+    m_velocity       = { 0.f, 0.f };
+}
+
+void Camera::CancelMove()
+{
+    m_bMoving = false;
+}
+
+void Camera::LockWithGlide(
+    const Aabb& _lockBounds,
+    const float _glideSeconds)
+{
+    if (_glideSeconds <= 0.f)
+    {
+        m_bPendingLock = false;
+        Lock(_lockBounds);
+        return;
+    }
+    m_pendingLock  = _lockBounds;
+    m_bPendingLock = true;
+    BeginMove(_lockBounds.GetCenter(), _glideSeconds);
 }
 
 Aabb Camera::GetActiveBounds_(
@@ -174,28 +214,56 @@ void Camera::SnapToTarget()
 void Camera::Update(
     const float _dt)
 {
-    const jug::VECTOR2 focus = { m_target.x + m_tuning.targetOffset.x, m_target.y + m_tuning.targetOffset.y };
-
-    jug::VECTOR2 desired = {
-        ApplyDeadzone_(m_center.x, focus.x, m_tuning.deadzoneHalf.x),
-        ApplyDeadzone_(m_center.y, focus.y, m_tuning.deadzoneHalf.y)
-    };
-
-    if (m_bForwardOnly)
+    if (m_bMoving)
     {
-        desired.x = jug::Max(desired.x, m_center.x);
-    }
-    desired = ClampCenter_(desired);
-
-    if (m_tuning.smoothTime <= 0.f)
-    {
-        m_center   = desired;
+        // 스크립트 직선 이동 (추적 중단). 틱 수로 세므로 부동소수 누적 오차가 없다.
+        ++m_moveElapsed;
+        if (m_moveElapsed >= m_moveTotalTicks)
+        {
+            m_center  = m_moveTarget;
+            m_bMoving = false;
+            if (m_bPendingLock)
+            {
+                m_bPendingLock = false;
+                Lock(m_pendingLock);
+            }
+        }
+        else
+        {
+            const float t = static_cast<float>(m_moveElapsed) / static_cast<float>(m_moveTotalTicks);
+            m_center      = { m_moveStart.x + (m_moveTarget.x - m_moveStart.x) * t, m_moveStart.y + (m_moveTarget.y - m_moveStart.y) * t };
+        }
         m_velocity = { 0.f, 0.f };
     }
     else
     {
-        SmoothDamp_(m_center.x, m_velocity.x, desired.x, m_tuning.smoothTime, _dt);
-        SmoothDamp_(m_center.y, m_velocity.y, desired.y, m_tuning.smoothTime, _dt);
+        const jug::VECTOR2 focus = { m_target.x + m_tuning.targetOffset.x, m_target.y + m_tuning.targetOffset.y };
+
+        jug::VECTOR2 desired = {
+            ApplyDeadzone_(m_center.x, focus.x, m_tuning.deadzoneHalf.x),
+            ApplyDeadzone_(m_center.y, focus.y, m_tuning.deadzoneHalf.y)
+        };
+
+        if (m_bForwardOnly)
+        {
+            desired.x = jug::Max(desired.x, m_center.x);
+        }
+        if (m_bForwardOnlyY)
+        {
+            desired.y = jug::Max(desired.y, m_center.y);
+        }
+        desired = ClampCenter_(desired);
+
+        if (m_tuning.smoothTime <= 0.f)
+        {
+            m_center   = desired;
+            m_velocity = { 0.f, 0.f };
+        }
+        else
+        {
+            SmoothDamp_(m_center.x, m_velocity.x, desired.x, m_tuning.smoothTime, _dt);
+            SmoothDamp_(m_center.y, m_velocity.y, desired.y, m_tuning.smoothTime, _dt);
+        }
     }
 
     // 경계/락이 바뀌었을 수 있으므로 항상 클램프 (경계가 전진 전용보다 우선)

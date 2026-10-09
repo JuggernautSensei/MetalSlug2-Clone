@@ -18,6 +18,7 @@ enum class eAction : uint8_t
     Jump,
     Bomb,
     Pause,
+    Start,   // 메뉴/타이틀 시작 (Enter, Space). 게임 플레이 입력이 아니다
     Count
 };
 

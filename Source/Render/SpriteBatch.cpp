@@ -346,6 +346,30 @@ void SpriteBatch::DrawFrame(
     DrawFrame(_frame, _worldOrigin, _camera.GetPosition(), _options);
 }
 
+void SpriteBatch::DrawFrameRect(
+    const AnimFrame&         _frame,
+    const IntRect&           _dest,
+    const SpriteDrawOptions& _options) const
+{
+    if (!m_pRenderer || _frame.IsEmpty() || _dest.w <= 0 || _dest.h <= 0 || _frame.atlas < 0 || static_cast<size_t>(_frame.atlas) >= m_pages.size())
+    {
+        return;
+    }
+
+    const Page& page = m_pages[static_cast<size_t>(_frame.atlas)];
+    if (!page.pTexture)
+    {
+        return;
+    }
+
+    const SDL_FRect src = { static_cast<float>(_frame.x), static_cast<float>(_frame.y), static_cast<float>(_frame.w), static_cast<float>(_frame.h) };
+    const SDL_FRect dst = { static_cast<float>(_dest.x), static_cast<float>(_dest.y), static_cast<float>(_dest.w), static_cast<float>(_dest.h) };
+
+    SDL_SetTextureColorMod(page.pTexture, _options.tint.r, _options.tint.g, _options.tint.b);
+    SDL_SetTextureAlphaMod(page.pTexture, _options.tint.a);
+    SDL_RenderTextureRotated(m_pRenderer, page.pTexture, &src, &dst, 0.0, nullptr, _options.bFlipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+}
+
 void SpriteBatch::Submit(
     const int                _layer,
     const int                _sortKey,

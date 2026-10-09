@@ -2,6 +2,7 @@
 #include <JugX/Application.h>
 #include <JugX/Random.h>
 
+#include "Audio/AudioSystem.h"
 #include "Core/FixedStep.h"
 #include "Core/Input.h"
 #include "Core/Replay.h"
@@ -23,10 +24,11 @@ namespace slug
 //     --seed <n>                RNG 시드
 //     --record <path>           플레이한 입력을 리플레이로 저장 (종료 시)
 //     --replay <path>           리플레이 입력으로 시뮬레이션 (끝나면 종료, --replay-hold 면 유지)
+//     --no-audio                오디오 장치를 열지 않는다 (소리 요청은 조용히 무시)
 //     --capture <path> [--capture-frame <n>]   n 번째 렌더 프레임을 BMP 로 저장하고 종료
 //     --capture <prefix> --capture-ticks a,b,c  시뮬레이션 틱 a,b,c 를 마친 화면을 <prefix>_<tick>.bmp 로 저장하고 종료
 //                                               (이 모드는 렌더 프레임마다 정확히 1틱만 진행해 결정적으로 캡처한다)
-//   디버그 키: F1 판정 상자 표시, F2 일시정지, F3 한 틱 진행(일시정지 중), F4 슬로모션(1/4)
+//   디버그 키: F1 판정 상자 표시, F2 일시정지, F3 한 틱 진행(일시정지 중), F4 슬로모션(1/4), F5/F6 스테이지 워프(F1 켜진 상태: 다음 섹션 / 보스 아레나)
 // ===========================================
 
 class App final : public jug::Application
@@ -56,6 +58,7 @@ private:
     AnimationLibrary  m_anims     = {};
     jug::RngMt19937   m_rng       = jug::RngMt19937 { uint64_t { 1 } };
     GameContext       m_ctx       = {};
+    AudioSystem       m_audio     = {};
     InputSystem       m_input     = {};
     FixedStepClock    m_clock     = {};
 
@@ -67,6 +70,7 @@ private:
     jug::FilePath m_recordPath = {};
     jug::FilePath m_replayPath = {};
     bool          m_bReplayHold = false;
+    bool          m_bNoAudio    = false;
 
     // 리플레이
     ReplayData m_recording    = {};
@@ -86,6 +90,8 @@ private:
     bool  m_bStepOnce   = false;
     bool  m_bSlowMo     = false;
     bool  m_bDebugDraw  = false;
+    int   m_pendingWarp = 0;   // F5/F6 (F1 켜진 상태): 다음 Update 에서 GameContext::debugWarp 로 전달
+    int   m_pendingSpawn = 0;  // 숫자키 1..8 (적 디버그 스폰): 다음 Update 에서 GameContext::debugSpawn 으로 전달
     float m_fps         = 0.f;
 };
 

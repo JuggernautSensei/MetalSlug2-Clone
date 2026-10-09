@@ -158,3 +158,9 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
 - 레거시 병사는 지면보다 3px 위(`g-40`, 실제 반높이 37.5)에서 스폰해 중력으로 안착. 새 포맷은 발 y 를 직접 지정(`groundSnap`/플랫폼 윗면).
 - 플랫폼 스폰(`y` = 윗면)은 같은 섹션에서 앞서 생성된 소품(집 지붕·다리 도로 `box_collider` y=405) 위에 선다. 순서 의존.
 - 검증: `Scripts/ValidateStage.ps1 [-Stage Assets/Stage/Stage0.json]` — 파싱, ID 유일/참조, 이름(스프라이트/애니/지면/BGM) 존재, 섹션별 개수 출력.
+
+## 12. 런타임 (`StageState`, 상태 이름 `stage0`)
+- 구성: `Source/Game/Stage/StageState.*` 가 `Assets/Stage/Stage0.json` 을 `StageRunner` 로 돌린다. 플레이어/전투/투사체/카메라/HUD 는 SandboxState 와 같은 경로.
+- 엔티티: `StagePlaceholders` (`IStageHost` 구현). 적/소품/NPC 는 색 상자 + def 이름 + Hurtbox + Health (`PlaceholderEntity`, 체력 표는 `StagePlaceholders.cpp`). 플레이어에게 피해를 주지 않으며, 칼/총/폭탄에 맞으면 HP 가 줄고 0 이면 30틱 뒤 제거. 실제 구현은 같은 `IStageHost` 를 다른 클래스로 바꿔 끼운다.
+- 디버그: F1 켜진 상태에서 F5 = 다음 섹션으로 워프, F6 = 보스 아레나(`boss` 섹션)로 워프. F1 오버레이에 현재 섹션 id, 열린 게이트, 경계, 지면 이름이 나온다. 요청은 `GameContext::debugWarp` 로 전달된다 (헤드리스/리플레이에는 없음).
+- 한계: 플레이스홀더는 AI/사격이 없고 소품의 물리 충돌(벽/플랫폼)도 없다. 무적(`playerInvincible`)은 상태 표시만 한다.

@@ -23,6 +23,8 @@ jug::String ErrorCategory::MakeMessage(
         case eError::Parse: return "파싱 실패";
         case eError::NotFound: return "찾을 수 없음";
         case eError::InvalidData: return "잘못된 데이터";
+        case eError::EnemyDef: return "적 정의 오류";
+        case eError::StageInvalid: return "스테이지 스크립트 검증 실패";
     }
     return "알 수 없는 에러";
 }

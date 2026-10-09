@@ -8,6 +8,7 @@
 #include <JugX/Math.h>
 
 #include "Game/Player/PlayerHitboxes.h"
+#include "Game/Ui/ScreenFlow.h"
 #include "World/Constants.h"
 
 namespace slug
@@ -51,16 +52,6 @@ namespace
         _renderer.DrawRect(topLeft, { jug::Max(1.f, bottomRight.x - topLeft.x), jug::Max(1.f, bottomRight.y - topLeft.y) }, _color);
     }
 
-    [[nodiscard]] const char* GetWeaponName_(
-        const eWeapon _weapon)
-    {
-        switch (_weapon)
-        {
-            case eWeapon::Hmg: return "H.M.GUN";
-            case eWeapon::Shotgun: return "SHOTGUN";
-            default: return "PISTOL";
-        }
-    }
 }   // namespace
 
 SandboxState::SandboxState() = default;
@@ -79,6 +70,19 @@ void SandboxState::OnEnter(
     GameContext& _ctx)
 {
     BuildWorld_(_ctx);
+    m_ui.Init(_ctx);
+    m_prevStats          = m_player.GetStats();
+    m_prevWeapon         = m_player.GetWeapon().weapon;
+    m_prevScore          = m_player.GetScore();
+    m_bGameOverAnnounced = false;
+
+    _ctx.GetAudio().PlayBgm(sfx::kBgmStage, true);
+}
+
+void SandboxState::OnExit(
+    GameContext& _ctx)
+{
+    _ctx.GetAudio().AllStop();
 }
 
 void SandboxState::BuildWorld_(
@@ -134,6 +138,29 @@ void SandboxState::BuildWorld_(
     m_camera.SetBounds(m_config.cameraBounds);
     m_camera.SetForwardOnly(true);
 
+    // --- 적 정의 (없거나 깨졌으면 적 없이 동작) ---
+    {
+        jug::FilePath defsPath = m_config.enemyDefPath;
+        if (defsPath.empty() && !_ctx.assetRoot.empty())
+        {
+            defsPath = EnemyDefLibrary::GetDefaultPath(_ctx.assetRoot);
+        }
+        m_enemyLib = {};
+        if (!defsPath.empty())
+        {
+            jug::String message;
+            if (jug::Result<EnemyDefLibrary> lib = EnemyDefLibrary::Load(defsPath, &message))
+            {
+                m_enemyLib = lib.Take();
+            }
+            else
+            {
+                JUG_CORE_LOG_WARN("적 정의를 읽지 못해 적을 배치하지 않습니다: {}", message);
+            }
+        }
+        m_enemies.SetLibrary(&m_enemyLib);
+    }
+
     // --- 플레이어 / 표적 ---
     RestartGame();
 
@@ -174,6 +201,7 @@ void SandboxState::RestartGame()
     m_projectiles.Clear();
     m_effects.Clear();
     m_targets.Clear();
+    m_enemies.Reset(1);
 
     m_player.Reset(m_tuning, m_config.spawnFeet);
     m_player.SnapToGround(MakePhysicsWorld_(), 16.f);
@@ -210,6 +238,50 @@ uint32_t SandboxState::AddTarget(
     const bool         _bShooter)
 {
     return m_targets.Add(_kind, _feet, _bShooter, m_tuning.sandbox);
+}
+
+EnemyHandle SandboxState::SpawnEnemy(
+    const jug::StringView _defName,
+    const jug::VECTOR2    _feet,
+    const SpawnParams&    _params)
+{
+    const PhysicsWorld world = MakeEnemyPhysicsWorld_();
+    return m_enemies.Spawn(_defName, _feet, _params, &world);
+}
+
+void SandboxState::SpawnDebugEnemy_(
+    const int _slot)
+{
+    // 숫자키 1..8 → 보병 정의 8종 (플레이어 앞 180 px)
+    static constexpr const char* kSlots[] = { "soldier_bomb", "soldier_sword", "soldier_missile", "soldier_bzk", "soldier_hang", "flying_bzk", "shielder", "pow" };
+    constexpr int                kSlotCount = static_cast<int>(sizeof(kSlots) / sizeof(kSlots[0]));
+    if (_slot < 0 || _slot >= kSlotCount)
+    {
+        return;
+    }
+
+    const jug::StringView name = kSlots[_slot];
+    const jug::VECTOR2     feet = m_player.GetFeet();
+    jug::VECTOR2           at   = { feet.x + 180.f, feet.y };
+    if (name == "flying_bzk")
+    {
+        at.y = feet.y - 150.f;   // 낙하산: 공중에서 내려온다
+    }
+    else if (name == "soldier_hang")
+    {
+        at.y = feet.y - 120.f;   // 감시탑 아래에 매달림
+    }
+    SpawnParams params;
+    params.facing = -1;
+    (void)SpawnEnemy(name, at, params);
+}
+
+PhysicsWorld SandboxState::MakeEnemyPhysicsWorld_() const
+{
+    PhysicsWorld world;
+    world.pGround   = &m_ground;
+    world.platforms = m_config.platforms;
+    return world;
 }
 
 void SandboxState::UpdateWalls_()
@@ -258,7 +330,13 @@ void SandboxState::Tick(
     // 1) 판정 모으기 시작: 표적이 먼저 Hurtbox 를 등록해야 플레이어의 칼 자동 발동 질의가 맞는다.
     m_combat.BeginTick();
     UpdateWalls_();
+    if (_ctx.debugSpawn > 0)
+    {
+        SpawnDebugEnemy_(_ctx.debugSpawn - 1);
+        _ctx.debugSpawn = 0;
+    }
     m_targets.RegisterHurtboxes(m_combat);
+    m_enemies.RegisterHurtboxes(m_combat);
 
     // 2) 플레이어
     PlayerContext playerCtx;
@@ -271,11 +349,33 @@ void SandboxState::Tick(
 
     // 3) 사수 → 투사체 이동/판정 등록
     m_targets.TickShooters(m_tuning.sandbox, m_player.GetFeet(), m_player.IsAlive(), m_projectiles, m_combat);
+
+    // 적: AI / 이동 / 공격 판정 등록 (투사체 Step 전에 발사해야 같은 틱에 움직인다)
+    EnemyContext enemyCtx;
+    enemyCtx.pTuning      = &m_tuning;
+    enemyCtx.physics      = MakeEnemyPhysicsWorld_();
+    enemyCtx.pCombat      = &m_combat;
+    enemyCtx.pProjectiles = &m_projectiles;
+    enemyCtx.player.feet        = m_player.GetFeet();
+    enemyCtx.player.bodyBox     = m_player.GetBodyBox();
+    enemyCtx.player.center      = m_player.GetBodyBox().GetCenter();
+    enemyCtx.player.bAlive      = m_player.IsAlive();
+    enemyCtx.player.bInvulnerable = m_player.GetInvincibleTicks() > 0;
+    enemyCtx.cameraView   = Aabb::FromMinSize(m_camera.GetPositionNoShake(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
+    enemyCtx.pAnims       = _ctx.pAnims;
+    m_enemies.Tick(enemyCtx);
+
     m_projectiles.Step(&m_ground, m_combat, kStepSec);
 
     // 4) 판정 해소 → 모든 피해는 HitEvent 로만 적용된다
     const jug::Vector<HitEvent>& events = m_combat.Resolve();
-    const int                    score  = m_targets.ApplyEvents(events, m_tuning.sandbox);
+    m_enemies.OnHitEvents(events);
+    int enemyScore = 0;
+    for (const EnemyEvent& event: m_enemies.TakeEvents())
+    {
+        enemyScore += event.score;
+    }
+    const int score = m_targets.ApplyEvents(events, m_tuning.sandbox) + enemyScore;
     m_player.AddScore(score);
     m_player.OnHitEvents(events);
     m_projectiles.OnHitEvents(events, m_combat);
@@ -283,6 +383,8 @@ void SandboxState::Tick(
 
     // 5) 연출 / 카메라
     const jug::Vector<FxRequest> fx = m_projectiles.TakeFx();
+    RequestSounds_(_ctx, fx);
+    m_ui.Tick();
     if (_ctx.pAnims)
     {
         for (const FxRequest& request: fx)
@@ -333,13 +435,86 @@ void SandboxState::Tick(
     if (m_player.IsGameOver() && m_player.GetGameOverTicks() >= m_tuning.player.gameOverTicks)
     {
         RestartGame();
+        m_ui.GetBanner().Clear();
+        m_ui.GetFade().SetClear();
+        m_prevStats          = m_player.GetStats();
+        m_prevWeapon         = m_player.GetWeapon().weapon;
+        m_prevScore          = m_player.GetScore();
+        m_bGameOverAnnounced = false;
+        _ctx.GetAudio().PlayBgm(sfx::kBgmStage, true);
     }
+}
+
+// 플레이어/폭발 이벤트를 소리 요청으로 바꾼다. 요청은 틱의 결과를 읽기만 하며 시뮬레이션 상태를 바꾸지 않는다.
+void SandboxState::RequestSounds_(
+    GameContext&                  _ctx,
+    const jug::Vector<FxRequest>& _fx)
+{
+    IAudioSink&        audio = _ctx.GetAudio();
+    const PlayerStats& stats = m_player.GetStats();
+    const eWeapon      weapon = m_player.GetWeapon().weapon;
+
+    for (int i = m_prevStats.shotsFired; i < stats.shotsFired; ++i)
+    {
+        // 권총은 또렷하게, 연사 무기는 피치를 흔들고 작게
+        audio.Play(sfx::kPistolShot, weapon == eWeapon::Pistol ? 0.8f : 0.55f, weapon == eWeapon::Pistol ? 0.04f : 0.12f);
+    }
+    for (int i = m_prevStats.knifeSlashes; i < stats.knifeSlashes; ++i)
+    {
+        audio.Play((i & 1) == 0 ? sfx::kKnife1 : sfx::kKnife2, 0.9f, 0.05f);
+    }
+    for (int i = m_prevStats.bombsThrown; i < stats.bombsThrown; ++i)
+    {
+        audio.Play(sfx::kBombThrow);   // 에셋 없음: sounds.json 에 같은 이름이 생기면 자동으로 들린다
+    }
+    for (int i = m_prevStats.deaths; i < stats.deaths; ++i)
+    {
+        audio.Play(sfx::kPlayerDeath);
+    }
+    for (const FxRequest& request: _fx)
+    {
+        if (request.kind == eFxKind::BombExplosion)
+        {
+            audio.Play(sfx::kBombExplode, 1.f, 0.03f);
+        }
+    }
+
+    // 무기 획득 (권총 → 다른 무기): 파워업 징글 + 무기 음성
+    if (weapon != m_prevWeapon && weapon != eWeapon::Pistol)
+    {
+        audio.Play(sfx::kPowerUp);
+        audio.Play(weapon == eWeapon::Shotgun ? sfx::kVoiceShotgun : sfx::kVoiceHmg);
+    }
+    if (m_player.GetScore() > m_prevScore)
+    {
+        audio.Play(sfx::kEnemyDeath, 0.7f, 0.1f);   // 에셋 없음
+    }
+
+    // 게임 오버: 한 번만 배너 + 징글
+    if (m_player.IsGameOver() && !m_bGameOverAnnounced)
+    {
+        m_bGameOverAnnounced = true;
+        const ScreenFlowConfig config = MakeGameOverFlowConfig();
+        BannerSpec             spec   = MakeBannerSpec(config.bannerText, static_cast<float>(m_tuning.player.gameOverTicks) / 60.f);
+        spec.color                    = config.bannerColor;
+        m_ui.GetBanner().Show(std::move(spec));
+        audio.FadeOutBgm(config.bgmFadeSeconds);
+        audio.Play(config.sfx);
+    }
+
+    m_prevStats  = stats;
+    m_prevWeapon = weapon;
+    m_prevScore  = m_player.GetScore();
 }
 
 uint64_t SandboxState::HashState() const
 {
     uint64_t hash = m_player.HashState();
     hash ^= m_targets.HashState() * 1099511628211ull;
+    if (m_enemies.GetCount() > 0)
+    {
+        hash ^= m_enemies.HashState() * 1099511628211ull;   // 적이 없으면 기존 해시와 같다
+    }
     hash ^= static_cast<uint64_t>(m_projectiles.GetBullets().size()) << 8;
     hash ^= static_cast<uint64_t>(m_projectiles.GetBombs().size()) << 16;
     hash *= 1099511628211ull;
@@ -414,6 +589,12 @@ void SandboxState::DrawWorld_(
         renderer.FillRect(tl, dummy.size, color);
         renderer.DrawRect(tl, dummy.size, { 20, 20, 20, 255 });
         renderer.DrawDebugText({ tl.x + 4.f, tl.y + 4.f }, std::format("{}\n{}/{}", GetDummyName(dummy.kind), dummy.health.hp, dummy.health.maxHp), { 255, 255, 255, 255 });
+    }
+
+    // --- 적 (보병 / 포로 / 적 탄) ---
+    if (pAnims)
+    {
+        m_enemies.Submit(sprites, *pAnims, m_projectiles, _alpha);
     }
 
     // --- 플레이어 ---
@@ -509,45 +690,47 @@ void SandboxState::DrawDebugBoxes_(
 }
 
 void SandboxState::DrawHud_(
-    GameContext& _ctx) const
+    GameContext& _ctx)
 {
     Renderer&               renderer = *_ctx.pRenderer;
     const PlayerController& p        = m_player;
-    const WeaponState&      weapon   = p.GetWeapon();
 
-    const jug::String ammo = weapon.HasFiniteAmmo() ? std::to_string(weapon.ammo) : jug::String { "INF" };
-    const jug::String hud  = std::format("LIVES {}  BOMB {}  ARMS {} {}  SCORE {}", p.GetLives(), weapon.bombs, GetWeaponName_(weapon.weapon), ammo, p.GetScore());
-    renderer.DrawDebugText({ 9.f, 9.f }, hud, { 0, 0, 0, 255 });
-    renderer.DrawDebugText({ 8.f, 8.f }, hud, { 255, 240, 120, 255 });
+    // --- 게임 HUD (비트맵 폰트) ---
+    m_ui.DrawHud(_ctx, MakeHudModel(p));
 
-    const jug::VECTOR2 vel   = p.GetVelocity();
-    const jug::VECTOR2 pos   = p.GetFeet();
-    const jug::String  debug = std::format(
-        "STATE {} {}  AIM {}  OVL {}\nPOS {:.1f},{:.1f}  VEL {:.0f},{:.0f}  GND {}\nINV {}  KNIFE-RANGE {}  TICK {}  FPS {:.0f}\nF1 BOX  F2 PAUSE  F3 STEP  F4 SLOW  J SHOT  K JUMP  L BOMB",
-        GetStateName(p.GetState()),
-        p.GetFacing() > 0 ? "R" : "L",
-        GetAimName(p.GetAim()),
-        GetOverlayName(p.GetOverlay()),
-        pos.x,
-        pos.y,
-        vel.x,
-        vel.y,
-        p.IsGrounded() ? 1 : 0,
-        p.GetInvincibleTicks(),
-        p.IsKnifeTargetInRange() ? 1 : 0,
-        m_tickCount,
-        _ctx.fps);
-    renderer.DrawDebugText({ 9.f, 33.f }, debug, { 0, 0, 0, 255 });
-    renderer.DrawDebugText({ 8.f, 32.f }, debug, { 255, 255, 255, 255 });
-
-    if (p.IsGameOver())
+    // --- 디버그 오버레이: F1 ---
+    if (_ctx.bDebugDraw)
     {
-        renderer.DrawDebugText({ 268.f, 200.f }, "GAME OVER", { 255, 60, 60, 255 });
+        const jug::VECTOR2 vel   = p.GetVelocity();
+        const jug::VECTOR2 pos   = p.GetFeet();
+        const jug::String  debug = std::format(
+            "STATE {} {}  AIM {}  OVL {}\nPOS {:.1f},{:.1f}  VEL {:.0f},{:.0f}  GND {}\nINV {}  KNIFE-RANGE {}  TICK {}  FPS {:.0f}\nF1 BOX  F2 PAUSE  F3 STEP  F4 SLOW  J SHOT  K JUMP  L BOMB",
+            GetStateName(p.GetState()),
+            p.GetFacing() > 0 ? "R" : "L",
+            GetAimName(p.GetAim()),
+            GetOverlayName(p.GetOverlay()),
+            pos.x,
+            pos.y,
+            vel.x,
+            vel.y,
+            p.IsGrounded() ? 1 : 0,
+            p.GetInvincibleTicks(),
+            p.IsKnifeTargetInRange() ? 1 : 0,
+            m_tickCount,
+            _ctx.fps);
+        renderer.DrawDebugText({ 9.f, 61.f }, debug, { 0, 0, 0, 255 });
+        renderer.DrawDebugText({ 8.f, 60.f }, debug, { 255, 255, 255, 255 });
     }
+
     if (_ctx.bPaused)
     {
-        renderer.DrawDebugText({ 282.f, 220.f }, "PAUSED", { 255, 255, 255, 255 });
+        TextStyle style;
+        style.align = eTextAlign::Center;
+        m_ui.DrawText(_ctx, Renderer::kLogicalWidth / 2, 216, "PAUSED", style);
     }
+
+    // 오버레이(페이드 → 배너)는 항상 마지막
+    m_ui.DrawOverlays(_ctx);
 }
 
 }   // namespace slug

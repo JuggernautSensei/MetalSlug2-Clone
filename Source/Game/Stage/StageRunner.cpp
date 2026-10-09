@@ -1,0 +1,921 @@
+#include "Game/Stage/StageRunner.h"
+
+#include <algorithm>
+#include <cmath>
+#include <cstring>
+
+#include <JugX/Assert.h>
+#include <JugX/Math.h>
+
+#include "World/Constants.h"
+
+namespace slug
+{
+
+namespace
+{
+    // 예약 시각을 틱으로: 초 * 60 을 반올림한다 (0.5, 1.5, 6.7 등 모두 정확)
+    constexpr double kTicksPerSec = 60.0;
+
+    constexpr float kWallDepth   = 64.f;
+    constexpr float kWallExtentY = 4000.f;
+
+    void MixU64_(
+        uint64_t&      _hash,
+        const uint64_t _value)
+    {
+        for (int i = 0; i < 8; ++i)
+        {
+            _hash ^= (_value >> (i * 8)) & 0xFFu;
+            _hash *= 1099511628211ull;
+        }
+    }
+
+    void MixFloat_(
+        uint64_t&   _hash,
+        const float _value)
+    {
+        uint32_t bits = 0;
+        std::memcpy(&bits, &_value, sizeof(bits));
+        MixU64_(_hash, bits);
+    }
+}   // namespace
+
+StageRunner::StageRunner(
+    const StageData& _data,
+    IStageHost&      _host,
+    Camera&          _camera,
+    jug::RngMt19937& _rng)
+    : m_pData(&_data)
+    , m_pHost(&_host)
+    , m_pCamera(&_camera)
+    , m_pRng(&_rng)
+{
+}
+
+int64_t StageRunner::ToTicks_(
+    const float _seconds)
+{
+    return static_cast<int64_t>(std::llround(static_cast<double>(_seconds) * kTicksPerSec));
+}
+
+// ===========================================
+//  초기화
+// ===========================================
+
+void StageRunner::Begin()
+{
+    m_tick          = 0;
+    m_nextSection   = 0;
+    m_bFinished     = false;
+    m_pending.clear();
+    m_nextSeq       = 1;
+    m_waveCutoffSeq = 0;
+    m_gates.clear();
+    m_records.clear();
+    m_spawnedCount  = 0;
+    m_skippedCount  = 0;
+    m_locks.clear();
+
+    const CameraConfig& config = m_pData->camera;
+    m_base         = config.initialBounds;
+    m_cameraOffset = config.initialOffset;
+    m_curveActive.assign(config.boundsCurves.size(), 0);
+
+    m_groundName   = m_pData->groundInitial;
+    m_backdropMode = m_pData->backdropInitial;
+
+    m_pCamera->CancelMove();
+    m_pCamera->Unlock();
+    m_pCamera->SetForwardOnly(config.bForward);
+    m_pCamera->SetForwardOnlyY(config.bForward);
+    ApplyCameraBounds_();
+
+    m_pHost->SetGround(m_groundName);
+    if (!m_backdropMode.empty())
+    {
+        m_pHost->SetBackdrop(m_backdropMode);
+    }
+    if (!m_pData->bgmName.empty())
+    {
+        m_pHost->PlayBgm(m_pData->bgmName, m_pData->bBgmLoop);
+    }
+}
+
+std::optional<jug::VECTOR2> StageRunner::ResolvePlayerStart() const
+{
+    const PlayerStart& start = m_pData->player;
+    float              y     = start.y;
+    if (start.bGroundSnap)
+    {
+        const std::optional<float> ground = m_pHost->GetGroundFindY(start.x, start.fromY);
+        if (!ground)
+        {
+            return std::nullopt;
+        }
+        y = *ground;
+    }
+    else if (start.origin == eOrigin::LegacyCenter)
+    {
+        y += start.halfHeight;
+    }
+    return jug::VECTOR2 { start.x, y };
+}
+
+// ===========================================
+//  카메라 보조
+// ===========================================
+
+Aabb StageRunner::CurrentViewRect_() const
+{
+    return Aabb::FromMinSize(m_pCamera->GetPositionNoShake(), m_pCamera->GetTuning().viewSize);
+}
+
+Aabb StageRunner::GetEffectiveBounds() const
+{
+    return m_locks.empty() ? m_base : m_locks.back().rect;
+}
+
+bool StageRunner::HasPermanentLock() const
+{
+    for (const LockEntry& lock: m_locks)
+    {
+        if (lock.bPermanent)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool StageRunner::IsCurveActive(
+    const size_t _curveIndex) const
+{
+    return _curveIndex < m_curveActive.size() && m_curveActive[_curveIndex] != 0;
+}
+
+void StageRunner::ApplyCameraBounds_()
+{
+    m_pCamera->SetBounds(m_base);
+}
+
+void StageRunner::ApplyCameraLock_()
+{
+    if (m_locks.empty())
+    {
+        m_pCamera->Unlock();
+    }
+    else
+    {
+        m_pCamera->Lock(m_locks.back().rect);
+    }
+}
+
+jug::VECTOR2 StageRunner::ComputeCameraTarget(
+    const jug::VECTOR2 _playerFeet) const
+{
+    return { _playerFeet.x + m_cameraOffset.x, _playerFeet.y - kStageCameraTargetLift + m_cameraOffset.y };
+}
+
+ScreenWalls StageRunner::MakeScreenWalls() const
+{
+    ScreenWalls walls;
+    const float margin = m_pData->camera.playerMargin;
+    const Aabb  view   = CurrentViewRect_();
+
+    if (m_pData->camera.bForward)
+    {
+        walls.bHasLeft = true;
+        walls.left     = Aabb::FromMinMax({ view.min.x - kWallDepth, -kWallExtentY }, { view.min.x + margin, kWallExtentY });
+    }
+
+    const Aabb bounds        = GetEffectiveBounds();
+    const bool bAtRightLimit = view.max.x >= bounds.max.x - 0.5f;
+    if (!m_locks.empty() || m_pCamera->IsMoving() || m_pCamera->HasPendingLock() || bAtRightLimit)
+    {
+        walls.bHasRight = true;
+        walls.right     = Aabb::FromMinMax({ view.max.x - margin, -kWallExtentY }, { view.max.x + kWallDepth, kWallExtentY });
+    }
+    return walls;
+}
+
+// ===========================================
+//  Tick
+// ===========================================
+
+void StageRunner::Tick()
+{
+    if (m_bFinished)
+    {
+        return;
+    }
+
+    CancelAbortables_();
+
+    // 1) 섹션 트리거: 플레이어 x 가 triggerX 를 엄격히 넘으면, 배열 순서대로, 각 1회
+    const jug::VECTOR2 feet = m_pHost->PlayerFeet();
+    while (m_nextSection < static_cast<int>(m_pData->sections.size()) && feet.x > m_pData->sections[static_cast<size_t>(m_nextSection)].triggerX && !m_bFinished)
+    {
+        const int index = m_nextSection++;
+        FireSection_(index, false);
+    }
+
+    // 2) 예약 큐 (지연 액션, 웨이브)
+    ProcessPending_();
+
+    // 3) 경계 곡선
+    ProcessCurves_();
+
+    // 4) 게이트
+    ProcessGates_();
+
+    // 5) 카메라 추적
+    m_pCamera->SetTarget(ComputeCameraTarget(m_pHost->PlayerFeet()));
+    m_pCamera->Update(kStepSec);
+
+    ++m_tick;
+}
+
+void StageRunner::CancelAbortables_()
+{
+    if (!m_pHost->IsGameOver())
+    {
+        return;
+    }
+    // 게임 오버: abortOnGameOver 게이트 자체와 그 게이트가 예약한 액션을 취소한다 (레거시 피날레)
+    std::erase_if(m_gates, [](const GateState& _gate) { return _gate.bAbortOnGameOver; });
+    std::erase_if(m_pending, [](const PendingItem& _item) { return _item.bAbortOnGameOver; });
+}
+
+void StageRunner::ProcessPending_()
+{
+    if (m_pending.empty())
+    {
+        return;
+    }
+
+    // 지금 실행할 항목을 (due, seq) 순으로 꺼낸다. 실행 중 새로 예약되는 항목은 due > now 이므로 다음 틱 이후이다.
+    jug::Vector<PendingItem> ready;
+    for (size_t i = 0; i < m_pending.size();)
+    {
+        if (m_pending[i].dueTick <= m_tick)
+        {
+            ready.push_back(m_pending[i]);
+            m_pending.erase(m_pending.begin() + static_cast<std::ptrdiff_t>(i));
+        }
+        else
+        {
+            ++i;
+        }
+    }
+    std::stable_sort(ready.begin(), ready.end(), [](const PendingItem& _a, const PendingItem& _b) {
+        return _a.dueTick != _b.dueTick ? _a.dueTick < _b.dueTick : _a.seq < _b.seq;
+    });
+
+    for (const PendingItem& item: ready)
+    {
+        if (m_bFinished)
+        {
+            break;
+        }
+        ExecContext ctx;
+        ctx.sectionIndex = item.sectionIndex;
+        ctx.bSilent      = false;
+        ctx.bAbort       = item.bAbortOnGameOver;
+
+        if (item.pWave)
+        {
+            if (item.seq < m_waveCutoffSeq)
+            {
+                continue;   // clear 로 취소된 웨이브
+            }
+            ExecSpawn_(item.pWave->spawn, ctx, true);
+        }
+        else if (item.pAction)
+        {
+            if (item.bAbortOnGameOver && m_pHost->IsGameOver())
+            {
+                continue;
+            }
+            Execute_(*item.pAction, ctx);
+        }
+    }
+}
+
+void StageRunner::ProcessCurves_()
+{
+    if (HasPermanentLock())
+    {
+        return;   // 영구 잠금 이후 boundsCurves 무시
+    }
+    const float playerX = m_pHost->PlayerFeet().x;
+    bool        bChanged = false;
+    for (size_t i = 0; i < m_pData->camera.boundsCurves.size(); ++i)
+    {
+        if (m_curveActive[i] == 0)
+        {
+            continue;
+        }
+        m_base   = m_pData->camera.boundsCurves[i].EvaluateBounds(playerX);
+        bChanged = true;
+    }
+    if (bChanged)
+    {
+        ApplyCameraBounds_();
+    }
+}
+
+bool StageRunner::IsGateSatisfied_(
+    const GateState& _gate) const
+{
+    const StageAction& action = *_gate.pAction;
+    for (const jug::String& stageId: action.waitFor)
+    {
+        const SpawnRecord* pRecord = FindRecord_(stageId);
+        if (!pRecord)
+        {
+            return false;   // 아직 스폰되지 않음: 기다린다
+        }
+        for (const SpawnId id: pRecord->ids)   // 비어 있으면(건너뜀) 만족
+        {
+            const bool bDone = action.until == eGateUntil::DestroyFinished ? m_pHost->IsDestroyFinished(id) : m_pHost->IsDefeated(id);
+            if (!bDone)
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void StageRunner::ProcessGates_()
+{
+    for (size_t i = 0; i < m_gates.size() && !m_bFinished;)
+    {
+        if (!IsGateSatisfied_(m_gates[i]))
+        {
+            ++i;
+            continue;
+        }
+
+        const GateState gate = m_gates[i];
+        m_gates.erase(m_gates.begin() + static_cast<std::ptrdiff_t>(i));
+
+        ExecContext ctx;
+        ctx.sectionIndex = gate.sectionIndex;
+        ctx.bSilent      = false;
+        ctx.bAbort       = gate.bAbortOnGameOver;
+        RunActions_(gate.pAction->actions, ctx);
+        // m_gates 가 바뀌었을 수 있다(새 게이트/clear). i 는 제거한 자리에서 계속한다.
+    }
+}
+
+// ===========================================
+//  섹션 / 액션 실행
+// ===========================================
+
+void StageRunner::FireSection_(
+    const int  _index,
+    const bool _bSilent)
+{
+    const StageSection& section = m_pData->sections[static_cast<size_t>(_index)];
+
+    for (size_t i = 0; i < m_pData->camera.boundsCurves.size(); ++i)
+    {
+        const BoundsCurve& curve = m_pData->camera.boundsCurves[i];
+        if (curve.fromIndex == _index)
+        {
+            m_curveActive[i] = 1;
+        }
+        if (curve.untilIndex == _index)
+        {
+            m_curveActive[i] = 0;   // until 섹션의 액션이 실행되기 직전에 곡선을 끈다
+        }
+    }
+
+    if (!_bSilent)
+    {
+        m_pHost->OnSectionEntered(_index, section.id);
+    }
+
+    ExecContext ctx;
+    ctx.sectionIndex = _index;
+    ctx.bSilent      = _bSilent;
+    RunActions_(section.actions, ctx);
+}
+
+void StageRunner::RunActions_(
+    const jug::Vector<StageAction>& _actions,
+    const ExecContext&              _ctx)
+{
+    for (const StageAction& action: _actions)
+    {
+        if (m_bFinished)
+        {
+            return;
+        }
+        if (!ShouldRunAction(action.when, _ctx.bSilent))
+        {
+            continue;
+        }
+
+        const int64_t delayTicks = _ctx.bSilent ? 0 : ToTicks_(action.delay);
+        if (delayTicks > 0)
+        {
+            PendingItem item;
+            item.dueTick          = m_tick + delayTicks;
+            item.seq              = m_nextSeq++;
+            item.pAction          = &action;
+            item.sectionIndex     = _ctx.sectionIndex;
+            item.bAbortOnGameOver = _ctx.bAbort;
+            m_pending.push_back(item);
+            continue;
+        }
+        Execute_(action, _ctx);
+    }
+}
+
+void StageRunner::Execute_(
+    const StageAction& _action,
+    const ExecContext& _ctx)
+{
+    switch (_action.type)
+    {
+        case eActionType::Spawn:
+            ExecSpawn_(_action.spawn, _ctx, false);
+            break;
+
+        case eActionType::SpawnWave:
+            for (const WaveEntry& entry: _action.waveEntries)
+            {
+                const int64_t delayTicks = ToTicks_(entry.delay);
+                if (delayTicks > 0)
+                {
+                    PendingItem item;
+                    item.dueTick          = m_tick + delayTicks;
+                    item.seq              = m_nextSeq++;
+                    item.pWave            = &entry;
+                    item.sectionIndex     = _ctx.sectionIndex;
+                    item.bAbortOnGameOver = _ctx.bAbort;
+                    m_pending.push_back(item);
+                }
+                else
+                {
+                    ExecSpawn_(entry.spawn, _ctx, true);
+                }
+            }
+            break;
+
+        case eActionType::SetBounds:
+            if (!HasPermanentLock())
+            {
+                m_base = _action.rect.rect;
+                ApplyCameraBounds_();
+            }
+            break;
+
+        case eActionType::LockCamera:
+            ExecLock_(_action, _ctx);
+            break;
+
+        case eActionType::UnlockCamera:
+            ExecUnlock_();
+            break;
+
+        case eActionType::CameraMove:
+            m_pCamera->BeginMove(_action.to, _ctx.bSilent ? 0.f : _action.seconds);
+            break;
+
+        case eActionType::SetCameraOffset:
+            m_cameraOffset = _action.offset;
+            break;
+
+        case eActionType::SetBackdrop:
+            m_backdropMode = _action.mode;
+            m_pHost->SetBackdrop(_action.mode);
+            break;
+
+        case eActionType::SetGround:
+            m_groundName = _action.name;
+            m_pHost->SetGround(_action.name);
+            break;
+
+        case eActionType::Gate:
+        {
+            GateState gate;
+            gate.pAction          = &_action;
+            gate.sectionIndex     = _ctx.sectionIndex;
+            gate.bAbortOnGameOver = _action.bAbortOnGameOver || _ctx.bAbort;
+            m_gates.push_back(gate);
+            break;
+        }
+
+        case eActionType::Command:
+            if (const SpawnRecord* pRecord = FindRecord_(_action.target))
+            {
+                for (const SpawnId id: pRecord->ids)
+                {
+                    m_pHost->SendCommand(id, _action.command);
+                }
+            }
+            break;
+
+        case eActionType::Clear:
+            ExecClear_(_action);
+            break;
+
+        case eActionType::Banner:
+            m_pHost->ShowBanner(_action.text, _action.seconds);
+            break;
+
+        case eActionType::Fade:
+            m_pHost->FadeTo(_action.fadeTo, _action.seconds);
+            break;
+
+        case eActionType::PlayBgm:
+            m_pHost->PlayBgm(_action.name, _action.bLoop);
+            break;
+
+        case eActionType::PlayerInvincible:
+            m_pHost->SetPlayerInvincible(_action.seconds);
+            break;
+
+        case eActionType::EndStage:
+            m_bFinished = true;
+            m_pHost->EndStage(_action.next);
+            break;
+    }
+}
+
+void StageRunner::ExecLock_(
+    const StageAction& _action,
+    const ExecContext& _ctx)
+{
+    LockEntry entry;
+    entry.rect       = _action.rect.bCurrent ? CurrentViewRect_() : _action.rect.rect;
+    entry.bPermanent = _action.bPermanent;
+    m_locks.push_back(entry);
+
+    // 글라이드: 카메라 중심을 락 중심으로 옮긴 뒤 락을 건다 (silent 에서는 즉시)
+    if (_action.glide > 0.f && !_ctx.bSilent && !_action.rect.bCurrent)
+    {
+        m_pCamera->LockWithGlide(entry.rect, _action.glide);
+    }
+    else
+    {
+        m_pCamera->Lock(entry.rect);
+    }
+}
+
+void StageRunner::ExecUnlock_()
+{
+    // 가장 최근의 비영구 잠금 하나를 푼다
+    for (size_t i = m_locks.size(); i > 0; --i)
+    {
+        if (!m_locks[i - 1].bPermanent)
+        {
+            m_locks.erase(m_locks.begin() + static_cast<std::ptrdiff_t>(i - 1));
+            m_pCamera->Unlock();   // 보류 중인 글라이드 락도 취소
+            ApplyCameraLock_();
+            return;
+        }
+    }
+}
+
+void StageRunner::ExecClear_(
+    const StageAction& _action)
+{
+    if (_action.bClearWaves)
+    {
+        // 대기 웨이브와 열린 게이트를 정리한다 (지연 액션은 유지)
+        m_waveCutoffSeq = m_nextSeq;
+        std::erase_if(m_pending, [](const PendingItem& _item) { return _item.pWave != nullptr; });
+        m_gates.clear();
+    }
+    if (_action.clearLayers != 0)
+    {
+        EntityFilter filter;
+        filter.layerMask = _action.clearLayers;
+        m_pHost->ClearEntities(filter);
+    }
+}
+
+// ===========================================
+//  spawn 해소
+// ===========================================
+
+StageRunner::SpawnRecord* StageRunner::FindRecord_(
+    const jug::StringView _stageId)
+{
+    for (SpawnRecord& record: m_records)
+    {
+        if (record.stageId == _stageId)
+        {
+            return &record;
+        }
+    }
+    return nullptr;
+}
+
+const StageRunner::SpawnRecord* StageRunner::FindRecord_(
+    const jug::StringView _stageId) const
+{
+    for (const SpawnRecord& record: m_records)
+    {
+        if (record.stageId == _stageId)
+        {
+            return &record;
+        }
+    }
+    return nullptr;
+}
+
+jug::Span<const SpawnId> StageRunner::FindSpawnIds(
+    const jug::StringView _stageId) const
+{
+    const SpawnRecord* pRecord = FindRecord_(_stageId);
+    return pRecord ? jug::Span<const SpawnId> { pRecord->ids } : jug::Span<const SpawnId> {};
+}
+
+bool StageRunner::WasSpawnSkipped(
+    const jug::StringView _stageId) const
+{
+    const SpawnRecord* pRecord = FindRecord_(_stageId);
+    return pRecord && pRecord->ids.empty();
+}
+
+void StageRunner::ExecSpawn_(
+    const SpawnSpec&   _spec,
+    const ExecContext& _ctx,
+    const bool         _bWave)
+{
+    const int count = _spec.GetCount();
+    for (int i = 0; i < count; ++i)
+    {
+        SpawnRequest request;
+        request.kind         = _spec.kind;
+        request.def          = _spec.def;
+        request.stageId      = _spec.id;
+        request.facing       = _spec.facing;
+        request.bHasHp       = _spec.bHasHp;
+        request.hp           = _spec.hp;
+        request.drop         = _spec.drop;
+        request.bSettle      = _spec.bSettle;
+        request.bFromCamera  = _spec.bHasCamera;
+        request.bWave        = _bWave;
+        request.bSilent      = _ctx.bSilent;
+        request.repeatIndex  = i;
+        request.sectionIndex = _ctx.sectionIndex;
+        request.bHasLayer    = _spec.bHasLayer;
+        request.layer        = _spec.layer;
+        request.cullMargin   = _spec.cullMargin;
+        request.bHasAmbush   = _spec.bHasAmbush;
+        request.ambush       = _spec.ambush;
+        request.size         = _spec.size;
+        request.collisionLayer = _spec.collisionLayer;
+        request.anim         = _spec.anim;
+        request.sprite       = _spec.sprite;
+        request.pParams      = &_spec.params;
+
+        // --- 위치 해소 ---
+        jug::VECTOR2 position = { 0.f, 0.f };
+        bool         bSkip    = false;
+        if (_spec.bHasCamera)
+        {
+            const Aabb       view = CurrentViewRect_();
+            const CameraAnchor& a = _spec.camera;
+            int dx = a.dxMin;
+            if (a.IsRandomX())
+            {
+                dx = jug::Random<int>(*m_pRng, a.dxMin, a.dxMax);
+            }
+            const float baseX = a.ax == eAnchorX::Left ? view.min.x : (a.ax == eAnchorX::Right ? view.max.x : (view.min.x + view.max.x) * 0.5f);
+            const float baseY = a.ay == eAnchorY::Top ? view.min.y : (a.ay == eAnchorY::Bottom ? view.max.y : (view.min.y + view.max.y) * 0.5f);
+            position = { baseX + static_cast<float>(dx), baseY + a.dy };
+        }
+        else
+        {
+            position.x = _spec.x;
+            position.y = _spec.y;
+            if (_spec.bHasRepeat)
+            {
+                position.x += static_cast<float>(i) * _spec.repeat.stepX;
+                position.y += static_cast<float>(i) * _spec.repeat.stepY;
+            }
+            if (_spec.bGroundSnap)
+            {
+                const std::optional<float> ground = m_pHost->GetGroundFindY(position.x, _spec.fromY);
+                if (ground)
+                {
+                    position.y = *ground;
+                }
+                else
+                {
+                    bSkip = true;   // 레거시: 지면이 없으면 스폰하지 않는다
+                }
+            }
+        }
+        if (_spec.bHasCamera && _spec.bHasRepeat)
+        {
+            position.x += static_cast<float>(i) * _spec.repeat.stepX;
+            position.y += static_cast<float>(i) * _spec.repeat.stepY;
+        }
+
+        // --- 원점 규칙 ---
+        if (_spec.origin == eOrigin::LegacyCenter && (_spec.kind == eEntityKind::Enemy || _spec.kind == eEntityKind::Npc))
+        {
+            request.halfHeight   = _spec.halfHeight;
+            request.position     = { position.x, position.y + _spec.halfHeight };
+            request.positionMode = ePositionMode::Feet;
+        }
+        else
+        {
+            request.halfHeight   = _spec.bHasHalfHeight ? _spec.halfHeight : 0.f;
+            request.position     = position;
+            request.positionMode = _spec.origin == eOrigin::Feet ? ePositionMode::Feet : ePositionMode::LegacyCenter;
+        }
+
+        SpawnId id = kInvalidSpawnId;
+        if (!bSkip)
+        {
+            id = m_pHost->SpawnEntity(request);
+        }
+        if (id == kInvalidSpawnId)
+        {
+            ++m_skippedCount;
+        }
+        else
+        {
+            ++m_spawnedCount;
+        }
+
+        if (!_spec.id.empty())
+        {
+            SpawnRecord* pRecord = FindRecord_(_spec.id);
+            if (!pRecord)
+            {
+                m_records.push_back({ _spec.id, {} });
+                pRecord = &m_records.back();
+            }
+            if (id != kInvalidSpawnId)
+            {
+                pRecord->ids.push_back(id);
+            }
+        }
+    }
+}
+
+// ===========================================
+//  워프
+// ===========================================
+
+bool StageRunner::WarpToSection(
+    const jug::StringView _id)
+{
+    const int index = m_pData->FindSection(_id);
+    return index >= 0 && WarpToSection(index);
+}
+
+bool StageRunner::WarpToBoss()
+{
+    int index = m_pData->FindSection("boss");
+    if (index < 0)
+    {
+        index = static_cast<int>(m_pData->sections.size()) - 1;
+    }
+    return index >= 0 && WarpToSection(index);
+}
+
+bool StageRunner::WarpToSection(
+    const int _index)
+{
+    if (_index < m_nextSection || _index >= static_cast<int>(m_pData->sections.size()) || m_bFinished)
+    {
+        return false;
+    }
+
+    // 진행 중이던 연출/대기 상태를 정리한다 (워프 후 월드는 "그 지점까지 조용히 진행한 상태")
+    m_pending.clear();
+    m_gates.clear();
+    m_waveCutoffSeq = m_nextSeq;
+    std::erase_if(m_locks, [](const LockEntry& _lock) { return !_lock.bPermanent; });
+    m_pCamera->CancelMove();
+    m_pCamera->Unlock();
+    ApplyCameraLock_();
+
+    while (m_nextSection < _index)
+    {
+        FireSection_(m_nextSection, true);
+        ++m_nextSection;
+    }
+
+    // 플레이어: 대상 섹션 triggerX + 1, 지면으로
+    const float  targetX = m_pData->sections[static_cast<size_t>(_index)].triggerX + 1.f;
+    const Aabb   bounds  = GetEffectiveBounds();
+    jug::VECTOR2 feet    = m_pHost->PlayerFeet();
+    feet.x               = targetX;
+    if (const std::optional<float> ground = m_pHost->GetGroundFindY(targetX, bounds.min.y))
+    {
+        feet.y = *ground;
+    }
+    m_pHost->WarpPlayer(feet);
+
+    // 카메라: 곡선 경계를 새 위치로 평가하고 즉시 맞춘다
+    ProcessCurves_();
+    m_pCamera->SetTarget(ComputeCameraTarget(feet));
+    m_pCamera->SnapToTarget();
+    return true;
+}
+
+// ===========================================
+//  조회 / 해시
+// ===========================================
+
+std::optional<float> StageRunner::GetNextTriggerX() const
+{
+    if (m_nextSection >= static_cast<int>(m_pData->sections.size()))
+    {
+        return std::nullopt;
+    }
+    return m_pData->sections[static_cast<size_t>(m_nextSection)].triggerX;
+}
+
+int StageRunner::GetPendingActionCount() const
+{
+    int count = 0;
+    for (const PendingItem& item: m_pending)
+    {
+        count += item.pAction ? 1 : 0;
+    }
+    return count;
+}
+
+int StageRunner::GetPendingWaveCount() const
+{
+    int count = 0;
+    for (const PendingItem& item: m_pending)
+    {
+        count += item.pWave ? 1 : 0;
+    }
+    return count;
+}
+
+jug::Vector<jug::String> StageRunner::GetOpenGateIds() const
+{
+    jug::Vector<jug::String> ids;
+    for (const GateState& gate: m_gates)
+    {
+        ids.push_back(gate.pAction->gateId);
+    }
+    return ids;
+}
+
+uint64_t StageRunner::HashState() const
+{
+    uint64_t hash = 14695981039346656037ull;
+    MixU64_(hash, static_cast<uint64_t>(m_tick));
+    MixU64_(hash, static_cast<uint64_t>(m_nextSection));
+    MixU64_(hash, m_bFinished ? 1u : 0u);
+    for (const PendingItem& item: m_pending)
+    {
+        MixU64_(hash, static_cast<uint64_t>(item.dueTick));
+        MixU64_(hash, item.seq);
+    }
+    MixU64_(hash, m_gates.size());
+    for (const LockEntry& lock: m_locks)
+    {
+        MixFloat_(hash, lock.rect.min.x);
+        MixFloat_(hash, lock.rect.min.y);
+        MixFloat_(hash, lock.rect.max.x);
+        MixFloat_(hash, lock.rect.max.y);
+    }
+    MixFloat_(hash, m_base.min.x);
+    MixFloat_(hash, m_base.min.y);
+    MixFloat_(hash, m_base.max.x);
+    MixFloat_(hash, m_base.max.y);
+    MixFloat_(hash, m_cameraOffset.x);
+    MixFloat_(hash, m_cameraOffset.y);
+    for (const SpawnRecord& record: m_records)
+    {
+        for (const SpawnId id: record.ids)
+        {
+            MixU64_(hash, id);
+        }
+    }
+    MixU64_(hash, static_cast<uint64_t>(m_spawnedCount));
+    MixU64_(hash, static_cast<uint64_t>(m_skippedCount));
+    for (const char c: m_groundName)
+    {
+        MixU64_(hash, static_cast<uint8_t>(c));
+    }
+    for (const char c: m_backdropMode)
+    {
+        MixU64_(hash, static_cast<uint8_t>(c));
+    }
+    const jug::VECTOR2 center = m_pCamera->GetViewCenter();
+    MixFloat_(hash, center.x);
+    MixFloat_(hash, center.y);
+    return hash;
+}
+
+}   // namespace slug

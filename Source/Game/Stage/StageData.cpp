@@ -1,0 +1,2250 @@
+#include "Game/Stage/StageData.h"
+
+#include <cmath>
+#include <format>
+#include <fstream>
+#include <optional>
+#include <sstream>
+#include <utility>
+
+#include <JugX/JsonDeserializer.h>
+
+#include "Core/Error.h"
+
+namespace slug
+{
+
+// ===========================================
+//  ParamValue
+// ===========================================
+
+ParamValue ParamValue::MakeBool(
+    const bool _bValue)
+{
+    ParamValue value;
+    value.m_type   = eType::Bool;
+    value.m_bValue = _bValue;
+    return value;
+}
+
+ParamValue ParamValue::MakeNumber(
+    const double _value)
+{
+    ParamValue value;
+    value.m_type   = eType::Number;
+    value.m_number = _value;
+    return value;
+}
+
+ParamValue ParamValue::MakeString(
+    jug::String _value)
+{
+    ParamValue value;
+    value.m_type   = eType::String;
+    value.m_string = std::move(_value);
+    return value;
+}
+
+ParamValue ParamValue::MakeArray()
+{
+    ParamValue value;
+    value.m_type = eType::Array;
+    return value;
+}
+
+ParamValue ParamValue::MakeObject()
+{
+    ParamValue value;
+    value.m_type = eType::Object;
+    return value;
+}
+
+void ParamValue::PushBack(
+    ParamValue _value)
+{
+    JUG_ASSERT(m_type == eType::Array, "PushBack requires an array value");
+    m_items.push_back(std::move(_value));
+}
+
+void ParamValue::Set(
+    jug::String _key,
+    ParamValue  _value)
+{
+    JUG_ASSERT(m_type == eType::Object, "Set requires an object value");
+    for (size_t i = 0; i < m_keys.size(); ++i)
+    {
+        if (m_keys[i] == _key)
+        {
+            m_items[i] = std::move(_value);
+            return;
+        }
+    }
+    m_keys.push_back(std::move(_key));
+    m_items.push_back(std::move(_value));
+}
+
+bool ParamValue::AsBool(
+    const bool _bDefault) const
+{
+    return m_type == eType::Bool ? m_bValue : _bDefault;
+}
+
+double ParamValue::AsNumber(
+    const double _default) const
+{
+    return m_type == eType::Number ? m_number : _default;
+}
+
+float ParamValue::AsFloat(
+    const float _default) const
+{
+    return m_type == eType::Number ? static_cast<float>(m_number) : _default;
+}
+
+int ParamValue::AsInt(
+    const int _default) const
+{
+    return m_type == eType::Number ? static_cast<int>(std::llround(m_number)) : _default;
+}
+
+const jug::String& ParamValue::AsString() const
+{
+    static const jug::String kEmpty;
+    return m_type == eType::String ? m_string : kEmpty;
+}
+
+size_t ParamValue::GetSize() const
+{
+    return (m_type == eType::Array || m_type == eType::Object) ? m_items.size() : 0;
+}
+
+const ParamValue& ParamValue::At(
+    const size_t _index) const
+{
+    if (m_type != eType::Array || _index >= m_items.size())
+    {
+        return NullValue();
+    }
+    return m_items[_index];
+}
+
+const ParamValue* ParamValue::Find(
+    const jug::StringView _key) const
+{
+    if (m_type != eType::Object)
+    {
+        return nullptr;
+    }
+    for (size_t i = 0; i < m_keys.size(); ++i)
+    {
+        if (m_keys[i] == _key)
+        {
+            return &m_items[i];
+        }
+    }
+    return nullptr;
+}
+
+bool ParamValue::GetBool(
+    const jug::StringView _key,
+    const bool            _bDefault) const
+{
+    const ParamValue* pValue = Find(_key);
+    return pValue ? pValue->AsBool(_bDefault) : _bDefault;
+}
+
+float ParamValue::GetFloat(
+    const jug::StringView _key,
+    const float           _default) const
+{
+    const ParamValue* pValue = Find(_key);
+    return pValue ? pValue->AsFloat(_default) : _default;
+}
+
+int ParamValue::GetInt(
+    const jug::StringView _key,
+    const int             _default) const
+{
+    const ParamValue* pValue = Find(_key);
+    return pValue ? pValue->AsInt(_default) : _default;
+}
+
+jug::String ParamValue::GetString(
+    const jug::StringView _key,
+    const jug::StringView _default) const
+{
+    const ParamValue* pValue = Find(_key);
+    return (pValue && pValue->IsString()) ? pValue->m_string : jug::String { _default };
+}
+
+jug::VECTOR2 ParamValue::GetVec2(
+    const jug::StringView _key,
+    const jug::VECTOR2    _default) const
+{
+    const ParamValue* pValue = Find(_key);
+    jug::VECTOR2      out    = _default;
+    if (pValue && pValue->TryGetVec2(out))
+    {
+        return out;
+    }
+    return _default;
+}
+
+bool ParamValue::TryGetVec2(
+    jug::VECTOR2& _out) const
+{
+    if (m_type != eType::Array || m_items.size() != 2 || !m_items[0].IsNumber() || !m_items[1].IsNumber())
+    {
+        return false;
+    }
+    _out = { m_items[0].AsFloat(), m_items[1].AsFloat() };
+    return true;
+}
+
+const ParamValue& ParamValue::EmptyObject()
+{
+    static const ParamValue kEmpty = ParamValue::MakeObject();
+    return kEmpty;
+}
+
+const ParamValue& ParamValue::NullValue()
+{
+    static const ParamValue kNull;
+    return kNull;
+}
+
+// ===========================================
+//  BoundsCurve / StageData 조회
+// ===========================================
+
+float BoundsCurve::EvaluateTop(
+    const float _playerX) const
+{
+    if (top.empty())
+    {
+        return 0.f;
+    }
+
+    float result = top.back().y;
+    if (_playerX <= top.front().x)
+    {
+        result = top.front().y;
+    }
+    else if (_playerX < top.back().x)
+    {
+        for (size_t i = 1; i < top.size(); ++i)
+        {
+            if (_playerX <= top[i].x)
+            {
+                const jug::VECTOR2 a = top[i - 1];
+                const jug::VECTOR2 b = top[i];
+                const float        t = (_playerX - a.x) / (b.x - a.x);
+                result               = a.y + (b.y - a.y) * t;
+                break;
+            }
+        }
+    }
+    return bTrunc ? std::trunc(result) : result;
+}
+
+Aabb BoundsCurve::EvaluateBounds(
+    const float _playerX) const
+{
+    const float top0 = EvaluateTop(_playerX);
+    return Aabb::FromMinMax({ left, top0 }, { right, top0 + height });
+}
+
+int StageData::FindSection(
+    const jug::StringView _id) const
+{
+    for (size_t i = 0; i < sections.size(); ++i)
+    {
+        if (sections[i].id == _id)
+        {
+            return static_cast<int>(i);
+        }
+    }
+    return -1;
+}
+
+const NamedRect* StageData::FindRect(
+    const jug::StringView _name) const
+{
+    for (const NamedRect& rect: rects)
+    {
+        if (rect.name == _name)
+        {
+            return &rect;
+        }
+    }
+    return nullptr;
+}
+
+const BackdropMode* StageData::FindBackdrop(
+    const jug::StringView _id) const
+{
+    for (const BackdropMode& mode: backdrops)
+    {
+        if (mode.id == _id)
+        {
+            return &mode;
+        }
+    }
+    return nullptr;
+}
+
+bool StageData::HasGroundMap(
+    const jug::StringView _name) const
+{
+    for (const jug::String& map: groundMaps)
+    {
+        if (map == _name)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+namespace
+{
+    template<typename F>
+    void ForEachAction_(
+        const jug::Vector<StageAction>& _actions,
+        F&&                             _fn)
+    {
+        for (const StageAction& action: _actions)
+        {
+            _fn(action);
+            if (action.type == eActionType::Gate)
+            {
+                ForEachAction_(action.actions, _fn);
+            }
+        }
+    }
+}   // namespace
+
+int StageData::CountSpawns() const
+{
+    int count = 0;
+    for (const StageSection& section: sections)
+    {
+        ForEachAction_(section.actions, [&count](const StageAction& _action) {
+            if (_action.type == eActionType::Spawn)
+            {
+                count += _action.spawn.GetCount();
+            }
+        });
+    }
+    return count;
+}
+
+int StageData::CountWaveEntries() const
+{
+    int count = 0;
+    for (const StageSection& section: sections)
+    {
+        ForEachAction_(section.actions, [&count](const StageAction& _action) {
+            if (_action.type == eActionType::SpawnWave)
+            {
+                for (const WaveEntry& entry: _action.waveEntries)
+                {
+                    count += entry.spawn.GetCount();
+                }
+            }
+        });
+    }
+    return count;
+}
+
+int StageData::CountGates() const
+{
+    int count = 0;
+    for (const StageSection& section: sections)
+    {
+        ForEachAction_(section.actions, [&count](const StageAction& _action) {
+            if (_action.type == eActionType::Gate)
+            {
+                ++count;
+            }
+        });
+    }
+    return count;
+}
+
+const char* GetEntityKindName(
+    const eEntityKind _kind)
+{
+    switch (_kind)
+    {
+        case eEntityKind::Enemy: return "enemy";
+        case eEntityKind::Npc: return "npc";
+        case eEntityKind::Prop: return "prop";
+        case eEntityKind::Decor: return "decor";
+        case eEntityKind::Item: return "item";
+        case eEntityKind::Collider: return "collider";
+    }
+    return "?";
+}
+
+const char* GetActionTypeName(
+    const eActionType _type)
+{
+    switch (_type)
+    {
+        case eActionType::Spawn: return "spawn";
+        case eActionType::SpawnWave: return "spawnWave";
+        case eActionType::SetBounds: return "setBounds";
+        case eActionType::LockCamera: return "lockCamera";
+        case eActionType::UnlockCamera: return "unlockCamera";
+        case eActionType::CameraMove: return "cameraMove";
+        case eActionType::SetCameraOffset: return "setCameraOffset";
+        case eActionType::SetBackdrop: return "setBackdrop";
+        case eActionType::SetGround: return "setGround";
+        case eActionType::Gate: return "gate";
+        case eActionType::Command: return "command";
+        case eActionType::Clear: return "clear";
+        case eActionType::Banner: return "banner";
+        case eActionType::Fade: return "fade";
+        case eActionType::PlayBgm: return "playBgm";
+        case eActionType::PlayerInvincible: return "playerInvincible";
+        case eActionType::EndStage: return "endStage";
+    }
+    return "?";
+}
+
+// ===========================================
+//  파서
+//   첫 오류에서 멈추고 "위치: 메시지" 형태의 진단 문자열을 남긴다.
+// ===========================================
+
+namespace
+{
+    using jug::JsonReader;
+    using jug::String;
+    using jug::StringView;
+
+    template<typename E>
+    struct EnumEntry
+    {
+        StringView name;
+        E          value;
+    };
+
+    template<typename E, size_t N>
+    [[nodiscard]] bool LookupEnum_(
+        const EnumEntry<E> (&_table)[N],
+        const StringView _name,
+        E&               _out)
+    {
+        for (const EnumEntry<E>& entry: _table)
+        {
+            if (entry.name == _name)
+            {
+                _out = entry.value;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    template<typename E, size_t N>
+    [[nodiscard]] String ListEnum_(
+        const EnumEntry<E> (&_table)[N])
+    {
+        String list;
+        for (const EnumEntry<E>& entry: _table)
+        {
+            if (!list.empty())
+            {
+                list += '|';
+            }
+            list += entry.name;
+        }
+        return list;
+    }
+
+    constexpr EnumEntry<eEntityKind> kKindTable[] = {
+        { "enemy",    eEntityKind::Enemy    },
+        { "npc",      eEntityKind::Npc      },
+        { "prop",     eEntityKind::Prop     },
+        { "decor",    eEntityKind::Decor    },
+        { "item",     eEntityKind::Item     },
+        { "collider", eEntityKind::Collider }
+    };
+    constexpr EnumEntry<eOrigin> kOriginTable[] = {
+        { "feet",         eOrigin::Feet         },
+        { "legacyCenter", eOrigin::LegacyCenter }
+    };
+    constexpr EnumEntry<eStageLayer> kLayerTable[] = {
+        { "farBackground",   eStageLayer::FarBackground   },
+        { "background",      eStageLayer::Background      },
+        { "interact",        eStageLayer::Interact        },
+        { "monster",         eStageLayer::Monster         },
+        { "npc",             eStageLayer::Npc             },
+        { "item",            eStageLayer::Item            },
+        { "frontBackground", eStageLayer::FrontBackground },
+        { "collider",        eStageLayer::Collider        }
+    };
+    constexpr EnumEntry<eCollisionLayer> kCollisionTable[] = {
+        { "wall",               eCollisionLayer::Wall               },
+        { "groundExceptPlayer", eCollisionLayer::GroundExceptPlayer }
+    };
+    constexpr EnumEntry<eAnchorX> kAnchorXTable[] = {
+        { "left",   eAnchorX::Left   },
+        { "right",  eAnchorX::Right  },
+        { "center", eAnchorX::Center }
+    };
+    constexpr EnumEntry<eAnchorY> kAnchorYTable[] = {
+        { "top",    eAnchorY::Top    },
+        { "bottom", eAnchorY::Bottom },
+        { "center", eAnchorY::Center }
+    };
+    constexpr EnumEntry<eActionType> kActionTable[] = {
+        { "spawn",            eActionType::Spawn            },
+        { "spawnWave",        eActionType::SpawnWave        },
+        { "setBounds",        eActionType::SetBounds        },
+        { "lockCamera",       eActionType::LockCamera       },
+        { "unlockCamera",     eActionType::UnlockCamera     },
+        { "cameraMove",       eActionType::CameraMove       },
+        { "setCameraOffset",  eActionType::SetCameraOffset  },
+        { "setBackdrop",      eActionType::SetBackdrop      },
+        { "setGround",        eActionType::SetGround        },
+        { "gate",             eActionType::Gate             },
+        { "command",          eActionType::Command          },
+        { "clear",            eActionType::Clear            },
+        { "banner",           eActionType::Banner           },
+        { "fade",             eActionType::Fade             },
+        { "playBgm",          eActionType::PlayBgm          },
+        { "playerInvincible", eActionType::PlayerInvincible },
+        { "endStage",         eActionType::EndStage         }
+    };
+    constexpr EnumEntry<eWhen> kWhenTable[] = {
+        { "normal", eWhen::Normal },
+        { "silent", eWhen::Silent },
+        { "always", eWhen::Always }
+    };
+    constexpr EnumEntry<eGateUntil> kUntilTable[] = {
+        { "defeated",        eGateUntil::Defeated        },
+        { "destroyFinished", eGateUntil::DestroyFinished }
+    };
+    constexpr EnumEntry<eFadeTarget> kFadeTable[] = {
+        { "black", eFadeTarget::Black },
+        { "clear", eFadeTarget::Clear }
+    };
+
+    [[nodiscard]] bool IsCreature_(
+        const eEntityKind _kind)
+    {
+        return _kind == eEntityKind::Enemy || _kind == eEntityKind::Npc;
+    }
+
+    [[nodiscard]] eOrigin DefaultOrigin_(
+        const eEntityKind _kind)
+    {
+        return IsCreature_(_kind) ? eOrigin::Feet : eOrigin::LegacyCenter;
+    }
+
+    [[nodiscard]] eWhen DefaultWhen_(
+        const StageAction& _action)
+    {
+        switch (_action.type)
+        {
+            case eActionType::Spawn:
+                switch (_action.spawn.kind)
+                {
+                    case eEntityKind::Prop:
+                    case eEntityKind::Decor:
+                    case eEntityKind::Item:
+                    case eEntityKind::Collider:
+                    case eEntityKind::Npc: return eWhen::Always;
+                    case eEntityKind::Enemy: return eWhen::Normal;
+                }
+                return eWhen::Normal;
+            case eActionType::SetBounds:
+            case eActionType::SetBackdrop:
+            case eActionType::SetCameraOffset:
+            case eActionType::UnlockCamera: return eWhen::Always;
+            default: return eWhen::Normal;
+        }
+    }
+
+    [[nodiscard]] ParamValue ToParam_(
+        const JsonReader& _json)
+    {
+        if (_json.IsBool())
+        {
+            return ParamValue::MakeBool(_json.Read<bool>().GetValue());
+        }
+        if (_json.IsNumber())
+        {
+            return ParamValue::MakeNumber(_json.Read<double>().GetValue());
+        }
+        if (_json.IsString())
+        {
+            return ParamValue::MakeString(_json.Read<String>().GetValue());
+        }
+        if (_json.IsArray())
+        {
+            ParamValue array = ParamValue::MakeArray();
+            for (const JsonReader element: _json.GetArray())
+            {
+                array.PushBack(ToParam_(element));
+            }
+            return array;
+        }
+        if (_json.IsObject())
+        {
+            ParamValue object = ParamValue::MakeObject();
+            for (const auto [key, value]: _json.GetObject())
+            {
+                object.Set(String { key }, ToParam_(value));
+            }
+            return object;
+        }
+        return ParamValue {};
+    }
+
+    class Parser
+    {
+    public:
+        explicit Parser(
+            StageData& _out)
+            : m_out(_out)
+        {
+        }
+
+        [[nodiscard]] bool Parse(const JsonReader& _root);
+
+        [[nodiscard]] const String& GetError() const { return m_error; }
+
+    private:
+        enum class eSpawnContext
+        {
+            Action,
+            WaveEntry
+        };
+
+        // --- 오류 ---
+        bool Fail_(const String& _where, const String& _message);
+
+        // --- 필드 읽기 (없고 필수가 아니면 true + 값 유지, 타입이 틀리면 false) ---
+        bool GetField_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, std::optional<JsonReader>& _out);
+        bool GetNumber_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, double& _out, bool* _pFound = nullptr);
+        bool GetFloat_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, float& _out, bool* _pFound = nullptr);
+        bool GetInt_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, int& _out, bool* _pFound = nullptr);
+        bool GetBool_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, bool& _out, bool* _pFound = nullptr);
+        bool GetString_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, String& _out, bool* _pFound = nullptr);
+        bool GetVec2_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, jug::VECTOR2& _out, bool* _pFound = nullptr);
+        bool GetObject_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, std::optional<JsonReader>& _out);
+        bool GetArray_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, std::optional<JsonReader>& _out);
+
+        template<typename E, size_t N>
+        bool GetEnum_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, const EnumEntry<E> (&_table)[N], E& _out, bool* _pFound = nullptr)
+        {
+            String text;
+            bool   bFound = false;
+            if (!GetString_(_obj, _where, _key, _bRequired, text, &bFound))
+            {
+                return false;
+            }
+            if (_pFound)
+            {
+                *_pFound = bFound;
+            }
+            if (!bFound)
+            {
+                return true;
+            }
+            if (!LookupEnum_(_table, text, _out))
+            {
+                return Fail_(_where, std::format("field '{}' has unknown value '{}' (expected {})", _key, text, ListEnum_(_table)));
+            }
+            return true;
+        }
+
+        [[nodiscard]] bool ExpectObject_(const JsonReader& _json, const String& _where);
+        bool               CheckKeys_(const JsonReader& _obj, const String& _where, std::initializer_list<StringView> _allowed);
+
+        // --- 구조 ---
+        bool ParseWorld_(const JsonReader& _root);
+        bool ParseBgm_(const JsonReader& _root);
+        bool ParseGround_(const JsonReader& _root);
+        bool ParseBackdrop_(const JsonReader& _root);
+        bool ParseRects_(const JsonReader& _root);
+        bool ParseCamera_(const JsonReader& _root);
+        bool ParsePlayer_(const JsonReader& _root);
+        bool ParseSections_(const JsonReader& _root);
+        bool ParseRect_(const JsonReader& _obj, const String& _where, StringView _key, bool _bAllowCurrent, RectRef& _out);
+        bool ParseRectArray_(const JsonReader& _array, const String& _where, StringView _key, Aabb& _out);
+
+        bool ParseSpawn_(const JsonReader& _obj, const String& _where, eSpawnContext _context, SpawnSpec& _out);
+        bool ParseCameraAnchor_(const JsonReader& _obj, const String& _where, CameraAnchor& _out);
+        bool ParseAction_(const JsonReader& _obj, const String& _where, StageAction& _out);
+        bool ParseActionList_(const JsonReader& _array, const String& _where, jug::Vector<StageAction>& _out);
+
+        // --- 교차 검증 ---
+        bool Validate_();
+        bool CollectIds_(const jug::Vector<StageAction>& _actions, const String& _where);
+        bool CheckRefs_(const jug::Vector<StageAction>& _actions, const String& _where);
+
+        StageData&               m_out;
+        String                   m_error;
+        jug::Vector<String>      m_spawnIds;
+        jug::Vector<String>      m_gateIds;
+    };
+
+    // ===========================================
+    //  오류 / 필드 읽기
+    // ===========================================
+
+    bool Parser::Fail_(
+        const String& _where,
+        const String& _message)
+    {
+        if (m_error.empty())
+        {
+            m_error = _where.empty() ? _message : std::format("{}: {}", _where, _message);
+        }
+        return false;
+    }
+
+    bool Parser::GetField_(
+        const JsonReader&          _obj,
+        const String&              _where,
+        const StringView           _key,
+        const bool                 _bRequired,
+        std::optional<JsonReader>& _out)
+    {
+        _out.reset();
+        if (!_obj.HasField(_key))
+        {
+            if (_bRequired)
+            {
+                return Fail_(_where, std::format("missing required field '{}'", _key));
+            }
+            return true;
+        }
+        const jug::Result<JsonReader> found = _obj.FindField(_key);
+        _out                                = found.GetValue();
+        return true;
+    }
+
+    bool Parser::GetNumber_(
+        const JsonReader& _obj,
+        const String&     _where,
+        const StringView  _key,
+        const bool        _bRequired,
+        double&           _out,
+        bool*             _pFound)
+    {
+        std::optional<JsonReader> field;
+        if (!GetField_(_obj, _where, _key, _bRequired, field))
+        {
+            return false;
+        }
+        if (_pFound)
+        {
+            *_pFound = field.has_value();
+        }
+        if (!field)
+        {
+            return true;
+        }
+        if (!field->IsNumber())
+        {
+            return Fail_(_where, std::format("field '{}' must be a number", _key));
+        }
+        _out = field->Read<double>().GetValue();
+        return true;
+    }
+
+    bool Parser::GetFloat_(
+        const JsonReader& _obj,
+        const String&     _where,
+        const StringView  _key,
+        const bool        _bRequired,
+        float&            _out,
+        bool*             _pFound)
+    {
+        double value = static_cast<double>(_out);
+        if (!GetNumber_(_obj, _where, _key, _bRequired, value, _pFound))
+        {
+            return false;
+        }
+        _out = static_cast<float>(value);
+        return true;
+    }
+
+    bool Parser::GetInt_(
+        const JsonReader& _obj,
+        const String&     _where,
+        const StringView  _key,
+        const bool        _bRequired,
+        int&              _out,
+        bool*             _pFound)
+    {
+        double value = static_cast<double>(_out);
+        bool   bFound = false;
+        if (!GetNumber_(_obj, _where, _key, _bRequired, value, &bFound))
+        {
+            return false;
+        }
+        if (_pFound)
+        {
+            *_pFound = bFound;
+        }
+        if (bFound)
+        {
+            if (value != std::floor(value) || std::abs(value) > 2147483647.0)
+            {
+                return Fail_(_where, std::format("field '{}' must be an integer", _key));
+            }
+            _out = static_cast<int>(value);
+        }
+        return true;
+    }
+
+    bool Parser::GetBool_(
+        const JsonReader& _obj,
+        const String&     _where,
+        const StringView  _key,
+        const bool        _bRequired,
+        bool&             _out,
+        bool*             _pFound)
+    {
+        std::optional<JsonReader> field;
+        if (!GetField_(_obj, _where, _key, _bRequired, field))
+        {
+            return false;
+        }
+        if (_pFound)
+        {
+            *_pFound = field.has_value();
+        }
+        if (!field)
+        {
+            return true;
+        }
+        if (!field->IsBool())
+        {
+            return Fail_(_where, std::format("field '{}' must be a boolean", _key));
+        }
+        _out = field->Read<bool>().GetValue();
+        return true;
+    }
+
+    bool Parser::GetString_(
+        const JsonReader& _obj,
+        const String&     _where,
+        const StringView  _key,
+        const bool        _bRequired,
+        String&           _out,
+        bool*             _pFound)
+    {
+        std::optional<JsonReader> field;
+        if (!GetField_(_obj, _where, _key, _bRequired, field))
+        {
+            return false;
+        }
+        if (_pFound)
+        {
+            *_pFound = field.has_value();
+        }
+        if (!field)
+        {
+            return true;
+        }
+        if (!field->IsString())
+        {
+            return Fail_(_where, std::format("field '{}' must be a string", _key));
+        }
+        _out = field->Read<String>().GetValue();
+        return true;
+    }
+
+    bool Parser::GetVec2_(
+        const JsonReader& _obj,
+        const String&     _where,
+        const StringView  _key,
+        const bool        _bRequired,
+        jug::VECTOR2&     _out,
+        bool*             _pFound)
+    {
+        std::optional<JsonReader> field;
+        if (!GetField_(_obj, _where, _key, _bRequired, field))
+        {
+            return false;
+        }
+        if (_pFound)
+        {
+            *_pFound = field.has_value();
+        }
+        if (!field)
+        {
+            return true;
+        }
+        if (!field->IsArray() || field->GetSize() != 2)
+        {
+            return Fail_(_where, std::format("field '{}' must be an array of 2 numbers", _key));
+        }
+        float values[2] = { 0.f, 0.f };
+        int   index     = 0;
+        for (const JsonReader element: field->GetArray())
+        {
+            if (!element.IsNumber())
+            {
+                return Fail_(_where, std::format("field '{}' must be an array of 2 numbers", _key));
+            }
+            values[index++] = static_cast<float>(element.Read<double>().GetValue());
+        }
+        _out = { values[0], values[1] };
+        return true;
+    }
+
+    bool Parser::GetObject_(
+        const JsonReader&          _obj,
+        const String&              _where,
+        const StringView           _key,
+        const bool                 _bRequired,
+        std::optional<JsonReader>& _out)
+    {
+        if (!GetField_(_obj, _where, _key, _bRequired, _out))
+        {
+            return false;
+        }
+        if (_out && !_out->IsObject())
+        {
+            return Fail_(_where, std::format("field '{}' must be an object", _key));
+        }
+        return true;
+    }
+
+    bool Parser::GetArray_(
+        const JsonReader&          _obj,
+        const String&              _where,
+        const StringView           _key,
+        const bool                 _bRequired,
+        std::optional<JsonReader>& _out)
+    {
+        if (!GetField_(_obj, _where, _key, _bRequired, _out))
+        {
+            return false;
+        }
+        if (_out && !_out->IsArray())
+        {
+            return Fail_(_where, std::format("field '{}' must be an array", _key));
+        }
+        return true;
+    }
+
+    bool Parser::ExpectObject_(
+        const JsonReader& _json,
+        const String&     _where)
+    {
+        if (!_json.IsObject())
+        {
+            return Fail_(_where, "must be an object");
+        }
+        return true;
+    }
+
+    bool Parser::CheckKeys_(
+        const JsonReader&                   _obj,
+        const String&                       _where,
+        const std::initializer_list<StringView> _allowed)
+    {
+        if (!ExpectObject_(_obj, _where))
+        {
+            return false;
+        }
+        for (const auto [key, value]: _obj.GetObject())
+        {
+            if (key == "note")
+            {
+                continue;
+            }
+            bool bKnown = false;
+            for (const StringView allowed: _allowed)
+            {
+                if (allowed == key)
+                {
+                    bKnown = true;
+                    break;
+                }
+            }
+            if (!bKnown)
+            {
+                return Fail_(_where, std::format("unknown key '{}'", key));
+            }
+        }
+        return true;
+    }
+
+    // ===========================================
+    //  최상위
+    // ===========================================
+
+    bool Parser::Parse(
+        const JsonReader& _root)
+    {
+        const String where = "root";
+        if (!CheckKeys_(_root, where, { "version", "name", "title", "world", "bgm", "ground", "backdrop", "player", "rects", "camera", "sections" }))
+        {
+            return false;
+        }
+
+        if (!GetInt_(_root, where, "version", true, m_out.version) || !GetString_(_root, where, "name", true, m_out.name))
+        {
+            return false;
+        }
+        if (m_out.version != 1)
+        {
+            return Fail_(where, std::format("unsupported version {} (expected 1)", m_out.version));
+        }
+        m_out.title = m_out.name;
+        if (!GetString_(_root, where, "title", false, m_out.title))
+        {
+            return false;
+        }
+
+        // 의존 순서: world → ground → backdrop → rects → camera → player → sections
+        if (!ParseWorld_(_root) || !ParseBgm_(_root) || !ParseGround_(_root) || !ParseBackdrop_(_root) || !ParseRects_(_root) || !ParseCamera_(_root) || !ParsePlayer_(_root) || !ParseSections_(_root))
+        {
+            return false;
+        }
+        return Validate_();
+    }
+
+    bool Parser::ParseWorld_(
+        const JsonReader& _root)
+    {
+        const String              where = "world";
+        std::optional<JsonReader> world;
+        if (!GetObject_(_root, "root", "world", true, world) || !CheckKeys_(*world, where, { "size", "view", "background" }))
+        {
+            return false;
+        }
+        if (!GetVec2_(*world, where, "size", true, m_out.worldSize) || !GetVec2_(*world, where, "view", false, m_out.viewSize) || !GetString_(*world, where, "background", true, m_out.background))
+        {
+            return false;
+        }
+        if (m_out.worldSize.x <= 0.f || m_out.worldSize.y <= 0.f || m_out.viewSize.x <= 0.f || m_out.viewSize.y <= 0.f)
+        {
+            return Fail_(where, "size and view must be positive");
+        }
+        return true;
+    }
+
+    bool Parser::ParseBgm_(
+        const JsonReader& _root)
+    {
+        std::optional<JsonReader> bgm;
+        if (!GetObject_(_root, "root", "bgm", false, bgm) || !bgm)
+        {
+            return !m_error.size();
+        }
+        const String where = "bgm";
+        return CheckKeys_(*bgm, where, { "name", "loop" }) && GetString_(*bgm, where, "name", true, m_out.bgmName) && GetBool_(*bgm, where, "loop", false, m_out.bBgmLoop);
+    }
+
+    bool Parser::ParseGround_(
+        const JsonReader& _root)
+    {
+        const String              where = "ground";
+        std::optional<JsonReader> ground;
+        if (!GetObject_(_root, "root", "ground", true, ground) || !CheckKeys_(*ground, where, { "initial", "maps" }))
+        {
+            return false;
+        }
+        std::optional<JsonReader> maps;
+        if (!GetString_(*ground, where, "initial", true, m_out.groundInitial) || !GetArray_(*ground, where, "maps", true, maps))
+        {
+            return false;
+        }
+        for (const JsonReader element: maps->GetArray())
+        {
+            if (!element.IsString())
+            {
+                return Fail_(where, "maps entries must be strings");
+            }
+            String name = element.Read<String>().GetValue();
+            if (m_out.HasGroundMap(name))
+            {
+                return Fail_(where, std::format("duplicate ground map '{}'", name));
+            }
+            m_out.groundMaps.push_back(std::move(name));
+        }
+        if (!m_out.HasGroundMap(m_out.groundInitial))
+        {
+            return Fail_(where, std::format("initial '{}' is not in maps", m_out.groundInitial));
+        }
+        return true;
+    }
+
+    bool Parser::ParseBackdrop_(
+        const JsonReader& _root)
+    {
+        std::optional<JsonReader> backdrop;
+        if (!GetObject_(_root, "root", "backdrop", false, backdrop))
+        {
+            return false;
+        }
+        if (!backdrop)
+        {
+            return true;
+        }
+        const String where = "backdrop";
+        if (!CheckKeys_(*backdrop, where, { "initial", "modes" }))
+        {
+            return false;
+        }
+        std::optional<JsonReader> modes;
+        if (!GetString_(*backdrop, where, "initial", true, m_out.backdropInitial) || !GetObject_(*backdrop, where, "modes", true, modes))
+        {
+            return false;
+        }
+        for (const auto [id, json]: modes->GetObject())
+        {
+            const String modeWhere = std::format("backdrop.modes.{}", id);
+            if (!CheckKeys_(json, modeWhere, { "sprite", "offset", "parallaxX" }))
+            {
+                return false;
+            }
+            BackdropMode mode;
+            mode.id = String { id };
+            if (!GetString_(json, modeWhere, "sprite", true, mode.sprite) || !GetVec2_(json, modeWhere, "offset", false, mode.offset) || !GetFloat_(json, modeWhere, "parallaxX", false, mode.parallaxX))
+            {
+                return false;
+            }
+            m_out.backdrops.push_back(std::move(mode));
+        }
+        if (!m_out.FindBackdrop(m_out.backdropInitial))
+        {
+            return Fail_(where, std::format("initial '{}' is not in modes", m_out.backdropInitial));
+        }
+        return true;
+    }
+
+    bool Parser::ParseRectArray_(
+        const JsonReader& _array,
+        const String&     _where,
+        const StringView  _key,
+        Aabb&             _out)
+    {
+        if (!_array.IsArray() || _array.GetSize() != 4)
+        {
+            return Fail_(_where, std::format("'{}' must be an array [left, top, right, bottom]", _key));
+        }
+        float values[4] = {};
+        int   index     = 0;
+        for (const JsonReader element: _array.GetArray())
+        {
+            if (!element.IsNumber())
+            {
+                return Fail_(_where, std::format("'{}' must be an array of 4 numbers", _key));
+            }
+            values[index++] = static_cast<float>(element.Read<double>().GetValue());
+        }
+        if (values[2] <= values[0] || values[3] <= values[1])
+        {
+            return Fail_(_where, std::format("'{}' must have right > left and bottom > top", _key));
+        }
+        _out = Aabb::FromMinMax({ values[0], values[1] }, { values[2], values[3] });
+        return true;
+    }
+
+    bool Parser::ParseRects_(
+        const JsonReader& _root)
+    {
+        std::optional<JsonReader> rects;
+        if (!GetObject_(_root, "root", "rects", false, rects))
+        {
+            return false;
+        }
+        if (!rects)
+        {
+            return true;
+        }
+        for (const auto [name, json]: rects->GetObject())
+        {
+            if (name == "note")
+            {
+                continue;
+            }
+            if (name == "current")
+            {
+                return Fail_("rects", "'current' is a reserved rect name");
+            }
+            NamedRect rect;
+            rect.name = String { name };
+            if (!ParseRectArray_(json, std::format("rects.{}", name), name, rect.rect))
+            {
+                return false;
+            }
+            m_out.rects.push_back(std::move(rect));
+        }
+        return true;
+    }
+
+    bool Parser::ParseRect_(
+        const JsonReader& _obj,
+        const String&     _where,
+        const StringView  _key,
+        const bool        _bAllowCurrent,
+        RectRef&          _out)
+    {
+        std::optional<JsonReader> field;
+        if (!GetField_(_obj, _where, _key, true, field))
+        {
+            return false;
+        }
+        if (field->IsString())
+        {
+            const String name = field->Read<String>().GetValue();
+            if (name == "current")
+            {
+                if (!_bAllowCurrent)
+                {
+                    return Fail_(_where, "'current' is not allowed here");
+                }
+                _out.bCurrent = true;
+                _out.name     = name;
+                return true;
+            }
+            const NamedRect* pRect = m_out.FindRect(name);
+            if (!pRect)
+            {
+                return Fail_(_where, std::format("unknown rect '{}'", name));
+            }
+            _out.bCurrent = false;
+            _out.rect     = pRect->rect;
+            _out.name     = name;
+            return true;
+        }
+        _out.bCurrent = false;
+        return ParseRectArray_(*field, _where, _key, _out.rect);
+    }
+
+    bool Parser::ParseCamera_(
+        const JsonReader& _root)
+    {
+        // 기본값: 월드 전체가 경계
+        m_out.camera.initialBounds = Aabb::FromMinMax({ 0.f, 0.f }, m_out.worldSize);
+
+        std::optional<JsonReader> camera;
+        if (!GetObject_(_root, "root", "camera", false, camera))
+        {
+            return false;
+        }
+        if (!camera)
+        {
+            return true;
+        }
+        const String where = "camera";
+        if (!CheckKeys_(*camera, where, { "policy", "initialBounds", "initialOffset", "chaseSpeed", "playerMargin", "boundsCurves" }))
+        {
+            return false;
+        }
+
+        String policy = "forward";
+        if (!GetString_(*camera, where, "policy", false, policy))
+        {
+            return false;
+        }
+        if (policy != "forward" && policy != "free")
+        {
+            return Fail_(where, std::format("unknown policy '{}' (expected forward|free)", policy));
+        }
+        m_out.camera.bForward = policy == "forward";
+
+        if (camera->HasField("initialBounds"))
+        {
+            std::optional<JsonReader> bounds;
+            if (!GetField_(*camera, where, "initialBounds", true, bounds) || !ParseRectArray_(*bounds, where, "initialBounds", m_out.camera.initialBounds))
+            {
+                return false;
+            }
+        }
+        if (!GetVec2_(*camera, where, "initialOffset", false, m_out.camera.initialOffset) || !GetFloat_(*camera, where, "chaseSpeed", false, m_out.camera.chaseSpeed) || !GetFloat_(*camera, where, "playerMargin", false, m_out.camera.playerMargin))
+        {
+            return false;
+        }
+        if (m_out.camera.playerMargin < 0.f)
+        {
+            return Fail_(where, "playerMargin must be >= 0");
+        }
+
+        std::optional<JsonReader> curves;
+        if (!GetArray_(*camera, where, "boundsCurves", false, curves) || !curves)
+        {
+            return !m_error.size();
+        }
+        int curveIndex = 0;
+        for (const JsonReader json: curves->GetArray())
+        {
+            const String curveWhere = std::format("camera.boundsCurves[{}]", curveIndex++);
+            if (!CheckKeys_(json, curveWhere, { "id", "source", "from", "until", "left", "right", "height", "top", "round" }))
+            {
+                return false;
+            }
+            BoundsCurve curve;
+            String      source = "playerX";
+            String      round  = "none";
+            if (!GetString_(json, curveWhere, "id", true, curve.id) || !GetString_(json, curveWhere, "source", false, source) || !GetString_(json, curveWhere, "from", true, curve.from) || !GetString_(json, curveWhere, "until", true, curve.until) || !GetFloat_(json, curveWhere, "left", true, curve.left) || !GetFloat_(json, curveWhere, "right", true, curve.right) || !GetFloat_(json, curveWhere, "height", true, curve.height) || !GetString_(json, curveWhere, "round", false, round))
+            {
+                return false;
+            }
+            if (source != "playerX")
+            {
+                return Fail_(curveWhere, std::format("unsupported source '{}' (expected playerX)", source));
+            }
+            if (round != "trunc" && round != "none")
+            {
+                return Fail_(curveWhere, std::format("unknown round '{}' (expected trunc|none)", round));
+            }
+            curve.bTrunc = round == "trunc";
+            if (curve.right <= curve.left || curve.height <= 0.f)
+            {
+                return Fail_(curveWhere, "right must be > left and height must be > 0");
+            }
+
+            std::optional<JsonReader> top;
+            if (!GetArray_(json, curveWhere, "top", true, top))
+            {
+                return false;
+            }
+            if (top->GetSize() < 2)
+            {
+                return Fail_(curveWhere, "top needs at least 2 points");
+            }
+            for (const JsonReader point: top->GetArray())
+            {
+                if (!point.IsArray() || point.GetSize() != 2)
+                {
+                    return Fail_(curveWhere, "top points must be [x, y]");
+                }
+                float values[2] = {};
+                int   index     = 0;
+                for (const JsonReader element: point.GetArray())
+                {
+                    if (!element.IsNumber())
+                    {
+                        return Fail_(curveWhere, "top points must be [x, y] numbers");
+                    }
+                    values[index++] = static_cast<float>(element.Read<double>().GetValue());
+                }
+                if (!curve.top.empty() && values[0] <= curve.top.back().x)
+                {
+                    return Fail_(curveWhere, "top points must have strictly increasing x");
+                }
+                curve.top.push_back({ values[0], values[1] });
+            }
+            m_out.camera.boundsCurves.push_back(std::move(curve));
+        }
+        return true;
+    }
+
+    bool Parser::ParsePlayer_(
+        const JsonReader& _root)
+    {
+        std::optional<JsonReader> player;
+        if (!GetObject_(_root, "root", "player", false, player))
+        {
+            return false;
+        }
+        if (!player)
+        {
+            return true;
+        }
+        const String where = "player";
+        if (!CheckKeys_(*player, where, { "x", "y", "origin", "halfHeight", "settle", "groundSnap", "fromY" }))
+        {
+            return false;
+        }
+        PlayerStart& start = m_out.player;
+        bool         bHasHalf = false;
+        if (!GetFloat_(*player, where, "x", true, start.x) || !GetFloat_(*player, where, "y", false, start.y, &start.bHasY) || !GetEnum_(*player, where, "origin", false, kOriginTable, start.origin) || !GetFloat_(*player, where, "halfHeight", false, start.halfHeight, &bHasHalf) || !GetBool_(*player, where, "settle", false, start.bSettle) || !GetBool_(*player, where, "groundSnap", false, start.bGroundSnap) || !GetFloat_(*player, where, "fromY", false, start.fromY))
+        {
+            return false;
+        }
+        if (!start.bHasY && !start.bGroundSnap)
+        {
+            return Fail_(where, "needs 'y' unless groundSnap is true");
+        }
+        if (start.bHasY && start.bGroundSnap)
+        {
+            return Fail_(where, "'y' must be omitted when groundSnap is true");
+        }
+        return true;
+    }
+
+    // ===========================================
+    //  spawn
+    // ===========================================
+
+    bool Parser::ParseCameraAnchor_(
+        const JsonReader& _obj,
+        const String&     _where,
+        CameraAnchor&     _out)
+    {
+        std::optional<JsonReader> anchor;
+        if (!GetObject_(_obj, _where, "camera", true, anchor))
+        {
+            return false;
+        }
+        const String where = _where + " camera";
+        if (!CheckKeys_(*anchor, where, { "ax", "dx", "ay", "dy" }) || !GetEnum_(*anchor, where, "ax", true, kAnchorXTable, _out.ax) || !GetEnum_(*anchor, where, "ay", true, kAnchorYTable, _out.ay) || !GetFloat_(*anchor, where, "dy", false, _out.dy))
+        {
+            return false;
+        }
+
+        if (anchor->HasField("dx"))
+        {
+            std::optional<JsonReader> dx;
+            if (!GetField_(*anchor, where, "dx", true, dx))
+            {
+                return false;
+            }
+            if (dx->IsNumber())
+            {
+                const double value = dx->Read<double>().GetValue();
+                if (value != std::floor(value))
+                {
+                    return Fail_(where, "field 'dx' must be an integer or [min, max] integers");
+                }
+                _out.dxMin = _out.dxMax = static_cast<int>(value);
+            }
+            else if (dx->IsArray() && dx->GetSize() == 2)
+            {
+                int values[2] = {};
+                int index     = 0;
+                for (const JsonReader element: dx->GetArray())
+                {
+                    if (!element.IsNumber() || element.Read<double>().GetValue() != std::floor(element.Read<double>().GetValue()))
+                    {
+                        return Fail_(where, "field 'dx' must be an integer or [min, max] integers");
+                    }
+                    values[index++] = static_cast<int>(element.Read<double>().GetValue());
+                }
+                if (values[0] > values[1])
+                {
+                    return Fail_(where, "field 'dx' range must have min <= max");
+                }
+                _out.dxMin = values[0];
+                _out.dxMax = values[1];
+            }
+            else
+            {
+                return Fail_(where, "field 'dx' must be an integer or [min, max] integers");
+            }
+        }
+        return true;
+    }
+
+    bool Parser::ParseSpawn_(
+        const JsonReader&    _obj,
+        const String&        _where,
+        const eSpawnContext  _context,
+        SpawnSpec&           _out)
+    {
+        // 키 집합: spawn 필드 + 컨텍스트별 공통 키
+        static constexpr StringView kSpawnKeys[] = { "kind", "def", "id", "x", "y", "origin", "halfHeight", "groundSnap", "fromY", "settle", "camera", "repeat", "facing", "hp", "drop", "ambush", "layer", "cullMargin", "size", "collisionLayer", "anim", "sprite", "params" };
+        if (!ExpectObject_(_obj, _where))
+        {
+            return false;
+        }
+        for (const auto [key, value]: _obj.GetObject())
+        {
+            if (key == "note")
+            {
+                continue;
+            }
+            bool bKnown = false;
+            for (const StringView allowed: kSpawnKeys)
+            {
+                bKnown = bKnown || allowed == key;
+            }
+            if (_context == eSpawnContext::Action)
+            {
+                bKnown = bKnown || key == "type" || key == "delay" || key == "when";
+            }
+            else if (_context == eSpawnContext::WaveEntry)
+            {
+                bKnown = bKnown || key == "delay";
+            }
+            if (!bKnown)
+            {
+                return Fail_(_where, std::format("unknown key '{}'", key));
+            }
+        }
+
+        if (!GetEnum_(_obj, _where, "kind", true, kKindTable, _out.kind) || !GetString_(_obj, _where, "def", true, _out.def) || !GetString_(_obj, _where, "id", false, _out.id))
+        {
+            return false;
+        }
+        if (_out.def.empty())
+        {
+            return Fail_(_where, "field 'def' must not be empty");
+        }
+
+        _out.origin = DefaultOrigin_(_out.kind);
+        bool bOriginExplicit = false;
+        if (!GetEnum_(_obj, _where, "origin", false, kOriginTable, _out.origin, &bOriginExplicit) || !GetFloat_(_obj, _where, "x", false, _out.x, &_out.bHasX) || !GetFloat_(_obj, _where, "y", false, _out.y, &_out.bHasY) || !GetFloat_(_obj, _where, "halfHeight", false, _out.halfHeight, &_out.bHasHalfHeight) || !GetBool_(_obj, _where, "groundSnap", false, _out.bGroundSnap) || !GetFloat_(_obj, _where, "fromY", false, _out.fromY) || !GetBool_(_obj, _where, "settle", false, _out.bSettle))
+        {
+            return false;
+        }
+
+        // 위치
+        _out.bHasCamera = _obj.HasField("camera");
+        if (_out.bHasCamera)
+        {
+            if (_out.bHasX || _out.bHasY)
+            {
+                return Fail_(_where, "'camera' cannot be combined with 'x'/'y'");
+            }
+            if (_out.bGroundSnap)
+            {
+                return Fail_(_where, "'camera' cannot be combined with groundSnap");
+            }
+            if (!ParseCameraAnchor_(_obj, _where, _out.camera))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (!_out.bHasX)
+            {
+                return Fail_(_where, "spawn needs a position: 'x' (and 'y' or groundSnap) or 'camera'");
+            }
+            if (_out.bGroundSnap && _out.bHasY)
+            {
+                return Fail_(_where, "'y' must be omitted when groundSnap is true");
+            }
+            if (!_out.bGroundSnap && !_out.bHasY)
+            {
+                return Fail_(_where, "spawn needs 'y' unless groundSnap is true");
+            }
+        }
+        if (_obj.HasField("fromY") && !_out.bGroundSnap)
+        {
+            return Fail_(_where, "'fromY' requires groundSnap");
+        }
+        if (_out.bGroundSnap && _out.origin != eOrigin::Feet)
+        {
+            return Fail_(_where, "groundSnap requires origin 'feet' (set origin explicitly for non-creature kinds)");
+        }
+
+        // 원점 / halfHeight
+        if (_out.bHasHalfHeight)
+        {
+            if (_out.origin != eOrigin::LegacyCenter)
+            {
+                return Fail_(_where, "'halfHeight' is only valid with origin 'legacyCenter'");
+            }
+            if (_out.halfHeight < 0.f)
+            {
+                return Fail_(_where, "'halfHeight' must be >= 0");
+            }
+        }
+        if (IsCreature_(_out.kind) && _out.origin == eOrigin::LegacyCenter && !_out.bHasHalfHeight)
+        {
+            return Fail_(_where, "legacyCenter creature needs 'halfHeight'");
+        }
+
+        // repeat
+        if (_obj.HasField("repeat"))
+        {
+            std::optional<JsonReader> repeat;
+            if (!GetObject_(_obj, _where, "repeat", true, repeat))
+            {
+                return false;
+            }
+            const String repeatWhere = _where + " repeat";
+            if (!CheckKeys_(*repeat, repeatWhere, { "count", "stepX", "stepY" }) || !GetInt_(*repeat, repeatWhere, "count", true, _out.repeat.count) || !GetFloat_(*repeat, repeatWhere, "stepX", false, _out.repeat.stepX) || !GetFloat_(*repeat, repeatWhere, "stepY", false, _out.repeat.stepY))
+            {
+                return false;
+            }
+            if (_out.repeat.count < 1)
+            {
+                return Fail_(repeatWhere, "'count' must be >= 1");
+            }
+            _out.bHasRepeat = true;
+        }
+
+        // facing
+        if (_obj.HasField("facing"))
+        {
+            String facing;
+            if (!GetString_(_obj, _where, "facing", true, facing))
+            {
+                return false;
+            }
+            if (facing == "left")
+            {
+                _out.facing = -1;
+            }
+            else if (facing == "right")
+            {
+                _out.facing = 1;
+            }
+            else
+            {
+                return Fail_(_where, std::format("field 'facing' has unknown value '{}' (expected left|right)", facing));
+            }
+        }
+
+        if (!GetInt_(_obj, _where, "hp", false, _out.hp, &_out.bHasHp) || !GetString_(_obj, _where, "drop", false, _out.drop) || !GetFloat_(_obj, _where, "cullMargin", false, _out.cullMargin))
+        {
+            return false;
+        }
+        if (_out.bHasHp && _out.hp <= 0)
+        {
+            return Fail_(_where, "'hp' must be > 0");
+        }
+        if (_out.cullMargin < 0.f)
+        {
+            return Fail_(_where, "'cullMargin' must be >= 0");
+        }
+
+        if (_obj.HasField("ambush"))
+        {
+            std::optional<JsonReader> ambush;
+            if (!GetObject_(_obj, _where, "ambush", true, ambush))
+            {
+                return false;
+            }
+            const String ambushWhere = _where + " ambush";
+            if (!CheckKeys_(*ambush, ambushWhere, { "xMin", "xMax" }) || !GetFloat_(*ambush, ambushWhere, "xMin", true, _out.ambush.xMin) || !GetFloat_(*ambush, ambushWhere, "xMax", true, _out.ambush.xMax))
+            {
+                return false;
+            }
+            if (_out.ambush.xMax < _out.ambush.xMin)
+            {
+                return Fail_(ambushWhere, "'xMax' must be >= 'xMin'");
+            }
+            _out.bHasAmbush = true;
+        }
+
+        if (!GetEnum_(_obj, _where, "layer", false, kLayerTable, _out.layer, &_out.bHasLayer))
+        {
+            return false;
+        }
+
+        // collider
+        const bool bCollider = _out.kind == eEntityKind::Collider;
+        if (bCollider)
+        {
+            if (!GetVec2_(_obj, _where, "size", true, _out.size) || !GetEnum_(_obj, _where, "collisionLayer", true, kCollisionTable, _out.collisionLayer))
+            {
+                return false;
+            }
+            if (_out.size.x <= 0.f || _out.size.y <= 0.f)
+            {
+                return Fail_(_where, "'size' must be positive");
+            }
+        }
+        else if (_obj.HasField("size") || _obj.HasField("collisionLayer"))
+        {
+            return Fail_(_where, "'size'/'collisionLayer' are only valid for kind 'collider'");
+        }
+
+        // decor
+        if (!GetString_(_obj, _where, "anim", false, _out.anim) || !GetString_(_obj, _where, "sprite", false, _out.sprite))
+        {
+            return false;
+        }
+        if (_out.kind == eEntityKind::Decor)
+        {
+            if (_out.def == "anim_decor" && _out.anim.empty())
+            {
+                return Fail_(_where, "decor 'anim_decor' needs 'anim'");
+            }
+            if (_out.def == "sprite_decor" && _out.sprite.empty())
+            {
+                return Fail_(_where, "decor 'sprite_decor' needs 'sprite'");
+            }
+            if (_out.anim.empty() && _out.sprite.empty())
+            {
+                return Fail_(_where, "decor needs 'anim' or 'sprite'");
+            }
+        }
+        else if (!_out.anim.empty() || !_out.sprite.empty())
+        {
+            return Fail_(_where, "'anim'/'sprite' are only valid for kind 'decor'");
+        }
+
+        // params
+        if (_obj.HasField("params"))
+        {
+            std::optional<JsonReader> params;
+            if (!GetObject_(_obj, _where, "params", true, params))
+            {
+                return false;
+            }
+            _out.params = ToParam_(*params);
+            if (const ParamValue* pArena = _out.params.Find("arena"); pArena && pArena->IsString() && !m_out.FindRect(pArena->AsString()))
+            {
+                return Fail_(_where, std::format("params.arena references unknown rect '{}'", pArena->AsString()));
+            }
+        }
+        return true;
+    }
+
+    // ===========================================
+    //  actions
+    // ===========================================
+
+    bool Parser::ParseActionList_(
+        const JsonReader&         _array,
+        const String&             _where,
+        jug::Vector<StageAction>& _out)
+    {
+        if (!_array.IsArray())
+        {
+            return Fail_(_where, "must be an array");
+        }
+        int index = 0;
+        for (const JsonReader json: _array.GetArray())
+        {
+            StageAction action;
+            // 위치 문자열은 타입을 알기 전에 만들어야 하므로 타입을 먼저 훑는다.
+            String typeName = "?";
+            if (json.IsObject() && json.HasField("type") && json.FindField("type")->IsString())
+            {
+                typeName = json.FindField("type")->Read<String>().GetValue();
+            }
+            const String where = std::format("{} action #{} ({})", _where, index++, typeName);
+            if (!ParseAction_(json, where, action))
+            {
+                return false;
+            }
+            _out.push_back(std::move(action));
+        }
+        return true;
+    }
+
+    bool Parser::ParseAction_(
+        const JsonReader& _obj,
+        const String&     _where,
+        StageAction&      _out)
+    {
+        if (!ExpectObject_(_obj, _where))
+        {
+            return false;
+        }
+        if (!GetEnum_(_obj, _where, "type", true, kActionTable, _out.type))
+        {
+            return false;
+        }
+
+        // 공통: delay / when
+        if (!GetFloat_(_obj, _where, "delay", false, _out.delay))
+        {
+            return false;
+        }
+        if (_out.delay < 0.f)
+        {
+            return Fail_(_where, "'delay' must be >= 0");
+        }
+
+        bool bWhenExplicit = false;
+        switch (_out.type)
+        {
+            case eActionType::Spawn:
+                if (!ParseSpawn_(_obj, _where, eSpawnContext::Action, _out.spawn))
+                {
+                    return false;
+                }
+                break;
+
+            case eActionType::SpawnWave:
+            {
+                if (!CheckKeys_(_obj, _where, { "type", "delay", "when", "entries" }))
+                {
+                    return false;
+                }
+                std::optional<JsonReader> entries;
+                if (!GetArray_(_obj, _where, "entries", true, entries))
+                {
+                    return false;
+                }
+                if (entries->GetSize() == 0)
+                {
+                    return Fail_(_where, "'entries' must not be empty");
+                }
+                int index = 0;
+                for (const JsonReader json: entries->GetArray())
+                {
+                    const String entryWhere = std::format("{} entries[{}]", _where, index++);
+                    WaveEntry    entry;
+                    if (!ParseSpawn_(json, entryWhere, eSpawnContext::WaveEntry, entry.spawn))
+                    {
+                        return false;
+                    }
+                    bool bHasDelay = false;
+                    if (!GetFloat_(json, entryWhere, "delay", true, entry.delay, &bHasDelay))
+                    {
+                        return false;
+                    }
+                    if (entry.delay < 0.f)
+                    {
+                        return Fail_(entryWhere, "'delay' must be >= 0");
+                    }
+                    _out.waveEntries.push_back(std::move(entry));
+                }
+                break;
+            }
+
+            case eActionType::SetBounds:
+                if (!CheckKeys_(_obj, _where, { "type", "delay", "when", "rect" }) || !ParseRect_(_obj, _where, "rect", false, _out.rect))
+                {
+                    return false;
+                }
+                break;
+
+            case eActionType::LockCamera:
+                if (!CheckKeys_(_obj, _where, { "type", "delay", "when", "rect", "glide", "permanent" }) || !ParseRect_(_obj, _where, "rect", true, _out.rect) || !GetFloat_(_obj, _where, "glide", false, _out.glide) || !GetBool_(_obj, _where, "permanent", false, _out.bPermanent))
+                {
+                    return false;
+                }
+                if (_out.glide < 0.f)
+                {
+                    return Fail_(_where, "'glide' must be >= 0");
+                }
+                break;
+
+            case eActionType::UnlockCamera:
+                if (!CheckKeys_(_obj, _where, { "type", "delay", "when" }))
+                {
+                    return false;
+                }
+                break;
+
+            case eActionType::CameraMove:
+                if (!CheckKeys_(_obj, _where, { "type", "delay", "when", "to", "seconds" }) || !GetVec2_(_obj, _where, "to", true, _out.to) || !GetFloat_(_obj, _where, "seconds", true, _out.seconds))
+                {
+                    return false;
+                }
+                if (_out.seconds < 0.f)
+                {
+                    return Fail_(_where, "'seconds' must be >= 0");
+                }
+                break;
+
+            case eActionType::SetCameraOffset:
+                if (!CheckKeys_(_obj, _where, { "type", "delay", "when", "offset" }) || !GetVec2_(_obj, _where, "offset", true, _out.offset))
+                {
+                    return false;
+                }
+                break;
+
+            case eActionType::SetBackdrop:
+                if (!CheckKeys_(_obj, _where, { "type", "delay", "when", "mode" }) || !GetString_(_obj, _where, "mode", true, _out.mode))
+                {
+                    return false;
+                }
+                if (!m_out.FindBackdrop(_out.mode))
+                {
+                    return Fail_(_where, std::format("unknown backdrop mode '{}'", _out.mode));
+                }
+                break;
+
+            case eActionType::SetGround:
+                if (!CheckKeys_(_obj, _where, { "type", "delay", "when", "name" }) || !GetString_(_obj, _where, "name", true, _out.name))
+                {
+                    return false;
+                }
+                if (!m_out.HasGroundMap(_out.name))
+                {
+                    return Fail_(_where, std::format("unknown ground map '{}'", _out.name));
+                }
+                break;
+
+            case eActionType::Gate:
+            {
+                if (!CheckKeys_(_obj, _where, { "type", "delay", "when", "id", "waitFor", "until", "actions", "abortOnGameOver" }) || !GetString_(_obj, _where, "id", true, _out.gateId) || !GetEnum_(_obj, _where, "until", false, kUntilTable, _out.until) || !GetBool_(_obj, _where, "abortOnGameOver", false, _out.bAbortOnGameOver))
+                {
+                    return false;
+                }
+                std::optional<JsonReader> waitFor;
+                std::optional<JsonReader> actions;
+                if (!GetArray_(_obj, _where, "waitFor", true, waitFor) || !GetArray_(_obj, _where, "actions", true, actions))
+                {
+                    return false;
+                }
+                if (waitFor->GetSize() == 0)
+                {
+                    return Fail_(_where, "'waitFor' must not be empty");
+                }
+                for (const JsonReader element: waitFor->GetArray())
+                {
+                    if (!element.IsString())
+                    {
+                        return Fail_(_where, "'waitFor' entries must be strings");
+                    }
+                    _out.waitFor.push_back(element.Read<String>().GetValue());
+                }
+                if (!ParseActionList_(*actions, std::format("{} (gate '{}') actions", _where, _out.gateId), _out.actions))
+                {
+                    return false;
+                }
+                break;
+            }
+
+            case eActionType::Command:
+                if (!CheckKeys_(_obj, _where, { "type", "delay", "when", "target", "command" }) || !GetString_(_obj, _where, "target", true, _out.target) || !GetString_(_obj, _where, "command", true, _out.command))
+                {
+                    return false;
+                }
+                break;
+
+            case eActionType::Clear:
+            {
+                if (!CheckKeys_(_obj, _where, { "type", "delay", "when", "waves", "layers" }) || !GetBool_(_obj, _where, "waves", false, _out.bClearWaves))
+                {
+                    return false;
+                }
+                std::optional<JsonReader> layers;
+                if (!GetArray_(_obj, _where, "layers", false, layers))
+                {
+                    return false;
+                }
+                if (layers)
+                {
+                    for (const JsonReader element: layers->GetArray())
+                    {
+                        eStageLayer layer = eStageLayer::Monster;
+                        if (!element.IsString() || !LookupEnum_(kLayerTable, element.Read<String>().GetValue(), layer))
+                        {
+                            return Fail_(_where, std::format("'layers' entries must be one of {}", ListEnum_(kLayerTable)));
+                        }
+                        _out.clearLayers |= LayerBit(layer);
+                    }
+                }
+                if (!_out.bClearWaves && _out.clearLayers == 0)
+                {
+                    return Fail_(_where, "clear needs 'waves': true and/or a non-empty 'layers'");
+                }
+                break;
+            }
+
+            case eActionType::Banner:
+                if (!CheckKeys_(_obj, _where, { "type", "delay", "when", "text", "seconds" }) || !GetString_(_obj, _where, "text", true, _out.text) || !GetFloat_(_obj, _where, "seconds", true, _out.seconds))
+                {
+                    return false;
+                }
+                if (_out.seconds < 0.f)
+                {
+                    return Fail_(_where, "'seconds' must be >= 0");
+                }
+                break;
+
+            case eActionType::Fade:
+                if (!CheckKeys_(_obj, _where, { "type", "delay", "when", "to", "seconds" }) || !GetEnum_(_obj, _where, "to", true, kFadeTable, _out.fadeTo) || !GetFloat_(_obj, _where, "seconds", true, _out.seconds))
+                {
+                    return false;
+                }
+                if (_out.seconds < 0.f)
+                {
+                    return Fail_(_where, "'seconds' must be >= 0");
+                }
+                break;
+
+            case eActionType::PlayBgm:
+                if (!CheckKeys_(_obj, _where, { "type", "delay", "when", "name", "loop" }) || !GetString_(_obj, _where, "name", true, _out.name) || !GetBool_(_obj, _where, "loop", false, _out.bLoop))
+                {
+                    return false;
+                }
+                break;
+
+            case eActionType::PlayerInvincible:
+                if (!CheckKeys_(_obj, _where, { "type", "delay", "when", "seconds" }) || !GetFloat_(_obj, _where, "seconds", true, _out.seconds))
+                {
+                    return false;
+                }
+                if (_out.seconds < 0.f)
+                {
+                    return Fail_(_where, "'seconds' must be >= 0");
+                }
+                break;
+
+            case eActionType::EndStage:
+                _out.next = "title";
+                if (!CheckKeys_(_obj, _where, { "type", "delay", "when", "next" }) || !GetString_(_obj, _where, "next", false, _out.next))
+                {
+                    return false;
+                }
+                break;
+        }
+
+        _out.when = DefaultWhen_(_out);
+        if (!GetEnum_(_obj, _where, "when", false, kWhenTable, _out.when, &bWhenExplicit))
+        {
+            return false;
+        }
+        return true;
+    }
+
+    // ===========================================
+    //  섹션
+    // ===========================================
+
+    bool Parser::ParseSections_(
+        const JsonReader& _root)
+    {
+        std::optional<JsonReader> sections;
+        if (!GetArray_(_root, "root", "sections", true, sections))
+        {
+            return false;
+        }
+
+        int index = 0;
+        for (const JsonReader json: sections->GetArray())
+        {
+            String id = "?";
+            if (json.IsObject() && json.HasField("id") && json.FindField("id")->IsString())
+            {
+                id = json.FindField("id")->Read<String>().GetValue();
+            }
+            const String where = std::format("sections[{}] '{}'", index++, id);
+            if (!CheckKeys_(json, where, { "id", "legacy", "triggerX", "actions" }))
+            {
+                return false;
+            }
+
+            StageSection section;
+            std::optional<JsonReader> actions;
+            if (!GetString_(json, where, "id", true, section.id) || !GetString_(json, where, "legacy", false, section.legacy) || !GetFloat_(json, where, "triggerX", true, section.triggerX) || !GetArray_(json, where, "actions", true, actions))
+            {
+                return false;
+            }
+            if (section.id.empty())
+            {
+                return Fail_(where, "section 'id' must not be empty");
+            }
+            if (m_out.FindSection(section.id) >= 0)
+            {
+                return Fail_(where, "duplicate section id");
+            }
+            if (!m_out.sections.empty() && section.triggerX < m_out.sections.back().triggerX)
+            {
+                return Fail_(where, std::format("triggerX {} is smaller than the previous section's {} (sections must be ordered)", section.triggerX, m_out.sections.back().triggerX));
+            }
+            if (!ParseActionList_(*actions, where, section.actions))
+            {
+                return false;
+            }
+            m_out.sections.push_back(std::move(section));
+        }
+        if (m_out.sections.empty())
+        {
+            return Fail_("sections", "at least one section is required");
+        }
+        return true;
+    }
+
+    // ===========================================
+    //  교차 검증 (id 유일성/참조)
+    // ===========================================
+
+    bool Parser::CollectIds_(
+        const jug::Vector<StageAction>& _actions,
+        const String&                   _where)
+    {
+        int index = 0;
+        for (const StageAction& action: _actions)
+        {
+            const String where = std::format("{} action #{} ({})", _where, index++, GetActionTypeName(action.type));
+            auto         AddSpawnId = [&](const SpawnSpec& _spawn, const String& _at) {
+                if (_spawn.id.empty())
+                {
+                    return true;
+                }
+                for (const String& existing: m_spawnIds)
+                {
+                    if (existing == _spawn.id)
+                    {
+                        return Fail_(_at, std::format("duplicate spawn id '{}'", _spawn.id));
+                    }
+                }
+                m_spawnIds.push_back(_spawn.id);
+                return true;
+            };
+
+            if (action.type == eActionType::Spawn)
+            {
+                if (!AddSpawnId(action.spawn, where))
+                {
+                    return false;
+                }
+            }
+            else if (action.type == eActionType::SpawnWave)
+            {
+                int entryIndex = 0;
+                for (const WaveEntry& entry: action.waveEntries)
+                {
+                    if (!AddSpawnId(entry.spawn, std::format("{} entries[{}]", where, entryIndex++)))
+                    {
+                        return false;
+                    }
+                }
+            }
+            else if (action.type == eActionType::Gate)
+            {
+                for (const String& existing: m_gateIds)
+                {
+                    if (existing == action.gateId)
+                    {
+                        return Fail_(where, std::format("duplicate gate id '{}'", action.gateId));
+                    }
+                }
+                m_gateIds.push_back(action.gateId);
+                if (!CollectIds_(action.actions, std::format("{} (gate '{}') actions", _where, action.gateId)))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    bool Parser::CheckRefs_(
+        const jug::Vector<StageAction>& _actions,
+        const String&                   _where)
+    {
+        const auto HasSpawnId = [this](const String& _id) {
+            for (const String& existing: m_spawnIds)
+            {
+                if (existing == _id)
+                {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        int index = 0;
+        for (const StageAction& action: _actions)
+        {
+            const String where = std::format("{} action #{} ({})", _where, index++, GetActionTypeName(action.type));
+            if (action.type == eActionType::Gate)
+            {
+                for (const String& id: action.waitFor)
+                {
+                    if (!HasSpawnId(id))
+                    {
+                        return Fail_(where, std::format("gate '{}' waitFor unknown spawn id '{}'", action.gateId, id));
+                    }
+                }
+                if (!CheckRefs_(action.actions, std::format("{} (gate '{}') actions", _where, action.gateId)))
+                {
+                    return false;
+                }
+            }
+            else if (action.type == eActionType::Command && !HasSpawnId(action.target))
+            {
+                return Fail_(where, std::format("command target unknown spawn id '{}'", action.target));
+            }
+        }
+        return true;
+    }
+
+    bool Parser::Validate_()
+    {
+        // 스폰/게이트 id 수집 (섹션 순서)
+        for (const StageSection& section: m_out.sections)
+        {
+            if (!CollectIds_(section.actions, std::format("section '{}'", section.id)))
+            {
+                return false;
+            }
+        }
+        for (const StageSection& section: m_out.sections)
+        {
+            if (!CheckRefs_(section.actions, std::format("section '{}'", section.id)))
+            {
+                return false;
+            }
+        }
+
+        // boundsCurves 의 섹션 참조
+        for (BoundsCurve& curve: m_out.camera.boundsCurves)
+        {
+            const String where = std::format("camera.boundsCurves '{}'", curve.id);
+            curve.fromIndex    = m_out.FindSection(curve.from);
+            curve.untilIndex   = m_out.FindSection(curve.until);
+            if (curve.fromIndex < 0)
+            {
+                return Fail_(where, std::format("'from' references unknown section '{}'", curve.from));
+            }
+            if (curve.untilIndex < 0)
+            {
+                return Fail_(where, std::format("'until' references unknown section '{}'", curve.until));
+            }
+            if (curve.fromIndex >= curve.untilIndex)
+            {
+                return Fail_(where, "'from' section must come before the 'until' section");
+            }
+        }
+        return true;
+    }
+
+    [[nodiscard]] jug::Result<StageData> MakeFailure_(
+        StageLoadDiagnostics* _pDiag,
+        const String&         _message,
+        const eError          _code)
+    {
+        if (_pDiag)
+        {
+            _pDiag->message = _message;
+        }
+        return jug::Error { _code };
+    }
+}   // namespace
+
+// ===========================================
+//  로더 진입점
+// ===========================================
+
+jug::Result<StageData> LoadStageFromJson(
+    const jug::StringView  _json,
+    StageLoadDiagnostics*  _pDiag)
+{
+    if (_pDiag)
+    {
+        _pDiag->message.clear();
+    }
+
+    jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::Load(_json, jug::eJsonLoadOption::AllowBOM);
+    if (!doc)
+    {
+        return MakeFailure_(_pDiag, "JSON syntax error", eError::Parse);
+    }
+
+    StageData data;
+    Parser    parser { data };
+    if (!parser.Parse(doc->GetReader()))
+    {
+        return MakeFailure_(_pDiag, parser.GetError(), eError::StageInvalid);
+    }
+    return data;
+}
+
+jug::Result<StageData> LoadStageFromFile(
+    const jug::FilePath&  _path,
+    StageLoadDiagnostics* _pDiag)
+{
+    std::ifstream file { _path, std::ios::binary };
+    if (!file)
+    {
+        return MakeFailure_(_pDiag, std::format("cannot open '{}'", _path.string()), eError::FileOpen);
+    }
+    std::ostringstream buffer;
+    buffer << file.rdbuf();
+    const jug::String text = buffer.str();
+    return LoadStageFromJson(text, _pDiag);
+}
+
+}   // namespace slug

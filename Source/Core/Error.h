@@ -19,7 +19,9 @@ enum class eError
     FileRead,
     Parse,
     NotFound,
-    InvalidData
+    InvalidData,
+    EnemyDef,      // 적 정의 오류 (Enemies 에이전트가 사용; Error.cpp 에 메시지가 이미 있어 선언 누락을 보정)
+    StageInvalid  // 스테이지 스크립트(Stage*.json) 검증 실패 (상세 메시지는 StageLoadDiagnostics)
 };
 
 class ErrorCategory final : public jug::IErrorCategory

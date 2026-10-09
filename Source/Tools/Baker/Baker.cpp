@@ -124,6 +124,8 @@ namespace
         [[nodiscard]] jug::Result<void> PackAndWriteAtlas_();
         [[nodiscard]] jug::Result<void> WriteJsons_();
         [[nodiscard]] jug::Result<void> BakeSounds_();
+        void                            BakeExtraSounds_(std::error_code& _ec);
+        void                            BakeExtraSprites_();
         void                            BakeGrounds_();
         [[nodiscard]] int               AddUnique_(Image&& _image);
 
@@ -918,10 +920,142 @@ namespace
             m_state.sounds.push_back(std::move(out));
         }
 
+        BakeExtraSounds_(ec);
+
         size_t ok = 0;
         for (const SoundOut& s: m_state.sounds) { ok += s.bOk ? 1 : 0; }
         Log("sounds: {} of {} copied", ok, m_state.sounds.size());
         return jug::Error { jug::kOK };
+    }
+
+    // ===========================================
+    //  추가 사운드 (SoundData.txt 에 없지만 게임이 쓰는 이름이 분명한 파일)
+    //   이름이 불분명한 번호 파일(NARRATOR n (m).mp3, gen_xx.wav 등)은 여기에 넣지 않는다.
+    // ===========================================
+
+    void Baker::BakeExtraSounds_(
+        std::error_code& _ec)
+    {
+        struct ExtraSound
+        {
+            const char* name;
+            const char* legacyPath;   // legacyRoot 기준
+            const char* outFile;      // Audio/ 아래 파일 이름 (공백/쉼표 없는 이름으로 복사)
+            bool        bBgm;
+        };
+        static constexpr ExtraSound kExtras[] = {
+            { "Sfx_GameOver", "Sounds/NARRATOR MS1,2/sfx-gameover.mp3", "Sfx_GameOver.mp3", false },
+            { "Sfx_PowerUp", "Sounds/NARRATOR MS1,2/sfx-powerup.mp3", "Sfx_PowerUp.mp3", false },
+            { "Sfx_Bingo", "Sounds/NARRATOR MS1,2/sfx-bingo.mp3", "Sfx_Bingo.mp3", false },
+            { "Sfx_LetsGo", "Sounds/NARRATOR MS1,2/sfx-letsgo.mp3", "Sfx_LetsGo.mp3", false },
+            { "Sfx_HereWeGo", "Sounds/NARRATOR MS1,2/sfx-herewego.mp3", "Sfx_HereWeGo.mp3", false },
+            { "Sfx_Yah", "Sounds/NARRATOR MS1,2/sfx-yah.mp3", "Sfx_Yah.mp3", false },
+            { "Sfx_YeeHa", "Sounds/NARRATOR MS1,2/sfx-yeeha.mp3", "Sfx_YeeHa.mp3", false },
+            { "Title_MS3", "Sounds/MS X,3,4,5/MS3_Title.ogg", "Title_MS3.ogg", false },
+            { "Title_MS2", "Sounds/NARRATOR MS1,2/MS2_Title.ogg", "Title_MS2.ogg", false },
+        };
+
+        for (const ExtraSound& extra: kExtras)
+        {
+            SoundOut out;
+            out.name = extra.name;
+
+            const fs::path src = m_options.legacyRoot / fs::path(extra.legacyPath);
+            if (!fs::is_regular_file(src, _ec))
+            {
+                out.error = std::string("missing sound file: ") + extra.legacyPath;
+                AddAnomaly_("MissingSound", out.name, out.error);
+                m_state.sounds.push_back(std::move(out));
+                continue;
+            }
+
+            out.file = std::string("Audio/") + extra.outFile;
+            fs::copy_file(src, m_options.outRoot / out.file, fs::copy_options::overwrite_existing, _ec);
+            if (_ec)
+            {
+                out.error = "copy failed: " + _ec.message();
+                AddAnomaly_("CopyFailed", out.name, out.error);
+                m_state.sounds.push_back(std::move(out));
+                continue;
+            }
+            out.bBgm = extra.bBgm;
+            out.bOk  = true;
+            m_state.sounds.push_back(std::move(out));
+        }
+    }
+
+    // ===========================================
+    //  추가 스프라이트 (TextureData.data 에 없이 씬 코드가 직접 로드하던 큰 이미지)
+    //   TitleBackground: Dummy/Main_Title.bmp (1280x720) 를 정확히 1/2 (박스 평균) 로 줄여 640x360 독립 PNG 로 굽는다.
+    // ===========================================
+
+    void Baker::BakeExtraSprites_()
+    {
+        if (!m_options.Wants("sprites"))
+        {
+            return;
+        }
+
+        jug::Result<Image> loaded = LoadBmpFile(m_options.legacyRoot / fs::path("Dummy/Main_Title.bmp"));
+        if (!loaded)
+        {
+            Log("WARN: Dummy/Main_Title.bmp not found; skipping TitleBackground");
+            AddAnomaly_("MissingTexture", "TitleBackground", "Dummy/Main_Title.bmp");
+            return;
+        }
+        Image src = loaded.Take();
+        ForceOpaque(src);
+
+        const int dstW = src.width / 2;
+        const int dstH = src.height / 2;
+        if (dstW <= 0 || dstH <= 0)
+        {
+            return;
+        }
+
+        Image dst = Image::Make(dstW, dstH);
+        for (int y = 0; y < dstH; ++y)
+        {
+            for (int x = 0; x < dstW; ++x)
+            {
+                uint32_t sum[4] = { 0, 0, 0, 0 };
+                for (int dy = 0; dy < 2; ++dy)
+                {
+                    for (int dx = 0; dx < 2; ++dx)
+                    {
+                        const uint8_t* pSrc = src.At(x * 2 + dx, y * 2 + dy);
+                        for (int c = 0; c < 4; ++c)
+                        {
+                            sum[c] += pSrc[c];
+                        }
+                    }
+                }
+                uint8_t* pDst = dst.At(x, y);
+                for (int c = 0; c < 4; ++c)
+                {
+                    pDst[c] = static_cast<uint8_t>((sum[c] + 2) / 4);
+                }
+            }
+        }
+
+        SpriteOut out;
+        out.rec.name = "TitleBackground";
+        out.bValid   = true;
+        out.cellW    = dstW;
+        out.cellH    = dstH;
+        out.texW     = dstW;
+        out.texH     = dstH;
+        out.bFile    = true;
+        out.file     = "Textures/TitleBackground.png";
+
+        std::vector<uint8_t> png;
+        if (!EncodePng(dst, png) || !WriteBytes(m_options.outRoot / out.file, png.data(), png.size()))
+        {
+            Log("WARN: failed to write {}", out.file);
+            AddAnomaly_("WriteFailed", "TitleBackground", out.file);
+            return;
+        }
+        m_state.sprites.push_back(std::move(out));
     }
 
     // ===========================================
@@ -1043,6 +1177,7 @@ namespace
         Log("baked animations: {} of {}", validAnims, m_state.anims.size());
 
         MergeUniques_();
+        BakeExtraSprites_();
         if (jug::Result<void> r = PackAndWriteAtlas_(); !r)
         {
             return r;
