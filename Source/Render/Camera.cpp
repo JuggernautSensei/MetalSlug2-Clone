@@ -250,7 +250,29 @@ void Camera::Update(
         }
         else
         {
-            m_center.x   = desired.x;
+            // 영상 분석: 스크롤은 2→7(영상 px/프레임) 으로 약 0.3 s 에 걸쳐 오르고, 플레이어가 멈추면 즉시 멈춘다
+            constexpr float kRampStart   = 1.2f;    // px/틱
+            constexpr float kRampAccel   = 0.19f;   // px/틱²
+            constexpr float kSnapGap     = 120.f;
+            const float     gap          = desired.x - m_center.x;
+            const float     playerStep   = m_bHasPrevFocus ? std::abs(focus.x - m_prevFocusX) : 0.f;
+            m_prevFocusX                 = focus.x;
+            m_bHasPrevFocus              = true;
+            if (std::abs(gap) < 0.001f)
+            {
+                m_pushSpeed = 0.f;
+            }
+            else if (std::abs(gap) > kSnapGap)
+            {
+                m_center.x  = desired.x;
+                m_pushSpeed = 0.f;
+            }
+            else
+            {
+                m_pushSpeed = m_pushSpeed <= 0.f ? kRampStart : m_pushSpeed + kRampAccel;
+                const float step = slug::Min(std::abs(gap), slug::Min(m_pushSpeed, playerStep));
+                m_center.x += gap > 0.f ? step : -step;
+            }
             m_velocity.x = 0.f;
             SmoothDamp_(m_center.y, m_velocity.y, desired.y, m_tuning.smoothTime, _dt);
         }

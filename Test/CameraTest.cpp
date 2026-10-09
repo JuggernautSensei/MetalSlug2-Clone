@@ -329,3 +329,35 @@ TEST(Camera, DeterministicAcrossIdenticalRuns)
     };
     EXPECT_EQ(Run(), Run());
 }
+
+TEST(Camera, ScrollRampsUpWhilePlayerRunsAndStopsInstantlyWhenPlayerStops)
+{
+    Camera camera = MakeLevelCamera();
+    const float half = camera.GetTuning().deadzoneHalf.x;
+    float       x    = 320.f + half + 1.f;
+    camera.SetTarget({ x, 224.f });
+    camera.Update();
+
+    float previousCenter = camera.GetViewCenter().x;
+    float firstStep      = 0.f;
+    float lastStep       = 0.f;
+    for (int i = 0; i < 40; ++i)
+    {
+        x += 4.17f;
+        camera.SetTarget({ x, 224.f });
+        camera.Update();
+        const float step = camera.GetViewCenter().x - previousCenter;
+        previousCenter   = camera.GetViewCenter().x;
+        if (i == 0)
+        {
+            firstStep = step;
+        }
+        lastStep = step;
+    }
+    EXPECT_LT(firstStep, 2.f);
+    EXPECT_NEAR(lastStep, 4.17f, 0.05f);
+
+    camera.SetTarget({ x, 224.f });
+    camera.Update();
+    EXPECT_FLOAT_EQ(camera.GetViewCenter().x, previousCenter);
+}

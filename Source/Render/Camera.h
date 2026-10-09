@@ -76,6 +76,9 @@ private:
 
     Vec2 m_center   = { 320.f, 224.f };   // 시점 중심 (실수 상태)
     Vec2 m_velocity = { 0.f, 0.f };
+    float m_prevFocusX    = 0.f;
+    float m_pushSpeed     = 0.f;
+    bool  m_bHasPrevFocus = false;
     Vec2 m_target   = { 320.f, 224.f };
 
     Aabb m_bounds       = {};
