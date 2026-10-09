@@ -53,6 +53,7 @@ public:
     [[nodiscard]] Vec2       GetFeet() const { return m_body.position; }
 
     void PushFeetX(float _minX);
+    void PushFeetXMax(float _maxX);
     [[nodiscard]] Vec2       GetPrevFeet() const { return m_prevFeet; }
     [[nodiscard]] Vec2       GetVelocity() const { return m_body.velocity; }
     [[nodiscard]] int                GetFacing() const { return m_facing; }

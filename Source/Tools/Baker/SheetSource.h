@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -59,6 +60,7 @@ struct SheetClipSpec
     bool               bMirror   = false;      // _Right <-> _Left 좌우 반전 클립을 추가로 굽는다
     bool               bAsSprite = false;      // 프레임 1개짜리를 sprites.json 에 넣는다
     bool               bReplace  = false;      // 같은 이름의 레거시/기존 클립을 대체 허용
+    int                scale     = 0;          // 0 = 시트 배율 상속, 1 이상 = 이 클립만 덮어씀
 };
 
 struct SheetSpec
@@ -66,6 +68,7 @@ struct SheetSpec
     std::string                file;           // sheets.json 기준 상대 경로 (보통 같은 폴더의 PNG)
     SheetKey                   key;
     std::vector<IRect>         exclude;        // 시트 좌표계에서 무시할 영역 (라벨 텍스트 등)
+    int                        scale = 1;      // 기본 최근접 확대 배율 (정수 1..kSheetMaxScale)
     std::vector<SheetClipSpec> clips;
 };
 
@@ -192,6 +195,89 @@ inline void FlipHorizontal(Image& _image)
         return { _w / 2, _h / 2 };
     }
     return { _w / 2, _h };
+}
+
+inline constexpr int kSheetMaxScale = 8;
+
+// 클립 배율: 클립 값이 1 이상이면 그것, 아니면 시트 기본 배율.
+[[nodiscard]] inline int ResolveSheetScale(
+    const int _sheetScale,
+    const int _clipScale)
+{
+    return _clipScale > 0 ? _clipScale : std::max(1, _sheetScale);
+}
+
+// 최근접 이웃 확대. 배경(알파 0)과 색은 블록 단위로 그대로 복제된다. _scale <= 1 이면 복사만 한다.
+[[nodiscard]] inline Image ScaleNearest(
+    const Image& _src,
+    const int    _scale)
+{
+    if (_scale <= 1)
+    {
+        return _src;
+    }
+    Image dst = Image::Make(_src.width * _scale, _src.height * _scale);
+    for (int y = 0; y < dst.height; ++y)
+    {
+        for (int x = 0; x < dst.width; ++x)
+        {
+            std::memcpy(dst.At(x, y), _src.At(x / _scale, y / _scale), 4);
+        }
+    }
+    return dst;
+}
+
+struct BuiltFrames
+{
+    std::vector<FrameOut> frames;
+    std::vector<Image>    trimmed;
+    int                   cellW = 0;
+    int                   cellH = 0;
+};
+
+// 사각형 -> 최근접 확대(_scale) -> 알파 기준 트림 -> 피벗. 확대를 트림/피벗보다 먼저 하므로
+// 트림 좌표와 피벗은 확대된 프레임 기준이다. _bFlip 이면 좌우 반전 프레임(피벗 x 도 뒤집음).
+[[nodiscard]] inline BuiltFrames BuildSheetFrames(
+    const Image&              _image,
+    const std::vector<IRect>& _rects,
+    const eSheetPivot         _pivot,
+    const bool                _bFlip,
+    const int                 _scale = 1)
+{
+    BuiltFrames out;
+    for (const IRect& rect: _rects)
+    {
+        Image crop = ScaleNearest(CropImage(_image, rect), _scale);
+        out.cellW  = std::max(out.cellW, crop.width);
+        out.cellH  = std::max(out.cellH, crop.height);
+
+        FrameOut    f;
+        const IRect bounds = FindOpaqueBounds(crop, { 0, 0, crop.width, crop.height }, 0);
+        if (bounds.IsEmpty())
+        {
+            f.bEmpty = true;
+            out.frames.push_back(f);
+            out.trimmed.emplace_back();
+            continue;
+        }
+
+        Image trimmed = CropImage(crop, bounds);
+        f.trimX       = bounds.x;
+        f.trimY       = bounds.y;
+        f.w           = bounds.w;
+        f.h           = bounds.h;
+        Pivot pivot   = ComputeSheetPivot(f.w, f.h, _pivot);
+        if (_bFlip)
+        {
+            FlipHorizontal(trimmed);
+            pivot.x = f.w - pivot.x;
+        }
+        f.pivotX = pivot.x;
+        f.pivotY = pivot.y;
+        out.frames.push_back(f);
+        out.trimmed.push_back(std::move(trimmed));
+    }
+    return out;
 }
 
 // 키 적용이 끝난 시트에서 내용(알파 > 0) 덩어리를 찾아 사각형 목록을 돌려준다.

@@ -353,7 +353,7 @@ TEST(StageIntegration, WarpChainThroughEverySectionReachesTheBossAndEndsTheStage
     }
     sim.Warp(2);
     sim.Step(2);
-    ASSERT_GT(sim.State().GetEnemies().CountAlive("battleship"), 0);
+    ASSERT_GT(sim.State().GetEnemies().CountAlive("bigshiee"), 0);
 
     const IGameState* pStage = sim.StagePtr();
     sim.State().GetEnemies().KillAll(true);
@@ -410,7 +410,7 @@ TEST(StageIntegration, DebugWarpToTheBossThenBossDeathEndsTheStageThroughTheFlow
     sim.Warp(2);   // F6: 보스 아레나
     sim.Step(2);
 
-    ASSERT_GT(sim.State().GetEnemies().CountAlive("battleship"), 0);
+    ASSERT_GT(sim.State().GetEnemies().CountAlive("bigshiee"), 0);
 
     const IGameState* pStage = sim.StagePtr();
     sim.State().GetEnemies().KillAll(true);
@@ -438,7 +438,7 @@ TEST(StageIntegration, BossHpBarShowsOnlyDuringTheBossFightAndHidesAfterDeath)
 
     EnemyHandle boss;
     sim.State().GetEnemies().ForEachAlive([&](const Enemy& _e) {
-        if (_e.behavior == eEnemyBehavior::BattleShip)
+        if (_e.behavior == eEnemyBehavior::BigShiee)
         {
             boss = EnemyHandle { _e.id };
         }

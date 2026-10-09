@@ -108,7 +108,7 @@
     <ClCompile Include="..\..\Source\Game\Combat\CombatSystem.cpp" />
     <ClCompile Include="..\..\Source\Game\Combat\Projectiles.cpp" />
     <ClCompile Include="..\..\Source\Game\DemoState.cpp" />
-    <ClCompile Include="..\..\Source\Game\Enemies\BattleShip.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\BigShiee.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\Bus.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\Bzk.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\EnemyBehaviors.cpp" />
@@ -188,7 +188,7 @@
     <ClInclude Include="..\..\Source\Game\Combat\CombatSystem.h" />
     <ClInclude Include="..\..\Source\Game\Combat\Projectiles.h" />
     <ClInclude Include="..\..\Source\Game\DemoState.h" />
-    <ClInclude Include="..\..\Source\Game\Enemies\BattleShip.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\BigShiee.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyBehaviors.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyCommon.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyDef.h" />

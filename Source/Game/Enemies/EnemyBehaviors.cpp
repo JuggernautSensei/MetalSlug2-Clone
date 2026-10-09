@@ -14,7 +14,7 @@ const BehaviorOps& GetBehaviorOps(
         case eEnemyBehavior::Shielder: return kShielderOps;
         case eEnemyBehavior::Pow: return kPowOps;
         case eEnemyBehavior::Bus: return kBusOps;
-        case eEnemyBehavior::BattleShip: return kBattleShipOps;
+        case eEnemyBehavior::BigShiee: return kBigShieeOps;
         case eEnemyBehavior::Jeep: return kJeepOps;
         case eEnemyBehavior::BTank: return kBTankOps;
         case eEnemyBehavior::MissleTank: return kMissleTankOps;

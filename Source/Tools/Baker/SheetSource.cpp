@@ -164,6 +164,14 @@ namespace
             _out.pivot = (pivot == "center") ? eSheetPivot::Center : eSheetPivot::Foot;
         }
 
+        // scale 은 키가 있을 때만 검사한다. 없으면 0 (시트 배율 상속).
+        if (yyjson_obj_get(_pClip, "scale") != nullptr
+            && (!OptInt_(_pClip, "scale", _out.scale) || _out.scale < 1 || _out.scale > kSheetMaxScale))
+        {
+            _error = "clip '" + _out.name + "': scale must be an integer 1.." + std::to_string(kSheetMaxScale);
+            return false;
+        }
+
         if (!OptBool_(_pClip, "loop", _out.bLoop) || !OptReal_(_pClip, "fps", _out.fps) || !OptBool_(_pClip, "mirror", _out.bMirror)
             || !OptBool_(_pClip, "asSprite", _out.bAsSprite) || !OptBool_(_pClip, "replace", _out.bReplace))
         {
@@ -247,6 +255,12 @@ namespace
             }
         }
 
+        if (!OptInt_(_pSheet, "scale", _out.scale) || _out.scale < 1 || _out.scale > kSheetMaxScale)
+        {
+            _error = _out.file + ": scale must be an integer 1.." + std::to_string(kSheetMaxScale);
+            return false;
+        }
+
         if (yyjson_val* clips = yyjson_obj_get(_pSheet, "clips"))
         {
             if (!yyjson_is_arr(clips)) { _error = _out.file + ": clips must be an array"; return false; }
@@ -279,57 +293,6 @@ namespace
         }
         const IRect region = _clip.bHasRegion ? _clip.region : IRect { 0, 0, _image.width, _image.height };
         return SliceAuto(_image, region, _clip.autoOpts, _spec.exclude);
-    }
-
-    struct BuiltFrames
-    {
-        std::vector<FrameOut> frames;
-        std::vector<Image>    trimmed;
-        int                   cellW = 0;
-        int                   cellH = 0;
-    };
-
-    // 사각형 -> 알파 기준 트림 -> 피벗. bFlip 이면 좌우 반전 프레임(피벗 x 도 뒤집음).
-    [[nodiscard]] BuiltFrames BuildFrames_(
-        const Image&              _image,
-        const std::vector<IRect>& _rects,
-        const eSheetPivot         _pivot,
-        const bool                _bFlip)
-    {
-        BuiltFrames out;
-        for (const IRect& rect: _rects)
-        {
-            out.cellW = std::max(out.cellW, rect.w);
-            out.cellH = std::max(out.cellH, rect.h);
-
-            FrameOut    f;
-            Image       crop   = CropImage(_image, rect);
-            const IRect bounds = FindOpaqueBounds(crop, { 0, 0, crop.width, crop.height }, 0);
-            if (bounds.IsEmpty())
-            {
-                f.bEmpty = true;
-                out.frames.push_back(f);
-                out.trimmed.emplace_back();
-                continue;
-            }
-
-            Image trimmed = CropImage(crop, bounds);
-            f.trimX       = bounds.x;
-            f.trimY       = bounds.y;
-            f.w           = bounds.w;
-            f.h           = bounds.h;
-            Pivot pivot   = ComputeSheetPivot(f.w, f.h, _pivot);
-            if (_bFlip)
-            {
-                FlipHorizontal(trimmed);
-                pivot.x = f.w - pivot.x;
-            }
-            f.pivotX = pivot.x;
-            f.pivotY = pivot.y;
-            out.frames.push_back(f);
-            out.trimmed.push_back(std::move(trimmed));
-        }
-        return out;
     }
 
     [[nodiscard]] bool HasValidAnim_(
@@ -475,20 +438,6 @@ namespace
         }
     }
 
-    [[nodiscard]] Image ScaleNearest_(
-        const Image& _src,
-        const int    _scale)
-    {
-        Image dst = Image::Make(_src.width * _scale, _src.height * _scale);
-        for (int y = 0; y < dst.height; ++y)
-        {
-            for (int x = 0; x < dst.width; ++x)
-            {
-                std::memcpy(dst.At(x, y), _src.At(x / _scale, y / _scale), 4);
-            }
-        }
-        return dst;
-    }
 }
 
 slug::Result<void> LoadSheetConfig(
@@ -638,7 +587,7 @@ slug::Result<void> AppendSheetClips(
                     continue;
                 }
 
-                BuiltFrames built = BuildFrames_(image, rects, clip.pivot, v.bFlip);
+                BuiltFrames built = BuildSheetFrames(image, rects, clip.pivot, v.bFlip, ResolveSheetScale(spec.scale, clip.scale));
                 if (action == eSheetNameAction::Replace)
                 {
                     const std::string reason = "replaced by sheet clip from " + spec.file;
@@ -795,7 +744,7 @@ slug::Result<void> RunSheetPreview(const BakerOptions& _options)
         }
     }
 
-    Image output = _options.sheetPreviewScale > 1 ? ScaleNearest_(canvas, _options.sheetPreviewScale) : canvas;
+    Image output = _options.sheetPreviewScale > 1 ? ScaleNearest(canvas, _options.sheetPreviewScale) : canvas;
     const fs::path outDir = slug::FindAssetRoot().parent_path() / "Captures" / "SheetPreview";
     std::error_code ec;
     fs::create_directories(outDir, ec);

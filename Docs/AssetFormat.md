@@ -119,6 +119,10 @@ u8    bits[ceil(width/8) * height]   // 행 우선, 각 행은 바이트 경계 
   4. `rows:true` 면 세로 중심이 같은 행(첫 사각형 높이 안)끼리 밴드로 묶고 밴드 안에서 x 순, `false` 면 x 순.
   - 기본값: `rows: true`, `mergeGap: 2`, `minPixels: 30`. 촘촘한 시트는 `mergeGap: 0` 이 맞다(프레임끼리 붙는 경우가 많음).
 - `clips[].frames`: 명시 사각형 `[x,y,w,h]` 목록. 있으면 `auto` 보다 우선한다. `auto` 와 `frames` 중 하나는 필수.
+- `scale`: 정수 1..8 (기본 1). 시트 항목에 두면 그 시트 클립의 기본 배율이고, 클립에 `scale` 을 두면 그 클립만 덮어쓴다 (클립 값 0 또는 생략 = 시트 값 상속).
+  원본 시트 픽셀은 1x 이므로, 레거시 2x 아트와 크기를 맞추려면 2 를 쓴다. **최근접 이웃 확대**를 키 적용 직후, 자르기/트림/피벗 계산 **이전**에 한다.
+  따라서 프레임 피벗/트림/cellW/cellH 와 `anim.json` 의 w/h 는 확대된 크기 기준이고, `frames` / `exclude` / `region` 좌표는 여전히 시트(1x) 좌표다.
+  자동 검출(`auto`)은 1x 시트에서 수행하고 그 사각형을 확대한다. 미리보기(`--sheet-preview`)는 1x 로 그린다.
 - `pivot`: `foot`(기본) = 트림된 프레임의 아래 중앙 `(w/2, h)`, `center` = `(w/2, h/2)`. 피벗 규칙은 위 `anim.json` 과 같다(그리기: `topLeft = origin - pivot`).
 - `loop`(기본 true), `fps`(기본 12, `frameDuration = 1/fps`).
 - `mirror: true`: 이름 토큰이 `_Right` 또는 `_Left` 인 클립의 반대쪽 클립을 추가로 굽는다
@@ -153,3 +157,5 @@ u8    bits[ceil(width/8) * height]   // 행 우선, 각 행은 바이트 경계 
 파일럿 주의: `Order_Run_Right/Left` 는 레거시 클립(8프레임, 80x78)과 이름이 겹쳐 `replace:false` 로 건너뛴다.
 Running 행을 쓰려면 이름을 바꾸거나 `replace:true` 를 명시해야 한다(레거시 아트 대체). 레거시 `Parker` 는 대체하지 않았다.
 fps 값은 임시(원본 재생 속도 미확인)이다.
+배율: 46546.png, 38098.png, 40204.png 는 `"scale": 2` (원본 1x 픽셀아트 → 레거시 2x 크기; 예: Big Shiee 본체 271x208 → 542x416).
+29720.png 는 1x 유지: `UI_Mission_*` 글자는 `UiLayout.h` 의 `missionGlyphNum/Den`(5/3)으로 코드에서 배율을 보정하므로 이중 확대하면 안 된다.

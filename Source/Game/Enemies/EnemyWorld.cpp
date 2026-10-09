@@ -7,7 +7,7 @@
 
 #include "Base/Log.h"
 
-#include "Game/Enemies/BattleShip.h"
+#include "Game/Enemies/BigShiee.h"
 #include "Game/Enemies/EnemyCommon.h"
 #include "World/Constants.h"
 
@@ -97,6 +97,7 @@ void EnemyWorld::Reset(
     m_rng.Reseed(_seed);
     m_nextId      = kEnemyOwnerBase;
     m_bPlayerMinX = false;
+    m_bPlayerMaxX = false;
 }
 
 EnemyHandle EnemyWorld::Spawn(
@@ -279,6 +280,7 @@ void EnemyWorld::Tick(
     }
     m_lastCtx     = _ctx;
     m_bPlayerMinX = false;
+    m_bPlayerMaxX = false;
 
     if (_ctx.pProjectiles)
     {
@@ -653,7 +655,7 @@ std::optional<float> EnemyWorld::GetBossHpRatio() const
 {
     for (const Enemy& e: m_enemies)
     {
-        if (e.life != eEnemyLife::Alive || e.behavior != eEnemyBehavior::BattleShip || !battleship::IsFightStarted(e))
+        if (e.life != eEnemyLife::Alive || e.behavior != eEnemyBehavior::BigShiee || !bigshiee::IsFightStarted(e))
         {
             continue;
         }
@@ -698,6 +700,13 @@ void EnemyWorld::RequestPlayerMinX(
 {
     m_playerMinX  = m_bPlayerMinX ? std::max(m_playerMinX, _minX) : _minX;
     m_bPlayerMinX = true;
+}
+
+void EnemyWorld::RequestPlayerMaxX(
+    const float _maxX)
+{
+    m_playerMaxX  = m_bPlayerMaxX ? std::min(m_playerMaxX, _maxX) : _maxX;
+    m_bPlayerMaxX = true;
 }
 
 bool EnemyWorld::IsTagDefeated(

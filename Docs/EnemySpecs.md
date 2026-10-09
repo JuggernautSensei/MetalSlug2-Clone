@@ -292,29 +292,55 @@
 - 새: 지면 교체는 `groundPatch`/`GroundMap` 스왑 이벤트(`on_death: swap_ground`). 레거시 버그: `static_pointer_cast<Projectile>` 무검사(칼 UI 타입은 OK), 개방 판정이 모든 겹침.
 - 스폰: `CREATE_BUS` (x>2244) `(2995,255)`.
 
-### 3.2 BattleShip ("Big Shiee", 최종 보스) — `BattleShip.*`, `BattleShipDoubleTurret.*`, `BattleShipBullet.*`
+### 3.2 Big Shiee (최종보스, MS2 Mission 4) — `Source/Game/Enemies/BigShiee.*`, def `bigshiee` (`Assets/Defs/Boss.json`)
+
+구 BattleShip(레일 이동 + 머리 개폐 + 격앙) 구현은 **폐기**했다. 아래는 원작 영상(`Assets/Source/videoplayback (1).mp4`, 약 290–373 s) 대조로 새로 짠 설계다. 수치는 모두 def `params` 로 뺐다.
+
 | 항목 | 값 |
 |---|---|
-| 원점/지면 | 본체 원점, **지면 = 원점 y + 132**(`battleShipGroundToPosY`) → F=132 |
-| HP/점수 | 레거시 250 → 새 **900**(TTK 90 s). 점수 없음 → 권장 10000. 포탑 레거시 20 → 새 **40** (권장; 선택 파괴) |
-| 아레나 | 월드 `RECT(13454,864,14094,1312)`(640×448) 고정, 보스 지면 y = `FindGroundY(13950)` |
-| 피격 박스(본체 원점 기준 중심) | 선수 `170×190 @(175,40)`, 함교 `280×170 @(60,−90)`, 후갑판 `300×110 @(−120,10)` (발 기준 y 에서 −132 보정: `(175,−92)`,`(60,−222)`,`(−120,−122)`) |
-| 플레이어 차단 | 파괴 연출 종료 전까지 `player.x < body.x + 270` 이면 강제 보정(전진 선수 앞) |
-- 등장: 배너(WARNING 2.5 s) 동안 `arena.left − 330` 에 숨어 있다(머리 +253 까지 화면 밖) → `entranceDelaySec` 후 레일로 슬롯1(`arena.left+296`) 까지 가속 500 px/s² / 최고 500 px/s 로 약 2.3 s 진입(화면 왼쪽에서 보이며 굴러 들어옴) → 최초 Idle 진입 = 전투 시작(`FightStarted`). 포탑은 `FightStarted && !Defeated` 일 때만 작동.
-- 레일 이동: 최고 500 px/s, 가속/제동 500 px/s² (진입과 공유), 목표 전방에서 제동(정지 시 속도 0→Idle). 슬롯 x = `arena.left + {281,296,311}`. 클립: `BattleShip_{Front,Back}_Rail_{Forward,Backward}[_Fast]`(8f×.03/.02 루프), Idle `…_Rail_Idle`.
-- **화면 맞춤 (보정, 레거시 대비)**: 레거시 슬롯 `{30,100,190}` 에서는 꼬리(`tail` −213 − 피벗 66 → 본체 기준 −279)가 아레나 왼쪽 밖으로 잘렸다. 선체 가로 범위(본체 원점 기준): 꼬리 **−279** ~ 선수 **+253**(머리 switching 프레임 최대 **+317**), 앞 레일 −259 ~ +125, 잔해 `BattleShip_Destroy` −331 ~ +271. 640 px 안에 전부 들어오려면 279 ≤ 슬롯 ≤ 323 → `{281,296,311}`. 잔해는 602 px 라 아레나 안으로 클램프(`BattleShip.cpp` SubmitParts_).
-  - **트레이드오프**: 선체가 아레나 폭의 85% 를 차지해 플레이어는 선수 앞(`+270`, `hullBlockDx`) 오른쪽 약 60~90 px 만 쓸 수 있다. 플레이어 가동 폭을 넓히려면 아레나(카메라 경계)를 넓히거나 선체 길이를 줄여야 한다(미결정).
-- 머리 위 가느다란 기둥(빨간 끝 캡 느낌)은 `BattleShip_Head` 스프라이트의 안테나 와이어(레거시 오프셋 (131,5) 그대로)이며 소품이 아니다.
-- 아레나 정리: openland_4 의 `big_house`(x=13542, 스프라이트 폭 498 → 13293~13791) 는 아레나와 겹쳐 선체 뒤에서 탄을 막으므로 제거(레거시도 배치했던 버그; 타워는 레거시도 제외). `bridge_block`(13170, 폭 156 → 13092~13248) 은 아레나 밖이라 유지. 보스 섹션 `clear` 는 여전히 `monster` 레이어만 지운다.
-- HMG 픽업: 보스 섹션에서 `gunitem_mg` 를 `arena.left+120`(x=13574, 낙하 착지) 에 생성. 플레이어는 배너 동안 주워야 한다(이후 선체가 플레이어를 +270 앞으로 밀어낸다).
-- **패턴** (Idle 대기 **1.6 s**(격앙 0.8) 후 `patternCount++`): 홀수=캐논, 짝수=레일 이동(현재와 다른 슬롯 랜덤).
-  - 캐논: Head 개방 `BattleShip_Head_Swiching_Start`(18f×.08=1.44 s)+안테나 `Antena_Turn` → `BattleShip_Cannon_Start`(20f×.08=1.6 s) → CannonIdle: **캐논 각 추적 60°/s**(격앙 90°/s, 초기 −60°), 포 앵글 −135..−45° 를 11.25° 로 나눠 `BattleShip_Cannon_Idle_0..8` → **1.0 s**(격앙 0.6) 후 Shot: `Cannon_Shot_{0..4}`(7f×.08=.56 s) 시작 시 탄 생성. **3연발**(격앙 5) 후 `Cannon_End`(14f×.08)+`Head_Swiching_End`(21f×.08) → Idle.
-  - 탄 `BattleShipBullet(idx)`: 스프라이트 `BattleShip_Bullet_{idx}`(50×58, 박스 **30×30**, 속도 300 일정, 중력 없음). 스폰 `body+(123,−149)+((idx−2)·37, 10)` (idx=샷 클립 인덱스). 방향 = 플레이어 향, `dir.y=max(dir.y,1)`, `|dir.x| ≤ 1.7·dir.y`(수직 ±60° 이내만). 소멸 `Explosion_Huge`(0,−20). 플레이어 무적 통과 규칙 미적용(버그).
-- 격앙(`HP×2 ≤ max`): 대기·캐논 시간 단축, 발수 5, 선체 임의 지점 소폭발 1 s 마다.
-- **BattleShipDoubleTurret** ×2: 오프셋 `(−200,−70)`,`(−100,−120)`(본체 기준), 박스 `70×50 @(0,5)`. 방향 3상태 LEFT/MID/RIGHT = 플레이어 `|dx|≤60` MID, 아니면 부호. 한 번에 한 칸 회전(`DCannon_TurnLeft/Right_0/1` 3f×.08=.24 s), 회전 후 쿨타임을 `cool−0.25` 로 두고 재판단. 쿨 **2.4 s**(격앙 1.4), 첫 발 지연 `i×1.2 s`, 발사 후 `−rand[0,0.5) s` 추가. 발사: `DCannon_Shot_{Left,Mid,Right}`(14f×.08=1.12 s) 시작 즉시 `BTankProjectile`(vy0 −200, g 500) 생성, 머즐 `(−30,−30)/(0,−35)/(30,−30)`, 속도 `clamp(|dx|/flightTime,40,450)`(플레이어 x±30 랜덤 목표, 체공시간 120Hz 시뮬), 이펙트 `BattleShip_DCannon_Shot_Effect_*`(19f×.08). 사망: `Explosion S+M+L`, 디브리 `BattleShip_Cannon_Destroy_Type1/3`, 잔해 `BattleShip_Cannon_Destroy_Type5`(1f) 유지, 본체 파괴 시 폭발 후 제거. 칼로 못 때림(버그→수정).
-- 파괴(HP 0): 피격 박스 OFF, 포탑 전부 파괴, **2.8 s** 연쇄폭발(0.12 s 마다 `S1 + M(0/1) + L(1/3 확률)` 선체 영역 `x∈[−250,240], y∈[−200,110]`) → 플래시 0.12 s + `M1 L1`×6 + 디브리 6(`BattleShip_Cannon_Destroy_Type1..4`) → 부품 클립 제거, 잔해 `BattleShip_Destroy`(1f, 602×381) offset(−30,−52). **3.6 s** 에 `IsDestroyFinished` → 플레이어 10 s 무적 → 1.5 s → "MISSION COMPLETE" 배너 4 s → 페이드 1.2 s → 타이틀.
-- 리그 구성(컴포넌트 offset, 본체 원점 기준; 새는 파트별 `rig.parts[]`): backRail (226,66), body (−57,−114), head (131,5), tail (−213,52), frontRail (−67,63), antenna (2,−217), cannon (123,−149), cannonDeco 스프라이트 `BattleShip_Cannon_Deco` (55,−24), wreck (−30,−52). 렌더 `topLeft = origin + offset − pivot(baked)`.
-- 반사 규칙: 레거시는 `ObjectType::Projectile||UI` 의 `HITBOX` 모두 피격(칼 포함, 동일 탄 중복 방지 `_hitProjectiles`). 새: HitResolver 의 `hitId` 중복 방지로 대체(관통 샷건이 3 박스 중복 가격 방지).
+| 원점/지면 | 원점 = 발 − (0, 208) (아트 416 높이의 중심). 발 = 스폰 시 지면 스냅 (`groundSnap`) |
+| 화면 위치 | 아레나 왼쪽 기준 중심 x = `homeX` 290. 주행 범위 205~290 (`driveMinX/MaxX`), 50 px/s, 도착 후 3 s 정지 |
+| 등장 | 오른쪽 화면 밖 `home + 420` 에서 2.5 s 굴러 들어옴 (`Body_DriveBack`), 기저 폭발 `Explosion_Small` 0.25 s 주기 |
+| HP/점수 | 선체 900 (`hp`, `ttk` 90 기준). 점수 10000. HUD 바 = `GetBossHpRatio()` (선체 비율) |
+| 파츠 | 포탑 A..G 각 60 HP (파트 0..6), 캐논 헤드 300 HP (파트 7). 선체 피격은 기본 체력 경로 (`OnHit` 이 false 반환). 포탑/캐논 피격은 파트 HP 만 깎고 선체 HP 에 닿지 않는다 |
+| 피격 상자 | 선체 `560x330 @(0,43)`, 캐논 `120x155 @(−133,−75)`, 포탑 `64x50` (포탑 중심 기준). Melee 불가 (`human` 아님): 총알/폭발만 |
+| 플레이어 띠 | `RequestPlayerMaxX(보스 x − 60)`: 플레이어는 보스 왼쪽 띠(약 145~230 px)에만 머문다. 띠는 항상 양수 폭이라 갇히지 않는다 |
+| 포구 | 캐논 포구 `(−173,−64)` (원점 기준, 왼쪽 발사). 포탑 포구 `(−40,−10)` (포탑 중심 기준) |
+
+**단계 (전투 시계 = 등장 종료 시 0)**
+| 단계 | 시간 | 동작 |
+|---|---|---|
+| 등장 `kEntrance` | 2.5 s | 굴러 들어옴. 끝나면 `IsFightStarted` = true |
+| 포탑 연사 `kAssault` | 12 s | 1.2 s 마다 살아 있는 포탑 2기가 청록 트레이서 1발씩. 사격 예고 0.4 s = `Turret_X_Shooting` (클립 진행으로 표시) |
+| 캐논 전개 `kDeploy` | 4 s | `Cannon_Deploy1 → 3 → 6 → 9` (각 1 s, 마지막 프레임 유지) |
+| 캐논 볼리 `kCannon` | 반복 | 3~4 s 간격. 트레이서 3발 (살아 있는 포탑 무작위, 없으면 캐논 포구, 0.1 s 간격) + 2 볼리마다 주황 포탄 1발 (캐논, 착탄 시 `bigshiee_blast` 60x60 0.3 s) |
+| 주행 | 연사/캐논 단계 | 목표 x 를 205~290 에서 무작위로 뽑아 이동 |
+| 격앙 | 캐논 파괴 또는 선체 50% 이하 | 연사/볼리 간격 ÷1.3 |
+| 캐논 조준 | 캐논 단계 | `Gun_Aim` 9 프레임 = 목표 방향을 −135°..−45° 를 11.25° 로 나눈 구간. 사격 시 `Gun_Shoot_1..5` (구간 2개당 행 1개). 파괴 시 `Destroyed_Cannon` |
+| 사망 | 선체 0 | 포탑 전부 파괴, 발사 큐 비움. 8 s 연쇄 폭발 (0.2 s 간격 S/M/L 무작위, 종료 시 `Explosion_Huge` + M/L 6쌍), 이후 `Destroyed_Body` 가 2 s 침몰 (+24 px), 잔해 연기 0.5 s 간격. **10 s 에 `IsDestroyFinished`** → 스테이지 게이트 `boss_dead` → 플레이어 10 s 무적 → `endStage` (리절트 화면 확인) |
+
+**발사 규칙**
+- 트레이서: 발사 원점 → 플레이어 중심 직선, 400 px/s, 중력 없음, 즉사(Bullet). 플레이어가 죽었으면 쏘지 않는다.
+- 주황 포탄: 포물선 v0 (vx 보정, vy −300), g 500. 발사 시각에 플레이어 x ± 20 을 착탄점으로 잡고, 같은 이산 적분(반-오일러)으로 착탄 틱을 미리 계산해 예약 큐에 `blast` 를 넣는다. 착탄 blast 는 정지 판정 상자 60x60, 0.3 s.
+- 예약 큐 8칸은 `Enemy::ext[7..14]` 에 패킹한다 (fireAt | kind | source | dx). 포탑 상태 (HP, 예고 틱) 는 `ext[0..6]` 에 패킹.
+
+**원작 대응 (영상 시각, 추정)**
+| 원작 | 본 구현 |
+|---|---|
+| 등장 ~290 s, 굴러 들어옴 + 기저 폭발 | 등장 2.5 s |
+| 상단 포탑 청록 트레이서 연사 296–308 s | 포탑 연사 12 s |
+| 캐논 상승 312–316 s (Cannon_Deploy1/6) | 캐논 전개 4 s (Deploy1→9) |
+| 캐논 idle 중 3~4 s 마다 청록 3발 + 주황 포탄, 318–351 s | 캐논 볼리 (동일 주기 3~4 s) |
+| 캐논 파괴 ~352 s, 격앙 +30% | 캐논 300 HP 파괴 = 격앙 (볼리 ÷1.3) |
+| 연쇄 폭발 356–371 s, 침몰 371–373 s, 연기 ~12 s | 사망 8 s 연쇄 + 침몰 2 s + 연기 (10 s 완료) |
+
+**불확실 (확인 필요)**
+1. 영상→게임 좌표 매핑 (원점 ±10 px). 포탑 A..G 와 캐논 포구/캐논 헤드 위치는 합성 검증 (`Docs/BigShieeLayout.md` §9) 으로 맞췄으나 원작의 정확한 포탑 위치는 확정하지 못했다.
+2. 청록 3발 / 주황 포탄의 "쏘는 포탑·각도" 는 영상에서 명확하지 않아 설계값이다.
+3. 주행 속도 50 px/s 와 범위 205~290 은 영상 추정치.
+4. 플레이어 띠 폭 (145~230 px) 은 레거시 선수 +270 대신 "보스 왼쪽" 으로 해석한 결과다 (원작은 플레이어가 보스 왼쪽에 서고 보스는 왼쪽으로 쏜다는 요구사항에 따름).
+5. HP 900 의 권총 단독 전투 시간 (60–80 s 목표) 은 실측하지 않았다 (권총 2 dmg, 연사 10발/s 이론 상한).
+
 
 ### 3.3 기타 비행/탈것
 - 설계 외 `Plane`, `Parker`, `Stage0Lake`, `Sign` 은 장식/연출(§6).
@@ -404,8 +430,8 @@
 | Aparch | 50 | 120 | 12 s | 6 | 1000→2000 | 처치까지 카메라 고정 (RIVER_MID) |
 | Sarubia | 80 | 150 | 15 s | 8 | 1000→2000 | 처치까지 카메라 고정 (OPENLAND_4) |
 | MBTruck (버스) | 160 | 250 | 25 s | 13 | 0→2000 | 처치 시 카메라 해제 |
-| BattleShip 본체 | 250 | 900 | 90 s | 45 | 0→10000 | 아레나 락 |
-| 포탑(DCannon) | 20 | 40 | 4 s | 2 | 0→500 | 선택 |
+| Big Shiee 선체 (구 BattleShip) | 250 | 900 | 90 s | 45 | 0→10000 | 아레나 락, 처치 시 게이트 `boss_dead` |
+| Big Shiee 포탑 A..G (각) | - | 60 | 6 s | 3 | 0 | 선택 파괴 (선체 HP 와 무관) |
 | Alian | 10 | 40 | 4 s | 2 | 100 | - |
 | 파괴 구조물 | 10~40 | ×2 | - | - | 0 | - |
 > 샷건(6, 관통) 으로는 보스 150발 이상 → 보스전은 권총/HMG 중심, 폭탄 10발(=200 dmg=22%). 밸런스는 `dpsRef` 로 조정.
@@ -421,7 +447,7 @@
 1. **지프 방향 규약**(좌주행=`_Left`=우발사)은 코드에서만 도출. 스프라이트 시각 확인(컨택트 시트 해상도 부족) 필요 → AnimViewer 로 `Jeep_Move_Left` 가 어느 쪽을 보는지 확인 후 규약 확정.
 2. **MBTruck 원점 F≈123, 충돌/스프라이트 정렬**: 스프라이트 하단(원점+146) 과 지면(+123) 이 어긋남. 실제 지면 접촉 기준으로 재조정 필요.
 3. Shielder: 폭탄/샷건이 방패에 막히는지는 레거시 불명(폭탄 `Projectile` 타입이면 막힘 가능). 본 문서는 "Blast/Melee 우회"로 정함.
-4. BattleShip 파트 렌더 오프셋(애니메이터 offset + baked pivot 합성)은 AnimViewer 로 겹침 확인 필요.
+4. (구 BattleShip 항목, 폐기) Big Shiee 파트 오프셋은 `Docs/BigShieeLayout.md` §9 의 캡처로 검증했다.
 5. HMG 연사 속도는 PlayerSpec 에 없음 → HMG TTK 미산정.
 6. Truck F(LOADED/REFRI)·MobBoat 수면 높이 등 일부는 `DevScene` 좌표에서의 역산값.
 7. Aparch 패턴 시작 패리티 `rand()` — 새 구현은 결정적(시드 고정 RNG) 으로.

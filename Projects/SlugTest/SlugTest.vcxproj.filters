@@ -18,7 +18,7 @@
     <ClCompile Include="..\..\Test\BakerTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Test\BattleShipTest.cpp">
+    <ClCompile Include="..\..\Test\BigShieeTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Test\BossDefTest.cpp">

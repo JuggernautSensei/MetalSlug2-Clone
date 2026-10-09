@@ -70,7 +70,7 @@ extern const BehaviorOps kFlyingBzkOps;
 extern const BehaviorOps kShielderOps;
 extern const BehaviorOps kPowOps;
 extern const BehaviorOps kBusOps;
-extern const BehaviorOps kBattleShipOps;
+extern const BehaviorOps kBigShieeOps;
 extern const BehaviorOps kJeepOps;
 extern const BehaviorOps kBTankOps;
 extern const BehaviorOps kMissleTankOps;

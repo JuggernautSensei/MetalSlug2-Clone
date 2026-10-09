@@ -124,7 +124,7 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
 | `sarubia` | `Sarubia` | 50 | 중간보스 |
 | `aparch` | `Aparch` | 50 | 비행. `legacyCenter` 로 기록 |
 | `mb_truck` | `MBTruck` (버스 중간보스) | 130 | 180x260. `legacyCenter`. 사망 시 지면 `Stage0_1` 교체는 스테이지 데이터(gate)에서, 파괴 이펙트/`MainTruck_Die_Front`(pos+(12,88))는 def 쪽 |
-| `battleship` | `BattleShip` (최종 보스) | - | `params.arena` = rect 이름, `params.positionFromArena:true` = 보스가 위치를 아레나 기준으로 스스로 계산(레거시 `SetArena`), `groundSnap` 의 y 를 지면 y 로 전달 |
+| `bigshiee` | `BigShiee` (최종 보스, Big Shiee) | - | `params.arena` = rect 이름, `params.positionFromArena:true` = 보스가 위치를 아레나 기준으로 스스로 계산(레거시 `SetArena`), `groundSnap` 의 y 를 지면 y 로 전달 |
 | (미사용) `fixed_jeep` `alian` | `FixedJeep` `Alian` | 30 / 50 | Stage0 DevScene 은 스폰하지 않음 |
 
 **NPC/아이템**: `pow`(= 레거시 `Older`, 충돌체 50x80 → halfHeight 40, 항상 `settle`) / 아이템 ID: `gunitem_mg` `gunitem_sg` `bomb_supple` `bullet_supple` `item_letter` `random_score`(과일 7+애니 6 중 균등) `random_fruit`(apple carrot banana banana_bundle watermelon cabbage pair) `random_anime`(mando letter chicken fish bread fruits).
@@ -161,7 +161,7 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
 ## 12. 런타임 (`StageState`, 상태 이름 `stage0`)
 - 구성: `Source/Game/Stage/StageState.*` 가 `Assets/Stage/Stage0.json` 을 `StageRunner` 로 돌린다. 플레이어/전투/투사체/카메라/HUD 는 SandboxState 와 같은 경로. 기본 시작 상태는 `title` (Assets/Baked 가 없으면 `sandbox`), 타이틀 Start → `stage0`.
 - 호스트: `StageWorldHost` (`IStageHost` 구현). 스폰 한 개를 아래 순서로 보낸다. 정의가 없으면 다음 단계로 떨어진다.
-  - `enemy` / `npc` → `EnemyWorld::Spawn` (def 는 Enemies/Vehicles/Boss.json). `params.arena` 는 rect 이름을 풀어 `SpawnParams::arena` 로 준다. `battleship` 은 아레나 왼쪽 밖 (x - 300) 에서 등장.
+  - `enemy` / `npc` → `EnemyWorld::Spawn` (def 는 Enemies/Vehicles/Boss.json). `params.arena` 는 rect 이름을 풀어 `SpawnParams::arena` 로 준다. `bigshiee` 은 `params.arena` 의 아레나 오른쪽 밖 (`homeX + entranceFromX`) 에서 굴러 들어온다 (위치는 Init 이 아레나 기준으로 정한다).
   - `prop` → `PropWorld::Spawn` (Props.json). `params` 의 `sprites` / `hitbox` / `standBox` / `explodeOnDeath` 를 `PropSpawnParams` 로 옮긴다. `hp` 는 def 값을 쓴다 (스테이지 데이터에 hp 덮어쓰기 없음).
   - `item` → `PropWorld::SpawnItem` (아이템 id 또는 `random_*` 그룹). 중심 기준이므로 발 = 중심 + (0, 16).
   - `collider` → 스테이지 충돌체 목록. `collisionLayer: wall` 은 플레이어/적 벽, `groundExceptPlayer` 는 적만 서는 원웨이 바닥. 매 틱 물리 입력에 합친다.

@@ -163,3 +163,81 @@ TEST(BakerSheetCollision, LegacyNamesAreNeverOverwrittenWithoutReplace)
     EXPECT_EQ(ResolveSheetName(true, false), eSheetNameAction::Skip);
     EXPECT_EQ(ResolveSheetName(true, true), eSheetNameAction::Replace);
 }
+
+TEST(BakerSheetScale, ClipValueOverridesSheetAndZeroInherits)
+{
+    EXPECT_EQ(ResolveSheetScale(2, 0), 2);
+    EXPECT_EQ(ResolveSheetScale(2, 1), 1);
+    EXPECT_EQ(ResolveSheetScale(1, 3), 3);
+    EXPECT_EQ(ResolveSheetScale(1, 0), 1);
+}
+
+TEST(BakerSheetScale, NearestUpscaleRepeatsEachPixelBlock)
+{
+    Image src = Image::Make(2, 1);
+    src.At(0, 0)[0] = 10;
+    src.At(0, 0)[3] = 255;
+    src.At(1, 0)[0] = 20;
+    src.At(1, 0)[3] = 0;
+    const Image up = ScaleNearest(src, 2);
+    EXPECT_EQ(up.width, 4);
+    EXPECT_EQ(up.height, 2);
+    for (int y = 0; y < 2; ++y)
+    {
+        EXPECT_EQ(up.At(0, y)[0], 10);
+        EXPECT_EQ(up.At(1, y)[0], 10);
+        EXPECT_EQ(up.At(2, y)[0], 20);
+        EXPECT_EQ(up.At(3, y)[3], 0);
+    }
+}
+
+TEST(BakerSheetScale, ScaledFrameDoublesSizeAndFootPivot)
+{
+    // 6x5 시트, 3x2 블롭 (1,1). 1x: 트림 (1,1,3,2), 피벗 (1,2).
+    Image sheet = MakeMagentaSheet(6, 5, { { 1, 1, 3, 2 } });
+    ApplySheetKey(sheet, SheetKey {});
+    const std::vector<IRect> rects = { { 0, 0, 6, 5 } };
+
+    const BuiltFrames one = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 1);
+    EXPECT_EQ(one.frames[0].w, 3);
+    EXPECT_EQ(one.frames[0].h, 2);
+    EXPECT_EQ(one.frames[0].pivotX, 1);
+    EXPECT_EQ(one.frames[0].pivotY, 2);
+
+    // 2x: 블롭이 (2,2) 에 6x4 로 커지고, 피벗은 확대된 프레임 기준 (3,4). 셀 크기도 2배.
+    const BuiltFrames two = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 2);
+    EXPECT_EQ(two.frames[0].trimX, 2);
+    EXPECT_EQ(two.frames[0].trimY, 2);
+    EXPECT_EQ(two.frames[0].w, 6);
+    EXPECT_EQ(two.frames[0].h, 4);
+    EXPECT_EQ(two.frames[0].pivotX, 3);
+    EXPECT_EQ(two.frames[0].pivotY, 4);
+    EXPECT_EQ(two.cellW, 12);
+    EXPECT_EQ(two.cellH, 10);
+    EXPECT_EQ(two.trimmed[0].width, 6);
+    EXPECT_EQ(two.trimmed[0].height, 4);
+
+    const BuiltFrames center = BuildSheetFrames(sheet, rects, eSheetPivot::Center, false, 2);
+    EXPECT_EQ(center.frames[0].pivotX, 3);
+    EXPECT_EQ(center.frames[0].pivotY, 2);
+}
+
+TEST(BakerSheetScale, MirrorOfScaledFrameFlipsPixelsAndPivotAroundScaledWidth)
+{
+    // 블롭 좌상단 픽셀(시트 (1,1))에 마커 7. 3배 확대 시 트림 프레임 w=9, 피벗 x=4 (foot).
+    Image sheet = MakeMagentaSheet(6, 5, { { 1, 1, 3, 2 } });
+    ApplySheetKey(sheet, SheetKey {});
+    sheet.At(1, 1)[0] = 7;
+    const std::vector<IRect> rects = { { 0, 0, 6, 5 } };
+
+    const BuiltFrames plain  = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 3);
+    const BuiltFrames mirror = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, true, 3);
+    EXPECT_EQ(plain.frames[0].w, 9);
+    EXPECT_EQ(plain.frames[0].pivotX, 4);
+    EXPECT_EQ(plain.trimmed[0].At(0, 0)[0], 7);
+    EXPECT_EQ(plain.trimmed[0].At(8, 0)[0], 200);
+    EXPECT_EQ(mirror.frames[0].pivotX, 5);
+    EXPECT_EQ(mirror.frames[0].pivotY, plain.frames[0].pivotY);
+    EXPECT_EQ(mirror.trimmed[0].At(8, 0)[0], 7);
+    EXPECT_EQ(mirror.trimmed[0].At(0, 0)[0], 200);
+}

@@ -43,13 +43,16 @@ public:
     void               RequestPlayerMinX(float _minX);
     [[nodiscard]] bool HasPlayerMinX() const { return m_bPlayerMinX; }
     [[nodiscard]] float GetPlayerMinX() const { return m_playerMinX; }
+    void               RequestPlayerMaxX(float _maxX);
+    [[nodiscard]] bool HasPlayerMaxX() const { return m_bPlayerMaxX; }
+    [[nodiscard]] float GetPlayerMaxX() const { return m_playerMaxX; }
     [[nodiscard]] bool IsTagDefeated(uint32_t _userTag) const;
     [[nodiscard]] EnemyHandle ResolveHandle(EnemyHandle _handle) const;
 
     [[nodiscard]] int CountAlive(const EnemyFilter& _filter = {}) const;
     [[nodiscard]] int CountAlive(slug::StringView _defName) const;
 
-    // 살아 있고 전투가 시작된 보스(battleship)의 본체 HP 비율 (0..1). 없으면 nullopt.
+    // 살아 있고 전투가 시작된 보스(bigshiee)의 선체 HP 비율 (0..1). 없으면 nullopt.
     [[nodiscard]] std::optional<float> GetBossHpRatio() const;
 
     template<typename Fn>
@@ -110,6 +113,8 @@ private:
     EnemyContext           m_lastCtx  = {};
     float                  m_playerMinX  = 0.f;
     bool                   m_bPlayerMinX = false;
+    float                  m_playerMaxX  = 0.f;
+    bool                   m_bPlayerMaxX = false;
 
     slug::Vector<Enemy>          m_enemies    = {};
     slug::Vector<EnemyEvent>     m_events     = {};

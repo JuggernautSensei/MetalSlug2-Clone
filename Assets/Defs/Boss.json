@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "중간보스/최종보스 정의 (Docs/EnemySpecs.md 3.1 / 3.2). 좌표 params 는 '원점' 기준(원점 = 발 - (0, originDepth)), 방향은 항상 +1(레거시 그대로). 시간은 초. 파츠 클립 이름은 Source/Game/Enemies/BattleShip.cpp, Bus.cpp 의 표가 참조한다.",
+  "note": "중간보스/최종보스 정의 (Docs/EnemySpecs.md 3.1 / 3.2). 좌표 params 는 '원점' 기준(원점 = 발 - (0, originDepth)). 시간은 초. 최종보스 Big Shiee 의 파츠 클립 이름은 Source/Game/Enemies/BigShiee.cpp 가 직접 참조한다.",
   "defs": {
 
     "mb_truck": {
@@ -32,10 +32,10 @@
       }
     },
 
-    "battleship": {
-      "note": "최종보스 Big Shiee. HP 900 (TTK 90 s). 등장 → 레일 패턴(캐논 / 레일 이동) 반복, 포탑 2기, 격앙(HP<=50%) 시 빨라짐. 파괴 시퀀스 3.6 s 후 IsDestroyFinished. 슬롯 281/296/311 = 아레나 640 px 안에 선체 전체(꼬리 -279 ~ 선수 +317)가 들어오는 범위(레거시 30/100/190 은 꼬리가 화면 밖으로 잘림). 등장: 배너 2.5 s 동안 화면 밖(-330), 이후 약 2.3 s 레일 진입.",
+    "bigshiee": {
+      "note": "최종보스 Big Shiee (원작 MS2 Mission 4). 선체 HP 900 (TTK 90 s 기준, 권총 단독 전투 60~80 s 가 목표). 포탑 A..G 각 60, 캐논 헤드 300 (파괴 시 격앙). 등장 2.5 s 굴러 들어옴 → 포탑 연사 12 s → 캐논 전개 4 s → 캐논 볼리(3~4 s 간격, 청록 트레이서 3발 + 2볼리마다 주황 포탄) 반복. 선체 사망 후 연쇄 폭발 8 s, 침몰 포함 10 s 뒤 IsDestroyFinished. 좌표는 원점 기준 (원점 = 발 - 208), 화면 x 는 아레나 왼쪽 기준. 검증: Docs/BigShieeLayout.md.",
       "kind": "boss",
-      "behavior": "battleship",
+      "behavior": "bigshiee",
       "hp": 900,
       "ttk": 90,
       "score": 10000,
@@ -44,58 +44,47 @@
       "physics": { "useGravity": false },
       "body": { "w": 300, "h": 190, "cx": 0, "cy": -95 },
       "params": {
-        "originDepth": 132,
-        "entranceOffsetX": -330,
-        "entranceDelaySec": 2.5,
-        "railSlots": [120, 170, 220],
-        "homeSlot": 1,
-        "railMax": 500,
-        "railAccel": 500,
-        "railDecel": 500,
-        "idleSec": 1.6,
-        "idleEnragedSec": 0.8,
-        "headOpenSec": 1.44,
-        "cannonStartSec": 1.6,
-        "cannonIdleSec": 1.0,
-        "cannonIdleEnragedSec": 0.6,
-        "cannonShotSec": 0.56,
-        "cannonShots": 3,
-        "cannonShotsEnraged": 5,
-        "cannonEndSec": 1.12,
-        "headCloseSec": 1.68,
-        "cannonTrackDeg": 60,
-        "cannonTrackDegEnraged": 90,
-        "cannonAngleStart": -60,
-        "cannonAngleMin": -135,
-        "cannonAngleMax": -45,
-        "cannonOffset": [123, -149],
-        "bulletSpeed": 300,
-        "bulletSpread": 37,
-        "bulletProjectile": "battleship_bullet",
-        "bow": { "w": 170, "h": 190, "cx": 175, "cy": 40 },
-        "bridge": { "w": 280, "h": 170, "cx": 60, "cy": -90 },
-        "aft": { "w": 300, "h": 110, "cx": -120, "cy": 10 },
-        "hullBlockDx": 270,
-        "turret0Offset": [-200, -70],
-        "turret1Offset": [-100, -120],
-        "turretBox": { "w": 70, "h": 50, "cx": 0, "cy": 5 },
-        "turretMuzzle": [-30, -30, 0, -35, 30, -30],
-        "turretHp": 40,
-        "turretCoolSec": 2.4,
-        "turretCoolEnragedSec": 1.4,
-        "turretFirstStepSec": 1.2,
-        "turretTurnSec": 0.24,
-        "turretShotSec": 1.12,
-        "turretMidDx": 60,
-        "turretAimJitter": 30,
-        "turretRandomSec": 0.5,
-        "turretArcMinVx": 40,
-        "turretArcMaxVx": 450,
-        "turretProjectile": "btank_shell",
-        "enragedSmallSec": 1.0,
-        "destroyChainSec": 2.8,
-        "destroyChainStepSec": 0.12,
-        "destroyFinishSec": 3.6
+        "originDepth": 208,
+        "homeX": 290,
+        "driveMinX": 205,
+        "driveMaxX": 290,
+        "driveSpeed": 50,
+        "driveRestSec": 3.0,
+        "entranceFromX": 420,
+        "entranceSec": 2.5,
+        "rumbleSec": 0.25,
+        "hullBlockDx": -60,
+        "assaultSec": 12.0,
+        "burstSec": 1.2,
+        "burstCount": 2,
+        "deploySec": 4.0,
+        "volleyMinSec": 3.0,
+        "volleyMaxSec": 4.0,
+        "volleyStreaks": 3,
+        "shellEvery": 2,
+        "telegraphSec": 0.4,
+        "streakStaggerSec": 0.1,
+        "shellJitter": 20,
+        "enragedRate": 1.3,
+        "streakSpeed": 400,
+        "turretHp": 60,
+        "cannonHp": 300,
+        "turretOffsets": [-130, -108, -8, -146, 52, -33, -48, -28, 150, -14, 85, 24, -76, -90],
+        "turretMuzzle": [-40, -10],
+        "turretBox": { "w": 64, "h": 50, "cx": 0, "cy": 0 },
+        "cannonOffset": [-108, -48],
+        "cannonMuzzle": [-173, -64],
+        "cannonBox": { "w": 120, "h": 155, "cx": -133, "cy": -75 },
+        "hullBox": { "w": 560, "h": 330, "cx": 0, "cy": 43 },
+        "emblemOffset": [245, 25],
+        "wreckCannonOffset": [-150, 60],
+        "tracerProjectile": "bigshiee_tracer",
+        "shellProjectile": "bigshiee_shell",
+        "blastProjectile": "bigshiee_blast",
+        "destroyChainSec": 8.0,
+        "destroyStepSec": 0.2,
+        "destroyFinishSec": 10.0,
+        "smokeStepSec": 0.5
       }
     },
 
@@ -111,26 +100,37 @@
       "explosion": { "fx": "BTank_Proj_Effect", "offset": [0, 0] }
     },
 
-    "btank_shell": {
+    "bigshiee_tracer": {
       "kind": "projectile",
-      "note": "포탑 포탄 (BTank 계열 포물선). 보스 포탑이 발사 시 수평 속도를 계산한다.",
-      "box": { "w": 20, "h": 20 },
-      "v0": [0, -200],
-      "gravity": 500,
-      "maxFall": 3000,
-      "anim": { "fly": { "name": "BTank_Proj", "frames": 3, "sec": 0.05, "loop": true } },
+      "note": "Big Shiee 청록 트레이서 (직선 400 px/s, 중력 없음, 플레이어 조준은 발사 코드가 정한다). 피해 즉사.",
+      "box": { "w": 12, "h": 12 },
+      "speed": 400,
+      "lifetime": 4,
+      "anim": { "fly": { "name": "BigShiee_Projectile_Cyan", "frames": 4, "sec": 0.0833, "loop": true } },
       "onSolid": "explode",
-      "explosion": { "fx": "BTank_Proj_Effect", "offset": [0, 0] }
+      "explosion": { "fx": "Explosion_Small", "offset": [0, 0] }
     },
 
-    "battleship_bullet": {
+    "bigshiee_shell": {
       "kind": "projectile",
-      "note": "최종보스 캐논 탄 (표적 방향 300 px/s, 중력 없음). 스프라이트 BattleShip_Bullet_{tag}(0..4) 는 발사 코드가 그린다. 소멸 Explosion_Huge.",
-      "box": { "w": 30, "h": 30 },
-      "speed": 300,
-      "anim": { "fly": { "name": "BattleShip_Bullet_0", "frames": 1, "sec": 0.1, "loop": true } },
+      "note": "Big Shiee 주황 포탄 (포물선, v0 y -300, g 500). 발사 코드가 착탄점(플레이어 x ± 20)에 맞춰 vx 를 계산하고 같은 시각에 bigshiee_blast 를 예약한다.",
+      "box": { "w": 16, "h": 16 },
+      "v0": [0, -300],
+      "gravity": 500,
+      "maxFall": 3000,
+      "lifetime": 4,
+      "anim": { "fly": { "name": "BigShiee_Shell_Flame_1", "frames": 12, "sec": 0.0833, "loop": true } },
       "onSolid": "explode",
-      "explosion": { "fx": "Explosion_Huge", "offset": [0, -20] }
+      "explosion": { "fx": "Explosion_Mid", "offset": [0, -20] }
+    },
+
+    "bigshiee_blast": {
+      "kind": "projectile",
+      "note": "Big Shiee 착탄 폭발 판정 (정지 상자 60x60, 0.3 s, 피해 1). speed 1 은 검증용 최소값이며 실제 발사는 속도 0 으로 한다. 시각 효과는 발사 코드가 Explosion_Mid 로 낸다.",
+      "box": { "w": 60, "h": 60 },
+      "speed": 1,
+      "lifetime": 0.3,
+      "anim": { "fly": { "name": "Explosion_Mid", "frames": 28, "sec": 0.06, "loop": false } }
     }
   }
 }

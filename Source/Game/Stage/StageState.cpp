@@ -337,6 +337,10 @@ void StageState::Tick(
     {
         m_player.PushFeetX(m_enemies.GetPlayerMinX());
     }
+    if (m_enemies.HasPlayerMaxX())
+    {
+        m_player.PushFeetXMax(m_enemies.GetPlayerMaxX());
+    }
 
     for (const ItemPickup& pickup: m_props.GetItems().Collect(m_player.GetBodyBox()))
     {

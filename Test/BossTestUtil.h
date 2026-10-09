@@ -13,7 +13,7 @@
 
 #include "Game/Combat/CombatSystem.h"
 #include "Game/Combat/Projectiles.h"
-#include "Game/Enemies/BattleShip.h"
+#include "Game/Enemies/BigShiee.h"
 #include "Game/Enemies/EnemyDef.h"
 #include "Game/Enemies/EnemyWorld.h"
 #include "Render/Animation.h"

@@ -268,7 +268,7 @@ void SandboxState::SpawnBossLab_()
     SpawnParams params;
     params.facing = 1;
     params.arena  = m_config.bossArena;
-    (void)m_enemies.Spawn("battleship", { m_config.bossArena.min.x - 300.f, m_config.bossGroundY }, params, nullptr);
+    (void)m_enemies.Spawn("bigshiee", { m_config.bossArena.min.x - 300.f, m_config.bossGroundY }, params, nullptr);
 }
 
 void SandboxState::AddDefaultTargets_()
@@ -439,6 +439,10 @@ void SandboxState::Tick(
     if (m_enemies.HasPlayerMinX())
     {
         m_player.PushFeetX(m_enemies.GetPlayerMinX());
+    }
+    if (m_enemies.HasPlayerMaxX())
+    {
+        m_player.PushFeetXMax(m_enemies.GetPlayerMaxX());
     }
 
     for (const ItemPickup& pickup: m_props.GetItems().Collect(m_player.GetBodyBox()))

@@ -308,7 +308,7 @@
         {"type": "lockCamera", "rect": "bossArena", "permanent": true},
         {"type": "clear", "layers": ["monster"]},
         {"type": "spawn", "kind": "item", "def": "gunitem_mg", "x": 13574, "y": 1200},
-        {"type": "spawn", "kind": "enemy", "def": "battleship", "id": "boss", "x": 13950, "groundSnap": true, "fromY": 1100, "params": {"arena": "bossArena", "positionFromArena": true}},
+        {"type": "spawn", "kind": "enemy", "def": "bigshiee", "id": "boss", "x": 13950, "groundSnap": true, "fromY": 1100, "params": {"arena": "bossArena", "positionFromArena": true}},
         {"type": "banner", "text": "WARNING", "seconds": 2.5},
         {"type": "gate", "id": "boss_dead", "waitFor": ["boss"], "until": "destroyFinished", "abortOnGameOver": true, "actions": [{"type": "playerInvincible", "seconds": 10.0}, {"type": "endStage", "next": "title"}]}
       ]

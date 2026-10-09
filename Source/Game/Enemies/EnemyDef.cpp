@@ -25,7 +25,7 @@ const char* GetBehaviorName(
         case eEnemyBehavior::Shielder: return "shielder";
         case eEnemyBehavior::Pow: return "pow";
         case eEnemyBehavior::Bus: return "bus";
-        case eEnemyBehavior::BattleShip: return "battleship";
+        case eEnemyBehavior::BigShiee: return "bigshiee";
         case eEnemyBehavior::Jeep: return "jeep";
         case eEnemyBehavior::BTank: return "btank";
         case eEnemyBehavior::MissleTank: return "missle_tank";

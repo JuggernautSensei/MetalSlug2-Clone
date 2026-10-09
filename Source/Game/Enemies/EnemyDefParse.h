@@ -64,7 +64,7 @@ void ParseFlyingBzkCfg(DefReader& _reader, EnemyDef& _def);
 void ParseShielderCfg(DefReader& _reader, EnemyDef& _def);
 void ParsePowCfg(DefReader& _reader, EnemyDef& _def);
 void ParseBusCfg(DefReader& _reader, EnemyDef& _def);
-void ParseBattleShipCfg(DefReader& _reader, EnemyDef& _def);
+void ParseBigShieeCfg(DefReader& _reader, EnemyDef& _def);
 void ParseJeepCfg(DefReader& _reader, EnemyDef& _def);
 void ParseBTankCfg(DefReader& _reader, EnemyDef& _def);
 void ParseMissleTankCfg(DefReader& _reader, EnemyDef& _def);

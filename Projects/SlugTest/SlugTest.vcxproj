@@ -108,7 +108,7 @@
     <ClCompile Include="..\..\Test\AudioTest.cpp" />
     <ClCompile Include="..\..\Test\BakerSheetTest.cpp" />
     <ClCompile Include="..\..\Test\BakerTest.cpp" />
-    <ClCompile Include="..\..\Test\BattleShipTest.cpp" />
+    <ClCompile Include="..\..\Test\BigShieeTest.cpp" />
     <ClCompile Include="..\..\Test\BossDefTest.cpp" />
     <ClCompile Include="..\..\Test\BusTest.cpp" />
     <ClCompile Include="..\..\Test\CameraTest.cpp" />

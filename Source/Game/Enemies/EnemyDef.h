@@ -20,7 +20,7 @@ enum class eEnemyBehavior : uint8_t
     Shielder,
     Pow,
     Bus,
-    BattleShip,
+    BigShiee,
     Jeep,
     BTank,
     MissleTank,
@@ -435,59 +435,51 @@ struct BusCfg
     int      weaponShell        = -1;        // 포탄 무기 (Given 이 아닌 Facing + arc)
 };
 
-struct BattleShipCfg
+inline constexpr int kBigShieeTurretCount = 7;   // 포탑 A..G
+
+struct BigShieeCfg
 {
-    float    originDepth      = 132.f;
-    float    entranceOffsetX  = -300.f;     // 등장: arena.left + 이 값 에서 레일로 굴러 들어온다
-    int      entranceDelayTicks = 0;        // 등장 대기 (WARNING 배너 중에는 화면 밖에 숨어 있다)
-    float    railSlot[3]      = { 30.f, 100.f, 190.f };   // arena.left 기준 (back, home, forward)
-    int      homeSlot         = 1;
-    float    railMaxSpeed     = 100.f;
-    float    railAccel        = 50.f;
-    float    railDecel        = 100.f;
-    int      idleTicks        = 96;          // 1.6 s (격앙 0.8 s)
-    int      idleEnragedTicks = 48;
-    int      headOpenTicks    = 86;          // Head_Swiching_Start 1.44 s
-    int      cannonStartTicks = 96;          // Cannon_Start 1.6 s
-    int      cannonIdleTicks  = 60;          // 1.0 s (격앙 0.6 s)
-    int      cannonIdleEnragedTicks = 36;
-    float    cannonShotSec    = 0.56f;       // Cannon_Shot_{0..4} 한 번 (7 f x 0.08)
-    int      cannonShots      = 3;           // 격앙 5
-    int      cannonShotsEnraged = 5;
-    int      cannonEndTicks   = 67;          // Cannon_End 1.12 s
-    int      headCloseTicks   = 101;         // Head_Swiching_End 1.68 s
-    float    cannonTrackDeg   = 60.f;        // 초당 (격앙 90)
-    float    cannonTrackDegEnraged = 90.f;
-    float    cannonAngleStart = -60.f;
-    float    cannonAngleMin   = -135.f;
-    float    cannonAngleMax   = -45.f;
-    Vec2 cannonOffset = { 123.f, -149.f };   // 원점 기준 포 중심
-    float    bulletSpeed      = 300.f;
-    float    bulletSpread     = 37.f;        // 발사 위치 (idx - 2) * spread
-    slug::String bulletProjectile = {};
-    BoxDef   bow              = {};
-    BoxDef   bridge           = {};
-    BoxDef   aft              = {};
-    float    hullBlockDx      = 270.f;       // 파괴 전: 플레이어 x 는 선체 x + 이 값 이상
-    Vec2 turretOffset[2] = { { -200.f, -70.f }, { -100.f, -120.f } };
-    BoxDef   turretBox        = {};
-    Vec2 turretMuzzle[3] = { { -30.f, -30.f }, { 0.f, -35.f }, { 30.f, -30.f } };   // LEFT / MID / RIGHT
-    int      turretHp         = 40;
-    float    turretCoolSec    = 2.4f;        // 격앙 1.4 s
-    float    turretCoolEnragedSec = 1.4f;
-    float    turretFirstStepSec = 1.2f;      // i * 이 값 = 첫 발 지연
-    float    turretTurnSec    = 0.24f;
-    float    turretShotSec    = 1.12f;       // DCannon_Shot_* (14 f x 0.08)
-    float    turretMidDx      = 60.f;
-    float    turretAimJitter  = 30.f;        // 플레이어 x ± 이 값 목표
-    float    turretRandomSec  = 0.5f;       // 발사 후 추가 랜덤 [0, 이 값)
-    float    turretArcMinVx   = 40.f;
-    float    turretArcMaxVx   = 450.f;
-    slug::String turretProjectile = {};
-    int      enragedSmallTicks = 60;         // 격앙 중 선체 소폭발 주기 (1 s)
-    float    destroyChainSec  = 2.8f;
-    float    destroyChainStepSec = 0.12f;
-    float    destroyFinishSec = 3.6f;
+    float    originDepth       = 208.f;    // 발(바닥) → 프레임 중심 (아트 높이 416 의 절반)
+    float    homeX             = 290.f;    // 아레나 왼쪽 기준 중심 x (화면 좌표)
+    float    driveMinX         = 205.f;    // 선체 주행 범위 (화면 좌표)
+    float    driveMaxX         = 290.f;
+    float    driveSpeed        = 50.f;     // px/s
+    int      driveRestTicks    = 180;      // 목표 도착 후 정지 (3 s)
+    float    entranceFromX     = 420.f;    // 등장 시작 = home + 이 값 (오른쪽 화면 밖에서 굴러 들어온다)
+    int      entranceTicks     = 150;      // 2.5 s
+    int      rumbleTicks       = 15;       // 등장 중 기저 폭발 주기
+    float    hullBlockDx       = -60.f;    // 플레이어 x 상한 = 보스 x + 이 값 (플레이어는 보스 왼쪽 띠에 머문다)
+    int      assaultTicks      = 720;      // 1단계: 포탑 연사 12 s
+    int      burstTicks        = 72;       // 포탑 연사 간격 1.2 s
+    int      burstCount        = 2;        // 한 번에 발사하는 포탑 수
+    int      deployTicks       = 240;      // 2단계: 캐논 전개 4 s (클립 4 단계)
+    int      volleyMinTicks    = 180;      // 캐논 단계 볼리 간격 3 s ~ 4 s
+    int      volleyMaxTicks    = 240;
+    int      volleyStreaks     = 3;        // 볼리당 청록 트레이서 수
+    int      shellEvery        = 2;        // N 번째 볼리마다 주황 포탄 1발
+    int      telegraphTicks    = 24;       // 사격 예고 (포탑 Shooting 클립) 0.4 s
+    int      streakStaggerTicks = 6;       // 트레이서 간격 0.1 s
+    float    shellJitter       = 20.f;     // 포탄 착탄 목표 = 플레이어 x ± 이 값
+    float    enragedRate       = 1.3f;     // 격앙 시 발사 빈도 배율 (캐논 파괴 또는 선체 50% 이하)
+    float    streakSpeed       = 400.f;    // 청록 트레이서 속도 px/s
+    int      turretHp          = 60;
+    int      cannonHp          = 300;
+    Vec2     turretOffset[kBigShieeTurretCount] = {};   // 보스 원점 기준 포탑 중심
+    Vec2     turretMuzzle      = { -40.f, -10.f };      // 포탑 중심 기준 포구 (왼쪽 발사)
+    BoxDef   turretBox         = {};                    // 포탑 중심 기준 피격 상자
+    Vec2     cannonOffset      = { -133.f, -75.f };     // 보스 원점 기준 캐논 헤드 중심 (Gun_* 클립 피벗)
+    Vec2     cannonMuzzle      = { -173.f, -64.f };     // 보스 원점 기준 포구
+    BoxDef   cannonBox         = {};                    // 보스 원점 기준 피격 상자
+    BoxDef   hullBox           = {};                    // 보스 원점 기준 선체 피격 상자
+    Vec2     emblemOffset      = { 245.f, 25.f };       // 보스 원점 기준 엠블럼 스핀 오버레이
+    Vec2     wreckCannonOffset = { -150.f, 60.f };      // 잔해 원점 기준 떨어진 캐논 조각
+    slug::String tracerProjectile = {};
+    slug::String shellProjectile  = {};
+    slug::String blastProjectile  = {};
+    float    destroyChainSec   = 8.f;      // 선체 폭발 연쇄 (사망 후)
+    float    destroyStepSec    = 0.2f;
+    float    destroyFinishSec  = 10.f;     // 침몰 포함 IsDestroyFinished
+    float    smokeStepSec      = 0.5f;     // 잔해 연기 주기
 };
 
 struct EnemyDef
@@ -518,7 +510,7 @@ struct EnemyDef
     ShielderCfg  shielder  = {};
     PowCfg       pow       = {};
     BusCfg         bus         = {};
-    BattleShipCfg  battleShip  = {};
+    BigShieeCfg    bigShiee    = {};
     JeepCfg        jeep        = {};
     BTankCfg       btank       = {};
     MissleTankCfg  missleTank  = {};
