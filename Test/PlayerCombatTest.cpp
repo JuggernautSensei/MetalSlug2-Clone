@@ -3,6 +3,8 @@
 #include "Base/Math.h"
 #include "Base/Random.h"
 
+#include <vector>
+
 #include "Game/Player/PlayerHitboxes.h"
 
 using namespace slugtest;
@@ -207,32 +209,80 @@ TEST(PlayerShot, AimDirectionsShootInThoseDirections)
 {
     struct Case
     {
+        bool  bHmg;
         bool  bUp;
         bool  bRight;
         float signX;
         float signY;
     };
     const Case cases[] = {
-        { false, false, 1.f,  0.f }, // 앞
-        {  true, false, 0.f, -1.f }, // 위
-        {  true,  true, 1.f, -1.f }, // 대각 위
+        { false, false,  true,  1.f,  0.f }, // 앞
+        { false,  true, false,  0.f, -1.f }, // 위
+        { false,  true,  true,  0.f, -1.f }, // 위 + 방향: 권총은 대각 없이 똑바로 위
+        {  true,  true,  true,  1.f, -1.f }, // 위 + 방향: HMG 만 대각 위
     };
 
     for (const Case& c: cases)
     {
         Sim sim;
         sim.Step(2);
+        if (c.bHmg)
+        {
+            sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
+        }
         sim.Set(eAction::Up, c.bUp);
         sim.Set(eAction::Right, c.bRight);
+        sim.Step(kAimSettleTicks);
         sim.Hold(eAction::Shot);
         sim.Step();
-        ASSERT_EQ(BulletCount(sim), 1u);
+        ASSERT_EQ(BulletCount(sim), 1u) << "hmg " << c.bHmg << " up " << c.bUp << " right " << c.bRight;
         const Vec2 v = sim.State().GetProjectiles().GetBullets()[0].velocity;
         EXPECT_EQ(v.x > 0.f, c.signX > 0.f);
         EXPECT_EQ(std::abs(v.x) < 0.01f, c.signX == 0.f);
         EXPECT_EQ(v.y < 0.f, c.signY < 0.f);
         EXPECT_EQ(std::abs(v.y) < 0.01f, c.signY == 0.f);
     }
+}
+
+TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToFortyFive)
+{
+    Sim sim;
+    UnlimitedBullets(sim);
+    sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
+    sim.Hold(eAction::Up);
+    sim.Hold(eAction::Right);
+    sim.Hold(eAction::Shot);
+
+    std::vector<float> angles;
+    int                shots = 0;
+    for (int tick = 0; tick < 40; ++tick)
+    {
+        sim.Step();
+        const int fired = sim.Player().GetStats().shotsFired;
+        if (fired > shots)
+        {
+            shots = fired;
+            const auto  bullets = sim.State().GetProjectiles().GetBullets();
+            const Vec2  v       = bullets[bullets.size() - 1].velocity;
+            angles.push_back(std::atan2(-v.y, std::abs(v.x)) * 180.f / 3.14159265f);
+        }
+    }
+
+    ASSERT_GE(angles.size(), 5u);
+    EXPECT_LT(angles.front(), 10.f);   // 처음엔 거의 정면
+    EXPECT_GT(angles.back(), 40.f);    // 끝에는 대각 45도 근처
+    size_t increases = 0;
+    for (size_t i = 0; i < angles.size(); ++i)
+    {
+        EXPECT_GE(angles[i], -0.5f) << "shot " << i;
+        EXPECT_LE(angles[i], 45.5f) << "shot " << i;
+        if (i > 0)
+        {
+            EXPECT_GE(angles[i], angles[i - 1]) << "shot " << i;
+            increases += angles[i] > angles[i - 1] + 0.5f ? 1 : 0;
+        }
+    }
+    EXPECT_GE(increases, 2u);          // 모든 탄이 같은 각도가 아니다
 }
 
 TEST(PlayerShot, AirAimDownShootsDownAndBulletDiesOnGround)
@@ -599,8 +649,11 @@ TEST(PlayerBomb, BlastHitsAllTargetsInRadiusOnce)
 {
     Sim sim;
     sim.Step(2);
-    const uint32_t a = sim.State().AddTarget(eDummyKind::Jeep, { 240.f, 378.f });
-    const uint32_t b = sim.State().AddTarget(eDummyKind::Bus, { 330.f, 378.f });
+    // 수류탄은 새 튜닝(260/-330, 중력 900)에서 약 x 330 근처 지면에 떨어진다.
+    // 지프(90x50)는 그 지점 바로 앞, 버스(170x90)는 공중 경로와 겹치지 않게 뒤에 둬서
+    // 폭발 범위(110x130) 안에서 둘 다 한 번씩만 맞는지 본다.
+    const uint32_t a = sim.State().AddTarget(eDummyKind::Jeep, { 320.f, 378.f });
+    const uint32_t b = sim.State().AddTarget(eDummyKind::Bus, { 420.f, 378.f });
     sim.Tap(eAction::Bomb);
     sim.Step(80);
     EXPECT_GT(Dummy(sim, a).hitsTaken, 0);

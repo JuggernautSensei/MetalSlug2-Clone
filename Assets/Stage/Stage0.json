@@ -292,7 +292,7 @@
       "actions": [
         {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 13170, "y": 1274},
         {"type": "spawn", "kind": "prop", "def": "big_house", "x": 13542, "y": 1257},
-        {"type": "spawn", "kind": "enemy", "def": "sarubia", "x": 12790, "groundSnap": true, "fromY": 1100, "id": "sarubia"},
+        {"type": "spawn", "kind": "enemy", "def": "sarubia", "x": 12540, "groundSnap": true, "fromY": 1100, "id": "sarubia"},
         {"type": "lockCamera", "rect": "current"},
         {"type": "gate", "id": "sarubia_dead", "waitFor": ["sarubia"], "actions": [{"type": "unlockCamera"}]},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bzk", "x": 12950, "groundSnap": true, "fromY": 1100},

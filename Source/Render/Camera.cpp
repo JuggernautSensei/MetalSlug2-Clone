@@ -250,7 +250,8 @@ void Camera::Update(
         }
         else
         {
-            SmoothDamp_(m_center.x, m_velocity.x, desired.x, m_tuning.smoothTime, _dt);
+            m_center.x   = desired.x;
+            m_velocity.x = 0.f;
             SmoothDamp_(m_center.y, m_velocity.y, desired.y, m_tuning.smoothTime, _dt);
         }
     }

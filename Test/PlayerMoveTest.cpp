@@ -208,13 +208,25 @@ TEST(PlayerAim, UpAimsUp)
     EXPECT_EQ(sim.Player().GetAim(), eAim::Up);
 }
 
-TEST(PlayerAim, UpPlusDirectionAimsDiagonalAndKeepsMoving)
+TEST(PlayerAim, UpPlusDirectionAimsStraightUpForNonHmgWeapons)
 {
     Sim sim;
     sim.Hold(eAction::Up);
     sim.Hold(eAction::Right);
     const float x0 = sim.X();
     sim.Step();
+    EXPECT_EQ(sim.Player().GetAim(), eAim::Up);
+    EXPECT_GT(sim.X(), x0);
+}
+
+TEST(PlayerAim, UpPlusDirectionAimsDiagonalAndKeepsMoving)
+{
+    Sim sim;
+    sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
+    sim.Hold(eAction::Up);
+    sim.Hold(eAction::Right);
+    const float x0 = sim.X();
+    sim.Step(kAimSettleTicks);   // HMG 조준각이 45도까지 움직일 시간
     EXPECT_EQ(sim.Player().GetAim(), eAim::DiagUp);
     EXPECT_GT(sim.X(), x0);
 }
@@ -250,7 +262,19 @@ TEST(PlayerAim, DownInAirAimsDown)
     EXPECT_EQ(sim.Player().GetAim(), eAim::Down);
     sim.Hold(eAction::Right);
     sim.Step();
-    EXPECT_EQ(sim.Player().GetAim(), eAim::DiagDown);
+    EXPECT_FALSE(sim.Player().IsGrounded());
+    EXPECT_EQ(sim.Player().GetAim(), eAim::Down);   // 방향키를 같이 눌러도 권총은 똑바로 아래
+
+    // HMG 만 대각 아래 (조준각이 -45도까지 움직일 시간)
+    Sim hmg;
+    hmg.Player().PickUpWeapon(eWeapon::Hmg, hmg.Tune());
+    hmg.Tap(eAction::Jump);
+    hmg.Step(5);
+    hmg.Hold(eAction::Down);
+    hmg.Hold(eAction::Right);
+    hmg.Step(kAimSettleTicks);
+    EXPECT_FALSE(hmg.Player().IsGrounded());
+    EXPECT_EQ(hmg.Player().GetAim(), eAim::DiagDown);
 }
 
 TEST(PlayerJump, JumpStartsOnTheSameTickAsThePress)

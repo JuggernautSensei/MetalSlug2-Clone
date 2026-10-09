@@ -256,27 +256,42 @@ TEST(StageIntegration, LongWalkThroughTheFirstSectionsWithoutWarpReachesTheStree
     EXPECT_GT(sim.State().GetEnemies().GetCount(), 0u);            // 실제 적이 스폰되어 있다
 }
 
-TEST(StageIntegration, BotPlaythroughReport)
+TEST(StageIntegration, BotCanWalkTheWholeStageUpToTheBossArena)
 {
     IntegrationSim sim;
     float bestX = 0.f;
-    for (int i = 0; i < 40000 && !sim.State().IsFinished(); ++i)
+    for (int i = 0; i < 40000 && sim.Current() == sim.StagePtr(); ++i)
     {
         sim.BotStep(true, true);
-        const float x = sim.State().GetPlayer().GetFeet().x;
-        bestX         = std::max(bestX, x);
-        if (i % 2000 == 0)
+        if (sim.Current() == sim.StagePtr())
         {
-            std::printf("[bot] tick %5d x=%7.1f best=%7.1f section=%d enemies=%zu score=%d\n", i, x, bestX, sim.State().GetRunner().GetNextSectionIndex(), sim.State().GetEnemies().GetCount(), sim.State().GetPlayer().GetScore());
+            bestX = std::max(bestX, sim.State().GetPlayer().GetFeet().x);
         }
     }
-    std::printf("[bot] end best=%.1f finished=%d\n", bestX, sim.State().IsFinished() ? 1 : 0);
+    EXPECT_GE(bestX, 13500.f);
+}
+
+TEST(StageIntegration, SarubiaGateStartsInsideTheLockedScreenSoItCanBeShot)
+{
+    IntegrationSim sim(true);
+    for (int i = 0; i < 19; ++i)
+    {
+        sim.Warp(1);
+        sim.BotStep(true, true, 30);
+    }
+    sim.BotStep(true, true, 300);
+
+    const float camLeft  = sim.State().GetCamera().GetPositionNoShake().x;
+    bool        bFound   = false;
     sim.State().GetEnemies().ForEachAlive([&](const Enemy& _e) {
-        std::printf("[bot]  alive def=%d behavior=%d feet=(%.0f,%.0f) hp=%d/%d active=%d state=%d\n", _e.defIndex, static_cast<int>(_e.behavior), _e.body.position.x, _e.body.position.y, _e.health.hp, _e.health.maxHp, _e.bActive ? 1 : 0, _e.state);
+        if (_e.behavior == eEnemyBehavior::Sarubia)
+        {
+            bFound = true;
+            EXPECT_GT(_e.body.position.x, camLeft);
+            EXPECT_LT(_e.body.position.x + 50.f, camLeft + 640.f);
+        }
     });
-    const PlayerController& pl = sim.State().GetPlayer();
-    std::printf("[bot] player feet=(%.0f,%.0f)\n", pl.GetFeet().x, pl.GetFeet().y);
-    SUCCEED();
+    EXPECT_TRUE(bFound);
 }
 
 TEST(StageIntegration, WarpChainThroughEverySectionReachesTheBossAndEndsTheStage)

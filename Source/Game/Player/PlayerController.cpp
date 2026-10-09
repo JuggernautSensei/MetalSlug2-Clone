@@ -1,7 +1,9 @@
 #include "Game/Player/PlayerController.h"
 #include "Base/Types.h"
 
+#include <algorithm>
 #include <bit>
+#include <cmath>
 #include <cstring>
 
 #include "Base/Math.h"
@@ -91,6 +93,7 @@ void PlayerController::Reset(
     m_state   = ePlayerState::Idle;
     m_pose    = ePose::Stand;
     m_aim     = eAim::Forward;
+    m_aimDegree = 0.f;
     m_overlay = eOverlay::None;
     m_facing  = 1;
 
@@ -287,6 +290,7 @@ void PlayerController::Respawn_(
     ++m_stateSerial;
     m_pose             = ePose::Air;
     m_aim              = eAim::Forward;
+    m_aimDegree        = 0.f;
     m_overlay          = eOverlay::None;
     m_invincibleTicks  = tuning.player.respawnInvincible;
     m_airTicks         = 1;
@@ -414,20 +418,45 @@ void PlayerController::TickMovement_(
 void PlayerController::UpdateAim_(
     const PlayerCommand& _command)
 {
-    m_aim = eAim::Forward;
-    if (m_pose == ePose::Crouch)
+    const bool bHmg        = m_weapon.weapon == eWeapon::Hmg;
+    const bool bHorizontal = _command.moveX != 0;
+    float      targetDeg   = 0.f;
+    if (m_pose != ePose::Crouch)
     {
-        return;
+        if (_command.bUpHeld && !_command.bDownHeld)
+        {
+            targetDeg = bHorizontal && bHmg ? 45.f : 90.f;
+        }
+        else if (_command.bDownHeld && !_command.bUpHeld && m_pose == ePose::Air)
+        {
+            targetDeg = bHorizontal && bHmg ? -45.f : -90.f;
+        }
     }
 
-    const bool bHorizontal = _command.moveX != 0;
-    if (_command.bUpHeld && !_command.bDownHeld)
+    if (bHmg)
     {
-        m_aim = bHorizontal ? eAim::DiagUp : eAim::Up;
+        constexpr float kSweepPerTick = 250.f / 60.f;
+        constexpr float kReturnPerTick = 1000.f / 60.f;
+        const float     step           = m_shotTicksLeft > 0 || _command.bShotHeld ? kSweepPerTick : kReturnPerTick;
+        m_aimDegree += std::clamp(targetDeg - m_aimDegree, -step, step);
     }
-    else if (_command.bDownHeld && !_command.bUpHeld && m_pose == ePose::Air)
+    else
     {
-        m_aim = bHorizontal ? eAim::DiagDown : eAim::Down;
+        m_aimDegree = targetDeg;
+    }
+
+    const float absDeg = std::abs(m_aimDegree);
+    if (absDeg < 22.5f)
+    {
+        m_aim = eAim::Forward;
+    }
+    else if (absDeg < 67.5f)
+    {
+        m_aim = m_aimDegree > 0.f ? eAim::DiagUp : eAim::DiagDown;
+    }
+    else
+    {
+        m_aim = m_aimDegree > 0.f ? eAim::Up : eAim::Down;
     }
 }
 
@@ -596,7 +625,12 @@ void PlayerController::TickShot_(
     }
 
     const Vec2 muzzle    = GetMuzzlePosition(m_body.position, m_facing, m_pose, m_aim, tuning.muzzle);
-    const Vec2 direction = GetAimDirection(m_aim, m_facing);
+    Vec2       direction = GetAimDirection(m_aim, m_facing);
+    if (m_weapon.weapon == eWeapon::Hmg)
+    {
+        const float rad = m_aimDegree * (3.14159265f / 180.f);
+        direction       = { static_cast<float>(m_facing) * std::cos(rad), -std::sin(rad) };
+    }
     const Vec2 chest     = { m_body.position.x, m_body.position.y - m_body.size.y * 0.6f };
 
     _ctx.pProjectiles->SpawnBullet(MakeBulletSpawn(m_weapon.weapon, weapon, kPlayerOwnerId, muzzle, chest, direction), *_ctx.pCombat);

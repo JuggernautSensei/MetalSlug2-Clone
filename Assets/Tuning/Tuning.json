@@ -101,7 +101,7 @@
             "fireIntervalTicks": 3,
             "holdRepeatTicks": 3,
             "ammo": 30,
-            "projectileSpeed": 420,
+            "projectileSpeed": 180,
             "maxAlive": 0,
             "pierce": true,
             "hitSize": [40, 24],
@@ -131,8 +131,8 @@
         "throwTicks": 12,
         "releaseTick": 3,
         "releaseOffset": [14, -36],
-        "speedX": 190,
-        "speedY": -300,
+        "speedX": 260,
+        "speedY": -330,
         "inheritMoveX": 0.35,
         "gravity": 900,
         "hitSize": [12, 12],
@@ -155,7 +155,7 @@
     "camera": {
         "deadzoneHalf": [24, 16],
         "smoothTime": 0.14,
-        "lookAheadX": 40
+        "lookAheadX": 0
     },
     "sandbox": {
         "gruntHp": 1,

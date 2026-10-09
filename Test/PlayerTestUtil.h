@@ -18,6 +18,9 @@ namespace slugtest
 
 using namespace slug;
 
+// 조준 키를 누른 뒤 조준각이 목표각에 닿을 때까지 기다리는 틱 (HMG 는 연속 조준각이라 시간이 걸린다)
+inline constexpr int kAimSettleTicks = 20;
+
 inline GroundMap MakeFlatGround(
     const int _width  = 1600,
     const int _height = 448,

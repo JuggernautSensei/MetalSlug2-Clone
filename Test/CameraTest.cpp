@@ -59,20 +59,23 @@ TEST(Camera, FollowConvergesToTargetWithinDeadzone)
     EXPECT_EQ(camera.GetPosition(), settled);
 }
 
-TEST(Camera, FollowIsSmoothNotInstantAndNeverOvershoots)
+TEST(Camera, HorizontalFollowIsInstantAndVerticalIsSmooth)
 {
     Camera camera = MakeLevelCamera();
     camera.SetTarget({ 1000.f, 224.f });
-
-    float previous = camera.GetViewCenter().x;
     camera.Update();
-    EXPECT_LT(camera.GetViewCenter().x, 1000.f - camera.GetTuning().deadzoneHalf.x);   // 한 틱에 도달하지 않음
+    EXPECT_FLOAT_EQ(camera.GetViewCenter().x, 1000.f - camera.GetTuning().deadzoneHalf.x);
+
+    camera.SetTarget({ 1000.f, 300.f });
+    float previous = camera.GetViewCenter().y;
+    camera.Update();
+    EXPECT_LT(camera.GetViewCenter().y, 300.f - camera.GetTuning().deadzoneHalf.y);
     for (int i = 0; i < 400; ++i)
     {
         camera.Update();
-        ASSERT_GE(camera.GetViewCenter().x, previous) << "tick " << i;
-        ASSERT_LE(camera.GetViewCenter().x, 1000.f - camera.GetTuning().deadzoneHalf.x + 0.01f);   // 오버슈트 없음
-        previous = camera.GetViewCenter().x;
+        ASSERT_GE(camera.GetViewCenter().y, previous) << "tick " << i;
+        ASSERT_LE(camera.GetViewCenter().y, 300.f - camera.GetTuning().deadzoneHalf.y + 0.01f);
+        previous = camera.GetViewCenter().y;
     }
 }
 

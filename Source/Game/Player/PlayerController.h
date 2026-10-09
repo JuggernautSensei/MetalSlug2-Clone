@@ -106,6 +106,7 @@ private:
     ePlayerState m_state   = ePlayerState::Idle;
     ePose        m_pose    = ePose::Stand;
     eAim         m_aim     = eAim::Forward;
+    float        m_aimDegree = 0.f;
     eOverlay     m_overlay = eOverlay::None;
     int          m_facing  = 1;
 

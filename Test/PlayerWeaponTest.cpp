@@ -164,10 +164,11 @@ TEST(PlayerWeapon, ShotgunAndFlamePierceBothJeeps)
     {
         Sim sim;
         sim.State().AddTarget(eDummyKind::Jeep, { 220.f, 378.f });
-        const uint32_t second = sim.State().AddTarget(eDummyKind::Jeep, { 360.f, 378.f });
+        // 화염 사거리는 200px 이라 두 번째 지프는 그 안에 둔다 (속도 180px/s 라 도달까지 약 60틱)
+        const uint32_t second = sim.State().AddTarget(eDummyKind::Jeep, { 290.f, 378.f });
         sim.Player().PickUpWeapon(weapon, sim.Tune());
         sim.Hold(eAction::Shot);
-        sim.Step(40);
+        sim.Step(70);
         sim.Release(eAction::Shot);
         EXPECT_GT(DummyOf(sim, second).hitsTaken, 0) << "weapon " << static_cast<int>(weapon);
     }
@@ -289,10 +290,11 @@ TEST(PlayerWeapon, AimStatesFireEveryWeaponInTheExpectedDirection)
         float       signX;
         float       signY;
     };
+    // 위 + 방향(upRight)은 HMG 만 대각(signX=1), 나머지 무기는 똑바로 위
     const Aim aims[] = {
         { "forward", false, true,  false, false,  1.f,  0.f },
         { "up",      true,  false, false, false,  0.f, -1.f },
-        { "diagUp",  true,  true,  false, false,  1.f, -1.f },
+        { "upRight", true,  true,  false, false,  1.f, -1.f },
         { "crouch",  false, true,  true,  false,  1.f,  0.f },
         { "airDown", false, false, true,  true,   0.f,  1.f },
     };
@@ -313,13 +315,16 @@ TEST(PlayerWeapon, AimStatesFireEveryWeaponInTheExpectedDirection)
             sim.Set(eAction::Up, aim.bUp);
             sim.Set(eAction::Right, aim.bRight);
             sim.Set(eAction::Down, aim.bDown);
+            sim.Step(kAimSettleTicks);   // 조준 키를 누른 채 조준각이 목표에 닿을 때까지 기다린다
             sim.Hold(eAction::Shot);
             sim.Step();
 
+            const bool  bDiagOnly = aim.bUp && aim.bRight && weapon != eWeapon::Hmg;
+            const float signX     = bDiagOnly ? 0.f : aim.signX;
             ASSERT_GE(BulletsOf(sim), 1u) << aim.name << " weapon " << raw;
             const Vec2 v = sim.State().GetProjectiles().GetBullets()[0].velocity;
-            EXPECT_EQ(v.x > 0.f, aim.signX > 0.f) << aim.name << " weapon " << raw;
-            EXPECT_EQ(std::abs(v.x) < 0.01f, aim.signX == 0.f) << aim.name << " weapon " << raw;
+            EXPECT_EQ(v.x > 0.f, signX > 0.f) << aim.name << " weapon " << raw;
+            EXPECT_EQ(std::abs(v.x) < 0.01f, signX == 0.f) << aim.name << " weapon " << raw;
             EXPECT_EQ(v.y < 0.f, aim.signY < 0.f) << aim.name << " weapon " << raw;
             EXPECT_EQ(std::abs(v.y) < 0.01f, aim.signY == 0.f) << aim.name << " weapon " << raw;
         }

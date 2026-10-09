@@ -53,9 +53,13 @@ bool SubmitPlayerBullet(
     {
         case eWeapon::Hmg:
         {
-            const int         group  = bVertical ? (vy < 0.f ? 2 : 3) : (bRight ? 0 : 1);
-            const int         frame  = (_bullet.ageTicks / 2) % 15;
-            const std::string name   = "HM_Bullet_" + std::to_string(group) + "_" + std::to_string(frame);
+            float degrees = std::atan2(-vy, vx) * (180.f / 3.14159265f);
+            if (degrees < 0.f)
+            {
+                degrees += 360.f;
+            }
+            const int         index = static_cast<int>(std::lround(degrees / 6.f)) % 60;
+            const std::string name  = "HM_Bullet_" + std::to_string(index / 15) + "_" + std::to_string(index % 15);
             const SpriteInfo* pInfo  = _spriteLib.Find(name);
             if (!pInfo)
             {

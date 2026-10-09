@@ -393,7 +393,17 @@ void BeginSoldierDeath(
 
     if (_e.lastHitKind == eHitKind::Blast && death.clipBomb >= 0)
     {
-        _e.deathPhase = kDeathBomb;
+        const float away = SideToPlayer(_e, _env) < 0 ? 1.f : -1.f;
+
+        _e.deathPhase          = kDeathBomb;
+        _e.aux                 = static_cast<int>(_e.body.position.y);
+        _e.body.position.y -= 30.f;
+        _e.body.velocity       = { away * 110.f, -430.f };
+        _e.body.bCollideGround = false;
+        _e.body.bCollideSolids = false;
+        _e.body.bCollideOneWay = false;
+        _e.body.bGrounded      = false;
+        _e.bGrounded           = false;
         SetClip(_e, death.clipBomb, true);
     }
     else if (_e.lastHitKind == eHitKind::Melee && death.clipSlash >= 0)
@@ -426,9 +436,23 @@ void TickSoldierDeath(
     EnemyEnv&       _env)
 {
     const DeathDef& death = _def.death;
-    _e.body.velocity.x    = 0.f;
-    _e.body.bUseGravity   = true;
+    const bool bFlying = _e.deathPhase == kDeathBomb;
+    if (!bFlying)
+    {
+        _e.body.velocity.x = 0.f;
+    }
+    _e.body.bUseGravity = true;
     (void)StepPhysics(_e, _def, _env);
+
+    if (bFlying)
+    {
+        ++_e.deathTicks;
+        if (_e.body.velocity.y > 0.f && _e.body.position.y > static_cast<float>(_e.aux) + 60.f)
+        {
+            _e.life = eEnemyLife::Gone;
+        }
+        return;
+    }
 
     const auto EnterLand = [&]() {
         _e.deathPhase = kDeathLand;

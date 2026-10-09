@@ -137,7 +137,7 @@ struct WeaponsTuning
         3,
         3,
         30,
-        420.f,
+        180.f,
         0,
         true,
         { 40.f, 24.f },
@@ -197,8 +197,8 @@ struct BombTuning
     int          throwTicks    = 12;   // 던지기 동작 길이
     int          releaseTick   = 3;    // 동작 시작 후 폭탄이 손을 떠나는 틱
     Vec2 releaseOffset = { 14.f, -36.f };
-    float        speedX        = 190.f;
-    float        speedY        = -300.f;
+    float        speedX        = 260.f;
+    float        speedY        = -330.f;
     float        inheritMoveX  = 0.35f;   // 플레이어 속도 계승 비율
     float        gravity       = 900.f;
     Vec2 hitSize       = { 12.f, 12.f };   // 비행 중 적과 닿는 크기
@@ -225,7 +225,7 @@ struct CameraSettings
 {
     Vec2 deadzoneHalf = { 24.f, 16.f };
     float        smoothTime   = 0.14f;
-    float        lookAheadX   = 40.f;   // 진행 방향 앞쪽으로 보는 양
+    float        lookAheadX   = 0.f;    // 진행 방향 앞쪽으로 보는 양
 };
 
 struct SandboxTuning
