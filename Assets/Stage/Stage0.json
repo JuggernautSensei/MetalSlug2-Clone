@@ -35,7 +35,7 @@
         {"type": "spawn", "kind": "prop", "def": "truck", "x": 1430, "y": 342},
         {"type": "spawn", "kind": "prop", "def": "truck", "x": 1810, "y": 342},
         {"type": "spawn", "kind": "prop", "def": "truck", "x": 2200, "y": 342},
-        {"type": "spawn", "kind": "collider", "def": "box_collider", "x": 1119, "y": 350, "size": [137, 90], "collisionLayer": "wall"},
+        {"type": "spawn", "kind": "collider", "def": "box_collider", "x": 1119, "y": 354, "size": [137, 48], "collisionLayer": "wall", "note": "레거시 137x90(점프 129px 기준)을 새 점프(약 72px)로 넘을 수 있게 48px 로 낮춤. 바닥 y=378"},
         {"type": "spawn", "kind": "npc", "def": "pow", "x": 1325, "y": 140, "settle": true, "drop": "gunitem_mg"},
         {"type": "spawn", "kind": "npc", "def": "pow", "x": 1542, "y": 140, "settle": true, "drop": "gunitem_mg"},
         {"type": "spawn", "kind": "npc", "def": "pow", "x": 2000, "y": 140, "settle": true, "drop": "gunitem_mg"},

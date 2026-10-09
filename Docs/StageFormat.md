@@ -160,7 +160,21 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
 - 검증: `Scripts/ValidateStage.ps1 [-Stage Assets/Stage/Stage0.json]` — 파싱, ID 유일/참조, 이름(스프라이트/애니/지면/BGM) 존재, 섹션별 개수 출력.
 
 ## 12. 런타임 (`StageState`, 상태 이름 `stage0`)
-- 구성: `Source/Game/Stage/StageState.*` 가 `Assets/Stage/Stage0.json` 을 `StageRunner` 로 돌린다. 플레이어/전투/투사체/카메라/HUD 는 SandboxState 와 같은 경로.
-- 엔티티: `StagePlaceholders` (`IStageHost` 구현). 적/소품/NPC 는 색 상자 + def 이름 + Hurtbox + Health (`PlaceholderEntity`, 체력 표는 `StagePlaceholders.cpp`). 플레이어에게 피해를 주지 않으며, 칼/총/폭탄에 맞으면 HP 가 줄고 0 이면 30틱 뒤 제거. 실제 구현은 같은 `IStageHost` 를 다른 클래스로 바꿔 끼운다.
-- 디버그: F1 켜진 상태에서 F5 = 다음 섹션으로 워프, F6 = 보스 아레나(`boss` 섹션)로 워프. F1 오버레이에 현재 섹션 id, 열린 게이트, 경계, 지면 이름이 나온다. 요청은 `GameContext::debugWarp` 로 전달된다 (헤드리스/리플레이에는 없음).
-- 한계: 플레이스홀더는 AI/사격이 없고 소품의 물리 충돌(벽/플랫폼)도 없다. 무적(`playerInvincible`)은 상태 표시만 한다.
+- 구성: `Source/Game/Stage/StageState.*` 가 `Assets/Stage/Stage0.json` 을 `StageRunner` 로 돌린다. 플레이어/전투/투사체/카메라/HUD 는 SandboxState 와 같은 경로. 기본 시작 상태는 `title` (Assets/Baked 가 없으면 `sandbox`), 타이틀 Start → `stage0`.
+- 호스트: `StageWorldHost` (`IStageHost` 구현). 스폰 한 개를 아래 순서로 보낸다. 정의가 없으면 다음 단계로 떨어진다.
+  - `enemy` / `npc` → `EnemyWorld::Spawn` (def 는 Enemies/Vehicles/Boss.json). `params.arena` 는 rect 이름을 풀어 `SpawnParams::arena` 로 준다. `battleship` 은 아레나 왼쪽 밖 (x - 300) 에서 등장.
+  - `prop` → `PropWorld::Spawn` (Props.json). `params` 의 `sprites` / `hitbox` / `standBox` / `explodeOnDeath` 를 `PropSpawnParams` 로 옮긴다. `hp` 는 def 값을 쓴다 (스테이지 데이터에 hp 덮어쓰기 없음).
+  - `item` → `PropWorld::SpawnItem` (아이템 id 또는 `random_*` 그룹). 중심 기준이므로 발 = 중심 + (0, 16).
+  - `collider` → 스테이지 충돌체 목록. `collisionLayer: wall` 은 플레이어/적 벽, `groundExceptPlayer` 는 적만 서는 원웨이 바닥. 매 틱 물리 입력에 합친다.
+  - 그 밖 (`decor` 의 `anim_decor` / `sprite_decor`, 정의가 아직 없는 이름) → `StagePlaceholders` (상자). 판정 가능 kind 만 평소에도 그린다. 장식 플레이스홀더는 F1 에서만 보인다.
+- 틱 순서: 판정 시작 → 소품 Tick → 벽/발판 안정 저장소 갱신 (`StageState` 멤버 벡터에 복사, 이 틱 동안만 쓴다) → Hurtbox 등록 (플레이스홀더/적/소품, 플레이어 Tick 전) → 플레이어 → 아이템 습득 → 적 → 투사체 Step → Resolve → 피해 적용 (소품/적/플레이스홀더/플레이어/투사체) → 이벤트 소비 → 연출 → `StageRunner::Tick`.
+- 이벤트: 적 `Died` → 점수 + 드롭 아이템 (`drop`), `ItemDropped` (포로) → 튀는 아이템, 소품 `GroundPatch` → Baked/Textures/<sprite>.png 의 파란 픽셀 (RGB_BLUE 규칙) 마스크를 `ApplyGroundPatch` 로 활성 지면에 적용 (집 발자국은 공기로 비워진다).
+- 게이트: `IsDefeated` / `IsDestroyFinished` 는 라우팅 표로 해당 월드에 묻는다 (적은 EnemyWorld, 소품은 PropWorld, 아이템은 사라짐, 충돌체는 제거됨).
+- 끝 장면: `endStage` → `MISSION COMPLETE` (ScreenFlow, 세계 정지) → `title`. 플레이어 게임 오버 → `GAME OVER` (ScreenFlow) → `title`. Stage0 의 보스 게이트는 `playerInvincible` 뒤 `endStage` 만 한다 (배너/암전은 ScreenFlow 가 맡는다).
+- 디버그: F1 켜진 상태에서 F5 = 다음 섹션으로 워프, F6 = 보스 아레나로 워프 (GameContext::debugWarp). `--warp N` 명령행 옵션은 시작 시 F5 를 N 번 누른 것과 같다 (F1 도 켠다). F1 오버레이에 섹션 id, 열린 게이트, 적/소품/아이템/충돌체/플레이스홀더 개수, 지면 이름이 나온다.
+- 한계 / 아직 없는 것:
+  - `box_collider` (x 1119, y 350, 137x90, wall) 는 윗면 y 305 이 점프 정점 (약 y 303~312) 과 거의 같아 일반 점프로 넘기 어렵다. 데이터(y 가 중심인지 윗면인지) 또는 물리를 확인할 것.
+  - `sendCommand` 중 `startBattle` 은 무시한다 (버스는 문 접촉으로 스스로 시작). 그 밖의 명령은 경고 한 번.
+  - `clear` 는 적(Monster 비트, Npc 비트면 포로 포함)과 충돌체를 지운다. 소품/아이템은 지우지 않는다.
+  - 원경 장식 (`anim_decor` / `sprite_decor`) 은 플레이스홀더다 (정의/스프라이트 연결 없음). 보스 HP 바 (`bShowBoss`) 는 아직 HUD 에 연결하지 않았다.
+  - 무적(`playerInvincible`) 은 플레이어 `ExtendInvincibility` 로 실제 피해를 막는다 (PlayerController 추가 훅 1개).

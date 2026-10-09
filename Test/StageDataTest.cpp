@@ -421,7 +421,7 @@ TEST(StageDataReal, Stage0KeySemantics)
     EXPECT_EQ(pGate->until, eGateUntil::DestroyFinished);
     EXPECT_TRUE(pGate->bAbortOnGameOver);
     EXPECT_EQ(pGate->actions.back().type, eActionType::EndStage);
-    EXPECT_FLOAT_EQ(pGate->actions.back().delay, 6.7f);
+    EXPECT_FLOAT_EQ(pGate->actions.back().delay, 0.f);   // 끝 장면(MISSION COMPLETE)은 ScreenFlow 가 맡는다
 
     // fence repeat
     const StageSection& busEnd = data.sections[static_cast<size_t>(data.FindSection("bus_end"))];

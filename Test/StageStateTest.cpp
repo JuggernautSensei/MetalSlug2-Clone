@@ -115,11 +115,21 @@ TEST(StageState, PlayerLandsOnTheGroundAfterTheStart)
 
 TEST(StageState, HoldingRightAdvancesThroughSectionsAndTheCameraNeverScrollsBack)
 {
+    // 트럭(고체 소품)이 길을 막으므로 봇은 오른쪽으로 걸으며 주기적으로 쏜다. 적 피해는 무적(디버그)으로 막는다.
     StageSim sim;
     sim.Hold(eAction::Right);
     float lastCamX = -1.f;
     for (int i = 0; i < 900; ++i)
     {
+        sim.State().GetPlayer().ExtendInvincibility(600);
+        if (i % 24 < 3)
+        {
+            sim.Hold(eAction::Shot);
+        }
+        else
+        {
+            sim.Release(eAction::Shot);
+        }
         sim.Step();
         const float camX = sim.State().GetCamera().GetPositionNoShake().x;
         ASSERT_GE(camX, lastCamX - 1e-3f) << "tick " << i;

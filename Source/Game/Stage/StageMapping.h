@@ -6,6 +6,7 @@
 
 #include "Game/Props/PropDef.h"
 #include "Game/Stage/StageData.h"
+#include "Game/Stage/StageHost.h"
 #include "World/GroundMap.h"
 #include "World/Geometry.h"
 
@@ -26,7 +27,8 @@ namespace slug
 // collider 상자: LegacyCenter 면 position 이 중심, Feet 면 바닥 중앙. size 는 [w,h].
 [[nodiscard]] Aabb MakeColliderBox(const SpawnRequest& _request);
 
-// 지면 패치 마스크: Baked/Textures/<sprite>.png 의 알파 >= 128 인 픽셀을 고체로 만든다. 읽지 못하면 nullopt.
+// 지면 패치 마스크: Baked/Textures/<sprite>.png 의 파란 픽셀(레거시 RGB_BLUE 규칙, 알파 >= 128) 을 고체로 만든다. 나머지는 공기.
+// 읽지 못하면 nullopt. (ApplyGroundPatch 는 공기 칸도 지면을 공기로 바꾸므로 집 파괴 시 발자국이 비워진다.)
 [[nodiscard]] std::optional<GroundMap> LoadGroundPatchMask(const jug::FilePath& _pngPath);
 
 // 아이템 스폰 기준점: 스크립트의 legacyCenter(상자 중심) → 발 중앙 (32x32 상자 기준 +16)

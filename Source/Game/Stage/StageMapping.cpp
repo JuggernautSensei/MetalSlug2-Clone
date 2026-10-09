@@ -130,13 +130,16 @@ std::optional<GroundMap> LoadGroundPatchMask(
         return std::nullopt;
     }
 
+    // 고체 규칙 = 레거시 RGB_BLUE (파란 픽셀). 알파 < 128 은 공기. 흰 픽셀(집 픽셀맵)은 공기이므로
+    // 집 파괴 패치는 발자국 안의 지면을 비운다 (알파 불투명 전부를 고체로 보면 발자국 전체가 벽이 된다).
     GroundMap mask = GroundMap::MakeEmpty(width, height);
     for (int y = 0; y < height; ++y)
     {
         for (int x = 0; x < width; ++x)
         {
-            const size_t alphaIndex = (static_cast<size_t>(y) * static_cast<size_t>(width) + static_cast<size_t>(x)) * 4 + 3;
-            mask.SetSolid(x, y, pPixels[alphaIndex] >= 128);
+            const size_t index = (static_cast<size_t>(y) * static_cast<size_t>(width) + static_cast<size_t>(x)) * 4;
+            const bool   bBlue = pPixels[index] < 80 && pPixels[index + 1] < 80 && pPixels[index + 2] >= 200;
+            mask.SetSolid(x, y, bBlue && pPixels[index + 3] >= 128);
         }
     }
     stbi_image_free(pPixels);
