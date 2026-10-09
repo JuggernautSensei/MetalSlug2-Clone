@@ -10,14 +10,6 @@
 
 using namespace slugtest;
 
-// ===========================================
-//  리플레이 스크립트
-//   사람이 손으로 녹화하는 대신 코드로 입력 타임라인을 만든다. 같은 스크립트가
-//    - Test/Replays/*.rep  (회귀 테스트)
-//    - Captures/Visual/*.rep  (Slug.exe --replay ... --capture-ticks 로 눈으로 확인)
-//   로 저장된다.
-// ===========================================
-
 namespace
 {
 class Script
@@ -28,7 +20,6 @@ public:
     {
     }
 
-    // [from, to) 틱 동안 눌림
     Script& Hold(const eAction _action, const int _from, const int _to)
     {
         for (int t = _from; t < _to && t < static_cast<int>(m_frames.size()); ++t)
@@ -38,7 +29,6 @@ public:
         return *this;
     }
 
-    // 한 틱만 누름
     Script& Tap(const eAction _action, const int _tick)
     {
         return Hold(_action, _tick, _tick + 1);
@@ -70,7 +60,6 @@ void Write(
     ASSERT_TRUE(static_cast<bool>(SaveReplay(_path, _script.Build()))) << _path.string();
 }
 
-// 회귀용: 달리기 → 칼로 보병 처치 → 사격 → 점프 → 폭탄 → 앉기
 Script MakeRegressionScript()
 {
     Script s { 900 };
@@ -89,7 +78,7 @@ Script MakeRegressionScript()
     s.Tap(eAction::Bomb, 385);
     return s;
 }
-}   // namespace
+}
 
 TEST(PlayerReplay, WriteRegressionAndVisualScripts)
 {
@@ -97,25 +86,17 @@ TEST(PlayerReplay, WriteRegressionAndVisualScripts)
 
     const slug::FilePath visual = RepoRoot() / "Captures" / "Visual";
 
-    // 달리기: 연속 프레임으로 떨림 확인
     Write(visual / "run.rep", Script { 200 }.Hold(eAction::Right, 10, 200));
     Write(visual / "runleft.rep", Script { 200 }.Hold(eAction::Right, 10, 60).Hold(eAction::Left, 60, 200));
-    // 점프
     Write(visual / "jump.rep", Script { 120 }.Hold(eAction::Right, 10, 200).Hold(eAction::Jump, 20, 60));
     Write(visual / "jumpup.rep", Script { 120 }.Hold(eAction::Jump, 20, 70));
-    // 앉기 / 앉아 이동
     Write(visual / "crouch.rep", Script { 120 }.Hold(eAction::Down, 10, 90).Hold(eAction::Right, 50, 90));
-    // 사격: 앞 / 위 / 대각 / 앉아서 / 공중 아래
     Write(visual / "shoot.rep", Script { 200 }.Tap(eAction::Shot, 20).Hold(eAction::Up, 60, 100).Tap(eAction::Shot, 70).Hold(eAction::Up, 120, 160).Hold(eAction::Right, 120, 160).Tap(eAction::Shot, 130));
     Write(visual / "shootcrouch.rep", Script { 120 }.Hold(eAction::Down, 10, 80).Tap(eAction::Shot, 30));
     Write(visual / "shootair.rep", Script { 140 }.Hold(eAction::Jump, 10, 50).Hold(eAction::Down, 30, 60).Tap(eAction::Shot, 35).Tap(eAction::Shot, 18));
-    // 칼: 첫 보병(330) 앞까지 달려가 휘두른다
     Write(visual / "knife.rep", Script { 200 }.Hold(eAction::Right, 5, 100).Hold(eAction::Shot, 100, 140));
-    // 폭탄
     Write(visual / "bomb.rep", Script { 160 }.Tap(eAction::Bomb, 20));
-    // 사망: 사수(1300) 가까이 달린다
     Write(visual / "death.rep", Script { 700 }.Hold(eAction::Right, 5, 700));
-    // HMG/기본 연사
     Write(visual / "hold.rep", Script { 160 }.Hold(eAction::Shot, 20, 140));
 }
 
@@ -160,7 +141,6 @@ TEST(PlayerReplay, RegressionReplayPlaysTheSameWayTwiceAndHitsTheMilestones)
 
 TEST(PlayerReplay, HeadlessReplayThroughTheStateFactoryUsesTheSamePath)
 {
-    // 상태 이름으로 만든 샌드박스(기본 구성)를 SimRunner 로 돌려도 안전하게 끝까지 간다 (애셋 유무와 무관)
     slug::RngMt19937 rng { uint64_t { 1 } };
     GameContext     ctx;
     ctx.pRng = &rng;

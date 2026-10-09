@@ -8,12 +8,6 @@
 
 namespace slug::baker
 {
-
-// ===========================================
-//  레거시 텍스트 포맷 파서
-//    "key:value" 줄들의 블록. 레거시 로더처럼 첫 키(File Name / Resource Name)가 나오면 새 레코드가 시작된다.
-// ===========================================
-
 enum class eTransparentMode
 {
     None     = 0,   // BitBlt (알파 무시)
@@ -24,7 +18,7 @@ enum class eTransparentMode
 struct TextureRecord
 {
     std::string      name;
-    std::string      path;   // Resources 기준, '/' 구분자로 정규화
+    std::string      path;
     eTransparentMode mode = eTransparentMode::None;
 };
 
@@ -42,7 +36,7 @@ struct AnimRecord
     int         optionIndex   = 0;
     int         offsetX       = 0;
     int         offsetY       = 0;
-    std::string sourceFile;          // 어느 .anime 에서 왔는지
+    std::string sourceFile;
 };
 
 struct SpriteRecord
@@ -59,12 +53,8 @@ struct SpriteRecord
 struct SoundRecord
 {
     std::string name;
-    std::string path;   // '/' 구분자로 정규화
+    std::string path;
 };
-
-// ===========================================
-//  유틸
-// ===========================================
 
 [[nodiscard]] inline std::string_view TrimView(std::string_view _s)
 {
@@ -131,8 +121,6 @@ struct SoundRecord
     return out;
 }
 
-// 텍스트를 (key, value) 줄 목록으로 쪼갠다. BOM / CRLF / 빈 줄 / ':' 없는 줄을 처리한다.
-// 키와 값 모두 앞뒤 공백을 제거한다. ':' 가 없는 줄은 _warnings 에 기록하고 건너뛴다.
 [[nodiscard]] inline std::vector<std::pair<std::string, std::string>> SplitKeyValueLines(
     std::string_view          _text,
     std::vector<std::string>* _pWarnings = nullptr)
@@ -169,10 +157,6 @@ struct SoundRecord
     return lines;
 }
 
-// ===========================================
-//  TextureData.data
-// ===========================================
-
 [[nodiscard]] inline std::vector<TextureRecord> ParseTextureData(
     const std::string_view    _text,
     std::vector<std::string>& _warnings)
@@ -205,7 +189,6 @@ struct SoundRecord
         }
         else if (key == "Transparent")
         {
-            // 레거시: "default" -> RGB(255, 0, 255) 고정. 그 외 값은 NULL(검정)로 해석되므로 여기서는 무시한다.
         }
         else
         {
@@ -214,10 +197,6 @@ struct SoundRecord
     }
     return records;
 }
-
-// ===========================================
-//  *.anime
-// ===========================================
 
 [[nodiscard]] inline std::vector<AnimRecord> ParseAnimeData(
     const std::string_view    _text,
@@ -279,10 +258,6 @@ struct SoundRecord
     return records;
 }
 
-// ===========================================
-//  *.sprite
-// ===========================================
-
 [[nodiscard]] inline std::vector<SpriteRecord> ParseSpriteData(
     const std::string_view    _text,
     const std::string&        _sourceFile,
@@ -326,10 +301,6 @@ struct SoundRecord
     return records;
 }
 
-// ===========================================
-//  SoundData.txt
-// ===========================================
-
 [[nodiscard]] inline std::vector<SoundRecord> ParseSoundData(
     const std::string_view    _text,
     std::vector<std::string>& _warnings)
@@ -357,5 +328,4 @@ struct SoundRecord
     }
     return records;
 }
-
-}   // namespace slug::baker
+}

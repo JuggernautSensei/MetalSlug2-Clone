@@ -4,13 +4,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  SimRunner
-//   입력 프레임을 받아 현재 상태를 한 틱씩 진행한다.
-//   App(라이브) 과 헤드리스 도구/테스트가 동일하게 사용한다.
-// ===========================================
-
 class SimRunner
 {
 public:
@@ -38,5 +31,4 @@ private:
     InputHistory              m_history   = {};
     uint64_t                  m_tickCount = 0;
 };
-
-}   // namespace slug
+}

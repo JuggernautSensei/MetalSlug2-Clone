@@ -17,8 +17,6 @@ namespace slug
 
 namespace
 {
-
-// 실수 범위 난수는 [_lo, _hi] 균등 분포로 직접 만든다 (결정적).
 template<typename RngT>
 float RandRange(RngT& _rng, const float _lo, const float _hi)
 {
@@ -26,7 +24,6 @@ float RandRange(RngT& _rng, const float _lo, const float _hi)
     return _lo + static_cast<float>(unit) * (_hi - _lo);
 }
 
-// 점수 팝업/아이템 렌더 레이어 (PropWorld 의 소품 레이어 사이)
 constexpr int kItemRenderLayer  = 34;
 constexpr int kPopupRenderLayer = 46;
 constexpr float kSupplyBounceVy = -400.f;
@@ -35,13 +32,11 @@ constexpr float kRollMinVx      = -50.f;
 constexpr float kRollMaxVx      = 49.f;
 constexpr float kRollStopSpeed  = 1.f;
 
-// 발 기준 원점에서 프레임을 바닥 정렬로 그릴 때의 원점 (스프라이트 하단 = 발)
 Vec2 BottomAlignedOrigin(const AnimFrame& _frame, const Vec2 _feet)
 {
     return { _feet.x, _feet.y - static_cast<float>(_frame.h - _frame.pivotY) };
 }
-
-}   // namespace
+}
 
 ItemWorld::ItemWorld(
     const PropDefLibrary* _pLibrary,
@@ -78,7 +73,6 @@ uint32_t ItemWorld::Spawn(
         return 0;
     }
 
-    // 그룹이면 균등 추첨 (스테이지 시드 RNG)
     slug::String itemName { _name };
     if (const PropItemGroup* pGroup = m_pLibrary->FindGroup(_name))
     {
@@ -137,7 +131,6 @@ void ItemWorld::Tick(
     const float             _cameraLeft,
     const AnimationLibrary* _pAnims)
 {
-    // 점수 팝업
     for (ScorePopup& popup: m_popups)
     {
         popup.ageSec += _dt;
@@ -174,7 +167,7 @@ void ItemWorld::Tick(
         if (item.bPickedUp)
         {
             item.pickupSec -= _dt;
-            continue;   // 습득 연출 중에는 물리를 멈춘다
+            continue;
         }
 
         const PropItemDef& def = m_pLibrary->GetItems()[static_cast<size_t>(item.defIndex)];
@@ -182,10 +175,9 @@ void ItemWorld::Tick(
         {
             if (item.rollVx != 0.f)
             {
-                item.body.velocity.x = item.rollVx;   // 착지하는 순간 굴러간다
+                item.body.velocity.x = item.rollVx;
                 item.rollVx          = 0.f;
             }
-            // 지면에서 v -= v*dt 로 감속 (정지 임계 이하이면 0)
             item.body.velocity.x -= item.body.velocity.x * _dt;
             if (std::abs(item.body.velocity.x) < kRollStopSpeed)
             {
@@ -260,15 +252,13 @@ slug::Vector<ItemPickup> ItemWorld::Collect(
         if (def.kind == eItemKind::Score)
         {
             SpawnPopup_(item.feet, def.score);
-            item.ageSec = kItemLifetimeSec;   // 다음 정리 때 제거
+            item.ageSec = kItemLifetimeSec;
             continue;
         }
-        // 무기/보급: 습득 연출(Disappear) 후 짧게 사라진다. Get_Item_Effect 는 PropWorld 가 재생한다.
         item.bPickedUp = true;
         item.pickupSec = kItemPickupHideSec;
         m_fx.push_back(ItemFxRequest { slug::String { "Get_Item_Effect" }, item.feet });
     }
-    // 점수 아이템은 바로 제거 (수명 종료로 표시)
     m_items.erase(std::remove_if(m_items.begin(), m_items.end(), [](const PropItem& _i) { return !_i.bPickedUp && _i.ageSec >= kItemLifetimeSec; }), m_items.end());
     return out;
 }
@@ -307,7 +297,6 @@ void ItemWorld::Submit(
     {
         const PropItemDef& def = m_pLibrary->GetItems()[static_cast<size_t>(item.defIndex)];
 
-        // 깜빡임: 수명 70% 이후 (습득 연출 중에는 항상 보임)
         if (!item.bPickedUp && item.ageSec >= kItemBlinkStartSec && (static_cast<int>(item.ageSec / kItemBlinkPeriod) % 2) != 0)
         {
             continue;
@@ -368,7 +357,6 @@ void ItemWorld::Submit(
     {
         const std::string text = std::to_string(popup.score);
 
-        // 0.07 s 마다 빨강/노랑 교대. 1.05 s 뒤부터 가속 상승 (-500 px/s²)
         const int   phase  = static_cast<int>(popup.ageSec / kScorePopupBlinkSec);
         const eFontColor color = (phase % 2 == 0) ? eFontColor::Red : eFontColor::Yellow;
         float       rise   = 0.f;
@@ -378,7 +366,6 @@ void ItemWorld::Submit(
             rise          = 0.5f * 500.f * t * t;
         }
 
-        // 자릿수 합계 폭으로 가운데 정렬
         slug::Vector<AnimFrame> glyphs;
         int                    width = 0;
         for (const char ch: text)
@@ -459,7 +446,6 @@ void ApplyItemPickup(
             }
             else
             {
-                // 탄약 보급: 지금 든 무기가 유한 탄이면 그 무기의 탄을 채운다 (권총은 탄 개념 없음)
                 const eWeapon current = _player.GetWeapon().weapon;
                 if (current != eWeapon::Pistol)
                 {
@@ -469,5 +455,4 @@ void ApplyItemPickup(
             break;
     }
 }
-
-}   // namespace slug
+}

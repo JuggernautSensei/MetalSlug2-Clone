@@ -29,11 +29,7 @@ namespace
     {
         return (static_cast<size_t>(_width) + 7) / 8;
     }
-}   // namespace
-
-// ===========================================
-//  생성
-// ===========================================
+}
 
 slug::Result<GroundMap> GroundMap::Load(
     const slug::FilePath& _path)
@@ -144,10 +140,6 @@ GroundMap GroundMap::MakeFromRows(
     return map;
 }
 
-// ===========================================
-//  편집
-// ===========================================
-
 void GroundMap::SetSolid(
     const int  _x,
     const int  _y,
@@ -185,7 +177,6 @@ void GroundMap::FillRect(
 
 uint64_t GroundMap::CountSolidPixels() const
 {
-    // 행 끝 패딩 비트에 외부 데이터가 1 을 넣었을 수 있으므로 유효 폭만 센다.
     uint64_t count = 0;
     for (int y = 0; y < m_height; ++y)
     {
@@ -196,10 +187,6 @@ uint64_t GroundMap::CountSolidPixels() const
     }
     return count;
 }
-
-// ===========================================
-//  질의
-// ===========================================
 
 bool GroundMap::IsOutOfBoundsSolid_(
     const int _x,
@@ -225,7 +212,6 @@ bool GroundMap::IsRectSolid(
     const int y0 = slug::Min(_y0, _y1);
     const int y1 = slug::Max(_y0, _y1);
 
-    // 맵 밖에 걸친 부분이 고체 정책이면 즉시 true
     if ((x0 < 0 && m_policy.bSolidLeft) || (x1 >= m_width && m_policy.bSolidRight) || (y0 < 0 && m_policy.bSolidTop) || (y1 >= m_height && m_policy.bSolidBottom))
     {
         return true;
@@ -366,10 +352,8 @@ Vec2 GroundMap::EstimateNormal(
     const int _halfWidth,
     const int _searchRange) const
 {
-    // 접선 (1, slope) 에 수직이고 위를 향하는 벡터: (slope, -1)
     const float slope  = EstimateSlope(_x, _y, _halfWidth, _searchRange);
     const float invLen = 1.f / std::sqrt(slope * slope + 1.f);
     return { slope * invLen, -invLen };
 }
-
-}   // namespace slug
+}

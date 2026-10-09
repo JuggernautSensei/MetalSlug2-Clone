@@ -6,11 +6,6 @@
 
 namespace slug::baker
 {
-
-// ===========================================
-//  기본 도형
-// ===========================================
-
 struct IRect
 {
     int x = 0;
@@ -22,16 +17,12 @@ struct IRect
     [[nodiscard]] bool operator==(const IRect&) const = default;
 };
 
-// ===========================================
-//  RGBA8 이미지 (straight alpha, 프리멀티플라이 하지 않음)
-// ===========================================
-
 struct Image
 {
     int                  width  = 0;
     int                  height = 0;
-    std::vector<uint8_t> pixels;                          // width * height * 4
-    bool                 bSourceHasAlpha = false;         // 원본 BMP 가 알파 채널을 가졌는지 (리포트용)
+    std::vector<uint8_t> pixels;
+    bool                 bSourceHasAlpha = false;
 
     [[nodiscard]] static Image Make(
         const int _width,
@@ -61,12 +52,6 @@ struct Image
     }
 };
 
-// ===========================================
-//  영역 처리
-// ===========================================
-
-// _region 중 이미지 밖은 투명으로 취급한다. 알파가 _alphaThreshold 보다 큰 픽셀의 타이트한 바운딩 박스를
-// 이미지 좌표계로 반환한다. 불투명 픽셀이 없으면 w = h = 0.
 [[nodiscard]] inline IRect FindOpaqueBounds(
     const Image& _image,
     const IRect& _region,
@@ -107,7 +92,6 @@ struct Image
     return { minX, minY, maxX - minX + 1, maxY - minY + 1 };
 }
 
-// _rect 영역을 복사한다. 이미지 밖은 투명(0).
 [[nodiscard]] inline Image CropImage(
     const Image& _src,
     const IRect& _rect)
@@ -138,7 +122,6 @@ struct Image
     return out;
 }
 
-// _src 를 _dst 의 (_dx, _dy) 에 덮어쓴다 (알파 합성 없음, 범위 밖은 잘라냄).
 inline void CopyInto(
     Image&       _dst,
     const Image& _src,
@@ -164,11 +147,6 @@ inline void CopyInto(
     }
 }
 
-// ===========================================
-//  알파 처리
-// ===========================================
-
-// 컬러키 색(RGB 일치)을 완전 투명으로 만든다. 나머지는 알파 255 로 고정한다 (레거시 TransparentBlt 동작).
 inline void ApplyColorKey(
     Image&        _image,
     const uint8_t _r,
@@ -189,7 +167,6 @@ inline void ApplyColorKey(
     }
 }
 
-// 불투명한 순수 마젠타 (255, 0, 255, 255) 만 완전 투명으로 만든다. 다른 픽셀의 알파는 건드리지 않는다.
 inline void ApplyMagentaKeyKeepAlpha(Image& _image)
 {
     uint8_t* p = _image.pixels.data();
@@ -202,7 +179,6 @@ inline void ApplyMagentaKeyKeepAlpha(Image& _image)
     }
 }
 
-// 알파를 전부 255 로 만든다 (레거시 BitBlt 동작).
 inline void ForceOpaque(Image& _image)
 {
     uint8_t* p = _image.pixels.data();
@@ -212,7 +188,6 @@ inline void ForceOpaque(Image& _image)
     }
 }
 
-// 알파 0 픽셀의 RGB 를 0 으로 만든다 (선형 필터링 시 마젠타 등이 번지는 것을 방지, 중복 제거에도 유리).
 inline void ClearTransparentColor(Image& _image)
 {
     uint8_t* p = _image.pixels.data();
@@ -225,7 +200,6 @@ inline void ClearTransparentColor(Image& _image)
     }
 }
 
-// 불투명한 순수 마젠타 (255, 0, 255, 255) 픽셀 수 (컬러키 누수 검출용)
 [[nodiscard]] inline uint64_t CountOpaqueMagenta(const Image& _image)
 {
     uint64_t       count = 0;
@@ -239,10 +213,6 @@ inline void ClearTransparentColor(Image& _image)
     }
     return count;
 }
-
-// ===========================================
-//  해시 / 비교 (프레임 중복 제거용)
-// ===========================================
 
 [[nodiscard]] inline uint64_t HashImage(const Image& _image)
 {
@@ -267,10 +237,6 @@ inline void ClearTransparentColor(Image& _image)
 {
     return _a.width == _b.width && _a.height == _b.height && _a.pixels == _b.pixels;
 }
-
-// ===========================================
-//  그리기 (컨택트 시트용)
-// ===========================================
 
 inline void FillRect(
     Image&        _dst,
@@ -316,7 +282,6 @@ inline void PutPixel(
     p[3]       = 255;
 }
 
-// straight alpha 소스를 불투명 대상 위에 합성한다.
 inline void BlendOver(
     Image&       _dst,
     const Image& _src,
@@ -353,5 +318,4 @@ inline void BlendOver(
         }
     }
 }
-
-}   // namespace slug::baker
+}

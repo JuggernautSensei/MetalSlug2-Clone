@@ -28,11 +28,7 @@ Camera MakeCamera(
     camera.SetBounds(_bounds);
     return camera;
 }
-}   // namespace
-
-// ===========================================
-//  Camera 확장 (y 전진 전용, 직선 이동, 글라이드 락)
-// ===========================================
+}
 
 TEST(CameraStageExt, ForwardOnlyYNeverMovesUp)
 {
@@ -111,7 +107,6 @@ TEST(CameraStageExt, BeginMoveWithZeroSecondsSnapsAndMoveRespectsBounds)
         camera.Update();
         ASSERT_LE(camera.GetViewCenter().x, 3680.f + 1e-3f);
     }
-    // 1초(60틱) 후 이동 종료. 경계로 잡힌 위치에서 멈추고, 이후에는 추적이 재개된다 (StageFormat.md cameraMove).
     EXPECT_FALSE(camera.IsMoving());
     EXPECT_FLOAT_EQ(camera.GetViewCenter().x, 3680.f);
 }
@@ -130,7 +125,7 @@ TEST(CameraStageExt, LockWithGlideMovesFirstThenLocksOnArrival)
         ASSERT_FALSE(camera.IsLocked()) << k;
         EXPECT_NEAR(camera.GetViewCenter().x, 2400.f + 390.f * static_cast<float>(k) / 60.f, 1e-2f) << k;
     }
-    camera.Update();   // 60 번째 틱: 도착과 동시에 락
+    camera.Update();
     EXPECT_TRUE(camera.IsLocked());
     EXPECT_FALSE(camera.HasPendingLock());
     EXPECT_FLOAT_EQ(camera.GetViewCenter().x, 2790.f);
@@ -168,10 +163,6 @@ TEST(CameraStageExt, LockWithZeroGlideIsPlainLock)
     EXPECT_TRUE(camera.IsLocked());
     EXPECT_FALSE(camera.HasPendingLock());
 }
-
-// ===========================================
-//  러너 + 카메라 (락 스택, 영구 락, 경계 곡선, cameraMove)
-// ===========================================
 
 TEST(StageRunnerCamera, SetBoundsDuringLockOnlyChangesTheRestoredBounds)
 {
@@ -224,7 +215,6 @@ TEST(StageRunnerCamera, CurrentRectLocksTheViewWhereItIs)
     fx.StepAt(1500.f);
     EXPECT_EQ(fx.runner.GetLockDepth(), 1);
     EXPECT_EQ(fx.runner.GetEffectiveBounds(), viewBefore);
-    // 락 후 플레이어가 멀리 가도 화면은 고정
     for (int i = 0; i < 100; ++i)
     {
         fx.StepAt(2400.f);
@@ -239,7 +229,7 @@ TEST(StageRunnerCamera, GlideLockMovesThenLocks)
     fx.StepAt(2700.f, 1);   // tick 0: 락 요청, 이동 1틱
     EXPECT_TRUE(fx.camera.IsMoving());
     EXPECT_FALSE(fx.camera.IsLocked());
-    EXPECT_TRUE(fx.runner.MakeScreenWalls().bHasRight);   // 이동 중에도 화면 안에 가둔다
+    EXPECT_TRUE(fx.runner.MakeScreenWalls().bHasRight);
     fx.StepAt(2700.f, 59);
     EXPECT_FALSE(fx.camera.IsMoving());
     EXPECT_TRUE(fx.camera.IsLocked());
@@ -299,7 +289,7 @@ TEST(StageRunnerCamera, BoundsCurveIsActiveBetweenFromAndUntil)
     fx.StepAt(2900.f);     // 오른쪽 끝에서 clamp
     EXPECT_FLOAT_EQ(fx.runner.GetBaseBounds().min.y, 500.f);
 
-    fx.StepAt(3100.f);     // until 섹션: 곡선 해제 후 그 섹션의 setBounds 가 적용된다
+    fx.StepAt(3100.f);
     EXPECT_FALSE(fx.runner.IsCurveActive(0));
     EXPECT_EQ(fx.runner.GetBaseBounds(), Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
     fx.StepAt(1500.f, 3);
@@ -317,7 +307,6 @@ TEST(StageRunnerCamera, Stage0SlopeMatchesTheLegacyFormula)
     int total = 0;
     for (float x = 6500.f; x <= 8800.f; x += 0.5f)
     {
-        // 레거시: top = min(850, 350 + (x - 6650) * 0.255), 정수 절사
         const float legacy = std::trunc(std::min(850.f, 350.f + (x - 6650.f) * 0.255f));
         const float ours   = curve.EvaluateTop(x);
         ASSERT_LE(std::abs(ours - legacy), 1.f) << "x=" << x << " ours=" << ours << " legacy=" << legacy;
@@ -356,7 +345,6 @@ TEST(StageRunnerCamera, FollowsPlayerForwardOnlyAndNeverScrollsBack)
     float maxX = fx.camera.GetPositionNoShake().x;
     for (int i = 0; i < 600; ++i)
     {
-        // 앞으로 갔다가 되돌아오는 플레이어
         const float x = i < 300 ? 100.f + static_cast<float>(i) * 3.f : 1000.f - static_cast<float>(i - 300) * 3.f;
         fx.StepAt(x);
         const float camX = fx.camera.GetPositionNoShake().x;

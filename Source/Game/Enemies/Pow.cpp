@@ -6,14 +6,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  Pow — 포로 (레거시 Older, Docs/EnemySpecs.md §4.3)
-//   묶여 있다가 플레이어의 어떤 공격(총알/칼/폭발) 에든 풀려난다 → 순찰 → 플레이어와 겹치면 아이템을 건네고 왼쪽으로 도주한다.
-//   Neutral 팀이라 적 탄에는 맞지 않는다. 풀려난 뒤에는 Hurtbox 가 없다 (칼 자동 발동 대상이 아니다).
-//   아이템은 ItemDropped 이벤트 (drop = SpawnParams.drop) 로 알린다.
-// ===========================================
-
 namespace
 {
     enum ePowState : int
@@ -26,10 +18,6 @@ namespace
         kClose,
         kRun
     };
-
-    // e.aux  = 방향 반전 타이머 (틱)
-    // e.aux2 = 다음 반전까지 간격 (틱)
-    // e.aux3 = 순찰 누적 틱
 
     void Go_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, const int _state)
     {
@@ -61,7 +49,6 @@ namespace
                 break;
             case kClose:
             {
-                // 플레이어 반대쪽으로 비켜서 아이템을 건넨다
                 const float side = DxToPlayer(_e, _env) < 0.f ? 1.f : -1.f;
                 _e.body.position.x += side * cfg.closeNudge;
                 _e.facing = DxToPlayer(_e, _env) < 0.f ? -1 : 1;
@@ -87,7 +74,6 @@ namespace
     {
         const PowCfg& cfg = _def.pow;
 
-        // 활강 중에는 낙하 속도 상한을 낮춘다
         if (_e.state == kGlide)
         {
             _env.phys.terminalVelocity = cfg.glideMaxFall;
@@ -126,7 +112,7 @@ namespace
                 }
                 else if (!FloorAhead(_e, _env, cfg.edgeProbeDist, cfg.edgeProbeDrop))
                 {
-                    Go_(_e, _def, _env, kGlide);   // 낭떠러지: 뛰어내려 활강
+                    Go_(_e, _def, _env, kGlide);
                     _e.body.velocity.x = static_cast<float>(_e.facing) * cfg.walkSpeed;
                 }
                 else if (_e.bOnOneWay && _e.aux3 >= cfg.dropMinPatrolTicks && DyToPlayer(_e, _env) >= cfg.dropDy)
@@ -209,7 +195,6 @@ namespace
 
     bool OnHit_(Enemy& _e, const EnemyDef&, EnemyEnv& _env, const HitEvent&)
     {
-        // 묶여 있는 동안에만 의미가 있다 (풀린 뒤에는 Hurtbox 도 없다). 피해는 항상 무시한다.
         if (_e.state == kStuck)
         {
             Go_(_e, _env.lib.Get(_e.defIndex), _env, kEscape);
@@ -220,7 +205,6 @@ namespace
 
     void RegisterHurtboxes_(const Enemy& _e, const EnemyDef& _def, CombatSystem& _combat)
     {
-        // 떨어지는 중에는 피격되지 않는다: 풀려나면 활강(수평 이동)으로 바뀌므로 착지 후에만 묶인 포로가 된다
         if (_e.state != kStuck || !_e.bGrounded)
         {
             return;
@@ -231,7 +215,7 @@ namespace
         hurtbox.owner = _e.id;
         _combat.AddHurtbox(hurtbox);
     }
-}   // namespace
+}
 
 const BehaviorOps kPowOps = {
     .init              = &Init_,
@@ -275,5 +259,4 @@ void ParsePowCfg(
     c.clipItem     = _r.Clip("item");
     c.clipRun      = _r.Clip("run");
 }
-
-}   // namespace slug
+}

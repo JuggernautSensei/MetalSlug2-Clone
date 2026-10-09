@@ -95,5 +95,4 @@ void SimRunner::SwitchState_(
         m_pState->OnEnter(m_ctx);
     }
 }
-
-}   // namespace slug
+}

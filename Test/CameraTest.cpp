@@ -17,7 +17,6 @@ bool IsIntegral(
     return _value == std::floor(_value);
 }
 
-// 폭 4000, 높이 448 짜리 가로 스크롤 레벨
 Camera MakeLevelCamera()
 {
     Camera camera;
@@ -26,7 +25,7 @@ Camera MakeLevelCamera()
     camera.SnapToTarget();
     return camera;
 }
-}   // namespace
+}
 
 TEST(Camera, OutputIsAlwaysIntegralWhileFollowingFractionalTarget)
 {
@@ -52,7 +51,6 @@ TEST(Camera, FollowConvergesToTargetWithinDeadzone)
 
     const CameraTuning& tuning = camera.GetTuning();
     EXPECT_LE(std::abs(camera.GetViewCenter().x - 1500.f), tuning.deadzoneHalf.x + 0.01f);
-    // 정지 후에는 더 움직이지 않는다 (정수 스냅이 깜박이지 않음)
     const Vec2 settled = camera.GetPosition();
     for (int i = 0; i < 120; ++i)
     {
@@ -72,7 +70,7 @@ TEST(Camera, FollowIsSmoothNotInstantAndNeverOvershoots)
     for (int i = 0; i < 400; ++i)
     {
         camera.Update();
-        ASSERT_GE(camera.GetViewCenter().x, previous) << "tick " << i;                             // 단조 증가
+        ASSERT_GE(camera.GetViewCenter().x, previous) << "tick " << i;
         ASSERT_LE(camera.GetViewCenter().x, 1000.f - camera.GetTuning().deadzoneHalf.x + 0.01f);   // 오버슈트 없음
         previous = camera.GetViewCenter().x;
     }
@@ -132,7 +130,6 @@ TEST(Camera, BoundsSmallerThanViewAreCentered)
     camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 400.f, 300.f }));
     camera.SetTarget({ 200.f, 150.f });
     camera.SnapToTarget();
-    // 뷰(640x448) 가 경계보다 크면 경계 중앙에 놓는다: (400-640)/2 = -120
     EXPECT_FLOAT_EQ(camera.GetPosition().x, -120.f);
     EXPECT_FLOAT_EQ(camera.GetPosition().y, -74.f);
 }
@@ -145,7 +142,6 @@ TEST(Camera, ForwardOnlyNeverMovesBackward)
     float maxX = camera.GetPositionNoShake().x;
     for (int i = 0; i < 900; ++i)
     {
-        // 앞으로 갔다가 뒤로 돌아오는 플레이어
         const float t = static_cast<float>(i);
         camera.SetTarget({ 320.f + (i < 400 ? t * 3.f : 1200.f - (t - 400.f) * 3.f), 224.f });
         camera.Update();
@@ -181,7 +177,6 @@ TEST(Camera, LockConfinesTheViewAndUnlockRestoresFollowing)
     camera.SetTarget({ 1000.f, 224.f });
     camera.SnapToTarget();
 
-    // 보스전: 화면 한 장 크기로 고정
     const float lockLeft = camera.GetPosition().x;
     camera.Lock(Aabb::FromMinMax({ lockLeft, 0.f }, { lockLeft + 640.f, 448.f }));
     EXPECT_TRUE(camera.IsLocked());
@@ -212,7 +207,6 @@ TEST(Camera, LockWinsOverForwardOnly)
     }
     ASSERT_GT(camera.GetPosition().x, 1000.f);
 
-    // 이미 지나온 영역으로 락(예: 되돌아간 구간) → 락 경계가 우선
     camera.Lock(Aabb::FromMinMax({ 100.f, 0.f }, { 740.f, 448.f }));
     camera.Update();
     EXPECT_FLOAT_EQ(camera.GetPosition().x, 100.f);
@@ -243,7 +237,6 @@ TEST(Camera, WorldScreenRoundTripAndVisibility)
 
     EXPECT_TRUE(camera.IsVisible(Aabb::FromMinMax({ 1000.f, 100.f }, { 1010.f, 110.f })));
     EXPECT_FALSE(camera.IsVisible(Aabb::FromMinMax({ 3000.f, 100.f }, { 3010.f, 110.f })));
-    // 여유(margin) 를 주면 화면 바로 밖도 포함
     const Aabb view        = camera.GetViewRect();
     const Aabb justOutside = Aabb::FromMinMax({ view.max.x + 5.f, 100.f }, { view.max.x + 15.f, 110.f });
     EXPECT_FALSE(camera.IsVisible(justOutside));
@@ -302,7 +295,6 @@ TEST(Camera, ShakeIsDeterministicDecaysAndStaysInBounds)
         bMoved = bMoved || a[i].x != 1680.f;
     }
     EXPECT_TRUE(bMoved);
-    // 0.5초(30틱) 뒤에는 흔들림이 멈춘다
     EXPECT_FLOAT_EQ(a.back().x, 1680.f);
     EXPECT_FLOAT_EQ(a.back().y, 0.f);
 }

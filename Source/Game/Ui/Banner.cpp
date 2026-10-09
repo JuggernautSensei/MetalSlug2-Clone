@@ -113,5 +113,4 @@ float BannerSystem::GetAlpha() const
     }
     return ComputeBannerAlpha(m_elapsed, m_current.fadeInTicks, m_current.holdTicks, m_current.fadeOutTicks);
 }
-
-}   // namespace slug
+}

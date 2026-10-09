@@ -43,7 +43,7 @@ namespace
         const WeaponTuning& weapon = _tuning.weapons.Get(_weapon);
         return slug::Max(weapon.fireIntervalTicks, weapon.holdRepeatTicks);
     }
-}   // namespace
+}
 
 TEST(PlayerWeapon, EveryWeaponFiresAtItsTunedRateWhileHeld)
 {
@@ -286,7 +286,7 @@ TEST(PlayerWeapon, AimStatesFireEveryWeaponInTheExpectedDirection)
         bool        bRight;
         bool        bDown;
         bool        bAir;
-        float       signX;   // 0 = 수직
+        float       signX;
         float       signY;
     };
     const Aim aims[] = {

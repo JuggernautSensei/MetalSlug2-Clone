@@ -25,8 +25,7 @@ void LogFormat(
 {
     LogMessage(_level, std::format(_format, std::forward<Args>(_args)...));
 }
-
-}   // namespace slug
+}
 
 #define SLUG_LOG_TRACE(...) slug::LogFormat(slug::eLogLevel::Trace, __VA_ARGS__)
 #define SLUG_LOG_INFO(...)  slug::LogFormat(slug::eLogLevel::Info, __VA_ARGS__)

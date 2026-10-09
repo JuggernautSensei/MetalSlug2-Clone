@@ -12,7 +12,6 @@ using namespace slugtest;
 
 namespace
 {
-// 섹션 하나(id "s0", triggerX 0)에 액션 배열을 넣은 스테이지
 std::string OneSection(
     const std::string& _actions)
 {
@@ -24,17 +23,13 @@ const StageAction& FirstAction(
 {
     return _data.sections.at(0).actions.at(0);
 }
-}   // namespace
-
-// ===========================================
-//  정상 로드
-// ===========================================
+}
 
 TEST(StageData, LoadsMinimalStageWithDefaults)
 {
     const StageData data = MustLoad(OneSection("[]"));
     EXPECT_EQ(data.name, "T");
-    EXPECT_EQ(data.title, "T");   // title 생략 시 name
+    EXPECT_EQ(data.title, "T");
     EXPECT_FLOAT_EQ(data.viewSize.x, 640.f);
     EXPECT_EQ(data.groundInitial, "G0");
     EXPECT_EQ(data.backdropInitial, "a");
@@ -204,10 +199,6 @@ TEST(StageData, BoundsCurveResolvesSectionIndicesAndEvaluates)
     EXPECT_EQ(bounds, Aabb::FromMinMax({ 100.f, 350.f }, { 3000.f, 798.f }));
 }
 
-// ===========================================
-//  검증 오류 (메시지에 위치가 들어 있어야 한다)
-// ===========================================
-
 TEST(StageDataErrors, InvalidJsonSyntax)
 {
     StageLoadDiagnostics diag;
@@ -337,10 +328,6 @@ TEST(StageDataErrors, MissingFileIsReported)
     EXPECT_EQ(result.GetError().GetCode(), eError::FileOpen);
 }
 
-// ===========================================
-//  실제 Stage0.json
-// ===========================================
-
 TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
 {
     StageLoadDiagnostics diag;
@@ -362,24 +349,20 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
     EXPECT_EQ(data.camera.initialBounds, Aabb::FromMinMax({ 0.f, 0.f }, { 3520.f, 448.f }));
     EXPECT_FLOAT_EQ(data.camera.playerMargin, 14.f);
 
-    // 섹션 순서와 triggerX
     EXPECT_EQ(data.sections.front().id, "intro");
     EXPECT_EQ(data.sections.back().id, "boss");
     EXPECT_FLOAT_EQ(data.sections.back().triggerX, 13500.f);
     EXPECT_EQ(data.FindSection("bus_start"), 3);
 
-    // 이름 있는 rect
     const NamedRect* pArena = data.FindRect("bossArena");
     ASSERT_NE(pArena, nullptr);
     EXPECT_EQ(pArena->rect, Aabb::FromMinMax({ 13454.f, 864.f }, { 14094.f, 1312.f }));
 
-    // 경계 곡선
     ASSERT_EQ(data.camera.boundsCurves.size(), 1u);
     EXPECT_EQ(data.camera.boundsCurves[0].fromIndex, data.FindSection("downtown_start"));
     EXPECT_EQ(data.camera.boundsCurves[0].untilIndex, data.FindSection("openland_start"));
     EXPECT_TRUE(data.camera.boundsCurves[0].bTrunc);
 
-    // 플레이어 시작
     EXPECT_TRUE(data.player.bGroundSnap);
     EXPECT_FLOAT_EQ(data.player.x, 100.f);
 }
@@ -390,23 +373,19 @@ TEST(StageDataReal, Stage0KeySemantics)
     ASSERT_TRUE(result);
     const StageData data = result.Take();
 
-    // bus_create: setGround 는 silent 전용
     const StageSection& busCreate = data.sections[static_cast<size_t>(data.FindSection("bus_create"))];
     EXPECT_EQ(busCreate.actions[0].type, eActionType::SetGround);
     EXPECT_EQ(busCreate.actions[0].when, eWhen::Silent);
-    // mb_truck: legacyCenter 크리처 + halfHeight
     EXPECT_EQ(busCreate.actions[1].spawn.def, "mb_truck");
     EXPECT_EQ(busCreate.actions[1].spawn.origin, eOrigin::LegacyCenter);
     EXPECT_FLOAT_EQ(busCreate.actions[1].spawn.halfHeight, 130.f);
 
-    // bus_start: 글라이드 락 + command + 게이트
     const StageSection& busStart = data.sections[static_cast<size_t>(data.FindSection("bus_start"))];
     EXPECT_EQ(busStart.actions[0].type, eActionType::LockCamera);
     EXPECT_FLOAT_EQ(busStart.actions[0].glide, 1.f);
     EXPECT_EQ(busStart.actions[2].type, eActionType::Gate);
     EXPECT_EQ(busStart.actions[2].waitFor.size(), 1u);
 
-    // boss: 영구 락, destroyFinished 게이트, endStage 지연 6.7 s
     const StageSection& boss = data.sections.back();
     bool bPermanent = false;
     const StageAction* pGate = nullptr;
@@ -423,9 +402,8 @@ TEST(StageDataReal, Stage0KeySemantics)
     EXPECT_EQ(pGate->until, eGateUntil::DestroyFinished);
     EXPECT_TRUE(pGate->bAbortOnGameOver);
     EXPECT_EQ(pGate->actions.back().type, eActionType::EndStage);
-    EXPECT_FLOAT_EQ(pGate->actions.back().delay, 0.f);   // 끝 장면(MISSION COMPLETE)은 ScreenFlow 가 맡는다
+    EXPECT_FLOAT_EQ(pGate->actions.back().delay, 0.f);
 
-    // fence repeat
     const StageSection& busEnd = data.sections[static_cast<size_t>(data.FindSection("bus_end"))];
     bool bFence = false;
     for (const StageAction& action: busEnd.actions)

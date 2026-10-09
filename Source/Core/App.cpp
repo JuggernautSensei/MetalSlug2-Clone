@@ -19,7 +19,6 @@ namespace slug
 
 namespace
 {
-    // 모니터에 들어가는 최대 정수 배율 (최대 3배)
     [[nodiscard]] int ChooseWindowScale_()
     {
         const SDL_DisplayID display = SDL_GetPrimaryDisplay();
@@ -36,7 +35,7 @@ namespace
         }
         return scale;
     }
-}   // namespace
+}
 
 int App::Run(
     const int _argc,
@@ -145,11 +144,10 @@ void App::ParseArgs_()
         }
         else if (args[i] == "--weapon" && bHasValue)
         {
-            m_pendingWeapon = std::atoi(args[++i].c_str());   // F7..F10 과 같다 (1 HMG, 2 샷건, 3 로켓, 4 화염)
+            m_pendingWeapon = std::atoi(args[++i].c_str());
         }
         else if (args[i] == "--hold" && bHasValue)
         {
-            // 시작부터 누르고 있는 키 (캡처 검증용): J 사격, K 점프, Up/Down/Left/Right
             const slug::String name = args[++i];
             if (name == "J") m_input.OnKeyDown(SDL_SCANCODE_J);
             else if (name == "K") m_input.OnKeyDown(SDL_SCANCODE_K);
@@ -160,13 +158,11 @@ void App::ParseArgs_()
         }
         else if (args[i] == "--warp" && bHasValue)
         {
-            // 스테이지 디버그: 시작하자마자 다음 섹션으로 N 번 워프 (F1 디버그 켜짐)
             m_startWarpCount = std::atoi(args[++i].c_str());
             m_bDebugDraw     = true;
         }
         else if (args[i] == "--capture-ticks" && bHasValue)
         {
-            // 쉼표로 구분된 틱 목록 (오름차순으로 정렬해 사용)
             const slug::String list = args[++i];
             size_t            begin = 0;
             while (begin < list.size())
@@ -211,7 +207,6 @@ void App::Init_()
     }
     if (m_stateName.empty())
     {
-        // 기본 상태: Baked 에셋이 있으면 타이틀 (타이틀 → stage0), 없으면 샌드박스 (에셋 없이도 동작)
         const bool bHasBaked = std::filesystem::exists(slug::FilePath { SLUG_ASSET_DIR } / "Baked");
         m_stateName          = bHasBaked ? slug::String { GetDefaultStateName() } : slug::String { "sandbox" };
     }
@@ -224,7 +219,6 @@ void App::Init_()
         return;
     }
 
-    // 에셋 로드 (없으면 경고만 하고 계속: 스프라이트 없이도 데모 상태는 동작)
     const slug::FilePath bakedRoot = slug::FilePath { SLUG_ASSET_DIR } / "Baked";
     m_sprites.Init(m_renderer.GetNative());
     if (slug::Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(bakedRoot))
@@ -250,7 +244,6 @@ void App::Init_()
     m_ctx.pRng      = &m_rng;
     m_ctx.assetRoot = slug::FilePath { SLUG_ASSET_DIR };
 
-    // 오디오: 실패/--no-audio/캡처 모드에서는 장치 없이(또는 NullAudio 로) 계속한다. 소리는 시뮬레이션에 영향을 주지 않는다.
     {
         AudioConfig audioConfig;
         audioConfig.bEnabled = !m_bNoAudio && m_capturePath.empty();
@@ -308,7 +301,6 @@ void App::OnKeyDown_(
         return;
     }
 
-    // 디버그 키는 시뮬레이션 입력이 아니라 앱 제어이다 (리플레이에 기록되지 않는다).
     switch (_key)
     {
         case SDL_SCANCODE_F1: m_bDebugDraw = !m_bDebugDraw; return;
@@ -317,7 +309,6 @@ void App::OnKeyDown_(
         case SDL_SCANCODE_F4: m_bSlowMo = !m_bSlowMo; return;
         case SDL_SCANCODE_F5: if (m_bDebugDraw) { m_pendingWarp = 1; } return;   // 스테이지: 다음 섹션
         case SDL_SCANCODE_F6: if (m_bDebugDraw) { m_pendingWarp = 2; } return;   // 스테이지: 보스 아레나
-        // 숫자키 1..8: 샌드박스 적 디버그 스폰 (보병 정의 8종, 플레이어 앞)
         case SDL_SCANCODE_1: m_pendingSpawn = 1; return;
         case SDL_SCANCODE_2: m_pendingSpawn = 2; return;
         case SDL_SCANCODE_3: m_pendingSpawn = 3; return;
@@ -326,7 +317,7 @@ void App::OnKeyDown_(
         case SDL_SCANCODE_6: m_pendingSpawn = 6; return;
         case SDL_SCANCODE_7: m_pendingSpawn = 7; return;
         case SDL_SCANCODE_8: m_pendingSpawn = 8; return;
-        case SDL_SCANCODE_9: m_pendingSpawn = 9; return;   // 차량 5종 순환 (SandboxState::SpawnDebugEnemy_ 의 슬롯 8)
+        case SDL_SCANCODE_9: m_pendingSpawn = 9; return;
         case SDL_SCANCODE_F7: m_pendingWeapon = 1; return;
         case SDL_SCANCODE_F8: m_pendingWeapon = 2; return;
         case SDL_SCANCODE_F9: m_pendingWeapon = 3; return;
@@ -345,14 +336,13 @@ void App::OnKeyUp_(
 
 void App::OnFocusLost_()
 {
-    // 포커스를 잃으면 눌림 상태가 영원히 남지 않도록 비운다.
     m_input.ClearAll();
 }
 
 void App::Update_(
     const float _deltaTimeSec)
 {
-    m_audio.Update(_deltaTimeSec);   // 끝난 소리 회수 + BGM 페이드 (렌더 프레임 단위)
+    m_audio.Update(_deltaTimeSec);
 
     if (!m_pRunner)
     {
@@ -369,16 +359,16 @@ void App::Update_(
     m_ctx.slowMoDivisor = m_bSlowMo ? 4 : 1;
     if (m_startWarpCount > 0)
     {
-        m_pendingWarp = 1;   // --warp N: F5 를 N 번 누른 것과 같다 (다음 섹션으로 N 번 워프)
+        m_pendingWarp = 1;
         --m_startWarpCount;
     }
-    m_ctx.debugWarp     = m_pendingWarp;   // 상태가 소비한다 (스테이지 F5/F6)
+    m_ctx.debugWarp     = m_pendingWarp;
     m_pendingWarp       = 0;
     m_ctx.debugWeapon   = m_pendingWeapon;
     m_pendingWeapon     = 0;
     if (m_pendingSpawn > 0)
     {
-        m_ctx.debugSpawn = m_pendingSpawn;   // 샌드박스가 소비한다 (적 디버그 스폰)
+        m_ctx.debugSpawn = m_pendingSpawn;
         m_pendingSpawn   = 0;
     }
 
@@ -431,7 +421,6 @@ void App::Tick_()
 
     m_pRunner->Step(frame);
 
-    // 디버그 종료 키: Esc (Pause)
     if (!m_bPlayback && m_pRunner->GetHistory().WasPressed(eAction::Pause))
     {
         m_bRunning = false;
@@ -441,7 +430,6 @@ void App::Tick_()
 void App::Render_(
     const float _alpha)
 {
-    // 상태가 BeginFrame 을 부르지 않았을 때를 대비해 기본 클리어는 상태 Render 가 책임진다.
     m_pRunner->Render(_alpha);
 
     ++m_renderFrameCount;
@@ -474,5 +462,4 @@ void App::Render_(
 
     m_renderer.EndFrame();
 }
-
-}   // namespace slug
+}

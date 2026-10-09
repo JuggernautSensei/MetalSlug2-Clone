@@ -16,10 +16,6 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    // ===========================================
-    //  애니메이션별 분석 결과
-    // ===========================================
-
     struct AnimAnalysis
     {
         DriftResult drift;
@@ -43,10 +39,6 @@ namespace
     {
         return std::format("{:.1f}", _v);
     }
-
-    // ===========================================
-    //  3x5 숫자 폰트 (컨택트 시트 번호 표시)
-    // ===========================================
 
     constexpr uint16_t kDigitGlyphs[10] = {
         0b111101101101111, 0b010110010010111, 0b111001111100111, 0b111001111001111, 0b101101111001001,
@@ -77,10 +69,6 @@ namespace
             cx += 4;
         }
     }
-
-    // ===========================================
-    //  컨택트 시트
-    // ===========================================
 
     constexpr int kLabelH     = 7;
     constexpr int kSheetMaxW  = 2560;
@@ -157,7 +145,6 @@ namespace
     {
         const AnimOut& anim = _state.anims[_block.animIndex];
 
-        // 라벨 띠
         FillRect(_sheet, { _block.x, _block.y, _block.w, kLabelH }, 24, 24, 32);
         DrawNumber_(_sheet, _block.x + 1, _block.y + 1, _block.label);
 
@@ -165,7 +152,6 @@ namespace
         const int slotW = _block.slotW * _scale;
         const int slotH = _block.slotH * _scale;
 
-        // 체커 배경 (마젠타/흰 테두리가 눈에 띄도록 중간 회색 계열)
         for (size_t i = 0; i < _block.frameCount; ++i)
         {
             const int sx = _block.x + static_cast<int>(i) * (slotW + 1);
@@ -183,7 +169,6 @@ namespace
             }
         }
 
-        // 첫 비어있지 않은 프레임의 바닥선 (원점 기준 h - pivotY)
         int footLineY = -1;
         for (size_t i = 0; i < _block.frameCount; ++i)
         {
@@ -206,7 +191,6 @@ namespace
                 DrawScaled_(_sheet, img, sx + (_block.originX - f.pivotX) * _scale, bodyY + (_block.originY - f.pivotY) * _scale, _scale);
             }
 
-            // 바닥선 (초록)
             if (footLineY >= 0 && footLineY < slotH)
             {
                 for (int x = 0; x < slotW; ++x)
@@ -215,7 +199,6 @@ namespace
                 }
             }
 
-            // 피벗 십자 (빨강). 빈 프레임은 노란 점
             const int cx = sx + _block.originX * _scale + _scale / 2;
             const int cy = bodyY + _block.originY * _scale + _scale / 2;
             for (int d = -3; d <= 3; ++d)
@@ -230,7 +213,6 @@ namespace
         }
     }
 
-    // 카테고리의 애니메이션 목록을 블록으로 나누고 시트에 배치한다.
     void PlanCategory_(
         const BakeState&        _state,
         const eAnimCategory     _category,
@@ -251,7 +233,6 @@ namespace
             }
             ++label;
 
-            // 슬롯 크기: 모든 프레임의 (원점 기준) 확장 범위 합집합
             int  left = 0, right = 0, top = 0, bottom = 0;
             bool bAny = false;
             for (const FrameOut& f: anim.frames)
@@ -278,7 +259,6 @@ namespace
                 continue;
             }
 
-            // 원점 십자(±3)가 항상 보이도록 범위에 포함
             left   = std::min(left, -4);
             right  = std::max(right, 5);
             top    = std::min(top, -4);
@@ -310,7 +290,6 @@ namespace
             return;
         }
 
-        // 흐름 배치
         std::vector<SheetPlan> plans;
         auto                   newSheet = [&]()
         {
@@ -354,10 +333,6 @@ namespace
         }
     }
 
-    // ===========================================
-    //  좌/우 쌍 검사
-    // ===========================================
-
     void CheckLeftRightTwins_(
         const BakeState&      _state,
         std::vector<Anomaly>& _out)
@@ -390,7 +365,6 @@ namespace
             const AnimOut& l = _state.anims[index];
             const AnimOut& r = _state.anims[it->second];
 
-            // 오프셋이 정확한 X-미러인가 (offL.x == -offR.x, offL.y == offR.y)
             const int mirrorErrX = l.rec.offsetX + r.rec.offsetX;
             const int diffY      = l.rec.offsetY - r.rec.offsetY;
             if (mirrorErrX != 0 || diffY != 0)
@@ -401,7 +375,6 @@ namespace
                                  magnitude });
             }
 
-            // 셀 크기 / 프레임 수 / 지속시간 / 루프 비교
             std::string props;
             if (l.cellW != r.cellW || l.cellH != r.cellH) { props += std::format(" cell {}x{} vs {}x{};", l.cellW, l.cellH, r.cellW, r.cellH); }
             if (l.frames.size() != r.frames.size()) { props += std::format(" frames {} vs {};", l.frames.size(), r.frames.size()); }
@@ -413,7 +386,6 @@ namespace
                 _out.push_back({ "LeftRightPropertyMismatch", base, props, 1.0 });
             }
 
-            // 실제 바닥 앵커(트림+피벗 적용 후) Y 가 좌/우에서 다른가
             const size_t common = std::min(l.frames.size(), r.frames.size());
             double       maxDy  = 0.0;
             for (size_t i = 0; i < common; ++i)
@@ -432,11 +404,7 @@ namespace
             }
         }
     }
-}   // namespace
-
-// ===========================================
-//  WriteReports
-// ===========================================
+}
 
 slug::Result<void> WriteReports(
     const BakerOptions& _options,
@@ -446,7 +414,6 @@ slug::Result<void> WriteReports(
     std::error_code ec;
     fs::create_directories(reportDir, ec);
 
-    // --- 애니메이션 분석 + 애니메이션 단위 이상 징후
     std::vector<AnimAnalysis> analysis(_state.anims.size());
     for (size_t i = 0; i < _state.anims.size(); ++i)
     {
@@ -510,7 +477,6 @@ slug::Result<void> WriteReports(
         ++anomalyCounts[a.type];
     }
 
-    // --- pivot_report.json
     {
         std::vector<size_t> byDrift;
         for (size_t i = 0; i < _state.anims.size(); ++i)
@@ -598,7 +564,6 @@ slug::Result<void> WriteReports(
         }
     }
 
-    // --- 컨택트 시트
     {
         std::vector<SheetPlan> plans;
         for (const eAnimCategory category: kAllCategories)
@@ -614,7 +579,6 @@ slug::Result<void> WriteReports(
             }
         }
 
-        // 이전 실행의 시트 제거
         for (const fs::directory_entry& entry: fs::directory_iterator(reportDir, ec))
         {
             const std::string name = entry.path().filename().string();
@@ -648,13 +612,12 @@ slug::Result<void> WriteReports(
         Log("contact sheets: {} file(s) in {}", plans.size(), reportDir.string());
     }
 
-    // --- bake_summary.txt
     {
         std::string s;
         auto        line = [&s](const std::string& _text) { s += _text; s += '\n'; };
 
         size_t validAnims = 0, skippedAnims = 0, validSprites = 0, atlasSprites = 0, fileSprites = 0, implicitSprites = 0, skippedSprites = 0;
-        std::map<std::string, std::pair<size_t, size_t>> perCategory;   // key -> (anims, frames)
+        std::map<std::string, std::pair<size_t, size_t>> perCategory;
         for (const AnimOut& a: _state.anims)
         {
             if (a.bValid)
@@ -796,5 +759,4 @@ slug::Result<void> WriteReports(
 
     return slug::Error { slug::kOK };
 }
-
-}   // namespace slug::baker
+}

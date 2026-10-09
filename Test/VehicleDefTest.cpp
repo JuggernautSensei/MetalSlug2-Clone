@@ -8,7 +8,6 @@ using namespace slugtest;
 
 namespace
 {
-    // 정의 하나를 찾는다 (없으면 테스트 실패)
     const EnemyDef& Need(const EnemyDefLibrary& _lib, const char* _name)
     {
         static const EnemyDef kEmpty {};
@@ -17,7 +16,6 @@ namespace
         return pDef ? *pDef : kEmpty;
     }
 
-    // 클립 이름의 {side} 를 두 방향으로 치환해 애니메이션 라이브러리에서 확인한다
     void ExpectClipExists(const AnimationLibrary& _anims, const slug::String& _name, const char* _owner)
     {
         if (_name.empty())
@@ -31,11 +29,7 @@ namespace
             EXPECT_TRUE(_anims.IsValid(_anims.Find(name))) << _owner << ": " << name.c_str();
         }
     }
-}   // namespace
-
-// ===========================================
-//  로드 / 이름 / 수치
-// ===========================================
+}
 
 TEST(VehicleDefs, LoadsTheDefsDirectoryWithAllFiveVehiclesAndTheirProjectiles)
 {
@@ -53,7 +47,6 @@ TEST(VehicleDefs, LoadsTheDefsDirectoryWithAllFiveVehiclesAndTheirProjectiles)
     {
         EXPECT_NE(lib.FindProjectile(name), nullptr) << name;
     }
-    // 같은 폴더의 보병 정의도 함께 올라온다 (파일 병합)
     EXPECT_NE(lib.Find("soldier_bomb"), nullptr);
 }
 
@@ -91,14 +84,12 @@ TEST(VehicleDefs, BodiesMatchTheSpecHurtboxes)
 {
     EnemyDefLibrary lib;
     ASSERT_TRUE(LoadVehicleLib(lib));
-    // 지프: 75x60 @(0,-30), F=30 / 전차: 100x100 @(0,-50), F=50~75 (기록: 2.3 은 F=75 이나 발 기준 상자는 동일)
     EXPECT_FLOAT_EQ(Need(lib, "jeep").body.w, 75.f);
     EXPECT_FLOAT_EQ(Need(lib, "jeep").body.h, 60.f);
     EXPECT_FLOAT_EQ(Need(lib, "jeep").body.cy, -30.f);
     EXPECT_FLOAT_EQ(Need(lib, "btank").body.cy, -50.f);
     EXPECT_FLOAT_EQ(Need(lib, "sarubia").body.w, 100.f);
     EXPECT_FLOAT_EQ(Need(lib, "missle_tank").body.h, 100.f);
-    // 헬기는 기체 중심이 원점
     EXPECT_FLOAT_EQ(Need(lib, "aparch").body.cy, 0.f);
     EXPECT_FLOAT_EQ(Need(lib, "aparch").body.w, 100.f);
 }
@@ -109,9 +100,7 @@ TEST(VehicleDefs, ActivationRulesAreDataDriven)
     ASSERT_TRUE(LoadVehicleLib(lib));
     EXPECT_FLOAT_EQ(Need(lib, "jeep").activation.marginPx, 150.f);
     EXPECT_TRUE(Need(lib, "jeep").activation.bLatch);
-    // 전차는 플레이어 x 기준으로 행동이 직접 켠다 (화면 margin 을 끈다)
     EXPECT_LT(Need(lib, "btank").activation.marginPx, 0.f);
-    // 미사일 전차는 항상 활성 (사거리는 행동이 본다)
     EXPECT_TRUE(Need(lib, "missle_tank").activation.bAlways);
     EXPECT_FLOAT_EQ(Need(lib, "aparch").activation.marginPx, 400.f);
     EXPECT_FLOAT_EQ(Need(lib, "sarubia").activation.marginPx, 150.f);
@@ -132,10 +121,6 @@ TEST(VehicleDefs, EveryVehicleWeaponReferencesARealProjectile)
     EXPECT_EQ(Need(lib, "missle_tank").weapons.size(), 2u);
     EXPECT_EQ(Need(lib, "aparch").weapons.size(), 2u);
 }
-
-// ===========================================
-//  투사체 물리 (Docs/EnemySpecs.md §2)
-// ===========================================
 
 TEST(VehicleDefs, RocketHasTheLegacyIgnitionDelayAndBeginClip)
 {
@@ -229,10 +214,6 @@ TEST(VehicleDefs, VehicleDeathsDeclareTheirDelayedEffectsAndRemovalTimes)
     EXPECT_FLOAT_EQ(Need(lib, "btank").death.fx[0].offset.y, -40.f);   // 레거시 (0,+35) = 발 기준 -40
 }
 
-// ===========================================
-//  오류 보고 / 클립 이름 / 타이밍 (Baked 가 있을 때)
-// ===========================================
-
 TEST(VehicleDefs, AnUnknownBehaviorParameterFailsTheLoadWithTheDefinitionName)
 {
     const char* kJson = R"({
@@ -305,7 +286,7 @@ TEST(VehicleDefs, NonLoopClipTimingsMatchTheBakedAnimations)
             const ClipDef& clip = named.clip;
             if (clip.bLoop || clip.name.empty())
             {
-                continue;   // 루프 클립은 길이가 의미 없다 (상태는 타이머로 전이)
+                continue;
             }
             for (int side = 0; side < (clip.bSided ? 2 : 1); ++side)
             {

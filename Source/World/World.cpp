@@ -15,7 +15,7 @@ void World::Destroy(
 {
     if (!IsAlive(_entity))
     {
-        return;   // 이미 죽었거나 파괴 대기 중인 핸들, 낡은 핸들은 무시
+        return;
     }
 
     m_entities.Get(_entity).bPendingDestroy = true;
@@ -36,11 +36,10 @@ void World::FlushDestroyed()
                 ((_storages.Contains(entity) ? _storages.Erase(entity) : void()), ...);
             },
             m_storages);
-        m_entities.Erase(entity);   // 슬롯 토큰이 올라가 이전 핸들은 영구히 무효가 된다
+        m_entities.Erase(entity);
     }
     m_pendingDestroy.clear();
 
-    // 생성 순서를 유지한 채 무효가 된 핸들만 제거 (안정적)
     std::erase_if(m_order, [this](const Entity _entity) {
         return !m_entities.IsValid(_entity);
     });
@@ -48,7 +47,6 @@ void World::FlushDestroyed()
 
 void World::Clear()
 {
-    // Pool::Clear() 는 세대를 0 으로 되돌려 낡은 핸들이 되살아날 수 있으므로, 하나씩 지워 세대를 올린다.
     for (const Entity entity: m_order)
     {
         if (m_entities.IsValid(entity))
@@ -78,5 +76,4 @@ bool World::IsValid(
 {
     return m_entities.IsValid(_entity);
 }
-
-}   // namespace slug
+}

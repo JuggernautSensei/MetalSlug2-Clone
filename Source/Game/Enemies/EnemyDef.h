@@ -11,47 +11,31 @@
 
 namespace slug
 {
-
-// ===========================================
-//  적 정의 (Assets/Defs/Enemies.json)
-//   수치(HP/박스/속도/타이머/클립 이름/공격 파라미터)는 전부 JSON 에서 오고 코드는 행동 "종류" 만 안다.
-//   스키마는 Docs/EnemyDefsSchema.md, 수치 근거는 Docs/EnemySpecs.md.
-//   시간은 JSON 에서 초 단위이며 시뮬레이션에서는 틱(1/60 s)으로 환산해 쓴다.
-// ===========================================
-
-// 행동 종류 (switch / 테이블 인덱스). 새 적 종류는 여기에 추가한다 (Docs: 새 적 추가 방법).
 enum class eEnemyBehavior : uint8_t
 {
-    Soldier,     // 일반 병사 3종 (aiType: bomb / sword / missile)
-    Bzk,         // 바주카 병사
-    Hang,        // 매달린 병사
-    FlyingBzk,   // 낙하산 바주카 (착지 시 Bzk 로 변신)
-    Shielder,    // 방패병
-    Pow,         // 포로 (Older)
-    Bus,         // 버스 중간보스 (MBTruck): 탄/병사 투하, 8단계 파손
-    BattleShip,  // 최종보스 (Big Shiee): 레일/캐논/포탑 2기, 파괴 연출
-    Jeep,        // 이동 로켓 지프 (Docs/EnemySpecs.md 2.1)
-    BTank,       // 고정 포탑 전차 (2.3)
-    MissleTank,  // 미사일 전차 (2.4)
-    Sarubia,     // 보행 전차 / 중간보스 게이트 (2.5)
-    Aparch,      // 공격 헬기 (2.6)
+    Soldier,
+    Bzk,
+    Hang,
+    FlyingBzk,
+    Shielder,
+    Pow,
+    Bus,
+    BattleShip,
+    Jeep,
+    BTank,
+    MissleTank,
+    Sarubia,
+    Aparch,
     Count
 };
 
 [[nodiscard]] const char*                    GetBehaviorName(eEnemyBehavior _behavior);
 [[nodiscard]] std::optional<eEnemyBehavior> FindBehavior(slug::StringView _name);
 
-// 애니메이션 시간 단위 (Render/Animation.h 의 kAnimTimeUnitsPerSec / 60). 한 틱 = 100,000 단위.
 inline constexpr int64_t kAnimUnitsPerTick = 100'000;
 
-// 초 → 틱 (가장 가까운 정수)
 [[nodiscard]] int SecToTicks(float _sec);
 
-// ===========================================
-//  박스 / 클립
-// ===========================================
-
-// 발 기준 박스 (중심 cx, cy / 크기 w, h). 오른쪽(+1) 기준이며 왼쪽을 볼 때 x 가 미러된다.
 struct BoxDef
 {
     float w  = 0.f;
@@ -68,25 +52,21 @@ struct BoxDef
     [[nodiscard]] bool IsEmpty() const { return w <= 0.f || h <= 0.f; }
 };
 
-// 클립 타이밍 (anim.json 과 같아야 한다 — 테스트가 검증). 시뮬레이션이 애니메이션 라이브러리 없이도 같은 타이밍으로 돌도록 JSON 에 둔다.
 struct ClipDef
 {
-    slug::String name      = {};      // "SD_Idle_{side}" — {side} 는 Left/Right 로 치환
+    slug::String name      = {};
     int         frames    = 1;
     float       frameSec  = 0.1f;
     bool        bLoop     = false;
-    int64_t     frameUnits = 0;      // frameSec 를 애니메이션 시간 단위로 환산한 값 (로더가 채운다)
-    bool        bSided    = false;   // name 에 {side} 가 있는가
+    int64_t     frameUnits = 0;
+    bool        bSided    = false;
 
     [[nodiscard]] bool IsValid() const { return !name.empty(); }
 
-    // 클립 시작 후 _ticks 틱이 지났을 때 보이는 프레임 (루프는 순환, 비루프는 마지막 프레임에서 정지)
     [[nodiscard]] int FrameAt(int _ticks) const;
 
-    // 프레임 _frame 에 처음 진입하는 틱 (상태 진입 후 경과 틱). 이벤트 시각 계산용
     [[nodiscard]] int TickOfFrame(int _frame) const;
 
-    // 비루프 클립이 끝나는(마지막 프레임이 다 재생되는) 틱. 루프 클립에는 의미가 없다.
     [[nodiscard]] int GetDurationTicks() const;
 
     [[nodiscard]] bool IsFinished(int _ticks) const { return !bLoop && _ticks >= GetDurationTicks(); }
@@ -94,11 +74,10 @@ struct ClipDef
 
 struct NamedClip
 {
-    slug::String name = {};   // 논리 이름 ("idle", "throw", ...)
+    slug::String name = {};
     ClipDef     clip = {};
 };
 
-// 일회성 이펙트 요청 정의 (애니메이션 이름 + 오프셋(발 기준, 좌향이면 x 미러) + 지연)
 struct FxDef
 {
     slug::String  clip     = {};
@@ -107,17 +86,13 @@ struct FxDef
     int          layer    = 60;
 };
 
-// ===========================================
-//  무기 / 투사체
-// ===========================================
-
 struct ProjectileDef
 {
     slug::String  name            = {};
     Vec2 size            = { 20.f, 20.f };
     int          damage          = 1;
-    float        speed           = 0.f;   // 일정 속도 (방향 벡터에 곱한다). 0 이면 v0 / speedRamp 를 쓴다
-    bool         bRamp           = false;   // 선형 가속: 0 → rampMax (진행 방향)
+    float        speed           = 0.f;
+    bool         bRamp           = false;
     float        rampFrom        = 0.f;
     float        rampAccel       = 0.f;
     float        rampMax         = 0.f;
@@ -127,46 +102,40 @@ struct ProjectileDef
     float        lifetimeSec     = 5.f;
     float        startDelaySec   = 0.f;
     bool         bExplodeOnSolid = true;
-    ClipDef      begin           = {};   // 점화 대기 동안의 클립 (선택)
+    ClipDef      begin           = {};
     ClipDef      fly             = {};
-    FxDef        explosion       = {};   // 적중/지형 접촉 시 연출 (clip 이 비면 없음)
-    // 구르는 탄 (사루비아 수류탄): 착지 후 지면을 rollSpeed 로 구르고 rollSec 뒤 소멸. 착지 연출은 land 클립
+    FxDef        explosion       = {};
     float        rollSpeed       = 0.f;
     float        rollSec         = 0.f;
-    bool         bExpireFx       = false;   // 수명 종료 시에도 explosion 연출 (시각 전용)
-    ClipDef      land            = {};      // 착지 직후 클립 (rollSpeed > 0 일 때 fly 앞에 재생)
+    bool         bExpireFx       = false;
+    ClipDef      land            = {};
 };
 
 enum class eWeaponAim : uint8_t
 {
-    Facing,   // 바라보는 방향 수평
-    Given     // 호출자가 방향 벡터를 준다 (바주카/방패병)
+    Facing,
+    Given
 };
 
 struct WeaponDef
 {
     slug::String  name            = {};
-    int          projectile      = -1;   // EnemyDefLibrary::GetProjectile 인덱스 (-1 = 투사체 없음)
+    int          projectile      = -1;
     Vec2 muzzle          = { 0.f, 0.f };   // 발 기준, 좌향이면 x 미러
     eWeaponAim   aim             = eWeaponAim::Facing;
-    float        tiltThreshold   = 0.f;   // > 0 이면 |dy| 가 이 값을 넘을 때 방향에 tiltDy 만큼 y 기울임
+    float        tiltThreshold   = 0.f;
     float        tiltDy          = 0.f;
-    bool         bArc            = false;   // 포물선: 플레이어 근처에 떨어지도록 수평 속도를 계산한다
+    bool         bArc            = false;
     float        arcMinVx        = 0.f;
     float        arcMaxVx        = 0.f;
-    FxDef        muzzleFx        = {};   // 발사 연출 (오프셋은 muzzle 기준)
-    bool         bHitbox         = false;   // 근접 판정 무기 (칼): Hitbox 를 직접 등록한다
+    FxDef        muzzleFx        = {};
+    bool         bHitbox         = false;
     BoxDef       hitbox          = {};
     float        hitboxLifeSec   = 0.f;
     int          hitboxDamage    = 1;
-    bool         bHitboxFollows  = false;   // true 면 판정이 몸을 따라 이동 (점프 베기)
+    bool         bHitboxFollows  = false;
 };
 
-// ===========================================
-//  사망 / 드롭
-// ===========================================
-
-// 병사류 사망 연출 (논리 클립 인덱스는 EnemyDef::clips 기준, -1 = 없음)
 struct DeathDef
 {
     int   clipBomb       = -1;   // 폭발 계열 피격 → 날아감
@@ -176,13 +145,13 @@ struct DeathDef
     int   clipFall       = -1;
     int   clipLand       = -1;
     int   clipJump       = -1;   // 공중 사망
-    int   fallAt1        = 0;    // Stand1 이 이 프레임에 닿으면 쓰러짐(Land/Fall) 으로 전환
+    int   fallAt1        = 0;
     int   fallAt2        = 0;
     float blinkAtSec     = 2.f;   // 최종 클립 시작 후
     float blinkForSec    = 1.f;
     float blinkPeriodSec = 0.1f;
     float removeAtSec    = 3.f;
-    slug::Vector<FxDef> fx = {};   // 사망 순간 이펙트 (디브리 등)
+    slug::Vector<FxDef> fx = {};
 };
 
 struct DropDef
@@ -195,7 +164,7 @@ struct ActivationDef
 {
     float marginPx = 150.f;   // 화면 오른쪽 가장자리 + marginPx 안으로 들어오면 활성
     bool  bLatch   = true;
-    bool  bAlways  = false;   // true: 스폰 즉시 활성 (화면 검사 없음)
+    bool  bAlways  = false;
 };
 
 struct PhysicsDef
@@ -206,13 +175,8 @@ struct PhysicsDef
     float jumpVy        = -450.f;
     float dropSpeed     = 100.f;    // 원웨이 하강 속도
     float footHalfWidth = 4.f;
-    bool  bGravity      = true;     // false: 살아 있는 동안 중력/지면 물리 없음 (매달린 병사, 낙하산)
+    bool  bGravity      = true;
 };
-
-// ===========================================
-//  행동별 설정 (JSON "params" + "clips" 에서 로더가 채운다)
-//   -1 은 "없음".
-// ===========================================
 
 enum class eSoldierAi : uint8_t
 {
@@ -225,7 +189,6 @@ struct SoldierCfg
 {
     eSoldierAi ai = eSoldierAi::Bomb;
 
-    // 수치
     int   cooldownTicks   = 60;
     float detect          = 350.f;
     float jumpAttack      = 150.f;    // Sword
@@ -243,11 +206,9 @@ struct SoldierCfg
     float wallProbeX      = 25.f;
     float wallProbeY      = -37.5f;
 
-    // 클립 인덱스 (EnemyDef::clips)
     int clipIdle = -1, clipMove = -1, clipMoveDown = -1, clipFall = -1, clipHJump = -1, clipLand = -1;
     int clipThrow = -1, clipSlash = -1, clipJumpSlashReady = -1, clipJumpSlash = -1, clipJumpSlashLand = -1;
 
-    // 무기 인덱스 (EnemyDef::weapons)
     int weaponAttack = -1, weaponSlash = -1, weaponJumpSlash = -1;
 };
 
@@ -302,14 +263,13 @@ struct FlyingBzkCfg
     Vec2 muzzleBase = { 0.f, -63.f };
     float muzzleDist     = 50.f;
     float landProbe      = 1.f;     // 발 아래 이 거리 안에 지면이 있으면 착지로 본다
-    slug::String landedDef = {};     // 착지 시 변신할 def 이름
+    slug::String landedDef = {};
 
     int clipReady[5] = { -1, -1, -1, -1, -1 };
     int clipShot[5]  = { -1, -1, -1, -1, -1 };
     int clipDieJump = -1, clipDieLand = -1;
     int weaponRocket = -1;
 
-    // 낙하산 (몸 위에 겹쳐 그리는 오버레이) / 파괴 이펙트
     int          clipPara = -1;
     Vec2 paraOffset = { -5.f, -87.5f };
     FxDef        paraDestroy = {};
@@ -336,7 +296,6 @@ struct ShielderCfg
     float wallProbeY    = -37.5f;
     int   defenceTicks  = 24;       // 방어 연출 (0.4 s)
 
-    // 방패 판정 상자 (발 기준, 오른쪽 기준 x 미러). 앞/위/아래
     BoxDef shieldFront = {};
     BoxDef shieldUp    = {};
     BoxDef shieldDown  = {};
@@ -377,11 +336,6 @@ struct PowCfg
     int clipStuck = -1, clipEscape = -1, clipMove = -1, clipGlide = -1, clipMoveDown = -1, clipItem = -1, clipRun = -1;
 };
 
-// ===========================================
-//  차량 / 전차 / 헬기 (Docs/EnemySpecs.md §2). 수치는 Vehicles.json "params", 클립/무기는 "clips"/"weapons" 에서 로더가 채운다.
-// ===========================================
-
-// 이동 로켓 지프 (2.1). 원점 = 발 (지면 추종). 클립 접미 = 주행 방향(_Left: 좌주행 / 우발사).
 struct JeepCfg
 {
     float speed        = 200.f;   // 주행 px/s
@@ -396,7 +350,6 @@ struct JeepCfg
     int weaponRocket = -1;
 };
 
-// 고정 포탑 전차 (2.3). 원점 = 발. 항상 좌향. 활성 = 플레이어 x >= 전차 x - activateDx.
 struct BTankCfg
 {
     float activateDx    = 500.f;
@@ -408,7 +361,6 @@ struct BTankCfg
     int weaponShell = -1;
 };
 
-// 미사일 전차 (2.4). 원점 = 발. 조준 모드 Up(곡사)/Down(직사). 활성 = |dx| <= rangeDx 동안 타이머 누적.
 struct MissleTankCfg
 {
     float rangeDx      = 600.f;   // 이 거리 안에서만 행동 타이머가 간다
@@ -424,7 +376,6 @@ struct MissleTankCfg
     int weaponUp = -1, weaponDown = -1;
 };
 
-// 보행 전차 / 중간보스 게이트 (2.5). 원점 = 발. 롤링 수류탄(사루비아 탄)을 쏜다.
 struct SarubiaCfg
 {
     int   cooldownTicks = 120;    // Idle 2 s
@@ -439,11 +390,10 @@ struct SarubiaCfg
     int weaponGrenade = -1;
 };
 
-// 공격 헬기 (2.6). 원점 = 기체 중심 (비행: 지면 없음). 항상 좌향.
 struct AparchCfg
 {
     float speed        = 300.f;   // 접근 속도
-    float decelSq      = 10000.f; // 목표까지 거리² 이하면 감속 (v = max(minSpeed, v - decel*dt))
+    float decelSq      = 10000.f;
     float arriveSq     = 400.f;   // 이 거리² 이하면 정지
     float decel        = 600.f;
     float minSpeed     = 50.f;
@@ -473,11 +423,10 @@ struct AparchCfg
     int weaponMissile = -1, weaponDrop = -1;
 };
 
-// 버스 중간보스 (Docs/EnemySpecs.md 3.1). 좌표는 "원점" 기준: 원점 = 발 - (0, originDepth). 방향은 항상 +1 (레거시 좌표 그대로).
 struct BusCfg
 {
     float    originDepth        = 123.f;
-    BoxDef   trigger            = {};        // 플레이어 몸이 닿으면 전투 시작 (문 개방)
+    BoxDef   trigger            = {};
     int      openTicks          = 210;       // MainTruck_Begin 길이 (3.5 s)
     int      shellFirstTicks    = 120;       // 첫 포탄 (전투 시작 후 2 s)
     int      shellIntervalTicks = 180;       // 이후 3 s 간격
@@ -486,11 +435,10 @@ struct BusCfg
     int      soldierAliveMax    = 2;         // 동시 생존 투하 병사
     int      soldierTotalMax    = 8;         // 누적 투하 병사
     Vec2 soldierOffset  = { -150.f, -40.f };   // 원점 기준 투하 위치
-    slug::String  soldierDef     = {};        // 투하 병사 정의 (soldier_bomb)
+    slug::String  soldierDef     = {};
     int      weaponShell        = -1;        // 포탄 무기 (Given 이 아닌 Facing + arc)
 };
 
-// 최종보스 (Docs/EnemySpecs.md 3.2). 좌표는 "본체 원점" 기준. 원점 = 발 - (0, originDepth).
 struct BattleShipCfg
 {
     float    originDepth      = 132.f;
@@ -519,14 +467,13 @@ struct BattleShipCfg
     Vec2 cannonOffset = { 123.f, -149.f };   // 원점 기준 포 중심
     float    bulletSpeed      = 300.f;
     float    bulletSpread     = 37.f;        // 발사 위치 (idx - 2) * spread
-    slug::String bulletProjectile = {};       // 투사체 정의 이름 (battleship_bullet). 발사 때 라이브러리에서 찾는다
-    BoxDef   bow              = {};          // 피격 상자 (원점 기준)
+    slug::String bulletProjectile = {};
+    BoxDef   bow              = {};
     BoxDef   bridge           = {};
     BoxDef   aft              = {};
     float    hullBlockDx      = 270.f;       // 파괴 전: 플레이어 x 는 선체 x + 이 값 이상
-    // 포탑 (2기)
     Vec2 turretOffset[2] = { { -200.f, -70.f }, { -100.f, -120.f } };
-    BoxDef   turretBox        = {};          // 포탑 원점 기준 피격 상자
+    BoxDef   turretBox        = {};
     Vec2 turretMuzzle[3] = { { -30.f, -30.f }, { 0.f, -35.f }, { 30.f, -30.f } };   // LEFT / MID / RIGHT
     int      turretHp         = 40;
     float    turretCoolSec    = 2.4f;        // 격앙 1.4 s
@@ -539,17 +486,12 @@ struct BattleShipCfg
     float    turretRandomSec  = 0.5f;       // 발사 후 추가 랜덤 [0, 이 값)
     float    turretArcMinVx   = 40.f;
     float    turretArcMaxVx   = 450.f;
-    slug::String turretProjectile = {};       // 포탑 포탄 정의 이름 (btank_shell)
-    // 격앙 / 파괴
+    slug::String turretProjectile = {};
     int      enragedSmallTicks = 60;         // 격앙 중 선체 소폭발 주기 (1 s)
     float    destroyChainSec  = 2.8f;
     float    destroyChainStepSec = 0.12f;
     float    destroyFinishSec = 3.6f;
 };
-
-// ===========================================
-//  EnemyDef
-// ===========================================
 
 struct EnemyDef
 {
@@ -559,8 +501,8 @@ struct EnemyDef
     int            hp       = 1;
     int            score    = 0;
 
-    BoxDef        body      = {};   // 이동/지형 충돌 박스
-    BoxDef        hurtbox   = {};   // 피격 박스 (기본: body)
+    BoxDef        body      = {};
+    BoxDef        hurtbox   = {};
     ActivationDef activation = {};
     PhysicsDef    physics   = {};
 
@@ -569,11 +511,9 @@ struct EnemyDef
     DeathDef               death   = {};
     slug::Vector<DropDef>   drops   = {};
 
-    // 몸 위에 겹쳐 그리는 오버레이 클립 (선택): 낙하산 등. clips 인덱스, -1 = 없음
     int          overlayClip   = -1;
     Vec2 overlayOffset = { 0.f, 0.f };
 
-    // 행동별 설정 (behavior 에 해당하는 것만 의미가 있다)
     SoldierCfg   soldier   = {};
     BzkCfg       bzk       = {};
     HangCfg      hang      = {};
@@ -588,10 +528,8 @@ struct EnemyDef
     SarubiaCfg     sarubia     = {};
     AparchCfg      aparch      = {};
 
-    // true: 카메라 뒤로 밀려나도 정리하지 않는다 (보스 아레나 고정)
     bool bNoDespawn = false;
 
-    // true: 사람 (칼 대상). 차량/보스는 false 라서 칼을 받지 않는다
     bool bHuman = false;
 
     [[nodiscard]] const ClipDef& GetClip(const int _index) const { return clips[static_cast<size_t>(_index)].clip; }
@@ -607,31 +545,20 @@ struct EnemyGlobals
     float despawnBelowCameraPx  = 300.f;
 };
 
-// ===========================================
-//  EnemyDefLibrary
-//   Assets/Defs/Enemies.json 를 읽어 보관한다. 로드 후에는 읽기 전용이다.
-//   정의는 로드 순서대로 인덱스가 매겨지며(안정), 이름으로 찾을 수 있다.
-// ===========================================
-
 class EnemyDefLibrary
 {
 public:
-    // 오류 시 사유(정의 이름/필드 포함)를 _pMessage 에 채우고 로그로도 남긴다.
     [[nodiscard]] static slug::Result<EnemyDefLibrary> Parse(slug::StringView _json, slug::String* _pMessage = nullptr);
     [[nodiscard]] static slug::Result<EnemyDefLibrary> Load(const slug::FilePath& _path, slug::String* _pMessage = nullptr);
 
-    // 폴더 안의 모든 *.json 을 이름순으로 합쳐서 로드한다 (Enemies.json, Vehicles.json, Props.json, Boss.json ...).
-    // 정의 이름은 파일 간에도 유일해야 하고, base 상속은 파일 경계를 넘을 수 있다.
     [[nodiscard]] static slug::Result<EnemyDefLibrary> LoadDirectory(const slug::FilePath& _dir, slug::String* _pMessage = nullptr);
 
-    // <assetRoot>/Defs/Enemies.json
     [[nodiscard]] static slug::FilePath GetDefaultPath(const slug::FilePath& _assetRoot);
 
-    // <assetRoot>/Defs
     [[nodiscard]] static slug::FilePath GetDefaultDirectory(const slug::FilePath& _assetRoot);
 
     [[nodiscard]] const EnemyDef* Find(slug::StringView _name) const;
-    [[nodiscard]] int             FindIndex(slug::StringView _name) const;   // 없으면 -1
+    [[nodiscard]] int             FindIndex(slug::StringView _name) const;
     [[nodiscard]] const EnemyDef& Get(const int _index) const { return m_defs[static_cast<size_t>(_index)]; }
 
     [[nodiscard]] const ProjectileDef* FindProjectile(slug::StringView _name) const;
@@ -653,5 +580,4 @@ private:
     slug::HashMap<slug::String, int>      m_projIndex   = {};
     EnemyGlobals                        m_globals     = {};
 };
-
-}   // namespace slug
+}

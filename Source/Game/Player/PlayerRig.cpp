@@ -14,20 +14,14 @@ namespace slug
 
 namespace
 {
-    // ===========================================
-    //  클립 이름 표
-    //   {W} = 무기 토큰(DG/SG/MG), {S} = Left/Right. 패턴을 앞에서부터 시도하고, 무기 토큰도 폴백 순서로 시도한다.
-    // ===========================================
-
     struct SlotDef
     {
         const char* label;
         const char* patterns[3];
         bool        bRequired;
-        eRigClip    fallback;   // 자기 자신이면 폴백 없음
+        eRigClip    fallback;
     };
 
-    // eRigClip 의 선언 순서와 같아야 한다 (아래 static_assert 로 개수만 확인).
     constexpr SlotDef kSlots[] = {
         {              "Idle",                                 { "Player_Stand_Idle_{W}_{S}", nullptr, nullptr },  true,          eRigClip::Idle },
         {              "Move",                                 { "Player_Stand_Move_{W}_{S}", nullptr, nullptr },  true,          eRigClip::Idle },
@@ -63,7 +57,6 @@ namespace
     };
     static_assert(sizeof(kSlots) / sizeof(kSlots[0]) == kRigClipCount, "kSlots 는 eRigClip 과 같은 개수여야 한다.");
 
-    // 무기별 토큰 폴백 순서
     constexpr const char* kPistolTokens[]  = { "DG", nullptr, nullptr };
     constexpr const char* kHmgTokens[]     = { "MG", "SG", "DG" };
     constexpr const char* kShotgunTokens[] = { "SG", "DG", nullptr };
@@ -112,7 +105,7 @@ namespace
     {
         return _facing < 0 ? 0 : 1;
     }
-}   // namespace
+}
 
 const char* GetRigClipName(
     const eRigClip _clip)
@@ -260,10 +253,6 @@ void PlayerRig::Update(
 
     const SlotTable& table = GetTable_(_state.weapon, _state.facing);
 
-    // ===========================================
-    //  슬롯 선택
-    // ===========================================
-
     eRigClip upperSlot = eRigClip::Idle;
     eRigClip lowerSlot = eRigClip::LowerIdle;
     bool     bLower    = false;
@@ -296,7 +285,6 @@ void PlayerRig::Update(
         bLower          = true;
         lowerSlot       = bAir ? (_state.bMoving ? eRigClip::LowerJumpMove : eRigClip::LowerJumpIdle) : (_state.bMoving ? eRigClip::LowerMove : eRigClip::LowerIdle);
 
-        // 기본 상체 (겹침 동작이 없을 때)
         eRigClip base = bAir ? (_state.bMoving ? eRigClip::JumpMove : eRigClip::JumpIdle) : (_state.bMoving ? eRigClip::Move : eRigClip::Idle);
         if (!bAir && _state.bIdleAction && !_state.bMoving && _state.aim == eAim::Forward)
         {
@@ -332,10 +320,6 @@ void PlayerRig::Update(
     const Slot upper = GetSlot_(table, upperSlot);
     const Slot lower = bLower ? GetSlot_(table, lowerSlot) : Slot {};
 
-    // ===========================================
-    //  원점 높이 (발 기준선)
-    // ===========================================
-
     if (bDead || bVictory || _state.pose == ePose::Crouch)
     {
         m_originLift = static_cast<float>(upper.baseline);
@@ -348,10 +332,6 @@ void PlayerRig::Update(
     {
         m_originLift = static_cast<float>(lower.baseline);
     }
-
-    // ===========================================
-    //  하체 (기준 타임라인)
-    // ===========================================
 
     m_bHasLower = bLower && !lower.id.IsNull();
     if (m_bHasLower)
@@ -373,10 +353,6 @@ void PlayerRig::Update(
         }
     }
     m_lowerSlot = lowerSlot;
-
-    // ===========================================
-    //  상체
-    // ===========================================
 
     if (upper.id.IsNull())
     {
@@ -403,7 +379,6 @@ void PlayerRig::Update(
     }
     else if (_state.overlay != eOverlay::None && !bDead && !bVictory)
     {
-        // 겹침 동작은 정해진 틱 안에 클립 전체가 재생되도록 속도를 맞춘다.
         const float speed = ClipTicks_(upper.id) / static_cast<float>(slug::Max(1, _state.overlayDurationTicks));
         m_upper.Update(*m_pLibrary, kStepSec, speed);
     }
@@ -445,5 +420,4 @@ void PlayerRig::Submit(
         _sprites.Submit(_layer, _sortKey, *pFrame, origin, options);
     }
 }
-
-}   // namespace slug
+}

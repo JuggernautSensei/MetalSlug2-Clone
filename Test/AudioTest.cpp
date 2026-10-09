@@ -36,7 +36,6 @@ namespace
         return bank.Take();
     }
 
-    // 장치 없는(dry) AudioSystem
     [[nodiscard]] AudioConfig MakeDryConfig()
     {
         AudioConfig config;
@@ -50,11 +49,7 @@ namespace
     {
         return slug::FilePath { SLUG_ASSET_DIR } / "Baked";
     }
-}   // namespace
-
-// ===========================================
-//  SoundBank
-// ===========================================
+}
 
 TEST(AudioBank, ParsesEntriesNamesFilesAndBgmFlag)
 {
@@ -92,7 +87,7 @@ TEST(AudioBank, RejectsMalformedJsonAndMissingSections)
 {
     EXPECT_FALSE(static_cast<bool>(SoundBank::LoadFromJson("{ not json")));
     EXPECT_FALSE(static_cast<bool>(SoundBank::LoadFromJson(R"({"version":1})")));
-    EXPECT_FALSE(static_cast<bool>(SoundBank::LoadFromJson(R"({"sounds":{"A":{"bgm":true}}})")));   // file 없음
+    EXPECT_FALSE(static_cast<bool>(SoundBank::LoadFromJson(R"({"sounds":{"A":{"bgm":true}}})")));
     EXPECT_FALSE(static_cast<bool>(SoundBank::LoadFromJson(R"({"sounds":{"A":5}})")));
 }
 
@@ -129,10 +124,6 @@ TEST(AudioBank, BakedSoundsJsonListsExistingFilesAndExtras)
     EXPECT_NE(bank->Find(sfx::kKnife1), nullptr);
     EXPECT_NE(bank->Find(sfx::kPickupCoin), nullptr);
 }
-
-// ===========================================
-//  VoiceAllocator (동시 발음 수 제한)
-// ===========================================
 
 TEST(AudioVoices, FillsEmptySlotsWithoutStealing)
 {
@@ -172,9 +163,9 @@ TEST(AudioVoices, PerSoundLimitStealsOldestOfThatSoundOnly)
 
     const VoiceAllocator::Acquired third = voices.Acquire(7);
     EXPECT_TRUE(third.bStolen);
-    EXPECT_EQ(third.slot, first);            // 같은 소리의 가장 오래된 것
+    EXPECT_EQ(third.slot, first);
     EXPECT_EQ(voices.CountSound(7), 2);
-    EXPECT_TRUE(voices.IsActive(other));     // 다른 소리는 건드리지 않는다
+    EXPECT_TRUE(voices.IsActive(other));
     EXPECT_TRUE(voices.IsActive(second));
     EXPECT_EQ(voices.GetActiveCount(), 3);
 }
@@ -208,10 +199,6 @@ TEST(AudioVoices, NeverExceedsCapacityUnderSpam)
         }
     }
 }
-
-// ===========================================
-//  순수 계산
-// ===========================================
 
 TEST(AudioMath, PitchStaysInsideVariationRange)
 {
@@ -268,10 +255,6 @@ TEST(AudioMath, BgmFaderZeroSecondsIsImmediate)
     EXPECT_TRUE(fader.Update(0.f));
 }
 
-// ===========================================
-//  Null / Test 싱크
-// ===========================================
-
 TEST(AudioSinks, NullAudioAcceptsEverythingSilently)
 {
     NullAudio& null = NullAudio::Get();
@@ -303,7 +286,7 @@ TEST(AudioSinks, TestAudioRecordsEventsInOrder)
     EXPECT_FLOAT_EQ(audio.GetEvents()[3].seconds, 1.5f);
     EXPECT_EQ(audio.GetPlayCount(), 2);
     EXPECT_EQ(audio.CountPlays("A"), 1);
-    EXPECT_TRUE(audio.GetCurrentBgm().empty());   // StopBgm 으로 비워짐
+    EXPECT_TRUE(audio.GetCurrentBgm().empty());
 }
 
 TEST(AudioSinks, GameContextFallsBackToNullAudio)
@@ -316,10 +299,6 @@ TEST(AudioSinks, GameContextFallsBackToNullAudio)
     ctx.GetAudio().Play("X");
     EXPECT_EQ(audio.CountPlays("X"), 1);
 }
-
-// ===========================================
-//  AudioSystem (장치 없는 dry 모드: 정책/통계만)
-// ===========================================
 
 TEST(AudioSystemDry, UninitializedSystemIsAnInertNoOp)
 {
@@ -372,11 +351,11 @@ TEST(AudioSystemDry, SilentVolumeStartsNothing)
 TEST(AudioSystemDry, PerSoundLimitCapsConcurrentCopiesAndCountsStolen)
 {
     AudioSystem audio;
-    ASSERT_TRUE(static_cast<bool>(audio.Init(MakeBank(), MakeDryConfig())));   // 같은 소리 최대 2
+    ASSERT_TRUE(static_cast<bool>(audio.Init(MakeBank(), MakeDryConfig())));
 
     for (int i = 0; i < 10; ++i)
     {
-        audio.Play("PlayerGunShot");   // 권총 연사
+        audio.Play("PlayerGunShot");
     }
     const int shotId = audio.GetBank().FindIndex("PlayerGunShot");
     EXPECT_EQ(audio.GetVoices().CountSound(shotId), 2);
@@ -387,7 +366,7 @@ TEST(AudioSystemDry, PerSoundLimitCapsConcurrentCopiesAndCountsStolen)
 TEST(AudioSystemDry, TotalVoiceLimitHoldsAcrossDifferentSounds)
 {
     AudioSystem audio;
-    ASSERT_TRUE(static_cast<bool>(audio.Init(MakeBank(), MakeDryConfig())));   // 전체 4, 소리당 2
+    ASSERT_TRUE(static_cast<bool>(audio.Init(MakeBank(), MakeDryConfig())));
     for (int i = 0; i < 3; ++i)
     {
         audio.Play("Coin");
@@ -434,10 +413,10 @@ TEST(AudioSystemDry, BgmPlayRestartRulesAndFadeOut)
     EXPECT_EQ(audio.GetBgmName(), "Stage1_BGM");
     EXPECT_EQ(audio.GetStats().bgmStarts, 1);
 
-    audio.PlayBgm("Stage1_BGM", true);   // 같은 곡은 이어서 재생 (재시작 없음)
+    audio.PlayBgm("Stage1_BGM", true);
     EXPECT_EQ(audio.GetStats().bgmStarts, 1);
 
-    audio.PlayBgm("NoSuchSong", true);   // 없는 곡은 현재 곡을 그대로 둔다
+    audio.PlayBgm("NoSuchSong", true);
     EXPECT_EQ(audio.GetBgmName(), "Stage1_BGM");
 
     audio.FadeOutBgm(1.f);
@@ -488,12 +467,8 @@ TEST(AudioSystemDry, MissingDirectoryReturnsErrorButSystemStaysInert)
     AudioSystem audio;
     EXPECT_FALSE(static_cast<bool>(audio.InitFromDirectory("Z:/no/such/dir", MakeDryConfig())));
     EXPECT_FALSE(audio.IsInitialized());
-    audio.Play("Coin");   // 크래시 없이 무시
+    audio.Play("Coin");
 }
-
-// ===========================================
-//  결정성: 오디오는 시뮬레이션에 영향을 주지 않는다
-// ===========================================
 
 namespace
 {
@@ -526,7 +501,7 @@ namespace
         SandboxState*          pState = nullptr;
         std::unique_ptr<SimRunner> runner = nullptr;
     };
-}   // namespace
+}
 
 TEST(AudioDeterminism, SameStateHashWithNullTestAndDryAudio)
 {
@@ -554,12 +529,8 @@ TEST(AudioDeterminism, SimulationDoesNotConsumeSimRngForAudio)
     AudioSim b { &testAudio };
     a.RunScript(300);
     b.RunScript(300);
-    EXPECT_EQ(a.rng.Generate(), b.rng.Generate());   // 시뮬레이션 RNG 상태가 같다
+    EXPECT_EQ(a.rng.Generate(), b.rng.Generate());
 }
-
-// ===========================================
-//  샌드박스 소리 요청
-// ===========================================
 
 TEST(AudioSandbox, PistolShotRequestsShotSound)
 {
@@ -602,10 +573,6 @@ TEST(AudioSandbox, EntersWithStageBgmAndStopsOnExit)
     EXPECT_GE(audio.CountKind(eAudioEvent::AllStop), 1);
     EXPECT_TRUE(audio.GetCurrentBgm().empty());
 }
-
-// ===========================================
-//  실제 miniaudio 엔진 (장치가 있을 때만; 거의 무음으로 재생)
-// ===========================================
 
 TEST(AudioDevice, RealEngineDecodesEveryBakedSoundWhenADeviceExists)
 {

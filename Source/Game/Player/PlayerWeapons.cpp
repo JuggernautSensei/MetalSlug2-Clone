@@ -113,5 +113,4 @@ BulletSpawn MakeBulletSpawn(
     spawn.bTrail      = _weapon == eWeapon::Rocket;
     return spawn;
 }
-
-}   // namespace slug
+}

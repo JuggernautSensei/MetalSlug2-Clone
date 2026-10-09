@@ -20,5 +20,4 @@ void LogMessage(
     }
     std::fprintf(stderr, "%s%.*s\n", pPrefix, static_cast<int>(_message.size()), _message.data());
 }
-
-}   // namespace slug
+}

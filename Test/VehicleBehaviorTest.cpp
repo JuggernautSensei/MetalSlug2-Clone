@@ -17,11 +17,10 @@ namespace
         return params;
     }
 
-    // 틱마다 이번 틱에 새로 생긴 투사체를 센다 (ageTicks == 1 인 것). owner 는 적 핸들.
     struct SpawnLog
     {
-        std::vector<int>      ticks;   // 생성된 틱 번호
-        std::vector<Shot>     shots;   // 생성 시점의 투사체 사본 (첫 Step 직후)
+        std::vector<int>      ticks;
+        std::vector<Shot>     shots;
     };
 
     void StepAndLog(VehicleRig& _rig, const EnemyHandle _owner, SpawnLog& _log, const int _count)
@@ -40,17 +39,12 @@ namespace
         }
     }
 
-    // 플레이어 오른쪽에서 왼쪽을 보고 달리는 지프 (로켓은 플레이어 쪽 = 뒤로 나간다)
     EnemyHandle SpawnJeepFacingThePlayer(VehicleRig& _rig, const Vec2 _player, const float _x)
     {
         _rig.SetPlayer(_player);
         return _rig.Spawn("jeep", { _x, kGround }, Facing(-1));
     }
-}   // namespace
-
-// ===========================================
-//  지프 (2.1)
-// ===========================================
+}
 
 TEST(VehicleJeep, DrivesAtTwoHundredPixelsPerSecondTowardTheEdgeOnThePlayersSide)
 {
@@ -92,7 +86,6 @@ TEST(VehicleJeep, RocketsLeaveFromTheRearTowardThePlayer)
     ASSERT_FALSE(log.shots.empty());
     const Shot& rocket = log.shots.front();
     EXPECT_LT(rocket.velocity.x, 0.f) << "플레이어(왼쪽)를 향해 뒤로 나간다";
-    // 머즐(발 -88)이 플레이어 중심(발 -30)보다 58 px 위: |dy| > 50 이므로 레거시대로 y 0.1 기울여 아래로 향한다
     EXPECT_NEAR(rocket.velocity.y, 29.85f, 1.5f);
     EXPECT_EQ(rocket.params.startDelayTicks, 24);   // 점화 0.4 s
 }
@@ -143,7 +136,6 @@ TEST(VehicleJeep, BombsKillItInFourHitsAndItLeavesAfterOnePointSevenSeconds)
     EXPECT_EQ(rig.E(h), nullptr) << "1.7 s 뒤 제거";
 }
 
-// 로켓은 머즐 높이(발 -88)로 나가므로 서 있는 플레이어(머리 위) 위를 지나간다. 플레이어가 그 높이에 있으면 맞는다.
 TEST(VehicleJeep, ARocketHitsAPlayerAtItsFlightHeight)
 {
     VehicleRig rig;
@@ -151,10 +143,6 @@ TEST(VehicleJeep, ARocketHitsAPlayerAtItsFlightHeight)
     rig.Step(1200);
     EXPECT_GE(rig.PlayerHits(), 1);
 }
-
-// ===========================================
-//  고정 포탑 전차 (2.3)
-// ===========================================
 
 TEST(VehicleBTank, StaysClosedUntilThePlayerIsWithinFiveHundredPixels)
 {
@@ -245,10 +233,6 @@ TEST(VehicleBTank, DestructionRemovesItAfterFourSeconds)
     EXPECT_EQ(rig.E(h), nullptr);
 }
 
-// ===========================================
-//  미사일 전차 (2.4)
-// ===========================================
-
 TEST(VehicleMissleTank, FiresFiveMissilesPerVolleyWhenTheTargetIsNear)
 {
     VehicleRig rig({ 100.f, kGround });
@@ -300,10 +284,6 @@ TEST(VehicleMissleTank, DestructionIsSilentUntilTwoSecondsLater)
     EXPECT_EQ(rig.E(h), nullptr);
 }
 
-// ===========================================
-//  사루비아 (2.5)
-// ===========================================
-
 TEST(VehicleSarubia, WalksTowardAFarPlayerAtOneHundredPixelsPerSecond)
 {
     VehicleRig rig({ 100.f, kGround });
@@ -324,7 +304,6 @@ TEST(VehicleSarubia, GrenadeFallsStraightDownThenRollsAlongTheGround)
     ASSERT_EQ(log.shots.size(), 1u);
     const int spawnTick = log.ticks.front();
 
-    // 착지까지 수평 이동은 없다
     int landedTick = -1;
     for (int i = 0; i < 120 && landedTick < 0; ++i)
     {
@@ -347,7 +326,6 @@ TEST(VehicleSarubia, GrenadeFallsStraightDownThenRollsAlongTheGround)
     ASSERT_GE(landedTick, 0);
     EXPECT_NEAR(landedTick - spawnTick, 60, 6) << "150 px 낙하 (중력 300) 약 1 s";
 
-    // 착지 후 왼쪽으로 100 px/s 로 구른다
     const auto GrenadeX = [&]() {
         for (const Shot& shot: rig.Projectiles().GetShots())
         {
@@ -390,10 +368,6 @@ TEST(VehicleSarubia, DeathExplodesAtOnceAndLeavesAfterTwoSeconds)
     EXPECT_EQ(rig.E(h), nullptr);
 }
 
-// ===========================================
-//  공격 헬기 (2.6)
-// ===========================================
-
 TEST(VehicleAparch, FliesToItsScreenPointWithoutFalling)
 {
     VehicleRig rig({ 100.f, kGround });
@@ -421,8 +395,6 @@ TEST(VehicleAparch, BombPatternDropsFollowTheLegacyRhythm)
             drops.push_back(log.ticks[i]);
         }
     }
-    // 한 번의 폭탄 패턴: 투하 0.5 / 1.0 / 1.5 / 2.5 / 3.0 / 3.5 / 4.5 / 5.0 / 5.5 s
-    // 첫 투하 기준 상대 시각 (30, 60, 90, 150, 180, 210, 270, 300, 330 틱 → 첫 값을 뺀 것)
     const int kOffsets[] = { 0, 30, 60, 120, 150, 180, 240, 270, 300 };
     bool      bFound     = false;
     for (size_t i = 0; i + 9 <= drops.size() && !bFound; ++i)
@@ -495,5 +467,5 @@ TEST(VehicleAparch, AttackingItRequiresTheFullHitPointsTotal)
     {
         (void)rig.Strike(h.id, eHitKind::Bullet, 3);
     }
-    EXPECT_TRUE(rig.E(h)->IsAlive());   // 117 / 120
+    EXPECT_TRUE(rig.E(h)->IsAlive());
 }

@@ -129,5 +129,4 @@ inline constexpr Vec2 Vec2::kRight = { 1.f, 0.f };
 inline constexpr Vec2 Vec2::kUp    = { 0.f, 1.f };
 inline constexpr Vec2 Vec2::kUnitX = { 1.f, 0.f };
 inline constexpr Vec2 Vec2::kUnitY = { 0.f, 1.f };
-
-}   // namespace slug
+}

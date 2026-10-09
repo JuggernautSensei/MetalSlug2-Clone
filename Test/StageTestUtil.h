@@ -14,12 +14,6 @@
 #include "Game/Stage/StageRunner.h"
 #include "Render/Camera.h"
 
-// ===========================================
-//  스테이지 테스트 도우미
-//   FakeStageHost : IStageHost 의 완전한 가짜 구현 (호출 기록, 격파 제어, 지면 함수, 플레이어 위치).
-//   RunnerFixture : StageData + FakeStageHost + Camera + StageRunner 묶음.
-// ===========================================
-
 namespace slugtest
 {
 
@@ -41,7 +35,6 @@ struct HostEvent
 class FakeStageHost final : public IStageHost
 {
 public:
-    // --- 테스트가 조작하는 값 ---
     int64_t                                              now = 0;
     Vec2                                         playerFeet = { 0.f, 378.f };
     bool                                                 bPlayerAlive = true;
@@ -53,11 +46,10 @@ public:
         }
         return std::nullopt;
     };
-    bool                                                 bAutoDefeat = false;   // 스폰된 enemy/prop 이 즉시 격파된 것으로 본다
+    bool                                                 bAutoDefeat = false;
     SpawnId                                              nextId = 1;
     bool                                                 bRefuseSpawns = false;
 
-    // --- 기록 ---
     std::vector<SpawnLogEntry> spawns;
     std::vector<HostEvent>     events;
     std::set<SpawnId>          defeated;
@@ -151,7 +143,6 @@ public:
         Log_("section:" + std::to_string(_index) + ":" + std::string { _id });
     }
 
-    // --- 조회 도우미 ---
     [[nodiscard]] int CountEvents(const std::string& _prefix) const
     {
         int count = 0;
@@ -197,7 +188,6 @@ private:
     void Log_(std::string _text) { events.push_back({ now, std::move(_text) }); }
 };
 
-// 작은 스테이지 JSON 을 만든다. _sections 는 "[...]" 배열 문자열, _camera 는 camera 객체 문자열.
 inline std::string WrapStage(
     const std::string& _sections,
     const std::string& _camera = R"J({"initialBounds":[0,0,4000,448]})J")
@@ -221,7 +211,6 @@ inline StageData MustLoad(const std::string& _json)
     return result.Take();
 }
 
-// 로드 실패를 기대하고 진단 메시지를 돌려준다. 성공하면 빈 문자열.
 inline std::string LoadError(const std::string& _json)
 {
     StageLoadDiagnostics diag;
@@ -241,7 +230,6 @@ public:
         runner.Begin();
     }
 
-    // 플레이어 x 를 _x 로 두고 _count 틱 진행
     void Step(int _count = 1)
     {
         for (int i = 0; i < _count; ++i)
@@ -263,5 +251,4 @@ public:
     slug::RngMt19937   rng;
     StageRunner       runner;
 };
-
-}   // namespace slugtest
+}

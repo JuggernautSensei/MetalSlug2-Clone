@@ -17,7 +17,7 @@ namespace
         auto* pSrc = static_cast<const uint8_t*>(_pData);
         pOut->insert(pOut->end(), pSrc, pSrc + _size);
     }
-}   // namespace
+}
 
 bool EncodePng(
     const Image&          _image,
@@ -30,5 +30,4 @@ bool EncodePng(
     }
     return stbi_write_png_to_func(&AppendBytes_, &_outBytes, _image.width, _image.height, 4, _image.pixels.data(), _image.width * 4) != 0;
 }
-
-}   // namespace slug::baker
+}

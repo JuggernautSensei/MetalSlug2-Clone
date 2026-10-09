@@ -79,7 +79,6 @@ void Renderer::FillRect(
     const Vec2 _size,
     const slug::RGBA    _color)
 {
-    // 정수 스냅: 서브픽셀 위치로 인한 떨림을 막는다.
     const SDL_FRect rect = { std::floor(_topLeft.x), std::floor(_topLeft.y), std::floor(_size.x), std::floor(_size.y) };
     SDL_SetRenderDrawColor(m_pRenderer, _color.r, _color.g, _color.b, _color.a);
     SDL_RenderFillRect(m_pRenderer, &rect);
@@ -114,7 +113,6 @@ void Renderer::DrawDebugText(
     const float x = std::floor(_topLeft.x);
     float       y = std::floor(_topLeft.y);
 
-    // SDL_RenderDebugText 는 NUL 종료 문자열을 받으므로 줄 단위로 잘라서 그린다.
     slug::String line;
     for (const char c: _text)
     {
@@ -170,5 +168,4 @@ slug::Result<void> Renderer::SaveScreenshotBmp(
     }
     return slug::Error { slug::kOK };
 }
-
-}   // namespace slug
+}

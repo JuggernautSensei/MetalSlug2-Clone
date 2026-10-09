@@ -7,24 +7,16 @@
 
 namespace slug
 {
-
-// ===========================================
-//  MissleTank — 미사일 전차 (Docs/EnemySpecs.md §2.4)
-//   고정 포대. 조준 모드 Down(직사, 근거리) / Up(곡사, 원거리 |dx|>farDx). 모드 전환에는 조준 클립 한 번이 든다.
-//   플레이어가 rangeDx 안에 있는 동안만 Idle 타이머가 간다 (벗어나면 리셋). 발사 준비 2 s → 미사일 5발 연속.
-// ===========================================
-
 namespace
 {
     enum eMissleTankState : int
     {
-        kIdle,    // 대기 (1 s 누적 후 판단)
-        kAim,     // 조준 모드 전환 (aux 토글)
-        kReady,   // 발사 준비 (2 s)
-        kShot     // 미사일 1발 (counter 발 남음)
+        kIdle,
+        kAim,
+        kReady,
+        kShot
     };
 
-    // e.aux: 조준 모드 (0 Down 직사 / 1 Up 곡사). e.counter: 남은 발수.
     constexpr int kModeDown = 0;
     constexpr int kModeUp   = 1;
 
@@ -38,7 +30,7 @@ namespace
         const bool bUp = IsUp_(_e);
         switch (_e.state)
         {
-            case kAim: return _e.aux == kModeDown ? _c.clipAimUp : _c.clipAimDown;   // 직사 → 곡사 전환은 AimmingUp
+            case kAim: return _e.aux == kModeDown ? _c.clipAimUp : _c.clipAimDown;
             case kReady: return bUp ? _c.clipReadyUp : _c.clipReadyDown;
             case kShot: return bUp ? _c.clipShotUp : _c.clipShotDown;
             default: return bUp ? _c.clipIdleUp : _c.clipIdleDown;
@@ -55,7 +47,7 @@ namespace
     {
         (void)_env;
         PrepareBody(_e, _def);
-        _e.aux = kModeDown;   // 초기 조준은 직사
+        _e.aux = kModeDown;
         Go_(_e, _def, kIdle);
     }
 
@@ -90,7 +82,7 @@ namespace
             case kAim:
                 if (_e.clip >= 0 && _e.stateTicks >= _def.GetClip(_e.clip).GetDurationTicks())
                 {
-                    _e.aux = IsUp_(_e) ? kModeDown : kModeUp;   // 조준 모드 토글
+                    _e.aux = IsUp_(_e) ? kModeDown : kModeUp;
                     Go_(_e, _def, kIdle);
                 }
                 break;
@@ -106,7 +98,6 @@ namespace
             case kShot:
                 if (ClipReachedFrame(_e, _def, c.fireFrame))
                 {
-                    // 머즐 y 는 레거시 rand[0,24) 를 그대로 더한다 (탄 높이 분산)
                     const Vec2 jitter = { 0.f, static_cast<float>(_env.world.Roll(24)) };
                     (void)FireWeapon(_e, _def, _env, IsUp_(_e) ? c.weaponUp : c.weaponDown, { 0.f, 0.f }, jitter);
                 }
@@ -115,7 +106,7 @@ namespace
                     --_e.counter;
                     if (_e.counter > 0)
                     {
-                        Go_(_e, _def, kShot);   // 연속 발사 (준비 없이)
+                        Go_(_e, _def, kShot);
                     }
                     else
                     {
@@ -132,7 +123,7 @@ namespace
     {
         BeginVehicleDeath(_e, _def, _env, IsUp_(_e) ? _def.missleTank.clipDestroyUp : _def.missleTank.clipDestroyDown);
     }
-}   // namespace
+}
 
 const BehaviorOps kMissleTankOps = {
     .init       = &Init_,
@@ -168,5 +159,4 @@ void ParseMissleTankCfg(
     c.weaponUp   = _r.Weapon("up");
     c.weaponDown = _r.Weapon("down");
 }
-
-}   // namespace slug
+}

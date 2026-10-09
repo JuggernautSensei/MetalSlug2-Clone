@@ -39,7 +39,7 @@ namespace
         runner.Run(_frames);
         return pDemo->GetPosition();
     }
-}   // namespace
+}
 
 TEST(Replay, SerializeRoundTrip)
 {
@@ -85,7 +85,6 @@ TEST(SimRunner, SameInputsGiveIdenticalResult)
     const Vec2            b      = RunDemo(script);
     EXPECT_FLOAT_EQ(a.x, b.x);
     EXPECT_FLOAT_EQ(a.y, b.y);
-    // 오른쪽 120틱(+240) → 왼쪽 60틱(-120) = +120,  아래 120틱(+240)
     EXPECT_FLOAT_EQ(a.x, 320.f + 120.f);
     EXPECT_FLOAT_EQ(a.y, 224.f + 240.f);
 }

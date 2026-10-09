@@ -6,11 +6,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  정수 변환 헬퍼
-// ===========================================
-
 [[nodiscard]] inline int FloorToInt(
     const float _value)
 {
@@ -22,12 +17,6 @@ namespace slug
 {
     return static_cast<int>(std::ceil(_value));
 }
-
-// ===========================================
-//  Aabb
-//   2D 축 정렬 사각형. 월드 픽셀 좌표(+y 아래). min 포함, max 미포함 개념의 연속 좌표이다.
-//   Overlaps 는 "면적이 겹칠 때만" true 이다 (변이 닿기만 하면 false).
-// ===========================================
 
 struct Aabb
 {
@@ -61,7 +50,6 @@ struct Aabb
         };
     }
 
-    // 발(하단 중앙) 기준. 캐릭터 원점 규약과 동일하다.
     [[nodiscard]] static constexpr Aabb FromBottomCenter(
         const Vec2 _bottomCenter,
         const Vec2 _size)
@@ -97,7 +85,6 @@ struct Aabb
         return { (min.x + max.x) * 0.5f, max.y };
     }
 
-    // 크기가 0 이하이면 비어 있다고 본다.
     [[nodiscard]] constexpr bool IsEmpty() const
     {
         return max.x <= min.x || max.y <= min.y;
@@ -109,7 +96,6 @@ struct Aabb
         return min.x < _other.max.x && max.x > _other.min.x && min.y < _other.max.y && max.y > _other.min.y;
     }
 
-    // 점 포함 (min 포함, max 미포함)
     [[nodiscard]] constexpr bool Contains(
         const Vec2 _point) const
     {
@@ -122,7 +108,6 @@ struct Aabb
         return _other.min.x >= min.x && _other.max.x <= max.x && _other.min.y >= min.y && _other.max.y <= max.y;
     }
 
-    // 겹치는 영역. 겹치지 않으면 nullopt.
     [[nodiscard]] std::optional<Aabb> Intersection(
         const Aabb& _other) const
     {
@@ -136,7 +121,6 @@ struct Aabb
         };
     }
 
-    // 모든 변을 _amount 만큼 바깥으로(음수면 안쪽으로) 확장한 사각형.
     [[nodiscard]] constexpr Aabb Expanded(
         const float _amount) const
     {
@@ -164,7 +148,6 @@ struct Aabb
         };
     }
 
-    // 두 사각형을 모두 포함하는 최소 사각형
     [[nodiscard]] constexpr Aabb Union(
         const Aabb& _other) const
     {
@@ -174,7 +157,6 @@ struct Aabb
         };
     }
 
-    // _axisX 를 기준으로 좌우 반전한 사각형 (바라보는 방향이 바뀔 때 로컬 히트박스를 뒤집는 용도)
     [[nodiscard]] constexpr Aabb MirroredX(
         const float _axisX) const
     {
@@ -190,10 +172,6 @@ struct Aabb
         return min == _other.min && max == _other.max;
     }
 };
-
-// ===========================================
-//  Circle
-// ===========================================
 
 struct Circle
 {
@@ -227,5 +205,4 @@ struct Circle
         };
     }
 };
-
-}   // namespace slug
+}

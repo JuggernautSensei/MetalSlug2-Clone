@@ -8,11 +8,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  배치
-// ===========================================
-
 slug::Vector<int> SplitLineLengths(
     const slug::StringView _text)
 {
@@ -111,7 +106,6 @@ TextLayout LayoutText(
     layout.lines  = lineIndex;
     layout.height = lineIndex * cell + (lineIndex - 1) * gap;
 
-    // 전체 경계: 정렬 기준에 따라 가장 넓은 줄 기준
     int left = _x;
     if (_style.align == eTextAlign::Center)
     {
@@ -137,7 +131,6 @@ int FitTextScale(
         widest = std::max(widest, length);
     }
 
-    // scale 배일 때 폭 = widest * 16 * scale + (widest-1) * spacing  <=  _maxWidth
     int best = 1;
     for (int scale = 1; scale <= std::max(1, _maxScale); ++scale)
     {
@@ -176,10 +169,6 @@ const char* GetFontSpriteName(
         default: return "Font_Normal";
     }
 }
-
-// ===========================================
-//  BitmapFont
-// ===========================================
 
 bool BitmapFont::Init(
     const SpriteLibrary& _sprites)
@@ -266,7 +255,6 @@ void BitmapFont::DrawText(
         }
         else if (quad.ch != ' ' && pNative)
         {
-            // 글리프가 없는 문자: SDL 내장 8x8 폰트를 칸 크기(16*scale)에 맞게 2*scale 배로 그린다.
             slug::RGBA color = GetFontFallbackColor(_style.color);
             color.a         = _style.alpha;
 
@@ -310,5 +298,4 @@ void BitmapFont::DrawTimeDigits(
         x += kCell;
     }
 }
-
-}   // namespace slug
+}

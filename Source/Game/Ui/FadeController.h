@@ -3,25 +3,17 @@
 
 namespace slug
 {
-
-// ===========================================
-//  FadeController
-//   장면 전환용 화면 암전. 검정 오버레이의 불투명도(0 = 투명, 1 = 완전 검정)를 틱 단위로 진행한다.
-//   FadeToBlack / FadeToClear 는 현재 알파에서 목표까지 _ticks 틱에 걸쳐 선형으로 움직인다 (이미 목표면 즉시 완료).
-// ===========================================
-
 class FadeController
 {
 public:
     enum class ePhase : uint8_t
     {
-        Clear,          // 알파 0, 대기
+        Clear,
         FadingToBlack,
-        Black,          // 알파 1, 대기 (검정 유지)
+        Black,
         FadingToClear
     };
 
-    // 초기 상태: 투명 / 검정
     void SetClear();
     void SetBlack();
 
@@ -47,5 +39,4 @@ private:
     ePhase m_phase       = ePhase::Clear;
     ePhase m_donePhase   = ePhase::Clear;
 };
-
-}   // namespace slug
+}

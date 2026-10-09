@@ -60,5 +60,4 @@ Vec2 ScreenToWorld(
     const Aabb& view = _env.ctx.cameraView;
     return { view.min.x + _screen.x, view.min.y + _screen.y };
 }
-
-}   // namespace slug
+}

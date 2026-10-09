@@ -13,8 +13,6 @@ namespace slug
 
 namespace
 {
-    // 독립 텍스처 캐시: SpriteBatch 는 텍스처를 해제하는 API 가 없으므로, 같은 (배치, 이름) 은 한 번만 올린다.
-    // (타이틀 ↔ 스테이지를 오가며 화면 크기 텍스처가 계속 쌓이는 것을 막는다.)
     [[nodiscard]] int LoadStandaloneCached_(
         GameContext&          _ctx,
         const slug::StringView _name,
@@ -40,11 +38,7 @@ namespace
         s_cache.emplace(key, handle);
         return handle;
     }
-}   // namespace
-
-// ===========================================
-//  초기화 / 틱
-// ===========================================
+}
 
 void UiSystem::Init(
     const GameContext& _ctx)
@@ -77,10 +71,6 @@ void UiSystem::Tick()
     m_banner.Tick();
     m_fade.Tick();
 }
-
-// ===========================================
-//  그리기
-// ===========================================
 
 void UiSystem::DrawText(
     GameContext&          _ctx,
@@ -235,5 +225,4 @@ void UiSystem::DrawOverlays(
     DrawFade(_ctx);
     DrawBanner(_ctx);
 }
-
-}   // namespace slug
+}

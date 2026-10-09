@@ -19,7 +19,6 @@ float Width(const Aabb& _box)
     return _box.max.x - _box.min.x;
 }
 
-// 배치한 소품 하나를 기준으로 피격 결과를 한 번에 만든다 (판정 경로 없이 이벤트만 적용)
 void HitN(PropWorld& _world, const PropHandle _id, const int _times, const int _damage, const eHitKind _kind = eHitKind::Bullet)
 {
     for (int i = 0; i < _times; ++i)
@@ -64,7 +63,6 @@ int CountEvents(const slug::Vector<PropEvent>& _events, const ePropEventKind _ki
     return n;
 }
 
-// 판정 전체 경로: 소품 Hurtbox 등록 → Hitbox 1개 → Resolve → OnHitEvents
 const slug::Vector<HitEvent>* ResolveHitbox(CombatSystem& _combat, PropWorld& _world, const Hitbox& _hitbox)
 {
     _combat.BeginTick();
@@ -74,19 +72,14 @@ const slug::Vector<HitEvent>* ResolveHitbox(CombatSystem& _combat, PropWorld& _w
     _world.OnHitEvents(events);
     return &events;
 }
-
-}   // namespace
-
-// ===========================================
-//  스폰 / 피격 단계
-// ===========================================
+}
 
 TEST(PropWorld, UnknownDefSpawnsNothing)
 {
     PropWorld world { &GetPropLib(), 1 };
     EXPECT_EQ(world.Spawn("no_such_def", { 0.f, 0.f }), kNoProp);
     EXPECT_EQ(world.GetCount(), 0u);
-    EXPECT_TRUE(world.IsDestroyed(kNoProp));   // 없는 핸들은 파괴된 것으로 본다
+    EXPECT_TRUE(world.IsDestroyed(kNoProp));
 }
 
 TEST(PropWorld, ShopDestroyedAfterFourPistolHits)
@@ -94,7 +87,7 @@ TEST(PropWorld, ShopDestroyedAfterFourPistolHits)
     PropWorld world { &GetPropLib(), 1 };
     const PropHandle shop = world.Spawn("shop_0", { 1274.f, 228.f });
     ASSERT_NE(shop, kNoProp);
-    EXPECT_GE(shop, kPropOwnerBase);   // 소품 owner id 범위
+    EXPECT_GE(shop, kPropOwnerBase);
 
     HitN(world, shop, 3, 3);
     EXPECT_FALSE(world.IsDestroyed(shop));
@@ -102,7 +95,7 @@ TEST(PropWorld, ShopDestroyedAfterFourPistolHits)
 
     HitN(world, shop, 1, 3);
     EXPECT_TRUE(world.IsDestroyed(shop));
-    EXPECT_FALSE(world.IsDestroyFinished(shop));   // 파괴 연출 0.5 s 동안은 아직
+    EXPECT_FALSE(world.IsDestroyFinished(shop));
 
     TickN(world, 31);
     EXPECT_TRUE(world.IsDestroyFinished(shop));
@@ -186,10 +179,6 @@ TEST(PropWorld, ImmortalGuardPostTakesNoDamageAndHasNoHurtbox)
     EXPECT_EQ(world.GetPlatforms().size(), 2u);   // 가드 포스트 발판 2개는 항상 있다
 }
 
-// ===========================================
-//  판정 등록 / 실제 Hitbox 경로
-// ===========================================
-
 TEST(PropWorld, HurtboxesAreNeutralWithPropOwnerAndNoHazard)
 {
     PropWorld world { &GetPropLib(), 1 };
@@ -264,14 +253,10 @@ TEST(PropWorld, ParamHitboxOverrideChangesHurtbox)
     EXPECT_FLOAT_EQ(Width(combat.GetHurtboxes()[0].box), 50.f);
 }
 
-// ===========================================
-//  정적 충돌 출력
-// ===========================================
-
 TEST(PropWorld, ShopStandBoxIsOneWayPlatformAndGoesAwayOnDestroy)
 {
     PropWorld world { &GetPropLib(), 1 };
-    const PropHandle shop = world.Spawn("shop_0", { 200.f, 100.f });   // standBox 220x20 @(30,10) → 중심 (230,110), 윗면 y=100
+    const PropHandle shop = world.Spawn("shop_0", { 200.f, 100.f });
     ASSERT_EQ(world.GetPlatforms().size(), 1u);
     const Platform& p = world.GetPlatforms()[0];
     EXPECT_TRUE(p.bOneWay);
@@ -306,7 +291,7 @@ TEST(PropWorld, HouseRoofOnlyBlocksEnemies)
 
     HitN(world, house, 10, 2);   // HP 20 → 파괴
     TickN(world, 1);
-    EXPECT_TRUE(world.GetEnemyPlatforms().empty());   // 지붕이 사라져 위의 적이 떨어진다
+    EXPECT_TRUE(world.GetEnemyPlatforms().empty());
 }
 
 TEST(PropWorld, BridgeBlockWallShrinksOnDestroy)
@@ -320,10 +305,6 @@ TEST(PropWorld, BridgeBlockWallShrinksOnDestroy)
     EXPECT_FLOAT_EQ(Width(world.GetWalls()[0].box), 72.f);
     EXPECT_FLOAT_EQ(world.GetWalls()[0].box.GetCenter().x, 10098.f + 30.f);
 }
-
-// ===========================================
-//  물리: 발판 위에 서고, 벽에 막힌다
-// ===========================================
 
 TEST(PropWorld, PlayerLandsOnOneWayShopPlatform)
 {
@@ -360,10 +341,6 @@ TEST(PropWorld, PlayerIsBlockedByBridgeWall)
     EXPECT_LT(body.position.x, 125.f);
     EXPECT_GT(body.position.x, 100.f);
 }
-
-// ===========================================
-//  드롭 / 2차 폭발 / 낙하
-// ===========================================
 
 TEST(PropWorld, MobBoatDropsSixItemsAndBurstsOnDeath)
 {
@@ -471,10 +448,6 @@ TEST(PropWorld, ApplyGroundPatchWritesOnlyPatchRegion)
     EXPECT_EQ(map.CountSolidPixels(), 9u);
 }
 
-// ===========================================
-//  변종 / 결정성 / 컬링 / 정리
-// ===========================================
-
 TEST(PropWorld, TruckVariantPositionShiftMatchesLegacyFinalInit)
 {
     PropWorld world { &GetPropLib(), 1 };
@@ -528,7 +501,7 @@ TEST(PropWorld, ClearByLayerAndResetRestoreIds)
     PropWorld world { &GetPropLib(), 1 };
     world.Spawn("shop_0", { 1274.f, 228.f });
     world.Spawn("truck", { 580.f, 342.f });
-    world.ClearByLayer(true);    // front 없음
+    world.ClearByLayer(true);
     EXPECT_EQ(world.GetCount(), 2u);
     world.ClearByLayer(false);
     EXPECT_EQ(world.GetCount(), 0u);

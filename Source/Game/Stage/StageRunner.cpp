@@ -16,7 +16,6 @@ namespace slug
 
 namespace
 {
-    // 예약 시각을 틱으로: 초 * 60 을 반올림한다 (0.5, 1.5, 6.7 등 모두 정확)
     constexpr double kTicksPerSec = 60.0;
 
     constexpr float kWallDepth   = 64.f;
@@ -41,7 +40,7 @@ namespace
         std::memcpy(&bits, &_value, sizeof(bits));
         MixU64_(_hash, bits);
     }
-}   // namespace
+}
 
 StageRunner::StageRunner(
     const StageData& _data,
@@ -60,10 +59,6 @@ int64_t StageRunner::ToTicks_(
 {
     return static_cast<int64_t>(std::llround(static_cast<double>(_seconds) * kTicksPerSec));
 }
-
-// ===========================================
-//  초기화
-// ===========================================
 
 void StageRunner::Begin()
 {
@@ -123,10 +118,6 @@ std::optional<Vec2> StageRunner::ResolvePlayerStart() const
     }
     return Vec2 { start.x, y };
 }
-
-// ===========================================
-//  카메라 보조
-// ===========================================
 
 Aabb StageRunner::CurrentViewRect_() const
 {
@@ -201,10 +192,6 @@ ScreenWalls StageRunner::MakeScreenWalls() const
     return walls;
 }
 
-// ===========================================
-//  Tick
-// ===========================================
-
 void StageRunner::Tick()
 {
     if (m_bFinished)
@@ -214,7 +201,6 @@ void StageRunner::Tick()
 
     CancelAbortables_();
 
-    // 1) 섹션 트리거: 플레이어 x 가 triggerX 를 엄격히 넘으면, 배열 순서대로, 각 1회
     const Vec2 feet = m_pHost->PlayerFeet();
     while (m_nextSection < static_cast<int>(m_pData->sections.size()) && feet.x > m_pData->sections[static_cast<size_t>(m_nextSection)].triggerX && !m_bFinished)
     {
@@ -222,16 +208,12 @@ void StageRunner::Tick()
         FireSection_(index, false);
     }
 
-    // 2) 예약 큐 (지연 액션, 웨이브)
     ProcessPending_();
 
-    // 3) 경계 곡선
     ProcessCurves_();
 
-    // 4) 게이트
     ProcessGates_();
 
-    // 5) 카메라 추적
     m_pCamera->SetTarget(ComputeCameraTarget(m_pHost->PlayerFeet()));
     m_pCamera->Update(kStepSec);
 
@@ -244,7 +226,6 @@ void StageRunner::CancelAbortables_()
     {
         return;
     }
-    // 게임 오버: abortOnGameOver 게이트 자체와 그 게이트가 예약한 액션을 취소한다 (레거시 피날레)
     std::erase_if(m_gates, [](const GateState& _gate) { return _gate.bAbortOnGameOver; });
     std::erase_if(m_pending, [](const PendingItem& _item) { return _item.bAbortOnGameOver; });
 }
@@ -256,7 +237,6 @@ void StageRunner::ProcessPending_()
         return;
     }
 
-    // 지금 실행할 항목을 (due, seq) 순으로 꺼낸다. 실행 중 새로 예약되는 항목은 due > now 이므로 다음 틱 이후이다.
     slug::Vector<PendingItem> ready;
     for (size_t i = 0; i < m_pending.size();)
     {
@@ -289,7 +269,7 @@ void StageRunner::ProcessPending_()
         {
             if (item.seq < m_waveCutoffSeq)
             {
-                continue;   // clear 로 취소된 웨이브
+                continue;
             }
             ExecSpawn_(item.pWave->spawn, ctx, true);
         }
@@ -308,7 +288,7 @@ void StageRunner::ProcessCurves_()
 {
     if (HasPermanentLock())
     {
-        return;   // 영구 잠금 이후 boundsCurves 무시
+        return;
     }
     const float playerX = m_pHost->PlayerFeet().x;
     bool        bChanged = false;
@@ -336,9 +316,9 @@ bool StageRunner::IsGateSatisfied_(
         const SpawnRecord* pRecord = FindRecord_(stageId);
         if (!pRecord)
         {
-            return false;   // 아직 스폰되지 않음: 기다린다
+            return false;
         }
-        for (const SpawnId id: pRecord->ids)   // 비어 있으면(건너뜀) 만족
+        for (const SpawnId id: pRecord->ids)
         {
             const bool bDone = action.until == eGateUntil::DestroyFinished ? m_pHost->IsDestroyFinished(id) : m_pHost->IsDefeated(id);
             if (!bDone)
@@ -368,13 +348,8 @@ void StageRunner::ProcessGates_()
         ctx.bSilent      = false;
         ctx.bAbort       = gate.bAbortOnGameOver;
         RunActions_(gate.pAction->actions, ctx);
-        // m_gates 가 바뀌었을 수 있다(새 게이트/clear). i 는 제거한 자리에서 계속한다.
     }
 }
-
-// ===========================================
-//  섹션 / 액션 실행
-// ===========================================
 
 void StageRunner::FireSection_(
     const int  _index,
@@ -558,7 +533,6 @@ void StageRunner::ExecLock_(
     entry.bPermanent = _action.bPermanent;
     m_locks.push_back(entry);
 
-    // 글라이드: 카메라 중심을 락 중심으로 옮긴 뒤 락을 건다 (silent 에서는 즉시)
     if (_action.glide > 0.f && !_ctx.bSilent && !_action.rect.bCurrent)
     {
         m_pCamera->LockWithGlide(entry.rect, _action.glide);
@@ -571,13 +545,12 @@ void StageRunner::ExecLock_(
 
 void StageRunner::ExecUnlock_()
 {
-    // 가장 최근의 비영구 잠금 하나를 푼다
     for (size_t i = m_locks.size(); i > 0; --i)
     {
         if (!m_locks[i - 1].bPermanent)
         {
             m_locks.erase(m_locks.begin() + static_cast<std::ptrdiff_t>(i - 1));
-            m_pCamera->Unlock();   // 보류 중인 글라이드 락도 취소
+            m_pCamera->Unlock();
             ApplyCameraLock_();
             return;
         }
@@ -589,7 +562,6 @@ void StageRunner::ExecClear_(
 {
     if (_action.bClearWaves)
     {
-        // 대기 웨이브와 열린 게이트를 정리한다 (지연 액션은 유지)
         m_waveCutoffSeq = m_nextSeq;
         std::erase_if(m_pending, [](const PendingItem& _item) { return _item.pWave != nullptr; });
         m_gates.clear();
@@ -601,10 +573,6 @@ void StageRunner::ExecClear_(
         m_pHost->ClearEntities(filter);
     }
 }
-
-// ===========================================
-//  spawn 해소
-// ===========================================
 
 StageRunner::SpawnRecord* StageRunner::FindRecord_(
     const slug::StringView _stageId)
@@ -679,7 +647,6 @@ void StageRunner::ExecSpawn_(
         request.sprite       = _spec.sprite;
         request.pParams      = &_spec.params;
 
-        // --- 위치 해소 ---
         Vec2 position = { 0.f, 0.f };
         bool         bSkip    = false;
         if (_spec.bHasCamera)
@@ -713,7 +680,7 @@ void StageRunner::ExecSpawn_(
                 }
                 else
                 {
-                    bSkip = true;   // 레거시: 지면이 없으면 스폰하지 않는다
+                    bSkip = true;
                 }
             }
         }
@@ -723,7 +690,6 @@ void StageRunner::ExecSpawn_(
             position.y += static_cast<float>(i) * _spec.repeat.stepY;
         }
 
-        // --- 원점 규칙 ---
         if (_spec.origin == eOrigin::LegacyCenter && (_spec.kind == eEntityKind::Enemy || _spec.kind == eEntityKind::Npc))
         {
             request.halfHeight   = _spec.halfHeight;
@@ -767,10 +733,6 @@ void StageRunner::ExecSpawn_(
     }
 }
 
-// ===========================================
-//  워프
-// ===========================================
-
 bool StageRunner::WarpToSection(
     const slug::StringView _id)
 {
@@ -796,7 +758,6 @@ bool StageRunner::WarpToSection(
         return false;
     }
 
-    // 진행 중이던 연출/대기 상태를 정리한다 (워프 후 월드는 "그 지점까지 조용히 진행한 상태")
     m_pending.clear();
     m_gates.clear();
     m_waveCutoffSeq = m_nextSeq;
@@ -811,7 +772,6 @@ bool StageRunner::WarpToSection(
         ++m_nextSection;
     }
 
-    // 플레이어: 대상 섹션 triggerX + 1, 지면으로
     const float  targetX = m_pData->sections[static_cast<size_t>(_index)].triggerX + 1.f;
     const Aabb   bounds  = GetEffectiveBounds();
     Vec2 feet    = m_pHost->PlayerFeet();
@@ -822,16 +782,11 @@ bool StageRunner::WarpToSection(
     }
     m_pHost->WarpPlayer(feet);
 
-    // 카메라: 곡선 경계를 새 위치로 평가하고 즉시 맞춘다
     ProcessCurves_();
     m_pCamera->SetTarget(ComputeCameraTarget(feet));
     m_pCamera->SnapToTarget();
     return true;
 }
-
-// ===========================================
-//  조회 / 해시
-// ===========================================
 
 std::optional<float> StageRunner::GetNextTriggerX() const
 {
@@ -919,5 +874,4 @@ uint64_t StageRunner::HashState() const
     MixFloat_(hash, center.y);
     return hash;
 }
-
-}   // namespace slug
+}

@@ -5,11 +5,6 @@
 using namespace slug;
 using namespace slugtest;
 
-// ===========================================
-//  버스 중간보스 (mb_truck): 트리거 개방 / 포탄 / 병사 투하 / 파손 단계 / 사망
-//   버스 원점 = 발 - (0,123). 트리거 = 원점 + (-215, 0) 상자 60x260 → 발 x 385 부근에서 닿는다.
-// ===========================================
-
 namespace
 {
     constexpr float kBusX      = 600.f;
@@ -24,7 +19,6 @@ namespace
         return _rig.SpawnAt("mb_truck", { kBusX, kBusFeetY }, params);
     }
 
-    // 플레이어를 트리거에 한 틱 댄다 → 개방 (전투 시작)
     void OpenBus(BossRig& _rig)
     {
         _rig.SetPlayer({ kTriggerX, kBusFeetY });
@@ -40,7 +34,6 @@ namespace
         return _rig.World().CountAlive(filter);
     }
 
-    // 살아 있는 이 버스의 병사 핸들 목록
     std::vector<EnemyHandle> SoldierHandles(BossRig& _rig, const EnemyHandle _bus)
     {
         std::vector<EnemyHandle> out;
@@ -55,7 +48,6 @@ namespace
         return out;
     }
 
-    // 피해 후 한 틱 (파손 단계는 버스의 틱에서 갱신된다)
     void HitTick(BossRig& _rig, const uint32_t _id, const int _damage)
     {
         _rig.Hit(_id, _damage);
@@ -71,11 +63,7 @@ namespace
         }
         return n;
     }
-}   // namespace
-
-// ===========================================
-//  개방 / 트리거
-// ===========================================
+}
 
 TEST(Bus, StaysClosedUntilThePlayerTouchesTheTrigger)
 {
@@ -114,10 +102,6 @@ TEST(Bus, TheTriggerOnlyCountsWhileThePlayerIsAlive)
     rig.Frame();
     EXPECT_EQ(rig.Find(bus)->state, 0);
 }
-
-// ===========================================
-//  포탄 / 병사 투하 타이머
-// ===========================================
 
 TEST(Bus, ShellsFireTwoSecondsIntoTheBattleThenEveryThreeSeconds)
 {
@@ -208,7 +192,6 @@ TEST(Bus, AtMostTwoDropsAreAliveAtOnceAndKillingThemFreesSlots)
     rig.Run(1200);   // 3 s + 5 s 간격 여러 번
     EXPECT_EQ(SoldiersAlive(rig, bus), 2);   // 생존 상한 2
 
-    // 살아 있는 병사를 처치하면 다음 투하 시각에 빈 칸이 채워진다
     for (const EnemyHandle h: SoldierHandles(rig, bus))
     {
         rig.Hit(h.id, 1);
@@ -225,7 +208,7 @@ TEST(Bus, TotalDropsAreCappedAtEightEvenWhenAllAreKilled)
     const EnemyHandle bus = SpawnBus(rig);
     rig.Run(5);
     OpenBus(rig);
-    for (int i = 0; i < 60 * 60; ++i)   // 60 s 동안 매 틱 살아 있는 병사를 처치 (3 s, 5 s 간격 -> 8 명까지)
+    for (int i = 0; i < 60 * 60; ++i)
     {
         for (const EnemyHandle h: SoldierHandles(rig, bus))
         {
@@ -237,10 +220,6 @@ TEST(Bus, TotalDropsAreCappedAtEightEvenWhenAllAreKilled)
     EXPECT_EQ(CountDiedWithTag(rig, bus.id), 8);
     EXPECT_EQ(SoldiersAlive(rig, bus), 0);
 }
-
-// ===========================================
-//  파손 단계 / 사망
-// ===========================================
 
 TEST(Bus, DamageStagesAdvanceEveryEighthOfItsHitPoints)
 {
@@ -271,7 +250,7 @@ TEST(Bus, DamageWorksWhileTheDoorIsStillClosed)
     HitTick(rig, bus.id, 50);
     EXPECT_EQ(rig.Find(bus)->health.hp, 200);
     EXPECT_EQ(rig.Find(bus)->state, 0);    // 여전히 닫힘
-    EXPECT_EQ(rig.Find(bus)->aux, 1);      // 200 * 8 = 1600 <= 250 * 7 = 1750 -> 1단계 (2단계는 <= 1500)
+    EXPECT_EQ(rig.Find(bus)->aux, 1);
 }
 
 TEST(Bus, DeathEmitsOneDiedEventAndStopsAllAttacks)
@@ -293,7 +272,7 @@ TEST(Bus, DeathEmitsOneDiedEventAndStopsAllAttacks)
     EXPECT_TRUE(rig.World().IsDefeated(bus));
 
     rig.Run(900);
-    EXPECT_EQ(rig.Find(bus)->shotsFired, shotsBefore);     // 포탄 중단
+    EXPECT_EQ(rig.Find(bus)->shotsFired, shotsBefore);
     EXPECT_EQ(rig.CountEventsOf(eEnemyEventKind::Died, bus), 1);   // Died 는 한 번
     EXPECT_EQ(SoldiersAlive(rig, bus), 0);
 }

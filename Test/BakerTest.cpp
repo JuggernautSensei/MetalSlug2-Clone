@@ -12,14 +12,9 @@
 
 using namespace slug::baker;
 
-// ===========================================
-//  트림 바운딩 박스
-// ===========================================
-
 TEST(BakerTrim, FindsTightBoundsInsideCell)
 {
     Image img = Image::Make(20, 10);
-    // 셀 (10,0,10,10) 안에 (13,2)~(15,6) 불투명
     for (int y = 2; y <= 6; ++y)
     {
         for (int x = 13; x <= 15; ++x)
@@ -80,15 +75,8 @@ TEST(BakerAlpha, ColorKeyMakesMagentaTransparentAndRestOpaque)
     EXPECT_EQ(img.At(1, 0)[0], 10);
 }
 
-// ===========================================
-//  피벗 계산 (레거시 예시: Player_Stand_Idle_Lower_Right 류)
-// ===========================================
-
 TEST(BakerPivot, LegacyFormulaHandComputed)
 {
-    // cell 85x58, offset (20, -19), trim (5, 8)
-    // 원점(셀 기준) = (85/2 - 20, 58/2 + 19) = (42 - 20, 29 + 19) = (22, 48)
-    // pivot = (22 - 5, 48 - 8) = (17, 40)
     const Pivot p = ComputePivot(85, 58, 20, -19, 5, 8);
     EXPECT_EQ(p.x, 17);
     EXPECT_EQ(p.y, 40);
@@ -96,7 +84,6 @@ TEST(BakerPivot, LegacyFormulaHandComputed)
 
 TEST(BakerPivot, OddCellWidthUsesIntegerDivision)
 {
-    // 75/2 = 37 (정수 나눗셈). offset (-10,-10), trim 0 -> (47, 34 + 10 = 44)  (69/2 = 34)
     const Pivot p = ComputePivot(75, 69, -10, -10, 0, 0);
     EXPECT_EQ(p.x, 47);
     EXPECT_EQ(p.y, 44);
@@ -104,8 +91,6 @@ TEST(BakerPivot, OddCellWidthUsesIntegerDivision)
 
 TEST(BakerPivot, DrawingBackReproducesLegacyPosition)
 {
-    // 레거시: left = pos.x - cellW/2 + offX, 트림된 프레임 좌상단 = left + trimX.
-    // 새 규칙: topLeft = origin - pivot. 두 값이 같아야 한다.
     const int      posX = 300, posY = 200;
     const uint32_t cellW = 79, cellH = 65;
     const int      offX = -5, offY = -8, trimX = 7, trimY = 3;
@@ -127,7 +112,6 @@ TEST(BakerPivot, StripWidthIsDividedByEndPlusOne)
 
 TEST(BakerDrift, ConstantAnchorHasZeroDrift)
 {
-    // 프레임 크기가 달라도 (원점 기준) 바닥 중앙이 같으면 드리프트 0
     const FrameBox boxes[] = {
         { 40, 50, 20, 50, false },
         { 44, 46, 22, 46, false },
@@ -155,7 +139,7 @@ TEST(BakerDrift, LoopWrapIsIncluded)
     const FrameBox boxes[] = {
         { 10, 10, 5, 10, false },
         { 10, 10, 5, 10, false },
-        { 10, 10, 9, 10, false },   // 앵커 X: -5+5=0 -> -9+5=-4, 마지막 -> 처음 복귀 시 4
+        { 10, 10, 9, 10, false },
     };
     EXPECT_DOUBLE_EQ(ComputeAnchorDrift(boxes, false, 0).x, 4.0);
     EXPECT_DOUBLE_EQ(ComputeAnchorDrift(boxes, true, 0).x, 4.0);
@@ -163,10 +147,6 @@ TEST(BakerDrift, LoopWrapIsIncluded)
     const FrameBox flat[] = { { 10, 10, 5, 10, false }, { 10, 10, 5, 10, false } };
     EXPECT_DOUBLE_EQ(ComputeAnchorDrift(flat, true, 0).max, 0.0);
 }
-
-// ===========================================
-//  패커
-// ===========================================
 
 namespace
 {
@@ -181,11 +161,10 @@ namespace
         {
             return false;
         }
-        // _gap 만큼 부풀려서 겹침 검사 (간격 보장 확인)
         return _pa.x < _pb.x + _sb.w + _gap && _pb.x < _pa.x + _sa.w + _gap
             && _pa.y < _pb.y + _sb.h + _gap && _pb.y < _pa.y + _sa.h + _gap;
     }
-}   // namespace
+}
 
 TEST(BakerPacker, NoOverlapKeepsGapAndStaysInPage)
 {
@@ -237,10 +216,6 @@ TEST(BakerPacker, OversizedRectIsNotPlacedAndZeroSizeIsFree)
     EXPECT_EQ(result.pageCount, 1);
 }
 
-// ===========================================
-//  지형 비트마스크
-// ===========================================
-
 TEST(BakerGround, ThresholdRules)
 {
     const GroundThreshold th;
@@ -289,10 +264,6 @@ TEST(BakerGround, FileHeaderLayout)
     EXPECT_EQ(file[12], 0xAB);
     EXPECT_EQ(file[13], 0xCD);
 }
-
-// ===========================================
-//  레거시 파서 / JSON / BMP
-// ===========================================
 
 TEST(BakerParser, ParsesAnimeBlocksWithCrlf)
 {
@@ -361,7 +332,6 @@ TEST(BakerJson, EscapesAndNests)
 
 TEST(BakerBmp, Decodes32BitWithAlphaBottomUp)
 {
-    // 2x2, 32bpp BI_RGB, bottom-up. 행0(아래) = (B,G,R,A): 빨강 A=255, 초록 A=0 / 행1(위) = 파랑 A=128, 마젠타 A=255
     std::vector<uint8_t> f(14 + 40 + 16, 0);
     f[0] = 'B'; f[1] = 'M';
     f[10] = 54;
@@ -374,12 +344,10 @@ TEST(BakerBmp, Decodes32BitWithAlphaBottomUp)
     ASSERT_TRUE(result.HasValue());
     const Image& img = *result;
     EXPECT_TRUE(img.bSourceHasAlpha);
-    // 위쪽 행 (파일의 두 번째 행)
     EXPECT_EQ(img.At(0, 0)[2], 255);   // 파랑
     EXPECT_EQ(img.At(0, 0)[3], 128);
     EXPECT_EQ(img.At(1, 0)[0], 255);   // 마젠타 R
     EXPECT_EQ(img.At(1, 0)[2], 255);   // 마젠타 B
-    // 아래쪽 행
     EXPECT_EQ(img.At(0, 1)[0], 255);   // 빨강
     EXPECT_EQ(img.At(0, 1)[3], 255);
     EXPECT_EQ(img.At(1, 1)[1], 255);   // 초록

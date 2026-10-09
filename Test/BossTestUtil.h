@@ -19,12 +19,6 @@
 #include "Render/SpriteLibrary.h"
 #include "World/Constants.h"
 
-// ===========================================
-//  보스 테스트 도우미
-//   Enemies.json + Boss.json 만 담은 임시 폴더를 만들어 읽는다 (다른 정의 파일의 진행 중 변경에 흔들리지 않게).
-//   BossRig 는 SandboxState 없이 EnemyWorld / CombatSystem / ProjectileSystem 을 SandboxState::Tick 과 같은 순서로 돌린다.
-// ===========================================
-
 namespace slugtest
 {
 
@@ -32,8 +26,6 @@ using namespace slug;
 
 inline constexpr uint32_t kTestPlayerOwner = 1;
 
-// Enemies.json + Boss.json 만 담은 임시 폴더를 만든다 (샌드박스 테스트의 enemyDefPath 로도 쓴다). 실패하면 빈 경로.
-//   호출마다 새 폴더를 쓴다 (다른 테스트/프로세스가 잡고 있는 파일과 겹치지 않게). 복사는 몇 번 재시도한다.
 inline std::filesystem::path BossDefsDir()
 {
     static int sCounter = 0;
@@ -56,7 +48,6 @@ inline std::filesystem::path BossDefsDir()
     return dir;
 }
 
-// Enemies.json + Boss.json 만 읽는다. 실패하면 false.
 inline bool LoadBossLibrary(
     EnemyDefLibrary& _out)
 {
@@ -74,7 +65,6 @@ inline bool LoadBossLibrary(
     return true;
 }
 
-// 테스트용 틱 구동기. 플레이어는 가짜 몸통 상자 하나 (bInvulnerable 로 무적 표현).
 class BossRig
 {
 public:
@@ -96,17 +86,14 @@ public:
     [[nodiscard]] const std::vector<EnemyEvent>& Events() const { return m_events; }
     [[nodiscard]] const std::vector<HitEvent>&   PlayerHits() const { return m_playerHits; }
 
-    // 플레이어 위치/상태 (다음 Frame 부터 적용)
     void SetPlayer(const Vec2 _feet, const bool _bAlive = true)
     {
         m_feet   = _feet;
         m_bAlive = _bAlive;
     }
 
-    // 플레이어 몸통은 무적(true) 이면 피격 판정에서 빠진다. false 면 탄/포탄이 맞는다 (PlayerHits 로 기록)
     void SetPlayerInvulnerable(const bool _b) { m_bInvulnerable = _b; }
 
-    // SandboxState::Tick 과 같은 순서: Hurtbox 등록 → 적 틱 → 투사체 → 판정 → 이벤트 적용
     void Frame()
     {
         m_ctx.player.feet          = m_feet;
@@ -154,7 +141,6 @@ public:
 
     [[nodiscard]] int Tick() const { return m_tick; }
 
-    // 이벤트 종류별 개수 (누적)
     [[nodiscard]] int CountEvents(const eEnemyEventKind _kind) const
     {
         int n = 0;
@@ -165,7 +151,6 @@ public:
         return n;
     }
 
-    // 소유자가 _id 인 적의 이벤트 개수 (누적)
     [[nodiscard]] int CountEventsOf(const eEnemyEventKind _kind, const EnemyHandle _h) const
     {
         int n = 0;
@@ -176,7 +161,6 @@ public:
         return n;
     }
 
-    // 피해 한 번 (소유자 _target, 공격 종류 Bullet)
     void Hit(const uint32_t _target, const int _damage)
     {
         HitEvent ev;
@@ -193,7 +177,6 @@ public:
         }
     }
 
-    // 여러 틱 동안 _count 개 이벤트 중 Enemy 종류 개수를 세는 대신 현재 적 목록에서 찾는다
     [[nodiscard]] const Enemy* Find(const EnemyHandle _h) const { return m_world.Get(_h); }
 
     [[nodiscard]] EnemyHandle SpawnAt(const slug::StringView _def, const Vec2 _feet, const SpawnParams& _params = {})
@@ -216,10 +199,8 @@ private:
     std::vector<HitEvent>     m_playerHits  = {};
 };
 
-// 보스 아레나 (640x448, 바닥 378): 최종보스 테스트 기본값
 inline Aabb BossArena()
 {
     return Aabb::FromMinMax({ 0.f, 0.f }, { 640.f, 448.f });
 }
-
-}   // namespace slugtest
+}

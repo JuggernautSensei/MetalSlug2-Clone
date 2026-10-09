@@ -10,11 +10,6 @@
 #include "Game/Stage/StageState.h"
 #include "Game/Stage/StagePlaceholders.h"
 
-// ===========================================
-//  stage0 상태 (헤드리스). Assets/Stage/Stage0.json + Baked 지면을 실제로 로드해 SimRunner 로 돌린다.
-//   Baked 가 없으면 StageState 가 평지로 대체하므로 지면 y 검사는 느슨하게 둔다.
-// ===========================================
-
 namespace
 {
 using namespace slug;
@@ -58,8 +53,8 @@ private:
     slug::RngMt19937 m_rng;
     GameContext     m_ctx = {};
     InputFrame      m_frame = {};
-    StageState*     m_pState = nullptr;   // m_runner 가 소유한다
-    std::unique_ptr<SimRunner> m_runner = nullptr;   // 가장 마지막에 파괴되어야 OnExit 이 m_ctx 를 본다
+    StageState*     m_pState = nullptr;
+    std::unique_ptr<SimRunner> m_runner = nullptr;
 };
 
 SpawnRequest MakeRequest(
@@ -83,17 +78,12 @@ HitEvent MakeHit(
     event.damage = _damage;
     return event;
 }
-
-}   // namespace
-
-// ===========================================
-//  로드 / 시작
-// ===========================================
+}
 
 TEST(StageState, LoadsStage0AndStartsAtTheScriptedPlayerStart)
 {
     StageSim sim;
-    sim.Step();   // OnEnter 가 끝난 뒤 첫 틱 (섹션 0 "intro" 가 발동)
+    sim.Step();
 
     StageState& state = sim.State();
     ASSERT_TRUE(state.IsLoaded());
@@ -118,7 +108,6 @@ TEST(StageState, PlayerLandsOnTheGroundAfterTheStart)
 
 TEST(StageState, HoldingRightAdvancesThroughSectionsAndTheCameraNeverScrollsBack)
 {
-    // 트럭(고체 소품)이 길을 막으므로 봇은 오른쪽으로 걸으며 주기적으로 쏜다. 적 피해는 무적(디버그)으로 막는다.
     StageSim sim;
     sim.Hold(eAction::Right);
     float lastCamX = -1.f;
@@ -142,14 +131,10 @@ TEST(StageState, HoldingRightAdvancesThroughSectionsAndTheCameraNeverScrollsBack
     EXPECT_GE(sim.State().GetRunner().GetNextSectionIndex(), 2);   // intro, street 발동
 }
 
-// ===========================================
-//  디버그 워프 (F1 켜진 상태에서만)
-// ===========================================
-
 TEST(StageStateDebug, F5WarpsToTheNextSectionOnlyWithDebugDraw)
 {
     StageSim sim { true };
-    sim.Step();                       // 섹션 0 발동 → 다음은 1 ("street", triggerX 750)
+    sim.Step();
     ASSERT_EQ(sim.State().GetRunner().GetNextSectionIndex(), 1);
 
     sim.Ctx().debugWarp = 1;          // F5
@@ -180,10 +165,6 @@ TEST(StageStateDebug, F6WarpsToTheBossArena)
     EXPECT_TRUE(sim.State().GetRunner().GetNextSectionIndex() >= 20);
 }
 
-// ===========================================
-//  StagePlaceholders 단위
-// ===========================================
-
 TEST(StagePlaceholders, HitsKillAtZeroHpThenTheEntityIsRemovedAfterTheDeathWindow)
 {
     StagePlaceholders host;
@@ -204,7 +185,6 @@ TEST(StagePlaceholders, HitsKillAtZeroHpThenTheEntityIsRemovedAfterTheDeathWindo
     EXPECT_TRUE(host.IsDefeated(id));
     EXPECT_FALSE(host.IsDestroyFinished(id));
 
-    // 죽은 뒤에는 다시 맞아도 처치로 세지 않는다
     EXPECT_EQ(host.ApplyEvents(killing), 0);
 
     for (int i = 0; i < kPlaceholderDeathTicks; ++i)
@@ -229,7 +209,7 @@ TEST(StagePlaceholders, NonHittableKindsAreNeverDefeatedUntilCleared)
     EntityFilter filter;
     filter.layerMask = LayerBit(eStageLayer::Item);
     host.ClearEntities(filter);
-    EXPECT_TRUE(host.IsDefeated(item));   // 제거된 ID 는 격파로 본다
+    EXPECT_TRUE(host.IsDefeated(item));
     EXPECT_FALSE(host.IsDefeated(decor));
 }
 

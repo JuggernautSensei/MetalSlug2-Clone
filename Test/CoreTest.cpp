@@ -5,10 +5,6 @@
 
 using namespace slug;
 
-// ===========================================
-//  FixedStepClock
-// ===========================================
-
 TEST(FixedStepClock, OneStepPerSixtiethOfSecond)
 {
     FixedStepClock clock;
@@ -25,7 +21,6 @@ TEST(FixedStepClock, SubStepDeltasAccumulate)
 
 TEST(FixedStepClock, SameStepCountAtDifferentFrameRates)
 {
-    // 1초를 60fps / 144fps / 30fps 로 쪼개도 총 스텝 수는 60 (오차 1 이내)
     const double frameRates[] = { 60.0, 144.0, 30.0, 240.0 };
     for (const double fps: frameRates)
     {
@@ -54,10 +49,6 @@ TEST(FixedStepClock, AlphaIsFractionOfStep)
     EXPECT_NEAR(clock.GetAlpha(), 0.25f, 1e-3f);
 }
 
-// ===========================================
-//  InputHistory
-// ===========================================
-
 namespace
 {
     InputFrame Held(
@@ -67,7 +58,7 @@ namespace
         frame.Set(_action, true);
         return frame;
     }
-}   // namespace
+}
 
 TEST(InputHistory, PressEdgeIsDetectedOnFirstFrame)
 {
@@ -114,7 +105,6 @@ TEST(InputHistory, ConsumedPressIsNotReported)
     history.ConsumePress(eAction::Jump);
     EXPECT_FALSE(history.WasPressedWithin(eAction::Jump, 4));
 
-    // 새 눌림은 다시 감지된다.
     history.Push({});
     history.Push(Held(eAction::Jump));
     EXPECT_TRUE(history.WasPressedWithin(eAction::Jump, 2));

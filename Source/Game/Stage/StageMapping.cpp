@@ -6,7 +6,6 @@
 #include <fstream>
 #include <vector>
 
-// stb_image: SpriteBatch.cpp 와 같은 방식으로 static 구현을 이 번역 단위에도 둔다 (심볼 충돌 없음).
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -45,7 +44,7 @@ namespace
         }
         return box;
     }
-}   // namespace
+}
 
 PropSpawnParams MakePropSpawnParams(
     const ParamValue* _pParams)
@@ -132,8 +131,6 @@ std::optional<GroundMap> LoadGroundPatchMask(
         return std::nullopt;
     }
 
-    // 고체 규칙 = 레거시 RGB_BLUE (파란 픽셀). 알파 < 128 은 공기. 흰 픽셀(집 픽셀맵)은 공기이므로
-    // 집 파괴 패치는 발자국 안의 지면을 비운다 (알파 불투명 전부를 고체로 보면 발자국 전체가 벽이 된다).
     GroundMap mask = GroundMap::MakeEmpty(width, height);
     for (int y = 0; y < height; ++y)
     {
@@ -153,5 +150,4 @@ Vec2 ItemFeetFromCenter(
 {
     return { _center.x, _center.y + 16.f };
 }
-
-}   // namespace slug
+}

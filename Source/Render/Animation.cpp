@@ -24,10 +24,6 @@ namespace
         return static_cast<int64_t>(std::llround(_sec * kUnitsPerSec));
     }
 
-    // ===========================================
-    //  JSON 헬퍼 (숫자는 모두 double 로 읽어 정수 형태 JSON 과 실수 형태 JSON 을 모두 허용)
-    // ===========================================
-
     [[nodiscard]] bool ReadInt_(
         const slug::JsonReader& _object,
         const slug::StringView  _key,
@@ -130,8 +126,6 @@ namespace
             return slug::Error { eError::InvalidData };
         }
 
-        // 레거시 데이터에는 OptionIndex 가 프레임 수를 넘는 항목이 있다 (Baker 리포트 LoopStartOutOfRange).
-        // 거부하면 라이브러리 전체가 로드되지 않으므로 마지막 프레임으로 클램프한다.
         if (clip.loopStart < 0 || clip.loopStart >= clip.GetFrameCount())
         {
             clip.loopStart = slug::Clamp(clip.loopStart, 0, clip.GetFrameCount() - 1);
@@ -192,20 +186,12 @@ namespace
         }
         return pages;
     }
-}   // namespace
-
-// ===========================================
-//  AnimClip
-// ===========================================
+}
 
 int64_t AnimClip::GetFrameDurationUnits() const
 {
     return ToUnits_(static_cast<double>(frameDuration));
 }
-
-// ===========================================
-//  AnimationLibrary
-// ===========================================
 
 slug::Result<AnimationLibrary> AnimationLibrary::LoadFromJson(
     const slug::StringView _animJson)
@@ -221,7 +207,6 @@ slug::Result<AnimationLibrary> AnimationLibrary::LoadFromJson(
 slug::Result<AnimationLibrary> AnimationLibrary::LoadFromDirectory(
     const slug::FilePath& _bakedRoot)
 {
-    // --- manifest.json ---
     slug::Result<slug::JsonDeserializer> manifestDoc = slug::JsonDeserializer::LoadFromFile(_bakedRoot / "manifest.json");
     if (!manifestDoc)
     {
@@ -250,7 +235,6 @@ slug::Result<AnimationLibrary> AnimationLibrary::LoadFromDirectory(
         return pages.GetError();
     }
 
-    // --- anim.json ---
     slug::Result<slug::JsonDeserializer> animDoc = slug::JsonDeserializer::LoadFromFile(_bakedRoot / animFile);
     if (!animDoc)
     {
@@ -319,10 +303,6 @@ const AnimClip* AnimationLibrary::FindClip(
 {
     return GetOrNull(Find(_name));
 }
-
-// ===========================================
-//  AnimPlayer
-// ===========================================
 
 void AnimPlayer::Play(
     const AnimId _clip,
@@ -431,7 +411,6 @@ void AnimPlayer::SyncPhase(
         return;
     }
 
-    // 정수 비례식: 반올림 오차 없이 같은 비율 위치로 옮긴다.
     m_bFinished = false;
     m_timeUnits = _other.m_timeUnits * totalUnits / otherTotalUnits;
     Settle_(_clip);
@@ -464,5 +443,4 @@ const AnimFrame* AnimPlayer::GetFrameData(
     }
     return &pClip->frames[static_cast<size_t>(m_frame)];
 }
-
-}   // namespace slug
+}

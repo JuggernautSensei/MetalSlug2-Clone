@@ -32,7 +32,7 @@ namespace
         const int index = static_cast<int>(static_cast<float>(_ageTicks) * kTickSec / pClip->frameDuration);
         return &pClip->frames[static_cast<size_t>(_bLoop ? index % count : std::min(index, count - 1))];
     }
-}   // namespace
+}
 
 bool SubmitPlayerBullet(
     SpriteBatch&        _sprites,
@@ -145,5 +145,4 @@ void PlayWeaponPickupSfx(
         default: break;
     }
 }
-
-}   // namespace slug
+}

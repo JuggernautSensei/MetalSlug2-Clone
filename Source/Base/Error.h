@@ -45,5 +45,4 @@ public:
 private:
     eError m_code = eError::Ok;
 };
-
-}   // namespace slug
+}

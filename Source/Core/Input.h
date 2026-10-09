@@ -8,11 +8,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  게임 액션
-// ===========================================
-
 enum class eAction : uint8_t
 {
     Left,
@@ -23,16 +18,11 @@ enum class eAction : uint8_t
     Jump,
     Bomb,
     Pause,
-    Start,   // 메뉴/타이틀 시작 (Enter, Space). 게임 플레이 입력이 아니다
+    Start,
     Count
 };
 
 inline constexpr size_t kActionCount = static_cast<size_t>(eAction::Count);
-
-// ===========================================
-//  InputFrame
-//   고정 스텝 1틱 동안의 입력 스냅샷. 리플레이는 이 값만 기록하면 된다.
-// ===========================================
 
 struct InputFrame
 {
@@ -55,12 +45,6 @@ struct InputFrame
     [[nodiscard]] constexpr bool operator==(const InputFrame&) const = default;
 };
 
-// ===========================================
-//  InputSystem
-//   SDL 키 이벤트를 모아 두었다가 스텝마다 Sample() 로 액션 상태를 만든다.
-//   엣지(눌림/뗌) 판정은 InputHistory 가 연속된 InputFrame 으로 계산한다.
-// ===========================================
-
 class InputSystem
 {
 public:
@@ -78,11 +62,6 @@ private:
     slug::ARRAY<bool, kKeyCapacity> m_keyDown = {};
 };
 
-// ===========================================
-//  InputHistory
-//   최근 N 스텝의 입력을 보관하여 엣지/버퍼링 질의를 제공한다.
-// ===========================================
-
 class InputHistory
 {
 public:
@@ -94,22 +73,19 @@ public:
     [[nodiscard]] const InputFrame& GetCurrent() const;
 
     [[nodiscard]] bool IsHeld(eAction _action) const;
-    [[nodiscard]] bool WasPressed(eAction _action) const;    // 이번 스텝에 눌림
-    [[nodiscard]] bool WasReleased(eAction _action) const;   // 이번 스텝에 뗌
+    [[nodiscard]] bool WasPressed(eAction _action) const;
+    [[nodiscard]] bool WasReleased(eAction _action) const;
 
-    // 최근 _frames 스텝 이내에 눌림이 있었는가 (입력 버퍼)
     [[nodiscard]] bool WasPressedWithin(eAction _action, int _frames) const;
 
-    // 눌림 버퍼 소비 (같은 눌림이 두 번 처리되지 않도록 현재까지의 눌림 기록을 지운다)
     void ConsumePress(eAction _action);
 
 private:
     [[nodiscard]] const InputFrame& GetAgo_(size_t _ago) const;
 
     slug::ARRAY<InputFrame, kCapacity> m_frames          = {};
-    slug::ARRAY<uint16_t, kCapacity>   m_consumedPresses = {};   // 스텝별 소비된 눌림 마스크
+    slug::ARRAY<uint16_t, kCapacity>   m_consumedPresses = {};
     size_t                            m_head            = 0;
     size_t                            m_count           = 0;
 };
-
-}   // namespace slug
+}

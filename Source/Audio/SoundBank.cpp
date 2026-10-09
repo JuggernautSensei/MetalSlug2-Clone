@@ -51,7 +51,7 @@ namespace
         }
         return bank;
     }
-}   // namespace
+}
 
 slug::Result<SoundBank> SoundBank::LoadFromJson(
     const slug::StringView _json,
@@ -101,5 +101,4 @@ int SoundBank::FindIndex(
     const auto it = m_nameToIndex.find(slug::String { _name });
     return it == m_nameToIndex.end() ? -1 : static_cast<int>(it->second);
 }
-
-}   // namespace slug
+}

@@ -20,7 +20,6 @@ function Has($o, [string]$k) { if ($null -eq $o) { return $false }; return $null
 function ChkSpr([string]$n, [string]$w) { if ($n -and ($spr -notcontains $n)) { Err "missing sprite '$n' ($w)" } }
 function ChkAni([string]$n, [string]$w) { if ($n -and ($ani -notcontains $n)) { Err "missing anim '$n' ($w)" } }
 
-# 최상위
 ChkSpr $s.world.background 'world.background'
 if ($snd -notcontains $s.bgm.name) { Err "missing sound '$($s.bgm.name)'" }
 foreach ($m in $s.ground.maps) { if ($gnd -notcontains $m) { Err "missing ground '$m'" } }
@@ -29,7 +28,6 @@ foreach ($p in $s.backdrop.modes.PSObject.Properties) { ChkSpr $p.Value.sprite "
 if (-not (Has $s.backdrop.modes $s.backdrop.initial)) { Err 'backdrop.initial unknown' }
 $rects = if (Has $s 'rects') { $s.rects.PSObject.Properties.Name } else { @() }
 
-# 섹션
 $ids = @{}; $spawnIds = @{}; $gateIds = @{}; $prevX = -1
 $secNames = @($s.sections | ForEach-Object { $_.id })
 foreach ($sec in $s.sections) {
@@ -98,7 +96,6 @@ foreach ($sec in $s.sections) {
 }
 '{0,-16} {1,6} {2,6} {3,4} {4,5} {5,5} {6,5} {7,6} {8,5} {9,5}' -f 'TOTAL', $total.spawn, $total.enemy, $total.pow, $total.prop, $total.decor, $total.item, $total.collider, $total.wave, $total.gate
 
-# 참조 검사
 foreach ($g in $gateIds.Values) { foreach ($w in $g.waitFor) { if (-not $spawnIds.ContainsKey($w)) { Err "gate '$($g.id)' waitFor unknown spawn id '$w'" } } }
 foreach ($t in $script:cmdTargets) { if (-not $spawnIds.ContainsKey($t)) { Err "command target unknown '$t'" } }
 

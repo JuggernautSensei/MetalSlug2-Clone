@@ -5,13 +5,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  Hang — 감시탑에 매달린 병사 (Docs/EnemySpecs.md §1.3)
-//   움직이지 않고 플레이어가 가로 거리 이내면 일정 시간마다 플레이어 쪽으로 폭탄을 던진다.
-//   중력은 사망 시에만 켜진다 (살아 있는 동안 물리 없음).
-// ===========================================
-
 namespace
 {
     enum eHangState : int
@@ -19,8 +12,6 @@ namespace
         kIdle,
         kThrow
     };
-
-    // e.aux = Idle 에서 누적한 틱 (탐지 거리 안일 때만)
 
     void Go_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, const int _state)
     {
@@ -81,7 +72,7 @@ namespace
         _e.bGrounded = false;
         BeginSoldierDeath(_e, _def, _env);
     }
-}   // namespace
+}
 
 const BehaviorOps kHangOps = {
     .init              = &Init_,
@@ -105,5 +96,4 @@ void ParseHangCfg(
     c.clipThrow  = _r.Clip("throw");
     c.weaponBomb = _r.Weapon("bomb");
 }
-
-}   // namespace slug
+}

@@ -2,12 +2,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  행동 종류 → Ops 테이블
-//   새 적 종류: EnemyDef.h 의 eEnemyBehavior 에 값을 추가하고 여기에 한 줄을 더한다.
-// ===========================================
-
 const BehaviorOps& GetBehaviorOps(
     const eEnemyBehavior _behavior)
 {
@@ -31,5 +25,4 @@ const BehaviorOps& GetBehaviorOps(
     static const BehaviorOps kEmpty {};
     return kEmpty;
 }
-
-}   // namespace slug
+}

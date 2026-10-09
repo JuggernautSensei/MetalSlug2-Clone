@@ -6,13 +6,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  Sarubia — 보행 전차, 중간보스 게이트 (Docs/EnemySpecs.md §2.5)
-//   Idle 2 s 후: 플레이어가 뒤에 있으면 선회, 멀면(|dx|>chaseDx) 전진, 아니면 수류탄 사격.
-//   수류탄(sarubia_grenade)은 수직으로 떨어져 착지한 뒤 지면을 따라 구르고, 수명 후 시각 전용 폭발로 사라진다.
-// ===========================================
-
 namespace
 {
     enum eSarubiaState : int
@@ -22,7 +15,7 @@ namespace
         kMoveStart,
         kMove,
         kMoveStop,
-        kShotStart,   // 사격 준비 (1.5 s)
+        kShotStart,
         kShot
     };
 
@@ -151,7 +144,7 @@ namespace
     {
         BeginVehicleDeath(_e, _def, _env, _def.sarubia.clipDestroy);
     }
-}   // namespace
+}
 
 const BehaviorOps kSarubiaOps = {
     .init       = &Init_,
@@ -184,5 +177,4 @@ void ParseSarubiaCfg(
 
     c.weaponGrenade = _r.Weapon("grenade");
 }
-
-}   // namespace slug
+}

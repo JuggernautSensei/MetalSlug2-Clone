@@ -16,11 +16,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  ParamValue
-// ===========================================
-
 ParamValue ParamValue::MakeBool(
     const bool _bValue)
 {
@@ -216,10 +211,6 @@ const ParamValue& ParamValue::NullValue()
     return kNull;
 }
 
-// ===========================================
-//  BoundsCurve / StageData 조회
-// ===========================================
-
 float BoundsCurve::EvaluateTop(
     const float _playerX) const
 {
@@ -325,7 +316,7 @@ namespace
             }
         }
     }
-}   // namespace
+}
 
 int StageData::CountSpawns() const
 {
@@ -415,11 +406,6 @@ const char* GetActionTypeName(
     }
     return "?";
 }
-
-// ===========================================
-//  파서
-//   첫 오류에서 멈추고 "위치: 메시지" 형태의 진단 문자열을 남긴다.
-// ===========================================
 
 namespace
 {
@@ -628,10 +614,8 @@ namespace
             WaveEntry
         };
 
-        // --- 오류 ---
         bool Fail_(const String& _where, const String& _message);
 
-        // --- 필드 읽기 (없고 필수가 아니면 true + 값 유지, 타입이 틀리면 false) ---
         bool GetField_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, std::optional<JsonReader>& _out);
         bool GetNumber_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, double& _out, bool* _pFound = nullptr);
         bool GetFloat_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, float& _out, bool* _pFound = nullptr);
@@ -669,7 +653,6 @@ namespace
         [[nodiscard]] bool ExpectObject_(const JsonReader& _json, const String& _where);
         bool               CheckKeys_(const JsonReader& _obj, const String& _where, std::initializer_list<StringView> _allowed);
 
-        // --- 구조 ---
         bool ParseWorld_(const JsonReader& _root);
         bool ParseBgm_(const JsonReader& _root);
         bool ParseGround_(const JsonReader& _root);
@@ -686,7 +669,6 @@ namespace
         bool ParseAction_(const JsonReader& _obj, const String& _where, StageAction& _out);
         bool ParseActionList_(const JsonReader& _array, const String& _where, slug::Vector<StageAction>& _out);
 
-        // --- 교차 검증 ---
         bool Validate_();
         bool CollectIds_(const slug::Vector<StageAction>& _actions, const String& _where);
         bool CheckRefs_(const slug::Vector<StageAction>& _actions, const String& _where);
@@ -696,10 +678,6 @@ namespace
         slug::Vector<String>      m_spawnIds;
         slug::Vector<String>      m_gateIds;
     };
-
-    // ===========================================
-    //  오류 / 필드 읽기
-    // ===========================================
 
     bool Parser::Fail_(
         const String& _where,
@@ -984,10 +962,6 @@ namespace
         return true;
     }
 
-    // ===========================================
-    //  최상위
-    // ===========================================
-
     bool Parser::Parse(
         const JsonReader& _root)
     {
@@ -1011,7 +985,6 @@ namespace
             return false;
         }
 
-        // 의존 순서: world → ground → backdrop → rects → camera → player → sections
         if (!ParseWorld_(_root) || !ParseBgm_(_root) || !ParseGround_(_root) || !ParseBackdrop_(_root) || !ParseRects_(_root) || !ParseCamera_(_root) || !ParsePlayer_(_root) || !ParseSections_(_root))
         {
             return false;
@@ -1232,7 +1205,6 @@ namespace
     bool Parser::ParseCamera_(
         const JsonReader& _root)
     {
-        // 기본값: 월드 전체가 경계
         m_out.camera.initialBounds = Aabb::FromMinMax({ 0.f, 0.f }, m_out.worldSize);
 
         std::optional<JsonReader> camera;
@@ -1382,10 +1354,6 @@ namespace
         return true;
     }
 
-    // ===========================================
-    //  spawn
-    // ===========================================
-
     bool Parser::ParseCameraAnchor_(
         const JsonReader& _obj,
         const String&     _where,
@@ -1451,7 +1419,6 @@ namespace
         const eSpawnContext  _context,
         SpawnSpec&           _out)
     {
-        // 키 집합: spawn 필드 + 컨텍스트별 공통 키
         static constexpr StringView kSpawnKeys[] = { "kind", "def", "id", "x", "y", "origin", "halfHeight", "groundSnap", "fromY", "settle", "camera", "repeat", "facing", "hp", "drop", "ambush", "layer", "cullMargin", "size", "collisionLayer", "anim", "sprite", "params" };
         if (!ExpectObject_(_obj, _where))
         {
@@ -1498,7 +1465,6 @@ namespace
             return false;
         }
 
-        // 위치
         _out.bHasCamera = _obj.HasField("camera");
         if (_out.bHasCamera)
         {
@@ -1539,7 +1505,6 @@ namespace
             return Fail_(_where, "groundSnap requires origin 'feet' (set origin explicitly for non-creature kinds)");
         }
 
-        // 원점 / halfHeight
         if (_out.bHasHalfHeight)
         {
             if (_out.origin != eOrigin::LegacyCenter)
@@ -1556,7 +1521,6 @@ namespace
             return Fail_(_where, "legacyCenter creature needs 'halfHeight'");
         }
 
-        // repeat
         if (_obj.HasField("repeat"))
         {
             std::optional<JsonReader> repeat;
@@ -1576,7 +1540,6 @@ namespace
             _out.bHasRepeat = true;
         }
 
-        // facing
         if (_obj.HasField("facing"))
         {
             String facing;
@@ -1635,7 +1598,6 @@ namespace
             return false;
         }
 
-        // collider
         const bool bCollider = _out.kind == eEntityKind::Collider;
         if (bCollider)
         {
@@ -1653,7 +1615,6 @@ namespace
             return Fail_(_where, "'size'/'collisionLayer' are only valid for kind 'collider'");
         }
 
-        // decor
         if (!GetString_(_obj, _where, "anim", false, _out.anim) || !GetString_(_obj, _where, "sprite", false, _out.sprite))
         {
             return false;
@@ -1678,7 +1639,6 @@ namespace
             return Fail_(_where, "'anim'/'sprite' are only valid for kind 'decor'");
         }
 
-        // params
         if (_obj.HasField("params"))
         {
             std::optional<JsonReader> params;
@@ -1695,10 +1655,6 @@ namespace
         return true;
     }
 
-    // ===========================================
-    //  actions
-    // ===========================================
-
     bool Parser::ParseActionList_(
         const JsonReader&         _array,
         const String&             _where,
@@ -1712,7 +1668,6 @@ namespace
         for (const JsonReader json: _array.GetArray())
         {
             StageAction action;
-            // 위치 문자열은 타입을 알기 전에 만들어야 하므로 타입을 먼저 훑는다.
             String typeName = "?";
             if (json.IsObject() && json.HasField("type") && json.FindField("type")->IsString())
             {
@@ -1742,7 +1697,6 @@ namespace
             return false;
         }
 
-        // 공통: delay / when
         if (!GetFloat_(_obj, _where, "delay", false, _out.delay))
         {
             return false;
@@ -1990,10 +1944,6 @@ namespace
         return true;
     }
 
-    // ===========================================
-    //  섹션
-    // ===========================================
-
     bool Parser::ParseSections_(
         const JsonReader& _root)
     {
@@ -2047,10 +1997,6 @@ namespace
         }
         return true;
     }
-
-    // ===========================================
-    //  교차 검증 (id 유일성/참조)
-    // ===========================================
 
     bool Parser::CollectIds_(
         const slug::Vector<StageAction>& _actions,
@@ -2156,7 +2102,6 @@ namespace
 
     bool Parser::Validate_()
     {
-        // 스폰/게이트 id 수집 (섹션 순서)
         for (const StageSection& section: m_out.sections)
         {
             if (!CollectIds_(section.actions, std::format("section '{}'", section.id)))
@@ -2172,7 +2117,6 @@ namespace
             }
         }
 
-        // boundsCurves 의 섹션 참조
         for (BoundsCurve& curve: m_out.camera.boundsCurves)
         {
             const String where = std::format("camera.boundsCurves '{}'", curve.id);
@@ -2205,11 +2149,7 @@ namespace
         }
         return slug::Error { _code };
     }
-}   // namespace
-
-// ===========================================
-//  로더 진입점
-// ===========================================
+}
 
 slug::Result<StageData> LoadStageFromJson(
     const slug::StringView  _json,
@@ -2249,5 +2189,4 @@ slug::Result<StageData> LoadStageFromFile(
     const slug::String text = buffer.str();
     return LoadStageFromJson(text, _pDiag);
 }
-
-}   // namespace slug
+}

@@ -14,11 +14,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  디브리 클립 (Wood1..6 / Metal1..12 / Rock1..3)
-// ===========================================
-
 int GetDebrisClipCount(
     const eDebrisSet _set)
 {
@@ -41,12 +36,6 @@ slug::String GetDebrisClipName(
 
 namespace
 {
-
-// ===========================================
-//  PropDefParser
-//   Props.json → PropDefLibrary. 알 수 없는 키/값은 오류이며, 메시지는 "<정의>: <필드>: 사유" 형식이다.
-// ===========================================
-
 using KeyList = std::initializer_list<std::string_view>;
 
 eDebrisSet ParseDebrisSet(const std::string_view _s, bool& _bOk)
@@ -58,8 +47,7 @@ eDebrisSet ParseDebrisSet(const std::string_view _s, bool& _bOk)
     _bOk = false;
     return eDebrisSet::Wood;
 }
-
-}   // namespace
+}
 
 class PropDefParser
 {
@@ -291,7 +279,6 @@ bool PropDefParser::Parts_(
         {
             return false;
         }
-        // role: 문자열 또는 문자열 배열 (예: ["hurt", "wall"] = 같은 상자를 피격과 벽으로 둘 다)
         slug::Vector<ePropRole> roles;
         if (!item.HasField("role"))
         {
@@ -684,7 +671,6 @@ bool PropDefParser::Run(
         return Fail_("Props.json", "version", "지원하지 않는 버전입니다 (1 만 지원)");
     }
 
-    // 그룹은 아이템보다 먼저 이름만 등록한다 (드롭 검사는 뒤에서). 아이템 본체는 아래에서 읽는다.
     if (_root.HasField("defs"))
     {
         const slug::Result<slug::JsonReader> defs = _root.FindField("defs");
@@ -827,10 +813,6 @@ bool PropDefParser::ParseParams(
     return true;
 }
 
-// ===========================================
-//  PropDefLibrary
-// ===========================================
-
 slug::Result<PropDefLibrary> PropDefLibrary::Parse(
     const slug::StringView _json,
     slug::String*          _pMessage)
@@ -934,7 +916,7 @@ bool PropDefLibrary::ParseSpawnParams(
         _error = slug::String { std::format("{}: 정의가 없습니다", std::string { _defName }) };
         return false;
     }
-    PropDefLibrary scratch;   // 파서는 라이브러리를 변경하지 않는다 (파라미터 해석만 사용)
+    PropDefLibrary scratch;
     PropDefParser  parser { scratch };
     _out = {};
     if (!parser.ParseParams(*pDef, _params, _out))
@@ -1033,5 +1015,4 @@ slug::String PropDefLibrary::FindMissingAsset(
     }
     return {};
 }
-
-}   // namespace slug
+}

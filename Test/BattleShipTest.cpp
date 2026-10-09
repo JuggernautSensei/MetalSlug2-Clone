@@ -8,11 +8,6 @@
 using namespace slug;
 using namespace slugtest;
 
-// ===========================================
-//  최종보스 (battleship): 등장 / 패턴 / 캐논 / 포탑 / 선체 차단 / 파괴 연출 / 권총 격파
-//   아레나 640x448 (x 0..640, 바닥 378). 등장 = 아레나 왼쪽 -300 → 홈 슬롯 (100).
-// ===========================================
-
 namespace
 {
     constexpr float kGroundY = 378.f;
@@ -25,7 +20,6 @@ namespace
         return _rig.SpawnAt("battleship", { BossArena().min.x - 300.f, kGroundY }, params);
     }
 
-    // 전투 시작(홈 도착)까지 진행
     void RunUntilFight(BossRig& _rig, const EnemyHandle _ship, const int _maxTicks = 900)
     {
         for (int i = 0; i < _maxTicks; ++i)
@@ -38,7 +32,6 @@ namespace
         }
     }
 
-    // 포탑 둘 제거 (캐논 탄 수만 세려고)
     void KillTurrets(BossRig& _rig, const EnemyHandle _ship)
     {
         for (int i = 0; i < battleship::kTurretCount; ++i)
@@ -47,7 +40,6 @@ namespace
         }
     }
 
-    // 상태 전이마다 (상태, 그 상태에 머문 틱 수) 를 기록한다
     struct Phase
     {
         int state;
@@ -76,11 +68,7 @@ namespace
         }
         return out;
     }
-}   // namespace
-
-// ===========================================
-//  등장 / 전투 시작
-// ===========================================
+}
 
 TEST(BattleShip, EntranceRollsInFromLeftOfTheArenaInAboutFiveSeconds)
 {
@@ -128,10 +116,6 @@ TEST(BattleShip, IdleLastsOneAndAHalfSecondsBeforeTheNextPattern)
     EXPECT_EQ(rig.Find(ship)->state, battleship::kHeadOpen);
 }
 
-// ===========================================
-//  패턴 / 캐논
-// ===========================================
-
 TEST(BattleShip, CannonSequenceFollowsTheClipTiming)
 {
     BossRig rig;
@@ -139,12 +123,10 @@ TEST(BattleShip, CannonSequenceFollowsTheClipTiming)
     const EnemyHandle ship = SpawnShip(rig);
     RunUntilFight(rig, ship);
     std::vector<Phase> phases = RecordPhases(rig, ship, 1000);
-    // 첫 구간은 전투 시작 직후 남은 대기(Idle) 이므로 버린다
     ASSERT_FALSE(phases.empty());
     ASSERT_EQ(phases[0].state, battleship::kIdle);
     phases.erase(phases.begin());
 
-    // 기대: HeadOpen 86 / CannonStart 96 / (CannonIdle 60, CannonShot 34) x3 / CannonEnd 67 / HeadClose 101
     std::vector<int> want = { battleship::kHeadOpen, battleship::kCannonStart };
     for (int k = 0; k < 3; ++k)
     {
@@ -172,7 +154,7 @@ TEST(BattleShip, CannonFiresThreeShotsWhenNotEnraged)
     ASSERT_TRUE(rig.IsReady());
     const EnemyHandle ship = SpawnShip(rig);
     RunUntilFight(rig, ship);
-    KillTurrets(rig, ship);   // 포탑 탄을 빼고 캐논 탄만 센다
+    KillTurrets(rig, ship);
     const int before = rig.Find(ship)->shotsFired;
     rig.Run(600);
     EXPECT_EQ(rig.Find(ship)->shotsFired - before, 3);
@@ -211,15 +193,11 @@ TEST(BattleShip, CannonTracksThePlayerWithinItsAngleRange)
     RunUntilFight(rig, ship);
     rig.SetPlayer({ 500.f, kGroundY });
     rig.Run(100);
-    rig.Frame();   // 패턴 1 (캐논) 진행 중
+    rig.Frame();
     const float angle = battleship::GetCannonAngle(*rig.Find(ship));
     EXPECT_GE(angle, -135.f);
     EXPECT_LE(angle, -45.f);
 }
-
-// ===========================================
-//  레일
-// ===========================================
 
 TEST(BattleShip, EvenPatternMovesTheRailToAnotherSlotAndStops)
 {
@@ -228,7 +206,6 @@ TEST(BattleShip, EvenPatternMovesTheRailToAnotherSlotAndStops)
     const EnemyHandle ship = SpawnShip(rig);
     RunUntilFight(rig, ship);
     KillTurrets(rig, ship);
-    // 패턴 1 (캐논) 이 끝나 Idle 로 돌아오면 패턴 2 는 레일
     for (int i = 0; i < 2000 && rig.Find(ship)->state != battleship::kRailMove; ++i)
     {
         rig.Frame();
@@ -248,10 +225,6 @@ TEST(BattleShip, EvenPatternMovesTheRailToAnotherSlotAndStops)
     EXPECT_NEAR(pShip->body.position.x, slotX, 0.6f);
     EXPECT_NEAR(pShip->body.velocity.x, 0.f, 0.001f);
 }
-
-// ===========================================
-//  포탑
-// ===========================================
 
 TEST(BattleShip, TurretsAreDestroyableWhileTheShipStaysAttackable)
 {
@@ -303,10 +276,6 @@ TEST(BattleShip, TurretsFireArcingShellsOnceTheFightStarts)
     EXPECT_TRUE(bShell);
 }
 
-// ===========================================
-//  플레이어 피해 / 선체 차단
-// ===========================================
-
 TEST(BattleShip, CannonShotsKillAnExposedPlayer)
 {
     BossRig rig;
@@ -343,14 +312,10 @@ TEST(BattleShip, HullConstraintStaysUntilTheDestroySequenceEnds)
     RunUntilFight(rig, ship);
     rig.Hit(ship.id, 900);
     rig.Run(100);
-    EXPECT_TRUE(rig.World().HasPlayerMinX());   // 파괴 연출 중에도 막는다
+    EXPECT_TRUE(rig.World().HasPlayerMinX());
     rig.Run(200);
-    EXPECT_FALSE(rig.World().HasPlayerMinX());  // 3.6 s 가 지나면 풀린다
+    EXPECT_FALSE(rig.World().HasPlayerMinX());
 }
-
-// ===========================================
-//  파괴 연출
-// ===========================================
 
 TEST(BattleShip, DestroySequenceTakesExactlyTheSpecTicks)
 {
@@ -366,7 +331,7 @@ TEST(BattleShip, DestroySequenceTakesExactlyTheSpecTicks)
     EXPECT_FALSE(rig.World().IsDestroyFinished(ship));
 
     rig.Run(215);
-    EXPECT_FALSE(rig.World().IsDestroyFinished(ship));   // 3.6 s = 216 틱 전
+    EXPECT_FALSE(rig.World().IsDestroyFinished(ship));
     rig.Run(1);
     EXPECT_TRUE(rig.World().IsDestroyFinished(ship));
 }
@@ -393,12 +358,8 @@ TEST(BattleShip, IsDestroyFinishedIsFalseForAHandleThatIsStillAlive)
     const EnemyHandle ship = SpawnShip(rig);
     rig.Run(60);
     EXPECT_FALSE(rig.World().IsDestroyFinished(ship));
-    EXPECT_TRUE(rig.World().IsDestroyFinished(EnemyHandle {}));   // 빈 핸들은 끝난 것
+    EXPECT_TRUE(rig.World().IsDestroyFinished(EnemyHandle {}));
 }
-
-// ===========================================
-//  결정성
-// ===========================================
 
 TEST(BattleShip, IdenticalScriptedRunsProduceIdenticalStateHashes)
 {
@@ -419,10 +380,6 @@ TEST(BattleShip, IdenticalScriptedRunsProduceIdenticalStateHashes)
     };
     EXPECT_EQ(runOnce(), runOnce());
 }
-
-// ===========================================
-//  샌드박스 통합 (SandboxState 의 bosslab 구성, 실제 PlayerController / SimRunner)
-// ===========================================
 
 namespace
 {
@@ -450,7 +407,7 @@ namespace
         }
         return nullptr;
     }
-}   // namespace
+}
 
 TEST(BossLab, HullKeepsThePlayerOnTheFarSideOfTheBow)
 {
@@ -463,7 +420,6 @@ TEST(BossLab, HullKeepsThePlayerOnTheFarSideOfTheBow)
     EnemyHandle ship;
     ASSERT_NE(FindShip(sim.State(), ship), nullptr) << "bosslab 에 battleship 이 없습니다 (Defs 로딩 실패?)";
 
-    // 플레이어를 선체 쪽(왼쪽)으로 계속 민다. 선체 x + 270 아래로는 못 간다.
     sim.Hold(eAction::Left);
     sim.Step(300);
     EnemyHandle again;
@@ -480,7 +436,6 @@ TEST(BossLab, ThePistolCanDefeatTheBattleshipThroughThePlayerController)
         GTEST_SKIP() << "Boss.json 임시 폴더를 만들지 못했습니다";
     }
     Sim sim(config);
-    // 무한 탄, 그리고 리스폰 무적 (플레이어가 죽어도 계속 쏜다). 리스폰은 선체 뒤쪽 (x 500)에서.
     sim.Tune().weapons.pistol.maxAlive = 0;
     sim.Tune().player.respawnInvincible = 1000000;
     sim.Tune().player.respawnOffsetX    = 400.f;
@@ -500,7 +455,6 @@ TEST(BossLab, ThePistolCanDefeatTheBattleshipThroughThePlayerController)
         }
     }
     EXPECT_TRUE(sim.State().GetEnemies().IsDestroyFinished(ship));
-    // 완벽한 명중의 연속 사격 (사람 명중률 아님): 900 HP 가 수십 초 안에 깎인다. 즉시 죽지는 않아야 한다.
     EXPECT_GT(ticks, 60 * 15);
     EXPECT_LT(ticks, 9000);
     std::printf("[boss-lab] pistol kill after %d ticks (%.1f s)\n", ticks, static_cast<double>(ticks) / 60.0);

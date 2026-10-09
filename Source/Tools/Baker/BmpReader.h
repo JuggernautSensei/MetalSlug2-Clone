@@ -12,12 +12,6 @@
 
 namespace slug::baker
 {
-
-// ===========================================
-//  BMP 디코더 (1/4/8 팔레트, 24, 32 비트 + BITFIELDS)
-//    stb_image 는 알파가 전부 0 인 32비트 BMP 를 불투명으로 바꾸는 휴리스틱이 있어 직접 디코딩한다.
-// ===========================================
-
 namespace bmp_detail
 {
     [[nodiscard]] inline uint32_t ReadU32(
@@ -71,7 +65,7 @@ namespace bmp_detail
             return static_cast<uint8_t>((static_cast<uint64_t>(v) * 255u + max / 2u) / max);
         }
     };
-}   // namespace bmp_detail
+}
 
 [[nodiscard]] inline slug::Result<Image> DecodeBmp(
     const std::vector<uint8_t>& _file)
@@ -87,7 +81,7 @@ namespace bmp_detail
     const uint32_t hdrSize    = ReadU32(&_file[14]);
     if (hdrSize < 40 || _file.size() < 14u + hdrSize)
     {
-        return slug::eError::Parse;   // BITMAPCOREHEADER 등은 지원하지 않음
+        return slug::eError::Parse;
     }
 
     const int      width    = static_cast<int>(ReadU32(&_file[18]));
@@ -104,10 +98,9 @@ namespace bmp_detail
     }
     if (compress != 0 && compress != 3)
     {
-        return slug::eError::InvalidData;   // RLE 미지원
+        return slug::eError::InvalidData;
     }
 
-    // 채널 마스크
     Mask mr, mg, mb, ma;
     if (bpp == 32 || bpp == 16)
     {
@@ -141,7 +134,6 @@ namespace bmp_detail
         }
     }
 
-    // 팔레트
     std::vector<uint32_t> palette;
     if (bpp <= 8)
     {
@@ -254,5 +246,4 @@ namespace bmp_detail
     }
     return DecodeBmp(file);
 }
-
-}   // namespace slug::baker
+}

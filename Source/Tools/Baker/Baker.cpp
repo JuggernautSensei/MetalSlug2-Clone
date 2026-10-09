@@ -19,10 +19,6 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    // ===========================================
-    //  텍스처 작업 단위 (텍스처 하나를 한 번만 디코딩해서 그것을 쓰는 애니/스프라이트를 모두 처리)
-    // ===========================================
-
     struct TextureJob
     {
         const TextureRecord*  pRecord = nullptr;
@@ -32,7 +28,6 @@ namespace
         std::vector<Anomaly>  anomalies;
     };
 
-    // 이름이 "_<token>_" 또는 "_<token>" (끝) 을 포함하는지
     [[nodiscard]] bool HasWeaponToken_(
         const std::string& _name,
         const std::string& _token)
@@ -58,7 +53,6 @@ namespace
 
         if (lower.starts_with("player"))
         {
-            // 하체 전용은 "_Lower", 무기별 상체 변형(SG/MG)은 PlayerUpper, 기본 총(DG) 통짜는 Player
             if (_animName.find("Lower") != std::string::npos)
             {
                 return eAnimCategory::PlayerLower;
@@ -103,10 +97,6 @@ namespace
         return files;
     }
 
-    // ===========================================
-    //  Baker 본체
-    // ===========================================
-
     class Baker
     {
     public:
@@ -148,10 +138,6 @@ namespace
         std::unordered_map<uint64_t, std::vector<int>> m_uniqueByHash;
     };
 
-    // ===========================================
-    //  정의 파일 읽기
-    // ===========================================
-
     slug::Result<void> Baker::LoadDefinitions_()
     {
         const fs::path dataDir = ResourceDataDir_();
@@ -161,7 +147,6 @@ namespace
             return slug::Error { slug::eError::NotFound };
         }
 
-        // --- TextureData.data
         {
             slug::Result<std::string> text = ReadText(dataDir / "TextureData.data");
             if (!text)
@@ -185,7 +170,6 @@ namespace
         }
         m_state.textureCount = m_textures.size();
 
-        // --- *.anime  (Player -> Enemy -> Ect -> NPC 순, 중복 이름은 뒤의 것이 이김: 레거시와 동일)
         std::map<std::string, size_t> animIndex;
         std::set<std::string>         referencedTextures;
         {
@@ -232,7 +216,6 @@ namespace
             }
         }
 
-        // --- *.sprite
         std::map<std::string, size_t> spriteIndex;
         {
             for (const fs::path& file: ListFiles_(dataDir / "Sprite", ".sprite"))
@@ -268,7 +251,6 @@ namespace
                 }
             }
 
-            // 어디에도 참조되지 않은 텍스처(폰트/UI 등)는 텍스처 이름 그대로 전체를 스프라이트로 노출한다.
             if (m_options.Wants("sprites"))
             {
                 for (const TextureRecord& tex: m_textures)
@@ -309,7 +291,6 @@ namespace
             return &m_jobs[it->second];
         };
 
-        // m_jobs 가 재할당되면 포인터가 깨지므로 먼저 최대 크기만큼 예약한다.
         m_jobs.reserve(m_textures.size());
 
         for (size_t i = 0; i < m_state.anims.size(); ++i)
@@ -339,10 +320,6 @@ namespace
             }
         }
     }
-
-    // ===========================================
-    //  텍스처 처리 (스레드에서 실행)
-    // ===========================================
 
     void Baker::ProcessJob_(TextureJob& _job)
     {
@@ -378,7 +355,6 @@ namespace
         stat.h               = img.height;
         stat.bSourceHasAlpha = img.bSourceHasAlpha;
 
-        // --- 알파 / 컬러키 처리 (레거시 TRANS_OP 에 대응)
         switch (tex.mode)
         {
             case eTransparentMode::None: ForceOpaque(img); break;
@@ -407,11 +383,9 @@ namespace
                     }
                 }
 
-                // 알파 모드로 표시됐지만 실제로는 마젠타 컬러키 아트인 텍스처가 많다 (불투명 순수 마젠타는 의도된 색이 아님).
                 const bool bJunkAlpha = stat.opaqueMagenta > 0 && artPixels > 0 && artAlphaZero * 2 > artPixels;
                 if (m_options.bKeyMagentaInAlpha && bJunkAlpha)
                 {
-                    // 아트의 알파가 0 이고 배경 마젠타의 알파가 255 인 구형(XRGB) 파일: 알파 채널을 버리고 컬러키로 취급한다.
                     ApplyColorKey(img, 255, 0, 255);
                     _job.anomalies.push_back({ "AlphaChannelUnreliable", tex.name, "UseTransparent=2 but art pixels have alpha 0 and background is opaque magenta; baked as magenta colorkey", static_cast<double>(artAlphaZero) });
                 }
@@ -435,7 +409,6 @@ namespace
         }
         ClearTransparentColor(img);
 
-        // --- 애니메이션: 스트립 슬라이스 -> 프레임 트림 -> 피벗
         for (const size_t animIdx: _job.anims)
         {
             AnimOut&          out = m_state.anims[animIdx];
@@ -465,7 +438,7 @@ namespace
 
             for (int i = 0; i < count; ++i)
             {
-                const int    col  = r.start + i;   // 레거시 비루프 Start>0 컬럼 버그는 올바른 컬럼으로 굽는다.
+                const int    col  = r.start + i;
                 const IRect  cell = { col * out.cellW, r.line * out.cellH, out.cellW, out.cellH };
                 FrameOut&    f    = out.frames[static_cast<size_t>(i)];
 
@@ -509,7 +482,6 @@ namespace
             out.bValid = true;
         }
 
-        // --- 스프라이트
         bool bStandaloneWritten = false;
         for (const size_t spriteIdx: _job.sprites)
         {
@@ -564,10 +536,6 @@ namespace
         }
     }
 
-    // ===========================================
-    //  병합: 중복 프레임 제거
-    // ===========================================
-
     int Baker::AddUnique_(Image&& _image)
     {
         const uint64_t hash = HashImage(_image);
@@ -617,13 +585,8 @@ namespace
         }
     }
 
-    // ===========================================
-    //  아틀라스 패킹 / 페이지 PNG
-    // ===========================================
-
     slug::Result<void> Baker::PackAndWriteAtlas_()
     {
-        // 이전 실행의 페이지 제거
         {
             std::error_code ec;
             for (const fs::path& old: ListFiles_(m_options.outRoot / "Atlas", ".png"))
@@ -690,13 +653,8 @@ namespace
         return slug::Error { slug::kOK };
     }
 
-    // ===========================================
-    //  JSON 출력
-    // ===========================================
-
     slug::Result<void> Baker::WriteJsons_()
     {
-        // --- anim.json
         {
             JsonWriter w;
             w.BeginObject();
@@ -716,7 +674,6 @@ namespace
                 w.Field("loopStart", r.bLoop ? r.optionIndex : 0);
                 if (!r.bLoop && r.optionIndex > 0)
                 {
-                    // 레거시 CanChangeAnimation: start + idx >= optionIdx  ->  idx >= optionIdx - start
                     w.Field("cancelFrame", std::max(0, r.optionIndex - r.start));
                 }
                 w.Field("frameDuration", r.frameDuration);
@@ -757,7 +714,6 @@ namespace
             }
         }
 
-        // --- sprites.json
         {
             JsonWriter w;
             w.BeginObject();
@@ -806,7 +762,6 @@ namespace
             }
         }
 
-        // --- sounds.json
         {
             JsonWriter w;
             w.BeginObject();
@@ -833,7 +788,6 @@ namespace
             }
         }
 
-        // --- manifest.json
         {
             JsonWriter w;
             w.BeginObject();
@@ -867,10 +821,6 @@ namespace
 
         return slug::Error { slug::kOK };
     }
-
-    // ===========================================
-    //  사운드
-    // ===========================================
 
     slug::Result<void> Baker::BakeSounds_()
     {
@@ -929,19 +879,14 @@ namespace
         return slug::Error { slug::kOK };
     }
 
-    // ===========================================
-    //  추가 사운드 (SoundData.txt 에 없지만 게임이 쓰는 이름이 분명한 파일)
-    //   이름이 불분명한 번호 파일(NARRATOR n (m).mp3, gen_xx.wav 등)은 여기에 넣지 않는다.
-    // ===========================================
-
     void Baker::BakeExtraSounds_(
         std::error_code& _ec)
     {
         struct ExtraSound
         {
             const char* name;
-            const char* legacyPath;   // legacyRoot 기준
-            const char* outFile;      // Audio/ 아래 파일 이름 (공백/쉼표 없는 이름으로 복사)
+            const char* legacyPath;
+            const char* outFile;
             bool        bBgm;
         };
         static constexpr ExtraSound kExtras[] = {
@@ -984,11 +929,6 @@ namespace
             m_state.sounds.push_back(std::move(out));
         }
     }
-
-    // ===========================================
-    //  추가 스프라이트 (TextureData.data 에 없이 씬 코드가 직접 로드하던 큰 이미지)
-    //   TitleBackground: Dummy/Main_Title.bmp (1280x720) 를 정확히 1/2 (박스 평균) 로 줄여 640x360 독립 PNG 로 굽는다.
-    // ===========================================
 
     void Baker::BakeExtraSprites_()
     {
@@ -1059,10 +999,6 @@ namespace
         m_state.sprites.push_back(std::move(out));
     }
 
-    // ===========================================
-    //  지형 충돌맵
-    // ===========================================
-
     void Baker::BakeGrounds_()
     {
         if (!m_options.Wants("ground"))
@@ -1131,10 +1067,6 @@ namespace
         }
     }
 
-    // ===========================================
-    //  Run
-    // ===========================================
-
     slug::Result<void> Baker::Run()
     {
         const auto start = std::chrono::steady_clock::now();
@@ -1151,7 +1083,6 @@ namespace
         }
         BuildJobs_();
 
-        // --- 텍스처 병렬 처리
         Log("processing {} textures ...", m_jobs.size());
         ParallelFor(m_jobs.size(), m_options.threads, [&](const size_t _i) { ProcessJob_(m_jobs[_i]); });
 
@@ -1164,7 +1095,6 @@ namespace
             m_state.textures.push_back(job.stat);
         }
 
-        // 건너뛴 항목 로그
         size_t validAnims = 0;
         for (const AnimOut& a: m_state.anims)
         {
@@ -1198,12 +1128,11 @@ namespace
         m_state.elapsedSec = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
         return WriteReports(m_options, m_state);
     }
-}   // namespace
+}
 
 slug::Result<void> RunBaker(const BakerOptions& _options)
 {
     Baker baker(_options);
     return baker.Run();
 }
-
-}   // namespace slug::baker
+}

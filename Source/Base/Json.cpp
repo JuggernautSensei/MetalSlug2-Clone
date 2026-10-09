@@ -20,8 +20,7 @@ namespace
     }
     return flags;
 }
-
-}   // namespace
+}
 
 JsonReader::JsonReader(
     yyjson_val* _pValue)
@@ -244,5 +243,4 @@ JsonReader JsonDeserializer::GetReader() const
 {
     return JsonReader { m_pDoc ? yyjson_doc_get_root(m_pDoc) : nullptr };
 }
-
-}   // namespace slug
+}

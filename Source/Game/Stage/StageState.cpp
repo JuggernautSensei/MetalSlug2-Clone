@@ -62,7 +62,6 @@ namespace
         _renderer.DrawRect(topLeft, { slug::Max(1.f, bottomRight.x - topLeft.x), slug::Max(1.f, bottomRight.y - topLeft.y) }, _color);
     }
 
-    // 플레이스홀더 상자 색: 피격 번쩍임 > 종류별 기본색
     [[nodiscard]] slug::RGBA GetPlaceholderColor_(
         const PlaceholderEntity& _entity)
     {
@@ -91,13 +90,9 @@ namespace
         }
         return joined;
     }
-}   // namespace
+}
 
 StageState::StageState() = default;
-
-// ===========================================
-//  수명
-// ===========================================
 
 void StageState::OnEnter(
     GameContext& _ctx)
@@ -136,7 +131,6 @@ void StageState::Load_(
     }
     m_data = data.Take();
 
-    // --- 지면: 이름 목록의 각 맵을 Baked/Ground 에서 읽는다 (없으면 평지로 대체) ---
     m_host = StageWorldHost {};
     const int flatWidth  = static_cast<int>(m_data.worldSize.x);
     const int flatHeight = static_cast<int>(m_data.worldSize.y);
@@ -156,7 +150,6 @@ void StageState::Load_(
         }
     }
 
-    // --- 튜닝 (Assets/Tuning/Tuning.json, 없으면 기본값) ---
     m_tuning = {};
     if (slug::Result<Tuning> loaded = LoadTuning(GetDefaultTuningPath(_ctx.assetRoot)))
     {
@@ -167,10 +160,9 @@ void StageState::Load_(
         SLUG_LOG_WARN("Tuning.json 을 읽지 못해 기본값을 사용합니다");
     }
 
-    // --- 적 / 소품 정의 (없으면 그 종류는 플레이스홀더로 대신한다) ---
     {
         slug::String message;
-        const slug::FilePath defsPath = EnemyDefLibrary::GetDefaultDirectory(_ctx.assetRoot);   // Defs/*.json 전부 (Enemies / Vehicles / Boss)
+        const slug::FilePath defsPath = EnemyDefLibrary::GetDefaultDirectory(_ctx.assetRoot);
         m_enemyLib = {};
         if (slug::Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
         {
@@ -200,12 +192,10 @@ void StageState::Load_(
     m_host.BindWorld(&m_enemies, &m_props);
     m_host.BindRects(m_data.rects);
 
-    // --- 카메라 / 러너 ---
     m_camera = Camera { MakeCameraTuning_(m_tuning.camera) };
     m_camera.SetForwardOnly(true);
     m_runner.emplace(m_data, m_host, m_camera, m_rng);
 
-    // --- 애니메이션 / 렌더 자원 ---
     m_bRigBound = false;
     if (_ctx.pAnims && _ctx.pAnims->GetClipCount() > 0)
     {
@@ -221,7 +211,7 @@ void StageState::Load_(
         {
             m_spriteLib = library.Take();
         }
-        m_enemies.SetSpriteLibrary(&m_spriteLib);   // 보스 파츠의 정적 스프라이트
+        m_enemies.SetSpriteLibrary(&m_spriteLib);
         if (_ctx.pSprites)
         {
             const slug::FilePath bgPath = _ctx.assetRoot / "Baked" / "Textures" / (m_data.background + ".png");
@@ -260,7 +250,6 @@ void StageState::Load_(
 void StageState::Restart_(
     GameContext& _ctx)
 {
-    // 1) 전투/연출/월드 상태 초기화 (러너 Begin 전에 비워야 스크립트 스폰이 새 월드에 들어간다)
     m_host.SetContext(&_ctx);
     m_host.Reset();
     m_enemies.Reset(1);
@@ -274,16 +263,13 @@ void StageState::Restart_(
     m_flow.Reset();
     m_endKind = eEndKind::None;
 
-    // 2) 러너 시작: 지면/원경/BGM/경계/섹션 상태 (호스트 SetGround, PlayBgm 이 여기서 일어난다)
     m_runner->Begin();
 
-    // 3) 플레이어: 스크립트 시작 위치 (지면 스냅 실패 시 x 만 쓰고 중력에 맡긴다)
     m_startFeet = m_runner->ResolvePlayerStart().value_or(Vec2 { m_data.player.x, 0.f });
     UpdateWalls_();
     m_player.Reset(m_tuning, m_startFeet);
     m_player.SnapToGround(MakePhysicsWorld_(), 16.f);
 
-    // 4) 카메라: 시작 위치로 즉시 맞춘다
     m_camera.SetTarget(m_runner->ComputeCameraTarget(m_player.GetFeet()));
     m_camera.SnapToTarget();
     m_prevCameraPos = m_camera.GetPositionNoShake();
@@ -296,10 +282,6 @@ void StageState::Restart_(
     m_host.SetContext(nullptr);
 }
 
-// ===========================================
-//  Tick
-// ===========================================
-
 void StageState::Tick(
     GameContext&        _ctx,
     const InputHistory& _input)
@@ -310,7 +292,6 @@ void StageState::Tick(
         return;
     }
 
-    // 끝 장면(MISSION COMPLETE / GAME OVER) 중에는 세계를 멈추고 연출만 진행한다
     if (IsFlowing_())
     {
         m_host.SetContext(&_ctx);
@@ -327,7 +308,6 @@ void StageState::Tick(
     HandleDebugWarp_(_ctx);
     m_host.SetContext(&_ctx);
 
-    // 1) 판정 모으기 시작 + 소품 틱 (타이머/낙하/연출/컬링). 이후 소품 충돌 출력이 이번 틱 상태가 된다.
     m_combat.BeginTick();
     {
         PropTickContext propCtx;
@@ -338,12 +318,10 @@ void StageState::Tick(
     }
     UpdateWalls_();
 
-    // 2) Hurtbox 등록 (플레이어 Tick 전: 칼 자동 발동 질의가 맞도록)
     m_host.RegisterPlaceholderHurtboxes(m_combat);
     m_enemies.RegisterHurtboxes(m_combat);
     m_props.RegisterHurtboxes(m_combat);
 
-    // 3) 플레이어
     PlayerContext playerCtx;
     playerCtx.pTuning      = &m_tuning;
     playerCtx.physics      = MakePhysicsWorld_();
@@ -352,13 +330,11 @@ void StageState::Tick(
     playerCtx.respawnFeet  = GetRespawnFeet_();
     m_player.Tick(playerCtx, _input);
 
-    // 보스 선체가 요청한 플레이어 발 x 하한 (직전 적 틱의 값)
     if (m_enemies.HasPlayerMinX())
     {
         m_player.PushFeetX(m_enemies.GetPlayerMinX());
     }
 
-    // 4) 소품 아이템 습득 (플레이어 몸 상자와 겹친 것)
     for (const ItemPickup& pickup: m_props.GetItems().Collect(m_player.GetBodyBox()))
     {
         ApplyItemPickup(m_player, pickup, m_tuning);
@@ -370,7 +346,6 @@ void StageState::Tick(
         }
     }
 
-    // 5) 적: AI / 이동 / 공격 판정 등록 (투사체 Step 전에 발사해야 같은 틱에 움직인다)
     EnemyContext enemyCtx;
     enemyCtx.pTuning            = &m_tuning;
     enemyCtx.physics            = MakeEnemyPhysicsWorld_();
@@ -387,7 +362,6 @@ void StageState::Tick(
 
     m_projectiles.Step(m_host.GetActiveGround(), m_combat, kStepSec);
 
-    // 6) 판정 해소 → 모든 피해는 HitEvent 로만 적용된다
     const slug::Vector<HitEvent>& events = m_combat.Resolve();
     m_props.OnHitEvents(events);
     m_enemies.OnHitEvents(events);
@@ -401,11 +375,9 @@ void StageState::Tick(
     m_projectiles.OnHitEvents(events, m_combat);
     m_host.TickPlaceholders();
 
-    // 7) 이벤트 소비: 점수 / 드롭 아이템 / 지면 패치 / 소리
     ConsumeEnemyEvents_(_ctx);
     ConsumePropEvents_(_ctx);
 
-    // 8) 연출
     const slug::Vector<FxRequest> fx = m_projectiles.TakeFx();
     RequestSounds_(_ctx, fx);
     m_ui.Tick();
@@ -438,11 +410,9 @@ void StageState::Tick(
         }
     }
 
-    // 9) 스크립트 한 틱 (섹션/예약/경계/게이트 + 카메라 추적). 카메라 보간용으로 이전 위치를 남긴다.
     m_prevCameraPos = m_camera.GetPositionNoShake();
     m_runner->Tick();
 
-    // 10) 끝 장면 판정: endStage 요청 → MISSION COMPLETE, 플레이어 게임 오버 → GAME OVER
     if (m_endKind == eEndKind::None)
     {
         if (m_host.IsEndRequested())
@@ -478,7 +448,6 @@ void StageState::HandleDebugWarp_(
         _ctx.debugWeapon = 0;
     }
 
-    // 요청은 한 번만 소비한다 (같은 프레임의 다음 틱에서 다시 워프하지 않도록)
     const int request = _ctx.debugWarp;
     _ctx.debugWarp    = 0;
     if (request == 0 || !_ctx.bDebugDraw)
@@ -489,24 +458,17 @@ void StageState::HandleDebugWarp_(
     m_host.SetContext(&_ctx);
     if (request == 1)
     {
-        // F5: 아직 발동하지 않은 다음 섹션으로 (silent 실행으로 건너뛴 구간의 소품/경계/지면만 맞춘다)
         (void)m_runner->WarpToSection(m_runner->GetNextSectionIndex());
     }
     else if (request == 2)
     {
-        // F6: 보스 아레나 (id "boss" 섹션, 없으면 마지막)
         (void)m_runner->WarpToBoss();
     }
     m_host.SetContext(nullptr);
 }
 
-// ===========================================
-//  물리 입력 저장소
-// ===========================================
-
 void StageState::UpdateWalls_()
 {
-    // 화면 벽: 왼쪽(되돌아갈 수 없음) 항상, 오른쪽은 락/경계 끝일 때만 (StageRunner::MakeScreenWalls). 플레이어 전용.
     const ScreenWalls screen = m_runner->MakeScreenWalls();
     m_walls.clear();
     m_enemyWalls.clear();
@@ -521,7 +483,6 @@ void StageState::UpdateWalls_()
         m_walls.push_back({ screen.right });
     }
 
-    // 소품: 벽은 플레이어/적, 발판은 플레이어/적, 적 전용 발판(집 지붕)은 적만
     for (const Wall& wall: m_props.GetWalls())
     {
         m_walls.push_back(wall);
@@ -537,7 +498,6 @@ void StageState::UpdateWalls_()
         m_enemyPlatforms.push_back(platform);
     }
 
-    // 스테이지 충돌체 (box_collider): wall = 모두, groundExceptPlayer = 적만 서는 원웨이 바닥
     for (const StageCollider& collider: m_host.GetColliders())
     {
         if (collider.layer == eCollisionLayer::Wall)
@@ -576,10 +536,6 @@ Vec2 StageState::GetRespawnFeet_() const
     return { cam.x + m_tuning.player.respawnOffsetX, cam.y - m_tuning.player.respawnDropY };
 }
 
-// ===========================================
-//  이벤트 소비
-// ===========================================
-
 void StageState::ConsumeEnemyEvents_(
     GameContext& _ctx)
 {
@@ -597,7 +553,6 @@ void StageState::ConsumeEnemyEvents_(
             }
             break;
         case eEnemyEventKind::ItemDropped:
-            // 포로가 건네는 아이템 (POW): 튕기며 떨어진다
             (void)m_props.SpawnItem(event.drop, event.pos, true);
             break;
         case eEnemyEventKind::Freed:
@@ -626,7 +581,7 @@ void StageState::ConsumePropEvents_(
             ApplyGroundPatch_(_ctx, event.name, event.pos);
             break;
         case ePropEventKind::Damaged:
-        case ePropEventKind::DropSpawned:   // 아이템은 PropWorld 가 이미 만들었다
+        case ePropEventKind::DropSpawned:
         case ePropEventKind::Removed:
         case ePropEventKind::Culled:
             break;
@@ -646,7 +601,6 @@ const GroundMap* StageState::FindPatchMask_(
         }
     }
 
-    // 처음 요청: Baked/Textures/<sprite>.png 를 읽어 알파 마스크를 만든다 (실패도 캐시한다)
     PatchMask patch;
     patch.name = _sprite;
     const slug::FilePath path = _ctx.assetRoot / "Baked" / "Textures" / (_sprite + ".png");
@@ -676,7 +630,6 @@ void StageState::ApplyGroundPatch_(
     }
 }
 
-// 플레이어 소리 요청: 틱의 결과를 읽기만 한다 (시뮬레이션 상태를 바꾸지 않는다)
 void StageState::RequestSounds_(
     GameContext&                  _ctx,
     const slug::Vector<FxRequest>& _fx)
@@ -741,10 +694,6 @@ uint64_t StageState::HashState() const
     return hash;
 }
 
-// ===========================================
-//  종료
-// ===========================================
-
 bool StageState::IsFinished() const
 {
     if (m_bFailed)
@@ -777,10 +726,6 @@ std::unique_ptr<IGameState> StageState::TakeNextState()
     return CreateState("title");
 }
 
-// ===========================================
-//  Render
-// ===========================================
-
 void StageState::Render(
     GameContext& _ctx,
     const float  _alpha)
@@ -793,7 +738,6 @@ void StageState::Render(
     }
     renderer.BeginFrame({ 156, 190, 224, 255 });
 
-    // 카메라도 보간한다 (플레이어와 같은 위상)
     const Vec2 camNow    = m_camera.GetPositionNoShake();
     const Vec2 cameraPos = { std::floor(m_prevCameraPos.x + (camNow.x - m_prevCameraPos.x) * _alpha), std::floor(m_prevCameraPos.y + (camNow.y - m_prevCameraPos.y) * _alpha) };
 
@@ -831,7 +775,6 @@ void StageState::DrawBackdrop_(
         return;
     }
 
-    // 원경 중심 (화면 좌표) = (320 + offset.x - parallaxX*camCenterX, 224 + offset.y), 정수로 내림 (Docs/StageFormat.md §4)
     const float camCenterX = _cameraPos.x + Renderer::kLogicalWidth * 0.5f;
     const float centerX    = Renderer::kLogicalWidth * 0.5f + pMode->offset.x - pMode->parallaxX * camCenterX;
     const float centerY    = Renderer::kLogicalHeight * 0.5f + pMode->offset.y;
@@ -841,7 +784,6 @@ void StageState::DrawBackdrop_(
     const int left   = static_cast<int>(std::floor(centerX)) - pivotX;
     const int top    = static_cast<int>(std::floor(centerY)) - pivotY;
 
-    // 가로로 반복한다 (스테이지 길이 전체에서 화면이 비지 않도록). 세로는 한 장만 둔다.
     const int tileW = pSprite->width;
     int       x     = left % tileW;
     if (x > 0)
@@ -875,7 +817,6 @@ void StageState::DrawWorld_(
 
     DrawBackdrop_(_ctx, _cameraPos);
 
-    // --- 플레이스홀더 (정의가 없는 엔티티): 상자 + def 이름 + 체력. 판정이 없는 것은 F1 에서만 보인다 ---
     for (const PlaceholderEntity& entity: m_host.GetPlaceholders().GetEntities())
     {
         if (!entity.bHittable && !_ctx.bDebugDraw)
@@ -900,13 +841,11 @@ void StageState::DrawWorld_(
 
     const AnimationLibrary* pAnims = _ctx.pAnims;
 
-    // --- 적 (보병 / 차량 / 보스 / 탄) ---
     if (pAnims)
     {
         m_enemies.Submit(sprites, *pAnims, m_projectiles, _alpha);
     }
 
-    // --- 플레이어 ---
     {
         const Vec2 feet = Lerp_(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
         if (m_bRigBound && pAnims)
@@ -924,7 +863,6 @@ void StageState::DrawWorld_(
         }
     }
 
-    // --- 투사체 ---
     {
         for (const Bullet& bullet: m_projectiles.GetBullets())
         {
@@ -952,7 +890,6 @@ void StageState::DrawWorld_(
         }
     }
 
-    // --- 소품 / 아이템 / 디브리 ---
     if (pAnims)
     {
         m_props.Submit(sprites, *pAnims, m_spriteLib);
@@ -1002,13 +939,12 @@ void StageState::DrawDebugBoxes_(
 
 void StageState::DrawHud_(
     GameContext& _ctx,
-    const Vec2 /*_cameraPos*/)
+    const Vec2)
 {
     Renderer& renderer = *_ctx.pRenderer;
 
     m_ui.DrawHud(_ctx, MakeHudModel(m_player));
 
-    // --- 디버그 오버레이: F1 (현재 섹션, 열린 게이트, 워프 키, 월드 개수) ---
     if (_ctx.bDebugDraw)
     {
         const StagePlaceholders& placeholders = m_host.GetPlaceholders();
@@ -1059,8 +995,6 @@ void StageState::DrawHud_(
         m_ui.DrawText(_ctx, Renderer::kLogicalWidth / 2, 216, "PAUSED", style);
     }
 
-    // 오버레이(페이드 → 배너)는 항상 마지막
     m_ui.DrawOverlays(_ctx);
 }
-
-}   // namespace slug
+}

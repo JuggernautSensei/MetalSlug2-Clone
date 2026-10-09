@@ -8,13 +8,8 @@
 
 using namespace slug;
 
-// ===========================================
-//  테스트 도우미
-// ===========================================
-
 namespace
 {
-// 윗면이 floorY 인 평지 (폭 w, 높이 h)
 GroundMap MakeFlat(
     const int _w      = 400,
     const int _h      = 160,
@@ -34,7 +29,6 @@ Body MakeBody(
     return body;
 }
 
-// 컨트롤러처럼 매 틱 가로 속도를 지정하고 한 스텝 진행
 MoveResult Tick(
     Body&               _body,
     const PhysicsWorld& _world,
@@ -52,7 +46,6 @@ PhysicsWorld WorldOf(
     return world;
 }
 
-// 땅에 붙여서 시작
 Body StandingOn(
     const PhysicsWorld& _world,
     const float         _x,
@@ -62,11 +55,7 @@ Body StandingOn(
     EXPECT_TRUE(Physics::SnapToGround(body, _world, 64.f));
     return body;
 }
-}   // namespace
-
-// ===========================================
-//  중력 / 착지
-// ===========================================
+}
 
 TEST(Physics, FreeFallAppliesGravityPerStep)
 {
@@ -85,7 +74,7 @@ TEST(Physics, FallVelocityIsClampedToTerminal)
     const GroundMap    map   = GroundMap::MakeEmpty(400, 100);
     const PhysicsWorld world = WorldOf(map);
     Body               body  = MakeBody(100.f, 10.f);
-    body.bCollideGround      = false;   // 지면 없이 계속 낙하
+    body.bCollideGround      = false;
 
     PhysicsTuning tuning;
     for (int i = 0; i < 400; ++i)
@@ -117,7 +106,6 @@ TEST(Physics, LandsExactlyOnFlatGroundAndReportsLandedOnce)
 
 TEST(Physics, FastFallDoesNotTunnelThroughThinGround)
 {
-    // 1px 두께 바닥 + 그 아래는 공기. 터미널 속도(50px/틱)로 떨어져도 뚫지 않아야 한다.
     GroundMap map = GroundMap::MakeEmpty(400, 3000);
     map.FillRect(0, 2000, 399, 2000, true);
     const PhysicsWorld world = WorldOf(map);
@@ -177,10 +165,6 @@ TEST(Physics, SnapToGroundPlacesFeetOnSurface)
     EXPECT_FALSE(tooFar.bGrounded);
 }
 
-// ===========================================
-//  평지 이동
-// ===========================================
-
 TEST(Physics, WalkingOnFlatGroundIsFrameRateIndependentAtFixedStep)
 {
     const GroundMap    map   = MakeFlat();
@@ -213,13 +197,8 @@ TEST(Physics, StandingStillStaysGroundedWithoutDrift)
     EXPECT_FLOAT_EQ(body.position.y, 100.f);
 }
 
-// ===========================================
-//  경사
-// ===========================================
-
 namespace
 {
-// 열 c 의 지면 윗면이 high 로 올라가는 45° 오르막 (x 가 증가할수록 y 감소). 열 rampStart..rampEnd 에서 1:1.
 GroundMap MakeRamp45(
     const int _rampStart = 50,
     const int _rampEnd   = 90,
@@ -258,7 +237,7 @@ int RampSurfaceAt(
     }
     return _baseY;
 }
-}   // namespace
+}
 
 TEST(Physics, WalksUpA45DegreeRampWithoutLeavingTheGround)
 {
@@ -272,12 +251,10 @@ TEST(Physics, WalksUpA45DegreeRampWithoutLeavingTheGround)
         ASSERT_TRUE(result.bGroundedNow) << "tick " << i << " x=" << body.position.x;
         ASSERT_FALSE(result.bHitWallRight) << "tick " << i;
 
-        // 발 센서(footHalfWidth=1)가 덮는 열 중 가장 높은 지면 위에 선다
         const int highestCol = CeilToInt(body.position.x + 1.f) - 1;
         ASSERT_FLOAT_EQ(body.position.y, static_cast<float>(RampSurfaceAt(highestCol))) << "tick " << i << " x=" << body.position.x;
     }
 
-    // 램프 끝(고원)에 도달
     EXPECT_GT(body.position.x, 90.f);
     EXPECT_FLOAT_EQ(body.position.y, 60.f);
 }
@@ -309,7 +286,6 @@ TEST(Physics, FlatGroundReportsFlatNormal)
 
 TEST(Physics, WalksDownARampAndStaysGrounded)
 {
-    // 오르막을 거꾸로: 왼쪽이 높고 오른쪽이 낮은 내리막
     GroundMap map = GroundMap::MakeEmpty(400, 200);
     for (int c = 0; c < 400; ++c)
     {
@@ -332,7 +308,6 @@ TEST(Physics, WalksDownARampAndStaysGrounded)
 
 TEST(Physics, StepUpToLowCurbButBlockedByTallWall)
 {
-    // x >= 150 에 높이 3px 턱, x >= 250 에 높이 8px 벽
     GroundMap map = MakeFlat();
     map.FillRect(150, 97, 249, 99, true);
     map.FillRect(250, 92, 399, 99, true);
@@ -348,20 +323,13 @@ TEST(Physics, StepUpToLowCurbButBlockedByTallWall)
 
     EXPECT_TRUE(bHitWall);
     EXPECT_TRUE(body.bGrounded);
-    // 3px 턱은 올라섰다 (현재 서 있는 발 높이 = 97)
     EXPECT_FLOAT_EQ(body.position.y, 97.f);
-    // 8px 벽 앞에서 멈췄다: 오른쪽 모서리가 벽 열(250) 이내
     EXPECT_LE(body.position.x + 12.f, 250.f + 0.01f);
     EXPECT_GT(body.position.x, 200.f);
 }
 
-// ===========================================
-//  낭떠러지 / 스냅
-// ===========================================
-
 TEST(Physics, WalksOffALedgeAndFallsThenLands)
 {
-    // x < 100 : 윗면 y=80, x >= 100 : 윗면 y=150
     GroundMap map = GroundMap::MakeEmpty(400, 200);
     map.FillRect(0, 80, 99, 199, true);
     map.FillRect(100, 150, 399, 199, true);
@@ -389,7 +357,6 @@ TEST(Physics, LedgeEdgeUsesCenterFootSensor)
     map.FillRect(0, 80, 99, 199, true);   // 열 99 까지가 땅
     const PhysicsWorld world = WorldOf(map);
 
-    // 몸 반이 허공에 걸쳐도 중심이 땅 위면 선다
     Body body = StandingOn(world, 95.f, 80.f);
     for (int i = 0; i < 10; ++i)
     {
@@ -397,7 +364,6 @@ TEST(Physics, LedgeEdgeUsesCenterFootSensor)
     }
     EXPECT_TRUE(body.bGrounded);
 
-    // 중심(발 센서)이 완전히 벗어나면 떨어진다
     body.position.x = 103.f;
     (void)Tick(body, world);
     EXPECT_FALSE(body.bGrounded);
@@ -405,7 +371,6 @@ TEST(Physics, LedgeEdgeUsesCenterFootSensor)
 
 TEST(Physics, SmallDropIsSnappedWhileGrounded)
 {
-    // 3px 단차 내리막 (maxSnapDown=4 이내): 공중에 뜨지 않고 붙어서 내려간다
     GroundMap map = GroundMap::MakeEmpty(400, 200);
     map.FillRect(0, 100, 149, 199, true);
     map.FillRect(150, 103, 399, 199, true);
@@ -437,10 +402,6 @@ TEST(Physics, DeepDropIsNotSnapped)
     EXPECT_TRUE(bLeft);
 }
 
-// ===========================================
-//  점프 / 천장 / 벽
-// ===========================================
-
 TEST(Physics, JumpReachesExpectedApexAndReturns)
 {
     const GroundMap    map   = MakeFlat();
@@ -466,11 +427,9 @@ TEST(Physics, JumpReachesExpectedApexAndReturns)
 
     EXPECT_TRUE(bLeft);
     EXPECT_TRUE(bLanded);
-    // v²/2g = 128.6px (이산화 오차 허용)
     const float apexHeight = 100.f - minY;
     EXPECT_GT(apexHeight, 120.f);
     EXPECT_LT(apexHeight, 132.f);
-    // 체공 시간 2v/g ≈ 0.857s ≈ 51틱
     EXPECT_NEAR(static_cast<float>(ticks), 51.f, 3.f);
     EXPECT_FLOAT_EQ(body.position.y, 100.f);
 }
@@ -508,10 +467,8 @@ TEST(Physics, CeilingStopsAJumpAndZeroesVelocity)
         }
     }
     ASSERT_TRUE(bHit);
-    // 머리 윗면이 천장 아랫면(60)에 딱 닿음: feet - 40 == 60
     EXPECT_FLOAT_EQ(body.position.y - body.size.y, 60.f);
 
-    // 이후 아래로 떨어진다
     for (int i = 0; i < 80; ++i)
     {
         (void)Tick(body, world);
@@ -579,7 +536,7 @@ TEST(Physics, AirborneBodyClearingTheLedgeLandsOnTop)
     const PhysicsWorld world = WorldOf(map);
     Body               body  = StandingOn(world, 150.f, 100.f);
 
-    body.velocity.y = -kJumpSpeed;   // 충분히 높이 뜬다
+    body.velocity.y = -kJumpSpeed;
     for (int i = 0; i < 60; ++i)
     {
         (void)Tick(body, world, 150.f);
@@ -591,21 +548,16 @@ TEST(Physics, AirborneBodyClearingTheLedgeLandsOnTop)
 
 TEST(Physics, AirborneBodyDoesNotStepUpLedges)
 {
-    // 공중에서는 계단 오르기(step-up) 보정이 없다: 3px 위 턱 모서리에 걸리면 막힌다.
     GroundMap map = MakeFlat();
     map.FillRect(200, 94, 399, 99, true);   // 윗면 y=94 (바닥보다 6px 높음)
     const PhysicsWorld world = WorldOf(map);
 
-    Body             body   = MakeBody(187.f, 98.f);   // 바닥 2px 위 공중, 오른쪽 모서리(199)가 턱 열(200) 바로 앞
+    Body             body   = MakeBody(187.f, 98.f);
     const MoveResult result = Tick(body, world, kRunSpeed);
     EXPECT_TRUE(result.bHitWallRight);
     EXPECT_GE(body.position.y, 98.f);   // 끌어올려지지 않는다
     EXPECT_FLOAT_EQ(body.position.x + 12.f, 200.f);
 }
-
-// ===========================================
-//  플랫폼 / 벽 상자
-// ===========================================
 
 TEST(Physics, OneWayPlatformPassesFromBelowAndLandsFromAbove)
 {
@@ -634,7 +586,7 @@ TEST(Physics, OneWayPlatformPassesFromBelowAndLandsFromAbove)
         }
     }
 
-    EXPECT_FALSE(bCeiling);   // 아래에서 위로는 통과
+    EXPECT_FALSE(bCeiling);
     EXPECT_TRUE(bLanded);
     EXPECT_FLOAT_EQ(body.position.y, 60.f);   // 윗면 위에 섰다
 }
@@ -649,7 +601,6 @@ TEST(Physics, OneWayPlatformDoesNotCatchBodiesThatAreBelowTheTop)
     PhysicsWorld world = WorldOf(map);
     world.platforms    = slug::Span<const Platform> { &oneWay, 1 };
 
-    // 발이 이미 윗면보다 아래(80)에 있는 채 낙하/점프 정점에 있는 경우
     Body body = MakeBody(150.f, 80.f);
     for (int i = 0; i < 60; ++i)
     {
@@ -714,7 +665,6 @@ TEST(Physics, SolidPlatformSupportsBlocksSidesAndBumpsHead)
     PhysicsWorld world = WorldOf(map);
     world.platforms    = slug::Span<const Platform> { &solid, 1 };
 
-    // 옆에서 막힘
     Body body = StandingOn(world, 100.f, 100.f);
     bool bHit = false;
     for (int i = 0; i < 90; ++i)
@@ -724,7 +674,6 @@ TEST(Physics, SolidPlatformSupportsBlocksSidesAndBumpsHead)
     EXPECT_TRUE(bHit);
     EXPECT_FLOAT_EQ(body.position.x + 12.f, 150.f);
 
-    // 위에서 착지
     Body faller = MakeBody(180.f, 0.f);
     for (int i = 0; i < 120; ++i)
     {
@@ -733,7 +682,6 @@ TEST(Physics, SolidPlatformSupportsBlocksSidesAndBumpsHead)
     EXPECT_TRUE(faller.bGrounded);
     EXPECT_FLOAT_EQ(faller.position.y, 50.f);
 
-    // 아래에서 머리를 부딪힘: 높은 곳에 매달린 솔리드
     Platform hanging;
     hanging.box         = Aabb::FromMinMax({ 300.f, 20.f }, { 360.f, 40.f });
     PhysicsWorld world2 = WorldOf(map);
@@ -789,7 +737,6 @@ TEST(Physics, WallBoxBlocksAndCanBeStoodOn)
     EXPECT_TRUE(bHit);
     EXPECT_FLOAT_EQ(body.position.x + 12.f, 200.f);
 
-    // 왼쪽에서 접근해도 막힌다
     Body other = StandingOn(world, 300.f, 100.f);
     bHit       = false;
     for (int i = 0; i < 90; ++i)
@@ -817,10 +764,6 @@ TEST(Physics, BodiesCanOptOutOfCollisionLayers)
     EXPECT_FLOAT_EQ(ghost.position.y, 100.f);
 }
 
-// ===========================================
-//  결정성
-// ===========================================
-
 namespace
 {
 struct Snapshot
@@ -840,7 +783,6 @@ Snapshot Capture(
     return { std::bit_cast<uint32_t>(_body.position.x), std::bit_cast<uint32_t>(_body.position.y), std::bit_cast<uint32_t>(_body.velocity.x), std::bit_cast<uint32_t>(_body.velocity.y), _body.bGrounded };
 }
 
-// 램프, 낭떠러지, 원웨이, 벽이 섞인 시나리오를 입력 스크립트로 600스텝 돌린다
 slug::Vector<Snapshot> RunScenario()
 {
     GroundMap map = MakeRamp45(50, 90, 100);
@@ -875,7 +817,7 @@ slug::Vector<Snapshot> RunScenario()
     }
     return history;
 }
-}   // namespace
+}
 
 TEST(Physics, SameInputsProduceBitIdenticalResultsAfter600Steps)
 {
@@ -891,7 +833,6 @@ TEST(Physics, SameInputsProduceBitIdenticalResultsAfter600Steps)
 
 TEST(Physics, ScenarioActuallyMovesTheBody)
 {
-    // 결정성 테스트가 "아무 것도 안 하는" 시나리오로 통과하지 않도록 최소한의 움직임을 확인
     const slug::Vector<Snapshot> history = RunScenario();
     const float                 endX    = std::bit_cast<float>(history.back().x);
     EXPECT_GT(endX, 100.f);

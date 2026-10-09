@@ -12,7 +12,6 @@ struct NullHandleType
 
 inline constexpr NullHandleType kNullHandle {};
 
-// 하위 24bit 는 인덱스, 상위 8bit 는 세대(token). 값 0xFFFFFFFF 는 null.
 template<typename T>
 class Handle
 {
@@ -44,8 +43,7 @@ private:
 
     uint32_t m_value = kNullValue;
 };
-
-}   // namespace slug
+}
 
 template<typename T>
 struct std::hash<slug::Handle<T>>

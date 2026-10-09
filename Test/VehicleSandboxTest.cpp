@@ -9,7 +9,6 @@ namespace
 {
     constexpr float kGroundY = 378.f;
 
-    // 샌드박스 상태를 GameContext 로 직접 돌린다 (숫자키 디버그 스폰 경로)
     struct DirectState
     {
         GameContext  ctx   = {};
@@ -21,11 +20,7 @@ namespace
             state.OnEnter(ctx);
         }
     };
-}   // namespace
-
-// ===========================================
-//  디버그 스폰 (숫자키 9 → 차량 5종 순환)
-// ===========================================
+}
 
 TEST(VehicleSandbox, KeyNineSpawnsTheFiveVehiclesInTurnAndWraps)
 {
@@ -51,10 +46,6 @@ TEST(VehicleSandbox, KeyTenStillDoesNothing)
     d.state.Tick(d.ctx, d.input);
     EXPECT_EQ(d.state.GetEnemies().GetCount(), 0u);
 }
-
-// ===========================================
-//  배치 / 지면
-// ===========================================
 
 TEST(VehicleSandbox, GroundVehiclesRestOnTheGroundAndHelicoptersHover)
 {
@@ -105,15 +96,10 @@ TEST(VehicleSandbox, SandboxHashIsDeterministicWithAllVehiclesPresent)
     EXPECT_EQ(first, second);
 }
 
-// ===========================================
-//  실제 플레이어 사격 (PlayerController 경로): 권총 3 피해
-// ===========================================
-
 TEST(VehicleSandbox, PistolBurstsWearDownAMissleTankAtThreeDamagePerHit)
 {
     Sim sim { MakeEnemyConfig() };
     sim.Step(2);
-    // 전차를 권총 사거리 안, 플레이어 왼쪽 방향이 아닌 오른쪽 240 px 에 둔다 (미사일 궤적은 머리 위로 지나간다)
     const EnemyHandle h = sim.State().SpawnEnemy("missle_tank", { sim.X() + 240.f, kGroundY });
     sim.Hold(eAction::Shot);
     sim.Step(40);

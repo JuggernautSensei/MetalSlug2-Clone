@@ -3,25 +3,19 @@
 
 namespace slug
 {
-
-// ===========================================
-//  플레이어 공용 열거형
-// ===========================================
-
 enum class ePlayerState : uint8_t
 {
     Idle,
     Run,
-    Jump,   // 상승/하강 모두 (하강 여부는 속도로 구분)
+    Jump,
     Crouch,
     CrouchMove,
     Dead,
-    Respawn,   // 리스폰 낙하 (무적)
+    Respawn,
     Victory,
     Count
 };
 
-// 겹침 동작: 상체에 덮어 재생되며 이동/점프 상태를 막지 않는다.
 enum class eOverlay : uint8_t
 {
     None,
@@ -35,8 +29,8 @@ enum class eAim : uint8_t
     Forward,
     Up,
     DiagUp,
-    Down,      // 공중에서만
-    DiagDown   // 공중에서만
+    Down,
+    DiagDown
 };
 
 enum class ePose : uint8_t
@@ -89,7 +83,5 @@ enum class ePose : uint8_t
     return "?";
 }
 
-// 소유자 ID 규약 (HitResolver 의 owner). 0 은 kNoOwner.
 inline constexpr uint32_t kPlayerOwnerId = 1;
-
-}   // namespace slug
+}

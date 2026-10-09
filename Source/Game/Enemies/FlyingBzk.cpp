@@ -8,13 +8,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  FlyingBzk — 낙하산 바주카 병사 (Docs/EnemySpecs.md §1.4)
-//   중력 없이 일정 속도로 하강하며 수평으로 천천히 흔들린다. 화면 안에 있는 동안 주기적으로 플레이어 쪽으로 쏜다.
-//   발이 지면에 닿으면 낙하산이 터지고 같은 자리에 soldier_bzk 로 변신한다 (userTag / drop 승계).
-// ===========================================
-
 namespace
 {
     enum eFlyingState : int
@@ -22,12 +15,6 @@ namespace
         kDescend,
         kShot
     };
-
-    // e.aux  = 발사 타이머 (틱)
-    // e.aux2 = 자세 (0..4)
-    // e.aux3 = 수평 흔들림 방향 (-1 / +1)
-    // e.aux4 = 흔들림 타이머 (틱)
-    // e.counter = 쏜 횟수
 
     [[nodiscard]] bool IsOnScreen_(const Enemy& _e, const EnemyEnv& _env)
     {
@@ -44,7 +31,7 @@ namespace
         {
             if (std::abs(deg - _cfg.postureDeg[i]) <= _cfg.windowDeg)
             {
-                _e.aux2 = i;   // 창 사이 간격에서는 직전 자세 유지
+                _e.aux2 = i;
                 break;
             }
         }
@@ -74,7 +61,6 @@ namespace
             return;
         }
 
-        // --- 이동: 하강 + 수평 흔들림 ---
         if (++_e.aux4 >= cfg.driftFlipTicks)
         {
             _e.aux4 = 0;
@@ -86,7 +72,6 @@ namespace
         _e.body.position.x += static_cast<float>(_e.aux3) * cfg.driftSpeed * kStepSec;
         _e.body.position.y += cfg.descendSpeed * kStepSec;
 
-        // --- 착지 → 병사로 변신 ---
         {
             Body probe = _e.body;
             if (Physics::SnapToGround(probe, _env.ctx.physics, cfg.landProbe))
@@ -115,7 +100,6 @@ namespace
             }
         }
 
-        // --- 조준 / 발사 ---
         FacePlayer(_e, _env);
         UpdatePosture_(_e, cfg, _env);
 
@@ -152,7 +136,7 @@ namespace
         _e.bGrounded = false;
         BeginSoldierDeath(_e, _def, _env);
     }
-}   // namespace
+}
 
 const BehaviorOps kFlyingBzkOps = {
     .init              = &Init_,
@@ -191,7 +175,6 @@ void ParseFlyingBzkCfg(
     }
     c.weaponRocket = _r.Weapon("rocket");
 
-    // 낙하산 파괴 이펙트 (착지 변신 시)
     if (_def.overlayClip >= 0)
     {
         c.clipPara   = _def.overlayClip;
@@ -201,5 +184,4 @@ void ParseFlyingBzkCfg(
     c.paraDestroy.offset = _r.ReadVec2("paraDestroyOffset", c.paraOffset);
     c.paraDestroy.layer  = 20;
 }
-
-}   // namespace slug
+}

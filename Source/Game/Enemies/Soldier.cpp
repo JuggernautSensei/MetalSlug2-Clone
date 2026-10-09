@@ -6,25 +6,18 @@
 
 namespace slug
 {
-
-// ===========================================
-//  Soldier — 일반 병사 3종 (폭탄 / 칼 / 미사일). 같은 몸, AI 만 다르다. 수치는 Enemies.json (Docs/EnemySpecs.md §1.1).
-//   틱 순서: 판단(전이/속도) → 물리 → 착지 후처리 → 근접 판정 등록.
-//   레거시 버그 수정: 이동 중에도 매 틱 플레이어 쪽을 본다 / 하강(MoveDown)은 원웨이 위에서만 / 상태 전이는 같은 틱.
-// ===========================================
-
 namespace
 {
     enum eSoldierState : int
     {
-        kWait,             // 활성 전 대기 (착지 후)
-        kFall,             // 낙하 (스폰 직후 / 걷다 떨어짐)
+        kWait,
+        kFall,
         kLand,
         kIdle,
         kMove,
-        kMoveDown,         // 원웨이 발판 통과 하강
-        kHJump,            // 전진 점프
-        kThrow,            // 폭탄 / 미사일 던지기
+        kMoveDown,
+        kHJump,
+        kThrow,
         kSlash,
         kJumpSlashReady,
         kJumpSlash,
@@ -38,7 +31,6 @@ namespace
         return std::abs(DxToPlayer(_e, _env));
     }
 
-    // 하강 / 점프 우선 규칙. 둘 다 아니면 _fallback.
     void Reposition_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, const int _fallback)
     {
         const SoldierCfg& cfg  = _def.soldier;
@@ -62,7 +54,7 @@ namespace
         const SoldierCfg& cfg = _def.soldier;
         if (_state == kMove && _e.aiVariant == 1)
         {
-            _state = kIdle;   // 제자리 고정 변종: 걷지 않는다
+            _state = kIdle;
         }
 
         EnterState(_e, _state);
@@ -128,7 +120,6 @@ namespace
         }
     }
 
-    // --- 폭탄 병사 ---
     void DecideBomb_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
     {
         const SoldierCfg& cfg   = _def.soldier;
@@ -163,7 +154,6 @@ namespace
             return;
         }
 
-        // Move
         if (_e.stateTicks >= cfg.cooldownTicks)
         {
             switch (Roll(_env, 3))
@@ -183,7 +173,6 @@ namespace
         }
     }
 
-    // --- 칼 병사 ---
     void DecideSword_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
     {
         const SoldierCfg& cfg   = _def.soldier;
@@ -231,7 +220,6 @@ namespace
             return;
         }
 
-        // Move
         if (_e.stateTicks >= cfg.cooldownTicks)
         {
             int next = kMove;
@@ -260,7 +248,6 @@ namespace
         }
     }
 
-    // --- 미사일 병사 ---
     void DecideMissile_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
     {
         const SoldierCfg& cfg   = _def.soldier;
@@ -290,7 +277,6 @@ namespace
             return;
         }
 
-        // Move
         if (_e.stateTicks >= cfg.cooldownTicks)
         {
             Reposition_(_e, _def, _env, Roll(_env, 2) == 0 ? kThrow : kIdle);
@@ -300,10 +286,6 @@ namespace
             Go_(_e, _def, _env, kHJump);
         }
     }
-
-    // ===========================================
-    //  Ops
-    // ===========================================
 
     void Init_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
     {
@@ -317,7 +299,6 @@ namespace
         const float       speed = _def.physics.speed;
         const float       face  = static_cast<float>(_e.facing);
 
-        // --- 1) 판단 ---
         switch (_e.state)
         {
             case kWait:
@@ -359,7 +340,7 @@ namespace
                     Go_(_e, _def, _env, kFall);
                     break;
                 }
-                FacePlayer(_e, _env);   // 이동 중에도 플레이어 쪽을 본다
+                FacePlayer(_e, _env);
                 switch (cfg.ai)
                 {
                     case eSoldierAi::Bomb: DecideBomb_(_e, _def, _env); break;
@@ -440,10 +421,8 @@ namespace
             default: break;
         }
 
-        // --- 2) 물리 ---
         (void)StepPhysics(_e, _def, _env);
 
-        // --- 3) 착지 후처리 (같은 틱에 반영) ---
         switch (_e.state)
         {
             case kFall:
@@ -474,7 +453,6 @@ namespace
             default: break;
         }
 
-        // --- 4) 근접 판정 ---
         TickMelee(_e, _def, _env);
     }
 
@@ -482,7 +460,7 @@ namespace
     {
         BeginSoldierDeath(_e, _def, _env);
     }
-}   // namespace
+}
 
 const BehaviorOps kSoldierOps = {
     .init              = &Init_,
@@ -492,10 +470,6 @@ const BehaviorOps kSoldierOps = {
     .tickDying         = &TickSoldierDeath,
     .registerHurtboxes = nullptr,
 };
-
-// ===========================================
-//  설정 파서
-// ===========================================
 
 void ParseSoldierCfg(
     DefReader& _r,
@@ -567,5 +541,4 @@ void ParseSoldierCfg(
         }
     }
 }
-
-}   // namespace slug
+}

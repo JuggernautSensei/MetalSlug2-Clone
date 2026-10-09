@@ -20,12 +20,6 @@
 #include "Game/Ui/Hud.h"
 #include "StageTestUtil.h"
 
-// ===========================================
-//  stage0 통합 테스트 (헤드리스). 실제 Stage0.json + 실제 정의(Enemies/Vehicles/Boss/Props) + 실제 지면으로
-//   StageState 를 SimRunner 로 돌린다. 봇은 오른쪽으로 걸으며 주기적으로 쏘고, 칼은 자동 발동에 맡긴다.
-//   피해는 무적(디버그 ExtendInvincibility)으로 막아 진행을 본다. 무적이 없을 때의 사망 경로는 별도 검사한다.
-// ===========================================
-
 namespace
 {
 using namespace slug;
@@ -45,12 +39,10 @@ public:
     }
 
     [[nodiscard]] StageState&  State() { return *m_pState; }
-    [[nodiscard]] IGameState*  Current() const { return m_runner->GetState(); }   // 끝 장면 후에는 스테이지가 교체되므로 포인터 비교만 한다
+    [[nodiscard]] IGameState*  Current() const { return m_runner->GetState(); }
     [[nodiscard]] const IGameState* StagePtr() const { return m_pState; }
     [[nodiscard]] GameContext& Ctx() { return m_ctx; }
 
-    // 봇 한 틱: 무적 유지, 오른쪽 이동, _bShoot 이면 사격 (24 틱 주기로 3 틱씩 누른다)
-    // 벽(상자 충돌체/고체 소품)에 막혀 20 틱 동안 전진하지 못하면: 뒤로 물러난 뒤 달려가며 점프한다 (달리기 점프)
     void BotStep(const bool _bRight, const bool _bShoot, const int _count = 1)
     {
         for (int i = 0; i < _count; ++i)
@@ -66,7 +58,6 @@ public:
                 m_stuckTicks = 0;
             }
 
-            // 앞쪽 40px 안에 키 큰 벽(충돌체/소품 벽)이 있으면 달리며 점프한다 (정점에서 벽 위로 넘어가도록 점프를 누른 채 유지)
             if (m_backTicks == 0 && m_jumpTicks == 0 && player.IsGrounded() && IsWallAhead_(player.GetFeet()))
             {
                 m_jumpTicks = 36;
@@ -107,7 +98,6 @@ public:
 
     void Hold(const eAction _action) { m_frame.Set(_action, true); }
 
-    // 디버그 워프 요청 (F5 = 1, F6 = 2). 다음 틱에 소비된다.
     void Warp(const int _code, const int _count = 1)
     {
         for (int i = 0; i < _count; ++i)
@@ -119,7 +109,6 @@ public:
     }
 
 private:
-    // 발 앞 46px 안에 발판보다 위로 솟은 벽(상자 충돌체 wall / 소품 벽)이 있는가
     [[nodiscard]] bool IsWallAhead_(
         const Vec2 _feet) const
     {
@@ -144,16 +133,15 @@ private:
     slug::RngMt19937 m_rng;
     GameContext     m_ctx      = {};
     InputFrame      m_frame    = {};
-    StageState*     m_pState   = nullptr;   // m_runner 가 소유한다
+    StageState*     m_pState   = nullptr;
     uint64_t        m_botTick  = 0;
     float           m_lastX    = -1.f;
     int             m_stuckTicks = 0;
     int             m_jumpTicks  = 0;
     int             m_backTicks  = 0;
-    std::unique_ptr<SimRunner> m_runner = nullptr;   // 가장 마지막에 파괴되어야 OnExit 이 m_ctx 를 본다
+    std::unique_ptr<SimRunner> m_runner = nullptr;
 };
 
-// 스테이지 종료 경로 검사용: 실제 정의 라이브러리 + StageWorldHost + StageRunner (JSON 스테이지)
 class GateFixture
 {
 public:
@@ -203,12 +191,7 @@ public:
     PlayerController  player;
     Tuning            tuning;
 };
-
-}   // namespace
-
-// ===========================================
-//  정의와 엔티티 배치
-// ===========================================
+}
 
 TEST(StageIntegration, Stage0UsesRealEnemiesAndPropsInsteadOfPlaceholders)
 {
@@ -219,17 +202,14 @@ TEST(StageIntegration, Stage0UsesRealEnemiesAndPropsInsteadOfPlaceholders)
     EXPECT_GT(sim.State().GetEnemies().CountAlive("soldier_bomb"), 0);
     EXPECT_GT(sim.State().GetProps().GetCount(), 0u);   // intro 의 트럭 두 대
 
-    // 정의가 있는 적/소품은 플레이스홀더로 남지 않는다
     for (const PlaceholderEntity& entity: host.GetPlaceholders().GetEntities())
     {
-        EXPECT_EQ(entity.kind, eEntityKind::Decor) << entity.def;   // 현재 정의가 없는 것은 장식(anim_decor/sprite_decor) 뿐이다
+        EXPECT_EQ(entity.kind, eEntityKind::Decor) << entity.def;
     }
 }
 
 TEST(StageIntegration, GroundPatchMaskAndApplyClearTheDestroyedHouseFootprint)
 {
-    // 집 픽셀맵(Stage0_House_4_PixelMap): 레거시 규칙상 고체(파란 픽셀)가 없고 전부 공기다.
-    // 파괴 패치는 발자국 안의 지면을 비워야 하며, 발자국 밖은 그대로 남아야 한다.
     const std::optional<GroundMap> mask = LoadGroundPatchMask(slug::FilePath { SLUG_ASSET_DIR } / "Baked" / "Textures" / "Stage0_House_4_PixelMap.png");
     ASSERT_TRUE(mask.has_value());
     EXPECT_EQ(mask->GetWidth(), 1306);
@@ -249,7 +229,6 @@ TEST(StageIntegration, SpawnedEnemiesStandOnTheGroundAtTheirScriptedFeet)
 {
     IntegrationSim sim;
     sim.Step(2);
-    // 첫 섹션(intro) 의 soldier_bomb (x 900) 은 지면 y 378 에 서 있어야 한다
     bool bFound = false;
     for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
     {
@@ -265,8 +244,6 @@ TEST(StageIntegration, SpawnedEnemiesStandOnTheGroundAtTheirScriptedFeet)
 
 TEST(StageIntegration, LongWalkThroughTheFirstSectionsWithoutWarpReachesTheStreet)
 {
-    // 워프 없이 intro → street 를 걷는다. x≈1119 의 box_collider(벽) 는 점프(정점 약 72px)로 넘을 수 있어야 한다.
-    // (레거시 90px 높이는 새 점프로 못 넘어 48px 로 낮췄다 — Stage0.json)
     IntegrationSim sim;
     for (int i = 0; i < 6000 && sim.State().GetPlayer().GetFeet().x < 1300.f; ++i)
     {
@@ -278,8 +255,6 @@ TEST(StageIntegration, LongWalkThroughTheFirstSectionsWithoutWarpReachesTheStree
     EXPECT_GT(sim.State().GetEnemies().GetCount(), 0u);            // 실제 적이 스폰되어 있다
 }
 
-// 전 구간 연쇄 워프 (F5 를 섹션 수만큼 눌러 모든 섹션을 silent/일반 실행) + 봇 120 틱씩 → F6 보스 → 보스 처치 → 흐름 종료.
-// 워프 경로에서도 스폰/게이트/소품 지붕/지면 교체가 충돌 없이 돌아감을 확인한다.
 TEST(StageIntegration, WarpChainThroughEverySectionReachesTheBossAndEndsTheStage)
 {
     IntegrationSim sim(true);
@@ -304,10 +279,6 @@ TEST(StageIntegration, WarpChainThroughEverySectionReachesTheBossAndEndsTheStage
     }
     EXPECT_NE(sim.Current(), pStage);
 }
-
-// ===========================================
-//  판정 / 점수 / 게이트
-// ===========================================
 
 TEST(StageIntegration, EnemyDeathScoreReachesThePlayerAndTheHudModel)
 {
@@ -337,12 +308,10 @@ TEST(StageIntegration, GateOpensOnlyAfterTheSpawnedTargetDies)
 
 TEST(StageIntegration, PropRoofCarriesThePlayerAboveTheGround)
 {
-    IntegrationSim sim(true);   // 워프 요청은 F1(디버그) 상태에서만 소비된다
-    // 거리 섹션(street)까지 워프 → 상점 지붕이 생긴다 (소품은 silent 실행으로도 놓인다)
+    IntegrationSim sim(true);
     sim.Warp(1, 2);
     sim.Step(2);
 
-    // shop_5 (x 2513, 중심 y 181) 의 지붕 위로 떨어뜨린다
     sim.State().GetPlayer().Reset(Tuning {}, { 2513.f, 60.f });
     sim.Step(240);
     const Vec2 feet = sim.State().GetPlayer().GetFeet();
@@ -350,10 +319,6 @@ TEST(StageIntegration, PropRoofCarriesThePlayerAboveTheGround)
     EXPECT_NEAR(feet.x, 2513.f, 80.f);
     EXPECT_LT(feet.y, 300.f);   // 지면(378)이 아니라 지붕 위
 }
-
-// ===========================================
-//  끝까지: 워프 + 보스 처치 → MISSION COMPLETE → 타이틀
-// ===========================================
 
 TEST(StageIntegration, DebugWarpToTheBossThenBossDeathEndsTheStageThroughTheFlow)
 {
@@ -369,13 +334,11 @@ TEST(StageIntegration, DebugWarpToTheBossThenBossDeathEndsTheStageThroughTheFlow
     {
         sim.Step();
     }
-    // 보스 사망 → 사망 연출 → endStage → MISSION COMPLETE 흐름 → 타이틀 상태로 교체
     EXPECT_NE(sim.Current(), pStage);
 }
 
 TEST(StageIntegration, GameOverRunsTheGameOverFlowAndReturnsToTitle)
 {
-    // 무적이 없을 때의 실제 사망 경로: 목숨이 다하면 GAME OVER 흐름을 거쳐 타이틀로 간다
     IntegrationSim sim;
     sim.Step(2);
     const IGameState* pStage = sim.StagePtr();

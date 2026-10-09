@@ -9,11 +9,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  포맷
-// ===========================================
-
 slug::String FormatScore(
     const int _score)
 {
@@ -38,10 +33,6 @@ slug::String FormatTimer(
     return std::format("{:02}", std::clamp(_seconds, 0, 99));
 }
 
-// ===========================================
-//  모델
-// ===========================================
-
 HudModel MakeHudModel(
     const PlayerController& _player)
 {
@@ -62,10 +53,6 @@ HudModel MakeHudModel(
     }
     return model;
 }
-
-// ===========================================
-//  배치
-// ===========================================
 
 namespace
 {
@@ -101,7 +88,7 @@ namespace
         item.scale = _scale;
         return item;
     }
-}   // namespace
+}
 
 slug::Vector<HudItem> BuildHudItems(
     const HudModel& _model,
@@ -111,11 +98,9 @@ slug::Vector<HudItem> BuildHudItems(
 
     if (_model.bShowPlayer)
     {
-        // 점수 (오른쪽 정렬), 목숨
         items.push_back(MakeText_(FormatScore(_model.score), _layout.scoreRightX, _layout.scoreY, eTextAlign::Right, eFontColor::Default));
         items.push_back(MakeText_(std::format("1UP X{}", std::max(0, _model.lives)), _layout.livesX, _layout.livesY, eTextAlign::Left, eFontColor::White));
 
-        // ARMS / BOMB 패널 + 숫자
         items.push_back(MakeSprite_("PlayerStateUI_Bomb", _layout.armsPanelX + 62, _layout.armsPanelY + 17));
 
         const int digitsY = _layout.armsPanelY + _layout.digitsDY;
@@ -134,7 +119,6 @@ slug::Vector<HudItem> BuildHudItems(
         items.push_back(MakeText_(FormatBombs(_model.bombs), _layout.armsPanelX + _layout.bombRightDX, digitsY, eTextAlign::Right, eFontColor::RedYellow));
     }
 
-    // 타이머
     if (_model.bShowTimer)
     {
         HudItem item;
@@ -145,19 +129,16 @@ slug::Vector<HudItem> BuildHudItems(
         items.push_back(std::move(item));
     }
 
-    // 2P PRESS START 점멸
     if (_model.bShowPressStart2p && IsBlinkOn(_model.uiTick, _layout.pressStartBlinkTicks))
     {
         items.push_back(MakeSprite_("PressStartUI", _layout.pressStartCenterX, _layout.pressStartCenterY));
     }
 
-    // 레벨 표시
     if (!_model.levelSprite.empty())
     {
         items.push_back(MakeSprite_(_model.levelSprite, _layout.levelCenterX, _layout.levelCenterY));
     }
 
-    // 보스 HP 바: 안쪽 채움(먼저) → 틀(위)
     if (_model.bShowBoss)
     {
         constexpr int kFrameW = 106;   // PlayerHPUI
@@ -190,5 +171,4 @@ slug::Vector<HudItem> BuildHudItems(
 
     return items;
 }
-
-}   // namespace slug
+}

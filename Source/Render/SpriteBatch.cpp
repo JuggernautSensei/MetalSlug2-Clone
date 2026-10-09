@@ -10,7 +10,6 @@
 
 #include <SDL3/SDL.h>
 
-// 다른 번역 단위(Baker 등)가 stb_image 구현을 따로 포함해도 링크 충돌이 없도록 static 으로 만든다.
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -21,18 +20,12 @@
 
 namespace slug
 {
-
-// ===========================================
-//  순수 계산부
-// ===========================================
-
 IntRect ComputeDestRect(
     const AnimFrame&   _frame,
     const Vec2 _worldOrigin,
     const Vec2 _cameraPos,
     const bool         _bFlipX)
 {
-    // 원점을 화면 좌표로 옮긴 뒤 정수로 내림한다. (카메라가 정수이면 floor(origin) - camera 와 같다)
     const int originX = FloorToInt(_worldOrigin.x - _cameraPos.x);
     const int originY = FloorToInt(_worldOrigin.y - _cameraPos.y);
 
@@ -40,7 +33,6 @@ IntRect ComputeDestRect(
     rect.w = _frame.w;
     rect.h = _frame.h;
     rect.y = originY - _frame.pivotY;
-    // 반전: [ox - px, ox - px + w] 를 ox 기준으로 접으면 [ox + px - w, ox + px]
     rect.x = _bFlipX ? originX + _frame.pivotX - _frame.w : originX - _frame.pivotX;
     return rect;
 }
@@ -80,7 +72,6 @@ TextureViewRects ComputeTextureView(
     const int camX = FloorToInt(_cameraPos.x);
     const int camY = FloorToInt(_cameraPos.y);
 
-    // 월드 좌표에서 텍스처 사각형과 화면 사각형의 교집합
     const int x0 = std::max(texX, camX);
     const int y0 = std::max(texY, camY);
     const int x1 = std::min(texX + _texW, camX + _viewW);
@@ -98,7 +89,6 @@ TextureViewRects ComputeTextureView(
 
 namespace
 {
-    // 파일을 읽어 RGBA8 로 디코드한다. 한글/유니코드 경로를 안전하게 열기 위해 파일을 직접 읽어 메모리 디코드.
     struct DecodedImage
     {
         int                  width  = 0;
@@ -145,11 +135,7 @@ namespace
         stbi_image_free(pPixels);
         return image;
     }
-}   // namespace
-
-// ===========================================
-//  SpriteBatch
-// ===========================================
+}
 
 SpriteBatch::~SpriteBatch()
 {
@@ -408,5 +394,4 @@ void SpriteBatch::Flush(
 {
     Flush(_camera.GetPosition());
 }
-
-}   // namespace slug
+}

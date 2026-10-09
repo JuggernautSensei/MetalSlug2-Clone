@@ -23,7 +23,6 @@ std::unique_ptr<IGameState> CreateState(
     }
     if (_name == "proplab")
     {
-        // 소품 검증: Stage0 상점 거리 (플레이어 1500,378), 표적 없음 (상태 이름 proplab)
         SandboxConfig config;
         config.spawnFeet     = { 1500.f, 378.f };
         config.bSpawnTargets = false;
@@ -33,18 +32,17 @@ std::unique_ptr<IGameState> CreateState(
     if (_name == "enemylab")
     {
         SandboxConfig config;
-        config.bEnemyLab = true;   // 보병 8종을 플레이어 앞에 배치 (적 시각 검증)
+        config.bEnemyLab = true;
         return std::unique_ptr<IGameState> { new SandboxState { config } };
     }
     if (_name == "vehiclelab")
     {
         SandboxConfig config;
-        config.bVehicleLab = true;   // 차량 5종을 화면 안에 배치 (차량 시각 검증)
+        config.bVehicleLab = true;
         return std::unique_ptr<IGameState> { new SandboxState { config } };
     }
     if (_name == "bosslab")
     {
-        // 최종보스 검증: 640x448 평지 아레나 (바닥 y 378), 플레이어는 오른쪽에서 시작, 보스는 왼쪽 밖에서 레일로 등장
         SandboxConfig config;
         config.bLoadBakedGround = false;
         config.ground           = GroundMap::MakeEmpty(640, 448);
@@ -75,8 +73,6 @@ std::unique_ptr<IGameState> CreateState(
 
 slug::StringView GetDefaultStateName()
 {
-    // 기본 시작 상태 = 타이틀 (타이틀 Start → stage0). App 이 Assets/Baked 가 없으면 "sandbox" 로 대신한다.
     return "title";
 }
-
-}   // namespace slug
+}

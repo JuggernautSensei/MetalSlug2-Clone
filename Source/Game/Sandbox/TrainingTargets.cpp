@@ -162,7 +162,6 @@ int TrainingTargets::ApplyEvents(
                 continue;
             }
 
-            // 모든 표적이 같은 경로: Health 에 피해만 적용한다 (종류/무기별 분기 없음)
             const int applied = dummy.health.ApplyDamage(event.damage);
             if (applied > 0)
             {
@@ -236,5 +235,4 @@ uint64_t TrainingTargets::HashState() const
     Mix(m_killCount);
     return hash;
 }
-
-}   // namespace slug
+}

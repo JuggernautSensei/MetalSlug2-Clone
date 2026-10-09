@@ -70,7 +70,7 @@ namespace
 
         return library;
     }
-}   // namespace
+}
 
 slug::Result<SpriteLibrary> SpriteLibrary::LoadFromJson(
     const slug::StringView _json)
@@ -112,5 +112,4 @@ const SpriteInfo* SpriteLibrary::Find(
     const auto it = m_nameToIndex.find(slug::String { _name });
     return it == m_nameToIndex.end() ? nullptr : &m_sprites[it->second];
 }
-
-}   // namespace slug
+}

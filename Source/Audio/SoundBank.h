@@ -4,19 +4,12 @@
 
 namespace slug
 {
-
-// ===========================================
-//  SoundEntry / SoundBank
-//   sounds.json (Docs/AssetFormat.md) 를 이름 → 파일 경로 표로 파싱한다. 장치/디코딩과 무관한 순수 데이터라 테스트 가능하다.
-//    - bBgm 인 항목은 스트리밍 재생, 나머지는 메모리에 디코딩해 둔다.
-// ===========================================
-
 struct SoundEntry
 {
     slug::String   name = {};
-    slug::String   file = {};   // Baked 루트 기준 상대 경로 ("Audio/PlayerBomb.wav")
+    slug::String   file = {};
     bool          bBgm = false;
-    slug::FilePath path = {};   // 루트가 정해진 뒤의 전체 경로
+    slug::FilePath path = {};
 };
 
 class SoundBank
@@ -25,10 +18,10 @@ public:
     [[nodiscard]] static slug::Result<SoundBank> LoadFromJson(slug::StringView _json, const slug::FilePath& _root = {});
     [[nodiscard]] static slug::Result<SoundBank> LoadFromDirectory(const slug::FilePath& _bakedRoot);
 
-    void Add(SoundEntry _entry);   // 같은 이름이면 교체
+    void Add(SoundEntry _entry);
 
     [[nodiscard]] const SoundEntry*           Find(slug::StringView _name) const;
-    [[nodiscard]] int                         FindIndex(slug::StringView _name) const;   // 없으면 -1
+    [[nodiscard]] int                         FindIndex(slug::StringView _name) const;
     [[nodiscard]] const SoundEntry&           Get(const int _index) const { return m_entries[static_cast<size_t>(_index)]; }
     [[nodiscard]] size_t                      GetCount() const { return m_entries.size(); }
     [[nodiscard]] bool                        IsEmpty() const { return m_entries.empty(); }
@@ -38,5 +31,4 @@ private:
     slug::Vector<SoundEntry>             m_entries     = {};
     slug::HashMap<slug::String, uint32_t> m_nameToIndex = {};
 };
-
-}   // namespace slug
+}

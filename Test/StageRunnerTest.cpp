@@ -11,7 +11,6 @@ using namespace slugtest;
 
 namespace
 {
-// 섹션 하나(id "s0", triggerX 0)에 액션 배열을 넣은 스테이지
 std::string OneSection(
     const std::string& _actions,
     const std::string& _camera = R"J({"initialBounds":[0,0,4000,448]})J")
@@ -20,11 +19,7 @@ std::string OneSection(
 }
 
 constexpr const char* kTallBounds = R"J({"initialBounds":[0,0,4000,1000]})J";
-}   // namespace
-
-// ===========================================
-//  Begin
-// ===========================================
+}
 
 TEST(StageRunnerBegin, AppliesInitialGroundBackdropAndBgm)
 {
@@ -63,10 +58,6 @@ TEST(StageRunnerBegin, ResolvesPlayerStartWithGroundSnap)
     EXPECT_FLOAT_EQ(seenFromY, 10.f);
 }
 
-// ===========================================
-//  트리거
-// ===========================================
-
 TEST(StageRunnerTrigger, FiresOnlyWhenStrictlyGreaterThanTriggerX)
 {
     RunnerFixture fx { WrapStage(R"J([{"id":"a","triggerX":100,"actions":[{"type":"banner","text":"A","seconds":1}]}])J") };
@@ -100,7 +91,7 @@ TEST(StageRunnerTrigger, SeveralSectionsFireInOrderInOneTick)
         {"id":"b","triggerX":200,"actions":[{"type":"banner","text":"B","seconds":1}]},
         {"id":"c","triggerX":300,"actions":[{"type":"banner","text":"C","seconds":1}]}])J") };
     fx.StepAt(500.f);
-    ASSERT_EQ(fx.host.events.size(), 2u + 6u);   // Begin 의 지면+원경 2개 + (section, banner) * 3
+    ASSERT_EQ(fx.host.events.size(), 2u + 6u);
     std::vector<std::string> order;
     for (const HostEvent& event: fx.host.events)
     {
@@ -129,7 +120,7 @@ TEST(StageRunnerTrigger, SameTriggerXKeepsArrayOrder)
     const HostEvent* pSecond = fx.host.FindEvent("banner:second");
     ASSERT_NE(pFirst, nullptr);
     ASSERT_NE(pSecond, nullptr);
-    EXPECT_LT(pFirst, pSecond);   // events 벡터에서 앞선다
+    EXPECT_LT(pFirst, pSecond);
 }
 
 TEST(StageRunnerTrigger, ActionsRunInArrayOrder)
@@ -146,10 +137,6 @@ TEST(StageRunnerTrigger, ActionsRunInArrayOrder)
     EXPECT_EQ(fx.host.spawns[0].id, 1u);
     EXPECT_EQ(fx.host.spawns[2].id, 3u);
 }
-
-// ===========================================
-//  지연 / 웨이브 / repeat
-// ===========================================
 
 TEST(StageRunnerTiming, DelaysAreExactTicks)
 {
@@ -254,7 +241,7 @@ TEST(StageRunnerWave, RandomDxIsSeededInRangeAndFixedDxDoesNotDrawRng)
     const std::vector<float> a2 = Collect(7);
     const std::vector<float> b  = Collect(8);
     ASSERT_EQ(a.size(), 40u);
-    EXPECT_EQ(a, a2);   // 같은 시드 → 같은 위치
+    EXPECT_EQ(a, a2);
     EXPECT_NE(a, b);
     bool bVaried = false;
     for (const float x: a)
@@ -265,7 +252,6 @@ TEST(StageRunnerWave, RandomDxIsSeededInRangeAndFixedDxDoesNotDrawRng)
     }
     EXPECT_TRUE(bVaried);
 
-    // 고정 dx 는 난수를 소모하지 않는다
     RunnerFixture fixed { OneSection(R"J([{"type":"spawnWave","entries":[
         {"delay":1.0,"kind":"enemy","def":"e","camera":{"ax":"left","dx":123,"ay":"top","dy":0}}]}])J") };
     fixed.StepAt(5.f, 70);
@@ -362,7 +348,6 @@ TEST(StageRunnerSpawn, GroundSnapUsesHostAndSkipsWhenNoGround)
     ASSERT_EQ(queries.size(), 3u);
     EXPECT_FLOAT_EQ(queries[2].second, 400.f);   // fromY 전달
 
-    // 건너뛴 스폰을 기다리는 게이트는 열린다 (레거시: lock+gate 가 스폰과 함께 사라짐)
     EXPECT_NE(fx.host.FindEvent("banner:opened"), nullptr);
     EXPECT_EQ(fx.runner.GetOpenGateCount(), 0);
 }
@@ -389,10 +374,6 @@ TEST(StageRunnerSpawn, ParamsPointerAndLayerArePassedThrough)
     ASSERT_NE(request.pParams, nullptr);
     EXPECT_FLOAT_EQ(request.pParams->GetVec2("velocity").x, 70.f);
 }
-
-// ===========================================
-//  게이트
-// ===========================================
 
 namespace
 {
@@ -495,12 +476,12 @@ TEST(StageRunnerGate, AbortOnGameOverCancelsDelayedFinaleActionsOnly)
     fx.host.defeated.insert(fx.runner.FindSpawnIds("boss").front());
     fx.StepAt(5.f, 10);
     EXPECT_NE(fx.host.FindEvent("banner:early"), nullptr);
-    fx.host.bGameOver = true;   // 피날레 도중 게임 오버
+    fx.host.bGameOver = true;
     fx.StepAt(5.f, 400);
     EXPECT_EQ(fx.host.FindEvent("banner:cancelled"), nullptr);
     EXPECT_FALSE(fx.host.bEnded);
     EXPECT_FALSE(fx.runner.IsFinished());
-    EXPECT_NE(fx.host.FindEvent("banner:outside"), nullptr);   // 게이트와 무관한 지연 액션은 유지
+    EXPECT_NE(fx.host.FindEvent("banner:outside"), nullptr);
 }
 
 TEST(StageRunnerGate, WithoutAbortFlagGameOverDoesNotCancel)
@@ -545,10 +526,6 @@ TEST(StageRunnerCommand, SendsToEveryInstance)
     EXPECT_NE(fx.host.commands[0].first, fx.host.commands[1].first);
 }
 
-// ===========================================
-//  clear / endStage / 기타 액션
-// ===========================================
-
 TEST(StageRunnerClear, ClearWavesCancelsWavesAndGatesButKeepsOtherDelayedActions)
 {
     RunnerFixture fx { OneSection(R"J([
@@ -588,7 +565,7 @@ TEST(StageRunnerFlow, EndStageFinishesTheRunner)
     EXPECT_EQ(fx.host.endNext, "title");
     const int64_t tickAfter = fx.runner.GetTick();
     fx.StepAt(5.f, 200);
-    EXPECT_EQ(fx.runner.GetTick(), tickAfter);                 // 더 이상 진행하지 않는다
+    EXPECT_EQ(fx.runner.GetTick(), tickAfter);
     EXPECT_EQ(fx.host.FindEvent("banner:never"), nullptr);
 }
 
@@ -626,10 +603,6 @@ TEST(StageRunnerActions, SimpleActionsAreForwardedToTheHost)
     EXPECT_FLOAT_EQ(target.y, 378.f - kStageCameraTargetLift - 140.f);
 }
 
-// ===========================================
-//  silent / 워프
-// ===========================================
-
 namespace
 {
 const char* kWarpStage = R"J([
@@ -656,7 +629,6 @@ TEST(StageRunnerWarp, SilentRunsOnlyWhenAlwaysOrSilentActions)
     RunnerFixture fx { WrapStage(kWarpStage) };
     ASSERT_TRUE(fx.runner.WarpToSection(1));
 
-    // always 종류만 스폰 (enemy 는 normal)
     EXPECT_EQ(fx.host.CountSpawnsOf("e0"), 0);
     EXPECT_EQ(fx.host.CountSpawnsOf("p0"), 1);
     EXPECT_EQ(fx.host.CountSpawnsOf("n0"), 1);
@@ -665,7 +637,6 @@ TEST(StageRunnerWarp, SilentRunsOnlyWhenAlwaysOrSilentActions)
     {
         EXPECT_TRUE(entry.request.bSilent);
     }
-    // silent 전용 / always 액션 적용, normal 연출 없음
     EXPECT_EQ(fx.host.currentGround, "G1");
     EXPECT_EQ(fx.host.currentBackdrop, "b");
     EXPECT_FLOAT_EQ(fx.runner.GetCameraOffset().x, 5.f);
@@ -674,7 +645,6 @@ TEST(StageRunnerWarp, SilentRunsOnlyWhenAlwaysOrSilentActions)
     EXPECT_EQ(fx.host.CountEvents("banner:late"), 1);   // always 는 silent 에서 지연 없이 즉시
     EXPECT_EQ(fx.runner.GetLockDepth(), 0);             // lockCamera 는 normal
 
-    // 플레이어는 대상 섹션 triggerX + 1 로 옮겨졌고, 다음 틱에 그 섹션이 정상 발동한다
     ASSERT_EQ(fx.host.warps.size(), 1u);
     EXPECT_FLOAT_EQ(fx.host.warps[0].x, 101.f);
     EXPECT_FLOAT_EQ(fx.host.warps[0].y, 378.f);
@@ -761,11 +731,9 @@ TEST(StageRunnerWarp, WarpingGivesTheSameAlwaysStateAsPlayingThere)
             {"type":"spawn","kind":"enemy","def":"soldier","x":9,"y":9}]},
         {"id":"s2","triggerX":400,"actions":[{"type":"banner","text":"X","seconds":1}]}])J");
 
-    // A: 워프
     RunnerFixture warped { json };
     ASSERT_TRUE(warped.runner.WarpToSection(2));
 
-    // B: 실제로 진행 (보스는 즉시 격파)
     RunnerFixture played { json };
     played.StepAt(10.f);
     played.host.DefeatAll();
@@ -780,7 +748,6 @@ TEST(StageRunnerWarp, WarpingGivesTheSameAlwaysStateAsPlayingThere)
     EXPECT_EQ(warped.runner.GetLockDepth(), played.runner.GetLockDepth());
     EXPECT_EQ(warped.camera.IsLocked(), played.camera.IsLocked());
 
-    // always 종류 스폰의 def 순서가 같다
     auto AlwaysDefs = [](const FakeStageHost& _host) {
         std::vector<std::string> defs;
         for (const SpawnLogEntry& entry: _host.spawns)
@@ -795,10 +762,6 @@ TEST(StageRunnerWarp, WarpingGivesTheSameAlwaysStateAsPlayingThere)
     EXPECT_EQ(AlwaysDefs(warped.host), AlwaysDefs(played.host));
 }
 
-// ===========================================
-//  플레이어 화면 제약
-// ===========================================
-
 TEST(StageRunnerWalls, LeftWallAlwaysAndRightWallOnlyWhenLockedOrAtTheEnd)
 {
     RunnerFixture fx { OneSection(R"J([{"type":"lockCamera","rect":[320,0,960,448],"delay":1.0}])J") };
@@ -810,7 +773,7 @@ TEST(StageRunnerWalls, LeftWallAlwaysAndRightWallOnlyWhenLockedOrAtTheEnd)
     const Aabb  view  = Aabb::FromMinSize(fx.camera.GetPositionNoShake(), { 640.f, 448.f });
     ASSERT_TRUE(walls.bHasLeft);
     EXPECT_FLOAT_EQ(walls.left.max.x, view.min.x + 14.f);
-    EXPECT_FALSE(walls.bHasRight);   // 락 없음, 경계 끝 아님
+    EXPECT_FALSE(walls.bHasRight);
 
     fx.StepAt(1000.f, 70);   // 락 적용
     walls = fx.runner.MakeScreenWalls();

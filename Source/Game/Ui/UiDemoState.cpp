@@ -33,7 +33,7 @@ HudModel UiDemoState::MakeModel_() const
 
 void UiDemoState::Tick(
     GameContext&        _ctx,
-    const InputHistory& /*_input*/)
+    const InputHistory&)
 {
     ++m_tick;
     m_ui.Tick();
@@ -61,14 +61,13 @@ void UiDemoState::Tick(
 
 void UiDemoState::Render(
     GameContext& _ctx,
-    const float  /*_alpha*/)
+    const float)
 {
     Renderer& renderer = *_ctx.pRenderer;
     renderer.BeginFrame({ 156, 190, 224, 255 });
     (void)m_ui.DrawStandalone(_ctx, "Stage0_Main", -900, -880);
 
     m_ui.DrawHud(_ctx, MakeModel_());
-    m_ui.DrawOverlays(_ctx);   // 페이드 → 배너 (항상 마지막)
+    m_ui.DrawOverlays(_ctx);
 }
-
-}   // namespace slug
+}

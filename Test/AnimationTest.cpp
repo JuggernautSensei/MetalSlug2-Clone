@@ -54,8 +54,6 @@ constexpr const char* kSampleJson = R"({
         }
     })";
 
-// 1/60 초 고정 스텝을 n 번 진행했을 때 "정확한 유리수" 로 계산한 프레임 번호 (루프 시작 0 인 루프 클립)
-//   시간 = n / 60, 프레임 = floor(시간 / frameDuration) = floor(n * (단위/60) / durationUnits)
 int ExpectedLoopFrame(
     const int64_t _ticks,
     const int64_t _durationUnits,
@@ -64,11 +62,7 @@ int ExpectedLoopFrame(
     const int64_t frame = (_ticks * (kAnimTimeUnitsPerSec / 60)) / _durationUnits;
     return static_cast<int>(frame % _frameCount);
 }
-}   // namespace
-
-// ===========================================
-//  AnimationLibrary
-// ===========================================
+}
 
 TEST(AnimationLibrary, ParsesBakedJsonWithFramesAndPivots)
 {
@@ -97,7 +91,7 @@ TEST(AnimationLibrary, ParsesBakedJsonWithFramesAndPivots)
 
     const AnimClip* pDead = lib.FindClip("Player_Dead");
     ASSERT_NE(pDead, nullptr);
-    EXPECT_FALSE(pDead->bLoop);   // 생략 시 비루프
+    EXPECT_FALSE(pDead->bLoop);
     EXPECT_EQ(pDead->loopStart, 0);
 }
 
@@ -129,22 +123,17 @@ TEST(AnimationLibrary, RejectsMalformedData)
 {
     EXPECT_TRUE(AnimationLibrary::LoadFromJson("{ not json").HasError());
     EXPECT_TRUE(AnimationLibrary::LoadFromJson("[]").HasError());
-    EXPECT_TRUE(AnimationLibrary::LoadFromJson(R"({"version":1})").HasError());   // animations 없음
+    EXPECT_TRUE(AnimationLibrary::LoadFromJson(R"({"version":1})").HasError());
 
-    // frames 없음
     EXPECT_TRUE(AnimationLibrary::LoadFromJson(R"({"animations":{"A":{"frameDuration":0.1}}})").HasError());
-    // frameDuration 없음 / 0 이하
     EXPECT_TRUE(AnimationLibrary::LoadFromJson(R"({"animations":{"A":{"frames":[{"atlas":0,"x":0,"y":0,"w":1,"h":1,"pivotX":0,"pivotY":0}]}}})").HasError());
     EXPECT_TRUE(AnimationLibrary::LoadFromJson(R"({"animations":{"A":{"frameDuration":0,"frames":[{"atlas":0,"x":0,"y":0,"w":1,"h":1,"pivotX":0,"pivotY":0}]}}})").HasError());
-    // 프레임 필드 누락
     EXPECT_TRUE(AnimationLibrary::LoadFromJson(R"({"animations":{"A":{"frameDuration":0.1,"frames":[{"atlas":0,"x":0}]}}})").HasError());
-    // 빈 프레임 목록
     EXPECT_TRUE(AnimationLibrary::LoadFromJson(R"({"animations":{"A":{"frameDuration":0.1,"frames":[]}}})").HasError());
 }
 
 TEST(AnimationLibrary, ClampsOutOfRangeLoopStart)
 {
-    // 레거시 데이터의 OptionIndex 가 프레임 수를 넘는 경우: 거부하지 않고 마지막 프레임으로 클램프
     const char* json = R"({"animations":{"A":{"loop":true,"loopStart":3,"frameDuration":0.1,"frames":[{"atlas":0,"x":0,"y":0,"w":1,"h":1,"pivotX":0,"pivotY":0}]}}})";
     const auto  lib  = AnimationLibrary::LoadFromJson(json);
     ASSERT_TRUE(lib.HasValue());
@@ -178,13 +167,8 @@ TEST(AnimationLibrary, AddClipReplacesSameNameKeepingId)
     EXPECT_EQ(lib.GetClipCount(), 2u);
 }
 
-// ===========================================
-//  AnimPlayer 타이밍
-// ===========================================
-
 TEST(AnimPlayer, LoopFrameIndexIsExactAtSixtyHertzForSixTickFrames)
 {
-    // 0.1초 = 정확히 6틱. 부동소수 오차로 경계가 한 틱 어긋나면 안 된다.
     AnimationLibrary lib;
     const AnimId     id = lib.AddClip(MakeClip("A", 4, 0.1f, true));
 
@@ -199,7 +183,6 @@ TEST(AnimPlayer, LoopFrameIndexIsExactAtSixtyHertzForSixTickFrames)
 
 TEST(AnimPlayer, FrameIndexMatchesExactRationalForNonIntegerTickDurations)
 {
-    // 0.06초 = 3.6틱, 0.05초 = 3틱, 0.07초 = 4.2틱 … 모두 유리수 정답과 일치해야 한다.
     const float durations[] = { 0.06f, 0.05f, 0.07f, 0.04f, 0.12f, 0.03f };
     for (const float duration: durations)
     {
@@ -230,7 +213,7 @@ TEST(AnimPlayer, NoDriftAfterAnHourOfFixedSteps)
         (void)player.Update(lib, kStepSec);
     }
     EXPECT_EQ(player.GetFrame(), (ticks / 6) % 4);
-    EXPECT_LT(player.GetTimeUnits(), lib.Get(id).GetTotalDurationUnits());   // 시간이 루프 안에 감겨 있다 (무한 증가 안 함)
+    EXPECT_LT(player.GetTimeUnits(), lib.Get(id).GetTotalDurationUnits());
 }
 
 TEST(AnimPlayer, UpdateReportsOnlyFrameChanges)
@@ -255,10 +238,9 @@ TEST(AnimPlayer, LoopJumpsToLoopStartNotZero)
     AnimPlayer       player;
     player.Play(id);
 
-    // 처음 한 바퀴: 0,0,0,0,0,0, 1 … 4, 이후 2,3,4,2,3,4 …
     for (int i = 0; i < 30; ++i)
     {
-        (void)player.Update(lib, kStepSec);   // 30틱 = 0.5초 → 끝에 도달
+        (void)player.Update(lib, kStepSec);
     }
     EXPECT_EQ(player.GetFrame(), 2);   // 0 이 아니라 loopStart
     for (int frame = 3; frame <= 4; ++frame)
@@ -291,7 +273,7 @@ TEST(AnimPlayer, NonLoopStopsOnLastFrameAndFinishes)
     }
     EXPECT_EQ(player.GetFrame(), 3);
 
-    (void)player.Update(lib, kStepSec);   // 15틱째 (0.25초)
+    (void)player.Update(lib, kStepSec);
     EXPECT_TRUE(player.IsFinished());
     EXPECT_EQ(player.GetFrame(), 3);
 
@@ -317,10 +299,10 @@ TEST(AnimPlayer, PlayRestartsOnlyWhenAskedOrClipChanges)
     }
     ASSERT_EQ(player.GetFrame(), 1);
 
-    player.Play(a);   // 같은 클립: 유지
+    player.Play(a);
     EXPECT_EQ(player.GetFrame(), 1);
 
-    player.Play(a, true);   // 재시작
+    player.Play(a, true);
     EXPECT_EQ(player.GetFrame(), 0);
     EXPECT_EQ(player.GetTimeUnits(), 0);
 
@@ -328,7 +310,7 @@ TEST(AnimPlayer, PlayRestartsOnlyWhenAskedOrClipChanges)
     {
         (void)player.Update(lib, kStepSec);
     }
-    player.Play(b);   // 다른 클립: 처음부터
+    player.Play(b);
     EXPECT_EQ(player.GetClip(), b);
     EXPECT_EQ(player.GetFrame(), 0);
 }
@@ -371,10 +353,6 @@ TEST(AnimPlayer, UpdateWithoutClipIsHarmless)
     EXPECT_EQ(player.GetFrameData(lib), nullptr);
 }
 
-// ===========================================
-//  위상 동기화 (상체/하체가 한 타임라인 공유)
-// ===========================================
-
 TEST(AnimPlayer, SetNormalizedTimeMapsRatioToFrame)
 {
     AnimationLibrary lib;
@@ -396,7 +374,6 @@ TEST(AnimPlayer, SetNormalizedTimeMapsRatioToFrame)
 
 TEST(AnimPlayer, SyncPhaseKeepsUpperAndLowerBodyInStep)
 {
-    // 하체 6프레임, 상체 12프레임: 길이가 같으면 같은 위상에서 프레임이 비례해야 한다.
     AnimationLibrary lib;
     const AnimId     lower     = lib.AddClip(MakeClip("Lower", 6, 0.1f, true));
     const AnimId     upper     = lib.AddClip(MakeClip("Upper", 12, 0.05f, true));

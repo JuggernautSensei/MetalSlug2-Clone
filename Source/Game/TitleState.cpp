@@ -26,8 +26,7 @@ namespace
             _renderer.FillRect({ 0.f, static_cast<float>(y) }, { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(kGradientBandH) }, color);
         }
     }
-
-}   // namespace
+}
 
 TitleState::TitleState() = default;
 
@@ -46,7 +45,6 @@ void TitleState::OnEnter(
     m_selected.clear();
     m_pNext = nullptr;
 
-    // 검정에서 밝아지며 시작
     m_ui.GetFade().SetBlack();
     m_ui.GetFade().FadeToClear(m_config.fadeInTicks);
 
@@ -85,7 +83,6 @@ void TitleState::Tick(
 
     if (m_bStarting)
     {
-        // 암전이 끝나면 다음 상태를 만든다 (SimRunner 가 Tick 직후 TakeNextState 로 가져간다)
         if (!m_ui.GetFade().IsBusy() && !m_pNext)
         {
             m_pNext = CreateNext_();
@@ -110,7 +107,7 @@ std::unique_ptr<IGameState> TitleState::TakeNextState()
 
 void TitleState::Render(
     GameContext& _ctx,
-    const float  /*_alpha*/)
+    const float)
 {
     Renderer&       renderer = *_ctx.pRenderer;
     const UiLayout& layout   = m_ui.GetLayout();
@@ -125,7 +122,6 @@ void TitleState::Render(
     title.scale = FitTextScale(kTitleName, 600, 3);
     m_ui.DrawText(_ctx, layout.screenW / 2, layout.titleNameY, kTitleName, title);
 
-    // PRESS START: 시작 후에는 빠르게 깜빡인다
     const int  period = m_bStarting ? 4 : layout.titleBlinkTicks;
     if (IsBlinkOn(m_ui.GetTick(), period))
     {
@@ -143,5 +139,4 @@ void TitleState::Render(
 
     m_ui.DrawOverlays(_ctx);
 }
-
-}   // namespace slug
+}

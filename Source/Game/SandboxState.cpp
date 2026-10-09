@@ -57,8 +57,7 @@ namespace
         const Vec2 bottomRight = ToScreen_(_box.max, _camera);
         _renderer.DrawRect(topLeft, { slug::Max(1.f, bottomRight.x - topLeft.x), slug::Max(1.f, bottomRight.y - topLeft.y) }, _color);
     }
-
-}   // namespace
+}
 
 SandboxState::SandboxState() = default;
 
@@ -67,10 +66,6 @@ SandboxState::SandboxState(
     : m_config(std::move(_config))
 {
 }
-
-// ===========================================
-//  월드 구성
-// ===========================================
 
 void SandboxState::OnEnter(
     GameContext& _ctx)
@@ -94,10 +89,8 @@ void SandboxState::OnExit(
 void SandboxState::BuildWorld_(
     GameContext& _ctx)
 {
-    // 발판은 설정값에서 시작한다 (소품은 아래에서 더한다)
     m_platforms = m_config.platforms;
 
-    // --- Tuning ---
     m_tuning = m_config.tuning;
     m_bWatch = false;
     if (m_config.bLoadTuningFile && !_ctx.assetRoot.empty())
@@ -118,7 +111,6 @@ void SandboxState::BuildWorld_(
         }
     }
 
-    // --- 지면 ---
     if (m_config.bLoadBakedGround)
     {
         bool bLoaded = false;
@@ -142,23 +134,20 @@ void SandboxState::BuildWorld_(
         m_ground = m_config.ground;
     }
 
-    // --- 카메라 ---
     m_camera = Camera { MakeCameraTuning_(m_tuning.camera) };
     m_camera.SetBounds(m_config.cameraBounds);
     m_camera.SetForwardOnly(true);
 
-    // --- 적 정의 (없거나 깨졌으면 적 없이 동작) ---
     {
         slug::FilePath defsPath = m_config.enemyDefPath;
         if (defsPath.empty() && !_ctx.assetRoot.empty())
         {
-            defsPath = EnemyDefLibrary::GetDefaultDirectory(_ctx.assetRoot);   // Defs/*.json 전부 (Enemies / Vehicles ...)
+            defsPath = EnemyDefLibrary::GetDefaultDirectory(_ctx.assetRoot);
         }
         m_enemyLib = {};
         if (!defsPath.empty())
         {
             slug::String message;
-            // 폴더면 *.json 을 모두 합쳐 읽고, 파일이면 그 파일만 읽는다
             if (slug::Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
             {
                 m_enemyLib = lib.Take();
@@ -171,10 +160,8 @@ void SandboxState::BuildWorld_(
         m_enemies.SetLibrary(&m_enemyLib);
     }
 
-    // --- 플레이어 / 표적 ---
     RestartGame();
 
-    // --- 소품 (PropWorld): 정의 로드 + 검증용 배치 ---
     if (!_ctx.assetRoot.empty())
     {
         slug::String message;
@@ -202,11 +189,10 @@ void SandboxState::BuildWorld_(
     }
     UpdatePropCollision_();
 
-    // --- 애니메이션 / 렌더 자원 ---
     m_bRigBound = false;
     if (_ctx.pAnims && _ctx.pAnims->GetClipCount() > 0)
     {
-        (void)m_rig.Bind(*_ctx.pAnims, m_tuning.rig);   // 없는 클립은 폴백 + 로그
+        (void)m_rig.Bind(*_ctx.pAnims, m_tuning.rig);
         m_bRigBound = true;
         m_bombClip  = _ctx.pAnims->Find("PlayerBomb");
         m_bombAnim.Play(m_bombClip, true);
@@ -218,7 +204,7 @@ void SandboxState::BuildWorld_(
         {
             m_spriteLib = library.Take();
         }
-        m_enemies.SetSpriteLibrary(&m_spriteLib);   // 보스 파츠의 정적 스프라이트 (없으면 그 파츠는 생략)
+        m_enemies.SetSpriteLibrary(&m_spriteLib);
         if (m_config.bBackground && _ctx.pSprites)
         {
             if (const slug::Result<int> handle = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / "Textures" / "Stage0_Main.png"))
@@ -262,7 +248,6 @@ void SandboxState::RestartGame()
     }
     if (m_config.bVehicleLab)
     {
-        // 차량 5종을 카메라(왼쪽 0) 안에 늘어놓는다 (플레이어 x = 100). 헬기는 상공.
         const Vec2 feet = m_player.GetFeet();
         SpawnParams        left;
         left.facing = -1;
@@ -280,11 +265,9 @@ void SandboxState::RestartGame()
 
 void SandboxState::SpawnBossLab_()
 {
-    // 최종보스: 아레나 왼쪽 밖(-300)에서 레일로 들어온다. 발 y = 아레나 바닥.
     SpawnParams params;
     params.facing = 1;
     params.arena  = m_config.bossArena;
-    // 지면 스냅 없이 스폰한다 (발 x 가 지면 맵 밖이고, 선체는 물리를 쓰지 않는다)
     (void)m_enemies.Spawn("battleship", { m_config.bossArena.min.x - 300.f, m_config.bossGroundY }, params, nullptr);
 }
 
@@ -293,7 +276,6 @@ void SandboxState::AddDefaultTargets_()
     const float          groundY = m_config.spawnFeet.y;
     const SandboxTuning& sb      = m_tuning.sandbox;
 
-    // 칼 연습: 가까운 보병 둘 / 차량 / 버스 / 사격 연습: 사수 둘
     m_targets.Add(eDummyKind::Grunt, { 330.f, groundY }, false, sb);
     m_targets.Add(eDummyKind::Grunt, { 400.f, groundY }, false, sb);
     m_targets.Add(eDummyKind::Jeep, { 640.f, groundY }, false, sb);
@@ -325,7 +307,6 @@ void SandboxState::SpawnDebugEnemy_(
     const int   _slot,
     const float _aheadPx)
 {
-    // 숫자키 9 (_slot 8) → 차량 5종을 차례로 (플레이어 앞). 헬기는 공중에 띄운다.
     if (_slot == 8)
     {
         static constexpr const char* kVehicles[] = { "jeep", "btank", "missle_tank", "sarubia", "aparch" };
@@ -339,7 +320,6 @@ void SandboxState::SpawnDebugEnemy_(
         return;
     }
 
-    // 숫자키 1..8 → 보병 정의 8종 (플레이어 앞 _aheadPx)
     static constexpr const char* kSlots[] ={ "soldier_bomb", "soldier_sword", "soldier_missile", "soldier_bzk", "soldier_hang", "flying_bzk", "shielder", "pow" };
     constexpr int                kSlotCount = static_cast<int>(sizeof(kSlots) / sizeof(kSlots[0]));
     if (_slot < 0 || _slot >= kSlotCount)
@@ -366,7 +346,6 @@ void SandboxState::SpawnDebugEnemy_(
 PhysicsWorld SandboxState::MakeEnemyPhysicsWorld_() const
 {
     PhysicsWorld world;
-    // 적 발판은 설정값만 쓴다. 소품 발판은 매 틱 바뀌는 벡터라 적 물리에 넘기면 크래시가 난다 (AudioDeterminism/PlayerReplay 재현).
     world.pGround   = &m_ground;
     world.platforms = m_config.platforms;
     return world;
@@ -374,14 +353,11 @@ PhysicsWorld SandboxState::MakeEnemyPhysicsWorld_() const
 
 void SandboxState::UpdateWalls_()
 {
-    // 카메라 왼쪽 가장자리(되돌아갈 수 없음)와 구간 오른쪽 끝을 보이지 않는 벽으로 막는다.
     const float camLeft = m_camera.GetPositionNoShake().x;
     m_walls.clear();
     m_walls.push_back({ Aabb::FromMinMax({ camLeft - 64.f, -4000.f }, { camLeft, 4000.f }) });
     m_walls.push_back({ Aabb::FromMinMax({ m_config.cameraBounds.max.x, -4000.f }, { m_config.cameraBounds.max.x + 64.f, 4000.f }) });
 
-
-    // 소품 벽 (파괴 상태에 따라 PropWorld 가 매 틱 낸다)
     for (const Wall& wall: m_props.GetWalls())
     {
         m_walls.push_back(wall);
@@ -391,7 +367,6 @@ void SandboxState::UpdateWalls_()
 
 void SandboxState::UpdatePropCollision_()
 {
-    // 플레이어 발판 = 설정 발판 + 소품 발판 (상점 지붕 등). 적 물리는 설정 발판만 쓴다 (MakeEnemyPhysicsWorld_ 주석).
     m_platforms.clear();
     m_platforms.insert(m_platforms.end(), m_config.platforms.begin(), m_config.platforms.end());
     for (const Platform& platform: m_props.GetPlatforms())
@@ -415,10 +390,6 @@ Vec2 SandboxState::GetRespawnFeet_() const
     return { cam.x + m_tuning.player.respawnOffsetX, cam.y - m_tuning.player.respawnDropY };
 }
 
-// ===========================================
-//  Tick
-// ===========================================
-
 void SandboxState::Tick(
     GameContext&        _ctx,
     const InputHistory& _input)
@@ -434,7 +405,6 @@ void SandboxState::Tick(
         }
     }
 
-    // 1) 판정 모으기 시작: 표적이 먼저 Hurtbox 를 등록해야 플레이어의 칼 자동 발동 질의가 맞는다.
     m_combat.BeginTick();
     {
         PropTickContext propCtx;
@@ -458,7 +428,6 @@ void SandboxState::Tick(
     m_enemies.RegisterHurtboxes(m_combat);
     m_props.RegisterHurtboxes(m_combat);
 
-    // 2) 플레이어
     PlayerContext playerCtx;
     playerCtx.pTuning      = &m_tuning;
     playerCtx.physics      = MakePhysicsWorld_();
@@ -467,22 +436,18 @@ void SandboxState::Tick(
     playerCtx.respawnFeet  = GetRespawnFeet_();
     m_player.Tick(playerCtx, _input);
 
-    // 보스 선체가 요청한 플레이어 발 x 하한 (직전 적 틱의 값): 선체 x + 270 보다 왼쪽으로는 밀려난다
     if (m_enemies.HasPlayerMinX())
     {
         m_player.PushFeetX(m_enemies.GetPlayerMinX());
     }
 
-    // 소품 아이템 습득 (플레이어 몸 상자와 겹친 것)
     for (const ItemPickup& pickup: m_props.GetItems().Collect(m_player.GetBodyBox()))
     {
         ApplyItemPickup(m_player, pickup, m_tuning);
     }
 
-    // 3) 사수 → 투사체 이동/판정 등록
     m_targets.TickShooters(m_tuning.sandbox, m_player.GetFeet(), m_player.IsAlive(), m_projectiles, m_combat);
 
-    // 적: AI / 이동 / 공격 판정 등록 (투사체 Step 전에 발사해야 같은 틱에 움직인다)
     EnemyContext enemyCtx;
     enemyCtx.pTuning      = &m_tuning;
     enemyCtx.physics      = MakeEnemyPhysicsWorld_();
@@ -499,10 +464,9 @@ void SandboxState::Tick(
 
     m_projectiles.Step(&m_ground, m_combat, kStepSec);
 
-    // 4) 판정 해소 → 모든 피해는 HitEvent 로만 적용된다
     const slug::Vector<HitEvent>& events = m_combat.Resolve();
     m_props.OnHitEvents(events);
-    (void)m_props.TakeEvents();   // 소품 이벤트는 아직 소비처가 없다 (스테이지 호스트가 가져간다)   // 소품 이벤트는 아직 소비처가 없다 (스테이지 호스트가 가져간다)
+    (void)m_props.TakeEvents();
     m_enemies.OnHitEvents(events);
     int enemyScore = 0;
     for (const EnemyEvent& event: m_enemies.TakeEvents())
@@ -515,7 +479,6 @@ void SandboxState::Tick(
     m_projectiles.OnHitEvents(events, m_combat);
     m_targets.Tick(m_tuning.sandbox);
 
-    // 5) 연출 / 카메라
     const slug::Vector<FxRequest> fx = m_projectiles.TakeFx();
     RequestSounds_(_ctx, fx);
     m_ui.Tick();
@@ -552,7 +515,6 @@ void SandboxState::Tick(
             const char* side = dummy.facing < 0 ? "Left" : "Right";
             if (dummy.deadTicks >= 0)
             {
-                // 죽은 원인에 맞는 임시 사망 연출 (칼: 피, 폭발: 날아감, 그 외: 쓰러짐)
                 const char* death = dummy.lastKind == eHitKind::Melee ? "SD_Die_Slash" : (dummy.lastKind == eHitKind::Blast ? "SD_Die_Bomb" : "SD_Die_Stand_1");
                 dummy.anim.Play(_ctx.pAnims->Find(std::format("{}_{}", death, side)), false);
             }
@@ -573,7 +535,6 @@ void SandboxState::Tick(
     m_camera.SetTarget({ m_player.GetFeet().x + m_tuning.camera.lookAheadX, m_player.GetFeet().y - 60.f });
     m_camera.Update(kStepSec);
 
-    // 6) 게임 오버 후 자동 재시작
     if (m_player.IsGameOver() && m_player.GetGameOverTicks() >= m_tuning.player.gameOverTicks)
     {
         RestartGame();
@@ -587,7 +548,6 @@ void SandboxState::Tick(
     }
 }
 
-// 플레이어/폭발 이벤트를 소리 요청으로 바꾼다. 요청은 틱의 결과를 읽기만 하며 시뮬레이션 상태를 바꾸지 않는다.
 void SandboxState::RequestSounds_(
     GameContext&                  _ctx,
     const slug::Vector<FxRequest>& _fx)
@@ -606,7 +566,7 @@ void SandboxState::RequestSounds_(
     }
     for (int i = m_prevStats.bombsThrown; i < stats.bombsThrown; ++i)
     {
-        audio.Play(sfx::kBombThrow);   // 에셋 없음: sounds.json 에 같은 이름이 생기면 자동으로 들린다
+        audio.Play(sfx::kBombThrow);
     }
     for (int i = m_prevStats.deaths; i < stats.deaths; ++i)
     {
@@ -633,7 +593,6 @@ void SandboxState::RequestSounds_(
         audio.Play(sfx::kEnemyDeath, 0.7f, 0.1f);   // 에셋 없음
     }
 
-    // 게임 오버: 한 번만 배너 + 징글
     if (m_player.IsGameOver() && !m_bGameOverAnnounced)
     {
         m_bGameOverAnnounced = true;
@@ -668,10 +627,6 @@ uint64_t SandboxState::HashState() const
     return hash;
 }
 
-// ===========================================
-//  Render
-// ===========================================
-
 void SandboxState::Render(
     GameContext& _ctx,
     const float  _alpha)
@@ -679,7 +634,6 @@ void SandboxState::Render(
     Renderer& renderer = *_ctx.pRenderer;
     renderer.BeginFrame({ 156, 190, 224, 255 });
 
-    // 카메라도 보간한다 (플레이어와 같은 위상으로 움직여야 고주사율에서 상대 떨림이 없다)
     const Vec2 camNow    = m_camera.GetPositionNoShake();
     const Vec2 cameraPos = { std::floor(m_prevCameraPos.x + (camNow.x - m_prevCameraPos.x) * _alpha), std::floor(m_prevCameraPos.y + (camNow.y - m_prevCameraPos.y) * _alpha) };
 
@@ -705,7 +659,6 @@ void SandboxState::DrawWorld_(
     SpriteBatch&            sprites  = *_ctx.pSprites;
     const AnimationLibrary* pAnims   = _ctx.pAnims;
 
-    // --- 표적 ---
     for (const TrainingDummy& dummy: m_targets.GetDummies())
     {
         const bool bDying = dummy.deadTicks >= 0;
@@ -738,13 +691,11 @@ void SandboxState::DrawWorld_(
         renderer.DrawDebugText({ tl.x + 4.f, tl.y + 4.f }, std::format("{}\n{}/{}", GetDummyName(dummy.kind), dummy.health.hp, dummy.health.maxHp), { 255, 255, 255, 255 });
     }
 
-    // --- 적 (보병 / 포로 / 적 탄) ---
     if (pAnims)
     {
         m_enemies.Submit(sprites, *pAnims, m_projectiles, _alpha);
     }
 
-    // --- 플레이어 ---
     {
         const Vec2 feet = Lerp_(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
         if (m_bRigBound && pAnims)
@@ -762,7 +713,6 @@ void SandboxState::DrawWorld_(
         }
     }
 
-    // --- 투사체 ---
     {
         for (const Bullet& bullet: m_projectiles.GetBullets())
         {
@@ -812,7 +762,6 @@ void SandboxState::DrawDebugBoxes_(
         DrawBox_(_renderer, hitbox.box, _cameraPos, { 255, 50, 50, 255 });
     }
 
-    // 몸통 / 발 센서 / 칼 자동 발동 영역
     const Aabb body = m_player.GetBodyBox();
     DrawBox_(_renderer, body, _cameraPos, { 80, 120, 255, 255 });
 
@@ -824,7 +773,6 @@ void SandboxState::DrawDebugBoxes_(
     const Aabb trigger = MakeKnifeTriggerBox(feet, m_player.GetFacing(), body.GetWidth() * 0.5f, m_tuning.knife);
     DrawBox_(_renderer, trigger, _cameraPos, m_player.IsKnifeTargetInRange() ? slug::RGBA { 255, 220, 40, 255 } : slug::RGBA { 120, 110, 40, 255 });
 
-    // 카메라 왼쪽 벽
     for (const Wall& wall: m_walls)
     {
         DrawBox_(_renderer, wall.box, _cameraPos, { 200, 80, 200, 255 });
@@ -837,10 +785,8 @@ void SandboxState::DrawHud_(
     Renderer&               renderer = *_ctx.pRenderer;
     const PlayerController& p        = m_player;
 
-    // --- 게임 HUD (비트맵 폰트) ---
     m_ui.DrawHud(_ctx, MakeHudModel(p));
 
-    // --- 디버그 오버레이: F1 ---
     if (_ctx.bDebugDraw)
     {
         const Vec2 vel   = p.GetVelocity();
@@ -871,8 +817,6 @@ void SandboxState::DrawHud_(
         m_ui.DrawText(_ctx, Renderer::kLogicalWidth / 2, 216, "PAUSED", style);
     }
 
-    // 오버레이(페이드 → 배너)는 항상 마지막
     m_ui.DrawOverlays(_ctx);
 }
-
-}   // namespace slug
+}

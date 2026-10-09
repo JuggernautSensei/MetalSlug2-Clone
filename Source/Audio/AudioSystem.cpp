@@ -2,11 +2,6 @@
 #include "Base/Types.h"
 #include "Base/Result.h"
 
-// ===========================================
-//  miniaudio 구현부 (프로젝트에서 MINIAUDIO_IMPLEMENTATION 은 이 파일 하나뿐)
-//   Vorbis(.ogg) 디코딩을 위해 stb_vorbis 를 miniaudio 구현 앞/뒤로 끼워 넣는다.
-// ===========================================
-
 #define STB_VORBIS_HEADER_ONLY
 #include <stb_vorbis.c>
 
@@ -23,17 +18,12 @@
 
 namespace slug
 {
-
-// ===========================================
-//  Backend (miniaudio 상태. 장치가 없으면 만들어지지 않는다)
-// ===========================================
-
 struct AudioSystem::Backend
 {
     ma_engine             engine        = {};
     bool                  bEngine       = false;
     slug::Vector<ma_sound> voices        = {};
-    slug::Vector<char>     voiceInit     = {};   // 슬롯의 ma_sound 가 초기화되어 있는가
+    slug::Vector<char>     voiceInit     = {};
     ma_sound              bgm           = {};
     bool                  bBgmInit      = false;
 
@@ -77,7 +67,6 @@ struct AudioSystem::Backend
 
 namespace
 {
-    // 플랫폼 경로 → miniaudio 파일 열기 (Windows 는 와이드 경로로 UTF-8/ANSI 변환 문제를 피한다)
     [[nodiscard]] ma_result InitSoundFromFile_(
         ma_engine*            _pEngine,
         const slug::FilePath&  _path,
@@ -108,11 +97,7 @@ namespace
     {
         return std::clamp(_v, 0.f, 1.f);
     }
-}   // namespace
-
-// ===========================================
-//  생성/소멸/초기화
-// ===========================================
+}
 
 AudioSystem::AudioSystem() = default;
 
@@ -144,7 +129,6 @@ slug::Result<void> AudioSystem::Init(
         return slug::Error { slug::kOK };
     }
 
-    // 장치 시도. 실패해도 오류가 아니라 dry 모드로 계속한다.
     std::unique_ptr<Backend> pBackend { new Backend };
     const ma_engine_config engineConfig = ma_engine_config_init();
     if (const ma_result result = ma_engine_init(&engineConfig, &pBackend->engine); result != MA_SUCCESS)
@@ -156,7 +140,6 @@ slug::Result<void> AudioSystem::Init(
     pBackend->voices.resize(static_cast<size_t>(m_voices.GetCapacity()));
     pBackend->voiceInit.assign(static_cast<size_t>(m_voices.GetCapacity()), 0);
 
-    // 짧은 효과음은 미리 메모리에 디코딩해 둔다 (재생 때마다 디스크/디코더를 건드리지 않는다)
     int preloaded = 0;
     for (const SoundEntry& entry: m_bank.GetEntries())
     {
@@ -206,10 +189,6 @@ void AudioSystem::Shutdown()
     m_bInitialized = false;
 }
 
-// ===========================================
-//  프레임 갱신
-// ===========================================
-
 void AudioSystem::Update(
     const float _dtSec)
 {
@@ -218,7 +197,6 @@ void AudioSystem::Update(
         return;
     }
 
-    // --- 끝난 효과음 회수 ---
     for (int slot = 0; slot < m_voices.GetCapacity(); ++slot)
     {
         if (!m_voices.IsActive(slot))
@@ -245,7 +223,6 @@ void AudioSystem::Update(
         }
     }
 
-    // --- BGM ---
     if (m_bgmState != eBgmState::Stopped)
     {
         if (m_bgmFade.Update(_dtSec))
@@ -262,10 +239,6 @@ void AudioSystem::Update(
         }
     }
 }
-
-// ===========================================
-//  IAudioSink
-// ===========================================
 
 void AudioSystem::Play(
     const slug::StringView _name,
@@ -348,7 +321,6 @@ void AudioSystem::PlayBgm(
         return;
     }
 
-    // 이미 같은 곡이 (페이드 아웃 중이 아니게) 재생 중이면 끊김 없이 유지한다
     if (m_bgmState == eBgmState::Playing && m_bgmName == _name)
     {
         return;
@@ -412,10 +384,6 @@ void AudioSystem::AllStop()
     StopBgm_();
 }
 
-// ===========================================
-//  볼륨
-// ===========================================
-
 void AudioSystem::SetMasterVolume(
     const float _volume)
 {
@@ -435,10 +403,6 @@ void AudioSystem::SetBgmVolume(
     m_bgmVolume = Clamp01_(_volume);
     ApplyBgmVolume_();
 }
-
-// ===========================================
-//  내부
-// ===========================================
 
 void AudioSystem::StopBgm_()
 {
@@ -468,5 +432,4 @@ void AudioSystem::StopVoice_(
     }
     m_voices.Release(_slot);
 }
-
-}   // namespace slug
+}

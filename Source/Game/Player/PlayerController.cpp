@@ -26,7 +26,6 @@ namespace
         return tuning;
     }
 
-    // 영역이 고체(픽셀 지면 / 솔리드 플랫폼 / 벽)와 겹치는가. 원웨이는 위에서만 서는 것이므로 무시.
     [[nodiscard]] bool IsRegionBlocked_(
         const PhysicsWorld& _world,
         const Aabb&         _region)
@@ -69,11 +68,7 @@ namespace
             _hash *= 1099511628211ull;
         }
     }
-}   // namespace
-
-// ===========================================
-//  세션 / 초기화
-// ===========================================
+}
 
 void PlayerController::Reset(
     const Tuning&      _tuning,
@@ -161,10 +156,6 @@ void PlayerController::SetVictory()
     }
 }
 
-// ===========================================
-//  피격 / 사망
-// ===========================================
-
 bool PlayerController::OnHitEvents(
     const slug::Span<const HitEvent> _events)
 {
@@ -221,17 +212,12 @@ Hurtbox PlayerController::MakeHurtbox(
     return hurtbox;
 }
 
-// ===========================================
-//  틱
-// ===========================================
-
 void PlayerController::Tick(
     const PlayerContext& _ctx,
     const InputHistory&  _input)
 {
     m_pTuning = _ctx.pTuning;
 
-    // 지난 틱에 끝난 공격의 HitId 정리 (이미 Resolve 가 끝난 뒤이므로 안전)
     if (_ctx.pCombat)
     {
         for (const uint32_t id: m_pendingRelease)
@@ -257,7 +243,6 @@ void PlayerController::Tick(
         TickAlive_(_ctx, _input);
     }
 
-    // 판정 등록 (무적이면 bInvulnerable 로 등록되어 HitResolver 가 거른다)
     if (_ctx.pCombat && m_state != ePlayerState::Dead)
     {
         _ctx.pCombat->AddHurtbox(MakeHurtbox(*_ctx.pTuning));
@@ -273,7 +258,6 @@ void PlayerController::TickDead_(
 {
     const Tuning& tuning = *_ctx.pTuning;
 
-    // 공중에서 죽었으면 바닥까지 떨어진다
     m_body.velocity.x = 0.f;
     m_lastMove        = Physics::Step(m_body, _ctx.physics, MakePhysicsTuning_(tuning.move));
     ++m_deadTicks;
@@ -323,7 +307,7 @@ void PlayerController::TickAlive_(
     PlayerCommand command = m_input.Read(_input, _ctx.pTuning->move);
     if (m_state == ePlayerState::Victory)
     {
-        command = {};   // 승리 연출 중에는 조작을 받지 않는다
+        command = {};
     }
 
     TickMovement_(_ctx, command);
@@ -331,7 +315,6 @@ void PlayerController::TickAlive_(
     DeriveState_();
     TickActions_(_ctx, command);
 
-    // 대기 연출 타이머
     if (m_state == ePlayerState::Idle && m_overlay == eOverlay::None)
     {
         ++m_idleTicks;
@@ -355,18 +338,15 @@ void PlayerController::TickMovement_(
 
     const bool bGroundedBefore = m_body.bGrounded;
 
-    // --- 앉기 / 일어서기 ---
     bool bCrouch = bGroundedBefore && _command.bDownHeld && m_state != ePlayerState::Respawn;
     if (!bCrouch && m_pose == ePose::Crouch && bGroundedBefore)
     {
-        // 일어설 머리 공간이 없으면 계속 앉아 있는다
         const Aabb headRegion = Aabb::FromMinMax(
             { m_body.position.x - tuning.body.standSize.x * 0.5f, m_body.position.y - tuning.body.standSize.y },
             { m_body.position.x + tuning.body.standSize.x * 0.5f, m_body.position.y - tuning.body.crouchSize.y });
         bCrouch = IsRegionBlocked_(_ctx.physics, headRegion);
     }
 
-    // --- 가로 이동 (입력 즉시 최고 속도, 공중에서도 100% 제어) ---
     m_moveX = _command.moveX;
     if (m_moveX != 0)
     {
@@ -375,7 +355,6 @@ void PlayerController::TickMovement_(
     const float speed = bCrouch ? move.crouchSpeed : (bGroundedBefore ? move.runSpeed : move.airSpeed);
     m_body.velocity.x = static_cast<float>(m_moveX) * speed;
 
-    // --- 가변 점프: 상승 중 버튼을 떼면 속도를 줄인다 ---
     if (m_bJumping && !m_bJumpCut)
     {
         if (m_body.velocity.y < 0.f)
@@ -392,10 +371,8 @@ void PlayerController::TickMovement_(
         }
     }
 
-    // --- 점프 (버퍼 + 코요테) ---
     const bool bCoyote = m_bCoyoteAvailable && m_airTicks >= 1 && m_airTicks <= move.coyoteTicks;
 
-    // 이번 틱에 착지할 예정이면 바로 점프로 이어 간다: 착지 직전에 누른 점프가 착지 틱에 발동한다 (한 틱도 낭비하지 않는다).
     bool bWillLand = false;
     if (_command.bJumpBuffered && !bGroundedBefore && m_body.velocity.y >= 0.f)
     {
@@ -408,7 +385,6 @@ void PlayerController::TickMovement_(
         const bool bOnOneWay = bGroundedBefore && _command.bDownHeld && m_lastMove.platformIndex >= 0 && static_cast<size_t>(m_lastMove.platformIndex) < _ctx.physics.platforms.size() && _ctx.physics.platforms[static_cast<size_t>(m_lastMove.platformIndex)].bOneWay;
         if (bOnOneWay)
         {
-            // 아래 + 점프 : 원웨이 플랫폼 통과
             m_body.RequestDropThrough();
             m_input.Consume(eAction::Jump);
         }
@@ -431,12 +407,10 @@ void PlayerController::TickMovement_(
         }
     }
 
-    // --- 물리 ---
     m_body.size          = bCrouch ? tuning.body.crouchSize : tuning.body.standSize;
     m_body.footHalfWidth = tuning.body.footHalfWidth;
     m_lastMove           = Physics::Step(m_body, _ctx.physics, MakePhysicsTuning_(move));
 
-    // --- 공중/지상 기록 ---
     if (m_body.bGrounded)
     {
         m_airTicks         = 0;
@@ -449,13 +423,12 @@ void PlayerController::TickMovement_(
     {
         if (bGroundedBefore && !m_bJumping)
         {
-            m_bAirFromJump = false;   // 낭떠러지에서 떨어짐
+            m_bAirFromJump = false;
         }
         ++m_airTicks;
         m_pose = ePose::Air;
     }
 
-    // 벽에 막혀 있으면 달리는 모습을 보이지 않는다
     m_bMoving = m_moveX != 0 && !(m_moveX > 0 ? m_lastMove.bHitWallRight : m_lastMove.bHitWallLeft);
 }
 
@@ -487,7 +460,7 @@ void PlayerController::DeriveState_()
     }
     if (m_state == ePlayerState::Respawn && !m_body.bGrounded)
     {
-        return;   // 리스폰 낙하 중
+        return;
     }
 
     if (!m_body.bGrounded)
@@ -503,10 +476,6 @@ void PlayerController::DeriveState_()
         m_state = m_bMoving ? ePlayerState::Run : ePlayerState::Idle;
     }
 }
-
-// ===========================================
-//  행동: 칼 / 폭탄 / 사격
-// ===========================================
 
 void PlayerController::TickActions_(
     const PlayerContext& _ctx,
@@ -548,17 +517,13 @@ void PlayerController::TickKnife_(
     const float        half   = m_body.size.x * 0.5f;
     CombatSystem&      combat = *_ctx.pCombat;
 
-    // 표적 탐지: 몸 앞 가장자리 + range 안에 다른 팀의 Hurtbox 가 있는가 (대상 종류 구분 없음)
     m_bKnifeTargetInRange = combat.HasTargetIn(eTeam::Player, eHitKind::Melee, MakeKnifeTriggerBox(m_body.position, m_facing, half, knife), kPlayerOwnerId);
 
-    // 끝난 베기 정리
     if (m_knifeTick >= knife.durationTicks)
     {
         EndKnife_(_ctx);
     }
 
-    // 발동: Shot 이 눌렸거나(버퍼) 눌려 있고 표적이 범위 안이면 총 대신 칼.
-    // 이미 베는 중이면 끝나기 chainWindow 틱 전부터 다음 베기로 이어진다.
     const bool bWant  = _command.bShotBuffered || _command.bShotHeld;
     const bool bChain = m_knifeTick >= 0 && m_knifeTick >= knife.durationTicks - knife.chainWindowTicks;
     if (m_bKnifeTargetInRange && bWant && (m_knifeTick < 0 || bChain))
@@ -570,7 +535,7 @@ void PlayerController::TickKnife_(
         ++m_overlaySerial;
         ++m_stats.knifeSlashes;
         m_input.Consume(eAction::Shot);
-        m_throwTick = -1;   // 아직 손을 떠나지 않은 폭탄 동작은 취소 (폭탄은 소모되지 않는다)
+        m_throwTick = -1;
     }
 
     if (m_knifeTick >= 0)
@@ -583,7 +548,7 @@ void PlayerController::TickKnife_(
             hitbox.team    = eTeam::Player;
             hitbox.kind    = eHitKind::Melee;
             hitbox.damage  = knife.damage;
-            hitbox.bPierce = true;   // 한 번의 베기는 범위 안의 모든 표적을 각각 한 번씩 때린다
+            hitbox.bPierce = true;
             hitbox.owner   = kPlayerOwnerId;
             hitbox.id      = m_knifeHitId;
             combat.AddHitbox(hitbox);
@@ -638,7 +603,6 @@ void PlayerController::TickShot_(
     const PlayerContext& _ctx,
     const PlayerCommand& _command)
 {
-    // 칼/폭탄 동작 중에는 쏘지 않는다. (두 동작은 틱 타이머로 끝나므로 영구히 막히지 않는다)
     if (m_knifeTick >= 0 || m_throwTick >= 0 || m_bSlashShown || m_bThrowShown)
     {
         return;
@@ -664,10 +628,6 @@ void PlayerController::TickShot_(
     m_input.Consume(eAction::Shot);
     OnFired(m_weapon);
 }
-
-// ===========================================
-//  리그 / 해시
-// ===========================================
 
 RigState PlayerController::MakeRigState() const
 {
@@ -740,5 +700,4 @@ void PlayerController::PushFeetX(
         }
     }
 }
-
-}   // namespace slug
+}

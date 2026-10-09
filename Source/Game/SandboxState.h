@@ -23,38 +23,25 @@
 
 namespace slug
 {
-
-// ===========================================
-//  SandboxConfig
-//   기본값 = 실제 게임 샌드박스(Stage0 거리 + 훈련 표적). 테스트는 값을 바꿔서 작은 맵을 주입한다.
-// ===========================================
-
 struct SandboxConfig
 {
-    bool                  bLoadBakedGround = true;   // Baked/Ground/Stage0_0.bin (없으면 평지로 대체)
-    GroundMap             ground           = {};     // bLoadBakedGround == false 일 때 사용
-    slug::Vector<Platform> platforms        = {};     // 추가 플랫폼 (테스트용 원웨이/솔리드)
+    bool                  bLoadBakedGround = true;
+    GroundMap             ground           = {};
+    slug::Vector<Platform> platforms        = {};
     Aabb                  cameraBounds     = Aabb::FromMinMax({ 0.f, 0.f }, { 3520.f, 448.f });
     Vec2          spawnFeet        = { 100.f, 378.f };
-    bool                  bSpawnTargets    = true;   // 기본 훈련 표적/사수 배치
-    bool                  bLoadTuningFile  = true;   // Assets/Tuning/Tuning.json 로드 (+ 라이브에서 핫리로드)
-    Tuning                tuning           = {};     // bLoadTuningFile == false 일 때 사용
-    bool                  bBackground      = true;   // Stage0_Main 배경 (렌더러가 있을 때만)
-    slug::FilePath         enemyDefPath     = {};     // 적 정의 JSON 파일 또는 정의 폴더. 비면 <assetRoot>/Defs 폴더 전체 (없으면 적 없이 동작)
-    bool                  bEnemyLab        = false;  // 적 검증용: 보병 정의 8종을 플레이어 앞에 배치 (상태 이름 "enemylab")
-    bool                  bVehicleLab      = false;  // 차량 검증용: 차량 5종을 화면 안에 배치 (상태 이름 "vehiclelab")
-    bool                  bBossLab         = false;  // 보스 검증: 최종보스를 아레나(bossArena)에 등장시킨다 (상태 이름 "bosslab")
+    bool                  bSpawnTargets    = true;
+    bool                  bLoadTuningFile  = true;
+    Tuning                tuning           = {};
+    bool                  bBackground      = true;
+    slug::FilePath         enemyDefPath     = {};
+    bool                  bEnemyLab        = false;
+    bool                  bVehicleLab      = false;
+    bool                  bBossLab         = false;
     Aabb                  bossArena        = Aabb::FromMinMax({ 0.f, 0.f }, { 640.f, 448.f });   // 640x448, 바닥 bossGroundY
     float                 bossGroundY      = 378.f;
-    bool                  bPropLab         = false;  // 소품 검증: Stage0 상점 거리에 상점/트럭/아이템 배치 (상태 이름 "proplab")
+    bool                  bPropLab         = false;
 };
-
-// ===========================================
-//  SandboxState
-//   M2 플레이어 테스트 맵: Stage0 거리 + 훈련 표적 + 사수 + 디버그 오버레이.
-//   Tick 은 헤드리스에서도 동일하게 동작한다 (렌더러/애셋 없이도 판정과 이동은 같다).
-//   틱 순서: 표적 Hurtbox 등록 → 플레이어 → 사수 → 투사체 → Resolve → 이벤트 적용 → 카메라/이펙트
-// ===========================================
 
 class SandboxState final : public IGameState
 {
@@ -67,7 +54,6 @@ public:
     void Tick(GameContext& _ctx, const InputHistory& _input) override;
     void Render(GameContext& _ctx, float _alpha) override;
 
-    // --- 테스트/도구용 접근자 ---
     [[nodiscard]] PlayerController&       GetPlayer() { return m_player; }
     [[nodiscard]] const PlayerController& GetPlayer() const { return m_player; }
     [[nodiscard]] TrainingTargets&        GetTargets() { return m_targets; }
@@ -84,28 +70,24 @@ public:
     [[nodiscard]] const EnemyWorld&       GetEnemies() const { return m_enemies; }
     [[nodiscard]] const EnemyDefLibrary&  GetEnemyLib() const { return m_enemyLib; }
 
-    // 표적을 직접 추가 (테스트). 반환: 소유자 ID
     uint32_t AddTarget(eDummyKind _kind, Vec2 _feet, bool _bShooter = false);
 
-    // 적을 직접 스폰 (테스트/도구). 발 위치 아래 지면에 붙인다. 알 수 없는 정의면 null 핸들.
     EnemyHandle SpawnEnemy(slug::StringView _defName, Vec2 _feet, const SpawnParams& _params = {});
 
-    // 플레이어와 표적을 처음 상태로 되돌린다
     void RestartGame();
 
-    // 시뮬레이션 상태 해시 (결정성 검증: 플레이어 + 표적 + 투사체 수)
     [[nodiscard]] uint64_t HashState() const;
 
 private:
     void                       BuildWorld_(GameContext& _ctx);
     void                       AddDefaultTargets_();
     void                       UpdateWalls_();
-    void                       UpdatePropCollision_();   // 소품 발판을 m_platforms 에 모은다
+    void                       UpdatePropCollision_();
     [[nodiscard]] PhysicsWorld MakePhysicsWorld_() const;
     [[nodiscard]] Vec2 GetRespawnFeet_() const;
-    [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;   // 적용: 지면 + 플랫폼 (카메라 왼쪽 벽 제외)
-    void                       SpawnDebugEnemy_(int _slot, float _aheadPx = 180.f);   // 숫자키 1..8 (보병 정의 8종), 9 = 차량 5종 순환 (플레이어 앞)
-    void                       SpawnBossLab_();                                         // bosslab: 최종보스를 아레나 왼쪽 밖에서 등장시킨다
+    [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;
+    void                       SpawnDebugEnemy_(int _slot, float _aheadPx = 180.f);
+    void                       SpawnBossLab_();
 
     void DrawWorld_(GameContext& _ctx, Vec2 _cameraPos, float _alpha);
     void DrawDebugBoxes_(Renderer& _renderer, Vec2 _cameraPos) const;
@@ -119,8 +101,8 @@ private:
 
     GroundMap         m_ground        = {};
     slug::Vector<Wall> m_walls         = {};
-    slug::Vector<Platform> m_platforms      = {};     // 플레이어 발판 (설정 + 소품). 적 발판은 설정값만 쓴다
-    PropDefLibrary        m_propDefs       = {};     // Assets/Defs/Props/Props.json
+    slug::Vector<Platform> m_platforms      = {};
+    PropDefLibrary        m_propDefs       = {};
     PropWorld             m_props          { nullptr, 1 };
     Camera            m_camera        = {};
     Vec2      m_prevCameraPos = { 0.f, 0.f };
@@ -131,18 +113,16 @@ private:
     ProjectileSystem m_projectiles = {};
     TrainingTargets  m_targets     = {};
     EnemyDefLibrary  m_enemyLib    = {};
-    EnemyWorld       m_enemies     { &m_enemyLib };   // m_enemyLib 보다 뒤에 선언되어야 한다
+    EnemyWorld       m_enemies     { &m_enemyLib };
     int              m_vehicleCursor = 0;              // 숫자키 9: 다음에 뽑을 차량 번호
     EffectList       m_effects     = {};
     AnimPlayer       m_bombAnim    = {};
 
-    // 렌더 자원 (렌더러가 있을 때만 유효)
     SpriteLibrary m_spriteLib = {};
     int           m_bgHandle  = -1;
     bool          m_bRigBound = false;
     AnimId        m_bombClip  = slug::kNullHandle;
 
-    // UI / 오디오 (시뮬레이션 상태가 아니다: HashState 에 포함되지 않는다)
     UiSystem    m_ui                 = {};
     PlayerStats m_prevStats          = {};
     eWeapon     m_prevWeapon         = eWeapon::Pistol;
@@ -151,5 +131,4 @@ private:
 
     uint64_t m_tickCount = 0;
 };
-
-}   // namespace slug
+}

@@ -40,5 +40,4 @@ bool CombatSystem::HasTargetIn(
     }
     return false;
 }
-
-}   // namespace slug
+}

@@ -23,5 +23,4 @@ String Error::MakeMessage() const
     }
     return "알 수 없는 에러";
 }
-
-}   // namespace slug
+}

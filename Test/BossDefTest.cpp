@@ -12,10 +12,6 @@
 using namespace slug;
 using namespace slugtest;
 
-// ===========================================
-//  보스 정의 (Assets/Defs/Boss.json) 파싱 / 명세 값 / 클립 이름
-// ===========================================
-
 TEST(BossDef, BothBossDefinitionsParseWithSpecHitPoints)
 {
     BossRig rig;
@@ -143,13 +139,11 @@ TEST(BossDef, BossClipAndSpriteNamesExistInBakedAssets)
     ASSERT_TRUE(sprites) << "sprites.json 을 읽지 못했습니다";
 
     const char* kNames[] = {
-        // 버스
         "MainTruck_Not_Begin", "MainTruck_Begin", "MainTruck_Idle_0", "MainTruck_Idle_1", "MainTruck_Idle_2", "MainTruck_Idle_3",
         "MainTruck_Ladder_0", "MainTruck_Ladder_1", "MainTruck_Ladder_2", "MainTruck_Ladder_3", "MainTruck_Deco_Destroy_Stop",
         "MainTruck_Deco_Destroy", "MainTruck_Big_Win_Destroy_Begin", "MainTruck_Bump", "MainTruck_Sideparts", "MainTruck_Die",
         "MainTruck_Die_Front", "LeftUp_Win_Destroy", "RightUp_Win_Destroy", "LeftDown_Win_Destroy", "RightDown_Win_Destroy",
         "BTank_Proj", "BTank_Proj_Effect", "BTank_Shot_Effect", "Explosion_Small", "Explosion_Mid", "Explosion_Large", "Explosion_Huge",
-        // 최종보스
         "BattleShip_Body", "BattleShip_Tail", "BattleShip_Head", "BattleShip_Head_Swiching_Start", "BattleShip_Head_Swiching_End",
         "BattleShip_Antena", "BattleShip_Antena_Turn", "BattleShip_Cannon_Start", "BattleShip_Cannon_End", "BattleShip_Cannon_Idle_0",
         "BattleShip_Cannon_Idle_8", "BattleShip_Cannon_Shot_0", "BattleShip_Cannon_Shot_4", "BattleShip_Cannon_Deco",
@@ -172,7 +166,6 @@ TEST(BossDef, BossClipAndSpriteNamesExistInBakedAssets)
 TEST(BossDef, ClipDurationsAgreeWithTheBakedFrames)
 {
     SLUG_REQUIRE_BAKED(anims);
-    // 명세의 대표 타이밍: MainTruck_Begin 3.5 s, Cannon_Start 1.6 s, DCannon_Shot 1.12 s, Destroy 잔해 1 프레임
     const int beginTicks = GetNamedPartTicks(anims, "MainTruck_Begin");
     EXPECT_NEAR(beginTicks, 210, 3);
     EXPECT_NEAR(GetNamedPartTicks(anims, "BattleShip_Cannon_Start"), 96, 3);

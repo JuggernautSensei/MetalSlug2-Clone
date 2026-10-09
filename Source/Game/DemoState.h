@@ -5,12 +5,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  DemoState
-//   입력으로 사각형을 움직이는 최소 상태. 고정 스텝/보간/리플레이 결정성 검증용.
-// ===========================================
-
 class DemoState final : public IGameState
 {
 public:
@@ -27,5 +21,4 @@ private:
     Vec2 m_pos       = { 320.f, 224.f };
     bool         m_bFinished = false;
 };
-
-}   // namespace slug
+}

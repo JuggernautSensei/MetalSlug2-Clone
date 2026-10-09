@@ -27,7 +27,6 @@ namespace
         return _seconds <= 0.f ? 0 : static_cast<int>(std::lround(static_cast<double>(_seconds) * static_cast<double>(kTickRate)));
     }
 
-    // 플레이스홀더 기본 체력/크기. 이름 규칙은 Docs/StageFormat.md §9 의 대략적인 크기를 따른다 (정확한 충돌체는 실제 구현의 몫).
     struct DefaultSpec
     {
         int          hp   = 1;
@@ -87,11 +86,7 @@ namespace
     {
         return _kind == eEntityKind::Enemy || _kind == eEntityKind::Npc || _kind == eEntityKind::Prop;
     }
-}   // namespace
-
-// ===========================================
-//  구성
-// ===========================================
+}
 
 void StagePlaceholders::AddGroundMap(
     const slug::StringView _name,
@@ -158,10 +153,6 @@ const slug::String& StagePlaceholders::GetActiveGroundName() const
     return m_grounds[static_cast<size_t>(m_activeGround)].name;
 }
 
-// ===========================================
-//  틱 훅
-// ===========================================
-
 void StagePlaceholders::RegisterHurtboxes(
     CombatSystem& _combat) const
 {
@@ -223,7 +214,6 @@ void StagePlaceholders::Tick()
         }
     }
 
-    // 사망 연출이 끝난 것은 제거한다 (게이트의 destroyFinished 는 제거로 판정)
     std::erase_if(m_entities, [](const PlaceholderEntity& _entity) { return _entity.deadTicks >= kPlaceholderDeathTicks; });
 }
 
@@ -265,10 +255,6 @@ const PlaceholderEntity* StagePlaceholders::Find_(
     return nullptr;
 }
 
-// ===========================================
-//  IStageHost
-// ===========================================
-
 SpawnId StagePlaceholders::SpawnEntity(
     const SpawnRequest& _request)
 {
@@ -283,7 +269,6 @@ SpawnId StagePlaceholders::SpawnEntity(
     entity.bHittable = IsHittableKind_(_request.kind);
     entity.health    = Health::Make(_request.bHasHp ? _request.hp : spec.hp);
 
-    // 요청 위치는 Feet 이면 발, LegacyCenter 이면 박스 중심이다 (발 = 중심 + 높이/2)
     entity.feet = _request.positionMode == ePositionMode::Feet
         ? _request.position
         : Vec2 { _request.position.x, _request.position.y + entity.size.y * 0.5f };
@@ -314,10 +299,9 @@ void StagePlaceholders::ClearEntities(
 }
 
 void StagePlaceholders::SendCommand(
-    SpawnId /*_id*/,
-    slug::StringView /*_command*/)
+    SpawnId,
+    slug::StringView)
 {
-    // 플레이스홀더는 명령을 해석하지 않는다 (mb_truck startBattle 등은 실제 구현의 몫)
 }
 
 void StagePlaceholders::SetGround(
@@ -370,7 +354,6 @@ bool StagePlaceholders::IsGameOver() const
 void StagePlaceholders::SetPlayerInvincible(
     const float _seconds)
 {
-    // 플레이스홀더는 플레이어에게 피해를 주지 않으므로 무적은 상태 표시용으로만 기록한다.
     m_invincibleTicks = SecondsToTicks_(_seconds);
 }
 
@@ -381,16 +364,14 @@ void StagePlaceholders::WarpPlayer(
     {
         return;
     }
-    // 디버그 워프: 점수는 유지하고 위치/상태만 초기화한다
     const int score = m_pPlayer->GetScore();
     m_pPlayer->Reset(*m_pTuning, _feet);
     m_pPlayer->AddScore(score);
 }
 
 void StagePlaceholders::SetBackdrop(
-    slug::StringView /*_modeId*/)
+    slug::StringView)
 {
-    // 원경 모드는 StageRunner 가 보관한다 (렌더는 러너의 GetBackdropMode 를 읽는다)
 }
 
 void StagePlaceholders::ShowBanner(
@@ -446,5 +427,4 @@ void StagePlaceholders::OnSectionEntered(
     m_lastSectionIndex = _index;
     m_lastSectionId    = slug::String { _id };
 }
-
-}   // namespace slug
+}

@@ -15,7 +15,6 @@ namespace
         return std::floor(_value + 0.5f);
     }
 
-    // 임계 감쇠 스프링 (Unity SmoothDamp 와 같은 근사식). dt 가 고정이면 결정적이다.
     void SmoothDamp_(
         float&      _current,
         float&      _velocity,
@@ -32,14 +31,12 @@ namespace
         _velocity          = (_velocity - omega * temp) * e;
         float out          = _target + (change + temp) * e;
 
-        // 목표를 넘어서지 않도록 한다
         if ((_target - _current > 0.f) == (out > _target))
         {
             out       = _target;
             _velocity = 0.f;
         }
 
-        // 아주 가까우면 붙인다 (끝없이 미세하게 움직여 정수 스냅이 깜박이는 것을 방지)
         if (std::abs(out - _target) < 0.001f && std::abs(_velocity) < 0.01f)
         {
             out       = _target;
@@ -48,7 +45,6 @@ namespace
         _current = out;
     }
 
-    // 데드존 규칙: 목표가 데드존 안이면 현재 중심 유지, 밖이면 목표가 데드존 경계에 걸리는 위치로 이동
     [[nodiscard]] float ApplyDeadzone_(
         const float _center,
         const float _focus,
@@ -64,7 +60,7 @@ namespace
         }
         return _center;
     }
-}   // namespace
+}
 
 Camera::Camera(
     const CameraTuning& _tuning)
@@ -188,7 +184,6 @@ Vec2 Camera::SnapTopLeft_(
     const Aabb bounds     = GetActiveBounds_(bHasBounds);
     if (bHasBounds)
     {
-        // 정수로 스냅한 뒤에도 경계 밖으로 나가지 않도록 안쪽으로 올림/내림한다
         const float minX = std::ceil(bounds.min.x);
         const float maxX = std::floor(bounds.max.x - m_tuning.viewSize.x);
         const float minY = std::ceil(bounds.min.y);
@@ -216,7 +211,6 @@ void Camera::Update(
 {
     if (m_bMoving)
     {
-        // 스크립트 직선 이동 (추적 중단). 틱 수로 세므로 부동소수 누적 오차가 없다.
         ++m_moveElapsed;
         if (m_moveElapsed >= m_moveTotalTicks)
         {
@@ -266,10 +260,8 @@ void Camera::Update(
         }
     }
 
-    // 경계/락이 바뀌었을 수 있으므로 항상 클램프 (경계가 전진 전용보다 우선)
     m_center = ClampCenter_(m_center);
 
-    // 흔들림
     if (m_shakeTime < m_shakeDuration)
     {
         m_shakeTime += _dt;
@@ -325,7 +317,6 @@ Vec2 Camera::GetPosition() const
         return position;
     }
 
-    // 흔들림을 더해도 경계 밖이 보이지 않도록 다시 클램프한다
     position += m_shakeOffset;
     bool       bHasBounds = false;
     const Aabb bounds     = GetActiveBounds_(bHasBounds);
@@ -372,5 +363,4 @@ bool Camera::IsVisible(
 {
     return GetViewRect().Expanded(_margin).Overlaps(_worldBox);
 }
-
-}   // namespace slug
+}

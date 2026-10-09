@@ -5,16 +5,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  Shielder — 방패병 (Docs/EnemySpecs.md §1.5)
-//   방패는 별도 Hurtbox (소유자 = 적 ID | kShieldOwnerBit, 받는 종류 = Bullet 만) 로 표현한다.
-//   몸통보다 먼저 등록하므로 정면에서 오는 탄은 방패가 먼저 받아 소모된다. 칼(Melee)/폭탄(Blast) 은 방패가 받지 않아 몸통에 닿고,
-//   관통 샷건 탄은 방패와 몸통을 모두 맞춘다 (소유자가 다르므로).
-//   방패는 사격 자세(ShotReady 이후)에서는 내려간다 (취약).
-//   레거시 구멍 수정: -100 < dy < -50 구간도 수평으로 취급한다.
-// ===========================================
-
 namespace
 {
     enum eShielderState : int
@@ -32,8 +22,6 @@ namespace
         kLookIdle,
         kLookEnd
     };
-
-    // e.shieldDir: 0 앞 / 1 위 / 2 아래 (조준/방패 방향). e.counter: 남은 발수.
 
     [[nodiscard]] int PickDir_(const int _dir, const int _fwd, const int _up, const int _down)
     {
@@ -89,7 +77,7 @@ namespace
                 break;
             case kShotStart:
                 _e.shieldDir = 0;
-                _e.bShieldUp = true;   // 사격 준비 동안은 아직 방어 중
+                _e.bShieldUp = true;
                 FacePlayer(_e, _env);
                 _e.counter = cfg.bullets;
                 break;
@@ -101,7 +89,7 @@ namespace
             case kShotReady:
             case kShot:
             case kShotEnd:
-                _e.bShieldUp = false;   // 사격 중에는 취약
+                _e.bShieldUp = false;
                 break;
             default: break;
         }
@@ -192,7 +180,7 @@ namespace
                 FacePlayer(_e, _env);
                 if (!FloorAhead(_e, _env, cfg.edgeProbeDist, cfg.edgeProbeDrop) || WallAhead(_e, _env, cfg.wallProbeW, cfg.wallProbeH, cfg.wallProbeX, cfg.wallProbeY))
                 {
-                    Go_(_e, _def, _env, kMoveStop);   // 낭떠러지/벽 앞에서는 멈춘다 (레거시: 그대로 떨어짐)
+                    Go_(_e, _def, _env, kMoveStop);
                 }
                 else if (_e.stateTicks >= cfg.moveMaxTicks)
                 {
@@ -293,7 +281,7 @@ namespace
                 {
                     if (absDx <= cfg.guard)
                     {
-                        Go_(_e, _def, _env, kShotReady);   // 수직 사격 (Look 자세에서 바로)
+                        Go_(_e, _def, _env, kShotReady);
                     }
                     else
                     {
@@ -320,7 +308,6 @@ namespace
             Go_(_e, _def, _env, _e.bActive ? kIdle : kWait);
         }
 
-        // 방어 연출: 방패가 올라와 있는 동안 막으면 잠깐 방어 클립을 덮어쓴다 (상태 타이머는 클립이 아니라 stateTicks 로 센다)
         if (_e.defenceTicks > 0)
         {
             --_e.defenceTicks;
@@ -333,7 +320,7 @@ namespace
     {
         if ((_event.target & kShieldOwnerBit) != 0)
         {
-            _e.defenceTicks = _def.shielder.defenceTicks;   // 방패가 막음: 피해 없음
+            _e.defenceTicks = _def.shielder.defenceTicks;
             return true;
         }
         return false;
@@ -355,7 +342,7 @@ namespace
             shield.box     = box.At(_e.body.position, _e.facing);
             shield.team    = _def.team;
             shield.owner   = _e.id | kShieldOwnerBit;
-            shield.accepts = HitKindMask { eHitKind::Bullet };   // 총알만 받아 소모시킨다
+            shield.accepts = HitKindMask { eHitKind::Bullet };
             _combat.AddHurtbox(shield);
         }
 
@@ -365,7 +352,7 @@ namespace
         body.owner = _e.id;
         _combat.AddHurtbox(body);
     }
-}   // namespace
+}
 
 const BehaviorOps kShielderOps = {
     .init              = &Init_,
@@ -437,5 +424,4 @@ void ParseShielderCfg(
     c.weaponUp      = _r.Weapon("up");
     c.weaponDown    = _r.Weapon("down");
 }
-
-}   // namespace slug
+}

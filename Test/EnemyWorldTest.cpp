@@ -14,11 +14,7 @@ namespace
     {
         return _pEnemy && _pEnemy->bGrounded && std::abs(_pEnemy->body.position.y - kGroundY) < 0.5f;
     }
-}   // namespace
-
-// ===========================================
-//  스폰 / 활성 / 정리
-// ===========================================
+}
 
 TEST(EnemyWorld, SpawningAnUnknownDefinitionReturnsANullHandle)
 {
@@ -62,7 +58,7 @@ TEST(EnemyWorld, SpawnSnapsOntoGroundWithinReach)
 
 TEST(EnemyWorld, ActivationWaitsForTheScreenThenLatches)
 {
-    EnemyRig rig({ 100.f, kGroundY }, 0.f);   // 화면 [0, 640]: 오른쪽 여유 150 → x ≤ 790 이면 활성
+    EnemyRig rig({ 100.f, kGroundY }, 0.f);
     ASSERT_TRUE(rig.IsLoaded());
     const EnemyHandle h = rig.Spawn("soldier_bomb", { 1000.f, kGroundY });
     rig.Step(30);
@@ -106,7 +102,7 @@ TEST(EnemyWorld, DelayedSpawnHasNoHurtboxUntilItAppears)
     SpawnParams params;
     params.delaySec = 0.5f;
     const EnemyHandle h = rig.Spawn("soldier_bomb", { 300.f, kGroundY }, params);
-    EXPECT_FALSE(rig.World().IsDefeated(h));   // 대기 중이라도 "처치됨" 은 아니다
+    EXPECT_FALSE(rig.World().IsDefeated(h));
     EXPECT_EQ(rig.Strike(h.id, eHitKind::Bullet, 3), 0u);   // 대기 중에는 맞지 않는다
     rig.Step(40);
     ASSERT_NE(rig.E(h), nullptr);
@@ -195,10 +191,6 @@ TEST(EnemyWorld, ResetClearsEverythingAndRestartsIds)
     EXPECT_EQ(rig.Spawn("soldier_bomb", { 300.f, kGroundY }).id, kEnemyOwnerBase);
 }
 
-// ===========================================
-//  피해 / 사망
-// ===========================================
-
 TEST(EnemyWorld, PistolAndKnifeEachKillASoldierInOneHit)
 {
     {
@@ -224,7 +216,6 @@ TEST(EnemyWorld, PistolAndKnifeEachKillASoldierInOneHit)
 
 TEST(EnemyWorld, HitCountFollowsDamageAgainstAHighHp)
 {
-    // HP 20 짜리 보병: 권총(3) 7발, 칼(8) 3회, 폭탄(20) 1발
     const auto HitsToKill = [](const eHitKind _kind, const int _damage) {
         EnemyRig rig;
         if (!rig.IsLoaded())
@@ -259,14 +250,12 @@ TEST(EnemyWorld, ShieldBlocksBulletsButNotMelee)
     rig.Step(10);
     ASSERT_TRUE(rig.E(h)->bShieldUp);
 
-    // 방패 상자 (소유자 = id | kShieldOwnerBit) 를 총알이 때린다 → 막힌다 (피해 없음)
     EXPECT_GT(rig.Strike(h.id | kShieldOwnerBit, eHitKind::Bullet, 3), 0u);
     EXPECT_EQ(rig.E(h)->health.hp, 1);
     EXPECT_FALSE(rig.World().IsDefeated(h));
     rig.Step(1);
     EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Died), 0);
 
-    // 칼은 방패 상자가 받지 않는다 → 몸통이 맞아 죽는다
     (void)rig.Strike(h.id, eHitKind::Melee, 8);
     EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Died), 1);
 }
@@ -311,10 +300,6 @@ TEST(EnemyWorld, PowIgnoresEnemyBulletsAndHasNoHurtboxOnceFreed)
     EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Freed), 1);
 }
 
-// ===========================================
-//  변신 / 공격
-// ===========================================
-
 TEST(EnemyWorld, FlyingBzkLandsAndTransformsIntoSoldierBzk)
 {
     EnemyRig rig;
@@ -327,8 +312,8 @@ TEST(EnemyWorld, FlyingBzkLandsAndTransformsIntoSoldierBzk)
     const Enemy* pHeir = rig.E(heir);
     ASSERT_NE(pHeir, nullptr);
     EXPECT_EQ(rig.Lib().Get(pHeir->defIndex).name, "soldier_bzk");
-    EXPECT_EQ(rig.E(para), nullptr);                    // 원래 개체는 사라졌다
-    EXPECT_FALSE(rig.World().IsDefeated(para));         // 후계자를 따라가면 아직 살아 있다
+    EXPECT_EQ(rig.E(para), nullptr);
+    EXPECT_FALSE(rig.World().IsDefeated(para));
     EXPECT_FALSE(rig.World().IsDefeated(heir));
     EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Transformed), 1);
     EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Removed), 0);   // 변신은 Removed 를 내지 않는다
@@ -355,10 +340,6 @@ TEST(EnemyWorld, SwordSoldierHitsThePlayerTeamWhenAdjacent)
     }
     EXPECT_GT(rig.PlayerHits(), 0) << "칼 병사가 플레이어를 한 번도 베지 않았다";
 }
-
-// ===========================================
-//  결정성
-// ===========================================
 
 TEST(EnemyWorld, OneThousandEightHundredTicksAreDeterministic)
 {

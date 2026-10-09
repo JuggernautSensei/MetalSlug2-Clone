@@ -18,11 +18,7 @@ slug::Vector<Entity> Collect(
     });
     return result;
 }
-}   // namespace
-
-// ===========================================
-//  수명 / 지연 파괴
-// ===========================================
+}
 
 TEST(World, CreateGivesDistinctLiveEntities)
 {
@@ -34,7 +30,7 @@ TEST(World, CreateGivesDistinctLiveEntities)
     EXPECT_TRUE(world.IsAlive(a));
     EXPECT_TRUE(world.IsAlive(b));
     EXPECT_EQ(world.GetEntityCount(), 2u);
-    EXPECT_FALSE(world.IsAlive(Entity {}));   // null 핸들
+    EXPECT_FALSE(world.IsAlive(Entity {}));
     EXPECT_FALSE(world.IsAlive(slug::kNullHandle));
 }
 
@@ -45,8 +41,8 @@ TEST(World, DestroyIsDeferredUntilFlush)
     (void)world.Add<Health>(e, Health::Make(5));
 
     world.Destroy(e);
-    EXPECT_FALSE(world.IsAlive(e));   // 즉시 죽은 것으로 취급
-    EXPECT_TRUE(world.IsValid(e));    // 하지만 데이터는 아직 남아 있다
+    EXPECT_FALSE(world.IsAlive(e));
+    EXPECT_TRUE(world.IsValid(e));
     ASSERT_NE(world.TryGet<Health>(e), nullptr);
     EXPECT_EQ(world.TryGet<Health>(e)->hp, 5);
     EXPECT_EQ(world.GetEntityCount(), 0u);
@@ -64,9 +60,9 @@ TEST(World, DoubleDestroyAndDeadHandlesAreIgnored)
     const Entity b = world.Create();
 
     world.Destroy(a);
-    world.Destroy(a);   // 중복
+    world.Destroy(a);
     world.FlushDestroyed();
-    world.Destroy(a);   // 이미 사라진 핸들
+    world.Destroy(a);
     world.Destroy(Entity {});
     world.FlushDestroyed();
 
@@ -82,7 +78,6 @@ TEST(World, StaleHandleStaysDeadAfterSlotReuse)
     world.Destroy(old);
     world.FlushDestroyed();
 
-    // 슬롯을 재사용하는 새 엔티티들
     slug::Vector<Entity> fresh;
     for (int i = 0; i < 8; ++i)
     {
@@ -95,13 +90,12 @@ TEST(World, StaleHandleStaysDeadAfterSlotReuse)
         EXPECT_NE(e, old);
         bSlotReused = bSlotReused || e.GetIndex() == old.GetIndex();
     }
-    EXPECT_TRUE(bSlotReused);   // 재사용이 실제로 일어났다는 전제 확인
+    EXPECT_TRUE(bSlotReused);
 
     EXPECT_FALSE(world.IsAlive(old));
     EXPECT_FALSE(world.IsValid(old));
     EXPECT_EQ(world.TryGet<Health>(old), nullptr);
 
-    // 낡은 핸들로 Destroy 해도 새 엔티티는 영향받지 않는다
     world.Destroy(old);
     world.FlushDestroyed();
     for (const Entity e: fresh)
@@ -149,10 +143,6 @@ TEST(World, ClearInvalidatesEveryOldHandleEvenAfterRecreating)
     }
 }
 
-// ===========================================
-//  순회 순서
-// ===========================================
-
 TEST(World, IterationIsCreationOrderAndSurvivesDestroys)
 {
     World               world;
@@ -166,7 +156,6 @@ TEST(World, IterationIsCreationOrderAndSurvivesDestroys)
     world.Destroy(created[4]);
     world.FlushDestroyed();
 
-    // 슬롯이 재사용되어도 순서는 "생성 순서" (남은 것 → 새로 만든 것)
     const Entity n1 = world.Create();
     const Entity n2 = world.Create();
 
@@ -265,10 +254,6 @@ TEST(World, ForEachAllowsMutatingComponentsInPlace)
     EXPECT_FLOAT_EQ(sum, 40.f);
 }
 
-// ===========================================
-//  컴포넌트
-// ===========================================
-
 TEST(World, ComponentAddGetHasRemove)
 {
     World        world;
@@ -282,7 +267,7 @@ TEST(World, ComponentAddGetHasRemove)
 
     world.Remove<Body>(e);
     EXPECT_FALSE(world.Has<Body>(e));
-    world.Remove<Body>(e);   // 없는 컴포넌트 제거는 무시
+    world.Remove<Body>(e);
     EXPECT_EQ(world.TryGet<Body>(e), nullptr);
 }
 
@@ -310,10 +295,6 @@ TEST(World, SpriteAndTeamComponentsHoldTheirData)
     EXPECT_EQ(world.Get<Team>(e).team, eTeam::Enemy);
     EXPECT_EQ(world.Get<Sprite>(e).layer, 5);
 }
-
-// ===========================================
-//  결정성
-// ===========================================
 
 TEST(World, RandomCreateDestroySequencesProduceIdenticalOrders)
 {

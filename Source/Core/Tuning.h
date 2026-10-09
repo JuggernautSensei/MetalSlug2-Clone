@@ -7,30 +7,17 @@
 
 namespace slug
 {
-
-// ===========================================
-//  Tuning
-//   모든 게임플레이 수치는 여기서 온다 (코드 상수 금지). Assets/Tuning/Tuning.json 에서 읽고,
-//   JSON 에 없는 키는 아래 기본값을 쓴다. 단위: 위치 px, 속도 px/s, 시간은 "틱"(1/60 s) 또는 초(이름에 Sec).
-//   기본값은 Assets/Tuning/Tuning.json 과 동일하게 유지한다 (TuningTest 가 검증).
-// ===========================================
-
 enum class eWeapon : uint8_t
 {
-    Pistol,   // DG: 시작 무기
-    Hmg,      // 헤비머신건
+    Pistol,
+    Hmg,
     Shotgun,
-    Rocket,   // 로켓 런처 (착탄 폭발)
-    Flame,    // 화염방사
+    Rocket,
+    Flame,
     Count
 };
 
 inline constexpr size_t kWeaponCount = static_cast<size_t>(eWeapon::Count);
-
-// ===========================================
-//  이동 / 점프
-//   손맛 기준 (640x448, 레거시 수치): 달리기 250 px/s, 점프 정점 ≈ 129 px, 체공 ≈ 0.86 s
-// ===========================================
 
 struct MoveTuning
 {
@@ -40,7 +27,7 @@ struct MoveTuning
     float jumpSpeed        = 600.f;    // px/s 초속
     float gravity          = 1400.f;   // px/s²
     float terminalVelocity = 1000.f;   // px/s
-    float jumpCutFactor    = 0.5f;     // 점프 버튼을 떼면 상승 속도에 곱함 (가변 점프 높이, 최소 점프 ≈ 32 px)
+    float jumpCutFactor    = 0.5f;
     int   coyoteTicks      = 4;        // 낭떠러지를 벗어난 뒤에도 점프를 허용하는 틱 수
     int   jumpBufferTicks  = 4;        // 착지 직전에 누른 점프를 기억하는 틱 수
     int   shotBufferTicks  = 6;        // 사격 락 중에 누른 사격을 기억하는 틱 수
@@ -58,10 +45,6 @@ struct BodyTuning
     Vec2 hurtCrouch    = { 16.f, 32.f };
     float        footHalfWidth = 4.f;
 };
-
-// ===========================================
-//  조준 / 총구 위치 (오른쪽을 볼 때 발 중앙 기준 오프셋, 왼쪽은 x 반전)
-// ===========================================
 
 struct MuzzleSet
 {
@@ -91,19 +74,15 @@ struct MuzzleTuning
     };
 };
 
-// ===========================================
-//  무기
-// ===========================================
-
 struct WeaponTuning
 {
     int          damage            = 3;
     int          fireIntervalTicks = 4;       // 연타해도 이보다 빨리 쏠 수 없다
-    int          holdRepeatTicks   = 6;       // 버튼을 누르고 있을 때 반복 간격 (0 = 홀드 연사 없음, 탭만)
+    int          holdRepeatTicks   = 6;
     int          ammo              = 0;       // 0 = 무한
     float        projectileSpeed   = 800.f;   // px/s
     int          maxAlive          = 4;       // 동시에 살아 있는 탄 수 상한 (0 = 무제한)
-    bool         bPierce           = false;   // 관통
+    bool         bPierce           = false;
     Vec2 hitSize           = { 14.f, 10.f };
     float        range             = 420.f;   // 사거리 px
     int          shotOverlayTicks  = 14;      // 사격 상체 동작 길이
@@ -198,17 +177,11 @@ struct WeaponsTuning
     }
 };
 
-// ===========================================
-//  칼
-//   Shot 입력 시 적의 Hurtbox 가 (몸 앞 가장자리 + range) 안에 있으면 총 대신 칼. 타이밍은 모두 틱 기준이라
-//   애셋(애니메이션) 없이도 판정이 동일하게 동작한다 (애니메이션은 이 길이에 맞춰 재생 속도를 조정).
-// ===========================================
-
 struct KnifeTuning
 {
     float range            = 34.f;   // 몸통 앞 가장자리에서 자동 발동 거리
     int   damage           = 8;
-    float reach            = 52.f;   // 칼 판정 상자: 몸 중심에서 앞쪽 길이 (range + 몸 반폭 이상이어야 한다)
+    float reach            = 52.f;
     float back             = 6.f;    // 몸 중심에서 뒤쪽 여유
     float bottom           = 4.f;    // 발에서 판정 아래 끝까지
     float top              = 60.f;   // 발에서 판정 위 끝까지
@@ -217,10 +190,6 @@ struct KnifeTuning
     int   activeLastTick   = 11;     // 판정 종료 (포함)
     int   chainWindowTicks = 6;      // 끝나기 전 이 틱부터 다음 베기 입력을 받아 바로 이어 벤다
 };
-
-// ===========================================
-//  폭탄
-// ===========================================
 
 struct BombTuning
 {
@@ -240,10 +209,6 @@ struct BombTuning
     int          blastTicks    = 10;     // 폭발 판정 유지 틱
 };
 
-// ===========================================
-//  플레이어 (목숨/리스폰)
-// ===========================================
-
 struct PlayerTuning
 {
     int   lives             = 3;
@@ -257,20 +222,12 @@ struct PlayerTuning
     int   idleActionLength  = 100;   // 대기 연출 길이 (틱). 끝나면 다시 대기 시간을 센다
 };
 
-// ===========================================
-//  카메라
-// ===========================================
-
 struct CameraSettings
 {
     Vec2 deadzoneHalf = { 24.f, 16.f };
     float        smoothTime   = 0.14f;
     float        lookAheadX   = 40.f;   // 진행 방향 앞쪽으로 보는 양
 };
-
-// ===========================================
-//  샌드박스 (훈련용 더미/사수)
-// ===========================================
 
 struct SandboxTuning
 {
@@ -284,14 +241,10 @@ struct SandboxTuning
     float shooterRange         = 380.f;   // 사수가 플레이어를 향해 쏘기 시작하는 가로 거리
 };
 
-// ===========================================
-//  리그 (스프라이트 합성 보조)
-// ===========================================
-
 struct RigTuning
 {
     float airBaseline   = 40.f;   // 공중에서 원점이 발보다 몇 px 위인가 (스프라이트 정렬용)
-    int   diagUpVariant = 4;      // 대각 위 조준 포즈: Lookingup_3(약 15도) 또는 4(약 35도)
+    int   diagUpVariant = 4;
 };
 
 struct Tuning
@@ -308,32 +261,18 @@ struct Tuning
     RigTuning      rig     = {};
 };
 
-// ===========================================
-//  로드 / 덤프
-// ===========================================
-
-// JSON 텍스트를 읽는다. 누락된 키는 기본값. 형식이 잘못되면 Error.
 [[nodiscard]] slug::Result<Tuning> ParseTuning(slug::StringView _json);
 [[nodiscard]] slug::Result<Tuning> LoadTuning(const slug::FilePath& _path);
 
-// 모든 값을 사람이 읽을 수 있는 텍스트로 덤프한다 (동일성 비교/디버그 용)
 [[nodiscard]] slug::String DumpTuning(const Tuning& _tuning);
 
-// 기본 Tuning.json 위치: <assetRoot>/Tuning/Tuning.json
 [[nodiscard]] slug::FilePath GetDefaultTuningPath(const slug::FilePath& _assetRoot);
-
-// ===========================================
-//  TuningWatcher
-//   파일 수정 시각을 일정 호출 횟수(틱)마다 확인하여 핫리로드한다. 시간 대신 틱을 세므로 결정적이다.
-// ===========================================
 
 class TuningWatcher
 {
 public:
     void Init(slug::FilePath _path, int _pollIntervalTicks = 60);
 
-    // 매 틱 호출. 파일이 바뀌어 새로 읽었으면 true 를 반환하고 _out 을 갱신한다.
-    // 파싱에 실패하면 _out 은 그대로 두고 false (오류는 로그).
     bool Poll(Tuning& _out);
 
     [[nodiscard]] const slug::FilePath& GetPath() const { return m_path; }
@@ -347,5 +286,4 @@ private:
     bool                            m_bHasStamp   = false;
     std::filesystem::file_time_type m_stamp       = {};
 };
-
-}   // namespace slug
+}

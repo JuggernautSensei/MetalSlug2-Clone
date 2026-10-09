@@ -5,11 +5,6 @@
 
 using namespace slugtest;
 
-// ===========================================
-//  구르는 탄 / 수명 연출 (Projectiles.* 확장: 사루비아 수류탄)
-//   지면 위에서만 움직이는 짧은 테스트: 중력 + GroundMap 만 쓴다 (판정 해소는 하지 않는다).
-// ===========================================
-
 namespace
 {
     constexpr float kFloorY = 378.f;
@@ -55,7 +50,7 @@ namespace
             return shots.empty() ? nullptr : &shots[0];
         }
     };
-}   // namespace
+}
 
 TEST(VehicleProjectile, RollingShotFallsStraightThenLandsOnTheFloor)
 {

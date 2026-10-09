@@ -38,18 +38,13 @@ bool HasMeleeHitbox(
     return false;
 }
 
-// 무한 탄(권총) 간격을 재기 위해 화면 내 탄 수 제한을 푼다
 void UnlimitedBullets(
     Sim& _sim)
 {
     _sim.Tune().weapons.pistol.maxAlive = 0;
     _sim.Tune().weapons.hmg.maxAlive    = 0;
 }
-}   // namespace
-
-// ===========================================
-//  사격: 권총
-// ===========================================
+}
 
 TEST(PlayerShot, FirstShotSpawnsABulletOnTheSameTick)
 {
@@ -75,7 +70,7 @@ TEST(PlayerShot, PistolNeverHasMoreThanMaxAliveBullets)
         peak = std::max(peak, BulletCount(sim));
         ASSERT_LE(BulletCount(sim), cap) << "tick " << i;
     }
-    EXPECT_EQ(peak, cap);   // 상한까지는 실제로 쏜다
+    EXPECT_EQ(peak, cap);
 }
 
 TEST(PlayerShot, HeldPistolRepeatsAtHoldRepeatInterval)
@@ -105,7 +100,6 @@ TEST(PlayerShot, TappingCannotBeatTheFireInterval)
         }
         sim.Step();
     }
-    // 2 틱마다 눌러도 최소 간격(5틱)이 지켜진다: 40 틱 동안 8 발
     EXPECT_EQ(sim.Player().GetStats().shotsFired, (39 / interval) + 1);
 }
 
@@ -130,9 +124,9 @@ TEST(PlayerShot, ShotPressedDuringCooldownIsBufferedAndFiresWhenReady)
     Sim sim;
     UnlimitedBullets(sim);
     sim.Tune().weapons.pistol.fireIntervalTicks = 5;
-    sim.Tap(eAction::Shot);   // t0 발사
-    sim.Step();               // t1
-    sim.Tap(eAction::Shot);   // t2 눌림: 쿨다운 중 (간격 5)
+    sim.Tap(eAction::Shot);
+    sim.Step();
+    sim.Tap(eAction::Shot);
     sim.Step(2);              // t3, t4
     EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);
     sim.Step(2);   // t5 에 버퍼된 눌림이 발사된다
@@ -313,10 +307,6 @@ TEST(PlayerShot, EveryShotIsOneHitIdThatIsReleasedAfterwards)
     EXPECT_EQ(sim.State().GetCombat().GetResolver().GetTrackedHitCount(), 0u);   // HitId 누수 없음
 }
 
-// ===========================================
-//  칼
-// ===========================================
-
 TEST(PlayerKnife, AdjacentGruntDiesFromOneSlashAndNoBulletIsFired)
 {
     Sim sim;
@@ -326,7 +316,7 @@ TEST(PlayerKnife, AdjacentGruntDiesFromOneSlashAndNoBulletIsFired)
     sim.Hold(eAction::Shot);
     sim.Step();
     sim.Release(eAction::Shot);
-    EXPECT_EQ(sim.Player().GetOverlay(), eOverlay::Slash);   // 눌린 틱에 곧바로 베기 동작
+    EXPECT_EQ(sim.Player().GetOverlay(), eOverlay::Slash);
 
     bool bAnyBullet = false;
     for (int i = 0; i < 30; ++i)
@@ -345,12 +335,12 @@ TEST(PlayerKnife, GruntDiesAtTheFirstActiveTick)
     Sim sim;
     sim.Step(2);
     const uint32_t id = sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + 25.f, 378.f });
-    sim.Tap(eAction::Shot);   // 틱 0
+    sim.Tap(eAction::Shot);
     const int first = sim.Tune().knife.activeFirstTick;
     sim.Step(first - 1);
     EXPECT_TRUE(Dummy(sim, id).IsAlive());
     sim.Step();
-    EXPECT_FALSE(Dummy(sim, id).IsAlive());   // activeFirstTick 에 맞는다
+    EXPECT_FALSE(Dummy(sim, id).IsAlive());
 }
 
 TEST(PlayerKnife, VehicleDummiesAreNotKnifedAndTakeThePistolInstead)
@@ -443,7 +433,7 @@ TEST(PlayerKnife, TargetBehindThePlayerDoesNotTriggerKnife)
 TEST(PlayerKnife, WorksWhileCrouchedRunningAndInTheAir)
 {
     {
-        Sim sim;   // 앉은 채
+        Sim sim;
         sim.Step(2);
         sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + 25.f, 378.f });
         sim.Hold(eAction::Down);
@@ -452,7 +442,7 @@ TEST(PlayerKnife, WorksWhileCrouchedRunningAndInTheAir)
         EXPECT_EQ(sim.Player().GetStats().knifeSlashes, 1);
     }
     {
-        Sim sim;   // 달리는 중
+        Sim sim;
         sim.State().AddTarget(eDummyKind::Grunt, { 200.f, 378.f });
         sim.Hold(eAction::Right);
         sim.Step(25);
@@ -460,7 +450,7 @@ TEST(PlayerKnife, WorksWhileCrouchedRunningAndInTheAir)
         EXPECT_EQ(sim.Player().GetStats().knifeSlashes, 1);
     }
     {
-        Sim sim;   // 점프 중
+        Sim sim;
         sim.Step(2);
         sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + 25.f, 378.f });
         sim.Tap(eAction::Jump);
@@ -547,7 +537,7 @@ TEST(PlayerKnife, KnifeIsMeleeAndHitsEveryTeamItCanHit)
     const slug::Vector<Hitbox>   hits   = { swing };
     const slug::Vector<Hurtbox>  hurts  = { enemy, neutral, bulletOnly };
     const slug::Vector<HitEvent> events = resolver.Resolve(hits, hurts);
-    ASSERT_EQ(events.size(), 2u);   // Enemy 와 Neutral 모두 (대상별 특수 처리 없음), 총알 전용 표적은 칼을 받지 않는다
+    ASSERT_EQ(events.size(), 2u);
     EXPECT_EQ(events[0].target, 2000u);
     EXPECT_EQ(events[1].target, 2001u);
 }
@@ -571,10 +561,6 @@ TEST(PlayerKnife, KillingWithKnifeAwardsScore)
     EXPECT_EQ(sim.Player().GetScore(), 100);
 }
 
-// ===========================================
-//  폭탄
-// ===========================================
-
 TEST(PlayerBomb, ThrowReleasesTheBombAtTheConfiguredTickAndSpendsOne)
 {
     Sim sim;
@@ -586,7 +572,7 @@ TEST(PlayerBomb, ThrowReleasesTheBombAtTheConfiguredTickAndSpendsOne)
     EXPECT_EQ(sim.Player().GetWeapon().bombs, 10);
 
     const int release = sim.Tune().bomb.releaseTick;
-    sim.Step(release);   // 던지기 시작 틱 + release 틱
+    sim.Step(release);
     EXPECT_EQ(sim.Player().GetWeapon().bombs, 9);
     EXPECT_EQ(sim.Player().GetStats().bombsThrown, 1);
     EXPECT_EQ(sim.State().GetProjectiles().GetBombs().size(), 1u);
@@ -679,13 +665,8 @@ TEST(PlayerBomb, ThrowArcLandsAheadOfThePlayer)
     EXPECT_LT(maxX, sim.X() + 260.f);
 }
 
-// ===========================================
-//  사망 / 리스폰 / 게임 오버
-// ===========================================
-
 namespace
 {
-// 플레이어 컨트롤러만 단독으로 돌리는 도우미: 임의의 Hitbox 를 직접 주입한다.
 struct Harness
 {
     Tuning           tuning;
@@ -710,7 +691,6 @@ struct Harness
         return world;
     }
 
-    // _inject 는 이 틱에 추가로 등록할 Hitbox
     bool Tick(
         const InputFrame           _input  = {},
         const slug::Vector<Hitbox>& _inject = {})
@@ -760,7 +740,7 @@ struct Harness
         return hit;
     }
 };
-}   // namespace
+}
 
 TEST(PlayerDeath, AnyEnemyHitboxKindKillsThePlayer)
 {
@@ -779,7 +759,7 @@ TEST(PlayerDeath, NeutralHazardKillsButOwnTeamDoesNot)
 {
     Harness h;
     h.Run(3);
-    (void)h.Tick({}, { h.EnemyHit(eHitKind::Blast, eTeam::Player) });   // 아군 폭발
+    (void)h.Tick({}, { h.EnemyHit(eHitKind::Blast, eTeam::Player) });
     EXPECT_NE(h.player.GetState(), ePlayerState::Dead);
     (void)h.Tick({}, { h.EnemyHit(eHitKind::Hazard, eTeam::Neutral) });
     EXPECT_EQ(h.player.GetState(), ePlayerState::Dead);
@@ -787,7 +767,6 @@ TEST(PlayerDeath, NeutralHazardKillsButOwnTeamDoesNot)
 
 TEST(PlayerDeath, TouchingAnEnemyBodyIsHarmless)
 {
-    // 몸통 접촉은 무해: Hitbox 가 없으면 아무 일도 없다 (표적 Hurtbox 와 겹쳐 있어도)
     Sim sim;
     sim.Step(2);
     sim.State().AddTarget(eDummyKind::Bus, { sim.X(), 378.f });   // 같은 자리
@@ -812,7 +791,6 @@ TEST(PlayerDeath, JumpingOverTheBulletSurvives)
     Sim sim;
     sim.Step(2);
     sim.State().AddTarget(eDummyKind::Grunt, { 380.f, 378.f }, true);
-    // 총알이 나가는 순간을 보고 총알이 가까워지면 뛴다
     int guard = 0;
     while (sim.Player().IsAlive() && guard++ < 400)
     {
@@ -861,7 +839,7 @@ TEST(PlayerRespawn, RespawnsAfterConfiguredDelayWithInvincibilityAndPistol)
     ASSERT_EQ(h.player.GetState(), ePlayerState::Dead);
 
     h.Run(h.tuning.player.deathTicks - 2);
-    EXPECT_EQ(h.player.GetState(), ePlayerState::Dead);   // 아직 지연 중
+    EXPECT_EQ(h.player.GetState(), ePlayerState::Dead);
     h.Run(3);
     EXPECT_EQ(h.player.GetState(), ePlayerState::Respawn);
     EXPECT_NEAR(h.player.GetFeet().x, h.respawnFeet.x, 0.01f);
@@ -885,7 +863,7 @@ TEST(PlayerRespawn, DropsFromAboveLandsAndKeepsInvincibilityUntilItExpires)
     h.Run(90);
     EXPECT_TRUE(h.player.IsGrounded());
     EXPECT_EQ(h.player.GetState(), ePlayerState::Idle);
-    EXPECT_TRUE(h.player.IsInvincible());   // 착지 후에도 남은 무적
+    EXPECT_TRUE(h.player.IsInvincible());
 
     h.Run(h.tuning.player.respawnInvincible);
     EXPECT_FALSE(h.player.IsInvincible());
@@ -906,7 +884,7 @@ TEST(PlayerRespawn, InvincibleRespawnIgnoresEnemyHitboxesUntilItEnds)
     EXPECT_NE(h.player.GetState(), ePlayerState::Dead);
     EXPECT_EQ(h.player.GetLives(), 2);
 
-    h.Run(h.tuning.player.respawnInvincible);   // 무적 종료 대기
+    h.Run(h.tuning.player.respawnInvincible);
     ASSERT_FALSE(h.player.IsInvincible());
     (void)h.Tick({}, { h.EnemyHit(eHitKind::Bullet) });
     EXPECT_EQ(h.player.GetState(), ePlayerState::Dead);
@@ -948,7 +926,7 @@ TEST(PlayerRespawn, ControlWorksWhileDroppingIn)
     right.Set(eAction::Right, true);
     const float x = h.player.GetFeet().x;
     (void)h.Tick(right);
-    EXPECT_GT(h.player.GetFeet().x, x);   // 낙하 중에도 즉시 이동
+    EXPECT_GT(h.player.GetFeet().x, x);
 }
 
 TEST(PlayerGameOver, LastLifeLostEndsTheGameWithoutRespawn)
@@ -968,7 +946,7 @@ TEST(PlayerGameOver, LastLifeLostEndsTheGameWithoutRespawn)
     EXPECT_EQ(h.player.GetLives(), 0);
 
     h.Run(h.tuning.player.deathTicks + 200);
-    EXPECT_EQ(h.player.GetState(), ePlayerState::Dead);   // 되살아나지 않는다
+    EXPECT_EQ(h.player.GetState(), ePlayerState::Dead);
     EXPECT_GT(h.player.GetGameOverTicks(), h.tuning.player.deathTicks);
 }
 
@@ -985,7 +963,6 @@ TEST(PlayerGameOver, SandboxRestartsAfterTheGameOverTimer)
             break;
         }
     }
-    // 게임 오버 후 gameOverTicks 가 지나면 샌드박스가 처음부터 다시 시작한다
     EXPECT_EQ(sim.Player().GetLives(), 3);
     EXPECT_FALSE(sim.Player().IsGameOver());
     EXPECT_TRUE(sim.Player().IsAlive());
@@ -1010,10 +987,6 @@ TEST(PlayerVictory, VictoryStateIsInvulnerableAndIgnoresInput)
     EXPECT_EQ(h.player.GetLives(), 3);
 }
 
-// ===========================================
-//  Combat / Projectile 단위
-// ===========================================
-
 TEST(CombatSystem, HasTargetInFollowsTheResolverRules)
 {
     CombatSystem combat;
@@ -1029,7 +1002,7 @@ TEST(CombatSystem, HasTargetInFollowsTheResolverRules)
     const Aabb outside = Aabb::FromMinMax({ 130.f, 10.f }, { 150.f, 30.f });
     EXPECT_TRUE(combat.HasTargetIn(eTeam::Player, eHitKind::Melee, inside));
     EXPECT_FALSE(combat.HasTargetIn(eTeam::Player, eHitKind::Melee, outside));
-    EXPECT_FALSE(combat.HasTargetIn(eTeam::Enemy, eHitKind::Melee, inside));        // 같은 팀은 안 때린다
+    EXPECT_FALSE(combat.HasTargetIn(eTeam::Enemy, eHitKind::Melee, inside));
     EXPECT_FALSE(combat.HasTargetIn(eTeam::Player, eHitKind::Melee, inside, 10));   // 자기 자신 제외
 
     combat.BeginTick();
@@ -1082,7 +1055,6 @@ TEST(Projectiles, FastBulletDoesNotTunnelThroughAThinTarget)
 
 TEST(Projectiles, FirstTickSweepCoversTheSpanFromTheBodyToTheMuzzle)
 {
-    // 총구가 표적을 넘어선 위치에서 생겨도 몸통 → 총구 구간의 표적은 첫 틱에 맞는다
     CombatSystem     combat;
     ProjectileSystem projectiles;
 

@@ -8,13 +8,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  Bzk — 바주카 병사 (Docs/EnemySpecs.md §1.2)
-//   플레이어 방향을 5구간 자세(수평 / 22.5 / 45 / 67.5 / 90 도, 위 또는 아래) 로 조준하고 2발을 쏜다.
-//   두 번째 발은 각도를 다시 계산하지 않는다 (레거시 의도 유지).
-// ===========================================
-
 namespace
 {
     enum eBzkState : int
@@ -30,11 +23,6 @@ namespace
         kShot,
         kRecover
     };
-
-    // e.aux  = 자세 (0 수평, 1..4 = 22.5 x n 도)
-    // e.aux2 = 0 위쪽 / 1 아래쪽
-    // e.aux3 = HJump 도약 여부
-    // e.counter = 남은 발수
 
     void Go_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, const int _state)
     {
@@ -104,11 +92,10 @@ namespace
         }
     }
 
-    // 플레이어 방향 → 자세 (0..4). 중심(몸통 중심) 에서 플레이어 중심까지의 수평 대비 각도.
     [[nodiscard]] int ChoosePosture_(const Enemy& _e, const BzkCfg& _cfg, const EnemyEnv& _env, bool& _bDown)
     {
         const float cx = _e.body.position.x;
-        const float cy = _e.body.position.y + _cfg.muzzleBase.y;   // 총구 높이 기준
+        const float cy = _e.body.position.y + _cfg.muzzleBase.y;
         const float dx = std::abs(_env.ctx.player.center.x - cx);
         const float dy = _env.ctx.player.center.y - cy;
         _bDown         = dy > 0.f;
@@ -289,7 +276,7 @@ namespace
     {
         BeginSoldierDeath(_e, _def, _env);
     }
-}   // namespace
+}
 
 const BehaviorOps kBzkOps = {
     .init              = &Init_,
@@ -342,5 +329,4 @@ void ParseBzkCfg(
     }
     c.weaponRocket = _r.Weapon("rocket");
 }
-
-}   // namespace slug
+}

@@ -11,12 +11,6 @@
 #include "PlayerTestUtil.h"
 #include "World/Constants.h"
 
-// ===========================================
-//  적 테스트 도우미
-//   EnemyRig: 적 월드만 따로 돌린다 (플레이어는 판정 상자만 있는 가짜 표적). 틱 순서는 SandboxState 와 같다.
-//   샌드박스 Sim: 실제 PlayerController + SandboxState 를 SimRunner 로 돌린다 (EnemyDefsPath 로 정의를 읽는다).
-// ===========================================
-
 namespace slugtest
 {
 
@@ -40,20 +34,17 @@ inline bool LoadEnemyLib(
     return true;
 }
 
-// 샌드박스 설정: 평지 + 표적 없음 + 적 정의 파일
 inline SandboxConfig MakeEnemyConfig(
     const Vec2 _spawn = { 100.f, 378.f })
 {
     SandboxConfig config = MakeFlatConfig();
     config.spawnFeet     = _spawn;
-    config.enemyDefPath  = slug::FilePath { SLUG_ASSET_DIR } / "Defs";   // 정의 폴더 전체 (Enemies.json + Vehicles.json)
+    config.enemyDefPath  = slug::FilePath { SLUG_ASSET_DIR } / "Defs";
     return config;
 }
 
-// 보병 정의 8종 (숫자키 1..8 과 같은 순서)
 inline constexpr const char* kInfantryNames[] = { "soldier_bomb", "soldier_sword", "soldier_missile", "soldier_bzk", "soldier_hang", "flying_bzk", "shielder", "pow" };
 
-// 플레이어 오너 ID (SandboxState 의 플레이어 HitResolver 소유자와 같은 규약: 1)
 inline constexpr uint32_t kTestPlayerOwner = 1;
 
 class EnemyRig
@@ -94,7 +85,6 @@ public:
         return m_world.Spawn(_name, _feet, _params, &world);
     }
 
-    // 플레이어 판정 상자 + 적 월드 한 틱 (SandboxState 순서: 판정 등록 → 적 → 투사체 → 해소 → 이벤트)
     void Step(const int _count = 1)
     {
         for (int i = 0; i < _count; ++i)
@@ -112,10 +102,8 @@ public:
         }
     }
 
-    // 플레이어(소유자 1)가 맞은 HitEvent 누적 수 (적 공격이 플레이어에게 닿았는지 확인용)
     [[nodiscard]] int PlayerHits() const { return m_playerHits; }
 
-    // 소유자 _owner 의 첫 Hurtbox 와 겹치는 한 번짜리 판정을 즉시 해소한다. 반환: 이번 판정의 HitEvent 수
     size_t Strike(
         const uint32_t _owner,
         const eHitKind _kind,
@@ -244,5 +232,4 @@ private:
     ProjectileSystem         m_projectiles = {};
     std::vector<EnemyEvent>  m_events    = {};
 };
-
-}   // namespace slugtest
+}

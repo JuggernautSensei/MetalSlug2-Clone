@@ -6,10 +6,6 @@
 
 using namespace slugtest;
 
-// ===========================================
-//  시작 상태
-// ===========================================
-
 TEST(PlayerStart, StartsWithPistolAndTenBombs)
 {
     Sim sim;
@@ -36,10 +32,6 @@ TEST(PlayerStart, DefaultStateNameIsSandbox)
     EXPECT_TRUE(static_cast<bool>(CreateState("sandbox")));
 }
 
-// ===========================================
-//  이동: 입력과 같은 틱에 반응
-// ===========================================
-
 TEST(PlayerMove, RightPressMovesOnTheSameTick)
 {
     Sim sim;
@@ -47,7 +39,7 @@ TEST(PlayerMove, RightPressMovesOnTheSameTick)
     const float before = sim.X();
 
     sim.Hold(eAction::Right);
-    sim.Step();   // 눌림이 도착한 바로 그 틱
+    sim.Step();
     EXPECT_GT(sim.X(), before);
     EXPECT_EQ(sim.Player().GetState(), ePlayerState::Run);
 }
@@ -77,7 +69,6 @@ TEST(PlayerMove, RunSpeedMatchesTuning)
 
 TEST(PlayerMove, RunSpeedFeelsLikeMetalSlug)
 {
-    // 640x448 에서 메탈슬러그 달리기는 대략 100~130 px/s
     EXPECT_GE(Tuning {}.move.runSpeed, 240.f);
     EXPECT_LE(Tuning {}.move.runSpeed, 260.f);
 }
@@ -118,7 +109,6 @@ TEST(PlayerMove, BothDirectionsHeldCancelOut)
 
 TEST(PlayerMove, MovementIsIndependentOfRenderRate)
 {
-    // 시뮬레이션은 틱 단위라 같은 틱 수면 같은 결과 (프레임 시간이 개입하지 않는다)
     Sim a;
     Sim b;
     a.Hold(eAction::Right);
@@ -151,7 +141,7 @@ TEST(PlayerMove, BlockedByInvisibleRightWall)
     sim.Step(400);
     EXPECT_LE(sim.X(), 400.f - 10.f + 0.01f);
     EXPECT_FALSE(sim.Player().IsMoving());
-    EXPECT_EQ(sim.Player().GetState(), ePlayerState::Idle);   // 벽에 막히면 달리는 모습을 보이지 않는다
+    EXPECT_EQ(sim.Player().GetState(), ePlayerState::Idle);
 }
 
 TEST(PlayerMove, CannotWalkLeftOfCameraEdge)
@@ -161,10 +151,6 @@ TEST(PlayerMove, CannotWalkLeftOfCameraEdge)
     sim.Step(300);
     EXPECT_GE(sim.X(), 10.f - 0.01f);
 }
-
-// ===========================================
-//  앉기
-// ===========================================
 
 TEST(PlayerCrouch, DownCrouchesOnTheSameTickAndShrinksBody)
 {
@@ -204,19 +190,15 @@ TEST(PlayerCrouch, StandingUpRestoresBody)
 TEST(PlayerCrouch, StaysCrouchedUnderLowCeiling)
 {
     GroundMap ground = MakeFlatGround();
-    ground.FillRect(0, 300, 1599, 331, true);   // 앉으면 들어가지만 서면 머리가 닿는 천장 (서면 머리 y=320, 앉으면 342)
+    ground.FillRect(0, 300, 1599, 331, true);
     Sim sim { MakeConfig(std::move(ground), { 100.f, 378.f }) };
 
     sim.Hold(eAction::Down);
     sim.Step(5);
     sim.Release(eAction::Down);
     sim.Step(5);
-    EXPECT_EQ(sim.Player().GetPose(), ePose::Crouch);   // 일어설 공간이 없으면 계속 앉는다
+    EXPECT_EQ(sim.Player().GetPose(), ePose::Crouch);
 }
-
-// ===========================================
-//  조준
-// ===========================================
 
 TEST(PlayerAim, UpAimsUp)
 {
@@ -245,7 +227,7 @@ TEST(PlayerAim, AimChangeIsInstant)
     EXPECT_EQ(sim.Player().GetAim(), eAim::Up);
     sim.Release(eAction::Up);
     sim.Step();
-    EXPECT_EQ(sim.Player().GetAim(), eAim::Forward);   // 보간 없이 같은 틱에 복귀
+    EXPECT_EQ(sim.Player().GetAim(), eAim::Forward);
 }
 
 TEST(PlayerAim, DownOnGroundCrouchesInsteadOfAimingDown)
@@ -271,10 +253,6 @@ TEST(PlayerAim, DownInAirAimsDown)
     EXPECT_EQ(sim.Player().GetAim(), eAim::DiagDown);
 }
 
-// ===========================================
-//  점프
-// ===========================================
-
 TEST(PlayerJump, JumpStartsOnTheSameTickAsThePress)
 {
     Sim sim;
@@ -288,7 +266,6 @@ TEST(PlayerJump, JumpStartsOnTheSameTickAsThePress)
 
 namespace
 {
-// 점프를 시작해 다시 땅에 닿을 때까지 정점 높이와 체공 틱을 잰다.
 struct JumpMeasure
 {
     float apex  = 0.f;
@@ -315,7 +292,7 @@ JumpMeasure MeasureJump(
     } while (!_sim.Player().IsGrounded() && ticks < 300);
     return { groundY - minY, ticks };
 }
-}   // namespace
+}
 
 TEST(PlayerJump, HeldJumpApexAndAirTimeFeelRight)
 {
@@ -356,7 +333,6 @@ TEST(PlayerJump, LandsBackOnTheGround)
 
 TEST(PlayerJump, HoldingJumpDoesNotBounce)
 {
-    // 계속 누르고 있어도 착지 후 자동으로 다시 뛰지 않는다 (눌림 엣지에만 반응)
     Sim sim;
     sim.Step(2);
     sim.Hold(eAction::Jump);
@@ -381,20 +357,18 @@ TEST(PlayerJump, FullAirControl)
     sim.Hold(eAction::Left);
     const float x1 = sim.X();
     sim.Step();
-    EXPECT_LT(sim.X(), x1);   // 공중 방향 전환
+    EXPECT_LT(sim.X(), x1);
     EXPECT_EQ(sim.Player().GetFacing(), -1);
 }
 
 TEST(PlayerJump, JumpBufferTriggersOnLanding)
 {
-    // 땅 위 38px 에서 시작 → 낙하 → 착지 틱을 먼저 잰다.
     auto Make = [] { return Sim { MakeConfig(MakeFlatGround(), { 100.f, 340.f }) }; };
 
     Sim       probe   = Make();
     const int landing = probe.StepUntil(100, [&] { return probe.Player().IsGrounded(); });
     ASSERT_GT(landing, 6);   // landing = 착지가 일어난 틱까지 진행한 수
 
-    // 착지 3 틱 전에 누르면 착지 틱에 바로 점프한다
     Sim a = Make();
     a.Step(landing - 3);
     a.Tap(eAction::Jump);
@@ -402,7 +376,6 @@ TEST(PlayerJump, JumpBufferTriggersOnLanding)
     EXPECT_EQ(a.Player().GetStats().jumps, 1);
     EXPECT_LT(a.Player().GetVelocity().y, 0.f);
 
-    // 8 틱 전에 누르면 버퍼가 만료되어 점프하지 않는다
     Sim b = Make();
     b.Step(landing - 8);
     b.Tap(eAction::Jump);
@@ -432,7 +405,6 @@ TEST(PlayerJump, JumpBufferBoundaryIsFourTicks)
 
 namespace
 {
-// 오른쪽 x=400 에서 끊기는 낭떠러지
 SandboxConfig MakeLedgeConfig()
 {
     GroundMap ground = GroundMap::MakeEmpty(1600, 448);
@@ -440,7 +412,7 @@ SandboxConfig MakeLedgeConfig()
     ground.FillRect(400, 440, 1599, 447, true);
     return MakeConfig(std::move(ground), { 300.f, 378.f });
 }
-}   // namespace
+}
 
 TEST(PlayerJump, CoyoteJumpWorksShortlyAfterWalkingOffALedge)
 {
@@ -451,7 +423,7 @@ TEST(PlayerJump, CoyoteJumpWorksShortlyAfterWalkingOffALedge)
 
     sim.Step(2);   // T+1, T+2
     sim.Hold(eAction::Jump);
-    sim.Step();   // T+3 : 점프 눌림
+    sim.Step();
     EXPECT_EQ(sim.Player().GetStats().jumps, 1);
     EXPECT_LT(sim.Player().GetVelocity().y, 0.f);
 }
@@ -464,7 +436,7 @@ TEST(PlayerJump, CoyoteJumpIsRejectedLongAfterTheLedge)
 
     sim.Step(7);   // T+1 .. T+7
     sim.Hold(eAction::Jump);
-    sim.Step();   // T+8
+    sim.Step();
     EXPECT_EQ(sim.Player().GetStats().jumps, 0);
     EXPECT_GT(sim.Player().GetVelocity().y, 0.f);   // 계속 떨어진다
 }
@@ -490,7 +462,7 @@ TEST(PlayerJump, CoyoteDoesNotAllowDoubleJump)
     sim.Step(2);
     sim.Tap(eAction::Jump);
     sim.Step(2);
-    sim.Tap(eAction::Jump);   // 공중 두 번째 점프: 코요테 아님
+    sim.Tap(eAction::Jump);
     sim.Step(10);
     EXPECT_EQ(sim.Player().GetStats().jumps, 1);
 }
@@ -568,10 +540,6 @@ TEST(PlayerJump, WalkingOffALedgeStartsFalling)
     EXPECT_EQ(sim.Player().GetStats().jumps, 0);
 }
 
-// ===========================================
-//  결정성
-// ===========================================
-
 namespace
 {
 slug::Vector<InputFrame> MakeNoisyScript(
@@ -583,7 +551,6 @@ slug::Vector<InputFrame> MakeNoisyScript(
     InputFrame              cur;
     for (int i = 0; i < _ticks; ++i)
     {
-        // 8 틱마다 임의의 키를 토글한다
         if (i % 8 == 0)
         {
             const eAction action = static_cast<eAction>(slug::Random<int>(rng, 0, 6));
@@ -606,7 +573,7 @@ uint64_t RunScript(
     }
     return sim.State().HashState();
 }
-}   // namespace
+}
 
 TEST(PlayerDeterminism, SameScriptTwiceGivesIdenticalStateHash)
 {

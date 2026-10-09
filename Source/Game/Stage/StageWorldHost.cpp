@@ -28,7 +28,6 @@ namespace
         return _seconds <= 0.f ? 0 : static_cast<int>(std::lround(static_cast<double>(_seconds) * static_cast<double>(kTickRate)));
     }
 
-    // 배틀십(최종보스): 레거시 SetArena 와 같이 아레나 왼쪽 밖(-300)에서 레일로 들어온다 (SandboxState::SpawnBossLab_ 과 같은 규칙)
     constexpr float kBossEntryOffsetX = 300.f;
 
     [[nodiscard]] Vec2 EnemyFeet_(
@@ -40,11 +39,7 @@ namespace
         }
         return _request.position;
     }
-}   // namespace
-
-// ===========================================
-//  구성
-// ===========================================
+}
 
 void StageWorldHost::BindWorld(
     EnemyWorld* _pEnemies,
@@ -79,10 +74,6 @@ void StageWorldHost::Reset()
     m_colliders.clear();
     m_nextId = 1;
 }
-
-// ===========================================
-//  라우팅 표
-// ===========================================
 
 const SpawnRoute* StageWorldHost::FindRoute(
     const SpawnId _id) const
@@ -156,16 +147,11 @@ uint64_t StageWorldHost::HashState() const
     return hash;
 }
 
-// ===========================================
-//  IStageHost: 엔티티
-// ===========================================
-
 SpawnId StageWorldHost::SpawnEntity(
     const SpawnRequest& _request)
 {
     const SpawnId id = AllocId_();
 
-    // 충돌체: 월드 객체가 아니라 스테이지 충돌 목록이다 (정의 이름과 무관)
     if (_request.kind == eEntityKind::Collider)
     {
         StageCollider collider;
@@ -180,7 +166,6 @@ SpawnId StageWorldHost::SpawnEntity(
 
     const ParamValue* pParams = _request.pParams;
 
-    // 적 / NPC → EnemyWorld
     if (m_pEnemies && (_request.kind == eEntityKind::Enemy || _request.kind == eEntityKind::Npc))
     {
         SpawnParams params;
@@ -192,7 +177,6 @@ SpawnId StageWorldHost::SpawnEntity(
         Vec2 feet = EnemyFeet_(_request);
         if (_request.def == "battleship")
         {
-            // 최종보스: params.arena = 아레나 사각형, 등장 위치는 아레나 왼쪽 밖
             if (pParams)
             {
                 if (const ParamValue* pArena = pParams->Find("arena"); pArena && pArena->IsString())
@@ -212,10 +196,8 @@ SpawnId StageWorldHost::SpawnEntity(
             AddRoute_(id, eRouteKind::Enemy, handle.id);
             return id;
         }
-        // 정의가 없으면 아래 플레이스홀더로 떨어진다
     }
 
-    // 소품 → PropWorld (스프라이트 중심 기준)
     if (m_pProps && _request.kind == eEntityKind::Prop)
     {
         const PropHandle handle = m_pProps->Spawn(_request.def, _request.position, MakePropSpawnParams(pParams));
@@ -226,7 +208,6 @@ SpawnId StageWorldHost::SpawnEntity(
         }
     }
 
-    // 아이템 → PropWorld 가 가진 ItemWorld (이름 또는 random_* 그룹)
     if (m_pProps && _request.kind == eEntityKind::Item)
     {
         const Vec2 feet   = _request.positionMode == ePositionMode::Feet ? _request.position : ItemFeetFromCenter(_request.position);
@@ -238,7 +219,6 @@ SpawnId StageWorldHost::SpawnEntity(
         }
     }
 
-    // 나머지 (정의가 아직 없는 적/소품/장식/아이템, decor) → 플레이스홀더
     const SpawnId inner = m_placeholders.SpawnEntity(_request);
     AddRoute_(id, eRouteKind::Placeholder, inner);
     return id;
@@ -250,7 +230,7 @@ bool StageWorldHost::IsDefeated(
     const SpawnRoute* pRoute = FindRoute(_id);
     if (!pRoute)
     {
-        return true;   // 알 수 없는 ID 는 격파로 본다
+        return true;
     }
     switch (pRoute->kind)
     {
@@ -288,7 +268,6 @@ void StageWorldHost::ClearEntities(
 {
     m_placeholders.ClearEntities(_filter);
 
-    // 적 (보병/차량/보스). 포로(npc) 는 Npc 비트가 있을 때만 지운다. 소품/아이템은 레이어 정리 대상이 아니다.
     if (m_pEnemies && (_filter.layerMask & LayerBit(eStageLayer::Monster)) != 0)
     {
         m_pEnemies->ClearMonsters((_filter.layerMask & LayerBit(eStageLayer::Npc)) != 0);
@@ -301,7 +280,6 @@ void StageWorldHost::SendCommand(
     const SpawnId          _id,
     const slug::StringView  _command)
 {
-    // 버스(mb_truck) 의 startBattle 은 문 접촉으로 스스로 시작한다 (Bus.cpp). 그 밖의 명령은 아직 없다.
     static bool bWarnedOnce = false;
     if (_command == "startBattle")
     {
@@ -313,10 +291,6 @@ void StageWorldHost::SendCommand(
         SLUG_LOG_WARN("스테이지 명령 '{}' (대상 {}) 은 아직 구현되지 않았습니다", std::string { _command }, _id);
     }
 }
-
-// ===========================================
-//  IStageHost: 지면 / 플레이어 / 연출
-// ===========================================
 
 void StageWorldHost::SetGround(
     const slug::StringView _name)
@@ -401,5 +375,4 @@ void StageWorldHost::OnSectionEntered(
 {
     m_placeholders.OnSectionEntered(_index, _id);
 }
-
-}   // namespace slug
+}

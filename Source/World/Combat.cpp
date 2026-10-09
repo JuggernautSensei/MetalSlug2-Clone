@@ -8,14 +8,13 @@ namespace slug
 
 namespace
 {
-    // 대상 식별 키: owner 가 있으면 owner, 없으면 hurtbox 인덱스 (겹치지 않도록 상위 비트로 구분)
     [[nodiscard]] uint64_t MakeTargetKey_(
         const Hurtbox& _hurtbox,
         const size_t   _index)
     {
         return _hurtbox.owner != kNoOwner ? static_cast<uint64_t>(_hurtbox.owner) : ((1ull << 32) | static_cast<uint64_t>(_index));
     }
-}   // namespace
+}
 
 slug::Vector<HitEvent> HitResolver::Resolve(
     const slug::Span<const Hitbox>  _hitboxes,
@@ -37,7 +36,7 @@ slug::Vector<HitEvent> HitResolver::Resolve(
             const auto it = m_hitRecords.find(hitbox.id);
             if (it != m_hitRecords.end() && it->second.bConsumed)
             {
-                continue;   // 이미 소모된 비관통 공격
+                continue;
             }
         }
 
@@ -71,7 +70,7 @@ slug::Vector<HitEvent> HitResolver::Resolve(
                     const slug::Vector<uint64_t>& targets = it->second.targets;
                     if (std::find(targets.begin(), targets.end(), targetKey) != targets.end())
                     {
-                        continue;   // 같은 공격이 같은 대상을 이미 때림
+                        continue;
                     }
                 }
             }
@@ -99,7 +98,7 @@ slug::Vector<HitEvent> HitResolver::Resolve(
 
             if (!hitbox.bPierce)
             {
-                break;   // 비관통: 첫 피격으로 소모
+                break;
             }
         }
     }
@@ -117,5 +116,4 @@ void HitResolver::Clear()
 {
     m_hitRecords.clear();
 }
-
-}   // namespace slug
+}

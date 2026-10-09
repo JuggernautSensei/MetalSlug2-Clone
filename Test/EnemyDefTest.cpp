@@ -11,7 +11,6 @@ using namespace slugtest;
 
 namespace
 {
-    // Enemies.json 원문 (치환 기반 오류 케이스용)
     std::string ReadDefsText()
     {
         std::ifstream    file(EnemyDefsPath().string());
@@ -20,7 +19,6 @@ namespace
         return buffer.str();
     }
 
-    // _from 을 _to 로 한 번 바꾼다. 못 찾으면 빈 문자열(테스트가 실패하도록).
     std::string ReplaceOnce(
         std::string       _text,
         const std::string _from,
@@ -45,11 +43,7 @@ namespace
         }
         return _name;
     }
-}   // namespace
-
-// ===========================================
-//  로드 / 구조
-// ===========================================
+}
 
 TEST(EnemyDefs, LoadsTheInfantryDefinitionsAndGlobals)
 {
@@ -92,10 +86,6 @@ TEST(EnemyDefs, SecToTicksRoundsToNearestTick)
     EXPECT_EQ(SecToTicks(0.5f), 30);
     EXPECT_EQ(SecToTicks(1.0f / 60.f), 1);
 }
-
-// ===========================================
-//  값 (EnemySpecs 와 대조)
-// ===========================================
 
 TEST(EnemyDefs, EachSoldierVariantHasItsOwnAi)
 {
@@ -249,10 +239,6 @@ TEST(EnemyDefs, ClipTimingMatchesTheSpecTicks)
     EXPECT_TRUE(def.GetClip(def.FindClip("idle")).bLoop);
 }
 
-// ===========================================
-//  오류 처리 (필수 값 / 알 수 없는 키 / 교차 참조)
-// ===========================================
-
 TEST(EnemyDefsErrors, RealFileParsesWithoutMessage)
 {
     slug::String message;
@@ -318,10 +304,6 @@ TEST(EnemyDefsErrors, DuplicateDefinitionNameIsRejected)
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text)));
 }
 
-// ===========================================
-//  애니메이션 연결 (Assets/Baked 가 있을 때)
-// ===========================================
-
 TEST(EnemyDefsBaked, EveryDefinedClipExistsInTheAnimationLibrary)
 {
     SLUG_REQUIRE_BAKED(anims);
@@ -373,7 +355,6 @@ TEST(EnemyDefsBaked, ClipFrameCountAndTimingMatchTheBakedAnimation)
             {
                 continue;
             }
-            // 좌/우 중 하나라도 같으면 통과 (Die_Stand_2 / Die_Land 처럼 좌우 간격이 다른 클립이 있다)
             const AnimClip* pLeft  = anims.FindClip(ResolveSideText(named.clip.name.c_str(), true));
             const AnimClip* pRight = anims.FindClip(ResolveSideText(named.clip.name.c_str(), false));
             ASSERT_NE(pLeft, nullptr) << named.clip.name.c_str();

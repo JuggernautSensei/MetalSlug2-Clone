@@ -28,7 +28,6 @@ namespace
         return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
     }
 
-    // 베이크된 클립의 시간(애니 단위)에서 보이는 프레임 인덱스 (루프/비루프 규칙은 애니메이션과 같다)
     [[nodiscard]] int BakedFrameAt_(
         const AnimClip& _clip,
         const int64_t   _timeUnits)
@@ -51,7 +50,6 @@ namespace
         return static_cast<int>(index >= n ? n - 1 : index);
     }
 
-    // 정의의 물리 상수를 적 한 마리용 PhysicsTuning 으로 바꾼다 (중력/낙하 상한은 def 에서)
     [[nodiscard]] PhysicsTuning MakePhys_(
         const EnemyDef& _def)
     {
@@ -66,11 +64,7 @@ namespace
     {
         return _facing < 0 ? 0 : 1;
     }
-}   // namespace
-
-// ===========================================
-//  생성 / 설정
-// ===========================================
+}
 
 EnemyWorld::EnemyWorld(
     const EnemyDefLibrary* _pLibrary,
@@ -103,10 +97,6 @@ void EnemyWorld::Reset(
     m_nextId      = kEnemyOwnerBase;
     m_bPlayerMinX = false;
 }
-
-// ===========================================
-//  스폰
-// ===========================================
 
 EnemyHandle EnemyWorld::Spawn(
     const slug::StringView _defName,
@@ -190,10 +180,6 @@ void EnemyWorld::Create_(
     m_enemies.push_back(e);
 }
 
-// ===========================================
-//  판정 등록 / 피해 적용
-// ===========================================
-
 void EnemyWorld::RegisterHurtboxes(
     CombatSystem& _combat) const
 {
@@ -236,7 +222,7 @@ void EnemyWorld::OnHitEvents(
         {
             continue;
         }
-        const uint32_t id  = event.target & kEnemyIdMask;   // 방패/포탑 파트 비트는 떼고 적 ID 만 본다
+        const uint32_t id  = event.target & kEnemyIdMask;
         const size_t   idx = FindIndex_(id);
         if (idx >= m_enemies.size())
         {
@@ -252,7 +238,6 @@ void EnemyWorld::OnHitEvents(
         const BehaviorOps& ops = GetBehaviorOps(e.behavior);
         EnemyEnv           env { *this, m_lastCtx, *m_pLibrary, MakePhys_(def) };
 
-        // 행동이 먼저 본다 (방패 막기 / 포로 구출). true 면 기본 피해를 적용하지 않는다.
         if (ops.onHit && ops.onHit(e, def, env, event))
         {
             continue;
@@ -284,10 +269,6 @@ void EnemyWorld::BeginDying_(
     }
 }
 
-// ===========================================
-//  틱
-// ===========================================
-
 void EnemyWorld::Tick(
     const EnemyContext& _ctx)
 {
@@ -296,9 +277,8 @@ void EnemyWorld::Tick(
         return;
     }
     m_lastCtx     = _ctx;
-    m_bPlayerMinX = false;   // 보스가 이번 틱에 다시 요청한다 (플레이어는 다음 틱 시작 전의 값을 읽는다)
+    m_bPlayerMinX = false;
 
-    // 0) 투사체 적중/지형 접촉 연출 (직전 틱의 Step 결과)
     if (_ctx.pProjectiles)
     {
         const slug::Vector<ShotFx> shotFx = _ctx.pProjectiles->TakeShotFx();
@@ -317,14 +297,12 @@ void EnemyWorld::Tick(
         }
     }
 
-    // 1) 연출: 지연 이펙트 / 이펙트 진행
     FlushFx_(_ctx.pAnims);
     if (_ctx.pAnims)
     {
         m_effects.Update(*_ctx.pAnims, kStepSec);
     }
 
-    // 2) 적 갱신 (스폰 순서). 틱 중에는 m_enemies 의 크기가 변하지 않는다 (스폰/변신은 SpawnDeferred 로 틱 끝에 반영).
     const Aabb& view = _ctx.cameraView;
     for (Enemy& e: m_enemies)
     {
@@ -358,12 +336,10 @@ void EnemyWorld::Tick(
 
         if (e.life == eEnemyLife::Alive)
         {
-            // 활성화 (래치): 화면 오른쪽 + 여유 안으로 들어오면 행동 시작
             if (!e.bActive && (def.activation.bAlways || e.body.position.x <= view.max.x + def.activation.marginPx))
             {
                 e.bActive = true;
             }
-            // 정리: 카메라 뒤로 밀려났거나 화면 아래로 떨어졌다
             if (!def.bNoDespawn && (e.body.position.x < view.min.x - m_pLibrary->GetGlobals().despawnBehindCameraPx || e.body.position.y > view.max.y + m_pLibrary->GetGlobals().despawnBelowCameraPx))
             {
                 e.life = eEnemyLife::Gone;
@@ -392,7 +368,6 @@ void EnemyWorld::Tick(
         }
     }
 
-    // 3) 틱 끝: 예약된 스폰 반영 → 제거된 적 정리 (Removed 이벤트)
     for (const DeferredSpawn& spawn: m_deferred)
     {
         Create_(spawn.id, spawn.defIndex, spawn.feet, spawn.params, nullptr);
@@ -400,7 +375,6 @@ void EnemyWorld::Tick(
     m_deferred.clear();
     RemoveGone_();
 
-    // 4) 이번 틱 이펙트 요청 적재 (다음 틱에 나타남)
     if (!_ctx.pAnims)
     {
         m_pendingFx.clear();
@@ -456,10 +430,6 @@ void EnemyWorld::FlushFx_(
     }
     m_pendingFx.resize(keep);
 }
-
-// ===========================================
-//  렌더
-// ===========================================
 
 void EnemyWorld::BindAnims(
     const AnimationLibrary& _anims)
@@ -518,7 +488,6 @@ void EnemyWorld::Submit(
         BindAnims(_anims);
     }
 
-    // --- 적 / 포로 ---
     for (const Enemy& e: m_enemies)
     {
         if (!e.bVisible || e.life == eEnemyLife::Pending || e.life == eEnemyLife::Gone)
@@ -530,7 +499,6 @@ void EnemyWorld::Submit(
         const int          side = SideIndex_(e.facing);
         const Vec2 feet = Lerp_(e.prevFeet, e.body.position, _alpha);
 
-        // 부가 파츠 (보스 리그 등): 본체 클립과 무관하게 매 틱 그린다
         if (ops.submitParts)
         {
             const EnemyRenderEnv render { _sprites, _anims, m_pSprites, _projectiles, feet, _alpha, kEnemyLayer };
@@ -554,7 +522,6 @@ void EnemyWorld::Submit(
         const float lift = static_cast<float>(pClip->GetFootBaseline());
         _sprites.Submit(kEnemyLayer, static_cast<int>(feet.y), *pFrame, { feet.x, feet.y - lift });
 
-        // 몸 위 오버레이 (낙하산 등)
         if (def.overlayClip >= 0)
         {
             const AnimClip* pOver = _anims.GetOrNull(m_clipIds[static_cast<size_t>(e.defIndex)][static_cast<size_t>(def.overlayClip)][side]);
@@ -569,7 +536,6 @@ void EnemyWorld::Submit(
         }
     }
 
-    // --- 적 투사체 (Shot) ---
     for (const Shot& shot: _projectiles.GetShots())
     {
         if (!shot.bAlive)
@@ -581,7 +547,6 @@ void EnemyWorld::Submit(
         {
             continue;
         }
-        // 구르는 탄: 방향은 굴러가는 쪽, 낙하 중에는 begin(낙하) → 착지 시 land → 굴러가며 fly
         const size_t pIdx     = static_cast<size_t>(projIndex);
         const bool   bRoll    = shot.params.rollSpeed > 0.f;
         const int    side     = bRoll ? (shot.params.rollDirX < 0.f ? 0 : 1) : (shot.velocity.x < 0.f ? 0 : 1);
@@ -619,10 +584,6 @@ void EnemyWorld::Submit(
 
     m_effects.Submit(_anims, _sprites);
 }
-
-// ===========================================
-//  조회
-// ===========================================
 
 size_t EnemyWorld::FindIndex_(
     const uint32_t _id) const
@@ -781,10 +742,6 @@ int EnemyWorld::CountAlive(
     return CountAlive(filter);
 }
 
-// ===========================================
-//  이벤트 / 정리
-// ===========================================
-
 slug::Vector<EnemyEvent> EnemyWorld::TakeEvents()
 {
     slug::Vector<EnemyEvent> out = std::move(m_events);
@@ -831,14 +788,14 @@ void EnemyWorld::KillAll(
         Enemy& e = m_enemies[i];
         if (e.life == eEnemyLife::Pending)
         {
-            continue;   // 대기 중인 것은 취소
+            continue;
         }
         if (e.life == eEnemyLife::Alive)
         {
             EnemyEvent event = MakeEvent(e, eEnemyEventKind::Died);
             event.score      = _bAwardScore ? m_pLibrary->Get(e.defIndex).score : 0;
             PushEvent(std::move(event));
-            continue;   // 연출 없이 제거
+            continue;
         }
         if (keep != i)
         {
@@ -904,10 +861,6 @@ uint64_t EnemyWorld::HashState() const
     return hash;
 }
 
-// ===========================================
-//  행동 함수용 서비스
-// ===========================================
-
 int EnemyWorld::Roll(
     const int _n)
 {
@@ -960,5 +913,4 @@ EnemyEvent EnemyWorld::MakeEvent(
     }
     return event;
 }
-
-}   // namespace slug
+}

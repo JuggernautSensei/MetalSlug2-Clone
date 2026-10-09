@@ -7,12 +7,6 @@
 
 namespace slug::baker
 {
-
-// ===========================================
-//  픽셀 충돌맵 -> 비트마스크
-// ===========================================
-
-// 레거시: 파랑 (0, 0, 255) 알파 255 = 땅. 안티앨리어싱 가장자리를 위해 임계값으로 판정한다.
 struct GroundThreshold
 {
     int blueMin  = 192;   // B >= blueMin
@@ -24,9 +18,9 @@ struct GroundThreshold
 struct GroundStats
 {
     uint64_t solidCount        = 0;
-    uint64_t unclassifiedCount = 0;   // 고체도 공기도 아닌 픽셀 (알파 불투명인데 흰색도 파랑도 아닌 색)
+    uint64_t unclassifiedCount = 0;
     uint64_t totalCount        = 0;
-    IRect    solidBounds       = {};  // 고체 픽셀의 바운딩 박스
+    IRect    solidBounds       = {};
 };
 
 [[nodiscard]] inline bool IsSolidPixel(
@@ -39,7 +33,6 @@ struct GroundStats
     return _b >= _th.blueMin && _r <= _th.redMax && _g <= _th.greenMax && _a >= _th.alphaMin;
 }
 
-// 공기: 투명(알파 < alphaMin) 이거나 거의 흰색
 [[nodiscard]] inline bool IsAirPixel(
     const uint8_t          _r,
     const uint8_t          _g,
@@ -50,7 +43,6 @@ struct GroundStats
     return _a < _th.alphaMin || (_r >= 192 && _g >= 192 && _b >= 192);
 }
 
-// 행 우선, 행마다 바이트 경계 정렬, LSB 가 왼쪽 픽셀. 1 = 고체.
 [[nodiscard]] inline std::vector<uint8_t> BuildGroundBits(
     const Image&           _image,
     const GroundThreshold& _th,
@@ -99,7 +91,6 @@ struct GroundStats
     return bits;
 }
 
-// "GRND" + u32 width + u32 height + bits (리틀엔디안)
 [[nodiscard]] inline std::vector<uint8_t> BuildGroundFile(
     const int                   _width,
     const int                   _height,
@@ -118,5 +109,4 @@ struct GroundStats
     }
     return file;
 }
-
-}   // namespace slug::baker
+}

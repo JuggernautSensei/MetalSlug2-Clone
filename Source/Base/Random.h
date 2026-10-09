@@ -30,7 +30,6 @@ concept RngT = requires(R _rng) {
     { _rng.Generate() } -> std::same_as<uint64_t>;
 };
 
-// 실수는 [0, 1], 정수는 uint64 범위 그대로.
 template<typename T, RngT R>
     requires std::is_arithmetic_v<T>
 [[nodiscard]] T Random(R& _rng)
@@ -45,7 +44,6 @@ template<typename T, RngT R>
     }
 }
 
-// 실수는 [_min, _max], 정수는 [_min, _max] (양끝 포함).
 template<typename T, RngT R>
     requires std::is_arithmetic_v<T>
 [[nodiscard]] T Random(R& _rng, const T _min, const T _max)
@@ -62,5 +60,4 @@ template<typename T, RngT R>
         return static_cast<T>(_rng.Generate() % range) + _min;
     }
 }
-
-}   // namespace slug
+}

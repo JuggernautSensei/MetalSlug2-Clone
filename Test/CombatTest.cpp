@@ -55,11 +55,7 @@ slug::Vector<HitEvent> Resolve(
 {
     return _resolver.Resolve(_hits, _hurts);
 }
-}   // namespace
-
-// ===========================================
-//  팀 규칙
-// ===========================================
+}
 
 TEST(Combat, TeamMatrix)
 {
@@ -123,7 +119,6 @@ TEST(Combat, NeutralHazardsHitBothSidesButNotTheirOwner)
         MakeHurt(eTeam::Neutral, Box(0, 0, 10, 10), 3),
     };
 
-    // 위험물이 pierce 로 모두 훑는다 (Neutral 끼리는 무시)
     auto       hit    = MakeHit(eTeam::Neutral, eHitKind::Hazard, Box(0, 0, 10, 10), 9, true, 1, 3);
     const auto events = Resolve(resolver, { hit }, hurts);
     ASSERT_EQ(events.size(), 2u);
@@ -134,24 +129,17 @@ TEST(Combat, NeutralHazardsHitBothSidesButNotTheirOwner)
 TEST(Combat, OwnerNeverHitsItself)
 {
     HitResolver resolver;
-    // 폭발이 터진 본인 Hurtbox 는 Neutral 위험물이어도 무시
     Hurtbox self   = MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 100);
     auto    hazard = MakeHit(eTeam::Neutral, eHitKind::Blast, Box(0, 0, 10, 10), 1, true, 5, 100);
     EXPECT_TRUE(Resolve(resolver, { hazard }, { self }).empty());
 }
 
-// ===========================================
-//  칼은 모든 적을 때린다 (클래스별 예외 없음)
-// ===========================================
-
 TEST(Combat, KnifeHitsEveryEnemyRegardlessOfKind)
 {
-    // 다양한 "적 종류" 를 팀/소유자만 다르게 만들어 본다. 종류에 따른 분기는 존재하지 않아야 한다.
     HitResolver          resolver;
     slug::Vector<Hurtbox> enemies;
     for (uint32_t i = 0; i < 20; ++i)
     {
-        // 서로 겹치지 않게 일렬로 배치 (병사, 차량, 전차, 헬기, 보스 부위 …)
         const float x = static_cast<float>(i) * 30.f;
         enemies.push_back(MakeHurt(eTeam::Enemy, Box(x, 0, x + 24.f, 40), 200 + i));
     }
@@ -172,7 +160,7 @@ TEST(Combat, HurtboxMayRestrictAcceptedKinds)
 {
     HitResolver resolver;
     Hurtbox     armored = MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 5);
-    armored.accepts     = HitKindMask { eHitKind::Blast, eHitKind::Melee };   // 총알은 튕긴다
+    armored.accepts     = HitKindMask { eHitKind::Blast, eHitKind::Melee };
 
     EXPECT_TRUE(Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 10, 10), 1) }, { armored }).empty());
     EXPECT_EQ(Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Blast, Box(0, 0, 10, 10), 2) }, { armored }).size(), 1u);
@@ -191,10 +179,6 @@ TEST(Combat, InvulnerableHurtboxIgnoresHitsWithoutConsumingThem)
     EXPECT_EQ(events[0].target, 6u);
 }
 
-// ===========================================
-//  소모 / 관통 / 중복 방지
-// ===========================================
-
 TEST(Combat, NonPierceHitboxIsConsumedByFirstHitInIndexOrder)
 {
     HitResolver resolver;
@@ -211,7 +195,7 @@ TEST(Combat, ConsumedBulletDoesNotHitAgainOnLaterFrames)
     const slug::Vector<Hurtbox> target = { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 1) };
 
     EXPECT_EQ(Resolve(resolver, bullet, target).size(), 1u);
-    EXPECT_TRUE(Resolve(resolver, bullet, target).empty());                                             // 같은 id 는 소모됨
+    EXPECT_TRUE(Resolve(resolver, bullet, target).empty());
     EXPECT_TRUE(Resolve(resolver, bullet, { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 2) }).empty());   // 다른 대상에게도 안 감
 
     resolver.Release(77);   // 새 공격이 같은 id 를 재사용
@@ -229,10 +213,8 @@ TEST(Combat, PiercingHitboxHitsEachTargetExactlyOnce)
     EXPECT_EQ(events[0].target, 1u);
     EXPECT_EQ(events[1].target, 2u);
 
-    // 다음 프레임에도 계속 겹쳐 있지만 이미 맞은 대상은 제외
     EXPECT_TRUE(Resolve(resolver, laser, targets).empty());
 
-    // 새 대상이 나타나면 그 대상만 맞는다
     targets.push_back(MakeHurt(eTeam::Enemy, Box(100, 0, 110, 10), 3));
     events = Resolve(resolver, laser, targets);
     ASSERT_EQ(events.size(), 1u);
@@ -244,7 +226,6 @@ TEST(Combat, MeleeSwingSharingAnIdHitsEachTargetOncePerSwing)
     HitResolver                resolver;
     const slug::Vector<Hurtbox> enemy = { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 1) };
 
-    // 칼 휘두르기: 여러 프레임 활성, 비관통이지만 한 번 맞으면 소모
     const slug::Vector<Hitbox> swing = { MakeHit(eTeam::Player, eHitKind::Melee, Box(0, 0, 10, 10), 31, false, 4) };
     int                       total = 0;
     for (int frame = 0; frame < 6; ++frame)
@@ -253,7 +234,6 @@ TEST(Combat, MeleeSwingSharingAnIdHitsEachTargetOncePerSwing)
     }
     EXPECT_EQ(total, 1);
 
-    // 다음 휘두르기(새 id) 는 다시 맞는다
     const slug::Vector<Hitbox> nextSwing = { MakeHit(eTeam::Player, eHitKind::Melee, Box(0, 0, 10, 10), 32, false, 4) };
     EXPECT_EQ(Resolve(resolver, nextSwing, enemy).size(), 1u);
 }
@@ -269,7 +249,6 @@ TEST(Combat, PierceHitsOnlyOncePerOwnerEvenWithManyHurtboxes)
 
 TEST(Combat, UntrackedHitboxHitsEveryCall)
 {
-    // id 0 = 추적 안 함 (지속 피해 구역 등)
     HitResolver                resolver;
     const slug::Vector<Hitbox>  zone   = { MakeHit(eTeam::Neutral, eHitKind::Hazard, Box(0, 0, 10, 10), kNoHitId, true, 1, 0) };
     const slug::Vector<Hurtbox> victim = { MakeHurt(eTeam::Player, Box(0, 0, 10, 10), 1) };
@@ -333,10 +312,6 @@ TEST(Combat, ResolverIsDeterministicAcrossIdenticalRuns)
     EXPECT_FALSE(a.empty());
     EXPECT_EQ(a, b);
 }
-
-// ===========================================
-//  Health
-// ===========================================
 
 TEST(Health, ApplyDamageClampsAndReportsApplied)
 {

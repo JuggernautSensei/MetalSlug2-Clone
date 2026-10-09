@@ -12,7 +12,6 @@ struct AllFlagTag
 
 inline constexpr AllFlagTag kAllFlag {};
 
-// 열거형 값의 인덱스를 비트로 쓰는 집합 (값 < 32).
 template<typename E>
     requires std::is_enum_v<E>
 class IndexedFlags
@@ -42,5 +41,4 @@ private:
 
     uint32_t m_bits = 0u;
 };
-
-}   // namespace slug
+}

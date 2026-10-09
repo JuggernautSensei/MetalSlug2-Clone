@@ -7,8 +7,6 @@
 
 namespace slug
 {
-
-// 핸들 인덱스로 직접 접근하는 저장소. 세대가 다르면 없는 것으로 취급한다.
 template<typename HandleT, typename T>
 class HandleStorage
 {
@@ -93,5 +91,4 @@ private:
 
     Vector<Slot> m_slots = {};
 };
-
-}   // namespace slug
+}

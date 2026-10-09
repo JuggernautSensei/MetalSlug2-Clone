@@ -23,11 +23,7 @@ AnimFrame MakeFrame(
     frame.pivotY = _pivotY;
     return frame;
 }
-}   // namespace
-
-// ===========================================
-//  ComputeDestRect (순수 계산)
-// ===========================================
+}
 
 TEST(SpriteDest, PivotIsSubtractedFromSnappedOrigin)
 {
@@ -66,7 +62,6 @@ TEST(SpriteDest, CameraIsSubtracted)
 
 TEST(SpriteDest, FlipMirrorsAroundTheOriginKeepingThePivotOnIt)
 {
-    // 프레임 폭 40, 피벗 x=10: 원점 오른쪽으로 30px 뻗어 있다. 반전하면 원점 왼쪽으로 30px 뻗어야 한다.
     const AnimFrame frame   = MakeFrame(40, 20, 10, 20);
     const IntRect   normal  = ComputeDestRect(frame, { 100.f, 100.f }, { 0.f, 0.f }, false);
     const IntRect   flipped = ComputeDestRect(frame, { 100.f, 100.f }, { 0.f, 0.f }, true);
@@ -75,7 +70,6 @@ TEST(SpriteDest, FlipMirrorsAroundTheOriginKeepingThePivotOnIt)
     EXPECT_EQ(normal.x + normal.w, 130);
     EXPECT_EQ(flipped.x, 70);   // [70, 110)
     EXPECT_EQ(flipped.x + flipped.w, 110);
-    // 원점 기준 대칭
     EXPECT_EQ(100 - normal.x, flipped.x + flipped.w - 100);
     EXPECT_EQ(normal.x + normal.w - 100, 100 - flipped.x);
     EXPECT_EQ(normal.y, flipped.y);
@@ -89,7 +83,6 @@ TEST(SpriteDest, FlipOfCenteredPivotIsIdenticalRect)
 
 TEST(SpriteDest, OddWidthFramesDoNotLoseAPixel)
 {
-    // 홀수 폭 (41px) 도 피벗이 정수로 주어지므로 width/2 절삭 오차가 없다
     const AnimFrame frame = MakeFrame(41, 10, 20, 10);
     const IntRect   a     = ComputeDestRect(frame, { 100.f, 100.f }, { 0.f, 0.f }, false);
     const IntRect   b     = ComputeDestRect(frame, { 100.f, 100.f }, { 0.f, 0.f }, true);
@@ -97,10 +90,6 @@ TEST(SpriteDest, OddWidthFramesDoNotLoseAPixel)
     EXPECT_EQ(a.x, 80);
     EXPECT_EQ(b.x, 100 + 20 - 41);
 }
-
-// ===========================================
-//  정렬
-// ===========================================
 
 TEST(SpriteSort, OrdersByLayerThenSortKeyThenSubmission)
 {
@@ -110,7 +99,7 @@ TEST(SpriteSort, OrdersByLayerThenSortKeyThenSubmission)
         command.layer   = _layer;
         command.sortKey = _key;
         command.seq     = static_cast<uint32_t>(commands.size());
-        command.frame.x = _tag;   // 식별용
+        command.frame.x = _tag;
         commands.push_back(command);
     };
 
@@ -132,7 +121,7 @@ TEST(SpriteSort, OrdersByLayerThenSortKeyThenSubmission)
 
 TEST(SpriteSort, BatchSubmitAssignsSequenceAndFlushClearsQueue)
 {
-    SpriteBatch batch;   // 렌더러 없이도 제출/정렬은 동작
+    SpriteBatch batch;
     AnimFrame   frame = MakeFrame(4, 4, 0, 0);
     batch.Submit(1, 0, frame, { 0.f, 0.f });
     batch.Submit(0, 0, frame, { 1.f, 0.f });
@@ -144,10 +133,6 @@ TEST(SpriteSort, BatchSubmitAssignsSequenceAndFlushClearsQueue)
     batch.Flush(Vec2 { 0.f, 0.f });   // 렌더러 없음 → 그리지 않고 큐만 비운다
     EXPECT_TRUE(batch.GetPendingCommands().empty());
 }
-
-// ===========================================
-//  소프트웨어 렌더러로 실제 픽셀 검증 (GPU 불필요)
-// ===========================================
 
 namespace
 {
@@ -201,7 +186,6 @@ struct SoftwareTarget
     }
 };
 
-// 4x4 아틀라스: 왼쪽 열은 빨강, 나머지는 초록
 slug::Vector<uint8_t> MakeAtlas4x4()
 {
     slug::Vector<uint8_t> pixels(4 * 4 * 4);
@@ -222,7 +206,7 @@ slug::Vector<uint8_t> MakeAtlas4x4()
 constexpr uint32_t kRed   = 0xFF0000;
 constexpr uint32_t kGreen = 0x00FF00;
 constexpr uint32_t kBlack = 0x000000;
-}   // namespace
+}
 
 TEST(SpriteBatchSdl, DrawsFrameAtSnappedPositionWithPivot)
 {
@@ -242,7 +226,6 @@ TEST(SpriteBatchSdl, DrawsFrameAtSnappedPositionWithPivot)
     target.Clear();
     batch.DrawFrame(frame, { 10.7f, 20.9f }, Vec2 { 0.f, 0.f });
 
-    // 원점 (10,20) → 좌상단 (8,16), 크기 4x4
     EXPECT_EQ(target.PixelRgb(8, 16), kRed);
     EXPECT_EQ(target.PixelRgb(9, 16), kGreen);
     EXPECT_EQ(target.PixelRgb(11, 19), kGreen);
@@ -271,7 +254,6 @@ TEST(SpriteBatchSdl, FlipXMirrorsPixelsAroundOrigin)
     options.bFlipX = true;
     batch.DrawFrame(frame, { 10.f, 20.f }, Vec2 { 0.f, 0.f }, options);
 
-    // 빨간 열이 오른쪽 끝으로 간다 (8..11 중 11)
     EXPECT_EQ(target.PixelRgb(11, 16), kRed);
     EXPECT_EQ(target.PixelRgb(8, 16), kGreen);
 }
@@ -289,13 +271,11 @@ TEST(SpriteBatchSdl, FlushDrawsInSortedOrderLaterOnTop)
     const slug::Vector<uint8_t> atlas = MakeAtlas4x4();
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
 
-    // 같은 자리에 겹쳐 그리되 색이 다른 두 프레임: 초록 단색(오른쪽 열) 과 빨강(왼쪽 열)
     AnimFrame red   = MakeFrame(1, 1, 0, 0);   // atlas (0,0) = 빨강
     AnimFrame green = MakeFrame(1, 1, 0, 0);
     green.x         = 1;   // atlas (1,0) = 초록
 
     target.Clear();
-    // 레이어가 높은 빨강을 먼저 제출해도 초록(레이어 0) 이 아래, 빨강(레이어 1) 이 위
     batch.Submit(1, 0, red, { 5.f, 5.f });
     batch.Submit(0, 0, green, { 5.f, 5.f });
     batch.Flush(Vec2 { 0.f, 0.f });

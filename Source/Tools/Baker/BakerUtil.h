@@ -16,11 +16,6 @@
 
 namespace slug::baker
 {
-
-// ===========================================
-//  로그 (스레드 안전)
-// ===========================================
-
 inline std::mutex& LogMutex()
 {
     static std::mutex s_mutex;
@@ -38,10 +33,6 @@ void Log(
     std::fputc('\n', stdout);
     std::fflush(stdout);
 }
-
-// ===========================================
-//  파일 입출력
-// ===========================================
 
 [[nodiscard]] inline slug::Result<void> WriteBytes(
     const std::filesystem::path& _path,
@@ -89,10 +80,6 @@ void Log(
     return text;
 }
 
-// ===========================================
-//  병렬 for
-// ===========================================
-
 template<typename Fn>
 void ParallelFor(
     const size_t _count,
@@ -133,7 +120,6 @@ void ParallelFor(
     }
 }
 
-// 파일 이름으로 쓸 수 없는 문자를 '_' 로 바꾼다.
 [[nodiscard]] inline std::string SanitizeFileName(const std::string& _name)
 {
     std::string out = _name;
@@ -147,5 +133,4 @@ void ParallelFor(
     }
     return out;
 }
-
-}   // namespace slug::baker
+}

@@ -21,7 +21,6 @@ enum class eJsonLoadOption : uint32_t
 
 class JsonDeserializer;
 
-// 비소유 JSON 노드. 수명은 소유자 JsonDeserializer 를 따른다.
 class JsonReader
 {
     friend class JsonDeserializer;
@@ -124,5 +123,4 @@ private:
 
     yyjson_doc* m_pDoc = nullptr;
 };
-
-}   // namespace slug
+}

@@ -64,7 +64,7 @@ namespace
         slug::Span<const uint8_t> m_bytes  = {};
         size_t                   m_offset = 0;
     };
-}   // namespace
+}
 
 slug::Vector<uint8_t> SerializeReplay(
     const ReplayData& _replay)
@@ -175,5 +175,4 @@ slug::Result<ReplayData> LoadReplay(
     }
     return DeserializeReplay(bytes);
 }
-
-}   // namespace slug
+}

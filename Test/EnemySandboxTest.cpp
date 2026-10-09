@@ -15,7 +15,6 @@ namespace
         return _pEnemy && _pEnemy->bGrounded && std::abs(_pEnemy->body.position.y - kGroundY) < 0.5f;
     }
 
-    // 샌드박스 상태를 GameContext 로 직접 돌린다 (숫자키 디버그 스폰 경로 검증용)
     struct DirectState
     {
         GameContext    ctx   = {};
@@ -27,11 +26,7 @@ namespace
             state.OnEnter(ctx);
         }
     };
-}   // namespace
-
-// ===========================================
-//  배치 / 지면 / 활성
-// ===========================================
+}
 
 TEST(EnemySandbox, LoadsTheDefinitionFileAndSpawnsEveryInfantryKind)
 {
@@ -42,7 +37,6 @@ TEST(EnemySandbox, LoadsTheDefinitionFileAndSpawnsEveryInfantryKind)
     float x = 260.f;
     for (const char* name: kInfantryNames)
     {
-        // 낙하산 병은 공중에서 내려와야 하므로 높이를 준다 (지면에 두면 바로 착지해 변신한다)
         const float y = std::strcmp(name, "flying_bzk") == 0 ? 150.f : kGroundY;
         const EnemyHandle h = sim.State().SpawnEnemy(name, { x, y });
         EXPECT_FALSE(h.IsNull()) << name;
@@ -68,7 +62,6 @@ TEST(EnemySandbox, GroundedKindsRestOnTheGround)
         names.push_back(name);
         x += 60.f;
     }
-    // 병사는 전투 행동(점프 베기 등)을 하므로 "120 틱 안에 한 번이라도 지면에 서 있었다" 로 확인한다
     std::vector<bool> seen(handles.size(), false);
     for (int tick = 0; tick < 120; ++tick)
     {
@@ -119,16 +112,12 @@ TEST(EnemySandbox, InactiveMissileSoldierStaysSilentWhileFarAway)
 
 TEST(EnemySandbox, WithoutADefinitionFileNothingSpawns)
 {
-    SandboxConfig config = MakeFlatConfig();   // enemyDefPath 없음, assetRoot 없음
+    SandboxConfig config = MakeFlatConfig();
     Sim sim { config };
     sim.Step(1);
     EXPECT_EQ(sim.State().GetEnemyLib().GetDefCount(), 0u);
     EXPECT_TRUE(sim.State().SpawnEnemy("soldier_bomb", { 300.f, kGroundY }).IsNull());
 }
-
-// ===========================================
-//  플레이어와의 교전
-// ===========================================
 
 TEST(EnemySandbox, KnifeKillsASoldierInOneSlash)
 {
@@ -187,10 +176,6 @@ TEST(EnemySandbox, TrainingTargetsStillDieToTheKnifeWithEnemiesPresent)
     EXPECT_EQ(sim.Player().GetStats().knifeSlashes, 1);
 }
 
-// ===========================================
-//  디버그 스폰 (숫자키 1..8 → 보병 정의 8종)
-// ===========================================
-
 TEST(EnemySandbox, DebugSpawnSlotsSpawnTheEightInfantryKinds)
 {
     for (int slot = 1; slot <= 8; ++slot)
@@ -207,14 +192,10 @@ TEST(EnemySandbox, DebugSpawnSlotsSpawnTheEightInfantryKinds)
 TEST(EnemySandbox, DebugSpawnOutOfRangeDoesNothing)
 {
     DirectState d;
-    d.ctx.debugSpawn = 10;   // 9 는 이제 차량 순환 키 (VehicleSandboxTest 가 검증)
+    d.ctx.debugSpawn = 10;
     d.state.Tick(d.ctx, d.input);
     EXPECT_EQ(d.state.GetEnemies().GetCount(), 0u);
 }
-
-// ===========================================
-//  결정성
-// ===========================================
 
 TEST(EnemySandbox, SandboxHashIsDeterministicWithEnemiesPresent)
 {

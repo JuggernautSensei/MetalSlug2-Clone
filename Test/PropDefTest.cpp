@@ -10,8 +10,6 @@ using namespace slugtest;
 
 namespace
 {
-
-// 최소 정의 파서 입력 (에러 케이스 치환용)
 std::string Wrap(const std::string& _defs)
 {
     return std::string { "{ \"version\": 1, \"defs\": { " } + _defs + " } }";
@@ -21,12 +19,7 @@ slug::Result<PropDefLibrary> ParseText(const std::string& _text, slug::String* _
 {
     return PropDefLibrary::Parse(slug::StringView { _text.c_str(), _text.size() }, _pMessage);
 }
-
-}   // namespace
-
-// ===========================================
-//  Props.json 내용 (Stage0 이 쓰는 이름 전부)
-// ===========================================
+}
 
 TEST(PropDef, StageDefNamesAllPresent)
 {
@@ -103,7 +96,6 @@ TEST(PropDef, TruckVariantsHaveLegacyYCorrection)
     EXPECT_EQ(truck->variants[0].dy, 0.f);
     EXPECT_EQ(truck->variants[1].dy, -10.f);
     EXPECT_EQ(truck->variants[2].dy, -17.f);
-    // 머리 + 꼬리 각각 피격/벽 두 파츠씩 (role 배열 확장)
     EXPECT_EQ(truck->variants[0].parts.size(), 4u);
     EXPECT_TRUE(truck->bRemoveOnDestroy);
 }
@@ -162,10 +154,6 @@ TEST(PropDef, ClipAndSpriteNamesExistInBakedAssets)
     const slug::String missing = GetPropLib().FindMissingAsset(anims, sprites);
     EXPECT_TRUE(missing.empty()) << std::string { missing.c_str() };
 }
-
-// ===========================================
-//  파싱 오류 / 형식 검사
-// ===========================================
 
 TEST(PropDef, RejectsUnknownKeyWithPath)
 {
@@ -249,6 +237,6 @@ TEST(PropDef, SpawnParamsRejectUnknownKeysAndBadVariant)
 
     auto doc2 = slug::JsonDeserializer::Load(R"({ "variant": 1 })");
     ASSERT_TRUE(static_cast<bool>(doc2));
-    EXPECT_FALSE(lib.ParseSpawnParams("shop_0", doc2->GetReader(), params, err));   // 변종 없는 정의
-    EXPECT_FALSE(lib.ParseSpawnParams("nope", doc2->GetReader(), params, err));     // 없는 정의
+    EXPECT_FALSE(lib.ParseSpawnParams("shop_0", doc2->GetReader(), params, err));
+    EXPECT_FALSE(lib.ParseSpawnParams("nope", doc2->GetReader(), params, err));
 }

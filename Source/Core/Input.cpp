@@ -11,7 +11,6 @@ namespace
         SDL_Scancode  key;
     };
 
-    // 기본 조작: 기존 게임과 동일(A/D/W/S, J 사격, K 점프, L 폭탄) + 방향키/Z/X/C 대체키
     constexpr KeyBinding kBindings[] = {
         { eAction::Left, SDL_SCANCODE_A },
         { eAction::Left, SDL_SCANCODE_LEFT },
@@ -32,11 +31,7 @@ namespace
         { eAction::Start, SDL_SCANCODE_KP_ENTER },
         { eAction::Start, SDL_SCANCODE_SPACE },
     };
-}   // namespace
-
-// ===========================================
-//  InputSystem
-// ===========================================
+}
 
 void InputSystem::OnKeyDown(
     const SDL_Scancode _key)
@@ -82,10 +77,6 @@ InputFrame InputSystem::Sample() const
     }
     return frame;
 }
-
-// ===========================================
-//  InputHistory
-// ===========================================
 
 void InputHistory::Push(
     const InputFrame _frame)
@@ -162,5 +153,4 @@ void InputHistory::ConsumePress(
         m_consumedPresses[(m_head + kCapacity - ago) % kCapacity] |= mask;
     }
 }
-
-}   // namespace slug
+}

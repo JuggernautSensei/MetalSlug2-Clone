@@ -14,12 +14,6 @@
 #include "PlayerTestUtil.h"
 #include "World/Constants.h"
 
-// ===========================================
-//  차량 테스트 도우미
-//   VehicleRig: 정의 폴더 전체(Enemies.json + Vehicles.json)를 읽어 적 월드만 돌린다. 플레이어는 판정 상자만 있는 표적.
-//   틱 순서는 SandboxState 와 같다 (판정 등록 → 적 → 투사체 → 해소 → 적/투사체 피해 반영).
-// ===========================================
-
 namespace slugtest
 {
 
@@ -43,10 +37,8 @@ inline bool LoadVehicleLib(
     return true;
 }
 
-// 차량 다섯 종 (숫자키 9 순서와 같다)
 inline constexpr const char* kVehicleNames[] = { "jeep", "btank", "missle_tank", "sarubia", "aparch" };
 
-// 지면 y (평지 테스트 지형)
 inline constexpr float kVehicleGroundY = 378.f;
 
 class VehicleRig
@@ -85,7 +77,6 @@ public:
         return m_world.Spawn(_name, _feet, _params, &world);
     }
 
-    // 틱 진행 (SandboxState 순서)
     void Step(const int _count = 1)
     {
         for (int i = 0; i < _count; ++i)
@@ -107,7 +98,6 @@ public:
 
     [[nodiscard]] int Ticks() const { return m_ticks; }
 
-    // 소유자 _owner 의 첫 Hurtbox 와 겹치는 판정을 한 번 해소한다. 반환: 이번 판정의 HitEvent 수
     size_t Strike(
         const uint32_t _owner,
         const eHitKind _kind,
@@ -170,7 +160,6 @@ public:
         return sum;
     }
 
-    // 소유자(적 ID)가 쏜 살아 있는 투사체 수 / 첫 투사체
     [[nodiscard]] int CountShots(const EnemyHandle _owner) const
     {
         int count = 0;
@@ -252,5 +241,4 @@ private:
     ProjectileSystem         m_projectiles = {};
     std::vector<EnemyEvent>  m_events      = {};
 };
-
-}   // namespace slugtest
+}

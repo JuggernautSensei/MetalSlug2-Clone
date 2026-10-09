@@ -23,11 +23,7 @@ const AnimFrame& LowerFrame(
     const PlayerRig& rig = _sim.State().GetRig();
     return _anims.Get(rig.GetLowerClip()).frames[static_cast<size_t>(rig.GetLowerFrame())];
 }
-}   // namespace
-
-// ===========================================
-//  이름 표
-// ===========================================
+}
 
 TEST(PlayerRigNames, EveryRequiredSlotResolvesForEveryWeaponAndSide)
 {
@@ -48,7 +44,6 @@ TEST(PlayerRigNames, EveryRequiredSlotResolvesForEveryWeaponAndSide)
                 {
                     EXPECT_FALSE(PlayerRig::ResolveClipName(anims, slot, weapon, facing).empty()) << GetRigClipName(slot) << " weapon=" << static_cast<int>(weapon) << " facing=" << facing;
                 }
-                // 선택 슬롯도 폴백을 거쳐 반드시 어떤 클립으로든 해석된다
                 EXPECT_FALSE(rig.GetSlotClip(weapon, facing, slot).IsNull()) << GetRigClipName(slot);
             }
         }
@@ -68,13 +63,11 @@ TEST(PlayerRigNames, TableFollowsTheLegacyNames)
     EXPECT_EQ(PlayerRig::ResolveClipName(anims, eRigClip::Death, eWeapon::Pistol, 1), "Player_Death_byBullet_DG_Right");
     EXPECT_EQ(PlayerRig::ResolveClipName(anims, eRigClip::Victory, eWeapon::Pistol, 1), "Player_Victory_DG");
 
-    // HMG: 사격 동작은 MG 전용 클립, 나머지는 SG 세트를 재사용
     EXPECT_EQ(PlayerRig::ResolveClipName(anims, eRigClip::Shot, eWeapon::Hmg, 1), "Player_Stand_Shot_MG_Right");
     EXPECT_EQ(PlayerRig::ResolveClipName(anims, eRigClip::Idle, eWeapon::Hmg, 1), "Player_Stand_Idle_SG_Right");
     EXPECT_EQ(PlayerRig::ResolveClipName(anims, eRigClip::CrouchShot, eWeapon::Hmg, -1), "Player_Crouch_Shot_MG_Left");
     EXPECT_EQ(PlayerRig::ResolveClipName(anims, eRigClip::JumpShotDown, eWeapon::Hmg, 1), "Player_Jump_Shot_Lookdown_MG_Right");
 
-    // 샷건
     EXPECT_EQ(PlayerRig::ResolveClipName(anims, eRigClip::Shot, eWeapon::Shotgun, 1), "Player_Stand_Shot_SG_Right");
     EXPECT_EQ(PlayerRig::ResolveClipName(anims, eRigClip::JumpShotDown, eWeapon::Shotgun, 1), "Player_Jump_Shot_Lookdown_SG_Right");
 }
@@ -88,10 +81,6 @@ TEST(PlayerRigNames, DgHasNoDiagonalShotClipSoItFallsBackToTheAimPose)
     EXPECT_EQ(rig.GetSlotClip(eWeapon::Pistol, 1, eRigClip::ShotDiag3), rig.GetSlotClip(eWeapon::Pistol, 1, eRigClip::LookUpDiag3));
     EXPECT_FALSE(PlayerRig::ResolveClipName(anims, eRigClip::ShotDiag3, eWeapon::Hmg, 1).empty());   // MG 에는 있다
 }
-
-// ===========================================
-//  상태 → 클립 선택
-// ===========================================
 
 TEST(PlayerRigPose, IdleUsesIdleUpperAndLowerClips)
 {
@@ -142,7 +131,7 @@ TEST(PlayerRigPose, UpperKeepsThePhaseAfterAShotOverlayEndsWhileRunning)
     sim.Tap(eAction::Shot);
     sim.Step(sim.Tune().weapons.pistol.shotOverlayTicks + 3);
     EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Move_DG_Right"));
-    EXPECT_EQ(sim.State().GetRig().GetUpperFrame(), sim.State().GetRig().GetLowerFrame());   // 달리기 위상이 이어진다
+    EXPECT_EQ(sim.State().GetRig().GetUpperFrame(), sim.State().GetRig().GetLowerFrame());
 }
 
 TEST(PlayerRigPose, CrouchJumpAndAirClips)
@@ -185,7 +174,7 @@ TEST(PlayerRigPose, ShotSlashAndThrowOverlaysPickTheirClips)
         sim.Tap(eAction::Shot);
         EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Shot_DG_Right"));
         sim.Step(sim.Tune().weapons.pistol.shotOverlayTicks + 1);
-        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Idle_DG_Right"));   // 겹침이 끝나면 복귀
+        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Idle_DG_Right"));
     }
     {
         Sim sim { MakeFlatConfig(), &anims };
@@ -205,7 +194,7 @@ TEST(PlayerRigPose, ShotSlashAndThrowOverlaysPickTheirClips)
         sim.Step(2);
         sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + 25.f, 378.f });
         sim.Tap(eAction::Shot);
-        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Slash2_DG_Right"));   // 첫 베기: 번갈아 시작 (토글)
+        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Slash2_DG_Right"));
         sim.Step(sim.Tune().knife.durationTicks + 2);
         sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + 25.f, 378.f });
         sim.Tap(eAction::Shot);
@@ -262,7 +251,7 @@ TEST(PlayerRigPose, EveryNewShotRestartsTheShotAnimation)
     sim.Step();
     sim.Step(sim.Tune().weapons.hmg.holdRepeatTicks - 1);   // 다음 발사 직전: 애니메이션이 진행되어 있다
     const int beforeFrame = sim.State().GetRig().GetUpperFrame();
-    sim.Step();   // 다음 발사 틱: 처음부터 다시
+    sim.Step();
     const int afterFrame = sim.State().GetRig().GetUpperFrame();
     EXPECT_EQ(afterFrame, 0);
     EXPECT_GE(beforeFrame, 0);
@@ -280,10 +269,6 @@ TEST(PlayerRigPose, DeathPlaysTheDeathClipAndFacingPicksTheSide)
     sim.Step();
     EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Death_byBullet_DG_Left"));
 }
-
-// ===========================================
-//  발 정렬 / 떨림 (피벗 데이터 기반)
-// ===========================================
 
 TEST(PlayerRigFeet, IdleAndRunLowerBodyFeetSitOnTheGround)
 {
@@ -308,10 +293,10 @@ TEST(PlayerRigFeet, IdleAndRunLowerBodyFeetSitOnTheGround)
         EXPECT_LE(bottom, sim.Y() + 0.01f) << "발이 땅을 파고들었다 (tick " << i << ")";
         if (bottom >= sim.Y() - 0.01f)
         {
-            ++groundedFrames;   // 발이 정확히 닿는 프레임
+            ++groundedFrames;
         }
     }
-    EXPECT_GE(groundedFrames, 16);   // 12 프레임 주기 중 10 프레임은 접지 (나머지 2 프레임은 공중 동작)
+    EXPECT_GE(groundedFrames, 16);
 }
 
 TEST(PlayerRigFeet, RunCycleOriginNeverMovesVerticallyAndAnchorDriftIsAtMostTwoPixels)
@@ -325,10 +310,9 @@ TEST(PlayerRigFeet, RunCycleOriginNeverMovesVerticallyAndAnchorDriftIsAtMostTwoP
     for (int i = 0; i < 60; ++i)
     {
         sim.Step();
-        EXPECT_FLOAT_EQ(sim.State().GetRig().GetOrigin(sim.Player().GetFeet()).y, originY);   // 달리는 동안 몸통 높이는 프레임마다 출렁이지 않는다
+        EXPECT_FLOAT_EQ(sim.State().GetRig().GetOrigin(sim.Player().GetFeet()).y, originY);
     }
 
-    // 상체 달리기 클립의 프레임 간 바닥 중앙 앵커 변동 (피벗 기반)
     for (const char* name: { "Player_Stand_Move_DG_Right", "Player_Stand_Move_DG_Left" })
     {
         const AnimClip* pClip = anims.FindClip(name);
@@ -342,7 +326,6 @@ TEST(PlayerRigFeet, RunCycleOriginNeverMovesVerticallyAndAnchorDriftIsAtMostTwoP
         }
     }
 
-    // 하체: 접지 프레임들의 바닥은 ±2px 안에 있고, 그보다 높은 프레임은 달리기의 공중 동작(주기당 2프레임)뿐
     for (const char* name: { "Player_Stand_Move_Lower_Right", "Player_Stand_Move_Lower_Left" })
     {
         const AnimClip* pClip = anims.FindClip(name);
@@ -390,7 +373,6 @@ TEST(PlayerRigFeet, EveryPlayerClipHasSanePivots)
             {
                 continue;
             }
-            // 피벗이 프레임 크기의 몇 배씩 벗어나지 않는다 (단, Player_Stand_Idle_Lookup_SG 의 Y 오프셋 오타가 알려진 예외)
             if (clip.name.find("Idle_Lookup_SG") != slug::String::npos)
             {
                 continue;

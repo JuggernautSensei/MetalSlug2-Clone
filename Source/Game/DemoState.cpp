@@ -51,5 +51,4 @@ bool DemoState::IsFinished() const
 {
     return m_bFinished;
 }
-
-}   // namespace slug
+}

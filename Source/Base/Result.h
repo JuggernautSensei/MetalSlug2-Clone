@@ -82,5 +82,4 @@ public:
 private:
     Error m_error = {};
 };
-
-}   // namespace slug
+}

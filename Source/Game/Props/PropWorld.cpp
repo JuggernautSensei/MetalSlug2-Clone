@@ -13,8 +13,6 @@ namespace slug
 
 namespace
 {
-
-// 실수 범위 난수는 [_lo, _hi] 균등 분포로 직접 만든다 (결정적).
 template<typename RngT>
 float RandRange(RngT& _rng, const float _lo, const float _hi)
 {
@@ -43,8 +41,7 @@ uint64_t MixFloat(uint64_t _h, float _f)
     std::memcpy(&bits, &_f, sizeof(bits));
     return MixHash(_h, bits);
 }
-
-}   // namespace
+}
 
 PropWorld::PropWorld(
     const PropDefLibrary* _pLibrary,
@@ -162,10 +159,6 @@ slug::Vector<PropEvent> PropWorld::TakeEvents()
     return out;
 }
 
-// ===========================================
-//  스폰
-// ===========================================
-
 PropHandle PropWorld::Spawn(
     const slug::StringView  _defName,
     const Vec2     _center,
@@ -197,7 +190,6 @@ PropHandle PropWorld::SpawnByIndex(
     inst.cullMargin       = def.cullMargin;
     inst.bExplodeOnDeath  = _params.bExplodeOnDeath;
 
-    // 변종 (Truck 3종, Pence 3종): 강제 번호가 없으면 시드 RNG 로 고른다. dy 는 레거시 FinalInit 보정
     const PropVariant* pVar = nullptr;
     if (!def.variants.empty())
     {
@@ -267,10 +259,6 @@ uint32_t PropWorld::SpawnItem(
     return m_items.Spawn(_name, _feet, _bBounce);
 }
 
-// ===========================================
-//  판정
-// ===========================================
-
 bool PropWorld::PartActive_(
     const PropPart&    _part,
     const PropInstance& _inst)
@@ -322,7 +310,7 @@ void PropWorld::OnHitEvents(
         const size_t idx = FindIndex_(ev.target);
         if (idx >= m_props.size())
         {
-            continue;   // 소품이 아닌 대상
+            continue;
         }
         PropInstance& inst = m_props[idx];
         if (inst.bDestroyed || inst.bRemove)
@@ -334,7 +322,7 @@ void PropWorld::OnHitEvents(
         const int applied = inst.health.ApplyDamage(ev.damage);
         if (applied <= 0)
         {
-            continue;   // 불사(hp 0) 또는 피해 0
+            continue;
         }
         PropEvent damaged;
         damaged.kind     = ePropEventKind::Damaged;
@@ -344,7 +332,6 @@ void PropWorld::OnHitEvents(
         damaged.value    = applied;
         m_events.push_back(damaged);
 
-        // 피격 연출 (Hit 클립이 있으면 다시 재생)
         if (inst.visuals[static_cast<size_t>(ePropVisual::Hit)].ref != eVisualRef::None)
         {
             inst.bHitPlaying  = true;
@@ -352,7 +339,6 @@ void PropWorld::OnHitEvents(
             inst.bVisualBound = false;
         }
 
-        // 손상 단계 진입 (1회): 예) 지면집 HP≤20 → 목재 부스러기
         if (def.damagedAtHp >= 0 && !inst.bDamagedBurstDone && inst.health.hp > 0 && inst.health.hp <= def.damagedAtHp)
         {
             inst.bDamagedBurstDone = true;
@@ -364,7 +350,6 @@ void PropWorld::OnHitEvents(
         }
     }
 
-    // 파괴 중 생성 예약 (간판 등): 순회가 끝난 뒤 생성한다
     for (const PendingChild& child: m_pendingChildren)
     {
         SpawnByIndex(child.defIndex, child.pos);
@@ -472,10 +457,6 @@ void PropWorld::QueueDrops_(
     }
 }
 
-// ===========================================
-//  틱
-// ===========================================
-
 ePropVisual PropWorld::ComputeVisual_(
     const PropInstance& _inst) const
 {
@@ -517,7 +498,7 @@ void PropWorld::UpdateVisual_(
     _inst.visual = next;
     if (_pAnims == nullptr)
     {
-        return;   // 라이브러리 없이는 클립 시각 진행이 없다 (헤드리스/테스트)
+        return;
     }
     const PropVisual& pv = _inst.visuals[static_cast<size_t>(next)];
     if (bChange)
@@ -543,7 +524,6 @@ void PropWorld::Tick(
     }
     const float dt = _ctx.dt;
 
-    // 1) 폭발 요청 → EffectList (라이브러리가 있어야 재생된다. 없으면 버린다)
     if (_ctx.pAnims != nullptr)
     {
         for (const PropFxRequest& fx: m_pendingFx)
@@ -554,7 +534,6 @@ void PropWorld::Tick(
     }
     m_pendingFx.clear();
 
-    // 2) 디브리 (중력 1000, 5 s, 화면 왼쪽 이탈 제거)
     for (PropDebrisPiece& piece: m_debris)
     {
         piece.ageSec += dt;
@@ -575,7 +554,6 @@ void PropWorld::Tick(
         std::remove_if(m_debris.begin(), m_debris.end(), [&](const PropDebrisPiece& _p) { return _p.ageSec >= kDebrisLifeSec || _p.pos.x < _ctx.cameraLeft - 50.f; }),
         m_debris.end());
 
-    // 3) 소품 시간 진행: 낙하체, 파괴 연출, 2차 폭발, 시각
     for (PropInstance& inst: m_props)
     {
         const PropDef& def = m_pLibrary->GetDefs()[static_cast<size_t>(inst.defIndex)];
@@ -638,7 +616,6 @@ void PropWorld::Tick(
         UpdateVisual_(inst, _ctx.pAnims, dt);
     }
 
-    // 4) 카메라 뒤로 벗어난 소품 제거 (레거시 RemoveObjectOutOfCamera). Culled 이벤트 뒤에 Removed 가 같이 나간다
     for (PropInstance& inst: m_props)
     {
         if (!inst.bRemove && inst.pos.x < _ctx.cameraLeft - inst.cullMargin)
@@ -672,7 +649,6 @@ void PropWorld::Tick(
             }),
         m_props.end());
 
-    // 5) 아이템 물리 (소품 발판/벽을 지면과 함께 쓴다). 습득 이펙트는 여기서 재생한다
     const PhysicsWorld world { _ctx.pGround, GetPlatforms(), GetWalls() };
     m_items.Tick(world, dt, _ctx.cameraLeft, _ctx.pAnims);
     for (const ItemFxRequest& fx: m_items.TakeFx())
@@ -715,10 +691,6 @@ void PropWorld::RebuildCollision_()
     }
 }
 
-// ===========================================
-//  렌더
-// ===========================================
-
 void PropWorld::Submit(
     SpriteBatch&            _sprites,
     const AnimationLibrary& _anims,
@@ -753,7 +725,7 @@ void PropWorld::Submit(
         }
         else
         {
-            continue;   // 보이지 않는 상태 (예: 교체 전 배경에 포함된 다리)
+            continue;
         }
         if (frame.IsEmpty())
         {
@@ -815,5 +787,4 @@ uint64_t PropWorld::HashState() const
     }
     return MixHash(h, m_items.HashState());
 }
-
-}   // namespace slug
+}

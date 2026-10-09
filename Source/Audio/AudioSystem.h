@@ -10,14 +10,9 @@
 
 namespace slug
 {
-
-// ===========================================
-//  AudioConfig / AudioStats
-// ===========================================
-
 struct AudioConfig
 {
-    bool     bEnabled      = true;    // false: 장치를 열지 않는다 (요청 처리/통계만 수행하는 dry 모드)
+    bool     bEnabled      = true;
     int      maxVoices     = 16;      // 동시에 울리는 효과음 상한
     int      maxPerSound   = 4;       // 같은 소리의 동시 상한 (권총 연사 등)
     float    masterVolume  = 1.f;
@@ -37,14 +32,6 @@ struct AudioStats
     int loadFailed   = 0;   // 디코딩에 실패한 효과음 수
 };
 
-// ===========================================
-//  AudioSystem
-//   miniaudio(ma_engine) 기반 IAudioSink 구현.
-//    - 짧은 SFX 는 시작 시 메모리에 디코딩해 두고(리소스 매니저 등록), BGM 은 스트리밍한다. wav/mp3/ogg(stb_vorbis) 지원.
-//    - 장치가 없거나 bEnabled == false 면 "dry 모드": 뱅크/보이스 정책/통계는 그대로 동작하고 소리만 나지 않는다. 항상 안전하다.
-//    - Update(dt) 는 렌더 프레임마다(시뮬레이션 틱이 아니라) 한 번 불러 끝난 소리를 회수하고 BGM 페이드를 진행한다.
-// ===========================================
-
 class AudioSystem final : public IAudioSink
 {
 public:
@@ -54,22 +41,18 @@ public:
     AudioSystem(const AudioSystem&)            = delete;
     AudioSystem& operator=(const AudioSystem&) = delete;
 
-    // 뱅크를 직접 주입 (테스트/도구). 장치 초기화 실패는 오류가 아니라 dry 모드로 내려간다.
     [[nodiscard]] slug::Result<void> Init(SoundBank _bank, const AudioConfig& _config);
-    // <bakedRoot>/sounds.json 을 읽는다. 파일이 없으면 오류(호출자가 NullAudio 로 대체 가능).
     [[nodiscard]] slug::Result<void> InitFromDirectory(const slug::FilePath& _bakedRoot, const AudioConfig& _config);
     void                            Shutdown();
 
     void Update(float _dtSec);
 
-    // --- IAudioSink ---
     void Play(slug::StringView _name, float _volume = 1.f, float _pitchVariation = 0.f) override;
     void PlayBgm(slug::StringView _name, bool _bLoop = true) override;
     void StopBgm() override;
     void FadeOutBgm(float _seconds) override;
     void AllStop() override;
 
-    // --- 볼륨 ---
     void               SetMasterVolume(float _volume);
     void               SetSfxVolume(float _volume);
     void               SetBgmVolume(float _volume);
@@ -77,7 +60,6 @@ public:
     [[nodiscard]] float GetSfxVolume() const { return m_sfxVolume; }
     [[nodiscard]] float GetBgmVolume() const { return m_bgmVolume; }
 
-    // --- 조회 ---
     [[nodiscard]] bool               IsInitialized() const { return m_bInitialized; }
     [[nodiscard]] bool               HasDevice() const { return m_bDevice; }
     [[nodiscard]] const SoundBank&   GetBank() const { return m_bank; }
@@ -98,7 +80,6 @@ private:
         FadingOut
     };
 
-    // dry 모드에서 보이스가 점유하는 시간 (실제 길이를 모르므로 고정)
     static constexpr float kDryVoiceSeconds = 0.5f;
 
     void StopBgm_();
@@ -110,7 +91,7 @@ private:
     SoundBank     m_bank         = {};
     AudioStats    m_stats        = {};
     VoiceAllocator m_voices      = {};
-    slug::Vector<float> m_dryRemaining = {};   // dry 모드 보이스 남은 시간
+    slug::Vector<float> m_dryRemaining = {};
     AudioRng      m_rng          = AudioRng {};
     slug::RbSet<slug::String> m_warnedMissing = {};
 
@@ -125,5 +106,4 @@ private:
 
     std::unique_ptr<Backend> m_pBackend = nullptr;
 };
-
-}   // namespace slug
+}

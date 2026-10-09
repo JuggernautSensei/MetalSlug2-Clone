@@ -13,7 +13,6 @@ namespace slug
 
 namespace
 {
-    // 선분 위를 _stepPx 간격으로 훑어 첫 고체 지점을 찾는다. 찾으면 직전의 비고체 지점을 _outLastFree 에 돌려준다.
     [[nodiscard]] bool SegmentHitsGround_(
         const GroundMap&   _ground,
         const Vec2 _from,
@@ -49,7 +48,7 @@ namespace
             { slug::Min(_a.x, _b.x) - _size.x * 0.5f, slug::Min(_a.y, _b.y) - _size.y * 0.5f },
             { slug::Max(_a.x, _b.x) + _size.x * 0.5f, slug::Max(_a.y, _b.y) + _size.y * 0.5f });
     }
-}   // namespace
+}
 
 void ProjectileSystem::Clear()
 {
@@ -156,7 +155,6 @@ void ProjectileSystem::Step(
     CombatSystem&    _combat,
     const float      _dt)
 {
-    // --- 탄 ---
     for (Bullet& bullet: m_bullets)
     {
         bullet.renderPrev = bullet.position;
@@ -211,7 +209,6 @@ void ProjectileSystem::Step(
     }
     std::erase_if(m_bullets, [](const Bullet& _b) { return !_b.bAlive; });
 
-    // --- 샷 (적 투사체: 중력/가속/점화 대기) ---
     for (Shot& shot: m_shots)
     {
         const ShotSpawn& params = shot.params;
@@ -237,7 +234,6 @@ void ProjectileSystem::Step(
             shot.position.y += shot.velocity.y * _dt;
         }
 
-        // 구르는 탄: 착지 후에는 rollTicks 뒤에 소멸한다 (착지 전에는 lifetimeTicks 가 상한)
         const bool bRoll = params.rollSpeed > 0.f;
         if (bRoll && shot.bLanded)
         {
@@ -260,8 +256,6 @@ void ProjectileSystem::Step(
             {
                 if (bRoll)
                 {
-                    // 착지 (또는 지면을 따라 구르는 중): 이번 틱의 새 x 에서 고체 밖으로 밀어 올려 세우고 수직 속도를 없앤다.
-                    // (구간 판정의 마지막 빈 지점을 쓰면 첫 샘플부터 고체인 경우 제자리에 멈춘다)
                     Vec2 standing = shot.position;
                     for (int guard = 0; guard < 64 && _pGround->IsSolidAt(standing); ++guard)
                     {
@@ -303,7 +297,6 @@ void ProjectileSystem::Step(
     }
     std::erase_if(m_shots, [](const Shot& _s) { return !_s.bAlive; });
 
-    // --- 폭탄 ---
     for (Bomb& bomb: m_bombs)
     {
         bomb.renderPrev = bomb.position;
@@ -320,7 +313,6 @@ void ProjectileSystem::Step(
 
         bomb.position = next;
 
-        // 표적과 닿으면 공중에서도 터진다
         const Aabb contact = Aabb::FromCenterSize(bomb.position, bomb.params.hitSize);
         if (_combat.HasTargetIn(bomb.params.team, eHitKind::Blast, contact, bomb.params.owner))
         {
@@ -329,8 +321,6 @@ void ProjectileSystem::Step(
     }
     std::erase_if(m_bombs, [](const Bomb& _b) { return !_b.bAlive; });
 
-    // --- 폭발 (폭탄이 이번 틱에 터졌다면 같은 틱에 판정) ---
-    // 끝난 폭발의 HitId 는 판정이 해소된 다음 틱에 푼다 (이번 틱 Resolve 가 기록을 다시 만들지 않도록).
     for (const Blast& blast: m_blasts)
     {
         if (blast.ticksLeft <= 0)
@@ -468,5 +458,4 @@ slug::Vector<FxRequest> ProjectileSystem::TakeFx()
     out.swap(m_fx);
     return out;
 }
-
-}   // namespace slug
+}

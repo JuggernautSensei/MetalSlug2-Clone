@@ -18,8 +18,7 @@ void AssertFail(
 {
     ReportAssertFailure(_expr, std::format(_format, std::forward<Args>(_args)...), _loc);
 }
-
-}   // namespace slug
+}
 
 #ifdef NDEBUG
 #    define SLUG_ASSERT(_cond, ...) ((void)0)

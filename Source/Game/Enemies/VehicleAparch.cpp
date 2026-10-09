@@ -10,31 +10,19 @@
 
 namespace slug
 {
-
-// ===========================================
-//  Aparch — 공격 헬기 (Docs/EnemySpecs.md §2.6)
-//   원점 = 기체 중심 (지면 개념 없음, 중력 없음). 항상 좌향.
-//   활성 후 화면 (approachX, approachY) 로 접근 → 2 s 대기 → 패턴을 번갈아 한다.
-//     미사일: 포 전개 1 s → 자세 이동 1 s → 미사일 3발 (1 s 간격) → 수납/복귀 1 s
-//     폭탄:   플레이어 위를 따라다니며 6 s 동안 폭탄을 투하 (0.5 s 틱: 드롭 시각 0.5/1.0/1.5, 2.5/3.0/3.5, 4.5/5.0/5.5 s)
-//   사망: 표류하며 1.5 s 동안 연쇄 폭발, 끝에 대형 폭발과 금속 파편 후 제거.
-// ===========================================
-
 namespace
 {
     enum eAparchState : int
     {
-        kApproach,   // 접근 (목표 화면 지점)
-        kStop,       // 정지 클립 후 대기
+        kApproach,
+        kStop,
         kIdle,
-        kMissGun,    // 포 전개 (포는 별도 오버레이라 몸체 클립을 그대로 쓴다: 오버레이 슬롯은 로터 하나뿐)
-        kMissMove,   // 미사일 자세로 이동
-        kMissShoot,  // 미사일 3발 (counter = 발사 수)
-        kMissEnd,    // 포 수납 + 복귀
-        kBomb        // 폭탄 패턴 (counter = 0.5 s 틱 리듬 카운터)
+        kMissGun,
+        kMissMove,
+        kMissShoot,
+        kMissEnd,
+        kBomb
     };
-
-    // e.aux: 패턴 카운터 (홀/짝으로 미사일/폭탄 교대). e.aux2: 시작 패리티 선택 여부.
 
     [[nodiscard]] int ClipOf_(const Enemy& _e, const AparchCfg& _c)
     {
@@ -57,7 +45,6 @@ namespace
         return _e.clip >= 0 && _e.stateTicks >= _def.GetClip(_e.clip).GetDurationTicks();
     }
 
-    // 목표 쪽으로 남은 거리의 일부만큼 이동 (duration 틱 안에 도달하는 부드러운 이동)
     void GlideTo_(Enemy& _e, const Vec2 _target, const int _remainingTicks)
     {
         if (_remainingTicks <= 1)
@@ -99,7 +86,6 @@ namespace
                     Go_(_e, _def, kStop);
                     break;
                 }
-                // 접근 속도: 기본 speed, 가까워지면 감속 (v = max(minSpeed, v - decel*dt))
                 const float curSpeed = std::sqrt(_e.body.velocity.x * _e.body.velocity.x + _e.body.velocity.y * _e.body.velocity.y);
                 const float speed    = dist2 <= c.decelSq ? slug::Max(c.minSpeed, curSpeed - c.decel * kStepSec) : c.speed;
                 const float len      = std::sqrt(dist2);
@@ -152,7 +138,6 @@ namespace
 
             case kMissShoot:
                 _e.body.velocity = { 0.f, 0.f };
-                // 발사 시각: 0, 1 s, 2 s (직전 발로부터 1 s 간격). 마지막 발 뒤 1 s 에 수납으로 넘어간다
                 if (_e.counter < c.missileShots && _e.stateTicks >= _e.counter * c.missileIntervalTicks)
                 {
                     (void)FireWeapon(_e, _def, _env, c.weaponMissile);
@@ -175,13 +160,11 @@ namespace
 
             case kBomb:
             {
-                // 플레이어 위 followOffsetY 를 따라다닌다
                 const float dx = DxToPlayer(_e, _env);
                 const float dy = DyToPlayer(_e, _env) - c.followOffsetY;
                 _e.body.velocity = { dx * c.followGain, dy * c.followGain };
                 _e.body.position = { _e.body.position.x + _e.body.velocity.x * kStepSec, _e.body.position.y + _e.body.velocity.y * kStepSec };
 
-                // 0.5 s 틱: counter 를 올리고, 홀수(mod 7 기준)면 투하 후 한 번 더 올린다 (레거시 t%7&1 리듬)
                 if (_e.stateTicks > 0 && _e.stateTicks % c.bombStepTicks == 0)
                 {
                     ++_e.counter;
@@ -208,7 +191,7 @@ namespace
         const AparchCfg& c = _def.aparch;
         SetClip(_e, c.clipDestroy, true);
         _e.deathTicks      = 0;
-        _e.body.velocity   = { c.driftX, c.driftY };   // 표류
+        _e.body.velocity   = { c.driftX, c.driftY };
     }
 
     void TickDying_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
@@ -216,7 +199,6 @@ namespace
         const AparchCfg& c = _def.aparch;
         _e.body.position   = { _e.body.position.x + _e.body.velocity.x * kStepSec, _e.body.position.y + _e.body.velocity.y * kStepSec };
 
-        // 연쇄 폭발: 0, 0.3 s, ... 마다 S+M (중심 (-30,-20), 반경 ±50 균등)
         const int t = _e.deathTicks;
         if (t % c.chainIntervalTicks == 0 && t / c.chainIntervalTicks < c.chainCount)
         {
@@ -239,7 +221,7 @@ namespace
         }
         ++_e.deathTicks;
     }
-}   // namespace
+}
 
 const BehaviorOps kAparchOps = {
     .init       = &Init_,
@@ -299,5 +281,4 @@ void ParseAparchCfg(
     c.weaponMissile = _r.Weapon("missile");
     c.weaponDrop    = _r.Weapon("drop");
 }
-
-}   // namespace slug
+}

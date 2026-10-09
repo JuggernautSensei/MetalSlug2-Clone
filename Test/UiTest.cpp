@@ -53,7 +53,6 @@ namespace
         return count;
     }
 
-    // 스프라이트 크기 (Baker 산출물과 같다: PlayerStateUI 124x34 등)
     [[nodiscard]] Vec2 SpriteSize(
         const slug::StringView _name)
     {
@@ -75,7 +74,6 @@ namespace
         return _r.x >= 0 && _r.y >= 0 && _r.x + _r.w <= _layout.screenW && _r.y + _r.h <= _layout.screenH;
     }
 
-    // 항목 하나가 화면 안에 완전히 들어가는가
     [[nodiscard]] bool ItemFits(
         const HudItem&  _item,
         const UiLayout& _layout)
@@ -108,11 +106,7 @@ namespace
         model.bombs = 10;
         return model;
     }
-}   // namespace
-
-// ===========================================
-//  글리프 매핑 / 폭 계산
-// ===========================================
+}
 
 TEST(UiFont, GlyphIndexMapsLettersDigitsAndZero)
 {
@@ -165,7 +159,7 @@ TEST(UiFont, MeasureCharsIsAdvanceTimesCountMinusSpacingTail)
 
 TEST(UiFont, FitTextScalePicksLargestScaleThatFits)
 {
-    EXPECT_EQ(FitTextScale("MISSION COMPLETE", 576, 3), 2);   // 16자 x 16 = 256, 2배 = 512 <= 576, 3배 = 768 초과
+    EXPECT_EQ(FitTextScale("MISSION COMPLETE", 576, 3), 2);
     EXPECT_EQ(FitTextScale("GAME OVER", 576, 3), 3);          // 9자 x 48 = 432
     EXPECT_EQ(FitTextScale("GAME OVER", 576, 2), 2);          // 상한
     EXPECT_EQ(FitTextScale("A VERY VERY VERY LONG LINE OF BANNER TEXT HERE", 576, 3), 1);   // 안 들어가도 1
@@ -181,10 +175,6 @@ TEST(UiFont, MeasureTextSizeUsesWidestLineAndLineGap)
     EXPECT_EQ(MeasureTextHeight("AB\nABCD", style), 2 * 32 + 1 * 4 * 2);
     EXPECT_EQ(MeasureTextHeight("AB", style), 32);
 }
-
-// ===========================================
-//  텍스트 배치
-// ===========================================
 
 TEST(UiLayoutText, LeftAlignStartsAtAnchor)
 {
@@ -226,7 +216,6 @@ TEST(UiLayoutText, MultiLineCentersEachLineAndStacksWithGap)
     const TextLayout layout = LayoutText("AB\nABCD", 100, 50, style);
     ASSERT_EQ(layout.lines, 2);
     ASSERT_EQ(layout.quads.size(), 6u);
-    // 1줄: 폭 64 → 100-32, 2줄: 폭 128 → 100-64
     EXPECT_EQ(layout.quads[0].dst.x, 68);
     EXPECT_EQ(layout.quads[2].dst.x, 36);
     EXPECT_EQ(layout.quads[0].dst.y, 50);
@@ -264,10 +253,6 @@ TEST(UiLayoutText, EmptyAndNewlineOnlyStringsAreSafe)
     EXPECT_TRUE(two.quads.empty());
     EXPECT_EQ(two.lines, 2);
 }
-
-// ===========================================
-//  BitmapFont: 글리프 프레임 (합성 스프라이트 / 실제 Baked)
-// ===========================================
 
 TEST(UiBitmapFont, GlyphFrameCutsTheStripIntoSixteenPixelCells)
 {
@@ -344,13 +329,8 @@ TEST(UiBitmapFont, BakedFontStripsAndUiSpritesExistWithExpectedSizes)
     EXPECT_EQ(nine.w, 32);
 }
 
-// ===========================================
-//  배너 타임라인 (정확한 틱)
-// ===========================================
-
 TEST(UiBanner, AlphaCurveAtExactTicks)
 {
-    // 페이드 인 3, 유지 4, 페이드 아웃 3 (총 10)
     const float expected[] = { 0.f, 1.f / 3.f, 2.f / 3.f, 1.f, 1.f, 1.f, 1.f, 1.f, 2.f / 3.f, 1.f / 3.f, 0.f };
     for (int e = 0; e <= 10; ++e)
     {
@@ -393,11 +373,11 @@ TEST(UiBanner, SystemRunsFadeInHoldFadeOutThenDeactivates)
         banner.Tick();
         EXPECT_FLOAT_EQ(banner.GetAlpha(), 1.f) << "tick " << tick;
     }
-    banner.Tick();   // 8
+    banner.Tick();
     EXPECT_LT(banner.GetAlpha(), 1.f);
-    banner.Tick();   // 9
+    banner.Tick();
     EXPECT_TRUE(banner.IsActive());
-    banner.Tick();   // 10 = 총 길이
+    banner.Tick();
     EXPECT_FALSE(banner.IsActive());
     EXPECT_FLOAT_EQ(banner.GetAlpha(), 0.f);
 }
@@ -411,7 +391,7 @@ TEST(UiBanner, QueueRunsSpecsBackToBackAndShowReplaces)
     b.text = "TWO";
 
     BannerSystem banner;
-    banner.Enqueue(a);   // 비어 있으니 즉시 시작
+    banner.Enqueue(a);
     banner.Enqueue(b);
     EXPECT_EQ(banner.GetCurrent().text, "ONE");
     EXPECT_EQ(banner.GetQueuedCount(), 1u);
@@ -424,7 +404,7 @@ TEST(UiBanner, QueueRunsSpecsBackToBackAndShowReplaces)
     EXPECT_EQ(banner.GetCurrent().text, "TWO");
     EXPECT_EQ(banner.GetElapsedTicks(), 0);
 
-    banner.Show(a);   // 즉시 교체 + 대기열 비움
+    banner.Show(a);
     EXPECT_EQ(banner.GetCurrent().text, "ONE");
     EXPECT_EQ(banner.GetQueuedCount(), 0u);
 
@@ -461,10 +441,6 @@ TEST(UiBanner, StandardBannersFitTheScreenWidth)
         EXPECT_GE(style.scale, 1) << text;
     }
 }
-
-// ===========================================
-//  페이드
-// ===========================================
 
 TEST(UiFade, FadeToBlackReachesOneAtExactTick)
 {
@@ -541,10 +517,6 @@ TEST(UiFade, IdleTicksDoNothing)
     EXPECT_TRUE(fade.IsBlack());
     EXPECT_FLOAT_EQ(fade.GetAlpha(), 1.f);
 }
-
-// ===========================================
-//  HUD 모델 → 배치
-// ===========================================
 
 TEST(UiHud, PistolShowsInfiniteSymbolAndNoAmmoDigits)
 {
@@ -664,7 +636,6 @@ TEST(UiHud, BossBarFillScalesWithRatioAndFrameDrawsLast)
     model.bossHpRatio = 0.f;
     slug::Vector<HudItem> empty = BuildHudItems(model, layout);
 
-    // [..., 바탕 Rect, (채움 Rect), PlayerHPUI 틀]
     const auto rectsOf = [](const slug::Vector<HudItem>& _items) {
         slug::Vector<HudItem> rects;
         for (const HudItem& item: _items)
@@ -720,7 +691,6 @@ TEST(UiHud, TypicalModelFitsAndPanelDoesNotOverlapScoreBlock)
         EXPECT_TRUE(ItemFits(item, layout)) << item.text;
     }
 
-    // 점수 7자리 왼쪽 끝은 목숨 줄과 같은 x 대에 있고, ARMS 패널은 점수 오른쪽 끝보다 오른쪽에서 시작한다.
     EXPECT_GE(layout.armsPanelX, layout.scoreRightX);
     const IntRect score = LayoutText("9999999", layout.scoreRightX, layout.scoreY, [] {
         TextStyle s;
@@ -734,7 +704,7 @@ TEST(UiHud, MakeHudModelReadsPlayerController)
 {
     slugtest::Sim sim;
     const HudModel model = MakeHudModel(sim.Player());
-    EXPECT_TRUE(model.bInfiniteAmmo);   // 시작 무기는 권총
+    EXPECT_TRUE(model.bInfiniteAmmo);
     EXPECT_EQ(model.lives, 3);
     EXPECT_EQ(model.bombs, 10);
     EXPECT_EQ(model.score, 0);
@@ -749,13 +719,9 @@ TEST(UiHud, MakeHudModelReadsPlayerController)
     EXPECT_EQ(after.bombs, 13);
 }
 
-// ===========================================
-//  UiSystem (헤드리스에서도 타이밍은 진행)
-// ===========================================
-
 TEST(UiSystem, HeadlessTicksAdvanceBannerFadeAndBlinkClock)
 {
-    GameContext ctx;   // 렌더러 없음
+    GameContext ctx;
     UiSystem    ui;
     ui.Init(ctx);
     EXPECT_FALSE(ui.HasSprites());
@@ -771,15 +737,10 @@ TEST(UiSystem, HeadlessTicksAdvanceBannerFadeAndBlinkClock)
     EXPECT_TRUE(ui.GetBanner().IsActive());
     EXPECT_GT(ui.GetBanner().GetAlpha(), 0.f);
 
-    // 그리기는 아무 일도 하지 않는다 (크래시 없음)
     ui.DrawHud(ctx, MakeModel());
     ui.DrawOverlays(ctx);
     EXPECT_FALSE(ui.DrawSprite(ctx, "PressStartUI", 0, 0));
 }
-
-// ===========================================
-//  ScreenFlow: GAME OVER / MISSION COMPLETE
-// ===========================================
 
 TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
 {
@@ -793,7 +754,6 @@ TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
     ScreenFlow flow;
 
     flow.Start(config, ui, audio);
-    // delay 0: Start 와 같은 틱에 배너 시작 + 징글
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Banner);
     EXPECT_TRUE(ui.GetBanner().IsActive());
     EXPECT_EQ(ui.GetBanner().GetCurrent().text, "GAME OVER");
@@ -895,7 +855,7 @@ TEST(UiFlow, TickBeforeStartAndAfterDoneIsHarmless)
     ui.Init(ctx);
     TestAudio  audio;
     ScreenFlow flow;
-    flow.Tick(ui, audio);   // Start 전
+    flow.Tick(ui, audio);
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Idle);
     EXPECT_FALSE(flow.IsRunning());
 
@@ -911,12 +871,8 @@ TEST(UiFlow, TickBeforeStartAndAfterDoneIsHarmless)
     EXPECT_TRUE(flow.IsDone());
     const int elapsed = flow.GetElapsedTicks();
     flow.Tick(ui, audio);
-    EXPECT_EQ(flow.GetElapsedTicks(), elapsed);   // Done 이후에는 더 세지 않는다
+    EXPECT_EQ(flow.GetElapsedTicks(), elapsed);
 }
-
-// ===========================================
-//  TitleState (SimRunner 로 구동)
-// ===========================================
 
 namespace
 {
@@ -961,7 +917,7 @@ namespace
         config.nextState = "sandbox";
         return config;
     }
-}   // namespace
+}
 
 TEST(UiTitle, StaysOnTitleWithoutInput)
 {
@@ -978,7 +934,7 @@ TEST(UiTitle, ShotPressStartsFadeThenSwitchesStateExactlyAfterFade)
     TitleSim sim { config };
     sim.Idle(30);
 
-    sim.Step(eAction::Shot, true);   // 눌림 틱 T
+    sim.Step(eAction::Shot, true);
     EXPECT_TRUE(sim.pTitle->IsStarting());
     EXPECT_EQ(sim.pTitle->GetSelectedStateName(), "sandbox");
     EXPECT_EQ(sim.audio.CountPlays(sfx::kOk), 1);
@@ -1004,7 +960,7 @@ TEST(UiTitle, StartActionAlsoWorksAndHeldKeyDoesNotRetrigger)
     sim.Idle(20);
     sim.Step(eAction::Start, true);
     EXPECT_TRUE(sim.pTitle->IsStarting());
-    sim.Step(eAction::Start, true);   // 계속 누름 → 효과음 한 번만
+    sim.Step(eAction::Start, true);
     sim.Step(eAction::Start, true);
     EXPECT_EQ(sim.audio.CountPlays(sfx::kOk), 1);
 }
@@ -1014,7 +970,7 @@ TEST(UiTitle, InputsDuringEntryDelayAreIgnored)
     TitleConfig config = SandboxTitleConfig();
     config.inputDelayTicks = 12;
     TitleSim sim { config };
-    sim.Step(eAction::Shot, true);   // tick 1
+    sim.Step(eAction::Shot, true);
     sim.Step(eAction::Shot, false);
     sim.Idle(5);
     EXPECT_FALSE(sim.pTitle->IsStarting());
@@ -1037,7 +993,7 @@ TEST(UiTitle, MovementKeysDoNotStartTheGame)
 
 TEST(UiTitle, AutoSelectionFallsBackToSandboxWhenStage0IsNotRegistered)
 {
-    TitleSim sim;   // nextState 비어 있음 → stage0 가 있으면 stage0, 없으면 sandbox
+    TitleSim sim;
     sim.Idle(20);
     sim.Step(eAction::Start, true);
     const slug::String& selected = sim.pTitle->GetSelectedStateName();

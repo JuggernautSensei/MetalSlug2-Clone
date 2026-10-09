@@ -14,15 +14,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  EnemyDefParser
-//   Enemies.json → EnemyDefLibrary. 알 수 없는 키/값은 오류이며, 메시지에는 항상 정의 이름과 필드 경로가 들어간다.
-//   `extends` 로 부모 정의를 상속한다 (스칼라/객체는 자식 우선, clips/weapons/params 는 키 단위로 덮어씀).
-//   `abstract: true` 정의는 상속 전용이라 라이브러리에 들어가지 않는다.
-//   투사체 정의(kind:"projectile")를 먼저 읽고 적 정의를 읽는다 (무기가 투사체를 이름으로 참조하므로).
-// ===========================================
-
 class EnemyDefParser
 {
 public:
@@ -32,7 +23,7 @@ public:
     }
 
     [[nodiscard]] bool Run(const slug::JsonReader& _root);
-    [[nodiscard]] bool RunMany(slug::Span<const slug::JsonReader> _roots);   // 여러 파일의 defs 를 합쳐서 해석 (상속은 파일 경계를 넘어 가능)
+    [[nodiscard]] bool RunMany(slug::Span<const slug::JsonReader> _roots);
     [[nodiscard]] bool AddRoot_(const slug::JsonReader& _root);
     [[nodiscard]] bool Finish_();
 
@@ -119,7 +110,7 @@ namespace
         }
         return false;
     }
-}   // namespace
+}
 
 void EnemyDefParser::Fail_(
     const slug::StringView _def,
@@ -336,10 +327,6 @@ bool EnemyDefParser::ReadFx_(
     return ReadStr_(_def, _field, _reader, "clip", _out.clip, true) && ReadVec2_(_def, _field, _reader, "offset", _out.offset) && ReadNum_(_def, _field, _reader, "delay", _out.delaySec, false) && ReadInt_(_def, _field, _reader, "layer", _out.layer, false);
 }
 
-// ===========================================
-//  상속 체인
-// ===========================================
-
 bool EnemyDefParser::BuildChain_(
     const slug::StringView _name,
     const int             _depth,
@@ -421,7 +408,7 @@ EnemyDefParser::Entries EnemyDefParser::Merge_(
         const slug::Result<slug::JsonReader> field = reader.FindField(_key);
         if (!field || !field->IsObject())
         {
-            continue;   // 형식 오류는 호출자가 Find_ 로 다시 검사한다
+            continue;
         }
         for (const auto [name, value]: field->GetObject())
         {
@@ -438,10 +425,6 @@ EnemyDefParser::Entries EnemyDefParser::Merge_(
     }
     return entries;
 }
-
-// ===========================================
-//  투사체
-// ===========================================
 
 bool EnemyDefParser::ParseProjectile_(
     const RawDef& _raw,
@@ -548,7 +531,6 @@ bool EnemyDefParser::ParseProjectile_(
         }
     }
 
-    // 구르는 탄 (사루비아 수류탄)
     for (const slug::JsonReader& reader: _chain)
     {
         if (!ReadNum_(name, "", reader, "rollSpeed", projectile.rollSpeed, false) || !ReadNum_(name, "", reader, "rollSec", projectile.rollSec, false) || !ReadBool_(name, "", reader, "expireFx", projectile.bExpireFx))
@@ -568,10 +550,6 @@ bool EnemyDefParser::ParseProjectile_(
     m_lib.m_projectiles.push_back(std::move(projectile));
     return true;
 }
-
-// ===========================================
-//  무기 / 사망
-// ===========================================
 
 bool EnemyDefParser::ParseWeapon_(
     const slug::String&     _def,
@@ -733,10 +711,6 @@ bool EnemyDefParser::ParseDeath_(
     return true;
 }
 
-// ===========================================
-//  적
-// ===========================================
-
 bool EnemyDefParser::ParseEnemy_(
     const RawDef& _raw,
     const Chain&  _chain)
@@ -750,7 +724,6 @@ bool EnemyDefParser::ParseEnemy_(
     EnemyDef def;
     def.name = name;
 
-    // --- 종류 / 행동 / 팀 ---
     slug::String kind;
     slug::String behaviorName;
     slug::String teamName;
@@ -808,7 +781,6 @@ bool EnemyDefParser::ParseEnemy_(
         return false;
     }
 
-    // --- 수치 ---
     def.activation.marginPx = m_lib.m_globals.activationMarginPx;
     float ttk               = 0.f;
     for (const slug::JsonReader& reader: _chain)
@@ -879,7 +851,6 @@ bool EnemyDefParser::ParseEnemy_(
         }
     }
 
-    // --- 클립 / 무기 ---
     for (const auto& [logical, reader]: Merge_(_chain, "clips"))
     {
         NamedClip clip;
@@ -951,7 +922,6 @@ bool EnemyDefParser::ParseEnemy_(
         }
     }
 
-    // --- 행동별 설정 (params) ---
     slug::Vector<ParamEntry> params;
     for (auto& [key, reader]: Merge_(_chain, "params"))
     {
@@ -991,10 +961,6 @@ bool EnemyDefParser::ParseEnemy_(
     m_lib.m_defs.push_back(std::move(def));
     return true;
 }
-
-// ===========================================
-//  Run
-// ===========================================
 
 bool EnemyDefParser::Run(
     const slug::JsonReader& _root)
@@ -1066,7 +1032,6 @@ bool EnemyDefParser::AddRoot_(
 
 bool EnemyDefParser::Finish_()
 {
-    // 1 패스: 투사체 / 2 패스: 적 (abstract 는 건너뜀)
     for (int pass = 0; pass < 2; ++pass)
     {
         for (const RawDef& raw: m_raw)
@@ -1106,7 +1071,6 @@ bool EnemyDefParser::Finish_()
         }
     }
 
-    // 교차 검증: 변신 대상 def 존재
     for (const EnemyDef& def: m_lib.m_defs)
     {
         if (def.behavior == eEnemyBehavior::FlyingBzk && m_lib.FindIndex(def.flyingBzk.landedDef) < 0)
@@ -1117,10 +1081,6 @@ bool EnemyDefParser::Finish_()
     }
     return true;
 }
-
-// ===========================================
-//  EnemyDefLibrary
-// ===========================================
 
 slug::Result<EnemyDefLibrary> EnemyDefLibrary::Parse(
     const slug::StringView _json,
@@ -1204,7 +1164,6 @@ slug::Result<EnemyDefLibrary> EnemyDefLibrary::LoadDirectory(
     }
     std::sort(files.begin(), files.end());
 
-    // JsonReader 는 JsonDeserializer 가 살아 있는 동안만 유효하므로 모두 보관한다.
     slug::Vector<slug::JsonDeserializer> docs;
     docs.reserve(files.size());
     slug::Vector<slug::JsonReader> roots;
@@ -1278,5 +1237,4 @@ int EnemyDefLibrary::FindProjectileIndex(
     const auto it = m_projIndex.find(slug::String { _name });
     return it == m_projIndex.end() ? -1 : it->second;
 }
-
-}   // namespace slug
+}

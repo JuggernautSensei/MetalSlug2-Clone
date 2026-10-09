@@ -8,17 +8,11 @@
 
 namespace slug::baker
 {
-
-// ===========================================
-//  최소 JSON 작성기 (들여쓰기 출력, 인라인 객체 지원)
-// ===========================================
-
 class JsonWriter
 {
 public:
     [[nodiscard]] const std::string& Str() const { return m_text; }
 
-    // _bInline = true 면 해당 컨테이너를 한 줄로 출력한다.
     void BeginObject(const bool _bInline = false) { Open_('{', _bInline); }
     void EndObject() { Close_('}'); }
     void BeginArray(const bool _bInline = false) { Open_('[', _bInline); }
@@ -113,7 +107,6 @@ private:
         }
     }
 
-    // 값/키 앞에서 호출: 쉼표와 줄바꿈 처리
     void Separator_()
     {
         if (m_bAfterKey)
@@ -187,5 +180,4 @@ private:
     std::vector<Level> m_stack;
     bool               m_bAfterKey = false;
 };
-
-}   // namespace slug::baker
+}

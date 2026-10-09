@@ -49,5 +49,4 @@ void EffectList::Submit(
         }
     }
 }
-
-}   // namespace slug
+}

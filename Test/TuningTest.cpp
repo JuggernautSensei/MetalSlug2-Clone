@@ -9,10 +9,6 @@
 
 using namespace slug;
 
-// ===========================================
-//  파싱
-// ===========================================
-
 TEST(Tuning, EmptyObjectGivesAllDefaults)
 {
     slug::Result<Tuning> parsed = ParseTuning("{}");
@@ -35,7 +31,7 @@ TEST(Tuning, PartialOverridesOnlyChangeTheNamedKeys)
     const Tuning  d;
     EXPECT_FLOAT_EQ(t.move.runSpeed, 99.5f);
     EXPECT_EQ(t.move.coyoteTicks, 7);
-    EXPECT_FLOAT_EQ(t.move.jumpSpeed, d.move.jumpSpeed);   // 건드리지 않은 값은 기본값
+    EXPECT_FLOAT_EQ(t.move.jumpSpeed, d.move.jumpSpeed);
     EXPECT_EQ(t.weapons.pistol.damage, 5);
     EXPECT_TRUE(t.weapons.pistol.bPierce);
     EXPECT_FLOAT_EQ(t.weapons.pistol.hitSize.x, 20.f);
@@ -88,15 +84,10 @@ TEST(Tuning, MissingFileIsAnError)
     EXPECT_FALSE(LoadTuning(slug::FilePath { "no/such/Tuning.json" }).HasValue());
 }
 
-// ===========================================
-//  손맛 기준 (사양서의 수치 범위)
-// ===========================================
-
 TEST(Tuning, JumpFeelNumbersMatchTheDesignTargets)
 {
     const Tuning t;
 
-    // 이산 적분(세미 임플리시트 오일러)으로 실제 점프를 재현해 정점과 체공 시간을 잰다
     float y     = 0.f;
     float vy    = -t.move.jumpSpeed;
     float apex  = 0.f;
@@ -129,7 +120,6 @@ TEST(Tuning, WeaponTablesAreInternallyConsistent)
         EXPECT_GT(w.range, 0.f);
         EXPECT_GE(w.shotOverlayTicks, 1);
     }
-    // 시작 무기는 무한 탄이고, 상위 무기보다 약하되 차량을 상대할 수 있어야 한다
     EXPECT_EQ(t.weapons.pistol.ammo, 0);
     EXPECT_GE(t.weapons.pistol.damage, 3);
     EXPECT_LE(t.weapons.hmg.fireIntervalTicks, t.weapons.pistol.fireIntervalTicks);
@@ -142,10 +132,6 @@ TEST(Tuning, KnifeKillsAGruntInOneSlash)
     const Tuning t;
     EXPECT_GE(t.knife.damage, t.sandbox.gruntHp);
 }
-
-// ===========================================
-//  핫리로드 감시
-// ===========================================
 
 namespace
 {
@@ -164,7 +150,7 @@ void Touch_(
     std::error_code ec;
     std::filesystem::last_write_time(_path, std::filesystem::last_write_time(_path, ec) + std::chrono::seconds(_seconds), ec);
 }
-}   // namespace
+}
 
 TEST(TuningWatcher, ReloadsWhenTheFileChangesAndKeepsOldValuesOnBadJson)
 {
@@ -177,14 +163,12 @@ TEST(TuningWatcher, ReloadsWhenTheFileChangesAndKeepsOldValuesOnBadJson)
     TuningWatcher watcher;
     watcher.Init(path, 5);
 
-    // 변경 없음: 몇 번 폴링해도 리로드하지 않는다
     for (int i = 0; i < 20; ++i)
     {
         EXPECT_FALSE(watcher.Poll(tuning));
     }
     EXPECT_EQ(watcher.GetReloadCount(), 0);
 
-    // 수정 → 간격(5틱) 안에 감지
     WriteFile_(path, R"({ "move": { "runSpeed": 77 } })");
     Touch_(path, 10);
     bool bReloaded = false;
@@ -196,7 +180,6 @@ TEST(TuningWatcher, ReloadsWhenTheFileChangesAndKeepsOldValuesOnBadJson)
     EXPECT_FLOAT_EQ(tuning.move.runSpeed, 77.f);
     EXPECT_EQ(watcher.GetReloadCount(), 1);
 
-    // 깨진 JSON: 이전 값 유지
     WriteFile_(path, "{ broken");
     Touch_(path, 20);
     for (int i = 0; i < 10; ++i)
@@ -206,7 +189,6 @@ TEST(TuningWatcher, ReloadsWhenTheFileChangesAndKeepsOldValuesOnBadJson)
     EXPECT_FLOAT_EQ(tuning.move.runSpeed, 77.f);
     EXPECT_EQ(watcher.GetReloadCount(), 1);
 
-    // 고치면 다시 반영
     WriteFile_(path, R"({ "move": { "runSpeed": 55 } })");
     Touch_(path, 30);
     for (int i = 0; i < 10; ++i)
@@ -230,10 +212,6 @@ TEST(TuningWatcher, MissingFileNeverReloads)
     }
 }
 
-// ===========================================
-//  독립 텍스처(배경) 뷰 계산 (SpriteBatch::ComputeTextureView)
-// ===========================================
-
 TEST(TextureView, FullyInsideShowsTheViewSizedRegion)
 {
     const TextureViewRects view = ComputeTextureView(14094, 1328, { 0.f, 0.f }, { 1000.f, 0.f }, 640, 448);
@@ -252,7 +230,6 @@ TEST(TextureView, ClipsAtTheRightEdgeOfTheTexture)
 
 TEST(TextureView, ClipsAtTheLeftEdgeWhenTheCameraIsBeforeTheTexture)
 {
-    // 카메라가 텍스처 왼쪽 밖: 텍스처는 화면 오른쪽 일부에만 나온다
     const TextureViewRects view = ComputeTextureView(1000, 448, { 0.f, 0.f }, { -100.f, 0.f }, 640, 448);
     ASSERT_TRUE(view.bVisible);
     EXPECT_EQ(view.src, (IntRect { 0, 0, 540, 448 }));
@@ -278,7 +255,7 @@ TEST(TextureView, SubpixelCameraAndOriginAreFlooredSoEdgesDoNotShimmer)
 {
     const TextureViewRects a = ComputeTextureView(2000, 448, { 0.f, 0.f }, { 100.25f, 0.f }, 640, 448);
     const TextureViewRects b = ComputeTextureView(2000, 448, { 0.f, 0.f }, { 100.99f, 0.f }, 640, 448);
-    EXPECT_EQ(a.src, b.src);   // 같은 정수 픽셀이면 같은 영역
+    EXPECT_EQ(a.src, b.src);
     EXPECT_EQ(a.src.x, 100);
 
     const TextureViewRects c = ComputeTextureView(2000, 448, { 0.f, 0.f }, { 101.f, 0.f }, 640, 448);

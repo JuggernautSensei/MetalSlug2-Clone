@@ -7,8 +7,6 @@
 
 namespace slug
 {
-
-// 슬롯 재사용 + 세대 증가. 파괴된 핸들은 같은 슬롯이 재사용되어도 IsValid() == false.
 template<typename HandleT, typename T>
 class ResourcePool
 {
@@ -96,5 +94,4 @@ private:
     Vector<uint32_t> m_freeList   = {};
     size_t           m_aliveCount = 0;
 };
-
-}   // namespace slug
+}

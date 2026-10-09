@@ -20,7 +20,7 @@ namespace
             default: return _muzzle.stand;
         }
     }
-}   // namespace
+}
 
 Aabb MakeKnifeTriggerBox(
     const Vec2 _feet,
@@ -106,5 +106,4 @@ Aabb MakePlayerHurtboxBox(
     const Vec2 size = _pose == ePose::Crouch ? _body.hurtCrouch : _body.hurtStand;
     return Aabb::FromBottomCenter(_feet, size);
 }
-
-}   // namespace slug
+}

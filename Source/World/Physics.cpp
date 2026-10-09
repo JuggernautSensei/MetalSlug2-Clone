@@ -10,7 +10,6 @@ namespace
     constexpr float kOneWayEpsilon = 0.001f;
     constexpr float kInf           = 1.0e30f;
 
-    // 한 스텝 동안의 작업 문맥
     struct StepContext
     {
         Body&                body;
@@ -24,7 +23,7 @@ namespace
     {
         None,
         Found,
-        Blocked   // 올라설 수 없는 높이의 턱
+        Blocked
     };
 
     struct SupportResult
@@ -47,9 +46,6 @@ namespace
         return slug::Max(_body.footHalfWidth, 0.5f);
     }
 
-    // _yMin ≤ 지면 높이 ≤ _yMax 인 가장 높은 지지면을 찾는다.
-    //  - 원웨이는 윗면이 _yMinOneWay 이상일 때만 지지면이 된다 (아래에서 끌어올리지 않기 위함).
-    //  - _bCheckBlocked: 탐색 시작 행이 두 줄 연속 고체면 오를 수 없는 턱으로 보고 Blocked 를 반환한다.
     [[nodiscard]] SupportResult FindSupport_(
         const StepContext& _ctx,
         const float        _x,
@@ -63,7 +59,6 @@ namespace
 
         SupportResult best;
 
-        // --- 픽셀 지면 ---
         if (_ctx.world.pGround && body.bCollideGround)
         {
             const GroundMap& ground = *_ctx.world.pGround;
@@ -95,7 +90,6 @@ namespace
             }
         }
 
-        // --- 솔리드 / 원웨이 플랫폼, 벽 ---
         const float footMin = _x - fh;
         const float footMax = _x + fh;
 
@@ -154,8 +148,6 @@ namespace
         return best;
     }
 
-    // 가로 이동 후보 위치 _newX 에서 진행 방향 가장자리가 막히는지 검사한다.
-    // 막히면 벽면에 딱 붙는 x 좌표를 반환한다. _stepZone 높이(발 쪽)는 검사에서 제외한다 (경사/턱 오르기 허용).
     [[nodiscard]] std::optional<float> FindLateralBlock_(
         const StepContext& _ctx,
         const float        _oldX,
@@ -169,7 +161,7 @@ namespace
         const float left  = _newX - half;
         const float right = _newX + half;
         const float top   = _feetY - body.size.y;
-        const float limit = _feetY - _stepZone;   // 이 아래(발 쪽)는 계단 영역
+        const float limit = _feetY - _stepZone;
 
         if (limit <= top)
         {
@@ -178,16 +170,13 @@ namespace
 
         std::optional<float> snapX;
 
-        // 픽셀 지면: 진행 방향 가장자리 열(새로 걸치는 열, 서브스텝이 1px 이하이므로 하나)과 그 안쪽 이웃 열의
-        // "몸 높이 범위 안 첫 고체 행" 을 비교한다. 이웃 열보다 _stepZone 이하로만 솟아 있으면 경사/턱이므로 통과,
-        // 더 많이 솟아 있으면 벽이다. (가장자리가 발 센서보다 반폭만큼 앞서 있어도 45° 경사가 막히지 않는다)
         if (_ctx.world.pGround && body.bCollideGround)
         {
             const GroundMap& ground  = *_ctx.world.pGround;
             const int        col     = _dir > 0 ? CeilToInt(right) - 1 : FloorToInt(left);
             const int        colIn   = col - _dir;
             const int        rowTop  = FloorToInt(top);
-            const int        rowFeet = CeilToInt(_feetY);   // 몸이 차지하는 행은 [rowTop, rowFeet)
+            const int        rowFeet = CeilToInt(_feetY);
             if (rowFeet > rowTop)
             {
                 const int                span  = rowFeet - 1 - rowTop;
@@ -217,15 +206,12 @@ namespace
                     return;
                 }
 
-                // 이미 옆면이 겹쳐 있는 블록(예: 플랫폼 가장자리를 막 벗어나 떨어지는 중)은 "앞"이 아니므로 막지 않는다.
-                // 이동 전 진행 방향 모서리가 블록 면을 넘지 않은 경우에만 벽으로 취급한다.
                 const bool bAhead = _dir > 0 ? _block.min.x >= _oldX + half - kOneWayEpsilon : _block.max.x <= _oldX - half + kOneWayEpsilon;
                 if (!bAhead)
                 {
                     return;
                 }
                 const float x = _dir > 0 ? _block.min.x - half : _block.max.x + half;
-                // 더 먼저 부딪히는(이동 방향 기준 가까운) 쪽을 채택
                 if (!snapX || (_dir > 0 ? x < *snapX : x > *snapX))
                 {
                     snapX = x;
@@ -248,7 +234,6 @@ namespace
         return snapX;
     }
 
-    // 위로 _oldFeet → _newFeet(위쪽) 올라설 때 머리가 새로 차지하는 영역이 막혀 있는가
     [[nodiscard]] bool IsHeadBlocked_(
         const StepContext& _ctx,
         const float        _x,
@@ -305,8 +290,6 @@ namespace
         _ctx.result.wallIndex     = _support.wallIndex;
     }
 
-    // 지면에 붙어 있는 상태를 유지한다: 계단 오르기 / 스냅 다운. 지지면이 사라졌으면 공중 상태로 전환.
-    // 반환: false 이면 올라설 수 없는 턱 (호출자가 벽으로 처리)
     [[nodiscard]] bool Resettle_(
         StepContext& _ctx,
         const float  _x)
@@ -329,7 +312,6 @@ namespace
             return true;
         }
 
-        // 위로 올라서는 경우 머리 위 공간 확인
         if (support.y < feet && IsHeadBlocked_(_ctx, _x, feet, support.y))
         {
             return false;
@@ -360,7 +342,6 @@ namespace
 
             if (const std::optional<float> snapX = FindLateralBlock_(_ctx, body.position.x, newX, body.position.y, dir, zone))
             {
-                // 벽면에 딱 붙인다 (이미 파고든 경우는 뒤로 밀지 않는다)
                 body.position.x                                                  = dir > 0 ? slug::Max(body.position.x, slug::Min(newX, *snapX)) : slug::Min(body.position.x, slug::Max(newX, *snapX));
                 (dir > 0 ? _ctx.result.bHitWallRight : _ctx.result.bHitWallLeft) = true;
                 body.velocity.x                                                  = 0.f;
@@ -402,7 +383,6 @@ namespace
 
             if (s > 0.f)
             {
-                // 하강: [f0, f1] 안에 지지면이 있으면 착지
                 const SupportResult support = FindSupport_(_ctx, body.position.x, f0, f1, f0, false);
                 if (support.kind == eSupport::Found)
                 {
@@ -415,7 +395,6 @@ namespace
             }
             else
             {
-                // 상승: 머리 위 천장 검사
                 const float half  = HalfWidthOf_(body);
                 const float left  = body.position.x - half;
                 const float right = body.position.x + half;
@@ -437,7 +416,6 @@ namespace
                 if (body.bCollideSolids)
                 {
                     auto TestBlock = [&](const Aabb& _block) {
-                        // 머리가 블록 아랫면을 통과하려 하는가
                         if (_block.min.x < right && _block.max.x > left && _block.max.y > top1 && _block.max.y <= top0 + kOneWayEpsilon && _block.min.y < top0)
                         {
                             const float feetAtBlock = _block.max.y + body.size.y;
@@ -475,11 +453,7 @@ namespace
             }
         }
     }
-}   // namespace
-
-// ===========================================
-//  Physics
-// ===========================================
+}
 
 MoveResult Physics::Step(
     Body&                _body,
@@ -491,7 +465,6 @@ MoveResult Physics::Step(
 
     const bool bWasGrounded = _body.bGrounded;
 
-    // 위로 향하는 속도가 있으면 지면을 떠난다 (점프)
     if (_body.velocity.y < 0.f)
     {
         _body.bGrounded = false;
@@ -503,17 +476,13 @@ MoveResult Physics::Step(
         --_body.dropThroughSteps;
     }
 
-    // 1) 가로 이동 (지면 위라면 경사 추종 포함)
     MoveX_(ctx, _body.velocity.x * _dt);
 
-    // 2) 가로로 움직이지 않았더라도 지지면이 유지되는지 확인
-    //    (올라설 수 없는 턱에 끼었다면 Resettle_ 이 false 를 돌려주지만 위치는 그대로 유지된다)
     if (_body.bGrounded)
     {
         (void)Resettle_(ctx, _body.position.x);
     }
 
-    // 3) 공중이면 중력 + 세로 이동
     if (!_body.bGrounded)
     {
         if (_body.bUseGravity)
@@ -528,7 +497,6 @@ MoveResult Physics::Step(
         _body.velocity.y = 0.f;
     }
 
-    // 결과 정리
     MoveResult& result  = ctx.result;
     result.bGroundedNow = _body.bGrounded;
     result.bLanded      = !bWasGrounded && _body.bGrounded;
@@ -569,5 +537,4 @@ bool Physics::SnapToGround(
     _body.bGrounded  = true;
     return true;
 }
-
-}   // namespace slug
+}

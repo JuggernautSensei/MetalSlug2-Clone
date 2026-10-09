@@ -9,24 +9,12 @@
 
 namespace slug
 {
-
-// ===========================================
-//  BattleShip — 최종보스 Big Shiee (Docs/EnemySpecs.md 3.2)
-//   등장: arena.left + entranceOffsetX 에서 레일로 굴러 들어와 홈 슬롯에서 멈추면 전투 시작.
-//   패턴: 대기(1.6 s) 후 홀수 번째는 캐논 (머리 → 캐논, 포 추적, 3발 / 격앙 5발), 짝수 번째는 레일 이동.
-//   포탑 2기: 플레이어 방향으로 회전하고 포물선 포탄을 쏜다. 각각 HP 40, 독립 피격 소유자 (MakePartOwner).
-//   선체: 피격 상자 3개 (선수/함교/후갑판). HP 0 이면 3.6 s 파괴 연출 후 IsDestroyFinished.
-//   선체는 파괴 연출이 끝날 때까지 플레이어의 x 를 선체 x + 270 이상으로 막는다 (RequestPlayerMinX).
-//   레거시 수정: 포탑도 칼로 맞는다 / 보스 탄은 무적 플레이어를 통과한다 (HitResolver 규칙 그대로).
-//   좌표: 보스 파라미터는 "원점" 기준 (원점 = 발 - (0, originDepth)). 방향은 항상 +1.
-// ===========================================
-
 namespace
 {
     using namespace battleship;
 
     constexpr int   kPersistTicks = 1 << 20;   // 끝난 비루프 연출을 마지막 프레임에 머물게 하는 값
-    constexpr int   kBulletLayer  = 32;        // EnemyWorld 의 kShotLayer 와 같다 (탄은 Shot 으로 등록되어 있다)
+    constexpr int   kBulletLayer  = 32;
     constexpr float kHullMinX     = -250.f;    // 폭발 영역 (원점 기준, 레거시 선체 영역)
     constexpr float kHullMaxX     = 240.f;
     constexpr float kHullMinY     = -200.f;
@@ -44,13 +32,11 @@ namespace
     constexpr const char* kBulletNames[5] = {
         "BattleShip_Bullet_0", "BattleShip_Bullet_1", "BattleShip_Bullet_2", "BattleShip_Bullet_3", "BattleShip_Bullet_4"
     };
-    // 포탑 방향 이름 (0 왼쪽 / 1 가운데 / 2 오른쪽)
     constexpr const char* kDirNames[3]        = { "Left", "Mid", "Right" };
     constexpr const char* kDirFxNames[3]      = { "BattleShip_DCannon_Shot_Effect_Left", "BattleShip_DCannon_Shot_Effect_Mid", "BattleShip_DCannon_Shot_Effect_Right" };
     constexpr const char* kTurretIdleNames[3] = { "BattleShip_DCannon_Left", "BattleShip_DCannon_Mid", "BattleShip_DCannon_Right" };
     constexpr const char* kTurretShotNames[3] = { "BattleShip_DCannon_Shot_Left", "BattleShip_DCannon_Shot_Mid", "BattleShip_DCannon_Shot_Right" };
 
-    // 포탑 동작 종류 (kTurretAction)
     constexpr int kActNone      = 0;
     constexpr int kActTurnLeft  = 1;
     constexpr int kActTurnRight = 2;
@@ -100,7 +86,6 @@ namespace
         return _e.ext[kExtRailSlot];
     }
 
-    // 레일 한 틱: 가속 → 정속 → 제동 (목표 거리 안에서 멈출 수 있는 속도). 도착하면 true.
     bool RailStep_(
         Enemy&               _e,
         const BattleShipCfg& _c,
@@ -121,7 +106,6 @@ namespace
         float       nv       = v;
         if (v * dir > 0.f && std::abs(dist) <= stopDist)
         {
-            // 제동: 같은 방향 속도를 줄인다 (반대로 뒤집히지 않게)
             nv = v - (v > 0.f ? 1.f : -1.f) * _c.railDecel * dt;
             if (nv * v < 0.f)
             {
@@ -130,7 +114,6 @@ namespace
         }
         else
         {
-            // 가속: 목표 방향 최고 속도로
             const float step = _c.railAccel * dt;
             nv               = v + std::clamp(dir * _c.railMaxSpeed - v, -step, step);
         }
@@ -150,7 +133,6 @@ namespace
         return false;
     }
 
-    // 다른 두 슬롯 중 무작위
     [[nodiscard]] int PickOtherSlot_(
         EnemyEnv& _env,
         const int _current)
@@ -179,7 +161,6 @@ namespace
         _e.ext[kExtAngle] = static_cast<int>(std::lround(_deg * 100.f));
     }
 
-    // 포 추적: 플레이어 쪽 각도를 [min, max] 로 잘라 초당 track 도씩 따라간다
     void TrackCannon_(
         Enemy&               _e,
         const BattleShipCfg& _c,
@@ -209,7 +190,6 @@ namespace
         return std::clamp(static_cast<int>(std::lround(t * 4.f)), 0, 4);   // Cannon_Shot_0..4 (샷 클립 = 탄 스프라이트)
     }
 
-    // 캐논 탄: 머리 중심 + ((bin-2)*spread, 10) 에서 플레이어 방향 직선. 아래로만 (dir.y >= 1), 좌우 1.7 : 1 이내.
     void FireCannonBullet_(
         Enemy&               _e,
         const EnemyDef&      _def,
@@ -264,7 +244,6 @@ namespace
         ++_e.shotsFired;
     }
 
-    // 포탑 포탄: 플레이어 x ± jitter 로 떨어지도록 수평 속도를 계산한다 (포물선: v0.y, g)
     void FireTurret_(
         Enemy&               _e,
         const EnemyDef&      _def,
@@ -323,7 +302,6 @@ namespace
         ++_e.shotsFired;
     }
 
-    // 플레이어 쪽 포탑 방향 (|dx| <= midDx 면 가운데)
     [[nodiscard]] int DesiredDir_(
         const EnemyEnv&      _env,
         const BattleShipCfg& _c,
@@ -337,7 +315,6 @@ namespace
         return dx < 0.f ? 0 : 2;
     }
 
-    // 포탑 한 개의 한 틱: 회전 중 / 발사 중이면 그 동작을 끝까지, 아니면 방향을 맞추고 쿨타임 후 발사
     void TickTurret_(
         Enemy&               _e,
         const EnemyDef&      _def,
@@ -385,7 +362,6 @@ namespace
         t[kTurretCool]   = SecToTicks(cool) + Roll(_env, std::max(1, SecToTicks(c.turretRandomSec)));
     }
 
-    // 포탑 파괴: 폭발 연출, 판정 제거 (hp 0). 잔해(Destroy_Type5)는 렌더가 그린다.
     void KillTurret_(
         Enemy&               _e,
         const EnemyDef&      _def,
@@ -407,7 +383,6 @@ namespace
         }
     }
 
-    // 선체 무작위 지점 폭발 (격앙 시 1 s 마다, 파괴 연출의 연쇄 폭발도 같은 영역)
     void HullExplosion_(
         const Enemy&    _e,
         const EnemyDef& _def,
@@ -422,10 +397,6 @@ namespace
         fx.position = { o.x + dx, o.y + dy };
         _env.world.RequestFx(fx);
     }
-
-    // ===========================================
-    //  행동 틱
-    // ===========================================
 
     void Init_(
         Enemy&          _e,
@@ -445,13 +416,13 @@ namespace
             int* t = Turret_(_e, i);
             t[kTurretHp]     = c.turretHp;
             t[kTurretDir]    = 1;   // 가운데
-            t[kTurretCool]   = SecToTicks(c.turretFirstStepSec * static_cast<float>(i));   // 첫 발 지연 i x 1.2 s
+            t[kTurretCool]   = SecToTicks(c.turretFirstStepSec * static_cast<float>(i));
             t[kTurretBusy]   = 0;
             t[kTurretAction] = kActNone;
         }
         if (!_e.arena.IsEmpty())
         {
-            _e.body.position.x = _e.arena.min.x + c.entranceOffsetX;   // 레일 밖(왼쪽)에서 굴러 들어온다
+            _e.body.position.x = _e.arena.min.x + c.entranceOffsetX;
             EnterState(_e, kEntrance);
         }
         else
@@ -565,7 +536,6 @@ namespace
             default: break;
         }
 
-        // 격앙: 선체 임의 지점 소폭발 (1 s 마다)
         if (bEnraged && _e.ext[kExtFightStarted] != 0)
         {
             if (++_e.ext[kExtEnragedTimer] >= c.enragedSmallTicks)
@@ -575,11 +545,9 @@ namespace
             }
         }
 
-        // 선체가 플레이어를 막는다 (파괴 전). 이번 틱의 이동 뒤 값으로 요청한다
         _env.world.RequestPlayerMinX(_e.body.position.x + c.hullBlockDx);
     }
 
-    // 본체 피격: 포탑 파트면 포탑 HP 만 깎는다 (기본 피해 없음). 본체는 기본 처리 (HP 900).
     bool OnHit_(
         Enemy&          _e,
         const EnemyDef& _def,
@@ -623,7 +591,6 @@ namespace
         _e.deathTicks = 0;
     }
 
-    // 파괴 연출: 0.12 s 마다 연쇄 폭발, 2.8 s 에 플래시 + 큰 폭발 6회 (잔해만 남김), 3.6 s 에 완료
     void TickDying_(
         Enemy&          _e,
         const EnemyDef& _def,
@@ -711,10 +678,6 @@ namespace
         }
     }
 
-    // ===========================================
-    //  렌더 파츠
-    // ===========================================
-
     void SubmitRail_(
         const Enemy&          _e,
         const BattleShipCfg& _c,
@@ -754,7 +717,6 @@ namespace
         const int            layer = _r.layer;
         const int            chainEnd = SecToTicks(c.destroyChainSec);
 
-        // 파괴 후: 연쇄 폭발이 끝나면 부품은 사라지고 잔해만 남는다
         if (_e.life == eEnemyLife::Dying && _e.deathTicks >= chainEnd)
         {
             SubmitNamedPart(_r, "BattleShip_Destroy", { o.x - 30.f, o.y - 52.f }, kPersistTicks, false, sort, layer);
@@ -765,12 +727,10 @@ namespace
         const bool bCannonPhase = state == kCannonStart || state == kCannonIdle || state == kCannonShot || state == kCannonEnd;
         const int  sinceState   = _e.stateTicks;
 
-        // 본체 / 꼬리 (항상 같은 속도로 루프)
         SubmitNamedPart(_r, "BattleShip_Tail", { o.x - 213.f, o.y + 52.f }, _e.clipTicks, true, sort, layer);
         SubmitNamedPart(_r, "BattleShip_Body", { o.x - 57.f, o.y - 114.f }, _e.clipTicks, true, sort, layer);
         SubmitNamedPart(_r, "BattleShip_Cannon_Deco", { o.x + 55.f, o.y - 24.f }, kPersistTicks, false, sort, layer);
 
-        // 머리 / 캐논 전환
         const Vec2 head   = { o.x + 131.f, o.y + 5.f };
         const Vec2 cannon = { o.x + c.cannonOffset.x, o.y + c.cannonOffset.y };
         const float        angle  = static_cast<float>(_e.ext[kExtAngle]) / 100.f;
@@ -803,15 +763,12 @@ namespace
             SubmitNamedPart(_r, "BattleShip_Cannon_End", cannon, sinceState, false, sort, layer);
         }
 
-        // 안테나 (머리 전환 중에는 회전 클립)
         const bool bAntennaTurn = state == kHeadOpen || state == kHeadClose;
         SubmitNamedPart(_r, bAntennaTurn ? "BattleShip_Antena_Turn" : "BattleShip_Antena", { o.x + 2.f, o.y - 217.f }, _e.clipTicks, true, sort, layer);
 
-        // 레일 (앞/뒤)
         SubmitRail_(_e, c, _r, { o.x + 226.f, o.y + 66.f }, sort, false);
         SubmitRail_(_e, c, _r, { o.x - 67.f, o.y + 63.f }, sort, true);
 
-        // 포탑 2기 (파괴된 것은 잔해 Type5)
         for (int i = 0; i < kTurretCount; ++i)
         {
             const int*         t  = &_e.ext[kTurretBase + i * kTurretStride];
@@ -839,7 +796,6 @@ namespace
             }
         }
 
-        // 탄 (이 보스가 쏜 Shot 만: 스프라이트는 tag 로 고른다)
         for (const Shot& shot: _r.projectiles.GetShots())
         {
             if (!shot.bAlive || shot.params.owner != _e.id)
@@ -850,8 +806,7 @@ namespace
             SubmitNamedPart(_r, kBulletNames[std::clamp(static_cast<int>(shot.params.tag), 0, 4)], p, 0, true, static_cast<int>(p.y), kBulletLayer);
         }
     }
-
-}   // namespace
+}
 
 const BehaviorOps kBattleShipOps = {
     .init              = &Init_,
@@ -863,10 +818,6 @@ const BehaviorOps kBattleShipOps = {
     .submitParts       = &SubmitParts_,
     .deathDone         = &DeathDone_,
 };
-
-// ===========================================
-//  공개 조회 (BattleShip.h)
-// ===========================================
 
 namespace battleship
 {
@@ -910,12 +861,7 @@ Vec2 GetTurretOrigin(const Enemy& _e, const EnemyDef& _def, const int _index)
 {
     return TurretOriginOf_(_e, _def.battleShip, _index);
 }
-
-}   // namespace battleship
-
-// ===========================================
-//  파라미터 파서 (Boss.json "battleship")
-// ===========================================
+}
 
 void ParseBattleShipCfg(
     DefReader& _r,
@@ -986,5 +932,4 @@ void ParseBattleShipCfg(
     c.destroyChainStepSec = _r.Num("destroyChainStepSec");
     c.destroyFinishSec   = _r.Num("destroyFinishSec");
 }
-
-}   // namespace slug
+}

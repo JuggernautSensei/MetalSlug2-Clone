@@ -71,7 +71,7 @@ void FadeController::Tick()
     --m_ticksLeft;
     if (m_ticksLeft <= 0)
     {
-        m_alpha = m_target;   // 마지막 틱에 정확히 목표에 닿는다 (부동소수 오차 제거)
+        m_alpha = m_target;
         m_phase = m_donePhase;
         return;
     }
@@ -82,5 +82,4 @@ uint8_t FadeController::GetAlpha255() const
 {
     return static_cast<uint8_t>(std::lround(std::clamp(m_alpha, 0.f, 1.f) * 255.f));
 }
-
-}   // namespace slug
+}

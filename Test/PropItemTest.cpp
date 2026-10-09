@@ -45,17 +45,11 @@ bool IsFruit(const PropDefLibrary& _lib, const slug::String& _name)
     return false;
 }
 
-// 플레이어 몸 상자: 발 (x, y) 기준 24x40
 Aabb PlayerBoxAt(const Vec2 _feet)
 {
     return Aabb::FromBottomCenter(_feet, { 24.f, 40.f });
 }
-
-}   // namespace
-
-// ===========================================
-//  스폰 / 물리
-// ===========================================
+}
 
 TEST(PropItem, UnknownNameSpawnsNothing)
 {
@@ -174,10 +168,6 @@ TEST(PropItem, RollingFruitFallsStraightDownBeforeItRolls)
     EXPECT_NE(items.Find(id)->feet.x, 100.f);
 }
 
-// ===========================================
-//  습득 / 점수 팝업
-// ===========================================
-
 TEST(PropItem, ScoreItemCollectedGivesPickupAndPopup)
 {
     const GroundMap ground = MakeFloorMap(400, 200, 140);
@@ -272,7 +262,7 @@ TEST(PropItem, BulletSupplyRefillsOnlyFiniteWeapons)
     ItemPickup bullet;
     bullet.kind   = eItemKind::Supply;
     bullet.supply = eSupplyKind::Bullet;
-    ApplyItemPickup(player, bullet, tuning);   // 권총: 변화 없음
+    ApplyItemPickup(player, bullet, tuning);
     EXPECT_EQ(player.GetWeapon().weapon, eWeapon::Pistol);
     EXPECT_EQ(player.GetWeapon().ammo, 0);
 
@@ -281,7 +271,7 @@ TEST(PropItem, BulletSupplyRefillsOnlyFiniteWeapons)
     gun.weapon = eWeapon::Hmg;
     ApplyItemPickup(player, gun, tuning);
     const int afterGun = player.GetWeapon().ammo;
-    ApplyItemPickup(player, bullet, tuning);   // HMG 탄 보충
+    ApplyItemPickup(player, bullet, tuning);
     EXPECT_EQ(player.GetWeapon().ammo, afterGun + tuning.weapons.hmgPickupAmmo);
 }
 

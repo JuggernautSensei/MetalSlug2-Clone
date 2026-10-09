@@ -30,11 +30,7 @@ namespace
     {
         return _phase == kDeathLand || _phase == kDeathSlash || _phase == kDeathBomb;
     }
-}   // namespace
-
-// ===========================================
-//  플레이어 상대량
-// ===========================================
+}
 
 float DistToPlayer(
     const Enemy&    _e,
@@ -63,10 +59,6 @@ void FacePlayer(
 {
     _e.facing = SideToPlayer(_e, _env);
 }
-
-// ===========================================
-//  상태 / 클립
-// ===========================================
 
 void EnterState(
     Enemy&    _e,
@@ -106,10 +98,6 @@ bool ClipFinished(
 {
     return _e.clip >= 0 && _def.GetClip(_e.clip).IsFinished(_e.clipTicks);
 }
-
-// ===========================================
-//  물리 / 지형
-// ===========================================
 
 void PrepareBody(
     Enemy&          _e,
@@ -184,10 +172,6 @@ bool FloorAhead(
     return Physics::SnapToGround(probe, _env.ctx.physics, _drop + 8.f);
 }
 
-// ===========================================
-//  이펙트
-// ===========================================
-
 slug::String ResolveSide(
     const slug::String& _name,
     const int          _facing)
@@ -220,10 +204,6 @@ void RequestFx(
     _env.world.RequestFx(std::move(request));
 }
 
-// ===========================================
-//  공격
-// ===========================================
-
 Vec2 GetMuzzleWorld(
     const Enemy&    _e,
     const EnemyDef& _def,
@@ -255,7 +235,6 @@ bool FireWeapon(
     const Vec2   base   = GetMuzzleWorld(_e, _def, _weapon);
     const Vec2   muzzle = { base.x + _muzzleExtra.x, base.y + _muzzleExtra.y };
 
-    // 방향
     Vec2 dir = weapon.aim == eWeaponAim::Given ? _dir : Vec2 { facing, 0.f };
     if (weapon.tiltThreshold > 0.f)
     {
@@ -290,7 +269,7 @@ bool FireWeapon(
     spawn.startDelayTicks = SecToTicks(proj.startDelaySec);
     spawn.bExplodeOnSolid = proj.bExplodeOnSolid;
     spawn.visual          = static_cast<uint16_t>(weapon.projectile + 1);
-    spawn.rollSpeed       = proj.rollSpeed;   // 구르는 탄 (차량 공용): 착지 후 바라보는 방향으로 굴러간다
+    spawn.rollSpeed       = proj.rollSpeed;
     spawn.rollDirX        = facing;
     spawn.rollTicks       = proj.rollSpeed > 0.f ? SecToTicks(proj.rollSec) : 0;
     spawn.bExpireFx       = proj.bExpireFx;
@@ -310,7 +289,6 @@ bool FireWeapon(
         spawn.velocity = { proj.v0.x * facing, proj.v0.y };
     }
 
-    // 포물선: 플레이어 근처에 떨어지도록 수평 속도를 계산한다 (사거리가 모자라면 최대 속도로 던진다)
     if (weapon.bArc)
     {
         const float vy0 = proj.v0.y;
@@ -363,7 +341,7 @@ void TickMelee(
     {
         if (_e.meleeHitId != kNoHitId && _env.ctx.pCombat)
         {
-            _env.ctx.pCombat->ReleaseHitId(_e.meleeHitId);   // 마지막 판정이 해소된 다음 틱에 기록을 푼다
+            _env.ctx.pCombat->ReleaseHitId(_e.meleeHitId);
         }
         _e.meleeHitId = kNoHitId;
         return;
@@ -400,12 +378,6 @@ void CancelMelee(
     _e.meleeHitId     = kNoHitId;
     _e.meleeTicksLeft = 0;
 }
-
-// ===========================================
-//  병사류 사망 연출
-//   폭발(Blast) → Die_Bomb, 칼(Melee) → Die_Slash, 그 외: 지상이면 Die_Stand_1/2 (50:50) → Die_Land, 공중이면 Die_Jump → 착지 시 Die_Land.
-//   시체는 판정이 없다. 최종 클립 시작 후 blinkAt 에 깜빡이고 removeAt 에 사라진다.
-// ===========================================
 
 void BeginSoldierDeath(
     Enemy&          _e,
@@ -514,10 +486,6 @@ void TickSoldierDeath(
     }
 }
 
-// ===========================================
-//  부가 파츠 렌더
-// ===========================================
-
 bool SubmitNamedPart(
     const EnemyRenderEnv& _render,
     const slug::StringView _name,
@@ -579,5 +547,4 @@ int GetNamedPartTicks(
     }
     return static_cast<int>(pClip->GetTotalDurationUnits() / kAnimUnitsPerTick);
 }
-
-}   // namespace slug
+}

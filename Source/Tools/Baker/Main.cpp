@@ -40,8 +40,7 @@ void PrintUsage_()
 {
     return ParseIntStrict(_text, _out);
 }
-
-}   // namespace
+}
 
 int main(
     int    _argc,

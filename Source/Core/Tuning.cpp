@@ -17,10 +17,6 @@ namespace slug
 
 namespace
 {
-    // ===========================================
-    //  필드 목록 (파싱과 덤프가 같은 목록을 공유한다 — 키를 한 곳에서만 관리)
-    // ===========================================
-
     template<typename V, typename W>
     void VisitWeapon_(
         V& _v,
@@ -182,10 +178,6 @@ namespace
         _v.End();
     }
 
-    // ===========================================
-    //  JSON 읽기 방문자: 없는 키는 건너뛰고(기본값 유지), 타입이 틀리면 오류로 기록한다.
-    // ===========================================
-
     class ReadVisitor
     {
     public:
@@ -316,10 +308,6 @@ namespace
         bool                                        m_bError = false;
     };
 
-    // ===========================================
-    //  덤프 방문자
-    // ===========================================
-
     class DumpVisitor
     {
     public:
@@ -396,7 +384,7 @@ namespace
         }
         return tuning;
     }
-}   // namespace
+}
 
 slug::Result<Tuning> ParseTuning(
     const slug::StringView _json)
@@ -433,10 +421,6 @@ slug::FilePath GetDefaultTuningPath(
 {
     return _assetRoot / "Tuning" / "Tuning.json";
 }
-
-// ===========================================
-//  TuningWatcher
-// ===========================================
 
 void TuningWatcher::Init(
     slug::FilePath _path,
@@ -490,5 +474,4 @@ bool TuningWatcher::Poll(
     SLUG_LOG_INFO("Tuning 리로드: {}", m_path.string());
     return true;
 }
-
-}   // namespace slug
+}

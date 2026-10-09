@@ -58,7 +58,7 @@ void ScreenFlow::Start(
         _audio.StopBgm();
     }
 
-    Advance_(_ui, _audio);   // delay == 0 이면 같은 틱에 배너 시작
+    Advance_(_ui, _audio);
 }
 
 void ScreenFlow::Tick(
@@ -103,7 +103,6 @@ void ScreenFlow::Advance_(
     UiSystem&   _ui,
     IAudioSink& _audio)
 {
-    // 한 틱에 여러 단계를 건너뛸 수 있다 (길이 0 인 단계)
     const int bannerStart = m_config.delayTicks;
     const int fadeStart   = bannerStart + m_config.bannerTicks;
     const int holdStart   = fadeStart + m_config.fadeTicks;
@@ -126,5 +125,4 @@ void ScreenFlow::Advance_(
         m_phase = eFlowPhase::Done;
     }
 }
-
-}   // namespace slug
+}

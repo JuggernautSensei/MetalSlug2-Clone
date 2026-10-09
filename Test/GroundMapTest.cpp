@@ -15,7 +15,6 @@ using namespace slug;
 
 namespace
 {
-// 결정적인 간단한 난수 (테스트 데이터 생성용)
 struct Lcg
 {
     uint32_t state = 12345u;
@@ -27,7 +26,6 @@ struct Lcg
     }
 };
 
-// 파일 포맷 그대로의 바이트열 생성
 slug::Vector<uint8_t> MakeFile(
     const uint32_t              _w,
     const uint32_t              _h,
@@ -44,15 +42,10 @@ slug::Vector<uint8_t> MakeFile(
     data.insert(data.end(), _bits.begin(), _bits.end());
     return data;
 }
-}   // namespace
-
-// ===========================================
-//  로드 / 포맷
-// ===========================================
+}
 
 TEST(GroundMap, MakeFromBitsUsesLsbAsLeftmostPixel)
 {
-    // 폭 10 → 행당 2바이트. 행0: x=0,2 (byte0=0b101) 와 x=9 (byte1=0b10)
     const uint8_t   bits[] = { 0b00000101, 0b00000010, 0, 0 };
     const GroundMap map    = GroundMap::MakeFromBits(10, 2, bits);
 
@@ -138,10 +131,6 @@ TEST(GroundMap, MakeFromRowsBuildsAsciiMap)
     EXPECT_FALSE(map.IsSolid(3, 1));
     EXPECT_TRUE(map.IsSolid(3, 2));
 }
-
-// ===========================================
-//  질의
-// ===========================================
 
 TEST(GroundMap, OutOfBoundsPolicyDefaultsAndOverrides)
 {
@@ -262,7 +251,6 @@ TEST(GroundMap, EditingPrimitives)
 
 TEST(GroundMap, SlopeEstimateOnRampAndFlat)
 {
-    // 오른쪽이 높아지는 45° 오르막: 윗면 y = 100 - x
     GroundMap map = GroundMap::MakeEmpty(120, 120);
     for (int x = 0; x < 100; ++x)
     {
@@ -275,16 +263,11 @@ TEST(GroundMap, SlopeEstimateOnRampAndFlat)
     EXPECT_NEAR(normal.x, -0.70710678f, 1e-4f);
     EXPECT_NEAR(normal.y, -0.70710678f, 1e-4f);
 
-    // 평지
     EXPECT_FLOAT_EQ(map.EstimateSlope(110, 100, 4, 8), 0.f);
     const Vec2 flat = map.EstimateNormal(110, 100, 4, 8);
     EXPECT_FLOAT_EQ(flat.x, 0.f);
     EXPECT_FLOAT_EQ(flat.y, -1.f);
 }
-
-// ===========================================
-//  Aabb / Circle
-// ===========================================
 
 TEST(Geometry, AabbFactoriesAndAccessors)
 {
@@ -343,7 +326,6 @@ TEST(Geometry, AabbIntersectionExpandAndTransform)
 
 TEST(Geometry, AabbMirrorFlipsAroundAxis)
 {
-    // 오른쪽을 바라보는 칼 히트박스(원점 기준 +10..+40) 를 왼쪽으로 뒤집기
     const Aabb right = Aabb::FromMinMax({ 110.f, 80.f }, { 140.f, 120.f });
     const Aabb left  = right.MirroredX(100.f);
     EXPECT_EQ(left, Aabb::FromMinMax({ 60.f, 80.f }, { 90.f, 120.f }));

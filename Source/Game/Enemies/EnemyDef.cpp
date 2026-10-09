@@ -13,11 +13,6 @@
 
 namespace slug
 {
-
-// ===========================================
-//  기본 유틸
-// ===========================================
-
 const char* GetBehaviorName(
     const eEnemyBehavior _behavior)
 {
@@ -112,10 +107,6 @@ int EnemyDef::FindWeapon(
     }
     return -1;
 }
-
-// ===========================================
-//  DefReader
-// ===========================================
 
 DefReader::DefReader(
     const slug::StringView    _defName,
@@ -390,5 +381,4 @@ bool DefReader::Finish()
     }
     return m_error.empty();
 }
-
-}   // namespace slug
+}
