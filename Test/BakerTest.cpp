@@ -75,6 +75,89 @@ TEST(BakerAlpha, ColorKeyMakesMagentaTransparentAndRestOpaque)
     EXPECT_EQ(img.At(1, 0)[0], 10);
 }
 
+namespace
+{
+    // 64x64 이미지의 중심 (32,32) 에 반지름 _r 인 단색 원판을 그린다 (바깥은 알파 0).
+    [[nodiscard]] Image MakeDisc_(
+        const int     _r,
+        const uint8_t _red,
+        const uint8_t _green,
+        const uint8_t _blue)
+    {
+        Image img = Image::Make(64, 64);
+        for (int y = 0; y < 64; ++y)
+        {
+            for (int x = 0; x < 64; ++x)
+            {
+                if ((x - 32) * (x - 32) + (y - 32) * (y - 32) <= _r * _r)
+                {
+                    uint8_t* p = img.At(x, y);
+                    p[0]       = _red;
+                    p[1]       = _green;
+                    p[2]       = _blue;
+                    p[3]       = 255;
+                }
+            }
+        }
+        return img;
+    }
+}
+
+TEST(BakerSilhouette, FlatDarkDiscBecomesFlashKeepingAlpha)
+{
+    Image        img    = MakeDisc_(30, 32, 24, 0);   // 면적 약 2800px, 레거시 Explosion_* f0 과 같은 색
+    const Image  before = img;
+    ASSERT_TRUE(ConvertSolidSilhouetteToFlash(img));
+
+    for (int y = 0; y < 64; ++y)
+    {
+        for (int x = 0; x < 64; ++x)
+        {
+            EXPECT_EQ(img.At(x, y)[3], before.At(x, y)[3]) << x << "," << y;
+            if (img.At(x, y)[3] != 0)
+            {
+                EXPECT_GE(img.At(x, y)[1], 170) << x << "," << y;   // 전부 밝아졌다
+            }
+        }
+    }
+
+    const uint8_t* centre = img.At(32, 32);
+    EXPECT_EQ(centre[0], 255);
+    EXPECT_EQ(centre[1], 248);
+    EXPECT_EQ(centre[2], 200);
+
+    EXPECT_EQ(img.At(52, 32)[1], 248);   // 바깥 25% 이전(d <= 0.75) 은 코어색 유지
+    EXPECT_EQ(img.At(52, 32)[2], 200);
+
+    const uint8_t* rim = img.At(62, 32); // 가장 먼 불투명 픽셀은 주황
+    EXPECT_EQ(rim[0], 255);
+    EXPECT_EQ(rim[1], 170);
+    EXPECT_EQ(rim[2], 60);
+}
+
+TEST(BakerSilhouette, FlatSaturatedRedConvertsButLightFlatSmallAndMixedDoNot)
+{
+    Image red = MakeDisc_(30, 152, 0, 0);   // 어둡지 않아도 채도가 높으면 실루엣
+    EXPECT_TRUE(ConvertSolidSilhouetteToFlash(red));
+    EXPECT_EQ(red.At(62, 32)[1], 170);
+
+    Image light = MakeDisc_(30, 248, 248, 248);   // 밝은 단색 원판은 손대지 않는다
+    const Image lightBefore = light;
+    EXPECT_FALSE(ConvertSolidSilhouetteToFlash(light));
+    EXPECT_TRUE(light.pixels == lightBefore.pixels);
+
+    Image small = MakeDisc_(20, 32, 24, 0);   // 면적 약 1250px < 2500px
+    const Image smallBefore = small;
+    EXPECT_FALSE(ConvertSolidSilhouetteToFlash(small));
+    EXPECT_TRUE(small.pixels == smallBefore.pixels);
+
+    Image mixed = MakeDisc_(30, 32, 24, 0);   // 한 픽셀만 달라도 단색이 아니다
+    mixed.At(40, 32)[0] = 33;
+    const Image mixedBefore = mixed;
+    EXPECT_FALSE(ConvertSolidSilhouetteToFlash(mixed));
+    EXPECT_TRUE(mixed.pixels == mixedBefore.pixels);
+}
+
 TEST(BakerPivot, LegacyFormulaHandComputed)
 {
     const Pivot p = ComputePivot(85, 58, 20, -19, 5, 8);
