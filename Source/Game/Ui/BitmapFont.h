@@ -95,15 +95,10 @@ struct TextLayout
 
 [[nodiscard]] TextLayout LayoutText(slug::StringView _text, int _x, int _y, const TextStyle& _style);
 
-[[nodiscard]] slug::Vector<int> SplitLineLengths(slug::StringView _text);
 [[nodiscard]] int              MeasureTextWidth(slug::StringView _text, const TextStyle& _style);
 [[nodiscard]] int              MeasureTextHeight(slug::StringView _text, const TextStyle& _style);
 
 [[nodiscard]] int FitTextScale(slug::StringView _text, int _maxWidth, int _maxScale, int _letterSpacing = 0);
-
-[[nodiscard]] slug::RGBA GetFontFallbackColor(eFontColor _color);
-
-[[nodiscard]] const char* GetFontSpriteName(eFontColor _color);
 
 class BitmapFont
 {

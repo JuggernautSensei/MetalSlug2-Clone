@@ -69,9 +69,7 @@ public:
     void                            ExtendInvincibility(int _ticks) { m_invincibleTicks = (_ticks > m_invincibleTicks) ? _ticks : m_invincibleTicks; }
     [[nodiscard]] bool               IsGameOver() const { return m_bGameOver; }
     [[nodiscard]] int                GetGameOverTicks() const { return m_gameOverTicks; }
-    [[nodiscard]] int                GetDeadTicks() const { return m_deadTicks; }
     [[nodiscard]] bool               IsKnifeInProgress() const { return m_knifeTick >= 0; }
-    [[nodiscard]] bool               IsKnifeActive() const { return m_bKnifeEmitted; }
     [[nodiscard]] bool               IsMoving() const { return m_bMoving; }
     [[nodiscard]] const PlayerStats& GetStats() const { return m_stats; }
     [[nodiscard]] const Body&        GetBody() const { return m_body; }
@@ -136,7 +134,6 @@ private:
     int                   m_moveX           = 0;
     bool                  m_bSlashShown     = false;
     bool                  m_bThrowShown     = false;
-    bool                  m_bKnifeEmitted   = false;
     slug::Vector<uint32_t> m_pendingRelease  = {};
 
     const Tuning* m_pTuning = nullptr;

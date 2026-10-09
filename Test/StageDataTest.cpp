@@ -30,7 +30,6 @@ TEST(StageData, LoadsMinimalStageWithDefaults)
 {
     const StageData data = MustLoad(OneSection("[]"));
     EXPECT_EQ(data.name, "T");
-    EXPECT_EQ(data.title, "T");
     EXPECT_FLOAT_EQ(data.viewSize.x, 640.f);
     EXPECT_EQ(data.groundInitial, "G0");
     EXPECT_EQ(data.backdropInitial, "a");

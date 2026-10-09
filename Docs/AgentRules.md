@@ -1,7 +1,7 @@
 # 에이전트 공통 규칙 (MyMetalSlug2)
 
 ## 프로젝트
-- 저장소: `C:\Users\Ahnjiwoo\Desktop\Projects\windowAPIProject(24.02.05)\MyMetalSlug2` (Visual Studio 2026 솔루션 `MyMetalSlug2.sln` + vcpkg 매니페스트 모드, C++20, 네임스페이스 `slug`). 외부 의존은 vcpkg 의 SDL3, yyjson, stb, miniaudio 뿐이며 자체 기반 레이어는 `Source/Base/` (`Types.h`, `Math.h`(`Vec2`), `RGBA.h`, `Error.h`/`Result.h`, `Json.h`, `Handle.h`/`HandleStorage.h`/`ResourcePool.h`, `Random.h`, `EnumFlags.h`, `Log.h`, `Assert.h`). 헤더는 `"Base/Xxx.h"` 로 포함하고 PCH 강제 포함에 기대지 않는다.
+- 저장소: `C:\Users\Ahnjiwoo\Desktop\Projects\windowAPIProject(24.02.05)\MyMetalSlug2` (Visual Studio 2026 솔루션 `MyMetalSlug2.sln` + vcpkg 매니페스트 모드, C++20, 네임스페이스 `slug`). 외부 의존은 vcpkg 의 SDL3, yyjson, stb, miniaudio 뿐이며 자체 기반 레이어는 `Source/Base/` (`Types.h`, `Math.h`(`Vec2`), `RGBA.h`, `Error.h`/`Result.h`, `Json.h`, `Handle.h`/`HandleStorage.h`/`ResourcePool.h`, `Random.h`, `Log.h`, `Assert.h`). 헤더는 `"Base/Xxx.h"` 로 포함하고 PCH 강제 포함에 기대지 않는다.
 - 전체 계획: `C:\Users\Ahnjiwoo\.claude\plans\zippy-dreaming-beaver.md`. 문서: `Docs/*.md` (AssetFormat, PlayerSpec, EnemySpecs, EnemyDefsSchema, StageFormat).
 - 시뮬레이션은 고정 60Hz(`SimRunner`), 라이브와 헤드리스(`SlugHeadless`, 테스트)가 같은 `IGameState::Tick` 경로. 모든 판정은 `CombatSystem`/`HitResolver` 단일 경로. 좌표는 `slug::Vec2` float 월드 픽셀, +y 아래, **엔티티 원점 = 발 중앙**.
 

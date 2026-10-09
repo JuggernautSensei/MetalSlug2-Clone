@@ -177,7 +177,6 @@ void ParseFlyingBzkCfg(
 
     if (_def.overlayClip >= 0)
     {
-        c.clipPara   = _def.overlayClip;
         c.paraOffset = _def.overlayOffset;
     }
     c.paraDestroy.clip   = _r.Str("paraDestroyFx");

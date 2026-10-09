@@ -63,8 +63,6 @@ struct ClipDef
 
     [[nodiscard]] bool IsValid() const { return !name.empty(); }
 
-    [[nodiscard]] int FrameAt(int _ticks) const;
-
     [[nodiscard]] int TickOfFrame(int _frame) const;
 
     [[nodiscard]] int GetDurationTicks() const;
@@ -244,7 +242,7 @@ struct HangCfg
     float detectX     = 500.f;
     int   throwTicks  = 120;     // 2.0 s
     int   fireFrame   = 9;
-    int   clipIdle = -1, clipThrow = -1, clipDieJump = -1, clipDieLand = -1;
+    int   clipIdle = -1, clipThrow = -1;
     int   weaponBomb  = -1;
 };
 
@@ -267,10 +265,8 @@ struct FlyingBzkCfg
 
     int clipReady[5] = { -1, -1, -1, -1, -1 };
     int clipShot[5]  = { -1, -1, -1, -1, -1 };
-    int clipDieJump = -1, clipDieLand = -1;
     int weaponRocket = -1;
 
-    int          clipPara = -1;
     Vec2 paraOffset = { -5.f, -87.5f };
     FxDef        paraDestroy = {};
 };

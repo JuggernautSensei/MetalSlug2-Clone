@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 
 #include "Audio/AudioSink.h"
+#include "TestAudio.h"
 #include "Game/GameState.h"
 #include "Game/SandboxState.h"
 #include "Game/SimRunner.h"

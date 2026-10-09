@@ -153,7 +153,6 @@ public:
     [[nodiscard]] const PropInstance* Get(PropHandle _handle) const;
     [[nodiscard]] slug::Span<const PropInstance> GetProps() const { return m_props; }
     [[nodiscard]] size_t GetCount() const { return m_props.size(); }
-    [[nodiscard]] slug::Span<const PropFxRequest>    GetPendingFx() const { return m_pendingFx; }
     [[nodiscard]] slug::Span<const PropDebrisPiece>  GetDebris() const { return m_debris; }
 
     [[nodiscard]] slug::Vector<PropEvent> TakeEvents();

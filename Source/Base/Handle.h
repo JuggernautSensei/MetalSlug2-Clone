@@ -35,7 +35,6 @@ public:
     [[nodiscard]] constexpr bool     IsNull() const { return m_value == kNullValue; }
     constexpr explicit               operator bool() const { return !IsNull(); }
     [[nodiscard]] constexpr uint32_t GetIndex() const { return m_value & 0xFFFFFFu; }
-    [[nodiscard]] constexpr uint8_t  GetToken() const { return static_cast<uint8_t>(m_value >> 24); }
     [[nodiscard]] constexpr uint32_t GetValue() const { return m_value; }
 
 private:

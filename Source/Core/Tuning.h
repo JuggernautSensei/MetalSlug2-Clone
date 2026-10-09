@@ -274,7 +274,6 @@ public:
 
     bool Poll(Tuning& _out);
 
-    [[nodiscard]] const slug::FilePath& GetPath() const { return m_path; }
     [[nodiscard]] int                  GetReloadCount() const { return m_reloadCount; }
 
 private:

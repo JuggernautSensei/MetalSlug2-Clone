@@ -41,7 +41,6 @@ public:
     [[nodiscard]] uint64_t CountSolidPixels() const;
 
     void                                    SetBoundsPolicy(const GroundBoundsPolicy& _policy) { m_policy = _policy; }
-    [[nodiscard]] const GroundBoundsPolicy& GetBoundsPolicy() const { return m_policy; }
 
     [[nodiscard]] bool IsSolid(
         const int _x,

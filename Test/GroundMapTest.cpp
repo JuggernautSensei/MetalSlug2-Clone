@@ -26,6 +26,31 @@ struct Lcg
     }
 };
 
+struct Circle
+{
+    Vec2 center = { 0.f, 0.f };
+    float radius = 0.f;
+
+    [[nodiscard]] bool Overlaps(
+        const Circle& _other) const
+    {
+        const float dx  = _other.center.x - center.x;
+        const float dy  = _other.center.y - center.y;
+        const float sum = radius + _other.radius;
+        return dx * dx + dy * dy < sum * sum;
+    }
+
+    [[nodiscard]] bool Overlaps(
+        const Aabb& _box) const
+    {
+        const float cx = slug::Clamp(center.x, _box.min.x, _box.max.x);
+        const float cy = slug::Clamp(center.y, _box.min.y, _box.max.y);
+        const float dx = center.x - cx;
+        const float dy = center.y - cy;
+        return dx * dx + dy * dy < radius * radius;
+    }
+};
+
 slug::Vector<uint8_t> MakeFile(
     const uint32_t              _w,
     const uint32_t              _h,

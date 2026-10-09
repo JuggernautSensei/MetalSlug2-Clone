@@ -15,7 +15,6 @@ public:
     [[nodiscard]] bool IsFinished() const override { return m_flow.IsDone(); }
 
     [[nodiscard]] int                GetTickCount() const { return m_tick; }
-    [[nodiscard]] const ScreenFlow&  GetFlow() const { return m_flow; }
     [[nodiscard]] const UiSystem&    GetUi() const { return m_ui; }
 
 private:

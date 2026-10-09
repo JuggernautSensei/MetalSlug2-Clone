@@ -87,12 +87,6 @@ bool ParamValue::AsBool(
     return m_type == eType::Bool ? m_bValue : _bDefault;
 }
 
-double ParamValue::AsNumber(
-    const double _default) const
-{
-    return m_type == eType::Number ? m_number : _default;
-}
-
 float ParamValue::AsFloat(
     const float _default) const
 {
@@ -149,14 +143,6 @@ bool ParamValue::GetBool(
 {
     const ParamValue* pValue = Find(_key);
     return pValue ? pValue->AsBool(_bDefault) : _bDefault;
-}
-
-float ParamValue::GetFloat(
-    const slug::StringView _key,
-    const float           _default) const
-{
-    const ParamValue* pValue = Find(_key);
-    return pValue ? pValue->AsFloat(_default) : _default;
 }
 
 int ParamValue::GetInt(
@@ -966,7 +952,7 @@ namespace
         const JsonReader& _root)
     {
         const String where = "root";
-        if (!CheckKeys_(_root, where, { "version", "name", "title", "world", "bgm", "ground", "backdrop", "player", "rects", "camera", "sections" }))
+        if (!CheckKeys_(_root, where, { "version", "name", "world", "bgm", "ground", "backdrop", "player", "rects", "camera", "sections" }))
         {
             return false;
         }
@@ -978,11 +964,6 @@ namespace
         if (m_out.version != 1)
         {
             return Fail_(where, std::format("unsupported version {} (expected 1)", m_out.version));
-        }
-        m_out.title = m_out.name;
-        if (!GetString_(_root, where, "title", false, m_out.title))
-        {
-            return false;
         }
 
         if (!ParseWorld_(_root) || !ParseBgm_(_root) || !ParseGround_(_root) || !ParseBackdrop_(_root) || !ParseRects_(_root) || !ParseCamera_(_root) || !ParsePlayer_(_root) || !ParseSections_(_root))
@@ -1217,7 +1198,7 @@ namespace
             return true;
         }
         const String where = "camera";
-        if (!CheckKeys_(*camera, where, { "policy", "initialBounds", "initialOffset", "chaseSpeed", "playerMargin", "boundsCurves" }))
+        if (!CheckKeys_(*camera, where, { "policy", "initialBounds", "initialOffset", "playerMargin", "boundsCurves" }))
         {
             return false;
         }
@@ -1241,7 +1222,7 @@ namespace
                 return false;
             }
         }
-        if (!GetVec2_(*camera, where, "initialOffset", false, m_out.camera.initialOffset) || !GetFloat_(*camera, where, "chaseSpeed", false, m_out.camera.chaseSpeed) || !GetFloat_(*camera, where, "playerMargin", false, m_out.camera.playerMargin))
+        if (!GetVec2_(*camera, where, "initialOffset", false, m_out.camera.initialOffset) || !GetFloat_(*camera, where, "playerMargin", false, m_out.camera.playerMargin))
         {
             return false;
         }
@@ -1962,14 +1943,14 @@ namespace
                 id = json.FindField("id")->Read<String>().GetValue();
             }
             const String where = std::format("sections[{}] '{}'", index++, id);
-            if (!CheckKeys_(json, where, { "id", "legacy", "triggerX", "actions" }))
+            if (!CheckKeys_(json, where, { "id", "triggerX", "actions" }))
             {
                 return false;
             }
 
             StageSection section;
             std::optional<JsonReader> actions;
-            if (!GetString_(json, where, "id", true, section.id) || !GetString_(json, where, "legacy", false, section.legacy) || !GetFloat_(json, where, "triggerX", true, section.triggerX) || !GetArray_(json, where, "actions", true, actions))
+            if (!GetString_(json, where, "id", true, section.id) || !GetFloat_(json, where, "triggerX", true, section.triggerX) || !GetArray_(json, where, "actions", true, actions))
             {
                 return false;
             }

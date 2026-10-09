@@ -34,7 +34,6 @@ public:
     void SetSpriteLibrary(const SpriteLibrary* _pSprites) { m_pSprites = _pSprites; }
 
     [[nodiscard]] const Enemy* Get(EnemyHandle _handle) const;
-    [[nodiscard]] const Enemy* GetById(uint32_t _id) const;
 
     [[nodiscard]] bool IsDefeated(EnemyHandle _handle) const;
     [[nodiscard]] Health GetHealth(EnemyHandle _handle) const;

@@ -192,9 +192,6 @@
     <ClCompile Include="..\..\Source\Game\Stage\StageMapping.cpp">
       <Filter>Source\Game\Stage</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Game\Stage\StagePlaceholders.cpp">
-      <Filter>Source\Game\Stage</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\Game\Stage\StageRunner.cpp">
       <Filter>Source\Game\Stage</Filter>
     </ClCompile>
@@ -273,9 +270,6 @@
       <Filter>Source\Audio</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Base\Assert.h">
-      <Filter>Source\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Base\EnumFlags.h">
       <Filter>Source\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Base\Error.h">
@@ -408,9 +402,6 @@
       <Filter>Source\Game\Stage</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Stage\StageMapping.h">
-      <Filter>Source\Game\Stage</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Game\Stage\StagePlaceholders.h">
       <Filter>Source\Game\Stage</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Stage\StageRunner.h">

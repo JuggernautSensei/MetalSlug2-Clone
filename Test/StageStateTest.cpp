@@ -9,7 +9,7 @@
 #include "Core/Input.h"
 #include "Game/SimRunner.h"
 #include "Game/Stage/StageState.h"
-#include "Game/Stage/StagePlaceholders.h"
+#include "Game/Stage/StageWorldHost.h"
 
 namespace
 {
@@ -143,7 +143,7 @@ TEST(StageStateDebug, F5WarpsToTheNextSectionOnlyWithDebugDraw)
     EXPECT_EQ(sim.Ctx().debugWarp, 0);   // 소비됨
     EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 750.f);
     EXPECT_EQ(sim.State().GetRunner().GetNextSectionIndex(), 2);
-    EXPECT_EQ(sim.State().GetHost().GetPlaceholders().GetLastSectionId(), "street");
+    EXPECT_EQ(sim.State().GetHost().GetLastSectionId(), "street");
 }
 
 TEST(StageStateDebug, WarpRequestIsIgnoredWithoutDebugDraw)
@@ -166,44 +166,47 @@ TEST(StageStateDebug, F6WarpsToTheBossArena)
     EXPECT_TRUE(sim.State().GetRunner().GetNextSectionIndex() >= 20);
 }
 
-TEST(StagePlaceholders, HitsKillAtZeroHpThenTheEntityIsRemovedAfterTheDeathWindow)
+TEST(StageHostPlaceholders, HitsKillAtZeroHpThenTheEntityIsRemovedAfterTheDeathWindow)
 {
-    StagePlaceholders host;
-    SpawnRequest      request = MakeRequest("soldier_bomb", eEntityKind::Enemy, { 500.f, 378.f });
-    request.bHasHp = true;
-    request.hp     = 2;
-    const SpawnId id = host.SpawnEntity(request);
+    StageWorldHost host;
+    SpawnRequest   request = MakeRequest("soldier_bomb", eEntityKind::Enemy, { 500.f, 378.f });
+    request.bHasHp         = true;
+    request.hp             = 2;
+    const SpawnId id       = host.SpawnEntity(request);
+    const SpawnId target   = host.GetPlaceholderEntities()[0].id;   // 피격은 플레이스홀더 자신의 id 로 들어온다
 
     EXPECT_NE(id, kInvalidSpawnId);
     EXPECT_FALSE(host.IsDefeated(id));
 
-    const slug::Vector<HitEvent> events = { MakeHit(id, 1) };
-    EXPECT_EQ(host.ApplyEvents(events), 0);
+    const slug::Vector<HitEvent> events = { MakeHit(target, 1) };
+    EXPECT_EQ(host.ApplyPlaceholderEvents(events), 0);
     EXPECT_FALSE(host.IsDefeated(id));
 
-    const slug::Vector<HitEvent> killing = { MakeHit(id, 5) };
-    EXPECT_EQ(host.ApplyEvents(killing), 1);
+    const slug::Vector<HitEvent> killing = { MakeHit(target, 5) };
+    EXPECT_EQ(host.ApplyPlaceholderEvents(killing), 1);
     EXPECT_TRUE(host.IsDefeated(id));
     EXPECT_FALSE(host.IsDestroyFinished(id));
 
-    EXPECT_EQ(host.ApplyEvents(killing), 0);
+    EXPECT_EQ(host.ApplyPlaceholderEvents(killing), 0);
 
     for (int i = 0; i < kPlaceholderDeathTicks; ++i)
     {
-        host.Tick();
+        host.TickPlaceholders();
     }
     EXPECT_TRUE(host.IsDestroyFinished(id));
-    EXPECT_TRUE(host.GetEntities().empty());
+    EXPECT_TRUE(host.GetPlaceholderEntities().empty());
 }
 
-TEST(StagePlaceholders, NonHittableKindsAreNeverDefeatedUntilCleared)
+TEST(StageHostPlaceholders, NonHittableKindsAreNeverDefeatedUntilCleared)
 {
-    StagePlaceholders host;
-    const SpawnId     decor = host.SpawnEntity(MakeRequest("anim_decor", eEntityKind::Decor, { 10.f, 10.f }));
-    const SpawnId     item  = host.SpawnEntity(MakeRequest("random_score", eEntityKind::Item, { 20.f, 20.f }));
+    StageWorldHost host;
+    const SpawnId  decor = host.SpawnEntity(MakeRequest("anim_decor", eEntityKind::Decor, { 10.f, 10.f }));
+    const SpawnId  item  = host.SpawnEntity(MakeRequest("random_score", eEntityKind::Item, { 20.f, 20.f }));
+    const SpawnId  decorTarget = host.GetPlaceholderEntities()[0].id;
+    const SpawnId  itemTarget  = host.GetPlaceholderEntities()[1].id;
 
-    const slug::Vector<HitEvent> events = { MakeHit(decor, 99), MakeHit(item, 99) };
-    EXPECT_EQ(host.ApplyEvents(events), 0);
+    const slug::Vector<HitEvent> events = { MakeHit(decorTarget, 99), MakeHit(itemTarget, 99) };
+    EXPECT_EQ(host.ApplyPlaceholderEvents(events), 0);
     EXPECT_FALSE(host.IsDefeated(decor));
     EXPECT_FALSE(host.IsDefeated(item));
 
@@ -214,24 +217,24 @@ TEST(StagePlaceholders, NonHittableKindsAreNeverDefeatedUntilCleared)
     EXPECT_FALSE(host.IsDefeated(decor));
 }
 
-TEST(StagePlaceholders, LegacyCenterPositionsPutTheFeetAtTheBottomOfTheBox)
+TEST(StageHostPlaceholders, LegacyCenterPositionsPutTheFeetAtTheBottomOfTheBox)
 {
-    StagePlaceholders host;
-    SpawnRequest      request = MakeRequest("crate", eEntityKind::Prop, { 300.f, 100.f });
-    request.positionMode      = ePositionMode::LegacyCenter;
+    StageWorldHost host;
+    SpawnRequest   request = MakeRequest("crate", eEntityKind::Prop, { 300.f, 100.f });
+    request.positionMode   = ePositionMode::LegacyCenter;
     host.SpawnEntity(request);
 
-    ASSERT_EQ(host.GetEntities().size(), 1u);
-    const PlaceholderEntity& entity = host.GetEntities()[0];
+    ASSERT_EQ(host.GetPlaceholderEntities().size(), 1u);
+    const PlaceholderEntity& entity = host.GetPlaceholderEntities()[0];
     EXPECT_FLOAT_EQ(entity.feet.x, 300.f);
     EXPECT_FLOAT_EQ(entity.feet.y, 100.f + entity.size.y * 0.5f);
     EXPECT_TRUE(entity.bHittable);
 }
 
-TEST(StagePlaceholders, GroundLookupFollowsTheActiveMap)
+TEST(StageHostPlaceholders, GroundLookupFollowsTheActiveMap)
 {
-    StagePlaceholders host;
-    GroundMap         low = GroundMap::MakeEmpty(200, 100);
+    StageWorldHost host;
+    GroundMap      low = GroundMap::MakeEmpty(200, 100);
     low.FillRect(0, 60, 199, 99, true);
     GroundMap high = GroundMap::MakeEmpty(200, 100);
     high.FillRect(0, 30, 199, 99, true);

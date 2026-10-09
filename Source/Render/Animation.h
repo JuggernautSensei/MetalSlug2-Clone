@@ -92,7 +92,6 @@ public:
     [[nodiscard]] slug::Span<const slug::String> GetAtlasPages() const { return m_atlasPages; }
     [[nodiscard]] const slug::FilePath&         GetRoot() const { return m_root; }
 
-    void SetAtlasPages(slug::Vector<slug::String> _pages) { m_atlasPages = std::move(_pages); }
 
 private:
     slug::Vector<AnimClip>               m_clips       = {};
@@ -115,7 +114,6 @@ public:
     [[nodiscard]] AnimId  GetClip() const { return m_clip; }
     [[nodiscard]] int     GetFrame() const { return m_frame; }
     [[nodiscard]] int64_t GetTimeUnits() const { return m_timeUnits; }
-    [[nodiscard]] float   GetTimeSec() const { return static_cast<float>(static_cast<double>(m_timeUnits) / static_cast<double>(kAnimTimeUnitsPerSec)); }
     [[nodiscard]] bool    IsFinished() const { return m_bFinished; }
     [[nodiscard]] float   GetNormalizedTime(const AnimClip& _clip) const;
 

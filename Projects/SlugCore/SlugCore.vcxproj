@@ -141,7 +141,6 @@
     <ClCompile Include="..\..\Source\Game\SimRunner.cpp" />
     <ClCompile Include="..\..\Source\Game\Stage\StageData.cpp" />
     <ClCompile Include="..\..\Source\Game\Stage\StageMapping.cpp" />
-    <ClCompile Include="..\..\Source\Game\Stage\StagePlaceholders.cpp" />
     <ClCompile Include="..\..\Source\Game\Stage\StageRunner.cpp" />
     <ClCompile Include="..\..\Source\Game\Stage\StageState.cpp" />
     <ClCompile Include="..\..\Source\Game\Stage\StageWorldHost.cpp" />
@@ -170,7 +169,6 @@
     <ClInclude Include="..\..\Source\Audio\SoundBank.h" />
     <ClInclude Include="..\..\Source\Audio\VoiceAllocator.h" />
     <ClInclude Include="..\..\Source\Base\Assert.h" />
-    <ClInclude Include="..\..\Source\Base\EnumFlags.h" />
     <ClInclude Include="..\..\Source\Base\Error.h" />
     <ClInclude Include="..\..\Source\Base\Handle.h" />
     <ClInclude Include="..\..\Source\Base\Json.h" />
@@ -215,7 +213,6 @@
     <ClInclude Include="..\..\Source\Game\Stage\StageData.h" />
     <ClInclude Include="..\..\Source\Game\Stage\StageHost.h" />
     <ClInclude Include="..\..\Source\Game\Stage\StageMapping.h" />
-    <ClInclude Include="..\..\Source\Game\Stage\StagePlaceholders.h" />
     <ClInclude Include="..\..\Source\Game\Stage\StageRunner.h" />
     <ClInclude Include="..\..\Source\Game\Stage\StageState.h" />
     <ClInclude Include="..\..\Source\Game\Stage\StageWorldHost.h" />

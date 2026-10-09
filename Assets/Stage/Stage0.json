@@ -1,17 +1,16 @@
 {
   "version": 1,
   "name": "Stage0",
-  "title": "MISSION 4",
   "world": {"size": [14094, 1328], "view": [640, 448], "background": "Stage0_Main"},
   "bgm": {"name": "Stage1_BGM", "loop": true},
   "ground": {"initial": "Stage0_0", "maps": ["Stage0_0", "Stage0_1"]},
   "backdrop": {"initial": "first", "modes": {"first": {"sprite": "Stage0_Background_0", "offset": [249, -64], "parallaxX": 0.15, "period": 1024}, "second": {"sprite": "Stage0_Background_0", "offset": [700, -130], "parallaxX": 0.15, "period": 1024}, "third": {"sprite": "Stage0_Background_2", "offset": [750, 0], "parallaxX": 0.1}, "fourth": {"sprite": "Stage0_Background_1", "offset": [1100, -30], "parallaxX": 0.1, "period": 1024}}},
   "player": {"x": 100, "groundSnap": true, "fromY": 0, "note": "Legacy start Vec(100,0); the player falls to the ground (same result as groundSnap at x=100)."},
   "rects": {"bossArena": [13454, 864, 14094, 1312]},
-  "camera": {"policy": "forward", "initialBounds": [0, 0, 3520, 448], "initialOffset": [0, 0], "chaseSpeed": 10, "playerMargin": 14, "boundsCurves": [{"id": "downtown_slope", "source": "playerX", "from": "downtown_start", "until": "openland_start", "left": 3180, "right": 14094, "height": 448, "top": [[6500, 311.75], [8610.7843137, 850]], "round": "trunc"}]},
+  "camera": {"policy": "forward", "initialBounds": [0, 0, 3520, 448], "initialOffset": [0, 0], "playerMargin": 14, "boundsCurves": [{"id": "downtown_slope", "source": "playerX", "from": "downtown_start", "until": "openland_start", "left": 3180, "right": 14094, "height": 448, "top": [[6500, 311.75], [8610.7843137, 850]], "round": "trunc"}]},
   "sections": [
     {
-      "id": "intro", "legacy": "NONE", "triggerX": 0,
+      "id": "intro", "triggerX": 0,
       "actions": [
         {"type": "fade", "to": "clear", "seconds": 1.0},
         {"type": "banner", "text": "MISSION 4\nSTART", "seconds": 2.5},
@@ -24,7 +23,7 @@
       ]
     },
     {
-      "id": "street", "legacy": "START", "triggerX": 750,
+      "id": "street", "triggerX": 750,
       "actions": [
         {"type": "spawn", "kind": "prop", "def": "shop_5", "x": 2513, "y": 181, "params": {"sprites": ["Stage0_Shop_5_0", "Stage0_Shop_5_1"], "hitbox": {"size": [150, 75], "offset": [0, -200]}, "standBox": {"size": [230, 20], "offset": [35, 55]}}},
         {"type": "spawn", "kind": "prop", "def": "shop_4", "x": 2224, "y": 185, "params": {"sprites": ["Stage0_Shop_4_0", "Stage0_Shop_4_1"], "hitbox": {"size": [200, 75], "offset": [50, -100]}, "standBox": {"size": [250, 20], "offset": [80, 20]}}},
@@ -48,7 +47,7 @@
       ]
     },
     {
-      "id": "bus_create", "legacy": "CREATE_BUS", "triggerX": 2244,
+      "id": "bus_create", "triggerX": 2244,
       "actions": [
         {"type": "setGround", "name": "Stage0_1", "when": "silent"},
         {"type": "spawn", "kind": "enemy", "def": "mb_truck", "id": "bus", "x": 2995, "y": 255, "origin": "legacyCenter", "halfHeight": 130},
@@ -58,7 +57,7 @@
       ]
     },
     {
-      "id": "bus_start", "legacy": "BUS_START", "triggerX": 2670,
+      "id": "bus_start", "triggerX": 2670,
       "actions": [
         {"type": "lockCamera", "rect": [2470, 0, 3110, 448], "glide": 1.0},
         {"type": "command", "target": "bus", "command": "startBattle"},
@@ -66,7 +65,7 @@
       ]
     },
     {
-      "id": "bus_end", "legacy": "BUS_END", "triggerX": 3050,
+      "id": "bus_end", "triggerX": 3050,
       "actions": [
         {"type": "unlockCamera"},
         {"type": "spawn", "kind": "collider", "def": "box_collider", "x": 3410, "y": 397, "size": [159, 39], "collisionLayer": "wall"},
@@ -77,7 +76,7 @@
       ]
     },
     {
-      "id": "bridge", "legacy": "BRIDGE", "triggerX": 3300,
+      "id": "bridge", "triggerX": 3300,
       "actions": [
         {"type": "cameraMove", "to": [3505, 480], "seconds": 0.5},
         {"type": "setBounds", "rect": [3180, 256, 6520, 704]},
@@ -92,7 +91,7 @@
       ]
     },
     {
-      "id": "bridge_down", "legacy": "BRIDGE_DOWN", "triggerX": 3700,
+      "id": "bridge_down", "triggerX": 3700,
       "actions": [
         {"type": "setBackdrop", "mode": "second"},
         {"type": "spawn", "kind": "prop", "def": "mob_boat", "x": 4140, "y": 545, "id": "boat_1", "params": {"explodeOnDeath": true}},
@@ -105,7 +104,7 @@
       ]
     },
     {
-      "id": "bridge_mid", "legacy": "BRIDGE_MID", "triggerX": 4037,
+      "id": "bridge_mid", "triggerX": 4037,
       "actions": [
         {"type": "spawn", "kind": "prop", "def": "mob_boat", "x": 4634, "y": 545, "id": "boat_2", "params": {"explodeOnDeath": false}},
         {"type": "spawn", "kind": "prop", "def": "fence", "x": 4689, "y": 342, "repeat": {"count": 6, "stepX": 64, "stepY": 0}},
@@ -119,7 +118,7 @@
       ]
     },
     {
-      "id": "bridge_end", "legacy": "BRIDGE_END", "triggerX": 4600,
+      "id": "bridge_end", "triggerX": 4600,
       "actions": [
         {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 5639, "y": 648, "anim": "Stage0_Water", "layer": "background", "cullMargin": 100, "params": {"playerWaterTrigger": {"size": [1050, 40]}}},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 5060, "groundSnap": true},
@@ -128,7 +127,7 @@
       ]
     },
     {
-      "id": "river_start", "legacy": "RIVER_START", "triggerX": 5000,
+      "id": "river_start", "triggerX": 5000,
       "actions": [
         {"type": "spawn", "kind": "prop", "def": "guard_post", "x": 5800, "y": 541, "layer": "background"},
         {"type": "spawn", "kind": "item", "def": "item_letter", "x": 5800, "y": 200},
@@ -143,7 +142,7 @@
       ]
     },
     {
-      "id": "river_mid", "legacy": "RIVER_MID", "triggerX": 5600,
+      "id": "river_mid", "triggerX": 5600,
       "actions": [
         {"type": "setBounds", "rect": [3180, 288, 6520, 736]},
         {"type": "spawn", "kind": "npc", "def": "pow", "x": 5800, "y": 40, "settle": true, "drop": "gunitem_fs"},
@@ -155,7 +154,7 @@
       ]
     },
     {
-      "id": "river_end", "legacy": "RIVER_END", "triggerX": 6220,
+      "id": "river_end", "triggerX": 6220,
       "actions": [
         {"type": "setBounds", "rect": [3180, 288, 14094, 736]},
         {"type": "setCameraOffset", "offset": [50, -140]},
@@ -167,7 +166,7 @@
       ]
     },
     {
-      "id": "downtown_start", "legacy": "DOWNTOWN_START", "triggerX": 6500,
+      "id": "downtown_start", "triggerX": 6500,
       "actions": [
         {"type": "spawn", "kind": "prop", "def": "bridge_deck", "x": 6756, "y": 767},
         {"type": "spawn", "kind": "prop", "def": "bridge_deck", "x": 7075, "y": 847},
@@ -188,7 +187,7 @@
       ]
     },
     {
-      "id": "downtown_mid", "legacy": "DOWNTOWN_MID", "triggerX": 7400,
+      "id": "downtown_mid", "triggerX": 7400,
       "actions": [
         {"type": "spawn", "kind": "prop", "def": "bridge_deck", "x": 7716, "y": 1007},
         {"type": "spawn", "kind": "prop", "def": "bridge_deck", "x": 8356, "y": 1167},
@@ -221,7 +220,7 @@
       ]
     },
     {
-      "id": "downtown_end", "legacy": "DOWNTOWN_END", "triggerX": 8700,
+      "id": "downtown_end", "triggerX": 8700,
       "actions": [
         {"type": "setBackdrop", "mode": "fourth"},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 8878, "y": 1061},
@@ -232,7 +231,7 @@
       ]
     },
     {
-      "id": "openland_start", "legacy": "OPENLAND_START", "triggerX": 8980,
+      "id": "openland_start", "triggerX": 8980,
       "actions": [
         {"type": "setBounds", "rect": [3180, 864, 14094, 1312]},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 9420, "groundSnap": true, "fromY": 1100},
@@ -241,7 +240,7 @@
       ]
     },
     {
-      "id": "openland_1", "legacy": "OPENLAND_1", "triggerX": 9450,
+      "id": "openland_1", "triggerX": 9450,
       "actions": [
         {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 10098, "y": 1274},
         {"type": "spawn", "kind": "prop", "def": "big_house", "x": 10470, "y": 1257},
@@ -256,7 +255,7 @@
       ]
     },
     {
-      "id": "openland_2", "legacy": "OPENLAND_2", "triggerX": 10350,
+      "id": "openland_2", "triggerX": 10350,
       "actions": [
         {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 11122, "y": 1274},
         {"type": "spawn", "kind": "prop", "def": "big_house", "x": 11494, "y": 1257},
@@ -272,7 +271,7 @@
       ]
     },
     {
-      "id": "openland_3", "legacy": "OPENLAND_3", "triggerX": 11350,
+      "id": "openland_3", "triggerX": 11350,
       "actions": [
         {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 12146, "y": 1274},
         {"type": "spawn", "kind": "prop", "def": "big_house", "x": 12518, "y": 1257},
@@ -289,7 +288,7 @@
       ]
     },
     {
-      "id": "openland_4", "legacy": "OPENLAND_4", "triggerX": 12350, "note": "Legacy only spawns Sarubia + opens the gate if FindGroundY finds ground; the lockCamera/gate pair is skipped together with the spawn.",
+      "id": "openland_4", "triggerX": 12350, "note": "Legacy only spawns Sarubia + opens the gate if FindGroundY finds ground; the lockCamera/gate pair is skipped together with the spawn.",
       "actions": [
         {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 13170, "y": 1274},
         {"type": "spawn", "kind": "prop", "def": "big_house", "x": 13542, "y": 1257},
@@ -304,7 +303,7 @@
       ]
     },
     {
-      "id": "boss", "legacy": "OPENLAND_BOSS", "triggerX": 13500,
+      "id": "boss", "triggerX": 13500,
       "actions": [
         {"type": "clear", "waves": true},
         {"type": "lockCamera", "rect": "bossArena", "permanent": true},

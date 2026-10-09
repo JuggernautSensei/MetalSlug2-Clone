@@ -83,11 +83,6 @@ void Camera::SetBounds(
     m_bHasBounds = true;
 }
 
-void Camera::ClearBounds()
-{
-    m_bHasBounds = false;
-}
-
 void Camera::Lock(
     const Aabb& _lockBounds)
 {

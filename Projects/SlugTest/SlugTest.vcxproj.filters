@@ -131,6 +131,9 @@
     <ClInclude Include="..\..\Test\StageTestUtil.h">
       <Filter>Test</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Test\TestAudio.h">
+      <Filter>Test</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Test\VehicleTestUtil.h">
       <Filter>Test</Filter>
     </ClInclude>

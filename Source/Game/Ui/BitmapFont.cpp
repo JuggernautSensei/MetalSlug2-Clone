@@ -8,6 +8,8 @@
 
 namespace slug
 {
+namespace
+{
 slug::Vector<int> SplitLineLengths(
     const slug::StringView _text)
 {
@@ -27,6 +29,7 @@ slug::Vector<int> SplitLineLengths(
     }
     lengths.push_back(current);
     return lengths;
+}
 }
 
 int MeasureTextWidth(
@@ -142,6 +145,8 @@ int FitTextScale(
     return best;
 }
 
+namespace
+{
 slug::RGBA GetFontFallbackColor(
     const eFontColor _color)
 {
@@ -168,6 +173,7 @@ const char* GetFontSpriteName(
         case eFontColor::Yellow: return "Font_Yellow";
         default: return "Font_Normal";
     }
+}
 }
 
 bool BitmapFont::Init(

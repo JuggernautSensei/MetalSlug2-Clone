@@ -85,12 +85,10 @@ public:
 
     void Submit(SpriteBatch& _sprites, Vec2 _feet, int _layer, int _sortKey, slug::RGBA _tint = { 255, 255, 255, 255 }) const;
 
-    [[nodiscard]] bool         IsBound() const { return m_pLibrary != nullptr; }
     [[nodiscard]] AnimId       GetUpperClip() const { return m_upper.GetClip(); }
     [[nodiscard]] AnimId       GetLowerClip() const { return m_lower.GetClip(); }
     [[nodiscard]] int          GetUpperFrame() const { return m_upper.GetFrame(); }
     [[nodiscard]] int          GetLowerFrame() const { return m_lower.GetFrame(); }
-    [[nodiscard]] bool         IsUpperFinished() const { return m_upper.IsFinished(); }
     [[nodiscard]] float        GetOriginLift() const { return m_originLift; }
     [[nodiscard]] Vec2 GetOrigin(Vec2 _feet) const { return { _feet.x, _feet.y - m_originLift }; }
 

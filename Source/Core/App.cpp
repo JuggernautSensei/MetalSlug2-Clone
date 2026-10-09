@@ -36,7 +36,7 @@ namespace
         }
         return scale;
     }
-}
+}   // namespace
 
 int App::Run(
     const int _argc,
@@ -107,7 +107,7 @@ void App::PollEvents_()
 
 void App::ParseArgs_()
 {
-    const const slug::Span<const slug::String> args = m_cmdArgs;
+    const slug::Span<const slug::String> args = m_cmdArgs;
     for (size_t i = 1; i < args.size(); ++i)
     {
         const bool bHasValue = i + 1 < args.size();
@@ -150,12 +150,18 @@ void App::ParseArgs_()
         else if (args[i] == "--hold" && bHasValue)
         {
             const slug::String name = args[++i];
-            if (name == "J") m_input.OnKeyDown(SDL_SCANCODE_J);
-            else if (name == "K") m_input.OnKeyDown(SDL_SCANCODE_K);
-            else if (name == "Up") m_input.OnKeyDown(SDL_SCANCODE_UP);
-            else if (name == "Down") m_input.OnKeyDown(SDL_SCANCODE_DOWN);
-            else if (name == "Left") m_input.OnKeyDown(SDL_SCANCODE_LEFT);
-            else if (name == "Right") m_input.OnKeyDown(SDL_SCANCODE_RIGHT);
+            if (name == "J")
+                m_input.OnKeyDown(SDL_SCANCODE_J);
+            else if (name == "K")
+                m_input.OnKeyDown(SDL_SCANCODE_K);
+            else if (name == "Up")
+                m_input.OnKeyDown(SDL_SCANCODE_UP);
+            else if (name == "Down")
+                m_input.OnKeyDown(SDL_SCANCODE_DOWN);
+            else if (name == "Left")
+                m_input.OnKeyDown(SDL_SCANCODE_LEFT);
+            else if (name == "Right")
+                m_input.OnKeyDown(SDL_SCANCODE_RIGHT);
         }
         else if (args[i] == "--warp" && bHasValue)
         {
@@ -164,8 +170,8 @@ void App::ParseArgs_()
         }
         else if (args[i] == "--capture-ticks" && bHasValue)
         {
-            const slug::String list = args[++i];
-            size_t            begin = 0;
+            const slug::String list  = args[++i];
+            size_t             begin = 0;
             while (begin < list.size())
             {
                 size_t end = list.find(',', begin);
@@ -186,7 +192,7 @@ void App::ParseArgs_()
 
 void App::Init_()
 {
-        ParseArgs_();
+    ParseArgs_();
 
     if (!m_replayPath.empty())
     {
@@ -195,10 +201,10 @@ void App::Init_()
         {
             SLUG_LOG_FATAL("리플레이 로드 실패: {}", loaded.GetError().MakeMessage());
             m_returnCode = 1;
-            m_bRunning = false;
+            m_bRunning   = false;
             return;
         }
-        m_playback = loaded.Take();
+        m_playback  = loaded.Take();
         m_bPlayback = true;
         m_seed      = m_playback.seed;
         if (m_stateName.empty())
@@ -216,7 +222,7 @@ void App::Init_()
     {
         SLUG_LOG_FATAL("렌더러 초기화 실패: {}", result.GetError().MakeMessage());
         m_returnCode = 1;
-        m_bRunning = false;
+        m_bRunning   = false;
         return;
     }
 
@@ -235,7 +241,7 @@ void App::Init_()
         SLUG_LOG_WARN("Baked 에셋 없음 ({}): Scripts/Bake.ps1 을 실행하세요", bakedRoot.string());
     }
 
-    m_rng = slug::RngMt19937 { m_seed };
+    m_rng                 = slug::RngMt19937 { m_seed };
     m_recording.seed      = m_seed;
     m_recording.stateName = m_stateName;
 
@@ -263,10 +269,12 @@ void App::Init_()
     {
         SLUG_LOG_FATAL("알 수 없는 게임 상태: {}", m_stateName);
         m_returnCode = 1;
-        m_bRunning = false;
+        m_bRunning   = false;
         return;
     }
-    m_pRunner = std::unique_ptr<SimRunner> { new SimRunner { m_ctx, std::move(pState) } };
+    m_pRunner = std::unique_ptr<SimRunner> {
+        new SimRunner { m_ctx, std::move(pState) }
+    };
 }
 
 void App::Shutdown_()
@@ -308,8 +316,12 @@ void App::OnKeyDown_(
         case SDL_SCANCODE_F2: m_bPaused = !m_bPaused; return;
         case SDL_SCANCODE_F3: m_bStepOnce = true; return;
         case SDL_SCANCODE_F4: m_bSlowMo = !m_bSlowMo; return;
-        case SDL_SCANCODE_F5: if (m_bDebugDraw) { m_pendingWarp = 1; } return;   // 스테이지: 다음 섹션
-        case SDL_SCANCODE_F6: if (m_bDebugDraw) { m_pendingWarp = 2; } return;   // 스테이지: 보스 아레나
+        case SDL_SCANCODE_F5:
+            if (m_bDebugDraw) { m_pendingWarp = 1; }
+            return;   // 스테이지: 다음 섹션
+        case SDL_SCANCODE_F6:
+            if (m_bDebugDraw) { m_pendingWarp = 2; }
+            return;   // 스테이지: 보스 아레나
         case SDL_SCANCODE_1: m_pendingSpawn = 1; return;
         case SDL_SCANCODE_2: m_pendingSpawn = 2; return;
         case SDL_SCANCODE_3: m_pendingSpawn = 3; return;
@@ -363,10 +375,10 @@ void App::Update_(
         m_pendingWarp = 1;
         --m_startWarpCount;
     }
-    m_ctx.debugWarp     = m_pendingWarp;
-    m_pendingWarp       = 0;
-    m_ctx.debugWeapon   = m_pendingWeapon;
-    m_pendingWeapon     = 0;
+    m_ctx.debugWarp   = m_pendingWarp;
+    m_pendingWarp     = 0;
+    m_ctx.debugWeapon = m_pendingWeapon;
+    m_pendingWeapon   = 0;
     if (m_pendingSpawn > 0)
     {
         m_ctx.debugSpawn = m_pendingSpawn;
@@ -438,7 +450,7 @@ void App::Render_(
     {
         while (m_captureTickHead < m_captureTicks.size() && m_pRunner->GetTickCount() >= m_captureTicks[m_captureTickHead])
         {
-            const uint64_t     tick = m_captureTicks[m_captureTickHead++];
+            const uint64_t       tick = m_captureTicks[m_captureTickHead++];
             const slug::FilePath path = slug::FilePath { std::format("{}_{:05}.bmp", m_capturePath.string(), tick) };
             if (const slug::Result<void> result = m_renderer.SaveScreenshotBmp(path); !result)
             {
@@ -463,4 +475,4 @@ void App::Render_(
 
     m_renderer.EndFrame();
 }
-}
+}   // namespace slug

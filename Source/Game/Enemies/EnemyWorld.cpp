@@ -605,13 +605,6 @@ const Enemy* EnemyWorld::Get(
     return idx < m_enemies.size() ? &m_enemies[idx] : nullptr;
 }
 
-const Enemy* EnemyWorld::GetById(
-    const uint32_t _id) const
-{
-    const size_t idx = FindIndex_(_id);
-    return idx < m_enemies.size() ? &m_enemies[idx] : nullptr;
-}
-
 EnemyHandle EnemyWorld::ResolveHandle(
     const EnemyHandle _handle) const
 {
@@ -904,7 +897,6 @@ EnemyEvent EnemyWorld::MakeEvent(
     event.pos      = _e.body.position;
     event.drop     = _e.drop;
     event.userTag  = _e.userTag;
-    event.hitKind  = _e.lastHitKind;
     if (m_pLibrary && _e.defIndex >= 0)
     {
         const EnemyDef& def = m_pLibrary->Get(_e.defIndex);

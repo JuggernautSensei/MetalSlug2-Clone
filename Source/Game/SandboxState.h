@@ -60,7 +60,6 @@ public:
     [[nodiscard]] ProjectileSystem&       GetProjectiles() { return m_projectiles; }
     [[nodiscard]] CombatSystem&           GetCombat() { return m_combat; }
     [[nodiscard]] Tuning&                 GetTuning() { return m_tuning; }
-    [[nodiscard]] const GroundMap&        GetGround() const { return m_ground; }
     [[nodiscard]] const Camera&           GetCamera() const { return m_camera; }
     [[nodiscard]] PlayerRig&              GetRig() { return m_rig; }
     [[nodiscard]] const PlayerRig&        GetRig() const { return m_rig; }

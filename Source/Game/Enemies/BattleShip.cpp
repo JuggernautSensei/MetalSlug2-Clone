@@ -842,11 +842,6 @@ int GetTurretHp(const Enemy& _e, const int _index)
     return _e.ext[kTurretBase + _index * kTurretStride + kTurretHp];
 }
 
-int GetTurretDir(const Enemy& _e, const int _index)
-{
-    return _e.ext[kTurretBase + _index * kTurretStride + kTurretDir];
-}
-
 float GetCannonAngle(const Enemy& _e)
 {
     return static_cast<float>(_e.ext[kExtAngle]) / 100.f;
@@ -855,11 +850,6 @@ float GetCannonAngle(const Enemy& _e)
 Vec2 GetOrigin(const Enemy& _e, const EnemyDef& _def)
 {
     return OriginOf_(_e, _def.battleShip);
-}
-
-Vec2 GetTurretOrigin(const Enemy& _e, const EnemyDef& _def, const int _index)
-{
-    return TurretOriginOf_(_e, _def.battleShip, _index);
 }
 }
 

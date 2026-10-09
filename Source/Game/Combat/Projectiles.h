@@ -161,7 +161,6 @@ public:
     [[nodiscard]] int CountBombs(uint32_t _owner) const;
     [[nodiscard]] int CountShots(uint32_t _owner) const;
 
-    void CullShots(const Aabb& _keep, CombatSystem& _combat);
 
     [[nodiscard]] slug::Span<const Bullet> GetBullets() const { return m_bullets; }
     [[nodiscard]] slug::Span<const Bomb>   GetBombs() const { return m_bombs; }

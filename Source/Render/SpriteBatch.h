@@ -72,7 +72,6 @@ public:
 
     [[nodiscard]] slug::Result<int> LoadStandaloneTexture(const slug::FilePath& _pngPath);
     [[nodiscard]] slug::Result<int> AddStandaloneTextureFromRgba(int _width, int _height, slug::Span<const uint8_t> _rgba);
-    [[nodiscard]] size_t           GetStandaloneTextureCount() const { return m_textures.size(); }
 
     void DrawTexture(int _handle, Vec2 _texWorldPos, Vec2 _cameraPos, int _viewW, int _viewH, slug::RGBA _tint = { 255, 255, 255, 255 }) const;
 

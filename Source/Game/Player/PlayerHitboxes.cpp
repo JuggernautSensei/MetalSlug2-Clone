@@ -91,13 +91,6 @@ Vec2 GetBombReleasePosition(
     return { _feet.x + _bomb.releaseOffset.x * static_cast<float>(_facing), _feet.y + _bomb.releaseOffset.y + lowering };
 }
 
-Vec2 GetBodySize(
-    const ePose       _pose,
-    const BodyTuning& _body)
-{
-    return _pose == ePose::Crouch ? _body.crouchSize : _body.standSize;
-}
-
 Aabb MakePlayerHurtboxBox(
     const Vec2 _feet,
     const ePose        _pose,

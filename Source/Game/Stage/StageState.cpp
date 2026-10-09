@@ -721,7 +721,7 @@ std::unique_ptr<IGameState> StageState::TakeNextState()
 
     if (!m_bFailed && m_endKind == eEndKind::Mission && m_host.IsEndRequested())
     {
-        return CreateState(m_host.GetPlaceholders().GetEndStateName());
+        return CreateState(m_host.GetEndStateName());
     }
     return CreateState("title");
 }
@@ -825,7 +825,7 @@ void StageState::DrawWorld_(
     }
     SpriteBatch& sprites  = *_ctx.pSprites;
 
-    for (const PlaceholderEntity& entity: m_host.GetPlaceholders().GetEntities())
+    for (const PlaceholderEntity& entity: m_host.GetPlaceholderEntities())
     {
         if (!entity.bHittable && !_ctx.bDebugDraw)
         {
@@ -955,8 +955,7 @@ void StageState::DrawHud_(
 
     if (_ctx.bDebugDraw)
     {
-        const StagePlaceholders& placeholders = m_host.GetPlaceholders();
-        const slug::String&       lastId       = placeholders.GetLastSectionId();
+        const slug::String&       lastId       = m_host.GetLastSectionId();
         const slug::String        gates        = JoinIds_(m_runner->GetOpenGateIds());
         const Vec2       pos          = m_player.GetFeet();
         const Vec2       vel          = m_player.GetVelocity();
@@ -969,7 +968,7 @@ void StageState::DrawHud_(
             "F1 BOX  F2 PAUSE  F3 STEP  F4 SLOW  F5 NEXT SECTION  F6 BOSS ARENA",
             m_data.name,
             lastId.empty() ? slug::String { "-" } : lastId,
-            placeholders.GetLastSectionIndex(),
+            m_host.GetLastSectionIndex(),
             m_data.sections.size(),
             m_runner->GetNextSectionIndex(),
             nextX ? std::format("{:.0f}", *nextX) : slug::String { "-" },
@@ -980,7 +979,7 @@ void StageState::DrawHud_(
             m_props.GetCount(),
             m_props.GetItems().GetCount(),
             m_host.GetColliders().size(),
-            placeholders.GetEntities().size(),
+            m_host.GetPlaceholderEntities().size(),
             m_runner->GetSkippedCount(),
             m_runner->GetLockDepth(),
             m_runner->GetBackdropMode(),

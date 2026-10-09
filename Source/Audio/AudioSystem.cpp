@@ -119,7 +119,6 @@ slug::Result<void> AudioSystem::Init(
     m_rng          = AudioRng { _config.pitchSeed };
     m_voices.Reset(_config.maxVoices, _config.maxPerSound);
     m_dryRemaining.assign(static_cast<size_t>(m_voices.GetCapacity()), 0.f);
-    m_stats        = {};
     m_warnedMissing.clear();
     m_bInitialized = true;
     m_bDevice      = false;
@@ -153,12 +152,10 @@ slug::Result<void> AudioSystem::Init(
         }
         else
         {
-            ++m_stats.loadFailed;
             SLUG_LOG_WARN("효과음 로드 실패 {} ({}): {}", entry.name, entry.file, ma_result_description(result));
         }
     }
 
-    m_stats.preloaded = preloaded;
     m_pBackend        = std::move(pBackend);
     m_bDevice         = true;
     SLUG_LOG_INFO("오디오: 효과음 {} 개 로드, BGM 스트리밍, 동시 {} 음", preloaded, m_voices.GetCapacity());
@@ -249,12 +246,9 @@ void AudioSystem::Play(
     {
         return;
     }
-    ++m_stats.playRequests;
-
     const int index = m_bank.FindIndex(_name);
     if (index < 0)
     {
-        ++m_stats.missing;
         if (m_warnedMissing.insert(slug::String { _name }).second)
         {
             SLUG_LOG_TRACE("알 수 없는 효과음 요청: {}", _name);
@@ -269,15 +263,10 @@ void AudioSystem::Play(
     }
 
     const VoiceAllocator::Acquired acquired = m_voices.Acquire(index);
-    if (acquired.bStolen)
+    if (acquired.bStolen && m_bDevice && m_pBackend)
     {
-        ++m_stats.stolen;
-        if (m_bDevice && m_pBackend)
-        {
-            m_pBackend->UninitVoice(static_cast<size_t>(acquired.slot));
-        }
+        m_pBackend->UninitVoice(static_cast<size_t>(acquired.slot));
     }
-    ++m_stats.started;
     m_dryRemaining[static_cast<size_t>(acquired.slot)] = kDryVoiceSeconds;
 
     if (!m_bDevice || !m_pBackend)
@@ -317,7 +306,6 @@ void AudioSystem::PlayBgm(
     const int index = m_bank.FindIndex(_name);
     if (index < 0)
     {
-        ++m_stats.missing;
         return;
     }
 
@@ -331,7 +319,6 @@ void AudioSystem::PlayBgm(
     m_bBgmLoop = _bLoop;
     m_bgmFade.Reset();
     m_bgmState = eBgmState::Playing;
-    ++m_stats.bgmStarts;
 
     if (!m_bDevice || !m_pBackend)
     {
@@ -382,26 +369,6 @@ void AudioSystem::AllStop()
         }
     }
     StopBgm_();
-}
-
-void AudioSystem::SetMasterVolume(
-    const float _volume)
-{
-    m_masterVolume = Clamp01_(_volume);
-    ApplyBgmVolume_();
-}
-
-void AudioSystem::SetSfxVolume(
-    const float _volume)
-{
-    m_sfxVolume = Clamp01_(_volume);
-}
-
-void AudioSystem::SetBgmVolume(
-    const float _volume)
-{
-    m_bgmVolume = Clamp01_(_volume);
-    ApplyBgmVolume_();
 }
 
 void AudioSystem::StopBgm_()

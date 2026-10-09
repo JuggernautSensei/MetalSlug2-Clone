@@ -30,7 +30,6 @@ public:
     static constexpr int kDebugCharSize = 8;
     void                 DrawDebugText(Vec2 _topLeft, slug::StringView _text, slug::RGBA _color);
 
-    [[nodiscard]] SDL_Window*   GetWindow() const;
     [[nodiscard]] SDL_Renderer* GetNative() const;
     [[nodiscard]] bool          IsInitialized() const;
 

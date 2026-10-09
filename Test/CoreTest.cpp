@@ -75,16 +75,6 @@ TEST(InputHistory, PressEdgeIsDetectedOnFirstFrame)
     EXPECT_TRUE(history.IsHeld(eAction::Jump));
 }
 
-TEST(InputHistory, ReleaseEdge)
-{
-    InputHistory history;
-    history.Push(Held(eAction::Shot));
-    history.Push({});
-    EXPECT_TRUE(history.WasReleased(eAction::Shot));
-    history.Push({});
-    EXPECT_FALSE(history.WasReleased(eAction::Shot));
-}
-
 TEST(InputHistory, PressBufferWindow)
 {
     InputHistory history;
@@ -94,20 +84,6 @@ TEST(InputHistory, PressBufferWindow)
     history.Push({});
     EXPECT_TRUE(history.WasPressedWithin(eAction::Jump, 4));
     EXPECT_FALSE(history.WasPressedWithin(eAction::Jump, 2));
-}
-
-TEST(InputHistory, ConsumedPressIsNotReported)
-{
-    InputHistory history;
-    history.Push({});
-    history.Push(Held(eAction::Jump));
-    ASSERT_TRUE(history.WasPressedWithin(eAction::Jump, 4));
-    history.ConsumePress(eAction::Jump);
-    EXPECT_FALSE(history.WasPressedWithin(eAction::Jump, 4));
-
-    history.Push({});
-    history.Push(Held(eAction::Jump));
-    EXPECT_TRUE(history.WasPressedWithin(eAction::Jump, 2));
 }
 
 TEST(InputSystem, MultipleKeysMapToOneAction)

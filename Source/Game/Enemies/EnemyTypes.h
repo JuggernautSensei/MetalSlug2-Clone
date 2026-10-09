@@ -78,7 +78,6 @@ struct EnemyEvent
     int             score    = 0;
     slug::String     drop     = {};
     uint32_t        userTag  = 0;
-    eHitKind        hitKind  = eHitKind::Bullet;
 };
 
 struct EnemyPlayerInfo
@@ -140,7 +139,6 @@ struct Enemy
     int  clip      = -1;   // EnemyDef::clips 인덱스
     int  clipTicks = 0;    // 클립 시작 후 경과 틱
     bool bVisible  = true;
-    int  overlayTicks = 0;
 
     uint32_t meleeHitId    = kNoHitId;
     int      meleeTicksLeft = 0;

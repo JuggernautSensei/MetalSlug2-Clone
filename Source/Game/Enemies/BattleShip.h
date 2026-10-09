@@ -41,11 +41,9 @@ inline constexpr int kTurretAction = 4;   // 0 없음 / 1 왼쪽 회전 / 2 오�
 [[nodiscard]] bool IsFightStarted(const Enemy& _e);
 [[nodiscard]] int  GetPatternCount(const Enemy& _e);
 [[nodiscard]] int  GetTurretHp(const Enemy& _e, int _index);
-[[nodiscard]] int  GetTurretDir(const Enemy& _e, int _index);
 [[nodiscard]] float GetCannonAngle(const Enemy& _e);
 
 [[nodiscard]] Vec2 GetOrigin(const Enemy& _e, const EnemyDef& _def);
-[[nodiscard]] Vec2 GetTurretOrigin(const Enemy& _e, const EnemyDef& _def, int _index);
 
 [[nodiscard]] constexpr uint32_t TurretOwner(const uint32_t _enemyId, const int _index)
 {

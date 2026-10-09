@@ -147,6 +147,7 @@
     <ClInclude Include="..\..\Test\PlayerTestUtil.h" />
     <ClInclude Include="..\..\Test\PropTestUtil.h" />
     <ClInclude Include="..\..\Test\StageTestUtil.h" />
+    <ClInclude Include="..\..\Test\TestAudio.h" />
     <ClInclude Include="..\..\Test\VehicleTestUtil.h" />
   </ItemGroup>
   <ItemGroup>

@@ -59,7 +59,6 @@ public:
     [[nodiscard]] const UiSystem&          GetUi() const { return m_ui; }
     [[nodiscard]] UiSystem&                GetUi() { return m_ui; }
     [[nodiscard]] uint64_t                 GetTickCount() const { return m_tickCount; }
-    [[nodiscard]] eFlowPhase               GetFlowPhase() const { return m_flow.GetPhase(); }
     [[nodiscard]] uint64_t                 HashState() const;
 
 private:

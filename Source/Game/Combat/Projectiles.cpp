@@ -430,21 +430,6 @@ int ProjectileSystem::CountShots(
     return count;
 }
 
-void ProjectileSystem::CullShots(
-    const Aabb&   _keep,
-    CombatSystem& _combat)
-{
-    for (Shot& shot: m_shots)
-    {
-        if (shot.bAlive && !_keep.Contains(shot.position))
-        {
-            shot.bAlive = false;
-            _combat.ReleaseHitId(shot.hitId);
-        }
-    }
-    std::erase_if(m_shots, [](const Shot& _s) { return !_s.bAlive; });
-}
-
 slug::Vector<ShotFx> ProjectileSystem::TakeShotFx()
 {
     slug::Vector<ShotFx> out;

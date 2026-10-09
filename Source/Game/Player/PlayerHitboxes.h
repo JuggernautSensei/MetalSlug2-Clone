@@ -18,7 +18,6 @@ namespace slug
 
 [[nodiscard]] Vec2 GetBombReleasePosition(Vec2 _feet, int _facing, ePose _pose, const BombTuning& _bomb);
 
-[[nodiscard]] Vec2 GetBodySize(ePose _pose, const BodyTuning& _body);
 [[nodiscard]] Aabb         MakePlayerHurtboxBox(Vec2 _feet, ePose _pose, const BodyTuning& _body);
 
 [[nodiscard]] constexpr bool IsKnifeSwingActive(

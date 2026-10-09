@@ -25,34 +25,16 @@ private:
     std::mt19937_64 m_mt;
 };
 
-template<typename R>
-concept RngT = requires(R _rng) {
-    { _rng.Generate() } -> std::same_as<uint64_t>;
-};
-
-template<typename T, RngT R>
+// [_min, _max] 범위의 난수. 정수는 양 끝을 포함하고, 실수는 [_min, _max) 구간이다.
+template<typename T>
     requires std::is_arithmetic_v<T>
-[[nodiscard]] T Random(R& _rng)
-{
-    if constexpr (std::is_floating_point_v<T>)
-    {
-        return static_cast<T>(_rng.Generate()) / static_cast<T>(std::numeric_limits<uint64_t>::max());
-    }
-    else
-    {
-        return static_cast<T>(_rng.Generate());
-    }
-}
-
-template<typename T, RngT R>
-    requires std::is_arithmetic_v<T>
-[[nodiscard]] T Random(R& _rng, const T _min, const T _max)
+[[nodiscard]] T Random(RngMt19937& _rng, const T _min, const T _max)
 {
     SLUG_ASSERT(_min <= _max, "Invalid range: min > max.");
     if constexpr (std::is_floating_point_v<T>)
     {
-        const T range = _max - _min;
-        return Random<T>(_rng) * range + _min;
+        const T unit = static_cast<T>(_rng.Generate()) / static_cast<T>(std::numeric_limits<uint64_t>::max());
+        return unit * (_max - _min) + _min;
     }
     else
     {

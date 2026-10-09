@@ -56,21 +56,6 @@ int SecToTicks(
     return static_cast<int>(std::lround(static_cast<double>(_sec) * 60.0));
 }
 
-int ClipDef::FrameAt(
-    const int _ticks) const
-{
-    if (frames <= 1 || frameUnits <= 0)
-    {
-        return 0;
-    }
-    const int64_t index = (static_cast<int64_t>(_ticks < 0 ? 0 : _ticks) * kAnimUnitsPerTick) / frameUnits;
-    if (bLoop)
-    {
-        return static_cast<int>(index % frames);
-    }
-    return static_cast<int>(index >= frames ? frames - 1 : index);
-}
-
 int ClipDef::TickOfFrame(
     const int _frame) const
 {

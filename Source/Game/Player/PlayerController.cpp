@@ -119,7 +119,6 @@ void PlayerController::Reset(
     m_moveX           = 0;
     m_bSlashShown     = false;
     m_bThrowShown     = false;
-    m_bKnifeEmitted   = false;
     m_pendingRelease.clear();
 }
 
@@ -230,7 +229,6 @@ void PlayerController::Tick(
     m_prevFeet      = m_body.position;
     m_bSlashShown   = false;
     m_bThrowShown   = false;
-    m_bKnifeEmitted = false;
     TickWeapon(m_weapon);
 
     if (m_state == ePlayerState::Dead)
@@ -533,7 +531,6 @@ void PlayerController::TickKnife_(
             hitbox.owner   = kPlayerOwnerId;
             hitbox.id      = m_knifeHitId;
             combat.AddHitbox(hitbox);
-            m_bKnifeEmitted = true;
         }
         ++m_knifeTick;
     }

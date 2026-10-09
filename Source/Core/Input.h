@@ -74,18 +74,14 @@ public:
 
     [[nodiscard]] bool IsHeld(eAction _action) const;
     [[nodiscard]] bool WasPressed(eAction _action) const;
-    [[nodiscard]] bool WasReleased(eAction _action) const;
 
     [[nodiscard]] bool WasPressedWithin(eAction _action, int _frames) const;
-
-    void ConsumePress(eAction _action);
 
 private:
     [[nodiscard]] const InputFrame& GetAgo_(size_t _ago) const;
 
-    slug::ARRAY<InputFrame, kCapacity> m_frames          = {};
-    slug::ARRAY<uint16_t, kCapacity>   m_consumedPresses = {};
-    size_t                            m_head            = 0;
-    size_t                            m_count           = 0;
+    slug::ARRAY<InputFrame, kCapacity> m_frames = {};
+    size_t                             m_head   = 0;
+    size_t                             m_count  = 0;
 };
 }

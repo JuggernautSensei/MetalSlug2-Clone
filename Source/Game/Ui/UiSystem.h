@@ -33,9 +33,7 @@ public:
     [[nodiscard]] const BannerSystem&   GetBanner() const { return m_banner; }
     [[nodiscard]] FadeController&       GetFade() { return m_fade; }
     [[nodiscard]] const FadeController& GetFade() const { return m_fade; }
-    [[nodiscard]] BitmapFont&           GetFont() { return m_font; }
     [[nodiscard]] const UiLayout&       GetLayout() const { return m_layout; }
-    void                                SetLayout(const UiLayout& _layout) { m_layout = _layout; }
     [[nodiscard]] int                   GetTick() const { return m_tick; }
     [[nodiscard]] bool                  HasSprites() const { return m_bSprites; }
 

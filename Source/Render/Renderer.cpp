@@ -133,11 +133,6 @@ void Renderer::DrawDebugText(
     }
 }
 
-SDL_Window* Renderer::GetWindow() const
-{
-    return m_pWindow;
-}
-
 SDL_Renderer* Renderer::GetNative() const
 {
     return m_pRenderer;

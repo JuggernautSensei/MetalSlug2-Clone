@@ -81,16 +81,14 @@ InputFrame InputSystem::Sample() const
 void InputHistory::Push(
     const InputFrame _frame)
 {
-    m_head                    = (m_head + 1) % kCapacity;
-    m_frames[m_head]          = _frame;
-    m_consumedPresses[m_head] = 0;
-    m_count                   = m_count < kCapacity ? m_count + 1 : kCapacity;
+    m_head           = (m_head + 1) % kCapacity;
+    m_frames[m_head] = _frame;
+    m_count          = m_count < kCapacity ? m_count + 1 : kCapacity;
 }
 
 void InputHistory::Clear()
 {
     m_frames.fill({});
-    m_consumedPresses.fill(0);
     m_head  = 0;
     m_count = 0;
 }
@@ -118,12 +116,6 @@ bool InputHistory::WasPressed(
     return WasPressedWithin(_action, 1);
 }
 
-bool InputHistory::WasReleased(
-    const eAction _action) const
-{
-    return m_count >= 2 && !GetAgo_(0).IsHeld(_action) && GetAgo_(1).IsHeld(_action);
-}
-
 bool InputHistory::WasPressedWithin(
     const eAction _action,
     const int     _frames) const
@@ -136,21 +128,11 @@ bool InputHistory::WasPressedWithin(
         const size_t index   = (m_head + kCapacity - ago) % kCapacity;
         const bool   bNow    = (m_frames[index].held & mask) != 0;
         const bool   bBefore = (ago + 1 < m_count) ? ((m_frames[(index + kCapacity - 1) % kCapacity].held & mask) != 0) : false;
-        if (bNow && !bBefore && (m_consumedPresses[index] & mask) == 0)
+        if (bNow && !bBefore)
         {
             return true;
         }
     }
     return false;
-}
-
-void InputHistory::ConsumePress(
-    const eAction _action)
-{
-    const uint16_t mask = static_cast<uint16_t>(1u << static_cast<unsigned>(_action));
-    for (size_t ago = 0; ago < kCapacity && ago < m_count; ++ago)
-    {
-        m_consumedPresses[(m_head + kCapacity - ago) % kCapacity] |= mask;
-    }
 }
 }

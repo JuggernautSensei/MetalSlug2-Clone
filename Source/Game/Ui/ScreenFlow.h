@@ -47,7 +47,6 @@ public:
     [[nodiscard]] bool       IsRunning() const { return m_phase != eFlowPhase::Idle && m_phase != eFlowPhase::Done; }
     [[nodiscard]] bool       IsDone() const { return m_phase == eFlowPhase::Done; }
     [[nodiscard]] int        GetElapsedTicks() const { return m_elapsed; }
-    [[nodiscard]] const ScreenFlowConfig& GetConfig() const { return m_config; }
 
 private:
     void BeginBanner_(UiSystem& _ui, IAudioSink& _audio);

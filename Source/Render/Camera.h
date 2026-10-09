@@ -26,7 +26,6 @@ public:
     [[nodiscard]] const CameraTuning& GetTuning() const { return m_tuning; }
 
     void               SetBounds(const Aabb& _worldBounds);
-    void               ClearBounds();
     void               Lock(const Aabb& _lockBounds);
     void               Unlock();
     [[nodiscard]] bool IsLocked() const { return m_bLocked; }
@@ -45,11 +44,9 @@ public:
     [[nodiscard]] bool HasPendingLock() const { return m_bPendingLock; }
 
     [[nodiscard]] const Aabb& GetBounds() const { return m_bounds; }
-    [[nodiscard]] bool        HasBounds() const { return m_bHasBounds; }
     [[nodiscard]] const Aabb& GetLockBounds() const { return m_lockBounds; }
 
     void                       SetTarget(const Vec2 _target) { m_target = _target; }
-    [[nodiscard]] Vec2 GetTarget() const { return m_target; }
 
     void SnapToTarget();
     void SnapTo(Vec2 _viewCenter);

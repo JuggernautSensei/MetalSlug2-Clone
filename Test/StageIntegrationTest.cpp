@@ -203,7 +203,7 @@ TEST(StageIntegration, Stage0UsesRealEnemiesAndPropsInsteadOfPlaceholders)
     EXPECT_GT(sim.State().GetEnemies().CountAlive("soldier_bomb"), 0);
     EXPECT_GT(sim.State().GetProps().GetCount(), 0u);   // intro 의 트럭 두 대
 
-    for (const PlaceholderEntity& entity: host.GetPlaceholders().GetEntities())
+    for (const PlaceholderEntity& entity: host.GetPlaceholderEntities())
     {
         EXPECT_EQ(entity.kind, eEntityKind::Decor) << entity.def;
     }

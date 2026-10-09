@@ -40,7 +40,6 @@ public:
     [[nodiscard]] bool  IsObject() const { return m_type == eType::Object; }
 
     [[nodiscard]] bool              AsBool(bool _bDefault = false) const;
-    [[nodiscard]] double            AsNumber(double _default = 0.0) const;
     [[nodiscard]] float             AsFloat(float _default = 0.f) const;
     [[nodiscard]] int               AsInt(int _default = 0) const;
     [[nodiscard]] const slug::String& AsString() const;
@@ -53,7 +52,6 @@ public:
     [[nodiscard]] bool              Has(const slug::StringView _key) const { return Find(_key) != nullptr; }
 
     [[nodiscard]] bool             GetBool(slug::StringView _key, bool _bDefault = false) const;
-    [[nodiscard]] float            GetFloat(slug::StringView _key, float _default = 0.f) const;
     [[nodiscard]] int              GetInt(slug::StringView _key, int _default = 0) const;
     [[nodiscard]] slug::String      GetString(slug::StringView _key, slug::StringView _default = {}) const;
     [[nodiscard]] Vec2     GetVec2(slug::StringView _key, Vec2 _default = { 0.f, 0.f }) const;
@@ -290,7 +288,6 @@ struct StageAction
 struct StageSection
 {
     slug::String              id      = {};
-    slug::String              legacy  = {};
     float                    triggerX = 0.f;
     slug::Vector<StageAction> actions = {};
 };
@@ -333,7 +330,6 @@ struct CameraConfig
     bool                     bForward     = true;
     Aabb                     initialBounds = {};
     Vec2             initialOffset = { 0.f, 0.f };
-    float                    chaseSpeed    = 10.f;
     float                    playerMargin  = 14.f;
     slug::Vector<BoundsCurve> boundsCurves  = {};
 };
@@ -354,7 +350,6 @@ struct StageData
 {
     int         version = 1;
     slug::String name    = {};
-    slug::String title   = {};
 
     Vec2 worldSize  = { 0.f, 0.f };
     Vec2 viewSize   = { 640.f, 448.f };

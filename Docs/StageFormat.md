@@ -22,7 +22,7 @@
 | 키 | 타입 | 설명 |
 |---|---|---|
 | `version` | int | 1 |
-| `name`, `title` | string | 스테이지 ID / 표시명 |
+| `name` | string | 스테이지 ID |
 | `world` | `{size:[w,h], view:[w,h], background}` | `background` = sprites.json 키(`Stage0_Main`). 좌상단 (0,0) 에 그림 |
 | `bgm` | `{name, loop}` | sounds.json 키. 스테이지 시작 시 재생 |
 | `ground` | `{initial, maps:[...]}` | manifest `ground` 키. `setGround` 로 교체 |
@@ -38,7 +38,6 @@
 | `policy` | `"forward"`: 카메라 중심의 x,y 모두 **단조 비감소**(`max(prev, target)`). (`CAMERA_MOVE_POLICY::FORWARD`) |
 | `initialBounds` | `[0,0,3520,448]` — 카메라 **뷰 영역**이 들어가야 하는 월드 사각형. 중심은 `[l+320, r-320] x [t+224, b-224]` 로 clamp |
 | `initialOffset` | 추적 목표 = 플레이어 위치 + offset. `setCameraOffset` 으로 변경 |
-| `chaseSpeed` | 레거시 지수 추적 계수 10 (`cur += dt*(target-cur)*k`). 새 런타임은 튜닝 가능 |
 | `playerMargin` | 플레이어를 뷰 좌우 14px 안쪽으로 가둔다(`ClampPlayerToScreen`) |
 | `boundsCurves[]` | 매 틱 경계를 플레이어 위치로 계산하는 규칙(시가지 경사). 아래 |
 
@@ -52,7 +51,7 @@
 Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프라이트, 700,-130, 0.15) → `third`(Stage0_Background_2, 750,0, 0.1) → `fourth`(Stage0_Background_1, 1100,-30, 0.1).
 
 ## 5. sections
-`{ id, legacy, triggerX, actions[], note? }` — `id` 유일, `legacy` = 레거시 `STAGE0_EVENT` 이름(추적용). 액션은 **배열 순서대로** 실행(소품 → 적 → 웨이브 순으로 정렬되어 있음, 레거시 `EnterEvent` → `SpawnSectionEnemies` 순서와 동일).
+`{ id, triggerX, actions[], note? }` — `id` 유일. 액션은 **배열 순서대로** 실행(소품 → 적 → 웨이브 순으로 정렬되어 있음, 레거시 `EnterEvent` → `SpawnSectionEnemies` 순서와 동일).
 
 ### 모든 액션 공통
 `type`(필수), `delay`(초, 기본 0), `when`: `"normal"`/`"silent"`/`"always"`. 디버그 워프(레거시 `_silent`: 건너뛴 구간은 소품·경계·지면만 적용, 적/게이트/연출 없음)에서 `silent` 실행 시 어떤 액션을 돌릴지 정한다. 기본값: spawn(kind=prop/decor/item/collider/npc), setBounds, setBackdrop, setCameraOffset, unlockCamera = `always`; 나머지 = `normal`. 일반 플레이에서는 `normal`/`always` 만 실행.
@@ -166,7 +165,7 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
   - `prop` → `PropWorld::Spawn` (Props.json). `params` 의 `sprites` / `hitbox` / `standBox` / `explodeOnDeath` 를 `PropSpawnParams` 로 옮긴다. `hp` 는 def 값을 쓴다 (스테이지 데이터에 hp 덮어쓰기 없음).
   - `item` → `PropWorld::SpawnItem` (아이템 id 또는 `random_*` 그룹). 중심 기준이므로 발 = 중심 + (0, 16).
   - `collider` → 스테이지 충돌체 목록. `collisionLayer: wall` 은 플레이어/적 벽, `groundExceptPlayer` 는 적만 서는 원웨이 바닥. 매 틱 물리 입력에 합친다.
-  - 그 밖 (`decor` 의 `anim_decor` / `sprite_decor`, 정의가 아직 없는 이름) → `StagePlaceholders` (상자). 판정 가능 kind 만 평소에도 그린다. 장식 플레이스홀더는 F1 에서만 보인다.
+  - 그 밖 (`decor` 의 `anim_decor` / `sprite_decor`, 정의가 아직 없는 이름) → `StageWorldHost` 의 플레이스홀더 (상자). 판정 가능 kind 만 평소에도 그린다. 장식 플레이스홀더는 F1 에서만 보인다.
 - 틱 순서: 판정 시작 → 소품 Tick → 벽/발판 안정 저장소 갱신 (`StageState` 멤버 벡터에 복사, 이 틱 동안만 쓴다) → Hurtbox 등록 (플레이스홀더/적/소품, 플레이어 Tick 전) → 플레이어 → 아이템 습득 → 적 → 투사체 Step → Resolve → 피해 적용 (소품/적/플레이스홀더/플레이어/투사체) → 이벤트 소비 → 연출 → `StageRunner::Tick`.
 - 이벤트: 적 `Died` → 점수 + 드롭 아이템 (`drop`), `ItemDropped` (포로) → 튀는 아이템, 소품 `GroundPatch` → Baked/Textures/<sprite>.png 의 파란 픽셀 (RGB_BLUE 규칙) 마스크를 `ApplyGroundPatch` 로 활성 지면에 적용 (집 발자국은 공기로 비워진다).
 - 게이트: `IsDefeated` / `IsDestroyFinished` 는 라우팅 표로 해당 월드에 묻는다 (적은 EnemyWorld, 소품은 PropWorld, 아이템은 사라짐, 충돌체는 제거됨).

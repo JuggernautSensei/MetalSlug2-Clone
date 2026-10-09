@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
+#include <initializer_list>
 
-#include "Base/EnumFlags.h"
 #include "Base/Types.h"
 
 #include "World/Geometry.h"
@@ -24,7 +24,35 @@ enum class eHitKind : uint8_t
     Count
 };
 
-using HitKindMask = slug::IndexedFlags<eHitKind>;
+// eHitKind 집합. 종류 하나가 비트 하나다.
+struct HitKindMask
+{
+    constexpr HitKindMask() = default;
+    constexpr HitKindMask(std::initializer_list<eHitKind> _kinds)
+    {
+        for (const eHitKind kind: _kinds)
+        {
+            m_bits |= Bit_(kind);
+        }
+    }
+
+    [[nodiscard]] static constexpr HitKindMask All()
+    {
+        HitKindMask mask;
+        mask.m_bits = ~0u;
+        return mask;
+    }
+
+    [[nodiscard]] constexpr bool Has(const eHitKind _kind) const { return (m_bits & Bit_(_kind)) != 0u; }
+
+private:
+    static constexpr uint32_t Bit_(const eHitKind _kind)
+    {
+        return 1u << static_cast<uint32_t>(_kind);
+    }
+
+    uint32_t m_bits = 0u;
+};
 
 inline constexpr uint32_t kNoOwner = 0;
 inline constexpr uint32_t kNoHitId = 0;
@@ -58,7 +86,7 @@ struct Hurtbox
     Aabb        box           = {};
     eTeam       team          = eTeam::Enemy;
     uint32_t    owner         = kNoOwner;
-    HitKindMask accepts       = slug::kAllFlag;
+    HitKindMask accepts       = HitKindMask::All();
     bool        bInvulnerable = false;
 };
 
@@ -66,7 +94,7 @@ struct Hurtbox
 {
     if (_bMeleeable)
     {
-        return slug::kAllFlag;
+        return HitKindMask::All();
     }
     return HitKindMask { eHitKind::Bullet, eHitKind::Blast };
 }
