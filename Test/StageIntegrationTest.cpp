@@ -545,7 +545,7 @@ TEST(StageIntegration, BossHpBarShowsOnlyDuringTheBossFightAndHidesAfterDeath)
     ASSERT_FALSE(boss.IsNull());
 
     HitEvent ev;
-    ev.damage       = 450;
+    ev.damage       = 650;
     ev.kind         = eHitKind::Bullet;
     ev.attackerTeam = eTeam::Player;
     ev.attacker     = 1;

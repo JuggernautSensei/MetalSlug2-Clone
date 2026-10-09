@@ -57,6 +57,7 @@ public:
     [[nodiscard]] EnemyWorld&              GetEnemies() { return m_enemies; }
     [[nodiscard]] const PropWorld&         GetProps() const { return m_props; }
     [[nodiscard]] PropWorld&               GetProps() { return m_props; }
+    [[nodiscard]] const ProjectileSystem&  GetProjectiles() const { return m_projectiles; }   // 테스트/봇 관찰용 (읽기 전용)
     [[nodiscard]] const UiSystem&          GetUi() const { return m_ui; }
     [[nodiscard]] UiSystem&                GetUi() { return m_ui; }
     [[nodiscard]] uint64_t                 GetTickCount() const { return m_tickCount; }

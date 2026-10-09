@@ -26,7 +26,7 @@ TEST(BossDef, BothBossDefinitionsParseWithSpecHitPoints)
     EXPECT_EQ(pBus->behavior, eEnemyBehavior::Bus);
     EXPECT_EQ(pBoss->behavior, eEnemyBehavior::BigShiee);
     EXPECT_EQ(pBus->hp, 250);    // Docs/EnemySpecs.md 7 (TTK 25 s)
-    EXPECT_EQ(pBoss->hp, 900);   // 선체 HP (TTK 90 s 기준)
+    EXPECT_EQ(pBoss->hp, 1300);   // 선체 HP (권총 단독 60~90 s 목표)
     EXPECT_EQ(pBus->team, eTeam::Enemy);
     EXPECT_EQ(pBoss->team, eTeam::Enemy);
     EXPECT_TRUE(pBus->bNoDespawn);

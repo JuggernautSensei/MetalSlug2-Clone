@@ -21,6 +21,9 @@
     <ClCompile Include="..\..\Test\BigShieeTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Test\BossBotTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Test\BossDefTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>

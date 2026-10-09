@@ -116,7 +116,7 @@ TEST(BigShiee, EachTurretDiesOnItsOwnAndTheHullKeepsItsHealth)
     rig.Hit(bigshiee::TurretOwner(h.id, 0), 60);
     EXPECT_EQ(bigshiee::GetTurretHp(*rig.Find(h), 0), 0);
     EXPECT_EQ(bigshiee::GetTurretHp(*rig.Find(h), 1), 60);   // 다른 포탑은 그대로
-    EXPECT_EQ(rig.Find(h)->health.hp, 900);                   // 포탑 피해는 선체 HP 에 닿지 않는다
+    EXPECT_EQ(rig.Find(h)->health.hp, 1300);                  // 포탑 피해는 선체 HP 에 닿지 않는다
     EXPECT_FALSE(bigshiee::IsCannonDestroyed(*rig.Find(h)));
 }
 
@@ -130,10 +130,10 @@ TEST(BigShiee, HullHitsReduceTheHullHitPointsAndTheHudRatio)
 
     EXPECT_NEAR(rig.World().GetBossHpRatio().value_or(-1.f), 1.f, 1e-4f);
     rig.Hit(h.id, 2);
-    EXPECT_EQ(rig.Find(h)->health.hp, 898);
+    EXPECT_EQ(rig.Find(h)->health.hp, 1298);
     EXPECT_FALSE(bigshiee::IsEnraged(*rig.Find(h)));
 
-    rig.Hit(h.id, 448);   // 합계 450 = 절반
+    rig.Hit(h.id, 648);   // 합계 650 = 절반
     EXPECT_NEAR(rig.World().GetBossHpRatio().value_or(-1.f), 0.5f, 0.01f);
     EXPECT_TRUE(bigshiee::IsEnraged(*rig.Find(h)));   // 선체 50% 이하 = 격앙
 }
@@ -290,7 +290,7 @@ TEST(BigShiee, ThePlayerWallIsReleasedWhenTheBossDies)
     rig.Frame();
     EXPECT_TRUE(rig.World().HasPlayerMaxX());   // 전투 중에는 벽이 걸린다
 
-    rig.Hit(h.id, 1000);
+    rig.Hit(h.id, 5000);
     rig.Frame();
     EXPECT_FALSE(rig.World().HasPlayerMaxX());  // 사망 후에는 벽을 걸지 않는다 (스테이지 종료 가능)
     for (int t = 0; t < 300; ++t)
@@ -389,7 +389,7 @@ TEST(BigShiee, CannonDestructionEnragesAndRemovesTheCannonHurtbox)
     EXPECT_EQ(bigshiee::GetCannonHp(*rig.Find(h)), 0);
     EXPECT_TRUE(bigshiee::IsCannonDestroyed(*rig.Find(h)));
     EXPECT_TRUE(bigshiee::IsEnraged(*rig.Find(h)));
-    EXPECT_EQ(rig.Find(h)->health.hp, 900);   // 캐논 파괴는 선체 HP 를 깎지 않는다
+    EXPECT_EQ(rig.Find(h)->health.hp, 1300);  // 캐논 파괴는 선체 HP 를 깎지 않는다
 }
 
 TEST(BigShiee, NoAttacksWhenThePlayerIsDead)
@@ -424,7 +424,7 @@ TEST(BigShiee, HullDeathCascadeThenDestroyFinishedAfterTenSeconds)
     const EnemyHandle h = SpawnBoss(rig);
     ASSERT_TRUE(RunUntilFight(rig, h));
 
-    rig.Hit(h.id, 1000);
+    rig.Hit(h.id, 5000);
     EXPECT_EQ(rig.CountEventsOf(eEnemyEventKind::Died, h), 1);
     EXPECT_TRUE(rig.World().IsDefeated(h));              // 선체 0 = 처치 (게이트 조건)
     EXPECT_FALSE(rig.World().IsDestroyFinished(h));

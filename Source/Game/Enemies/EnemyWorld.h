@@ -23,6 +23,7 @@ public:
     [[nodiscard]] const EnemyDefLibrary* GetLibrary() const { return m_pLibrary; }
 
     void Reset(uint64_t _seed = 1);
+    void ReseedRng(uint64_t _seed) { m_rng.Reseed(_seed); }   // 테스트 전용: 전투 중 난수열만 바꾼다 (적 목록 유지)
 
     EnemyHandle Spawn(slug::StringView _defName, Vec2 _feet, const SpawnParams& _params = {}, const PhysicsWorld* _pSnapWorld = nullptr);
     EnemyHandle SpawnByIndex(int _defIndex, Vec2 _feet, const SpawnParams& _params = {}, const PhysicsWorld* _pSnapWorld = nullptr);
