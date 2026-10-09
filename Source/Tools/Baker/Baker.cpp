@@ -11,6 +11,7 @@
 #include "Tools/Baker/BmpReader.h"
 #include "Tools/Baker/JsonWriter.h"
 #include "Tools/Baker/PngWriter.h"
+#include "Tools/Baker/SheetSource.h"
 
 namespace slug::baker
 {
@@ -743,7 +744,7 @@ namespace
                 else
                 {
                     const PackPlacement& p     = m_state.placements[static_cast<size_t>(s.unique)];
-                    const Pivot          pivot = ComputePivot(static_cast<uint32_t>(s.cellW), static_cast<uint32_t>(s.cellH), 0, 0, 0, 0);
+                    const Pivot          pivot = s.bCustomPivot ? Pivot { s.pivotX, s.pivotY } : ComputePivot(static_cast<uint32_t>(s.cellW), static_cast<uint32_t>(s.cellH), 0, 0, 0, 0);
                     w.Field("atlas", p.page);
                     w.Field("x", p.x);
                     w.Field("y", p.y);
@@ -1095,6 +1096,11 @@ namespace
             m_state.textures.push_back(job.stat);
         }
 
+        if (slug::Result<void> r = AppendSheetClips(m_options, m_state); !r)
+        {
+            return r;
+        }
+
         size_t validAnims = 0;
         for (const AnimOut& a: m_state.anims)
         {
@@ -1132,6 +1138,10 @@ namespace
 
 slug::Result<void> RunBaker(const BakerOptions& _options)
 {
+    if (!_options.sheetPreview.empty())
+    {
+        return RunSheetPreview(_options);
+    }
     Baker baker(_options);
     return baker.Run();
 }

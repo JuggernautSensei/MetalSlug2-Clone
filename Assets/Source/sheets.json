@@ -1,0 +1,27 @@
+{
+    "sheets": [
+        {
+            "file": "46546.png",
+            "key": { "mode": "magenta", "tol": 0 },
+            "exclude": [ [ 0, 484, 318, 32 ] ],
+            "clips": [
+                { "name": "Parker_Run", "region": [ 0, 0, 318, 52 ], "auto": { "rows": true, "mergeGap": 0, "minPixels": 30 }, "pivot": "foot", "fps": 12 },
+                { "name": "Parker_Stopping", "region": [ 0, 52, 262, 46 ], "auto": { "rows": true, "mergeGap": 0, "minPixels": 30 }, "pivot": "foot", "fps": 12 },
+                { "name": "Parker_Run_2", "region": [ 0, 436, 318, 48 ], "auto": { "rows": true, "mergeGap": 0, "minPixels": 30 }, "pivot": "foot", "fps": 12 }
+            ]
+        },
+        {
+            "file": "38098.png",
+            "key": { "mode": "alpha" },
+            "exclude": [ [ 0, 400, 288, 72 ], [ 0, 176, 40, 6 ] ],
+            "clips": [
+                { "name": "Order_Run_Right", "region": [ 0, 19, 288, 32 ], "auto": { "rows": true, "mergeGap": 0, "minPixels": 30 }, "pivot": "foot", "fps": 10, "mirror": true },
+                { "name": "Order_Stopping", "region": [ 0, 84, 288, 32 ], "auto": { "rows": true, "mergeGap": 0, "minPixels": 30 }, "pivot": "foot", "fps": 10 },
+                { "name": "Order_Idle", "region": [ 0, 145, 288, 35 ], "auto": { "rows": true, "mergeGap": 0, "minPixels": 30 }, "pivot": "foot", "fps": 6 },
+                { "name": "Order_Recoil", "region": [ 0, 232, 288, 36 ], "auto": { "rows": true, "mergeGap": 0, "minPixels": 30 }, "pivot": "foot", "fps": 10 },
+                { "name": "Order_Turn", "region": [ 0, 300, 120, 30 ], "auto": { "rows": true, "mergeGap": 0, "minPixels": 30 }, "pivot": "foot", "fps": 10 },
+                { "name": "Order_Run_2", "region": [ 0, 362, 288, 34 ], "auto": { "rows": true, "mergeGap": 0, "minPixels": 30 }, "pivot": "foot", "fps": 10 }
+            ]
+        }
+    ]
+}

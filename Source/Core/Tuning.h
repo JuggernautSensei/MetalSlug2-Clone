@@ -199,6 +199,7 @@ struct BombTuning
     Vec2 releaseOffset = { 14.f, -36.f };
     float        speedX        = 260.f;
     float        speedY        = -330.f;
+    int          fuseTicks     = 72;   // 던진 뒤 터질 때까지 (레거시 1.2 s)
     float        inheritMoveX  = 0.35f;   // 플레이어 속도 계승 비율
     float        gravity       = 900.f;
     Vec2 hitSize       = { 12.f, 12.f };   // 비행 중 적과 닿는 크기

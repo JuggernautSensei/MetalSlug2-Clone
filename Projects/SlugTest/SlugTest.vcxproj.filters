@@ -12,6 +12,9 @@
     <ClCompile Include="..\..\Test\AudioTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Test\BakerSheetTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Test\BakerTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>

@@ -290,11 +290,11 @@ TEST(PlayerWeapon, AimStatesFireEveryWeaponInTheExpectedDirection)
         float       signX;
         float       signY;
     };
-    // 위 + 방향(upRight)은 HMG 만 대각(signX=1), 나머지 무기는 똑바로 위
+    // 위 + 방향(upRight)도 모든 무기가 똑바로 위 (HMG 는 정지 조준하면 각도 90도)
     const Aim aims[] = {
         { "forward", false, true,  false, false,  1.f,  0.f },
         { "up",      true,  false, false, false,  0.f, -1.f },
-        { "upRight", true,  true,  false, false,  1.f, -1.f },
+        { "upRight", true,  true,  false, false,  0.f, -1.f },
         { "crouch",  false, true,  true,  false,  1.f,  0.f },
         { "airDown", false, false, true,  true,   0.f,  1.f },
     };
@@ -319,12 +319,13 @@ TEST(PlayerWeapon, AimStatesFireEveryWeaponInTheExpectedDirection)
             sim.Hold(eAction::Shot);
             sim.Step();
 
-            const bool  bDiagOnly = aim.bUp && aim.bRight && weapon != eWeapon::Hmg;
-            const float signX     = bDiagOnly ? 0.f : aim.signX;
             ASSERT_GE(BulletsOf(sim), 1u) << aim.name << " weapon " << raw;
             const Vec2 v = sim.State().GetProjectiles().GetBullets()[0].velocity;
-            EXPECT_EQ(v.x > 0.f, signX > 0.f) << aim.name << " weapon " << raw;
-            EXPECT_EQ(std::abs(v.x) < 0.01f, signX == 0.f) << aim.name << " weapon " << raw;
+            if (aim.signX != 0.f)   // 똑바로 위/아래 탄은 cos(90도) 의 미세한 부호 오차가 있을 수 있어 크기만 본다
+            {
+                EXPECT_EQ(v.x > 0.f, aim.signX > 0.f) << aim.name << " weapon " << raw;
+            }
+            EXPECT_EQ(std::abs(v.x) < 0.01f, aim.signX == 0.f) << aim.name << " weapon " << raw;
             EXPECT_EQ(v.y < 0.f, aim.signY < 0.f) << aim.name << " weapon " << raw;
             EXPECT_EQ(std::abs(v.y) < 0.01f, aim.signY == 0.f) << aim.name << " weapon " << raw;
         }

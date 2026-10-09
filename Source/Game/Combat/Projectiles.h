@@ -64,6 +64,8 @@ struct BombSpawn
     Vec2 blastSize  = { 104.f, 72.f };
     float        blastUp    = 28.f;
     int          blastTicks = 10;
+    bool         bBounce    = false;   // 바닥에서 튕기고 퓨즈 시간이 끝나면 터진다
+    int          fuseTicks  = 0;
 };
 
 struct Bomb
@@ -73,6 +75,7 @@ struct Bomb
     Vec2 velocity   = { 0.f, 0.f };
     BombSpawn    params     = {};
     bool         bAlive     = true;
+    int          ageTicks   = 0;
 };
 
 struct Blast

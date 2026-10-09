@@ -81,3 +81,75 @@ u8    bits[ceil(width/8) * height]   // 행 우선, 각 행은 바이트 경계 
 - `contact_<category>.png` : 카테고리별 컨택트 시트(프레임 격자, 피벗 십자 표시).
 - `pivot_report.json` : 애니메이션별 `anchorDriftMax`(프레임 간 바닥 중앙 앵커 변동 px), 비정상 항목 목록.
 - `bake_summary.txt` : 텍스처/애니/스프라이트/사운드 개수, 건너뛴 항목과 이유.
+
+## 원본 시트 패스 (Assets/Source/sheets.json → anim.json / sprites.json)
+스프라이트 리퍼(spriters-resource 류)의 원본 시트 PNG 를 레거시와 같은 아틀라스/anim.json 경로로 굽는다.
+`Assets/Source/sheets.json` 이 있으면 `SlugBaker` 가 자동으로 실행한다 (`--sheets <file>` 지정, `--no-sheets` 생략,
+`Scripts/Bake.ps1 -Sheets <file>` / `-NoSheets`). `--only` 에 `sheet` 를 넣으면 이 패스만 필터링된다. 카테고리 키는 `sheet`.
+구현: `Source/Tools/Baker/SheetSource.h`(알고리즘, inline) / `SheetSource.cpp`(JSON, 패스). 시트 PNG 는 stb_image 로 디코드.
+
+### sheets.json 스키마
+```json
+{
+  "sheets": [
+    {
+      "file": "46546.png",
+      "key": { "mode": "magenta", "tol": 0 },
+      "exclude": [[0, 484, 318, 32]],
+      "clips": [
+        { "name": "Parker_Run", "region": [0, 0, 318, 52],
+          "auto": { "rows": true, "mergeGap": 0, "minPixels": 30 },
+          "pivot": "foot", "fps": 12, "loop": true },
+        { "name": "Order_Run_Right", "frames": [[10, 4, 20, 30], [34, 4, 20, 30]],
+          "pivot": "foot", "fps": 10, "mirror": true, "replace": false, "asSprite": false }
+      ]
+    }
+  ]
+}
+```
+- `file`: `sheets.json` 기준 상대 경로(보통 같은 폴더의 PNG). 좌표는 전부 시트 픽셀 좌표(좌상단 원점).
+- `key.mode`: `magenta`(±tol 로 (255,0,255)) / `color`(`colors: [[r,g,b],...]` 각각 ±tol) / `alpha`(알파 0 만 배경).
+  배경 픽셀은 RGBA 0 으로 바뀌고, 이후 트림은 알파 기준이다. 키 후 알파 > 0 인 픽셀이 전경.
+- `exclude`: 시트 전체에서 무시할 사각형(라벨 글자, 크레딧 문구 등). 모든 클립에 적용.
+- `clips[].region`: auto 슬라이스 범위. 생략하면 시트 전체.
+- `clips[].auto` (`true` 또는 객체): 자르기 알고리즘
+  1. region 안에서 알파 > 0 & exclude 밖인 픽셀을 전경으로 한다.
+  2. `mergeGap` 픽셀만큼 팽창(가로/세로 윈도 OR)한 뒤 4-연결 BFS 로 덩어리를 나눈다.
+  3. 덩어리의 **원본 전경** bbox 를 사각형으로 쓰고, 전경 픽셀이 `minPixels` 미만이면 버린다.
+  4. `rows:true` 면 세로 중심이 같은 행(첫 사각형 높이 안)끼리 밴드로 묶고 밴드 안에서 x 순, `false` 면 x 순.
+  - 기본값: `rows: true`, `mergeGap: 2`, `minPixels: 30`. 촘촘한 시트는 `mergeGap: 0` 이 맞다(프레임끼리 붙는 경우가 많음).
+- `clips[].frames`: 명시 사각형 `[x,y,w,h]` 목록. 있으면 `auto` 보다 우선한다. `auto` 와 `frames` 중 하나는 필수.
+- `pivot`: `foot`(기본) = 트림된 프레임의 아래 중앙 `(w/2, h)`, `center` = `(w/2, h/2)`. 피벗 규칙은 위 `anim.json` 과 같다(그리기: `topLeft = origin - pivot`).
+- `loop`(기본 true), `fps`(기본 12, `frameDuration = 1/fps`).
+- `mirror: true`: 이름 토큰이 `_Right` 또는 `_Left` 인 클립의 반대쪽 클립을 추가로 굽는다
+  (`X_Right` → `X_Left`). 프레임은 좌우 반전 이미지이고 피벗 x 는 `w - pivotX`. 토큰이 없으면 경고 후 무시.
+  레거시 `_Left/_Right` 는 원본 그대로 각각 구워지며 미러를 굽지 않는다. 시트 클립에만 적용한다.
+- `asSprite: true`: 프레임 1개짜리를 `sprites.json` 에 넣는다 (`{atlas,x,y,w,h,pivotX,pivotY}`, 트림된 크기).
+- `replace`(기본 false): 같은 이름이 이미 있으면 **이름 충돌 규칙**을 따른다.
+  - 이름이 없으면 추가.
+  - 이름이 있고 `replace:false` 면 **건너뛰고 경고** (`SheetNameCollision`, 레거시 이름은 절대 조용히 덮지 않는다).
+  - 이름이 있고 `replace:true` 면 기존 항목을 무효화(`SheetReplaced`)하고 시트 클립으로 대체.
+- 같은 시트 안에서 같은 이름이 두 번 나와도 위 규칙을 따른다.
+- 파일은 UTF-8 (BOM 허용). 주석은 JSON 에 넣을 수 없으므로 미작성 시트는 아래 표로 관리한다.
+
+### 미리보기 (검증용 디버그 모드)
+`SlugBaker.exe --sheet-preview <file.png> [--sheet-preview-scale 3]` 은 레거시 리소스 없이 실행되며
+키 적용 + 자동 검출/명시 사각형에 번호(클립별 0..)를 붙여 `Captures/SheetPreview/<name>.png` 를 쓴다.
+`sheets.json` 에 항목이 없으면 마젠타 키 + 시트 전체 auto 로 미리본다. 항목이 있는데 `clips` 가 비었으면 항목의 키로 전체 auto 를 본다.
+로그에 클립별 사각형 목록(`index x,y wxh`)이 찍히므로 `frames` 명시 값을 여기서 가져올 수 있다.
+
+### 시트 상태
+| 파일 | 내용 | 키 | 상태 |
+|---|---|---|---|
+| 46546.png | Parker (NPC), 318x516 | magenta | 파일럿: Parker_Run(행 0), Parker_Stopping(행 1), Parker_Run_2(행 9). 나머지 행은 이름 미정 |
+| 38098.png | Delivery Boy, 288x472 | alpha | 파일럿: Order_Run_Right(+mirror), Order_Stopping, Order_Idle, Order_Recoil, Order_Turn, Order_Run_2 (시트 라벨 기준) |
+| 40204.png | Big Shiee 보스 본체, 4624x3317 | color (153,217,234) | 미작성 (행 피치 ~213px, 루즈 프레임) |
+| 53213.png | 그린 탱크, 702x3380 | color (153,217,234) | 미작성 (라벨 글자 사이 행) |
+| 33825.png | 더블데커 버스 (MainTruck 계열), 567x2199 | color white + 녹색 편집 마커 | 미작성 (마커 exclude 필요) |
+| 29720.png | HUD/폰트/GO 표지/MISSION START, 566x1357 | color white + 녹색 마커 | 미작성 |
+| 143506.png | 타이틀/로고 아트, 1506x1860 | color 2색 | 미작성 (스프라이트 아님, 보류 권장) |
+| 32522.png | 아이템/이펙트/소형 메카 혼합, 1983x19513 | alpha | 미확인 (식별 후 작성) |
+
+파일럿 주의: `Order_Run_Right/Left` 는 레거시 클립(8프레임, 80x78)과 이름이 겹쳐 `replace:false` 로 건너뛴다.
+Running 행을 쓰려면 이름을 바꾸거나 `replace:true` 를 명시해야 한다(레거시 아트 대체). 레거시 `Parker` 는 대체하지 않았다.
+fps 값은 임시(원본 재생 속도 미확인)이다.

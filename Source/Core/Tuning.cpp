@@ -133,6 +133,7 @@ namespace
         _v.Field("releaseOffset", _t.bomb.releaseOffset);
         _v.Field("speedX", _t.bomb.speedX);
         _v.Field("speedY", _t.bomb.speedY);
+        _v.Field("fuseTicks", _t.bomb.fuseTicks);
         _v.Field("inheritMoveX", _t.bomb.inheritMoveX);
         _v.Field("gravity", _t.bomb.gravity);
         _v.Field("hitSize", _t.bomb.hitSize);

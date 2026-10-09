@@ -353,7 +353,8 @@ void PlayerController::TickMovement_(
     {
         m_facing = m_moveX;
     }
-    const float speed = bCrouch ? move.crouchSpeed : (bGroundedBefore ? move.runSpeed : move.airSpeed);
+    const bool  bFiring = _command.bShotHeld || m_shotTicksLeft > 0;
+    const float speed   = bCrouch ? (bFiring ? 0.f : move.crouchSpeed) : (bGroundedBefore ? move.runSpeed : move.airSpeed);
     m_body.velocity.x = static_cast<float>(m_moveX) * speed;
 
     const bool bCoyote = m_bCoyoteAvailable && m_airTicks >= 1 && m_airTicks <= move.coyoteTicks;
@@ -419,17 +420,16 @@ void PlayerController::UpdateAim_(
     const PlayerCommand& _command)
 {
     const bool bHmg        = m_weapon.weapon == eWeapon::Hmg;
-    const bool bHorizontal = _command.moveX != 0;
     float      targetDeg   = 0.f;
     if (m_pose != ePose::Crouch)
     {
         if (_command.bUpHeld && !_command.bDownHeld)
         {
-            targetDeg = bHorizontal && bHmg ? 45.f : 90.f;
+            targetDeg = 90.f;
         }
         else if (_command.bDownHeld && !_command.bUpHeld && m_pose == ePose::Air)
         {
-            targetDeg = bHorizontal && bHmg ? -45.f : -90.f;
+            targetDeg = -90.f;
         }
     }
 
@@ -594,6 +594,8 @@ void PlayerController::TickBomb_(
             spawn.blastSize  = bomb.blastSize;
             spawn.blastUp    = bomb.blastUp;
             spawn.blastTicks = bomb.blastTicks;
+            spawn.bBounce    = true;
+            spawn.fuseTicks  = bomb.fuseTicks;
             _ctx.pProjectiles->SpawnBomb(spawn);
             --m_weapon.bombs;
             ++m_stats.bombsThrown;

@@ -46,6 +46,25 @@ void UnlimitedBullets(
     _sim.Tune().weapons.pistol.maxAlive = 0;
     _sim.Tune().weapons.hmg.maxAlive    = 0;
 }
+
+// 다음 탄이 발사될 때까지 틱을 진행하고, 그 탄의 발사각(도, 위가 +)을 돌려준다. 발사가 없으면 NaN
+float StepUntilShotAngleDeg(
+    Sim&      _sim,
+    const int _maxTicks)
+{
+    const int before = _sim.Player().GetStats().shotsFired;
+    for (int i = 0; i < _maxTicks; ++i)
+    {
+        _sim.Step();
+        if (_sim.Player().GetStats().shotsFired > before)
+        {
+            const auto  bullets = _sim.State().GetProjectiles().GetBullets();
+            const Vec2  v       = bullets[bullets.size() - 1].velocity;
+            return std::atan2(-v.y, std::abs(v.x)) * 180.f / 3.14159265f;
+        }
+    }
+    return std::nan("");
+}
 }
 
 TEST(PlayerShot, FirstShotSpawnsABulletOnTheSameTick)
@@ -219,7 +238,7 @@ TEST(PlayerShot, AimDirectionsShootInThoseDirections)
         { false, false,  true,  1.f,  0.f }, // 앞
         { false,  true, false,  0.f, -1.f }, // 위
         { false,  true,  true,  0.f, -1.f }, // 위 + 방향: 권총은 대각 없이 똑바로 위
-        {  true,  true,  true,  1.f, -1.f }, // 위 + 방향: HMG 만 대각 위
+        {  true,  true,  true,  0.f, -1.f }, // 위 + 방향: HMG 도 정지 조준하면 똑바로 위 (각도 90도)
     };
 
     for (const Case& c: cases)
@@ -237,14 +256,17 @@ TEST(PlayerShot, AimDirectionsShootInThoseDirections)
         sim.Step();
         ASSERT_EQ(BulletCount(sim), 1u) << "hmg " << c.bHmg << " up " << c.bUp << " right " << c.bRight;
         const Vec2 v = sim.State().GetProjectiles().GetBullets()[0].velocity;
-        EXPECT_EQ(v.x > 0.f, c.signX > 0.f);
+        if (c.signX != 0.f)
+        {
+            EXPECT_EQ(v.x > 0.f, c.signX > 0.f);
+        }
         EXPECT_EQ(std::abs(v.x) < 0.01f, c.signX == 0.f);
         EXPECT_EQ(v.y < 0.f, c.signY < 0.f);
         EXPECT_EQ(std::abs(v.y) < 0.01f, c.signY == 0.f);
     }
 }
 
-TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToFortyFive)
+TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToNinety)
 {
     Sim sim;
     UnlimitedBullets(sim);
@@ -269,20 +291,44 @@ TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToFortyFive)
     }
 
     ASSERT_GE(angles.size(), 5u);
-    EXPECT_LT(angles.front(), 10.f);   // 처음엔 거의 정면
-    EXPECT_GT(angles.back(), 40.f);    // 끝에는 대각 45도 근처
+    EXPECT_LT(angles.front(), 10.f);          // 처음엔 거의 정면
+    EXPECT_NEAR(angles.back(), 90.f, 0.5f);   // 끝에는 똑바로 위 (대각에서 멈추지 않는다)
     size_t increases = 0;
+    size_t diagonal  = 0;
     for (size_t i = 0; i < angles.size(); ++i)
     {
         EXPECT_GE(angles[i], -0.5f) << "shot " << i;
-        EXPECT_LE(angles[i], 45.5f) << "shot " << i;
+        EXPECT_LE(angles[i], 90.5f) << "shot " << i;
+        diagonal += (angles[i] >= 22.5f && angles[i] <= 67.5f) ? 1 : 0;
         if (i > 0)
         {
             EXPECT_GE(angles[i], angles[i - 1]) << "shot " << i;
+            if (angles[i - 1] < 89.f)   // 쓸고 가는 구간에서는 탄마다 각도가 엄격히 증가한다
+            {
+                EXPECT_GT(angles[i], angles[i - 1]) << "shot " << i;
+            }
             increases += angles[i] > angles[i - 1] + 0.5f ? 1 : 0;
         }
     }
-    EXPECT_GE(increases, 2u);          // 모든 탄이 같은 각도가 아니다
+    EXPECT_GE(diagonal, 1u);                  // 조준각이 대각 구간을 지나며 쓸고 간다
+    EXPECT_GE(increases, 2u);                 // 모든 탄이 같은 각도가 아니다
+}
+
+TEST(PlayerShot, HmgHoldingUpWhileFiringEndsStraightUpThenReturnsToForwardOnRelease)
+{
+    Sim sim;
+    UnlimitedBullets(sim);
+    sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
+    sim.Hold(eAction::Up);
+    sim.Hold(eAction::Shot);
+    sim.Step(kAimSettleTicks);   // 250도/초로 90도까지 22틱
+    EXPECT_EQ(sim.Player().GetAim(), eAim::Up);
+    EXPECT_NEAR(StepUntilShotAngleDeg(sim, 10), 90.f, 0.01f);
+
+    sim.Release(eAction::Up);    // 사격은 계속: 250도/초로 0도까지 되돌아온다
+    sim.Step(30);
+    EXPECT_EQ(sim.Player().GetAim(), eAim::Forward);
+    EXPECT_NEAR(StepUntilShotAngleDeg(sim, 10), 0.f, 0.01f);
 }
 
 TEST(PlayerShot, AirAimDownShootsDownAndBulletDiesOnGround)

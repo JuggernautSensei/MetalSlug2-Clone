@@ -133,6 +133,7 @@
         "releaseOffset": [14, -36],
         "speedX": 260,
         "speedY": -330,
+        "fuseTicks": 72,
         "inheritMoveX": 0.35,
         "gravity": 900,
         "hitSize": [12, 12],

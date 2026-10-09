@@ -21,7 +21,11 @@ void PrintUsage_()
         "\n"
         "  --legacy <dir>          legacy Resources directory (contains ResourceData/)\n"
         "  --out <dir>             output root (default: <Assets>/Baked, Assets found from the exe location)\n"
-        "  --only <a,b,..>         partial bake: player enemy effect npc sprites ground sounds\n"
+        "  --only <a,b,..>         partial bake: player enemy effect npc sheet sprites ground sounds\n"
+        "  --sheets <sheets.json>  raw sprite sheet clips (default: <Assets>/Source/sheets.json when it exists)\n"
+        "  --no-sheets             skip the sheet pass\n"
+        "  --sheet-preview <png>   debug: write Captures/SheetPreview/<name>.png with numbered rects (no legacy bake)\n"
+        "  --sheet-preview-scale <n>  preview magnification, nearest neighbour (default 1)\n"
         "  --threshold <B,RG,A>    ground solid thresholds: B>=B, R<=RG, G<=RG, A>=A (default 192,96,128)\n"
         "  --ground-blue-min <n>   ground: minimum blue (default 192)\n"
         "  --ground-rg-max <n>     ground: maximum red/green (default 96)\n"
@@ -151,6 +155,22 @@ int main(
         else if (arg == "--standalone-size") { if (!nextInt(options.standaloneSize)) { return 2; } }
         else if (arg == "--alpha-threshold") { if (!nextInt(options.alphaThreshold)) { return 2; } }
         else if (arg == "--no-alpha-magenta-key") { options.bKeyMagentaInAlpha = false; }
+        else if (arg == "--sheets")
+        {
+            if (!next(value)) { return 2; }
+            options.sheetsPath = value;
+        }
+        else if (arg == "--no-sheets") { options.bNoSheets = true; }
+        else if (arg == "--sheet-preview")
+        {
+            if (!next(value)) { return 2; }
+            options.sheetPreview = value;
+        }
+        else if (arg == "--sheet-preview-scale")
+        {
+            if (!nextInt(options.sheetPreviewScale)) { return 2; }
+            if (options.sheetPreviewScale < 1) { options.sheetPreviewScale = 1; }
+        }
         else if (arg == "--threads") { if (!nextInt(options.threads)) { return 2; } }
         else
         {
@@ -160,7 +180,7 @@ int main(
         }
     }
 
-    if (options.legacyRoot.empty())
+    if (options.legacyRoot.empty() && options.sheetPreview.empty())
     {
         Log("ERROR: --legacy <Resources dir> is required");
         PrintUsage_();

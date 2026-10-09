@@ -25,6 +25,10 @@ struct BakerOptions
     int                   threads        = 0;            // 0 = 자동
     bool                  bKeyMagentaInAlpha = true;
     GroundThreshold       ground;
+    std::filesystem::path sheetsPath;                    // 비어 있으면 <Assets>/Source/sheets.json (있을 때만 사용)
+    bool                  bNoSheets      = false;        // --no-sheets: 시트 패스 생략
+    std::string           sheetPreview;                  // --sheet-preview <file>: 디버그 미리보기만 생성
+    int                   sheetPreviewScale = 1;         // 미리보기 배율
 
     [[nodiscard]] bool Wants(const std::string& _key) const { return only.empty() || only.contains(_key); }
 };
@@ -37,12 +41,13 @@ enum class eAnimCategory
     Enemy,
     Effect,
     Npc,
+    Sheet,   // sheets.json 으로 잘라낸 원본 시트 클립
     Other
 };
 
 inline constexpr eAnimCategory kAllCategories[] = {
     eAnimCategory::PlayerUpper, eAnimCategory::PlayerLower, eAnimCategory::Player, eAnimCategory::Enemy,
-    eAnimCategory::Effect, eAnimCategory::Npc, eAnimCategory::Other
+    eAnimCategory::Effect, eAnimCategory::Npc, eAnimCategory::Sheet, eAnimCategory::Other
 };
 
 [[nodiscard]] inline const char* CategoryKey(const eAnimCategory _c)
@@ -55,6 +60,7 @@ inline constexpr eAnimCategory kAllCategories[] = {
         case eAnimCategory::Enemy: return "enemy";
         case eAnimCategory::Effect: return "effect";
         case eAnimCategory::Npc: return "npc";
+        case eAnimCategory::Sheet: return "sheet";
         case eAnimCategory::Other: return "other";
     }
     return "other";
@@ -70,6 +76,7 @@ inline constexpr eAnimCategory kAllCategories[] = {
         case eAnimCategory::Enemy: return "enemy";
         case eAnimCategory::Effect: return "effect";
         case eAnimCategory::Npc: return "npc";
+        case eAnimCategory::Sheet: return "sheet";
         case eAnimCategory::Other: return "other";
     }
     return "other";
@@ -124,6 +131,9 @@ struct SpriteOut
     std::string  file;
     int          unique = -1;
     Image        image;
+    bool         bCustomPivot = false;   // 시트 스프라이트: 트림된 크기 + 지정 피벗 사용
+    int          pivotX       = 0;
+    int          pivotY       = 0;
 };
 
 struct GroundOut

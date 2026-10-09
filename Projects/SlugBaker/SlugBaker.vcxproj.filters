@@ -21,6 +21,9 @@
     <ClCompile Include="..\..\Source\Tools\Baker\Main.cpp">
       <Filter>Source\Tools\Baker</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\Tools\Baker\SheetSource.cpp">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\Tools\Baker\StbImpl.cpp">
       <Filter>Source\Tools\Baker</Filter>
     </ClCompile>
@@ -57,6 +60,9 @@
       <Filter>Source\Tools\Baker</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Tools\Baker\PngWriter.h">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Tools\Baker\SheetSource.h">
       <Filter>Source\Tools\Baker</Filter>
     </ClInclude>
   </ItemGroup>

@@ -300,7 +300,56 @@ void ProjectileSystem::Step(
     for (Bomb& bomb: m_bombs)
     {
         bomb.renderPrev = bomb.position;
+        ++bomb.ageTicks;
         bomb.velocity.y += bomb.params.gravity * _dt;
+
+        if (bomb.params.bBounce)
+        {
+            constexpr float kBounceDamping  = 0.4f;
+            constexpr float kGroundFriction = 0.82f;
+            Vec2            lastFree;
+
+            const Vec2 nextX = { bomb.position.x + bomb.velocity.x * _dt, bomb.position.y };
+            if (_pGround && SegmentHitsGround_(*_pGround, bomb.position, nextX, lastFree))
+            {
+                bomb.velocity.x = -bomb.velocity.x * kBounceDamping;
+            }
+            else
+            {
+                bomb.position = nextX;
+            }
+
+            const Vec2 nextY = { bomb.position.x, bomb.position.y + bomb.velocity.y * _dt };
+            if (_pGround && SegmentHitsGround_(*_pGround, bomb.position, nextY, lastFree))
+            {
+                bomb.position = lastFree;
+                if (bomb.velocity.y > 0.f)
+                {
+                    bomb.velocity.y = -bomb.velocity.y * kBounceDamping;
+                    bomb.velocity.x *= kGroundFriction;
+                    if (bomb.velocity.y > -40.f)
+                    {
+                        bomb.velocity.y = 0.f;
+                    }
+                }
+                else
+                {
+                    bomb.velocity.y = 0.f;
+                }
+            }
+            else
+            {
+                bomb.position = nextY;
+            }
+
+            const Aabb contactBounce = Aabb::FromCenterSize(bomb.position, bomb.params.hitSize);
+            if (bomb.ageTicks >= bomb.params.fuseTicks || _combat.HasTargetIn(bomb.params.team, eHitKind::Blast, contactBounce, bomb.params.owner))
+            {
+                ExplodeBomb_(bomb, bomb.position, _combat);
+            }
+            continue;
+        }
+
         const Vec2 next = { bomb.position.x + bomb.velocity.x * _dt, bomb.position.y + bomb.velocity.y * _dt };
 
         Vec2 lastFree;

@@ -176,6 +176,38 @@ TEST(PlayerCrouch, CrouchWalkUsesCrouchSpeed)
     EXPECT_EQ(sim.Player().GetState(), ePlayerState::CrouchMove);
 }
 
+TEST(PlayerCrouch, CrouchWalkDoesNotMoveWhileShotIsHeld)
+{
+    Sim sim;
+    sim.Step(2);
+    sim.Hold(eAction::Down);
+    sim.Step(5);
+    sim.Hold(eAction::Right);
+    sim.Hold(eAction::Shot);
+    sim.Step();
+    const float x0 = sim.X();
+    sim.Step(60);
+    EXPECT_NEAR(sim.X(), x0, 0.01f);
+    EXPECT_EQ(sim.Player().GetPose(), ePose::Crouch);
+}
+
+TEST(PlayerCrouch, CrouchWalkResumesAtCrouchSpeedAfterShotIsReleased)
+{
+    Sim sim;
+    sim.Step(2);
+    sim.Hold(eAction::Down);
+    sim.Step(5);
+    sim.Hold(eAction::Right);
+    sim.Hold(eAction::Shot);
+    sim.Step(5);
+    sim.Release(eAction::Shot);
+    sim.Step(60);   // 사격 연출(shot overlay) 이 끝날 때까지 기다린다
+    const float x0 = sim.X();
+    sim.Step(60);
+    EXPECT_NEAR(sim.X() - x0, sim.Tune().move.crouchSpeed, 1.5f);
+    EXPECT_EQ(sim.Player().GetState(), ePlayerState::CrouchMove);
+}
+
 TEST(PlayerCrouch, StandingUpRestoresBody)
 {
     Sim sim;
@@ -219,15 +251,15 @@ TEST(PlayerAim, UpPlusDirectionAimsStraightUpForNonHmgWeapons)
     EXPECT_GT(sim.X(), x0);
 }
 
-TEST(PlayerAim, UpPlusDirectionAimsDiagonalAndKeepsMoving)
+TEST(PlayerAim, UpPlusDirectionAimsStraightUpForHmgWhenNotFiring)
 {
     Sim sim;
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Hold(eAction::Up);
     sim.Hold(eAction::Right);
     const float x0 = sim.X();
-    sim.Step(kAimSettleTicks);   // HMG 조준각이 45도까지 움직일 시간
-    EXPECT_EQ(sim.Player().GetAim(), eAim::DiagUp);
+    sim.Step(kAimSettleTicks);   // 사격하지 않으면 조준각은 1000도/초로 90도에 금방 붙는다 (45도에 머물지 않는다)
+    EXPECT_EQ(sim.Player().GetAim(), eAim::Up);
     EXPECT_GT(sim.X(), x0);
 }
 
@@ -265,7 +297,7 @@ TEST(PlayerAim, DownInAirAimsDown)
     EXPECT_FALSE(sim.Player().IsGrounded());
     EXPECT_EQ(sim.Player().GetAim(), eAim::Down);   // 방향키를 같이 눌러도 권총은 똑바로 아래
 
-    // HMG 만 대각 아래 (조준각이 -45도까지 움직일 시간)
+    // HMG 도 아래 키를 누르면 똑바로 아래 (조준각 -90도, 대각에 머물지 않는다)
     Sim hmg;
     hmg.Player().PickUpWeapon(eWeapon::Hmg, hmg.Tune());
     hmg.Tap(eAction::Jump);
@@ -274,7 +306,7 @@ TEST(PlayerAim, DownInAirAimsDown)
     hmg.Hold(eAction::Right);
     hmg.Step(kAimSettleTicks);
     EXPECT_FALSE(hmg.Player().IsGrounded());
-    EXPECT_EQ(hmg.Player().GetAim(), eAim::DiagDown);
+    EXPECT_EQ(hmg.Player().GetAim(), eAim::Down);
 }
 
 TEST(PlayerJump, JumpStartsOnTheSameTickAsThePress)

@@ -107,6 +107,7 @@
     <ClCompile Include="..\..\Source\Tools\Baker\Baker.cpp" />
     <ClCompile Include="..\..\Source\Tools\Baker\BakerReport.cpp" />
     <ClCompile Include="..\..\Source\Tools\Baker\Main.cpp" />
+    <ClCompile Include="..\..\Source\Tools\Baker\SheetSource.cpp" />
     <ClCompile Include="..\..\Source\Tools\Baker\StbImpl.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -121,6 +122,7 @@
     <ClInclude Include="..\..\Source\Tools\Baker\LegacyParser.h" />
     <ClInclude Include="..\..\Source\Tools\Baker\Packer.h" />
     <ClInclude Include="..\..\Source\Tools\Baker\PngWriter.h" />
+    <ClInclude Include="..\..\Source\Tools\Baker\SheetSource.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SlugCore\SlugCore.vcxproj">

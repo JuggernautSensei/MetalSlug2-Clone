@@ -4,11 +4,15 @@
 #   powershell -NoProfile -File Scripts/Bake.ps1 -Only player,npc          # 부분 굽기 (빠른 반복용; 출력이 부분적이므로 -Out 을 따로 쓰는 것을 권장)
 #   powershell -NoProfile -File Scripts/Bake.ps1 -Threshold 192,96,128     # 지형 임계값 B,RG,A
 #   powershell -NoProfile -File Scripts/Bake.ps1 -Legacy <Resources 경로> -Out Assets/Baked -NoBuild
+#   powershell -NoProfile -File Scripts/Bake.ps1 -Sheets Assets/Source/sheets.json   # 시트 파일 지정 (기본: Assets/Source/sheets.json 이 있으면 자동)
+#   powershell -NoProfile -File Scripts/Bake.ps1 -NoSheets                            # 원본 시트 패스 생략
 param(
     [string]   $Legacy    = '',
     [string]   $Out       = 'Assets/Baked',
     [string[]] $Only      = @(),
     [string]   $Threshold = '',
+    [string]   $Sheets    = '',
+    [switch]   $NoSheets,
     [string[]] $Extra     = @(),
     [ValidateSet('Debug', 'Release')] [string] $Config = 'Debug',
     [switch]   $NoBuild
@@ -37,6 +41,8 @@ if (-not (Test-Path $exe)) { Write-Error "SlugBaker.exe 가 없습니다: $exe";
 $bakerArgs = @('--legacy', $Legacy, '--out', $Out)
 if ($Only.Count -gt 0)  { $bakerArgs += @('--only', ($Only -join ',')) }
 if ($Threshold)         { $bakerArgs += @('--threshold', $Threshold) }
+if ($Sheets)            { $bakerArgs += @('--sheets', (Resolve-Path $Sheets).Path) }
+if ($NoSheets)          { $bakerArgs += '--no-sheets' }
 $bakerArgs += $Extra
 
 & $exe @bakerArgs
