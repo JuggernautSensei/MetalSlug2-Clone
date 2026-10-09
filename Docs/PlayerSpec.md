@@ -1,0 +1,53 @@
+# 플레이어 사양 (M2)
+
+레거시 문제(입력 1프레임 지연, 샷 미버퍼, 공중 방향전환 불가, 상태 이중버퍼, 칼 판정 누락)를 없애고 조작감을 정의한다.
+모든 수치는 `Assets/Tuning/Tuning.json` 에서 핫리로드 가능해야 한다 (코드 상수 금지).
+
+## 시뮬레이션
+- 고정 60Hz. 한 틱 = 입력 샘플 → 상태 갱신 → 물리 → 히트박스 생성 → 애니메이션 진행. 상태 전이는 **같은 틱 안에서** 반영(지연 0).
+- 위치 float, 렌더에서 정수 스냅. 원점 = 발 중앙(피벗 기준).
+
+## 이동/점프 (px, 초 단위; 레거시 수치를 출발점으로)
+| 항목 | 기본값 | 비고 |
+|---|---|---|
+| 달리기 속도 | 130 px/s | 레거시 250은 640x448 해상도에서 과속. 튜닝 대상 |
+| 앉아 이동 | 65 px/s | |
+| 점프 초속 | 330 px/s | 가변 점프: 버튼을 떼면 상승 속도를 `jumpCutFactor=0.45` 배로 |
+| 중력 | 900 px/s² | 최대 낙하 속도 400 |
+| 코요테 | 4틱 | 낭떠러지에서 떨어진 직후에도 점프 허용 |
+| 점프 버퍼 | 4틱 | 착지 직전에 누른 점프 |
+| 공중 제어 | 100% | 공중에서 방향 전환/조준 가능 |
+| 사격 버퍼 | 6틱 | 사격 락 중에 누른 입력을 보존 |
+※ 위 속도/중력은 해상도 640x448 기준 재산정값(초안). 실제 확정은 M2에서 플레이 테스트로.
+
+## 상태
+`Idle, Run, Jump(Rise/Fall), Crouch, CrouchMove, Dead, Respawn(무적), Victory` + 겹침 동작 `Shoot, Knife, Throw`(상체/하체 합성).
+- 하체(Lower)와 상체(Upper)는 **하나의 리그**: 하체 타임라인이 기준, 상체는 같은 위상 공유(`SetNormalizedTime`). 발 피벗 정렬.
+- 에임: 8방향(앞/위/아래(공중)/대각 2종), 즉시 전환(레거시의 1000°/s 보간 제거).
+- 앉기: Down 홀드(지상). 앉은 채 이동 가능. 공중에서 Down 은 아래 조준.
+
+## 무기
+| 무기 | 입력 | 탄수 | 피해 | 비고 |
+|---|---|---|---|---|
+| 권총(DG) | 탭 연사(홀드 시 6틱 간격 반복) | 화면 내 3발 제한, 무한 | 2 | **시작 무기** |
+| 헤비머신건(MG) | 홀드 자동 연사 | 200 | 2 | 픽업 +100 |
+| 샷건(SG) | 탭 | 30 | 6, 관통 | 근거리 |
+| 폭탄 | L, 포물선 | 10 | 20 블래스트(반경) | 시작 10개 |
+| 칼 | 적(또는 파괴물/POW)이 근접 `28px` 이내일 때 Shot 이 칼로 대체 | - | 4, Melee | **모든 적 피격 가능**. 근접 시 총 대신 칼, 자동 판정 |
+- 총 소진 시 권총으로 복귀. 권총은 재장전 없이 무한.
+- 총알은 첫 겹침에서 소멸하되 `HitResolver` 가 대상 적용. 스폰 위치는 머즐 피벗(애니메이션 프레임 데이터)에서.
+
+## 피격/목숨
+- 적 공격(Hitbox.team=Enemy)에 맞으면 즉사(메탈슬러그 방식). 몸통 접촉은 무해.
+- 목숨 3, 사망 후 2초 뒤 카메라 좌측 +100 위치 상공에서 리스폰, 무적 2초(깜빡임), 권총/폭탄 10 으로 초기화.
+- 타임 0 → 사망. 목숨 0 → GAME OVER 3초 후 타이틀.
+
+## 애니메이션 이름 매핑 (레거시 Baker 산출 이름, 접미 `_Left/_Right`)
+- 하체: `Player_Stand_Idle_Lower`, `Player_Stand_Move_Lower`, `Player_Jump_Idle_Lower`, `Player_Jump_Move_Lower`
+- 상체 DG/SG(+MG 는 SG 목록 재사용): `Player_Stand_Idle_*`, `Player_Stand_Move_*`, `Player_Stand_MoveStop_*`, `Player_Stand_Shot_*`(+`_Up_`), `Player_Stand_Lookup_*`, `Player_Stand_Lookingup_3/4_*`, `Player_Stand_StartCrouch_*`, `Player_Crouch_Idle/Move/Shot/Throw/Slash1/Slash2_*`, `Player_Stand_Slash1/Slash2_*`, `Player_Stand_Throw_*`, `Player_Jump_Idle/Move/Lookdown/Lookingdown_1/2_*`, `Player_Jump_Shot_Down_*`, `Player_Jump_Shot_Lookdown_*`, `Player_Death_byBullet_DG`, `Player_Death_byBomb_Begin/End_DG`, `Player_Victory_*`, `Player_Ride_*`, `Player_Stand_Reload_DG`(미사용), `Player_Stand_Idle_Action_*`(장시간 대기 연출)
+- MG 전용: `Player_Stand_Shot_MG`, `Player_Crouch_Shot_MG`, `Player_Jump_Shot_Lookdown_MG`, `Player_Stand_Shot_Lookingup_3/4_BT/TB_MG`, `Player_Jump_Shot_Lookingdown_1/2_BT/TB_MG` (단일 프레임 비루프 `Start>0` 포함 — Baker 가 올바른 컬럼으로 굽는다)
+- 알려진 데이터 이슈: `Player_Stand_Idle_Lookup_SG` Y 오프셋 −430(우) vs −43(좌) 오타 → Baker 리포트에서 확인 후 보정.
+
+## 종료조건 (M2)
+- 테스트 맵(평지+경사+낭떠러지+원웨이 지붕)에서 이동/점프/사격/칼/폭탄이 입력 즉시 반응.
+- 리플레이 테스트: (1) 권총으로 시작, (2) 근접 병사를 칼로 1타 처치, (3) 점프 버퍼/코요테 동작, (4) 사격 홀드 시 권총은 연사 간격 준수.
