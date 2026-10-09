@@ -30,6 +30,9 @@ public:
     }
 
     [[nodiscard]] bool Run(const jug::JsonReader& _root);
+    [[nodiscard]] bool RunMany(jug::Span<const jug::JsonReader> _roots);   // 여러 파일의 defs 를 합쳐서 해석 (상속은 파일 경계를 넘어 가능)
+    [[nodiscard]] bool AddRoot_(const jug::JsonReader& _root);
+    [[nodiscard]] bool Finish_();
 
     jug::String error = {};
 
@@ -76,11 +79,11 @@ namespace
     constexpr const char* kGlobalKeys[] = { "note", "dpsRef", "activationMarginPx", "despawnBehindCameraPx", "despawnBelowCameraPx" };
     constexpr const char* kEnemyKeys[] = {
         "note", "extends", "abstract", "kind", "behavior", "team", "hp", "ttk", "score", "body", "hurtbox", "activation", "physics",
-        "clips", "weapons", "params", "death", "drops", "overlay"
+        "clips", "weapons", "params", "death", "drops", "overlay", "noDespawn"
     };
     constexpr const char* kProjectileKeys[] = {
         "note", "extends", "abstract", "kind", "team", "lethal", "box", "damage", "speed", "speedRamp", "startDelay", "v0", "gravity", "maxFall",
-        "lifetime", "onSolid", "anim", "explosion"
+        "lifetime", "onSolid", "anim", "explosion", "rollSpeed", "rollSec", "expireFx"
     };
     constexpr const char* kKnownKinds[] = { "walker", "vehicle", "turret", "flyer", "boss", "prop", "npc", "item", "projectile", "effect", "debris" };
     constexpr const char* kActivationKeys[] = { "note", "mode", "marginPx", "latch" };
@@ -93,7 +96,7 @@ namespace
     constexpr const char* kBoxKeys[] = { "note", "w", "h", "cx", "cy" };
     constexpr const char* kFxKeys[] = { "note", "clip", "offset", "delay", "layer" };
     constexpr const char* kSpeedRampKeys[] = { "note", "from", "accel", "max" };
-    constexpr const char* kAnimKeys[] = { "note", "begin", "fly" };
+    constexpr const char* kAnimKeys[] = { "note", "begin", "fly", "land" };
     constexpr const char* kExplosionKeys[] = { "note", "fx", "offset" };
     constexpr const char* kDropKeys[] = { "note", "item", "count" };
     constexpr const char* kOverlayKeys[] = { "note", "clip", "offset" };
@@ -525,11 +528,28 @@ bool EnemyDefParser::ParseProjectile_(
                 return false;
             }
         }
+        if (anim->HasField("land"))
+        {
+            const jug::Result<jug::JsonReader> land = anim->FindField("land");
+            if (!land || !ReadClip_(name, "anim.land", land.GetValue(), projectile.land))
+            {
+                return false;
+            }
+        }
     }
 
     if (const std::optional<jug::JsonReader> explosion = Obj("explosion"))
     {
         if (!CheckObjectKeys_(name, "explosion", *explosion, kExplosionKeys) || !ReadStr_(name, "explosion", *explosion, "fx", projectile.explosion.clip, true) || !ReadVec2_(name, "explosion", *explosion, "offset", projectile.explosion.offset))
+        {
+            return false;
+        }
+    }
+
+    // 구르는 탄 (사루비아 수류탄)
+    for (const jug::JsonReader& reader: _chain)
+    {
+        if (!ReadNum_(name, "", reader, "rollSpeed", projectile.rollSpeed, false) || !ReadNum_(name, "", reader, "rollSec", projectile.rollSec, false) || !ReadBool_(name, "", reader, "expireFx", projectile.bExpireFx))
         {
             return false;
         }
@@ -921,6 +941,14 @@ bool EnemyDefParser::ParseEnemy_(
         }
     }
 
+    for (const jug::JsonReader& reader: _chain)
+    {
+        if (!ReadBool_(name, "", reader, "noDespawn", def.bNoDespawn))
+        {
+            return false;
+        }
+    }
+
     // --- 행동별 설정 (params) ---
     jug::Vector<ParamEntry> params;
     for (auto& [key, reader]: Merge_(_chain, "params"))
@@ -938,6 +966,13 @@ bool EnemyDefParser::ParseEnemy_(
             case eEnemyBehavior::FlyingBzk: ParseFlyingBzkCfg(reader, def); break;
             case eEnemyBehavior::Shielder: ParseShielderCfg(reader, def); break;
             case eEnemyBehavior::Pow: ParsePowCfg(reader, def); break;
+            case eEnemyBehavior::Bus: ParseBusCfg(reader, def); break;
+            case eEnemyBehavior::BattleShip: ParseBattleShipCfg(reader, def); break;
+            case eEnemyBehavior::Jeep: ParseJeepCfg(reader, def); break;
+            case eEnemyBehavior::BTank: ParseBTankCfg(reader, def); break;
+            case eEnemyBehavior::MissleTank: ParseMissleTankCfg(reader, def); break;
+            case eEnemyBehavior::Sarubia: ParseSarubiaCfg(reader, def); break;
+            case eEnemyBehavior::Aparch: ParseAparchCfg(reader, def); break;
             case eEnemyBehavior::Count: break;
         }
         if (!reader.Finish())
@@ -960,6 +995,25 @@ bool EnemyDefParser::ParseEnemy_(
 // ===========================================
 
 bool EnemyDefParser::Run(
+    const jug::JsonReader& _root)
+{
+    return RunMany(jug::Span<const jug::JsonReader> { &_root, 1 });
+}
+
+bool EnemyDefParser::RunMany(
+    const jug::Span<const jug::JsonReader> _roots)
+{
+    for (const jug::JsonReader& root: _roots)
+    {
+        if (!AddRoot_(root))
+        {
+            return false;
+        }
+    }
+    return Finish_();
+}
+
+bool EnemyDefParser::AddRoot_(
     const jug::JsonReader& _root)
 {
     constexpr const char* kRoot = "Enemies.json";
@@ -1005,7 +1059,11 @@ bool EnemyDefParser::Run(
         m_rawIndex[jug::String { name }] = static_cast<int>(m_raw.size());
         m_raw.push_back({ jug::String { name }, reader });
     }
+    return true;
+}
 
+bool EnemyDefParser::Finish_()
+{
     // 1 패스: 투사체 / 2 패스: 적 (abstract 는 건너뜀)
     for (int pass = 0; pass < 2; ++pass)
     {
@@ -1120,10 +1178,75 @@ jug::Result<EnemyDefLibrary> EnemyDefLibrary::Load(
     return library;
 }
 
+jug::Result<EnemyDefLibrary> EnemyDefLibrary::LoadDirectory(
+    const jug::FilePath& _dir,
+    jug::String*         _pMessage)
+{
+    jug::Vector<jug::FilePath> files;
+    std::error_code            ec;
+    for (const auto& entry: std::filesystem::directory_iterator(_dir, ec))
+    {
+        if (entry.is_regular_file() && entry.path().extension() == ".json")
+        {
+            files.push_back(entry.path());
+        }
+    }
+    if (ec || files.empty())
+    {
+        if (_pMessage)
+        {
+            *_pMessage = std::format("{}: 정의 파일(*.json)을 찾을 수 없습니다", _dir.string());
+        }
+        JUG_CORE_LOG_ERROR("적 정의 폴더 로드 실패: {}", _dir.string());
+        return jug::Error { eError::FileOpen };
+    }
+    std::sort(files.begin(), files.end());
+
+    // JsonReader 는 JsonDeserializer 가 살아 있는 동안만 유효하므로 모두 보관한다.
+    jug::Vector<jug::JsonDeserializer> docs;
+    docs.reserve(files.size());
+    jug::Vector<jug::JsonReader> roots;
+    roots.reserve(files.size());
+    for (const jug::FilePath& file: files)
+    {
+        jug::Result<jug::JsonDeserializer> doc = jug::JsonDeserializer::LoadFromFile(file, jug::eJsonLoadOption::AllowComments);
+        if (!doc)
+        {
+            if (_pMessage)
+            {
+                *_pMessage = std::format("{}: 파일을 열 수 없거나 JSON 구문 오류", file.string());
+            }
+            JUG_CORE_LOG_ERROR("적 정의 파일 로드 실패: {}", file.string());
+            return jug::Error { eError::FileOpen };
+        }
+        docs.push_back(doc.Take());
+        roots.push_back(docs.back().GetReader());
+    }
+
+    EnemyDefLibrary library;
+    EnemyDefParser  parser { library };
+    if (!parser.RunMany(roots))
+    {
+        if (_pMessage)
+        {
+            *_pMessage = parser.error;
+        }
+        JUG_CORE_LOG_ERROR("적 정의 오류 ({}): {}", _dir.string(), parser.error);
+        return jug::Error { eError::EnemyDef };
+    }
+    return library;
+}
+
 jug::FilePath EnemyDefLibrary::GetDefaultPath(
     const jug::FilePath& _assetRoot)
 {
     return _assetRoot / "Defs" / "Enemies.json";
+}
+
+jug::FilePath EnemyDefLibrary::GetDefaultDirectory(
+    const jug::FilePath& _assetRoot)
+{
+    return _assetRoot / "Defs";
 }
 
 const EnemyDef* EnemyDefLibrary::Find(

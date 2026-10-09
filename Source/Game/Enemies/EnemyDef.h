@@ -28,6 +28,13 @@ enum class eEnemyBehavior : uint8_t
     FlyingBzk,   // 낙하산 바주카 (착지 시 Bzk 로 변신)
     Shielder,    // 방패병
     Pow,         // 포로 (Older)
+    Bus,         // 버스 중간보스 (MBTruck): 탄/병사 투하, 8단계 파손
+    BattleShip,  // 최종보스 (Big Shiee): 레일/캐논/포탑 2기, 파괴 연출
+    Jeep,        // 이동 로켓 지프 (Docs/EnemySpecs.md 2.1)
+    BTank,       // 고정 포탑 전차 (2.3)
+    MissleTank,  // 미사일 전차 (2.4)
+    Sarubia,     // 보행 전차 / 중간보스 게이트 (2.5)
+    Aparch,      // 공격 헬기 (2.6)
     Count
 };
 
@@ -123,6 +130,11 @@ struct ProjectileDef
     ClipDef      begin           = {};   // 점화 대기 동안의 클립 (선택)
     ClipDef      fly             = {};
     FxDef        explosion       = {};   // 적중/지형 접촉 시 연출 (clip 이 비면 없음)
+    // 구르는 탄 (사루비아 수류탄): 착지 후 지면을 rollSpeed 로 구르고 rollSec 뒤 소멸. 착지 연출은 land 클립
+    float        rollSpeed       = 0.f;
+    float        rollSec         = 0.f;
+    bool         bExpireFx       = false;   // 수명 종료 시에도 explosion 연출 (시각 전용)
+    ClipDef      land            = {};      // 착지 직후 클립 (rollSpeed > 0 일 때 fly 앞에 재생)
 };
 
 enum class eWeaponAim : uint8_t
@@ -366,6 +378,176 @@ struct PowCfg
 };
 
 // ===========================================
+//  차량 / 전차 / 헬기 (Docs/EnemySpecs.md §2). 수치는 Vehicles.json "params", 클립/무기는 "clips"/"weapons" 에서 로더가 채운다.
+// ===========================================
+
+// 이동 로켓 지프 (2.1). 원점 = 발 (지면 추종). 클립 접미 = 주행 방향(_Left: 좌주행 / 우발사).
+struct JeepCfg
+{
+    float speed        = 200.f;   // 주행 px/s
+    float targetTol    = 10.f;    // 목표 x 와 이 거리 안이면 도착
+    float edgeInset    = 75.f;    // 화면 가장자리에서 떨어진 목표 x
+    int   idleTicks    = 60;      // Idle / IdleAndMove 대기 (1 s)
+    int   waitTicks    = 120;     // 사격 쌍 사이 휴지 (2 s)
+    int   bullets      = 4;       // 한 번 조준당 로켓 수
+    int   fireFrame    = 1;       // Shot 클립 안 발사 프레임
+
+    int clipIdle = -1, clipMove = -1, clipTurn = -1, clipAimming = -1, clipReady = -1, clipShotReady = -1, clipShot = -1, clipReAim = -1, clipDestroy = -1;
+    int weaponRocket = -1;
+};
+
+// 고정 포탑 전차 (2.3). 원점 = 발. 항상 좌향. 활성 = 플레이어 x >= 전차 x - activateDx.
+struct BTankCfg
+{
+    float activateDx    = 500.f;
+    int   idleTicks     = 180;     // 열린 뒤 발사 대기 (3 s)
+    int   shotsPerCycle = 2;       // 한 번에 연속 발사 수
+    int   fireFrame     = 2;       // Fire 클립 안 발사 프레임
+
+    int clipIdle = -1, clipOpen = -1, clipFire = -1, clipDestroy = -1;
+    int weaponShell = -1;
+};
+
+// 미사일 전차 (2.4). 원점 = 발. 조준 모드 Up(곡사)/Down(직사). 활성 = |dx| <= rangeDx 동안 타이머 누적.
+struct MissleTankCfg
+{
+    float rangeDx      = 600.f;   // 이 거리 안에서만 행동 타이머가 간다
+    float farDx        = 300.f;   // |dx| > farDx 이면 곡사(Up), 아니면 직사(Down)
+    int   detectTicks  = 60;      // Idle 누적 (1 s)
+    int   readyTicks   = 120;     // 발사 준비 (2 s)
+    int   bullets      = 5;
+    int   fireFrame    = 2;
+
+    int clipIdleUp = -1, clipIdleDown = -1, clipAimUp = -1, clipAimDown = -1;
+    int clipReadyUp = -1, clipReadyDown = -1, clipShotUp = -1, clipShotDown = -1;
+    int clipDestroyUp = -1, clipDestroyDown = -1;
+    int weaponUp = -1, weaponDown = -1;
+};
+
+// 보행 전차 / 중간보스 게이트 (2.5). 원점 = 발. 롤링 수류탄(사루비아 탄)을 쏜다.
+struct SarubiaCfg
+{
+    int   cooldownTicks = 120;    // Idle 2 s
+    float chaseDx       = 500.f;  // |dx| 가 이보다 크면 전진 (Move)
+    float stopDx        = 400.f;  // 전진 중 |dx| 가 이 값 이하가 되면 멈춘다
+    int   moveMaxTicks  = 120;    // 전진 최대 2 s
+    int   shotReadyTicks = 90;    // 사격 준비 1.5 s
+    int   fireFrame     = 1;
+
+    int clipIdle = -1, clipTurn = -1, clipMoveStart = -1, clipMove = -1, clipMoveStop = -1;
+    int clipShotStart = -1, clipShot = -1, clipDestroy = -1;
+    int weaponGrenade = -1;
+};
+
+// 공격 헬기 (2.6). 원점 = 기체 중심 (비행: 지면 없음). 항상 좌향.
+struct AparchCfg
+{
+    float speed        = 300.f;   // 접근 속도
+    float decelSq      = 10000.f; // 목표까지 거리² 이하면 감속 (v = max(minSpeed, v - decel*dt))
+    float arriveSq     = 400.f;   // 이 거리² 이하면 정지
+    float decel        = 600.f;
+    float minSpeed     = 50.f;
+    float approachX    = 445.f;   // 화면 좌표 (진입 지점)
+    float approachY    = 125.f;
+    float missileX     = 540.f;   // 화면 좌표 (미사일 자세)
+    float missileY     = 248.f;
+    float homeX        = 540.f;   // 화면 좌표 (복귀 지점)
+    float homeY        = 100.f;
+    int   idleTicks    = 120;     // 패턴 사이 2 s
+    int   gunTicks     = 60;      // 포 전개 1 s
+    int   moveTicks    = 60;      // 자세 이동 1 s
+    int   missileIntervalTicks = 60;   // 미사일 간격 1 s (3발)
+    int   missileShots = 3;
+    int   endTicks     = 60;      // 포 수납 + 복귀 1 s
+    float followOffsetY = 275.f;  // 폭탄 패턴: 플레이어 위 이 높이를 따라다닌다
+    float followGain   = 1.5f;
+    int   bombStepTicks = 30;     // 0.5 s 틱 (폭탄 패턴 리듬)
+    int   bombSteps    = 12;      // 6 s
+    float driftX       = 50.f;    // 사망 표류 (px/s)
+    float driftY       = -70.f;
+    int   chainCount   = 6;       // 사망 연쇄 폭발 횟수
+    int   chainIntervalTicks = 18;   // 0.3 s
+    int   removeTicks  = 90;      // 사망 후 1.5 s 에 제거
+
+    int clipIdle = -1, clipMove = -1, clipMoveStop = -1, clipDestroy = -1;
+    int weaponMissile = -1, weaponDrop = -1;
+};
+
+// 버스 중간보스 (Docs/EnemySpecs.md 3.1). 좌표는 "원점" 기준: 원점 = 발 - (0, originDepth). 방향은 항상 +1 (레거시 좌표 그대로).
+struct BusCfg
+{
+    float    originDepth        = 123.f;
+    BoxDef   trigger            = {};        // 플레이어 몸이 닿으면 전투 시작 (문 개방)
+    int      openTicks          = 210;       // MainTruck_Begin 길이 (3.5 s)
+    int      shellFirstTicks    = 120;       // 첫 포탄 (전투 시작 후 2 s)
+    int      shellIntervalTicks = 180;       // 이후 3 s 간격
+    int      soldierFirstTicks  = 180;       // 첫 병사 투하 (3 s)
+    int      soldierIntervalTicks = 300;     // 이후 5 s 간격
+    int      soldierAliveMax    = 2;         // 동시 생존 투하 병사
+    int      soldierTotalMax    = 8;         // 누적 투하 병사
+    jug::VECTOR2 soldierOffset  = { -150.f, -40.f };   // 원점 기준 투하 위치
+    jug::String  soldierDef     = {};        // 투하 병사 정의 (soldier_bomb)
+    int      weaponShell        = -1;        // 포탄 무기 (Given 이 아닌 Facing + arc)
+};
+
+// 최종보스 (Docs/EnemySpecs.md 3.2). 좌표는 "본체 원점" 기준. 원점 = 발 - (0, originDepth).
+struct BattleShipCfg
+{
+    float    originDepth      = 132.f;
+    float    entranceOffsetX  = -300.f;     // 등장: arena.left + 이 값 에서 레일로 굴러 들어온다
+    float    railSlot[3]      = { 30.f, 100.f, 190.f };   // arena.left 기준 (back, home, forward)
+    int      homeSlot         = 1;
+    float    railMaxSpeed     = 100.f;
+    float    railAccel        = 50.f;
+    float    railDecel        = 100.f;
+    int      idleTicks        = 96;          // 1.6 s (격앙 0.8 s)
+    int      idleEnragedTicks = 48;
+    int      headOpenTicks    = 86;          // Head_Swiching_Start 1.44 s
+    int      cannonStartTicks = 96;          // Cannon_Start 1.6 s
+    int      cannonIdleTicks  = 60;          // 1.0 s (격앙 0.6 s)
+    int      cannonIdleEnragedTicks = 36;
+    float    cannonShotSec    = 0.56f;       // Cannon_Shot_{0..4} 한 번 (7 f x 0.08)
+    int      cannonShots      = 3;           // 격앙 5
+    int      cannonShotsEnraged = 5;
+    int      cannonEndTicks   = 67;          // Cannon_End 1.12 s
+    int      headCloseTicks   = 101;         // Head_Swiching_End 1.68 s
+    float    cannonTrackDeg   = 60.f;        // 초당 (격앙 90)
+    float    cannonTrackDegEnraged = 90.f;
+    float    cannonAngleStart = -60.f;
+    float    cannonAngleMin   = -135.f;
+    float    cannonAngleMax   = -45.f;
+    jug::VECTOR2 cannonOffset = { 123.f, -149.f };   // 원점 기준 포 중심
+    float    bulletSpeed      = 300.f;
+    float    bulletSpread     = 37.f;        // 발사 위치 (idx - 2) * spread
+    jug::String bulletProjectile = {};       // 투사체 정의 이름 (battleship_bullet). 발사 때 라이브러리에서 찾는다
+    BoxDef   bow              = {};          // 피격 상자 (원점 기준)
+    BoxDef   bridge           = {};
+    BoxDef   aft              = {};
+    float    hullBlockDx      = 270.f;       // 파괴 전: 플레이어 x 는 선체 x + 이 값 이상
+    // 포탑 (2기)
+    jug::VECTOR2 turretOffset[2] = { { -200.f, -70.f }, { -100.f, -120.f } };
+    BoxDef   turretBox        = {};          // 포탑 원점 기준 피격 상자
+    jug::VECTOR2 turretMuzzle[3] = { { -30.f, -30.f }, { 0.f, -35.f }, { 30.f, -30.f } };   // LEFT / MID / RIGHT
+    int      turretHp         = 40;
+    float    turretCoolSec    = 2.4f;        // 격앙 1.4 s
+    float    turretCoolEnragedSec = 1.4f;
+    float    turretFirstStepSec = 1.2f;      // i * 이 값 = 첫 발 지연
+    float    turretTurnSec    = 0.24f;
+    float    turretShotSec    = 1.12f;       // DCannon_Shot_* (14 f x 0.08)
+    float    turretMidDx      = 60.f;
+    float    turretAimJitter  = 30.f;        // 플레이어 x ± 이 값 목표
+    float    turretRandomSec  = 0.5f;       // 발사 후 추가 랜덤 [0, 이 값)
+    float    turretArcMinVx   = 40.f;
+    float    turretArcMaxVx   = 450.f;
+    jug::String turretProjectile = {};       // 포탑 포탄 정의 이름 (btank_shell)
+    // 격앙 / 파괴
+    int      enragedSmallTicks = 60;         // 격앙 중 선체 소폭발 주기 (1 s)
+    float    destroyChainSec  = 2.8f;
+    float    destroyChainStepSec = 0.12f;
+    float    destroyFinishSec = 3.6f;
+};
+
+// ===========================================
 //  EnemyDef
 // ===========================================
 
@@ -398,6 +580,16 @@ struct EnemyDef
     FlyingBzkCfg flyingBzk = {};
     ShielderCfg  shielder  = {};
     PowCfg       pow       = {};
+    BusCfg         bus         = {};
+    BattleShipCfg  battleShip  = {};
+    JeepCfg        jeep        = {};
+    BTankCfg       btank       = {};
+    MissleTankCfg  missleTank  = {};
+    SarubiaCfg     sarubia     = {};
+    AparchCfg      aparch      = {};
+
+    // true: 카메라 뒤로 밀려나도 정리하지 않는다 (보스 아레나 고정)
+    bool bNoDespawn = false;
 
     [[nodiscard]] const ClipDef& GetClip(const int _index) const { return clips[static_cast<size_t>(_index)].clip; }
     [[nodiscard]] int            FindClip(jug::StringView _logicalName) const;
@@ -425,8 +617,15 @@ public:
     [[nodiscard]] static jug::Result<EnemyDefLibrary> Parse(jug::StringView _json, jug::String* _pMessage = nullptr);
     [[nodiscard]] static jug::Result<EnemyDefLibrary> Load(const jug::FilePath& _path, jug::String* _pMessage = nullptr);
 
+    // 폴더 안의 모든 *.json 을 이름순으로 합쳐서 로드한다 (Enemies.json, Vehicles.json, Props.json, Boss.json ...).
+    // 정의 이름은 파일 간에도 유일해야 하고, base 상속은 파일 경계를 넘을 수 있다.
+    [[nodiscard]] static jug::Result<EnemyDefLibrary> LoadDirectory(const jug::FilePath& _dir, jug::String* _pMessage = nullptr);
+
     // <assetRoot>/Defs/Enemies.json
     [[nodiscard]] static jug::FilePath GetDefaultPath(const jug::FilePath& _assetRoot);
+
+    // <assetRoot>/Defs
+    [[nodiscard]] static jug::FilePath GetDefaultDirectory(const jug::FilePath& _assetRoot);
 
     [[nodiscard]] const EnemyDef* Find(jug::StringView _name) const;
     [[nodiscard]] int             FindIndex(jug::StringView _name) const;   // 없으면 -1

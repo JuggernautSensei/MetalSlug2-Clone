@@ -15,6 +15,7 @@
 #include "Game/Sandbox/TrainingTargets.h"
 #include "Game/Ui/UiSystem.h"
 #include "Render/Camera.h"
+#include "Game/Props/PropWorld.h"
 #include "Render/SpriteLibrary.h"
 #include "World/GroundMap.h"
 #include "World/Physics.h"
@@ -38,8 +39,13 @@ struct SandboxConfig
     bool                  bLoadTuningFile  = true;   // Assets/Tuning/Tuning.json 로드 (+ 라이브에서 핫리로드)
     Tuning                tuning           = {};     // bLoadTuningFile == false 일 때 사용
     bool                  bBackground      = true;   // Stage0_Main 배경 (렌더러가 있을 때만)
-    jug::FilePath         enemyDefPath     = {};     // 적 정의 JSON. 비면 <assetRoot>/Defs/Enemies.json (없으면 적 없이 동작)
+    jug::FilePath         enemyDefPath     = {};     // 적 정의 JSON 파일 또는 정의 폴더. 비면 <assetRoot>/Defs 폴더 전체 (없으면 적 없이 동작)
     bool                  bEnemyLab        = false;  // 적 검증용: 보병 정의 8종을 플레이어 앞에 배치 (상태 이름 "enemylab")
+    bool                  bVehicleLab      = false;  // 차량 검증용: 차량 5종을 화면 안에 배치 (상태 이름 "vehiclelab")
+    bool                  bBossLab         = false;  // 보스 검증: 최종보스를 아레나(bossArena)에 등장시킨다 (상태 이름 "bosslab")
+    Aabb                  bossArena        = Aabb::FromMinMax({ 0.f, 0.f }, { 640.f, 448.f });   // 640x448, 바닥 bossGroundY
+    float                 bossGroundY      = 378.f;
+    bool                  bPropLab         = false;  // 소품 검증: Stage0 상점 거리에 상점/트럭/아이템 배치 (상태 이름 "proplab")
 };
 
 // ===========================================
@@ -93,10 +99,12 @@ private:
     void                       BuildWorld_(GameContext& _ctx);
     void                       AddDefaultTargets_();
     void                       UpdateWalls_();
+    void                       UpdatePropCollision_();   // 소품 발판을 m_platforms 에 모은다
     [[nodiscard]] PhysicsWorld MakePhysicsWorld_() const;
     [[nodiscard]] jug::VECTOR2 GetRespawnFeet_() const;
     [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;   // 적용: 지면 + 플랫폼 (카메라 왼쪽 벽 제외)
-    void                       SpawnDebugEnemy_(int _slot, float _aheadPx = 180.f);   // 숫자키 1..8 (보병 정의 8종, 플레이어 앞)
+    void                       SpawnDebugEnemy_(int _slot, float _aheadPx = 180.f);   // 숫자키 1..8 (보병 정의 8종), 9 = 차량 5종 순환 (플레이어 앞)
+    void                       SpawnBossLab_();                                         // bosslab: 최종보스를 아레나 왼쪽 밖에서 등장시킨다
 
     void DrawWorld_(GameContext& _ctx, jug::VECTOR2 _cameraPos, float _alpha);
     void DrawDebugBoxes_(Renderer& _renderer, jug::VECTOR2 _cameraPos) const;
@@ -110,6 +118,9 @@ private:
 
     GroundMap         m_ground        = {};
     jug::Vector<Wall> m_walls         = {};
+    jug::Vector<Platform> m_platforms      = {};     // 플레이어 발판 (설정 + 소품). 적 발판은 설정값만 쓴다
+    PropDefLibrary        m_propDefs       = {};     // Assets/Defs/Props/Props.json
+    PropWorld             m_props          { nullptr, 1 };
     Camera            m_camera        = {};
     jug::VECTOR2      m_prevCameraPos = { 0.f, 0.f };
 
@@ -120,6 +131,7 @@ private:
     TrainingTargets  m_targets     = {};
     EnemyDefLibrary  m_enemyLib    = {};
     EnemyWorld       m_enemies     { &m_enemyLib };   // m_enemyLib 보다 뒤에 선언되어야 한다
+    int              m_vehicleCursor = 0;              // 숫자키 9: 다음에 뽑을 차량 번호
     EffectList       m_effects     = {};
     AnimPlayer       m_bombAnim    = {};
 

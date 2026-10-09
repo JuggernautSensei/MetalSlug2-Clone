@@ -1,0 +1,460 @@
+{
+  "version": 1,
+  "note": "소품/아이템 정의. 스키마는 Docs/PropSpecs.md. 좌표는 스프라이트 중심 기준. HP 는 레거시 x2 (EnemySpecs 5/0.6).",
+  "defs": {
+    "shop_0": {
+      "hp": 30,
+      "idle": { "sprite": "Stage0_Shop_0_0" },
+      "destroyed": { "sprite": "Stage0_Shop_0_1" },
+      "parts": [
+        { "role": "hurt", "size": [150, 75], "offset": [0, -100] },
+        { "role": "platform", "size": [220, 20], "offset": [30, 10] }
+      ],
+      "onDestroy": {
+        "explosions": [
+          { "clip": "Explosion_Small", "count": 1, "spread": 75 },
+          { "clip": "Explosion_Mid", "count": 1, "spread": 75 },
+          { "clip": "Explosion_Large", "count": 1, "spread": 75 }
+        ],
+        "debris": { "set": "wood", "count": 6 }
+      }
+    },
+    "shop_1": {
+      "hp": 30,
+      "idle": { "sprite": "Stage0_Shop_1_0" },
+      "destroyed": { "sprite": "Stage0_Shop_1_1" },
+      "parts": [
+        { "role": "hurt", "size": [150, 75], "offset": [0, -100] },
+        { "role": "platform", "size": [220, 20], "offset": [20, 10] }
+      ],
+      "onDestroy": {
+        "explosions": [
+          { "clip": "Explosion_Small", "count": 1, "spread": 75 },
+          { "clip": "Explosion_Mid", "count": 1, "spread": 75 },
+          { "clip": "Explosion_Large", "count": 1, "spread": 75 }
+        ],
+        "debris": { "set": "wood", "count": 6 }
+      }
+    },
+    "shop_2": {
+      "hp": 30,
+      "idle": { "sprite": "Stage0_Shop_2_0" },
+      "destroyed": { "sprite": "Stage0_Shop_2_1" },
+      "parts": [
+        { "role": "hurt", "size": [100, 50], "offset": [25, -75] },
+        { "role": "platform", "size": [160, 20], "offset": [20, 15] }
+      ],
+      "onDestroy": {
+        "explosions": [
+          { "clip": "Explosion_Small", "count": 1, "spread": 75 },
+          { "clip": "Explosion_Mid", "count": 1, "spread": 75 },
+          { "clip": "Explosion_Large", "count": 1, "spread": 75 }
+        ],
+        "debris": { "set": "wood", "count": 6 }
+      }
+    },
+    "shop_3": {
+      "hp": 30,
+      "idle": { "sprite": "Stage0_Shop_3_0" },
+      "destroyed": { "sprite": "Stage0_Shop_3_1" },
+      "parts": [
+        { "role": "hurt", "size": [150, 75], "offset": [50, -100] },
+        { "role": "platform", "size": [300, 20], "offset": [30, 10] }
+      ],
+      "onDestroy": {
+        "explosions": [
+          { "clip": "Explosion_Small", "count": 1, "spread": 75 },
+          { "clip": "Explosion_Mid", "count": 1, "spread": 75 },
+          { "clip": "Explosion_Large", "count": 1, "spread": 75 }
+        ],
+        "debris": { "set": "wood", "count": 6 }
+      }
+    },
+    "shop_4": {
+      "hp": 30,
+      "idle": { "sprite": "Stage0_Shop_4_0" },
+      "destroyed": { "sprite": "Stage0_Shop_4_1" },
+      "parts": [
+        { "role": "hurt", "size": [200, 75], "offset": [50, -100] },
+        { "role": "platform", "size": [250, 20], "offset": [80, 20] }
+      ],
+      "onDestroy": {
+        "explosions": [
+          { "clip": "Explosion_Small", "count": 1, "spread": 75 },
+          { "clip": "Explosion_Mid", "count": 1, "spread": 75 },
+          { "clip": "Explosion_Large", "count": 1, "spread": 75 }
+        ],
+        "debris": { "set": "wood", "count": 6 }
+      }
+    },
+    "shop_5": {
+      "hp": 30,
+      "idle": { "sprite": "Stage0_Shop_5_0" },
+      "destroyed": { "sprite": "Stage0_Shop_5_1" },
+      "parts": [
+        { "role": "hurt", "size": [150, 75], "offset": [0, -200] },
+        { "role": "platform", "size": [230, 20], "offset": [35, 55] },
+        { "role": "platform", "size": [220, 20], "offset": [47, 130], "when": "destroyed" }
+      ],
+      "onDestroy": {
+        "explosions": [
+          { "clip": "Explosion_Small", "count": 1, "spread": 75 },
+          { "clip": "Explosion_Mid", "count": 1, "spread": 75 },
+          { "clip": "Explosion_Large", "count": 1, "spread": 75 }
+        ],
+        "debris": { "set": "wood", "count": 6 }
+      },
+      "drops": [ { "item": "bomb_supple", "count": 1, "bounce": true } ],
+      "spawns": [ { "def": "sign_fall", "offset": [50, -200] } ]
+    },
+
+    "truck": {
+      "hp": 30,
+      "remove": true,
+      "destroyDuration": 0,
+      "variants": [
+        {
+          "name": "default", "dy": 0,
+          "idle": { "anim": "Truck_Idle" }, "hit": { "anim": "Truck_Hit" },
+          "parts": [
+            { "role": ["hurt", "wall"], "size": [44, 75], "offset": [22, 5] },
+            { "role": ["hurt", "wall"], "size": [70, 25], "offset": [-35, 15] }
+          ]
+        },
+        {
+          "name": "loaded", "dy": -10,
+          "idle": { "anim": "LoadedTruck_Idle" }, "hit": { "anim": "LoadedTruck_Hit" },
+          "parts": [
+            { "role": ["hurt", "wall"], "size": [44, 75], "offset": [22, 15] },
+            { "role": ["hurt", "wall"], "size": [70, 90], "offset": [-35, 10] }
+          ]
+        },
+        {
+          "name": "refri", "dy": -17,
+          "idle": { "anim": "RefTruck_Idle" }, "hit": { "anim": "RefTruck_Hit" },
+          "parts": [
+            { "role": ["hurt", "wall"], "size": [44, 75], "offset": [22, 20] },
+            { "role": ["hurt", "wall"], "size": [70, 90], "offset": [-35, 10] }
+          ]
+        }
+      ],
+      "onDestroy": {
+        "explosions": [ { "clip": "Explosion_Huge", "count": 1, "offset": [-10, 0] } ],
+        "debris": { "set": "metal", "count": 6 }
+      }
+    },
+
+    "fence": {
+      "hp": 1,
+      "remove": true,
+      "destroyDuration": 0,
+      "variants": [
+        { "name": "pence0", "idle": { "sprite": "Pence0" } },
+        { "name": "pence1", "idle": { "sprite": "Pence1" } },
+        { "name": "pence2", "idle": { "sprite": "Pence2" } }
+      ],
+      "parts": [ { "role": "hurt", "size": [60, 30], "offset": [0, -20] } ],
+      "onDestroy": { "debris": { "set": "wood", "count": 5 } }
+    },
+
+    "mob_boat": {
+      "hp": 60,
+      "idle": { "sprite": "Mob_Boat_Idle" },
+      "destroyed": { "sprite": "Mob_Boat_Destroy" },
+      "parts": [ { "role": ["hurt", "wall"], "size": [150, 150], "offset": [0, 25] } ],
+      "onDestroy": {
+        "explosions": [
+          { "clip": "Explosion_Small", "count": 2, "spread": 100, "offset": [0, -50] },
+          { "clip": "Explosion_Mid", "count": 2, "spread": 100, "offset": [0, -50] },
+          { "clip": "Explosion_Large", "count": 2, "spread": 100, "offset": [0, -50] }
+        ],
+        "debris": { "set": "wood", "count": 3 }
+      },
+      "drops": [
+        { "item": "random_anime", "count": 3, "spreadX": 25, "bounce": true },
+        { "item": "random_fruit", "count": 3, "spreadX": 25, "bounce": true }
+      ],
+      "secondary": {
+        "afterSec": 2,
+        "explosions": [
+          { "clip": "Explosion_Small", "count": 2, "spread": 100, "offset": [0, -50] },
+          { "clip": "Explosion_Mid", "count": 2, "spread": 100, "offset": [0, -50] },
+          { "clip": "Explosion_Large", "count": 3, "spread": 100, "offset": [0, -50] }
+        ],
+        "debris": { "set": "wood", "count": 5 }
+      }
+    },
+
+    "bridge_deck": {
+      "hp": 20,
+      "destroyed": { "sprite": "Stage0_Bridge_0" },
+      "parts": [
+        { "role": "hurt", "size": [175, 100], "offset": [25, 0] },
+        { "role": "wall", "size": [175, 100], "offset": [25, 0], "when": "always" }
+      ],
+      "onDestroy": { "debris": { "set": "wood", "count": 5 } }
+    },
+    "bridge_house": {
+      "hp": 20,
+      "destroyed": { "sprite": "Stage0_Bridge_2" },
+      "parts": [
+        { "role": "hurt", "size": [150, 100], "offset": [0, 0] },
+        { "role": "wall", "size": [150, 100], "offset": [0, 0], "when": "always" }
+      ],
+      "onDestroy": { "debris": { "set": "wood", "count": 5 } }
+    },
+    "bridge_house2house": {
+      "hp": 20,
+      "destroyed": { "sprite": "Stage0_Bridge_1" },
+      "parts": [
+        { "role": "hurt", "size": [150, 100], "offset": [0, -25] },
+        { "role": "wall", "size": [150, 100], "offset": [0, -25], "when": "always" }
+      ],
+      "onDestroy": { "debris": { "set": "wood", "count": 5 } }
+    },
+    "bridge_block": {
+      "hp": 20,
+      "idle": { "sprite": "Stage0_Block_Idle" },
+      "destroyed": { "sprite": "Stage0_Block_Destroy" },
+      "parts": [
+        { "role": "hurt", "size": [135, 95], "offset": [0, 0] },
+        { "role": "wall", "size": [135, 95], "offset": [0, 0] },
+        { "role": "wall", "size": [72, 91], "offset": [30, 0], "when": "destroyed" }
+      ],
+      "onDestroy": { "debris": { "set": "rock", "count": 5 } }
+    },
+
+    "house_upper": {
+      "hp": 20,
+      "idle": { "sprite": "Stage0_House_0_Idle" },
+      "destroyed": { "sprite": "Stage0_House_0_Destroy" },
+      "parts": [
+        { "role": "hurt", "size": [150, 30], "offset": [0, 3] },
+        { "role": "enemyPlatform", "size": [150, 30], "offset": [0, 3] }
+      ],
+      "onDestroy": {
+        "explosions": [
+          { "clip": "Explosion_Small", "count": 3, "spread": 150 },
+          { "clip": "Explosion_Mid", "count": 3, "spread": 150 },
+          { "clip": "Explosion_Large", "count": 1, "spread": 150 }
+        ],
+        "debris": { "set": "wood", "count": 6 }
+      }
+    },
+    "house_open_window": {
+      "hp": 20,
+      "idle": { "sprite": "Stage0_House_1_Idle" },
+      "destroyed": { "sprite": "Stage0_House_1_Destroy" },
+      "parts": [
+        { "role": "hurt", "size": [150, 30], "offset": [0, -14] },
+        { "role": "enemyPlatform", "size": [150, 30], "offset": [0, -14] }
+      ],
+      "onDestroy": {
+        "explosions": [
+          { "clip": "Explosion_Small", "count": 3, "spread": 150 },
+          { "clip": "Explosion_Mid", "count": 3, "spread": 150 },
+          { "clip": "Explosion_Large", "count": 1, "spread": 150 }
+        ],
+        "debris": { "set": "wood", "count": 6 }
+      }
+    },
+    "house_cloth": {
+      "hp": 20,
+      "idle": { "sprite": "Stage0_House_2_Idle_0" },
+      "destroyed": { "sprite": "Stage0_House_2_Destroy" },
+      "parts": [
+        { "role": "hurt", "size": [150, 30], "offset": [0, -27] },
+        { "role": "enemyPlatform", "size": [150, 30], "offset": [0, -27] }
+      ],
+      "onDestroy": {
+        "explosions": [
+          { "clip": "Explosion_Small", "count": 3, "spread": 150 },
+          { "clip": "Explosion_Mid", "count": 3, "spread": 150 },
+          { "clip": "Explosion_Large", "count": 1, "spread": 150 }
+        ],
+        "debris": { "set": "wood", "count": 6 }
+      }
+    },
+    "house_no_cloth": {
+      "hp": 20,
+      "idle": { "sprite": "Stage0_House_2_Idle_1" },
+      "destroyed": { "sprite": "Stage0_House_2_Destroy" },
+      "parts": [
+        { "role": "hurt", "size": [150, 30], "offset": [0, -27] },
+        { "role": "enemyPlatform", "size": [150, 30], "offset": [0, -27] }
+      ],
+      "onDestroy": {
+        "explosions": [
+          { "clip": "Explosion_Small", "count": 3, "spread": 150 },
+          { "clip": "Explosion_Mid", "count": 3, "spread": 150 },
+          { "clip": "Explosion_Large", "count": 1, "spread": 150 }
+        ],
+        "debris": { "set": "wood", "count": 6 }
+      }
+    },
+    "house_yellow": {
+      "hp": 20,
+      "idle": { "sprite": "Stage0_House_3_Idle" },
+      "destroyed": { "sprite": "Stage0_House_3_Destroy" },
+      "parts": [
+        { "role": "hurt", "size": [150, 30], "offset": [0, -27] },
+        { "role": "enemyPlatform", "size": [150, 30], "offset": [0, -27] }
+      ],
+      "onDestroy": {
+        "explosions": [
+          { "clip": "Explosion_Small", "count": 3, "spread": 150 },
+          { "clip": "Explosion_Mid", "count": 3, "spread": 150 },
+          { "clip": "Explosion_Large", "count": 1, "spread": 150 }
+        ],
+        "debris": { "set": "wood", "count": 6 }
+      }
+    },
+
+    "ground_mini_house": {
+      "hp": 20,
+      "destroyed": { "sprite": "Stage0_Bridge_3" },
+      "parts": [
+        { "role": "hurt", "size": [140, 140], "offset": [40, 40] },
+        { "role": "wall", "size": [20, 45], "offset": [85, -1], "when": "always" }
+      ],
+      "onDestroy": {
+        "explosions": [
+          { "clip": "Explosion_Small", "count": 2, "spread": 70 },
+          { "clip": "Explosion_Mid", "count": 2, "spread": 70 },
+          { "clip": "Explosion_Large", "count": 1, "spread": 70 }
+        ],
+        "debris": { "set": "wood", "count": 6 }
+      }
+    },
+
+    "ground_house": {
+      "hp": 40,
+      "idle": { "sprite": "Stage0_House_4_Idle" },
+      "damaged": { "sprite": "Stage0_House_4_Destroy_0" },
+      "damagedAtHp": 20,
+      "destroyed": { "sprite": "Stage0_House_4_Destroy_1" },
+      "parts": [ { "role": "hurt", "size": [220, 220], "offset": [10, 50] } ],
+      "onDamaged": { "debris": { "set": "wood", "count": 5 } },
+      "onDestroy": {
+        "explosions": [
+          { "clip": "Explosion_Small", "count": 2, "spread": 100 },
+          { "clip": "Explosion_Mid", "count": 2, "spread": 100 },
+          { "clip": "Explosion_Large", "count": 1, "spread": 100 }
+        ],
+        "debris": { "set": "wood", "count": 5 }
+      },
+      "groundPatch": { "sprite": "Stage0_House_4_PixelMap", "size": [1306, 751], "inset": [12, 5] }
+    },
+
+    "big_house": {
+      "hp": 80,
+      "cullMargin": 150,
+      "idle": { "sprite": "Stage0_House_5_Idle" },
+      "damaged": { "sprite": "Stage0_House_5_Destroy_0" },
+      "damagedAtHp": 40,
+      "destroyed": { "sprite": "Stage0_House_5_Destroy_1" },
+      "parts": [
+        { "role": "hurt", "size": [310, 120], "offset": [10, 0] },
+        { "role": "hurt", "size": [240, 240], "offset": [-110, 60] },
+        { "role": "hurt", "size": [240, 240], "offset": [120, 60] }
+      ],
+      "onDamaged": { "debris": { "set": "wood", "count": 6 } },
+      "onDestroy": {
+        "explosions": [
+          { "clip": "Explosion_Small", "count": 3, "spread": 200 },
+          { "clip": "Explosion_Mid", "count": 3, "spread": 200 },
+          { "clip": "Explosion_Large", "count": 2, "spread": 200 }
+        ],
+        "debris": { "set": "wood", "count": 6 }
+      },
+      "groundPatch": { "sprite": "Stage0_House_5_PixelMap", "size": [555, 124], "inset": [12, 9] }
+    },
+
+    "tower": {
+      "hp": 20,
+      "idle": { "sprite": "Stage0_Tower_Idle" },
+      "destroyed": { "sprite": "Stage0_Tower_Destroy" },
+      "parts": [
+        { "role": "hurt", "size": [90, 210], "offset": [0, 0] },
+        { "role": "platform", "size": [80, 10], "offset": [5, 45] },
+        { "role": "platform", "size": [80, 10], "offset": [5, -25] },
+        { "role": "platform", "size": [80, 10], "offset": [5, -95] }
+      ],
+      "onDestroy": { "debris": { "set": "wood", "count": 5 } }
+    },
+
+    "guard_post": {
+      "hp": 0,
+      "idle": { "anim": "GuardPost" },
+      "parts": [
+        { "role": "platform", "size": [130, 10], "offset": [0, -65], "when": "always" },
+        { "role": "platform", "size": [165, 10], "offset": [0, 10], "when": "always" }
+      ]
+    },
+
+    "sign_fall": {
+      "hp": 0,
+      "idle": { "sprite": "Stage0_Sign_0" },
+      "fall": {
+        "gravity": 700,
+        "landed": { "sprite": "Stage0_Sign_1" },
+        "afterLandSec": 0.5,
+        "halfHeight": 45
+      },
+      "onDestroy": {
+        "explosions": [
+          { "clip": "Explosion_Large", "count": 1 },
+          { "clip": "Explosion_Mid", "count": 1 }
+        ],
+        "debris": { "set": "wood", "count": 6 }
+      }
+    }
+  },
+
+  "items": {
+    "gunitem_mg": {
+      "kind": "gun", "weapon": "hmg",
+      "visual": { "sprite": "GunItem_HM" },
+      "pickup": { "sprite": "GunItem_HM_Disappear" }
+    },
+    "gunitem_sg": {
+      "kind": "gun", "weapon": "shotgun",
+      "visual": { "sprite": "GunItem_SG" },
+      "pickup": { "sprite": "GunItem_SG_Disappear" }
+    },
+    "bomb_supple": {
+      "kind": "supply", "supply": "bomb", "amount": 10,
+      "visual": { "anim": "Bomb_Supplement" },
+      "pickup": { "anim": "Bomb_Supplement_Disappear" }
+    },
+    "bullet_supple": {
+      "kind": "supply", "supply": "bullet",
+      "visual": { "anim": "Bullet_Supplement" },
+      "pickup": { "anim": "Bullet_Supplement_Disappear" }
+    },
+
+    "item_apple":         { "kind": "score", "score": 500,  "roll": true, "visual": { "anim": "Item_Apple" } },
+    "item_banana":        { "kind": "score", "score": 300,  "roll": true, "visual": { "anim": "Item_Banana" } },
+    "item_banana_bundle": { "kind": "score", "score": 1000, "roll": true, "visual": { "anim": "Item_Banana_Bundle" } },
+    "item_watermelon":    { "kind": "score", "score": 800,  "roll": true, "visual": { "anim": "Item_Watermelon" } },
+    "item_cabbage":       { "kind": "score", "score": 700,  "roll": true, "visual": { "anim": "Item_Cabbage" } },
+    "item_pair":          { "kind": "score", "score": 400,  "roll": true, "visual": { "anim": "Item_Pair" } },
+    "item_carrot":        { "kind": "score", "score": 600,  "roll": true, "visual": { "anim": "Item_Carrot" } },
+
+    "item_mando":   { "kind": "score", "score": 3000, "begin": { "anim": "Item_Mando_Begin" }, "visual": { "anim": "Item_Mando_Idle" } },
+    "item_letter":  { "kind": "score", "score": 1100, "visual": { "anim": "Item_Letter" } },
+    "item_chicken": { "kind": "score", "score": 900,  "visual": { "anim": "Item_Chicken" } },
+    "item_fish":    { "kind": "score", "score": 1800, "visual": { "anim": "Item_Fish" } },
+    "item_bread":   { "kind": "score", "score": 1600, "visual": { "anim": "Item_Bread" } },
+    "item_fruits":  { "kind": "score", "score": 2500, "visual": { "anim": "Item_Fruits" } }
+  },
+
+  "groups": {
+    "random_fruit": [ "item_apple", "item_carrot", "item_banana", "item_banana_bundle", "item_watermelon", "item_cabbage", "item_pair" ],
+    "random_anime": [ "item_mando", "item_letter", "item_chicken", "item_fish", "item_bread", "item_fruits" ],
+    "random_score": [
+      "item_apple", "item_carrot", "item_banana", "item_banana_bundle", "item_watermelon", "item_cabbage", "item_pair",
+      "item_mando", "item_letter", "item_chicken", "item_fish", "item_bread", "item_fruits"
+    ]
+  }
+}
