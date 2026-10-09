@@ -61,7 +61,7 @@
         "hmg": {
             "damage": 2,
             "fireIntervalTicks": 3,
-            "holdRepeatTicks": 4,
+            "holdRepeatTicks": 3,
             "ammo": 200,
             "projectileSpeed": 640,
             "maxAlive": 0,
@@ -82,8 +82,37 @@
             "range": 200,
             "shotOverlayTicks": 16
         },
+        "rocket": {
+            "damage": 0,
+            "fireIntervalTicks": 24,
+            "holdRepeatTicks": 24,
+            "ammo": 20,
+            "projectileSpeed": 300,
+            "maxAlive": 2,
+            "pierce": false,
+            "hitSize": [16, 12],
+            "range": 420,
+            "shotOverlayTicks": 20,
+            "blastSize": [96, 96],
+            "blastDamage": 15,
+            "blastTicks": 6
+        },
+        "flame": {
+            "damage": 3,
+            "fireIntervalTicks": 3,
+            "holdRepeatTicks": 3,
+            "ammo": 30,
+            "projectileSpeed": 420,
+            "maxAlive": 0,
+            "pierce": true,
+            "hitSize": [40, 24],
+            "range": 200,
+            "shotOverlayTicks": 14
+        },
         "hmgPickupAmmo": 200,
-        "shotgunPickupAmmo": 30
+        "shotgunPickupAmmo": 30,
+        "rocketPickupAmmo": 20,
+        "flamePickupAmmo": 30
     },
     "knife": {
         "range": 34,

@@ -598,7 +598,9 @@ bool PropDefParser::Item_(
     {
         if (weapon == "hmg") item.weapon = eWeapon::Hmg;
         else if (weapon == "shotgun") item.weapon = eWeapon::Shotgun;
-        else return Fail_(where, "weapon", "hmg/shotgun 중 하나여야 합니다");
+        else if (weapon == "rocket") item.weapon = eWeapon::Rocket;
+        else if (weapon == "flame") item.weapon = eWeapon::Flame;
+        else return Fail_(where, "weapon", "hmg/shotgun/rocket/flame 중 하나여야 합니다");
     }
     jug::String supply;
     if (Str_(_obj, where, "supply", supply, false) && _obj.HasField("supply"))

@@ -27,6 +27,7 @@ struct HudModel
     bool bInfiniteAmmo  = true;   // 권총: 무한대 기호
     int  ammo           = 0;      // 유한 무기의 남은 탄
     int  bombs          = 0;
+    char weaponLetter   = 0;      // 든 무기 글자 (H/S/R/F). 권총은 0
 
     // --- 타이머 (스테이지가 채운다) ---
     bool bShowTimer     = false;

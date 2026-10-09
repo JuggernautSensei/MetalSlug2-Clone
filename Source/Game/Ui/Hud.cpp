@@ -50,6 +50,14 @@ HudModel MakeHudModel(
     model.bInfiniteAmmo = !_player.GetWeapon().HasFiniteAmmo();
     model.ammo          = _player.GetWeapon().ammo;
     model.bombs         = _player.GetWeapon().bombs;
+    switch (_player.GetWeapon().weapon)
+    {
+        case eWeapon::Hmg: model.weaponLetter = 'H'; break;
+        case eWeapon::Shotgun: model.weaponLetter = 'S'; break;
+        case eWeapon::Rocket: model.weaponLetter = 'R'; break;
+        case eWeapon::Flame: model.weaponLetter = 'F'; break;
+        default: break;
+    }
     return model;
 }
 
@@ -109,6 +117,10 @@ jug::Vector<HudItem> BuildHudItems(
         items.push_back(MakeSprite_("PlayerStateUI_Bomb", _layout.armsPanelX + 62, _layout.armsPanelY + 17));
 
         const int digitsY = _layout.armsPanelY + _layout.digitsDY;
+        if (_model.weaponLetter != 0)
+        {
+            items.push_back(MakeText_(jug::String(1, _model.weaponLetter), _layout.armsPanelX + _layout.weaponLetterDX, digitsY, eTextAlign::Left, eFontColor::White));
+        }
         if (_model.bInfiniteAmmo)
         {
             items.push_back(MakeSprite_("InfiniteUI_Red", _layout.armsPanelX + _layout.infiniteCenterDX, _layout.armsPanelY + _layout.infiniteCenterDY));

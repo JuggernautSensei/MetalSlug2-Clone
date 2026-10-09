@@ -41,6 +41,9 @@ void TickWeapon(WeaponState& _state);
 // 발사 처리: 쿨다운 리셋, 탄 소모, 소진되면 권총으로 복귀
 void OnFired(WeaponState& _state);
 
+// 디버그 무기 지급 슬롯 (F7..F10: 1 HMG, 2 샷건, 3 로켓, 4 화염). 그 밖의 값은 권총.
+[[nodiscard]] eWeapon WeaponFromDebugSlot(int _slot);
+
 // 탄 생성 정보
 [[nodiscard]] BulletSpawn MakeBulletSpawn(eWeapon _weapon, const WeaponTuning& _tuning, uint32_t _owner, jug::VECTOR2 _muzzle, jug::VECTOR2 _sweepFrom, jug::VECTOR2 _direction);
 

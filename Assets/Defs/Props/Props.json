@@ -422,6 +422,16 @@
       "visual": { "sprite": "GunItem_SG" },
       "pickup": { "sprite": "GunItem_SG_Disappear" }
     },
+    "gunitem_rl": {
+      "kind": "gun", "weapon": "rocket",
+      "visual": { "sprite": "GunItem_RL" },
+      "pickup": { "sprite": "GunItem_RL_Disappear" }
+    },
+    "gunitem_fs": {
+      "kind": "gun", "weapon": "flame",
+      "visual": { "sprite": "GunItem_FS" },
+      "pickup": { "sprite": "GunItem_FS_Disappear" }
+    },
     "bomb_supple": {
       "kind": "supply", "supply": "bomb", "amount": 10,
       "visual": { "anim": "Bomb_Supplement" },

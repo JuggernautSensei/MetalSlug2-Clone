@@ -73,6 +73,19 @@ void OnFired(
     }
 }
 
+eWeapon WeaponFromDebugSlot(
+    const int _slot)
+{
+    switch (_slot)
+    {
+        case 1: return eWeapon::Hmg;
+        case 2: return eWeapon::Shotgun;
+        case 3: return eWeapon::Rocket;
+        case 4: return eWeapon::Flame;
+        default: return eWeapon::Pistol;
+    }
+}
+
 BulletSpawn MakeBulletSpawn(
     const eWeapon       _weapon,
     const WeaponTuning& _tuning,
@@ -92,8 +105,12 @@ BulletSpawn MakeBulletSpawn(
     spawn.size      = _tuning.hitSize;
     spawn.range     = _tuning.range;
     spawn.bPierce   = _tuning.bPierce;
-    spawn.tag       = static_cast<uint8_t>(_weapon);
-    spawn.kind      = eHitKind::Bullet;
+    spawn.tag         = static_cast<uint8_t>(_weapon);
+    spawn.kind        = eHitKind::Bullet;
+    spawn.blastSize   = _tuning.blastSize;
+    spawn.blastDamage = _tuning.blastDamage;
+    spawn.blastTicks  = _tuning.blastTicks;
+    spawn.bTrail      = _weapon == eWeapon::Rocket;
     return spawn;
 }
 

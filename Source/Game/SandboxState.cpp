@@ -8,7 +8,9 @@
 #include <JugX/CoreLogger.h>
 #include <JugX/Math.h>
 
+#include "Game/Combat/BulletVisual.h"
 #include "Game/Player/PlayerHitboxes.h"
+#include "Game/Player/PlayerWeapons.h"
 #include "Game/Ui/ScreenFlow.h"
 #include "World/Constants.h"
 
@@ -444,6 +446,11 @@ void SandboxState::Tick(
         SpawnDebugEnemy_(_ctx.debugSpawn - 1);
         _ctx.debugSpawn = 0;
     }
+    if (_ctx.debugWeapon > 0)
+    {
+        m_player.PickUpWeapon(WeaponFromDebugSlot(_ctx.debugWeapon), m_tuning);
+        _ctx.debugWeapon = 0;
+    }
     m_targets.RegisterHurtboxes(m_combat);
     m_enemies.RegisterHurtboxes(m_combat);
     m_props.RegisterHurtboxes(m_combat);
@@ -517,6 +524,14 @@ void SandboxState::Tick(
             {
                 m_effects.Spawn(*_ctx.pAnims, "PlayerBombExplosion", request.position, 60);
             }
+            else if (request.kind == eFxKind::RocketExplosion)
+            {
+                m_effects.Spawn(*_ctx.pAnims, "Explosion_Mid", request.position, 56);
+            }
+            else if (request.kind == eFxKind::RocketSmoke)
+            {
+                m_effects.Spawn(*_ctx.pAnims, "Rocket_Smoke", request.position, 28);
+            }
             else
             {
                 m_effects.Spawn(*_ctx.pAnims, "Bullet_Destroy_Effect", request.position, 55);
@@ -580,8 +595,7 @@ void SandboxState::RequestSounds_(
 
     for (int i = m_prevStats.shotsFired; i < stats.shotsFired; ++i)
     {
-        // 권총은 또렷하게, 연사 무기는 피치를 흔들고 작게
-        audio.Play(sfx::kPistolShot, weapon == eWeapon::Pistol ? 0.8f : 0.55f, weapon == eWeapon::Pistol ? 0.04f : 0.12f);
+        PlayShotSfx(audio, weapon, i);
     }
     for (int i = m_prevStats.knifeSlashes; i < stats.knifeSlashes; ++i)
     {
@@ -601,13 +615,15 @@ void SandboxState::RequestSounds_(
         {
             audio.Play(sfx::kBombExplode, 1.f, 0.03f);
         }
+        else if (request.kind == eFxKind::RocketExplosion)
+        {
+            audio.Play(sfx::kBombExplode, 0.8f, 0.05f);
+        }
     }
 
-    // 무기 획득 (권총 → 다른 무기): 파워업 징글 + 무기 음성
-    if (weapon != m_prevWeapon && weapon != eWeapon::Pistol)
+    if (weapon != m_prevWeapon)
     {
-        audio.Play(sfx::kPowerUp);
-        audio.Play(weapon == eWeapon::Shotgun ? sfx::kVoiceShotgun : sfx::kVoiceHmg);
+        PlayWeaponPickupSfx(audio, weapon);
     }
     if (m_player.GetScore() > m_prevScore)
     {
@@ -745,21 +761,15 @@ void SandboxState::DrawWorld_(
 
     // --- 투사체 ---
     {
-        const SpriteInfo* pBulletH = m_spriteLib.Find("Player_Bullet_Basic_H");
-        const SpriteInfo* pBulletV = m_spriteLib.Find("Player_Bullet_Basic_V");
         for (const Bullet& bullet: m_projectiles.GetBullets())
         {
             const jug::VECTOR2 pos = Lerp_(bullet.renderPrev, bullet.position, _alpha);
-            if (bullet.team == eTeam::Player && pBulletH && pBulletV)
+            if (bullet.team == eTeam::Player && SubmitPlayerBullet(sprites, pAnims, m_spriteLib, bullet, pos, 30))
             {
-                const bool bVertical = std::abs(bullet.velocity.y) > std::abs(bullet.velocity.x);
-                sprites.Submit(30, 0, (bVertical ? pBulletV : pBulletH)->frame, pos);
+                continue;
             }
-            else
-            {
-                const jug::RGBA color = bullet.team == eTeam::Player ? jug::RGBA { 255, 240, 120, 255 } : jug::RGBA { 255, 80, 60, 255 };
-                renderer.FillRect(ToScreen_({ pos.x - bullet.size.x * 0.5f, pos.y - bullet.size.y * 0.5f }, _cameraPos), bullet.size, color);
-            }
+            const jug::RGBA color = bullet.team == eTeam::Player ? jug::RGBA { 255, 240, 120, 255 } : jug::RGBA { 255, 80, 60, 255 };
+            renderer.FillRect(ToScreen_({ pos.x - bullet.size.x * 0.5f, pos.y - bullet.size.y * 0.5f }, _cameraPos), bullet.size, color);
         }
 
         for (const Bomb& bomb: m_projectiles.GetBombs())

@@ -110,6 +110,7 @@
         {"type": "spawn", "kind": "prop", "def": "mob_boat", "x": 4634, "y": 545, "id": "boat_2", "params": {"explodeOnDeath": false}},
         {"type": "spawn", "kind": "prop", "def": "fence", "x": 4689, "y": 342, "repeat": {"count": 6, "stepX": 64, "stepY": 0}},
         {"type": "spawn", "kind": "npc", "def": "pow", "x": 4890, "y": 40, "settle": true, "drop": "gunitem_sg"},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 4300, "y": 40, "settle": true, "drop": "gunitem_rl"},
         {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 4700, "y": 405},
         {"type": "spawn", "kind": "enemy", "def": "shielder", "x": 4860, "y": 405},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 4520, "groundSnap": true, "fromY": 450},
@@ -145,6 +146,7 @@
       "id": "river_mid", "legacy": "RIVER_MID", "triggerX": 5600,
       "actions": [
         {"type": "setBounds", "rect": [3180, 288, 6520, 736]},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 5800, "y": 40, "settle": true, "drop": "gunitem_fs"},
         {"type": "spawn", "id": "aparch_river", "kind": "enemy", "def": "aparch", "origin": "legacyCenter", "halfHeight": 50, "camera": {"ax": "right", "dx": 250, "ay": "top", "dy": 125}},
         {"type": "spawn", "kind": "enemy", "def": "jeep", "x": 6000, "groundSnap": true},
         {"type": "lockCamera", "rect": "current"},

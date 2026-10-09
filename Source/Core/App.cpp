@@ -82,6 +82,21 @@ void App::ParseArgs_()
         {
             m_captureFrame = std::atoi(args[++i].c_str());
         }
+        else if (args[i] == "--weapon" && bHasValue)
+        {
+            m_pendingWeapon = std::atoi(args[++i].c_str());   // F7..F10 과 같다 (1 HMG, 2 샷건, 3 로켓, 4 화염)
+        }
+        else if (args[i] == "--hold" && bHasValue)
+        {
+            // 시작부터 누르고 있는 키 (캡처 검증용): J 사격, K 점프, Up/Down/Left/Right
+            const jug::String name = args[++i];
+            if (name == "J") m_input.OnKeyDown(jug::eKey::J);
+            else if (name == "K") m_input.OnKeyDown(jug::eKey::K);
+            else if (name == "Up") m_input.OnKeyDown(jug::eKey::Up);
+            else if (name == "Down") m_input.OnKeyDown(jug::eKey::Down);
+            else if (name == "Left") m_input.OnKeyDown(jug::eKey::Left);
+            else if (name == "Right") m_input.OnKeyDown(jug::eKey::Right);
+        }
         else if (args[i] == "--warp" && bHasValue)
         {
             // 스테이지 디버그: 시작하자마자 다음 섹션으로 N 번 워프 (F1 디버그 켜짐)
@@ -262,6 +277,10 @@ void App::OnKeyDown_(
         case jug::eKey::Num7: m_pendingSpawn = 7; return;
         case jug::eKey::Num8: m_pendingSpawn = 8; return;
         case jug::eKey::Num9: m_pendingSpawn = 9; return;   // 차량 5종 순환 (SandboxState::SpawnDebugEnemy_ 의 슬롯 8)
+        case jug::eKey::F7: m_pendingWeapon = 1; return;
+        case jug::eKey::F8: m_pendingWeapon = 2; return;
+        case jug::eKey::F9: m_pendingWeapon = 3; return;
+        case jug::eKey::F10: m_pendingWeapon = 4; return;
         default: break;
     }
 
@@ -306,6 +325,8 @@ void App::Update(
     }
     m_ctx.debugWarp     = m_pendingWarp;   // 상태가 소비한다 (스테이지 F5/F6)
     m_pendingWarp       = 0;
+    m_ctx.debugWeapon   = m_pendingWeapon;
+    m_pendingWeapon     = 0;
     if (m_pendingSpawn > 0)
     {
         m_ctx.debugSpawn = m_pendingSpawn;   // 샌드박스가 소비한다 (적 디버그 스폰)

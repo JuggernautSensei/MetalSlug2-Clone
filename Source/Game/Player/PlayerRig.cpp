@@ -65,6 +65,8 @@ namespace
     constexpr const char* kPistolTokens[]  = { "DG", nullptr, nullptr };
     constexpr const char* kHmgTokens[]     = { "MG", "SG", "DG" };
     constexpr const char* kShotgunTokens[] = { "SG", "DG", nullptr };
+    constexpr const char* kRocketTokens[]  = { "MG", "SG", "DG" };
+    constexpr const char* kFlameTokens[]   = { "SG", "MG", "DG" };
 
     [[nodiscard]] const char* const* GetTokens_(
         const eWeapon _weapon)
@@ -73,6 +75,8 @@ namespace
         {
             case eWeapon::Hmg: return kHmgTokens;
             case eWeapon::Shotgun: return kShotgunTokens;
+            case eWeapon::Rocket: return kRocketTokens;
+            case eWeapon::Flame: return kFlameTokens;
             default: return kPistolTokens;
         }
     }

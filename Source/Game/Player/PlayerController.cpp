@@ -139,8 +139,7 @@ void PlayerController::PickUpWeapon(
     const eWeapon _weapon,
     const Tuning& _tuning)
 {
-    const int ammo = _weapon == eWeapon::Hmg ? _tuning.weapons.hmgPickupAmmo : _tuning.weapons.shotgunPickupAmmo;
-    GiveWeapon(m_weapon, _weapon, ammo);
+    GiveWeapon(m_weapon, _weapon, _tuning.weapons.GetPickupAmmo(_weapon));
 }
 
 void PlayerController::SetVictory()

@@ -29,6 +29,10 @@ struct BulletSpawn
     bool         bPierce   = false;
     uint8_t      tag       = 0;   // 호출자가 정하는 분류 (예: 무기 종류) — CountBullets 용
     eHitKind     kind      = eHitKind::Bullet;
+    jug::VECTOR2 blastSize = { 0.f, 0.f };   // 착탄/사거리 끝 폭발 상자 (0 = 폭발 없음)
+    int          blastDamage = 0;
+    int          blastTicks  = 0;
+    bool         bTrail      = false;   // 로켓 연기 자국
 };
 
 struct Bullet
@@ -48,6 +52,11 @@ struct Bullet
     bool         bPierce    = false;
     bool         bAlive     = true;
     uint8_t      tag        = 0;
+    jug::VECTOR2 blastSize  = { 0.f, 0.f };
+    int          blastDamage = 0;
+    int          blastTicks  = 0;
+    bool         bTrail     = false;
+    int          ageTicks   = 0;
 };
 
 struct BombSpawn
@@ -141,7 +150,9 @@ struct ShotFx
 enum class eFxKind : uint8_t
 {
     BulletImpact,
-    BombExplosion
+    BombExplosion,
+    RocketExplosion,
+    RocketSmoke
 };
 
 struct FxRequest
@@ -185,6 +196,7 @@ public:
 
 private:
     void ExplodeBomb_(Bomb& _bomb, jug::VECTOR2 _at, CombatSystem& _combat);
+    void SpawnBulletBlast_(const Bullet& _bullet, CombatSystem& _combat);
 
     jug::Vector<Bullet>    m_bullets = {};
     jug::Vector<Bomb>      m_bombs   = {};

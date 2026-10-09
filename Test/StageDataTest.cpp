@@ -347,7 +347,7 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
     const StageData data = result.Take();
 
     EXPECT_EQ(data.sections.size(), 21u);
-    EXPECT_EQ(data.CountSpawns(), 173);
+    EXPECT_EQ(data.CountSpawns(), 175);
     EXPECT_EQ(data.CountWaveEntries(), 32);
     EXPECT_EQ(data.CountGates(), 4);
 

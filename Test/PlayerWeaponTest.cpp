@@ -1,0 +1,371 @@
+#include "PlayerTestUtil.h"
+#include "PropTestUtil.h"
+
+#include <algorithm>
+#include <vector>
+
+#include "Game/Combat/Projectiles.h"
+#include "Game/Player/PlayerWeapons.h"
+#include "Game/Props/PropDef.h"
+
+using namespace slugtest;
+
+namespace
+{
+    const TrainingDummy& DummyOf(
+        Sim&           _sim,
+        const uint32_t _id)
+    {
+        const TrainingDummy* pDummy = _sim.State().GetTargets().Find(_id);
+        EXPECT_NE(pDummy, nullptr);
+        static const TrainingDummy kEmpty;
+        return pDummy ? *pDummy : kEmpty;
+    }
+
+    size_t BulletsOf(
+        Sim& _sim)
+    {
+        return _sim.State().GetProjectiles().GetBullets().size();
+    }
+
+    const int kWeapons[] = {
+        static_cast<int>(eWeapon::Hmg),
+        static_cast<int>(eWeapon::Shotgun),
+        static_cast<int>(eWeapon::Rocket),
+        static_cast<int>(eWeapon::Flame),
+    };
+
+    int FireIntervalOf(
+        const Tuning& _tuning,
+        const eWeapon _weapon)
+    {
+        const WeaponTuning& weapon = _tuning.weapons.Get(_weapon);
+        return jug::Max(weapon.fireIntervalTicks, weapon.holdRepeatTicks);
+    }
+}   // namespace
+
+TEST(PlayerWeapon, EveryWeaponFiresAtItsTunedRateWhileHeld)
+{
+    for (const int raw: kWeapons)
+    {
+        const eWeapon weapon = static_cast<eWeapon>(raw);
+        Sim           sim;
+        sim.Player().PickUpWeapon(weapon, sim.Tune());
+        const int interval = FireIntervalOf(sim.Tune(), weapon);
+
+        sim.Hold(eAction::Shot);
+        std::vector<int> shotTicks;
+        int              lastShots = 0;
+        for (int tick = 0; tick < 60; ++tick)
+        {
+            sim.Step();
+            const int shots = sim.Player().GetStats().shotsFired;
+            if (shots > lastShots)
+            {
+                shotTicks.push_back(tick);
+                lastShots = shots;
+            }
+        }
+        ASSERT_GE(shotTicks.size(), weapon == eWeapon::Rocket ? 2u : 3u) << "weapon " << raw;
+        for (size_t i = 1; i < shotTicks.size(); ++i)
+        {
+            EXPECT_EQ(shotTicks[i] - shotTicks[i - 1], interval) << "weapon " << raw;
+        }
+    }
+}
+
+TEST(PlayerWeapon, HmgHoldFiresAboutTwentyTimesPerSecond)
+{
+    Sim sim;
+    sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
+    sim.Hold(eAction::Shot);
+    sim.Step(60);
+    EXPECT_GE(sim.Player().GetStats().shotsFired, 19);
+    EXPECT_LE(sim.Player().GetStats().shotsFired, 21);
+}
+
+TEST(PlayerWeapon, PickupAmmoComesFromTuningAndSameWeaponStacks)
+{
+    for (const int raw: kWeapons)
+    {
+        const eWeapon weapon = static_cast<eWeapon>(raw);
+        Sim           sim;
+        sim.Player().PickUpWeapon(weapon, sim.Tune());
+        const int ammo = sim.Tune().weapons.GetPickupAmmo(weapon);
+        EXPECT_GT(ammo, 0);
+        EXPECT_EQ(sim.Player().GetWeapon().weapon, weapon);
+        EXPECT_EQ(sim.Player().GetWeapon().ammo, ammo);
+
+        sim.Tap(eAction::Shot);
+        const int afterShot = sim.Player().GetWeapon().ammo;
+        EXPECT_EQ(afterShot, ammo - 1) << "weapon " << raw;
+
+        sim.Player().PickUpWeapon(weapon, sim.Tune());
+        EXPECT_EQ(sim.Player().GetWeapon().ammo, afterShot + ammo) << "weapon " << raw;
+    }
+}
+
+TEST(PlayerWeapon, PickingAnotherWeaponReplacesTheCurrentOneWithItsOwnAmmo)
+{
+    Sim sim;
+    sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
+    sim.Player().PickUpWeapon(eWeapon::Rocket, sim.Tune());
+    EXPECT_EQ(sim.Player().GetWeapon().weapon, eWeapon::Rocket);
+    EXPECT_EQ(sim.Player().GetWeapon().ammo, sim.Tune().weapons.rocketPickupAmmo);
+}
+
+TEST(PlayerWeapon, EmptyWeaponRevertsToPistolAfterExactlyItsAmmo)
+{
+    for (const int raw: kWeapons)
+    {
+        const eWeapon weapon = static_cast<eWeapon>(raw);
+        Sim           sim;
+        sim.Player().PickUpWeapon(weapon, sim.Tune());
+        const int ammo = sim.Tune().weapons.GetPickupAmmo(weapon);
+
+        sim.Hold(eAction::Shot);
+        const int ticks = sim.StepUntil(4000, [&] { return sim.Player().GetWeapon().weapon == eWeapon::Pistol; });
+        ASSERT_GE(ticks, 0) << "weapon " << raw;
+        EXPECT_EQ(sim.Player().GetStats().shotsFired, ammo) << "weapon " << raw;
+        EXPECT_EQ(sim.Player().GetWeapon().ammo, 0);
+    }
+}
+
+TEST(PlayerWeapon, RocketRespectsItsMaxAliveLimit)
+{
+    Sim sim;
+    sim.Player().PickUpWeapon(eWeapon::Rocket, sim.Tune());
+    sim.Hold(eAction::Shot);
+    int maxSeen = 0;
+    for (int tick = 0; tick < 200; ++tick)
+    {
+        sim.Step();
+        maxSeen = std::max(maxSeen, static_cast<int>(BulletsOf(sim)));
+    }
+    EXPECT_LE(maxSeen, sim.Tune().weapons.rocket.maxAlive);
+    EXPECT_GE(maxSeen, 1);
+}
+
+TEST(PlayerWeapon, HmgShotDamagesAJeepByItsTunedDamage)
+{
+    Sim            sim;
+    const uint32_t id = sim.State().AddTarget(eDummyKind::Jeep, { 260.f, 378.f });
+    sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
+    const int hp = DummyOf(sim, id).health.hp;
+    sim.Tap(eAction::Shot);
+    sim.Step(30);
+    EXPECT_EQ(DummyOf(sim, id).health.hp, hp - sim.Tune().weapons.hmg.damage);
+}
+
+TEST(PlayerWeapon, ShotgunAndFlamePierceBothJeeps)
+{
+    for (const eWeapon weapon: { eWeapon::Shotgun, eWeapon::Flame })
+    {
+        Sim sim;
+        sim.State().AddTarget(eDummyKind::Jeep, { 220.f, 378.f });
+        const uint32_t second = sim.State().AddTarget(eDummyKind::Jeep, { 360.f, 378.f });
+        sim.Player().PickUpWeapon(weapon, sim.Tune());
+        sim.Hold(eAction::Shot);
+        sim.Step(40);
+        sim.Release(eAction::Shot);
+        EXPECT_GT(DummyOf(sim, second).hitsTaken, 0) << "weapon " << static_cast<int>(weapon);
+    }
+}
+
+TEST(PlayerWeapon, RocketBlastDamagesDirectTargetOnceAndSparesFarTargets)
+{
+    Sim            sim;
+    const uint32_t direct = sim.State().AddTarget(eDummyKind::Jeep, { 300.f, 378.f });
+    const uint32_t far    = sim.State().AddTarget(eDummyKind::Jeep, { 1100.f, 378.f });
+    sim.Player().PickUpWeapon(eWeapon::Rocket, sim.Tune());
+    const int directHp = DummyOf(sim, direct).health.hp;
+    const int farHp    = DummyOf(sim, far).health.hp;
+
+    sim.Tap(eAction::Shot);
+    sim.Step(120);
+
+    EXPECT_EQ(DummyOf(sim, direct).health.hp, directHp - sim.Tune().weapons.rocket.blastDamage);
+    EXPECT_EQ(DummyOf(sim, far).health.hp, farHp);
+}
+
+TEST(PlayerWeapon, ProjectileBlastAppearsOnRangeEndOnlyWithBlastSize)
+{
+    for (const bool bBlast: { false, true })
+    {
+        ProjectileSystem projectiles;
+        CombatSystem     combat;
+        BulletSpawn      spawn;
+        spawn.position    = { 100.f, 200.f };
+        spawn.sweepFrom   = spawn.position;
+        spawn.direction   = { 1.f, 0.f };
+        spawn.speed       = 300.f;
+        spawn.range       = 60.f;
+        spawn.blastSize   = bBlast ? jug::VECTOR2 { 96.f, 96.f } : jug::VECTOR2 { 0.f, 0.f };
+        spawn.blastDamage = 15;
+        spawn.blastTicks  = 6;
+
+        bool bSawBlast = false;
+        combat.BeginTick();
+        projectiles.SpawnBullet(spawn, combat);
+        for (int tick = 0; tick < 20; ++tick)
+        {
+            combat.BeginTick();
+            projectiles.Step(nullptr, combat, 1.f / 60.f);
+            bSawBlast = bSawBlast || !projectiles.GetBlasts().empty();
+        }
+        EXPECT_EQ(bSawBlast, bBlast);
+        EXPECT_EQ(projectiles.GetBullets().size(), 0u);
+    }
+}
+
+TEST(PlayerWeapon, RocketGroundImpactSpawnsBlastAndExplosionFx)
+{
+    ProjectileSystem projectiles;
+    CombatSystem     combat;
+    const GroundMap  ground = MakeFlatGround();
+    BulletSpawn      spawn;
+    spawn.position    = { 100.f, 300.f };
+    spawn.sweepFrom   = spawn.position;
+    spawn.direction   = { 0.f, 1.f };
+    spawn.speed       = 600.f;
+    spawn.range       = 500.f;
+    spawn.blastSize   = { 96.f, 96.f };
+    spawn.blastDamage = 15;
+    spawn.blastTicks  = 6;
+
+    combat.BeginTick();
+    projectiles.SpawnBullet(spawn, combat);
+    bool bExplosionFx = false;
+    for (int tick = 0; tick < 30 && projectiles.GetBullets().size() > 0; ++tick)
+    {
+        combat.BeginTick();
+        projectiles.Step(&ground, combat, 1.f / 60.f);
+        for (const FxRequest& fx: projectiles.TakeFx())
+        {
+            bExplosionFx = bExplosionFx || fx.kind == eFxKind::RocketExplosion;
+        }
+    }
+    EXPECT_TRUE(bExplosionFx);
+    EXPECT_FALSE(projectiles.GetBlasts().empty());
+}
+
+TEST(PlayerWeapon, RocketLeavesSmokeTrailFx)
+{
+    ProjectileSystem projectiles;
+    CombatSystem     combat;
+    BulletSpawn      spawn;
+    spawn.position  = { 100.f, 200.f };
+    spawn.sweepFrom = spawn.position;
+    spawn.direction = { 1.f, 0.f };
+    spawn.speed     = 300.f;
+    spawn.range     = 400.f;
+    spawn.bTrail    = true;
+
+    combat.BeginTick();
+    projectiles.SpawnBullet(spawn, combat);
+    int smoke = 0;
+    for (int tick = 0; tick < 27; ++tick)
+    {
+        combat.BeginTick();
+        projectiles.Step(nullptr, combat, 1.f / 60.f);
+        for (const FxRequest& fx: projectiles.TakeFx())
+        {
+            smoke += fx.kind == eFxKind::RocketSmoke ? 1 : 0;
+        }
+    }
+    EXPECT_GE(smoke, 3);
+}
+
+TEST(PlayerWeapon, AimStatesFireEveryWeaponInTheExpectedDirection)
+{
+    struct Aim
+    {
+        const char* name;
+        bool        bUp;
+        bool        bRight;
+        bool        bDown;
+        bool        bAir;
+        float       signX;   // 0 = 수직
+        float       signY;
+    };
+    const Aim aims[] = {
+        { "forward", false, true,  false, false,  1.f,  0.f },
+        { "up",      true,  false, false, false,  0.f, -1.f },
+        { "diagUp",  true,  true,  false, false,  1.f, -1.f },
+        { "crouch",  false, true,  true,  false,  1.f,  0.f },
+        { "airDown", false, false, true,  true,   0.f,  1.f },
+    };
+
+    for (const int raw: kWeapons)
+    {
+        const eWeapon weapon = static_cast<eWeapon>(raw);
+        for (const Aim& aim: aims)
+        {
+            Sim sim;
+            sim.Step(2);
+            if (aim.bAir)
+            {
+                sim.Tap(eAction::Jump);
+                sim.Step(10);
+            }
+            sim.Player().PickUpWeapon(weapon, sim.Tune());
+            sim.Set(eAction::Up, aim.bUp);
+            sim.Set(eAction::Right, aim.bRight);
+            sim.Set(eAction::Down, aim.bDown);
+            sim.Hold(eAction::Shot);
+            sim.Step();
+
+            ASSERT_GE(BulletsOf(sim), 1u) << aim.name << " weapon " << raw;
+            const jug::VECTOR2 v = sim.State().GetProjectiles().GetBullets()[0].velocity;
+            EXPECT_EQ(v.x > 0.f, aim.signX > 0.f) << aim.name << " weapon " << raw;
+            EXPECT_EQ(std::abs(v.x) < 0.01f, aim.signX == 0.f) << aim.name << " weapon " << raw;
+            EXPECT_EQ(v.y < 0.f, aim.signY < 0.f) << aim.name << " weapon " << raw;
+            EXPECT_EQ(std::abs(v.y) < 0.01f, aim.signY == 0.f) << aim.name << " weapon " << raw;
+        }
+    }
+}
+
+TEST(PlayerWeapon, GunItemDefsForAllFourWeaponsMapToTheirWeapon)
+{
+    const struct
+    {
+        const char* id;
+        eWeapon     weapon;
+    } cases[] = {
+        { "gunitem_mg", eWeapon::Hmg },
+        { "gunitem_sg", eWeapon::Shotgun },
+        { "gunitem_rl", eWeapon::Rocket },
+        { "gunitem_fs", eWeapon::Flame },
+    };
+    for (const auto& c: cases)
+    {
+        const PropItemDef* pDef = GetPropLib().FindItem(c.id);
+        ASSERT_NE(pDef, nullptr) << c.id;
+        EXPECT_EQ(pDef->kind, eItemKind::Gun) << c.id;
+        EXPECT_EQ(pDef->weapon, c.weapon) << c.id;
+    }
+}
+
+TEST(PlayerWeapon, DebugSlotsMapToTheFourPickupWeapons)
+{
+    EXPECT_EQ(WeaponFromDebugSlot(1), eWeapon::Hmg);
+    EXPECT_EQ(WeaponFromDebugSlot(2), eWeapon::Shotgun);
+    EXPECT_EQ(WeaponFromDebugSlot(3), eWeapon::Rocket);
+    EXPECT_EQ(WeaponFromDebugSlot(4), eWeapon::Flame);
+    EXPECT_EQ(WeaponFromDebugSlot(0), eWeapon::Pistol);
+}
+
+TEST(PlayerWeapon, DeterminismHashIsStableAndSeesTheWeapon)
+{
+    const auto run = [](const eWeapon _weapon) {
+        Sim sim;
+        sim.Player().PickUpWeapon(_weapon, sim.Tune());
+        sim.Hold(eAction::Shot);
+        sim.Step(90);
+        return sim.State().HashState();
+    };
+    const uint64_t flame = run(eWeapon::Flame);
+    EXPECT_EQ(flame, run(eWeapon::Flame));
+    EXPECT_NE(flame, run(eWeapon::Rocket));
+    EXPECT_NE(run(eWeapon::Hmg), run(eWeapon::Shotgun));
+}

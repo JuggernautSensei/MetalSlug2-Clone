@@ -20,6 +20,8 @@ enum class eWeapon : uint8_t
     Pistol,   // DG: 시작 무기
     Hmg,      // 헤비머신건
     Shotgun,
+    Rocket,   // 로켓 런처 (착탄 폭발)
+    Flame,    // 화염방사
     Count
 };
 
@@ -105,6 +107,9 @@ struct WeaponTuning
     jug::VECTOR2 hitSize           = { 14.f, 10.f };
     float        range             = 420.f;   // 사거리 px
     int          shotOverlayTicks  = 14;      // 사격 상체 동작 길이
+    jug::VECTOR2 blastSize         = { 0.f, 0.f };   // 착탄 폭발 상자 (0 = 폭발 없음)
+    int          blastDamage       = 0;
+    int          blastTicks        = 0;
 };
 
 struct WeaponsTuning
@@ -113,7 +118,7 @@ struct WeaponsTuning
     WeaponTuning hmg    = {
         2,
         3,
-        4,
+        3,
         200,
         640.f,
         0,
@@ -134,8 +139,50 @@ struct WeaponsTuning
         200.f,
         16
     };
+    WeaponTuning rocket = {
+        0,
+        24,
+        24,
+        20,
+        300.f,
+        2,
+        false,
+        { 16.f, 12.f },
+        420.f,
+        20,
+        { 96.f, 96.f },
+        15,
+        6
+    };
+    WeaponTuning flame = {
+        3,
+        3,
+        3,
+        30,
+        420.f,
+        0,
+        true,
+        { 40.f, 24.f },
+        200.f,
+        14
+    };
     int hmgPickupAmmo     = 200;
     int shotgunPickupAmmo = 30;
+    int rocketPickupAmmo  = 20;
+    int flamePickupAmmo   = 30;
+
+    [[nodiscard]] int GetPickupAmmo(
+        const eWeapon _weapon) const
+    {
+        switch (_weapon)
+        {
+            case eWeapon::Hmg: return hmgPickupAmmo;
+            case eWeapon::Shotgun: return shotgunPickupAmmo;
+            case eWeapon::Rocket: return rocketPickupAmmo;
+            case eWeapon::Flame: return flamePickupAmmo;
+            default: return 0;
+        }
+    }
 
     [[nodiscard]] const WeaponTuning& Get(
         const eWeapon _weapon) const
@@ -144,6 +191,8 @@ struct WeaponsTuning
         {
             case eWeapon::Hmg: return hmg;
             case eWeapon::Shotgun: return shotgun;
+            case eWeapon::Rocket: return rocket;
+            case eWeapon::Flame: return flame;
             default: return pistol;
         }
     }

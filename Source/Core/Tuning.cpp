@@ -34,6 +34,9 @@ namespace
         _v.Field("hitSize", _w.hitSize);
         _v.Field("range", _w.range);
         _v.Field("shotOverlayTicks", _w.shotOverlayTicks);
+        _v.Field("blastSize", _w.blastSize);
+        _v.Field("blastDamage", _w.blastDamage);
+        _v.Field("blastTicks", _w.blastTicks);
     }
 
     template<typename V, typename S>
@@ -100,8 +103,16 @@ namespace
         _v.Begin("shotgun");
         VisitWeapon_(_v, _t.weapons.shotgun);
         _v.End();
+        _v.Begin("rocket");
+        VisitWeapon_(_v, _t.weapons.rocket);
+        _v.End();
+        _v.Begin("flame");
+        VisitWeapon_(_v, _t.weapons.flame);
+        _v.End();
         _v.Field("hmgPickupAmmo", _t.weapons.hmgPickupAmmo);
         _v.Field("shotgunPickupAmmo", _t.weapons.shotgunPickupAmmo);
+        _v.Field("rocketPickupAmmo", _t.weapons.rocketPickupAmmo);
+        _v.Field("flamePickupAmmo", _t.weapons.flamePickupAmmo);
         _v.End();
 
         _v.Begin("knife");

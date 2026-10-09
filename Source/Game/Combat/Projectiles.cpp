@@ -78,6 +78,10 @@ void ProjectileSystem::SpawnBullet(
     bullet.hitId      = _combat.NewHitId();
     bullet.bPierce    = _spawn.bPierce;
     bullet.tag        = _spawn.tag;
+    bullet.blastSize   = _spawn.blastSize;
+    bullet.blastDamage = _spawn.blastDamage;
+    bullet.blastTicks  = _spawn.blastTicks;
+    bullet.bTrail      = _spawn.bTrail;
     m_bullets.push_back(bullet);
 }
 
@@ -125,6 +129,27 @@ void ProjectileSystem::ExplodeBomb_(
     m_fx.push_back({ eFxKind::BombExplosion, _at });
 }
 
+void ProjectileSystem::SpawnBulletBlast_(
+    const Bullet&      _bullet,
+    CombatSystem&      _combat)
+{
+    if (_bullet.blastSize.x <= 0.f || _bullet.blastSize.y <= 0.f)
+    {
+        return;
+    }
+
+    Blast blast;
+    blast.box       = Aabb::FromCenterSize(_bullet.position, _bullet.blastSize);
+    blast.ticksLeft = _bullet.blastTicks;
+    blast.damage    = _bullet.blastDamage;
+    blast.team      = _bullet.team;
+    blast.owner     = _bullet.owner;
+    blast.hitId     = _combat.NewHitId();
+    m_blasts.push_back(blast);
+
+    m_fx.push_back({ eFxKind::RocketExplosion, _bullet.position });
+}
+
 void ProjectileSystem::Step(
     const GroundMap* _pGround,
     CombatSystem&    _combat,
@@ -137,10 +162,12 @@ void ProjectileSystem::Step(
         bullet.position.x += bullet.velocity.x * _dt;
         bullet.position.y += bullet.velocity.y * _dt;
         bullet.travelled += std::sqrt(bullet.velocity.x * bullet.velocity.x + bullet.velocity.y * bullet.velocity.y) * _dt;
+        ++bullet.ageTicks;
 
         if (bullet.travelled > bullet.range)
         {
             bullet.bAlive = false;
+            SpawnBulletBlast_(bullet, _combat);
         }
         else if (_pGround)
         {
@@ -148,7 +175,14 @@ void ProjectileSystem::Step(
             if (SegmentHitsGround_(*_pGround, bullet.renderPrev, bullet.position, lastFree))
             {
                 bullet.bAlive = false;
-                m_fx.push_back({ eFxKind::BulletImpact, bullet.position });
+                if (bullet.blastSize.x > 0.f)
+                {
+                    SpawnBulletBlast_(bullet, _combat);
+                }
+                else
+                {
+                    m_fx.push_back({ eFxKind::BulletImpact, bullet.position });
+                }
             }
         }
 
@@ -156,6 +190,11 @@ void ProjectileSystem::Step(
         {
             _combat.ReleaseHitId(bullet.hitId);
             continue;
+        }
+
+        if (bullet.bTrail && bullet.ageTicks % 9 == 1)
+        {
+            m_fx.push_back({ eFxKind::RocketSmoke, bullet.position });
         }
 
         Hitbox hitbox;
@@ -340,7 +379,14 @@ void ProjectileSystem::OnHitEvents(
             if (bullet.hitId == event.hitId && !bullet.bPierce && bullet.bAlive)
             {
                 bullet.bAlive = false;
-                m_fx.push_back({ eFxKind::BulletImpact, bullet.position });
+                if (bullet.blastSize.x > 0.f)
+                {
+                    SpawnBulletBlast_(bullet, _combat);
+                }
+                else
+                {
+                    m_fx.push_back({ eFxKind::BulletImpact, bullet.position });
+                }
                 _combat.ReleaseHitId(bullet.hitId);
                 break;
             }

@@ -34,6 +34,7 @@ struct GameContext
     int   slowMoDivisor = 1;       // F4: 2 이상이면 느린 재생
     int   debugWarp     = 0;       // F5(1)=다음 섹션, F6(2)=보스 아레나 워프 요청 (F1 켜진 상태에서만). 소비한 상태가 0 으로 되돌린다
     int   debugSpawn    = 0;       // 숫자키 1..8: 적 디버그 스폰 요청 (1 = 첫 보병 정의). 소비한 상태(샌드박스)가 0 으로 되돌린다
+    int   debugWeapon   = 0;       // F7..F10: 1 HMG, 2 샷건, 3 로켓, 4 화염방사 지급. 스테이지는 F1 켜진 상태에서만 받는다
 
     [[nodiscard]] bool IsHeadless() const
     {

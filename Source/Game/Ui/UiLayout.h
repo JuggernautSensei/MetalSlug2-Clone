@@ -31,6 +31,7 @@ struct UiLayout
     int armsPanelX     = 154;   // 패널 왼쪽 위
     int armsPanelY     = 8;
     int ammoRightDX    = 60;    // 패널 기준 탄 숫자 오른쪽 끝
+    int weaponLetterDX = 6;     // 패널 기준 무기 글자 왼쪽
     int bombRightDX    = 110;   // 패널 기준 폭탄 숫자 오른쪽 끝
     int digitsDY       = 17;    // 패널 기준 숫자 위쪽
     int infiniteCenterDX = 38;  // 패널 기준 무한대 기호 중심

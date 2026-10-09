@@ -9,7 +9,9 @@
 #include <JugX/Math.h>
 
 #include "Audio/AudioSink.h"
+#include "Game/Combat/BulletVisual.h"
 #include "Game/Player/PlayerHitboxes.h"
+#include "Game/Player/PlayerWeapons.h"
 #include "Game/StateFactory.h"
 #include "Game/Stage/StageMapping.h"
 #include "Game/Ui/Hud.h"
@@ -411,6 +413,14 @@ void StageState::Tick(
             {
                 m_effects.Spawn(*_ctx.pAnims, "PlayerBombExplosion", request.position, 60);
             }
+            else if (request.kind == eFxKind::RocketExplosion)
+            {
+                m_effects.Spawn(*_ctx.pAnims, "Explosion_Mid", request.position, 56);
+            }
+            else if (request.kind == eFxKind::RocketSmoke)
+            {
+                m_effects.Spawn(*_ctx.pAnims, "Rocket_Smoke", request.position, 28);
+            }
             else
             {
                 m_effects.Spawn(*_ctx.pAnims, "Bullet_Destroy_Effect", request.position, 55);
@@ -455,6 +465,15 @@ void StageState::StartFlow_(
 void StageState::HandleDebugWarp_(
     GameContext& _ctx)
 {
+    if (_ctx.debugWeapon > 0)
+    {
+        if (_ctx.bDebugDraw)
+        {
+            m_player.PickUpWeapon(WeaponFromDebugSlot(_ctx.debugWeapon), m_tuning);
+        }
+        _ctx.debugWeapon = 0;
+    }
+
     // 요청은 한 번만 소비한다 (같은 프레임의 다음 틱에서 다시 워프하지 않도록)
     const int request = _ctx.debugWarp;
     _ctx.debugWarp    = 0;
@@ -664,7 +683,7 @@ void StageState::RequestSounds_(
 
     for (int i = m_prevStats.shotsFired; i < stats.shotsFired; ++i)
     {
-        audio.Play(sfx::kPistolShot, weapon == eWeapon::Pistol ? 0.8f : 0.55f, weapon == eWeapon::Pistol ? 0.04f : 0.12f);
+        PlayShotSfx(audio, weapon, i);
     }
     for (int i = m_prevStats.knifeSlashes; i < stats.knifeSlashes; ++i)
     {
@@ -684,6 +703,14 @@ void StageState::RequestSounds_(
         {
             audio.Play(sfx::kBombExplode, 1.f, 0.03f);
         }
+        else if (request.kind == eFxKind::RocketExplosion)
+        {
+            audio.Play(sfx::kBombExplode, 0.8f, 0.05f);
+        }
+    }
+    if (weapon != m_prevWeapon)
+    {
+        PlayWeaponPickupSfx(audio, weapon);
     }
 
     m_prevStats  = stats;
@@ -895,21 +922,15 @@ void StageState::DrawWorld_(
 
     // --- 투사체 ---
     {
-        const SpriteInfo* pBulletH = m_spriteLib.Find("Player_Bullet_Basic_H");
-        const SpriteInfo* pBulletV = m_spriteLib.Find("Player_Bullet_Basic_V");
         for (const Bullet& bullet: m_projectiles.GetBullets())
         {
             const jug::VECTOR2 pos = Lerp_(bullet.renderPrev, bullet.position, _alpha);
-            if (bullet.team == eTeam::Player && pBulletH && pBulletV)
+            if (bullet.team == eTeam::Player && SubmitPlayerBullet(sprites, pAnims, m_spriteLib, bullet, pos, 30))
             {
-                const bool bVertical = std::abs(bullet.velocity.y) > std::abs(bullet.velocity.x);
-                sprites.Submit(30, 0, (bVertical ? pBulletV : pBulletH)->frame, pos);
+                continue;
             }
-            else
-            {
-                const jug::RGBA color = bullet.team == eTeam::Player ? jug::RGBA { 255, 240, 120, 255 } : jug::RGBA { 255, 80, 60, 255 };
-                renderer.FillRect(ToScreen_({ pos.x - bullet.size.x * 0.5f, pos.y - bullet.size.y * 0.5f }, _cameraPos), bullet.size, color);
-            }
+            const jug::RGBA color = bullet.team == eTeam::Player ? jug::RGBA { 255, 240, 120, 255 } : jug::RGBA { 255, 80, 60, 255 };
+            renderer.FillRect(ToScreen_({ pos.x - bullet.size.x * 0.5f, pos.y - bullet.size.y * 0.5f }, _cameraPos), bullet.size, color);
         }
 
         for (const Bomb& bomb: m_projectiles.GetBombs())
