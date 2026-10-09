@@ -1083,13 +1083,13 @@ namespace
         for (const auto [id, json]: modes->GetObject())
         {
             const String modeWhere = std::format("backdrop.modes.{}", id);
-            if (!CheckKeys_(json, modeWhere, { "sprite", "offset", "parallaxX" }))
+            if (!CheckKeys_(json, modeWhere, { "sprite", "offset", "parallaxX", "period" }))
             {
                 return false;
             }
             BackdropMode mode;
             mode.id = String { id };
-            if (!GetString_(json, modeWhere, "sprite", true, mode.sprite) || !GetVec2_(json, modeWhere, "offset", false, mode.offset) || !GetFloat_(json, modeWhere, "parallaxX", false, mode.parallaxX))
+            if (!GetString_(json, modeWhere, "sprite", true, mode.sprite) || !GetVec2_(json, modeWhere, "offset", false, mode.offset) || !GetFloat_(json, modeWhere, "parallaxX", false, mode.parallaxX) || !GetFloat_(json, modeWhere, "period", false, mode.period))
             {
                 return false;
             }

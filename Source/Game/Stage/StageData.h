@@ -301,6 +301,7 @@ struct BackdropMode
     slug::String  sprite    = {};
     Vec2 offset    = { 0.f, 0.f };
     float        parallaxX = 0.f;
+    float        period    = 0.f;   // 가로 반복 간격. 0 이면 스프라이트 너비
 };
 
 struct NamedRect

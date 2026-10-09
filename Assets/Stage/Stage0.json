@@ -5,7 +5,7 @@
   "world": {"size": [14094, 1328], "view": [640, 448], "background": "Stage0_Main"},
   "bgm": {"name": "Stage1_BGM", "loop": true},
   "ground": {"initial": "Stage0_0", "maps": ["Stage0_0", "Stage0_1"]},
-  "backdrop": {"initial": "first", "modes": {"first": {"sprite": "Stage0_Background_0", "offset": [249, -64], "parallaxX": 0.15}, "second": {"sprite": "Stage0_Background_0", "offset": [700, -130], "parallaxX": 0.15}, "third": {"sprite": "Stage0_Background_2", "offset": [750, 0], "parallaxX": 0.1}, "fourth": {"sprite": "Stage0_Background_1", "offset": [1100, -30], "parallaxX": 0.1}}},
+  "backdrop": {"initial": "first", "modes": {"first": {"sprite": "Stage0_Background_0", "offset": [249, -64], "parallaxX": 0.15, "period": 1024}, "second": {"sprite": "Stage0_Background_0", "offset": [700, -130], "parallaxX": 0.15, "period": 1024}, "third": {"sprite": "Stage0_Background_2", "offset": [750, 0], "parallaxX": 0.1}, "fourth": {"sprite": "Stage0_Background_1", "offset": [1100, -30], "parallaxX": 0.1, "period": 1024}}},
   "player": {"x": 100, "groundSnap": true, "fromY": 0, "note": "Legacy start Vec(100,0); the player falls to the ground (same result as groundSnap at x=100)."},
   "rects": {"bossArena": [13454, 864, 14094, 1312]},
   "camera": {"policy": "forward", "initialBounds": [0, 0, 3520, 448], "initialOffset": [0, 0], "chaseSpeed": 10, "playerMargin": 14, "boundsCurves": [{"id": "downtown_slope", "source": "playerX", "from": "downtown_start", "until": "openland_start", "left": 3180, "right": 14094, "height": 448, "top": [[6500, 311.75], [8610.7843137, 850]], "round": "trunc"}]},

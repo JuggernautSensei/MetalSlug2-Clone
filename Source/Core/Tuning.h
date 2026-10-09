@@ -27,7 +27,6 @@ struct MoveTuning
     float jumpSpeed        = 600.f;    // px/s 초속
     float gravity          = 1400.f;   // px/s²
     float terminalVelocity = 1000.f;   // px/s
-    float jumpCutFactor    = 0.5f;
     int   coyoteTicks      = 4;        // 낭떠러지를 벗어난 뒤에도 점프를 허용하는 틱 수
     int   jumpBufferTicks  = 4;        // 착지 직전에 누른 점프를 기억하는 틱 수
     int   shotBufferTicks  = 6;        // 사격 락 중에 누른 사격을 기억하는 틱 수

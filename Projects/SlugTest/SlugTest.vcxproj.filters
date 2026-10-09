@@ -114,9 +114,6 @@
     <ClCompile Include="..\..\Test\VehicleSandboxTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Test\WorldTest.cpp">
-      <Filter>Test</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Test\BossTestUtil.h">

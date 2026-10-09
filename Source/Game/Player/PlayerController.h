@@ -114,7 +114,6 @@ private:
     int  m_airTicks         = 0;      // 공중에서 끝난 연속 틱 수 (지면이면 0)
     bool m_bCoyoteAvailable = true;
     bool m_bJumping         = false;
-    bool m_bJumpCut         = false;
     bool m_bAirFromJump     = true;
 
     int      m_shotTicksLeft       = 0;

@@ -454,7 +454,7 @@ TEST(PlayerKnife, WorksWhileCrouchedRunningAndInTheAir)
         sim.Step(2);
         sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + 25.f, 378.f });
         sim.Tap(eAction::Jump);
-        sim.Step(8);
+        sim.Step(3);
         ASSERT_FALSE(sim.Player().IsGrounded());
         sim.Tap(eAction::Shot);
         EXPECT_EQ(sim.Player().GetStats().knifeSlashes, 1);

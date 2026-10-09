@@ -255,9 +255,6 @@
     <ClCompile Include="..\..\Source\World\Physics.cpp">
       <Filter>Source\World</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\World\World.cpp">
-      <Filter>Source\World</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\Audio\AudioMath.h">
@@ -287,9 +284,6 @@
     <ClInclude Include="..\..\Source\Base\Handle.h">
       <Filter>Source\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\Base\HandleStorage.h">
-      <Filter>Source\Base</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source\Base\Json.h">
       <Filter>Source\Base</Filter>
     </ClInclude>
@@ -300,9 +294,6 @@
       <Filter>Source\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Base\Random.h">
-      <Filter>Source\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Base\ResourcePool.h">
       <Filter>Source\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Base\Result.h">
@@ -489,9 +480,6 @@
       <Filter>Source\World</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\World\Physics.h">
-      <Filter>Source\World</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\World\World.h">
       <Filter>Source\World</Filter>
     </ClInclude>
   </ItemGroup>

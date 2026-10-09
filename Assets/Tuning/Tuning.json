@@ -6,7 +6,6 @@
         "jumpSpeed": 600,
         "gravity": 1400,
         "terminalVelocity": 1000,
-        "jumpCutFactor": 0.5,
         "coyoteTicks": 4,
         "jumpBufferTicks": 4,
         "shotBufferTicks": 6,

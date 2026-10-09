@@ -1,4 +1,4 @@
-#include "Core/AssetPath.h"
+﻿#include "Core/AssetPath.h"
 #include "Core/App.h"
 #include "Base/Types.h"
 #include "Base/Result.h"

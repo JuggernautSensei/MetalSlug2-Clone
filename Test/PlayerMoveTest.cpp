@@ -306,7 +306,7 @@ TEST(PlayerJump, HeldJumpApexAndAirTimeFeelRight)
     EXPECT_LE(airSec, 0.92f);
 }
 
-TEST(PlayerJump, VariableJumpShortTapIsLowerThanHeld)
+TEST(PlayerJump, TapAndHoldJumpTheSameHeight)
 {
     Sim tapSim;
     tapSim.Step(2);
@@ -316,9 +316,8 @@ TEST(PlayerJump, VariableJumpShortTapIsLowerThanHeld)
     heldSim.Step(2);
     const JumpMeasure held = MeasureJump(heldSim, true);
 
-    EXPECT_LT(tap.apex, held.apex * 0.5f);
-    EXPECT_GT(tap.apex, 5.f);   // 탭도 눈에 보이게 뜬다
-    EXPECT_LT(tap.ticks, held.ticks);
+    EXPECT_FLOAT_EQ(tap.apex, held.apex);
+    EXPECT_EQ(tap.ticks, held.ticks);
 }
 
 TEST(PlayerJump, LandsBackOnTheGround)

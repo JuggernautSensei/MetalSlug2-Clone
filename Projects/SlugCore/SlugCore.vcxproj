@@ -162,7 +162,6 @@
     <ClCompile Include="..\..\Source\World\Combat.cpp" />
     <ClCompile Include="..\..\Source\World\GroundMap.cpp" />
     <ClCompile Include="..\..\Source\World\Physics.cpp" />
-    <ClCompile Include="..\..\Source\World\World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\Audio\AudioMath.h" />
@@ -174,12 +173,10 @@
     <ClInclude Include="..\..\Source\Base\EnumFlags.h" />
     <ClInclude Include="..\..\Source\Base\Error.h" />
     <ClInclude Include="..\..\Source\Base\Handle.h" />
-    <ClInclude Include="..\..\Source\Base\HandleStorage.h" />
     <ClInclude Include="..\..\Source\Base\Json.h" />
     <ClInclude Include="..\..\Source\Base\Log.h" />
     <ClInclude Include="..\..\Source\Base\Math.h" />
     <ClInclude Include="..\..\Source\Base\Random.h" />
-    <ClInclude Include="..\..\Source\Base\ResourcePool.h" />
     <ClInclude Include="..\..\Source\Base\Result.h" />
     <ClInclude Include="..\..\Source\Base\RGBA.h" />
     <ClInclude Include="..\..\Source\Base\Types.h" />
@@ -242,7 +239,6 @@
     <ClInclude Include="..\..\Source\World\Geometry.h" />
     <ClInclude Include="..\..\Source\World\GroundMap.h" />
     <ClInclude Include="..\..\Source\World\Physics.h" />
-    <ClInclude Include="..\..\Source\World\World.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(VcpkgRoot)scripts\buildsystems\msbuild\vcpkg.targets" Condition="Exists('$(VcpkgRoot)scripts\buildsystems\msbuild\vcpkg.targets') And !Exists('$(LOCALAPPDATA)\vcpkg\vcpkg.user.targets')" />

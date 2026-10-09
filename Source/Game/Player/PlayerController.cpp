@@ -97,10 +97,9 @@ void PlayerController::Reset(
     m_airTicks         = 0;
     m_bCoyoteAvailable = true;
     m_bJumping         = false;
-    m_bJumpCut         = false;
     m_bAirFromJump     = true;
 
-    m_shotTicksLeft       = 0;
+    m_shotTicksLeft      = 0;
     m_knifeTick           = -1;
     m_knifeHitId          = kNoHitId;
     m_bSlashSecond        = false;
@@ -355,22 +354,6 @@ void PlayerController::TickMovement_(
     const float speed = bCrouch ? move.crouchSpeed : (bGroundedBefore ? move.runSpeed : move.airSpeed);
     m_body.velocity.x = static_cast<float>(m_moveX) * speed;
 
-    if (m_bJumping && !m_bJumpCut)
-    {
-        if (m_body.velocity.y < 0.f)
-        {
-            if (!_command.bJumpHeld)
-            {
-                m_body.velocity.y *= move.jumpCutFactor;
-                m_bJumpCut = true;
-            }
-        }
-        else
-        {
-            m_bJumpCut = true;
-        }
-    }
-
     const bool bCoyote = m_bCoyoteAvailable && m_airTicks >= 1 && m_airTicks <= move.coyoteTicks;
 
     bool bWillLand = false;
@@ -397,7 +380,6 @@ void PlayerController::TickMovement_(
             {
                 m_body.velocity.y  = -move.jumpSpeed;
                 m_bJumping         = true;
-                m_bJumpCut         = false;
                 m_bCoyoteAvailable = false;
                 m_bAirFromJump     = true;
                 bCrouch            = false;
@@ -416,8 +398,7 @@ void PlayerController::TickMovement_(
         m_airTicks         = 0;
         m_bCoyoteAvailable = true;
         m_bJumping         = false;
-        m_bJumpCut         = false;
-        m_pose             = bCrouch ? ePose::Crouch : ePose::Stand;
+        m_pose            = bCrouch ? ePose::Crouch : ePose::Stand;
     }
     else
     {

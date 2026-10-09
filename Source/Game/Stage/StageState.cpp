@@ -741,6 +741,7 @@ void StageState::Render(
     const Vec2 camNow    = m_camera.GetPositionNoShake();
     const Vec2 cameraPos = { std::floor(m_prevCameraPos.x + (camNow.x - m_prevCameraPos.x) * _alpha), std::floor(m_prevCameraPos.y + (camNow.y - m_prevCameraPos.y) * _alpha) };
 
+    DrawBackdrop_(_ctx, cameraPos);
     if (m_bgHandle >= 0 && _ctx.pSprites)
     {
         _ctx.pSprites->DrawTexture(m_bgHandle, { 0.f, 0.f }, cameraPos, Renderer::kLogicalWidth, Renderer::kLogicalHeight);
@@ -781,24 +782,33 @@ void StageState::DrawBackdrop_(
 
     const int pivotX = pSprite->bStandalone ? pSprite->width / 2 : pSprite->frame.pivotX;
     const int pivotY = pSprite->bStandalone ? pSprite->height / 2 : pSprite->frame.pivotY;
-    const int left   = static_cast<int>(std::floor(centerX)) - pivotX;
-    const int top    = static_cast<int>(std::floor(centerY)) - pivotY;
+    int       left = static_cast<int>(std::floor(centerX)) - pivotX;
+    const int top  = static_cast<int>(std::floor(centerY)) - pivotY;
 
-    const int tileW = pSprite->width;
-    int       x     = left % tileW;
-    if (x > 0)
+    const bool bTile  = pMode->period > 0.f;
+    const int  tileW  = bTile ? static_cast<int>(pMode->period) : pSprite->width;
+    if (!bTile && pSprite->width >= Renderer::kLogicalWidth)
+    {
+        left = std::clamp(left, Renderer::kLogicalWidth - pSprite->width, 0);
+    }
+    int x = bTile ? left % tileW : left;
+    if (bTile && x > 0)
     {
         x -= tileW;
     }
     for (; x < Renderer::kLogicalWidth; x += tileW)
     {
+        if (x + pSprite->width <= 0)
+        {
+            continue;
+        }
         if (pSprite->bStandalone)
         {
             _ctx.pSprites->DrawTexture(handle, { static_cast<float>(x) + _cameraPos.x, static_cast<float>(top) + _cameraPos.y }, _cameraPos, Renderer::kLogicalWidth, Renderer::kLogicalHeight);
         }
         else
         {
-            _ctx.pSprites->Submit(0, 0, pSprite->frame, { static_cast<float>(x + pivotX) + _cameraPos.x, static_cast<float>(top + pivotY) + _cameraPos.y });
+            _ctx.pSprites->DrawFrame(pSprite->frame, { static_cast<float>(x + pivotX) + _cameraPos.x, static_cast<float>(top + pivotY) + _cameraPos.y }, _cameraPos);
         }
     }
 }
@@ -814,8 +824,6 @@ void StageState::DrawWorld_(
         return;
     }
     SpriteBatch& sprites  = *_ctx.pSprites;
-
-    DrawBackdrop_(_ctx, _cameraPos);
 
     for (const PlaceholderEntity& entity: m_host.GetPlaceholders().GetEntities())
     {

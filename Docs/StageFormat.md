@@ -26,7 +26,7 @@
 | `world` | `{size:[w,h], view:[w,h], background}` | `background` = sprites.json 키(`Stage0_Main`). 좌상단 (0,0) 에 그림 |
 | `bgm` | `{name, loop}` | sounds.json 키. 스테이지 시작 시 재생 |
 | `ground` | `{initial, maps:[...]}` | manifest `ground` 키. `setGround` 로 교체 |
-| `backdrop` | `{initial, modes:{id:{sprite, offset:[x,y], parallaxX}}}` | 원경 1장. §4 |
+| `backdrop` | `{initial, modes:{id:{sprite, offset:[x,y], parallaxX, period?}}}` | 원경 1장. `period` 가 있으면 그 간격으로 가로 반복, 없으면 한 장(화면보다 넓으면 끝에서 멈춤). 그리는 순서는 원경 → Stage0_Main → 월드. §4 |
 | `player` | spawn 필드 부분집합 | 시작 위치. `x,y,origin,halfHeight,settle,groundSnap,fromY` |
 | `rects` | `{name:[l,t,r,b]}` | 이름 붙은 사각형. rect 필드는 배열 또는 이 이름 |
 | `camera` | §3 | |

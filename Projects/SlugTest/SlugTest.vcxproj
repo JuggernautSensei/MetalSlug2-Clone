@@ -140,7 +140,6 @@
     <ClCompile Include="..\..\Test\VehicleDefTest.cpp" />
     <ClCompile Include="..\..\Test\VehicleProjectileTest.cpp" />
     <ClCompile Include="..\..\Test\VehicleSandboxTest.cpp" />
-    <ClCompile Include="..\..\Test\WorldTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Test\BossTestUtil.h" />

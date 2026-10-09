@@ -61,7 +61,6 @@ namespace
         _v.Field("jumpSpeed", _t.move.jumpSpeed);
         _v.Field("gravity", _t.move.gravity);
         _v.Field("terminalVelocity", _t.move.terminalVelocity);
-        _v.Field("jumpCutFactor", _t.move.jumpCutFactor);
         _v.Field("coyoteTicks", _t.move.coyoteTicks);
         _v.Field("jumpBufferTicks", _t.move.jumpBufferTicks);
         _v.Field("shotBufferTicks", _t.move.shotBufferTicks);
