@@ -71,7 +71,7 @@ public:
                 bRight = false;
                 if (--m_backTicks == 0)
                 {
-                    m_jumpTicks = 36;   // 점프 컷(놓으면 높이 감소)을 피하려고 정점까지 누른다
+                    m_jumpTicks = 36;
                 }
             }
             else if (m_jumpTicks > 0)
@@ -254,6 +254,29 @@ TEST(StageIntegration, LongWalkThroughTheFirstSectionsWithoutWarpReachesTheStree
     EXPECT_GE(sim.State().GetPlayer().GetFeet().x, 1300.f);
     EXPECT_GE(sim.State().GetRunner().GetNextSectionIndex(), 2);   // intro, street 발동
     EXPECT_GT(sim.State().GetEnemies().GetCount(), 0u);            // 실제 적이 스폰되어 있다
+}
+
+TEST(StageIntegration, BotPlaythroughReport)
+{
+    IntegrationSim sim;
+    float bestX = 0.f;
+    for (int i = 0; i < 40000 && !sim.State().IsFinished(); ++i)
+    {
+        sim.BotStep(true, true);
+        const float x = sim.State().GetPlayer().GetFeet().x;
+        bestX         = std::max(bestX, x);
+        if (i % 2000 == 0)
+        {
+            std::printf("[bot] tick %5d x=%7.1f best=%7.1f section=%d enemies=%zu score=%d\n", i, x, bestX, sim.State().GetRunner().GetNextSectionIndex(), sim.State().GetEnemies().GetCount(), sim.State().GetPlayer().GetScore());
+        }
+    }
+    std::printf("[bot] end best=%.1f finished=%d\n", bestX, sim.State().IsFinished() ? 1 : 0);
+    sim.State().GetEnemies().ForEachAlive([&](const Enemy& _e) {
+        std::printf("[bot]  alive def=%d behavior=%d feet=(%.0f,%.0f) hp=%d/%d active=%d state=%d\n", _e.defIndex, static_cast<int>(_e.behavior), _e.body.position.x, _e.body.position.y, _e.health.hp, _e.health.maxHp, _e.bActive ? 1 : 0, _e.state);
+    });
+    const PlayerController& pl = sim.State().GetPlayer();
+    std::printf("[bot] player feet=(%.0f,%.0f)\n", pl.GetFeet().x, pl.GetFeet().y);
+    SUCCEED();
 }
 
 TEST(StageIntegration, WarpChainThroughEverySectionReachesTheBossAndEndsTheStage)
