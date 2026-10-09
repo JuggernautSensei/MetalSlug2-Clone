@@ -28,7 +28,8 @@ struct GameContext;
 // ===========================================
 
 // 플레이스홀더 엔티티 owner ID 는 kPlaceholderOwnerBase + 순번 (플레이어 owner 1 과 겹치지 않는다). SpawnId 와 같은 값이다.
-inline constexpr uint32_t kPlaceholderOwnerBase = 2000;
+// 적(2000+)/소품(5000+)/아이템(7000+) 과 겹치지 않도록 9000 부터 쓴다 (Hurtbox owner 는 전 세계에서 유일해야 한다).
+inline constexpr uint32_t kPlaceholderOwnerBase = 9000;
 inline constexpr int      kPlaceholderDeathTicks = 30;    // 사망 후 제거까지 (사망 연출 구간)
 inline constexpr int      kPlaceholderKillScore  = 100;   // 처치 점수 (플레이스홀더 한 기 기준)
 
@@ -69,6 +70,7 @@ public:
     // --- 조회 (렌더/디버그/테스트) ---
     [[nodiscard]] jug::Span<const PlaceholderEntity> GetEntities() const { return m_entities; }
     [[nodiscard]] const GroundMap*                   GetActiveGround() const;
+    [[nodiscard]] GroundMap*                         GetActiveGroundMut();          // 지면 패치(GroundPatch) 적용용
     [[nodiscard]] const jug::String&                 GetActiveGroundName() const;
     [[nodiscard]] const jug::String&                 GetLastSectionId() const { return m_lastSectionId; }
     [[nodiscard]] int                                GetLastSectionIndex() const { return m_lastSectionIndex; }

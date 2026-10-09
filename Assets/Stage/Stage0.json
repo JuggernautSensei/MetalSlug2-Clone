@@ -26,12 +26,12 @@
     {
       "id": "street", "legacy": "START", "triggerX": 750,
       "actions": [
-        {"type": "spawn", "kind": "prop", "def": "shop_5", "x": 2513, "y": 181, "params": {"hp": 15, "sprites": ["Stage0_Shop_5_0", "Stage0_Shop_5_1"], "hitbox": {"size": [150, 75], "offset": [0, -200]}, "standBox": {"size": [230, 20], "offset": [35, 55]}}},
-        {"type": "spawn", "kind": "prop", "def": "shop_4", "x": 2224, "y": 185, "params": {"hp": 15, "sprites": ["Stage0_Shop_4_0", "Stage0_Shop_4_1"], "hitbox": {"size": [200, 75], "offset": [50, -100]}, "standBox": {"size": [250, 20], "offset": [80, 20]}}},
-        {"type": "spawn", "kind": "prop", "def": "shop_3", "x": 1906, "y": 230, "params": {"hp": 15, "sprites": ["Stage0_Shop_3_0", "Stage0_Shop_3_1"], "hitbox": {"size": [150, 75], "offset": [50, -100]}, "standBox": {"size": [300, 20], "offset": [30, 10]}}},
-        {"type": "spawn", "kind": "prop", "def": "shop_2", "x": 1661, "y": 252, "params": {"hp": 15, "sprites": ["Stage0_Shop_2_0", "Stage0_Shop_2_1"], "hitbox": {"size": [100, 50], "offset": [25, -75]}, "standBox": {"size": [160, 20], "offset": [20, 15]}}},
-        {"type": "spawn", "kind": "prop", "def": "shop_1", "x": 1489, "y": 230, "params": {"hp": 15, "sprites": ["Stage0_Shop_1_0", "Stage0_Shop_1_1"], "hitbox": {"size": [150, 75], "offset": [0, -100]}, "standBox": {"size": [220, 20], "offset": [20, 10]}}},
-        {"type": "spawn", "kind": "prop", "def": "shop_0", "x": 1274, "y": 228, "params": {"hp": 15, "sprites": ["Stage0_Shop_0_0", "Stage0_Shop_0_1"], "hitbox": {"size": [150, 75], "offset": [0, -100]}, "standBox": {"size": [220, 20], "offset": [30, 10]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_5", "x": 2513, "y": 181, "params": {"sprites": ["Stage0_Shop_5_0", "Stage0_Shop_5_1"], "hitbox": {"size": [150, 75], "offset": [0, -200]}, "standBox": {"size": [230, 20], "offset": [35, 55]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_4", "x": 2224, "y": 185, "params": {"sprites": ["Stage0_Shop_4_0", "Stage0_Shop_4_1"], "hitbox": {"size": [200, 75], "offset": [50, -100]}, "standBox": {"size": [250, 20], "offset": [80, 20]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_3", "x": 1906, "y": 230, "params": {"sprites": ["Stage0_Shop_3_0", "Stage0_Shop_3_1"], "hitbox": {"size": [150, 75], "offset": [50, -100]}, "standBox": {"size": [300, 20], "offset": [30, 10]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_2", "x": 1661, "y": 252, "params": {"sprites": ["Stage0_Shop_2_0", "Stage0_Shop_2_1"], "hitbox": {"size": [100, 50], "offset": [25, -75]}, "standBox": {"size": [160, 20], "offset": [20, 15]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_1", "x": 1489, "y": 230, "params": {"sprites": ["Stage0_Shop_1_0", "Stage0_Shop_1_1"], "hitbox": {"size": [150, 75], "offset": [0, -100]}, "standBox": {"size": [220, 20], "offset": [20, 10]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_0", "x": 1274, "y": 228, "params": {"sprites": ["Stage0_Shop_0_0", "Stage0_Shop_0_1"], "hitbox": {"size": [150, 75], "offset": [0, -100]}, "standBox": {"size": [220, 20], "offset": [30, 10]}}},
         {"type": "spawn", "kind": "prop", "def": "truck", "x": 1430, "y": 342},
         {"type": "spawn", "kind": "prop", "def": "truck", "x": 1810, "y": 342},
         {"type": "spawn", "kind": "prop", "def": "truck", "x": 2200, "y": 342},
@@ -309,7 +309,7 @@
         {"type": "clear", "layers": ["monster"]},
         {"type": "spawn", "kind": "enemy", "def": "battleship", "id": "boss", "x": 13950, "groundSnap": true, "fromY": 1100, "params": {"arena": "bossArena", "positionFromArena": true}},
         {"type": "banner", "text": "WARNING", "seconds": 2.5},
-        {"type": "gate", "id": "boss_dead", "waitFor": ["boss"], "until": "destroyFinished", "abortOnGameOver": true, "actions": [{"type": "playerInvincible", "seconds": 10.0}, {"type": "banner", "text": "MISSION\nCOMPLETE", "seconds": 4.0, "delay": 1.5}, {"type": "fade", "to": "black", "seconds": 1.0, "delay": 5.5}, {"type": "endStage", "next": "title", "delay": 6.7}]}
+        {"type": "gate", "id": "boss_dead", "waitFor": ["boss"], "until": "destroyFinished", "abortOnGameOver": true, "actions": [{"type": "playerInvincible", "seconds": 10.0}, {"type": "endStage", "next": "title"}]}
       ]
     }
   ]

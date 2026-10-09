@@ -137,6 +137,15 @@ const GroundMap* StagePlaceholders::GetActiveGround() const
     return &m_grounds[static_cast<size_t>(m_activeGround)].map;
 }
 
+GroundMap* StagePlaceholders::GetActiveGroundMut()
+{
+    if (m_activeGround < 0 || m_activeGround >= static_cast<int>(m_grounds.size()))
+    {
+        return nullptr;
+    }
+    return &m_grounds[static_cast<size_t>(m_activeGround)].map;
+}
+
 const jug::String& StagePlaceholders::GetActiveGroundName() const
 {
     static const jug::String kNone = "";

@@ -2,13 +2,16 @@
 
 #include <algorithm>
 #include <cmath>
+#include <filesystem>
 #include <format>
 
 #include <JugX/CoreLogger.h>
 #include <JugX/Math.h>
 
+#include "Audio/AudioSink.h"
 #include "Game/Player/PlayerHitboxes.h"
 #include "Game/StateFactory.h"
+#include "Game/Stage/StageMapping.h"
 #include "Game/Ui/Hud.h"
 #include "World/Constants.h"
 
@@ -115,6 +118,7 @@ void StageState::Load_(
 {
     m_bLoaded = false;
     m_bFailed = false;
+    m_assetRoot = _ctx.assetRoot;
 
     StageLoadDiagnostics diag;
     jug::Result<StageData> data = LoadStageFromFile(_ctx.assetRoot / "Stage" / "Stage0.json", &diag);
@@ -127,7 +131,7 @@ void StageState::Load_(
     m_data = data.Take();
 
     // --- 지면: 이름 목록의 각 맵을 Baked/Ground 에서 읽는다 (없으면 평지로 대체) ---
-    m_host = StagePlaceholders {};
+    m_host = StageWorldHost {};
     const int flatWidth  = static_cast<int>(m_data.worldSize.x);
     const int flatHeight = static_cast<int>(m_data.worldSize.y);
     for (const jug::String& name: m_data.groundMaps)
@@ -157,8 +161,38 @@ void StageState::Load_(
         JUG_CORE_LOG_WARN("Tuning.json 을 읽지 못해 기본값을 사용합니다");
     }
 
+    // --- 적 / 소품 정의 (없으면 그 종류는 플레이스홀더로 대신한다) ---
+    {
+        jug::String message;
+        const jug::FilePath defsPath = EnemyDefLibrary::GetDefaultDirectory(_ctx.assetRoot);   // Defs/*.json 전부 (Enemies / Vehicles / Boss)
+        m_enemyLib = {};
+        if (jug::Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
+        {
+            m_enemyLib = lib.Take();
+        }
+        else
+        {
+            JUG_CORE_LOG_WARN("적 정의를 읽지 못해 플레이스홀더로 배치합니다: {}", message);
+        }
+        m_enemies.SetLibrary(&m_enemyLib);
+    }
+    {
+        jug::String message;
+        if (jug::Result<PropDefLibrary> lib = PropDefLibrary::Load(_ctx.assetRoot / "Defs" / "Props" / "Props.json", &message))
+        {
+            m_propDefs = lib.Take();
+        }
+        else
+        {
+            JUG_CORE_LOG_WARN("소품 정의를 읽지 못해 플레이스홀더로 배치합니다: {}", message);
+        }
+        m_props.SetLibrary(&m_propDefs);
+    }
+
     m_host.BindPlayer(&m_player, &m_tuning);
     m_host.BindUi(&m_ui);
+    m_host.BindWorld(&m_enemies, &m_props);
+    m_host.BindRects(m_data.rects);
 
     // --- 카메라 / 러너 ---
     m_camera = Camera { MakeCameraTuning_(m_tuning.camera) };
@@ -181,6 +215,7 @@ void StageState::Load_(
         {
             m_spriteLib = library.Take();
         }
+        m_enemies.SetSpriteLibrary(&m_spriteLib);   // 보스 파츠의 정적 스프라이트
         if (_ctx.pSprites)
         {
             const jug::FilePath bgPath = _ctx.assetRoot / "Baked" / "Textures" / (m_data.background + ".png");
@@ -201,20 +236,26 @@ void StageState::Load_(
 void StageState::Restart_(
     GameContext& _ctx)
 {
-    // 1) 전투/연출/호스트 상태 초기화
+    // 1) 전투/연출/월드 상태 초기화 (러너 Begin 전에 비워야 스크립트 스폰이 새 월드에 들어간다)
     m_host.SetContext(&_ctx);
     m_host.Reset();
+    m_enemies.Reset(1);
+    m_props.Reset(1);
     m_combat.GetResolver().Clear();
     m_combat.BeginTick();
     m_projectiles.Clear();
     m_effects.Clear();
+    m_patchMasks.clear();
     m_rng = jug::RngMt19937 { 0x57A6E0ull };
+    m_flow.Reset();
+    m_endKind = eEndKind::None;
 
     // 2) 러너 시작: 지면/원경/BGM/경계/섹션 상태 (호스트 SetGround, PlayBgm 이 여기서 일어난다)
     m_runner->Begin();
 
     // 3) 플레이어: 스크립트 시작 위치 (지면 스냅 실패 시 x 만 쓰고 중력에 맡긴다)
     m_startFeet = m_runner->ResolvePlayerStart().value_or(jug::VECTOR2 { m_data.player.x, 0.f });
+    UpdateWalls_();
     m_player.Reset(m_tuning, m_startFeet);
     m_player.SnapToGround(MakePhysicsWorld_(), 16.f);
 
@@ -240,7 +281,21 @@ void StageState::Tick(
     const InputHistory& _input)
 {
     ++m_tickCount;
-    if (!m_bLoaded || m_runner->IsFinished())
+    if (!m_bLoaded)
+    {
+        return;
+    }
+
+    // 끝 장면(MISSION COMPLETE / GAME OVER) 중에는 세계를 멈추고 연출만 진행한다
+    if (IsFlowing_())
+    {
+        m_host.SetContext(&_ctx);
+        m_ui.Tick();
+        m_flow.Tick(m_ui, _ctx.GetAudio());
+        m_host.SetContext(nullptr);
+        return;
+    }
+    if (m_runner->IsFinished())
     {
         return;
     }
@@ -248,12 +303,23 @@ void StageState::Tick(
     HandleDebugWarp_(_ctx);
     m_host.SetContext(&_ctx);
 
-    // 1) 판정 모으기 시작: 플레이스홀더가 Hurtbox 를 먼저 등록해야 칼 자동 발동 질의가 맞는다.
+    // 1) 판정 모으기 시작 + 소품 틱 (타이머/낙하/연출/컬링). 이후 소품 충돌 출력이 이번 틱 상태가 된다.
     m_combat.BeginTick();
+    {
+        PropTickContext propCtx;
+        propCtx.pGround    = m_host.GetActiveGround();
+        propCtx.pAnims     = _ctx.pAnims;
+        propCtx.cameraLeft = m_camera.GetPositionNoShake().x;
+        m_props.Tick(propCtx);
+    }
     UpdateWalls_();
-    m_host.RegisterHurtboxes(m_combat);
 
-    // 2) 플레이어
+    // 2) Hurtbox 등록 (플레이어 Tick 전: 칼 자동 발동 질의가 맞도록)
+    m_host.RegisterPlaceholderHurtboxes(m_combat);
+    m_enemies.RegisterHurtboxes(m_combat);
+    m_props.RegisterHurtboxes(m_combat);
+
+    // 3) 플레이어
     PlayerContext playerCtx;
     playerCtx.pTuning      = &m_tuning;
     playerCtx.physics      = MakePhysicsWorld_();
@@ -262,18 +328,60 @@ void StageState::Tick(
     playerCtx.respawnFeet  = GetRespawnFeet_();
     m_player.Tick(playerCtx, _input);
 
-    // 3) 투사체 이동/판정 등록 (플레이스홀더는 쏘지 않는다)
+    // 보스 선체가 요청한 플레이어 발 x 하한 (직전 적 틱의 값)
+    if (m_enemies.HasPlayerMinX())
+    {
+        m_player.PushFeetX(m_enemies.GetPlayerMinX());
+    }
+
+    // 4) 소품 아이템 습득 (플레이어 몸 상자와 겹친 것)
+    for (const ItemPickup& pickup: m_props.GetItems().Collect(m_player.GetBodyBox()))
+    {
+        ApplyItemPickup(m_player, pickup, m_tuning);
+        switch (pickup.kind)
+        {
+        case eItemKind::Gun:    _ctx.GetAudio().Play(sfx::kPowerUp); break;
+        case eItemKind::Supply: _ctx.GetAudio().Play(sfx::kOk); break;
+        case eItemKind::Score:  _ctx.GetAudio().Play(sfx::kPickupCoin); break;
+        }
+    }
+
+    // 5) 적: AI / 이동 / 공격 판정 등록 (투사체 Step 전에 발사해야 같은 틱에 움직인다)
+    EnemyContext enemyCtx;
+    enemyCtx.pTuning            = &m_tuning;
+    enemyCtx.physics            = MakeEnemyPhysicsWorld_();
+    enemyCtx.pCombat            = &m_combat;
+    enemyCtx.pProjectiles       = &m_projectiles;
+    enemyCtx.player.feet        = m_player.GetFeet();
+    enemyCtx.player.bodyBox     = m_player.GetBodyBox();
+    enemyCtx.player.center      = m_player.GetBodyBox().GetCenter();
+    enemyCtx.player.bAlive      = m_player.IsAlive();
+    enemyCtx.player.bInvulnerable = m_player.GetInvincibleTicks() > 0;
+    enemyCtx.cameraView         = Aabb::FromMinSize(m_camera.GetPositionNoShake(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
+    enemyCtx.pAnims             = _ctx.pAnims;
+    m_enemies.Tick(enemyCtx);
+
     m_projectiles.Step(m_host.GetActiveGround(), m_combat, kStepSec);
 
-    // 4) 판정 해소 → 피해는 HitEvent 로만 적용된다
+    // 6) 판정 해소 → 모든 피해는 HitEvent 로만 적용된다
     const jug::Vector<HitEvent>& events = m_combat.Resolve();
-    const int                    kills  = m_host.ApplyEvents(events);
+    m_props.OnHitEvents(events);
+    m_enemies.OnHitEvents(events);
+    const int kills = m_host.ApplyPlaceholderEvents(events);
+    if (kills > 0)
+    {
+        _ctx.GetAudio().Play(sfx::kEnemyDeath, 0.7f, 0.1f);
+    }
     m_player.AddScore(kills * kPlaceholderKillScore);
     m_player.OnHitEvents(events);
     m_projectiles.OnHitEvents(events, m_combat);
-    m_host.Tick();
+    m_host.TickPlaceholders();
 
-    // 5) 연출
+    // 7) 이벤트 소비: 점수 / 드롭 아이템 / 지면 패치 / 소리
+    ConsumeEnemyEvents_(_ctx);
+    ConsumePropEvents_(_ctx);
+
+    // 8) 연출
     const jug::Vector<FxRequest> fx = m_projectiles.TakeFx();
     RequestSounds_(_ctx, fx);
     m_ui.Tick();
@@ -298,16 +406,32 @@ void StageState::Tick(
         }
     }
 
-    // 6) 스크립트 한 틱 (섹션/예약/경계/게이트 + 카메라 추적). 카메라 보간용으로 이전 위치를 남긴다.
+    // 9) 스크립트 한 틱 (섹션/예약/경계/게이트 + 카메라 추적). 카메라 보간용으로 이전 위치를 남긴다.
     m_prevCameraPos = m_camera.GetPositionNoShake();
     m_runner->Tick();
 
-    // 7) 게임 오버 후 스테이지 재시작
-    if (m_player.IsGameOver() && m_player.GetGameOverTicks() >= m_tuning.player.gameOverTicks)
+    // 10) 끝 장면 판정: endStage 요청 → MISSION COMPLETE, 플레이어 게임 오버 → GAME OVER
+    if (m_endKind == eEndKind::None)
     {
-        Restart_(_ctx);
+        if (m_host.IsEndRequested())
+        {
+            StartFlow_(_ctx, eEndKind::Mission);
+        }
+        else if (m_player.IsGameOver())
+        {
+            StartFlow_(_ctx, eEndKind::GameOver);
+        }
     }
     m_host.SetContext(nullptr);
+}
+
+void StageState::StartFlow_(
+    GameContext& _ctx,
+    const eEndKind _kind)
+{
+    m_endKind = _kind;
+    const ScreenFlowConfig config = _kind == eEndKind::Mission ? MakeMissionCompleteFlowConfig() : MakeGameOverFlowConfig();
+    m_flow.Start(config, m_ui, _ctx.GetAudio());
 }
 
 void StageState::HandleDebugWarp_(
@@ -335,11 +459,73 @@ void StageState::HandleDebugWarp_(
     m_host.SetContext(nullptr);
 }
 
+// ===========================================
+//  물리 입력 저장소
+// ===========================================
+
+void StageState::UpdateWalls_()
+{
+    // 화면 벽: 왼쪽(되돌아갈 수 없음) 항상, 오른쪽은 락/경계 끝일 때만 (StageRunner::MakeScreenWalls). 플레이어 전용.
+    const ScreenWalls screen = m_runner->MakeScreenWalls();
+    m_walls.clear();
+    m_enemyWalls.clear();
+    m_playerPlatforms.clear();
+    m_enemyPlatforms.clear();
+    if (screen.bHasLeft)
+    {
+        m_walls.push_back({ screen.left });
+    }
+    if (screen.bHasRight)
+    {
+        m_walls.push_back({ screen.right });
+    }
+
+    // 소품: 벽은 플레이어/적, 발판은 플레이어/적, 적 전용 발판(집 지붕)은 적만
+    for (const Wall& wall: m_props.GetWalls())
+    {
+        m_walls.push_back(wall);
+        m_enemyWalls.push_back(wall);
+    }
+    for (const Platform& platform: m_props.GetPlatforms())
+    {
+        m_playerPlatforms.push_back(platform);
+        m_enemyPlatforms.push_back(platform);
+    }
+    for (const Platform& platform: m_props.GetEnemyPlatforms())
+    {
+        m_enemyPlatforms.push_back(platform);
+    }
+
+    // 스테이지 충돌체 (box_collider): wall = 모두, groundExceptPlayer = 적만 서는 원웨이 바닥
+    for (const StageCollider& collider: m_host.GetColliders())
+    {
+        if (collider.layer == eCollisionLayer::Wall)
+        {
+            m_walls.push_back({ collider.box });
+            m_enemyWalls.push_back({ collider.box });
+        }
+        else
+        {
+            m_enemyPlatforms.push_back({ collider.box, true });
+        }
+    }
+}
+
 PhysicsWorld StageState::MakePhysicsWorld_() const
 {
     PhysicsWorld world;
     world.pGround   = m_host.GetActiveGround();
     world.walls     = m_walls;
+    world.platforms = m_playerPlatforms;
+    return world;
+}
+
+PhysicsWorld StageState::MakeEnemyPhysicsWorld_() const
+{
+    PhysicsWorld world;
+    world.pGround   = m_host.GetActiveGround();
+    world.walls     = m_enemyWalls;
+    world.platforms = m_enemyPlatforms;
     return world;
 }
 
@@ -349,18 +535,103 @@ jug::VECTOR2 StageState::GetRespawnFeet_() const
     return { cam.x + m_tuning.player.respawnOffsetX, cam.y - m_tuning.player.respawnDropY };
 }
 
-void StageState::UpdateWalls_()
+// ===========================================
+//  이벤트 소비
+// ===========================================
+
+void StageState::ConsumeEnemyEvents_(
+    GameContext& _ctx)
 {
-    // 왼쪽(되돌아갈 수 없음) 항상, 오른쪽은 락/경계 끝일 때만 (StageRunner::MakeScreenWalls)
-    const ScreenWalls screen = m_runner->MakeScreenWalls();
-    m_walls.clear();
-    if (screen.bHasLeft)
+    IAudioSink& audio = _ctx.GetAudio();
+    for (const EnemyEvent& event: m_enemies.TakeEvents())
     {
-        m_walls.push_back({ screen.left });
+        switch (event.kind)
+        {
+        case eEnemyEventKind::Died:
+            m_player.AddScore(event.score);
+            audio.Play(sfx::kEnemyDeath, 0.7f, 0.1f);
+            if (!event.drop.empty())
+            {
+                (void)m_props.SpawnItem(event.drop, event.pos, false);
+            }
+            break;
+        case eEnemyEventKind::ItemDropped:
+            // 포로가 건네는 아이템 (POW): 튕기며 떨어진다
+            (void)m_props.SpawnItem(event.drop, event.pos, true);
+            break;
+        case eEnemyEventKind::Freed:
+        case eEnemyEventKind::Transformed:
+        case eEnemyEventKind::Removed:
+            break;
+        }
     }
-    if (screen.bHasRight)
+}
+
+void StageState::ConsumePropEvents_(
+    GameContext& _ctx)
+{
+    IAudioSink& audio = _ctx.GetAudio();
+    for (const PropEvent& event: m_props.TakeEvents())
     {
-        m_walls.push_back({ screen.right });
+        switch (event.kind)
+        {
+        case ePropEventKind::Destroyed:
+            audio.Play(sfx::kExplosion, 0.9f, 0.05f);
+            break;
+        case ePropEventKind::SecondaryBurst:
+            audio.Play(sfx::kBombExplode, 1.f, 0.03f);
+            break;
+        case ePropEventKind::GroundPatch:
+            ApplyGroundPatch_(_ctx, event.name, event.pos);
+            break;
+        case ePropEventKind::Damaged:
+        case ePropEventKind::DropSpawned:   // 아이템은 PropWorld 가 이미 만들었다
+        case ePropEventKind::Removed:
+        case ePropEventKind::Culled:
+            break;
+        }
+    }
+}
+
+const GroundMap* StageState::FindPatchMask_(
+    GameContext&       _ctx,
+    const jug::String& _sprite)
+{
+    for (const PatchMask& patch: m_patchMasks)
+    {
+        if (patch.name == _sprite)
+        {
+            return patch.bLoaded ? &patch.mask : nullptr;
+        }
+    }
+
+    // 처음 요청: Baked/Textures/<sprite>.png 를 읽어 알파 마스크를 만든다 (실패도 캐시한다)
+    PatchMask patch;
+    patch.name = _sprite;
+    const jug::FilePath path = _ctx.assetRoot / "Baked" / "Textures" / (_sprite + ".png");
+    if (std::optional<GroundMap> mask = LoadGroundPatchMask(path))
+    {
+        patch.mask    = std::move(*mask);
+        patch.bLoaded = true;
+    }
+    else
+    {
+        JUG_CORE_LOG_WARN("지면 패치 마스크 '{}' 을 읽지 못했습니다", path.string());
+    }
+    m_patchMasks.push_back(std::move(patch));
+    return m_patchMasks.back().bLoaded ? &m_patchMasks.back().mask : nullptr;
+}
+
+void StageState::ApplyGroundPatch_(
+    GameContext&       _ctx,
+    const jug::String& _sprite,
+    const jug::VECTOR2 _topLeft)
+{
+    GroundMap* pGround = m_host.GetActiveGroundMut();
+    const GroundMap* pMask = FindPatchMask_(_ctx, _sprite);
+    if (pGround && pMask)
+    {
+        ApplyGroundPatch(*pGround, _topLeft, *pMask);
     }
 }
 
@@ -396,10 +667,6 @@ void StageState::RequestSounds_(
             audio.Play(sfx::kBombExplode, 1.f, 0.03f);
         }
     }
-    if (m_player.GetScore() > m_prevScore)
-    {
-        audio.Play(sfx::kEnemyDeath, 0.7f, 0.1f);
-    }
 
     m_prevStats  = stats;
     m_prevWeapon = weapon;
@@ -410,6 +677,14 @@ uint64_t StageState::HashState() const
 {
     uint64_t hash = m_player.HashState();
     hash ^= m_host.HashState() * 1099511628211ull;
+    if (m_enemies.GetCount() > 0)
+    {
+        hash ^= m_enemies.HashState() * 1099511628211ull;
+    }
+    if (m_props.GetCount() > 0)
+    {
+        hash ^= m_props.HashState() * 1099511628211ull;
+    }
     hash ^= static_cast<uint64_t>(m_projectiles.GetBullets().size()) << 8;
     hash ^= static_cast<uint64_t>(m_projectiles.GetBombs().size()) << 16;
     hash ^= m_runner->HashState() * 1099511628211ull;
@@ -423,7 +698,19 @@ uint64_t StageState::HashState() const
 
 bool StageState::IsFinished() const
 {
-    return m_bFailed || (m_bLoaded && m_runner->IsFinished());
+    if (m_bFailed)
+    {
+        return true;
+    }
+    if (!m_bLoaded)
+    {
+        return false;
+    }
+    if (m_endKind != eEndKind::None)
+    {
+        return m_flow.IsDone();
+    }
+    return m_runner->IsFinished();
 }
 
 jug::Scoped<IGameState> StageState::TakeNextState()
@@ -434,11 +721,11 @@ jug::Scoped<IGameState> StageState::TakeNextState()
     }
     m_bTakenNext = true;
 
-    if (m_bFailed)
+    if (!m_bFailed && m_endKind == eEndKind::Mission && m_host.IsEndRequested())
     {
-        return CreateState("title");
+        return CreateState(m_host.GetPlaceholders().GetEndStateName());
     }
-    return CreateState(m_host.IsEndRequested() ? m_host.GetEndStateName() : jug::String { "title" });
+    return CreateState("title");
 }
 
 // ===========================================
@@ -509,9 +796,13 @@ void StageState::DrawWorld_(
 
     DrawBackdrop_(_ctx, _cameraPos);
 
-    // --- 플레이스홀더 엔티티: 상자 + def 이름 + 체력 (사망 연출 중에는 회색) ---
-    for (const PlaceholderEntity& entity: m_host.GetEntities())
+    // --- 플레이스홀더 (정의가 없는 엔티티): 상자 + def 이름 + 체력. 판정이 없는 것은 F1 에서만 보인다 ---
+    for (const PlaceholderEntity& entity: m_host.GetPlaceholders().GetEntities())
     {
+        if (!entity.bHittable && !_ctx.bDebugDraw)
+        {
+            continue;
+        }
         const Aabb box = entity.GetBox();
         const jug::VECTOR2 tl = ToScreen_(box.min, _cameraPos);
         const jug::RGBA color = entity.IsAlive() ? GetPlaceholderColor_(entity) : jug::RGBA { 90, 90, 90, 255 };
@@ -523,16 +814,23 @@ void StageState::DrawWorld_(
         }
         else
         {
-            // 판정이 없는 엔티티(소품 장식/아이템/충돌체): 외곽선과 이름만 (배경 스프라이트를 가리지 않는다)
             renderer.DrawRect(tl, entity.size, { 230, 230, 120, 255 });
             renderer.DrawDebugText({ tl.x + 2.f, tl.y + 2.f }, entity.def, { 255, 255, 120, 255 });
         }
     }
 
+    const AnimationLibrary* pAnims = _ctx.pAnims;
+
+    // --- 적 (보병 / 차량 / 보스 / 탄) ---
+    if (pAnims)
+    {
+        m_enemies.Submit(sprites, *pAnims, m_projectiles, _alpha);
+    }
+
     // --- 플레이어 ---
     {
         const jug::VECTOR2 feet = Lerp_(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
-        if (m_bRigBound && _ctx.pAnims)
+        if (m_bRigBound && pAnims)
         {
             const RigState rigState = m_player.MakeRigState();
             if (rigState.bVisible)
@@ -569,9 +867,9 @@ void StageState::DrawWorld_(
         for (const Bomb& bomb: m_projectiles.GetBombs())
         {
             const jug::VECTOR2 pos = Lerp_(bomb.renderPrev, bomb.position, _alpha);
-            if (_ctx.pAnims)
+            if (pAnims)
             {
-                if (const AnimFrame* pFrame = m_bombAnim.GetFrameData(*_ctx.pAnims))
+                if (const AnimFrame* pFrame = m_bombAnim.GetFrameData(*pAnims))
                 {
                     sprites.Submit(31, 0, *pFrame, pos);
                     continue;
@@ -581,9 +879,11 @@ void StageState::DrawWorld_(
         }
     }
 
-    if (_ctx.pAnims)
+    // --- 소품 / 아이템 / 디브리 ---
+    if (pAnims)
     {
-        m_effects.Submit(*_ctx.pAnims, sprites);
+        m_props.Submit(sprites, *pAnims, m_spriteLib);
+        m_effects.Submit(*pAnims, sprites);
     }
 
     sprites.Flush(_cameraPos);
@@ -617,6 +917,14 @@ void StageState::DrawDebugBoxes_(
     {
         DrawBox_(_renderer, wall.box, _cameraPos, { 200, 80, 200, 255 });
     }
+    for (const Platform& platform: m_playerPlatforms)
+    {
+        DrawBox_(_renderer, platform.box, _cameraPos, { 255, 160, 60, 255 });
+    }
+    for (const Platform& platform: m_enemyPlatforms)
+    {
+        DrawBox_(_renderer, platform.box, _cameraPos, { 120, 230, 230, 255 });
+    }
 }
 
 void StageState::DrawHud_(
@@ -627,36 +935,37 @@ void StageState::DrawHud_(
 
     m_ui.DrawHud(_ctx, MakeHudModel(m_player));
 
-    // --- 디버그 오버레이: F1 (현재 섹션, 열린 게이트, 워프 키) ---
+    // --- 디버그 오버레이: F1 (현재 섹션, 열린 게이트, 워프 키, 월드 개수) ---
     if (_ctx.bDebugDraw)
     {
-        const jug::String& lastId  = m_host.GetLastSectionId();
-        const jug::String  gates   = JoinIds_(m_runner->GetOpenGateIds());
-        const jug::VECTOR2 pos     = m_player.GetFeet();
-        const jug::VECTOR2 vel     = m_player.GetVelocity();
-        const std::optional<float> nextX = m_runner->GetNextTriggerX();
+        const StagePlaceholders& placeholders = m_host.GetPlaceholders();
+        const jug::String&       lastId       = placeholders.GetLastSectionId();
+        const jug::String        gates        = JoinIds_(m_runner->GetOpenGateIds());
+        const jug::VECTOR2       pos          = m_player.GetFeet();
+        const jug::VECTOR2       vel          = m_player.GetVelocity();
+        const std::optional<float> nextX      = m_runner->GetNextTriggerX();
 
         const jug::String debug = std::format(
             "STAGE {} SECTION {} (#{}/{})  NEXT #{} x>{}  GATES {} [{}]\n"
-            "ENT {}  SPAWNED {}  SKIPPED {}  LOCK {}  BOUNDS {:.0f},{:.0f}-{:.0f},{:.0f}  BG {}\n"
+            "ENEMY {} (SPAWNED {})  PROP {}  ITEM {}  COLL {}  PH {}  SKIPPED {}  LOCK {}  BG {}\n"
             "POS {:.1f},{:.1f}  VEL {:.0f},{:.0f}  GND {}  GROUND {}  TICK {}  FPS {:.0f}\n"
             "F1 BOX  F2 PAUSE  F3 STEP  F4 SLOW  F5 NEXT SECTION  F6 BOSS ARENA",
             m_data.name,
             lastId.empty() ? jug::String { "-" } : lastId,
-            m_host.GetLastSectionIndex(),
+            placeholders.GetLastSectionIndex(),
             m_data.sections.size(),
             m_runner->GetNextSectionIndex(),
             nextX ? std::format("{:.0f}", *nextX) : jug::String { "-" },
             m_runner->GetOpenGateCount(),
             gates.empty() ? jug::String { "-" } : gates,
-            m_host.GetEntities().size(),
+            m_enemies.CountAlive(),
             m_runner->GetSpawnedCount(),
+            m_props.GetCount(),
+            m_props.GetItems().GetCount(),
+            m_host.GetColliders().size(),
+            placeholders.GetEntities().size(),
             m_runner->GetSkippedCount(),
             m_runner->GetLockDepth(),
-            m_runner->GetEffectiveBounds().min.x,
-            m_runner->GetEffectiveBounds().min.y,
-            m_runner->GetEffectiveBounds().max.x,
-            m_runner->GetEffectiveBounds().max.y,
             m_runner->GetBackdropMode(),
             pos.x,
             pos.y,
