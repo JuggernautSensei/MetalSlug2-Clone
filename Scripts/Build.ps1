@@ -12,7 +12,7 @@ Set-Location $root
 $env:VCPKG_ROOT = if ($env:VCPKG_ROOT) { $env:VCPKG_ROOT } else { 'C:\vcpkg' }
 $cmake = 'C:\Program Files\CMake\bin\cmake.exe'
 
-$mutex = New-Object System.Threading.Mutex($false, 'Global\MSRemakeBuild')
+$mutex = New-Object System.Threading.Mutex($false, 'Global\MyMetalSlug2Build')
 $bLocked = $false
 try {
     $bLocked = $mutex.WaitOne([TimeSpan]::FromMinutes(30))

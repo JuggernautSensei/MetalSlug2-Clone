@@ -38,7 +38,7 @@ namespace
 }   // namespace
 
 App::App()
-    : Application({ .appName = "Metal Slug Remake", .appVersion = "0.1.0", .appIdentifier = "com.msremake.game", .bInitGamepad = false })
+    : Application({ .appName = "MyMetalSlug2", .appVersion = "0.1.0", .appIdentifier = "com.mymetalslug2.game", .bInitGamepad = false })
 {
 }
 
@@ -143,7 +143,7 @@ void App::Init()
         m_stateName          = bHasBaked ? jug::String { GetDefaultStateName() } : jug::String { "sandbox" };
     }
 
-    if (const jug::Result<void> result = m_renderer.Init("Metal Slug Remake", ChooseWindowScale_()); !result)
+    if (const jug::Result<void> result = m_renderer.Init("MyMetalSlug2", ChooseWindowScale_()); !result)
     {
         JUG_CORE_LOG_FATAL("렌더러 초기화 실패: {}", result.GetError().MakeMessage());
         SetReturnCode(1);

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(MSRemake
+project(MyMetalSlug2
     VERSION 0.1.0
     DESCRIPTION "Metal Slug style 2D action game"
     LANGUAGES CXX
@@ -53,6 +53,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/Source" FILES ${SLUG_CORE_SOURCES
 # ---------------------------------------------------------------------------
 add_executable(Slug "${CMAKE_CURRENT_SOURCE_DIR}/Source/Main.cpp")
 target_link_libraries(Slug PRIVATE SlugCore)
+set_target_properties(Slug PROPERTIES OUTPUT_NAME "MyMetalSlug2")   # 실행 파일: MyMetalSlug2.exe
 if(MSVC)
     # 콘솔 창 없이 실행하되 main() 진입점을 유지한다.
     set_target_properties(Slug PROPERTIES

@@ -1,7 +1,7 @@
-# 에이전트 공통 규칙 (MSRemake)
+# 에이전트 공통 규칙 (MyMetalSlug2)
 
 ## 프로젝트
-- 저장소: `C:\Users\Ahnjiwoo\Desktop\Projects\windowAPIProject(24.02.05)\MSRemake` (CMake + vcpkg + VS 2026, C++20, 네임스페이스 `slug`, JugX 라이브러리 `ThirdParty/JugX` = 네임스페이스 `jug`, `<JugX/Xxx.h>`, JugX `pch.h` 자동 force-include).
+- 저장소: `C:\Users\Ahnjiwoo\Desktop\Projects\windowAPIProject(24.02.05)\MyMetalSlug2` (CMake + vcpkg + VS 2026, C++20, 네임스페이스 `slug`, JugX 라이브러리 `ThirdParty/JugX` = 네임스페이스 `jug`, `<JugX/Xxx.h>`, JugX `pch.h` 자동 force-include).
 - 전체 계획: `C:\Users\Ahnjiwoo\.claude\plans\zippy-dreaming-beaver.md`. 문서: `Docs/*.md` (AssetFormat, PlayerSpec, EnemySpecs, EnemyDefsSchema, StageFormat).
 - 시뮬레이션은 고정 60Hz(`SimRunner`), 라이브와 헤드리스(`SlugHeadless`, 테스트)가 같은 `IGameState::Tick` 경로. 모든 판정은 `CombatSystem`/`HitResolver` 단일 경로. 좌표는 `jug::VECTOR2` float 월드 픽셀, +y 아래, **엔티티 원점 = 발 중앙**.
 
@@ -12,7 +12,7 @@
 - 빌드: `powershell -NoProfile -ExecutionPolicy Bypass -File Scripts/Build.ps1 [-Target <t>] [-Reconfigure]` (전역 뮤텍스로 직렬화됨. 다른 에이전트가 동시에 빌드한다. Bash 도구에서는 스크립트 실행이 막혀 있으므로 PowerShell 도구로 실행). 새 .cpp/테스트 파일을 추가한 직후엔 두 번 빌드해야 glob 이 반영될 수 있음(`-Reconfigure` 로 해결).
 - 다른 에이전트의 작업 중인 파일 때문에 빌드가 깨지면 잠시 후 재시도하고, **남의 파일은 수정하지 말 것** (소유 목록 참고). 정말 필요한 공유 파일 수정은 최소·추가형(additive)으로만 하고 보고서에 적는다.
 - 테스트: `Build\vs\bin\Debug\SlugTest.exe` (저장소 루트에서 실행). 기존 테스트는 모두 통과 상태를 유지한다.
-- 라이브 창 실행은 짧게(`Slug.exe --state <name> --capture <prefix> --capture-ticks a,b,c` 로 결정적 캡처 → BMP→PNG 변환 후 Read 도구로 확인). 프로세스를 남겨두지 말 것.
+- 라이브 창 실행은 짧게(`MyMetalSlug2.exe --state <name> --capture <prefix> --capture-ticks a,b,c` 로 결정적 캡처 → BMP→PNG 변환 후 Read 도구로 확인). 프로세스를 남겨두지 말 것.
 - **git add / git commit 금지** (리드가 커밋한다). `ThirdParty/**` 수정 금지.
 
 ## 공통 보고 형식
