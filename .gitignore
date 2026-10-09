@@ -6,3 +6,4 @@ CMakeUserPresets.json
 vcpkg_installed/
 Assets/Baked/
 Captures/
+cmake_test_discovery_*.json
