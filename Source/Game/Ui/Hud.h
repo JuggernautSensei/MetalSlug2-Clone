@@ -21,6 +21,12 @@ struct HudModel
     int  bombs         = 0;
     char weaponLetter  = 0;   // 든 무기 글자 (H/S/R/F). 권총은 0
 
+    // 메탈슬러그 SV-001 탑승: "ARMS CANNON" 패널 (탄 칸은 항상 무한 = 발칸, 오른쪽 숫자는 캐논탄) + 점수 아래 슬러그 게이지
+    bool  bSlugMode       = false;
+    int   cannonAmmo      = 0;
+    bool  bShowGauge      = false;
+    float gaugeRatio      = 0.f;   // 0..1 (오렌지 채움)
+
     bool bShowTimer   = false;
     int  timerSeconds = 0;
 

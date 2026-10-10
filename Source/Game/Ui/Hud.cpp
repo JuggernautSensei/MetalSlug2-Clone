@@ -95,14 +95,14 @@ Vector<HudItem> BuildHudItems(
         items.push_back(MakeText_(FormatScore(_model.score), _layout.scoreRightX, _layout.scoreY, eTextAlign::Right, eFontColor::Default));
         items.push_back(MakeText_(std::format("1UP={}", std::max(0, _model.lives)), _layout.livesX, _layout.livesY, eTextAlign::Left, eFontColor::White));
 
-        items.push_back(MakeSprite_("PlayerStateUI_Bomb", _layout.armsPanelX + 62, _layout.armsPanelY + 17));
+        items.push_back(MakeSprite_(_model.bSlugMode ? "PlayerStateUI_Cannon" : "PlayerStateUI_Bomb", _layout.armsPanelX + 62, _layout.armsPanelY + 17));
 
         const int digitsY = _layout.armsPanelY + _layout.digitsDY;
         if (_model.weaponLetter != 0)
         {
             items.push_back(MakeText_(String(1, _model.weaponLetter), _layout.armsPanelX + _layout.weaponLetterDX, digitsY, eTextAlign::Left, eFontColor::White));
         }
-        if (_model.bInfiniteAmmo)
+        if (_model.bInfiniteAmmo || _model.bSlugMode)
         {
             items.push_back(MakeSprite_("InfiniteUI_Red", _layout.armsPanelX + _layout.infiniteCenterDX, _layout.armsPanelY + _layout.infiniteCenterDY));
         }
@@ -110,7 +110,36 @@ Vector<HudItem> BuildHudItems(
         {
             items.push_back(MakeText_(FormatAmmo(_model.ammo), _layout.armsPanelX + _layout.ammoRightDX, digitsY, eTextAlign::Right, eFontColor::RedYellow));
         }
-        items.push_back(MakeText_(FormatBombs(_model.bombs), _layout.armsPanelX + _layout.bombRightDX, digitsY, eTextAlign::Right, eFontColor::RedYellow));
+        items.push_back(MakeText_(FormatBombs(_model.bSlugMode ? _model.cannonAmmo : _model.bombs), _layout.armsPanelX + _layout.bombRightDX, digitsY, eTextAlign::Right, eFontColor::RedYellow));
+    }
+
+    if (_model.bShowGauge)
+    {
+        // 점수 아래 슬러그 게이지: PlayerHPUI 프레임 (안쪽 94x8) 밑에 오렌지 채움
+        const float ratio = std::clamp(_model.gaugeRatio, 0.f, 1.f);
+        const int   fillW = static_cast<int>(static_cast<float>(_layout.gaugeInnerW) * ratio + 0.5f);
+        HudItem     back;
+        back.kind  = eHudItemKind::Rect;
+        back.x     = _layout.gaugeX + _layout.gaugeInnerX;
+        back.y     = _layout.gaugeY + _layout.gaugeInnerY;
+        back.w     = _layout.gaugeInnerW;
+        back.h     = _layout.gaugeInnerH;
+        back.color = { 40, 46, 66, 255 };
+        items.push_back(back);
+        if (fillW > 0)
+        {
+            HudItem fill = back;
+            fill.w       = fillW;
+            fill.h       = _layout.gaugeInnerH / 2;
+            fill.color   = { 255, 150, 30, 255 };
+            items.push_back(fill);
+            HudItem fillLow = fill;
+            fillLow.y       = back.y + fill.h;
+            fillLow.h       = _layout.gaugeInnerH - fill.h;
+            fillLow.color   = { 255, 96, 8, 255 };
+            items.push_back(fillLow);
+        }
+        items.push_back(MakeSprite_("PlayerHPUI", _layout.gaugeX + 53, _layout.gaugeY + 8));
     }
 
     if (_model.bShowTimer)

@@ -161,7 +161,7 @@ namespace
         "hitFlash",
         "centerAnchor"
     };
-    constexpr ARRAY<const char*, 22> kProjectileKeys = {
+    constexpr ARRAY<const char*, 24> kProjectileKeys = {
         "note",
         "extends",
         "abstract",
@@ -183,7 +183,9 @@ namespace
         "rollSpeed",
         "rollSec",
         "expireFx",
-        "groundProbe"
+        "groundProbe",
+        "trail",
+        "trailSec"
     };
     constexpr ARRAY<const char*, 11> kKnownKinds     = { "walker", "vehicle", "turret", "flyer", "boss", "prop", "npc", "item", "projectile", "effect", "debris" };
     constexpr ARRAY<const char*, 4>  kActivationKeys = { "note", "mode", "marginPx", "latch" };
@@ -677,6 +679,25 @@ bool EnemyDefParser::ParseProjectile_(
         }
     }
 
+    if (const std::optional<JsonReader> trail = Find_(_chain, "trail"))
+    {
+        float trailSec = 0.f;
+        if (!CheckObjectKeys_(name, "trail", *trail, kExplosionKeys)
+            || !ReadStr_(name, "trail", *trail, "fx", projectile.trail.clip, true)
+            || !ReadVec2_(name, "trail", *trail, "offset", projectile.trail.offset))
+        {
+            return false;
+        }
+        for (const JsonReader& reader: _chain)
+        {
+            if (!ReadNum_(name, "", reader, "trailSec", trailSec, false))
+            {
+                return false;
+            }
+        }
+        projectile.trailTicks = Max(1, SecToTicks(trailSec));
+    }
+
     for (const JsonReader& reader: _chain)
     {
         if (!ReadNum_(name, "", reader, "rollSpeed", projectile.rollSpeed, false)
@@ -1154,6 +1175,9 @@ bool EnemyDefParser::ParseEnemy_(
             case eEnemyBehavior::BTank: ParseBTankCfg(reader, def); break;
             case eEnemyBehavior::MissleTank: ParseMissleTankCfg(reader, def); break;
             case eEnemyBehavior::Sarubia: ParseSarubiaCfg(reader, def); break;
+            case eEnemyBehavior::Bus: ParseBusCfg(reader, def); break;
+            case eEnemyBehavior::Heli: ParseHeliCfg(reader, def); break;
+            case eEnemyBehavior::HeliBomb: ParseHeliBombCfg(reader, def); break;
             case eEnemyBehavior::Count: break;
         }
         if (!reader.Finish())

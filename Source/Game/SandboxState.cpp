@@ -13,6 +13,8 @@
 #include "Game/Combat/BulletVisual.h"
 #include "Game/Player/PlayerHitboxes.h"
 #include "Game/Player/PlayerWeapons.h"
+#include "Game/Player/SlugDef.h"
+#include "Game/Player/SlugRender.h"
 #include "Game/Ui/ScreenFlow.h"
 #include "World/Constants.h"
 
@@ -108,6 +110,23 @@ void SandboxState::BuildWorld_(
         else
         {
             SLUG_LOG_WARN("Tuning.json 을 읽지 못해 기본값을 사용합니다: {}", path.string());
+        }
+    }
+
+    m_slugTuning = m_config.slugTuning;
+    if (m_config.bLoadSlugFile && !_ctx.assetRoot.empty())
+    {
+        const FilePath slugPath = GetDefaultSlugTuningPath(_ctx.assetRoot);
+        if (std::filesystem::exists(slugPath))
+        {
+            if (Result<SlugTuning> slugLoaded = LoadSlugTuning(slugPath))
+            {
+                m_slugTuning = slugLoaded.Take();
+            }
+            else
+            {
+                SLUG_LOG_WARN("Slug.json 을 읽지 못해 기본값을 사용합니다: {}", slugPath.string());
+            }
         }
     }
 
@@ -231,6 +250,14 @@ void SandboxState::RestartGame()
     m_player.Reset(m_tuning, m_config.spawnFeet);
     m_player.SnapToGround(MakePhysicsWorld_(), 16.f);
 
+    m_slugs.Reset(m_slugTuning);
+    m_slugWalls.clear();
+    m_prevSlugStats = {};
+    for (const Vec2& feet: m_config.slugFeet)
+    {
+        (void)m_slugs.Spawn(feet, 1);
+    }
+
     m_camera.SetTarget({ m_config.spawnFeet.x, m_config.spawnFeet.y - 60.f });
     m_camera.SnapToTarget();
     m_prevCameraPos = m_camera.GetPositionNoShake();
@@ -246,6 +273,30 @@ void SandboxState::RestartGame()
             SpawnDebugEnemy_(slot, 200.f + 50.f * static_cast<float>(slot));
         }
     }
+    if (m_config.bHeliLab)
+    {
+        // 헬기 랩: 화면 위 오른쪽에서 진입 (Docs/Spec_Helicopter.md 의 스테이지 배치 규약과 같은 위치)
+        const Vec2  cam = m_camera.GetPositionNoShake();
+        SpawnParams params;
+        params.facing     = -1;
+        params.bActivated = true;
+        (void)SpawnEnemy("heli", { cam.x + static_cast<float>(Renderer::kLogicalWidth) - 133.f, cam.y - 30.f }, params);
+        if (m_config.bGodMode)
+        {
+            m_player.ExtendInvincibility(60 * 60 * 60);   // 비교 캡처용: 폭탄/미사일에 죽지 않는다
+        }
+    }
+    if (m_config.bSlugLab)
+    {
+        SpawnParams left;
+        left.facing = -1;
+        (void)SpawnEnemy("soldier_sword", { 1000.f, 378.f }, left);
+        (void)SpawnEnemy("soldier_sword", { 1060.f, 378.f }, left);
+        (void)SpawnEnemy("soldier_bomb", { 1240.f, 378.f }, left);
+        (void)SpawnEnemy("soldier_bzk", { 1400.f, 378.f }, left);
+        (void)SpawnEnemy("jeep", { 1700.f, 378.f }, left);
+        (void)SpawnEnemy("btank", { 1950.f, 378.f }, left);
+    }
     if (m_config.bVehicleLab)
     {
         const Vec2  feet = m_player.GetFeet();
@@ -256,6 +307,35 @@ void SandboxState::RestartGame()
         (void)SpawnEnemy("missle_tank", { 500.f, feet.y }, left);
         (void)SpawnEnemy("sarubia", { 600.f, feet.y }, left);
     }
+    m_busHandle    = {};
+    m_bBusUnlocked = false;
+    if (m_config.bBusLab)
+    {
+        // 원작 락: 카메라 오른쪽 끝 3136 에서 멈춘다. 버스 앵커는 화면 왼쪽 끝 + 489 = 2985 (Stage0_1 잔해 지형의 중심과 같다)
+        SpawnParams params;
+        params.facing = -1;
+        m_busHandle   = SpawnEnemy("bus", { m_config.cameraBounds.max.x - 640.f + 489.f, 378.f }, params);
+    }
+}
+
+void SandboxState::TickBusLab_(
+    GameContext& _ctx)
+{
+    if (!m_config.bBusLab || m_bBusUnlocked || m_busHandle.IsNull() || !m_enemies.IsDestroyFinished(m_busHandle))
+    {
+        return;
+    }
+    // 스테이지 데이터의 gate(destroyFinished) 와 같다: 지면을 잔해가 있는 Stage0_1 로 바꾸고 카메라 락을 푼다
+    m_bBusUnlocked = true;
+    if (!_ctx.assetRoot.empty())
+    {
+        if (Result<GroundMap> ground = GroundMap::Load(_ctx.assetRoot / "Baked" / "Ground" / "Stage0_1.bin"))
+        {
+            m_ground = ground.Take();
+        }
+    }
+    m_config.cameraBounds.max.x = 4200.f;
+    m_camera.SetBounds(m_config.cameraBounds);
 }
 
 void SandboxState::AddDefaultTargets_()
@@ -335,6 +415,7 @@ PhysicsWorld SandboxState::MakeEnemyPhysicsWorld_() const
     PhysicsWorld world;
     world.pGround   = &m_ground;
     world.platforms = m_config.platforms;
+    world.walls     = m_slugWalls;
     return world;
 }
 
@@ -348,6 +429,10 @@ void SandboxState::UpdateWalls_()
     for (const Wall& wall: m_props.GetWalls())
     {
         m_walls.push_back(wall);
+    }
+    for (const Aabb& box: m_enemies.GetSolidBoxes())
+    {
+        m_walls.push_back({ box });   // 살아 있는 적의 def.solid (버스 차체)
     }
     UpdatePropCollision_();
 }
@@ -421,23 +506,45 @@ void SandboxState::Tick(
     playerCtx.pCombat      = &m_combat;
     playerCtx.pProjectiles = &m_projectiles;
     playerCtx.respawnFeet  = GetRespawnFeet_();
+
+    SlugContext slugCtx;
+    slugCtx.pTuning      = &m_slugTuning;
+    slugCtx.pInputMove   = &m_tuning.move;
+    slugCtx.physics      = playerCtx.physics;
+    slugCtx.pCombat      = &m_combat;
+    slugCtx.pProjectiles = &m_projectiles;
+    m_slugs.Tick(slugCtx, _input, m_player);
     m_player.Tick(playerCtx, _input);
 
     if (m_enemies.HasPlayerMinX())
     {
         m_player.PushFeetX(m_enemies.GetPlayerMinX());
+        if (SlugVehicle* pRidden = m_slugs.GetRiddenOrNull())
+        {
+            pRidden->PushFeetX(m_enemies.GetPlayerMinX());
+        }
     }
     if (m_enemies.HasPlayerMaxX())
     {
         m_player.PushFeetXMax(m_enemies.GetPlayerMaxX());
+        if (SlugVehicle* pRidden = m_slugs.GetRiddenOrNull())
+        {
+            pRidden->PushFeetXMax(m_enemies.GetPlayerMaxX());
+        }
     }
 
     for (const ItemPickup& pickup: m_props.GetItems().Collect(m_player.GetBodyBox()))
     {
+        if (pickup.kind == eItemKind::Supply && pickup.supply == eSupplyKind::Bomb && m_slugs.OnBombSupply(pickup.amount))
+        {
+            continue;   // 탑승 중 폭탄 보급 상자 = 캐논탄
+        }
         ApplyItemPickup(m_player, pickup, m_tuning);
     }
 
     m_targets.TickShooters(m_tuning.sandbox, m_player.GetFeet(), m_player.IsAlive(), m_projectiles, m_combat);
+
+    m_slugWalls = m_slugs.MakeEnemyWalls();
 
     EnemyContext enemyCtx;
     enemyCtx.pTuning              = &m_tuning;
@@ -449,6 +556,14 @@ void SandboxState::Tick(
     enemyCtx.player.center        = m_player.GetBodyBox().GetCenter();
     enemyCtx.player.bAlive        = m_player.IsAlive();
     enemyCtx.player.bInvulnerable = m_player.GetInvincibleTicks() > 0;
+    if (const SlugVehicle* pRidden = m_slugs.GetRiddenOrNull())
+    {
+        // SV-001 에 타고 있으면 적은 차량을 표적으로 삼는다
+        enemyCtx.player.feet          = pRidden->GetFeet();
+        enemyCtx.player.bodyBox       = pRidden->MakeHurtbox().box;
+        enemyCtx.player.center        = enemyCtx.player.bodyBox.GetCenter();
+        enemyCtx.player.bInvulnerable = pRidden->GetMode() != eSlugMode::Driven;
+    }
     enemyCtx.cameraView           = Aabb::FromMinSize(m_camera.GetPositionNoShake(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
     enemyCtx.pAnims               = _ctx.pAnims;
     m_enemies.Tick(enemyCtx);
@@ -464,9 +579,11 @@ void SandboxState::Tick(
     {
         enemyScore += event.score;
     }
+    TickBusLab_(_ctx);
     const int score = m_targets.ApplyEvents(events, m_tuning.sandbox) + enemyScore;
     m_player.AddScore(score);
     m_player.OnHitEvents(events);
+    m_slugs.OnHitEvents(events, m_combat.GetHitboxes());
     m_projectiles.OnHitEvents(events, m_combat);
     m_targets.Tick(m_tuning.sandbox);
 
@@ -563,6 +680,28 @@ void SandboxState::RequestSounds_(
     {
         audio.Play(sfx::kPlayerDeath);
     }
+    SlugStats slugTotal;
+    for (const SlugVehicle& slug: m_slugs.GetAll())
+    {
+        const SlugStats& st = slug.GetStats();
+        slugTotal.vulcanShots += st.vulcanShots;
+        slugTotal.cannonShots += st.cannonShots;
+        slugTotal.explosions += st.explosions;
+    }
+    for (int i = m_prevSlugStats.vulcanShots; i < slugTotal.vulcanShots; ++i)
+    {
+        PlayShotSfx(audio, eWeapon::Hmg, i);
+    }
+    for (int i = m_prevSlugStats.cannonShots; i < slugTotal.cannonShots; ++i)
+    {
+        audio.Play(sfx::kBombExplode, 0.8f, 0.05f);
+    }
+    for (int i = m_prevSlugStats.explosions; i < slugTotal.explosions; ++i)
+    {
+        audio.Play(sfx::kExplosion, 1.f, 0.03f);
+    }
+    m_prevSlugStats = slugTotal;
+
     for (const FxRequest& request: _fx)
     {
         if (request.kind == eFxKind::BombExplosion)
@@ -611,6 +750,10 @@ uint64_t SandboxState::HashState() const
     if (m_props.GetCount() > 0)
     {
         hash ^= m_props.HashState() * 1099511628211ull;   // 소품이 없으면 기존 해시와 같다
+    }
+    if (m_slugs.GetCount() > 0)
+    {
+        hash ^= m_slugs.HashState() * 1099511628211ull;   // 차량이 없으면 기존 해시와 같다
     }
     hash ^= static_cast<uint64_t>(m_projectiles.GetBullets().size()) << 8;
     hash ^= static_cast<uint64_t>(m_projectiles.GetBombs().size()) << 16;
@@ -684,6 +827,14 @@ void SandboxState::DrawWorld_(
         m_enemies.Submit(sprites, *pAnims, m_projectiles, _alpha);
     }
 
+    if (pAnims)
+    {
+        for (const SlugVehicle& slug: m_slugs.GetAll())
+        {
+            SubmitSlug(sprites, *pAnims, slug, _alpha);
+        }
+    }
+
     {
         const Vec2 feet = Lerp_(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
         if (m_bRigBound && pAnims)
@@ -705,6 +856,10 @@ void SandboxState::DrawWorld_(
         for (const Bullet& bullet: m_projectiles.GetBullets())
         {
             const Vec2 pos = Lerp_(bullet.renderPrev, bullet.position, _alpha);
+            if (pAnims && IsSlugOwner(bullet.owner) && SubmitSlugBullet(sprites, *pAnims, bullet, pos, 30))
+            {
+                continue;
+            }
             if (bullet.team == eTeam::Player && SubmitPlayerBullet(sprites, pAnims, m_spriteLib, bullet, pos, 30))
             {
                 continue;
@@ -716,6 +871,10 @@ void SandboxState::DrawWorld_(
         for (const Bomb& bomb: m_projectiles.GetBombs())
         {
             const Vec2 pos = Lerp_(bomb.renderPrev, bomb.position, _alpha);
+            if (pAnims && IsSlugOwner(bomb.params.owner) && SubmitSlugShell(sprites, *pAnims, bomb, pos, 31))
+            {
+                continue;
+            }
             if (pAnims)
             {
                 if (const AnimFrame* pFrame = m_bombAnim.GetFrameData(*pAnims))
@@ -774,6 +933,13 @@ void SandboxState::DrawHud_(
     const PlayerController& p        = m_player;
 
     HudModel hud = MakeHudModel(p);
+    if (const SlugVehicle* pRidden = m_slugs.GetRiddenOrNull())
+    {
+        hud.bSlugMode  = true;
+        hud.cannonAmmo = pRidden->GetCannonAmmo();
+        hud.bShowGauge = true;
+        hud.gaugeRatio = pRidden->GetHpRatio();
+    }
     m_ui.DrawHud(_ctx, hud);
 
     if (_ctx.bDebugDraw)

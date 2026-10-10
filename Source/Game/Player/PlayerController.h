@@ -49,6 +49,12 @@ public:
     void AddBombs(int _count);
     void SetVictory();
 
+    // 차량(SV-001) 탑승: 탑승 중에는 입력/물리/피격이 차량 쪽으로 넘어가고 플레이어는 숨는다.
+    void BeginRide();
+    void SetRideFeet(Vec2 _feet, int _facing);
+    void EndRide(Vec2 _feet, Vec2 _velocity, int _facing, int _invincibleTicks);
+    [[nodiscard]] bool IsRiding() const;
+
     void PushFeetX(float _minX);
     void PushFeetXMax(float _maxX);
     void ExtendInvincibility(int _ticks);
@@ -141,6 +147,7 @@ private:
     int              m_moveX           = 0;
     bool             m_bSlashShown     = false;
     bool             m_bThrowShown     = false;
+    bool             m_bRiding         = false;
     Vector<uint32_t> m_pendingRelease  = {};
 
     const Tuning* m_pTuning = nullptr;

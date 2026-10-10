@@ -77,5 +77,8 @@ extern const BehaviorOps kJeepOps;
 extern const BehaviorOps kBTankOps;
 extern const BehaviorOps kMissleTankOps;
 extern const BehaviorOps kSarubiaOps;
+extern const BehaviorOps kBusOps;
+extern const BehaviorOps kHeliOps;
+extern const BehaviorOps kHeliBombOps;
 
 }   // namespace slug

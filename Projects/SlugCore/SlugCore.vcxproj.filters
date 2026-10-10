@@ -93,6 +93,9 @@
     <ClCompile Include="..\..\Source\Game\DemoState.cpp">
       <Filter>Source\Game</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\Bus.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\Game\Enemies\Bzk.cpp">
       <Filter>Source\Game\Enemies</Filter>
     </ClCompile>
@@ -115,6 +118,12 @@
       <Filter>Source\Game\Enemies</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Game\Enemies\Hang.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\Heli.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\HeliBomb.cpp">
       <Filter>Source\Game\Enemies</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Game\Enemies\Pow.cpp">
@@ -154,6 +163,21 @@
       <Filter>Source\Game\Player</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Game\Player\PlayerWeapons.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\SlugClips.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\SlugDef.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\SlugRender.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\SlugSystem.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\SlugVehicle.cpp">
       <Filter>Source\Game\Player</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Game\Props\DecorWorld.cpp">
@@ -326,6 +350,12 @@
     <ClInclude Include="..\..\Source\Game\DemoState.h">
       <Filter>Source\Game</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\BigShiee.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\BigShieeCfg.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyBehaviors.h">
       <Filter>Source\Game\Enemies</Filter>
     </ClInclude>
@@ -366,6 +396,24 @@
       <Filter>Source\Game\Player</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Player\PlayerWeapons.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\SlugClips.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\SlugDef.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\SlugRender.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\SlugSystem.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\SlugTypes.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\SlugVehicle.h">
       <Filter>Source\Game\Player</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Props\DecorWorld.h">

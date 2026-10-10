@@ -25,7 +25,7 @@ struct IntRect
     [[nodiscard]] constexpr bool operator==(const IntRect&) const = default;
 };
 
-[[nodiscard]] IntRect ComputeDestRect(const AnimFrame& _frame, Vec2 _worldOrigin, Vec2 _cameraPos, bool _bFlipX);
+[[nodiscard]] IntRect ComputeDestRect(const AnimFrame& _frame, Vec2 _worldOrigin, Vec2 _cameraPos, bool _bFlipX, bool _bFlipY = false);
 
 // 피격 플래시: 원작은 스프라이트 전체를 밝기 기준 주황 램프로 바꿔 그린다 (Docs/Spec_HitFlash.md, 버스 실측).
 // 아틀라스 페이지마다 램프 변환본 텍스처를 한 벌 더 만들어 두고, flashAmount 가 켜진 프레임은 변환본으로 그린다.
@@ -35,6 +35,7 @@ struct IntRect
 struct SpriteDrawOptions
 {
     bool  bFlipX      = false;
+    bool  bFlipY      = false;                    // 세로 반전 (SV-001 발칸탄처럼 한 사분면만 있는 스프라이트용)
     RGBA  tint        = { 255, 255, 255, 255 };   // 곱셈 색 + 알파
     float flashAmount = 0.f;                      // 0.5 이상이면 플래시 변환본으로 그린다 (0 = 끔)
 };

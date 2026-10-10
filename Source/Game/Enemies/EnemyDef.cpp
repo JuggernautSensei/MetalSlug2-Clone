@@ -28,6 +28,9 @@ const char* GetBehaviorName(
         case eEnemyBehavior::BTank: return "btank";
         case eEnemyBehavior::MissleTank: return "missle_tank";
         case eEnemyBehavior::Sarubia: return "sarubia";
+        case eEnemyBehavior::Bus: return "bus";
+        case eEnemyBehavior::Heli: return "heli";
+        case eEnemyBehavior::HeliBomb: return "heli_bomb";
         case eEnemyBehavior::Count: break;
     }
     return "?";

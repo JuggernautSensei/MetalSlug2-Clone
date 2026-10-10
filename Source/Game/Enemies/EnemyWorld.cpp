@@ -18,6 +18,7 @@ namespace
     constexpr int   kEnemyLayer   = 15;     // 플레이어(20) 뒤, 지면 위
     constexpr int   kOverlayLayer = 16;
     constexpr int   kShotLayer    = 32;   // 기존 탄(30)/폭탄(31) 위
+    constexpr int   kTrailLayer   = 29;   // 투사체 꼬리: 탄 뒤
 
     [[nodiscard]] Vec2 Lerp_(
         const Vec2  _a,
@@ -334,6 +335,11 @@ void EnemyWorld::Tick(
         }
     }
 
+    if (_ctx.pProjectiles && _ctx.pAnims)
+    {
+        SpawnShotTrails_(*_ctx.pProjectiles, *_ctx.pAnims);
+    }
+
     FlushFx_(_ctx.pAnims);
     if (_ctx.pAnims)
     {
@@ -421,6 +427,28 @@ void EnemyWorld::Tick(
     if (!_ctx.pAnims)
     {
         m_pendingFx.clear();
+    }
+}
+
+void EnemyWorld::SpawnShotTrails_(
+    const ProjectileSystem& _projectiles,
+    const AnimationLibrary& _anims)
+{
+    for (const Shot& shot: _projectiles.GetShots())
+    {
+        const int projIndex = static_cast<int>(shot.params.visual) - 1;
+        if (!shot.bAlive || projIndex < 0 || static_cast<size_t>(projIndex) >= m_pLibrary->GetProjectileCount())
+        {
+            continue;
+        }
+        const ProjectileDef& proj = m_pLibrary->GetProjectile(projIndex);
+        if (proj.trailTicks <= 0 || proj.trail.clip.empty() || shot.ageTicks <= shot.params.startDelayTicks || shot.ageTicks % proj.trailTicks != 0)
+        {
+            continue;
+        }
+        const int   facing = shot.velocity.x < 0.f ? -1 : 1;
+        const float sign   = static_cast<float>(facing);
+        m_effects.Spawn(_anims, ResolveSide(proj.trail.clip, facing), { shot.position.x + proj.trail.offset.x * sign, shot.position.y + proj.trail.offset.y }, kTrailLayer);
     }
 }
 

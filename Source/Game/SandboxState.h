@@ -11,6 +11,8 @@
 #include "Game/GameState.h"
 #include "Game/Player/PlayerController.h"
 #include "Game/Player/PlayerRig.h"
+#include "Game/Player/SlugSystem.h"
+#include "Game/Player/SlugTypes.h"
 #include "Game/Props/PropWorld.h"
 #include "Game/Sandbox/Effects.h"
 #include "Game/Sandbox/TrainingTargets.h"
@@ -38,6 +40,13 @@ struct SandboxConfig
     bool             bEnemyLab        = false;
     bool             bVehicleLab      = false;
     bool             bPropLab         = false;
+    bool             bBusLab          = false;   // 버스 중간보스 연습장: 실제 스테이지 좌표, 카메라 락, 사망 후 Stage0_1 지면
+    bool             bHeliLab         = false;
+    bool             bGodMode         = false;   // 랩 전용: 플레이어 무적 (캡처 비교용)
+    bool             bSlugLab         = false;   // sluglab: 평지에 주차된 SV-001 과 표적
+    Vector<Vec2>     slugFeet         = {};      // 시작할 때 놓을 주차 SV-001 발 위치
+    SlugTuning       slugTuning       = {};      // bLoadSlugFile 이 꺼져 있거나 파일이 없을 때 쓰는 값
+    bool             bLoadSlugFile    = true;
 };
 
 class SandboxState final : public IGameState
@@ -65,6 +74,8 @@ public:
     [[nodiscard]] EnemyWorld&             GetEnemies() { return m_enemies; }
     [[nodiscard]] const EnemyWorld&       GetEnemies() const { return m_enemies; }
     [[nodiscard]] const EnemyDefLibrary&  GetEnemyLib() const { return m_enemyLib; }
+    [[nodiscard]] SlugSystem&             GetSlugs() { return m_slugs; }
+    [[nodiscard]] const SlugSystem&       GetSlugs() const { return m_slugs; }
 
     uint32_t AddTarget(eDummyKind _kind, Vec2 _feet, bool _bShooter = false);
 
@@ -83,6 +94,7 @@ private:
     [[nodiscard]] Vec2         GetRespawnFeet_() const;
     [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;
     void                       SpawnDebugEnemy_(int _slot, float _aheadPx = 180.f);
+    void                       TickBusLab_(GameContext& _ctx);
 
     void DrawWorld_(GameContext& _ctx, Vec2 _cameraPos, float _alpha);
     void DrawDebugBoxes_(Renderer& _renderer, Vec2 _cameraPos) const;
@@ -109,9 +121,15 @@ private:
     TrainingTargets  m_targets     = {};
     EnemyDefLibrary  m_enemyLib    = {};
     EnemyWorld       m_enemies { &m_enemyLib };
+    EnemyHandle      m_busHandle     = {};      // buslab: 버스 (파괴 연출이 끝나면 카메라 락을 푼다)
+    bool             m_bBusUnlocked  = false;
     int              m_vehicleCursor = 0;   // 숫자키 9: 다음에 뽑을 차량 번호
     EffectList       m_effects       = {};
     AnimPlayer       m_bombAnim      = {};
+    SlugSystem       m_slugs         = {};
+    SlugTuning       m_slugTuning    = {};
+    Vector<Wall>     m_slugWalls     = {};   // 적이 SV-001 위로 올라타지 못하게 막는 벽
+    SlugStats        m_prevSlugStats = {};
 
     SpriteLibrary m_spriteLib = {};
     int           m_bgHandle  = -1;

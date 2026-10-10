@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "note": "헬기 (Docs/Spec_Helicopter.md). 시트 20642.png 에서 새로 자른 Heli_* 클립 + 원작 영상(V1 3:03-3:14, V2 2:35-2:41) 실측. 원점 = 기체 중심 (centerAnchor). 오프셋 x 는 바라보는 방향이 +, y 는 아래가 +.",
+  "defs": {
+
+    "heli_missile": {
+      "kind": "projectile",
+      "note": "헬기 미사일: 수평 직진 350 px/s (V1 190.8-191.6 s 노즈 위치 실측), 가속 없음. 연기 꼬리는 2틱마다.",
+      "box": { "w": 56, "h": 18 },
+      "speed": 350,
+      "anim": { "fly": { "name": "Heli_Missile_{side}", "frames": 14, "sec": 0.0333333, "loop": true } },
+      "onSolid": "explode",
+      "explosion": { "fx": "Explosion_Mid", "offset": [0, 0] },
+      "trail": { "fx": "Heli_Trail_{side}", "offset": [-22, 0] },
+      "trailSec": 0.0333
+    },
+
+    "heli_bomb": {
+      "kind": "flyer",
+      "behavior": "heli_bomb",
+      "note": "헬기 폭탄: 수직 낙하 (v0 100 px/s, 중력 80 -> 평균 약 130 px/s). 플레이어 총에 맞으면 공중에서 터진다 (V1 185.0 s).",
+      "hp": 1,
+      "score": 0,
+      "centerAnchor": true,
+      "body": { "w": 24, "h": 50, "cx": 0, "cy": 0 },
+      "activation": { "mode": "always" },
+      "physics": { "useGravity": false },
+      "clips": {
+        "fall": { "name": "Heli_Bomb", "frames": 7, "sec": 0.0833333, "loop": true }
+      },
+      "death": {
+        "removeAtSec": 0.2,
+        "fx": [
+          { "clip": "Explosion_Mid", "offset": [0, 10], "layer": 58 }
+        ]
+      },
+      "params": {
+        "startVy": 100,
+        "gravity": 80,
+        "maxFall": 400,
+        "hitSize": [24, 50],
+        "blastSize": [90, 80],
+        "blastSec": 0.13,
+        "blastDamage": 1,
+        "groundProbeY": 25
+      }
+    },
+
+    "heli": {
+      "kind": "flyer",
+      "behavior": "heli",
+      "note": "공격 헬기 (Aparch). 폭격(위 오른쪽 진입 -> 플레이어 위 호버, 0.4 s 마다 폭탄) 6.76 s (진입 포함) -> 포드 전개 -> 오른쪽 아래로 1.17 s 이동 -> 미사일 2발 (2.1 s 간격) -> 복귀.",
+      "ttk": 15,
+      "hp": 150,
+      "score": 1000,
+      "centerAnchor": true,
+      "body": { "w": 150, "h": 80, "cx": 0, "cy": 5 },
+      "activation": { "mode": "always" },
+      "physics": { "useGravity": false },
+      "clips": {
+        "fly":     { "name": "Heli_Fly_{side}",     "frames": 1,  "sec": 1.0 },
+        "turnIn":  { "name": "Heli_TurnIn_{side}",  "frames": 7,  "sec": 0.0833333 },
+        "turnOut": { "name": "Heli_TurnOut_{side}", "frames": 6,  "sec": 0.0833333 },
+        "pod":     { "name": "Heli_Pod_{side}",     "frames": 15, "sec": 0.0333333 },
+        "rotor":   { "name": "Heli_Rotor_3",        "frames": 5,  "sec": 0.0333333, "loop": true },
+        "puff":    { "name": "Heli_Puff_{side}",    "frames": 10, "sec": 0.0333333 }
+      },
+      "weapons": {
+        "missile": { "projectile": "heli_missile", "muzzle": [14, 43], "aim": "facing" }
+      },
+      "death": {
+        "removeAtSec": 0.05,
+        "fx": [
+          { "clip": "Explosion_Large", "offset": [0, 0], "layer": 58 }
+        ]
+      },
+      "params": {
+        "enterSpeedY": 27,
+        "hoverDy": 78,
+        "followDx": 15,
+        "followSpeed": 46,
+        "followDeadzone": 6,
+        "firstBombSec": 1.6,
+        "bombIntervalSec": 0.4,
+        "bombRunSec": 6.76,
+        "bombMuzzle": [-8, 45],
+        "bombMinY": 8,
+        "podOutSec": 0.2,
+        "moveSec": 1.17,
+        "sideMargin": 109,
+        "targetDyPlayer": -22,
+        "targetMinY": 150,
+        "targetMaxY": 300,
+        "missiles": 2,
+        "puffToMissileSec": 0.167,
+        "missileIntervalSec": 2.1,
+        "volleyEndSec": 1.5,
+        "puffOffset": [55, 40],
+        "turnWaitSec": 0.4,
+        "turnDx": 60,
+        "podOffset": [9, 32],
+        "rotorOffset": [18, -50],
+        "bombDef": "heli_bomb"
+      }
+    }
+  }
+}

@@ -22,11 +22,22 @@
 namespace slug
 {
 
+namespace
+{
+    [[nodiscard]] SDL_FlipMode FlipFlags_(
+        const SpriteDrawOptions& _options)
+    {
+        const int flags = (_options.bFlipX ? static_cast<int>(SDL_FLIP_HORIZONTAL) : 0) | (_options.bFlipY ? static_cast<int>(SDL_FLIP_VERTICAL) : 0);
+        return static_cast<SDL_FlipMode>(flags);
+    }
+}   // namespace
+
 IntRect ComputeDestRect(
     const AnimFrame& _frame,
     const Vec2       _worldOrigin,
     const Vec2       _cameraPos,
-    const bool       _bFlipX)
+    const bool       _bFlipX,
+    const bool       _bFlipY)
 {
     const int originX = FloorToInt(_worldOrigin.x - _cameraPos.x);
     const int originY = FloorToInt(_worldOrigin.y - _cameraPos.y);
@@ -34,7 +45,7 @@ IntRect ComputeDestRect(
     IntRect rect;
     rect.w = _frame.w;
     rect.h = _frame.h;
-    rect.y = originY - _frame.pivotY;
+    rect.y = _bFlipY ? originY + _frame.pivotY - _frame.h : originY - _frame.pivotY;
     rect.x = _bFlipX ? originX + _frame.pivotX - _frame.w : originX - _frame.pivotX;
     return rect;
 }
@@ -525,7 +536,7 @@ void SpriteBatch::DrawFrame(
         return;
     }
 
-    const IntRect dest = ComputeDestRect(_frame, _worldOrigin, _cameraPos, _options.bFlipX);
+    const IntRect dest = ComputeDestRect(_frame, _worldOrigin, _cameraPos, _options.bFlipX, _options.bFlipY);
 
     const SDL_FRect src = { static_cast<float>(_frame.x), static_cast<float>(_frame.y), static_cast<float>(_frame.w), static_cast<float>(_frame.h) };
     const SDL_FRect dst = { static_cast<float>(dest.x), static_cast<float>(dest.y), static_cast<float>(dest.w), static_cast<float>(dest.h) };
@@ -533,7 +544,7 @@ void SpriteBatch::DrawFrame(
     SDL_Texture* const pDraw = PickTexture_(page.pTexture, page.pFlashTexture, _options.flashAmount);
     SDL_SetTextureColorMod(pDraw, _options.tint.r, _options.tint.g, _options.tint.b);
     SDL_SetTextureAlphaMod(pDraw, _options.tint.a);
-    SDL_RenderTextureRotated(m_pRenderer, pDraw, &src, &dst, 0.0, nullptr, _options.bFlipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+    SDL_RenderTextureRotated(m_pRenderer, pDraw, &src, &dst, 0.0, nullptr, FlipFlags_(_options));
 }
 
 void SpriteBatch::DrawFrame(
@@ -567,7 +578,7 @@ void SpriteBatch::DrawFrameRect(
     SDL_Texture* const pDraw = PickTexture_(page.pTexture, page.pFlashTexture, _options.flashAmount);
     SDL_SetTextureColorMod(pDraw, _options.tint.r, _options.tint.g, _options.tint.b);
     SDL_SetTextureAlphaMod(pDraw, _options.tint.a);
-    SDL_RenderTextureRotated(m_pRenderer, pDraw, &src, &dst, 0.0, nullptr, _options.bFlipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+    SDL_RenderTextureRotated(m_pRenderer, pDraw, &src, &dst, 0.0, nullptr, FlipFlags_(_options));
 }
 
 void SpriteBatch::Submit(

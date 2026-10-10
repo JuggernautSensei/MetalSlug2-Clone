@@ -18,6 +18,9 @@ const BehaviorOps& GetBehaviorOps(
         case eEnemyBehavior::BTank: return kBTankOps;
         case eEnemyBehavior::MissleTank: return kMissleTankOps;
         case eEnemyBehavior::Sarubia: return kSarubiaOps;
+        case eEnemyBehavior::Bus: return kBusOps;
+        case eEnemyBehavior::Heli: return kHeliOps;
+        case eEnemyBehavior::HeliBomb: return kHeliBombOps;
         case eEnemyBehavior::Count: break;
     }
 

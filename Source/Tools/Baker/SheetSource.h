@@ -81,6 +81,7 @@ struct SheetClipSpec
     bool              bHasAnchor   = false;   // anchor: 첫 프레임 트림 좌표계의 엔티티 원점 (x,y)
     int               anchorX      = 0;
     int               anchorY      = 0;
+    Vector<Pivot>     origins      = {};   // origins: 프레임별 엔티티 원점 (시트 1x 좌표, frames 와 같은 순서). 있으면 정렬/피벗 규칙 대신 이 점이 피벗이다
 };
 
 struct SheetSpec
@@ -311,6 +312,7 @@ struct SheetRegisterOpts
     bool              bHasAnchor  = false;   // 공통 원점을 첫 프레임 트림 좌표 (anchorX, anchorY) 로 고정
     int               anchorX     = 0;
     int               anchorY     = 0;
+    Vector<Pivot>     origins     = {};   // 프레임별 원점 (시트 1x 좌표). 비어 있지 않으면 정렬을 끄고 이 점을 피벗으로 쓴다
 };
 
 struct SheetRegStats
@@ -637,7 +639,7 @@ inline void RegisterSheetFrames(
         cells.push_back(std::move(cell));
     }
 
-    const bool   bRegistering = _reg.bEnabled && nonEmpty >= 2;
+    const bool   bRegistering = _reg.bEnabled && _reg.origins.empty() && nonEmpty >= 2;
     const int    scale        = std::max(1, _scale);
     const int    range        = std::max(0, _reg.searchRange) * scale;
     const size_t n            = cells.size();
@@ -654,8 +656,14 @@ inline void RegisterSheetFrames(
             continue;
         }
         trimmed[i]   = CropImage(c.crop, c.bounds);
-        const int ax = c.crop.width / 2;
-        const int ay = (bRegistering || _pivot == eSheetPivot::Center) ? c.crop.height / 2 : c.crop.height;
+        int       ax = c.crop.width / 2;
+        int       ay = (bRegistering || _pivot == eSheetPivot::Center) ? c.crop.height / 2 : c.crop.height;
+        if (i < _reg.origins.size())
+        {
+            // 명시 원점: 사각형 좌상단 기준 시트 px 를 확대 배율로 환산한다
+            ax = (_reg.origins[i].x - _rects[i].x) * _scale;
+            ay = (_reg.origins[i].y - _rects[i].y) * _scale;
+        }
         tx[i]        = c.bounds.x - ax;
         ty[i]        = c.bounds.y - ay;
     }

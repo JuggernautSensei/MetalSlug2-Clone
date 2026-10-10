@@ -123,6 +123,7 @@ void PlayerController::Reset(
     m_moveX           = 0;
     m_bSlashShown     = false;
     m_bThrowShown     = false;
+    m_bRiding         = false;
     m_pendingRelease.clear();
 }
 
@@ -238,6 +239,16 @@ void PlayerController::Tick(
     m_bSlashShown = false;
     m_bThrowShown = false;
     TickWeapon(m_weapon);
+
+    if (m_bRiding)
+    {
+        // 차량 탑승 중: 입력/전투는 SlugVehicle 이 맡는다. 플레이어는 숨고 피격 상자도 내지 않는다.
+        if (m_invincibleTicks > 0)
+        {
+            --m_invincibleTicks;
+        }
+        return;
+    }
 
     if (m_state == ePlayerState::Dead)
     {
@@ -718,6 +729,10 @@ RigState PlayerController::MakeRigState() const
     rig.bAirFromJump  = m_bAirFromJump;
     rig.stateSerial   = m_stateSerial;
 
+    if (m_bRiding)
+    {
+        rig.bVisible = false;
+    }
     if (m_pTuning)
     {
         switch (m_overlay)
@@ -729,7 +744,7 @@ RigState PlayerController::MakeRigState() const
         }
 
         const int period = Max(1, m_pTuning->player.blinkPeriodTicks);
-        if (m_invincibleTicks > 0 && m_state != ePlayerState::Victory)
+        if (m_invincibleTicks > 0 && m_state != ePlayerState::Victory && !m_bRiding)
         {
             rig.bVisible = ((m_invincibleTicks / period) % 2) == 1;
         }
@@ -760,6 +775,70 @@ uint64_t PlayerController::HashState() const
     HashBytes_(hash, m_stats.jumps);
     HashBytes_(hash, m_stats.deaths);
     return hash;
+}
+
+void PlayerController::BeginRide()
+{
+    if (m_state == ePlayerState::Dead || m_state == ePlayerState::Victory)
+    {
+        return;
+    }
+    m_bRiding = true;
+    ++m_stateSerial;
+    m_overlay       = eOverlay::None;
+    m_shotTicksLeft = 0;
+    m_burstLeft     = 0;
+    m_burstTimer    = 0;
+    m_throwTick     = -1;
+    m_idleTicks     = 0;
+    m_body.velocity = { 0.f, 0.f };
+    if (m_knifeTick >= 0)
+    {
+        m_pendingRelease.push_back(m_knifeHitId);
+        m_knifeTick = -1;
+    }
+}
+
+void PlayerController::SetRideFeet(
+    const Vec2 _feet,
+    const int  _facing)
+{
+    m_body.position = _feet;
+    m_prevFeet      = _feet;
+    m_facing        = _facing < 0 ? -1 : 1;
+}
+
+void PlayerController::EndRide(
+    const Vec2 _feet,
+    const Vec2 _velocity,
+    const int  _facing,
+    const int  _invincibleTicks)
+{
+    if (!m_bRiding)
+    {
+        return;
+    }
+    m_bRiding          = false;
+    m_body.position    = _feet;
+    m_body.velocity    = _velocity;
+    m_body.bGrounded   = false;
+    m_body.size        = m_pTuning ? m_pTuning->body.standSize : m_body.size;
+    m_prevFeet         = _feet;
+    m_facing           = _facing < 0 ? -1 : 1;
+    m_state            = ePlayerState::Jump;
+    m_pose             = ePose::Air;
+    m_airTicks         = 1;
+    m_bCoyoteAvailable = false;
+    m_bJumping         = true;
+    m_bAirFromJump     = true;
+    m_idleTicks        = 0;
+    ++m_stateSerial;
+    ExtendInvincibility(_invincibleTicks);
+}
+
+bool PlayerController::IsRiding() const
+{
+    return m_bRiding;
 }
 
 void PlayerController::PushFeetXMax(

@@ -74,5 +74,8 @@ void ParseJeepCfg(DefReader& _reader, EnemyDef& _def);
 void ParseBTankCfg(DefReader& _reader, EnemyDef& _def);
 void ParseMissleTankCfg(DefReader& _reader, EnemyDef& _def);
 void ParseSarubiaCfg(DefReader& _reader, EnemyDef& _def);
+void ParseBusCfg(DefReader& _reader, EnemyDef& _def);
+void ParseHeliCfg(DefReader& _reader, EnemyDef& _def);
+void ParseHeliBombCfg(DefReader& _reader, EnemyDef& _def);
 
 }   // namespace slug

@@ -27,6 +27,13 @@ struct UiLayout
     int infiniteCenterDX = 38;    // 패널 기준 무한대 기호 중심
     int infiniteCenterDY = 25;
 
+    int gaugeX       = 24;   // 슬러그 게이지 프레임 왼쪽 위 (PlayerHPUI 106x16)
+    int gaugeY       = 20;
+    int gaugeInnerX  = 4;
+    int gaugeInnerY  = 4;
+    int gaugeInnerW  = 94;
+    int gaugeInnerH  = 8;
+
     int timerCenterX = 320;
     int timerTopY    = 8;
 

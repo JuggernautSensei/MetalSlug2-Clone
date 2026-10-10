@@ -39,8 +39,12 @@
 
 - 2-1 초반 NPC 연출: 꼬마가 플레이어 옆에 없음, 노인 등장 타이밍/팔 벌리는 동작 누락.
 - 2-3 적 배치 전면 재작성: `Docs/VideoTimeline.md` 기준으로 `Assets/Stage/Stage0.json` 재구성 (현재 원작보다 많음, 초반 트럭 위 병사 등).
-- 3-1 버스, 3-2 헬기, 3-3 배틀쉽, 3-4 메탈슬러그 SV-001: 작업을 시작했으나 토큰 한도로 중단. 진행분은 `WIP/*.patch` 로 보관 (빌드 미포함, `WIP/README.md`).
-  시트: 버스 33825, 헬기 20642, 배틀쉽 40204, SV-001 32522 (`Assets/Source`). 설계 규칙은 RemakePlan 3단계 참고.
+- 3-1~3-4 (WIP 패치 4종은 빌드에 통합됨, `WIP/` 삭제). 모두 컴파일/베이크/테스트(776) 통과하지만 설계는 미완성이며 `Assets/Stage/Stage0.json` 에는 배치하지 않았다.
+  - 버스 (시트 33825): `Assets/Defs/Bus.json`, `Enemies/Bus.cpp`, `eEnemyBehavior::Bus`, `BusCfg`. `buslab` 은 실제 스테이지 좌표/카메라 락으로 실행된다 (버스는 화면 오른쪽 밖에서 시작). 남음: 개방/계단/폭탄 연출 시각 검증, 파괴 후 카메라 락 해제, 스테이지 배치.
+  - 헬기 (시트 20642): `Assets/Defs/Helicopter.json`, `Heli.cpp`, `HeliBomb.cpp`, `HeliCfg`/`HeliBombCfg`. `helilab`/`helilab_god` 은 헬기가 진입해 폭격한다. 남음: 포드/미사일 일제 사격과 선회 타이밍 검증, 원작 미관측 가정값 확정, 스테이지 배치.
+  - 배틀쉽 (시트 40204): `BigShiee.h`, `BigShieeCfg.h`, `Scripts/GenBossSheet.py`, sheets.json 항목만 있다 (헤더 포함, .cpp/def/랩 없음, `bosslab` 상태 없음). 남음: 전체 구현.
+  - SV-001 (시트 32522, SlugIn/SlugOut): `Source/Game/Player/Slug*`, HUD, `SpriteBatch` 확장. `sluglab` 은 평지에 주차된 SV-001 2대와 표적으로 실행된다. 남음: 탑승/하차/무기/피격 전반 검증, 스테이지 연동.
+  - Baker 의 `origins` 는 버스와 SV-001 이 각각 구현했고 버스 쪽(`Pivot`) 으로 통일했다.
 - 확인 필요: HMG 버스트 발수(4), 권총 연타 최소 간격(5틱), 파이어샷 속도/사거리(영상에 장면 없음).
 - 스타일 가이드 기준 공개 이름 변경 보류분: `IStageHost::PlayerAlive`→`IsPlayerAlive`, `PlayerFeet`→`GetPlayerFeet`,
   `StageWorldHost::GetActiveGroundMut`→`ModifyActiveGround`, `eOrigin`/`ePositionMode` 통합.

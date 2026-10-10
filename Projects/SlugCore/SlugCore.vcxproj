@@ -108,6 +108,7 @@
     <ClCompile Include="..\..\Source\Game\Combat\CombatSystem.cpp" />
     <ClCompile Include="..\..\Source\Game\Combat\Projectiles.cpp" />
     <ClCompile Include="..\..\Source\Game\DemoState.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\Bus.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\Bzk.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\EnemyBehaviors.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\EnemyCommon.cpp" />
@@ -116,6 +117,8 @@
     <ClCompile Include="..\..\Source\Game\Enemies\EnemyWorld.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\FlyingBzk.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\Hang.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\Heli.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\HeliBomb.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\Pow.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\Shielder.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\Soldier.cpp" />
@@ -129,6 +132,11 @@
     <ClCompile Include="..\..\Source\Game\Player\PlayerInput.cpp" />
     <ClCompile Include="..\..\Source\Game\Player\PlayerRig.cpp" />
     <ClCompile Include="..\..\Source\Game\Player\PlayerWeapons.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\SlugClips.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\SlugDef.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\SlugRender.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\SlugSystem.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\SlugVehicle.cpp" />
     <ClCompile Include="..\..\Source\Game\Props\DecorWorld.cpp" />
     <ClCompile Include="..\..\Source\Game\Props\ItemWorld.cpp" />
     <ClCompile Include="..\..\Source\Game\Props\PropDef.cpp" />
@@ -187,6 +195,8 @@
     <ClInclude Include="..\..\Source\Game\Combat\HitFlash.h" />
     <ClInclude Include="..\..\Source\Game\Combat\Projectiles.h" />
     <ClInclude Include="..\..\Source\Game\DemoState.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\BigShiee.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\BigShieeCfg.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyBehaviors.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyCommon.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyDef.h" />
@@ -201,6 +211,12 @@
     <ClInclude Include="..\..\Source\Game\Player\PlayerRig.h" />
     <ClInclude Include="..\..\Source\Game\Player\PlayerTypes.h" />
     <ClInclude Include="..\..\Source\Game\Player\PlayerWeapons.h" />
+    <ClInclude Include="..\..\Source\Game\Player\SlugClips.h" />
+    <ClInclude Include="..\..\Source\Game\Player\SlugDef.h" />
+    <ClInclude Include="..\..\Source\Game\Player\SlugRender.h" />
+    <ClInclude Include="..\..\Source\Game\Player\SlugSystem.h" />
+    <ClInclude Include="..\..\Source\Game\Player\SlugTypes.h" />
+    <ClInclude Include="..\..\Source\Game\Player\SlugVehicle.h" />
     <ClInclude Include="..\..\Source\Game\Props\DecorWorld.h" />
     <ClInclude Include="..\..\Source\Game\Props\ItemWorld.h" />
     <ClInclude Include="..\..\Source\Game\Props\PropDef.h" />

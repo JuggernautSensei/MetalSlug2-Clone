@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "note": "더블데커 버스 중간보스 (Docs/Spec_Bus.md, 시트 33825, RemakePlan 3-1). 원점 = 바퀴 바닥 중앙. 시각 연출은 baked Bus_* 클립을 Bus.cpp 가 직접 고른다.",
+  "defs": {
+
+    "bus_bomb": {
+      "kind": "projectile",
+      "note": "버스 위층 병사가 던지는 폭탄 (Spec_Bus 5절): 원작은 플레이어를 조준하지 않고 버스 앞 고정 지점(앵커 왼쪽 약 144 px)에 포물선으로 떨어진다. 약 2.6 s 비행.",
+      "box": { "w": 20, "h": 20 },
+      "v0": [87, -205],
+      "gravity": 200,
+      "maxFall": 3000,
+      "lifetime": 8,
+      "anim": { "fly": { "name": "Soldier_Bomb", "frames": 16, "sec": 0.07, "loop": true } },
+      "onSolid": "explode",
+      "explosion": { "fx": "Explosion_Mid", "offset": [0, -20] }
+    },
+
+    "bus": {
+      "kind": "boss",
+      "behavior": "bus",
+      "note": "HP 160 = 원작 V1 의 HMG 82 발 x 피해 2 (탄수 547 -> 465, 점수 +8200 = 명중당 100점). 락 후 개방 -> 계단 -> 7 단계 파손 -> 대폭발 -> 잔해.",
+      "hp": 160,
+      "score": 8200,
+      "hitFlash": true,
+      "noDespawn": true,
+      "body": { "w": 200, "h": 250, "cx": 0, "cy": -125 },
+      "hurtbox": { "w": 200, "h": 250, "cx": 0, "cy": -125 },
+      "solid": { "w": 170, "h": 150, "cx": 0, "cy": -75 },
+      "activation": { "marginPx": 100000, "latch": true },
+      "physics": { "useGravity": false },
+      "weapons": {
+        "bomb": { "projectile": "bus_bomb", "muzzle": [-80, -186], "aim": "facing" }
+      },
+      "params": {
+        "lockScreenX": 489,
+        "lockSlackPx": 2,
+        "openDelaySec": 0.1667,
+        "stairsDelaySec": 0.7667,
+        "stageHp": [112, 100, 85, 62, 48, 34, 24],
+        "bombStage": 3,
+        "bombDelaySec": 0.6,
+        "wreckAfterSec": 0.1,
+        "destroyDoneSec": 1.0
+      }
+    }
+  }
+}

@@ -261,6 +261,27 @@ namespace
             }
             _out.bHasAnchor = true;
         }
+        if (yyjson_val* origins = yyjson_obj_get(_pClip, "origins"))
+        {
+            if (!yyjson_is_arr(origins) || yyjson_arr_size(origins) != _out.frames.size())
+            {
+                _error = "clip '" + _out.name + "': origins must be an array with one [x,y] per frame";
+                return false;
+            }
+            size_t      idx = 0;
+            size_t      max = 0;
+            yyjson_val* o   = nullptr;
+            yyjson_arr_foreach(origins, idx, max, o)
+            {
+                Pivot point;
+                if (!ReadPoint_(o, point.x, point.y))
+                {
+                    _error = "clip '" + _out.name + "': origin must be [x,y]";
+                    return false;
+                }
+                _out.origins.push_back(point);
+            }
+        }
         if (!OptInt_(_pClip, "searchRange", _out.searchRange) || _out.searchRange < 0 || _out.searchRange > 200)
         {
             _error = "clip '" + _out.name + "': searchRange must be an integer 0..200";
@@ -748,6 +769,7 @@ slug::Result<void> AppendSheetClips(
             reg.bHasAnchor  = clip.bHasAnchor;
             reg.anchorX     = clip.anchorX;
             reg.anchorY     = clip.anchorY;
+            reg.origins     = clip.origins;
 
             for (const Variant& v: variants)
             {

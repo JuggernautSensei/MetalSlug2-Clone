@@ -24,6 +24,9 @@ enum class eEnemyBehavior : uint8_t
     BTank,
     MissleTank,
     Sarubia,
+    Bus,
+    Heli,
+    HeliBomb,
     Count
 };
 
@@ -113,6 +116,8 @@ struct ProjectileDef
     ClipDef begin           = {};
     ClipDef fly             = {};
     FxDef   explosion       = {};
+    FxDef   trail           = {};   // 비행 중 주기적으로 남기는 꼬리 연출 (clip 이 비면 없음)
+    int     trailTicks      = 0;    // 꼬리 생성 간격 (틱, 0 = 없음)
     float   rollSpeed       = 0.f;
     float   rollSec         = 0.f;
     bool    bExpireFx       = false;
@@ -472,6 +477,83 @@ struct SarubiaCfg
     int weaponGrenade = -1;
 };
 
+// 더블데커 버스 중간보스 (Docs/Spec_Bus.md). 시각 연출은 baked 클립 (Bus_*) 을 코드가 직접 고른다. 여기에는 시간/체력 단계 값만 둔다.
+struct BusCfg
+{
+    static constexpr int kStageCount = 7;   // HP 단계 수 (창 파손/폭발 묶음/차체 교체)
+
+    float lockScreenX      = 489.f;   // 카메라가 멈췄을 때 화면 왼쪽 끝에서 버스 앵커까지 거리 (게임 px). 이 거리 이하가 되면 락으로 본다
+    float lockSlackPx      = 2.f;
+    int   openDelayTicks   = 10;    // 락 후 개방 시작까지 (원작 0.17 s)
+    int   stairsDelayTicks = 46;    // 개방 시작 후 계단이 펼쳐지기까지
+    int   bombStage        = 3;     // 이 단계에 들어간 뒤 폭탄을 던진다
+    int   bombDelayTicks   = 36;
+    int   wreckAfterTicks  = 6;     // 사망 후 차체 -> 잔해 교체 (폭발 흰 원이 가리는 동안)
+    int   destroyDoneTicks = 60;    // 사망 후 파괴 연출 종료 (카메라 락 해제 시점, 원작 약 1.0 s)
+
+    ARRAY<int, kStageCount> stageHp = { 112, 100, 85, 62, 48, 34, 24 };   // 체력이 이 값 이하가 되면 해당 단계 진입
+
+    int weaponBomb = -1;
+};
+
+// 헬기 (Docs/Spec_Helicopter.md). 위치는 전부 기체 중심, 카메라(화면) 기준 px, 시간은 틱.
+struct HeliCfg
+{
+    // 폭격 (진입 포함): 위 오른쪽에서 내려와 플레이어 위에 떠서 폭탄을 떨어뜨린다
+    float enterSpeedY       = 27.f;    // 호버 높이까지 내려오는 속도 px/s
+    float hoverDy           = 78.f;    // 호버 높이: 카메라 윗변 + 이 값
+    float followDx          = 15.f;    // 플레이어 x + 이 값을 따라간다
+    float followSpeed       = 46.f;    // 따라가는 가로 속도 px/s
+    float followDeadzone    = 6.f;
+    int   firstBombTicks    = 54;      // 폭격 시작 후 첫 폭탄까지
+    int   bombIntervalTicks = 24;
+    int   bombRunTicks      = 366;     // 한 번의 폭격 지속 (진입 포함)
+    Vec2  bombMuzzle        = { -8.f, 45.f };   // 투하 위치 (x 는 바라보는 방향이 +)
+    float bombMinY          = 8.f;     // 기체 중심이 카메라 윗변 + 이 값보다 위면 투하하지 않는다
+
+    // 포드 전개 → 오른쪽 아래로 이동 → 미사일 일제 사격 → 복귀
+    int              podOutTicks      = 12;       // 포드 전개 시작 후 이동 시작까지
+    int              moveTicks        = 70;       // 이동 시간 (이동 곡선 전체)
+    float            sideMargin       = 109.f;    // 이동 목표 x: 바라보는 반대쪽 화면 가장자리에서 이만큼
+    float            targetDyPlayer   = -22.f;    // 이동 목표 y: 플레이어 중심 y + 이 값
+    float            targetMinY       = 150.f;    // 목표 y 하한/상한 (카메라 윗변 기준)
+    float            targetMaxY       = 300.f;
+    ARRAY<float, 13> xCurve           = { 0.f, 0.02f, 0.10f, 0.22f, 0.35f, 0.48f, 0.61f, 0.72f, 0.81f, 0.89f, 0.95f, 0.99f, 1.f };
+    ARRAY<float, 13> yCurve           = { 0.f, 0.01f, 0.05f, 0.12f, 0.22f, 0.32f, 0.43f, 0.54f, 0.65f, 0.76f, 0.87f, 0.95f, 1.f };
+    int              missiles         = 2;        // 한 번의 일제 사격 미사일 수
+    int              puffToMissile    = 10;       // 발사 연기 → 미사일 등장
+    int              missileInterval  = 126;      // 발사 연기 사이 간격
+    int              volleyEndTicks   = 90;       // 마지막 발사 연기 후 복귀까지 (원작 미관측: 가정값)
+    Vec2             puffOffset       = { 55.f, 40.f };    // 발사 연기 위치 (x 는 바라보는 방향이 +)
+    int              turnWaitTicks    = 24;       // 플레이어가 반대쪽에 이만큼 머물면 선회 (원작 미관측: 가정값)
+    float            turnDx           = 60.f;     // 반대쪽 판정 가로 거리
+    Vec2             podOffset        = { 9.f, 32.f };      // 포드 위치 (x 는 바라보는 방향이 +)
+    Vec2             rotorOffset      = { 18.f, -50.f };    // 로터 위치 (x 는 바라보는 방향이 +)
+
+    int    clipFly       = -1;
+    int    clipTurnIn    = -1;
+    int    clipTurnOut   = -1;
+    int    clipPod       = -1;
+    int    clipRotor     = -1;
+    int    clipPuff      = -1;
+    int    weaponMissile = -1;
+    String bombDef       = {};
+};
+
+// 헬기 폭탄: 수직 낙하, 플레이어 총에 맞으면 공중에서 터진다 (원작: 플레이어 총알에 파괴됨)
+struct HeliBombCfg
+{
+    float startVy      = 100.f;            // 투하 직후 낙하 속도 px/s
+    float gravity      = 80.f;
+    float maxFall      = 400.f;
+    Vec2  hitSize      = { 24.f, 50.f };   // 비행 중 플레이어 접촉 상자
+    Vec2  blastSize    = { 90.f, 80.f };   // 폭발 상자
+    int   blastTicks   = 8;
+    int   blastDamage  = 1;
+    float groundProbeY = 25.f;             // 중심 아래 이 px 지점이 지면에 닿으면 터진다
+    int   clipFall     = -1;
+};
+
 // 피격 플래시 타이밍은 Game/Combat/HitFlash.h (피격당 ON 펄스 1회, Docs/Spec_HitFlash.md).
 inline constexpr int kHitFlashMinHp       = 20;   // 기본 대상: hp >= 20 (차량/보스). 생략 시 이 기준, JSON "hitFlash" 로 덮어쓴다
 inline constexpr int kEnemyFlashPartCount = 8;    // 부위별 플래시 타이머 수 (Enemy::partFlashTicks)
@@ -508,6 +590,9 @@ struct EnemyDef
     BTankCfg      btank      = {};
     MissleTankCfg missleTank = {};
     SarubiaCfg    sarubia    = {};
+    BusCfg        bus        = {};
+    HeliCfg       heli       = {};
+    HeliBombCfg   heliBomb   = {};
 
     bool bNoDespawn = false;
 

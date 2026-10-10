@@ -149,6 +149,7 @@ private:
     void BeginDying_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
     void RemoveGone_();
     void FlushFx_(const AnimationLibrary* _pAnims);
+    void SpawnShotTrails_(const ProjectileSystem& _projectiles, const AnimationLibrary& _anims);
 
     const EnemyDefLibrary* m_pLibrary       = nullptr;
     const SpriteLibrary*   m_pSprites       = nullptr;
