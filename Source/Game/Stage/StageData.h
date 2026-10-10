@@ -1,14 +1,14 @@
 ﻿#pragma once
 #include <cstdint>
 
+#include "Base/Math.h"
 #include "Base/Result.h"
 #include "Base/Types.h"
-#include "Base/Math.h"
-
 #include "World/Geometry.h"
 
 namespace slug
 {
+
 class ParamValue
 {
 public:
@@ -24,37 +24,54 @@ public:
 
     [[nodiscard]] static ParamValue MakeBool(bool _bValue);
     [[nodiscard]] static ParamValue MakeNumber(double _value);
-    [[nodiscard]] static ParamValue MakeString(slug::String _value);
+    [[nodiscard]] static ParamValue MakeString(String _value);
     [[nodiscard]] static ParamValue MakeArray();
     [[nodiscard]] static ParamValue MakeObject();
 
     void PushBack(ParamValue _value);
-    void Set(slug::String _key, ParamValue _value);
+    void Set(String _key, ParamValue _value);
 
-    [[nodiscard]] eType GetType() const { return m_type; }
-    [[nodiscard]] bool  IsNull() const { return m_type == eType::Null; }
-    [[nodiscard]] bool  IsBool() const { return m_type == eType::Bool; }
-    [[nodiscard]] bool  IsNumber() const { return m_type == eType::Number; }
-    [[nodiscard]] bool  IsString() const { return m_type == eType::String; }
-    [[nodiscard]] bool  IsArray() const { return m_type == eType::Array; }
-    [[nodiscard]] bool  IsObject() const { return m_type == eType::Object; }
+    [[nodiscard]] eType GetType() const;
+    [[nodiscard]] bool  IsNull() const;
+    [[nodiscard]] bool  IsBool() const;
+    [[nodiscard]] bool  IsNumber() const;
+    [[nodiscard]] bool  IsString() const;
+    [[nodiscard]] bool  IsArray() const;
+    [[nodiscard]] bool  IsObject() const;
 
-    [[nodiscard]] bool                AsBool(bool _bDefault = false) const;
-    [[nodiscard]] float               AsFloat(float _default = 0.f) const;
-    [[nodiscard]] int                 AsInt(int _default = 0) const;
-    [[nodiscard]] const slug::String& AsString() const;
+    [[nodiscard]] bool AsBool(
+        bool _bDefault = false) const;
 
-    [[nodiscard]] size_t                         GetSize() const;
-    [[nodiscard]] const ParamValue&              At(size_t _index) const;
-    [[nodiscard]] slug::Span<const slug::String> GetKeys() const { return m_keys; }
+    [[nodiscard]] float AsFloat(
+        float _default = 0.f) const;
 
-    [[nodiscard]] const ParamValue* Find(slug::StringView _key) const;
-    [[nodiscard]] bool              Has(const slug::StringView _key) const { return Find(_key) != nullptr; }
+    [[nodiscard]] int AsInt(
+        int _default = 0) const;
 
-    [[nodiscard]] bool         GetBool(slug::StringView _key, bool _bDefault = false) const;
-    [[nodiscard]] int          GetInt(slug::StringView _key, int _default = 0) const;
-    [[nodiscard]] slug::String GetString(slug::StringView _key, slug::StringView _default = {}) const;
-    [[nodiscard]] Vec2         GetVec2(slug::StringView _key, Vec2 _default = { 0.f, 0.f }) const;
+    [[nodiscard]] const String& AsString() const;
+
+    [[nodiscard]] size_t             GetSize() const;
+    [[nodiscard]] const ParamValue&  At(size_t _index) const;
+    [[nodiscard]] Span<const String> GetKeys() const;
+
+    [[nodiscard]] const ParamValue* Find(StringView _key) const;
+    [[nodiscard]] bool              Has(StringView _key) const;
+
+    [[nodiscard]] bool GetBool(
+        StringView _key,
+        bool       _bDefault = false) const;
+
+    [[nodiscard]] int GetInt(
+        StringView _key,
+        int        _default = 0) const;
+
+    [[nodiscard]] String GetString(
+        StringView _key,
+        StringView _default = {}) const;
+
+    [[nodiscard]] Vec2 GetVec2(
+        StringView _key,
+        Vec2       _default = { 0.f, 0.f }) const;
 
     [[nodiscard]] bool TryGetVec2(Vec2& _out) const;
 
@@ -62,12 +79,12 @@ public:
     [[nodiscard]] static const ParamValue& NullValue();
 
 private:
-    eType                      m_type   = eType::Null;
-    bool                       m_bValue = false;
-    double                     m_number = 0.0;
-    slug::String               m_string = {};
-    slug::Vector<ParamValue>   m_items  = {};
-    slug::Vector<slug::String> m_keys   = {};
+    eType              m_type   = eType::Null;
+    bool               m_bValue = false;
+    double             m_number = 0.0;
+    String             m_string = {};
+    Vector<ParamValue> m_items  = {};
+    Vector<String>     m_keys   = {};
 };
 
 enum class eEntityKind : uint8_t
@@ -173,7 +190,7 @@ struct CameraAnchor
     eAnchorY ay    = eAnchorY::Top;
     float    dy    = 0.f;
 
-    [[nodiscard]] bool IsRandomX() const { return dxMax != dxMin; }
+    [[nodiscard]] bool IsRandomX() const;
 };
 
 struct RepeatSpec
@@ -193,9 +210,9 @@ inline constexpr float kDefaultCullMargin = 200.f;
 
 struct SpawnSpec
 {
-    eEntityKind  kind = eEntityKind::Enemy;
-    slug::String def  = {};
-    slug::String id   = {};
+    eEntityKind kind = eEntityKind::Enemy;
+    String      def  = {};
+    String      id   = {};
 
     bool         bHasX      = false;
     bool         bHasY      = false;
@@ -214,25 +231,25 @@ struct SpawnSpec
     bool       bHasRepeat = false;
     RepeatSpec repeat     = {};
 
-    int          facing     = 0;   // -1 왼쪽, +1 오른쪽, 0 = def 기본
-    bool         bHasHp     = false;
-    int          hp         = 0;
-    slug::String drop       = {};
-    bool         bHasAmbush = false;
-    AmbushSpec   ambush     = {};
-    bool         bHasLayer  = false;
-    eStageLayer  layer      = eStageLayer::Monster;
-    float        cullMargin = kDefaultCullMargin;
+    int         facing     = 0;   // -1 왼쪽, +1 오른쪽, 0 = def 기본
+    bool        bHasHp     = false;
+    int         hp         = 0;
+    String      drop       = {};
+    bool        bHasAmbush = false;
+    AmbushSpec  ambush     = {};
+    bool        bHasLayer  = false;
+    eStageLayer layer      = eStageLayer::Monster;
+    float       cullMargin = kDefaultCullMargin;
 
     Vec2            size           = { 0.f, 0.f };
     eCollisionLayer collisionLayer = eCollisionLayer::Wall;
 
-    slug::String anim   = {};
-    slug::String sprite = {};
+    String anim   = {};
+    String sprite = {};
 
     ParamValue params = ParamValue::MakeObject();
 
-    [[nodiscard]] int GetCount() const { return bHasRepeat ? repeat.count : 1; }
+    [[nodiscard]] int GetCount() const;
 };
 
 struct WaveEntry
@@ -245,9 +262,9 @@ struct WaveEntry
 
 struct RectRef
 {
-    bool         bCurrent = false;
-    Aabb         rect     = {};
-    slug::String name     = {};
+    bool   bCurrent = false;
+    Aabb   rect     = {};
+    String name     = {};
 };
 
 struct StageAction
@@ -256,8 +273,8 @@ struct StageAction
     float       delay = 0.f;   // 초
     eWhen       when  = eWhen::Normal;
 
-    SpawnSpec               spawn       = {};
-    slug::Vector<WaveEntry> waveEntries = {};
+    SpawnSpec         spawn       = {};
+    Vector<WaveEntry> waveEntries = {};
 
     RectRef rect       = {};
     float   glide      = 0.f;   // LockCamera: 초
@@ -267,60 +284,60 @@ struct StageAction
     float seconds = 0.f;
     Vec2  offset  = { 0.f, 0.f };   // SetCameraOffset
 
-    slug::String text    = {};
-    slug::String mode    = {};
-    slug::String name    = {};
-    slug::String target  = {};
-    slug::String command = {};
-    slug::String next    = {};
-    bool         bLoop   = true;
+    String text    = {};
+    String mode    = {};
+    String name    = {};
+    String target  = {};
+    String command = {};
+    String next    = {};
+    bool   bLoop   = true;
 
     bool     bClearWaves = false;
     uint32_t clearLayers = 0;   // LayerBit 마스크
 
     eFadeTarget fadeTo = eFadeTarget::Black;
 
-    slug::String               gateId           = {};
-    slug::Vector<slug::String> waitFor          = {};
-    eGateUntil                 until            = eGateUntil::Defeated;
-    bool                       bAbortOnGameOver = false;
-    slug::Vector<StageAction>  actions          = {};
+    String              gateId           = {};
+    Vector<String>      waitFor          = {};
+    eGateUntil          until            = eGateUntil::Defeated;
+    bool                bAbortOnGameOver = false;
+    Vector<StageAction> actions          = {};
 };
 
 struct StageSection
 {
-    slug::String              id       = {};
-    float                     triggerX = 0.f;
-    slug::Vector<StageAction> actions  = {};
+    String              id       = {};
+    float               triggerX = 0.f;
+    Vector<StageAction> actions  = {};
 };
 
 struct BackdropMode
 {
-    slug::String id        = {};
-    slug::String sprite    = {};
-    Vec2         offset    = { 0.f, 0.f };
-    float        parallaxX = 0.f;
-    float        period    = 0.f;   // 가로 반복 간격. 0 이면 스프라이트 너비
+    String id        = {};
+    String sprite    = {};
+    Vec2   offset    = { 0.f, 0.f };
+    float  parallaxX = 0.f;
+    float  period    = 0.f;   // 가로 반복 간격. 0 이면 스프라이트 너비
 };
 
 struct NamedRect
 {
-    slug::String name = {};
-    Aabb         rect = {};
+    String name = {};
+    Aabb   rect = {};
 };
 
 struct BoundsCurve
 {
-    slug::String       id         = {};
-    slug::String       from       = {};
-    slug::String       until      = {};
-    int                fromIndex  = -1;
-    int                untilIndex = -1;
-    float              left       = 0.f;
-    float              right      = 0.f;
-    float              height     = 0.f;
-    slug::Vector<Vec2> top        = {};
-    bool               bTrunc     = false;
+    String       id         = {};
+    String       from       = {};
+    String       until      = {};
+    int          fromIndex  = -1;
+    int          untilIndex = -1;
+    float        left       = 0.f;
+    float        right      = 0.f;
+    float        height     = 0.f;
+    Vector<Vec2> top        = {};
+    bool         bTrunc     = false;
 
     [[nodiscard]] float EvaluateTop(float _playerX) const;
 
@@ -329,11 +346,11 @@ struct BoundsCurve
 
 struct CameraConfig
 {
-    bool                      bForward      = true;
-    Aabb                      initialBounds = {};
-    Vec2                      initialOffset = { 0.f, 0.f };
-    float                     playerMargin  = 14.f;
-    slug::Vector<BoundsCurve> boundsCurves  = {};
+    bool                bForward      = true;
+    Aabb                initialBounds = {};
+    Vec2                initialOffset = { 0.f, 0.f };
+    float               playerMargin  = 14.f;
+    Vector<BoundsCurve> boundsCurves  = {};
 };
 
 struct PlayerStart
@@ -359,33 +376,33 @@ struct EndlessTail
 
 struct StageData
 {
-    int          version = 1;
-    slug::String name    = {};
+    int    version = 1;
+    String name    = {};
 
-    Vec2         worldSize  = { 0.f, 0.f };
-    Vec2         viewSize   = { 640.f, 448.f };
-    slug::String background = {};
-    EndlessTail  endless    = {};
+    Vec2        worldSize  = { 0.f, 0.f };
+    Vec2        viewSize   = { 640.f, 448.f };
+    String      background = {};
+    EndlessTail endless    = {};
 
-    slug::String bgmName  = {};
-    bool         bBgmLoop = true;
+    String bgmName  = {};
+    bool   bBgmLoop = true;
 
-    slug::String               groundInitial = {};
-    slug::Vector<slug::String> groundMaps    = {};
+    String         groundInitial = {};
+    Vector<String> groundMaps    = {};
 
-    slug::String               backdropInitial = {};
-    slug::Vector<BackdropMode> backdrops       = {};
+    String               backdropInitial = {};
+    Vector<BackdropMode> backdrops       = {};
 
-    PlayerStart             player = {};
-    slug::Vector<NamedRect> rects  = {};
-    CameraConfig            camera = {};
+    PlayerStart       player = {};
+    Vector<NamedRect> rects  = {};
+    CameraConfig      camera = {};
 
-    slug::Vector<StageSection> sections = {};
+    Vector<StageSection> sections = {};
 
-    [[nodiscard]] int                 FindSection(slug::StringView _id) const;
-    [[nodiscard]] const NamedRect*    FindRect(slug::StringView _name) const;
-    [[nodiscard]] const BackdropMode* FindBackdrop(slug::StringView _id) const;
-    [[nodiscard]] bool                HasGroundMap(slug::StringView _name) const;
+    [[nodiscard]] int                 FindSection(StringView _id) const;
+    [[nodiscard]] const NamedRect*    FindRect(StringView _name) const;
+    [[nodiscard]] const BackdropMode* FindBackdrop(StringView _id) const;
+    [[nodiscard]] bool                HasGroundMap(StringView _name) const;
 
     [[nodiscard]] int CountSpawns() const;
     [[nodiscard]] int CountWaveEntries() const;
@@ -394,11 +411,16 @@ struct StageData
 
 struct StageLoadDiagnostics
 {
-    slug::String message = {};
+    String message = {};
 };
 
-[[nodiscard]] slug::Result<StageData> LoadStageFromJson(slug::StringView _json, StageLoadDiagnostics* _pDiag = nullptr);
-[[nodiscard]] slug::Result<StageData> LoadStageFromFile(const slug::FilePath& _path, StageLoadDiagnostics* _pDiag = nullptr);
+[[nodiscard]] Result<StageData> LoadStageFromJson(
+    StringView            _json,
+    StageLoadDiagnostics* _pDiag = nullptr);
+
+[[nodiscard]] Result<StageData> LoadStageFromFile(
+    const FilePath&       _path,
+    StageLoadDiagnostics* _pDiag = nullptr);
 
 [[nodiscard]] constexpr bool ShouldRunAction(
     const eWhen _when,
@@ -409,4 +431,5 @@ struct StageLoadDiagnostics
 
 [[nodiscard]] const char* GetEntityKindName(eEntityKind _kind);
 [[nodiscard]] const char* GetActionTypeName(eActionType _type);
+
 }   // namespace slug

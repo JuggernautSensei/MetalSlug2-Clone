@@ -1,23 +1,22 @@
 #include "Game/Stage/StageState.h"
-#include "Base/Types.h"
-#include "Base/Result.h"
-#include "Base/Random.h"
-#include "Base/RGBA.h"
 
 #include <algorithm>
 #include <cmath>
 #include <filesystem>
 #include <format>
 
+#include "Audio/AudioSink.h"
 #include "Base/Log.h"
 #include "Base/Math.h"
-
-#include "Audio/AudioSink.h"
+#include "Base/RGBA.h"
+#include "Base/Random.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
 #include "Game/Combat/BulletVisual.h"
 #include "Game/Player/PlayerHitboxes.h"
 #include "Game/Player/PlayerWeapons.h"
-#include "Game/StateFactory.h"
 #include "Game/Stage/StageMapping.h"
+#include "Game/StateFactory.h"
 #include "Game/Ui/Hud.h"
 #include "World/Constants.h"
 
@@ -29,7 +28,7 @@ namespace
     [[nodiscard]] CameraTuning MakeCameraTuning_(
         const CameraSettings& _settings)
     {
-        CameraTuning tuning;
+        CameraTuning tuning = {};
         tuning.viewSize     = { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) };
         tuning.deadzoneHalf = _settings.deadzoneHalf;
         tuning.smoothTime   = _settings.smoothTime;
@@ -37,9 +36,9 @@ namespace
     }
 
     [[nodiscard]] Vec2 Lerp_(
-        const Vec2 _a,
-        const Vec2 _b,
-        const float        _t)
+        const Vec2  _a,
+        const Vec2  _b,
+        const float _t)
     {
         return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
     }
@@ -52,17 +51,17 @@ namespace
     }
 
     void DrawBox_(
-        Renderer&          _renderer,
-        const Aabb&        _box,
-        const Vec2 _camera,
-        const slug::RGBA    _color)
+        Renderer&   _renderer,
+        const Aabb& _box,
+        const Vec2  _camera,
+        const RGBA  _color)
     {
         const Vec2 topLeft     = ToScreen_(_box.min, _camera);
         const Vec2 bottomRight = ToScreen_(_box.max, _camera);
-        _renderer.DrawRect(topLeft, { slug::Max(1.f, bottomRight.x - topLeft.x), slug::Max(1.f, bottomRight.y - topLeft.y) }, _color);
+        _renderer.DrawRect(topLeft, { Max(1.f, bottomRight.x - topLeft.x), Max(1.f, bottomRight.y - topLeft.y) }, _color);
     }
 
-    [[nodiscard]] slug::RGBA GetPlaceholderColor_(
+    [[nodiscard]] RGBA GetPlaceholderColor_(
         const PlaceholderEntity& _entity)
     {
         if (_entity.flashTicks > 0)
@@ -73,14 +72,14 @@ namespace
         {
             return { 150, 150, 170, 255 };
         }
-        return _entity.kind == eEntityKind::Npc ? slug::RGBA { 120, 170, 230, 255 } : slug::RGBA { 96, 120, 70, 255 };
+        return _entity.kind == eEntityKind::Npc ? RGBA { 120, 170, 230, 255 } : RGBA { 96, 120, 70, 255 };
     }
 
-    [[nodiscard]] slug::String JoinIds_(
-        const slug::Vector<slug::String>& _ids)
+    [[nodiscard]] String JoinIds_(
+        const Vector<String>& _ids)
     {
-        slug::String joined;
-        for (const slug::String& id: _ids)
+        String joined = {};
+        for (const String& id: _ids)
         {
             if (!joined.empty())
             {
@@ -90,7 +89,7 @@ namespace
         }
         return joined;
     }
-}
+}   // namespace
 
 StageState::StageState() = default;
 
@@ -114,15 +113,20 @@ void StageState::OnExit(
     _ctx.GetAudio().AllStop();
 }
 
+int StageState::GetRescuedPows() const
+{
+    return m_rescuedPows;
+}
+
 void StageState::Load_(
     GameContext& _ctx)
 {
-    m_bLoaded = false;
-    m_bFailed = false;
+    m_bLoaded   = false;
+    m_bFailed   = false;
     m_assetRoot = _ctx.assetRoot;
 
-    StageLoadDiagnostics diag;
-    slug::Result<StageData> data = LoadStageFromFile(_ctx.assetRoot / "Stage" / "Stage0.json", &diag);
+    StageLoadDiagnostics diag = {};
+    Result<StageData>    data = LoadStageFromFile(_ctx.assetRoot / "Stage" / "Stage0.json", &diag);
     if (!data)
     {
         SLUG_LOG_ERROR("Stage0.json 을 읽지 못했습니다: {}", diag.message);
@@ -131,13 +135,13 @@ void StageState::Load_(
     }
     m_data = data.Take();
 
-    m_host = StageWorldHost {};
+    m_host               = StageWorldHost {};
     const int flatWidth  = static_cast<int>(m_data.worldSize.x);
     const int flatHeight = static_cast<int>(m_data.worldSize.y);
-    for (const slug::String& name: m_data.groundMaps)
+    for (const String& name: m_data.groundMaps)
     {
-        const slug::FilePath path = _ctx.assetRoot / "Baked" / "Ground" / (name + ".bin");
-        if (slug::Result<GroundMap> map = GroundMap::Load(path))
+        const FilePath path = _ctx.assetRoot / "Baked" / "Ground" / (name + ".bin");
+        if (Result<GroundMap> map = GroundMap::Load(path))
         {
             GroundMap ground = map.Take();
             if (m_data.endless.bEnabled)
@@ -156,7 +160,7 @@ void StageState::Load_(
     }
 
     m_tuning = {};
-    if (slug::Result<Tuning> loaded = LoadTuning(GetDefaultTuningPath(_ctx.assetRoot)))
+    if (Result<Tuning> loaded = LoadTuning(GetDefaultTuningPath(_ctx.assetRoot)))
     {
         m_tuning = loaded.Take();
         if (_ctx.debugLives > 0)
@@ -170,10 +174,10 @@ void StageState::Load_(
     }
 
     {
-        slug::String message;
-        const slug::FilePath defsPath = EnemyDefLibrary::GetDefaultDirectory(_ctx.assetRoot);
-        m_enemyLib = {};
-        if (slug::Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
+        String         message  = {};
+        const FilePath defsPath = EnemyDefLibrary::GetDefaultDirectory(_ctx.assetRoot);
+        m_enemyLib              = {};
+        if (Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
         {
             m_enemyLib = lib.Take();
         }
@@ -184,8 +188,8 @@ void StageState::Load_(
         m_enemies.SetLibrary(&m_enemyLib);
     }
     {
-        slug::String message;
-        if (slug::Result<PropDefLibrary> lib = PropDefLibrary::Load(_ctx.assetRoot / "Defs" / "Props" / "Props.json", &message))
+        String message = {};
+        if (Result<PropDefLibrary> lib = PropDefLibrary::Load(_ctx.assetRoot / "Defs" / "Props" / "Props.json", &message))
         {
             m_propDefs = lib.Take();
         }
@@ -216,15 +220,15 @@ void StageState::Load_(
 
     if (!_ctx.IsHeadless())
     {
-        if (slug::Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot / "Baked"))
+        if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot / "Baked"))
         {
             m_spriteLib = library.Take();
         }
         m_enemies.SetSpriteLibrary(&m_spriteLib);
         if (_ctx.pSprites)
         {
-            const slug::FilePath bgPath = _ctx.assetRoot / "Baked" / "Textures" / (m_data.background + ".png");
-            if (const slug::Result<int> handle = _ctx.pSprites->LoadStandaloneTexture(bgPath))
+            const FilePath bgPath = _ctx.assetRoot / "Baked" / "Textures" / (m_data.background + ".png");
+            if (const Result<int> handle = _ctx.pSprites->LoadStandaloneTexture(bgPath))
             {
                 m_bgHandle = handle.GetValue();
             }
@@ -239,7 +243,7 @@ void StageState::Load_(
                 int handle = -1;
                 if (const SpriteInfo* pInfo = m_spriteLib.Find(mode.sprite); pInfo && pInfo->bStandalone)
                 {
-                    if (const slug::Result<int> loaded = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / slug::FilePath { pInfo->file }))
+                    if (const Result<int> loaded = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / FilePath { pInfo->file }))
                     {
                         handle = loaded.GetValue();
                     }
@@ -268,7 +272,7 @@ void StageState::Restart_(
     m_projectiles.Clear();
     m_effects.Clear();
     m_patchMasks.clear();
-    m_rng = slug::RngMt19937 { 0x57A6E0ull };
+    m_rng = RngMt19937 { 0x57A6E0ull };
     m_flow.Reset();
     m_endKind = eEndKind::None;
     m_timer.Reset();
@@ -322,10 +326,10 @@ void StageState::Tick(
 
     m_combat.BeginTick();
     {
-        PropTickContext propCtx;
-        propCtx.pGround    = m_host.GetActiveGround();
-        propCtx.pAnims     = _ctx.pAnims;
-        propCtx.cameraLeft = m_camera.GetPositionNoShake().x;
+        PropTickContext propCtx = {};
+        propCtx.pGround         = m_host.GetActiveGround();
+        propCtx.pAnims          = _ctx.pAnims;
+        propCtx.cameraLeft      = m_camera.GetPositionNoShake().x;
         m_props.Tick(propCtx);
     }
     UpdateWalls_();
@@ -334,12 +338,12 @@ void StageState::Tick(
     m_enemies.RegisterHurtboxes(m_combat);
     m_props.RegisterHurtboxes(m_combat);
 
-    PlayerContext playerCtx;
-    playerCtx.pTuning      = &m_tuning;
-    playerCtx.physics      = MakePhysicsWorld_();
-    playerCtx.pCombat      = &m_combat;
-    playerCtx.pProjectiles = &m_projectiles;
-    playerCtx.respawnFeet  = GetRespawnFeet_();
+    PlayerContext playerCtx = {};
+    playerCtx.pTuning       = &m_tuning;
+    playerCtx.physics       = MakePhysicsWorld_();
+    playerCtx.pCombat       = &m_combat;
+    playerCtx.pProjectiles  = &m_projectiles;
+    playerCtx.respawnFeet   = GetRespawnFeet_();
     m_player.Tick(playerCtx, _input);
 
     if (m_enemies.HasPlayerMinX())
@@ -356,24 +360,24 @@ void StageState::Tick(
         ApplyItemPickup(m_player, pickup, m_tuning);
         switch (pickup.kind)
         {
-        case eItemKind::Gun:    _ctx.GetAudio().Play(sfx::kPowerUp); break;
-        case eItemKind::Supply: _ctx.GetAudio().Play(sfx::kOk); break;
-        case eItemKind::Score:  _ctx.GetAudio().Play(sfx::kPickupCoin); break;
+            case eItemKind::Gun: _ctx.GetAudio().Play(sfx::kPowerUp); break;
+            case eItemKind::Supply: _ctx.GetAudio().Play(sfx::kOk); break;
+            case eItemKind::Score: _ctx.GetAudio().Play(sfx::kPickupCoin); break;
         }
     }
 
-    EnemyContext enemyCtx;
-    enemyCtx.pTuning            = &m_tuning;
-    enemyCtx.physics            = MakeEnemyPhysicsWorld_();
-    enemyCtx.pCombat            = &m_combat;
-    enemyCtx.pProjectiles       = &m_projectiles;
-    enemyCtx.player.feet        = m_player.GetFeet();
-    enemyCtx.player.bodyBox     = m_player.GetBodyBox();
-    enemyCtx.player.center      = m_player.GetBodyBox().GetCenter();
-    enemyCtx.player.bAlive      = m_player.IsAlive();
+    EnemyContext enemyCtx         = {};
+    enemyCtx.pTuning              = &m_tuning;
+    enemyCtx.physics              = MakeEnemyPhysicsWorld_();
+    enemyCtx.pCombat              = &m_combat;
+    enemyCtx.pProjectiles         = &m_projectiles;
+    enemyCtx.player.feet          = m_player.GetFeet();
+    enemyCtx.player.bodyBox       = m_player.GetBodyBox();
+    enemyCtx.player.center        = m_player.GetBodyBox().GetCenter();
+    enemyCtx.player.bAlive        = m_player.IsAlive();
     enemyCtx.player.bInvulnerable = m_player.GetInvincibleTicks() > 0;
-    enemyCtx.cameraView         = Aabb::FromMinSize(m_camera.GetPositionNoShake(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
-    enemyCtx.pAnims             = _ctx.pAnims;
+    enemyCtx.cameraView           = Aabb::FromMinSize(m_camera.GetPositionNoShake(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
+    enemyCtx.pAnims               = _ctx.pAnims;
     m_enemies.Tick(enemyCtx);
     m_runner->AddCameraScroll(m_enemies.TakeCameraScroll());   // 보스 자동 전진 (카메라 하한)
     {
@@ -388,7 +392,7 @@ void StageState::Tick(
 
     m_projectiles.Step(m_host.GetActiveGround(), m_combat, kStepSec, m_enemyPlatforms);
 
-    const slug::Vector<HitEvent>& events = m_combat.Resolve();
+    const Vector<HitEvent>& events = m_combat.Resolve();
     m_props.OnHitEvents(events);
     m_enemies.OnHitEvents(events);
     const int kills = m_host.ApplyPlaceholderEvents(events);
@@ -404,7 +408,7 @@ void StageState::Tick(
     ConsumeEnemyEvents_(_ctx);
     ConsumePropEvents_(_ctx);
 
-    const slug::Vector<FxRequest> fx = m_projectiles.TakeFx();
+    const Vector<FxRequest> fx = m_projectiles.TakeFx();
     RequestSounds_(_ctx, fx);
     m_ui.Tick();
     if (_ctx.pAnims)
@@ -460,7 +464,7 @@ void StageState::Tick(
 }
 
 void StageState::StartFlow_(
-    GameContext& _ctx,
+    GameContext&   _ctx,
     const eEndKind _kind)
 {
     m_endKind = _kind;
@@ -501,6 +505,11 @@ void StageState::HandleDebugWarp_(
         (void)m_runner->WarpToBoss();
     }
     m_host.SetContext(nullptr);
+}
+
+bool StageState::IsFlowing_() const
+{
+    return m_endKind != eEndKind::None && !m_flow.IsDone();
 }
 
 void StageState::UpdateWalls_()
@@ -557,19 +566,19 @@ void StageState::UpdateWalls_()
 
 PhysicsWorld StageState::MakePhysicsWorld_() const
 {
-    PhysicsWorld world;
-    world.pGround   = m_host.GetActiveGround();
-    world.walls     = m_walls;
-    world.platforms = m_playerPlatforms;
+    PhysicsWorld world = {};
+    world.pGround      = m_host.GetActiveGround();
+    world.walls        = m_walls;
+    world.platforms    = m_playerPlatforms;
     return world;
 }
 
 PhysicsWorld StageState::MakeEnemyPhysicsWorld_() const
 {
-    PhysicsWorld world;
-    world.pGround   = m_host.GetActiveGround();
-    world.walls     = m_enemyWalls;
-    world.platforms = m_enemyPlatforms;
+    PhysicsWorld world = {};
+    world.pGround      = m_host.GetActiveGround();
+    world.walls        = m_enemyWalls;
+    world.platforms    = m_enemyPlatforms;
     return world;
 }
 
@@ -587,27 +596,27 @@ void StageState::ConsumeEnemyEvents_(
     {
         switch (event.kind)
         {
-        case eEnemyEventKind::Died:
-            m_player.AddScore(event.score);
-            audio.Play(sfx::kEnemyDeath, 0.7f, 0.1f);
-            if (!event.drop.empty())
-            {
-                (void)m_props.SpawnItem(event.drop, event.pos, false);
-            }
-            break;
-        case eEnemyEventKind::PartDestroyed:
-            m_player.AddScore(event.score);
-            audio.Play(sfx::kEnemyDeath, 0.5f, 0.1f);
-            break;
-        case eEnemyEventKind::ItemDropped:
-            (void)m_props.SpawnItem(event.drop, event.pos, true);
-            break;
-        case eEnemyEventKind::Freed:
-            ++m_rescuedPows;
-            break;
-        case eEnemyEventKind::Transformed:
-        case eEnemyEventKind::Removed:
-            break;
+            case eEnemyEventKind::Died:
+                m_player.AddScore(event.score);
+                audio.Play(sfx::kEnemyDeath, 0.7f, 0.1f);
+                if (!event.drop.empty())
+                {
+                    (void)m_props.SpawnItem(event.drop, event.pos, false);
+                }
+                break;
+            case eEnemyEventKind::PartDestroyed:
+                m_player.AddScore(event.score);
+                audio.Play(sfx::kEnemyDeath, 0.5f, 0.1f);
+                break;
+            case eEnemyEventKind::ItemDropped:
+                (void)m_props.SpawnItem(event.drop, event.pos, true);
+                break;
+            case eEnemyEventKind::Freed:
+                ++m_rescuedPows;
+                break;
+            case eEnemyEventKind::Transformed:
+            case eEnemyEventKind::Removed:
+                break;
         }
     }
 }
@@ -620,27 +629,27 @@ void StageState::ConsumePropEvents_(
     {
         switch (event.kind)
         {
-        case ePropEventKind::Destroyed:
-            audio.Play(sfx::kExplosion, 0.9f, 0.05f);
-            break;
-        case ePropEventKind::SecondaryBurst:
-            audio.Play(sfx::kBombExplode, 1.f, 0.03f);
-            break;
-        case ePropEventKind::GroundPatch:
-            ApplyGroundPatch_(_ctx, event.name, event.pos);
-            break;
-        case ePropEventKind::Damaged:
-        case ePropEventKind::DropSpawned:
-        case ePropEventKind::Removed:
-        case ePropEventKind::Culled:
-            break;
+            case ePropEventKind::Destroyed:
+                audio.Play(sfx::kExplosion, 0.9f, 0.05f);
+                break;
+            case ePropEventKind::SecondaryBurst:
+                audio.Play(sfx::kBombExplode, 1.f, 0.03f);
+                break;
+            case ePropEventKind::GroundPatch:
+                ApplyGroundPatch_(_ctx, event.name, event.pos);
+                break;
+            case ePropEventKind::Damaged:
+            case ePropEventKind::DropSpawned:
+            case ePropEventKind::Removed:
+            case ePropEventKind::Culled:
+                break;
         }
     }
 }
 
 const GroundMap* StageState::FindPatchMask_(
-    GameContext&       _ctx,
-    const slug::String& _sprite)
+    GameContext&  _ctx,
+    const String& _sprite)
 {
     for (const PatchMask& patch: m_patchMasks)
     {
@@ -650,9 +659,9 @@ const GroundMap* StageState::FindPatchMask_(
         }
     }
 
-    PatchMask patch;
-    patch.name = _sprite;
-    const slug::FilePath path = _ctx.assetRoot / "Baked" / "Textures" / (_sprite + ".png");
+    PatchMask patch     = {};
+    patch.name          = _sprite;
+    const FilePath path = _ctx.assetRoot / "Baked" / "Textures" / (_sprite + ".png");
     if (std::optional<GroundMap> mask = LoadGroundPatchMask(path))
     {
         if (mask->CountSolidPixels() == 0)
@@ -675,12 +684,12 @@ const GroundMap* StageState::FindPatchMask_(
 }
 
 void StageState::ApplyGroundPatch_(
-    GameContext&       _ctx,
-    const slug::String& _sprite,
-    const Vec2 _topLeft)
+    GameContext&  _ctx,
+    const String& _sprite,
+    const Vec2    _topLeft)
 {
-    GroundMap* pGround = m_host.GetActiveGroundMut();
-    const GroundMap* pMask = FindPatchMask_(_ctx, _sprite);
+    GroundMap*       pGround = m_host.GetActiveGroundMut();
+    const GroundMap* pMask   = FindPatchMask_(_ctx, _sprite);
     if (pGround && pMask && !ApplyGroundPatch(*pGround, _topLeft, *pMask))
     {
         SLUG_LOG_ERROR("지면 패치 '{}' 가드에 걸려 적용하지 않았습니다 (바닥을 지우는 마스크)", _sprite.c_str());
@@ -688,12 +697,12 @@ void StageState::ApplyGroundPatch_(
 }
 
 void StageState::RequestSounds_(
-    GameContext&                  _ctx,
-    const slug::Vector<FxRequest>& _fx)
+    GameContext&             _ctx,
+    const Vector<FxRequest>& _fx)
 {
-    IAudioSink&        audio   = _ctx.GetAudio();
-    const PlayerStats& stats   = m_player.GetStats();
-    const eWeapon      weapon  = m_player.GetWeapon().weapon;
+    IAudioSink&        audio  = _ctx.GetAudio();
+    const PlayerStats& stats  = m_player.GetStats();
+    const eWeapon      weapon = m_player.GetWeapon().weapon;
 
     for (int i = m_prevStats.shotsFired; i < stats.shotsFired; ++i)
     {
@@ -730,6 +739,21 @@ void StageState::RequestSounds_(
     m_prevStats  = stats;
     m_prevWeapon = weapon;
     m_prevScore  = m_player.GetScore();
+}
+
+const UiSystem& StageState::GetUi() const
+{
+    return m_ui;
+}
+
+UiSystem& StageState::GetUi()
+{
+    return m_ui;
+}
+
+uint64_t StageState::GetTickCount() const
+{
+    return m_tickCount;
 }
 
 uint64_t StageState::HashState() const
@@ -817,8 +841,8 @@ void StageState::Render(
 }
 
 void StageState::DrawBackdrop_(
-    GameContext&       _ctx,
-    const Vec2 _cameraPos)
+    GameContext& _ctx,
+    const Vec2   _cameraPos)
 {
     const BackdropMode* pMode = m_data.FindBackdrop(m_runner->GetBackdropMode());
     if (!pMode || !_ctx.pSprites)
@@ -843,11 +867,11 @@ void StageState::DrawBackdrop_(
 
     const int pivotX = pSprite->bStandalone ? pSprite->width / 2 : pSprite->frame.pivotX;
     const int pivotY = pSprite->bStandalone ? pSprite->height / 2 : pSprite->frame.pivotY;
-    int       left = static_cast<int>(std::floor(centerX)) - pivotX;
-    const int top  = static_cast<int>(std::floor(centerY)) - pivotY;
+    int       left   = static_cast<int>(std::floor(centerX)) - pivotX;
+    const int top    = static_cast<int>(std::floor(centerY)) - pivotY;
 
-    const bool bTile  = pMode->period > 0.f;
-    const int  tileW  = bTile ? static_cast<int>(pMode->period) : pSprite->width;
+    const bool bTile = pMode->period > 0.f;
+    const int  tileW = bTile ? static_cast<int>(pMode->period) : pSprite->width;
     if (!bTile && pSprite->width >= Renderer::kLogicalWidth)
     {
         left = std::clamp(left, Renderer::kLogicalWidth - pSprite->width, 0);
@@ -875,16 +899,16 @@ void StageState::DrawBackdrop_(
 }
 
 void StageState::DrawWorld_(
-    GameContext&       _ctx,
-    const Vec2 _cameraPos,
-    const float        _alpha)
+    GameContext& _ctx,
+    const Vec2   _cameraPos,
+    const float  _alpha)
 {
     Renderer& renderer = *_ctx.pRenderer;
     if (!_ctx.pSprites)
     {
         return;
     }
-    SpriteBatch& sprites  = *_ctx.pSprites;
+    SpriteBatch& sprites = *_ctx.pSprites;
 
     for (const PlaceholderEntity& entity: m_host.GetPlaceholderEntities())
     {
@@ -892,9 +916,9 @@ void StageState::DrawWorld_(
         {
             continue;
         }
-        const Aabb box = entity.GetBox();
-        const Vec2 tl = ToScreen_(box.min, _cameraPos);
-        const slug::RGBA color = entity.IsAlive() ? GetPlaceholderColor_(entity) : slug::RGBA { 90, 90, 90, 255 };
+        const Aabb box   = entity.GetBox();
+        const Vec2 tl    = ToScreen_(box.min, _cameraPos);
+        const RGBA color = entity.IsAlive() ? GetPlaceholderColor_(entity) : RGBA { 90, 90, 90, 255 };
         if (entity.bHittable || !entity.IsAlive())
         {
             renderer.FillRect(tl, entity.size, color);
@@ -940,7 +964,7 @@ void StageState::DrawWorld_(
             {
                 continue;
             }
-            const slug::RGBA color = bullet.team == eTeam::Player ? slug::RGBA { 255, 240, 120, 255 } : slug::RGBA { 255, 80, 60, 255 };
+            const RGBA color = bullet.team == eTeam::Player ? RGBA { 255, 240, 120, 255 } : RGBA { 255, 80, 60, 255 };
             renderer.FillRect(ToScreen_({ pos.x - bullet.size.x * 0.5f, pos.y - bullet.size.y * 0.5f }, _cameraPos), bullet.size, color);
         }
 
@@ -969,46 +993,74 @@ void StageState::DrawWorld_(
 }
 
 void StageState::DrawDebugBoxes_(
-    Renderer&          _renderer,
+    Renderer&  _renderer,
     const Vec2 _cameraPos) const
 {
     for (const Hurtbox& hurtbox: m_combat.GetHurtboxes())
     {
-        DrawBox_(_renderer, hurtbox.box, _cameraPos, hurtbox.bInvulnerable ? slug::RGBA { 120, 200, 255, 255 } : slug::RGBA { 60, 255, 90, 255 });
+        DrawBox_(
+            _renderer,
+            hurtbox.box,
+            _cameraPos,
+            hurtbox.bInvulnerable ? RGBA { 120, 200, 255, 255 } : RGBA { 60, 255, 90, 255 });
     }
     for (const Hitbox& hitbox: m_combat.GetHitboxes())
     {
-        DrawBox_(_renderer, hitbox.box, _cameraPos, { 255, 50, 50, 255 });
+        DrawBox_(
+            _renderer,
+            hitbox.box,
+            _cameraPos,
+            { 255, 50, 50, 255 });
     }
 
     const Aabb body = m_player.GetBodyBox();
-    DrawBox_(_renderer, body, _cameraPos, { 80, 120, 255, 255 });
+    DrawBox_(
+        _renderer,
+        body,
+        _cameraPos,
+        { 80, 120, 255, 255 });
 
-    const Vec2 feet = m_player.GetFeet();
-    const float        fh   = m_player.GetBody().footHalfWidth;
+    const Vec2  feet = m_player.GetFeet();
+    const float fh   = m_player.GetBody().footHalfWidth;
     _renderer.DrawLine(ToScreen_({ feet.x - fh, feet.y }, _cameraPos), ToScreen_({ feet.x + fh, feet.y }, _cameraPos), { 255, 255, 0, 255 });
     _renderer.DrawLine(ToScreen_({ feet.x, feet.y - 4.f }, _cameraPos), ToScreen_({ feet.x, feet.y + 4.f }, _cameraPos), { 255, 255, 0, 255 });
 
     const Aabb trigger = MakeKnifeTriggerBox(feet, m_player.GetFacing(), body.GetWidth() * 0.5f, m_tuning.knife);
-    DrawBox_(_renderer, trigger, _cameraPos, m_player.IsKnifeTargetInRange() ? slug::RGBA { 255, 220, 40, 255 } : slug::RGBA { 120, 110, 40, 255 });
+    DrawBox_(
+        _renderer,
+        trigger,
+        _cameraPos,
+        m_player.IsKnifeTargetInRange() ? RGBA { 255, 220, 40, 255 } : RGBA { 120, 110, 40, 255 });
 
     for (const Wall& wall: m_walls)
     {
-        DrawBox_(_renderer, wall.box, _cameraPos, { 200, 80, 200, 255 });
+        DrawBox_(
+            _renderer,
+            wall.box,
+            _cameraPos,
+            { 200, 80, 200, 255 });
     }
     for (const Platform& platform: m_playerPlatforms)
     {
-        DrawBox_(_renderer, platform.box, _cameraPos, { 255, 160, 60, 255 });
+        DrawBox_(
+            _renderer,
+            platform.box,
+            _cameraPos,
+            { 255, 160, 60, 255 });
     }
     for (const Platform& platform: m_enemyPlatforms)
     {
-        DrawBox_(_renderer, platform.box, _cameraPos, { 120, 230, 230, 255 });
+        DrawBox_(
+            _renderer,
+            platform.box,
+            _cameraPos,
+            { 120, 230, 230, 255 });
     }
 }
 
 HudModel StageState::BuildHudModel() const
 {
-    HudModel model = MakeHudModel(m_player);
+    HudModel model     = MakeHudModel(m_player);
     model.bShowTimer   = true;
     model.timerSeconds = m_timer.GetSeconds();
     return model;
@@ -1024,25 +1076,25 @@ void StageState::DrawHud_(
 
     if (_ctx.bDebugDraw)
     {
-        const slug::String&       lastId       = m_host.GetLastSectionId();
-        const slug::String        gates        = JoinIds_(m_runner->GetOpenGateIds());
-        const Vec2       pos          = m_player.GetFeet();
-        const Vec2       vel          = m_player.GetVelocity();
-        const std::optional<float> nextX      = m_runner->GetNextTriggerX();
+        const String&              lastId = m_host.GetLastSectionId();
+        const String               gates  = JoinIds_(m_runner->GetOpenGateIds());
+        const Vec2                 pos    = m_player.GetFeet();
+        const Vec2                 vel    = m_player.GetVelocity();
+        const std::optional<float> nextX  = m_runner->GetNextTriggerX();
 
-        const slug::String debug = std::format(
+        const String debug = std::format(
             "STAGE {} SECTION {} (#{}/{})  NEXT #{} x>{}  GATES {} [{}]\n"
             "ENEMY {} (SPAWNED {})  PROP {}  ITEM {}  COLL {}  PH {}  SKIPPED {}  LOCK {}  BG {}\n"
             "POS {:.1f},{:.1f}  VEL {:.0f},{:.0f}  GND {}  GROUND {}  TICK {}  FPS {:.0f}\n"
             "F1 BOX  F2 PAUSE  F3 STEP  F4 SLOW  F5 NEXT SECTION  F6 STAGE END",
             m_data.name,
-            lastId.empty() ? slug::String { "-" } : lastId,
+            lastId.empty() ? String { "-" } : lastId,
             m_host.GetLastSectionIndex(),
             m_data.sections.size(),
             m_runner->GetNextSectionIndex(),
-            nextX ? std::format("{:.0f}", *nextX) : slug::String { "-" },
+            nextX ? std::format("{:.0f}", *nextX) : String { "-" },
             m_runner->GetOpenGateCount(),
-            gates.empty() ? slug::String { "-" } : gates,
+            gates.empty() ? String { "-" } : gates,
             m_enemies.CountAlive(),
             m_runner->GetSpawnedCount(),
             m_props.GetCount(),
@@ -1066,8 +1118,8 @@ void StageState::DrawHud_(
 
     if (_ctx.bPaused)
     {
-        TextStyle style;
-        style.align = eTextAlign::Center;
+        TextStyle style = {};
+        style.align     = eTextAlign::Center;
         m_ui.DrawText(_ctx, Renderer::kLogicalWidth / 2, 216, "PAUSED", style);
     }
 
@@ -1075,4 +1127,69 @@ void StageState::DrawHud_(
     m_ui.SetGameOverArt(m_flow.GetArtView());
     m_ui.DrawOverlays(_ctx);
 }
+bool StageState::IsLoaded() const
+{
+    return m_bLoaded;
 }
+
+const StageData& StageState::GetData() const
+{
+    return m_data;
+}
+
+const StageRunner& StageState::GetRunner() const
+{
+    return *m_runner;
+}
+
+const StageWorldHost& StageState::GetHost() const
+{
+    return m_host;
+}
+
+PlayerController& StageState::GetPlayer()
+{
+    return m_player;
+}
+
+const PlayerController& StageState::GetPlayer() const
+{
+    return m_player;
+}
+
+const Camera& StageState::GetCamera() const
+{
+    return m_camera;
+}
+
+const CombatSystem& StageState::GetCombat() const
+{
+    return m_combat;
+}
+
+const ProjectileSystem& StageState::GetProjectiles() const
+{
+    return m_projectiles;
+}
+
+const EnemyWorld& StageState::GetEnemies() const
+{
+    return m_enemies;
+}
+
+EnemyWorld& StageState::GetEnemies()
+{
+    return m_enemies;
+}
+
+const PropWorld& StageState::GetProps() const
+{
+    return m_props;
+}
+
+PropWorld& StageState::GetProps()
+{
+    return m_props;
+}
+
+}   // namespace slug

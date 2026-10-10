@@ -1,7 +1,4 @@
 #include "Game/Stage/StageData.h"
-#include "Base/Types.h"
-#include "Base/Math.h"
-#include "Base/Assert.h"
 
 #include <cmath>
 #include <format>
@@ -10,65 +7,72 @@
 #include <sstream>
 #include <utility>
 
-#include "Base/Json.h"
-
+#include "Base/Assert.h"
 #include "Base/Error.h"
+#include "Base/Json.h"
+#include "Base/Math.h"
+#include "Base/Types.h"
 
 namespace slug
 {
+
 ParamValue ParamValue::MakeBool(
     const bool _bValue)
 {
-    ParamValue value;
-    value.m_type   = eType::Bool;
-    value.m_bValue = _bValue;
+    ParamValue value = {};
+    value.m_type     = eType::Bool;
+    value.m_bValue   = _bValue;
     return value;
 }
 
 ParamValue ParamValue::MakeNumber(
     const double _value)
 {
-    ParamValue value;
-    value.m_type   = eType::Number;
-    value.m_number = _value;
+    ParamValue value = {};
+    value.m_type     = eType::Number;
+    value.m_number   = _value;
     return value;
 }
 
 ParamValue ParamValue::MakeString(
-    slug::String _value)
+    String _value)
 {
-    ParamValue value;
-    value.m_type   = eType::String;
-    value.m_string = std::move(_value);
+    ParamValue value = {};
+    value.m_type     = eType::String;
+    value.m_string   = std::move(_value);
     return value;
 }
 
 ParamValue ParamValue::MakeArray()
 {
-    ParamValue value;
-    value.m_type = eType::Array;
+    ParamValue value = {};
+    value.m_type     = eType::Array;
     return value;
 }
 
 ParamValue ParamValue::MakeObject()
 {
-    ParamValue value;
-    value.m_type = eType::Object;
+    ParamValue value = {};
+    value.m_type     = eType::Object;
     return value;
 }
 
 void ParamValue::PushBack(
     ParamValue _value)
 {
-    SLUG_ASSERT(m_type == eType::Array, "PushBack requires an array value");
+    SLUG_ASSERT(
+        m_type == eType::Array,
+        "PushBack requires an array value");
     m_items.push_back(std::move(_value));
 }
 
 void ParamValue::Set(
-    slug::String _key,
-    ParamValue  _value)
+    String     _key,
+    ParamValue _value)
 {
-    SLUG_ASSERT(m_type == eType::Object, "Set requires an object value");
+    SLUG_ASSERT(
+        m_type == eType::Object,
+        "Set requires an object value");
     for (size_t i = 0; i < m_keys.size(); ++i)
     {
         if (m_keys[i] == _key)
@@ -79,6 +83,41 @@ void ParamValue::Set(
     }
     m_keys.push_back(std::move(_key));
     m_items.push_back(std::move(_value));
+}
+
+ParamValue::eType ParamValue::GetType() const
+{
+    return m_type;
+}
+
+bool ParamValue::IsNull() const
+{
+    return m_type == eType::Null;
+}
+
+bool ParamValue::IsBool() const
+{
+    return m_type == eType::Bool;
+}
+
+bool ParamValue::IsNumber() const
+{
+    return m_type == eType::Number;
+}
+
+bool ParamValue::IsString() const
+{
+    return m_type == eType::String;
+}
+
+bool ParamValue::IsArray() const
+{
+    return m_type == eType::Array;
+}
+
+bool ParamValue::IsObject() const
+{
+    return m_type == eType::Object;
 }
 
 bool ParamValue::AsBool(
@@ -99,9 +138,9 @@ int ParamValue::AsInt(
     return m_type == eType::Number ? static_cast<int>(std::llround(m_number)) : _default;
 }
 
-const slug::String& ParamValue::AsString() const
+const String& ParamValue::AsString() const
 {
-    static const slug::String kEmpty;
+    static const String kEmpty = {};
     return m_type == eType::String ? m_string : kEmpty;
 }
 
@@ -120,8 +159,13 @@ const ParamValue& ParamValue::At(
     return m_items[_index];
 }
 
+Span<const String> ParamValue::GetKeys() const
+{
+    return m_keys;
+}
+
 const ParamValue* ParamValue::Find(
-    const slug::StringView _key) const
+    const StringView _key) const
 {
     if (m_type != eType::Object)
     {
@@ -137,36 +181,42 @@ const ParamValue* ParamValue::Find(
     return nullptr;
 }
 
+bool ParamValue::Has(
+    const StringView _key) const
+{
+    return Find(_key) != nullptr;
+}
+
 bool ParamValue::GetBool(
-    const slug::StringView _key,
-    const bool            _bDefault) const
+    const StringView _key,
+    const bool       _bDefault) const
 {
     const ParamValue* pValue = Find(_key);
     return pValue ? pValue->AsBool(_bDefault) : _bDefault;
 }
 
 int ParamValue::GetInt(
-    const slug::StringView _key,
-    const int             _default) const
+    const StringView _key,
+    const int        _default) const
 {
     const ParamValue* pValue = Find(_key);
     return pValue ? pValue->AsInt(_default) : _default;
 }
 
-slug::String ParamValue::GetString(
-    const slug::StringView _key,
-    const slug::StringView _default) const
+String ParamValue::GetString(
+    const StringView _key,
+    const StringView _default) const
 {
     const ParamValue* pValue = Find(_key);
-    return (pValue && pValue->IsString()) ? pValue->m_string : slug::String { _default };
+    return (pValue && pValue->IsString()) ? pValue->m_string : String { _default };
 }
 
 Vec2 ParamValue::GetVec2(
-    const slug::StringView _key,
-    const Vec2    _default) const
+    const StringView _key,
+    const Vec2       _default) const
 {
     const ParamValue* pValue = Find(_key);
-    Vec2      out    = _default;
+    Vec2              out    = _default;
     if (pValue && pValue->TryGetVec2(out))
     {
         return out;
@@ -193,8 +243,18 @@ const ParamValue& ParamValue::EmptyObject()
 
 const ParamValue& ParamValue::NullValue()
 {
-    static const ParamValue kNull;
+    static const ParamValue kNull = {};
     return kNull;
+}
+
+bool CameraAnchor::IsRandomX() const
+{
+    return dxMax != dxMin;
+}
+
+int SpawnSpec::GetCount() const
+{
+    return bHasRepeat ? repeat.count : 1;
 }
 
 float BoundsCurve::EvaluateTop(
@@ -216,10 +276,10 @@ float BoundsCurve::EvaluateTop(
         {
             if (_playerX <= top[i].x)
             {
-                const Vec2 a = top[i - 1];
-                const Vec2 b = top[i];
-                const float        t = (_playerX - a.x) / (b.x - a.x);
-                result               = a.y + (b.y - a.y) * t;
+                const Vec2  a = top[i - 1];
+                const Vec2  b = top[i];
+                const float t = (_playerX - a.x) / (b.x - a.x);
+                result        = a.y + (b.y - a.y) * t;
                 break;
             }
         }
@@ -235,7 +295,7 @@ Aabb BoundsCurve::EvaluateBounds(
 }
 
 int StageData::FindSection(
-    const slug::StringView _id) const
+    const StringView _id) const
 {
     for (size_t i = 0; i < sections.size(); ++i)
     {
@@ -248,7 +308,7 @@ int StageData::FindSection(
 }
 
 const NamedRect* StageData::FindRect(
-    const slug::StringView _name) const
+    const StringView _name) const
 {
     for (const NamedRect& rect: rects)
     {
@@ -261,7 +321,7 @@ const NamedRect* StageData::FindRect(
 }
 
 const BackdropMode* StageData::FindBackdrop(
-    const slug::StringView _id) const
+    const StringView _id) const
 {
     for (const BackdropMode& mode: backdrops)
     {
@@ -274,9 +334,9 @@ const BackdropMode* StageData::FindBackdrop(
 }
 
 bool StageData::HasGroundMap(
-    const slug::StringView _name) const
+    const StringView _name) const
 {
-    for (const slug::String& map: groundMaps)
+    for (const String& map: groundMaps)
     {
         if (map == _name)
         {
@@ -288,33 +348,67 @@ bool StageData::HasGroundMap(
 
 namespace
 {
-    template<typename F>
-    void ForEachAction_(
-        const slug::Vector<StageAction>& _actions,
-        F&&                             _fn)
+    [[nodiscard]] int CountSpawnsIn_(
+        const Vector<StageAction>& _actions)
     {
+        int count = 0;
         for (const StageAction& action: _actions)
         {
-            _fn(action);
+            if (action.type == eActionType::Spawn)
+            {
+                count += action.spawn.GetCount();
+            }
             if (action.type == eActionType::Gate)
             {
-                ForEachAction_(action.actions, _fn);
+                count += CountSpawnsIn_(action.actions);
             }
         }
+        return count;
     }
-}
+
+    [[nodiscard]] int CountWaveEntriesIn_(
+        const Vector<StageAction>& _actions)
+    {
+        int count = 0;
+        for (const StageAction& action: _actions)
+        {
+            if (action.type == eActionType::SpawnWave)
+            {
+                for (const WaveEntry& entry: action.waveEntries)
+                {
+                    count += entry.spawn.GetCount();
+                }
+            }
+            if (action.type == eActionType::Gate)
+            {
+                count += CountWaveEntriesIn_(action.actions);
+            }
+        }
+        return count;
+    }
+
+    [[nodiscard]] int CountGatesIn_(
+        const Vector<StageAction>& _actions)
+    {
+        int count = 0;
+        for (const StageAction& action: _actions)
+        {
+            if (action.type == eActionType::Gate)
+            {
+                ++count;
+                count += CountGatesIn_(action.actions);
+            }
+        }
+        return count;
+    }
+}   // namespace
 
 int StageData::CountSpawns() const
 {
     int count = 0;
     for (const StageSection& section: sections)
     {
-        ForEachAction_(section.actions, [&count](const StageAction& _action) {
-            if (_action.type == eActionType::Spawn)
-            {
-                count += _action.spawn.GetCount();
-            }
-        });
+        count += CountSpawnsIn_(section.actions);
     }
     return count;
 }
@@ -324,15 +418,7 @@ int StageData::CountWaveEntries() const
     int count = 0;
     for (const StageSection& section: sections)
     {
-        ForEachAction_(section.actions, [&count](const StageAction& _action) {
-            if (_action.type == eActionType::SpawnWave)
-            {
-                for (const WaveEntry& entry: _action.waveEntries)
-                {
-                    count += entry.spawn.GetCount();
-                }
-            }
-        });
+        count += CountWaveEntriesIn_(section.actions);
     }
     return count;
 }
@@ -342,12 +428,7 @@ int StageData::CountGates() const
     int count = 0;
     for (const StageSection& section: sections)
     {
-        ForEachAction_(section.actions, [&count](const StageAction& _action) {
-            if (_action.type == eActionType::Gate)
-            {
-                ++count;
-            }
-        });
+        count += CountGatesIn_(section.actions);
     }
     return count;
 }
@@ -395,22 +476,20 @@ const char* GetActionTypeName(
 
 namespace
 {
-    using slug::JsonReader;
-    using slug::String;
-    using slug::StringView;
+    using JsonEntry = std::pair<StringView, JsonReader>;
 
     template<typename E>
     struct EnumEntry
     {
-        StringView name;
+        StringView name = {};
         E          value;
     };
 
     template<typename E, size_t N>
     [[nodiscard]] bool LookupEnum_(
-        const EnumEntry<E> (&_table)[N],
-        const StringView _name,
-        E&               _out)
+        const ARRAY<EnumEntry<E>, N>& _table,
+        const StringView              _name,
+        E&                            _out)
     {
         for (const EnumEntry<E>& entry: _table)
         {
@@ -425,9 +504,9 @@ namespace
 
     template<typename E, size_t N>
     [[nodiscard]] String ListEnum_(
-        const EnumEntry<E> (&_table)[N])
+        const ARRAY<EnumEntry<E>, N>& _table)
     {
-        String list;
+        String list = {};
         for (const EnumEntry<E>& entry: _table)
         {
             if (!list.empty())
@@ -439,73 +518,73 @@ namespace
         return list;
     }
 
-    constexpr EnumEntry<eEntityKind> kKindTable[] = {
-        { "enemy",    eEntityKind::Enemy    },
-        { "npc",      eEntityKind::Npc      },
-        { "prop",     eEntityKind::Prop     },
-        { "decor",    eEntityKind::Decor    },
-        { "item",     eEntityKind::Item     },
-        { "collider", eEntityKind::Collider }
+    constexpr ARRAY<EnumEntry<eEntityKind>, 6> kKindTable = {
+        EnumEntry<eEntityKind> {    "enemy",    eEntityKind::Enemy },
+        EnumEntry<eEntityKind> {      "npc",      eEntityKind::Npc },
+        EnumEntry<eEntityKind> {     "prop",     eEntityKind::Prop },
+        EnumEntry<eEntityKind> {    "decor",    eEntityKind::Decor },
+        EnumEntry<eEntityKind> {     "item",     eEntityKind::Item },
+        EnumEntry<eEntityKind> { "collider", eEntityKind::Collider }
     };
-    constexpr EnumEntry<eOrigin> kOriginTable[] = {
-        { "feet",         eOrigin::Feet         },
-        { "legacyCenter", eOrigin::LegacyCenter }
+    constexpr ARRAY<EnumEntry<eOrigin>, 2> kOriginTable = {
+        EnumEntry<eOrigin> {         "feet",         eOrigin::Feet },
+        EnumEntry<eOrigin> { "legacyCenter", eOrigin::LegacyCenter }
     };
-    constexpr EnumEntry<eStageLayer> kLayerTable[] = {
-        { "farBackground",   eStageLayer::FarBackground   },
-        { "background",      eStageLayer::Background      },
-        { "interact",        eStageLayer::Interact        },
-        { "monster",         eStageLayer::Monster         },
-        { "npc",             eStageLayer::Npc             },
-        { "item",            eStageLayer::Item            },
-        { "frontBackground", eStageLayer::FrontBackground },
-        { "collider",        eStageLayer::Collider        }
+    constexpr ARRAY<EnumEntry<eStageLayer>, 8> kLayerTable = {
+        EnumEntry<eStageLayer> {   "farBackground",   eStageLayer::FarBackground },
+        EnumEntry<eStageLayer> {      "background",      eStageLayer::Background },
+        EnumEntry<eStageLayer> {        "interact",        eStageLayer::Interact },
+        EnumEntry<eStageLayer> {         "monster",         eStageLayer::Monster },
+        EnumEntry<eStageLayer> {             "npc",             eStageLayer::Npc },
+        EnumEntry<eStageLayer> {            "item",            eStageLayer::Item },
+        EnumEntry<eStageLayer> { "frontBackground", eStageLayer::FrontBackground },
+        EnumEntry<eStageLayer> {        "collider",        eStageLayer::Collider }
     };
-    constexpr EnumEntry<eCollisionLayer> kCollisionTable[] = {
-        { "wall",               eCollisionLayer::Wall               },
-        { "groundExceptPlayer", eCollisionLayer::GroundExceptPlayer }
+    constexpr ARRAY<EnumEntry<eCollisionLayer>, 2> kCollisionTable = {
+        EnumEntry<eCollisionLayer> {               "wall",               eCollisionLayer::Wall },
+        EnumEntry<eCollisionLayer> { "groundExceptPlayer", eCollisionLayer::GroundExceptPlayer }
     };
-    constexpr EnumEntry<eAnchorX> kAnchorXTable[] = {
-        { "left",   eAnchorX::Left   },
-        { "right",  eAnchorX::Right  },
-        { "center", eAnchorX::Center }
+    constexpr ARRAY<EnumEntry<eAnchorX>, 3> kAnchorXTable = {
+        EnumEntry<eAnchorX> {   "left",   eAnchorX::Left },
+        EnumEntry<eAnchorX> {  "right",  eAnchorX::Right },
+        EnumEntry<eAnchorX> { "center", eAnchorX::Center }
     };
-    constexpr EnumEntry<eAnchorY> kAnchorYTable[] = {
-        { "top",    eAnchorY::Top    },
-        { "bottom", eAnchorY::Bottom },
-        { "center", eAnchorY::Center }
+    constexpr ARRAY<EnumEntry<eAnchorY>, 3> kAnchorYTable = {
+        EnumEntry<eAnchorY> {    "top",    eAnchorY::Top },
+        EnumEntry<eAnchorY> { "bottom", eAnchorY::Bottom },
+        EnumEntry<eAnchorY> { "center", eAnchorY::Center }
     };
-    constexpr EnumEntry<eActionType> kActionTable[] = {
-        { "spawn",            eActionType::Spawn            },
-        { "spawnWave",        eActionType::SpawnWave        },
-        { "setBounds",        eActionType::SetBounds        },
-        { "lockCamera",       eActionType::LockCamera       },
-        { "unlockCamera",     eActionType::UnlockCamera     },
-        { "cameraMove",       eActionType::CameraMove       },
-        { "setCameraOffset",  eActionType::SetCameraOffset  },
-        { "setBackdrop",      eActionType::SetBackdrop      },
-        { "setGround",        eActionType::SetGround        },
-        { "gate",             eActionType::Gate             },
-        { "command",          eActionType::Command          },
-        { "clear",            eActionType::Clear            },
-        { "banner",           eActionType::Banner           },
-        { "fade",             eActionType::Fade             },
-        { "playBgm",          eActionType::PlayBgm          },
-        { "playerInvincible", eActionType::PlayerInvincible },
-        { "endStage",         eActionType::EndStage         }
+    constexpr ARRAY<EnumEntry<eActionType>, 17> kActionTable = {
+        EnumEntry<eActionType> {            "spawn",            eActionType::Spawn },
+        EnumEntry<eActionType> {        "spawnWave",        eActionType::SpawnWave },
+        EnumEntry<eActionType> {        "setBounds",        eActionType::SetBounds },
+        EnumEntry<eActionType> {       "lockCamera",       eActionType::LockCamera },
+        EnumEntry<eActionType> {     "unlockCamera",     eActionType::UnlockCamera },
+        EnumEntry<eActionType> {       "cameraMove",       eActionType::CameraMove },
+        EnumEntry<eActionType> {  "setCameraOffset",  eActionType::SetCameraOffset },
+        EnumEntry<eActionType> {      "setBackdrop",      eActionType::SetBackdrop },
+        EnumEntry<eActionType> {        "setGround",        eActionType::SetGround },
+        EnumEntry<eActionType> {             "gate",             eActionType::Gate },
+        EnumEntry<eActionType> {          "command",          eActionType::Command },
+        EnumEntry<eActionType> {            "clear",            eActionType::Clear },
+        EnumEntry<eActionType> {           "banner",           eActionType::Banner },
+        EnumEntry<eActionType> {             "fade",             eActionType::Fade },
+        EnumEntry<eActionType> {          "playBgm",          eActionType::PlayBgm },
+        EnumEntry<eActionType> { "playerInvincible", eActionType::PlayerInvincible },
+        EnumEntry<eActionType> {         "endStage",         eActionType::EndStage }
     };
-    constexpr EnumEntry<eWhen> kWhenTable[] = {
-        { "normal", eWhen::Normal },
-        { "silent", eWhen::Silent },
-        { "always", eWhen::Always }
+    constexpr ARRAY<EnumEntry<eWhen>, 3> kWhenTable = {
+        EnumEntry<eWhen> { "normal", eWhen::Normal },
+        EnumEntry<eWhen> { "silent", eWhen::Silent },
+        EnumEntry<eWhen> { "always", eWhen::Always }
     };
-    constexpr EnumEntry<eGateUntil> kUntilTable[] = {
-        { "defeated",        eGateUntil::Defeated        },
-        { "destroyFinished", eGateUntil::DestroyFinished }
+    constexpr ARRAY<EnumEntry<eGateUntil>, 2> kUntilTable = {
+        EnumEntry<eGateUntil> {        "defeated",        eGateUntil::Defeated },
+        EnumEntry<eGateUntil> { "destroyFinished", eGateUntil::DestroyFinished }
     };
-    constexpr EnumEntry<eFadeTarget> kFadeTable[] = {
-        { "black", eFadeTarget::Black },
-        { "clear", eFadeTarget::Clear }
+    constexpr ARRAY<EnumEntry<eFadeTarget>, 2> kFadeTable = {
+        EnumEntry<eFadeTarget> { "black", eFadeTarget::Black },
+        EnumEntry<eFadeTarget> { "clear", eFadeTarget::Clear }
     };
 
     [[nodiscard]] bool IsCreature_(
@@ -571,9 +650,9 @@ namespace
         if (_json.IsObject())
         {
             ParamValue object = ParamValue::MakeObject();
-            for (const auto [key, value]: _json.GetObject())
+            for (const JsonEntry& entry: _json.GetObject())
             {
-                object.Set(String { key }, ToParam_(value));
+                object.Set(String { entry.first }, ToParam_(entry.second));
             }
             return object;
         }
@@ -591,7 +670,7 @@ namespace
 
         [[nodiscard]] bool Parse(const JsonReader& _root);
 
-        [[nodiscard]] const String& GetError() const { return m_error; }
+        [[nodiscard]] const String& GetError() const;
 
     private:
         enum class eSpawnContext
@@ -602,20 +681,86 @@ namespace
 
         bool Fail_(const String& _where, const String& _message);
 
-        bool GetField_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, std::optional<JsonReader>& _out);
-        bool GetNumber_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, double& _out, bool* _pFound = nullptr);
-        bool GetFloat_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, float& _out, bool* _pFound = nullptr);
-        bool GetInt_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, int& _out, bool* _pFound = nullptr);
-        bool GetBool_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, bool& _out, bool* _pFound = nullptr);
-        bool GetString_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, String& _out, bool* _pFound = nullptr);
-        bool GetVec2_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, Vec2& _out, bool* _pFound = nullptr);
-        bool GetObject_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, std::optional<JsonReader>& _out);
-        bool GetArray_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, std::optional<JsonReader>& _out);
+        bool GetField_(
+            const JsonReader&          _obj,
+            const String&              _where,
+            StringView                 _key,
+            bool                       _bRequired,
+            std::optional<JsonReader>& _out);
+
+        bool GetNumber_(
+            const JsonReader& _obj,
+            const String&     _where,
+            StringView        _key,
+            bool              _bRequired,
+            double&           _out,
+            bool*             _pFound = nullptr);
+
+        bool GetFloat_(
+            const JsonReader& _obj,
+            const String&     _where,
+            StringView        _key,
+            bool              _bRequired,
+            float&            _out,
+            bool*             _pFound = nullptr);
+
+        bool GetInt_(
+            const JsonReader& _obj,
+            const String&     _where,
+            StringView        _key,
+            bool              _bRequired,
+            int&              _out,
+            bool*             _pFound = nullptr);
+
+        bool GetBool_(
+            const JsonReader& _obj,
+            const String&     _where,
+            StringView        _key,
+            bool              _bRequired,
+            bool&             _out,
+            bool*             _pFound = nullptr);
+
+        bool GetString_(
+            const JsonReader& _obj,
+            const String&     _where,
+            StringView        _key,
+            bool              _bRequired,
+            String&           _out,
+            bool*             _pFound = nullptr);
+
+        bool GetVec2_(
+            const JsonReader& _obj,
+            const String&     _where,
+            StringView        _key,
+            bool              _bRequired,
+            Vec2&             _out,
+            bool*             _pFound = nullptr);
+
+        bool GetObject_(
+            const JsonReader&          _obj,
+            const String&              _where,
+            StringView                 _key,
+            bool                       _bRequired,
+            std::optional<JsonReader>& _out);
+
+        bool GetArray_(
+            const JsonReader&          _obj,
+            const String&              _where,
+            StringView                 _key,
+            bool                       _bRequired,
+            std::optional<JsonReader>& _out);
 
         template<typename E, size_t N>
-        bool GetEnum_(const JsonReader& _obj, const String& _where, StringView _key, bool _bRequired, const EnumEntry<E> (&_table)[N], E& _out, bool* _pFound = nullptr)
+        bool GetEnum_(
+            const JsonReader&             _obj,
+            const String&                 _where,
+            const StringView              _key,
+            const bool                    _bRequired,
+            const ARRAY<EnumEntry<E>, N>& _table,
+            E&                            _out,
+            bool* const                   _pFound = nullptr)
         {
-            String text;
+            String text   = {};
             bool   bFound = false;
             if (!GetString_(_obj, _where, _key, _bRequired, text, &bFound))
             {
@@ -647,23 +792,46 @@ namespace
         bool ParseCamera_(const JsonReader& _root);
         bool ParsePlayer_(const JsonReader& _root);
         bool ParseSections_(const JsonReader& _root);
-        bool ParseRect_(const JsonReader& _obj, const String& _where, StringView _key, bool _bAllowCurrent, RectRef& _out);
-        bool ParseRectArray_(const JsonReader& _array, const String& _where, StringView _key, Aabb& _out);
 
-        bool ParseSpawn_(const JsonReader& _obj, const String& _where, eSpawnContext _context, SpawnSpec& _out);
+        bool ParseRect_(
+            const JsonReader& _obj,
+            const String&     _where,
+            StringView        _key,
+            bool              _bAllowCurrent,
+            RectRef&          _out);
+
+        bool ParseRectArray_(
+            const JsonReader& _array,
+            const String&     _where,
+            StringView        _key,
+            Aabb&             _out);
+
+        bool ParseSpawn_(
+            const JsonReader& _obj,
+            const String&     _where,
+            eSpawnContext     _context,
+            SpawnSpec&        _out);
+
         bool ParseCameraAnchor_(const JsonReader& _obj, const String& _where, CameraAnchor& _out);
         bool ParseAction_(const JsonReader& _obj, const String& _where, StageAction& _out);
-        bool ParseActionList_(const JsonReader& _array, const String& _where, slug::Vector<StageAction>& _out);
+        bool ParseActionList_(const JsonReader& _array, const String& _where, Vector<StageAction>& _out);
 
-        bool Validate_();
-        bool CollectIds_(const slug::Vector<StageAction>& _actions, const String& _where);
-        bool CheckRefs_(const slug::Vector<StageAction>& _actions, const String& _where);
+        bool               Validate_();
+        bool               AddSpawnId_(const SpawnSpec& _spawn, const String& _at);
+        [[nodiscard]] bool HasSpawnId_(const String& _id) const;
+        bool               CollectIds_(const Vector<StageAction>& _actions, const String& _where);
+        bool               CheckRefs_(const Vector<StageAction>& _actions, const String& _where);
 
-        StageData&               m_out;
-        String                   m_error;
-        slug::Vector<String>      m_spawnIds;
-        slug::Vector<String>      m_gateIds;
+        StageData&     m_out;
+        String         m_error    = {};
+        Vector<String> m_spawnIds = {};
+        Vector<String> m_gateIds  = {};
     };
+
+    const String& Parser::GetError() const
+    {
+        return m_error;
+    }
 
     bool Parser::Fail_(
         const String& _where,
@@ -692,8 +860,8 @@ namespace
             }
             return true;
         }
-        const slug::Result<JsonReader> found = _obj.FindField(_key);
-        _out                                = found.GetValue();
+        const Result<JsonReader> found = _obj.FindField(_key);
+        _out                           = found.GetValue();
         return true;
     }
 
@@ -703,9 +871,9 @@ namespace
         const StringView  _key,
         const bool        _bRequired,
         double&           _out,
-        bool*             _pFound)
+        bool* const       _pFound)
     {
-        std::optional<JsonReader> field;
+        std::optional<JsonReader> field = std::nullopt;
         if (!GetField_(_obj, _where, _key, _bRequired, field))
         {
             return false;
@@ -732,7 +900,7 @@ namespace
         const StringView  _key,
         const bool        _bRequired,
         float&            _out,
-        bool*             _pFound)
+        bool* const       _pFound)
     {
         double value = static_cast<double>(_out);
         if (!GetNumber_(_obj, _where, _key, _bRequired, value, _pFound))
@@ -749,9 +917,9 @@ namespace
         const StringView  _key,
         const bool        _bRequired,
         int&              _out,
-        bool*             _pFound)
+        bool* const       _pFound)
     {
-        double value = static_cast<double>(_out);
+        double value  = static_cast<double>(_out);
         bool   bFound = false;
         if (!GetNumber_(_obj, _where, _key, _bRequired, value, &bFound))
         {
@@ -778,9 +946,9 @@ namespace
         const StringView  _key,
         const bool        _bRequired,
         bool&             _out,
-        bool*             _pFound)
+        bool* const       _pFound)
     {
-        std::optional<JsonReader> field;
+        std::optional<JsonReader> field = std::nullopt;
         if (!GetField_(_obj, _where, _key, _bRequired, field))
         {
             return false;
@@ -807,9 +975,9 @@ namespace
         const StringView  _key,
         const bool        _bRequired,
         String&           _out,
-        bool*             _pFound)
+        bool* const       _pFound)
     {
-        std::optional<JsonReader> field;
+        std::optional<JsonReader> field = std::nullopt;
         if (!GetField_(_obj, _where, _key, _bRequired, field))
         {
             return false;
@@ -835,10 +1003,10 @@ namespace
         const String&     _where,
         const StringView  _key,
         const bool        _bRequired,
-        Vec2&     _out,
-        bool*             _pFound)
+        Vec2&             _out,
+        bool* const       _pFound)
     {
-        std::optional<JsonReader> field;
+        std::optional<JsonReader> field = std::nullopt;
         if (!GetField_(_obj, _where, _key, _bRequired, field))
         {
             return false;
@@ -855,8 +1023,8 @@ namespace
         {
             return Fail_(_where, std::format("field '{}' must be an array of 2 numbers", _key));
         }
-        float values[2] = { 0.f, 0.f };
-        int   index     = 0;
+        ARRAY<float, 2> values = { 0.f, 0.f };
+        int             index  = 0;
         for (const JsonReader element: field->GetArray())
         {
             if (!element.IsNumber())
@@ -917,16 +1085,17 @@ namespace
     }
 
     bool Parser::CheckKeys_(
-        const JsonReader&                   _obj,
-        const String&                       _where,
+        const JsonReader&                       _obj,
+        const String&                           _where,
         const std::initializer_list<StringView> _allowed)
     {
         if (!ExpectObject_(_obj, _where))
         {
             return false;
         }
-        for (const auto [key, value]: _obj.GetObject())
+        for (const JsonEntry& entry: _obj.GetObject())
         {
+            const StringView key = entry.first;
             if (key == "note")
             {
                 continue;
@@ -977,7 +1146,7 @@ namespace
         const JsonReader& _root)
     {
         const String              where = "world";
-        std::optional<JsonReader> world;
+        std::optional<JsonReader> world = std::nullopt;
         if (!GetObject_(_root, "root", "world", true, world) || !CheckKeys_(*world, where, { "size", "view", "background", "endless" }))
         {
             return false;
@@ -986,7 +1155,7 @@ namespace
         {
             return false;
         }
-        std::optional<JsonReader> endless;
+        std::optional<JsonReader> endless = std::nullopt;
         if (!GetObject_(*world, where, "endless", false, endless))
         {
             return false;
@@ -1010,7 +1179,7 @@ namespace
     bool Parser::ParseBgm_(
         const JsonReader& _root)
     {
-        std::optional<JsonReader> bgm;
+        std::optional<JsonReader> bgm = std::nullopt;
         if (!GetObject_(_root, "root", "bgm", false, bgm) || !bgm)
         {
             return !m_error.size();
@@ -1022,13 +1191,13 @@ namespace
     bool Parser::ParseGround_(
         const JsonReader& _root)
     {
-        const String              where = "ground";
-        std::optional<JsonReader> ground;
+        const String              where  = "ground";
+        std::optional<JsonReader> ground = std::nullopt;
         if (!GetObject_(_root, "root", "ground", true, ground) || !CheckKeys_(*ground, where, { "initial", "maps" }))
         {
             return false;
         }
-        std::optional<JsonReader> maps;
+        std::optional<JsonReader> maps = std::nullopt;
         if (!GetString_(*ground, where, "initial", true, m_out.groundInitial) || !GetArray_(*ground, where, "maps", true, maps))
         {
             return false;
@@ -1056,7 +1225,7 @@ namespace
     bool Parser::ParseBackdrop_(
         const JsonReader& _root)
     {
-        std::optional<JsonReader> backdrop;
+        std::optional<JsonReader> backdrop = std::nullopt;
         if (!GetObject_(_root, "root", "backdrop", false, backdrop))
         {
             return false;
@@ -1070,20 +1239,22 @@ namespace
         {
             return false;
         }
-        std::optional<JsonReader> modes;
+        std::optional<JsonReader> modes = std::nullopt;
         if (!GetString_(*backdrop, where, "initial", true, m_out.backdropInitial) || !GetObject_(*backdrop, where, "modes", true, modes))
         {
             return false;
         }
-        for (const auto [id, json]: modes->GetObject())
+        for (const JsonEntry& entry: modes->GetObject())
         {
-            const String modeWhere = std::format("backdrop.modes.{}", id);
+            const StringView id        = entry.first;
+            const JsonReader json      = entry.second;
+            const String     modeWhere = std::format("backdrop.modes.{}", id);
             if (!CheckKeys_(json, modeWhere, { "sprite", "offset", "parallaxX", "period" }))
             {
                 return false;
             }
-            BackdropMode mode;
-            mode.id = String { id };
+            BackdropMode mode = {};
+            mode.id           = String { id };
             if (!GetString_(json, modeWhere, "sprite", true, mode.sprite) || !GetVec2_(json, modeWhere, "offset", false, mode.offset) || !GetFloat_(json, modeWhere, "parallaxX", false, mode.parallaxX) || !GetFloat_(json, modeWhere, "period", false, mode.period))
             {
                 return false;
@@ -1107,8 +1278,8 @@ namespace
         {
             return Fail_(_where, std::format("'{}' must be an array [left, top, right, bottom]", _key));
         }
-        float values[4] = {};
-        int   index     = 0;
+        ARRAY<float, 4> values = {};
+        int             index  = 0;
         for (const JsonReader element: _array.GetArray())
         {
             if (!element.IsNumber())
@@ -1128,7 +1299,7 @@ namespace
     bool Parser::ParseRects_(
         const JsonReader& _root)
     {
-        std::optional<JsonReader> rects;
+        std::optional<JsonReader> rects = std::nullopt;
         if (!GetObject_(_root, "root", "rects", false, rects))
         {
             return false;
@@ -1137,8 +1308,10 @@ namespace
         {
             return true;
         }
-        for (const auto [name, json]: rects->GetObject())
+        for (const JsonEntry& entry: rects->GetObject())
         {
+            const StringView name = entry.first;
+            const JsonReader json = entry.second;
             if (name == "note")
             {
                 continue;
@@ -1147,8 +1320,8 @@ namespace
             {
                 return Fail_("rects", "'current' is a reserved rect name");
             }
-            NamedRect rect;
-            rect.name = String { name };
+            NamedRect rect = {};
+            rect.name      = String { name };
             if (!ParseRectArray_(json, std::format("rects.{}", name), name, rect.rect))
             {
                 return false;
@@ -1165,7 +1338,7 @@ namespace
         const bool        _bAllowCurrent,
         RectRef&          _out)
     {
-        std::optional<JsonReader> field;
+        std::optional<JsonReader> field = std::nullopt;
         if (!GetField_(_obj, _where, _key, true, field))
         {
             return false;
@@ -1202,7 +1375,7 @@ namespace
     {
         m_out.camera.initialBounds = Aabb::FromMinMax({ 0.f, 0.f }, m_out.worldSize);
 
-        std::optional<JsonReader> camera;
+        std::optional<JsonReader> camera = std::nullopt;
         if (!GetObject_(_root, "root", "camera", false, camera))
         {
             return false;
@@ -1230,7 +1403,7 @@ namespace
 
         if (camera->HasField("initialBounds"))
         {
-            std::optional<JsonReader> bounds;
+            std::optional<JsonReader> bounds = std::nullopt;
             if (!GetField_(*camera, where, "initialBounds", true, bounds) || !ParseRectArray_(*bounds, where, "initialBounds", m_out.camera.initialBounds))
             {
                 return false;
@@ -1245,7 +1418,7 @@ namespace
             return Fail_(where, "playerMargin must be >= 0");
         }
 
-        std::optional<JsonReader> curves;
+        std::optional<JsonReader> curves = std::nullopt;
         if (!GetArray_(*camera, where, "boundsCurves", false, curves) || !curves)
         {
             return !m_error.size();
@@ -1258,7 +1431,7 @@ namespace
             {
                 return false;
             }
-            BoundsCurve curve;
+            BoundsCurve curve  = {};
             String      source = "playerX";
             String      round  = "none";
             if (!GetString_(json, curveWhere, "id", true, curve.id) || !GetString_(json, curveWhere, "source", false, source) || !GetString_(json, curveWhere, "from", true, curve.from) || !GetString_(json, curveWhere, "until", true, curve.until) || !GetFloat_(json, curveWhere, "left", true, curve.left) || !GetFloat_(json, curveWhere, "right", true, curve.right) || !GetFloat_(json, curveWhere, "height", true, curve.height) || !GetString_(json, curveWhere, "round", false, round))
@@ -1279,7 +1452,7 @@ namespace
                 return Fail_(curveWhere, "right must be > left and height must be > 0");
             }
 
-            std::optional<JsonReader> top;
+            std::optional<JsonReader> top = std::nullopt;
             if (!GetArray_(json, curveWhere, "top", true, top))
             {
                 return false;
@@ -1294,8 +1467,8 @@ namespace
                 {
                     return Fail_(curveWhere, "top points must be [x, y]");
                 }
-                float values[2] = {};
-                int   index     = 0;
+                ARRAY<float, 2> values = {};
+                int             index  = 0;
                 for (const JsonReader element: point.GetArray())
                 {
                     if (!element.IsNumber())
@@ -1318,7 +1491,7 @@ namespace
     bool Parser::ParsePlayer_(
         const JsonReader& _root)
     {
-        std::optional<JsonReader> player;
+        std::optional<JsonReader> player = std::nullopt;
         if (!GetObject_(_root, "root", "player", false, player))
         {
             return false;
@@ -1332,7 +1505,7 @@ namespace
         {
             return false;
         }
-        PlayerStart& start = m_out.player;
+        PlayerStart& start    = m_out.player;
         bool         bHasHalf = false;
         if (!GetFloat_(*player, where, "x", true, start.x) || !GetFloat_(*player, where, "y", false, start.y, &start.bHasY) || !GetEnum_(*player, where, "origin", false, kOriginTable, start.origin) || !GetFloat_(*player, where, "halfHeight", false, start.halfHeight, &bHasHalf) || !GetBool_(*player, where, "settle", false, start.bSettle) || !GetBool_(*player, where, "groundSnap", false, start.bGroundSnap) || !GetFloat_(*player, where, "fromY", false, start.fromY))
         {
@@ -1354,7 +1527,7 @@ namespace
         const String&     _where,
         CameraAnchor&     _out)
     {
-        std::optional<JsonReader> anchor;
+        std::optional<JsonReader> anchor = std::nullopt;
         if (!GetObject_(_obj, _where, "camera", true, anchor))
         {
             return false;
@@ -1367,7 +1540,7 @@ namespace
 
         if (anchor->HasField("dx"))
         {
-            std::optional<JsonReader> dx;
+            std::optional<JsonReader> dx = std::nullopt;
             if (!GetField_(*anchor, where, "dx", true, dx))
             {
                 return false;
@@ -1383,8 +1556,8 @@ namespace
             }
             else if (dx->IsArray() && dx->GetSize() == 2)
             {
-                int values[2] = {};
-                int index     = 0;
+                ARRAY<int, 2> values = {};
+                int           index  = 0;
                 for (const JsonReader element: dx->GetArray())
                 {
                     if (!element.IsNumber() || element.Read<double>().GetValue() != std::floor(element.Read<double>().GetValue()))
@@ -1409,18 +1582,21 @@ namespace
     }
 
     bool Parser::ParseSpawn_(
-        const JsonReader&    _obj,
-        const String&        _where,
-        const eSpawnContext  _context,
-        SpawnSpec&           _out)
+        const JsonReader&   _obj,
+        const String&       _where,
+        const eSpawnContext _context,
+        SpawnSpec&          _out)
     {
-        static constexpr StringView kSpawnKeys[] = { "kind", "def", "id", "x", "y", "origin", "halfHeight", "groundSnap", "fromY", "settle", "camera", "repeat", "facing", "hp", "drop", "ambush", "layer", "cullMargin", "size", "collisionLayer", "anim", "sprite", "params" };
+        static constexpr ARRAY<StringView, 23> kSpawnKeys = {
+            { "kind", "def", "id", "x", "y", "origin", "halfHeight", "groundSnap", "fromY", "settle", "camera", "repeat", "facing", "hp", "drop", "ambush", "layer", "cullMargin", "size", "collisionLayer", "anim", "sprite", "params" }
+        };
         if (!ExpectObject_(_obj, _where))
         {
             return false;
         }
-        for (const auto [key, value]: _obj.GetObject())
+        for (const JsonEntry& entry: _obj.GetObject())
         {
+            const StringView key = entry.first;
             if (key == "note")
             {
                 continue;
@@ -1453,7 +1629,7 @@ namespace
             return Fail_(_where, "field 'def' must not be empty");
         }
 
-        _out.origin = DefaultOrigin_(_out.kind);
+        _out.origin          = DefaultOrigin_(_out.kind);
         bool bOriginExplicit = false;
         if (!GetEnum_(_obj, _where, "origin", false, kOriginTable, _out.origin, &bOriginExplicit) || !GetFloat_(_obj, _where, "x", false, _out.x, &_out.bHasX) || !GetFloat_(_obj, _where, "y", false, _out.y, &_out.bHasY) || !GetFloat_(_obj, _where, "halfHeight", false, _out.halfHeight, &_out.bHasHalfHeight) || !GetBool_(_obj, _where, "groundSnap", false, _out.bGroundSnap) || !GetFloat_(_obj, _where, "fromY", false, _out.fromY) || !GetBool_(_obj, _where, "settle", false, _out.bSettle))
         {
@@ -1518,7 +1694,7 @@ namespace
 
         if (_obj.HasField("repeat"))
         {
-            std::optional<JsonReader> repeat;
+            std::optional<JsonReader> repeat = std::nullopt;
             if (!GetObject_(_obj, _where, "repeat", true, repeat))
             {
                 return false;
@@ -1537,7 +1713,7 @@ namespace
 
         if (_obj.HasField("facing"))
         {
-            String facing;
+            String facing = {};
             if (!GetString_(_obj, _where, "facing", true, facing))
             {
                 return false;
@@ -1571,7 +1747,7 @@ namespace
 
         if (_obj.HasField("ambush"))
         {
-            std::optional<JsonReader> ambush;
+            std::optional<JsonReader> ambush = std::nullopt;
             if (!GetObject_(_obj, _where, "ambush", true, ambush))
             {
                 return false;
@@ -1636,7 +1812,7 @@ namespace
 
         if (_obj.HasField("params"))
         {
-            std::optional<JsonReader> params;
+            std::optional<JsonReader> params = std::nullopt;
             if (!GetObject_(_obj, _where, "params", true, params))
             {
                 return false;
@@ -1651,9 +1827,9 @@ namespace
     }
 
     bool Parser::ParseActionList_(
-        const JsonReader&         _array,
-        const String&             _where,
-        slug::Vector<StageAction>& _out)
+        const JsonReader&    _array,
+        const String&        _where,
+        Vector<StageAction>& _out)
     {
         if (!_array.IsArray())
         {
@@ -1662,8 +1838,8 @@ namespace
         int index = 0;
         for (const JsonReader json: _array.GetArray())
         {
-            StageAction action;
-            String typeName = "?";
+            StageAction action   = {};
+            String      typeName = "?";
             if (json.IsObject() && json.HasField("type") && json.FindField("type")->IsString())
             {
                 typeName = json.FindField("type")->Read<String>().GetValue();
@@ -1717,7 +1893,7 @@ namespace
                 {
                     return false;
                 }
-                std::optional<JsonReader> entries;
+                std::optional<JsonReader> entries = std::nullopt;
                 if (!GetArray_(_obj, _where, "entries", true, entries))
                 {
                     return false;
@@ -1730,7 +1906,7 @@ namespace
                 for (const JsonReader json: entries->GetArray())
                 {
                     const String entryWhere = std::format("{} entries[{}]", _where, index++);
-                    WaveEntry    entry;
+                    WaveEntry    entry      = {};
                     if (!ParseSpawn_(json, entryWhere, eSpawnContext::WaveEntry, entry.spawn))
                     {
                         return false;
@@ -1832,8 +2008,8 @@ namespace
                 {
                     return false;
                 }
-                std::optional<JsonReader> waitFor;
-                std::optional<JsonReader> actions;
+                std::optional<JsonReader> waitFor = std::nullopt;
+                std::optional<JsonReader> actions = std::nullopt;
                 if (!GetArray_(_obj, _where, "waitFor", true, waitFor) || !GetArray_(_obj, _where, "actions", true, actions))
                 {
                     return false;
@@ -1870,7 +2046,7 @@ namespace
                 {
                     return false;
                 }
-                std::optional<JsonReader> layers;
+                std::optional<JsonReader> layers = std::nullopt;
                 if (!GetArray_(_obj, _where, "layers", false, layers))
                 {
                     return false;
@@ -1954,7 +2130,7 @@ namespace
     bool Parser::ParseSections_(
         const JsonReader& _root)
     {
-        std::optional<JsonReader> sections;
+        std::optional<JsonReader> sections = std::nullopt;
         if (!GetArray_(_root, "root", "sections", true, sections))
         {
             return false;
@@ -1974,8 +2150,8 @@ namespace
                 return false;
             }
 
-            StageSection section;
-            std::optional<JsonReader> actions;
+            StageSection              section = {};
+            std::optional<JsonReader> actions = std::nullopt;
             if (!GetString_(json, where, "id", true, section.id) || !GetFloat_(json, where, "triggerX", true, section.triggerX) || !GetArray_(json, where, "actions", true, actions))
             {
                 return false;
@@ -2005,33 +2181,50 @@ namespace
         return true;
     }
 
+    bool Parser::AddSpawnId_(
+        const SpawnSpec& _spawn,
+        const String&    _at)
+    {
+        if (_spawn.id.empty())
+        {
+            return true;
+        }
+        for (const String& existing: m_spawnIds)
+        {
+            if (existing == _spawn.id)
+            {
+                return Fail_(_at, std::format("duplicate spawn id '{}'", _spawn.id));
+            }
+        }
+        m_spawnIds.push_back(_spawn.id);
+        return true;
+    }
+
+    bool Parser::HasSpawnId_(
+        const String& _id) const
+    {
+        for (const String& existing: m_spawnIds)
+        {
+            if (existing == _id)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     bool Parser::CollectIds_(
-        const slug::Vector<StageAction>& _actions,
-        const String&                   _where)
+        const Vector<StageAction>& _actions,
+        const String&              _where)
     {
         int index = 0;
         for (const StageAction& action: _actions)
         {
             const String where = std::format("{} action #{} ({})", _where, index++, GetActionTypeName(action.type));
-            auto         AddSpawnId = [&](const SpawnSpec& _spawn, const String& _at) {
-                if (_spawn.id.empty())
-                {
-                    return true;
-                }
-                for (const String& existing: m_spawnIds)
-                {
-                    if (existing == _spawn.id)
-                    {
-                        return Fail_(_at, std::format("duplicate spawn id '{}'", _spawn.id));
-                    }
-                }
-                m_spawnIds.push_back(_spawn.id);
-                return true;
-            };
 
             if (action.type == eActionType::Spawn)
             {
-                if (!AddSpawnId(action.spawn, where))
+                if (!AddSpawnId_(action.spawn, where))
                 {
                     return false;
                 }
@@ -2041,7 +2234,7 @@ namespace
                 int entryIndex = 0;
                 for (const WaveEntry& entry: action.waveEntries)
                 {
-                    if (!AddSpawnId(entry.spawn, std::format("{} entries[{}]", where, entryIndex++)))
+                    if (!AddSpawnId_(entry.spawn, std::format("{} entries[{}]", where, entryIndex++)))
                     {
                         return false;
                     }
@@ -2067,20 +2260,9 @@ namespace
     }
 
     bool Parser::CheckRefs_(
-        const slug::Vector<StageAction>& _actions,
-        const String&                   _where)
+        const Vector<StageAction>& _actions,
+        const String&              _where)
     {
-        const auto HasSpawnId = [this](const String& _id) {
-            for (const String& existing: m_spawnIds)
-            {
-                if (existing == _id)
-                {
-                    return true;
-                }
-            }
-            return false;
-        };
-
         int index = 0;
         for (const StageAction& action: _actions)
         {
@@ -2089,7 +2271,7 @@ namespace
             {
                 for (const String& id: action.waitFor)
                 {
-                    if (!HasSpawnId(id))
+                    if (!HasSpawnId_(id))
                     {
                         return Fail_(where, std::format("gate '{}' waitFor unknown spawn id '{}'", action.gateId, id));
                     }
@@ -2099,7 +2281,7 @@ namespace
                     return false;
                 }
             }
-            else if (action.type == eActionType::Command && !HasSpawnId(action.target))
+            else if (action.type == eActionType::Command && !HasSpawnId_(action.target))
             {
                 return Fail_(where, std::format("command target unknown spawn id '{}'", action.target));
             }
@@ -2145,35 +2327,35 @@ namespace
         return true;
     }
 
-    [[nodiscard]] slug::Result<StageData> MakeFailure_(
-        StageLoadDiagnostics* _pDiag,
-        const String&         _message,
-        const eError          _code)
+    [[nodiscard]] Result<StageData> MakeFailure_(
+        StageLoadDiagnostics* const _pDiag,
+        const String&               _message,
+        const eError                _code)
     {
         if (_pDiag)
         {
             _pDiag->message = _message;
         }
-        return slug::Error { _code };
+        return Error { _code };
     }
-}
+}   // namespace
 
-slug::Result<StageData> LoadStageFromJson(
-    const slug::StringView  _json,
-    StageLoadDiagnostics*  _pDiag)
+Result<StageData> LoadStageFromJson(
+    const StringView            _json,
+    StageLoadDiagnostics* const _pDiag)
 {
     if (_pDiag)
     {
         _pDiag->message.clear();
     }
 
-    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::Load(_json, slug::eJsonLoadOption::AllowBOM);
+    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, eJsonLoadOption::AllowBOM);
     if (!doc)
     {
         return MakeFailure_(_pDiag, "JSON syntax error", eError::Parse);
     }
 
-    StageData data;
+    StageData data = {};
     Parser    parser { data };
     if (!parser.Parse(doc->GetReader()))
     {
@@ -2182,9 +2364,9 @@ slug::Result<StageData> LoadStageFromJson(
     return data;
 }
 
-slug::Result<StageData> LoadStageFromFile(
-    const slug::FilePath&  _path,
-    StageLoadDiagnostics* _pDiag)
+Result<StageData> LoadStageFromFile(
+    const FilePath&             _path,
+    StageLoadDiagnostics* const _pDiag)
 {
     std::ifstream file { _path, std::ios::binary };
     if (!file)
@@ -2193,7 +2375,8 @@ slug::Result<StageData> LoadStageFromFile(
     }
     std::ostringstream buffer;
     buffer << file.rdbuf();
-    const slug::String text = buffer.str();
+    const String text = buffer.str();
     return LoadStageFromJson(text, _pDiag);
 }
-}
+
+}   // namespace slug

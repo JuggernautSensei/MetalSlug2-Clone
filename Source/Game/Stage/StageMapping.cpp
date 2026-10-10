@@ -1,10 +1,10 @@
 #include "Game/Stage/StageMapping.h"
-#include "Base/Types.h"
-#include "Base/Math.h"
 
 #include <cstdint>
 #include <fstream>
-#include <vector>
+
+#include "Base/Math.h"
+#include "Base/Types.h"
 
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
@@ -17,7 +17,7 @@ namespace
 {
     [[nodiscard]] Vec2 ReadVec2_(
         const ParamValue& _value,
-        const Vec2 _default)
+        const Vec2        _default)
     {
         if (!_value.IsArray() || _value.GetSize() < 2)
         {
@@ -29,7 +29,7 @@ namespace
     [[nodiscard]] PropBoxOverride ReadBox_(
         const ParamValue& _value)
     {
-        PropBoxOverride box;
+        PropBoxOverride box = {};
         if (!_value.IsObject())
         {
             return box;
@@ -44,12 +44,12 @@ namespace
         }
         return box;
     }
-}
+}   // namespace
 
 PropSpawnParams MakePropSpawnParams(
-    const ParamValue* _pParams)
+    const ParamValue* const _pParams)
 {
-    PropSpawnParams out;
+    PropSpawnParams out = {};
     if (!_pParams || !_pParams->IsObject())
     {
         return out;
@@ -102,7 +102,7 @@ Aabb MakeColliderBox(
 }
 
 std::optional<GroundMap> LoadGroundPatchMask(
-    const slug::FilePath& _pngPath)
+    const FilePath& _pngPath)
 {
     std::ifstream file { _pngPath, std::ios::binary | std::ios::ate };
     if (!file)
@@ -115,17 +115,17 @@ std::optional<GroundMap> LoadGroundPatchMask(
         return std::nullopt;
     }
 
-    std::vector<unsigned char> encoded(static_cast<size_t>(size));
+    Vector<unsigned char> encoded(static_cast<size_t>(size));
     file.seekg(0, std::ios::beg);
     if (!file.read(reinterpret_cast<char*>(encoded.data()), size))
     {
         return std::nullopt;
     }
 
-    int width    = 0;
-    int height   = 0;
-    int channels = 0;
-    stbi_uc* pPixels = stbi_load_from_memory(encoded.data(), static_cast<int>(encoded.size()), &width, &height, &channels, 4);
+    int      width    = 0;
+    int      height   = 0;
+    int      channels = 0;
+    stbi_uc* pPixels  = stbi_load_from_memory(encoded.data(), static_cast<int>(encoded.size()), &width, &height, &channels, 4);
     if (!pPixels || width <= 0 || height <= 0)
     {
         return std::nullopt;
@@ -150,4 +150,4 @@ Vec2 ItemFeetFromCenter(
 {
     return { _center.x, _center.y + 16.f };
 }
-}
+}   // namespace slug
