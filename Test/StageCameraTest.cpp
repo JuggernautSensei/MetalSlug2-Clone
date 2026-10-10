@@ -1,11 +1,12 @@
-﻿#include "Core/AssetPath.h"
+﻿// 스테이지 카메라 테스트: 카메라 액션 파싱과 StageRunner 가 카메라를 움직이는 방식 검증
 #include <algorithm>
-#include "Base/Types.h"
-#include "Base/Result.h"
 #include <cmath>
 
 #include <gtest/gtest.h>
 
+#include "Base/Result.h"
+#include "Base/Types.h"
+#include "Core/AssetPath.h"
 #include "StageTestUtil.h"
 
 using namespace slug;
@@ -15,25 +16,34 @@ namespace
 {
 constexpr const char* kTall = R"J({"initialBounds":[0,0,4000,1000]})J";
 
-std::string OneSection(
+[[nodiscard]] std::string OneSection_(
     const std::string& _actions,
     const std::string& _camera = R"J({"initialBounds":[0,0,4000,448]})J")
 {
     return WrapStage(R"J([{"id":"s0","triggerX":0,"actions":)J" + _actions + "}]", _camera);
 }
 
-Camera MakeCamera(
+[[nodiscard]] Camera MakeCamera_(
     const Aabb& _bounds = Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 1000.f }))
 {
     Camera camera;
     camera.SetBounds(_bounds);
     return camera;
 }
+
+// 배너 액션 하나짜리 스테이지를 _ticks 틱 돌린 뒤의 러너 해시
+[[nodiscard]] uint64_t HashAfterTicks_(
+    const int _ticks)
+{
+    RunnerFixture fx { OneSection_(R"J([{"type":"banner","text":"x","seconds":1,"delay":1.0}])J") };
+    fx.StepAt(5.f, _ticks);
+    return fx.runner.HashState();
 }
+}   // namespace
 
 TEST(CameraStageExt, ForwardOnlyYNeverMovesUp)
 {
-    Camera camera = MakeCamera();
+    Camera camera = MakeCamera_();
     camera.SetForwardOnlyY(true);
     camera.SetTarget({ 320.f, 700.f });
     camera.SnapToTarget();
@@ -48,7 +58,7 @@ TEST(CameraStageExt, ForwardOnlyYNeverMovesUp)
 
 TEST(CameraStageExt, ForwardOnlyYIsOffByDefaultAndBoundsStillWin)
 {
-    Camera camera = MakeCamera();
+    Camera camera = MakeCamera_();
     EXPECT_FALSE(camera.IsForwardOnlyY());
     camera.SetTarget({ 320.f, 700.f });
     camera.SnapToTarget();
@@ -67,7 +77,7 @@ TEST(CameraStageExt, ForwardOnlyYIsOffByDefaultAndBoundsStillWin)
 
 TEST(CameraStageExt, BeginMoveIsSmoothstepAndTickExactThenTrackingResumes)
 {
-    Camera camera = MakeCamera();
+    Camera camera = MakeCamera_();
     camera.SnapTo({ 320.f, 224.f });
     camera.SetTarget({ 9999.f, 224.f });   // 이동 중에는 무시되어야 한다
     camera.BeginMove({ 820.f, 424.f }, 0.5f);
@@ -101,7 +111,7 @@ TEST(CameraStageExt, BeginMoveIsSmoothstepAndTickExactThenTrackingResumes)
 
 TEST(CameraStageExt, BeginMoveWithZeroSecondsSnapsAndMoveRespectsBounds)
 {
-    Camera camera = MakeCamera();
+    Camera camera = MakeCamera_();
     camera.BeginMove({ 1500.f, 300.f }, 0.f);
     EXPECT_FALSE(camera.IsMoving());
     EXPECT_FLOAT_EQ(camera.GetViewCenter().x, 1500.f);
@@ -118,7 +128,7 @@ TEST(CameraStageExt, BeginMoveWithZeroSecondsSnapsAndMoveRespectsBounds)
 
 TEST(CameraStageExt, LockWithGlideMovesFirstThenLocksOnArrival)
 {
-    Camera camera = MakeCamera(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
+    Camera camera = MakeCamera_(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
     camera.SnapTo({ 2400.f, 224.f });
     camera.LockWithGlide(Aabb::FromMinMax({ 2470.f, 0.f }, { 3110.f, 448.f }), 1.f);
     EXPECT_TRUE(camera.HasPendingLock());
@@ -146,7 +156,7 @@ TEST(CameraStageExt, LockWithGlideMovesFirstThenLocksOnArrival)
 
 TEST(CameraStageExt, UnlockDuringGlideCancelsThePendingLock)
 {
-    Camera camera = MakeCamera(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
+    Camera camera = MakeCamera_(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
     camera.SnapTo({ 1000.f, 224.f });
     camera.LockWithGlide(Aabb::FromMinMax({ 1500.f, 0.f }, { 2140.f, 448.f }), 1.f);
     for (int i = 0; i < 20; ++i)
@@ -164,7 +174,7 @@ TEST(CameraStageExt, UnlockDuringGlideCancelsThePendingLock)
 
 TEST(CameraStageExt, LockWithZeroGlideIsPlainLock)
 {
-    Camera camera = MakeCamera(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
+    Camera camera = MakeCamera_(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
     camera.LockWithGlide(Aabb::FromMinMax({ 100.f, 0.f }, { 740.f, 448.f }), 0.f);
     EXPECT_TRUE(camera.IsLocked());
     EXPECT_FALSE(camera.HasPendingLock());
@@ -172,7 +182,7 @@ TEST(CameraStageExt, LockWithZeroGlideIsPlainLock)
 
 TEST(StageRunnerCamera, SetBoundsDuringLockOnlyChangesTheRestoredBounds)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"lockCamera","rect":[320,0,960,448]},
         {"type":"setBounds","rect":[0,0,3000,448]},
         {"type":"banner","text":"x","seconds":1}])J") };
@@ -187,7 +197,7 @@ TEST(StageRunnerCamera, SetBoundsDuringLockOnlyChangesTheRestoredBounds)
 
 TEST(StageRunnerCamera, UnlockRestoresAndNestedLocksPopInOrder)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"lockCamera","rect":[0,0,1000,448]},
         {"type":"lockCamera","rect":[200,0,840,448]},
         {"type":"unlockCamera","delay":1.0},
@@ -213,7 +223,7 @@ TEST(StageRunnerCamera, UnlockRestoresAndNestedLocksPopInOrder)
 
 TEST(StageRunnerCamera, CurrentRectLocksTheViewWhereItIs)
 {
-    RunnerFixture fx { OneSection(R"J([{"type":"lockCamera","rect":"current","delay":1.0}])J") };
+    RunnerFixture fx { OneSection_(R"J([{"type":"lockCamera","rect":"current","delay":1.0}])J") };
     fx.camera.SnapTo({ 1500.f, 224.f });
     fx.StepAt(1500.f, 59);
     const Aabb viewBefore = Aabb::FromMinSize(fx.camera.GetPositionNoShake(), { 640.f, 448.f });
@@ -230,7 +240,7 @@ TEST(StageRunnerCamera, CurrentRectLocksTheViewWhereItIs)
 
 TEST(StageRunnerCamera, GlideLockMovesThenLocks)
 {
-    RunnerFixture fx { OneSection(R"J([{"type":"lockCamera","rect":[2470,0,3110,448],"glide":1.0}])J") };
+    RunnerFixture fx { OneSection_(R"J([{"type":"lockCamera","rect":[2470,0,3110,448],"glide":1.0}])J") };
     fx.camera.SnapTo({ 2400.f, 224.f });
     fx.StepAt(2700.f, 1);   // tick 0: 락 요청, 이동 1틱
     EXPECT_TRUE(fx.camera.IsMoving());
@@ -252,18 +262,18 @@ TEST(StageRunnerCamera, PermanentLockCannotBeUnlockedAndIgnoresBoundsAndCurves)
             {"type":"unlockCamera"},
             {"type":"setBounds","rect":[0,0,1000,448]}]},
         {"id":"c","triggerX":500,"actions":[{"type":"setBounds","rect":[0,0,2000,448]},{"type":"unlockCamera"}]}])J",
-        R"J({"initialBounds":[0,0,4000,448],"boundsCurves":[{"id":"cv","from":"a","until":"c","left":0,"right":4000,"height":448,"top":[[0,0],[4000,400]]}]})J");
-    RunnerFixture fx { json };
+                                       R"J({"initialBounds":[0,0,4000,448],"boundsCurves":[{"id":"cv","from":"a","until":"c","left":0,"right":4000,"height":448,"top":[[0,0],[4000,400]]}]})J");
+    RunnerFixture     fx { json };
     fx.StepAt(50.f, 2);   // 곡선 활성
     EXPECT_NE(fx.runner.GetBaseBounds().min.y, 0.f);
     fx.StepAt(150.f, 2);
     EXPECT_TRUE(fx.runner.HasPermanentLock());
-    EXPECT_EQ(fx.runner.GetLockDepth(), 1);                 // unlockCamera 무시
+    EXPECT_EQ(fx.runner.GetLockDepth(), 1);   // unlockCamera 무시
     const Aabb baseAfter = fx.runner.GetBaseBounds();
     EXPECT_NE(baseAfter, Aabb::FromMinMax({ 0.f, 0.f }, { 1000.f, 448.f }));   // setBounds 무시
-    fx.StepAt(300.f, 5);                                    // 곡선 무시: 기본 경계가 더 변하지 않는다
+    fx.StepAt(300.f, 5);                                                       // 곡선 무시: 기본 경계가 더 변하지 않는다
     EXPECT_EQ(fx.runner.GetBaseBounds(), baseAfter);
-    fx.StepAt(600.f, 2);                                    // 뒤 섹션의 setBounds/unlock 도 무시
+    fx.StepAt(600.f, 2);   // 뒤 섹션의 setBounds/unlock 도 무시
     EXPECT_EQ(fx.runner.GetLockDepth(), 1);
     EXPECT_EQ(fx.runner.GetBaseBounds(), baseAfter);
     EXPECT_EQ(fx.camera.GetLockBounds(), Aabb::FromMinMax({ 100.f, 0.f }, { 740.f, 448.f }));
@@ -275,24 +285,24 @@ TEST(StageRunnerCamera, BoundsCurveIsActiveBetweenFromAndUntil)
         {"id":"a","triggerX":0,"actions":[]},
         {"id":"b","triggerX":1000,"actions":[]},
         {"id":"c","triggerX":3000,"actions":[{"type":"setBounds","rect":[0,0,4000,448]}]}])J",
-        R"J({"initialBounds":[0,0,4000,448],"boundsCurves":[{"id":"slope","source":"playerX","from":"b","until":"c","left":100,"right":4000,"height":448,"top":[[1000,100],[2000,500]],"round":"trunc"}]})J");
-    RunnerFixture fx { json };
+                                       R"J({"initialBounds":[0,0,4000,448],"boundsCurves":[{"id":"slope","source":"playerX","from":"b","until":"c","left":100,"right":4000,"height":448,"top":[[1000,100],[2000,500]],"round":"trunc"}]})J");
+    RunnerFixture     fx { json };
     fx.camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 1000.f }));
 
     fx.StepAt(500.f, 3);   // from 전: 비활성
     EXPECT_FALSE(fx.runner.IsCurveActive(0));
     EXPECT_FLOAT_EQ(fx.runner.GetBaseBounds().min.y, 0.f);
 
-    fx.StepAt(1500.f);     // b 발동 → 곡선 활성, 같은 틱에 평가
+    fx.StepAt(1500.f);   // b 발동 → 곡선 활성, 같은 틱에 평가
     EXPECT_TRUE(fx.runner.IsCurveActive(0));
     EXPECT_EQ(fx.runner.GetBaseBounds(), Aabb::FromMinMax({ 100.f, 300.f }, { 4000.f, 748.f }));
     EXPECT_EQ(fx.camera.GetBounds(), fx.runner.GetBaseBounds());
 
-    fx.StepAt(1750.f);     // 매 틱 재평가
+    fx.StepAt(1750.f);   // 매 틱 재평가
     EXPECT_FLOAT_EQ(fx.runner.GetBaseBounds().min.y, 400.f);
-    fx.StepAt(1200.f);     // 뒤로 가면 곡선도 되돌아간다
+    fx.StepAt(1200.f);   // 뒤로 가면 곡선도 되돌아간다
     EXPECT_FLOAT_EQ(fx.runner.GetBaseBounds().min.y, 180.f);
-    fx.StepAt(2900.f);     // 오른쪽 끝에서 clamp
+    fx.StepAt(2900.f);   // 오른쪽 끝에서 clamp
     EXPECT_FLOAT_EQ(fx.runner.GetBaseBounds().min.y, 500.f);
 
     fx.StepAt(3100.f);
@@ -306,7 +316,7 @@ TEST(StageRunnerCamera, Stage0SlopeMatchesTheLegacyFormula)
 {
     slug::Result<StageData> result = LoadStageFromFile(slug::FindAssetRoot() / "Stage" / "Stage0.json");
     ASSERT_TRUE(result);
-    const StageData   data  = result.Take();
+    const StageData    data  = result.Take();
     const BoundsCurve& curve = data.camera.boundsCurves.at(0);
 
     int exact = 0;
@@ -321,10 +331,10 @@ TEST(StageRunnerCamera, Stage0SlopeMatchesTheLegacyFormula)
     }
     EXPECT_GT(exact, total * 9 / 10);   // 거의 모든 점이 정확히 일치 (float 경계에서만 1 차이)
 
-    EXPECT_FLOAT_EQ(curve.EvaluateTop(6500.f), 311.f);     // trunc(311.75)
+    EXPECT_FLOAT_EQ(curve.EvaluateTop(6500.f), 311.f);   // trunc(311.75)
     EXPECT_FLOAT_EQ(curve.EvaluateTop(8610.7843137f), 850.f);
     EXPECT_FLOAT_EQ(curve.EvaluateTop(9000.f), 850.f);
-    EXPECT_FLOAT_EQ(curve.EvaluateTop(6000.f), 311.f);     // 앞쪽 clamp
+    EXPECT_FLOAT_EQ(curve.EvaluateTop(6000.f), 311.f);   // 앞쪽 clamp
     const Aabb bounds = curve.EvaluateBounds(7000.f);
     EXPECT_FLOAT_EQ(bounds.min.x, 3180.f);
     EXPECT_FLOAT_EQ(bounds.max.x, 14094.f);
@@ -333,7 +343,7 @@ TEST(StageRunnerCamera, Stage0SlopeMatchesTheLegacyFormula)
 
 TEST(StageRunnerCamera, CameraMoveActionReachesTargetThenResumesTracking)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"cameraMove","to":[1000,300],"seconds":0.5},
         {"type":"setBounds","rect":[0,0,4000,1000]}])J") };
     fx.camera.SnapTo({ 320.f, 224.f });
@@ -351,8 +361,8 @@ TEST(StageRunnerCamera, CameraMoveActionReachesTargetThenResumesTracking)
 
 TEST(StageRunnerCamera, FollowsPlayerForwardOnlyAndNeverScrollsBack)
 {
-    RunnerFixture fx { OneSection("[]", kTall) };
-    float maxX = fx.camera.GetPositionNoShake().x;
+    RunnerFixture fx { OneSection_("[]", kTall) };
+    float         maxX = fx.camera.GetPositionNoShake().x;
     for (int i = 0; i < 600; ++i)
     {
         const float x = i < 300 ? 100.f + static_cast<float>(i) * 3.f : 1000.f - static_cast<float>(i - 300) * 3.f;
@@ -366,11 +376,6 @@ TEST(StageRunnerCamera, FollowsPlayerForwardOnlyAndNeverScrollsBack)
 
 TEST(StageRunnerCamera, RunnerHashChangesWithStateAndIsReproducible)
 {
-    auto HashAfter = [](int _ticks) {
-        RunnerFixture fx { OneSection(R"J([{"type":"banner","text":"x","seconds":1,"delay":1.0}])J") };
-        fx.StepAt(5.f, _ticks);
-        return fx.runner.HashState();
-    };
-    EXPECT_EQ(HashAfter(10), HashAfter(10));
-    EXPECT_NE(HashAfter(10), HashAfter(11));
+    EXPECT_EQ(HashAfterTicks_(10), HashAfterTicks_(10));
+    EXPECT_NE(HashAfterTicks_(10), HashAfterTicks_(11));
 }

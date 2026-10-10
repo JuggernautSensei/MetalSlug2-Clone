@@ -1,10 +1,11 @@
-#include "Core/AssetPath.h"
+// Tuning/TextureView 테스트: 튜닝 JSON 로드와 기본값, 파일 감시, 텍스처 뷰 클리핑 검증
 #include <fstream>
-#include "Base/Types.h"
-#include "Base/Result.h"
 
 #include <gtest/gtest.h>
 
+#include "Base/Result.h"
+#include "Base/Types.h"
+#include "Core/AssetPath.h"
 #include "Core/Tuning.h"
 #include "Render/SpriteBatch.h"
 
@@ -19,7 +20,7 @@ TEST(Tuning, EmptyObjectGivesAllDefaults)
 
 TEST(Tuning, PartialOverridesOnlyChangeTheNamedKeys)
 {
-    const char*         json   = R"({
+    const char*          json   = R"({
         "move": { "runSpeed": 99.5, "coyoteTicks": 7 },
         "weapons": { "pistol": { "damage": 5, "pierce": true, "hitSize": [20, 9] } },
         "muzzle": { "stand": { "forward": [31, -33] } },
@@ -146,12 +147,12 @@ void WriteFile_(
 
 void Touch_(
     const slug::FilePath& _path,
-    const int            _seconds)
+    const int             _seconds)
 {
     std::error_code ec;
     std::filesystem::last_write_time(_path, std::filesystem::last_write_time(_path, ec) + std::chrono::seconds(_seconds), ec);
 }
-}
+}   // namespace
 
 TEST(TuningWatcher, ReloadsWhenTheFileChangesAndKeepsOldValuesOnBadJson)
 {

@@ -1,15 +1,15 @@
-#include "Core/AssetPath.h"
+// UI 테스트: 배너, 폰트, 페이드, HUD, 화면 흐름, 타이틀, 결과 화면 검증
 #include <filesystem>
-#include "Base/Types.h"
-#include "Base/Math.h"
-#include "Base/Result.h"
-#include "Base/Random.h"
 #include <map>
 
 #include <gtest/gtest.h>
 
 #include "Audio/AudioSink.h"
-#include "TestAudio.h"
+#include "Base/Math.h"
+#include "Base/Random.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
+#include "Core/AssetPath.h"
 #include "Game/GameState.h"
 #include "Game/SandboxState.h"
 #include "Game/SimRunner.h"
@@ -23,92 +23,124 @@
 #include "Game/Ui/UiLayout.h"
 #include "Game/Ui/UiSystem.h"
 #include "PlayerTestUtil.h"
+#include "TestAudio.h"
 
 using namespace slug;
 
 namespace
 {
-    [[nodiscard]] const HudItem* FindItem(
-        const slug::Vector<HudItem>& _items,
-        const eHudItemKind          _kind,
-        const slug::StringView       _text)
+[[nodiscard]] const HudItem* FindItem_(
+    const slug::Vector<HudItem>& _items,
+    const eHudItemKind           _kind,
+    const slug::StringView       _text)
+{
+    for (const HudItem& item: _items)
     {
-        for (const HudItem& item: _items)
+        if (item.kind == _kind && item.text == _text)
         {
-            if (item.kind == _kind && item.text == _text)
-            {
-                return &item;
-            }
+            return &item;
         }
-        return nullptr;
     }
+    return nullptr;
+}
 
-    [[nodiscard]] int CountKind(
-        const slug::Vector<HudItem>& _items,
-        const eHudItemKind          _kind)
+[[nodiscard]] int CountKind_(
+    const slug::Vector<HudItem>& _items,
+    const eHudItemKind           _kind)
+{
+    int count = 0;
+    for (const HudItem& item: _items)
     {
-        int count = 0;
-        for (const HudItem& item: _items)
+        count += item.kind == _kind ? 1 : 0;
+    }
+    return count;
+}
+
+[[nodiscard]] Vec2 SpriteSize_(
+    const slug::StringView _name)
+{
+    static const std::map<slug::String, Vec2> kSizes = {
+        { "PlayerStateUI_Bomb", { 124.f, 34.f } },
+        {     "InfiniteUI_Red",  { 40.f, 16.f } },
+        {       "PressStartUI", { 174.f, 30.f } },
+        {         "PlayerHPUI", { 106.f, 16.f } },
+        {            "LEVEL_1",  { 96.f, 16.f } },
+    };
+    const std::map<slug::String, Vec2>::const_iterator it = kSizes.find(slug::String { _name });
+    return it == kSizes.end() ? Vec2 { 0.f, 0.f } : it->second;
+}
+
+[[nodiscard]] bool InsideScreen_(
+    const IntRect&  _r,
+    const UiLayout& _layout)
+{
+    return _r.x >= 0 && _r.y >= 0 && _r.x + _r.w <= _layout.screenW && _r.y + _r.h <= _layout.screenH;
+}
+
+[[nodiscard]] bool ItemFits_(
+    const HudItem&  _item,
+    const UiLayout& _layout)
+{
+    switch (_item.kind)
+    {
+        case eHudItemKind::Text: return InsideScreen_(LayoutText(_item.text, _item.x, _item.y, _item.style).bounds, _layout);
+        case eHudItemKind::Sprite:
         {
-            count += item.kind == _kind ? 1 : 0;
+            const Vec2 size = SpriteSize_(_item.text);
+            const int  w    = static_cast<int>(size.x) * _item.scale;
+            const int  h    = static_cast<int>(size.y) * _item.scale;
+            return InsideScreen_({ _item.x - w / 2, _item.y - h / 2, w, h }, _layout);
         }
-        return count;
-    }
-
-    [[nodiscard]] Vec2 SpriteSize(
-        const slug::StringView _name)
-    {
-        static const std::map<slug::String, Vec2> kSizes = {
-            { "PlayerStateUI_Bomb", { 124.f, 34.f } },
-            { "InfiniteUI_Red", { 40.f, 16.f } },
-            { "PressStartUI", { 174.f, 30.f } },
-            { "PlayerHPUI", { 106.f, 16.f } },
-            { "LEVEL_1", { 96.f, 16.f } },
-        };
-        const auto it = kSizes.find(slug::String { _name });
-        return it == kSizes.end() ? Vec2 { 0.f, 0.f } : it->second;
-    }
-
-    [[nodiscard]] bool InsideScreen(
-        const IntRect&  _r,
-        const UiLayout& _layout)
-    {
-        return _r.x >= 0 && _r.y >= 0 && _r.x + _r.w <= _layout.screenW && _r.y + _r.h <= _layout.screenH;
-    }
-
-    [[nodiscard]] bool ItemFits(
-        const HudItem&  _item,
-        const UiLayout& _layout)
-    {
-        switch (_item.kind)
+        case eHudItemKind::TimeDigits:
         {
-            case eHudItemKind::Text: return InsideScreen(LayoutText(_item.text, _item.x, _item.y, _item.style).bounds, _layout);
-            case eHudItemKind::Sprite:
-            {
-                const Vec2 size = SpriteSize(_item.text);
-                const int          w    = static_cast<int>(size.x) * _item.scale;
-                const int          h    = static_cast<int>(size.y) * _item.scale;
-                return InsideScreen({ _item.x - w / 2, _item.y - h / 2, w, h }, _layout);
-            }
-            case eHudItemKind::TimeDigits:
-            {
-                const int w = static_cast<int>(_item.text.size()) * _layout.timeGlyphW;
-                return InsideScreen({ _item.x - w / 2, _item.y, w, _layout.timeGlyphH }, _layout);
-            }
-            case eHudItemKind::Rect: return InsideScreen({ _item.x, _item.y, _item.w, _item.h }, _layout);
+            const int w = static_cast<int>(_item.text.size()) * _layout.timeGlyphW;
+            return InsideScreen_({ _item.x - w / 2, _item.y, w, _layout.timeGlyphH }, _layout);
         }
-        return false;
+        case eHudItemKind::Rect: return InsideScreen_({ _item.x, _item.y, _item.w, _item.h }, _layout);
     }
+    return false;
+}
 
-    [[nodiscard]] HudModel MakeModel()
+[[nodiscard]] HudModel MakeModel_()
+{
+    HudModel model;
+    model.lives = 3;
+    model.score = 12'340;
+    model.bombs = 10;
+    return model;
+}
+
+// Banner/Results 등 단계 흐름을 _tick 에 닿을 때까지 한 틱씩 진행한다. _t 는 지금까지 진행한 틱 수
+void AdvanceFlowTo_(
+    int&        _t,
+    UiSystem&   _ui,
+    ScreenFlow& _flow,
+    TestAudio&  _audio,
+    const int   _tick)
+{
+    while (_t < _tick)
     {
-        HudModel model;
-        model.lives = 3;
-        model.score = 12'340;
-        model.bombs = 10;
-        return model;
+        ++_t;
+        _ui.Tick();
+        _flow.Tick(_ui, _audio);
     }
 }
+
+// HUD 항목 중 Rect 종류만 골라낸다
+[[nodiscard]] slug::Vector<HudItem> HudRects_(
+    const slug::Vector<HudItem>& _items)
+{
+    slug::Vector<HudItem> rects;
+    for (const HudItem& item: _items)
+    {
+        if (item.kind == eHudItemKind::Rect)
+        {
+            rects.push_back(item);
+        }
+    }
+    return rects;
+}
+}   // namespace
 
 TEST(UiFont, GlyphIndexMapsLettersDigitsAndZero)
 {
@@ -142,11 +174,11 @@ TEST(UiFont, EveryColumnIsReachableAndStaysInsideTheStrip)
         ++hits[fontmap::GetGlyphIndex(c)];
     }
     EXPECT_EQ(hits.size(), static_cast<size_t>(fontmap::kGlyphColumns));
-    for (const auto& [index, count]: hits)
+    for (const std::pair<const int, int>& hit: hits)
     {
-        EXPECT_GE(index, 0);
-        EXPECT_LT(index, fontmap::kGlyphColumns);
-        EXPECT_EQ(count, 1);
+        EXPECT_GE(hit.first, 0);
+        EXPECT_LT(hit.first, fontmap::kGlyphColumns);
+        EXPECT_EQ(hit.second, 1);
     }
 }
 
@@ -162,10 +194,10 @@ TEST(UiFont, MeasureCharsIsAdvanceTimesCountMinusSpacingTail)
 TEST(UiFont, FitTextScalePicksLargestScaleThatFits)
 {
     EXPECT_EQ(FitTextScale("MISSION COMPLETE", 576, 3), 2);
-    EXPECT_EQ(FitTextScale("GAME OVER", 576, 3), 3);          // 9자 x 48 = 432
-    EXPECT_EQ(FitTextScale("GAME OVER", 576, 2), 2);          // 상한
+    EXPECT_EQ(FitTextScale("GAME OVER", 576, 3), 3);                                        // 9자 x 48 = 432
+    EXPECT_EQ(FitTextScale("GAME OVER", 576, 2), 2);                                        // 상한
     EXPECT_EQ(FitTextScale("A VERY VERY VERY LONG LINE OF BANNER TEXT HERE", 576, 3), 1);   // 안 들어가도 1
-    EXPECT_EQ(FitTextScale("SHORT\nA MUCH LONGER SECOND LINE", 640, 3), 1);                  // 가장 긴 줄 기준
+    EXPECT_EQ(FitTextScale("SHORT\nA MUCH LONGER SECOND LINE", 640, 3), 1);                 // 가장 긴 줄 기준
 }
 
 TEST(UiFont, MeasureTextSizeUsesWidestLineAndLineGap)
@@ -180,7 +212,7 @@ TEST(UiFont, MeasureTextSizeUsesWidestLineAndLineGap)
 
 TEST(UiLayoutText, LeftAlignStartsAtAnchor)
 {
-    TextStyle style;
+    TextStyle        style;
     const TextLayout layout = LayoutText("ABC", 10, 20, style);
     ASSERT_EQ(layout.quads.size(), 3u);
     EXPECT_EQ(layout.quads[0].dst, (IntRect { 10, 20, 16, 16 }));
@@ -192,7 +224,7 @@ TEST(UiLayoutText, LeftAlignStartsAtAnchor)
 TEST(UiLayoutText, RightAlignEndsAtAnchor)
 {
     TextStyle style;
-    style.align = eTextAlign::Right;
+    style.align             = eTextAlign::Right;
     const TextLayout layout = LayoutText("1234", 148, 8, style);
     ASSERT_EQ(layout.quads.size(), 4u);
     EXPECT_EQ(layout.quads.back().dst.x + layout.quads.back().dst.w, 148);
@@ -203,7 +235,7 @@ TEST(UiLayoutText, RightAlignEndsAtAnchor)
 TEST(UiLayoutText, CenterAlignSplitsWidthAroundAnchor)
 {
     TextStyle style;
-    style.align = eTextAlign::Center;
+    style.align             = eTextAlign::Center;
     const TextLayout layout = LayoutText("ABCD", 320, 0, style);   // 폭 64
     EXPECT_EQ(layout.quads.front().dst.x, 320 - 32);
     EXPECT_EQ(layout.quads.back().dst.x + 16, 320 + 32);
@@ -212,9 +244,9 @@ TEST(UiLayoutText, CenterAlignSplitsWidthAroundAnchor)
 TEST(UiLayoutText, MultiLineCentersEachLineAndStacksWithGap)
 {
     TextStyle style;
-    style.align   = eTextAlign::Center;
-    style.scale   = 2;
-    style.lineGap = 4;
+    style.align             = eTextAlign::Center;
+    style.scale             = 2;
+    style.lineGap           = 4;
     const TextLayout layout = LayoutText("AB\nABCD", 100, 50, style);
     ASSERT_EQ(layout.lines, 2);
     ASSERT_EQ(layout.quads.size(), 6u);
@@ -227,11 +259,11 @@ TEST(UiLayoutText, MultiLineCentersEachLineAndStacksWithGap)
 
 TEST(UiLayoutText, FlagsOnlyNonSpaceUnsupportedCharsForFallback)
 {
-    TextStyle style;
+    TextStyle        style;
     const TextLayout layout = LayoutText("A-B C", 0, 0, style);
     ASSERT_EQ(layout.quads.size(), 5u);
     EXPECT_FALSE(layout.quads[0].bFallback);
-    EXPECT_TRUE(layout.quads[1].bFallback);    // '-'
+    EXPECT_TRUE(layout.quads[1].bFallback);   // '-'
     EXPECT_EQ(layout.quads[1].glyph, -1);
     EXPECT_FALSE(layout.quads[3].bFallback);   // ' ' 는 칸만 차지
     EXPECT_EQ(layout.quads[4].dst.x, 4 * 16);
@@ -240,7 +272,7 @@ TEST(UiLayoutText, FlagsOnlyNonSpaceUnsupportedCharsForFallback)
 TEST(UiLayoutText, LetterSpacingAddsBetweenCharsOnly)
 {
     TextStyle style;
-    style.letterSpacing = 2;
+    style.letterSpacing     = 2;
     const TextLayout layout = LayoutText("ABC", 0, 0, style);
     EXPECT_EQ(layout.quads[1].dst.x, 18);
     EXPECT_EQ(layout.quads[2].dst.x, 36);
@@ -260,10 +292,10 @@ TEST(UiBitmapFont, GlyphFrameCutsTheStripIntoSixteenPixelCells)
 {
     SpriteLibrary library;
     SpriteInfo    strip;
-    strip.name        = "Font_White";
-    strip.frame       = { 3, 100, 200, 560, 32, 280, 16 };
-    strip.width       = 560;
-    strip.height      = 32;
+    strip.name   = "Font_White";
+    strip.frame  = { 3, 100, 200, 560, 32, 280, 16 };
+    strip.width  = 560;
+    strip.height = 32;
     library.AddSprite(strip);
 
     BitmapFont font;
@@ -320,8 +352,8 @@ TEST(UiBitmapFont, BakedFontStripsAndUiSpritesExistWithExpectedSizes)
     {
         const SpriteInfo* pInfo = library->Find(name);
         ASSERT_NE(pInfo, nullptr) << name;
-        EXPECT_EQ(static_cast<float>(pInfo->frame.w), SpriteSize(name).x) << name;
-        EXPECT_EQ(static_cast<float>(pInfo->frame.h), SpriteSize(name).y) << name;
+        EXPECT_EQ(static_cast<float>(pInfo->frame.w), SpriteSize_(name).x) << name;
+        EXPECT_EQ(static_cast<float>(pInfo->frame.h), SpriteSize_(name).y) << name;
     }
 
     BitmapFont font;
@@ -333,7 +365,7 @@ TEST(UiBitmapFont, BakedFontStripsAndUiSpritesExistWithExpectedSizes)
 
 TEST(UiBanner, AlphaCurveAtExactTicks)
 {
-    const float expected[] = { 0.f, 1.f / 3.f, 2.f / 3.f, 1.f, 1.f, 1.f, 1.f, 1.f, 2.f / 3.f, 1.f / 3.f, 0.f };
+    const ARRAY<float, 11> expected = { 0.f, 1.f / 3.f, 2.f / 3.f, 1.f, 1.f, 1.f, 1.f, 1.f, 2.f / 3.f, 1.f / 3.f, 0.f };
     for (int e = 0; e <= 10; ++e)
     {
         EXPECT_NEAR(ComputeBannerAlpha(e, 3, 4, 3), expected[e], 1e-5f) << "elapsed " << e;
@@ -387,10 +419,12 @@ TEST(UiBanner, SystemRunsFadeInHoldFadeOutThenDeactivates)
 TEST(UiBanner, QueueRunsSpecsBackToBackAndShowReplaces)
 {
     BannerSpec a;
-    a.text = "ONE";
-    a.fadeInTicks = 1; a.holdTicks = 1; a.fadeOutTicks = 1;
-    BannerSpec b = a;
-    b.text = "TWO";
+    a.text         = "ONE";
+    a.fadeInTicks  = 1;
+    a.holdTicks    = 1;
+    a.fadeOutTicks = 1;
+    BannerSpec b   = a;
+    b.text         = "TWO";
 
     BannerSystem banner;
     banner.Enqueue(a);
@@ -434,12 +468,12 @@ TEST(UiBanner, StandardBannersFitTheScreenWidth)
     for (const char* text: { "MISSION 4 START", "MISSION COMPLETE", "WARNING", "GAME OVER", "MISSION 4\nSTART" })
     {
         TextStyle style;
-        style.align   = eTextAlign::Center;
-        style.lineGap = layout.bannerLineGap;
-        style.scale   = FitTextScale(text, layout.screenW - 2 * layout.bannerMargin, layout.bannerMaxScale);
-        const int height = MeasureTextHeight(text, style);
-        const TextLayout laid = LayoutText(text, layout.screenW / 2, layout.bannerCenterY - height / 2, style);
-        EXPECT_TRUE(InsideScreen(laid.bounds, layout)) << text;
+        style.align             = eTextAlign::Center;
+        style.lineGap           = layout.bannerLineGap;
+        style.scale             = FitTextScale(text, layout.screenW - 2 * layout.bannerMargin, layout.bannerMaxScale);
+        const int        height = MeasureTextHeight(text, style);
+        const TextLayout laid   = LayoutText(text, layout.screenW / 2, layout.bannerCenterY - height / 2, style);
+        EXPECT_TRUE(InsideScreen_(laid.bounds, layout)) << text;
         EXPECT_GE(style.scale, 1) << text;
     }
 }
@@ -522,26 +556,26 @@ TEST(UiFade, IdleTicksDoNothing)
 
 TEST(UiHud, PistolShowsInfiniteSymbolAndNoAmmoDigits)
 {
-    const UiLayout             layout;
-    HudModel                   model = MakeModel();
+    const UiLayout              layout;
+    const HudModel              model = MakeModel_();
     const slug::Vector<HudItem> items = BuildHudItems(model, layout);
 
-    EXPECT_NE(FindItem(items, eHudItemKind::Sprite, "InfiniteUI_Red"), nullptr);
-    EXPECT_EQ(FindItem(items, eHudItemKind::Text, "0"), nullptr);
-    EXPECT_NE(FindItem(items, eHudItemKind::Sprite, "PlayerStateUI_Bomb"), nullptr);
+    EXPECT_NE(FindItem_(items, eHudItemKind::Sprite, "InfiniteUI_Red"), nullptr);
+    EXPECT_EQ(FindItem_(items, eHudItemKind::Text, "0"), nullptr);
+    EXPECT_NE(FindItem_(items, eHudItemKind::Sprite, "PlayerStateUI_Bomb"), nullptr);
 }
 
 TEST(UiHud, FiniteWeaponShowsAmmoDigitsRightAlignedInsteadOfInfinity)
 {
     const UiLayout layout;
-    HudModel       model = MakeModel();
+    HudModel       model = MakeModel_();
     model.bInfiniteAmmo  = false;
     model.ammo           = 200;
 
     const slug::Vector<HudItem> items = BuildHudItems(model, layout);
-    EXPECT_EQ(FindItem(items, eHudItemKind::Sprite, "InfiniteUI_Red"), nullptr);
+    EXPECT_EQ(FindItem_(items, eHudItemKind::Sprite, "InfiniteUI_Red"), nullptr);
 
-    const HudItem* pAmmo = FindItem(items, eHudItemKind::Text, "200");
+    const HudItem* pAmmo = FindItem_(items, eHudItemKind::Text, "200");
     ASSERT_NE(pAmmo, nullptr);
     EXPECT_EQ(pAmmo->style.align, eTextAlign::Right);
     EXPECT_EQ(pAmmo->x, layout.armsPanelX + layout.ammoRightDX);
@@ -551,19 +585,19 @@ TEST(UiHud, FiniteWeaponShowsAmmoDigitsRightAlignedInsteadOfInfinity)
 
 TEST(UiHud, BombScoreAndLivesTexts)
 {
-    const UiLayout             layout;
-    const slug::Vector<HudItem> items = BuildHudItems(MakeModel(), layout);
+    const UiLayout              layout;
+    const slug::Vector<HudItem> items = BuildHudItems(MakeModel_(), layout);
 
-    const HudItem* pBombs = FindItem(items, eHudItemKind::Text, "10");
+    const HudItem* pBombs = FindItem_(items, eHudItemKind::Text, "10");
     ASSERT_NE(pBombs, nullptr);
     EXPECT_EQ(pBombs->x, layout.armsPanelX + layout.bombRightDX);
 
-    const HudItem* pScore = FindItem(items, eHudItemKind::Text, "12340");
+    const HudItem* pScore = FindItem_(items, eHudItemKind::Text, "12340");
     ASSERT_NE(pScore, nullptr);
     EXPECT_EQ(pScore->x, layout.scoreRightX);
     EXPECT_EQ(pScore->style.align, eTextAlign::Right);
 
-    EXPECT_NE(FindItem(items, eHudItemKind::Text, "1UP=3"), nullptr);
+    EXPECT_NE(FindItem_(items, eHudItemKind::Text, "1UP=3"), nullptr);
 }
 
 TEST(UiHud, ValuesAreClampedToTheirDigitBudget)
@@ -580,13 +614,13 @@ TEST(UiHud, ValuesAreClampedToTheirDigitBudget)
 TEST(UiHud, TimerOnlyWhenRequested)
 {
     const UiLayout layout;
-    HudModel       model = MakeModel();
-    EXPECT_EQ(CountKind(BuildHudItems(model, layout), eHudItemKind::TimeDigits), 0);
+    HudModel       model = MakeModel_();
+    EXPECT_EQ(CountKind_(BuildHudItems(model, layout), eHudItemKind::TimeDigits), 0);
 
-    model.bShowTimer   = true;
-    model.timerSeconds = 7;
-    const slug::Vector<HudItem> items = BuildHudItems(model, layout);
-    const HudItem*             pTimer = FindItem(items, eHudItemKind::TimeDigits, "07");
+    model.bShowTimer                   = true;
+    model.timerSeconds                 = 7;
+    const slug::Vector<HudItem> items  = BuildHudItems(model, layout);
+    const HudItem*              pTimer = FindItem_(items, eHudItemKind::TimeDigits, "07");
     ASSERT_NE(pTimer, nullptr);
     EXPECT_EQ(pTimer->x, layout.timerCenterX);
 }
@@ -594,22 +628,22 @@ TEST(UiHud, TimerOnlyWhenRequested)
 TEST(UiHud, InsertCoinIsStaticTopRightTextThatNeverBlinks)
 {
     const UiLayout layout;
-    HudModel       model = MakeModel();
+    HudModel       model = MakeModel_();
 
     for (const int tick: { 0, layout.pressStartBlinkTicks, layout.pressStartBlinkTicks * 3 })
     {
-        model.uiTick = tick;
+        model.uiTick                      = tick;
         const slug::Vector<HudItem> items = BuildHudItems(model, layout);
-        const HudItem* pCoin = FindItem(items, eHudItemKind::Text, "INSERT COIN");
+        const HudItem*              pCoin = FindItem_(items, eHudItemKind::Text, "INSERT COIN");
         ASSERT_NE(pCoin, nullptr) << tick;
         EXPECT_EQ(pCoin->x, layout.insertCoinRightX);
         EXPECT_EQ(pCoin->y, layout.insertCoinY);
         EXPECT_EQ(pCoin->style.align, eTextAlign::Right);
     }
-    EXPECT_EQ(FindItem(BuildHudItems(model, layout), eHudItemKind::Sprite, "PressStartUI"), nullptr);
+    EXPECT_EQ(FindItem_(BuildHudItems(model, layout), eHudItemKind::Sprite, "PressStartUI"), nullptr);
 
     model.bShowInsertCoin = false;
-    EXPECT_EQ(FindItem(BuildHudItems(model, layout), eHudItemKind::Text, "INSERT COIN"), nullptr);
+    EXPECT_EQ(FindItem_(BuildHudItems(model, layout), eHudItemKind::Text, "INSERT COIN"), nullptr);
 }
 
 TEST(UiHud, DisplayTimerCountsDownSlowlyAndNeverGoesNegative)
@@ -637,12 +671,12 @@ TEST(UiHud, DisplayTimerCountsDownSlowlyAndNeverGoesNegative)
 TEST(UiHud, PlayerBlockCanBeHiddenAndLevelSpriteOptional)
 {
     const UiLayout layout;
-    HudModel       model = MakeModel();
+    HudModel       model  = MakeModel_();
     model.bShowPlayer     = false;
     model.bShowInsertCoin = false;
     EXPECT_TRUE(BuildHudItems(model, layout).empty());
 
-    model.levelSprite = "LEVEL_1";
+    model.levelSprite                 = "LEVEL_1";
     const slug::Vector<HudItem> items = BuildHudItems(model, layout);
     ASSERT_EQ(items.size(), 1u);
     EXPECT_EQ(items[0].text, "LEVEL_1");
@@ -652,30 +686,19 @@ TEST(UiHud, PlayerBlockCanBeHiddenAndLevelSpriteOptional)
 TEST(UiHud, BossBarFillScalesWithRatioAndFrameDrawsLast)
 {
     const UiLayout layout;
-    HudModel       model = MakeModel();
+    HudModel       model = MakeModel_();
     model.bShowBoss      = true;
 
-    model.bossHpRatio = 1.f;
-    slug::Vector<HudItem> full = BuildHudItems(model, layout);
-    model.bossHpRatio = 0.5f;
-    slug::Vector<HudItem> half = BuildHudItems(model, layout);
-    model.bossHpRatio = 0.f;
-    slug::Vector<HudItem> empty = BuildHudItems(model, layout);
+    model.bossHpRatio                 = 1.f;
+    const slug::Vector<HudItem> full  = BuildHudItems(model, layout);
+    model.bossHpRatio                 = 0.5f;
+    const slug::Vector<HudItem> half  = BuildHudItems(model, layout);
+    model.bossHpRatio                 = 0.f;
+    const slug::Vector<HudItem> empty = BuildHudItems(model, layout);
 
-    const auto rectsOf = [](const slug::Vector<HudItem>& _items) {
-        slug::Vector<HudItem> rects;
-        for (const HudItem& item: _items)
-        {
-            if (item.kind == eHudItemKind::Rect)
-            {
-                rects.push_back(item);
-            }
-        }
-        return rects;
-    };
-    const slug::Vector<HudItem> fullRects  = rectsOf(full);
-    const slug::Vector<HudItem> halfRects  = rectsOf(half);
-    const slug::Vector<HudItem> emptyRects = rectsOf(empty);
+    const slug::Vector<HudItem> fullRects  = HudRects_(full);
+    const slug::Vector<HudItem> halfRects  = HudRects_(half);
+    const slug::Vector<HudItem> emptyRects = HudRects_(empty);
 
     ASSERT_EQ(fullRects.size(), 2u);
     ASSERT_EQ(halfRects.size(), 2u);
@@ -705,30 +728,28 @@ TEST(UiHud, ExtremeValuesStillFitInsideTheScreen)
 
     for (const HudItem& item: BuildHudItems(model, layout))
     {
-        EXPECT_TRUE(ItemFits(item, layout)) << "kind " << static_cast<int>(item.kind) << " text '" << item.text << "' at " << item.x << "," << item.y;
+        EXPECT_TRUE(ItemFits_(item, layout)) << "kind " << static_cast<int>(item.kind) << " text '" << item.text << "' at " << item.x << "," << item.y;
     }
 }
 
 TEST(UiHud, TypicalModelFitsAndPanelDoesNotOverlapScoreBlock)
 {
     const UiLayout layout;
-    for (const HudItem& item: BuildHudItems(MakeModel(), layout))
+    for (const HudItem& item: BuildHudItems(MakeModel_(), layout))
     {
-        EXPECT_TRUE(ItemFits(item, layout)) << item.text;
+        EXPECT_TRUE(ItemFits_(item, layout)) << item.text;
     }
 
     EXPECT_GE(layout.armsPanelX, layout.scoreRightX);
-    const IntRect score = LayoutText("9999999", layout.scoreRightX, layout.scoreY, [] {
-        TextStyle s;
-        s.align = eTextAlign::Right;
-        return s;
-    }()).bounds;
+    TextStyle rightStyle;
+    rightStyle.align    = eTextAlign::Right;
+    const IntRect score = LayoutText("9999999", layout.scoreRightX, layout.scoreY, rightStyle).bounds;
     EXPECT_GE(score.x, 0);
 }
 
 TEST(UiHud, MakeHudModelReadsPlayerController)
 {
-    slugtest::Sim sim;
+    slugtest::Sim  sim;
     const HudModel model = MakeHudModel(sim.Player());
     EXPECT_TRUE(model.bInfiniteAmmo);
     EXPECT_EQ(model.lives, 3);
@@ -763,7 +784,7 @@ TEST(UiSystem, HeadlessTicksAdvanceBannerFadeAndBlinkClock)
     EXPECT_TRUE(ui.GetBanner().IsActive());
     EXPECT_GT(ui.GetBanner().GetAlpha(), 0.f);
 
-    ui.DrawHud(ctx, MakeModel());
+    ui.DrawHud(ctx, MakeModel_());
     ui.DrawOverlays(ctx);
     EXPECT_FALSE(ui.DrawSprite(ctx, "PressStartUI", 0, 0));
 }
@@ -777,14 +798,14 @@ TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
     GameContext ctx;
     UiSystem    ui;
     ui.Init(ctx);
-    TestAudio audio;
+    TestAudio  audio;
     ScreenFlow flow;
 
     flow.Start(config, ui, audio);
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Art);
     EXPECT_FALSE(ui.GetBanner().IsActive());   // 배너 대신 전면 아트
     EXPECT_TRUE(flow.GetArtView().bVisible);
-    EXPECT_EQ(flow.GetArtView().alpha, 0);      // 페이드 인 시작
+    EXPECT_EQ(flow.GetArtView().alpha, 0);   // 페이드 인 시작
     EXPECT_EQ(audio.CountPlays(sfx::kGameOver), 1);
     EXPECT_EQ(audio.CountKind(eAudioEvent::FadeOutBgm), 1);
 
@@ -814,12 +835,12 @@ TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
 TEST(UiFlow, PhasesChangeAtExactTicks)
 {
     ScreenFlowConfig config;
-    config.bannerText = "TEST";
-    config.delayTicks = 5;
+    config.bannerText  = "TEST";
+    config.delayTicks  = 5;
     config.bannerTicks = 10;
-    config.fadeTicks = 4;
-    config.holdTicks = 3;
-    config.sfx = "Jingle";
+    config.fadeTicks   = 4;
+    config.holdTicks   = 3;
+    config.sfx         = "Jingle";
 
     GameContext ctx;
     UiSystem    ui;
@@ -832,18 +853,25 @@ TEST(UiFlow, PhasesChangeAtExactTicks)
     EXPECT_FALSE(ui.GetBanner().IsActive());
     EXPECT_EQ(audio.CountPlays("Jingle"), 0);
 
-    const struct { int tick; eFlowPhase phase; } expected[] = {
-        { 4, eFlowPhase::Delay },
-        { 5, eFlowPhase::Banner },
-        { 14, eFlowPhase::Banner },
-        { 15, eFlowPhase::FadeOut },
-        { 18, eFlowPhase::FadeOut },
-        { 19, eFlowPhase::Hold },
-        { 21, eFlowPhase::Hold },
-        { 22, eFlowPhase::Done },
+    struct Step
+    {
+        int        tick  = 0;
+        eFlowPhase phase = eFlowPhase::Delay;
+    };
+    const ARRAY<Step, 8> expected = {
+        {
+         { 4, eFlowPhase::Delay },
+         { 5, eFlowPhase::Banner },
+         { 14, eFlowPhase::Banner },
+         { 15, eFlowPhase::FadeOut },
+         { 18, eFlowPhase::FadeOut },
+         { 19, eFlowPhase::Hold },
+         { 21, eFlowPhase::Hold },
+         { 22, eFlowPhase::Done },
+         }
     };
     int t = 0;
-    for (const auto& step: expected)
+    for (const Step& step: expected)
     {
         while (t < step.tick)
         {
@@ -876,41 +904,32 @@ TEST(UiFlow, MissionCompleteShowsResultsBeforeTheCompleteBanner)
     EXPECT_FALSE(flow.GetResultsView().bBoxVisible);
 
     int t = 0;
-    auto advanceTo = [&](int _tick)
-    {
-        while (t < _tick)
-        {
-            ++t;
-            ui.Tick();
-            flow.Tick(ui, audio);
-        }
-    };
 
-    advanceTo(59);
+    AdvanceFlowTo_(t, ui, flow, audio, 59);
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Delay);
     EXPECT_FALSE(ui.GetBanner().IsActive());
 
-    advanceTo(60);
+    AdvanceFlowTo_(t, ui, flow, audio, 60);
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Results);
     EXPECT_FALSE(ui.GetBanner().IsActive());
     EXPECT_TRUE(flow.GetResultsView().bBoxVisible);
     EXPECT_EQ(flow.GetResultsView().rescued, 0);
 
-    advanceTo(60 + 12);
+    AdvanceFlowTo_(t, ui, flow, audio, 60 + 12);
     EXPECT_EQ(flow.GetResultsView().rescued, 1);
 
-    advanceTo(60 + 276 - 1);
+    AdvanceFlowTo_(t, ui, flow, audio, 60 + 276 - 1);
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Results);
     EXPECT_TRUE(flow.GetResultsView().bBoxVisible);   // 결과 단계 끝 직전까지 상자 표시
 
-    advanceTo(60 + 276);
+    AdvanceFlowTo_(t, ui, flow, audio, 60 + 276);
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Banner);
     EXPECT_FALSE(flow.GetResultsView().bBoxVisible);
     EXPECT_TRUE(ui.GetBanner().IsActive());
     EXPECT_EQ(ui.GetBanner().GetCurrent().text, "MISSION 4\nCOMPLETE!");
     EXPECT_EQ(audio.CountPlays(sfx::kMissionComplete), 1);
 
-    advanceTo(config.GetTotalTicks());
+    AdvanceFlowTo_(t, ui, flow, audio, config.GetTotalTicks());
     EXPECT_TRUE(flow.IsDone());
 }
 
@@ -992,9 +1011,9 @@ TEST(UiBanner, MissionGlyphNamesMapLettersDigitsAndPunctuation)
 
 TEST(UiBanner, GlyphPoseFliesInThenSitsThenFliesOut)
 {
-    constexpr int kIn = 18;
+    constexpr int kIn   = 18;
     constexpr int kHold = 100;
-    constexpr int kOut = 18;
+    constexpr int kOut  = 18;
 
     const GlyphPose before = ComputeMissionGlyphPose(-1, kIn, kHold, kOut, 0);
     EXPECT_EQ(before.alpha, 0);
@@ -1053,52 +1072,58 @@ TEST(UiFlow, TickBeforeStartAndAfterDoneIsHarmless)
 
 namespace
 {
-    struct TitleSim
+struct TitleSim
+{
+    explicit TitleSim(
+        TitleConfig _config = {})
+        : rng(uint64_t { 1 })
     {
-        explicit TitleSim(TitleConfig _config = {})
-            : rng(uint64_t { 1 })
-        {
-            ctx.pRng   = &rng;
-            ctx.pAudio = &audio;
-            pTitle     = new TitleState { std::move(_config) };
-            runner     = std::unique_ptr<SimRunner> { new SimRunner { ctx, std::unique_ptr<IGameState> { pTitle } } };
-        }
-
-        void Step(const eAction _action, const bool _bHeld)
-        {
-            InputFrame frame;
-            frame.Set(_action, _bHeld);
-            runner->Step(frame);
-        }
-
-        void Idle(const int _ticks)
-        {
-            for (int i = 0; i < _ticks; ++i)
-            {
-                runner->Step({});
-            }
-        }
-
-        [[nodiscard]] bool IsStillTitle() const { return runner->GetState() == pTitle; }
-
-        slug::RngMt19937        rng;
-        GameContext            ctx;
-        TestAudio              audio;
-        TitleState*            pTitle = nullptr;
-        std::unique_ptr<SimRunner> runner = nullptr;
-    };
-
-    [[nodiscard]] TitleConfig SandboxTitleConfig()
-    {
-        TitleConfig config;
-        config.nextState = "sandbox";
-        return config;
+        ctx.pRng   = &rng;
+        ctx.pAudio = &audio;
+        pTitle     = new TitleState { std::move(_config) };
+        runner     = std::unique_ptr<SimRunner> {
+            new SimRunner { ctx, std::unique_ptr<IGameState> { pTitle } }
+        };
     }
+
+    void Step(
+        const eAction _action,
+        const bool    _bHeld)
+    {
+        InputFrame frame;
+        frame.Set(_action, _bHeld);
+        runner->Step(frame);
+    }
+
+    void Idle(
+        const int _ticks)
+    {
+        for (int i = 0; i < _ticks; ++i)
+        {
+            runner->Step({});
+        }
+    }
+
+    [[nodiscard]] bool IsStillTitle() const { return runner->GetState() == pTitle; }
+
+    slug::RngMt19937           rng;
+    GameContext                ctx;
+    TestAudio                  audio;
+    TitleState*                pTitle = nullptr;
+    std::unique_ptr<SimRunner> runner = nullptr;
+};
+
+[[nodiscard]] TitleConfig SandboxTitleConfig_()
+{
+    TitleConfig config;
+    config.nextState = "sandbox";
+    return config;
 }
+}   // namespace
 
 TEST(UiTitle, StaysOnTitleWithoutInput)
 {
-    TitleSim sim { SandboxTitleConfig() };
+    TitleSim sim { SandboxTitleConfig_() };
     sim.Idle(300);
     EXPECT_TRUE(sim.IsStillTitle());
     EXPECT_FALSE(sim.pTitle->IsStarting());
@@ -1106,7 +1131,7 @@ TEST(UiTitle, StaysOnTitleWithoutInput)
 
 TEST(UiTitle, ShotPressStartsFadeThenSwitchesStateExactlyAfterFade)
 {
-    TitleConfig config = SandboxTitleConfig();
+    TitleConfig config    = SandboxTitleConfig_();
     config.startFadeTicks = 24;
     TitleSim sim { config };
     sim.Idle(30);
@@ -1133,7 +1158,7 @@ TEST(UiTitle, ShotPressStartsFadeThenSwitchesStateExactlyAfterFade)
 
 TEST(UiTitle, StartActionAlsoWorksAndHeldKeyDoesNotRetrigger)
 {
-    TitleSim sim { SandboxTitleConfig() };
+    TitleSim sim { SandboxTitleConfig_() };
     sim.Idle(20);
     sim.Step(eAction::Start, true);
     EXPECT_TRUE(sim.pTitle->IsStarting());
@@ -1144,7 +1169,7 @@ TEST(UiTitle, StartActionAlsoWorksAndHeldKeyDoesNotRetrigger)
 
 TEST(UiTitle, InputsDuringEntryDelayAreIgnored)
 {
-    TitleConfig config = SandboxTitleConfig();
+    TitleConfig config     = SandboxTitleConfig_();
     config.inputDelayTicks = 12;
     TitleSim sim { config };
     sim.Step(eAction::Shot, true);
@@ -1159,7 +1184,7 @@ TEST(UiTitle, InputsDuringEntryDelayAreIgnored)
 
 TEST(UiTitle, MovementKeysDoNotStartTheGame)
 {
-    TitleSim sim { SandboxTitleConfig() };
+    TitleSim sim { SandboxTitleConfig_() };
     sim.Idle(20);
     sim.Step(eAction::Right, true);
     sim.Step(eAction::Jump, true);
@@ -1179,7 +1204,7 @@ TEST(UiTitle, AutoSelectionFallsBackToSandboxWhenStage0IsNotRegistered)
 
 TEST(UiTitle, EntersWithBlackAndFadesIn)
 {
-    TitleSim sim { SandboxTitleConfig() };
+    TitleSim sim { SandboxTitleConfig_() };
     EXPECT_GT(sim.pTitle->GetUi().GetFade().GetAlpha(), 0.9f);   // 검정에서 시작
     sim.Idle(sim.pTitle->GetUi().GetFade().IsBusy() ? 40 : 0);
     EXPECT_TRUE(sim.pTitle->GetUi().GetFade().IsClear());

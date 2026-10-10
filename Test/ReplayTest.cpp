@@ -1,9 +1,10 @@
+// 리플레이/SimRunner 테스트: 리플레이 직렬화와 SimRunner 의 고정 틱 진행, 헤드리스 컨텍스트 검증
 #include <gtest/gtest.h>
-#include "Base/Types.h"
-#include "Base/Math.h"
-#include "Base/Result.h"
-#include "Base/Random.h"
 
+#include "Base/Math.h"
+#include "Base/Random.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
 #include "Core/Replay.h"
 #include "Game/DemoState.h"
 #include "Game/SimRunner.h"
@@ -13,40 +14,40 @@ using namespace slug;
 
 namespace
 {
-    slug::Vector<InputFrame> MakeScript()
+[[nodiscard]] slug::Vector<InputFrame> MakeScript_()
+{
+    slug::Vector<InputFrame> frames;
+    for (int i = 0; i < 240; ++i)
     {
-        slug::Vector<InputFrame> frames;
-        for (int i = 0; i < 240; ++i)
-        {
-            InputFrame frame;
-            frame.Set(eAction::Right, i < 120);
-            frame.Set(eAction::Down, i >= 60 && i < 180);
-            frame.Set(eAction::Left, i >= 180);
-            frames.push_back(frame);
-        }
-        return frames;
+        InputFrame frame;
+        frame.Set(eAction::Right, i < 120);
+        frame.Set(eAction::Down, i >= 60 && i < 180);
+        frame.Set(eAction::Left, i >= 180);
+        frames.push_back(frame);
     }
-
-    Vec2 RunDemo(
-        const slug::Vector<InputFrame>& _frames)
-    {
-        slug::RngMt19937 rng { uint64_t { 7 } };
-        GameContext     ctx;
-        ctx.pRng = &rng;
-
-        DemoState* pDemo = new DemoState;
-        SimRunner  runner { ctx, std::unique_ptr<IGameState> { pDemo } };
-        runner.Run(_frames);
-        return pDemo->GetPosition();
-    }
+    return frames;
 }
+
+[[nodiscard]] Vec2 RunDemo_(
+    const slug::Vector<InputFrame>& _frames)
+{
+    slug::RngMt19937 rng { uint64_t { 7 } };
+    GameContext      ctx;
+    ctx.pRng = &rng;
+
+    DemoState* pDemo = new DemoState;
+    SimRunner  runner { ctx, std::unique_ptr<IGameState> { pDemo } };
+    runner.Run(_frames);
+    return pDemo->GetPosition();
+}
+}   // namespace
 
 TEST(Replay, SerializeRoundTrip)
 {
     ReplayData replay;
     replay.seed      = 123456789;
     replay.stateName = "stage0";
-    replay.frames    = MakeScript();
+    replay.frames    = MakeScript_();
 
     const slug::Vector<uint8_t> bytes  = SerializeReplay(replay);
     slug::Result<ReplayData>    loaded = DeserializeReplay(bytes);
@@ -65,11 +66,11 @@ TEST(Replay, SerializeRoundTrip)
 TEST(Replay, RejectsBadMagicAndTruncation)
 {
     ReplayData replay;
-    replay.frames = MakeScript();
+    replay.frames               = MakeScript_();
     slug::Vector<uint8_t> bytes = SerializeReplay(replay);
 
     slug::Vector<uint8_t> badMagic = bytes;
-    badMagic[0] = 'X';
+    badMagic[0]                    = 'X';
     EXPECT_FALSE(DeserializeReplay(badMagic).HasValue());
 
     slug::Vector<uint8_t> truncated(bytes.begin(), bytes.begin() + static_cast<std::ptrdiff_t>(bytes.size() / 2));
@@ -80,9 +81,9 @@ TEST(Replay, RejectsBadMagicAndTruncation)
 
 TEST(SimRunner, SameInputsGiveIdenticalResult)
 {
-    const slug::Vector<InputFrame> script = MakeScript();
-    const Vec2            a      = RunDemo(script);
-    const Vec2            b      = RunDemo(script);
+    const slug::Vector<InputFrame> script = MakeScript_();
+    const Vec2                     a      = RunDemo_(script);
+    const Vec2                     b      = RunDemo_(script);
     EXPECT_FLOAT_EQ(a.x, b.x);
     EXPECT_FLOAT_EQ(a.y, b.y);
     EXPECT_FLOAT_EQ(a.x, 320.f + 120.f);

@@ -1,16 +1,17 @@
+// Physics 단위 테스트: 중력, 지면 스냅, 경사, 원웨이 플랫폼, 충돌 해소와 결정성 검증
 #include <bit>
-#include "Base/Types.h"
 #include <cmath>
 
 #include <gtest/gtest.h>
 
+#include "Base/Types.h"
 #include "World/Physics.h"
 
 using namespace slug;
 
 namespace
 {
-GroundMap MakeFlat(
+[[nodiscard]] GroundMap MakeFlat_(
     const int _w      = 400,
     const int _h      = 160,
     const int _floorY = 100)
@@ -20,7 +21,7 @@ GroundMap MakeFlat(
     return map;
 }
 
-Body MakeBody(
+[[nodiscard]] Body MakeBody_(
     const float _x,
     const float _feetY)
 {
@@ -29,7 +30,7 @@ Body MakeBody(
     return body;
 }
 
-MoveResult Tick(
+[[nodiscard]] MoveResult Tick_(
     Body&               _body,
     const PhysicsWorld& _world,
     const float         _vx = 0.f)
@@ -38,7 +39,7 @@ MoveResult Tick(
     return Physics::Step(_body, _world);
 }
 
-PhysicsWorld WorldOf(
+[[nodiscard]] PhysicsWorld WorldOf_(
     const GroundMap& _map)
 {
     PhysicsWorld world;
@@ -46,22 +47,22 @@ PhysicsWorld WorldOf(
     return world;
 }
 
-Body StandingOn(
+[[nodiscard]] Body StandingOn_(
     const PhysicsWorld& _world,
     const float         _x,
     const float         _y)
 {
-    Body body = MakeBody(_x, _y);
+    Body body = MakeBody_(_x, _y);
     EXPECT_TRUE(Physics::SnapToGround(body, _world, 64.f));
     return body;
 }
-}
+}   // namespace
 
 TEST(Physics, FreeFallAppliesGravityPerStep)
 {
-    const GroundMap    map   = MakeFlat(400, 4000, 3000);
-    const PhysicsWorld world = WorldOf(map);
-    Body               body  = MakeBody(100.f, 50.f);
+    const GroundMap    map   = MakeFlat_(400, 4000, 3000);
+    const PhysicsWorld world = WorldOf_(map);
+    Body               body  = MakeBody_(100.f, 50.f);
 
     const MoveResult result = Physics::Step(body, world);
     EXPECT_FALSE(result.bGroundedNow);
@@ -72,8 +73,8 @@ TEST(Physics, FreeFallAppliesGravityPerStep)
 TEST(Physics, FallVelocityIsClampedToTerminal)
 {
     const GroundMap    map   = GroundMap::MakeEmpty(400, 100);
-    const PhysicsWorld world = WorldOf(map);
-    Body               body  = MakeBody(100.f, 10.f);
+    const PhysicsWorld world = WorldOf_(map);
+    Body               body  = MakeBody_(100.f, 10.f);
     body.bCollideGround      = false;
 
     PhysicsTuning tuning;
@@ -87,14 +88,14 @@ TEST(Physics, FallVelocityIsClampedToTerminal)
 
 TEST(Physics, LandsExactlyOnFlatGroundAndReportsLandedOnce)
 {
-    const GroundMap    map   = MakeFlat();
-    const PhysicsWorld world = WorldOf(map);
-    Body               body  = MakeBody(100.f, 20.f);
+    const GroundMap    map   = MakeFlat_();
+    const PhysicsWorld world = WorldOf_(map);
+    Body               body  = MakeBody_(100.f, 20.f);
 
     int landedCount = 0;
     for (int i = 0; i < 120; ++i)
     {
-        const MoveResult result = Tick(body, world);
+        const MoveResult result = Tick_(body, world);
         landedCount += result.bLanded ? 1 : 0;
     }
 
@@ -108,12 +109,12 @@ TEST(Physics, FastFallDoesNotTunnelThroughThinGround)
 {
     GroundMap map = GroundMap::MakeEmpty(400, 3000);
     map.FillRect(0, 2000, 399, 2000, true);
-    const PhysicsWorld world = WorldOf(map);
+    const PhysicsWorld world = WorldOf_(map);
 
-    Body body = MakeBody(100.f, 10.f);
+    Body body = MakeBody_(100.f, 10.f);
     for (int i = 0; i < 400 && !body.bGrounded; ++i)
     {
-        (void)Tick(body, world);
+        (void)Tick_(body, world);
     }
     EXPECT_TRUE(body.bGrounded);
     EXPECT_FLOAT_EQ(body.position.y, 2000.f);
@@ -122,12 +123,12 @@ TEST(Physics, FastFallDoesNotTunnelThroughThinGround)
 TEST(Physics, BottomOfMapIsSolidByDefault)
 {
     const GroundMap    map   = GroundMap::MakeEmpty(200, 100);
-    const PhysicsWorld world = WorldOf(map);
-    Body               body  = MakeBody(100.f, 10.f);
+    const PhysicsWorld world = WorldOf_(map);
+    Body               body  = MakeBody_(100.f, 10.f);
 
     for (int i = 0; i < 120; ++i)
     {
-        (void)Tick(body, world);
+        (void)Tick_(body, world);
     }
     EXPECT_TRUE(body.bGrounded);
     EXPECT_FLOAT_EQ(body.position.y, 100.f);
@@ -140,11 +141,11 @@ TEST(Physics, BottomOfMapCanBeMadeNonSolid)
     policy.bSolidBottom = false;
     map.SetBoundsPolicy(policy);
 
-    const PhysicsWorld world = WorldOf(map);
-    Body               body  = MakeBody(100.f, 10.f);
+    const PhysicsWorld world = WorldOf_(map);
+    Body               body  = MakeBody_(100.f, 10.f);
     for (int i = 0; i < 120; ++i)
     {
-        (void)Tick(body, world);
+        (void)Tick_(body, world);
     }
     EXPECT_FALSE(body.bGrounded);
     EXPECT_GT(body.position.y, 100.f);
@@ -152,28 +153,28 @@ TEST(Physics, BottomOfMapCanBeMadeNonSolid)
 
 TEST(Physics, SnapToGroundPlacesFeetOnSurface)
 {
-    const GroundMap    map   = MakeFlat();
-    const PhysicsWorld world = WorldOf(map);
+    const GroundMap    map   = MakeFlat_();
+    const PhysicsWorld world = WorldOf_(map);
 
-    Body body = MakeBody(50.f, 90.f);
+    Body body = MakeBody_(50.f, 90.f);
     EXPECT_TRUE(Physics::SnapToGround(body, world, 20.f));
     EXPECT_FLOAT_EQ(body.position.y, 100.f);
     EXPECT_TRUE(body.bGrounded);
 
-    Body tooFar = MakeBody(50.f, 20.f);
+    Body tooFar = MakeBody_(50.f, 20.f);
     EXPECT_FALSE(Physics::SnapToGround(tooFar, world, 20.f));
     EXPECT_FALSE(tooFar.bGrounded);
 }
 
 TEST(Physics, WalkingOnFlatGroundIsFrameRateIndependentAtFixedStep)
 {
-    const GroundMap    map   = MakeFlat();
-    const PhysicsWorld world = WorldOf(map);
-    Body               body  = StandingOn(world, 20.f, 100.f);
+    const GroundMap    map   = MakeFlat_();
+    const PhysicsWorld world = WorldOf_(map);
+    Body               body  = StandingOn_(world, 20.f, 100.f);
 
     for (int i = 0; i < 60; ++i)
     {
-        const MoveResult result = Tick(body, world, kRunSpeed);
+        const MoveResult result = Tick_(body, world, kRunSpeed);
         ASSERT_TRUE(result.bGroundedNow);
         ASSERT_FALSE(result.bLeftGround);
     }
@@ -183,13 +184,13 @@ TEST(Physics, WalkingOnFlatGroundIsFrameRateIndependentAtFixedStep)
 
 TEST(Physics, StandingStillStaysGroundedWithoutDrift)
 {
-    const GroundMap    map   = MakeFlat();
-    const PhysicsWorld world = WorldOf(map);
-    Body               body  = StandingOn(world, 50.f, 100.f);
+    const GroundMap    map   = MakeFlat_();
+    const PhysicsWorld world = WorldOf_(map);
+    Body               body  = StandingOn_(world, 50.f, 100.f);
 
     for (int i = 0; i < 300; ++i)
     {
-        const MoveResult result = Tick(body, world);
+        const MoveResult result = Tick_(body, world);
         ASSERT_TRUE(result.bGroundedNow);
         ASSERT_FALSE(result.bLanded);
     }
@@ -199,7 +200,7 @@ TEST(Physics, StandingStillStaysGroundedWithoutDrift)
 
 namespace
 {
-GroundMap MakeRamp45(
+[[nodiscard]] GroundMap MakeRamp45_(
     const int _rampStart = 50,
     const int _rampEnd   = 90,
     const int _baseY     = 100)
@@ -221,7 +222,7 @@ GroundMap MakeRamp45(
     return map;
 }
 
-int RampSurfaceAt(
+[[nodiscard]] int RampSurfaceAt_(
     const int _c,
     const int _rampStart = 50,
     const int _rampEnd   = 90,
@@ -237,22 +238,22 @@ int RampSurfaceAt(
     }
     return _baseY;
 }
-}
+}   // namespace
 
 TEST(Physics, WalksUpA45DegreeRampWithoutLeavingTheGround)
 {
-    const GroundMap    map   = MakeRamp45();
-    const PhysicsWorld world = WorldOf(map);
-    Body               body  = StandingOn(world, 20.f, 100.f);
+    const GroundMap    map   = MakeRamp45_();
+    const PhysicsWorld world = WorldOf_(map);
+    Body               body  = StandingOn_(world, 20.f, 100.f);
 
     for (int i = 0; i < 90; ++i)
     {
-        const MoveResult result = Tick(body, world, kRunSpeed);
+        const MoveResult result = Tick_(body, world, kRunSpeed);
         ASSERT_TRUE(result.bGroundedNow) << "tick " << i << " x=" << body.position.x;
         ASSERT_FALSE(result.bHitWallRight) << "tick " << i;
 
         const int highestCol = CeilToInt(body.position.x + 1.f) - 1;
-        ASSERT_FLOAT_EQ(body.position.y, static_cast<float>(RampSurfaceAt(highestCol))) << "tick " << i << " x=" << body.position.x;
+        ASSERT_FLOAT_EQ(body.position.y, static_cast<float>(RampSurfaceAt_(highestCol))) << "tick " << i << " x=" << body.position.x;
     }
 
     EXPECT_GT(body.position.x, 90.f);
@@ -261,10 +262,10 @@ TEST(Physics, WalksUpA45DegreeRampWithoutLeavingTheGround)
 
 TEST(Physics, RampReportsSlopeAndNormal)
 {
-    const GroundMap    map    = MakeRamp45();
-    const PhysicsWorld world  = WorldOf(map);
-    Body               body   = StandingOn(world, 70.f, 80.f);
-    const MoveResult   result = Tick(body, world);
+    const GroundMap    map    = MakeRamp45_();
+    const PhysicsWorld world  = WorldOf_(map);
+    Body               body   = StandingOn_(world, 70.f, 80.f);
+    const MoveResult   result = Tick_(body, world);
 
     EXPECT_TRUE(result.bGroundedNow);
     EXPECT_NEAR(result.groundSlope, -1.f, 0.01f);   // 오른쪽으로 갈수록 위로 올라감
@@ -275,10 +276,10 @@ TEST(Physics, RampReportsSlopeAndNormal)
 
 TEST(Physics, FlatGroundReportsFlatNormal)
 {
-    const GroundMap    map    = MakeFlat();
-    const PhysicsWorld world  = WorldOf(map);
-    Body               body   = StandingOn(world, 200.f, 100.f);
-    const MoveResult   result = Tick(body, world);
+    const GroundMap    map    = MakeFlat_();
+    const PhysicsWorld world  = WorldOf_(map);
+    Body               body   = StandingOn_(world, 200.f, 100.f);
+    const MoveResult   result = Tick_(body, world);
     EXPECT_FLOAT_EQ(result.groundSlope, 0.f);
     EXPECT_FLOAT_EQ(result.groundNormal.x, 0.f);
     EXPECT_FLOAT_EQ(result.groundNormal.y, -1.f);
@@ -292,13 +293,13 @@ TEST(Physics, WalksDownARampAndStaysGrounded)
         const int surface = c < 50 ? 60 : (c < 90 ? 60 + (c - 50) : 100);
         map.FillRect(c, surface, c, 199, true);
     }
-    const PhysicsWorld world = WorldOf(map);
-    Body               body  = StandingOn(world, 20.f, 60.f);
+    const PhysicsWorld world = WorldOf_(map);
+    Body               body  = StandingOn_(world, 20.f, 60.f);
 
     int leftGroundCount = 0;
     for (int i = 0; i < 90; ++i)
     {
-        const MoveResult result = Tick(body, world, kRunSpeed);
+        const MoveResult result = Tick_(body, world, kRunSpeed);
         leftGroundCount += result.bLeftGround ? 1 : 0;
         ASSERT_TRUE(result.bGroundedNow) << "tick " << i;
     }
@@ -308,16 +309,16 @@ TEST(Physics, WalksDownARampAndStaysGrounded)
 
 TEST(Physics, StepUpToLowCurbButBlockedByTallWall)
 {
-    GroundMap map = MakeFlat();
+    GroundMap map = MakeFlat_();
     map.FillRect(150, 97, 249, 99, true);
     map.FillRect(250, 92, 399, 99, true);
-    const PhysicsWorld world = WorldOf(map);
+    const PhysicsWorld world = WorldOf_(map);
 
-    Body body     = StandingOn(world, 100.f, 100.f);
+    Body body     = StandingOn_(world, 100.f, 100.f);
     bool bHitWall = false;
     for (int i = 0; i < 150; ++i)
     {
-        const MoveResult result = Tick(body, world, kRunSpeed);
+        const MoveResult result = Tick_(body, world, kRunSpeed);
         bHitWall                = bHitWall || result.bHitWallRight;
     }
 
@@ -333,14 +334,14 @@ TEST(Physics, WalksOffALedgeAndFallsThenLands)
     GroundMap map = GroundMap::MakeEmpty(400, 200);
     map.FillRect(0, 80, 99, 199, true);
     map.FillRect(100, 150, 399, 199, true);
-    const PhysicsWorld world = WorldOf(map);
+    const PhysicsWorld world = WorldOf_(map);
 
-    Body body      = StandingOn(world, 60.f, 80.f);
+    Body body      = StandingOn_(world, 60.f, 80.f);
     int  leftCount = 0;
     int  landCount = 0;
     for (int i = 0; i < 120; ++i)   // x: 60 → 300 (맵 폭 400 안쪽)
     {
-        const MoveResult result = Tick(body, world, 120.f);
+        const MoveResult result = Tick_(body, world, 120.f);
         leftCount += result.bLeftGround ? 1 : 0;
         landCount += result.bLanded ? 1 : 0;
     }
@@ -355,17 +356,17 @@ TEST(Physics, LedgeEdgeUsesCenterFootSensor)
 {
     GroundMap map = GroundMap::MakeEmpty(400, 200);
     map.FillRect(0, 80, 99, 199, true);   // 열 99 까지가 땅
-    const PhysicsWorld world = WorldOf(map);
+    const PhysicsWorld world = WorldOf_(map);
 
-    Body body = StandingOn(world, 95.f, 80.f);
+    Body body = StandingOn_(world, 95.f, 80.f);
     for (int i = 0; i < 10; ++i)
     {
-        (void)Tick(body, world);
+        (void)Tick_(body, world);
     }
     EXPECT_TRUE(body.bGrounded);
 
     body.position.x = 103.f;
-    (void)Tick(body, world);
+    (void)Tick_(body, world);
     EXPECT_FALSE(body.bGrounded);
 }
 
@@ -374,12 +375,12 @@ TEST(Physics, SmallDropIsSnappedWhileGrounded)
     GroundMap map = GroundMap::MakeEmpty(400, 200);
     map.FillRect(0, 100, 149, 199, true);
     map.FillRect(150, 103, 399, 199, true);
-    const PhysicsWorld world = WorldOf(map);
+    const PhysicsWorld world = WorldOf_(map);
 
-    Body body = StandingOn(world, 100.f, 100.f);
+    Body body = StandingOn_(world, 100.f, 100.f);
     for (int i = 0; i < 40; ++i)
     {
-        const MoveResult result = Tick(body, world, kRunSpeed);
+        const MoveResult result = Tick_(body, world, kRunSpeed);
         ASSERT_TRUE(result.bGroundedNow);
         ASSERT_FALSE(result.bLeftGround);
     }
@@ -391,22 +392,22 @@ TEST(Physics, DeepDropIsNotSnapped)
     GroundMap map = GroundMap::MakeEmpty(400, 200);
     map.FillRect(0, 100, 149, 199, true);
     map.FillRect(150, 110, 399, 199, true);   // 10px 단차 > maxSnapDown
-    const PhysicsWorld world = WorldOf(map);
+    const PhysicsWorld world = WorldOf_(map);
 
-    Body body  = StandingOn(world, 100.f, 100.f);
+    Body body  = StandingOn_(world, 100.f, 100.f);
     bool bLeft = false;
     for (int i = 0; i < 40; ++i)
     {
-        bLeft |= Tick(body, world, kRunSpeed).bLeftGround;
+        bLeft |= Tick_(body, world, kRunSpeed).bLeftGround;
     }
     EXPECT_TRUE(bLeft);
 }
 
 TEST(Physics, JumpReachesExpectedApexAndReturns)
 {
-    const GroundMap    map   = MakeFlat();
-    const PhysicsWorld world = WorldOf(map);
-    Body               body  = StandingOn(world, 100.f, 100.f);
+    const GroundMap    map   = MakeFlat_();
+    const PhysicsWorld world = WorldOf_(map);
+    Body               body  = StandingOn_(world, 100.f, 100.f);
 
     body.velocity.y = -kJumpSpeed;
     float minY      = body.position.y;
@@ -415,7 +416,7 @@ TEST(Physics, JumpReachesExpectedApexAndReturns)
     bool  bLanded   = false;
     for (; ticks < 200; ++ticks)
     {
-        const MoveResult result = Tick(body, world);
+        const MoveResult result = Tick_(body, world);
         bLeft                   = bLeft || result.bLeftGround;
         minY                    = std::min(minY, body.position.y);
         if (result.bLanded)
@@ -436,12 +437,12 @@ TEST(Physics, JumpReachesExpectedApexAndReturns)
 
 TEST(Physics, LiftoffClearsGroundedFlagImmediately)
 {
-    const GroundMap    map   = MakeFlat();
-    const PhysicsWorld world = WorldOf(map);
-    Body               body  = StandingOn(world, 100.f, 100.f);
+    const GroundMap    map   = MakeFlat_();
+    const PhysicsWorld world = WorldOf_(map);
+    Body               body  = StandingOn_(world, 100.f, 100.f);
 
     body.velocity.y         = -kJumpSpeed;
-    const MoveResult result = Tick(body, world);
+    const MoveResult result = Tick_(body, world);
     EXPECT_TRUE(result.bLeftGround);
     EXPECT_FALSE(result.bGroundedNow);
     EXPECT_LT(body.position.y, 100.f);
@@ -449,16 +450,16 @@ TEST(Physics, LiftoffClearsGroundedFlagImmediately)
 
 TEST(Physics, CeilingStopsAJumpAndZeroesVelocity)
 {
-    GroundMap map = MakeFlat();
+    GroundMap map = MakeFlat_();
     map.FillRect(60, 20, 140, 59, true);   // 윗면 20, 아랫면 y=60 (행 59 까지)
-    const PhysicsWorld world = WorldOf(map);
-    Body               body  = StandingOn(world, 100.f, 100.f);
+    const PhysicsWorld world = WorldOf_(map);
+    Body               body  = StandingOn_(world, 100.f, 100.f);
 
     body.velocity.y = -kJumpSpeed;
     bool bHit       = false;
     for (int i = 0; i < 30; ++i)
     {
-        const MoveResult result = Tick(body, world);
+        const MoveResult result = Tick_(body, world);
         if (result.bHitCeiling)
         {
             bHit = true;
@@ -471,7 +472,7 @@ TEST(Physics, CeilingStopsAJumpAndZeroesVelocity)
 
     for (int i = 0; i < 80; ++i)
     {
-        (void)Tick(body, world);
+        (void)Tick_(body, world);
     }
     EXPECT_TRUE(body.bGrounded);
     EXPECT_FLOAT_EQ(body.position.y, 100.f);
@@ -479,15 +480,15 @@ TEST(Physics, CeilingStopsAJumpAndZeroesVelocity)
 
 TEST(Physics, WallStopsWalkingFlushAndZeroesVelocity)
 {
-    GroundMap map = MakeFlat();
+    GroundMap map = MakeFlat_();
     map.FillRect(200, 0, 399, 99, true);   // 열 200 부터 높은 벽
-    const PhysicsWorld world = WorldOf(map);
-    Body               body  = StandingOn(world, 100.f, 100.f);
+    const PhysicsWorld world = WorldOf_(map);
+    Body               body  = StandingOn_(world, 100.f, 100.f);
 
     bool bHit = false;
     for (int i = 0; i < 120; ++i)
     {
-        bHit |= Tick(body, world, kRunSpeed).bHitWallRight;
+        bHit |= Tick_(body, world, kRunSpeed).bHitWallRight;
     }
     EXPECT_TRUE(bHit);
     EXPECT_FLOAT_EQ(body.position.x + 12.f, 200.f);   // 오른쪽 모서리가 벽면에 정확히 닿음
@@ -497,15 +498,15 @@ TEST(Physics, WallStopsWalkingFlushAndZeroesVelocity)
 
 TEST(Physics, LeftWallStopsToo)
 {
-    GroundMap map = MakeFlat();
+    GroundMap map = MakeFlat_();
     map.FillRect(0, 0, 49, 99, true);   // 열 0..49 벽 (오른쪽 면 = 50)
-    const PhysicsWorld world = WorldOf(map);
-    Body               body  = StandingOn(world, 150.f, 100.f);
+    const PhysicsWorld world = WorldOf_(map);
+    Body               body  = StandingOn_(world, 150.f, 100.f);
 
     bool bHit = false;
     for (int i = 0; i < 120; ++i)
     {
-        bHit |= Tick(body, world, -kRunSpeed).bHitWallLeft;
+        bHit |= Tick_(body, world, -kRunSpeed).bHitWallLeft;
     }
     EXPECT_TRUE(bHit);
     EXPECT_FLOAT_EQ(body.position.x - 12.f, 50.f);
@@ -513,16 +514,16 @@ TEST(Physics, LeftWallStopsToo)
 
 TEST(Physics, AirborneBodyCannotPassThroughWallOrSlideIntoLedgeCorner)
 {
-    GroundMap map = MakeFlat();
+    GroundMap map = MakeFlat_();
     map.FillRect(200, 40, 399, 99, true);   // 윗면이 y=40 인 큰 블록
-    const PhysicsWorld world = WorldOf(map);
-    Body               body  = StandingOn(world, 150.f, 100.f);
+    const PhysicsWorld world = WorldOf_(map);
+    Body               body  = StandingOn_(world, 150.f, 100.f);
 
     body.velocity.y = -300.f;   // 정점 높이 ≈ 32px → 블록 윗면(40)보다 낮게 뜬다
     bool bHit       = false;
     for (int i = 0; i < 60; ++i)
     {
-        const MoveResult result = Tick(body, world, kRunSpeed);
+        const MoveResult result = Tick_(body, world, kRunSpeed);
         bHit                    = bHit || result.bHitWallRight;
         ASSERT_LE(body.position.x + 12.f, 200.f + 0.001f) << "tick " << i;   // 벽 안으로 파고들지 않음
     }
@@ -531,15 +532,15 @@ TEST(Physics, AirborneBodyCannotPassThroughWallOrSlideIntoLedgeCorner)
 
 TEST(Physics, AirborneBodyClearingTheLedgeLandsOnTop)
 {
-    GroundMap map = MakeFlat();
+    GroundMap map = MakeFlat_();
     map.FillRect(200, 80, 399, 99, true);   // 윗면 y=80, 바닥보다 20px 높은 단
-    const PhysicsWorld world = WorldOf(map);
-    Body               body  = StandingOn(world, 150.f, 100.f);
+    const PhysicsWorld world = WorldOf_(map);
+    Body               body  = StandingOn_(world, 150.f, 100.f);
 
     body.velocity.y = -kJumpSpeed;
     for (int i = 0; i < 60; ++i)
     {
-        (void)Tick(body, world, 150.f);
+        (void)Tick_(body, world, 150.f);
     }
     EXPECT_TRUE(body.bGrounded);
     EXPECT_FLOAT_EQ(body.position.y, 80.f);
@@ -548,12 +549,12 @@ TEST(Physics, AirborneBodyClearingTheLedgeLandsOnTop)
 
 TEST(Physics, AirborneBodyDoesNotStepUpLedges)
 {
-    GroundMap map = MakeFlat();
+    GroundMap map = MakeFlat_();
     map.FillRect(200, 94, 399, 99, true);   // 윗면 y=94 (바닥보다 6px 높음)
-    const PhysicsWorld world = WorldOf(map);
+    const PhysicsWorld world = WorldOf_(map);
 
-    Body             body   = MakeBody(187.f, 98.f);
-    const MoveResult result = Tick(body, world, kRunSpeed);
+    Body             body   = MakeBody_(187.f, 98.f);
+    const MoveResult result = Tick_(body, world, kRunSpeed);
     EXPECT_TRUE(result.bHitWallRight);
     EXPECT_GE(body.position.y, 98.f);   // 끌어올려지지 않는다
     EXPECT_FLOAT_EQ(body.position.x + 12.f, 200.f);
@@ -561,22 +562,22 @@ TEST(Physics, AirborneBodyDoesNotStepUpLedges)
 
 TEST(Physics, OneWayPlatformPassesFromBelowAndLandsFromAbove)
 {
-    const GroundMap map = MakeFlat();
+    const GroundMap map = MakeFlat_();
     Platform        oneWay;
     oneWay.box     = Aabb::FromMinMax({ 100.f, 60.f }, { 200.f, 66.f });
     oneWay.bOneWay = true;
 
-    PhysicsWorld world = WorldOf(map);
+    PhysicsWorld world = WorldOf_(map);
     world.platforms    = slug::Span<const Platform> { &oneWay, 1 };
 
-    Body body       = StandingOn(world, 150.f, 100.f);
+    Body body       = StandingOn_(world, 150.f, 100.f);
     body.velocity.y = -kJumpSpeed;
 
     bool bCeiling = false;
     bool bLanded  = false;
     for (int i = 0; i < 120; ++i)
     {
-        const MoveResult result = Tick(body, world);
+        const MoveResult result = Tick_(body, world);
         bCeiling                = bCeiling || result.bHitCeiling;
         if (result.bLanded)
         {
@@ -593,18 +594,18 @@ TEST(Physics, OneWayPlatformPassesFromBelowAndLandsFromAbove)
 
 TEST(Physics, OneWayPlatformDoesNotCatchBodiesThatAreBelowTheTop)
 {
-    const GroundMap map = MakeFlat();
+    const GroundMap map = MakeFlat_();
     Platform        oneWay;
     oneWay.box     = Aabb::FromMinMax({ 100.f, 60.f }, { 200.f, 66.f });
     oneWay.bOneWay = true;
 
-    PhysicsWorld world = WorldOf(map);
+    PhysicsWorld world = WorldOf_(map);
     world.platforms    = slug::Span<const Platform> { &oneWay, 1 };
 
-    Body body = MakeBody(150.f, 80.f);
+    Body body = MakeBody_(150.f, 80.f);
     for (int i = 0; i < 60; ++i)
     {
-        (void)Tick(body, world);
+        (void)Tick_(body, world);
     }
     EXPECT_TRUE(body.bGrounded);
     EXPECT_FLOAT_EQ(body.position.y, 100.f);   // 바닥까지 내려갔다 (원웨이에 걸리지 않음)
@@ -612,36 +613,36 @@ TEST(Physics, OneWayPlatformDoesNotCatchBodiesThatAreBelowTheTop)
 
 TEST(Physics, OneWayPlatformDoesNotBlockWalkingSideways)
 {
-    const GroundMap map = MakeFlat();
+    const GroundMap map = MakeFlat_();
     Platform        oneWay;
     oneWay.box     = Aabb::FromMinMax({ 150.f, 70.f }, { 170.f, 76.f });   // 몸통 높이 안쪽에 걸쳐 있음
     oneWay.bOneWay = true;
 
-    PhysicsWorld world = WorldOf(map);
+    PhysicsWorld world = WorldOf_(map);
     world.platforms    = slug::Span<const Platform> { &oneWay, 1 };
 
-    Body body = StandingOn(world, 100.f, 100.f);
+    Body body = StandingOn_(world, 100.f, 100.f);
     for (int i = 0; i < 90; ++i)
     {
-        (void)Tick(body, world, kRunSpeed);
+        (void)Tick_(body, world, kRunSpeed);
     }
     EXPECT_GT(body.position.x, 250.f);
 }
 
 TEST(Physics, DropThroughLetsBodyFallOffOneWayPlatform)
 {
-    const GroundMap map = MakeFlat();
+    const GroundMap map = MakeFlat_();
     Platform        oneWay;
     oneWay.box     = Aabb::FromMinMax({ 100.f, 60.f }, { 200.f, 66.f });
     oneWay.bOneWay = true;
 
-    PhysicsWorld world = WorldOf(map);
+    PhysicsWorld world = WorldOf_(map);
     world.platforms    = slug::Span<const Platform> { &oneWay, 1 };
 
-    Body body = StandingOn(world, 150.f, 60.f);
+    Body body = StandingOn_(world, 150.f, 60.f);
     for (int i = 0; i < 5; ++i)
     {
-        (void)Tick(body, world);
+        (void)Tick_(body, world);
     }
     ASSERT_TRUE(body.bGrounded);
     ASSERT_FLOAT_EQ(body.position.y, 60.f);
@@ -649,7 +650,7 @@ TEST(Physics, DropThroughLetsBodyFallOffOneWayPlatform)
     body.RequestDropThrough();
     for (int i = 0; i < 120; ++i)
     {
-        (void)Tick(body, world);
+        (void)Tick_(body, world);
     }
     EXPECT_TRUE(body.bGrounded);
     EXPECT_FLOAT_EQ(body.position.y, 100.f);   // 바닥까지 내려갔고 다시 원웨이에 걸리지 않았다
@@ -657,41 +658,41 @@ TEST(Physics, DropThroughLetsBodyFallOffOneWayPlatform)
 
 TEST(Physics, SolidPlatformSupportsBlocksSidesAndBumpsHead)
 {
-    const GroundMap map = MakeFlat();
+    const GroundMap map = MakeFlat_();
     Platform        solid;
     solid.box     = Aabb::FromMinMax({ 150.f, 50.f }, { 220.f, 100.f });   // 바닥에 놓인 상자 (높이 50)
     solid.bOneWay = false;
 
-    PhysicsWorld world = WorldOf(map);
+    PhysicsWorld world = WorldOf_(map);
     world.platforms    = slug::Span<const Platform> { &solid, 1 };
 
-    Body body = StandingOn(world, 100.f, 100.f);
+    Body body = StandingOn_(world, 100.f, 100.f);
     bool bHit = false;
     for (int i = 0; i < 90; ++i)
     {
-        bHit |= Tick(body, world, kRunSpeed).bHitWallRight;
+        bHit |= Tick_(body, world, kRunSpeed).bHitWallRight;
     }
     EXPECT_TRUE(bHit);
     EXPECT_FLOAT_EQ(body.position.x + 12.f, 150.f);
 
-    Body faller = MakeBody(180.f, 0.f);
+    Body faller = MakeBody_(180.f, 0.f);
     for (int i = 0; i < 120; ++i)
     {
-        (void)Tick(faller, world);
+        (void)Tick_(faller, world);
     }
     EXPECT_TRUE(faller.bGrounded);
     EXPECT_FLOAT_EQ(faller.position.y, 50.f);
 
     Platform hanging;
     hanging.box         = Aabb::FromMinMax({ 300.f, 20.f }, { 360.f, 40.f });
-    PhysicsWorld world2 = WorldOf(map);
+    PhysicsWorld world2 = WorldOf_(map);
     world2.platforms    = slug::Span<const Platform> { &hanging, 1 };
-    Body jumper         = StandingOn(world2, 330.f, 100.f);
+    Body jumper         = StandingOn_(world2, 330.f, 100.f);
     jumper.velocity.y   = -kJumpSpeed;
     bool bCeiling       = false;
     for (int i = 0; i < 40 && !bCeiling; ++i)
     {
-        bCeiling = Tick(jumper, world2).bHitCeiling;
+        bCeiling = Tick_(jumper, world2).bHitCeiling;
     }
     EXPECT_TRUE(bCeiling);
     EXPECT_FLOAT_EQ(jumper.position.y - jumper.size.y, 40.f);
@@ -699,20 +700,20 @@ TEST(Physics, SolidPlatformSupportsBlocksSidesAndBumpsHead)
 
 TEST(Physics, WalkingOffPlatformEdgeFallsToGround)
 {
-    const GroundMap map = MakeFlat();
+    const GroundMap map = MakeFlat_();
     Platform        solid;
     solid.box = Aabb::FromMinMax({ 100.f, 60.f }, { 160.f, 100.f });
 
-    PhysicsWorld world = WorldOf(map);
+    PhysicsWorld world = WorldOf_(map);
     world.platforms    = slug::Span<const Platform> { &solid, 1 };
 
-    Body body = StandingOn(world, 130.f, 60.f);
+    Body body = StandingOn_(world, 130.f, 60.f);
     ASSERT_FLOAT_EQ(body.position.y, 60.f);
 
     bool bLeft = false;
     for (int i = 0; i < 120; ++i)
     {
-        bLeft |= Tick(body, world, 100.f).bLeftGround;
+        bLeft |= Tick_(body, world, 100.f).bLeftGround;
     }
     EXPECT_TRUE(bLeft);
     EXPECT_TRUE(body.bGrounded);
@@ -721,27 +722,27 @@ TEST(Physics, WalkingOffPlatformEdgeFallsToGround)
 
 TEST(Physics, WallBoxBlocksAndCanBeStoodOn)
 {
-    const GroundMap map = MakeFlat();
+    const GroundMap map = MakeFlat_();
     Wall            wall;
     wall.box = Aabb::FromMinMax({ 200.f, 0.f }, { 210.f, 100.f });
 
-    PhysicsWorld world = WorldOf(map);
+    PhysicsWorld world = WorldOf_(map);
     world.walls        = slug::Span<const Wall> { &wall, 1 };
 
-    Body body = StandingOn(world, 100.f, 100.f);
+    Body body = StandingOn_(world, 100.f, 100.f);
     bool bHit = false;
     for (int i = 0; i < 90; ++i)
     {
-        bHit |= Tick(body, world, kRunSpeed).bHitWallRight;
+        bHit |= Tick_(body, world, kRunSpeed).bHitWallRight;
     }
     EXPECT_TRUE(bHit);
     EXPECT_FLOAT_EQ(body.position.x + 12.f, 200.f);
 
-    Body other = StandingOn(world, 300.f, 100.f);
+    Body other = StandingOn_(world, 300.f, 100.f);
     bHit       = false;
     for (int i = 0; i < 90; ++i)
     {
-        bHit |= Tick(other, world, -kRunSpeed).bHitWallLeft;
+        bHit |= Tick_(other, world, -kRunSpeed).bHitWallLeft;
     }
     EXPECT_TRUE(bHit);
     EXPECT_FLOAT_EQ(other.position.x - 12.f, 210.f);
@@ -749,16 +750,16 @@ TEST(Physics, WallBoxBlocksAndCanBeStoodOn)
 
 TEST(Physics, BodiesCanOptOutOfCollisionLayers)
 {
-    GroundMap map = MakeFlat();
+    GroundMap map = MakeFlat_();
     map.FillRect(200, 0, 399, 99, true);
-    const PhysicsWorld world = WorldOf(map);
+    const PhysicsWorld world = WorldOf_(map);
 
-    Body ghost           = MakeBody(100.f, 100.f);
+    Body ghost           = MakeBody_(100.f, 100.f);
     ghost.bCollideGround = false;
     ghost.bUseGravity    = false;
     for (int i = 0; i < 120; ++i)
     {
-        (void)Tick(ghost, world, kRunSpeed);
+        (void)Tick_(ghost, world, kRunSpeed);
     }
     EXPECT_GT(ghost.position.x, 250.f);
     EXPECT_FLOAT_EQ(ghost.position.y, 100.f);
@@ -777,25 +778,25 @@ struct Snapshot
     [[nodiscard]] bool operator==(const Snapshot&) const = default;
 };
 
-Snapshot Capture(
+[[nodiscard]] Snapshot Capture_(
     const Body& _body)
 {
     return { std::bit_cast<uint32_t>(_body.position.x), std::bit_cast<uint32_t>(_body.position.y), std::bit_cast<uint32_t>(_body.velocity.x), std::bit_cast<uint32_t>(_body.velocity.y), _body.bGrounded };
 }
 
-slug::Vector<Snapshot> RunScenario()
+[[nodiscard]] slug::Vector<Snapshot> RunScenario_()
 {
-    GroundMap map = MakeRamp45(50, 90, 100);
+    GroundMap map = MakeRamp45_(50, 90, 100);
     map.FillRect(260, 100, 330, 199, false);   // 구덩이
     map.FillRect(330, 40, 399, 199, true);
     Platform oneWay;
     oneWay.box     = Aabb::FromMinMax({ 120.f, 50.f }, { 180.f, 56.f });
     oneWay.bOneWay = true;
 
-    PhysicsWorld world = WorldOf(map);
+    PhysicsWorld world = WorldOf_(map);
     world.platforms    = slug::Span<const Platform> { &oneWay, 1 };
 
-    Body                  body = MakeBody(20.f, 100.f);
+    Body                   body = MakeBody_(20.f, 100.f);
     slug::Vector<Snapshot> history;
     for (int i = 0; i < 600; ++i)
     {
@@ -812,17 +813,17 @@ slug::Vector<Snapshot> RunScenario()
         {
             body.RequestDropThrough();
         }
-        (void)Tick(body, world, vx);
-        history.push_back(Capture(body));
+        (void)Tick_(body, world, vx);
+        history.push_back(Capture_(body));
     }
     return history;
 }
-}
+}   // namespace
 
 TEST(Physics, SameInputsProduceBitIdenticalResultsAfter600Steps)
 {
-    const slug::Vector<Snapshot> a = RunScenario();
-    const slug::Vector<Snapshot> b = RunScenario();
+    const slug::Vector<Snapshot> a = RunScenario_();
+    const slug::Vector<Snapshot> b = RunScenario_();
     ASSERT_EQ(a.size(), 600u);
     ASSERT_EQ(a.size(), b.size());
     for (size_t i = 0; i < a.size(); ++i)
@@ -833,7 +834,7 @@ TEST(Physics, SameInputsProduceBitIdenticalResultsAfter600Steps)
 
 TEST(Physics, ScenarioActuallyMovesTheBody)
 {
-    const slug::Vector<Snapshot> history = RunScenario();
-    const float                 endX    = std::bit_cast<float>(history.back().x);
+    const slug::Vector<Snapshot> history = RunScenario_();
+    const float                  endX    = std::bit_cast<float>(history.back().x);
     EXPECT_GT(endX, 100.f);
 }

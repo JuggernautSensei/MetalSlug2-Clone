@@ -1,3 +1,4 @@
+// 탈것 샌드박스 테스트: 샌드박스에 탈것을 스폰했을 때 결정성 검증
 #include <cmath>
 #include <vector>
 
@@ -7,20 +8,38 @@ using namespace slugtest;
 
 namespace
 {
-    constexpr float kGroundY = 378.f;
+constexpr float kGroundY = 378.f;
 
-    struct DirectState
+struct DirectState
+{
+    GameContext  ctx = {};
+    SandboxState state { MakeEnemyConfig() };
+    InputHistory input = {};
+
+    DirectState()
     {
-        GameContext  ctx   = {};
-        SandboxState state { MakeEnemyConfig() };
-        InputHistory input = {};
+        state.OnEnter(ctx);
+    }
+};
 
-        DirectState()
-        {
-            state.OnEnter(ctx);
-        }
-    };
+// 모든 탈것을 세워 두고 1200틱 동안 매 틱의 상태 해시를 _hashes 에 모은다
+void RunHashes_(
+    std::vector<uint64_t>& _hashes)
+{
+    Sim   sim { MakeEnemyConfig({ 100.f, kGroundY }) };
+    float x = 300.f;
+    for (const char* name: kVehicleNames)
+    {
+        (void)sim.State().SpawnEnemy(name, { x, kGroundY });
+        x += 150.f;
+    }
+    for (int i = 0; i < 1200; ++i)
+    {
+        sim.Step(1);
+        _hashes.push_back(sim.State().HashState());
+    }
 }
+}   // namespace
 
 TEST(VehicleSandbox, KeyNineSpawnsTheFourVehiclesInTurnAndWraps)
 {
@@ -51,7 +70,7 @@ TEST(VehicleSandbox, GroundVehiclesRestOnTheGround)
     Sim sim { MakeEnemyConfig() };
     sim.Step(2);
     SpawnParams left;
-    left.facing = -1;
+    left.facing               = -1;
     const EnemyHandle jeep    = sim.State().SpawnEnemy("jeep", { 400.f, kGroundY }, left);
     const EnemyHandle btank   = sim.State().SpawnEnemy("btank", { 700.f, kGroundY }, left);
     const EnemyHandle missile = sim.State().SpawnEnemy("missle_tank", { 800.f, kGroundY }, left);
@@ -69,24 +88,10 @@ TEST(VehicleSandbox, GroundVehiclesRestOnTheGround)
 
 TEST(VehicleSandbox, SandboxHashIsDeterministicWithAllVehiclesPresent)
 {
-    const auto Run = [](std::vector<uint64_t>& _hashes) {
-        Sim sim { MakeEnemyConfig({ 100.f, kGroundY }) };
-        float x = 300.f;
-        for (const char* name: kVehicleNames)
-        {
-            (void)sim.State().SpawnEnemy(name, { x, kGroundY });
-            x += 150.f;
-        }
-        for (int i = 0; i < 1200; ++i)
-        {
-            sim.Step(1);
-            _hashes.push_back(sim.State().HashState());
-        }
-    };
     std::vector<uint64_t> first;
     std::vector<uint64_t> second;
-    Run(first);
-    Run(second);
+    RunHashes_(first);
+    RunHashes_(second);
     EXPECT_EQ(first, second);
 }
 

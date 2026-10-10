@@ -1,11 +1,12 @@
-#include "Core/AssetPath.h"
+// StageState 테스트: 스테이지 상태 전환, 호스트 자리표시자, 디버그 옵션 검증
 #include <cmath>
-#include "Base/Types.h"
-#include "Base/Math.h"
-#include "Base/Random.h"
 
 #include <gtest/gtest.h>
 
+#include "Base/Math.h"
+#include "Base/Random.h"
+#include "Base/Types.h"
+#include "Core/AssetPath.h"
 #include "Core/Input.h"
 #include "Game/SimRunner.h"
 #include "Game/Stage/StageState.h"
@@ -26,23 +27,28 @@ public:
         m_ctx.assetRoot  = slug::FindAssetRoot();
         m_ctx.bDebugDraw = _bDebugDraw;
         m_pState         = new StageState;
-        m_runner         = std::unique_ptr<SimRunner> { new SimRunner { m_ctx, std::unique_ptr<IGameState> { m_pState } } };
+        m_runner         = std::unique_ptr<SimRunner> {
+            new SimRunner { m_ctx, std::unique_ptr<IGameState> { m_pState } }
+        };
     }
 
-    [[nodiscard]] StageState& State() { return *m_pState; }
+    [[nodiscard]] StageState&  State() { return *m_pState; }
     [[nodiscard]] GameContext& Ctx() { return m_ctx; }
 
-    void Hold(const eAction _action)
+    void Hold(
+        const eAction _action)
     {
         m_frame.Set(_action, true);
     }
 
-    void Release(const eAction _action)
+    void Release(
+        const eAction _action)
     {
         m_frame.Set(_action, false);
     }
 
-    void Step(const int _count = 1)
+    void Step(
+        const int _count = 1)
     {
         for (int i = 0; i < _count; ++i)
         {
@@ -51,17 +57,17 @@ public:
     }
 
 private:
-    slug::RngMt19937 m_rng;
-    GameContext     m_ctx = {};
-    InputFrame      m_frame = {};
-    StageState*     m_pState = nullptr;
+    slug::RngMt19937           m_rng;
+    GameContext                m_ctx    = {};
+    InputFrame                 m_frame  = {};
+    StageState*                m_pState = nullptr;
     std::unique_ptr<SimRunner> m_runner = nullptr;
 };
 
-SpawnRequest MakeRequest(
-    const char*          _def,
-    const eEntityKind    _kind,
-    const Vec2   _position)
+[[nodiscard]] SpawnRequest MakeRequest_(
+    const char*       _def,
+    const eEntityKind _kind,
+    const Vec2        _position)
 {
     SpawnRequest request;
     request.def      = _def;
@@ -70,7 +76,7 @@ SpawnRequest MakeRequest(
     return request;
 }
 
-HitEvent MakeHit(
+[[nodiscard]] HitEvent MakeHit_(
     const SpawnId _target,
     const int     _damage)
 {
@@ -79,7 +85,7 @@ HitEvent MakeHit(
     event.damage = _damage;
     return event;
 }
-}
+}   // namespace
 
 TEST(StageState, LoadsStage0AndStartsAtTheScriptedPlayerStart)
 {
@@ -138,7 +144,7 @@ TEST(StageStateDebug, F5WarpsToTheNextSectionOnlyWithDebugDraw)
     sim.Step();
     ASSERT_EQ(sim.State().GetRunner().GetNextSectionIndex(), 1);
 
-    sim.Ctx().debugWarp = 1;          // F5
+    sim.Ctx().debugWarp = 1;   // F5
     sim.Step();
     EXPECT_EQ(sim.Ctx().debugWarp, 0);   // 소비됨
     EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 750.f);
@@ -160,7 +166,7 @@ TEST(StageStateDebug, F6WarpsToTheStageEnd)
 {
     StageSim sim { true };
     sim.Step();
-    sim.Ctx().debugWarp = 2;          // F6
+    sim.Ctx().debugWarp = 2;   // F6
     sim.Step();
     EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 12900.f);   // stage_end 섹션 트리거
     EXPECT_TRUE(sim.State().GetRunner().GetNextSectionIndex() >= 20);
@@ -169,7 +175,7 @@ TEST(StageStateDebug, F6WarpsToTheStageEnd)
 TEST(StageHostPlaceholders, HitsKillAtZeroHpThenTheEntityIsRemovedAfterTheDeathWindow)
 {
     StageWorldHost host;
-    SpawnRequest   request = MakeRequest("soldier_bomb", eEntityKind::Enemy, { 500.f, 378.f });
+    SpawnRequest   request = MakeRequest_("soldier_bomb", eEntityKind::Enemy, { 500.f, 378.f });
     request.bHasHp         = true;
     request.hp             = 2;
     const SpawnId id       = host.SpawnEntity(request);
@@ -178,11 +184,11 @@ TEST(StageHostPlaceholders, HitsKillAtZeroHpThenTheEntityIsRemovedAfterTheDeathW
     EXPECT_NE(id, kInvalidSpawnId);
     EXPECT_FALSE(host.IsDefeated(id));
 
-    const slug::Vector<HitEvent> events = { MakeHit(target, 1) };
+    const slug::Vector<HitEvent> events = { MakeHit_(target, 1) };
     EXPECT_EQ(host.ApplyPlaceholderEvents(events), 0);
     EXPECT_FALSE(host.IsDefeated(id));
 
-    const slug::Vector<HitEvent> killing = { MakeHit(target, 5) };
+    const slug::Vector<HitEvent> killing = { MakeHit_(target, 5) };
     EXPECT_EQ(host.ApplyPlaceholderEvents(killing), 1);
     EXPECT_TRUE(host.IsDefeated(id));
     EXPECT_FALSE(host.IsDestroyFinished(id));
@@ -200,12 +206,12 @@ TEST(StageHostPlaceholders, HitsKillAtZeroHpThenTheEntityIsRemovedAfterTheDeathW
 TEST(StageHostPlaceholders, NonHittableKindsAreNeverDefeatedUntilCleared)
 {
     StageWorldHost host;
-    const SpawnId  decor = host.SpawnEntity(MakeRequest("anim_decor", eEntityKind::Decor, { 10.f, 10.f }));
-    const SpawnId  item  = host.SpawnEntity(MakeRequest("random_score", eEntityKind::Item, { 20.f, 20.f }));
+    const SpawnId  decor       = host.SpawnEntity(MakeRequest_("anim_decor", eEntityKind::Decor, { 10.f, 10.f }));
+    const SpawnId  item        = host.SpawnEntity(MakeRequest_("random_score", eEntityKind::Item, { 20.f, 20.f }));
     const SpawnId  decorTarget = host.GetPlaceholderEntities()[0].id;
     const SpawnId  itemTarget  = host.GetPlaceholderEntities()[1].id;
 
-    const slug::Vector<HitEvent> events = { MakeHit(decorTarget, 99), MakeHit(itemTarget, 99) };
+    const slug::Vector<HitEvent> events = { MakeHit_(decorTarget, 99), MakeHit_(itemTarget, 99) };
     EXPECT_EQ(host.ApplyPlaceholderEvents(events), 0);
     EXPECT_FALSE(host.IsDefeated(decor));
     EXPECT_FALSE(host.IsDefeated(item));
@@ -220,7 +226,7 @@ TEST(StageHostPlaceholders, NonHittableKindsAreNeverDefeatedUntilCleared)
 TEST(StageHostPlaceholders, LegacyCenterPositionsPutTheFeetAtTheBottomOfTheBox)
 {
     StageWorldHost host;
-    SpawnRequest   request = MakeRequest("crate", eEntityKind::Prop, { 300.f, 100.f });
+    SpawnRequest   request = MakeRequest_("crate", eEntityKind::Prop, { 300.f, 100.f });
     request.positionMode   = ePositionMode::LegacyCenter;
     host.SpawnEntity(request);
 
