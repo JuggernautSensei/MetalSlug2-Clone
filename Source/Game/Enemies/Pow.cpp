@@ -1,4 +1,5 @@
 #include <cmath>
+#include <string>
 #include "Base/Math.h"
 
 #include "Game/Enemies/EnemyCommon.h"
@@ -19,6 +20,21 @@ namespace
         kRun
     };
 
+    // 외형 변형 클립 (aiVariant 1..3). 변형에 해당 슬롯이 없으면 기본 클립을 쓴다
+    [[nodiscard]] int VariantClip_(const Enemy& _e, const PowCfg& _c, const int _slot, const int _base)
+    {
+        const int v = _e.aiVariant;
+        if (v >= 1 && v <= PowCfg::kVariantCount)
+        {
+            const int clip = _c.clipVariants[v - 1][_slot];
+            if (clip >= 0)
+            {
+                return clip;
+            }
+        }
+        return _base;
+    }
+
     void Go_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, const int _state)
     {
         const PowCfg& cfg = _def.pow;
@@ -26,25 +42,25 @@ namespace
         switch (_state)
         {
             case kStuck:
-                SetClip(_e, cfg.clipStuck, true);
+                SetClip(_e, VariantClip_(_e, cfg, 0, cfg.clipStuck), true);
                 _e.body.velocity.x = 0.f;
                 break;
             case kEscape:
-                SetClip(_e, cfg.clipEscape, true);
+                SetClip(_e, VariantClip_(_e, cfg, 1, cfg.clipEscape), true);
                 _e.body.velocity.x = 0.f;
                 break;
             case kWalk:
-                SetClip(_e, cfg.clipMove, true);
+                SetClip(_e, VariantClip_(_e, cfg, 2, cfg.clipMove), true);
                 _e.aux  = 0;
                 _e.aux2 = cfg.firstFlipTicks;
                 break;
             case kMoveDown:
-                SetClip(_e, cfg.clipMoveDown, true);
+                SetClip(_e, VariantClip_(_e, cfg, 4, cfg.clipMoveDown), true);
                 _e.body.velocity.x  = 0.f;
                 _e.body.bUseGravity = false;
                 break;
             case kGlide:
-                SetClip(_e, cfg.clipGlide, true);
+                SetClip(_e, VariantClip_(_e, cfg, 3, cfg.clipGlide), true);
                 _e.body.bUseGravity = true;
                 break;
             case kClose:
@@ -52,13 +68,13 @@ namespace
                 const float side = DxToPlayer(_e, _env) < 0.f ? 1.f : -1.f;
                 _e.body.position.x += side * cfg.closeNudge;
                 _e.facing = DxToPlayer(_e, _env) < 0.f ? -1 : 1;
-                SetClip(_e, cfg.clipItem, true);
+                SetClip(_e, VariantClip_(_e, cfg, 5, cfg.clipItem), true);
                 _e.body.velocity.x = 0.f;
                 break;
             }
             case kRun:
                 _e.facing = -1;
-                SetClip(_e, cfg.clipRun, true);
+                SetClip(_e, VariantClip_(_e, cfg, 6, cfg.clipRun), true);
                 break;
             default: break;
         }
@@ -279,5 +295,16 @@ void ParsePowCfg(
     c.clipMoveDown = _r.Clip("moveDown");
     c.clipItem     = _r.Clip("item");
     c.clipRun      = _r.Clip("run");
+
+    // 외형 변형: 슬롯별 "<key>_v<n>" 클립 (없으면 -1 -> 기본 클립 사용)
+    constexpr const char* kSlotKeys[PowCfg::kSlotCount] = { "stuck", "escape", "move", "glide", "moveDown", "item", "run" };
+    for (int v = 0; v < PowCfg::kVariantCount; ++v)
+    {
+        for (int s = 0; s < PowCfg::kSlotCount; ++s)
+        {
+            const std::string key = std::string(kSlotKeys[s]) + "_v" + std::to_string(v + 1);
+            c.clipVariants[v][s]  = _r.ClipOpt(key);
+        }
+    }
 }
 }

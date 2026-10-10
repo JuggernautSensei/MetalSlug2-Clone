@@ -348,6 +348,15 @@ struct PlayerStart
     float   fromY       = 0.f;
 };
 
+// 엔드리스 지형 (보스전): x >= fromX 의 지면 비트맵과 배경 텍스처를 [tileX, tileX + tileW) 구간의 주기 반복으로 본다.
+struct EndlessTail
+{
+    bool  bEnabled = false;
+    float fromX    = 0.f;
+    float tileX    = 0.f;
+    float tileW    = 0.f;
+};
+
 struct StageData
 {
     int          version = 1;
@@ -356,6 +365,7 @@ struct StageData
     Vec2         worldSize  = { 0.f, 0.f };
     Vec2         viewSize   = { 640.f, 448.f };
     slug::String background = {};
+    EndlessTail  endless    = {};
 
     slug::String bgmName  = {};
     bool         bBgmLoop = true;

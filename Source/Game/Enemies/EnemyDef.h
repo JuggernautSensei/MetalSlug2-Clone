@@ -106,6 +106,7 @@ struct ProjectileDef
     float        rollSpeed       = 0.f;
     float        rollSec         = 0.f;
     bool         bExpireFx       = false;
+    float        groundProbeY    = 0.f;   // 접촉 판정 점 (중심 아래 px). 스프라이트 바닥이 지면/지붕에 닿을 때 터지게 한다
     ClipDef      land            = {};
 };
 
@@ -330,6 +331,11 @@ struct PowCfg
     float edgeProbeDrop  = 12.f;
 
     int clipStuck = -1, clipEscape = -1, clipMove = -1, clipGlide = -1, clipMoveDown = -1, clipItem = -1, clipRun = -1;
+
+    // 외형 변형 (SpawnParams.aiVariant 1..3): 슬롯 순서 Stuck, Escape, Move, Glide, MoveDown, Item, Run. 없는 슬롯은 기본 클립을 쓴다
+    static constexpr int kVariantCount = 3;
+    static constexpr int kSlotCount    = 7;
+    int clipVariants[kVariantCount][kSlotCount] = {};
 };
 
 struct JeepCfg
@@ -369,6 +375,7 @@ struct MissleTankCfg
     int clipIdleUp = -1, clipIdleDown = -1, clipAimUp = -1, clipAimDown = -1;
     int clipReadyUp = -1, clipReadyDown = -1, clipShotUp = -1, clipShotDown = -1;
     int clipDestroyUp = -1, clipDestroyDown = -1;
+    int clipAppear = -1;   // 선택: 스폰 직후 땅에서 올라오는 연출 (kIdle 첫 1 s 동안만 재생, 타이밍 불변)
     int weaponUp = -1, weaponDown = -1;
 };
 
@@ -415,6 +422,7 @@ struct AparchCfg
     int   removeTicks  = 90;      // 사망 후 1.5 s 에 제거
 
     int clipIdle = -1, clipMove = -1, clipMoveStop = -1, clipDestroy = -1;
+    int clipGun = -1, clipGunHold = -1, clipGunEnd = -1, clipTurn = -1;   // 발사 포 전개/유지/수납, 좌우 전환
     int weaponMissile = -1, weaponDrop = -1;
 };
 
@@ -529,6 +537,7 @@ struct EnemyDef
 
     bool bHuman = false;
     bool bHitFlash = false;   // 피격 시 전체 스프라이트 블링크 (기본 hp >= kHitFlashMinHp)
+    bool bCenterAnchor = false;   // true 면 스프라이트 pivot 을 발(origin) 이 아니라 원점 그대로 둔다 (비행체: 원점 = 기체 중심)
 
     [[nodiscard]] const ClipDef& GetClip(const int _index) const { return clips[static_cast<size_t>(_index)].clip; }
     [[nodiscard]] int            FindClip(slug::StringView _logicalName) const;

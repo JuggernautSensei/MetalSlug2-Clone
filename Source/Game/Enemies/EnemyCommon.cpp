@@ -273,6 +273,7 @@ bool FireWeapon(
     spawn.rollDirX        = facing;
     spawn.rollTicks       = proj.rollSpeed > 0.f ? SecToTicks(proj.rollSec) : 0;
     spawn.bExpireFx       = proj.bExpireFx;
+    spawn.groundProbeY    = proj.groundProbeY;
 
     if (proj.speed > 0.f)
     {
@@ -427,6 +428,17 @@ void BeginSoldierDeath(
     for (const FxDef& fx: death.fx)
     {
         RequestFx(_env, fx, _e.body.position, _e.facing);
+    }
+
+    // 사람 적이 총/칼에 죽으면 작은 피 튐 (폭발 피격은 제외). 좌우는 id 홀짝으로 정해 RNG 를 소모하지 않는다 (리플레이 해시 유지)
+    if (_def.bHuman && _e.lastHitKind != eHitKind::Blast)
+    {
+        EnemyFxRequest request;
+        request.clip     = _e.lastHitKind == eHitKind::Melee ? "Fx_Blood_Splat_" : "Fx_Blood_Hit_";
+        request.clip    += (_e.id & 1u) != 0u ? "Right" : "Left";
+        request.position = { _e.body.position.x, _e.body.position.y - 30.f };
+        request.layer    = 60;
+        _env.world.RequestFx(std::move(request));
     }
 }
 

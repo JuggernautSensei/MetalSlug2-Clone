@@ -132,6 +132,7 @@
     <ClCompile Include="..\..\Source\Game\Player\PlayerInput.cpp" />
     <ClCompile Include="..\..\Source\Game\Player\PlayerRig.cpp" />
     <ClCompile Include="..\..\Source\Game\Player\PlayerWeapons.cpp" />
+    <ClCompile Include="..\..\Source\Game\Props\DecorWorld.cpp" />
     <ClCompile Include="..\..\Source\Game\Props\ItemWorld.cpp" />
     <ClCompile Include="..\..\Source\Game\Props\PropDef.cpp" />
     <ClCompile Include="..\..\Source\Game\Props\PropWorld.cpp" />
@@ -203,6 +204,7 @@
     <ClInclude Include="..\..\Source\Game\Player\PlayerRig.h" />
     <ClInclude Include="..\..\Source\Game\Player\PlayerTypes.h" />
     <ClInclude Include="..\..\Source\Game\Player\PlayerWeapons.h" />
+    <ClInclude Include="..\..\Source\Game\Props\DecorWorld.h" />
     <ClInclude Include="..\..\Source\Game\Props\ItemWorld.h" />
     <ClInclude Include="..\..\Source\Game\Props\PropDef.h" />
     <ClInclude Include="..\..\Source\Game\Props\PropWorld.h" />

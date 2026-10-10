@@ -5,6 +5,7 @@
 #include "Game/Combat/CombatSystem.h"
 #include "World/Combat.h"
 #include "World/GroundMap.h"
+#include "World/Physics.h"
 
 namespace slug
 {
@@ -111,6 +112,7 @@ struct ShotSpawn
     float        rollDirX        = 1.f;    // 굴러가는 방향 (±1)
     int          rollTicks       = 0;
     bool         bExpireFx       = false;
+    float        groundProbeY    = 0.f;    // 지면/지붕 접촉 판정 점: 중심에서 아래로 이만큼 (스프라이트 바닥이 닿는 높이). 0 = 중심
 };
 
 struct Shot
@@ -156,7 +158,8 @@ public:
     void SpawnBomb(const BombSpawn& _spawn);
     void SpawnShot(const ShotSpawn& _spawn, CombatSystem& _combat);
 
-    void Step(const GroundMap* _pGround, CombatSystem& _combat, float _dt);
+    // _platforms: 적/스테이지 발판(지붕). 낙하 중인 shell 은 윗면을 가로지르면 그 위에 착지한다 (빈 span = 지형만)
+    void Step(const GroundMap* _pGround, CombatSystem& _combat, float _dt, slug::Span<const Platform> _platforms = {});
 
     void OnHitEvents(slug::Span<const HitEvent> _events, CombatSystem& _combat);
 

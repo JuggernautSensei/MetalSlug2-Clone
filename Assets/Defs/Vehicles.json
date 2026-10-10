@@ -156,7 +156,8 @@
         "shotUp":      { "name": "MissleTank_Up_Shot_{side}",        "frames": 7,  "sec": 0.08 },
         "shotDown":    { "name": "MissleTank_Down_Shot_{side}",      "frames": 7,  "sec": 0.08 },
         "destroyUp":   { "name": "MissleTank_Up_Destroy_{side}",     "frames": 20, "sec": 0.08 },
-        "destroyDown": { "name": "MissleTank_Down_Destroy_{side}",   "frames": 21, "sec": 0.08 }
+        "destroyDown": { "name": "MissleTank_Down_Destroy_{side}",   "frames": 21, "sec": 0.08 },
+        "appear":      { "name": "MTank_Appear_{side}",              "frames": 8,  "sec": 0.0833 }
       },
       "weapons": {
         "up":   { "projectile": "missle_proj_up",   "muzzle": [50, -180], "aim": "facing", "muzzleFx": { "clip": "MissleTank_Up_Proj_Effect_{side}",   "offset": [0, 0] } },
@@ -166,6 +167,7 @@
         "removeAtSec": 2.0,
         "fx": [
           { "clip": "Explosion_Huge", "offset": [0, -30], "delay": 2.0, "layer": 10 },
+          { "clip": "Fx_FireBomb_Air", "offset": [0, -40], "delay": 2.0, "layer": 10 },
           { "clip": "Metal1", "offset": [-35, -40], "delay": 2.0 },
           { "clip": "Metal3", "offset": [-10, -60], "delay": 2.0 },
           { "clip": "Metal5", "offset": [20, -35], "delay": 2.0 },
@@ -194,6 +196,7 @@
       "rollSpeed": 100,
       "rollSec": 5,
       "expireFx": true,
+      "groundProbe": 14,
       "anim": {
         "begin": { "name": "Sarubia_Proj_Start",     "frames": 8,  "sec": 0.08 },
         "land":  { "name": "Sarubia_Proj_Collision", "frames": 6,  "sec": 0.08 },
@@ -256,42 +259,46 @@
       "note": "헬기 미사일 (EnemySpecs 2.6): 좌향 300 px/s, 기울임은 무기 tilt.",
       "box": { "w": 50, "h": 20 },
       "speed": 300,
-      "anim": { "fly": { "name": "Aparch_Missle_{side}", "frames": 2, "sec": 0.08, "loop": true } },
+      "anim": { "fly": { "name": "Heli_Missile", "frames": 14, "sec": 0.05, "loop": true } },
       "onSolid": "explode",
       "explosion": { "fx": "Explosion_Mid", "offset": [0, -35] }
     },
 
     "aparch_drop": {
       "kind": "projectile",
-      "note": "헬기 폭탄 (EnemySpecs 2.6): 정지에서 낙하, 중력 300.",
+      "note": "헬기 폭탄 (EnemySpecs 2.6): 정지에서 직하 낙하, 중력 300. 접촉은 스프라이트 바닥(groundProbe 25 = 스프라이트 반높이) 기준이라 지면/지붕 윗면에서 터진다. 폭발 fx 는 접촉점 위 35 px 중심 (지면 위에 놓임).",
       "box": { "w": 30, "h": 40 },
       "gravity": 300,
-      "anim": { "fly": { "name": "Aparch_DropMissle", "frames": 12, "sec": 0.08, "loop": true } },
+      "groundProbe": 25,
+      "anim": { "fly": { "name": "Heli_Bomb", "frames": 7, "sec": 0.0833, "loop": true } },
       "onSolid": "explode",
-      "explosion": { "fx": "Explosion_Mid", "offset": [0, -35] }
+      "explosion": { "fx": "Explosion_Mid", "offset": [0, -10] }
     },
 
     "aparch": {
       "kind": "vehicle",
       "behavior": "aparch",
-      "note": "공격 헬기 (EnemySpecs 2.6). 원점 = 기체 중심, 항상 좌향. 활성 margin 400. 사망 시 표류하며 연쇄 폭발.",
+      "centerAnchor": true,
+      "note": "공격 헬기 (EnemySpecs 2.6). 원점 = 기체 중심, 항상 좌향. 스프라이트 pivot 도 원점(centerAnchor). 활성 margin 400. 사망 시 표류하며 연쇄 폭발.",
       "ttk": 12,
       "hp": 120,
       "score": 2000,
       "body": { "w": 100, "h": 100, "cx": 0, "cy": 0 },
       "activation": { "marginPx": 400, "latch": true },
       "physics": { "useGravity": false },
-      "overlay": { "clip": "flight", "offset": [-18, -54] },
       "clips": {
-        "idle":     { "name": "Aparch_Idle_Left",     "frames": 1,  "sec": 0.08, "loop": true },
-        "move":     { "name": "Aparch_Move_{side}",     "frames": 6,  "sec": 0.06, "loop": true },
-        "moveStop": { "name": "Aparch_MoveStop_{side}", "frames": 6,  "sec": 0.06 },
+        "idle":     { "name": "Heli_Flying",          "frames": 7,  "sec": 0.04, "loop": true },
+        "move":     { "name": "Heli_Flying",          "frames": 7,  "sec": 0.04, "loop": true },
+        "moveStop": { "name": "Heli_Flying",          "frames": 7,  "sec": 0.04, "loop": true },
         "destroy":  { "name": "Aparch_Destroy_Left",  "frames": 8,  "sec": 0.06, "loop": true },
-        "flight":   { "name": "Aparch_Flight_Left4",  "frames": 5,  "sec": 0.04, "loop": true }
+        "turn":     { "name": "Heli_Turning",         "frames": 7,  "sec": 0.0714 },
+        "gun":      { "name": "Heli_Launch",          "frames": 14, "sec": 0.0625 },
+        "gunHold":  { "name": "Heli_Launch_Hold",     "frames": 1,  "sec": 1.0, "loop": true },
+        "gunEnd":   { "name": "Heli_Launch_End",      "frames": 14, "sec": 0.0625 }
       },
       "weapons": {
-        "missile": { "projectile": "aparch_missile", "muzzle": [30, 50],  "aim": "facing", "tilt": { "threshold": 50, "dy": 0.1 }, "muzzleFx": { "clip": "Aparch_Missle_Effect_{side}", "offset": [0, -5] } },
-        "drop":    { "projectile": "aparch_drop",    "muzzle": [-10, 60], "aim": "facing", "muzzleFx": { "clip": "Aparch_DropMissle_Effect", "offset": [0, 0] } }
+        "missile": { "projectile": "aparch_missile", "muzzle": [30, 50],  "aim": "facing", "tilt": { "threshold": 50, "dy": 0.1 }, "muzzleFx": { "clip": "Heli_Effect_Puff", "offset": [0, -5] } },
+        "drop":    { "projectile": "aparch_drop",    "muzzle": [-10, 60], "aim": "facing", "muzzleFx": { "clip": "Heli_Effect_Smoke", "offset": [0, 0] } }
       },
       "params": {
         "speed": 300,

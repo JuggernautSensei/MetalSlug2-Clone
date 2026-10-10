@@ -19,6 +19,9 @@
 #include "Game/Player/PlayerController.h"
 #include "Game/Props/ItemWorld.h"
 #include "Game/Props/PropWorld.h"
+#include "Game/Stage/StageData.h"
+#include "Game/Stage/StageState.h"
+#include "Game/Stage/StageWorldHost.h"
 #include "Game/SimRunner.h"
 #include "Game/Stage/StageRunner.h"
 #include "Game/Stage/StageState.h"
@@ -121,7 +124,63 @@ struct Kinematics
     float vy       = 0.f;
     float groundY  = 0.f;
     bool  bGrounded = true;
+    const StageState* pStage = nullptr;   // 지형/소품 (지붕 플랫폼, 벽) 을 본다. null 이면 평지 가정
 };
+
+// 발 위치 (x, feetY) 에서 가장 가까운 발판 y (지면 비트맵 또는 소품 지붕 플랫폼). 없으면 groundY.
+float SurfaceAt_(
+    const Kinematics& _k,
+    const float       _x,
+    const float       _feetY)
+{
+    float best = _k.groundY;
+    if (!_k.pStage)
+    {
+        return best;
+    }
+    float found = 1.e9f;
+    if (const GroundMap* pGround = _k.pStage->GetHost().GetActiveGround())
+    {
+        if (const std::optional<int> g = pGround->FindGroundY(static_cast<int>(std::floor(_x)), static_cast<int>(std::floor(_feetY)) - 60, 320))
+        {
+            if (static_cast<float>(*g) >= _feetY - 12.f)
+            {
+                found = static_cast<float>(*g);
+            }
+        }
+    }
+    for (const Platform& p: _k.pStage->GetProps().GetPlatforms())
+    {
+        if (_x >= p.box.min.x && _x <= p.box.max.x && p.box.min.y >= _feetY - 12.f && p.box.min.y < found)
+        {
+            found = p.box.min.y;
+        }
+    }
+    return found < 1.e8f ? found : best;
+}
+
+// 앞 46 px 안에 벽이 있는지 (발 위쪽 상자). 소품 벽과 충돌 벽 콜라이더를 본다.
+bool WallAhead_(
+    const StageState& _s,
+    const Vec2        _feet)
+{
+    constexpr float kRange = 46.f;
+    for (const Wall& wall: _s.GetProps().GetWalls())
+    {
+        if (wall.box.min.x > _feet.x && wall.box.min.x - _feet.x <= kRange && wall.box.min.y < _feet.y - 8.f)
+        {
+            return true;
+        }
+    }
+    for (const StageCollider& collider: _s.GetHost().GetColliders())
+    {
+        if (collider.layer == eCollisionLayer::Wall && collider.box.min.x > _feet.x && collider.box.min.x - _feet.x <= kRange && collider.box.min.y < _feet.y - 8.f)
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 // 계획을 kHorizon 틱 동안 시뮬레이션하고 첫 충돌 틱을 돌려준다 (충돌 없으면 kHorizon).
 int SimulatePlan(
@@ -160,13 +219,48 @@ int SimulatePlan(
         }
         x = std::clamp(x + step, _lo, _hi);
 
+        // 벽 (소품 벽 상자) 에 막힌다: 몸 상자가 벽 옆면을 넘지 못한다
+        if (_k.pStage && step != 0.f)
+        {
+            for (const Wall& w: _k.pStage->GetProps().GetWalls())
+            {
+                if (y - kHurtH >= w.box.max.y || y <= w.box.min.y)
+                {
+                    continue;
+                }
+                if (step > 0.f && x + kHurtHalfW > w.box.min.x && x < w.box.min.x)
+                {
+                    x = w.box.min.x - kHurtHalfW;
+                }
+                else if (step < 0.f && x - kHurtHalfW < w.box.max.x && x > w.box.max.x)
+                {
+                    x = w.box.max.x + kHurtHalfW;
+                }
+            }
+        }
+
+        const float surface = SurfaceAt_(_k, x, y);
+        if (bGrounded && surface > y + 1.f)
+        {
+            bGrounded = false;   // 발판 가장자리를 넘었다: 떨어진다
+            vy        = 0.f;
+        }
+        else if (bGrounded && surface < y - 24.f)
+        {
+            bGrounded = false;   // 지붕 아래로 빠졌다 (계산상): 위에서 떨어지지 않게 발판으로 올린다
+            y         = surface;
+        }
+        else if (bGrounded)
+        {
+            y = surface;         // 경사/지붕 높이를 따라간다
+        }
         if (!bGrounded)
         {
             vy += kGravity * kDt;
             y  += vy * kDt;
-            if (y >= _k.groundY)
+            if (y >= surface)
             {
-                y         = _k.groundY;
+                y         = surface;
                 vy        = 0.f;
                 bGrounded = true;
             }
@@ -465,7 +559,8 @@ InputFrame DodgeBot::Decide(
         { -1, 52, true, false },
         { 1, 52, true, false },
     };
-    const Kinematics kin { x, feet.y, player.GetVelocity().y, m_groundY, bGround };
+    Kinematics kin { x, feet.y, player.GetVelocity().y, m_groundY, bGround };
+    kin.pStage = &_s;
     // 충돌 없는 계획 중 끝 x 가 목표에 가장 가까운 것 (점프는 가산점). 전부 충돌이면 가장 오래 버티는 계획.
     int   chosen   = 1;
     int   fallback = 1;
@@ -526,7 +621,9 @@ InputFrame DodgeBot::Decide(
     frame.Set(eAction::Shot, true);
     // 파츠 바로 아래면 위로 쏜다 (Up = 조준 90 도)
     frame.Set(eAction::Up, bHasPart && std::fabs(x - partX) <= 14.f);
-    if (plan.bJump && bGround)
+    // 오른쪽으로 갈 때 앞에 벽 (소품 벽/충돌 상자) 이 있으면 뛰어 넘는다 (StageIntegration 봇과 같은 규칙, 집 지붕 위로 올라간다)
+    const bool bWallAhead = dir > 0 && bGround && WallAhead_(_s, player.GetFeet());
+    if ((plan.bJump || bWallAhead) && bGround)
     {
         frame.Set(eAction::Jump, true);
         ++m_jumps;

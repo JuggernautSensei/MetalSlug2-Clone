@@ -1,0 +1,27 @@
+File Name:Button1_On_Away
+Texture Name:Button1
+Width:97
+Height:67
+Column:0
+Line:0
+
+File Name:Button1_On_Hold
+Texture Name:Button1
+Width:97
+Height:67
+Column:1
+Line:0
+
+File Name:Button1_Off_Away
+Texture Name:Button1
+Width:97
+Height:67
+Column:2
+Line:0
+
+File Name:Button1_Off_Hold
+Texture Name:Button1
+Width:97
+Height:67
+Column:3
+Line:0

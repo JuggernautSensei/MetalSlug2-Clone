@@ -33,6 +33,22 @@ namespace
         }
         return img;
     }
+
+    // 단색(_r,_g,_b) 블롭 하나를 같은 위치에 그린다.
+    void PaintBlob(Image& _img, const IRect& _b, const uint8_t _r, const uint8_t _g, const uint8_t _bl)
+    {
+        for (int y = _b.y; y < _b.y + _b.h; ++y)
+        {
+            for (int x = _b.x; x < _b.x + _b.w; ++x)
+            {
+                uint8_t* p = _img.At(x, y);
+                p[0] = _r;
+                p[1] = _g;
+                p[2] = _bl;
+                p[3] = 255;
+            }
+        }
+    }
 }
 
 TEST(BakerSheetKey, MagentaKeyMakesBackgroundTransparentAndCountsIt)
@@ -193,7 +209,7 @@ TEST(BakerSheetScale, NearestUpscaleRepeatsEachPixelBlock)
 
 TEST(BakerSheetScale, ScaledFrameDoublesSizeAndFootPivot)
 {
-    // 6x5 시트, 3x2 블롭 (1,1). 1x: 트림 (1,1,3,2), 피벗 (1,2).
+    // 6x5 시트, 3x2 블롭 (1,1). 피벗은 트림 전 사각형(6x5) 기준: 발 = (w/2 - trimX, h - trimY).
     Image sheet = MakeMagentaSheet(6, 5, { { 1, 1, 3, 2 } });
     ApplySheetKey(sheet, SheetKey {});
     const std::vector<IRect> rects = { { 0, 0, 6, 5 } };
@@ -201,30 +217,31 @@ TEST(BakerSheetScale, ScaledFrameDoublesSizeAndFootPivot)
     const BuiltFrames one = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 1);
     EXPECT_EQ(one.frames[0].w, 3);
     EXPECT_EQ(one.frames[0].h, 2);
-    EXPECT_EQ(one.frames[0].pivotX, 1);
-    EXPECT_EQ(one.frames[0].pivotY, 2);
+    EXPECT_EQ(one.frames[0].pivotX, 2);   // 3 - 1
+    EXPECT_EQ(one.frames[0].pivotY, 4);   // 5 - 1
 
-    // 2x: 블롭이 (2,2) 에 6x4 로 커지고, 피벗은 확대된 프레임 기준 (3,4). 셀 크기도 2배.
+    // 2x: 블롭이 (2,2) 에 6x4 로 커지고, 사각형은 12x10. 발 피벗 = (6-2, 10-2) = (4,8). 셀 크기도 2배.
     const BuiltFrames two = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 2);
     EXPECT_EQ(two.frames[0].trimX, 2);
     EXPECT_EQ(two.frames[0].trimY, 2);
     EXPECT_EQ(two.frames[0].w, 6);
     EXPECT_EQ(two.frames[0].h, 4);
-    EXPECT_EQ(two.frames[0].pivotX, 3);
-    EXPECT_EQ(two.frames[0].pivotY, 4);
+    EXPECT_EQ(two.frames[0].pivotX, 4);
+    EXPECT_EQ(two.frames[0].pivotY, 8);
     EXPECT_EQ(two.cellW, 12);
     EXPECT_EQ(two.cellH, 10);
     EXPECT_EQ(two.trimmed[0].width, 6);
     EXPECT_EQ(two.trimmed[0].height, 4);
 
+    // 중심: (6-2, 5-2) = (4,3)
     const BuiltFrames center = BuildSheetFrames(sheet, rects, eSheetPivot::Center, false, 2);
-    EXPECT_EQ(center.frames[0].pivotX, 3);
-    EXPECT_EQ(center.frames[0].pivotY, 2);
+    EXPECT_EQ(center.frames[0].pivotX, 4);
+    EXPECT_EQ(center.frames[0].pivotY, 3);
 }
 
-TEST(BakerSheetScale, MirrorOfScaledFrameFlipsPixelsAndPivotAroundScaledWidth)
+TEST(BakerSheetMirror, MirrorOfScaledFrameFlipsPixelsAndPivotAroundScaledWidth)
 {
-    // 블롭 좌상단 픽셀(시트 (1,1))에 마커 7. 3배 확대 시 트림 프레임 w=9, 피벗 x=4 (foot).
+    // 블롭 좌상단 픽셀(시트 (1,1))에 마커 7. 3배 확대 시 트림 프레임 w=9, 피벗 x = 18/2 - 3 = 6 (foot), 뒤집으면 9 - 6 = 3.
     Image sheet = MakeMagentaSheet(6, 5, { { 1, 1, 3, 2 } });
     ApplySheetKey(sheet, SheetKey {});
     sheet.At(1, 1)[0] = 7;
@@ -233,11 +250,153 @@ TEST(BakerSheetScale, MirrorOfScaledFrameFlipsPixelsAndPivotAroundScaledWidth)
     const BuiltFrames plain  = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 3);
     const BuiltFrames mirror = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, true, 3);
     EXPECT_EQ(plain.frames[0].w, 9);
-    EXPECT_EQ(plain.frames[0].pivotX, 4);
+    EXPECT_EQ(plain.frames[0].pivotX, 6);
     EXPECT_EQ(plain.trimmed[0].At(0, 0)[0], 7);
     EXPECT_EQ(plain.trimmed[0].At(8, 0)[0], 200);
-    EXPECT_EQ(mirror.frames[0].pivotX, 5);
+    EXPECT_EQ(mirror.frames[0].pivotX, 3);
     EXPECT_EQ(mirror.frames[0].pivotY, plain.frames[0].pivotY);
     EXPECT_EQ(mirror.trimmed[0].At(8, 0)[0], 7);
     EXPECT_EQ(mirror.trimmed[0].At(0, 0)[0], 200);
+}
+
+TEST(BakerSheetRegister, SearchFindsTheBestShiftAndPreferBaseKeepsZeroOnTies)
+{
+    // 같은 30x30 사각형 두 장. 기준 위치를 (12,-7) 로 주면 겹침 최대는 (0,0) 이다.
+    Image a = Image::Make(40, 40);
+    Image b = Image::Make(40, 40);
+    PaintBlob(a, { 0, 0, 30, 30 }, 90, 180, 40);
+    PaintBlob(b, { 0, 0, 30, 30 }, 90, 180, 40);
+
+    const AlignResult far = BestAlign(a, b, 12, -7, 40, false);
+    EXPECT_EQ(far.dx, 0);
+    EXPECT_EQ(far.dy, 0);
+    EXPECT_GT(far.score, 0.99);
+
+    // 기준 위치가 이미 최고점이면 그대로 둔다.
+    const AlignResult zero = BestAlign(a, b, 0, 0, 40, true);
+    EXPECT_EQ(zero.dx, 0);
+    EXPECT_EQ(zero.dy, 0);
+}
+
+TEST(BakerSheetRegister, SameSquareAtDifferentOffsetsAndSizesCoincidesAfterRegistration)
+{
+    // 세 셀(크기가 다름)에 같은 6x6 사각형이 다른 위치에 있고, 셀마다 꼬리 1px 이 달라 트림 bbox 가 다르다.
+    Image sheet = MakeMagentaSheet(100, 40, {});
+    PaintBlob(sheet, { 3, 2, 6, 6 }, 200, 100, 50);
+    PaintBlob(sheet, { 37, 11, 6, 6 }, 200, 100, 50);
+    PaintBlob(sheet, { 43, 16, 1, 1 }, 0, 255, 0);       // 꼬리: 트림 bbox 를 키운다
+    PaintBlob(sheet, { 80, 5, 6, 6 }, 200, 100, 50);
+    PaintBlob(sheet, { 86, 5, 1, 1 }, 0, 255, 0);
+    ApplySheetKey(sheet, SheetKey {});
+    const std::vector<IRect> rects = { { 0, 0, 20, 20 }, { 30, 0, 14, 20 }, { 60, 0, 30, 24 } };
+
+    SheetRegisterOpts reg;
+    reg.bEnabled = true;
+    const BuiltFrames built = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 1, reg);
+    ASSERT_EQ(built.frames.size(), 3u);
+    EXPECT_TRUE(built.reg.bRegistered);
+    EXPECT_EQ(built.reg.alignedFrames, 2);
+    EXPECT_TRUE(built.reg.fallbackFrames.empty());
+
+    // 그리기 좌상단 = origin - pivot. 같은 사각형이 같은 화면 위치에 와야 한다.
+    for (size_t i = 1; i < built.frames.size(); ++i)
+    {
+        EXPECT_EQ(-built.frames[i].pivotX, -built.frames[0].pivotX) << "frame " << i;
+        EXPECT_EQ(-built.frames[i].pivotY, -built.frames[0].pivotY) << "frame " << i;
+    }
+    // 트림 전 기준 피벗(정렬 전)에서는 꼬리 때문에 어긋났다는 것을 측정이 보고해야 한다.
+    EXPECT_GT(built.reg.shiftBefore, 0.0);
+    EXPECT_LE(built.reg.shiftAfter, 1.0);
+}
+
+TEST(BakerSheetRegister, IdenticalSizeCellsStayOnRectPivotWithOrWithoutRegistration)
+{
+    // 10x10 셀 세 개, 같은 위치의 4x4 블롭.
+    // 정렬 끔: 사각형 발 피벗 = (5 - 2, 10 - 3) = (3, 7).
+    // 정렬 켬: 공통 원점 = 합집합(= 블롭) 의 발 중앙 -> (2, 4). 프레임끼리는 모두 같은 값이어야 한다.
+    Image sheet = MakeMagentaSheet(40, 10, { { 2, 3, 4, 4 }, { 12, 3, 4, 4 }, { 22, 3, 4, 4 } });
+    ApplySheetKey(sheet, SheetKey {});
+    const std::vector<IRect> rects = { { 0, 0, 10, 10 }, { 10, 0, 10, 10 }, { 20, 0, 10, 10 } };
+
+    SheetRegisterOpts reg;
+    reg.bEnabled = true;
+    const BuiltFrames on  = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 1, reg);
+    const BuiltFrames off = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 1, SheetRegisterOpts {});
+    for (size_t i = 0; i < rects.size(); ++i)
+    {
+        EXPECT_EQ(on.frames[i].pivotX, 2) << "frame " << i;
+        EXPECT_EQ(on.frames[i].pivotY, 4) << "frame " << i;
+        EXPECT_EQ(off.frames[i].pivotX, 3) << "frame " << i;
+        EXPECT_EQ(off.frames[i].pivotY, 7) << "frame " << i;
+    }
+    EXPECT_EQ(on.reg.alignedFrames, 2);
+    EXPECT_DOUBLE_EQ(on.reg.shiftBefore, 0.0);
+    EXPECT_FALSE(off.reg.bRegistered);
+}
+
+TEST(BakerSheetRegister, LowOverlapFrameFallsBackToRectPivot)
+{
+    // 같은 위치가 아니고 색이 달라 점수가 0.5 미만: 두 번째 프레임은 정렬하지 않고 사각형 피벗을 쓴다.
+    Image sheet = MakeMagentaSheet(20, 10, {});
+    PaintBlob(sheet, { 1, 1, 3, 3 }, 200, 100, 50);
+    PaintBlob(sheet, { 11, 6, 3, 3 }, 0, 0, 255);
+    ApplySheetKey(sheet, SheetKey {});
+    const std::vector<IRect> rects = { { 0, 0, 10, 10 }, { 10, 0, 10, 10 } };
+
+    SheetRegisterOpts reg;
+    reg.bEnabled = true;
+    const BuiltFrames built = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 1, reg);
+    EXPECT_EQ(built.reg.alignedFrames, 0);
+    ASSERT_EQ(built.reg.fallbackFrames.size(), 1u);
+    EXPECT_EQ(built.reg.fallbackFrames[0], 1u);
+    // 정렬하지 않은 프레임은 사각형 기준 위치(T) 를 그대로 쓴다. 공통 원점은 공유하므로 두 프레임의 피벗 차이 = 사각형 기준점 차이.
+    // 프레임 0: 트림 (1,1), 프레임 1: 트림 (1,6), 기준점 중심 (5,5) -> 차이 = (0, -5).
+    EXPECT_EQ(built.frames[1].pivotX - built.frames[0].pivotX, 0);
+    EXPECT_EQ(built.frames[1].pivotY - built.frames[0].pivotY, -5);
+}
+
+TEST(BakerSheetRegister, AnchorOverrideSetsTheOriginInFirstFrameTrimCoords)
+{
+    Image sheet = MakeMagentaSheet(40, 20, { { 3, 2, 6, 6 }, { 23, 2, 6, 6 } });
+    ApplySheetKey(sheet, SheetKey {});
+    const std::vector<IRect> rects = { { 0, 0, 20, 20 }, { 20, 0, 20, 20 } };
+
+    SheetRegisterOpts reg;
+    reg.bEnabled   = true;
+    reg.bHasAnchor = true;
+    reg.anchorX    = 1;
+    reg.anchorY    = 1;
+    const BuiltFrames built = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 1, reg);
+    EXPECT_EQ(built.frames[0].pivotX, 1);
+    EXPECT_EQ(built.frames[0].pivotY, 1);
+    EXPECT_EQ(built.frames[1].pivotX, 1);
+    EXPECT_EQ(built.frames[1].pivotY, 1);
+}
+
+TEST(BakerSheetRegister, DefaultRulesDecideWhetherAClipRegisters)
+{
+    SheetSpec sheet;
+    sheet.noRegisterPrefixes = { "Fx_" };
+
+    SheetClipSpec run;
+    run.name = "Parker_Run";
+    EXPECT_TRUE(ResolveSheetRegister(sheet, run, 3));
+    EXPECT_FALSE(ResolveSheetRegister(sheet, run, 1));      // 한 프레임
+
+    SheetClipSpec fx = run;
+    fx.name = "Fx_Burst";
+    EXPECT_FALSE(ResolveSheetRegister(sheet, fx, 5));
+
+    SheetClipSpec effect = run;
+    effect.bEffect = true;
+    EXPECT_FALSE(ResolveSheetRegister(sheet, effect, 5));
+
+    SheetClipSpec sprite = run;
+    sprite.bAsSprite = true;
+    EXPECT_FALSE(ResolveSheetRegister(sheet, sprite, 1));
+
+    SheetClipSpec forced = fx;
+    forced.bRegisterSet = true;
+    forced.bRegister    = true;
+    EXPECT_TRUE(ResolveSheetRegister(sheet, forced, 5));
 }

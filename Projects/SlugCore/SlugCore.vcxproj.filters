@@ -165,6 +165,9 @@
     <ClCompile Include="..\..\Source\Game\Player\PlayerWeapons.cpp">
       <Filter>Source\Game\Player</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Props\DecorWorld.cpp">
+      <Filter>Source\Game\Props</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\Game\Props\ItemWorld.cpp">
       <Filter>Source\Game\Props</Filter>
     </ClCompile>
@@ -373,6 +376,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Player\PlayerWeapons.h">
       <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Props\DecorWorld.h">
+      <Filter>Source\Game\Props</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Props\ItemWorld.h">
       <Filter>Source\Game\Props</Filter>

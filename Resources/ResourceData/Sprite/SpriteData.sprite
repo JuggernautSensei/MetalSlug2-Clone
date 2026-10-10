@@ -1,0 +1,552 @@
+File Name:DevBackground
+Texture Name:DevBackground
+Width:default
+Height:default
+Column:0
+Line:0
+
+File Name:Player_Bullet_Basic_H
+Texture Name:Player_Bullet_Basic
+Width:14
+Height:14
+Column:0
+Line:0
+
+File Name:Player_Bullet_Basic_V
+Texture Name:Player_Bullet_Basic
+Width:14
+Height:14
+Column:1
+Line:0
+
+File Name:HM_Bullet_0_0
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:0
+Line:0
+
+File Name:HM_Bullet_3_15
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:1
+Line:0
+
+File Name:HM_Bullet_3_14
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:2
+Line:0
+
+File Name:HM_Bullet_3_13
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:3
+Line:0
+
+File Name:HM_Bullet_3_12
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:4
+Line:0
+
+File Name:HM_Bullet_3_11
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:5
+Line:0
+
+File Name:HM_Bullet_3_10
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:6
+Line:0
+
+File Name:HM_Bullet_3_9
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:7
+Line:0
+
+File Name:HM_Bullet_3_8
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:8
+Line:0
+
+File Name:HM_Bullet_3_7
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:9
+Line:0
+
+File Name:HM_Bullet_3_6
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:10
+Line:0
+
+File Name:HM_Bullet_3_5
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:11
+Line:0
+
+File Name:HM_Bullet_3_4
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:12
+Line:0
+
+File Name:HM_Bullet_3_3
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:13
+Line:0
+
+File Name:HM_Bullet_3_2
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:14
+Line:0
+
+File Name:HM_Bullet_3_1
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:15
+Line:0
+
+File Name:HM_Bullet_3_0
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:16
+Line:0
+
+File Name:HM_Bullet_2_14
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:17
+Line:0
+
+File Name:HM_Bullet_2_13
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:18
+Line:0
+
+File Name:HM_Bullet_2_12
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:19
+Line:0
+
+File Name:HM_Bullet_2_11
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:20
+Line:0
+
+File Name:HM_Bullet_2_10
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:21
+Line:0
+
+File Name:HM_Bullet_2_9
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:22
+Line:0
+
+File Name:HM_Bullet_2_8
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:23
+Line:0
+
+File Name:HM_Bullet_2_7
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:24
+Line:0
+
+File Name:HM_Bullet_2_6
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:25
+Line:0
+
+File Name:HM_Bullet_2_5
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:26
+Line:0
+
+File Name:HM_Bullet_2_4
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:27
+Line:0
+
+File Name:HM_Bullet_2_3
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:28
+Line:0
+
+File Name:HM_Bullet_2_2
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:29
+Line:0
+
+File Name:HM_Bullet_2_1
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:30
+Line:0
+
+File Name:HM_Bullet_2_0
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:31
+Line:0
+
+File Name:HM_Bullet_1_15
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:32
+Line:0
+
+File Name:HM_Bullet_1_14
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:33
+Line:0
+
+File Name:HM_Bullet_1_13
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:34
+Line:0
+
+File Name:HM_Bullet_1_12
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:35
+Line:0
+
+File Name:HM_Bullet_1_11
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:36
+Line:0
+
+File Name:HM_Bullet_1_10
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:37
+Line:0
+
+File Name:HM_Bullet_1_9
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:38
+Line:0
+
+File Name:HM_Bullet_1_8
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:39
+Line:0
+
+File Name:HM_Bullet_1_7
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:40
+Line:0
+
+File Name:HM_Bullet_1_6
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:41
+Line:0
+
+File Name:HM_Bullet_1_5
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:42
+Line:0
+
+File Name:HM_Bullet_1_4
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:43
+Line:0
+
+File Name:HM_Bullet_1_3
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:44
+Line:0
+
+File Name:HM_Bullet_1_2
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:45
+Line:0
+
+File Name:HM_Bullet_1_1
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:46
+Line:0
+
+File Name:HM_Bullet_1_0
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:47
+Line:0
+
+File Name:HM_Bullet_0_14
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:48
+Line:0
+
+File Name:HM_Bullet_0_13
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:49
+Line:0
+
+File Name:HM_Bullet_0_12
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:50
+Line:0
+
+File Name:HM_Bullet_0_11
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:51
+Line:0
+
+File Name:HM_Bullet_0_10
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:52
+Line:0
+
+File Name:HM_Bullet_0_9
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:53
+Line:0
+
+File Name:HM_Bullet_0_8
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:54
+Line:0
+
+File Name:HM_Bullet_0_7
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:55
+Line:0
+
+File Name:HM_Bullet_0_6
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:56
+Line:0
+
+File Name:HM_Bullet_0_5
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:57
+Line:0
+
+File Name:HM_Bullet_0_4
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:58
+Line:0
+
+File Name:HM_Bullet_0_3
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:59
+Line:0
+
+File Name:HM_Bullet_0_2
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:60
+Line:0
+
+File Name:HM_Bullet_0_1
+Texture Name:HM_Bullet
+Width:64
+Height:64
+Column:61
+Line:0
+
+File Name:hostageScoreUI
+Texture Name:hostageScoreUI
+Width:16
+Height:16
+Column:0
+Line:0
+
+File Name:InfiniteUI_Default
+Texture Name:InfiniteUI
+Width:40
+Height:16
+Column:0
+Line:0
+
+File Name:InfiniteUI_Red
+Texture Name:InfiniteUI
+Width:40
+Height:16
+Column:1
+Line:0
+
+File Name:LEVEL_1
+Texture Name:LevelUI
+Width:96
+Height:16
+Column:0
+Line:0
+
+File Name:LEVEL_2
+Texture Name:LevelUI
+Width:96
+Height:16
+Column:0
+Line:1
+
+File Name:PlayerHPUI
+Texture Name:PlayerHPUI
+Width:106
+Height:16
+Column:0
+Line:0
+
+File Name:PlayerStateUI_Bomb
+Texture Name:PlayerStateUI
+Width:124
+Height:34
+Column:0
+Line:0
+
+File Name:PlayerStateUI_Cannon
+Texture Name:PlayerStateUI
+Width:124
+Height:34
+Column:1
+Line:0
+
+File Name:PressStartUI
+Texture Name:PressStartUI
+Width:174
+Height:30
+Column:0
+Line:0
+
+File Name:BattleShip_Bullet_0
+Texture Name:BattleShip_Bullet
+Width:50
+Height:58
+Column:0
+Line:0
+
+File Name:BattleShip_Bullet_1
+Texture Name:BattleShip_Bullet
+Width:50
+Height:58
+Column:1
+Line:0
+
+File Name:BattleShip_Bullet_2
+Texture Name:BattleShip_Bullet
+Width:50
+Height:58
+Column:2
+Line:0
+
+File Name:BattleShip_Bullet_3
+Texture Name:BattleShip_Bullet
+Width:50
+Height:58
+Column:3
+Line:0
+
+File Name:BattleShip_Bullet_4
+Texture Name:BattleShip_Bullet
+Width:50
+Height:58
+Column:4
+Line:0

@@ -72,11 +72,11 @@ namespace
     constexpr const char* kGlobalKeys[] = { "note", "dpsRef", "activationMarginPx", "despawnBehindCameraPx", "despawnBelowCameraPx" };
     constexpr const char* kEnemyKeys[] = {
         "note", "extends", "abstract", "kind", "behavior", "team", "hp", "ttk", "score", "body", "hurtbox", "solid", "activation", "physics",
-        "clips", "weapons", "params", "death", "drops", "overlay", "noDespawn", "human", "hitFlash"
+        "clips", "weapons", "params", "death", "drops", "overlay", "noDespawn", "human", "hitFlash", "centerAnchor"
     };
     constexpr const char* kProjectileKeys[] = {
         "note", "extends", "abstract", "kind", "team", "lethal", "box", "damage", "speed", "speedRamp", "startDelay", "v0", "gravity", "maxFall",
-        "lifetime", "onSolid", "anim", "explosion", "rollSpeed", "rollSec", "expireFx"
+        "lifetime", "onSolid", "anim", "explosion", "rollSpeed", "rollSec", "expireFx", "groundProbe"
     };
     constexpr const char* kKnownKinds[] = { "walker", "vehicle", "turret", "flyer", "boss", "prop", "npc", "item", "projectile", "effect", "debris" };
     constexpr const char* kActivationKeys[] = { "note", "mode", "marginPx", "latch" };
@@ -533,7 +533,7 @@ bool EnemyDefParser::ParseProjectile_(
 
     for (const slug::JsonReader& reader: _chain)
     {
-        if (!ReadNum_(name, "", reader, "rollSpeed", projectile.rollSpeed, false) || !ReadNum_(name, "", reader, "rollSec", projectile.rollSec, false) || !ReadBool_(name, "", reader, "expireFx", projectile.bExpireFx))
+        if (!ReadNum_(name, "", reader, "rollSpeed", projectile.rollSpeed, false) || !ReadNum_(name, "", reader, "rollSec", projectile.rollSec, false) || !ReadBool_(name, "", reader, "expireFx", projectile.bExpireFx) || !ReadNum_(name, "", reader, "groundProbe", projectile.groundProbeY, false))
         {
             return false;
         }
@@ -924,7 +924,7 @@ bool EnemyDefParser::ParseEnemy_(
     def.bHitFlash = def.hp >= kHitFlashMinHp;
     for (const slug::JsonReader& reader: _chain)
     {
-        if (!ReadBool_(name, "", reader, "noDespawn", def.bNoDespawn) || !ReadBool_(name, "", reader, "human", def.bHuman) || !ReadBool_(name, "", reader, "hitFlash", def.bHitFlash))
+        if (!ReadBool_(name, "", reader, "noDespawn", def.bNoDespawn) || !ReadBool_(name, "", reader, "human", def.bHuman) || !ReadBool_(name, "", reader, "hitFlash", def.bHitFlash) || !ReadBool_(name, "", reader, "centerAnchor", def.bCenterAnchor))
         {
             return false;
         }

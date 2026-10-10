@@ -55,11 +55,10 @@ TEST(BossDef, BossShieeConfigMatchesTheTimeline)
     EXPECT_FLOAT_EQ(c.originDepth, 208.f);            // 발 → 선체 중심 (416 / 2)
     EXPECT_FLOAT_EQ(c.stationX, 330.f);               // 카메라 왼쪽 기준 선체 중심 (원작 350~420 의 설계 보정)
     EXPECT_FLOAT_EQ(c.entranceFromX, -260.f);         // 등장 시작: 화면 왼쪽 밖
-    EXPECT_EQ(c.entranceTicks, 240);                  // 4 s (원작 257~262 s)
-    EXPECT_FLOAT_EQ(c.scrollSpeed, 18.f);             // 자동 전진 버스트 (원작 16~21 game px/s)
-    EXPECT_EQ(c.scrollOnTicks, 180);
-    EXPECT_EQ(c.scrollOffTicks, 120);
-    EXPECT_FLOAT_EQ(c.scrollBudget, 700.f);           // 아레나 잠금 (12700..14094) 안 여유 754 px 보다 작다
+    EXPECT_EQ(c.entranceTicks, 960);                  // 16 s (원작 252~274 s 천천히 굴러 들어옴)
+    EXPECT_FLOAT_EQ(c.scrollSpeed, 18.f);             // 엔드리스 드리프트 18 px/s (원작 16~21 game px/s, 끊김 없음)
+    EXPECT_EQ(c.scrollOffTicks, 0);
+    EXPECT_FLOAT_EQ(c.scrollBudget, 100000.f);        // 사실상 무제한 (엔드리스 아레나)
     EXPECT_EQ(c.turretHp, 120);
     EXPECT_EQ(c.turretTurnTicks + c.turretFireTicks, 75);   // 사격 예고 합계 1.25 s (>= 0.6 s)
     EXPECT_EQ(c.turretShootTicks, 60);

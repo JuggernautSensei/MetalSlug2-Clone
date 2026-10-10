@@ -318,10 +318,36 @@ void UiSystem::DrawFade(
     _ctx.pRenderer->FillRect({ 0.f, 0.f }, { static_cast<float>(m_layout.screenW), static_cast<float>(m_layout.screenH) }, { 0, 0, 0, alpha });
 }
 
+void UiSystem::DrawGameOverArt(
+    GameContext& _ctx) const
+{
+    if (_ctx.IsHeadless() || !_ctx.pSprites || !m_art.bVisible || m_art.alpha == 0)
+    {
+        return;
+    }
+    const SpriteInfo* pInfo = m_sprites.Find(m_art.sprite);
+    if (!pInfo || pInfo->bStandalone || pInfo->frame.w <= 0 || pInfo->frame.h <= 0)
+    {
+        return;
+    }
+
+    // 화면을 덮도록 비율을 유지해 확대하고 가운데를 기준으로 잘라 그린다
+    const float screenW = static_cast<float>(m_layout.screenW);
+    const float screenH = static_cast<float>(m_layout.screenH);
+    const float scale   = std::max(screenW / static_cast<float>(pInfo->frame.w), screenH / static_cast<float>(pInfo->frame.h));
+    const int   w       = static_cast<int>(static_cast<float>(pInfo->frame.w) * scale);
+    const int   h       = static_cast<int>(static_cast<float>(pInfo->frame.h) * scale);
+
+    SpriteDrawOptions options;
+    options.tint.a = m_art.alpha;
+    _ctx.pSprites->DrawFrameRect(pInfo->frame, { (m_layout.screenW - w) / 2, (m_layout.screenH - h) / 2, w, h }, options);
+}
+
 void UiSystem::DrawOverlays(
     GameContext& _ctx)
 {
     DrawMissionResults(_ctx);
+    DrawGameOverArt(_ctx);
     DrawFade(_ctx);
     DrawBanner(_ctx);
 }

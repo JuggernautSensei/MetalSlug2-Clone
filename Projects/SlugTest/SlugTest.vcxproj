@@ -115,6 +115,7 @@
     <ClCompile Include="..\..\Test\CameraTest.cpp" />
     <ClCompile Include="..\..\Test\CombatTest.cpp" />
     <ClCompile Include="..\..\Test\CoreTest.cpp" />
+    <ClCompile Include="..\..\Test\DecorWorldTest.cpp" />
     <ClCompile Include="..\..\Test\EnemyDefTest.cpp" />
     <ClCompile Include="..\..\Test\EnemySandboxTest.cpp" />
     <ClCompile Include="..\..\Test\EnemyWorldTest.cpp" />

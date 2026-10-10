@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <format>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -49,6 +50,18 @@ namespace
         }
         _out = { v[0], v[1], v[2], v[3] };
         return true;
+    }
+
+    [[nodiscard]] bool ReadPoint_(
+        yyjson_val* _pValue,
+        int&        _x,
+        int&        _y)
+    {
+        if (_pValue == nullptr || !yyjson_is_arr(_pValue) || yyjson_arr_size(_pValue) != 2)
+        {
+            return false;
+        }
+        return ReadInt_(yyjson_arr_get(_pValue, 0), _x) && ReadInt_(yyjson_arr_get(_pValue, 1), _y);
     }
 
     // 값이 없으면 기본값 유지(true), 있는데 형식이 틀리면 false.
@@ -172,6 +185,42 @@ namespace
             return false;
         }
 
+        if (yyjson_val* reg = yyjson_obj_get(_pClip, "register"))
+        {
+            if (!yyjson_is_bool(reg)) { _error = "clip '" + _out.name + "': register must be true or false"; return false; }
+            _out.bRegisterSet = true;
+            _out.bRegister    = yyjson_get_bool(reg);
+        }
+        if (!OptBool_(_pClip, "effect", _out.bEffect))
+        {
+            _error = "clip '" + _out.name + "': effect must be true or false";
+            return false;
+        }
+        if (yyjson_obj_get(_pClip, "registerTo") != nullptr)
+        {
+            std::string ref;
+            if (!ReadName_(_pClip, "registerTo", ref) || (ref != "first" && ref != "prev"))
+            {
+                _error = "clip '" + _out.name + "': registerTo must be \"first\" or \"prev\"";
+                return false;
+            }
+            _out.registerRef = (ref == "prev") ? eSheetRegisterRef::Prev : eSheetRegisterRef::First;
+        }
+        if (yyjson_obj_get(_pClip, "anchor") != nullptr)
+        {
+            if (!ReadPoint_(yyjson_obj_get(_pClip, "anchor"), _out.anchorX, _out.anchorY))
+            {
+                _error = "clip '" + _out.name + "': anchor must be [x,y]";
+                return false;
+            }
+            _out.bHasAnchor = true;
+        }
+        if (!OptInt_(_pClip, "searchRange", _out.searchRange) || _out.searchRange < 0 || _out.searchRange > 200)
+        {
+            _error = "clip '" + _out.name + "': searchRange must be an integer 0..200";
+            return false;
+        }
+
         if (!OptBool_(_pClip, "loop", _out.bLoop) || !OptReal_(_pClip, "fps", _out.fps) || !OptBool_(_pClip, "mirror", _out.bMirror)
             || !OptBool_(_pClip, "asSprite", _out.bAsSprite) || !OptBool_(_pClip, "replace", _out.bReplace))
         {
@@ -259,6 +308,19 @@ namespace
         {
             _error = _out.file + ": scale must be an integer 1.." + std::to_string(kSheetMaxScale);
             return false;
+        }
+
+        if (yyjson_val* prefixes = yyjson_obj_get(_pSheet, "noRegisterPrefixes"))
+        {
+            if (!yyjson_is_arr(prefixes)) { _error = _out.file + ": noRegisterPrefixes must be an array"; return false; }
+            size_t      idx = 0;
+            size_t      max = 0;
+            yyjson_val* p   = nullptr;
+            yyjson_arr_foreach(prefixes, idx, max, p)
+            {
+                if (!yyjson_is_str(p)) { _error = _out.file + ": noRegisterPrefixes entries must be strings"; return false; }
+                _out.noRegisterPrefixes.emplace_back(yyjson_get_str(p));
+            }
         }
 
         if (yyjson_val* clips = yyjson_obj_get(_pSheet, "clips"))
@@ -576,6 +638,15 @@ slug::Result<void> AppendSheetClips(
                 }
             }
 
+            const bool        bRegister = ResolveSheetRegister(spec, clip, rects.size());
+            SheetRegisterOpts reg;
+            reg.bEnabled    = bRegister;
+            reg.ref         = clip.registerRef;
+            reg.searchRange = clip.searchRange;
+            reg.bHasAnchor  = clip.bHasAnchor;
+            reg.anchorX     = clip.anchorX;
+            reg.anchorY     = clip.anchorY;
+
             for (const Variant& v: variants)
             {
                 const bool bExists = clip.bAsSprite ? HasValidSprite_(_state, v.name) : HasValidAnim_(_state, v.name);
@@ -587,7 +658,27 @@ slug::Result<void> AppendSheetClips(
                     continue;
                 }
 
-                BuiltFrames built = BuildSheetFrames(image, rects, clip.pivot, v.bFlip, ResolveSheetScale(spec.scale, clip.scale));
+                BuiltFrames built = BuildSheetFrames(image, rects, clip.pivot, v.bFlip, ResolveSheetScale(spec.scale, clip.scale), reg);
+                if (!clip.bAsSprite)
+                {
+                    const SheetRegStats& st = built.reg;
+                    _state.anomalies.push_back({ "SheetRegistration", v.name,
+                        std::format("content shift {:.1f} -> {:.1f} px, register {}, aligned {}, fallback {}",
+                            st.shiftBefore, st.shiftAfter, bRegister ? "on" : "off", st.alignedFrames, st.fallbackFrames.size()),
+                        st.shiftAfter });
+                    if (!st.fallbackFrames.empty())
+                    {
+                        std::string list;
+                        for (const size_t k: st.fallbackFrames)
+                        {
+                            list += (list.empty() ? "" : ",") + std::to_string(k);
+                        }
+                        _state.anomalies.push_back({ "SheetRegisterFallback", v.name,
+                            "frames [" + list + "] kept rect pivot (score below minScore)", static_cast<double>(st.fallbackFrames.size()) });
+                    }
+                    Log("sheet clip {}: content shift {:.1f} -> {:.1f} px, register {}, aligned {}, fallback {}",
+                        v.name, st.shiftBefore, st.shiftAfter, bRegister ? "on" : "off", st.alignedFrames, st.fallbackFrames.size());
+                }
                 if (action == eSheetNameAction::Replace)
                 {
                     const std::string reason = "replaced by sheet clip from " + spec.file;

@@ -1,0 +1,1826 @@
+File Name:Player_Crouch_Idle_DG_Left
+Texture Name:Player_Crouch_Idle_DG_Left
+Start:0
+End:5
+Width:75
+Height:69
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:-10
+OffsetY:-10
+
+File Name:Player_Crouch_Idle_DG_Right
+Texture Name:Player_Crouch_Idle_DG_Right
+Start:0
+End:5
+Width:75
+Height:69
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:10
+OffsetY:-10
+
+File Name:Player_Crouch_Move_DG_Left
+Texture Name:Player_Crouch_Move_DG_Left
+Start:0
+End:6
+Width:79
+Height:65
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:-5
+OffsetY:-8
+
+File Name:Player_Crouch_Move_DG_Right
+Texture Name:Player_Crouch_Move_DG_Right
+Start:0
+End:6
+Width:79
+Height:65
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:5
+OffsetY:-8
+
+File Name:Player_Crouch_Shot_DG_Left
+Texture Name:Player_Crouch_Shot_DG_Left
+Start:0
+End:9
+Width:120
+Height:63
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:-35
+OffsetY:-7
+
+File Name:Player_Crouch_Shot_DG_Right
+Texture Name:Player_Crouch_Shot_DG_Right
+Start:0
+End:9
+Width:120
+Height:63
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:35
+OffsetY:-7
+
+File Name:Player_Crouch_Slash1_DG_Left
+Texture Name:Player_Crouch_Slash1_DG_Left
+Start:0
+End:6
+Width:91
+Height:70
+FrameDuration:0.05
+Loop:0
+OptionIndex:6
+OffsetX:-12
+OffsetY:-10
+
+File Name:Player_Crouch_Slash1_DG_Right
+Texture Name:Player_Crouch_Slash1_DG_Right
+Start:0
+End:6
+Width:91
+Height:70
+FrameDuration:0.05
+Loop:0
+OptionIndex:6
+OffsetX:12
+OffsetY:-10
+
+File Name:Player_Crouch_Slash2_DG_Left
+Texture Name:Player_Crouch_Slash2_DG_Left
+Start:0
+End:5
+Width:113
+Height:67
+FrameDuration:0.05
+Loop:0
+OptionIndex:5
+OffsetX:-26
+OffsetY:-9
+
+File Name:Player_Crouch_Slash2_DG_Right
+Texture Name:Player_Crouch_Slash2_DG_Right
+Start:0
+End:5
+Width:113
+Height:67
+FrameDuration:0.05
+Loop:0
+OptionIndex:5
+OffsetX:26
+OffsetY:-9
+
+File Name:Player_Crouch_Throw_DG_Left
+Texture Name:Player_Crouch_Throw_DG_Left
+Start:0
+End:5
+Width:90
+Height:62
+FrameDuration:0.03
+Loop:0
+OptionIndex:0
+OffsetX:-12
+OffsetY:-6
+
+File Name:Player_Crouch_Throw_DG_Right
+Texture Name:Player_Crouch_Throw_DG_Right
+Start:0
+End:5
+Width:90
+Height:62
+FrameDuration:0.03
+Loop:0
+OptionIndex:0
+OffsetX:12
+OffsetY:-6
+
+File Name:Player_Death_byBomb_Begin_DG_Left
+Texture Name:Player_Death_byBomb_Begin_DG_Left
+Start:0
+End:6
+Width:95
+Height:90
+FrameDuration:0.13
+Loop:0
+OptionIndex:0
+OffsetX:-5
+OffsetY:-3
+
+File Name:Player_Death_byBomb_Begin_DG_Right
+Texture Name:Player_Death_byBomb_Begin_DG_Right
+Start:0
+End:6
+Width:95
+Height:90
+FrameDuration:0.13
+Loop:0
+OptionIndex:0
+OffsetX:5
+OffsetY:-3
+
+File Name:Player_Death_byBomb_End_DG_Left
+Texture Name:Player_Death_byBomb_End_DG_Left
+Start:0
+End:2
+Width:96
+Height:57
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-29
+
+File Name:Player_Death_byBomb_End_DG_Right
+Texture Name:Player_Death_byBomb_End_DG_Right
+Start:0
+End:2
+Width:96
+Height:57
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-29
+
+File Name:Player_Death_byBullet_DG_Left
+Texture Name:Player_Death_byBullet_DG_Left
+Start:0
+End:18
+Width:98
+Height:80
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-8
+OffsetY:-40
+
+File Name:Player_Death_byBullet_DG_Right
+Texture Name:Player_Death_byBullet_DG_Right
+Start:0
+End:18
+Width:98
+Height:80
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:8
+OffsetY:-40
+
+File Name:Player_Jump_Idle_DG_Left
+Texture Name:Player_Jump_Idle_DG_Left
+Start:0
+End:5
+Width:70
+Height:50
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:5
+OffsetY:-22
+
+File Name:Player_Jump_Idle_DG_Right
+Texture Name:Player_Jump_Idle_DG_Right
+Start:0
+End:5
+Width:70
+Height:50
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-5
+OffsetY:-22
+
+File Name:Player_Jump_Lookdown_DG_Left
+Texture Name:Player_Jump_Lookdown_DG_Left
+Start:0
+End:0
+Width:50
+Height:70
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-6
+
+File Name:Player_Jump_Lookdown_DG_Right
+Texture Name:Player_Jump_Lookdown_DG_Right
+Start:0
+End:0
+Width:50
+Height:70
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-6
+
+File Name:Player_Jump_Lookingdown_1_DG_Left
+Texture Name:Player_Jump_Lookingdown_DG_Left
+Start:1
+End:1
+Width:50
+Height:70
+FrameDuration:999
+Loop:1
+OptionIndex:1
+OffsetX:0
+OffsetY:-2
+
+File Name:Player_Jump_Lookingdown_2_DG_Left
+Texture Name:Player_Jump_Lookingdown_DG_Left
+Start:0
+End:0
+Width:50
+Height:70
+FrameDuration:999
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-2
+
+File Name:Player_Jump_Lookingdown_1_DG_Right
+Texture Name:Player_Jump_Lookingdown_DG_Right
+Start:1
+End:1
+Width:50
+Height:70
+FrameDuration:999
+Loop:1
+OptionIndex:1
+OffsetX:0
+OffsetY:-2
+
+File Name:Player_Jump_Lookingdown_2_DG_Right
+Texture Name:Player_Jump_Lookingdown_DG_Right
+Start:0
+End:0
+Width:50
+Height:70
+FrameDuration:999
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-2
+
+File Name:Player_Jump_Move_DG_Left
+Texture Name:Player_Jump_Move_DG_Left
+Start:0
+End:5
+Width:70
+Height:72
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-2
+OffsetY:-13
+
+File Name:Player_Jump_Move_DG_Right
+Texture Name:Player_Jump_Move_DG_Right
+Start:0
+End:5
+Width:70
+Height:72
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:2
+OffsetY:-13
+
+File Name:Player_Jump_Shot_Down_DG_Left
+Texture Name:Player_Jump_Shot_Down_DG_Left
+Start:0
+End:5
+Width:46
+Height:108
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:-4
+OffsetY:16
+
+File Name:Player_Jump_Shot_Down_DG_Right
+Texture Name:Player_Jump_Shot_Down_DG_Right
+Start:0
+End:5
+Width:46
+Height:108
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:4
+OffsetY:16
+
+File Name:Player_Ride_DG_Left
+Texture Name:Player_Ride_DG_Left
+Start:0
+End:5
+Width:66
+Height:88
+FrameDuration:0.07
+Loop:0
+OptionIndex:0
+OffsetX:1
+OffsetY:-44
+
+File Name:Player_Ride_DG_Right
+Texture Name:Player_Ride_DG_Right
+Start:0
+End:5
+Width:66
+Height:88
+FrameDuration:0.07
+Loop:0
+OptionIndex:0
+OffsetX:-1
+OffsetY:-44
+
+File Name:Player_Stand_Idle_Action_DG_Left
+Texture Name:Player_Stand_Idle_Action_DG_Left
+Start:0
+End:17
+Width:84
+Height:90
+FrameDuration:0.09
+Loop:0
+OptionIndex:0
+OffsetX:-8
+OffsetY:-23
+
+File Name:Player_Stand_Idle_Action_DG_Right
+Texture Name:Player_Stand_Idle_Action_DG_Right
+Start:0
+End:17
+Width:84
+Height:90
+FrameDuration:0.09
+Loop:0
+OptionIndex:0
+OffsetX:8
+OffsetY:-23
+
+
+File Name:Player_Stand_Idle_DG_Left
+Texture Name:Player_Stand_Idle_DG_Left
+Start:0
+End:5
+Width:70
+Height:70
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:-7
+OffsetY:-15
+
+File Name:Player_Stand_Idle_DG_Right
+Texture Name:Player_Stand_Idle_DG_Right
+Start:0
+End:5
+Width:70
+Height:70
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:7
+OffsetY:-15
+
+File Name:Player_Stand_Lookingup_3_DG_Left
+Texture Name:Player_Stand_Lookingup_DG_Left
+Start:0
+End:0
+Width:80
+Height:58
+FrameDuration:999
+Loop:1
+OptionIndex:0
+OffsetX:-11
+OffsetY:-22
+
+File Name:Player_Stand_Lookingup_4_DG_Left
+Texture Name:Player_Stand_Lookingup_DG_Left
+Start:1
+End:1
+Width:80
+Height:58
+FrameDuration:999
+Loop:1
+OptionIndex:0
+OffsetX:-12
+OffsetY:-24
+
+File Name:Player_Stand_Lookingup_3_DG_Right
+Texture Name:Player_Stand_Lookingup_DG_Right
+Start:0
+End:0
+Width:80
+Height:58
+FrameDuration:999
+Loop:1
+OptionIndex:0
+OffsetX:11
+OffsetY:-22
+
+File Name:Player_Stand_Lookingup_4_DG_Right
+Texture Name:Player_Stand_Lookingup_DG_Right
+Start:1
+End:1
+Width:80
+Height:58
+FrameDuration:999
+Loop:1
+OptionIndex:0
+OffsetX:12
+OffsetY:-24
+
+File Name:Player_Stand_Lookup_DG_Left
+Texture Name:Player_Stand_Lookup_DG_Left
+Start:0
+End:5
+Width:69
+Height:55
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:-5
+OffsetY:-26
+
+File Name:Player_Stand_Lookup_DG_Right
+Texture Name:Player_Stand_Lookup_DG_Right
+Start:0
+End:5
+Width:69
+Height:55
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:5
+OffsetY:-26
+
+File Name:Player_Stand_MoveStop_DG_Left
+Texture Name:Player_Stand_MoveStop_DG_Left
+Start:0
+End:5
+Width:72
+Height:78
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-6
+OffsetY:-13
+
+File Name:Player_Stand_MoveStop_DG_Right
+Texture Name:Player_Stand_MoveStop_DG_Right
+Start:0
+End:5
+Width:72
+Height:78
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:6
+OffsetY:-13
+
+File Name:Player_Stand_Move_DG_Left
+Texture Name:Player_Stand_Move_DG_Left
+Start:0
+End:11
+Width:75
+Height:75
+FrameDuration:0.06
+Loop:1
+OptionIndex:0
+OffsetX:-12
+OffsetY:-26
+
+File Name:Player_Stand_Move_DG_Right
+Texture Name:Player_Stand_Move_DG_Right
+Start:0
+End:11
+Width:75
+Height:75
+FrameDuration:0.06
+Loop:1
+OptionIndex:0
+OffsetX:12
+OffsetY:-26
+
+File Name:Player_Stand_Reload_DG_Left
+Texture Name:Player_Stand_Reload_DG_Left
+Start:0
+End:18
+Width:92
+Height:82
+FrameDuration:0.09
+Loop:0
+OptionIndex:0
+OffsetX:-18
+OffsetY:-8
+
+File Name:Player_Stand_Reload_DG_Right
+Texture Name:Player_Stand_Reload_DG_Right
+Start:0
+End:18
+Width:92
+Height:82
+FrameDuration:0.09
+Loop:0
+OptionIndex:0
+OffsetX:18
+OffsetY:-8
+
+
+File Name:Player_Stand_Shot_DG_Left
+Texture Name:Player_Stand_Shot_DG_Left
+Start:0
+End:9
+Width:110
+Height:60
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:-28
+OffsetY:-20
+
+File Name:Player_Stand_Shot_DG_Right
+Texture Name:Player_Stand_Shot_DG_Right
+Start:0
+End:9
+Width:110
+Height:60
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:28
+OffsetY:-20
+
+File Name:Player_Stand_Shot_Up_DG_Left
+Texture Name:Player_Stand_Shot_Up_DG_Left
+Start:0
+End:9
+Width:60
+Height:144
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:-5
+OffsetY:-70
+
+File Name:Player_Stand_Shot_Up_DG_Right
+Texture Name:Player_Stand_Shot_Up_DG_Right
+Start:0
+End:9
+Width:60
+Height:144
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:5
+OffsetY:-70
+
+File Name:Player_Stand_Slash1_DG_Left
+Texture Name:Player_Stand_Slash1_DG_Left
+Start:0
+End:5
+Width:110
+Height:103
+FrameDuration:0.055
+Loop:0
+OptionIndex:5
+OffsetX:-10
+OffsetY:-32
+
+File Name:Player_Stand_Slash1_DG_Right
+Texture Name:Player_Stand_Slash1_DG_Right
+Start:0
+End:5
+Width:110
+Height:103
+FrameDuration:0.055
+Loop:0
+OptionIndex:5
+OffsetX:10
+OffsetY:-32
+
+File Name:Player_Stand_Slash2_DG_Left
+Texture Name:Player_Stand_Slash2_DG_Left
+Start:0
+End:5
+Width:105
+Height:92
+FrameDuration:0.055
+Loop:0
+OptionIndex:5
+OffsetX:-22
+OffsetY:-25
+
+File Name:Player_Stand_Slash2_DG_Right
+Texture Name:Player_Stand_Slash2_DG_Right
+Start:0
+End:5
+Width:105
+Height:92
+FrameDuration:0.055
+Loop:0
+OptionIndex:5
+OffsetX:22
+OffsetY:-25
+
+File Name:Player_Stand_StartCrouch_DG_Left
+Texture Name:Player_Stand_StartCrouch_DG_Left
+Start:0
+End:2
+Width:72
+Height:91
+FrameDuration:0.05
+Loop:0
+OptionIndex:0
+OffsetX:-7
+OffsetY:-21
+
+File Name:Player_Stand_StartCrouch_DG_Right
+Texture Name:Player_Stand_StartCrouch_DG_Right
+Start:0
+End:2
+Width:72
+Height:91
+FrameDuration:0.05
+Loop:0
+OptionIndex:0
+OffsetX:7
+OffsetY:-21
+
+File Name:Player_Stand_Throw_DG_Left
+Texture Name:Player_Stand_Throw_DG_Left
+Start:0
+End:5
+Width:75
+Height:65
+FrameDuration:0.03
+Loop:0
+OptionIndex:5
+OffsetX:-8
+OffsetY:-20
+
+File Name:Player_Stand_Throw_DG_Right
+Texture Name:Player_Stand_Throw_DG_Right
+Start:0
+End:5
+Width:75
+Height:65
+FrameDuration:0.03
+Loop:0
+OptionIndex:5
+OffsetX:8
+OffsetY:-20
+
+File Name:Player_Victory_DG
+Texture Name:Player_Victory_DG
+Start:0
+End:5
+Width:86
+Height:86
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:-1
+OffsetY:-44
+
+File Name:Player_Jump_Idle_Lower_Left
+Texture Name:Player_Jump_Idle_Lower_Left
+Start:0
+End:5
+Width:51
+Height:53
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:2
+OffsetY:20
+
+File Name:Player_Jump_Idle_Lower_Right
+Texture Name:Player_Jump_Idle_Lower_Right
+Start:0
+End:5
+Width:51
+Height:53
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-2
+OffsetY:20
+
+File Name:Player_Jump_Move_Lower_Left
+Texture Name:Player_Jump_Move_Lower_Left
+Start:0
+End:5
+Width:66
+Height:42
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:2
+OffsetY:16
+
+File Name:Player_Jump_Move_Lower_Right
+Texture Name:Player_Jump_Move_Lower_Right
+Start:0
+End:5
+Width:66
+Height:42
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-2
+OffsetY:16
+
+File Name:Player_Stand_Idle_Lower_Left
+Texture Name:Player_Stand_Idle_Lower_Left
+Start:0
+End:0
+Width:60
+Height:60
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:1
+OffsetY:9
+
+File Name:Player_Stand_Idle_Lower_Right
+Texture Name:Player_Stand_Idle_Lower_Right
+Start:0
+End:0
+Width:60
+Height:60
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-1
+OffsetY:9
+
+File Name:Player_Stand_Move_Lower_Left
+Texture Name:Player_Stand_Move_Lower_Left
+Start:0
+End:11
+Width:64
+Height:44
+FrameDuration:0.06
+Loop:1
+OptionIndex:0
+OffsetX:-5
+OffsetY:5
+
+File Name:Player_Stand_Move_SG_Right
+Texture Name:Player_Stand_Move_SG_Right
+Start:0
+End:11
+Width:95
+Height:70
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:23
+OffsetY:-21
+
+File Name:Player_Stand_Move_SG_Left
+Texture Name:Player_Stand_Move_SG_Left
+Start:0
+End:11
+Width:95
+Height:70
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:-23
+OffsetY:-21
+
+File Name:Player_Stand_Move_Lower_Right
+Texture Name:Player_Stand_Move_Lower_Right
+Start:0
+End:11
+Width:64
+Height:44
+FrameDuration:0.06
+Loop:1
+OptionIndex:0
+OffsetX:5
+OffsetY:5
+
+File Name:Player_Crouch_Idle_SG_Left
+Texture Name:Player_Crouch_Idle_SG_Left
+Start:0
+End:5
+Width:92
+Height:53
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:-18
+OffsetY:-1
+
+File Name:Player_Crouch_Idle_SG_Right
+Texture Name:Player_Crouch_Idle_SG_Right
+Start:0
+End:5
+Width:92
+Height:53
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:18
+OffsetY:-1
+
+File Name:Player_Crouch_Move_SG_Left
+Texture Name:Player_Crouch_Move_SG_Left
+Start:0
+End:6
+Width:82
+Height:48
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:-17
+OffsetY:2
+
+File Name:Player_Crouch_Move_SG_Right
+Texture Name:Player_Crouch_Move_SG_Right
+Start:0
+End:6
+Width:82
+Height:48
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:17
+OffsetY:2
+
+File Name:Player_Crouch_Shot_MG_Left
+Texture Name:Player_Crouch_Shot_MG_Left
+Start:0
+End:3
+Width:136
+Height:57
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:-43
+OffsetY:-3
+
+File Name:Player_Crouch_Shot_SG_Left
+Texture Name:Player_Crouch_Shot_SG_Left
+Start:0
+End:5
+Width:96
+Height:66
+FrameDuration:0.04
+Loop:0
+OptionIndex:1
+OffsetX:-18
+OffsetY:-7
+
+File Name:Player_Crouch_Shot_MG_Right
+Texture Name:Player_Crouch_Shot_MG_Right
+Start:0
+End:3
+Width:136
+Height:57
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:43
+OffsetY:-3
+
+File Name:Player_Crouch_Shot_SG_Right
+Texture Name:Player_Crouch_Shot_SG_Right
+Start:0
+End:5
+Width:96
+Height:66
+FrameDuration:0.04
+Loop:0
+OptionIndex:1
+OffsetX:18
+OffsetY:-7
+
+File Name:Player_Crouch_Slash1_SG_Left
+Texture Name:Player_Crouch_Slash1_SG_Left
+Start:0
+End:6
+Width:88
+Height:72
+FrameDuration:0.055
+Loop:0
+OptionIndex:6
+OffsetX:-11
+OffsetY:-10
+
+File Name:Player_Crouch_Slash1_SG_Right
+Texture Name:Player_Crouch_Slash1_SG_Right
+Start:0
+End:6
+Width:88
+Height:72
+FrameDuration:0.055
+Loop:0
+OptionIndex:6
+OffsetX:11
+OffsetY:-10
+
+File Name:Player_Crouch_Slash2_SG_Left
+Texture Name:Player_Crouch_Slash2_SG_Left
+Start:0
+End:5
+Width:138
+Height:66
+FrameDuration:0.055
+Loop:0
+OptionIndex:5
+OffsetX:-12
+OffsetY:-7
+
+File Name:Player_Crouch_Slash2_SG_Right
+Texture Name:Player_Crouch_Slash2_SG_Right
+Start:0
+End:5
+Width:138
+Height:66
+FrameDuration:0.055
+Loop:0
+OptionIndex:5
+OffsetX:12
+OffsetY:-7
+
+File Name:Player_Crouch_Throw_SG_Left
+Texture Name:Player_Crouch_Throw_SG_Left
+Start:0
+End:5
+Width:89
+Height:75
+FrameDuration:0.035
+Loop:0
+OptionIndex:2
+OffsetX:-8
+OffsetY:-12
+
+File Name:Player_Crouch_Throw_SG_Right
+Texture Name:Player_Crouch_Throw_SG_Right
+Start:0
+End:5
+Width:89
+Height:75
+FrameDuration:0.03
+Loop:0
+OptionIndex:2
+OffsetX:8
+OffsetY:-12
+
+File Name:Player_Jump_Idle_SG_Left
+Texture Name:Player_Jump_Idle_SG_Left
+Start:0
+End:5
+Width:82
+Height:60
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-10
+OffsetY:-20
+
+File Name:Player_Jump_Idle_SG_Right
+Texture Name:Player_Jump_Idle_SG_Right
+Start:0
+End:5
+Width:82
+Height:60
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:10
+OffsetY:-20
+
+File Name:Player_Jump_Lookdown_SG_Left
+Texture Name:Player_Jump_Lookdown_SG_Left
+Start:0
+End:0
+Width:68
+Height:82
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:4
+
+File Name:Player_Jump_Lookdown_SG_Right
+Texture Name:Player_Jump_Lookdown_SG_Right
+Start:0
+End:0
+Width:68
+Height:82
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:4
+
+File Name:Player_Jump_Lookingdown_1_SG_Left
+Texture Name:Player_Jump_Lookingdown_SG_Left
+Start:1
+End:1
+Width:64
+Height:86
+FrameDuration:999
+Loop:1
+OptionIndex:1
+OffsetX:-9
+OffsetY:0
+
+File Name:Player_Jump_Lookingdown_2_SG_Left
+Texture Name:Player_Jump_Lookingdown_SG_Left
+Start:0
+End:0
+Width:64
+Height:86
+FrameDuration:999
+Loop:1
+OptionIndex:0
+OffsetX:-9
+OffsetY:0
+
+File Name:Player_Jump_Lookingdown_1_SG_Right
+Texture Name:Player_Jump_Lookingdown_SG_Right
+Start:1
+End:1
+Width:64
+Height:86
+FrameDuration:999
+Loop:1
+OptionIndex:1
+OffsetX:9
+OffsetY:0
+
+File Name:Player_Jump_Lookingdown_2_SG_Right
+Texture Name:Player_Jump_Lookingdown_SG_Right
+Start:0
+End:0
+Width:64
+Height:86
+FrameDuration:999
+Loop:1
+OptionIndex:0
+OffsetX:9
+OffsetY:0
+
+File Name:Player_Jump_Move_SG_Left
+Texture Name:Player_Jump_Move_SG_Left
+Start:0
+End:5
+Width:76
+Height:56
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-6
+OffsetY:-18
+
+File Name:Player_Jump_Move_SG_Right
+Texture Name:Player_Jump_Move_SG_Right
+Start:0
+End:5
+Width:76
+Height:56
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:6
+OffsetY:-18
+
+File Name:Player_Jump_Shot_Lookdown_MG_Left
+Texture Name:Player_Jump_Shot_Lookdown_MG_Left
+Start:0
+End:3
+Width:76
+Height:128
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:-4
+OffsetY:28
+
+File Name:Player_Jump_Shot_Lookdown_SG_Left
+Texture Name:Player_Jump_Shot_Lookdown_SG_Left
+Start:0
+End:5
+Width:74
+Height:84
+FrameDuration:0.04
+Loop:0
+OptionIndex:1
+OffsetX:0
+OffsetY:6
+
+File Name:Player_Jump_Shot_Lookdown_MG_Right
+Texture Name:Player_Jump_Shot_Lookdown_MG_Right
+Start:0
+End:3
+Width:76
+Height:128
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:4
+OffsetY:28
+
+File Name:Player_Jump_Shot_Lookdown_SG_Right
+Texture Name:Player_Jump_Shot_Lookdown_SG_Right
+Start:0
+End:5
+Width:74
+Height:84
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:0
+OffsetY:4
+
+File Name:Player_Jump_Shot_Lookingdown_1_TB_MG_Left
+Texture Name:Player_Jump_Shot_Lookingdown_SG_Left
+Start:1
+End:1
+Width:114
+Height:124
+FrameDuration:0.04
+Loop:0
+OptionIndex:1
+OffsetX:-32
+OffsetY:20
+
+File Name:Player_Jump_Shot_Lookingdown_2_TB_MG_Left
+Texture Name:Player_Jump_Shot_Lookingdown_SG_Left
+Start:0
+End:0
+Width:114
+Height:124
+FrameDuration:0.04
+Loop:0
+OptionIndex:0
+OffsetX:-32
+OffsetY:20
+
+File Name:Player_Jump_Shot_Lookingdown_1_BT_MG_Left
+Texture Name:Player_Jump_Shot_Lookingdown_SG_Left
+Start:2
+End:2
+Width:114
+Height:124
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:-32
+OffsetY:20
+
+File Name:Player_Jump_Shot_Lookingdown_2_BT_MG_Left
+Texture Name:Player_Jump_Shot_Lookingdown_SG_Left
+Start:3
+End:3
+Width:114
+Height:124
+FrameDuration:0.04
+Loop:0
+OptionIndex:3
+OffsetX:-32
+OffsetY:20
+
+File Name:Player_Jump_Shot_Lookingdown_1_TB_MG_Right
+Texture Name:Player_Jump_Shot_Lookingdown_SG_Right
+Start:1
+End:1
+Width:114
+Height:124
+FrameDuration:0.04
+Loop:0
+OptionIndex:1
+OffsetX:32
+OffsetY:22
+
+File Name:Player_Jump_Shot_Lookingdown_2_TB_MG_Right
+Texture Name:Player_Jump_Shot_Lookingdown_SG_Right
+Start:0
+End:0
+Width:114
+Height:124
+FrameDuration:0.04
+Loop:0
+OptionIndex:0
+OffsetX:32
+OffsetY:22
+
+File Name:Player_Jump_Shot_Lookingdown_1_BT_MG_Right
+Texture Name:Player_Jump_Shot_Lookingdown_SG_Right
+Start:2
+End:2
+Width:114
+Height:124
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:32
+OffsetY:22
+
+File Name:Player_Jump_Shot_Lookingdown_2_BT_MG_Right
+Texture Name:Player_Jump_Shot_Lookingdown_SG_Right
+Start:3
+End:3
+Width:114
+Height:124
+FrameDuration:0.04
+Loop:0
+OptionIndex:3
+OffsetX:32
+OffsetY:22
+
+File Name:Player_Ride_SG_Left
+Texture Name:Player_Ride_SG_Left
+Start:0
+End:4
+Width:82
+Height:84
+FrameDuration:0.07
+Loop:0
+OptionIndex:0
+OffsetX:-5
+OffsetY:-42
+
+File Name:Player_Ride_SG_Right
+Texture Name:Player_Ride_SG_Right
+Start:0
+End:4
+Width:82
+Height:84
+FrameDuration:0.07
+Loop:0
+OptionIndex:0
+OffsetX:5
+OffsetY:-42
+
+File Name:Player_Stand_Idle_Action_SG_Left
+Texture Name:Player_Stand_Idle_Action_SG_Left
+Start:0
+End:21
+Width:90
+Height:68
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-21
+OffsetY:-24
+
+File Name:Player_Stand_Idle_Action_SG_Right
+Texture Name:Player_Stand_Idle_Action_SG_Right
+Start:0
+End:21
+Width:90
+Height:68
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:21
+OffsetY:-24
+
+File Name:Player_Stand_Idle_Lookup_SG_Left
+Texture Name:Player_Stand_Idle_Lookup_SG_Left
+Start:0
+End:5
+Width:60
+Height:72
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-43
+
+File Name:Player_Stand_Idle_Lookup_SG_Right
+Texture Name:Player_Stand_Idle_Lookup_SG_Right
+Start:0
+End:5
+Width:60
+Height:72
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-430
+
+File Name:Player_Stand_Idle_SG_Right
+Texture Name:Player_Stand_Idle_SG_Right
+Start:0
+End:5
+Width:85
+Height:58
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:20
+OffsetY:-19
+
+File Name:Player_Stand_Idle_SG_Left
+Texture Name:Player_Stand_Idle_SG_Left
+Start:0
+End:5
+Width:85
+Height:58
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:-20
+OffsetY:-19
+
+File Name:Player_Stand_Lookingup_3_SG_Left
+Texture Name:Player_Stand_Lookingup_SG_Left
+Start:0
+End:0
+Width:78
+Height:58
+FrameDuration:999
+Loop:1
+OptionIndex:0
+OffsetX:-18
+OffsetY:-28
+
+File Name:Player_Stand_Lookingup_4_SG_Left
+Texture Name:Player_Stand_Lookingup_SG_Left
+Start:1
+End:1
+Width:78
+Height:58
+FrameDuration:999
+Loop:1
+OptionIndex:1
+OffsetX:-15
+OffsetY:-28
+
+File Name:Player_Stand_Lookingup_3_SG_Right
+Texture Name:Player_Stand_Lookingup_SG_Right
+Start:0
+End:0
+Width:78
+Height:68
+FrameDuration:999
+Loop:1
+OptionIndex:0
+OffsetX:18
+OffsetY:-24
+
+File Name:Player_Stand_Lookingup_4_SG_Right
+Texture Name:Player_Stand_Lookingup_SG_Right
+Start:1
+End:1
+Width:78
+Height:68
+FrameDuration:999
+Loop:1
+OptionIndex:1
+OffsetX:15
+OffsetY:-24
+
+File Name:Player_Stand_MoveStop_SG_Left
+Texture Name:Player_Stand_MoveStop_SG_Left
+Start:0
+End:5
+Width:85
+Height:74
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-14
+OffsetY:-12
+
+File Name:Player_Stand_MoveStop_SG_Right
+Texture Name:Player_Stand_MoveStop_SG_Right
+Start:0
+End:5
+Width:85
+Height:74
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:14
+OffsetY:-12
+
+File Name:Player_Stand_Shot_MG_Left
+Texture Name:Player_Stand_Shot_MG_Left
+Start:0
+End:3
+Width:124
+Height:56
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:-38
+OffsetY:-20
+
+File Name:Player_Stand_Shot_MG_Right
+Texture Name:Player_Stand_Shot_MG_Right
+Start:0
+End:3
+Width:124
+Height:56
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:38
+OffsetY:-20
+
+
+File Name:Player_Stand_Shot_Lookingup_3_BT_MG_Left
+Texture Name:Player_Stand_Shot_Lookingup_MG_Left
+Start:0
+End:0
+Width:113
+Height:127
+FrameDuration:0.04
+Loop:0
+OptionIndex:0
+OffsetX:-32
+OffsetY:-58
+
+File Name:Player_Stand_Shot_Lookingup_4_BT_MG_Left
+Texture Name:Player_Stand_Shot_Lookingup_MG_Left
+Start:1
+End:1
+Width:113
+Height:127
+FrameDuration:0.04
+Loop:0
+OptionIndex:1
+OffsetX:-32
+OffsetY:-58
+
+File Name:Player_Stand_Shot_Lookingup_3_TB_MG_Left
+Texture Name:Player_Stand_Shot_Lookingup_MG_Left
+Start:3
+End:3
+Width:113
+Height:127
+FrameDuration:0.04
+Loop:0
+OptionIndex:3
+OffsetX:-32
+OffsetY:-58
+
+File Name:Player_Stand_Shot_Lookingup_4_TB_MG_Left
+Texture Name:Player_Stand_Shot_Lookingup_MG_Left
+Start:2
+End:2
+Width:113
+Height:127
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:-32
+OffsetY:-58
+
+File Name:Player_Stand_Shot_Lookingup_3_BT_MG_Right
+Texture Name:Player_Stand_Shot_Lookingup_MG_Right
+Start:0
+End:0
+Width:113
+Height:127
+FrameDuration:0.04
+Loop:0
+OptionIndex:0
+OffsetX:32
+OffsetY:-58
+
+File Name:Player_Stand_Shot_Lookingup_4_BT_MG_Right
+Texture Name:Player_Stand_Shot_Lookingup_MG_Right
+Start:1
+End:1
+Width:113
+Height:127
+FrameDuration:0.04
+Loop:0
+OptionIndex:1
+OffsetX:32
+OffsetY:-58
+
+File Name:Player_Stand_Shot_Lookingup_3_TB_MG_Right
+Texture Name:Player_Stand_Shot_Lookingup_MG_Right
+Start:3
+End:3
+Width:113
+Height:127
+FrameDuration:0.04
+Loop:0
+OptionIndex:3
+OffsetX:32
+OffsetY:-58
+
+File Name:Player_Stand_Shot_Lookingup_4_TB_MG_Right
+Texture Name:Player_Stand_Shot_Lookingup_MG_Right
+Start:2
+End:2
+Width:113
+Height:127
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:32
+OffsetY:-58
+
+File Name:Player_Stand_Shot_SG_Left
+Texture Name:Player_Stand_Shot_SG_Left
+Start:0
+End:5
+Width:85
+Height:70
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:-16
+OffsetY:-20
+
+File Name:Player_Stand_Shot_SG_Right
+Texture Name:Player_Stand_Shot_SG_Right
+Start:0
+End:5
+Width:85
+Height:70
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:16
+OffsetY:-20
+
+File Name:Player_Stand_Shot_Up_MG_Left
+Texture Name:Player_Stand_Shot_Up_MG_Left
+Start:0
+End:3
+Width:48
+Height:144
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:-2
+OffsetY:-70
+
+File Name:Player_Stand_Shot_Up_MG_Right
+Texture Name:Player_Stand_Shot_Up_MG_Right
+Start:0
+End:3
+Width:48
+Height:144
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:2
+OffsetY:-70
+
+File Name:Player_Stand_Shot_Up_SG_Right
+Texture Name:Player_Stand_Shot_Up_SG_Right
+Start:0
+End:5
+Width:64
+Height:108
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:-6
+OffsetY:-52
+
+File Name:Player_Stand_Shot_Up_SG_Left
+Texture Name:Player_Stand_Shot_Up_SG_Left
+Start:0
+End:5
+Width:64
+Height:108
+FrameDuration:0.04
+Loop:0
+OptionIndex:2
+OffsetX:6
+OffsetY:-52
+
+File Name:Player_Stand_Slash1_SG_Left
+Texture Name:Player_Stand_Slash1_SG_Left
+Start:0
+End:5
+Width:108
+Height:96
+FrameDuration:0.055
+Loop:0
+OptionIndex:5
+OffsetX:10
+OffsetY:-30
+
+File Name:Player_Stand_Slash1_SG_Right
+Texture Name:Player_Stand_Slash1_SG_Right
+Start:0
+End:5
+Width:108
+Height:96
+FrameDuration:0.055
+Loop:0
+OptionIndex:5
+OffsetX:-10
+OffsetY:-30
+
+File Name:Player_Stand_Slash2_SG_Left
+Texture Name:Player_Stand_Slash2_SG_Left
+Start:0
+End:5
+Width:114
+Height:85
+FrameDuration:0.055
+Loop:0
+OptionIndex:5
+OffsetX:-14
+OffsetY:-14
+
+File Name:Player_Stand_Slash2_SG_Right
+Texture Name:Player_Stand_Slash2_SG_Right
+Start:0
+End:5
+Width:114
+Height:85
+FrameDuration:0.055
+Loop:0
+OptionIndex:5
+OffsetX:14
+OffsetY:-14
+
+File Name:Player_Stand_StartCrouch_SG_Left
+Texture Name:Player_Stand_StartCrouch_SG_Left
+Start:0
+End:2
+Width:89
+Height:82
+FrameDuration:0.05
+Loop:0
+OptionIndex:0
+OffsetX:-16
+OffsetY:-16
+
+File Name:Player_Stand_StartCrouch_SG_Right
+Texture Name:Player_Stand_StartCrouch_SG_Right
+Start:0
+End:2
+Width:89
+Height:82
+FrameDuration:0.05
+Loop:0
+OptionIndex:0
+OffsetX:16
+OffsetY:-16
+
+File Name:Player_Stand_Throw_SG_Left
+Texture Name:Player_Stand_Throw_SG_Left
+Start:0
+End:5
+Width:87
+Height:60
+FrameDuration:0.03
+Loop:0
+OptionIndex:2
+OffsetX:-14
+OffsetY:-22
+
+File Name:Player_Stand_Throw_SG_Right
+Texture Name:Player_Stand_Throw_SG_Right
+Start:0
+End:5
+Width:87
+Height:60
+FrameDuration:0.03
+Loop:0
+OptionIndex:2
+OffsetX:14
+OffsetY:-22
+
+File Name:Player_Victory_SG
+Texture Name:Player_Victory_SG
+Start:0
+End:5
+Width:87
+Height:78
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-39
+
+File Name:Player_Stand_Lookforward_DG_Left
+Texture Name:Player_Stand_Idle_DG_Left
+Start:0
+End:0
+Width:70
+Height:70
+FrameDuration:999
+Loop:1
+OptionIndex:0
+OffsetX:-7
+OffsetY:-15
+
+File Name:Player_Stand_Lookforward_DG_Right
+Texture Name:Player_Stand_Idle_DG_Right
+Start:0
+End:0
+Width:70
+Height:70
+FrameDuration:999
+Loop:1
+OptionIndex:0
+OffsetX:7
+OffsetY:-15
+
+File Name:Player_Stand_Lookforward_SG_Left
+Texture Name:Player_Stand_Idle_SG_Left
+Start:0
+End:0
+Width:85
+Height:58
+FrameDuration:999
+Loop:1
+OptionIndex:0
+OffsetX:-19
+OffsetY:-16
+
+File Name:Player_Stand_Lookforward_SG_Right
+Texture Name:Player_Stand_Idle_SG_Right
+Start:0
+End:0
+Width:85
+Height:58
+FrameDuration:999
+Loop:1
+OptionIndex:0
+OffsetX:19
+OffsetY:-16
+
+File Name:Player_Stand_Lookup_SG_Left
+Texture Name:Player_Stand_Lookup_SG_Left
+Start:0
+End:5
+Width:56
+Height:104
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-45
+
+File Name:Player_Stand_Lookup_SG_Right
+Texture Name:Player_Stand_Lookup_SG_Right
+Start:0
+End:5
+Width:56
+Height:104
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-45

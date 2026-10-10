@@ -13,6 +13,14 @@
 
 namespace slug
 {
+// 게임 오버 전면 아트 (UI_GameOver_* 스프라이트). 화면을 덮도록 확대해 가운데 기준으로 그린다.
+struct GameOverArtView
+{
+    bool         bVisible = false;
+    uint8_t      alpha    = 0;
+    slug::String sprite   = {};
+};
+
 class UiSystem
 {
 public:
@@ -40,13 +48,17 @@ public:
 
     void ShowBanner(slug::StringView _text, float _seconds) { m_banner.Show(MakeBannerSpec(_text, _seconds)); }
     void SetMissionResults(const MissionResultsView& _view) { m_results = _view; }
+    void SetGameOverArt(const GameOverArtView& _view) { m_art = _view; }
 
 private:
+    void DrawGameOverArt(GameContext& _ctx) const;
+
     UiLayout      m_layout  = {};
     BitmapFont    m_font    = {};
     SpriteLibrary m_sprites = {};
     BannerSystem  m_banner  = {};
     MissionResultsView m_results = {};
+    GameOverArtView    m_art     = {};
     FadeController m_fade   = {};
     int           m_tick    = 0;
     bool          m_bSprites = false;

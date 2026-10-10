@@ -1,0 +1,180 @@
+File Name:Older_Escape_Left
+Texture Name:Older_Escape_Left
+Start:0
+End:3
+Width:100
+Height:73
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Older_Escape_Right
+Texture Name:Older_Escape_Right
+Start:0
+End:3
+Width:100
+Height:73
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Older_Idle_Left
+Texture Name:Older_Idle_Left
+Start:0
+End:7
+Width:85
+Height:54
+FrameDuration:0.12
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:16
+
+File Name:Older_Idle_Right
+Texture Name:Older_Idle_Right
+Start:0
+End:7
+Width:85
+Height:54
+FrameDuration:0.12
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:16
+
+File Name:Older_Item_Left
+Texture Name:Older_Item_Left
+Start:0
+End:28
+Width:118
+Height:84
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Older_Item_Right
+Texture Name:Older_Item_Right
+Start:0
+End:28
+Width:118
+Height:84
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Older_Jump_Left
+Texture Name:Older_Jump_Left
+Start:0
+End:6
+Width:80
+Height:90
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Older_Jump_Right
+Texture Name:Older_Jump_Right
+Start:0
+End:6
+Width:80
+Height:90
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Older_Move_Left
+Texture Name:Older_Move_Left
+Start:0
+End:11
+Width:75
+Height:85
+FrameDuration:0.15
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Older_Move_Right
+Texture Name:Older_Move_Right
+Start:0
+End:11
+Width:75
+Height:85
+FrameDuration:0.15
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Older_MoveDown
+Texture Name:Older_MoveDown
+Start:0
+End:12
+Width:59
+Height:87
+FrameDuration:0.05
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Order_Run_Left
+Texture Name:Order_Run_Left
+Start:0
+End:7
+Width:90
+Height:90
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Order_Run_Right
+Texture Name:Order_Run_Right
+Start:0
+End:7
+Width:90
+Height:90
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Plane
+Texture Name:Plane
+Start:0
+End:1
+Width:139
+Height:58
+FrameDuration:0.2
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Parker
+Texture Name:Parker
+Start:0
+End:6
+Width:41
+Height:88
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+

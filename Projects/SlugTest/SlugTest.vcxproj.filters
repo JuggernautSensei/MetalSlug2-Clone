@@ -39,6 +39,9 @@
     <ClCompile Include="..\..\Test\CoreTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Test\DecorWorldTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Test\EnemyDefTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>

@@ -978,13 +978,27 @@ namespace
     {
         const String              where = "world";
         std::optional<JsonReader> world;
-        if (!GetObject_(_root, "root", "world", true, world) || !CheckKeys_(*world, where, { "size", "view", "background" }))
+        if (!GetObject_(_root, "root", "world", true, world) || !CheckKeys_(*world, where, { "size", "view", "background", "endless" }))
         {
             return false;
         }
         if (!GetVec2_(*world, where, "size", true, m_out.worldSize) || !GetVec2_(*world, where, "view", false, m_out.viewSize) || !GetString_(*world, where, "background", true, m_out.background))
         {
             return false;
+        }
+        std::optional<JsonReader> endless;
+        if (!GetObject_(*world, where, "endless", false, endless))
+        {
+            return false;
+        }
+        if (endless)
+        {
+            const String endlessWhere = "world.endless";
+            if (!CheckKeys_(*endless, endlessWhere, { "from", "tileX", "tileW" }) || !GetFloat_(*endless, endlessWhere, "from", true, m_out.endless.fromX) || !GetFloat_(*endless, endlessWhere, "tileX", true, m_out.endless.tileX) || !GetFloat_(*endless, endlessWhere, "tileW", true, m_out.endless.tileW))
+            {
+                return false;
+            }
+            m_out.endless.bEnabled = true;
         }
         if (m_out.worldSize.x <= 0.f || m_out.worldSize.y <= 0.f || m_out.viewSize.x <= 0.f || m_out.viewSize.y <= 0.f)
         {

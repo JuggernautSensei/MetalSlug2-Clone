@@ -61,6 +61,10 @@ public:
     void  RequestCameraScroll(float _dx) { m_cameraScroll += _dx; }
     float TakeCameraScroll();
 
+    // 카메라 흔들림 요청 (보스 등장 중 낮은 진폭). 가장 큰 진폭/긴 시간을 남기고, TakeCameraShake 가 가져간다.
+    void RequestCameraShake(float _amplitude, float _seconds);
+    void TakeCameraShake(float& _amplitude, float& _seconds);
+
     template<typename Fn>
     void ForEachAlive(Fn&& _fn) const
     {
@@ -124,6 +128,8 @@ private:
     bool                   m_bPlayerMinX = false;
     float                  m_playerMaxX  = 0.f;
     float                  m_cameraScroll = 0.f;
+    float                  m_shakeAmplitude = 0.f;
+    float                  m_shakeSeconds   = 0.f;
     bool                   m_bPlayerMaxX = false;
 
     slug::Vector<Enemy>          m_enemies    = {};

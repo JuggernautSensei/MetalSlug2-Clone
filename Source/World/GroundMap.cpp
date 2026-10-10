@@ -140,6 +140,17 @@ GroundMap GroundMap::MakeFromRows(
     return map;
 }
 
+void GroundMap::SetPeriodicTail(
+    const int _from,
+    const int _tailX,
+    const int _tailW)
+{
+    SLUG_ASSERT(_tailW > 0 && _tailX >= 0 && _tailX + _tailW <= m_width, "주기 꼬리는 비트맵 안의 구간이어야 한다.\n");
+    m_tailFrom = _from;
+    m_tailX    = _tailX;
+    m_tailW    = _tailW;
+}
+
 void GroundMap::SetSolid(
     const int  _x,
     const int  _y,

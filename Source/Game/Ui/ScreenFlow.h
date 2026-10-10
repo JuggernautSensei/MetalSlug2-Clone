@@ -15,6 +15,7 @@ enum class eFlowPhase : uint8_t
     Delay,
     Results,      // 구출 결과 상자 (RECAPTURED PRISONER 집계)
     Banner,
+    Art,          // 전면 아트 (게임 오버 샌드 아트): 페이드 인 후 홀드
     FadeOut,
     Hold,
     Done
@@ -32,6 +33,8 @@ struct ScreenFlowConfig
     int         bannerTicks     = 120;
     int         fadeTicks       = 40;
     int         holdTicks       = 20;
+    slug::String artSprite      = {};     // 비어 있지 않으면 배너 대신 전면 아트를 bannerTicks 동안 보인다 (앞 artFadeInTicks 는 페이드 인)
+    int         artFadeInTicks  = 0;
 
     [[nodiscard]] int GetTotalTicks() const { return delayTicks + resultsTicks + bannerTicks + fadeTicks + holdTicks; }
 };
@@ -58,6 +61,7 @@ public:
     [[nodiscard]] bool       IsDone() const { return m_phase == eFlowPhase::Done; }
     [[nodiscard]] int        GetElapsedTicks() const { return m_elapsed; }
     [[nodiscard]] MissionResultsView GetResultsView() const;
+    [[nodiscard]] GameOverArtView    GetArtView() const;
 
 private:
     void BeginBanner_(UiSystem& _ui, IAudioSink& _audio);

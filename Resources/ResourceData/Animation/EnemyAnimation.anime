@@ -1,0 +1,4910 @@
+File Name:Enemy_Bomb_Exp
+Texture Name:Enemy_Bomb_Exp
+Start:0
+End:7
+Width:64
+Height:64
+FrameDuration:0.05
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:LeftDown_Win_Destroy
+Texture Name:LeftDown_Win_Destroy
+Start:0
+End:8
+Width:98
+Height:117
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:LeftUp_Win_Destroy
+Texture Name:LeftUp_Win_Destroy
+Start:0
+End:8
+Width:120
+Height:120
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:MainTruck_Begin
+Texture Name:MainTruck_Begin
+Start:0
+End:24
+Width:400
+Height:288
+FrameDuration:0.14
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:MainTruck_Big_Win_Destroy_Begin
+Texture Name:MainTruck_Big_Win_Destroy_Begin
+Start:0
+End:4
+Width:150
+Height:118
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:MainTruck_Big_Win_Destroy_End
+Texture Name:MainTruck_Big_Win_Destroy_End
+Start:0
+End:8
+Width:104
+Height:143
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:MainTruck_Bump
+Texture Name:MainTruck_Bump
+Start:0
+End:5
+Width:146
+Height:43
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:MainTruck_Deco_Destroy
+Texture Name:MainTruck_Deco_Destroy
+Start:0
+End:10
+Width:74
+Height:84
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:MainTruck_Sideparts
+Texture Name:MainTruck_Sideparts
+Start:0
+End:11
+Width:74
+Height:115
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:RightDown_Win_Destroy
+Texture Name:RightDown_Win_Destroy
+Start:0
+End:8
+Width:106
+Height:119
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:RightUp_Win_Destroy
+Texture Name:RightUp_Win_Destroy
+Start:0
+End:8
+Width:106
+Height:120
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:MainTruck_Deco_Destroy_Stop
+Texture Name:MainTruck_Deco_Destroy
+Start:0
+End:0
+Width:74
+Height:84
+FrameDuration:1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:MainTruck_Bump_Stop
+Texture Name:MainTruck_Bump
+Start:0
+End:0
+Width:146
+Height:43
+FrameDuration:1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:MainTruck_Sideparts_Stop
+Texture Name:MainTruck_Sideparts
+Start:0
+End:0
+Width:74
+Height:115
+FrameDuration:1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:MainTruck_Big_Win_Destroy_Begin_Stop
+Texture Name:MainTruck_Big_Win_Destroy_Begin
+Start:0
+End:0
+Width:150
+Height:115
+FrameDuration:1.2
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BTank_Animing_Up
+Texture Name:BTank_Animing_Up
+Start:0
+End:7
+Width:186
+Height:114
+FrameDuration:0.12
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:20
+
+File Name:BTank_Destory
+Texture Name:BTank_Destory
+Start:0
+End:7
+Width:176
+Height:116
+FrameDuration:0.12
+Loop:0
+OptionIndex:0
+OffsetX:2
+OffsetY:21
+
+File Name:BTank_Fire
+Texture Name:BTank_Fire
+Start:0
+End:10
+Width:188
+Height:116
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-1
+OffsetY:20
+
+File Name:BTank_Idle
+Texture Name:BTank_Idle
+Start:0
+End:0
+Width:188
+Height:90
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:-1
+OffsetY:32
+
+File Name:BTank_Proj_Effect
+Texture Name:BTank_Proj_Effect
+Start:0
+End:8
+Width:20
+Height:20
+FrameDuration:0.05
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BTank_Shot_Effect
+Texture Name:BTank_Shot_Effect
+Start:0
+End:15
+Width:123
+Height:98
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-140
+OffsetY:-45
+
+File Name:BTank_Proj
+Texture Name:BTank_Proj
+Start:0
+End:2
+Width:20
+Height:20
+FrameDuration:0.05
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:MissleTank_AimmingDown_Left
+Texture Name:MissleTank_AimmingDown_Left
+Start:0
+End:8
+Width:160
+Height:156
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-25
+
+File Name:MissleTank_AimmingDown_Right
+Texture Name:MissleTank_AimmingDown_Right
+Start:0
+End:8
+Width:160
+Height:156
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-25
+
+File Name:MissleTank_AimmingUp_Left
+Texture Name:MissleTank_AimmingUp_Left
+Start:0
+End:8
+Width:160
+Height:156
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-25
+
+File Name:MissleTank_AimmingUp_Right
+Texture Name:MissleTank_AimmingUp_Right
+Start:0
+End:8
+Width:160
+Height:156
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-25
+
+File Name:MissleTank_Down_Destroy_Left
+Texture Name:MissleTank_Down_Destroy_Left
+Start:0
+End:20
+Width:224
+Height:168
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:32
+OffsetY:-31
+
+File Name:MissleTank_Down_Destroy_Right
+Texture Name:MissleTank_Down_Destroy_Right
+Start:0
+End:20
+Width:224
+Height:168
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-32
+OffsetY:-31
+
+File Name:MissleTank_Down_Idle_Left
+Texture Name:MissleTank_Down_Idle_Left
+Start:0
+End:1
+Width:158
+Height:104
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:-1
+OffsetY:1
+
+File Name:MissleTank_Down_Idle_Right
+Texture Name:MissleTank_Down_Idle_Right
+Start:0
+End:1
+Width:158
+Height:104
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:1
+OffsetY:1
+
+File Name:MissleTank_Down_Move_Left
+Texture Name:MissleTank_Down_Move_Left
+Start:0
+End:5
+Width:158
+Height:104
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:-1
+OffsetY:1
+
+File Name:MissleTank_Down_Move_Right
+Texture Name:MissleTank_Down_Move_Right
+Start:0
+End:5
+Width:158
+Height:104
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:1
+OffsetY:1
+
+File Name:MissleTank_Down_MoveStop_Left
+Texture Name:MissleTank_Down_MoveStop_Left
+Start:0
+End:3
+Width:158
+Height:109
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-1
+OffsetY:-2
+
+File Name:MissleTank_Down_MoveStop_Right
+Texture Name:MissleTank_Down_MoveStop_Right
+Start:0
+End:3
+Width:158
+Height:109
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:1
+OffsetY:-2
+
+File Name:MissleTank_Down_Proj_Effect_Left
+Texture Name:MissleTank_Down_Proj_Effect_Left
+Start:0
+End:15
+Width:143
+Height:66
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:MissleTank_Down_Proj_Effect_Right
+Texture Name:MissleTank_Down_Proj_Effect_Right
+Start:0
+End:15
+Width:143
+Height:66
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:MissleTank_Down_Ready_Shot_Left
+Texture Name:MissleTank_Down_Ready_Shot_Left
+Start:0
+End:2
+Width:240
+Height:104
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:40
+OffsetY:1
+
+File Name:MissleTank_Down_Ready_Shot_Right
+Texture Name:MissleTank_Down_Ready_Shot_Right
+Start:0
+End:2
+Width:240
+Height:104
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:-40
+OffsetY:1
+
+File Name:MissleTank_Down_Shot_Left
+Texture Name:MissleTank_Down_Shot_Left
+Start:0
+End:6
+Width:162
+Height:104
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:1
+OffsetY:1
+
+File Name:MissleTank_Down_Shot_Right
+Texture Name:MissleTank_Down_Shot_Right
+Start:0
+End:6
+Width:162
+Height:104
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-1
+OffsetY:1
+
+File Name:MissleTank_Turn_Left
+Texture Name:MissleTank_Turn_Left
+Start:0
+End:10
+Width:161
+Height:164
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-29
+
+File Name:MissleTank_Turn_Right
+Texture Name:MissleTank_Turn_Right
+Start:0
+End:10
+Width:161
+Height:164
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-29
+
+File Name:MissleTank_Up_Destroy_Left
+Texture Name:MissleTank_Up_Destroy_Left
+Start:0
+End:19
+Width:225
+Height:168
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:31
+OffsetY:-31
+
+File Name:MissleTank_Up_Destroy_Right
+Texture Name:MissleTank_Up_Destroy_Right
+Start:0
+End:19
+Width:225
+Height:168
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-31
+OffsetY:-31
+
+File Name:MissleTank_Up_Idle_Left
+Texture Name:MissleTank_Up_Idle_Left
+Start:0
+End:1
+Width:160
+Height:156
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-25
+
+File Name:MissleTank_Up_Idle_Right
+Texture Name:MissleTank_Up_Idle_Right
+Start:0
+End:1
+Width:160
+Height:156
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-25
+
+File Name:MissleTank_Up_Move_Left
+Texture Name:MissleTank_Up_Move_Left
+Start:0
+End:7
+Width:160
+Height:156
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-25
+
+File Name:MissleTank_Up_Move_Right
+Texture Name:MissleTank_Up_Move_Right
+Start:0
+End:7
+Width:160
+Height:156
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-25
+
+File Name:MissleTank_Up_MoveStop_Left
+Texture Name:MissleTank_Up_MoveStop_Left
+Start:0
+End:3
+Width:160
+Height:155
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-25
+
+File Name:MissleTank_Up_MoveStop_Right
+Texture Name:MissleTank_Up_MoveStop_Right
+Start:0
+End:3
+Width:160
+Height:155
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-25
+
+File Name:MissleTank_Up_Proj_Effect_Left
+Texture Name:MissleTank_Up_Proj_Effect_Left
+Start:0
+End:15
+Width:124
+Height:110
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:135
+OffsetY:50
+
+File Name:MissleTank_Up_Proj_Effect_Right
+Texture Name:MissleTank_Up_Proj_Effect_Right
+Start:0
+End:15
+Width:124
+Height:110
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:-135
+OffsetY:50
+
+File Name:MissleTank_Up_Ready_Shot_Left
+Texture Name:MissleTank_Up_Ready_Shot_Left
+Start:0
+End:2
+Width:214
+Height:162
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:27
+OffsetY:-22
+
+File Name:MissleTank_Up_Ready_Shot_Right
+Texture Name:MissleTank_Up_Ready_Shot_Right
+Start:0
+End:2
+Width:214
+Height:162
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:-27
+OffsetY:-22
+
+File Name:MissleTank_Up_Shot_Left
+Texture Name:MissleTank_Up_Shot_Left
+Start:0
+End:6
+Width:164
+Height:156
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:2
+OffsetY:-25
+
+File Name:MissleTank_Up_Shot_Right
+Texture Name:MissleTank_Up_Shot_Right
+Start:0
+End:6
+Width:164
+Height:156
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-2
+OffsetY:-25
+
+File Name:MissleTank_Proj_0
+Texture Name:MissleTank_Proj_0
+Start:0
+End:11
+Width:101
+Height:78
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:MissleTank_Proj_1
+Texture Name:MissleTank_Proj_1
+Start:0
+End:6
+Width:101
+Height:78
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Sarubia_Destroy_Left
+Texture Name:Sarubia_Destroy_Left
+Start:0
+End:3
+Width:180
+Height:194
+FrameDuration:0.12
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-44
+
+File Name:Sarubia_Destroy_Right
+Texture Name:Sarubia_Destroy_Right
+Start:0
+End:3
+Width:180
+Height:194
+FrameDuration:0.12
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-44
+
+File Name:Sarubia_Idle_Left
+Texture Name:Sarubia_Idle_Left
+Start:0
+End:1
+Width:144
+Height:192
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-44
+
+File Name:Sarubia_Idle_Right
+Texture Name:Sarubia_Idle_Right
+Start:0
+End:1
+Width:144
+Height:192
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-44
+
+File Name:Sarubia_Move_Left
+Texture Name:Sarubia_Move_Left
+Start:0
+End:5
+Width:148
+Height:192
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-44
+
+File Name:Sarubia_Move_Right
+Texture Name:Sarubia_Move_Right
+Start:0
+End:5
+Width:148
+Height:192
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-44
+
+File Name:Sarubia_Move_Start_Left
+Texture Name:Sarubia_Move_Start_Left
+Start:0
+End:5
+Width:147
+Height:192
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-44
+
+File Name:Sarubia_Move_Start_Right
+Texture Name:Sarubia_Move_Start_Right
+Start:0
+End:5
+Width:147
+Height:192
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-44
+
+File Name:Sarubia_Move_Stop_Left
+Texture Name:Sarubia_Move_Stop_Left
+Start:0
+End:5
+Width:144
+Height:190
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-43
+
+File Name:Sarubia_Move_Stop_Right
+Texture Name:Sarubia_Move_Stop_Right
+Start:0
+End:5
+Width:144
+Height:190
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-43
+
+File Name:Sarubia_Turn_Right
+Texture Name:Sarubia_Turn_Right
+Start:0
+End:10
+Width:144
+Height:192
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-44
+
+File Name:Sarubia_Proj_Collision
+Texture Name:Sarubia_Proj_Collision
+Start:0
+End:5
+Width:36
+Height:32
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Sarubia_Proj_Effect_Left
+Texture Name:Sarubia_Proj_Effect_Left
+Start:0
+End:15
+Width:104
+Height:92
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-110
+OffsetY:-95
+
+File Name:Sarubia_Proj_Effect_Right
+Texture Name:Sarubia_Proj_Effect_Right
+Start:0
+End:15
+Width:104
+Height:92
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:110
+OffsetY:-95
+
+File Name:Sarubia_Proj_Left
+Texture Name:Sarubia_Proj_Left
+Start:0
+End:20
+Width:28
+Height:28
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Sarubia_Proj_Right
+Texture Name:Sarubia_Proj_Right
+Start:0
+End:20
+Width:28
+Height:28
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Sarubia_Proj_Start
+Texture Name:Sarubia_Proj_Start
+Start:0
+End:7
+Width:28
+Height:28
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Sarubia_Proj_Trash
+Texture Name:Sarubia_Proj_Trash
+Start:0
+End:15
+Width:34
+Height:34
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Sarubia_Shot_Left
+Texture Name:Sarubia_Shot_Left
+Start:0
+End:11
+Width:164
+Height:197
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:4
+OffsetY:-47
+
+File Name:Sarubia_Shot_Right
+Texture Name:Sarubia_Shot_Right
+Start:0
+End:11
+Width:164
+Height:197
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-4
+OffsetY:-47
+
+File Name:Sarubia_Shot_Start_Left
+Texture Name:Sarubia_Shot_Start_Left
+Start:0
+End:6
+Width:162
+Height:201
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-49
+
+File Name:Sarubia_Shot_Start_Right
+Texture Name:Sarubia_Shot_Start_Right
+Start:0
+End:6
+Width:162
+Height:201
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-49
+
+File Name:Sarubia_Turn_Left
+Texture Name:Sarubia_Turn_Left
+Start:0
+End:10
+Width:144
+Height:192
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-44
+
+File Name:Aparch_DropMissle
+Texture Name:Aparch_DropMissle
+Start:0
+End:11
+Width:31
+Height:56
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_DropMissle_Effect
+Texture Name:Aparch_DropMissle_Effect
+Start:0
+End:7
+Width:75
+Height:69
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Drop_Bomb_Left
+Texture Name:Aparch_Drop_Bomb_Left
+Start:0
+End:0
+Width:178
+Height:114
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Drop_Bomb_Right
+Texture Name:Aparch_Drop_Bomb_Right
+Start:0
+End:0
+Width:178
+Height:114
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Gun_End_Left
+Texture Name:Aparch_Gun_End_Left
+Start:0
+End:8
+Width:80
+Height:38
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Gun_End_Right
+Texture Name:Aparch_Gun_End_Right
+Start:0
+End:8
+Width:80
+Height:38
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Gun_Left
+Texture Name:Aparch_Gun_Left
+Start:0
+End:8
+Width:80
+Height:38
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Gun_Right
+Texture Name:Aparch_Gun_Right
+Start:0
+End:8
+Width:80
+Height:38
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Idle_Left
+Texture Name:Aparch_Idle_Left
+Start:0
+End:0
+Width:178
+Height:108
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-3
+
+File Name:Aparch_Idle_Right
+Texture Name:Aparch_Idle_Right
+Start:0
+End:0
+Width:178
+Height:108
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-3
+
+File Name:Aparch_Missle_Effect_Left
+Texture Name:Aparch_Missle_Effect_Left
+Start:0
+End:9
+Width:78
+Height:64
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Missle_Effect_Right
+Texture Name:Aparch_Missle_Effect_Right
+Start:0
+End:9
+Width:78
+Height:64
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Missle_Left
+Texture Name:Aparch_Missle_Left
+Start:0
+End:1
+Width:110
+Height:32
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Missle_Right
+Texture Name:Aparch_Missle_Right
+Start:0
+End:1
+Width:110
+Height:32
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_MoveStop_Left
+Texture Name:Aparch_MoveStop_Left
+Start:0
+End:5
+Width:178
+Height:132
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_MoveStop_Right
+Texture Name:Aparch_MoveStop_Right
+Start:0
+End:5
+Width:178
+Height:132
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Move_Left
+Texture Name:Aparch_Move_Left
+Start:0
+End:5
+Width:178
+Height:132
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Move_Right
+Texture Name:Aparch_Move_Right
+Start:0
+End:5
+Width:178
+Height:132
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Flight_Left1
+Texture Name:Aparch_Flight_Left1
+Start:0
+End:4
+Width:162
+Height:38
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Flight_Left2
+Texture Name:Aparch_Flight_Left2
+Start:0
+End:4
+Width:162
+Height:38
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Flight_Left3
+Texture Name:Aparch_Flight_Left3
+Start:0
+End:4
+Width:162
+Height:38
+FrameDuration:0.04
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Flight_Left4
+Texture Name:Aparch_Flight_Left4
+Start:0
+End:4
+Width:162
+Height:38
+FrameDuration:0.04
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Flight_Left5
+Texture Name:Aparch_Flight_Left5
+Start:0
+End:4
+Width:162
+Height:38
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Flight_Left6
+Texture Name:Aparch_Flight_Left6
+Start:0
+End:4
+Width:162
+Height:38
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Flight_Left7
+Texture Name:Aparch_Flight_Left7
+Start:0
+End:4
+Width:162
+Height:38
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Flight_Right1
+Texture Name:Aparch_Flight_Right1
+Start:0
+End:4
+Width:162
+Height:38
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Flight_Right2
+Texture Name:Aparch_Flight_Right2
+Start:0
+End:4
+Width:162
+Height:38
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Flight_Right3
+Texture Name:Aparch_Flight_Right3
+Start:0
+End:4
+Width:162
+Height:38
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Flight_Right4
+Texture Name:Aparch_Flight_Right4
+Start:0
+End:4
+Width:162
+Height:38
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Flight_Right5
+Texture Name:Aparch_Flight_Right5
+Start:0
+End:4
+Width:162
+Height:38
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Flight_Right6
+Texture Name:Aparch_Flight_Right6
+Start:0
+End:4
+Width:162
+Height:38
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Flight_Right7
+Texture Name:Aparch_Flight_Right7
+Start:0
+End:4
+Width:162
+Height:38
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Aparch_Destroy_Left
+Texture Name:Aparch_Destroy
+Start:0
+End:7
+Width:178
+Height:132
+FrameDuration:0.06
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Jeep_Aimming_Left
+Texture Name:Jeep_Aimming_Left
+Start:0
+End:11
+Width:118
+Height:114
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-24
+
+File Name:Jeep_Aimming_Right
+Texture Name:Jeep_Aimming_Right
+Start:0
+End:11
+Width:118
+Height:114
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-24
+
+File Name:Jeep_ReAimming_Left
+Texture Name:Jeep_ReAimming_Left
+Start:0
+End:11
+Width:118
+Height:114
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-24
+
+File Name:Jeep_ReAimming_Right
+Texture Name:Jeep_ReAimming_Right
+Start:0
+End:11
+Width:118
+Height:114
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-24
+
+File Name:Jeep_Destroy_Left
+Texture Name:Jeep_Destroy_Left
+Start:0
+End:16
+Width:146
+Height:142
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-15
+OffsetY:-38
+
+File Name:Jeep_Destroy_Right
+Texture Name:Jeep_Destroy_Right
+Start:0
+End:16
+Width:146
+Height:142
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:15
+OffsetY:-38
+
+File Name:Jeep_Idle_Left
+Texture Name:Jeep_Idle_Left
+Start:0
+End:1
+Width:112
+Height:114
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-24
+
+File Name:Jeep_Idle_Right
+Texture Name:Jeep_Idle_Right
+Start:0
+End:1
+Width:112
+Height:114
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-24
+
+File Name:Jeep_Move_Left
+Texture Name:Jeep_Move_Left
+Start:0
+End:7
+Width:124
+Height:114
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-24
+
+File Name:Jeep_Move_Right
+Texture Name:Jeep_Move_Right
+Start:0
+End:7
+Width:124
+Height:114
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-24
+
+File Name:Jeep_Proj_Begin_Left
+Texture Name:Jeep_Proj_Begin_Left
+Start:0
+End:4
+Width:56
+Height:16
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Jeep_Proj_Begin_Right
+Texture Name:Jeep_Proj_Begin_Right
+Start:0
+End:4
+Width:56
+Height:16
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Jeep_Proj_Left
+Texture Name:Jeep_Proj_Left
+Start:0
+End:2
+Width:122
+Height:28
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Jeep_Proj_Right
+Texture Name:Jeep_Proj_Right
+Start:0
+End:2
+Width:122
+Height:28
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Jeep_Ready_Left
+Texture Name:Jeep_Ready_Left
+Start:0
+End:1
+Width:118
+Height:114
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-24
+
+File Name:Jeep_Ready_Right
+Texture Name:Jeep_Ready_Right
+Start:0
+End:1
+Width:118
+Height:114
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-24
+
+File Name:Jeep_Shot_Left
+Texture Name:Jeep_Shot_Left
+Start:0
+End:7
+Width:120
+Height:106
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-5
+OffsetY:-20
+
+File Name:Jeep_Shot_Ready_Left
+Texture Name:Jeep_Shot_Ready_Left
+Start:0
+End:11
+Width:166
+Height:133
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-28
+OffsetY:-34
+
+File Name:Jeep_Shot_Ready_Right
+Texture Name:Jeep_Shot_Ready_Right
+Start:0
+End:11
+Width:166
+Height:133
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:28
+OffsetY:-34
+
+File Name:Jeep_Shot_Right
+Texture Name:Jeep_Shot_Right
+Start:0
+End:7
+Width:120
+Height:106
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:5
+OffsetY:-20
+
+File Name:Jeep_Turn_Left
+Texture Name:Jeep_Turn_Left
+Start:0
+End:11
+Width:126
+Height:116
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-26
+
+File Name:Jeep_Turn_Right
+Texture Name:Jeep_Turn_Right
+Start:0
+End:11
+Width:126
+Height:116
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-26
+
+
+
+
+
+
+
+
+File Name:SD_Die_Bomb_Left
+Texture Name:SD_Die_Bomb_Left
+Start:0
+End:7
+Width:78
+Height:90
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:4
+OffsetY:0
+
+File Name:SD_Die_Bomb_Right
+Texture Name:SD_Die_Bomb_Right
+Start:0
+End:7
+Width:78
+Height:90
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:-4
+OffsetY:0
+
+File Name:SD_Die_Fall_Left
+Texture Name:SD_Die_Fall_Left
+Start:0
+End:3
+Width:82
+Height:82
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:SD_Die_Fall_Right
+Texture Name:SD_Die_Fall_Right
+Start:0
+End:3
+Width:82
+Height:82
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:SD_Die_Jump_Left
+Texture Name:SD_Die_Jump_Left
+Start:0
+End:9
+Width:86
+Height:83
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:SD_Die_Jump_Right
+Texture Name:SD_Die_Jump_Right
+Start:0
+End:9
+Width:86
+Height:83
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:SD_Die_Land_Left
+Texture Name:SD_Die_Land_Left
+Start:0
+End:6
+Width:106
+Height:62
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-5
+OffsetY:8
+
+File Name:SD_Die_Land_Right
+Texture Name:SD_Die_Land_Right
+Start:0
+End:6
+Width:106
+Height:62
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:5
+OffsetY:8
+
+File Name:SD_Die_Slash_Left
+Texture Name:SD_Die_Slash_Left
+Start:0
+End:11
+Width:110
+Height:104
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-2
+OffsetY:0
+
+File Name:SD_Die_Slash_Right
+Texture Name:SD_Die_Slash_Right
+Start:0
+End:11
+Width:110
+Height:104
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:2
+OffsetY:0
+
+File Name:SD_Die_Stand_1_Left
+Texture Name:SD_Die_Stand_1_Left
+Start:0
+End:10
+Width:58
+Height:74
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:4
+OffsetY:0
+
+File Name:SD_Die_Stand_1_Right
+Texture Name:SD_Die_Stand_1_Right
+Start:0
+End:10
+Width:58
+Height:74
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-4
+OffsetY:0
+
+File Name:SD_Die_Stand_2_Left
+Texture Name:SD_Die_Stand_2_Left
+Start:0
+End:9
+Width:86
+Height:82
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-6
+OffsetY:2
+
+File Name:SD_Die_Stand_2_Right
+Texture Name:SD_Die_Stand_2_Right
+Start:0
+End:9
+Width:86
+Height:82
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:6
+OffsetY:2
+
+File Name:SD_Hang_Idle_Left
+Texture Name:SD_Hang_Idle_Left
+Start:0
+End:3
+Width:50
+Height:80
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:SD_Hang_Idle_Right
+Texture Name:SD_Hang_Idle_Right
+Start:0
+End:0
+Width:50
+Height:80
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:SD_Hang_Throw_Bomb_Left
+Texture Name:SD_Hang_Throw_Bomb_Left
+Start:0
+End:10
+Width:74
+Height:86
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:4
+OffsetY:-3
+
+File Name:SD_Hang_Throw_Bomb_Right
+Texture Name:SD_Hang_Throw_Bomb_Right
+Start:0
+End:10
+Width:74
+Height:86
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-4
+OffsetY:-3
+
+File Name:SD_Idle_Left
+Texture Name:SD_Idle_Left
+Start:0
+End:5
+Width:56
+Height:76
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:-1
+OffsetY:-1
+
+File Name:SD_Idle_Right
+Texture Name:SD_Idle_Right
+Start:0
+End:5
+Width:56
+Height:76
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:1
+OffsetY:-1
+
+File Name:SD_Jump_Left
+Texture Name:SD_Jump_Left
+Start:0
+End:4
+Width:58
+Height:88
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:3
+OffsetY:7
+
+File Name:SD_Jump_Right
+Texture Name:SD_Jump_Right
+Start:0
+End:4
+Width:58
+Height:88
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-3
+OffsetY:7
+
+File Name:SD_Jump_Slash_Land_Left
+Texture Name:SD_Jump_Slash_Land_Left
+Start:0
+End:13
+Width:104
+Height:100
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-27
+OffsetY:-9
+
+File Name:SD_Jump_Slash_Land_Right
+Texture Name:SD_Jump_Slash_Land_Right
+Start:0
+End:13
+Width:104
+Height:100
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:27
+OffsetY:-9
+
+File Name:SD_Jump_Slash_Left
+Texture Name:SD_Jump_Slash_Left
+Start:0
+End:4
+Width:104
+Height:100
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-27
+OffsetY:-9
+
+File Name:SD_Jump_Slash_Ready_Left
+Texture Name:SD_Jump_Slash_Ready_Left
+Start:0
+End:1
+Width:104
+Height:100
+FrameDuration:0.12
+Loop:0
+OptionIndex:0
+OffsetX:-27
+OffsetY:-9
+
+File Name:SD_Jump_Slash_Ready_Right
+Texture Name:SD_Jump_Slash_Ready_Right
+Start:0
+End:1
+Width:104
+Height:100
+FrameDuration:0.12
+Loop:0
+OptionIndex:0
+OffsetX:27
+OffsetY:-9
+
+File Name:SD_Jump_Slash_Right
+Texture Name:SD_Jump_Slash_Right
+Start:0
+End:4
+Width:104
+Height:100
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:27
+OffsetY:-9
+
+File Name:SD_Land_Left
+Texture Name:SD_Land_Left
+Start:0
+End:2
+Width:56
+Height:70
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-3
+OffsetY:2
+
+File Name:SD_Land_Right
+Texture Name:SD_Land_Right
+Start:0
+End:2
+Width:56
+Height:70
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:3
+OffsetY:2
+
+File Name:SD_MoveDown_Left
+Texture Name:SD_MoveDown_Left
+Start:0
+End:8
+Width:61
+Height:84
+FrameDuration:0.07
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:SD_MoveDown_Right
+Texture Name:SD_MoveDown_Right
+Start:0
+End:8
+Width:61
+Height:84
+FrameDuration:0.07
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:SD_MoveJump_Left
+Texture Name:SD_MoveJump_Left
+Start:0
+End:5
+Width:64
+Height:80
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:SD_MoveJump_Right
+Texture Name:SD_MoveJump_Right
+Start:0
+End:5
+Width:64
+Height:80
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:SD_MoveStop_Left
+Texture Name:SD_MoveStop_Left
+Start:0
+End:3
+Width:50
+Height:76
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-1
+
+File Name:SD_MoveStop_Right
+Texture Name:SD_MoveStop_Right
+Start:0
+End:3
+Width:50
+Height:76
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-1
+
+File Name:SD_Move_Left
+Texture Name:SD_Move_Left
+Start:0
+End:11
+Width:56
+Height:80
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:-2
+OffsetY:-2
+
+File Name:SD_Move_Right
+Texture Name:SD_Move_Right
+Start:0
+End:11
+Width:56
+Height:80
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:2
+OffsetY:-2
+
+File Name:SD_Slash_Left
+Texture Name:SD_Slash_Left
+Start:0
+End:22
+Width:102
+Height:74
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-26
+OffsetY:0
+
+File Name:SD_Slash_Right
+Texture Name:SD_Slash_Right
+Start:0
+End:22
+Width:102
+Height:74
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:26
+OffsetY:0
+
+File Name:SD_Throw_Bomb_Left
+Texture Name:SD_Throw_Bomb_Left
+Start:0
+End:13
+Width:96
+Height:84
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:3
+OffsetY:-5
+
+File Name:SD_Throw_Bomb_Right
+Texture Name:SD_Throw_Bomb_Right
+Start:0
+End:13
+Width:96
+Height:84
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-3
+OffsetY:-5
+
+File Name:SD_Throw_Missle_Left
+Texture Name:SD_Throw_Missle_Left
+Start:0
+End:17
+Width:122
+Height:92
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:19
+OffsetY:-9
+
+File Name:SD_Throw_Missle_Right
+Texture Name:SD_Throw_Missle_Right
+Start:0
+End:17
+Width:122
+Height:92
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-19
+OffsetY:-9
+
+File Name:Soldier_Bomb
+Texture Name:Soldier_Bomb
+Start:0
+End:15
+Width:56
+Height:56
+FrameDuration:0.07
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:SD_Missle_Left
+Texture Name:SD_Missle_Left
+Start:0
+End:3
+Width:67
+Height:28
+FrameDuration:0.07
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:SD_Missle_Right
+Texture Name:SD_Missle_Right
+Start:0
+End:3
+Width:67
+Height:28
+FrameDuration:0.07
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Bazuka_Aiming_Down_Left
+Texture Name:Bazuka_Aiming_Down_Left
+Start:0
+End:2
+Width:92
+Height:86
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-11
+OffsetY:-6
+
+File Name:Bazuka_Aiming_Down_Right
+Texture Name:Bazuka_Aiming_Down_Right
+Start:0
+End:2
+Width:92
+Height:86
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:11
+OffsetY:-6
+
+File Name:Bazuka_Aiming_Up_Left
+Texture Name:Bazuka_Aiming_Up_Left
+Start:0
+End:2
+Width:90
+Height:88
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-15
+OffsetY:-6
+
+File Name:Bazuka_Aiming_Up_Right
+Texture Name:Bazuka_Aiming_Up_Right
+Start:0
+End:2
+Width:90
+Height:88
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:15
+OffsetY:-6
+
+File Name:Bazuka_Debics
+Texture Name:Bazuka_Debics
+Start:0
+End:23
+Width:82
+Height:82
+FrameDuration:0.03
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Bazuka_Fly_Shot_0_Left
+Texture Name:Bazuka_Fly_Shot_0_Left
+Start:0
+End:1
+Width:86
+Height:94
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-16
+OffsetY:-5
+
+File Name:Bazuka_Fly_Shot_0_Right
+Texture Name:Bazuka_Fly_Shot_0_Right
+Start:0
+End:1
+Width:86
+Height:94
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:16
+OffsetY:-5
+
+File Name:Bazuka_Fly_Shot_1_Left
+Texture Name:Bazuka_Fly_Shot_1_Left
+Start:0
+End:1
+Width:96
+Height:88
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-16
+OffsetY:-5
+
+File Name:Bazuka_Fly_Shot_1_Right
+Texture Name:Bazuka_Fly_Shot_1_Right
+Start:0
+End:1
+Width:96
+Height:88
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:16
+OffsetY:-5
+
+File Name:Bazuka_Fly_Shot_2_Left
+Texture Name:Bazuka_Fly_Shot_2_Left
+Start:0
+End:1
+Width:90
+Height:94
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-10
+OffsetY:-7
+
+File Name:Bazuka_Fly_Shot_2_Right
+Texture Name:Bazuka_Fly_Shot_2_Right
+Start:0
+End:1
+Width:90
+Height:94
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:10
+OffsetY:-7
+
+File Name:Bazuka_Fly_Shot_3_Left
+Texture Name:Bazuka_Fly_Shot_3_Left
+Start:0
+End:1
+Width:85
+Height:100
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-11
+
+File Name:Bazuka_Fly_Shot_3_Right
+Texture Name:Bazuka_Fly_Shot_3_Right
+Start:0
+End:1
+Width:85
+Height:100
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-11
+
+File Name:Bazuka_Fly_Shot_4_Left
+Texture Name:Bazuka_Fly_Shot_4_Left
+Start:0
+End:1
+Width:77
+Height:107
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:6
+OffsetY:-13
+
+File Name:Bazuka_Fly_Shot_4_Right
+Texture Name:Bazuka_Fly_Shot_4_Right
+Start:0
+End:1
+Width:77
+Height:107
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-6
+OffsetY:-13
+
+File Name:Bazuka_Fly_Shot_Ready_0_Left
+Texture Name:Bazuka_Fly_Shot_0_Left
+Start:0
+End:0
+Width:86
+Height:94
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-16
+OffsetY:-5
+
+File Name:Bazuka_Fly_Shot_Ready_0_Right
+Texture Name:Bazuka_Fly_Shot_0_Right
+Start:0
+End:0
+Width:86
+Height:94
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:16
+OffsetY:-5
+
+File Name:Bazuka_Fly_Shot_Ready_1_Left
+Texture Name:Bazuka_Fly_Shot_1_Left
+Start:0
+End:0
+Width:96
+Height:88
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-16
+OffsetY:-5
+
+File Name:Bazuka_Fly_Shot_Ready_1_Right
+Texture Name:Bazuka_Fly_Shot_1_Right
+Start:0
+End:0
+Width:96
+Height:88
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:16
+OffsetY:-5
+
+File Name:Bazuka_Fly_Shot_Ready_2_Left
+Texture Name:Bazuka_Fly_Shot_2_Left
+Start:0
+End:0
+Width:90
+Height:94
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-10
+OffsetY:-7
+
+File Name:Bazuka_Fly_Shot_Ready_2_Right
+Texture Name:Bazuka_Fly_Shot_2_Right
+Start:0
+End:0
+Width:90
+Height:94
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:10
+OffsetY:-7
+
+File Name:Bazuka_Fly_Shot_Ready_3_Left
+Texture Name:Bazuka_Fly_Shot_3_Left
+Start:0
+End:0
+Width:85
+Height:100
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-11
+
+File Name:Bazuka_Fly_Shot_Ready_3_Right
+Texture Name:Bazuka_Fly_Shot_3_Right
+Start:0
+End:0
+Width:85
+Height:100
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-11
+
+File Name:Bazuka_Fly_Shot_Ready_4_Left
+Texture Name:Bazuka_Fly_Shot_4_Left
+Start:0
+End:0
+Width:77
+Height:107
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:6
+OffsetY:-13
+
+File Name:Bazuka_Fly_Shot_Ready_4_Right
+Texture Name:Bazuka_Fly_Shot_4_Right
+Start:0
+End:0
+Width:77
+Height:107
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-6
+OffsetY:-13
+
+File Name:Bazuka_Idle_Left
+Texture Name:Bazuka_Idle_Left
+Start:0
+End:5
+Width:80
+Height:90
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:-13
+OffsetY:-8
+
+File Name:Bazuka_Idle_Right
+Texture Name:Bazuka_Idle_Right
+Start:0
+End:5
+Width:80
+Height:90
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:13
+OffsetY:-8
+
+File Name:Bazuka_Jump_Forward_Left
+Texture Name:Bazuka_Jump_Forward_Left
+Start:0
+End:7
+Width:120
+Height:84
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-13
+OffsetY:-5
+
+File Name:Bazuka_Jump_Forward_Right
+Texture Name:Bazuka_Jump_Forward_Right
+Start:0
+End:7
+Width:120
+Height:84
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:13
+OffsetY:-5
+
+File Name:Bazuka_Jump_Left
+Texture Name:Bazuka_Jump_Left
+Start:0
+End:5
+Width:87
+Height:86
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-10
+OffsetY:-6
+
+File Name:Bazuka_Jump_Right
+Texture Name:Bazuka_Jump_Right
+Start:0
+End:5
+Width:87
+Height:86
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:10
+OffsetY:-6
+
+File Name:Bazuka_Lending_Left
+Texture Name:Bazuka_Lending_Left
+Start:0
+End:1
+Width:87
+Height:86
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-10
+OffsetY:-6
+
+File Name:Bazuka_Lending_Right
+Texture Name:Bazuka_Lending_Right
+Start:0
+End:1
+Width:87
+Height:86
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:10
+OffsetY:-6
+
+File Name:Bazuka_Move_Left
+Texture Name:Bazuka_Move_Left
+Start:0
+End:10
+Width:92
+Height:86
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:-7
+OffsetY:-6
+
+File Name:Bazuka_Move_Right
+Texture Name:Bazuka_Move_Right
+Start:0
+End:10
+Width:92
+Height:86
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:7
+OffsetY:-6
+
+File Name:Bazuka_Para_Destroy
+Texture Name:Bazuka_Para_Destroy
+Start:0
+End:16
+Width:160
+Height:136
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:40
+OffsetY:16
+
+File Name:Bazuka_Para_Idle
+Texture Name:Bazuka_Para_Idle
+Start:0
+End:8
+Width:105
+Height:86
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-9
+
+File Name:Bazuka_Projectile
+Texture Name:Bazuka_Projectile
+Start:0
+End:3
+Width:20
+Height:20
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Bazuka_Shot_Down0_Left
+Texture Name:Bazuka_Shot_Down0_Left
+Start:0
+End:1
+Width:94
+Height:84
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-15
+OffsetY:-5
+
+File Name:Bazuka_Shot_Down0_Right
+Texture Name:Bazuka_Shot_Down0_Right
+Start:0
+End:1
+Width:94
+Height:84
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:15
+OffsetY:-5
+
+File Name:Bazuka_Shot_Down1_Left
+Texture Name:Bazuka_Shot_Down1_Left
+Start:0
+End:1
+Width:90
+Height:90
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-11
+OffsetY:-8
+
+File Name:Bazuka_Shot_Down1_Right
+Texture Name:Bazuka_Shot_Down1_Right
+Start:0
+End:1
+Width:90
+Height:90
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:11
+OffsetY:-8
+
+File Name:Bazuka_Shot_Down2_Left
+Texture Name:Bazuka_Shot_Down2_Left
+Start:0
+End:1
+Width:82
+Height:96
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-12
+
+File Name:Bazuka_Shot_Down2_Right
+Texture Name:Bazuka_Shot_Down2_Right
+Start:0
+End:1
+Width:82
+Height:96
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-12
+
+File Name:Bazuka_Shot_Down3_Left
+Texture Name:Bazuka_Shot_Down3_Left
+Start:0
+End:1
+Width:76
+Height:102
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:2
+OffsetY:-13
+
+File Name:Bazuka_Shot_Down3_Right
+Texture Name:Bazuka_Shot_Down3_Right
+Start:0
+End:1
+Width:76
+Height:102
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-2
+OffsetY:-13
+
+File Name:Bazuka_Shot_Effect
+Texture Name:Bazuka_Shot_Effect
+Start:0
+End:15
+Width:72
+Height:69
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Bazuka_Shot_Left
+Texture Name:Bazuka_Shot_Left
+Start:0
+End:1
+Width:86
+Height:88
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-12
+OffsetY:-6
+
+File Name:Bazuka_Shot_Right
+Texture Name:Bazuka_Shot_Right
+Start:0
+End:1
+Width:86
+Height:88
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:12
+OffsetY:-6
+
+File Name:Bazuka_Shot_Up0_Left
+Texture Name:Bazuka_Shot_Up0_Left
+Start:0
+End:1
+Width:86
+Height:100
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-5
+OffsetY:-12
+
+File Name:Bazuka_Shot_Up0_Right
+Texture Name:Bazuka_Shot_Up0_Right
+Start:0
+End:1
+Width:86
+Height:100
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:5
+OffsetY:-12
+
+File Name:Bazuka_Shot_Up1_Left
+Texture Name:Bazuka_Shot_Up1_Left
+Start:0
+End:1
+Width:68
+Height:116
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-1
+OffsetY:-20
+
+File Name:Bazuka_Shot_Up1_Right
+Texture Name:Bazuka_Shot_Up1_Right
+Start:0
+End:1
+Width:68
+Height:116
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:1
+OffsetY:-20
+
+File Name:Bazuka_Shot_Up2_Left
+Texture Name:Bazuka_Shot_Up2_Left
+Start:0
+End:1
+Width:70
+Height:114
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-2
+OffsetY:-19
+
+File Name:Bazuka_Shot_Up2_Right
+Texture Name:Bazuka_Shot_Up2_Right
+Start:0
+End:1
+Width:70
+Height:114
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:2
+OffsetY:-19
+
+File Name:Bazuka_Shot_Up3_Left
+Texture Name:Bazuka_Shot_Up3_Left
+Start:0
+End:1
+Width:72
+Height:114
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-7
+OffsetY:-19
+
+File Name:Bazuka_Shot_Up3_Right
+Texture Name:Bazuka_Shot_Up3_Right
+Start:0
+End:1
+Width:72
+Height:114
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:7
+OffsetY:-19
+
+File Name:Bazuka_Stand_Up_Left
+Texture Name:Bazuka_Stand_Up_Left
+Start:0
+End:4
+Width:95
+Height:82
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-21
+OffsetY:-4
+
+File Name:Bazuka_Stand_Up_Right
+Texture Name:Bazuka_Stand_Up_Right
+Start:0
+End:4
+Width:95
+Height:82
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:21
+OffsetY:-4
+
+File Name:Bazuka_Shot_Ready_Left
+Texture Name:Bazuka_Shot_Left
+Start:0
+End:0
+Width:86
+Height:88
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-12
+OffsetY:-6
+
+File Name:Bazuka_Shot_Ready_Right
+Texture Name:Bazuka_Shot_Right
+Start:0
+End:0
+Width:86
+Height:88
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:12
+OffsetY:-6
+
+File Name:Bazuka_Shot_Ready_Up0_Left
+Texture Name:Bazuka_Shot_Up0_Left
+Start:0
+End:0
+Width:86
+Height:100
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-5
+OffsetY:-12
+
+File Name:Bazuka_Shot_Ready_Up0_Right
+Texture Name:Bazuka_Shot_Up0_Right
+Start:0
+End:0
+Width:86
+Height:100
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:5
+OffsetY:-12
+
+File Name:Bazuka_Shot_Ready_Up1_Left
+Texture Name:Bazuka_Shot_Up1_Left
+Start:0
+End:0
+Width:68
+Height:116
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-1
+OffsetY:-20
+
+File Name:Bazuka_Shot_Ready_Up1_Right
+Texture Name:Bazuka_Shot_Up1_Right
+Start:0
+End:0
+Width:68
+Height:116
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:1
+OffsetY:-20
+
+File Name:Bazuka_Shot_Ready_Up2_Left
+Texture Name:Bazuka_Shot_Up2_Left
+Start:0
+End:0
+Width:70
+Height:114
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-2
+OffsetY:-19
+
+File Name:Bazuka_Shot_Ready_Up2_Right
+Texture Name:Bazuka_Shot_Up2_Right
+Start:0
+End:0
+Width:70
+Height:114
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:2
+OffsetY:-19
+
+File Name:Bazuka_Shot_Ready_Up3_Left
+Texture Name:Bazuka_Shot_Up3_Left
+Start:0
+End:0
+Width:72
+Height:114
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-7
+OffsetY:-19
+
+File Name:Bazuka_Shot_Ready_Up3_Right
+Texture Name:Bazuka_Shot_Up3_Right
+Start:0
+End:0
+Width:72
+Height:114
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:7
+OffsetY:-19
+
+File Name:Bazuka_Shot_Ready_Down0_Left
+Texture Name:Bazuka_Shot_Down0_Left
+Start:0
+End:0
+Width:94
+Height:84
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-15
+OffsetY:-5
+
+File Name:Bazuka_Shot_Ready_Down0_Right
+Texture Name:Bazuka_Shot_Down0_Right
+Start:0
+End:0
+Width:94
+Height:84
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:15
+OffsetY:-5
+
+File Name:Bazuka_Shot_Ready_Down1_Left
+Texture Name:Bazuka_Shot_Down1_Left
+Start:0
+End:0
+Width:90
+Height:90
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-11
+OffsetY:-8
+
+File Name:Bazuka_Shot_Ready_Down1_Right
+Texture Name:Bazuka_Shot_Down1_Right
+Start:0
+End:0
+Width:90
+Height:90
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:11
+OffsetY:-8
+
+File Name:Bazuka_Shot_Ready_Down2_Left
+Texture Name:Bazuka_Shot_Down2_Left
+Start:0
+End:0
+Width:82
+Height:96
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-12
+
+File Name:Bazuka_Shot_Ready_Down2_Right
+Texture Name:Bazuka_Shot_Down2_Right
+Start:0
+End:0
+Width:82
+Height:96
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-12
+
+File Name:Bazuka_Shot_Ready_Down3_Left
+Texture Name:Bazuka_Shot_Down3_Left
+Start:0
+End:0
+Width:76
+Height:102
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:2
+OffsetY:-13
+
+File Name:Bazuka_Shot_Ready_Down3_Right
+Texture Name:Bazuka_Shot_Down3_Right
+Start:0
+End:0
+Width:76
+Height:102
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-2
+OffsetY:-13
+
+File Name:Bazuka_Down_Recover_Left
+Texture Name:Bazuka_Down_Recover_Left
+Start:0
+End:2
+Width:92
+Height:86
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-11
+OffsetY:-6
+
+File Name:Bazuka_Down_Recover_Right
+Texture Name:Bazuka_Down_Recover_Right
+Start:0
+End:2
+Width:92
+Height:86
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:11
+OffsetY:-6
+
+File Name:Bazuka_Up_Recover_Left
+Texture Name:Bazuka_Up_Recover_Left
+Start:0
+End:2
+Width:90
+Height:88
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-15
+OffsetY:-6
+
+File Name:Bazuka_Up_Recover_Right
+Texture Name:Bazuka_Up_Recover_Right
+Start:0
+End:2
+Width:90
+Height:88
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:15
+OffsetY:-6
+
+File Name:Shield_Defence_Down_Left
+Texture Name:Shield_Defence_Down_Left
+Start:0
+End:3
+Width:296
+Height:85
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-3
+OffsetY:5
+
+File Name:Shield_Defence_Down_Right
+Texture Name:Shield_Defence_Down_Right
+Start:0
+End:3
+Width:296
+Height:85
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:3
+OffsetY:5
+
+File Name:Shield_Defence_Left
+Texture Name:Shield_Defence_Left
+Start:0
+End:3
+Width:272
+Height:76
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-7
+OffsetY:-1
+
+File Name:Shield_Defence_Right
+Texture Name:Shield_Defence_Right
+Start:0
+End:3
+Width:272
+Height:76
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:7
+OffsetY:-1
+
+File Name:Shield_Defence_Up_Left
+Texture Name:Shield_Defence_Up_Left
+Start:0
+End:3
+Width:332
+Height:88
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-8
+OffsetY:-7
+
+File Name:Shield_Defence_Up_Right
+Texture Name:Shield_Defence_Up_Right
+Start:0
+End:3
+Width:332
+Height:88
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:8
+OffsetY:-7
+
+File Name:Shield_Idle_Left
+Texture Name:Shield_Idle_Left
+Start:0
+End:5
+Width:420
+Height:78
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:-9
+OffsetY:-2
+
+File Name:Shield_Idle_Right
+Texture Name:Shield_Idle_Right
+Start:0
+End:5
+Width:420
+Height:78
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:9
+OffsetY:-2
+
+File Name:Shield_Jump_Left
+Texture Name:Shield_Jump_Left
+Start:0
+End:6
+Width:518
+Height:92
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-3
+OffsetY:-9
+
+File Name:Shield_Jump_Right
+Texture Name:Shield_Jump_Right
+Start:0
+End:6
+Width:518
+Height:92
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:3
+OffsetY:-9
+
+File Name:Shield_Lend_Left
+Texture Name:Shield_Lend_Left
+Start:0
+End:2
+Width:204
+Height:78
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-9
+OffsetY:-2
+
+File Name:Shield_Lend_Right
+Texture Name:Shield_Lend_Right
+Start:0
+End:2
+Width:204
+Height:78
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:9
+OffsetY:-2
+
+File Name:Shield_Move_Left
+Texture Name:Shield_Move_Left
+Start:0
+End:11
+Width:792
+Height:82
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:-3
+OffsetY:-4
+
+File Name:Shield_Move_Right
+Texture Name:Shield_Move_Right
+Start:0
+End:11
+Width:792
+Height:82
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:3
+OffsetY:-4
+
+File Name:Shield_Move_Stop_Left
+Texture Name:Shield_Move_Stop_Left
+Start:0
+End:3
+Width:292
+Height:76
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-1
+OffsetY:-1
+
+File Name:Shield_Move_Stop_Right
+Texture Name:Shield_Move_Stop_Right
+Start:0
+End:3
+Width:292
+Height:76
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:1
+OffsetY:-1
+
+File Name:Shield_Proj
+Texture Name:Shield_Proj
+Start:0
+End:1
+Width:32
+Height:16
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Shield_Proj_Effect_Down
+Texture Name:Shield_Proj_Effect_Down
+Start:0
+End:5
+Width:372
+Height:70
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Shield_Proj_Effect_Left
+Texture Name:Shield_Proj_Effect_Left
+Start:0
+End:5
+Width:414
+Height:62
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Shield_Proj_Effect_Right
+Texture Name:Shield_Proj_Effect_Right
+Start:0
+End:5
+Width:414
+Height:62
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Shield_Proj_Effect_Up
+Texture Name:Shield_Proj_Effect_Up
+Start:0
+End:5
+Width:372
+Height:70
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Shield_Shot_Down_Left
+Texture Name:Shield_Shot_Down_Left
+Start:0
+End:5
+Width:540
+Height:74
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:11
+OffsetY:0
+
+File Name:Shield_Shot_Down_Right
+Texture Name:Shield_Shot_Down_Right
+Start:0
+End:5
+Width:540
+Height:74
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-11
+OffsetY:0
+
+File Name:Shield_Shot_End_Down_Left
+Texture Name:Shield_Shot_End_Down_Left
+Start:0
+End:4
+Width:480
+Height:84
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:8
+OffsetY:5
+
+File Name:Shield_Shot_End_Down_Right
+Texture Name:Shield_Shot_End_Down_Right
+Start:0
+End:4
+Width:480
+Height:84
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-8
+OffsetY:5
+
+File Name:Shield_Shot_End_Left
+Texture Name:Shield_Shot_End_Left
+Start:0
+End:4
+Width:420
+Height:88
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-13
+OffsetY:-7
+
+File Name:Shield_Shot_End_Right
+Texture Name:Shield_Shot_End_Right
+Start:0
+End:4
+Width:420
+Height:88
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:13
+OffsetY:-7
+
+File Name:Shield_Shot_End_Up_Left
+Texture Name:Shield_Shot_End_Up_Left
+Start:0
+End:3
+Width:392
+Height:102
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:7
+OffsetY:-14
+
+File Name:Shield_Shot_End_Up_Right
+Texture Name:Shield_Shot_End_Up_Right
+Start:0
+End:3
+Width:392
+Height:102
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-7
+OffsetY:-14
+
+File Name:Shield_Shot_Left
+Texture Name:Shield_Shot_Left
+Start:0
+End:5
+Width:504
+Height:88
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-14
+OffsetY:-7
+
+File Name:Shield_Shot_Right
+Texture Name:Shield_Shot_Right
+Start:0
+End:5
+Width:504
+Height:88
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:14
+OffsetY:-7
+
+File Name:Shield_Shot_Ready_Down_Left
+Texture Name:Shield_Shot_Ready_Down_Left
+Start:0
+End:4
+Width:480
+Height:84
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:8
+OffsetY:5
+
+File Name:Shield_Shot_Ready_Down_Right
+Texture Name:Shield_Shot_Ready_Down_Right
+Start:0
+End:4
+Width:480
+Height:84
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-8
+OffsetY:5
+
+File Name:Shield_Shot_Ready_Left
+Texture Name:Shield_Shot_Ready_Left
+Start:0
+End:4
+Width:420
+Height:88
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-14
+OffsetY:-7
+
+File Name:Shield_Shot_Ready_Right
+Texture Name:Shield_Shot_Ready_Right
+Start:0
+End:4
+Width:420
+Height:88
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:14
+OffsetY:-7
+
+File Name:Shield_Shot_Ready_Up_Left
+Texture Name:Shield_Shot_Ready_Up_Left
+Start:0
+End:3
+Width:392
+Height:102
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:7
+OffsetY:-14
+
+File Name:Shield_Shot_Ready_Up_Right
+Texture Name:Shield_Shot_Ready_Up_Right
+Start:0
+End:3
+Width:392
+Height:102
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-7
+OffsetY:-14
+
+File Name:Shield_Shot_Up_Left
+Texture Name:Shield_Shot_Up_Left
+Start:0
+End:5
+Width:504
+Height:100
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:20
+OffsetY:-13
+
+File Name:Shield_Shot_Up_Right
+Texture Name:Shield_Shot_Up_Right
+Start:0
+End:5
+Width:504
+Height:100
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-20
+OffsetY:-13
+
+File Name:Shield_Trash
+Texture Name:Shield_Trash
+Start:0
+End:7
+Width:544
+Height:60
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Shield_LookDown_End_Left
+Texture Name:Shield_LookDown_End_Left
+Start:0
+End:2
+Width:228
+Height:82
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-6
+OffsetY:2
+
+File Name:Shield_LookDown_End_Right
+Texture Name:Shield_LookDown_End_Right
+Start:0
+End:2
+Width:228
+Height:82
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:6
+OffsetY:2
+
+File Name:Shield_LookDown_Idle_Left
+Texture Name:Shield_LookDown_Idle_Left
+Start:0
+End:5
+Width:540
+Height:84
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:-7
+OffsetY:3
+
+File Name:Shield_LookDown_Idle_Right
+Texture Name:Shield_LookDown_Idle_Right
+Start:0
+End:5
+Width:540
+Height:84
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:7
+OffsetY:3
+
+File Name:Shield_LookDown_Start_Left
+Texture Name:Shield_LookDown_Start_Left
+Start:0
+End:2
+Width:228
+Height:82
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-8
+OffsetY:2
+
+File Name:Shield_LookDown_Start_Right
+Texture Name:Shield_LookDown_Start_Right
+Start:0
+End:2
+Width:228
+Height:82
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:8
+OffsetY:2
+
+File Name:Shield_LookUp_End_Left
+Texture Name:Shield_LookUp_End_Left
+Start:0
+End:2
+Width:258
+Height:92
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-12
+OffsetY:-9
+
+File Name:Shield_LookUp_End_Right
+Texture Name:Shield_LookUp_End_Right
+Start:0
+End:2
+Width:258
+Height:92
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:12
+OffsetY:-9
+
+File Name:Shield_LookUp_Idle_Left
+Texture Name:Shield_LookUp_Idle_Left
+Start:0
+End:5
+Width:504
+Height:92
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:-12
+OffsetY:-9
+
+File Name:Shield_LookUp_Idle_Right
+Texture Name:Shield_LookUp_Idle_Right
+Start:0
+End:5
+Width:504
+Height:92
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:12
+OffsetY:-9
+
+File Name:Shield_LookUp_Start_Left
+Texture Name:Shield_LookUp_Start_Left
+Start:0
+End:2
+Width:258
+Height:92
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-12
+OffsetY:-9
+
+File Name:Shield_LookUp_Start_Right
+Texture Name:Shield_LookUp_Start_Right
+Start:0
+End:2
+Width:258
+Height:92
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:12
+OffsetY:-9
+
+File Name:Shield_Shot_Idle_Down_Left
+Texture Name:Shield_Shot_Ready_Down_Left
+Start:4
+End:4
+Width:96
+Height:84
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:8
+OffsetY:5
+
+File Name:Shield_Shot_Idle_Down_Right
+Texture Name:Shield_Shot_Ready_Down_Right
+Start:4
+End:4
+Width:96
+Height:84
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:-8
+OffsetY:5
+
+File Name:Shield_Shot_Idle_Up_Left
+Texture Name:Shield_Shot_Ready_Up_Left
+Start:3
+End:3
+Width:98
+Height:102
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:7
+OffsetY:-14
+
+File Name:Shield_Shot_Idle_Up_Right
+Texture Name:Shield_Shot_Ready_Up_Right
+Start:3
+End:3
+Width:98
+Height:102
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:-7
+OffsetY:-14
+
+File Name:Shield_Shot_Idle_Left
+Texture Name:Shield_Shot_Ready_Left
+Start:4
+End:4
+Width:84
+Height:88
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:-14
+OffsetY:-7
+
+File Name:Shield_Shot_Idle_Right
+Texture Name:Shield_Shot_Ready_Right
+Start:4
+End:4
+Width:84
+Height:88
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:14
+OffsetY:-7
+
+File Name:Alian_Bullet_1
+Texture Name:Alian_Bullet_1
+Start:0
+End:2
+Width:64
+Height:10
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Alian_Bullet_2
+Texture Name:Alian_Bullet_2
+Start:0
+End:2
+Width:64
+Height:30
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Alian_Bullet_3
+Texture Name:Alian_Bullet_3
+Start:0
+End:2
+Width:48
+Height:48
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Alian_Bullet_4
+Texture Name:Alian_Bullet_4
+Start:0
+End:2
+Width:28
+Height:60
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Alian_Bullet_5
+Texture Name:Alian_Bullet_5
+Start:0
+End:2
+Width:10
+Height:64
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Alian_Bullet_6
+Texture Name:Alian_Bullet_6
+Start:0
+End:2
+Width:28
+Height:60
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Alian_Bullet_7
+Texture Name:Alian_Bullet_7
+Start:0
+End:2
+Width:48
+Height:48
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Alian_Bullet_8
+Texture Name:Alian_Bullet_8
+Start:0
+End:2
+Width:64
+Height:30
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Alian_Bullet_9
+Texture Name:Alian_Bullet_9
+Start:0
+End:2
+Width:64
+Height:10
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Alian_Die
+Texture Name:Alian_Die
+Start:0
+End:23
+Width:128
+Height:120
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Alian_Idle
+Texture Name:Alian_Idle
+Start:0
+End:15
+Width:88
+Height:78
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Alian_Shot_Ready
+Texture Name:Alian_Shot_Ready
+Start:0
+End:12
+Width:64
+Height:64
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:35
+
+File Name:BattleShip_Antena
+Texture Name:BattleShip_Antena
+Start:0
+End:0
+Width:178
+Height:78
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Antena_Turn
+Texture Name:BattleShip_Antena_Turn
+Start:0
+End:15
+Width:178
+Height:78
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Back_Rail_Backward
+Texture Name:BattleShip_Back_Rail_Backward
+Start:0
+End:7
+Width:66
+Height:140
+FrameDuration:0.03
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Back_Rail_Forward
+Texture Name:BattleShip_Back_Rail_Forward
+Start:0
+End:7
+Width:66
+Height:140
+FrameDuration:0.03
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Back_Rail_Idle
+Texture Name:BattleShip_Back_Rail_Idle
+Start:0
+End:1
+Width:66
+Height:140
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Body
+Texture Name:BattleShip_Body
+Start:0
+End:1
+Width:364
+Height:328
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Bullet_Garbage
+Texture Name:BattleShip_Bullet_Garbage
+Start:0
+End:5
+Width:64
+Height:48
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Cannon_Destroy_Type1
+Texture Name:BattleShip_Cannon_Destroy_Type1
+Start:0
+End:0
+Width:77
+Height:84
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Cannon_Destroy_Type2
+Texture Name:BattleShip_Cannon_Destroy_Type2
+Start:0
+End:0
+Width:72
+Height:54
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Cannon_Destroy_Type3
+Texture Name:BattleShip_Cannon_Destroy_Type3
+Start:0
+End:0
+Width:68
+Height:50
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Cannon_Destroy_Type4
+Texture Name:BattleShip_Cannon_Destroy_Type4
+Start:0
+End:0
+Width:68
+Height:74
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Cannon_Destroy_Type5
+Texture Name:BattleShip_Cannon_Destroy_Type5
+Start:0
+End:0
+Width:122
+Height:58
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Cannon_Destroy_Type6
+Texture Name:BattleShip_Cannon_Destroy_Type6
+Start:0
+End:0
+Width:126
+Height:82
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Cannon_Destroy_Type7
+Texture Name:BattleShip_Cannon_Destroy_Type7
+Start:0
+End:0
+Width:80
+Height:76
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+
+File Name:BattleShip_DCannon_Left
+Texture Name:BattleShip_DCannon_Left
+Start:0
+End:21
+Width:92
+Height:72
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_DCannon_Mid
+Texture Name:BattleShip_DCannon_Mid
+Start:0
+End:19
+Width:54
+Height:70
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_DCannon_Right
+Texture Name:BattleShip_DCannon_Right
+Start:0
+End:21
+Width:92
+Height:72
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_DCannon_Shot_Effect_Left
+Texture Name:BattleShip_DCannon_Shot_Effect_Left
+Start:0
+End:18
+Width:127
+Height:109
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_DCannon_Shot_Effect_Mid
+Texture Name:BattleShip_DCannon_Shot_Effect_Mid
+Start:0
+End:18
+Width:130
+Height:131
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_DCannon_Shot_Effect_Right
+Texture Name:BattleShip_DCannon_Shot_Effect_Right
+Start:0
+End:18
+Width:130
+Height:116
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_DCannon_Shot_Left
+Texture Name:BattleShip_DCannon_Shot_Left
+Start:0
+End:13
+Width:84
+Height:81
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_DCannon_Shot_Mid
+Texture Name:BattleShip_DCannon_Shot_Mid
+Start:0
+End:13
+Width:54
+Height:76
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_DCannon_Shot_Right
+Texture Name:BattleShip_DCannon_Shot_Right
+Start:0
+End:13
+Width:84
+Height:82
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Destroy
+Texture Name:BattleShip_Destroy
+Start:0
+End:0
+Width:602
+Height:381
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Front_Rail_Backward
+Texture Name:BattleShip_Front_Rail_Backward
+Start:0
+End:7
+Width:384
+Height:150
+FrameDuration:0.03
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Front_Rail_Forward
+Texture Name:BattleShip_Front_Rail_Forward
+Start:0
+End:7
+Width:384
+Height:150
+FrameDuration:0.03
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Front_Rail_Idle
+Texture Name:BattleShip_Front_Rail_Idle
+Start:0
+End:1
+Width:384
+Height:150
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Head
+Texture Name:BattleShip_Head
+Start:0
+End:1
+Width:244
+Height:265
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Head_Swiching_End
+Texture Name:BattleShip_Head_Swiching_End
+Start:0
+End:20
+Width:264
+Height:265
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Head_Swiching_Start
+Texture Name:BattleShip_Head_Swiching_Start
+Start:0
+End:17
+Width:308
+Height:265
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:32
+OffsetY:0
+
+File Name:BattleShip_Mark_Clicking
+Texture Name:BattleShip_Mark_Clicking
+Start:0
+End:16
+Width:74
+Height:68
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Mark_Effect
+Texture Name:BattleShip_Mark_Effect
+Start:0
+End:5
+Width:74
+Height:76
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_SCannon_Left
+Texture Name:BattleShip_SCannon_Left
+Start:0
+End:9
+Width:82
+Height:50
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_SCannon_Mid
+Texture Name:BattleShip_SCannon_Mid
+Start:0
+End:17
+Width:36
+Height:60
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_SCannon_Right
+Texture Name:BattleShip_SCannon_Right
+Start:0
+End:13
+Width:72
+Height:50
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_SCannon_Shot_Effect_Left
+Texture Name:BattleShip_SCannon_Shot_Effect_Left
+Start:0
+End:14
+Width:127
+Height:103
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_SCannon_Shot_Effect_Mid
+Texture Name:BattleShip_SCannon_Shot_Effect_Mid
+Start:0
+End:15
+Width:114
+Height:119
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_SCannon_Shot_Effect_Right
+Texture Name:BattleShip_SCannon_Shot_Effect_Right
+Start:0
+End:15
+Width:130
+Height:105
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_SCannon_Shot_Left
+Texture Name:BattleShip_SCannon_Shot_Left
+Start:0
+End:10
+Width:86
+Height:62
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_SCannon_Shot_Mid
+Texture Name:BattleShip_SCannon_Shot_Mid
+Start:0
+End:10
+Width:54
+Height:58
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_SCannon_Shot_Right
+Texture Name:BattleShip_SCannon_Shot_Right
+Start:0
+End:10
+Width:88
+Height:64
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Support_Type1
+Texture Name:BattleShip_Support_Type1
+Start:0
+End:0
+Width:66
+Height:26
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Support_Type2
+Texture Name:BattleShip_Support_Type2
+Start:0
+End:0
+Width:74
+Height:18
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Support_Type3
+Texture Name:BattleShip_Support_Type3
+Start:0
+End:0
+Width:64
+Height:28
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Switching_Effect
+Texture Name:BattleShip_Switching_Effect
+Start:0
+End:5
+Width:200
+Height:215
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Tail
+Texture Name:BattleShip_Tail
+Start:0
+End:7
+Width:132
+Height:148
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Front_Rail_Backward_Fast
+Texture Name:BattleShip_Front_Rail_Backward
+Start:0
+End:7
+Width:384
+Height:150
+FrameDuration:0.02
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Front_Rail_Forward_Fast
+Texture Name:BattleShip_Front_Rail_Forward
+Start:0
+End:7
+Width:384
+Height:150
+FrameDuration:0.02
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Back_Rail_Backward_Fast
+Texture Name:BattleShip_Back_Rail_Backward
+Start:0
+End:7
+Width:66
+Height:140
+FrameDuration:0.02
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Back_Rail_Forward_Fast
+Texture Name:BattleShip_Back_Rail_Forward
+Start:0
+End:7
+Width:66
+Height:140
+FrameDuration:0.02
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+
+
+
+
+
+
+File Name:BattleShip_Cannon_Start
+Texture Name:BattleShip_Cannon_Start
+Start:0
+End:19
+Width:212
+Height:278
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Cannon_End
+Texture Name:BattleShip_Cannon_End
+Start:0
+End:13
+Width:212
+Height:278
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_Cannon_Idle_0
+Texture Name:BattleShip_Cannon_Idle
+Start:0
+End:0
+Width:192
+Height:248
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-13
+
+File Name:BattleShip_Cannon_Idle_1
+Texture Name:BattleShip_Cannon_Idle
+Start:1
+End:1
+Width:192
+Height:248
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-13
+
+File Name:BattleShip_Cannon_Idle_2
+Texture Name:BattleShip_Cannon_Idle
+Start:2
+End:2
+Width:192
+Height:248
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-13
+
+File Name:BattleShip_Cannon_Idle_3
+Texture Name:BattleShip_Cannon_Idle
+Start:3
+End:3
+Width:192
+Height:248
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-13
+
+File Name:BattleShip_Cannon_Idle_4
+Texture Name:BattleShip_Cannon_Idle
+Start:4
+End:4
+Width:192
+Height:248
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-13
+
+File Name:BattleShip_Cannon_Idle_5
+Texture Name:BattleShip_Cannon_Idle
+Start:5
+End:5
+Width:192
+Height:248
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-13
+
+File Name:BattleShip_Cannon_Idle_6
+Texture Name:BattleShip_Cannon_Idle
+Start:6
+End:6
+Width:192
+Height:248
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-13
+
+File Name:BattleShip_Cannon_Idle_7
+Texture Name:BattleShip_Cannon_Idle
+Start:7
+End:7
+Width:192
+Height:248
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-13
+
+File Name:BattleShip_Cannon_Idle_8
+Texture Name:BattleShip_Cannon_Idle
+Start:8
+End:8
+Width:192
+Height:248
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-13
+
+File Name:BattleShip_Cannon_Shot_0
+Texture Name:BattleShip_Cannon_Shot_0
+Start:0
+End:6
+Width:214
+Height:284
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:25
+OffsetY:-31
+
+File Name:BattleShip_Cannon_Shot_1
+Texture Name:BattleShip_Cannon_Shot_1
+Start:0
+End:6
+Width:196
+Height:284
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:8
+OffsetY:-31
+
+File Name:BattleShip_Cannon_Shot_2
+Texture Name:BattleShip_Cannon_Shot_2
+Start:0
+End:6
+Width:188
+Height:284
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:2
+OffsetY:-31
+
+File Name:BattleShip_Cannon_Shot_3
+Texture Name:BattleShip_Cannon_Shot_3
+Start:0
+End:6
+Width:198
+Height:284
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-5
+OffsetY:-31
+
+File Name:BattleShip_Cannon_Shot_4
+Texture Name:BattleShip_Cannon_Shot_4
+Start:0
+End:6
+Width:214
+Height:284
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:-21
+OffsetY:-31
+
+File Name:BattleShip_DCannon_TurnLeft_0
+Texture Name:BattleShip_DCannon_TurnLeft
+Start:3
+End:5
+Width:88
+Height:68
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_DCannon_TurnLeft_1
+Texture Name:BattleShip_DCannon_TurnLeft
+Start:0
+End:2
+Width:88
+Height:68
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_DCannon_TurnRight_0
+Texture Name:BattleShip_DCannon_TurnRight
+Start:0
+End:2
+Width:88
+Height:68
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_DCannon_TurnRight_1
+Texture Name:BattleShip_DCannon_TurnRight
+Start:3
+End:5
+Width:88
+Height:68
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_SCannon_TurnLeft_0
+Texture Name:BattleShip_SCannon_TurnLeft
+Start:3
+End:5
+Width:82
+Height:52
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:BattleShip_SCannon_TurnLeft_1
+Texture Name:BattleShip_SCannon_TurnLeft
+Start:0
+End:2
+Width:82
+Height:52
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+
+File Name:BattleShip_SCannon_TurnRight_0
+Texture Name:BattleShip_SCannon_TurnRight
+Start:0
+End:2
+Width:82
+Height:52
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+OffsetY:0
+
+File Name:BattleShip_SCannon_TurnRight_1
+Texture Name:BattleShip_SCannon_TurnRight
+Start:3
+End:5
+Width:82
+Height:52
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+OffsetY:0
