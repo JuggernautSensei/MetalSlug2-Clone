@@ -1,4 +1,6 @@
-﻿#include <cmath>
+// 샌드박스 상태에서 적 스폰, 전투, 디버그 스폰 슬롯과 상태 해시 결정성을 검증한다.
+
+#include <cmath>
 #include <cstring>
 #include <vector>
 
@@ -8,25 +10,60 @@ using namespace slugtest;
 
 namespace
 {
-    constexpr float kGroundY = 378.f;
+constexpr float kGroundY = 378.f;
 
-    bool OnGround(const Enemy* _pEnemy)
-    {
-        return _pEnemy && _pEnemy->bGrounded && std::abs(_pEnemy->body.position.y - kGroundY) < 0.5f;
-    }
-
-    struct DirectState
-    {
-        GameContext    ctx   = {};
-        SandboxState   state { MakeEnemyConfig() };
-        InputHistory   input = {};
-
-        DirectState()
-        {
-            state.OnEnter(ctx);
-        }
-    };
+[[nodiscard]] bool OnGround_(
+    const Enemy* _pEnemy)
+{
+    return _pEnemy && _pEnemy->bGrounded && std::abs(_pEnemy->body.position.y - kGroundY) < 0.5f;
 }
+
+struct DirectState
+{
+    GameContext  ctx = {};
+    SandboxState state { MakeEnemyConfig() };
+    InputHistory input = {};
+
+    DirectState()
+    {
+        state.OnEnter(ctx);
+    }
+};
+
+// 플레이어가 죽을 때까지 최대 _maxTicks 틱을 진행한다 (Sim::StepUntil 과 같은 규약: 경과 틱, 실패 -1)
+[[nodiscard]] int StepUntilPlayerDead_(
+    Sim&      _sim,
+    const int _maxTicks)
+{
+    for (int i = 0; i < _maxTicks; ++i)
+    {
+        if (!_sim.Player().IsAlive())
+        {
+            return i;
+        }
+        _sim.Step();
+    }
+    return !_sim.Player().IsAlive() ? _maxTicks : -1;
+}
+
+// 보병 전 종류를 세워 두고 1200틱 동안 샌드박스 상태 해시를 기록한다
+void RunHashes_(
+    slug::Vector<uint64_t>& _hashes)
+{
+    Sim   sim { MakeEnemyConfig({ 100.f, kGroundY }) };
+    float x = 300.f;
+    for (const char* name: kInfantryNames)
+    {
+        (void)sim.State().SpawnEnemy(name, { x, kGroundY });
+        x += 50.f;
+    }
+    for (int i = 0; i < 1200; ++i)
+    {
+        sim.Step(1);
+        _hashes.push_back(sim.State().HashState());
+    }
+}
+}   // namespace
 
 TEST(EnemySandbox, LoadsTheDefinitionFileAndSpawnsEveryInfantryKind)
 {
@@ -37,7 +74,7 @@ TEST(EnemySandbox, LoadsTheDefinitionFileAndSpawnsEveryInfantryKind)
     float x = 260.f;
     for (const char* name: kInfantryNames)
     {
-        const float y = std::strcmp(name, "flying_bzk") == 0 ? 150.f : kGroundY;
+        const float       y = std::strcmp(name, "flying_bzk") == 0 ? 150.f : kGroundY;
         const EnemyHandle h = sim.State().SpawnEnemy(name, { x, y });
         EXPECT_FALSE(h.IsNull()) << name;
         x += 60.f;
@@ -52,23 +89,23 @@ TEST(EnemySandbox, LoadsTheDefinitionFileAndSpawnsEveryInfantryKind)
 
 TEST(EnemySandbox, GroundedKindsRestOnTheGround)
 {
-    Sim sim { MakeEnemyConfig() };
-    float x = 260.f;
-    std::vector<EnemyHandle> handles;
-    std::vector<const char*> names;
+    Sim                       sim { MakeEnemyConfig() };
+    float                     x = 260.f;
+    slug::Vector<EnemyHandle> handles;
+    slug::Vector<const char*> names;
     for (const char* name: { "soldier_bomb", "soldier_sword", "soldier_missile", "soldier_bzk", "shielder", "pow" })
     {
         handles.push_back(sim.State().SpawnEnemy(name, { x, 300.f }));
         names.push_back(name);
         x += 60.f;
     }
-    std::vector<bool> seen(handles.size(), false);
+    slug::Vector<bool> seen(handles.size(), false);
     for (int tick = 0; tick < 120; ++tick)
     {
         sim.Step(1);
         for (size_t i = 0; i < handles.size(); ++i)
         {
-            seen[i] = seen[i] || OnGround(sim.State().GetEnemies().Get(handles[i]));
+            seen[i] = seen[i] || OnGround_(sim.State().GetEnemies().Get(handles[i]));
         }
     }
     for (size_t i = 0; i < handles.size(); ++i)
@@ -79,7 +116,7 @@ TEST(EnemySandbox, GroundedKindsRestOnTheGround)
 
 TEST(EnemySandbox, HangHoversAtItsSpawnHeight)
 {
-    Sim sim { MakeEnemyConfig() };
+    Sim               sim { MakeEnemyConfig() };
     const EnemyHandle h = sim.State().SpawnEnemy("soldier_hang", { 300.f, 260.f });
     sim.Step(120);
     const Enemy* pHang = sim.State().GetEnemies().Get(h);
@@ -89,7 +126,7 @@ TEST(EnemySandbox, HangHoversAtItsSpawnHeight)
 
 TEST(EnemySandbox, FlyingBzkDescendsAndTurnsIntoASoldierOnLanding)
 {
-    Sim sim { MakeEnemyConfig() };
+    Sim               sim { MakeEnemyConfig() };
     const EnemyHandle para = sim.State().SpawnEnemy("flying_bzk", { 300.f, 150.f });
     sim.Step(600);
     const EnemyHandle heir = sim.State().GetEnemies().ResolveHandle(para);
@@ -101,7 +138,7 @@ TEST(EnemySandbox, FlyingBzkDescendsAndTurnsIntoASoldierOnLanding)
 
 TEST(EnemySandbox, InactiveMissileSoldierStaysSilentWhileFarAway)
 {
-    Sim sim { MakeEnemyConfig() };
+    Sim               sim { MakeEnemyConfig() };
     const EnemyHandle h = sim.State().SpawnEnemy("soldier_missile", { 1200.f, kGroundY });
     sim.Step(600);
     const Enemy* pEnemy = sim.State().GetEnemies().Get(h);
@@ -113,7 +150,7 @@ TEST(EnemySandbox, InactiveMissileSoldierStaysSilentWhileFarAway)
 TEST(EnemySandbox, WithoutADefinitionFileNothingSpawns)
 {
     SandboxConfig config = MakeFlatConfig();
-    Sim sim { config };
+    Sim           sim { config };
     sim.Step(1);
     EXPECT_EQ(sim.State().GetEnemyLib().GetDefCount(), 0u);
     EXPECT_TRUE(sim.State().SpawnEnemy("soldier_bomb", { 300.f, kGroundY }).IsNull());
@@ -135,8 +172,8 @@ TEST(EnemySandbox, PistolBulletKillsASoldierAndAwardsItsScore)
 {
     Sim sim { MakeEnemyConfig() };
     sim.Step(2);
-    const EnemyHandle h = sim.State().SpawnEnemy("soldier_bomb", { sim.X() + 200.f, kGroundY });
-    const int scoreBefore = sim.Player().GetScore();
+    const EnemyHandle h           = sim.State().SpawnEnemy("soldier_bomb", { sim.X() + 200.f, kGroundY });
+    const int         scoreBefore = sim.Player().GetScore();
     sim.Hold(eAction::Shot);
     sim.Step(60);
     sim.Release(eAction::Shot);
@@ -159,7 +196,7 @@ TEST(EnemySandbox, ASwordSoldierCanKillThePlayer)
     Sim sim { MakeEnemyConfig() };
     sim.Step(2);
     (void)sim.State().SpawnEnemy("soldier_sword", { sim.X() + 45.f, kGroundY });
-    EXPECT_GE(sim.StepUntil(1500, [&] { return !sim.Player().IsAlive(); }), 0);
+    EXPECT_GE(StepUntilPlayerDead_(sim, 1500), 0);
 }
 
 TEST(EnemySandbox, TrainingTargetsStillDieToTheKnifeWithEnemiesPresent)
@@ -199,23 +236,9 @@ TEST(EnemySandbox, DebugSpawnOutOfRangeDoesNothing)
 
 TEST(EnemySandbox, SandboxHashIsDeterministicWithEnemiesPresent)
 {
-    const auto Run = [](std::vector<uint64_t>& _hashes) {
-        Sim sim { MakeEnemyConfig({ 100.f, kGroundY }) };
-        float x = 300.f;
-        for (const char* name: kInfantryNames)
-        {
-            (void)sim.State().SpawnEnemy(name, { x, kGroundY });
-            x += 50.f;
-        }
-        for (int i = 0; i < 1200; ++i)
-        {
-            sim.Step(1);
-            _hashes.push_back(sim.State().HashState());
-        }
-    };
-    std::vector<uint64_t> first;
-    std::vector<uint64_t> second;
-    Run(first);
-    Run(second);
+    slug::Vector<uint64_t> first;
+    slug::Vector<uint64_t> second;
+    RunHashes_(first);
+    RunHashes_(second);
     EXPECT_EQ(first, second);
 }

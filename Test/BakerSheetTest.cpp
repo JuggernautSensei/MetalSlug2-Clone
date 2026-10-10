@@ -1,3 +1,5 @@
+// 시트 베이커의 키 처리, 블롭 자동 분할, 피벗/스케일/미러, 프레임 정렬(등록)을 합성 이미지로 검증한다.
+
 #include <gtest/gtest.h>
 
 #include "Tools/Baker/SheetSource.h"
@@ -6,55 +8,66 @@ using namespace slug::baker;
 
 namespace
 {
-    // 배경 마젠타 위에 (x,y,w,h) 불투명 블롭을 올린 합성 시트.
-    Image MakeMagentaSheet(const int _w, const int _h, const std::vector<IRect>& _blobs)
+// 배경 마젠타 위에 (x,y,w,h) 불투명 블롭을 올린 합성 시트.
+[[nodiscard]] Image MakeMagentaSheet_(
+    const int                 _w,
+    const int                 _h,
+    const std::vector<IRect>& _blobs)
+{
+    Image img = Image::Make(_w, _h);
+    for (size_t i = 0; i < img.pixels.size(); i += 4)
     {
-        Image img = Image::Make(_w, _h);
-        for (size_t i = 0; i < img.pixels.size(); i += 4)
-        {
-            img.pixels[i]     = 255;
-            img.pixels[i + 1] = 0;
-            img.pixels[i + 2] = 255;
-            img.pixels[i + 3] = 255;
-        }
-        for (const IRect& b: _blobs)
-        {
-            for (int y = b.y; y < b.y + b.h; ++y)
-            {
-                for (int x = b.x; x < b.x + b.w; ++x)
-                {
-                    uint8_t* p = img.At(x, y);
-                    p[0] = 200;
-                    p[1] = 100;
-                    p[2] = 50;
-                    p[3] = 255;
-                }
-            }
-        }
-        return img;
+        img.pixels[i]     = 255;
+        img.pixels[i + 1] = 0;
+        img.pixels[i + 2] = 255;
+        img.pixels[i + 3] = 255;
     }
-
-    // 단색(_r,_g,_b) 블롭 하나를 같은 위치에 그린다.
-    void PaintBlob(Image& _img, const IRect& _b, const uint8_t _r, const uint8_t _g, const uint8_t _bl)
+    for (const IRect& b: _blobs)
     {
-        for (int y = _b.y; y < _b.y + _b.h; ++y)
+        for (int y = b.y; y < b.y + b.h; ++y)
         {
-            for (int x = _b.x; x < _b.x + _b.w; ++x)
+            for (int x = b.x; x < b.x + b.w; ++x)
             {
-                uint8_t* p = _img.At(x, y);
-                p[0] = _r;
-                p[1] = _g;
-                p[2] = _bl;
-                p[3] = 255;
+                uint8_t* p = img.At(x, y);
+                p[0]       = 200;
+                p[1]       = 100;
+                p[2]       = 50;
+                p[3]       = 255;
             }
+        }
+    }
+    return img;
+}
+
+// 단색(_r,_g,_b) 블롭 하나를 같은 위치에 그린다.
+void PaintBlob_(
+    Image&        _img,
+    const IRect&  _b,
+    const uint8_t _r,
+    const uint8_t _g,
+    const uint8_t _bl)
+{
+    for (int y = _b.y; y < _b.y + _b.h; ++y)
+    {
+        for (int x = _b.x; x < _b.x + _b.w; ++x)
+        {
+            uint8_t* p = _img.At(x, y);
+            p[0]       = _r;
+            p[1]       = _g;
+            p[2]       = _bl;
+            p[3]       = 255;
         }
     }
 }
+}   // namespace
 
 TEST(BakerSheetKey, MagentaKeyMakesBackgroundTransparentAndCountsIt)
 {
-    Image img = MakeMagentaSheet(4, 4, { { 1, 1, 2, 2 } });
-    const uint64_t bg = ApplySheetKey(img, SheetKey {});
+    const std::vector<IRect> blobs = {
+        { 1, 1, 2, 2 }
+    };
+    Image          img = MakeMagentaSheet_(4, 4, blobs);
+    const uint64_t bg  = ApplySheetKey(img, SheetKey {});
     EXPECT_EQ(bg, 12u);
     EXPECT_EQ(img.At(0, 0)[3], 0);
     EXPECT_EQ(img.At(0, 0)[0], 0);
@@ -64,16 +77,27 @@ TEST(BakerSheetKey, MagentaKeyMakesBackgroundTransparentAndCountsIt)
 
 TEST(BakerSheetKey, ColorKeyUsesListedColorsWithTolerance)
 {
-    Image img = Image::Make(3, 1);
-    uint8_t* p = img.pixels.data();
-    p[0] = 153; p[1] = 217; p[2] = 234; p[3] = 255;   // 배경 (허용 오차 안)
-    p[4] = 152; p[5] = 216; p[6] = 233; p[7] = 255;   // 배경 근처 색
-    p[8] = 10;  p[9] = 20;  p[10] = 30; p[11] = 255;  // 전경
+    Image    img = Image::Make(3, 1);
+    uint8_t* p   = img.pixels.data();
+    p[0]         = 153;
+    p[1]         = 217;
+    p[2]         = 234;
+    p[3]         = 255;   // 배경 (허용 오차 안)
+    p[4]         = 152;
+    p[5]         = 216;
+    p[6]         = 233;
+    p[7]         = 255;   // 배경 근처 색
+    p[8]         = 10;
+    p[9]         = 20;
+    p[10]        = 30;
+    p[11]        = 255;   // 전경
 
     SheetKey key;
-    key.mode  = eSheetKeyMode::Color;
-    key.colors = { { 153, 217, 234 } };
-    key.tol   = 1;
+    key.mode   = eSheetKeyMode::Color;
+    key.colors = {
+        { 153, 217, 234 }
+    };
+    key.tol = 1;
     EXPECT_EQ(ApplySheetKey(img, key), 2u);
     EXPECT_EQ(img.At(0, 0)[3], 0);
     EXPECT_EQ(img.At(1, 0)[3], 0);
@@ -82,10 +106,16 @@ TEST(BakerSheetKey, ColorKeyUsesListedColorsWithTolerance)
 
 TEST(BakerSheetKey, AlphaModeKeepsOpaqueColorAndClearsZeroAlpha)
 {
-    Image img = Image::Make(2, 1);
-    uint8_t* p = img.pixels.data();
-    p[0] = 255; p[1] = 0; p[2] = 255; p[3] = 255;     // 마젠타지만 불투명 -> 전경
-    p[4] = 9;   p[5] = 9; p[6] = 9;   p[7] = 0;       // 알파 0 -> 배경
+    Image    img = Image::Make(2, 1);
+    uint8_t* p   = img.pixels.data();
+    p[0]         = 255;
+    p[1]         = 0;
+    p[2]         = 255;
+    p[3]         = 255;   // 마젠타지만 불투명 -> 전경
+    p[4]         = 9;
+    p[5]         = 9;
+    p[6]         = 9;
+    p[7]         = 0;   // 알파 0 -> 배경
     SheetKey key;
     key.mode = eSheetKeyMode::Alpha;
     EXPECT_EQ(ApplySheetKey(img, key), 1u);
@@ -96,7 +126,12 @@ TEST(BakerSheetKey, AlphaModeKeepsOpaqueColorAndClearsZeroAlpha)
 TEST(BakerSheetAuto, ThreeBlobsGiveThreeOrderedRects)
 {
     // 두 개는 같은 행(왼->오), 하나는 아래 행
-    Image img = MakeMagentaSheet(60, 20, { { 40, 10, 6, 6 }, { 20, 2, 6, 6 }, { 2, 2, 6, 6 } });
+    const std::vector<IRect> blobs = {
+        { 40, 10, 6, 6 },
+        { 20,  2, 6, 6 },
+        {  2,  2, 6, 6 }
+    };
+    Image img = MakeMagentaSheet_(60, 20, blobs);
     ApplySheetKey(img, SheetKey {});
 
     const std::vector<IRect> rects = SliceAuto(img, { 0, 0, 60, 20 }, SheetAuto {}, {});
@@ -109,12 +144,16 @@ TEST(BakerSheetAuto, ThreeBlobsGiveThreeOrderedRects)
 TEST(BakerSheetAuto, MergeGapJoinsNearPiecesOnlyWithinGap)
 {
     // 가로 간격 1px -> mergeGap 2 이면 하나, mergeGap 0 이면 둘
-    Image img = MakeMagentaSheet(30, 10, { { 2, 2, 5, 5 }, { 8, 2, 5, 5 } });
+    const std::vector<IRect> blobs = {
+        { 2, 2, 5, 5 },
+        { 8, 2, 5, 5 }
+    };
+    Image img = MakeMagentaSheet_(30, 10, blobs);
     ApplySheetKey(img, SheetKey {});
 
     SheetAuto merged;
-    merged.mergeGap  = 2;
-    merged.minPixels = 1;
+    merged.mergeGap              = 2;
+    merged.minPixels             = 1;
     const std::vector<IRect> one = SliceAuto(img, { 0, 0, 30, 10 }, merged, {});
     ASSERT_EQ(one.size(), 1u);
     EXPECT_EQ(one[0], (IRect { 2, 2, 11, 5 }));
@@ -126,18 +165,30 @@ TEST(BakerSheetAuto, MergeGapJoinsNearPiecesOnlyWithinGap)
 
 TEST(BakerSheetAuto, ExcludeRemovesRegionAndMinPixelsDropsSpecks)
 {
-    Image img = MakeMagentaSheet(40, 12, { { 2, 2, 6, 6 }, { 16, 2, 6, 6 }, { 30, 2, 1, 1 } });
+    const std::vector<IRect> blobs = {
+        {  2, 2, 6, 6 },
+        { 16, 2, 6, 6 },
+        { 30, 2, 1, 1 }
+    };
+    Image img = MakeMagentaSheet_(40, 12, blobs);
     ApplySheetKey(img, SheetKey {});
 
     // 16..21 블롭 제외 -> 2번 블롭만 남고, 1x1 점(1px)은 minPixels 30 으로 버려짐
-    const std::vector<IRect> rects = SliceAuto(img, { 0, 0, 40, 12 }, SheetAuto {}, { { 14, 0, 10, 12 } });
+    const std::vector<IRect> excluded = {
+        { 14, 0, 10, 12 }
+    };
+    const std::vector<IRect> rects = SliceAuto(img, { 0, 0, 40, 12 }, SheetAuto {}, excluded);
     ASSERT_EQ(rects.size(), 1u);
     EXPECT_EQ(rects[0], (IRect { 2, 2, 6, 6 }));
 }
 
 TEST(BakerSheetAuto, RegionLimitsSearch)
 {
-    Image img = MakeMagentaSheet(40, 12, { { 2, 2, 6, 6 }, { 20, 2, 6, 6 } });
+    const std::vector<IRect> blobs = {
+        {  2, 2, 6, 6 },
+        { 20, 2, 6, 6 }
+    };
+    Image img = MakeMagentaSheet_(40, 12, blobs);
     ApplySheetKey(img, SheetKey {});
     const std::vector<IRect> rects = SliceAuto(img, { 10, 0, 30, 12 }, SheetAuto {}, {});
     ASSERT_EQ(rects.size(), 1u);
@@ -156,7 +207,7 @@ TEST(BakerSheetPivot, FootIsBottomCentreAndCenterIsMiddle)
 
 TEST(BakerSheetMirror, FlipSwapsColumnsAndNameMapsLeftRight)
 {
-    Image img = Image::Make(3, 1);
+    Image img       = Image::Make(3, 1);
     img.At(0, 0)[0] = 1;
     img.At(2, 0)[0] = 9;
     FlipHorizontal(img);
@@ -190,12 +241,12 @@ TEST(BakerSheetScale, ClipValueOverridesSheetAndZeroInherits)
 
 TEST(BakerSheetScale, NearestUpscaleRepeatsEachPixelBlock)
 {
-    Image src = Image::Make(2, 1);
+    Image src       = Image::Make(2, 1);
     src.At(0, 0)[0] = 10;
     src.At(0, 0)[3] = 255;
     src.At(1, 0)[0] = 20;
     src.At(1, 0)[3] = 0;
-    const Image up = ScaleNearest(src, 2);
+    const Image up  = ScaleNearest(src, 2);
     EXPECT_EQ(up.width, 4);
     EXPECT_EQ(up.height, 2);
     for (int y = 0; y < 2; ++y)
@@ -210,9 +261,14 @@ TEST(BakerSheetScale, NearestUpscaleRepeatsEachPixelBlock)
 TEST(BakerSheetScale, ScaledFrameDoublesSizeAndFootPivot)
 {
     // 6x5 시트, 3x2 블롭 (1,1). 피벗은 트림 전 사각형(6x5) 기준: 발 = (w/2 - trimX, h - trimY).
-    Image sheet = MakeMagentaSheet(6, 5, { { 1, 1, 3, 2 } });
+    const std::vector<IRect> blobs = {
+        { 1, 1, 3, 2 }
+    };
+    Image sheet = MakeMagentaSheet_(6, 5, blobs);
     ApplySheetKey(sheet, SheetKey {});
-    const std::vector<IRect> rects = { { 0, 0, 6, 5 } };
+    const std::vector<IRect> rects = {
+        { 0, 0, 6, 5 }
+    };
 
     const BuiltFrames one = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 1);
     EXPECT_EQ(one.frames[0].w, 3);
@@ -242,10 +298,15 @@ TEST(BakerSheetScale, ScaledFrameDoublesSizeAndFootPivot)
 TEST(BakerSheetMirror, MirrorOfScaledFrameFlipsPixelsAndPivotAroundScaledWidth)
 {
     // 블롭 좌상단 픽셀(시트 (1,1))에 마커 7. 3배 확대 시 트림 프레임 w=9, 피벗 x = 18/2 - 3 = 6 (foot), 뒤집으면 9 - 6 = 3.
-    Image sheet = MakeMagentaSheet(6, 5, { { 1, 1, 3, 2 } });
+    const std::vector<IRect> blobs = {
+        { 1, 1, 3, 2 }
+    };
+    Image sheet = MakeMagentaSheet_(6, 5, blobs);
     ApplySheetKey(sheet, SheetKey {});
-    sheet.At(1, 1)[0] = 7;
-    const std::vector<IRect> rects = { { 0, 0, 6, 5 } };
+    sheet.At(1, 1)[0]              = 7;
+    const std::vector<IRect> rects = {
+        { 0, 0, 6, 5 }
+    };
 
     const BuiltFrames plain  = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 3);
     const BuiltFrames mirror = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, true, 3);
@@ -264,8 +325,8 @@ TEST(BakerSheetRegister, SearchFindsTheBestShiftAndPreferBaseKeepsZeroOnTies)
     // 같은 30x30 사각형 두 장. 기준 위치를 (12,-7) 로 주면 겹침 최대는 (0,0) 이다.
     Image a = Image::Make(40, 40);
     Image b = Image::Make(40, 40);
-    PaintBlob(a, { 0, 0, 30, 30 }, 90, 180, 40);
-    PaintBlob(b, { 0, 0, 30, 30 }, 90, 180, 40);
+    PaintBlob_(a, { 0, 0, 30, 30 }, 90, 180, 40);
+    PaintBlob_(b, { 0, 0, 30, 30 }, 90, 180, 40);
 
     const AlignResult far = BestAlign(a, b, 12, -7, 40, false);
     EXPECT_EQ(far.dx, 0);
@@ -281,17 +342,21 @@ TEST(BakerSheetRegister, SearchFindsTheBestShiftAndPreferBaseKeepsZeroOnTies)
 TEST(BakerSheetRegister, SameSquareAtDifferentOffsetsAndSizesCoincidesAfterRegistration)
 {
     // 세 셀(크기가 다름)에 같은 6x6 사각형이 다른 위치에 있고, 셀마다 꼬리 1px 이 달라 트림 bbox 가 다르다.
-    Image sheet = MakeMagentaSheet(100, 40, {});
-    PaintBlob(sheet, { 3, 2, 6, 6 }, 200, 100, 50);
-    PaintBlob(sheet, { 37, 11, 6, 6 }, 200, 100, 50);
-    PaintBlob(sheet, { 43, 16, 2, 1 }, 0, 255, 0);       // 꼬리: 트림 bbox 를 키운다 (폭 6 -> 8, 중심 피벗 w/2 가 3 -> 4 로 달라진다)
-    PaintBlob(sheet, { 80, 5, 6, 6 }, 200, 100, 50);
-    PaintBlob(sheet, { 86, 5, 2, 1 }, 0, 255, 0);
+    Image sheet = MakeMagentaSheet_(100, 40, {});
+    PaintBlob_(sheet, { 3, 2, 6, 6 }, 200, 100, 50);
+    PaintBlob_(sheet, { 37, 11, 6, 6 }, 200, 100, 50);
+    PaintBlob_(sheet, { 43, 16, 2, 1 }, 0, 255, 0);   // 꼬리: 트림 bbox 를 키운다 (폭 6 -> 8, 중심 피벗 w/2 가 3 -> 4 로 달라진다)
+    PaintBlob_(sheet, { 80, 5, 6, 6 }, 200, 100, 50);
+    PaintBlob_(sheet, { 86, 5, 2, 1 }, 0, 255, 0);
     ApplySheetKey(sheet, SheetKey {});
-    const std::vector<IRect> rects = { { 0, 0, 20, 20 }, { 30, 0, 16, 20 }, { 60, 0, 30, 24 } };
+    const std::vector<IRect> rects = {
+        {  0, 0, 20, 20 },
+        { 30, 0, 16, 20 },
+        { 60, 0, 30, 24 }
+    };
 
     SheetRegisterOpts reg;
-    reg.bEnabled = true;
+    reg.bEnabled            = true;
     const BuiltFrames built = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 1, reg);
     ASSERT_EQ(built.frames.size(), 3u);
     EXPECT_TRUE(built.reg.bRegistered);
@@ -314,12 +379,21 @@ TEST(BakerSheetRegister, IdenticalSizeCellsStayOnRectPivotWithOrWithoutRegistrat
     // 10x10 셀 세 개, 같은 위치의 4x4 블롭.
     // 정렬 끔: 사각형 발 피벗 = (5 - 2, 10 - 3) = (3, 7).
     // 정렬 켬: 공통 원점 = 합집합(= 블롭) 의 발 중앙 -> (2, 4). 프레임끼리는 모두 같은 값이어야 한다.
-    Image sheet = MakeMagentaSheet(40, 10, { { 2, 3, 4, 4 }, { 12, 3, 4, 4 }, { 22, 3, 4, 4 } });
+    const std::vector<IRect> blobs = {
+        {  2, 3, 4, 4 },
+        { 12, 3, 4, 4 },
+        { 22, 3, 4, 4 }
+    };
+    Image sheet = MakeMagentaSheet_(40, 10, blobs);
     ApplySheetKey(sheet, SheetKey {});
-    const std::vector<IRect> rects = { { 0, 0, 10, 10 }, { 10, 0, 10, 10 }, { 20, 0, 10, 10 } };
+    const std::vector<IRect> rects = {
+        {  0, 0, 10, 10 },
+        { 10, 0, 10, 10 },
+        { 20, 0, 10, 10 }
+    };
 
     SheetRegisterOpts reg;
-    reg.bEnabled = true;
+    reg.bEnabled          = true;
     const BuiltFrames on  = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 1, reg);
     const BuiltFrames off = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 1, SheetRegisterOpts {});
     for (size_t i = 0; i < rects.size(); ++i)
@@ -337,14 +411,17 @@ TEST(BakerSheetRegister, IdenticalSizeCellsStayOnRectPivotWithOrWithoutRegistrat
 TEST(BakerSheetRegister, LowOverlapFrameFallsBackToRectPivot)
 {
     // 같은 위치가 아니고 색이 달라 점수가 0.5 미만: 두 번째 프레임은 정렬하지 않고 사각형 피벗을 쓴다.
-    Image sheet = MakeMagentaSheet(20, 10, {});
-    PaintBlob(sheet, { 1, 1, 3, 3 }, 200, 100, 50);
-    PaintBlob(sheet, { 11, 6, 3, 3 }, 0, 0, 255);
+    Image sheet = MakeMagentaSheet_(20, 10, {});
+    PaintBlob_(sheet, { 1, 1, 3, 3 }, 200, 100, 50);
+    PaintBlob_(sheet, { 11, 6, 3, 3 }, 0, 0, 255);
     ApplySheetKey(sheet, SheetKey {});
-    const std::vector<IRect> rects = { { 0, 0, 10, 10 }, { 10, 0, 10, 10 } };
+    const std::vector<IRect> rects = {
+        {  0, 0, 10, 10 },
+        { 10, 0, 10, 10 }
+    };
 
     SheetRegisterOpts reg;
-    reg.bEnabled = true;
+    reg.bEnabled            = true;
     const BuiltFrames built = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 1, reg);
     EXPECT_EQ(built.reg.alignedFrames, 0);
     ASSERT_EQ(built.reg.fallbackFrames.size(), 1u);
@@ -357,15 +434,22 @@ TEST(BakerSheetRegister, LowOverlapFrameFallsBackToRectPivot)
 
 TEST(BakerSheetRegister, AnchorOverrideSetsTheOriginInFirstFrameTrimCoords)
 {
-    Image sheet = MakeMagentaSheet(40, 20, { { 3, 2, 6, 6 }, { 23, 2, 6, 6 } });
+    const std::vector<IRect> blobs = {
+        {  3, 2, 6, 6 },
+        { 23, 2, 6, 6 }
+    };
+    Image sheet = MakeMagentaSheet_(40, 20, blobs);
     ApplySheetKey(sheet, SheetKey {});
-    const std::vector<IRect> rects = { { 0, 0, 20, 20 }, { 20, 0, 20, 20 } };
+    const std::vector<IRect> rects = {
+        {  0, 0, 20, 20 },
+        { 20, 0, 20, 20 }
+    };
 
     SheetRegisterOpts reg;
-    reg.bEnabled   = true;
-    reg.bHasAnchor = true;
-    reg.anchorX    = 1;
-    reg.anchorY    = 1;
+    reg.bEnabled            = true;
+    reg.bHasAnchor          = true;
+    reg.anchorX             = 1;
+    reg.anchorY             = 1;
     const BuiltFrames built = BuildSheetFrames(sheet, rects, eSheetPivot::Foot, false, 1, reg);
     EXPECT_EQ(built.frames[0].pivotX, 1);
     EXPECT_EQ(built.frames[0].pivotY, 1);
@@ -381,22 +465,22 @@ TEST(BakerSheetRegister, DefaultRulesDecideWhetherAClipRegisters)
     SheetClipSpec run;
     run.name = "Parker_Run";
     EXPECT_TRUE(ResolveSheetRegister(sheet, run, 3));
-    EXPECT_FALSE(ResolveSheetRegister(sheet, run, 1));      // 한 프레임
+    EXPECT_FALSE(ResolveSheetRegister(sheet, run, 1));   // 한 프레임
 
     SheetClipSpec fx = run;
-    fx.name = "Fx_Burst";
+    fx.name          = "Fx_Burst";
     EXPECT_FALSE(ResolveSheetRegister(sheet, fx, 5));
 
     SheetClipSpec effect = run;
-    effect.bEffect = true;
+    effect.bEffect       = true;
     EXPECT_FALSE(ResolveSheetRegister(sheet, effect, 5));
 
     SheetClipSpec sprite = run;
-    sprite.bAsSprite = true;
+    sprite.bAsSprite     = true;
     EXPECT_FALSE(ResolveSheetRegister(sheet, sprite, 1));
 
     SheetClipSpec forced = fx;
-    forced.bRegisterSet = true;
-    forced.bRegister    = true;
+    forced.bRegisterSet  = true;
+    forced.bRegister     = true;
     EXPECT_TRUE(ResolveSheetRegister(sheet, forced, 5));
 }

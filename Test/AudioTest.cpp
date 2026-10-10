@@ -1,16 +1,18 @@
-#include "Core/AssetPath.h"
-#include <filesystem>
-#include "Base/Types.h"
-#include "Base/Result.h"
-#include "Base/Random.h"
+// 사운드 뱅크 파싱, 보이스 할당, 오디오 수학, 싱크, 건식 오디오 시스템과 오디오가 시뮬레이션 결정성에 영향을 주지 않는지 검증한다.
 
 #include <gtest/gtest.h>
+
+#include <filesystem>
 
 #include "Audio/AudioMath.h"
 #include "Audio/AudioSink.h"
 #include "Audio/AudioSystem.h"
 #include "Audio/SoundBank.h"
 #include "Audio/VoiceAllocator.h"
+#include "Base/Random.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
+#include "Core/AssetPath.h"
 #include "Game/GameState.h"
 #include "Game/SandboxState.h"
 #include "Game/SimRunner.h"
@@ -21,7 +23,7 @@ using namespace slug;
 
 namespace
 {
-    constexpr const char* kBankJson = R"({
+constexpr const char* kBankJson = R"({
       "version": 1,
       "sounds": {
         "Stage1_BGM": { "file": "Audio/Stage1_BGM.wav", "bgm": true },
@@ -31,31 +33,31 @@ namespace
       }
     })";
 
-    [[nodiscard]] SoundBank MakeBank()
-    {
-        slug::Result<SoundBank> bank = SoundBank::LoadFromJson(kBankJson, "root");
-        EXPECT_TRUE(static_cast<bool>(bank));
-        return bank.Take();
-    }
-
-    [[nodiscard]] AudioConfig MakeDryConfig()
-    {
-        AudioConfig config;
-        config.bEnabled    = false;
-        config.maxVoices   = 4;
-        config.maxPerSound = 2;
-        return config;
-    }
-
-    slug::FilePath BakedRoot()
-    {
-        return slug::FindAssetRoot() / "Baked";
-    }
+[[nodiscard]] SoundBank MakeBank_()
+{
+    slug::Result<SoundBank> bank = SoundBank::LoadFromJson(kBankJson, "root");
+    EXPECT_TRUE(static_cast<bool>(bank));
+    return bank.Take();
 }
+
+[[nodiscard]] AudioConfig MakeDryConfig_()
+{
+    AudioConfig config;
+    config.bEnabled    = false;
+    config.maxVoices   = 4;
+    config.maxPerSound = 2;
+    return config;
+}
+
+[[nodiscard]] slug::FilePath BakedRoot_()
+{
+    return slug::FindAssetRoot() / "Baked";
+}
+}   // namespace
 
 TEST(AudioBank, ParsesEntriesNamesFilesAndBgmFlag)
 {
-    const SoundBank bank = MakeBank();
+    const SoundBank bank = MakeBank_();
     ASSERT_EQ(bank.GetCount(), 4u);
 
     const SoundEntry* pBgm = bank.Find("Stage1_BGM");
@@ -70,7 +72,7 @@ TEST(AudioBank, ParsesEntriesNamesFilesAndBgmFlag)
 
 TEST(AudioBank, MissingBgmKeyDefaultsToSfxAndPathJoinsRoot)
 {
-    const SoundBank   bank  = MakeBank();
+    const SoundBank   bank  = MakeBank_();
     const SoundEntry* pBomb = bank.Find("PlayerBomb");
     ASSERT_NE(pBomb, nullptr);
     EXPECT_FALSE(pBomb->bBgm);
@@ -79,7 +81,7 @@ TEST(AudioBank, MissingBgmKeyDefaultsToSfxAndPathJoinsRoot)
 
 TEST(AudioBank, UnknownNameIsNullAndIndexMinusOne)
 {
-    const SoundBank bank = MakeBank();
+    const SoundBank bank = MakeBank_();
     EXPECT_EQ(bank.Find("Nope"), nullptr);
     EXPECT_EQ(bank.FindIndex("Nope"), -1);
     EXPECT_GE(bank.FindIndex("Coin"), 0);
@@ -110,7 +112,7 @@ TEST(AudioBank, MissingDirectoryIsError)
 
 TEST(AudioBank, BakedSoundsJsonListsExistingFilesAndExtras)
 {
-    slug::Result<SoundBank> bank = SoundBank::LoadFromDirectory(BakedRoot());
+    slug::Result<SoundBank> bank = SoundBank::LoadFromDirectory(BakedRoot_());
     if (!bank)
     {
         GTEST_SKIP() << "Assets/Baked 없음";
@@ -129,7 +131,7 @@ TEST(AudioBank, BakedSoundsJsonListsExistingFilesAndExtras)
 
 TEST(AudioBank, EveryKnownSfxNameResolvesToBakedSound)
 {
-    slug::Result<SoundBank> bank = SoundBank::LoadFromDirectory(BakedRoot());
+    slug::Result<SoundBank> bank = SoundBank::LoadFromDirectory(BakedRoot_());
     if (!bank)
     {
         GTEST_SKIP() << "Assets/Baked 없음";
@@ -331,14 +333,14 @@ TEST(AudioSystemDry, UninitializedSystemIsAnInertNoOp)
 TEST(AudioSystemDry, DisabledConfigNeverOpensADevice)
 {
     AudioSystem audio;
-    ASSERT_TRUE(static_cast<bool>(audio.Init(MakeBank(), MakeDryConfig())));
+    ASSERT_TRUE(static_cast<bool>(audio.Init(MakeBank_(), MakeDryConfig_())));
     EXPECT_TRUE(audio.IsInitialized());
 }
 
 TEST(AudioSystemDry, InitFromBakedDirectoryOrError)
 {
-    AudioSystem audio;
-    const slug::Result<void> result = audio.InitFromDirectory(BakedRoot(), MakeDryConfig());
+    AudioSystem              audio;
+    const slug::Result<void> result = audio.InitFromDirectory(BakedRoot_(), MakeDryConfig_());
     if (!result)
     {
         GTEST_SKIP() << "Assets/Baked 없음";
@@ -350,43 +352,46 @@ TEST(AudioSystemDry, InitFromBakedDirectoryOrError)
 TEST(AudioSystemDry, MissingDirectoryReturnsErrorButSystemStaysInert)
 {
     AudioSystem audio;
-    EXPECT_FALSE(static_cast<bool>(audio.InitFromDirectory("Z:/no/such/dir", MakeDryConfig())));
+    EXPECT_FALSE(static_cast<bool>(audio.InitFromDirectory("Z:/no/such/dir", MakeDryConfig_())));
     EXPECT_FALSE(audio.IsInitialized());
     audio.Play("Coin");
 }
 
 namespace
 {
-    struct AudioSim
+struct AudioSim
+{
+    explicit AudioSim(
+        IAudioSink* _pAudio)
+        : rng(uint64_t { 1 })
     {
-        explicit AudioSim(IAudioSink* _pAudio)
-            : rng(uint64_t { 1 })
-        {
-            ctx.pRng   = &rng;
-            ctx.pAudio = _pAudio;
-            pState     = new SandboxState { slugtest::MakeFlatConfig() };
-            runner     = std::unique_ptr<SimRunner> { new SimRunner { ctx, std::unique_ptr<IGameState> { pState } } };
-        }
+        ctx.pRng                             = &rng;
+        ctx.pAudio                           = _pAudio;
+        std::unique_ptr<SandboxState> pOwned = std::make_unique<SandboxState>(slugtest::MakeFlatConfig());
+        pState                               = pOwned.get();
+        runner                               = std::make_unique<SimRunner>(ctx, std::move(pOwned));
+    }
 
-        void RunScript(const int _ticks)
+    void RunScript(
+        const int _ticks)
+    {
+        for (int t = 0; t < _ticks; ++t)
         {
-            for (int t = 0; t < _ticks; ++t)
-            {
-                InputFrame frame;
-                frame.Set(eAction::Right, (t / 40) % 2 == 0);
-                frame.Set(eAction::Shot, t % 9 < 4);
-                frame.Set(eAction::Jump, t % 70 == 10);
-                frame.Set(eAction::Bomb, t % 120 == 50);
-                runner->Step(frame);
-            }
+            InputFrame frame;
+            frame.Set(eAction::Right, (t / 40) % 2 == 0);
+            frame.Set(eAction::Shot, t % 9 < 4);
+            frame.Set(eAction::Jump, t % 70 == 10);
+            frame.Set(eAction::Bomb, t % 120 == 50);
+            runner->Step(frame);
         }
+    }
 
-        slug::RngMt19937        rng;
-        GameContext            ctx;
-        SandboxState*          pState = nullptr;
-        std::unique_ptr<SimRunner> runner = nullptr;
-    };
-}
+    slug::RngMt19937           rng    = {};
+    GameContext                ctx    = {};
+    SandboxState*              pState = nullptr;
+    std::unique_ptr<SimRunner> runner = nullptr;
+};
+}   // namespace
 
 TEST(AudioDeterminism, SameStateHashWithNullTestAndDryAudio)
 {
@@ -398,7 +403,7 @@ TEST(AudioDeterminism, SameStateHashWithNullTestAndDryAudio)
     withTest.RunScript(600);
 
     AudioSystem dry;
-    ASSERT_TRUE(static_cast<bool>(dry.Init(MakeBank(), MakeDryConfig())));
+    ASSERT_TRUE(static_cast<bool>(dry.Init(MakeBank_(), MakeDryConfig_())));
     AudioSim withDry { &dry };
     withDry.RunScript(600);
 
@@ -409,9 +414,9 @@ TEST(AudioDeterminism, SameStateHashWithNullTestAndDryAudio)
 
 TEST(AudioDeterminism, SimulationDoesNotConsumeSimRngForAudio)
 {
-    AudioSim a { nullptr };
+    AudioSim  a { nullptr };
     TestAudio testAudio;
-    AudioSim b { &testAudio };
+    AudioSim  b { &testAudio };
     a.RunScript(300);
     b.RunScript(300);
     EXPECT_EQ(a.rng.Generate(), b.rng.Generate());
@@ -466,12 +471,12 @@ TEST(AudioDevice, RealEnginePlaysEveryBakedSoundWithoutFailing)
     config.masterVolume = 0.001f;   // 테스트 중 소리가 거의 나지 않게
 
     AudioSystem audio;
-    if (!audio.InitFromDirectory(BakedRoot(), config))
+    if (!audio.InitFromDirectory(BakedRoot_(), config))
     {
         GTEST_SKIP() << "Assets/Baked 없음";
     }
 
-    slug::Result<SoundBank> bank = SoundBank::LoadFromDirectory(BakedRoot());
+    slug::Result<SoundBank> bank = SoundBank::LoadFromDirectory(BakedRoot_());
     ASSERT_TRUE(static_cast<bool>(bank));
     for (const SoundEntry& entry: bank->GetEntries())
     {

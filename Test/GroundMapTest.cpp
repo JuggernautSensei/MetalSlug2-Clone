@@ -1,13 +1,15 @@
-#include <cstdint>
-#include "Base/Types.h"
-#include "Base/Math.h"
-#include "Base/Result.h"
-#include <filesystem>
-#include <fstream>
+// 지면 비트맵(GroundMap)의 로드, 경계 정책, 지면/천장 질의와 기하(Geometry) 유틸을 검증한다.
 
 #include <gtest/gtest.h>
 
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
+
 #include "Base/Error.h"
+#include "Base/Math.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
 #include "World/Geometry.h"
 #include "World/GroundMap.h"
 
@@ -28,7 +30,7 @@ struct Lcg
 
 struct Circle
 {
-    Vec2 center = { 0.f, 0.f };
+    Vec2  center = { 0.f, 0.f };
     float radius = 0.f;
 
     [[nodiscard]] bool Overlaps(
@@ -51,9 +53,20 @@ struct Circle
     }
 };
 
-slug::Vector<uint8_t> MakeFile(
-    const uint32_t              _w,
-    const uint32_t              _h,
+[[nodiscard]] Circle MakeCircle_(
+    const float _x,
+    const float _y,
+    const float _radius)
+{
+    Circle circle;
+    circle.center = { _x, _y };
+    circle.radius = _radius;
+    return circle;
+}
+
+[[nodiscard]] slug::Vector<uint8_t> MakeFile_(
+    const uint32_t               _w,
+    const uint32_t               _h,
     const slug::Vector<uint8_t>& _bits)
 {
     slug::Vector<uint8_t> data = { 'G', 'R', 'N', 'D' };
@@ -67,12 +80,12 @@ slug::Vector<uint8_t> MakeFile(
     data.insert(data.end(), _bits.begin(), _bits.end());
     return data;
 }
-}
+}   // namespace
 
 TEST(GroundMap, MakeFromBitsUsesLsbAsLeftmostPixel)
 {
-    const uint8_t   bits[] = { 0b00000101, 0b00000010, 0, 0 };
-    const GroundMap map    = GroundMap::MakeFromBits(10, 2, bits);
+    const ARRAY<uint8_t, 4> bits = { 0b00000101, 0b00000010, 0, 0 };
+    const GroundMap         map  = GroundMap::MakeFromBits(10, 2, bits);
 
     EXPECT_EQ(map.GetWidth(), 10);
     EXPECT_EQ(map.GetHeight(), 2);
@@ -87,7 +100,7 @@ TEST(GroundMap, MakeFromBitsUsesLsbAsLeftmostPixel)
 
 TEST(GroundMap, LoadFromMemoryParsesHeaderAndBits)
 {
-    const slug::Vector<uint8_t>   file   = MakeFile(9, 2, { 0xFF, 0x01, 0x00, 0x00 });
+    const slug::Vector<uint8_t>   file   = MakeFile_(9, 2, { 0xFF, 0x01, 0x00, 0x00 });
     const slug::Result<GroundMap> result = GroundMap::LoadFromMemory(file);
     ASSERT_TRUE(result.HasValue());
 
@@ -103,26 +116,26 @@ TEST(GroundMap, LoadFromMemoryParsesHeaderAndBits)
 
 TEST(GroundMap, LoadFromMemoryRejectsBadMagicTruncationAndHugeSizes)
 {
-    slug::Vector<uint8_t> badMagic = MakeFile(8, 1, { 0xFF });
-    badMagic[0]                   = 'X';
+    slug::Vector<uint8_t> badMagic = MakeFile_(8, 1, { 0xFF });
+    badMagic[0]                    = 'X';
     EXPECT_TRUE(GroundMap::LoadFromMemory(badMagic).HasError());
 
-    const slug::Vector<uint8_t> truncated = MakeFile(16, 4, { 0xFF, 0xFF });   // 8바이트 필요
+    const slug::Vector<uint8_t> truncated = MakeFile_(16, 4, { 0xFF, 0xFF });   // 8바이트 필요
     EXPECT_TRUE(GroundMap::LoadFromMemory(truncated).HasError());
 
     const slug::Vector<uint8_t> tooShortHeader = { 'G', 'R', 'N', 'D', 1, 0, 0 };
     EXPECT_TRUE(GroundMap::LoadFromMemory(tooShortHeader).HasError());
 
-    const slug::Vector<uint8_t> huge = MakeFile(0xFFFFFFFFu, 0xFFFFFFFFu, {});
+    const slug::Vector<uint8_t> huge = MakeFile_(0xFFFFFFFFu, 0xFFFFFFFFu, {});
     EXPECT_TRUE(GroundMap::LoadFromMemory(huge).HasError());
 }
 
 TEST(GroundMap, LoadFromFileRoundTripAndMissingFile)
 {
-    const std::filesystem::path path = std::filesystem::temp_directory_path() / "slug_groundmap_test.bin";
+    const slug::FilePath path = std::filesystem::temp_directory_path() / "slug_groundmap_test.bin";
     {
-        const slug::Vector<uint8_t> file = MakeFile(16, 2, { 0x0F, 0xF0, 0x00, 0x80 });
-        std::ofstream              out { path, std::ios::binary };
+        const slug::Vector<uint8_t> file = MakeFile_(16, 2, { 0x0F, 0xF0, 0x00, 0x80 });
+        std::ofstream               out { path, std::ios::binary };
         out.write(reinterpret_cast<const char*>(file.data()), static_cast<std::streamsize>(file.size()));
     }
 
@@ -143,7 +156,7 @@ TEST(GroundMap, LoadFromFileRoundTripAndMissingFile)
 
 TEST(GroundMap, MakeFromRowsBuildsAsciiMap)
 {
-    const slug::StringView rows[] = {
+    const ARRAY<StringView, 3> rows = {
         "....",
         ".##.",
         "####"
@@ -358,18 +371,11 @@ TEST(Geometry, AabbMirrorFlipsAroundAxis)
 
 TEST(Geometry, CircleOverlaps)
 {
-    const Circle c = {
-        { 0.f, 0.f },
-        5.f
-    };
-    EXPECT_TRUE(c.Overlaps(Circle {
-        { 6.f, 0.f },
-        2.f
-    }));
-    EXPECT_FALSE(c.Overlaps(Circle {
-        { 7.f, 0.f },
-        2.f
-    }));
+    const Circle c      = MakeCircle_(0.f, 0.f, 5.f);
+    const Circle nearby = MakeCircle_(6.f, 0.f, 2.f);
+    const Circle far    = MakeCircle_(7.f, 0.f, 2.f);
+    EXPECT_TRUE(c.Overlaps(nearby));
+    EXPECT_FALSE(c.Overlaps(far));
     EXPECT_TRUE(c.Overlaps(Aabb::FromMinMax({ 4.f, -1.f }, { 10.f, 1.f })));
     EXPECT_FALSE(c.Overlaps(Aabb::FromMinMax({ 4.f, 4.f }, { 10.f, 10.f })));   // 모서리 거리 5.66 > 5
 }
@@ -385,11 +391,11 @@ TEST(GroundMap, PeriodicTailRepeatsTheTileBeyondTheWidth)
     }
     map.SetPeriodicTail(16, 12, 4);
     EXPECT_TRUE(map.HasPeriodicTail());
-    EXPECT_TRUE(map.IsSolid(16, 3));    // 12
-    EXPECT_TRUE(map.IsSolid(17, 3));    // 13
-    EXPECT_FALSE(map.IsSolid(18, 3));   // 14
-    EXPECT_FALSE(map.IsSolid(19, 3));   // 15
-    EXPECT_TRUE(map.IsSolid(20, 3));    // 12 (두 번째 반복)
+    EXPECT_TRUE(map.IsSolid(16, 3));                  // 12
+    EXPECT_TRUE(map.IsSolid(17, 3));                  // 13
+    EXPECT_FALSE(map.IsSolid(18, 3));                 // 14
+    EXPECT_FALSE(map.IsSolid(19, 3));                 // 15
+    EXPECT_TRUE(map.IsSolid(20, 3));                  // 12 (두 번째 반복)
     EXPECT_FALSE(map.IsSolid(16 + 4 * 100 + 2, 3));   // 주기 반복은 무한
     EXPECT_TRUE(map.IsSolid(16 + 4 * 100, 3));
 }

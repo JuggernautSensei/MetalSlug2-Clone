@@ -1,7 +1,9 @@
-#include <gtest/gtest.h>
-#include "Base/Result.h"
-#include "Base/Handle.h"
+// 애니메이션 라이브러리의 JSON 로드/조회와 AnimPlayer 의 고정 틱 진행(루프, 종료, 속도, 위상 동기화)을 검증한다.
 
+#include <gtest/gtest.h>
+
+#include "Base/Handle.h"
+#include "Base/Result.h"
 #include "Render/Animation.h"
 #include "World/Constants.h"
 
@@ -9,7 +11,7 @@ using namespace slug;
 
 namespace
 {
-AnimClip MakeClip(
+[[nodiscard]] AnimClip MakeClip_(
     const char* _name,
     const int   _frameCount,
     const float _frameDuration,
@@ -54,7 +56,7 @@ constexpr const char* kSampleJson = R"({
         }
     })";
 
-int ExpectedLoopFrame(
+[[nodiscard]] int ExpectedLoopFrame_(
     const int64_t _ticks,
     const int64_t _durationUnits,
     const int     _frameCount)
@@ -62,7 +64,7 @@ int ExpectedLoopFrame(
     const int64_t frame = (_ticks * (kAnimTimeUnitsPerSec / 60)) / _durationUnits;
     return static_cast<int>(frame % _frameCount);
 }
-}
+}   // namespace
 
 TEST(AnimationLibrary, ParsesBakedJsonWithFramesAndPivots)
 {
@@ -111,8 +113,8 @@ TEST(AnimationLibrary, FindIsStableAndNullForUnknownNames)
 
 TEST(AnimationLibrary, IdsFollowFileOrderSoLoadsAreDeterministic)
 {
-    const auto a = AnimationLibrary::LoadFromJson(kSampleJson);
-    const auto b = AnimationLibrary::LoadFromJson(kSampleJson);
+    const slug::Result<AnimationLibrary> a = AnimationLibrary::LoadFromJson(kSampleJson);
+    const slug::Result<AnimationLibrary> b = AnimationLibrary::LoadFromJson(kSampleJson);
     ASSERT_TRUE(a.HasValue() && b.HasValue());
     EXPECT_EQ(a->Find("Player_Stand_Idle_Lower_Right").GetIndex(), 0u);
     EXPECT_EQ(a->Find("Player_Dead").GetIndex(), 1u);
@@ -134,16 +136,16 @@ TEST(AnimationLibrary, RejectsMalformedData)
 
 TEST(AnimationLibrary, ClampsOutOfRangeLoopStart)
 {
-    const char* json = R"({"animations":{"A":{"loop":true,"loopStart":3,"frameDuration":0.1,"frames":[{"atlas":0,"x":0,"y":0,"w":1,"h":1,"pivotX":0,"pivotY":0}]}}})";
-    const auto  lib  = AnimationLibrary::LoadFromJson(json);
+    const char*                          pJson = R"({"animations":{"A":{"loop":true,"loopStart":3,"frameDuration":0.1,"frames":[{"atlas":0,"x":0,"y":0,"w":1,"h":1,"pivotX":0,"pivotY":0}]}}})";
+    const slug::Result<AnimationLibrary> lib   = AnimationLibrary::LoadFromJson(pJson);
     ASSERT_TRUE(lib.HasValue());
     EXPECT_EQ(lib->FindClip("A")->loopStart, 0);
 }
 
 TEST(AnimationLibrary, AcceptsIntegerValuedFloatsAndFloatValuedIntegers)
 {
-    const char* json = R"({"animations":{"A":{"frameDuration":1,"frames":[{"atlas":0,"x":1.0,"y":2,"w":3,"h":4,"pivotX":5,"pivotY":6}]}}})";
-    const auto  lib  = AnimationLibrary::LoadFromJson(json);
+    const char*                          pJson = R"({"animations":{"A":{"frameDuration":1,"frames":[{"atlas":0,"x":1.0,"y":2,"w":3,"h":4,"pivotX":5,"pivotY":6}]}}})";
+    const slug::Result<AnimationLibrary> lib   = AnimationLibrary::LoadFromJson(pJson);
     ASSERT_TRUE(lib.HasValue());
     EXPECT_FLOAT_EQ(lib->FindClip("A")->frameDuration, 1.f);
     EXPECT_EQ(lib->FindClip("A")->frames[0].x, 1);
@@ -157,11 +159,11 @@ TEST(AnimationLibrary, LoadFromDirectoryReportsMissingManifest)
 TEST(AnimationLibrary, AddClipReplacesSameNameKeepingId)
 {
     AnimationLibrary lib;
-    const AnimId     a = lib.AddClip(MakeClip("Walk", 4, 0.1f, true));
-    const AnimId     b = lib.AddClip(MakeClip("Run", 6, 0.05f, true));
+    const AnimId     a = lib.AddClip(MakeClip_("Walk", 4, 0.1f, true));
+    const AnimId     b = lib.AddClip(MakeClip_("Run", 6, 0.05f, true));
     EXPECT_NE(a, b);
 
-    const AnimId again = lib.AddClip(MakeClip("Walk", 2, 0.2f, false));
+    const AnimId again = lib.AddClip(MakeClip_("Walk", 2, 0.2f, false));
     EXPECT_EQ(again, a);
     EXPECT_EQ(lib.Get(a).GetFrameCount(), 2);
     EXPECT_EQ(lib.GetClipCount(), 2u);
@@ -170,7 +172,7 @@ TEST(AnimationLibrary, AddClipReplacesSameNameKeepingId)
 TEST(AnimPlayer, LoopFrameIndexIsExactAtSixtyHertzForSixTickFrames)
 {
     AnimationLibrary lib;
-    const AnimId     id = lib.AddClip(MakeClip("A", 4, 0.1f, true));
+    const AnimId     id = lib.AddClip(MakeClip_("A", 4, 0.1f, true));
 
     AnimPlayer player;
     player.Play(id);
@@ -183,11 +185,11 @@ TEST(AnimPlayer, LoopFrameIndexIsExactAtSixtyHertzForSixTickFrames)
 
 TEST(AnimPlayer, FrameIndexMatchesExactRationalForNonIntegerTickDurations)
 {
-    const float durations[] = { 0.06f, 0.05f, 0.07f, 0.04f, 0.12f, 0.03f };
+    const ARRAY<float, 6> durations = { 0.06f, 0.05f, 0.07f, 0.04f, 0.12f, 0.03f };
     for (const float duration: durations)
     {
         AnimationLibrary lib;
-        const AnimId     id = lib.AddClip(MakeClip("A", 5, duration, true));
+        const AnimId     id = lib.AddClip(MakeClip_("A", 5, duration, true));
         const int64_t    us = lib.Get(id).GetFrameDurationUnits();
 
         AnimPlayer player;
@@ -195,7 +197,7 @@ TEST(AnimPlayer, FrameIndexMatchesExactRationalForNonIntegerTickDurations)
         for (int tick = 1; tick <= 1800; ++tick)
         {
             (void)player.Update(lib, kStepSec);
-            ASSERT_EQ(player.GetFrame(), ExpectedLoopFrame(tick, us, 5)) << "duration " << duration << " tick " << tick;
+            ASSERT_EQ(player.GetFrame(), ExpectedLoopFrame_(tick, us, 5)) << "duration " << duration << " tick " << tick;
         }
     }
 }
@@ -203,7 +205,7 @@ TEST(AnimPlayer, FrameIndexMatchesExactRationalForNonIntegerTickDurations)
 TEST(AnimPlayer, NoDriftAfterAnHourOfFixedSteps)
 {
     AnimationLibrary lib;
-    const AnimId     id = lib.AddClip(MakeClip("A", 4, 0.1f, true));
+    const AnimId     id = lib.AddClip(MakeClip_("A", 4, 0.1f, true));
     AnimPlayer       player;
     player.Play(id);
 
@@ -219,7 +221,7 @@ TEST(AnimPlayer, NoDriftAfterAnHourOfFixedSteps)
 TEST(AnimPlayer, UpdateReportsOnlyFrameChanges)
 {
     AnimationLibrary lib;
-    const AnimId     id = lib.AddClip(MakeClip("A", 3, 0.1f, true));
+    const AnimId     id = lib.AddClip(MakeClip_("A", 3, 0.1f, true));
     AnimPlayer       player;
     player.Play(id);
 
@@ -234,7 +236,7 @@ TEST(AnimPlayer, UpdateReportsOnlyFrameChanges)
 TEST(AnimPlayer, LoopJumpsToLoopStartNotZero)
 {
     AnimationLibrary lib;
-    const AnimId     id = lib.AddClip(MakeClip("Intro", 5, 0.1f, true, 2));
+    const AnimId     id = lib.AddClip(MakeClip_("Intro", 5, 0.1f, true, 2));
     AnimPlayer       player;
     player.Play(id);
 
@@ -262,7 +264,7 @@ TEST(AnimPlayer, LoopJumpsToLoopStartNotZero)
 TEST(AnimPlayer, NonLoopStopsOnLastFrameAndFinishes)
 {
     AnimationLibrary lib;
-    const AnimId     id = lib.AddClip(MakeClip("Die", 4, 0.06f, false));   // 총 0.24초 = 14.4틱
+    const AnimId     id = lib.AddClip(MakeClip_("Die", 4, 0.06f, false));   // 총 0.24초 = 14.4틱
     AnimPlayer       player;
     player.Play(id);
 
@@ -288,8 +290,8 @@ TEST(AnimPlayer, NonLoopStopsOnLastFrameAndFinishes)
 TEST(AnimPlayer, PlayRestartsOnlyWhenAskedOrClipChanges)
 {
     AnimationLibrary lib;
-    const AnimId     a = lib.AddClip(MakeClip("A", 4, 0.1f, true));
-    const AnimId     b = lib.AddClip(MakeClip("B", 4, 0.1f, true));
+    const AnimId     a = lib.AddClip(MakeClip_("A", 4, 0.1f, true));
+    const AnimId     b = lib.AddClip(MakeClip_("B", 4, 0.1f, true));
 
     AnimPlayer player;
     player.Play(a);
@@ -318,7 +320,7 @@ TEST(AnimPlayer, PlayRestartsOnlyWhenAskedOrClipChanges)
 TEST(AnimPlayer, FinishedFlagClearsWhenRestarted)
 {
     AnimationLibrary lib;
-    const AnimId     id = lib.AddClip(MakeClip("Once", 2, 0.05f, false));
+    const AnimId     id = lib.AddClip(MakeClip_("Once", 2, 0.05f, false));
     AnimPlayer       player;
     player.Play(id);
     for (int i = 0; i < 20; ++i)
@@ -334,7 +336,7 @@ TEST(AnimPlayer, FinishedFlagClearsWhenRestarted)
 TEST(AnimPlayer, SpeedScaleStretchesTime)
 {
     AnimationLibrary lib;
-    const AnimId     id = lib.AddClip(MakeClip("A", 8, 0.1f, true));
+    const AnimId     id = lib.AddClip(MakeClip_("A", 8, 0.1f, true));
     AnimPlayer       fast;
     fast.Play(id);
     for (int i = 0; i < 6; ++i)
@@ -356,7 +358,7 @@ TEST(AnimPlayer, UpdateWithoutClipIsHarmless)
 TEST(AnimPlayer, SetNormalizedTimeMapsRatioToFrame)
 {
     AnimationLibrary lib;
-    const AnimId     id   = lib.AddClip(MakeClip("Run", 8, 0.1f, true));
+    const AnimId     id   = lib.AddClip(MakeClip_("Run", 8, 0.1f, true));
     const AnimClip&  clip = lib.Get(id);
 
     AnimPlayer player;
@@ -375,8 +377,8 @@ TEST(AnimPlayer, SetNormalizedTimeMapsRatioToFrame)
 TEST(AnimPlayer, SyncPhaseKeepsUpperAndLowerBodyInStep)
 {
     AnimationLibrary lib;
-    const AnimId     lower     = lib.AddClip(MakeClip("Lower", 6, 0.1f, true));
-    const AnimId     upper     = lib.AddClip(MakeClip("Upper", 12, 0.05f, true));
+    const AnimId     lower     = lib.AddClip(MakeClip_("Lower", 6, 0.1f, true));
+    const AnimId     upper     = lib.AddClip(MakeClip_("Upper", 12, 0.05f, true));
     const AnimClip&  lowerClip = lib.Get(lower);
     const AnimClip&  upperClip = lib.Get(upper);
 
@@ -397,8 +399,8 @@ TEST(AnimPlayer, SyncPhaseKeepsUpperAndLowerBodyInStep)
 TEST(AnimPlayer, SyncPhaseWithSameFrameCountGivesIdenticalFrames)
 {
     AnimationLibrary lib;
-    const AnimId     a = lib.AddClip(MakeClip("A", 6, 0.1f, true));
-    const AnimId     b = lib.AddClip(MakeClip("B", 6, 0.1f, true));
+    const AnimId     a = lib.AddClip(MakeClip_("A", 6, 0.1f, true));
+    const AnimId     b = lib.AddClip(MakeClip_("B", 6, 0.1f, true));
 
     AnimPlayer pa;
     AnimPlayer pb;
@@ -415,7 +417,7 @@ TEST(AnimPlayer, SyncPhaseWithSameFrameCountGivesIdenticalFrames)
 TEST(AnimPlayer, GetFrameDataReturnsCurrentFrame)
 {
     AnimationLibrary lib;
-    const AnimId     id = lib.AddClip(MakeClip("A", 3, 0.1f, true));
+    const AnimId     id = lib.AddClip(MakeClip_("A", 3, 0.1f, true));
     AnimPlayer       player;
     player.Play(id);
     for (int i = 0; i < 6; ++i)
