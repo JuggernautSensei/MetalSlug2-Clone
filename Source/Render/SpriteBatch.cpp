@@ -25,16 +25,23 @@ IntRect ComputeDestRect(
     const AnimFrame& _frame,
     const Vec2       _worldOrigin,
     const Vec2       _cameraPos,
-    const bool       _bFlipX)
+    const bool       _bFlipX,
+    const float      _scale)
 {
     const int originX = FloorToInt(_worldOrigin.x - _cameraPos.x);
     const int originY = FloorToInt(_worldOrigin.y - _cameraPos.y);
 
+    // 피벗(원점) 기준으로 확대한다 (1.0 이면 원본 크기)
+    const int w      = _scale == 1.f ? _frame.w : static_cast<int>(std::lround(static_cast<float>(_frame.w) * _scale));
+    const int h      = _scale == 1.f ? _frame.h : static_cast<int>(std::lround(static_cast<float>(_frame.h) * _scale));
+    const int pivotX = _scale == 1.f ? _frame.pivotX : static_cast<int>(std::lround(static_cast<float>(_frame.pivotX) * _scale));
+    const int pivotY = _scale == 1.f ? _frame.pivotY : static_cast<int>(std::lround(static_cast<float>(_frame.pivotY) * _scale));
+
     IntRect rect;
-    rect.w = _frame.w;
-    rect.h = _frame.h;
-    rect.y = originY - _frame.pivotY;
-    rect.x = _bFlipX ? originX + _frame.pivotX - _frame.w : originX - _frame.pivotX;
+    rect.w = w;
+    rect.h = h;
+    rect.y = originY - pivotY;
+    rect.x = _bFlipX ? originX + pivotX - w : originX - pivotX;
     return rect;
 }
 
@@ -401,7 +408,7 @@ void SpriteBatch::DrawFrame(
         return;
     }
 
-    const IntRect dest = ComputeDestRect(_frame, _worldOrigin, _cameraPos, _options.bFlipX);
+    const IntRect dest = ComputeDestRect(_frame, _worldOrigin, _cameraPos, _options.bFlipX, _options.scale);
 
     const SDL_FRect src = { static_cast<float>(_frame.x), static_cast<float>(_frame.y), static_cast<float>(_frame.w), static_cast<float>(_frame.h) };
     const SDL_FRect dst = { static_cast<float>(dest.x), static_cast<float>(dest.y), static_cast<float>(dest.w), static_cast<float>(dest.h) };

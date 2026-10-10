@@ -17,6 +17,9 @@ namespace
 {
     constexpr float kTickSec = 1.f / 60.f;
 
+    // 파이어샷 불꽃 확대 배율 (히트 박스 50x30 과 맞춘다)
+    constexpr float kFlameScale = 1.25f;
+
     [[nodiscard]] const AnimFrame* PickClipFrame_(
         const AnimationLibrary* _pAnims,
         const String&           _name,
@@ -95,7 +98,7 @@ bool SubmitPlayerBullet(
             {
                 return false;
             }
-            _sprites.Submit(_layer, 0, *pFrame, _pos, { .bFlipX = !bRight });
+            _sprites.Submit(_layer, 0, *pFrame, _pos, { .bFlipX = !bRight, .scale = kFlameScale });
             return true;
         }
         default:

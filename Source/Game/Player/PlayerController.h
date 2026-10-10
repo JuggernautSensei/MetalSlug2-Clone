@@ -90,6 +90,8 @@ private:
     void TickKnife_(const PlayerContext& _ctx, const PlayerCommand& _command);
     void TickBomb_(const PlayerContext& _ctx, const PlayerCommand& _command);
     void TickShot_(const PlayerContext& _ctx, const PlayerCommand& _command);
+    void FireBullet_(const PlayerContext& _ctx, const WeaponTuning& _weapon);
+    void CancelBurst_();
     void Respawn_(const PlayerContext& _ctx);
     void UpdateAim_(const PlayerCommand& _command);
     void DeriveState_();
@@ -117,6 +119,9 @@ private:
     bool m_bAirFromJump     = true;
 
     int      m_shotTicksLeft       = 0;
+    int      m_burstLeft           = 0;       // 연속 사격(버스트)에서 아직 나가지 않은 발수
+    int      m_burstTimer          = 0;       // 다음 버스트 탄까지 남은 틱
+    bool     m_bBurstAir           = false;   // 버스트를 시작할 때 공중이었는가 (착지/이륙하면 캔슬)
     int      m_knifeTick           = -1;   // -1: 베기 없음, 0.. : 발동 후 경과 틱
     uint32_t m_knifeHitId          = kNoHitId;
     bool     m_bSlashSecond        = false;

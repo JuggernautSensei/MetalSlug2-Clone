@@ -56,11 +56,12 @@ constexpr ARRAY<int, 4> kWeapons = {
 }
 }   // namespace
 
-TEST(PlayerWeapon, EveryWeaponFiresAtItsTunedRateWhileHeld)
+TEST(PlayerWeapon, HoldRepeatWeaponsFireAtTheirTunedRateWhileHeld)
 {
-    for (const int raw: kWeapons)
+    // 샷건/로켓만 홀드 반복이 있다. 권총/HMG/화염은 연타(또는 버스트)로만 발사한다
+    for (const eWeapon weapon: { eWeapon::Shotgun, eWeapon::Rocket })
     {
-        const eWeapon weapon = static_cast<eWeapon>(raw);
+        const int raw = static_cast<int>(weapon);
         Sim           sim;
         sim.Player().PickUpWeapon(weapon, sim.Tune());
         const int interval = FireIntervalOf_(sim.Tune(), weapon);
@@ -86,14 +87,31 @@ TEST(PlayerWeapon, EveryWeaponFiresAtItsTunedRateWhileHeld)
     }
 }
 
-TEST(PlayerWeapon, HmgHoldFiresAboutTwentyTimesPerSecond)
+TEST(PlayerWeapon, TapOnlyWeaponsNeverRepeatOnHold)
 {
+    for (const eWeapon weapon: { eWeapon::Pistol, eWeapon::Flame })
+    {
+        Sim sim;
+        sim.Player().PickUpWeapon(weapon, sim.Tune());
+        EXPECT_EQ(sim.Tune().weapons.Get(weapon).holdRepeatTicks, 0);
+        sim.Hold(eAction::Shot);
+        sim.Step(300);
+        EXPECT_EQ(sim.Player().GetStats().shotsFired, 1) << "weapon " << static_cast<int>(weapon);
+    }
+}
+
+TEST(PlayerWeapon, HmgBurstBulletsFollowTheAimAngleOfEachShot)
+{
+    // 버스트 도중 위를 누르면 조준각이 스윕하므로 뒤쪽 탄일수록 더 위를 향한다
     Sim sim;
+    sim.Step(2);
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
-    sim.Hold(eAction::Shot);
-    sim.Step(60);
-    EXPECT_GE(sim.Player().GetStats().shotsFired, 19);
-    EXPECT_LE(sim.Player().GetStats().shotsFired, 21);
+    sim.Tap(eAction::Shot);
+    sim.Hold(eAction::Up);
+    sim.Step(40);
+    const Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
+    ASSERT_GE(bullets.size(), 2u);
+    EXPECT_LT(bullets[bullets.size() - 1].velocity.y, bullets[0].velocity.y);
 }
 
 TEST(PlayerWeapon, PickupAmmoComesFromTuningAndSameWeaponStacks)
@@ -135,8 +153,13 @@ TEST(PlayerWeapon, EmptyWeaponRevertsToPistolAfterExactlyItsAmmo)
         sim.Player().PickUpWeapon(weapon, sim.Tune());
         const int ammo = sim.Tune().weapons.GetPickupAmmo(weapon);
 
-        sim.Hold(eAction::Shot);
-        const int ticks = sim.StepUntilWeapon(4000, eWeapon::Pistol);
+        int ticks = -1;
+        for (int tick = 0; tick < 4000 && ticks < 0; ++tick)
+        {
+            sim.Set(eAction::Shot, tick % 40 == 0);   // 연타 (HMG 는 버스트가 끝난 뒤 다시 누른다)
+            sim.Step();
+            ticks = sim.Player().GetWeapon().weapon == eWeapon::Pistol ? tick : -1;
+        }
         ASSERT_GE(ticks, 0) << "weapon " << raw;
         EXPECT_EQ(sim.Player().GetStats().shotsFired, ammo) << "weapon " << raw;
         EXPECT_EQ(sim.Player().GetWeapon().ammo, 0);
@@ -166,7 +189,7 @@ TEST(PlayerWeapon, HmgShotDamagesAJeepByItsTunedDamage)
     const int hp = DummyOf_(sim, id).health.hp;
     sim.Tap(eAction::Shot);
     sim.Step(30);
-    EXPECT_EQ(DummyOf_(sim, id).health.hp, hp - sim.Tune().weapons.hmg.damage);
+    EXPECT_EQ(DummyOf_(sim, id).health.hp, hp - sim.Tune().weapons.hmg.damage * sim.Tune().weapons.hmg.burstShots);   // 한 번 눌러 버스트 전체가 명중
 }
 
 TEST(PlayerWeapon, ShotgunAndFlamePierceBothJeeps)

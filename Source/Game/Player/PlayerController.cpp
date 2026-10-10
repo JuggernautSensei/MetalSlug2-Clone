@@ -102,6 +102,8 @@ void PlayerController::Reset(
     m_bAirFromJump     = true;
 
     m_shotTicksLeft       = 0;
+    m_burstLeft           = 0;
+    m_burstTimer          = 0;
     m_knifeTick           = -1;
     m_knifeHitId          = kNoHitId;
     m_bSlashSecond        = false;
@@ -148,6 +150,8 @@ void PlayerController::SetVictory()
     ++m_stateSerial;
     m_overlay       = eOverlay::None;
     m_shotTicksLeft = 0;
+    m_burstLeft     = 0;
+    m_burstTimer    = 0;
     m_throwTick     = -1;
     if (m_knifeTick >= 0)
     {
@@ -184,6 +188,8 @@ void PlayerController::Kill()
     m_deadTicks       = 0;
     m_overlay         = eOverlay::None;
     m_shotTicksLeft   = 0;
+    m_burstLeft       = 0;
+    m_burstTimer      = 0;
     m_throwTick       = -1;
     m_body.velocity.x = 0.f;
     if (m_knifeTick >= 0)
@@ -607,23 +613,75 @@ void PlayerController::TickBomb_(
     }
 }
 
+void PlayerController::CancelBurst_()
+{
+    // 이동/점프/칼/폭탄으로 버스트가 끊기면 남은 탄을 버리고 사격 연출도 즉시 끝낸다
+    if (m_burstLeft > 0)
+    {
+        m_shotTicksLeft = 0;
+    }
+    m_burstLeft  = 0;
+    m_burstTimer = 0;
+}
+
 void PlayerController::TickShot_(
     const PlayerContext& _ctx,
     const PlayerCommand& _command)
 {
     if (m_knifeTick >= 0 || m_throwTick >= 0 || m_bSlashShown || m_bThrowShown)
     {
+        CancelBurst_();
         return;
     }
 
     const Tuning&       tuning = *_ctx.pTuning;
     const WeaponTuning& weapon = tuning.weapons.Get(m_weapon.weapon);
-    const int           alive  = _ctx.pProjectiles->CountBullets(kPlayerOwnerId, static_cast<uint8_t>(m_weapon.weapon));
 
+    // 버스트 진행 중: 이동하거나 공중/지상이 바뀌면 캔슬, 아니면 간격마다 한 발씩
+    if (m_burstLeft > 0)
+    {
+        const bool bAir = m_pose == ePose::Air;
+        if (m_bMoving || bAir != m_bBurstAir || m_weapon.weapon == eWeapon::Pistol)
+        {
+            CancelBurst_();
+            return;
+        }
+        if (--m_burstTimer <= 0)
+        {
+            FireBullet_(_ctx, weapon);
+            if (--m_burstLeft > 0)
+            {
+                m_burstTimer = weapon.burstIntervalTicks;
+            }
+        }
+        return;
+    }
+
+    const int alive = _ctx.pProjectiles->CountBullets(kPlayerOwnerId, static_cast<uint8_t>(m_weapon.weapon));
     if (!ShouldFire(m_weapon, weapon, alive, _command.bShotBuffered, _command.bShotHeld))
     {
         return;
     }
+
+    FireBullet_(_ctx, weapon);
+    m_shotTicksLeft = weapon.shotOverlayTicks;
+    ++m_overlaySerial;
+    m_input.Consume(eAction::Shot);
+
+    // 헤비머신건: 한 번 입력 = 사격 모션 동안 이어지는 3~5발 (첫 발은 즉시)
+    if (weapon.burstShots > 1 && m_weapon.weapon != eWeapon::Pistol)
+    {
+        m_burstLeft  = weapon.burstShots - 1;
+        m_burstTimer = weapon.burstIntervalTicks;
+        m_bBurstAir  = m_pose == ePose::Air;
+    }
+}
+
+void PlayerController::FireBullet_(
+    const PlayerContext& _ctx,
+    const WeaponTuning&  _weapon)
+{
+    const Tuning& tuning = *_ctx.pTuning;
 
     const Vec2 muzzle    = GetMuzzlePosition(m_body.position, m_facing, m_pose, m_aim, tuning.muzzle);
     Vec2       direction = GetAimDirection(m_aim, m_facing);
@@ -634,12 +692,13 @@ void PlayerController::TickShot_(
     }
     const Vec2 chest = { m_body.position.x, m_body.position.y - m_body.size.y * 0.6f };
 
-    BulletSpawn spawn = MakeBulletSpawn(m_weapon.weapon, weapon, kPlayerOwnerId, muzzle, chest, direction);
+    BulletSpawn spawn = MakeBulletSpawn(m_weapon.weapon, _weapon, kPlayerOwnerId, muzzle, chest, direction);
     _ctx.pProjectiles->SpawnBullet(spawn, *_ctx.pCombat);
     if (m_weapon.weapon == eWeapon::Flame)
     {
+        // 화염은 크기가 커진 만큼 세 연기 탄의 세로 간격도 넓힌다
         constexpr ARRAY<float, 2> kSpeedScale = { 0.7f, 1.3f };
-        constexpr ARRAY<float, 2> kLift       = { -7.f, 7.f };
+        constexpr ARRAY<float, 2> kLift       = { -8.f, 8.f };
         for (size_t i = 0; i < kSpeedScale.size(); ++i)
         {
             BulletSpawn extra = spawn;
@@ -649,11 +708,12 @@ void PlayerController::TickShot_(
             _ctx.pProjectiles->SpawnBullet(extra, *_ctx.pCombat);
         }
     }
-    m_shotTicksLeft = weapon.shotOverlayTicks;
-    ++m_overlaySerial;
     ++m_stats.shotsFired;
-    m_input.Consume(eAction::Shot);
     OnFired(m_weapon);
+    if (m_weapon.weapon == eWeapon::Pistol)
+    {
+        m_burstLeft = 0;
+    }
 }
 
 RigState PlayerController::MakeRigState() const
@@ -708,6 +768,7 @@ uint64_t PlayerController::HashState() const
     HashBytes_(hash, m_invincibleTicks);
     HashBytes_(hash, m_facing);
     HashBytes_(hash, m_stats.shotsFired);
+    HashBytes_(hash, m_burstLeft);
     HashBytes_(hash, m_stats.knifeSlashes);
     HashBytes_(hash, m_stats.bombsThrown);
     HashBytes_(hash, m_stats.jumps);

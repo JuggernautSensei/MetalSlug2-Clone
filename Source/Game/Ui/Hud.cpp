@@ -80,14 +80,7 @@ HudModel MakeHudModel(
     model.bInfiniteAmmo = !_player.GetWeapon().HasFiniteAmmo();
     model.ammo          = _player.GetWeapon().ammo;
     model.bombs         = _player.GetWeapon().bombs;
-    switch (_player.GetWeapon().weapon)
-    {
-        case eWeapon::Hmg: model.weaponLetter = 'H'; break;
-        case eWeapon::Shotgun: model.weaponLetter = 'S'; break;
-        case eWeapon::Rocket: model.weaponLetter = 'R'; break;
-        case eWeapon::Flame: model.weaponLetter = 'F'; break;
-        default: break;
-    }
+    // 원작 HUD 는 무기 글자 없이 탄수 숫자만 보여준다 (weaponLetter 는 0 으로 둔다)
     return model;
 }
 
