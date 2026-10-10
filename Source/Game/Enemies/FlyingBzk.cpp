@@ -2,31 +2,36 @@
 #include <format>
 
 #include "Base/Math.h"
-
 #include "Game/Enemies/EnemyCommon.h"
 #include "Game/Enemies/EnemyDefParse.h"
 
 namespace slug
 {
+
 namespace
 {
-    enum eFlyingState : int
+    enum class eFlyingState
     {
-        kDescend,
-        kShot
+        Descend,
+        Shot
     };
 
-    [[nodiscard]] bool IsOnScreen_(const Enemy& _e, const EnemyEnv& _env)
+    [[nodiscard]] bool IsOnScreen_(
+        const Enemy&    _e,
+        const EnemyEnv& _env)
     {
         const Vec2 center = { _e.body.position.x, _e.body.position.y - _e.body.size.y * 0.5f };
         return _env.ctx.cameraView.Contains(center);
     }
 
-    void UpdatePosture_(Enemy& _e, const FlyingBzkCfg& _cfg, const EnemyEnv& _env)
+    void UpdatePosture_(
+        Enemy&              _e,
+        const FlyingBzkCfg& _cfg,
+        const EnemyEnv&     _env)
     {
         const float dx  = std::abs(_env.ctx.player.center.x - _e.body.position.x);
         const float dy  = _env.ctx.player.center.y - (_e.body.position.y + _cfg.muzzleBase.y);
-        const float deg = dy > 0.f ? std::atan2(dy, slug::Max(dx, 0.001f)) * slug::kRad2Deg : 0.f;
+        const float deg = dy > 0.f ? std::atan2(dy, Max(dx, 0.001f)) * kRad2Deg : 0.f;
         for (int i = 0; i < 5; ++i)
         {
             if (std::abs(deg - _cfg.postureDeg[i]) <= _cfg.windowDeg)
@@ -37,22 +42,31 @@ namespace
         }
     }
 
-    void Go_(Enemy& _e, const EnemyDef& _def, const int _state)
+    void Go_(
+        Enemy&             _e,
+        const EnemyDef&    _def,
+        const eFlyingState _state)
     {
         const FlyingBzkCfg& cfg = _def.flyingBzk;
-        EnterState(_e, _state);
-        SetClip(_e, _state == kShot ? cfg.clipShot[_e.aux2] : cfg.clipReady[_e.aux2], true);
+        EnterState(_e, static_cast<int>(_state));
+        SetClip(_e, _state == eFlyingState::Shot ? cfg.clipShot[_e.aux2] : cfg.clipReady[_e.aux2], true);
     }
 
-    void Init_(Enemy& _e, const EnemyDef& _def, EnemyEnv&)
+    void Init_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&)
     {
         PrepareBody(_e, _def);
         _e.body.bUseGravity = false;
         _e.aux3             = -1;   // 초기 방향 LEFT
-        Go_(_e, _def, kDescend);
+        Go_(_e, _def, eFlyingState::Descend);
     }
 
-    void Tick_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void Tick_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         const FlyingBzkCfg& cfg = _def.flyingBzk;
         _e.body.velocity        = { 0.f, 0.f };
@@ -80,10 +94,10 @@ namespace
                 if (landedIndex >= 0)
                 {
                     SpawnParams params;
-                    params.facing     = _e.facing;
-                    params.drop       = _e.drop;
-                    params.userTag    = _e.userTag;
-                    params.bActivated = true;
+                    params.facing            = _e.facing;
+                    params.drop              = _e.drop;
+                    params.userTag           = _e.userTag;
+                    params.bActivated        = true;
                     const EnemyHandle handle = _env.world.SpawnDeferred(landedIndex, probe.position, params);
                     _env.world.NoteSuccessor(EnemyHandle { _e.id }, handle);
 
@@ -103,22 +117,22 @@ namespace
         FacePlayer(_e, _env);
         UpdatePosture_(_e, cfg, _env);
 
-        if (_e.state == kDescend)
+        if (_e.state == static_cast<int>(eFlyingState::Descend))
         {
             SetClip(_e, cfg.clipReady[_e.aux2]);
             ++_e.aux;
             if (_e.aux >= cfg.fireIntervalTicks && _e.counter < cfg.maxShots && IsOnScreen_(_e, _env) && _env.ctx.player.bAlive)
             {
                 _e.aux = 0;
-                Go_(_e, _def, kShot);
+                Go_(_e, _def, eFlyingState::Shot);
             }
         }
         else
         {
             if (ClipReachedFrame(_e, _def, cfg.fireFrame))
             {
-                const float rad = cfg.fireDeg[_e.aux2] * slug::kDeg2Rad;
-                const Vec2 dir = { std::cos(rad) * static_cast<float>(_e.facing), std::sin(rad) };
+                const float rad = cfg.fireDeg[_e.aux2] * kDeg2Rad;
+                const Vec2  dir = { std::cos(rad) * static_cast<float>(_e.facing), std::sin(rad) };
                 if (FireWeapon(_e, _def, _env, cfg.weaponRocket, dir, { dir.x * cfg.muzzleDist, dir.y * cfg.muzzleDist }))
                 {
                     ++_e.counter;
@@ -126,17 +140,21 @@ namespace
             }
             if (ClipFinished(_e, _def))
             {
-                Go_(_e, _def, kDescend);
+                Go_(_e, _def, eFlyingState::Descend);
             }
         }
     }
 
-    void OnDeath_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void OnDeath_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         _e.bGrounded = false;
         BeginSoldierDeath(_e, _def, _env);
     }
-}
+
+}   // namespace
 
 const BehaviorOps kFlyingBzkOps = {
     .init              = &Init_,
@@ -160,13 +178,13 @@ void ParseFlyingBzkCfg(
     c.fireIntervalTicks = _r.Ticks("fireIntervalSec");
     c.maxShots          = _r.Int("maxShots");
     c.fireFrame         = _r.Int("fireFrame");
-    (void)_r.NumArray("postureDeg", c.postureDeg, 5);
-    (void)_r.NumArray("fireDeg", c.fireDeg, 5);
-    c.windowDeg         = _r.Num("windowDeg");
-    c.muzzleBase        = _r.ReadVec2("muzzleBase", c.muzzleBase);
-    c.muzzleDist        = _r.Num("muzzleDist");
-    c.landProbe         = _r.Num("landProbe");
-    c.landedDef         = _r.Str("landedDef");
+    (void)_r.NumArray("postureDeg", c.postureDeg);
+    (void)_r.NumArray("fireDeg", c.fireDeg);
+    c.windowDeg  = _r.Num("windowDeg");
+    c.muzzleBase = _r.ReadVec2("muzzleBase", c.muzzleBase);
+    c.muzzleDist = _r.Num("muzzleDist");
+    c.landProbe  = _r.Num("landProbe");
+    c.landedDef  = _r.Str("landedDef");
 
     for (int i = 0; i < 5; ++i)
     {
@@ -183,4 +201,5 @@ void ParseFlyingBzkCfg(
     c.paraDestroy.offset = _r.ReadVec2("paraDestroyOffset", c.paraOffset);
     c.paraDestroy.layer  = 20;
 }
-}
+
+}   // namespace slug

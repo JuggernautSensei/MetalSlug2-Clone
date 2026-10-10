@@ -1,12 +1,11 @@
 #include "Game/Enemies/EnemyWorld.h"
-#include "Base/Types.h"
-#include "Base/Math.h"
 
 #include <algorithm>
 #include <cstring>
 
 #include "Base/Log.h"
-
+#include "Base/Math.h"
+#include "Base/Types.h"
 #include "Game/Enemies/EnemyCommon.h"
 #include "World/Constants.h"
 
@@ -15,15 +14,15 @@ namespace slug
 
 namespace
 {
-    constexpr float kSpawnSnapPx     = 16.f;    // 스폰 시 발 아래 지면에 붙이는 최대 거리
-    constexpr int   kEnemyLayer      = 15;      // 플레이어(20) 뒤, 지면 위
-    constexpr int   kOverlayLayer    = 16;
-    constexpr int   kShotLayer       = 32;      // 기존 탄(30)/폭탄(31) 위
+    constexpr float kSpawnSnapPx  = 16.f;   // 스폰 시 발 아래 지면에 붙이는 최대 거리
+    constexpr int   kEnemyLayer   = 15;     // 플레이어(20) 뒤, 지면 위
+    constexpr int   kOverlayLayer = 16;
+    constexpr int   kShotLayer    = 32;   // 기존 탄(30)/폭탄(31) 위
 
     [[nodiscard]] Vec2 Lerp_(
-        const Vec2 _a,
-        const Vec2 _b,
-        const float        _t)
+        const Vec2  _a,
+        const Vec2  _b,
+        const float _t)
     {
         return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
     }
@@ -59,12 +58,26 @@ namespace
         return tuning;
     }
 
+    void MixHash_(
+        uint64_t&     _hash,
+        const int64_t _value)
+    {
+        ARRAY<unsigned char, sizeof(int64_t)> bytes = {};
+        std::memcpy(bytes.data(), &_value, sizeof(int64_t));
+        for (const unsigned char byte: bytes)
+        {
+            _hash ^= byte;
+            _hash *= 1'099'511'628'211ull;
+        }
+    }
+
     [[nodiscard]] int SideIndex_(
         const int _facing)
     {
         return _facing < 0 ? 0 : 1;
     }
-}
+
+}   // namespace
 
 EnemyWorld::EnemyWorld(
     const EnemyDefLibrary* _pLibrary,
@@ -77,8 +90,8 @@ EnemyWorld::EnemyWorld(
 void EnemyWorld::SetLibrary(
     const EnemyDefLibrary* _pLibrary)
 {
-    m_pLibrary     = _pLibrary;
-    m_bAnimsBound  = false;
+    m_pLibrary    = _pLibrary;
+    m_bAnimsBound = false;
     m_clipIds.clear();
     m_projFlyIds.clear();
     m_projBeginIds.clear();
@@ -94,19 +107,19 @@ void EnemyWorld::Reset(
     m_successors.clear();
     m_effects.Clear();
     m_rng.Reseed(_seed);
-    m_nextId      = kEnemyOwnerBase;
-    m_bPlayerMinX = false;
-    m_bPlayerMaxX = false;
-    m_cameraScroll = 0.f;
+    m_nextId         = kEnemyOwnerBase;
+    m_bPlayerMinX    = false;
+    m_bPlayerMaxX    = false;
+    m_cameraScroll   = 0.f;
     m_shakeAmplitude = 0.f;
     m_shakeSeconds   = 0.f;
 }
 
 EnemyHandle EnemyWorld::Spawn(
-    const slug::StringView _defName,
-    const Vec2    _feet,
-    const SpawnParams&    _params,
-    const PhysicsWorld*   _pSnapWorld)
+    const StringView    _defName,
+    const Vec2          _feet,
+    const SpawnParams&  _params,
+    const PhysicsWorld* _pSnapWorld)
 {
     if (!m_pLibrary)
     {
@@ -117,7 +130,7 @@ EnemyHandle EnemyWorld::Spawn(
 
 EnemyHandle EnemyWorld::SpawnByIndex(
     const int           _defIndex,
-    const Vec2  _feet,
+    const Vec2          _feet,
     const SpawnParams&  _params,
     const PhysicsWorld* _pSnapWorld)
 {
@@ -132,12 +145,12 @@ EnemyHandle EnemyWorld::SpawnByIndex(
 }
 
 EnemyHandle EnemyWorld::SpawnDeferred(
-    const int           _defIndex,
-    const Vec2  _feet,
-    const SpawnParams&  _params)
+    const int          _defIndex,
+    const Vec2         _feet,
+    const SpawnParams& _params)
 {
     const uint32_t id = m_nextId++;
-    DeferredSpawn   spawn;
+    DeferredSpawn  spawn;
     spawn.id       = id;
     spawn.defIndex = _defIndex;
     spawn.feet     = _feet;
@@ -149,7 +162,7 @@ EnemyHandle EnemyWorld::SpawnDeferred(
 void EnemyWorld::Create_(
     const uint32_t      _id,
     const int           _defIndex,
-    const Vec2  _feet,
+    const Vec2          _feet,
     const SpawnParams&  _params,
     const PhysicsWorld* _pSnapWorld)
 {
@@ -205,7 +218,7 @@ void EnemyWorld::RegisterHurtboxes(
             continue;
         }
         Hurtbox hurtbox;
-        hurtbox.box   = def.hurtbox.At(e.body.position, e.facing);
+        hurtbox.box     = def.hurtbox.At(e.body.position, e.facing);
         hurtbox.team    = def.team;
         hurtbox.owner   = e.id;
         hurtbox.accepts = AcceptsFor(def.bHuman);
@@ -214,7 +227,7 @@ void EnemyWorld::RegisterHurtboxes(
 }
 
 void EnemyWorld::OnHitEvents(
-    const slug::Span<const HitEvent> _events)
+    const Span<const HitEvent> _events)
 {
     if (!m_pLibrary)
     {
@@ -273,7 +286,7 @@ void EnemyWorld::BeginDying_(
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
-    _e.life = eEnemyLife::Dying;
+    _e.life            = eEnemyLife::Dying;
     _e.body.velocity.x = 0.f;
     PushEvent(MakeEvent(_e, eEnemyEventKind::Died));
     const BehaviorOps& ops = GetBehaviorOps(_e.behavior);
@@ -311,7 +324,7 @@ void EnemyWorld::Tick(
 
     if (_ctx.pProjectiles)
     {
-        const slug::Vector<ShotFx> shotFx = _ctx.pProjectiles->TakeShotFx();
+        const Vector<ShotFx> shotFx = _ctx.pProjectiles->TakeShotFx();
         for (const ShotFx& fx: shotFx)
         {
             const int projIndex = static_cast<int>(fx.visual) - 1;
@@ -370,7 +383,8 @@ void EnemyWorld::Tick(
             {
                 e.bActive = true;
             }
-            if (!def.bNoDespawn && (e.body.position.x < view.min.x - m_pLibrary->GetGlobals().despawnBehindCameraPx || e.body.position.y > view.max.y + m_pLibrary->GetGlobals().despawnBelowCameraPx))
+            if (!def.bNoDespawn
+                && (e.body.position.x < view.min.x - m_pLibrary->GetGlobals().despawnBehindCameraPx || e.body.position.y > view.max.y + m_pLibrary->GetGlobals().despawnBelowCameraPx))
             {
                 e.life = eEnemyLife::Gone;
                 continue;
@@ -483,8 +497,8 @@ void EnemyWorld::BindAnims(
             {
                 for (int side = 0; side < 2; ++side)
                 {
-                    const slug::String name = ResolveSide(def.clips[c].clip.name, side == 0 ? -1 : 1);
-                    m_clipIds[d][c][side]  = _anims.Find(name);
+                    const String name     = ResolveSide(def.clips[c].clip.name, side == 0 ? -1 : 1);
+                    m_clipIds[d][c][side] = _anims.Find(name);
                 }
             }
         }
@@ -497,7 +511,7 @@ void EnemyWorld::BindAnims(
             const ProjectileDef& proj = m_pLibrary->GetProjectile(static_cast<int>(p));
             for (int side = 0; side < 2; ++side)
             {
-                const int facing = side == 0 ? -1 : 1;
+                const int facing        = side == 0 ? -1 : 1;
                 m_projFlyIds[p][side]   = proj.fly.name.empty() ? AnimId {} : _anims.Find(ResolveSide(proj.fly.name, facing));
                 m_projBeginIds[p][side] = proj.begin.name.empty() ? AnimId {} : _anims.Find(ResolveSide(proj.begin.name, facing));
                 m_projLandIds[p][side]  = proj.land.name.empty() ? AnimId {} : _anims.Find(ResolveSide(proj.land.name, facing));
@@ -532,7 +546,7 @@ void EnemyWorld::Submit(
         const EnemyDef&    def  = m_pLibrary->Get(e.defIndex);
         const BehaviorOps& ops  = GetBehaviorOps(e.behavior);
         const int          side = SideIndex_(e.facing);
-        const Vec2 feet = Lerp_(e.prevFeet, e.body.position, _alpha);
+        const Vec2         feet = Lerp_(e.prevFeet, e.body.position, _alpha);
 
         if (ops.submitParts)
         {
@@ -554,7 +568,7 @@ void EnemyWorld::Submit(
         {
             continue;
         }
-        const float lift = def.bCenterAnchor ? 0.f : static_cast<float>(pClip->GetFootBaseline());   // 중심 앵커 def 는 pivot 을 원점에 둔다
+        const float       lift = def.bCenterAnchor ? 0.f : static_cast<float>(pClip->GetFootBaseline());   // 중심 앵커 def 는 pivot 을 원점에 둔다
         SpriteDrawOptions options;
         options.flashAmount = HitFlashAmount(e);
         _sprites.Submit(kEnemyLayer, static_cast<int>(feet.y), *pFrame, { feet.x, feet.y - lift }, options);
@@ -584,19 +598,20 @@ void EnemyWorld::Submit(
         {
             continue;
         }
-        const size_t pIdx     = static_cast<size_t>(projIndex);
-        const bool   bRoll    = shot.params.rollSpeed > 0.f;
-        const int    side     = bRoll ? (shot.params.rollDirX < 0.f ? 0 : 1) : (shot.velocity.x < 0.f ? 0 : 1);
-        const int    landAge  = shot.ageTicks - shot.landedAge;
-        const int    landTicks = m_pLibrary->GetProjectile(projIndex).land.GetDurationTicks();
-        const bool   bLand    = bRoll && shot.bLanded && landAge < landTicks && _anims.IsValid(m_projLandIds[pIdx][side]);
-        const bool   bBegin   = !bLand && (shot.ageTicks < shot.params.startDelayTicks || (bRoll && !shot.bLanded)) && _anims.IsValid(m_projBeginIds[pIdx][side]);
-        const AnimId clipId   = bLand ? m_projLandIds[pIdx][side] : (bBegin ? m_projBeginIds[pIdx][side] : m_projFlyIds[pIdx][side]);
-        const AnimClip* pClip = _anims.GetOrNull(clipId);
+        const size_t    pIdx      = static_cast<size_t>(projIndex);
+        const bool      bRoll     = shot.params.rollSpeed > 0.f;
+        const int       side      = bRoll ? (shot.params.rollDirX < 0.f ? 0 : 1) : (shot.velocity.x < 0.f ? 0 : 1);
+        const int       landAge   = shot.ageTicks - shot.landedAge;
+        const int       landTicks = m_pLibrary->GetProjectile(projIndex).land.GetDurationTicks();
+        const bool      bLand     = bRoll && shot.bLanded && landAge < landTicks && _anims.IsValid(m_projLandIds[pIdx][side]);
+        const bool      bBegin    = !bLand && (shot.ageTicks < shot.params.startDelayTicks || (bRoll && !shot.bLanded)) && _anims.IsValid(m_projBeginIds[pIdx][side]);
+        const AnimId    clipId    = bLand ? m_projLandIds[pIdx][side] : (bBegin ? m_projBeginIds[pIdx][side] : m_projFlyIds[pIdx][side]);
+        const AnimClip* pClip     = _anims.GetOrNull(clipId);
         if (!pClip)
         {
             continue;
         }
+
         int ticks = std::max(0, shot.ageTicks - shot.params.startDelayTicks);
         if (bLand)
         {
@@ -666,9 +681,9 @@ EnemyHandle EnemyWorld::ResolveHandle(
     return { id };
 }
 
-slug::Vector<Aabb> EnemyWorld::GetSolidBoxes() const
+Vector<Aabb> EnemyWorld::GetSolidBoxes() const
 {
-    slug::Vector<Aabb> boxes;
+    Vector<Aabb> boxes;
     if (!m_pLibrary)
     {
         return boxes;
@@ -689,8 +704,8 @@ slug::Vector<Aabb> EnemyWorld::GetSolidBoxes() const
 }
 
 void EnemyWorld::SendCommand(
-    const EnemyHandle      _handle,
-    const slug::StringView _command)
+    const EnemyHandle _handle,
+    const StringView  _command)
 {
     if (!m_pLibrary)
     {
@@ -835,10 +850,10 @@ int EnemyWorld::CountAlive(
 }
 
 int EnemyWorld::CountAlive(
-    const slug::StringView _defName) const
+    const StringView _defName) const
 {
     EnemyFilter filter;
-    filter.defIndex = m_pLibrary ? m_pLibrary->FindIndex(_defName) : -1;
+    filter.defIndex     = m_pLibrary ? m_pLibrary->FindIndex(_defName) : -1;
     filter.bHostileOnly = false;
     if (filter.defIndex < 0)
     {
@@ -847,9 +862,9 @@ int EnemyWorld::CountAlive(
     return CountAlive(filter);
 }
 
-slug::Vector<EnemyEvent> EnemyWorld::TakeEvents()
+Vector<EnemyEvent> EnemyWorld::TakeEvents()
 {
-    slug::Vector<EnemyEvent> out = std::move(m_events);
+    Vector<EnemyEvent> out = std::move(m_events);
     m_events.clear();
     return out;
 }
@@ -864,7 +879,7 @@ void EnemyWorld::ClearMonsters(
     size_t keep = 0;
     for (size_t i = 0; i < m_enemies.size(); ++i)
     {
-        Enemy& e = m_enemies[i];
+        Enemy&     e       = m_enemies[i];
         const bool bRemove = m_pLibrary->Get(e.defIndex).team == eTeam::Enemy || _bIncludeNpc;
         if (!bRemove)
         {
@@ -932,37 +947,28 @@ void EnemyWorld::CancelPending()
 
 uint64_t EnemyWorld::HashState() const
 {
-    uint64_t   hash = 14695981039346656037ull;
-    const auto Mix  = [&hash](const int64_t _value) {
-        unsigned char bytes[sizeof(int64_t)];
-        std::memcpy(bytes, &_value, sizeof(int64_t));
-        for (const unsigned char byte: bytes)
-        {
-            hash ^= byte;
-            hash *= 1099511628211ull;
-        }
-    };
+    uint64_t hash = 14'695'981'039'346'656'037ull;
     for (const Enemy& e: m_enemies)
     {
-        Mix(static_cast<int64_t>(e.id));
-        Mix(e.defIndex);
-        Mix(static_cast<int64_t>(e.life));
-        Mix(e.state);
-        Mix(e.stateTicks);
-        Mix(e.clipTicks);
-        Mix(e.clip);
-        Mix(e.health.hp);
-        Mix(e.facing);
-        Mix(e.counter);
-        Mix(e.aux);
-        Mix(e.aux2);
-        Mix(e.aux3);
-        Mix(e.aux4);
-        Mix(e.shotsFired);
-        Mix(static_cast<int64_t>(e.body.position.x * 16.f));
-        Mix(static_cast<int64_t>(e.body.position.y * 16.f));
+        MixHash_(hash, static_cast<int64_t>(e.id));
+        MixHash_(hash, e.defIndex);
+        MixHash_(hash, static_cast<int64_t>(e.life));
+        MixHash_(hash, e.state);
+        MixHash_(hash, e.stateTicks);
+        MixHash_(hash, e.clipTicks);
+        MixHash_(hash, e.clip);
+        MixHash_(hash, e.health.hp);
+        MixHash_(hash, e.facing);
+        MixHash_(hash, e.counter);
+        MixHash_(hash, e.aux);
+        MixHash_(hash, e.aux2);
+        MixHash_(hash, e.aux3);
+        MixHash_(hash, e.aux4);
+        MixHash_(hash, e.shotsFired);
+        MixHash_(hash, static_cast<int64_t>(e.body.position.x * 16.f));
+        MixHash_(hash, static_cast<int64_t>(e.body.position.y * 16.f));
     }
-    Mix(static_cast<int64_t>(m_events.size()));
+    MixHash_(hash, static_cast<int64_t>(m_events.size()));
     return hash;
 }
 
@@ -1012,9 +1018,63 @@ EnemyEvent EnemyWorld::MakeEvent(
     if (m_pLibrary && _e.defIndex >= 0)
     {
         const EnemyDef& def = m_pLibrary->Get(_e.defIndex);
-        event.defName = def.name;
-        event.score   = _kind == eEnemyEventKind::Died ? def.score : 0;
+        event.defName       = def.name;
+        event.score         = _kind == eEnemyEventKind::Died ? def.score : 0;
     }
     return event;
 }
+
+const EnemyDefLibrary* EnemyWorld::GetLibrary() const
+{
+    return m_pLibrary;
 }
+
+void EnemyWorld::ReseedRng(
+    const uint64_t _seed)
+{
+    m_rng.Reseed(_seed);
+}
+
+void EnemyWorld::SetSpriteLibrary(
+    const SpriteLibrary* _pSprites)
+{
+    m_pSprites = _pSprites;
+}
+
+bool EnemyWorld::HasPlayerMinX() const
+{
+    return m_bPlayerMinX;
+}
+
+float EnemyWorld::GetPlayerMinX() const
+{
+    return m_playerMinX;
+}
+
+bool EnemyWorld::HasPlayerMaxX() const
+{
+    return m_bPlayerMaxX;
+}
+
+float EnemyWorld::GetPlayerMaxX() const
+{
+    return m_playerMaxX;
+}
+
+void EnemyWorld::RequestCameraScroll(
+    const float _dx)
+{
+    m_cameraScroll += _dx;
+}
+
+Span<const Enemy> EnemyWorld::GetEnemies() const
+{
+    return m_enemies;
+}
+
+size_t EnemyWorld::GetCount() const
+{
+    return m_enemies.size();
+}
+
+}   // namespace slug

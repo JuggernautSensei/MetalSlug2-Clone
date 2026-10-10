@@ -1,193 +1,212 @@
-#include "Game/Enemies/EnemyCommon.h"
 #include "Base/Math.h"
+#include "Game/Enemies/EnemyCommon.h"
 #include "Game/Enemies/EnemyDefParse.h"
 #include "Game/Enemies/VehicleCommon.h"
 
 namespace slug
 {
+
 namespace
 {
-    enum eJeepState : int
+    enum class eJeepState
     {
-        kWait,
-        kIdleAndMove,
-        kMove,
-        kTurn,
-        kTurnToMove,
-        kIdle,
-        kAimming,
-        kShotIdle,
-        kShotReady,
-        kShot,
-        kReAim,
-        kTurnAfterShot
+        Wait,
+        IdleAndMove,
+        Move,
+        Turn,
+        TurnToMove,
+        Idle,
+        Aimming,
+        ShotIdle,
+        ShotReady,
+        Shot,
+        ReAim,
+        TurnAfterShot
     };
 
-    [[nodiscard]] int ClipOf_(const Enemy& _e, const JeepCfg& _c)
+    [[nodiscard]] int ClipOf_(
+        const Enemy&   _e,
+        const JeepCfg& _c)
     {
-        switch (_e.state)
+        switch (static_cast<eJeepState>(_e.state))
         {
-            case kMove: return _c.clipMove;
-            case kTurn:
-            case kTurnToMove:
-            case kTurnAfterShot: return _c.clipTurn;
-            case kAimming: return _c.clipAimming;
-            case kShotIdle: return _c.clipReady;
-            case kShotReady: return _c.clipShotReady;
-            case kShot: return _c.clipShot;
-            case kReAim: return _c.clipReAim;
+            case eJeepState::Move: return _c.clipMove;
+            case eJeepState::Turn:
+            case eJeepState::TurnToMove:
+            case eJeepState::TurnAfterShot: return _c.clipTurn;
+            case eJeepState::Aimming: return _c.clipAimming;
+            case eJeepState::ShotIdle: return _c.clipReady;
+            case eJeepState::ShotReady: return _c.clipShotReady;
+            case eJeepState::Shot: return _c.clipShot;
+            case eJeepState::ReAim: return _c.clipReAim;
             default: return _c.clipIdle;
         }
     }
 
-    void Go_(Enemy& _e, const EnemyDef& _def, const int _state)
+    void Go_(
+        Enemy&           _e,
+        const EnemyDef&  _def,
+        const eJeepState _state)
     {
-        EnterState(_e, _state);
+        EnterState(_e, static_cast<int>(_state));
         SetClip(_e, ClipOf_(_e, _def.jeep), true);
     }
 
-    [[nodiscard]] bool Done_(const Enemy& _e, const EnemyDef& _def)
+    [[nodiscard]] bool Done_(
+        const Enemy&    _e,
+        const EnemyDef& _def)
     {
         return _e.clip >= 0 && _e.stateTicks >= _def.GetClip(_e.clip).GetDurationTicks();
     }
 
-    [[nodiscard]] float TargetX_(const Enemy& _e, const JeepCfg& _c, const Aabb& _view)
+    [[nodiscard]] float TargetX_(
+        const Enemy&   _e,
+        const JeepCfg& _c,
+        const Aabb&    _view)
     {
         return _e.aux < 0 ? _view.min.x + _c.edgeInset : _view.max.x - _c.edgeInset;
     }
 
-    [[nodiscard]] bool PlayerOnFireSide_(const Enemy& _e, const EnemyEnv& _env)
+    [[nodiscard]] bool PlayerOnFireSide_(
+        const Enemy&    _e,
+        const EnemyEnv& _env)
     {
         return DxToPlayer(_e, _env) * static_cast<float>(_e.facing) < 0.f;
     }
 
-    void Init_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void Init_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         (void)_env;
         PrepareBody(_e, _def);
-        Go_(_e, _def, kWait);
+        Go_(_e, _def, eJeepState::Wait);
     }
 
-    void Tick_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void Tick_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         const JeepCfg& c    = _def.jeep;
         const Aabb&    view = _env.ctx.cameraView;
         _e.body.velocity.x  = 0.f;
 
-        switch (_e.state)
+        switch (static_cast<eJeepState>(_e.state))
         {
-            case kWait:
+            case eJeepState::Wait:
                 if (_e.bActive)
                 {
-                    Go_(_e, _def, kIdleAndMove);
+                    Go_(_e, _def, eJeepState::IdleAndMove);
                 }
                 break;
 
-            case kIdleAndMove:
+            case eJeepState::IdleAndMove:
                 if (_e.stateTicks >= c.idleTicks)
                 {
                     _e.aux = DxToPlayer(_e, _env) < 0.f ? -1 : 1;   // 플레이어가 왼쪽이면 좌측 가장자리
-                    Go_(_e, _def, _e.facing == _e.aux ? kMove : kTurnToMove);
+                    Go_(_e, _def, _e.facing == _e.aux ? eJeepState::Move : eJeepState::TurnToMove);
                 }
                 break;
 
-            case kTurnToMove:
+            case eJeepState::TurnToMove:
                 if (Done_(_e, _def))
                 {
                     _e.facing = -_e.facing;
-                    Go_(_e, _def, kMove);
+                    Go_(_e, _def, eJeepState::Move);
                 }
                 break;
 
-            case kMove:
+            case eJeepState::Move:
             {
-                _e.body.velocity.x = static_cast<float>(_e.facing) * c.speed;
+                _e.body.velocity.x    = static_cast<float>(_e.facing) * c.speed;
                 const float remaining = (TargetX_(_e, c, view) - _e.body.position.x) * static_cast<float>(_e.facing);
                 if (remaining <= c.targetTol)
                 {
-                    Go_(_e, _def, kTurn);
+                    Go_(_e, _def, eJeepState::Turn);
                 }
                 break;
             }
 
-            case kTurn:
+            case eJeepState::Turn:
                 if (Done_(_e, _def))
                 {
                     _e.facing = -_e.facing;
-                    Go_(_e, _def, kIdle);
+                    Go_(_e, _def, eJeepState::Idle);
                 }
                 break;
 
-            case kIdle:
+            case eJeepState::Idle:
                 if (_e.stateTicks >= c.idleTicks)
                 {
                     if (PlayerOnFireSide_(_e, _env))
                     {
                         _e.counter = c.bullets;
-                        Go_(_e, _def, kAimming);
+                        Go_(_e, _def, eJeepState::Aimming);
                     }
                     else
                     {
-                        Go_(_e, _def, kTurn);
+                        Go_(_e, _def, eJeepState::Turn);
                     }
                 }
                 break;
 
-            case kAimming:
+            case eJeepState::Aimming:
                 if (Done_(_e, _def))
                 {
-                    Go_(_e, _def, kShotIdle);
+                    Go_(_e, _def, eJeepState::ShotIdle);
                 }
                 break;
 
-            case kShotIdle:
+            case eJeepState::ShotIdle:
                 if (_e.counter == 2 || _e.counter == 0)
                 {
                     if (_e.stateTicks >= c.waitTicks)
                     {
-                        Go_(_e, _def, _e.counter == 0 ? kReAim : kShotReady);
+                        Go_(_e, _def, _e.counter == 0 ? eJeepState::ReAim : eJeepState::ShotReady);
                     }
                 }
                 else
                 {
-                    Go_(_e, _def, kShotReady);
+                    Go_(_e, _def, eJeepState::ShotReady);
                 }
                 break;
 
-            case kShotReady:
+            case eJeepState::ShotReady:
                 if (Done_(_e, _def))
                 {
-                    Go_(_e, _def, kShot);
+                    Go_(_e, _def, eJeepState::Shot);
                 }
                 break;
 
-            case kShot:
+            case eJeepState::Shot:
                 if (ClipReachedFrame(_e, _def, c.fireFrame))
                 {
                     const float facing = static_cast<float>(_e.facing);
-                    const Vec2 back  = { -facing, 0.f };
-                    const Vec2 shift = { 20.f * static_cast<float>(_e.counter & 1) * -facing, 0.f };
+                    const Vec2  back   = { -facing, 0.f };
+                    const Vec2  shift  = { 20.f * static_cast<float>(_e.counter & 1) * -facing, 0.f };
                     (void)FireWeapon(_e, _def, _env, c.weaponRocket, back, shift);
                 }
                 if (Done_(_e, _def))
                 {
                     --_e.counter;
-                    Go_(_e, _def, kShotIdle);
+                    Go_(_e, _def, eJeepState::ShotIdle);
                 }
                 break;
 
-            case kReAim:
+            case eJeepState::ReAim:
                 if (Done_(_e, _def))
                 {
-                    Go_(_e, _def, kTurnAfterShot);
+                    Go_(_e, _def, eJeepState::TurnAfterShot);
                 }
                 break;
 
-            case kTurnAfterShot:
+            case eJeepState::TurnAfterShot:
                 if (Done_(_e, _def))
                 {
                     _e.facing = -_e.facing;
-                    Go_(_e, _def, kIdleAndMove);
+                    Go_(_e, _def, eJeepState::IdleAndMove);
                 }
                 break;
 
@@ -197,17 +216,21 @@ namespace
         (void)StepPhysics(_e, _def, _env);
     }
 
-    void OnDeath_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void OnDeath_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         BeginVehicleDeath(_e, _def, _env, _def.jeep.clipDestroy);
     }
-}
+
+}   // namespace
 
 const BehaviorOps kJeepOps = {
-    .init       = &Init_,
-    .tick       = &Tick_,
-    .onDeath    = &OnDeath_,
-    .tickDying  = &TickVehicleDeath,
+    .init      = &Init_,
+    .tick      = &Tick_,
+    .onDeath   = &OnDeath_,
+    .tickDying = &TickVehicleDeath,
 };
 
 void ParseJeepCfg(
@@ -236,4 +259,5 @@ void ParseJeepCfg(
 
     c.weaponRocket = _r.Weapon("rocket");
 }
-}
+
+}   // namespace slug

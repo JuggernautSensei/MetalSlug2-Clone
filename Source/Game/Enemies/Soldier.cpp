@@ -1,47 +1,58 @@
 #include <cmath>
-#include "Base/Types.h"
 
+#include "Base/Types.h"
 #include "Game/Enemies/EnemyCommon.h"
 #include "Game/Enemies/EnemyDefParse.h"
 
 namespace slug
 {
+
 namespace
 {
-    enum eSoldierState : int
+    enum class eSoldierState
     {
-        kWait,
-        kFall,
-        kLand,
-        kIdle,
-        kMove,
-        kMoveDown,
-        kHJump,
-        kThrow,
-        kSlash,
-        kJumpSlashReady,
-        kJumpSlash,
-        kJumpSlashLand
+        Wait,
+        Fall,
+        Land,
+        Idle,
+        Move,
+        MoveDown,
+        HJump,
+        Throw,
+        Slash,
+        JumpSlashReady,
+        JumpSlash,
+        JumpSlashLand
     };
 
-    void Go_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, int _state);
+    void Go_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env,
+        eSoldierState   _state);
 
-    [[nodiscard]] float AbsDx_(const Enemy& _e, const EnemyEnv& _env)
+    [[nodiscard]] float AbsDx_(
+        const Enemy&    _e,
+        const EnemyEnv& _env)
     {
         return std::abs(DxToPlayer(_e, _env));
     }
 
-    void Reposition_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, const int _fallback)
+    void Reposition_(
+        Enemy&              _e,
+        const EnemyDef&     _def,
+        EnemyEnv&           _env,
+        const eSoldierState _fallback)
     {
-        const SoldierCfg& cfg  = _def.soldier;
-        const float       dy   = DyToPlayer(_e, _env);
+        const SoldierCfg& cfg = _def.soldier;
+        const float       dy  = DyToPlayer(_e, _env);
         if (_e.bGrounded && _e.bOnOneWay && dy > cfg.dropDy)
         {
-            Go_(_e, _def, _env, kMoveDown);
+            Go_(_e, _def, _env, eSoldierState::MoveDown);
         }
         else if (_e.bGrounded && dy < -cfg.jumpDy)
         {
-            Go_(_e, _def, _env, kHJump);
+            Go_(_e, _def, _env, eSoldierState::HJump);
         }
         else
         {
@@ -49,70 +60,75 @@ namespace
         }
     }
 
-    void Go_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, int _state)
+    void Go_(
+        Enemy&              _e,
+        const EnemyDef&     _def,
+        EnemyEnv&           _env,
+        const eSoldierState _requestedState)
     {
-        const SoldierCfg& cfg = _def.soldier;
-        if (_state == kMove && _e.aiVariant == 1)
+        const SoldierCfg& cfg   = _def.soldier;
+        eSoldierState     state = _requestedState;
+        if (state == eSoldierState::Move && _e.aiVariant == 1)
         {
-            _state = kIdle;
+            state = eSoldierState::Idle;
         }
 
-        EnterState(_e, _state);
-        switch (_state)
+        EnterState(_e, static_cast<int>(state));
+        switch (state)
         {
-            case kWait:
+            case eSoldierState::Wait:
                 SetClip(_e, cfg.clipIdle, true);
                 _e.body.velocity.x = 0.f;
                 break;
-            case kFall:
+            case eSoldierState::Fall:
                 SetClip(_e, cfg.clipFall, true);
                 break;
-            case kLand:
+            case eSoldierState::Land:
                 SetClip(_e, cfg.clipLand, true);
                 _e.body.velocity.x = 0.f;
                 break;
-            case kIdle:
+            case eSoldierState::Idle:
                 FacePlayer(_e, _env);
                 SetClip(_e, cfg.clipIdle, true);
                 _e.body.velocity.x = 0.f;
                 break;
-            case kMove:
+            case eSoldierState::Move:
                 FacePlayer(_e, _env);
                 SetClip(_e, cfg.clipMove, true);
                 break;
-            case kMoveDown:
+            case eSoldierState::MoveDown:
                 SetClip(_e, cfg.clipMoveDown, true);
                 _e.body.velocity.x  = 0.f;
                 _e.body.bUseGravity = false;
                 break;
-            case kHJump:
+            case eSoldierState::HJump:
                 FacePlayer(_e, _env);
                 SetClip(_e, cfg.clipHJump, true);
                 _e.body.velocity.y = _def.physics.jumpVy;
                 _e.body.bGrounded  = false;
                 _e.bGrounded       = false;
                 break;
-            case kThrow:
+            case eSoldierState::Throw:
                 FacePlayer(_e, _env);
                 SetClip(_e, cfg.clipThrow, true);
                 _e.body.velocity.x = 0.f;
                 break;
-            case kSlash:
+            case eSoldierState::Slash:
                 FacePlayer(_e, _env);
                 SetClip(_e, cfg.clipSlash, true);
                 _e.body.velocity.x = 0.f;
                 break;
-            case kJumpSlashReady:
+            case eSoldierState::JumpSlashReady:
                 FacePlayer(_e, _env);
                 SetClip(_e, cfg.clipJumpSlashReady, true);
                 _e.body.velocity.y = _def.physics.jumpVy;
                 _e.body.bGrounded  = false;
                 _e.bGrounded       = false;
                 break;
-            case kJumpSlash:
+            case eSoldierState::JumpSlash:
                 SetClip(_e, cfg.clipJumpSlash, true);
                 break;
-            case kJumpSlashLand:
+            case eSoldierState::JumpSlashLand:
                 SetClip(_e, cfg.clipJumpSlashLand, true);
                 _e.body.velocity.x = 0.f;
                 break;
@@ -120,12 +136,15 @@ namespace
         }
     }
 
-    void DecideBomb_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void DecideBomb_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         const SoldierCfg& cfg   = _def.soldier;
         const float       absDx = AbsDx_(_e, _env);
 
-        if (_e.state == kIdle)
+        if (_e.state == static_cast<int>(eSoldierState::Idle))
         {
             if (_e.stateTicks < cfg.cooldownTicks)
             {
@@ -135,20 +154,20 @@ namespace
             {
                 if (Roll(_env, 2) == 0)
                 {
-                    Go_(_e, _def, _env, kMove);
+                    Go_(_e, _def, _env, eSoldierState::Move);
                 }
                 else
                 {
-                    Reposition_(_e, _def, _env, kMove);
+                    Reposition_(_e, _def, _env, eSoldierState::Move);
                 }
             }
             else
             {
                 switch (Roll(_env, 3))
                 {
-                    case 0: Go_(_e, _def, _env, kThrow); break;
-                    case 1: Reposition_(_e, _def, _env, kThrow); break;
-                    default: Go_(_e, _def, _env, kMove); break;
+                    case 0: Go_(_e, _def, _env, eSoldierState::Throw); break;
+                    case 1: Reposition_(_e, _def, _env, eSoldierState::Throw); break;
+                    default: Go_(_e, _def, _env, eSoldierState::Move); break;
                 }
             }
             return;
@@ -158,27 +177,30 @@ namespace
         {
             switch (Roll(_env, 3))
             {
-                case 0: Go_(_e, _def, _env, kIdle); break;
-                case 1: Reposition_(_e, _def, _env, kThrow); break;
-                default: Go_(_e, _def, _env, kThrow); break;
+                case 0: Go_(_e, _def, _env, eSoldierState::Idle); break;
+                case 1: Reposition_(_e, _def, _env, eSoldierState::Throw); break;
+                default: Go_(_e, _def, _env, eSoldierState::Throw); break;
             }
         }
         else if (absDx <= cfg.closeStop)
         {
-            Go_(_e, _def, _env, Roll(_env, 2) == 0 ? kIdle : kThrow);
+            Go_(_e, _def, _env, Roll(_env, 2) == 0 ? eSoldierState::Idle : eSoldierState::Throw);
         }
         else if (WallAhead(_e, _env, cfg.wallProbeW, cfg.wallProbeH, cfg.wallProbeX, cfg.wallProbeY))
         {
-            Go_(_e, _def, _env, Roll(_env, 2) == 0 ? kHJump : kThrow);
+            Go_(_e, _def, _env, Roll(_env, 2) == 0 ? eSoldierState::HJump : eSoldierState::Throw);
         }
     }
 
-    void DecideSword_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void DecideSword_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         const SoldierCfg& cfg   = _def.soldier;
         const float       absDx = AbsDx_(_e, _env);
 
-        if (_e.state == kIdle)
+        if (_e.state == static_cast<int>(eSoldierState::Idle))
         {
             if (_e.stateTicks < cfg.cooldownTicks)
             {
@@ -188,33 +210,33 @@ namespace
             {
                 if (Roll(_env, 2) == 0)
                 {
-                    Go_(_e, _def, _env, kMove);
+                    Go_(_e, _def, _env, eSoldierState::Move);
                 }
                 else
                 {
-                    Reposition_(_e, _def, _env, kMove);
+                    Reposition_(_e, _def, _env, eSoldierState::Move);
                 }
             }
             else if (absDx >= cfg.jumpAttack)
             {
-                Reposition_(_e, _def, _env, Roll(_env, 2) == 0 ? kJumpSlashReady : kMove);
+                Reposition_(_e, _def, _env, Roll(_env, 2) == 0 ? eSoldierState::JumpSlashReady : eSoldierState::Move);
             }
             else
             {
                 switch (Roll(_env, 3))
                 {
-                    case 0: Go_(_e, _def, _env, kSlash); break;
+                    case 0: Go_(_e, _def, _env, eSoldierState::Slash); break;
                     case 1:
                         if (_e.bGrounded && _e.bOnOneWay && DyToPlayer(_e, _env) > cfg.dropDy)
                         {
-                            Go_(_e, _def, _env, kMoveDown);
+                            Go_(_e, _def, _env, eSoldierState::MoveDown);
                         }
                         else
                         {
-                            Go_(_e, _def, _env, kHJump);
+                            Go_(_e, _def, _env, eSoldierState::HJump);
                         }
                         break;
-                    default: Go_(_e, _def, _env, kMove); break;
+                    default: Go_(_e, _def, _env, eSoldierState::Move); break;
                 }
             }
             return;
@@ -222,12 +244,12 @@ namespace
 
         if (_e.stateTicks >= cfg.cooldownTicks)
         {
-            int next = kMove;
+            eSoldierState next = eSoldierState::Move;
             switch (Roll(_env, 3))
             {
-                case 0: next = kIdle; break;
-                case 1: next = kJumpSlashReady; break;
-                default: next = kMove; break;
+                case 0: next = eSoldierState::Idle; break;
+                case 1: next = eSoldierState::JumpSlashReady; break;
+                default: next = eSoldierState::Move; break;
             }
             Reposition_(_e, _def, _env, next);
         }
@@ -235,25 +257,28 @@ namespace
         {
             if (Roll(_env, 2) == 0)
             {
-                Go_(_e, _def, _env, kIdle);
+                Go_(_e, _def, _env, eSoldierState::Idle);
             }
             else
             {
-                Go_(_e, _def, _env, absDx <= cfg.swordNear ? kSlash : kJumpSlashReady);
+                Go_(_e, _def, _env, absDx <= cfg.swordNear ? eSoldierState::Slash : eSoldierState::JumpSlashReady);
             }
         }
         else if (WallAhead(_e, _env, cfg.wallProbeW, cfg.wallProbeH, cfg.wallProbeX, cfg.wallProbeY))
         {
-            Go_(_e, _def, _env, kHJump);
+            Go_(_e, _def, _env, eSoldierState::HJump);
         }
     }
 
-    void DecideMissile_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void DecideMissile_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         const SoldierCfg& cfg   = _def.soldier;
         const float       absDx = AbsDx_(_e, _env);
 
-        if (_e.state == kIdle)
+        if (_e.state == static_cast<int>(eSoldierState::Idle))
         {
             if (_e.stateTicks < cfg.cooldownTicks)
             {
@@ -263,66 +288,72 @@ namespace
             {
                 if (Roll(_env, 2) == 0)
                 {
-                    Go_(_e, _def, _env, kMove);
+                    Go_(_e, _def, _env, eSoldierState::Move);
                 }
                 else
                 {
-                    Reposition_(_e, _def, _env, kMove);
+                    Reposition_(_e, _def, _env, eSoldierState::Move);
                 }
             }
             else
             {
-                Reposition_(_e, _def, _env, Roll(_env, 2) == 0 ? kThrow : kMove);
+                Reposition_(_e, _def, _env, Roll(_env, 2) == 0 ? eSoldierState::Throw : eSoldierState::Move);
             }
             return;
         }
 
         if (_e.stateTicks >= cfg.cooldownTicks)
         {
-            Reposition_(_e, _def, _env, Roll(_env, 2) == 0 ? kThrow : kIdle);
+            Reposition_(_e, _def, _env, Roll(_env, 2) == 0 ? eSoldierState::Throw : eSoldierState::Idle);
         }
         else if (WallAhead(_e, _env, cfg.wallProbeW, cfg.wallProbeH, cfg.wallProbeX, cfg.wallProbeY))
         {
-            Go_(_e, _def, _env, kHJump);
+            Go_(_e, _def, _env, eSoldierState::HJump);
         }
     }
 
-    void Init_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void Init_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         PrepareBody(_e, _def);
-        Go_(_e, _def, _env, kFall);
+        Go_(_e, _def, _env, eSoldierState::Fall);
     }
 
-    void Tick_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void Tick_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         const SoldierCfg& cfg   = _def.soldier;
         const float       speed = _def.physics.speed;
         const float       face  = static_cast<float>(_e.facing);
 
-        switch (_e.state)
+        switch (static_cast<eSoldierState>(_e.state))
         {
-            case kWait:
+            case eSoldierState::Wait:
                 if (_e.bActive)
                 {
-                    Go_(_e, _def, _env, kIdle);
+                    Go_(_e, _def, _env, eSoldierState::Idle);
                 }
                 break;
 
-            case kFall:
+            case eSoldierState::Fall:
                 _e.body.velocity.x = 0.f;
                 break;
 
-            case kLand:
+            case eSoldierState::Land:
                 if (ClipFinished(_e, _def))
                 {
-                    Go_(_e, _def, _env, kIdle);
+                    Go_(_e, _def, _env, eSoldierState::Idle);
                 }
                 break;
 
-            case kIdle:
+            case eSoldierState::Idle:
                 if (!_e.bGrounded)
                 {
-                    Go_(_e, _def, _env, kFall);
+                    Go_(_e, _def, _env, eSoldierState::Fall);
                     break;
                 }
                 _e.body.velocity.x = 0.f;
@@ -334,10 +365,10 @@ namespace
                 }
                 break;
 
-            case kMove:
+            case eSoldierState::Move:
                 if (!_e.bGrounded)
                 {
-                    Go_(_e, _def, _env, kFall);
+                    Go_(_e, _def, _env, eSoldierState::Fall);
                     break;
                 }
                 FacePlayer(_e, _env);
@@ -347,30 +378,30 @@ namespace
                     case eSoldierAi::Sword: DecideSword_(_e, _def, _env); break;
                     case eSoldierAi::Missile: DecideMissile_(_e, _def, _env); break;
                 }
-                if (_e.state == kMove)
+                if (_e.state == static_cast<int>(eSoldierState::Move))
                 {
                     const bool bRetreat = cfg.retreatBelow > 0.f && AbsDx_(_e, _env) < cfg.retreatBelow;
                     _e.body.velocity.x  = static_cast<float>(_e.facing) * speed * (bRetreat ? -1.f : 1.f);
                 }
                 break;
 
-            case kMoveDown:
-                _e.body.velocity.x     = 0.f;
-                _e.body.velocity.y     = _def.physics.dropSpeed;
+            case eSoldierState::MoveDown:
+                _e.body.velocity.x       = 0.f;
+                _e.body.velocity.y       = _def.physics.dropSpeed;
                 _e.body.dropThroughSteps = 2;
                 if (ClipFinished(_e, _def))
                 {
                     _e.body.bUseGravity = true;
                     _e.body.velocity.y  = 0.f;
-                    Go_(_e, _def, _env, kFall);
+                    Go_(_e, _def, _env, eSoldierState::Fall);
                 }
                 break;
 
-            case kHJump:
+            case eSoldierState::HJump:
                 _e.body.velocity.x = face * speed;
                 break;
 
-            case kThrow:
+            case eSoldierState::Throw:
                 _e.body.velocity.x = 0.f;
                 if (ClipReachedFrame(_e, _def, cfg.fireFrame))
                 {
@@ -378,11 +409,11 @@ namespace
                 }
                 if (ClipFinished(_e, _def))
                 {
-                    Go_(_e, _def, _env, kIdle);
+                    Go_(_e, _def, _env, eSoldierState::Idle);
                 }
                 break;
 
-            case kSlash:
+            case eSoldierState::Slash:
                 _e.body.velocity.x = 0.f;
                 if (ClipReachedFrame(_e, _def, cfg.slashFrame))
                 {
@@ -390,19 +421,19 @@ namespace
                 }
                 if (ClipFinished(_e, _def))
                 {
-                    Go_(_e, _def, _env, kIdle);
+                    Go_(_e, _def, _env, eSoldierState::Idle);
                 }
                 break;
 
-            case kJumpSlashReady:
+            case eSoldierState::JumpSlashReady:
                 _e.body.velocity.x = face * speed;
                 if (_e.stateTicks >= cfg.jumpReadyTicks)
                 {
-                    Go_(_e, _def, _env, kJumpSlash);
+                    Go_(_e, _def, _env, eSoldierState::JumpSlash);
                 }
                 break;
 
-            case kJumpSlash:
+            case eSoldierState::JumpSlash:
                 _e.body.velocity.x = face * speed;
                 if (ClipReachedFrame(_e, _def, cfg.jumpSlashFrame))
                 {
@@ -410,11 +441,11 @@ namespace
                 }
                 break;
 
-            case kJumpSlashLand:
+            case eSoldierState::JumpSlashLand:
                 _e.body.velocity.x = 0.f;
                 if (ClipFinished(_e, _def))
                 {
-                    Go_(_e, _def, _env, kIdle);
+                    Go_(_e, _def, _env, eSoldierState::Idle);
                 }
                 break;
 
@@ -423,31 +454,31 @@ namespace
 
         (void)StepPhysics(_e, _def, _env);
 
-        switch (_e.state)
+        switch (static_cast<eSoldierState>(_e.state))
         {
-            case kFall:
+            case eSoldierState::Fall:
                 if (_e.bGrounded)
                 {
-                    Go_(_e, _def, _env, _e.bActive ? kLand : kWait);
+                    Go_(_e, _def, _env, _e.bActive ? eSoldierState::Land : eSoldierState::Wait);
                 }
                 break;
-            case kMoveDown:
+            case eSoldierState::MoveDown:
                 if (_e.bGrounded && _e.stateTicks > 1)
                 {
                     _e.body.bUseGravity = true;
-                    Go_(_e, _def, _env, kLand);
+                    Go_(_e, _def, _env, eSoldierState::Land);
                 }
                 break;
-            case kHJump:
+            case eSoldierState::HJump:
                 if (_e.bGrounded && _e.stateTicks > 0)
                 {
-                    Go_(_e, _def, _env, kLand);
+                    Go_(_e, _def, _env, eSoldierState::Land);
                 }
                 break;
-            case kJumpSlash:
+            case eSoldierState::JumpSlash:
                 if (_e.bGrounded && _e.stateTicks > 0)
                 {
-                    Go_(_e, _def, _env, kJumpSlashLand);
+                    Go_(_e, _def, _env, eSoldierState::JumpSlashLand);
                 }
                 break;
             default: break;
@@ -456,11 +487,15 @@ namespace
         TickMelee(_e, _def, _env);
     }
 
-    void OnDeath_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void OnDeath_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         BeginSoldierDeath(_e, _def, _env);
     }
-}
+
+}   // namespace
 
 const BehaviorOps kSoldierOps = {
     .init              = &Init_,
@@ -477,7 +512,7 @@ void ParseSoldierCfg(
 {
     SoldierCfg& c = _def.soldier;
 
-    const slug::String ai = _r.Str("ai");
+    const String ai = _r.Str("ai");
     if (ai == "bomb")
     {
         c.ai = eSoldierAi::Bomb;
@@ -503,10 +538,10 @@ void ParseSoldierCfg(
     c.retreatBelow  = _r.Num("retreatBelow", 0.f);
     {
         const BoxDef probe = _r.Box("wallProbe");
-        c.wallProbeW = probe.w;
-        c.wallProbeH = probe.h;
-        c.wallProbeX = probe.cx;
-        c.wallProbeY = probe.cy;
+        c.wallProbeW       = probe.w;
+        c.wallProbeH       = probe.h;
+        c.wallProbeX       = probe.cx;
+        c.wallProbeY       = probe.cy;
     }
 
     c.clipIdle     = _r.Clip("idle");
@@ -518,11 +553,11 @@ void ParseSoldierCfg(
 
     if (c.ai == eSoldierAi::Sword)
     {
-        c.jumpAttack     = _r.Num("jumpAttack");
-        c.swordNear      = _r.Num("swordNear");
-        c.slashFrame     = _r.Int("slashFrame");
-        c.jumpSlashFrame = _r.Int("jumpSlashFrame");
-        c.jumpReadyTicks = _r.Ticks("jumpReadySec");
+        c.jumpAttack         = _r.Num("jumpAttack");
+        c.swordNear          = _r.Num("swordNear");
+        c.slashFrame         = _r.Int("slashFrame");
+        c.jumpSlashFrame     = _r.Int("jumpSlashFrame");
+        c.jumpReadyTicks     = _r.Ticks("jumpReadySec");
         c.clipSlash          = _r.Clip("slash");
         c.clipJumpSlashReady = _r.Clip("jumpSlashReady");
         c.clipJumpSlash      = _r.Clip("jumpSlash");
@@ -541,4 +576,5 @@ void ParseSoldierCfg(
         }
     }
 }
-}
+
+}   // namespace slug

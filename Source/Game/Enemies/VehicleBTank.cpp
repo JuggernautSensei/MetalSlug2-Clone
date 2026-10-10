@@ -7,50 +7,62 @@
 
 namespace slug
 {
+
 namespace
 {
-    enum eBTankState : int
+    enum class eBTankState
     {
-        kClosed,
-        kOpen,
-        kIdle,
-        kFire
+        Closed,
+        Open,
+        Idle,
+        Fire
     };
 
-    [[nodiscard]] int ClipOf_(const Enemy& _e, const BTankCfg& _c)
+    [[nodiscard]] int ClipOf_(
+        const Enemy&    _e,
+        const BTankCfg& _c)
     {
-        switch (_e.state)
+        switch (static_cast<eBTankState>(_e.state))
         {
-            case kOpen:
-            case kIdle: return _c.clipOpen;
-            case kFire: return _c.clipFire;
+            case eBTankState::Open:
+            case eBTankState::Idle: return _c.clipOpen;
+            case eBTankState::Fire: return _c.clipFire;
             default: return _c.clipIdle;
         }
     }
 
-    void Go_(Enemy& _e, const EnemyDef& _def, const int _state)
+    void Go_(
+        Enemy&            _e,
+        const EnemyDef&   _def,
+        const eBTankState _state)
     {
         const BTankCfg& c = _def.btank;
-        EnterState(_e, _state);
+        EnterState(_e, static_cast<int>(_state));
         const int clip = ClipOf_(_e, c);
-        SetClip(_e, clip, _state != kIdle);
-        if (_state == kIdle && clip >= 0)
+        SetClip(_e, clip, _state != eBTankState::Idle);
+        if (_state == eBTankState::Idle && clip >= 0)
         {
             _e.clipTicks = std::max(_e.clipTicks, _def.GetClip(clip).GetDurationTicks());
         }
     }
 
-    void Init_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void Init_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         (void)_env;
         PrepareBody(_e, _def);
         _e.facing = -1;   // 항상 좌향
-        Go_(_e, _def, kClosed);
+        Go_(_e, _def, eBTankState::Closed);
     }
 
-    void Tick_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void Tick_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
-        const BTankCfg& c = _def.btank;
+        const BTankCfg& c  = _def.btank;
         _e.body.velocity.x = 0.f;
 
         if (!_e.bActive)
@@ -65,28 +77,28 @@ namespace
             }
         }
 
-        switch (_e.state)
+        switch (static_cast<eBTankState>(_e.state))
         {
-            case kClosed:
-                Go_(_e, _def, kOpen);
+            case eBTankState::Closed:
+                Go_(_e, _def, eBTankState::Open);
                 break;
 
-            case kOpen:
+            case eBTankState::Open:
                 if (_e.clip >= 0 && _e.stateTicks >= _def.GetClip(_e.clip).GetDurationTicks())
                 {
-                    Go_(_e, _def, kIdle);
+                    Go_(_e, _def, eBTankState::Idle);
                 }
                 break;
 
-            case kIdle:
+            case eBTankState::Idle:
                 if (_e.stateTicks >= c.idleTicks)
                 {
                     _e.counter = c.shotsPerCycle;
-                    Go_(_e, _def, kFire);
+                    Go_(_e, _def, eBTankState::Fire);
                 }
                 break;
 
-            case kFire:
+            case eBTankState::Fire:
                 if (ClipReachedFrame(_e, _def, c.fireFrame))
                 {
                     (void)FireWeapon(_e, _def, _env, c.weaponShell);
@@ -96,11 +108,11 @@ namespace
                     --_e.counter;
                     if (_e.counter > 0)
                     {
-                        Go_(_e, _def, kFire);
+                        Go_(_e, _def, eBTankState::Fire);
                     }
                     else
                     {
-                        Go_(_e, _def, kIdle);
+                        Go_(_e, _def, eBTankState::Idle);
                     }
                 }
                 break;
@@ -109,17 +121,21 @@ namespace
         }
     }
 
-    void OnDeath_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void OnDeath_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         BeginVehicleDeath(_e, _def, _env, _def.btank.clipDestroy);
     }
-}
+
+}   // namespace
 
 const BehaviorOps kBTankOps = {
-    .init       = &Init_,
-    .tick       = &Tick_,
-    .onDeath    = &OnDeath_,
-    .tickDying  = &TickVehicleDeath,
+    .init      = &Init_,
+    .tick      = &Tick_,
+    .onDeath   = &OnDeath_,
+    .tickDying = &TickVehicleDeath,
 };
 
 void ParseBTankCfg(
@@ -140,4 +156,5 @@ void ParseBTankCfg(
 
     c.weaponShell = _r.Weapon("shell");
 }
-}
+
+}   // namespace slug

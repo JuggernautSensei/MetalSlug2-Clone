@@ -5,108 +5,131 @@
 
 namespace slug
 {
+
 namespace
 {
-    enum eShielderState : int
+    enum class eShielderState
     {
-        kWait,
-        kFall,
-        kIdle,
-        kMove,
-        kMoveStop,
-        kShotStart,
-        kShotReady,
-        kShot,
-        kShotEnd,
-        kLookStart,
-        kLookIdle,
-        kLookEnd
+        Wait,
+        Fall,
+        Idle,
+        Move,
+        MoveStop,
+        ShotStart,
+        ShotReady,
+        Shot,
+        ShotEnd,
+        LookStart,
+        LookIdle,
+        LookEnd
     };
 
-    [[nodiscard]] int PickDir_(const int _dir, const int _fwd, const int _up, const int _down)
+    [[nodiscard]] int PickDir_(
+        const int _dir,
+        const int _fwd,
+        const int _up,
+        const int _down)
     {
         return _dir == 1 ? _up : (_dir == 2 ? _down : _fwd);
     }
 
-    [[nodiscard]] int StateClip_(const Enemy& _e, const ShielderCfg& _c)
+    [[nodiscard]] int StateClip_(
+        const Enemy&       _e,
+        const ShielderCfg& _c)
     {
-        switch (_e.state)
+        switch (static_cast<eShielderState>(_e.state))
         {
-            case kWait:
-            case kIdle: return _c.clipIdle;
-            case kFall: return _c.clipFall;
-            case kMove: return _c.clipMove;
-            case kMoveStop: return _c.clipMoveStop;
-            case kShotStart: return PickDir_(_e.shieldDir, _c.clipShotStart, _c.clipShotStartUp, _c.clipShotStartDown);
-            case kShotReady: return PickDir_(_e.shieldDir, _c.clipShotReady, _c.clipShotReadyUp, _c.clipShotReadyDown);
-            case kShot: return PickDir_(_e.shieldDir, _c.clipShot, _c.clipShotUp, _c.clipShotDown);
-            case kShotEnd: return PickDir_(_e.shieldDir, _c.clipShotEnd, _c.clipShotEndUp, _c.clipShotEndDown);
-            case kLookStart: return PickDir_(_e.shieldDir, _c.clipIdle, _c.clipLookUpStart, _c.clipLookDownStart);
-            case kLookIdle: return PickDir_(_e.shieldDir, _c.clipIdle, _c.clipLookUpIdle, _c.clipLookDownIdle);
-            case kLookEnd: return PickDir_(_e.shieldDir, _c.clipIdle, _c.clipLookUpEnd, _c.clipLookDownEnd);
+            case eShielderState::Wait:
+            case eShielderState::Idle: return _c.clipIdle;
+            case eShielderState::Fall: return _c.clipFall;
+            case eShielderState::Move: return _c.clipMove;
+            case eShielderState::MoveStop: return _c.clipMoveStop;
+            case eShielderState::ShotStart: return PickDir_(_e.shieldDir, _c.clipShotStart, _c.clipShotStartUp, _c.clipShotStartDown);
+            case eShielderState::ShotReady: return PickDir_(_e.shieldDir, _c.clipShotReady, _c.clipShotReadyUp, _c.clipShotReadyDown);
+            case eShielderState::Shot: return PickDir_(_e.shieldDir, _c.clipShot, _c.clipShotUp, _c.clipShotDown);
+            case eShielderState::ShotEnd: return PickDir_(_e.shieldDir, _c.clipShotEnd, _c.clipShotEndUp, _c.clipShotEndDown);
+            case eShielderState::LookStart: return PickDir_(_e.shieldDir, _c.clipIdle, _c.clipLookUpStart, _c.clipLookDownStart);
+            case eShielderState::LookIdle: return PickDir_(_e.shieldDir, _c.clipIdle, _c.clipLookUpIdle, _c.clipLookDownIdle);
+            case eShielderState::LookEnd: return PickDir_(_e.shieldDir, _c.clipIdle, _c.clipLookUpEnd, _c.clipLookDownEnd);
             default: return _c.clipIdle;
         }
     }
 
-    [[nodiscard]] bool StateDone_(const Enemy& _e, const EnemyDef& _def)
+    [[nodiscard]] bool StateDone_(
+        const Enemy&    _e,
+        const EnemyDef& _def)
     {
         return _e.stateTicks >= _def.GetClip(StateClip_(_e, _def.shielder)).GetDurationTicks();
     }
 
-    void Go_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, const int _state, const int _dir = -1)
+    void Go_(
+        Enemy&               _e,
+        const EnemyDef&      _def,
+        EnemyEnv&            _env,
+        const eShielderState _state,
+        const int            _dir = -1)
     {
         const ShielderCfg& cfg = _def.shielder;
-        EnterState(_e, _state);
+        EnterState(_e, static_cast<int>(_state));
         if (_dir >= 0)
         {
             _e.shieldDir = _dir;
         }
         switch (_state)
         {
-            case kIdle:
-            case kMove:
-            case kMoveStop:
+            case eShielderState::Idle:
+            case eShielderState::Move:
+            case eShielderState::MoveStop:
                 _e.shieldDir = 0;
                 _e.bShieldUp = true;
                 FacePlayer(_e, _env);
                 break;
-            case kWait:
-            case kFall:
+            case eShielderState::Wait:
+            case eShielderState::Fall:
                 _e.shieldDir = 0;
                 _e.bShieldUp = true;
                 break;
-            case kShotStart:
+            case eShielderState::ShotStart:
                 _e.shieldDir = 0;
                 _e.bShieldUp = true;
                 FacePlayer(_e, _env);
                 _e.counter = cfg.bullets;
                 break;
-            case kLookStart:
+            case eShielderState::LookStart:
                 _e.bShieldUp = true;
                 FacePlayer(_e, _env);
                 _e.counter = cfg.bullets;
                 break;
-            case kShotReady:
-            case kShot:
-            case kShotEnd:
+            case eShielderState::ShotReady:
+            case eShielderState::Shot:
+            case eShielderState::ShotEnd:
                 _e.bShieldUp = false;
                 break;
             default: break;
         }
-        if (_state == kMove || _state == kMoveStop || _state == kIdle || _state == kWait)
+        if (_state == eShielderState::Move
+            || _state == eShielderState::MoveStop
+            || _state == eShielderState::Idle
+            || _state == eShielderState::Wait)
         {
             _e.body.velocity.x = 0.f;
         }
         SetClip(_e, StateClip_(_e, cfg), true);
     }
 
-    void Init_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void Init_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         PrepareBody(_e, _def);
-        Go_(_e, _def, _env, kWait);
+        Go_(_e, _def, _env, eShielderState::Wait);
     }
 
-    void Tick_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void Tick_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         const ShielderCfg& cfg   = _def.shielder;
         const float        speed = _def.physics.speed;
@@ -114,24 +137,24 @@ namespace
         const float dy    = DyToPlayer(_e, _env);
         const float absDx = std::abs(DxToPlayer(_e, _env));
 
-        switch (_e.state)
+        switch (static_cast<eShielderState>(_e.state))
         {
-            case kWait:
+            case eShielderState::Wait:
                 _e.body.velocity.x = 0.f;
                 if (_e.bActive)
                 {
-                    Go_(_e, _def, _env, kIdle);
+                    Go_(_e, _def, _env, eShielderState::Idle);
                 }
                 break;
 
-            case kFall:
+            case eShielderState::Fall:
                 _e.body.velocity.x = 0.f;
                 break;
 
-            case kIdle:
+            case eShielderState::Idle:
                 if (!_e.bGrounded)
                 {
-                    Go_(_e, _def, _env, kFall);
+                    Go_(_e, _def, _env, eShielderState::Fall);
                     break;
                 }
                 _e.body.velocity.x = 0.f;
@@ -142,61 +165,62 @@ namespace
                     {
                         if (absDx <= cfg.guard)
                         {
-                            Go_(_e, _def, _env, kLookStart, 1);
+                            Go_(_e, _def, _env, eShielderState::LookStart, 1);
                         }
                         else
                         {
-                            Go_(_e, _def, _env, kMove);
+                            Go_(_e, _def, _env, eShielderState::Move);
                         }
                     }
                     else if (dy > cfg.levelDy)
                     {
                         if (absDx <= cfg.guard)
                         {
-                            Go_(_e, _def, _env, kLookStart, 2);
+                            Go_(_e, _def, _env, eShielderState::LookStart, 2);
                         }
                         else
                         {
-                            Go_(_e, _def, _env, kMove);
+                            Go_(_e, _def, _env, eShielderState::Move);
                         }
                     }
                     else if (absDx >= cfg.detect)
                     {
-                        Go_(_e, _def, _env, kMove);
+                        Go_(_e, _def, _env, eShielderState::Move);
                     }
                     else
                     {
-                        Go_(_e, _def, _env, Roll(_env, 2) == 0 ? kIdle : kShotStart);
+                        Go_(_e, _def, _env, Roll(_env, 2) == 0 ? eShielderState::Idle : eShielderState::ShotStart);
                     }
                 }
                 break;
 
-            case kMove:
+            case eShielderState::Move:
                 if (!_e.bGrounded)
                 {
-                    Go_(_e, _def, _env, kFall);
+                    Go_(_e, _def, _env, eShielderState::Fall);
                     break;
                 }
                 FacePlayer(_e, _env);
-                if (!FloorAhead(_e, _env, cfg.edgeProbeDist, cfg.edgeProbeDrop) || WallAhead(_e, _env, cfg.wallProbeW, cfg.wallProbeH, cfg.wallProbeX, cfg.wallProbeY))
+                if (!FloorAhead(_e, _env, cfg.edgeProbeDist, cfg.edgeProbeDrop)
+                    || WallAhead(_e, _env, cfg.wallProbeW, cfg.wallProbeH, cfg.wallProbeX, cfg.wallProbeY))
                 {
-                    Go_(_e, _def, _env, kMoveStop);
+                    Go_(_e, _def, _env, eShielderState::MoveStop);
                 }
                 else if (_e.stateTicks >= cfg.moveMaxTicks)
                 {
-                    Go_(_e, _def, _env, Roll(_env, 2) == 0 ? kMoveStop : kMove);
+                    Go_(_e, _def, _env, Roll(_env, 2) == 0 ? eShielderState::MoveStop : eShielderState::Move);
                 }
                 else if (absDx <= cfg.detect && std::abs(dy) <= cfg.moveDy)
                 {
-                    Go_(_e, _def, _env, kShotStart);
+                    Go_(_e, _def, _env, eShielderState::ShotStart);
                 }
                 else if (absDx <= cfg.guard && dy < -cfg.moveDy)
                 {
-                    Go_(_e, _def, _env, kLookStart, 1);
+                    Go_(_e, _def, _env, eShielderState::LookStart, 1);
                 }
                 else if (absDx <= cfg.guard && dy > cfg.moveDy)
                 {
-                    Go_(_e, _def, _env, kLookStart, 2);
+                    Go_(_e, _def, _env, eShielderState::LookStart, 2);
                 }
                 else
                 {
@@ -204,39 +228,39 @@ namespace
                 }
                 break;
 
-            case kMoveStop:
+            case eShielderState::MoveStop:
                 _e.body.velocity.x = 0.f;
                 if (StateDone_(_e, _def))
                 {
-                    Go_(_e, _def, _env, kIdle);
+                    Go_(_e, _def, _env, eShielderState::Idle);
                 }
                 break;
 
-            case kShotStart:
+            case eShielderState::ShotStart:
                 _e.body.velocity.x = 0.f;
                 if (_e.stateTicks >= cfg.startTicks)
                 {
-                    Go_(_e, _def, _env, kShotReady);
+                    Go_(_e, _def, _env, eShielderState::ShotReady);
                 }
                 break;
 
-            case kShotReady:
+            case eShielderState::ShotReady:
                 _e.body.velocity.x = 0.f;
                 if (_e.stateTicks >= cfg.readyTicks)
                 {
                     if (_e.counter <= 0)
                     {
-                        Go_(_e, _def, _env, kShotEnd);
+                        Go_(_e, _def, _env, eShielderState::ShotEnd);
                     }
                     else
                     {
                         --_e.counter;
-                        Go_(_e, _def, _env, kShot);
+                        Go_(_e, _def, _env, eShielderState::Shot);
                     }
                 }
                 break;
 
-            case kShot:
+            case eShielderState::Shot:
                 _e.body.velocity.x = 0.f;
                 if (_e.stateTicks == _def.GetClip(StateClip_(_e, cfg)).TickOfFrame(cfg.fireFrame))
                 {
@@ -255,46 +279,46 @@ namespace
                 }
                 if (StateDone_(_e, _def))
                 {
-                    Go_(_e, _def, _env, kShotReady);
+                    Go_(_e, _def, _env, eShielderState::ShotReady);
                 }
                 break;
 
-            case kShotEnd:
+            case eShielderState::ShotEnd:
                 _e.body.velocity.x = 0.f;
                 if (StateDone_(_e, _def))
                 {
-                    Go_(_e, _def, _env, kIdle);
+                    Go_(_e, _def, _env, eShielderState::Idle);
                 }
                 break;
 
-            case kLookStart:
+            case eShielderState::LookStart:
                 _e.body.velocity.x = 0.f;
                 if (StateDone_(_e, _def))
                 {
-                    Go_(_e, _def, _env, kLookIdle);
+                    Go_(_e, _def, _env, eShielderState::LookIdle);
                 }
                 break;
 
-            case kLookIdle:
+            case eShielderState::LookIdle:
                 _e.body.velocity.x = 0.f;
                 if (_e.stateTicks >= cfg.cooldownTicks)
                 {
                     if (absDx <= cfg.guard)
                     {
-                        Go_(_e, _def, _env, kShotReady);
+                        Go_(_e, _def, _env, eShielderState::ShotReady);
                     }
                     else
                     {
-                        Go_(_e, _def, _env, kLookEnd);
+                        Go_(_e, _def, _env, eShielderState::LookEnd);
                     }
                 }
                 break;
 
-            case kLookEnd:
+            case eShielderState::LookEnd:
                 _e.body.velocity.x = 0.f;
                 if (StateDone_(_e, _def))
                 {
-                    Go_(_e, _def, _env, kIdle);
+                    Go_(_e, _def, _env, eShielderState::Idle);
                 }
                 break;
 
@@ -303,9 +327,9 @@ namespace
 
         (void)StepPhysics(_e, _def, _env);
 
-        if (_e.state == kFall && _e.bGrounded)
+        if (_e.state == static_cast<int>(eShielderState::Fall) && _e.bGrounded)
         {
-            Go_(_e, _def, _env, _e.bActive ? kIdle : kWait);
+            Go_(_e, _def, _env, _e.bActive ? eShielderState::Idle : eShielderState::Wait);
         }
 
         if (_e.defenceTicks > 0)
@@ -316,7 +340,11 @@ namespace
         SetClip(_e, wantClip);
     }
 
-    bool OnHit_(Enemy& _e, const EnemyDef& _def, EnemyEnv&, const HitEvent& _event)
+    bool OnHit_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&,
+        const HitEvent& _event)
     {
         if ((_event.target & kShieldOwnerBit) != 0)
         {
@@ -326,19 +354,25 @@ namespace
         return false;
     }
 
-    void OnDeath_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void OnDeath_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         _e.bShieldUp = false;
         BeginSoldierDeath(_e, _def, _env);
     }
 
-    void RegisterHurtboxes_(const Enemy& _e, const EnemyDef& _def, CombatSystem& _combat)
+    void RegisterHurtboxes_(
+        const Enemy&    _e,
+        const EnemyDef& _def,
+        CombatSystem&   _combat)
     {
         const ShielderCfg& cfg = _def.shielder;
         if (_e.bShieldUp)
         {
             const BoxDef& box = _e.shieldDir == 1 ? cfg.shieldUp : (_e.shieldDir == 2 ? cfg.shieldDown : cfg.shieldFront);
-            Hurtbox shield;
+            Hurtbox       shield;
             shield.box     = box.At(_e.body.position, _e.facing);
             shield.team    = _def.team;
             shield.owner   = _e.id | kShieldOwnerBit;
@@ -352,7 +386,8 @@ namespace
         body.owner = _e.id;
         _combat.AddHurtbox(body);
     }
-}
+
+}   // namespace
 
 const BehaviorOps kShielderOps = {
     .init              = &Init_,
@@ -385,10 +420,10 @@ void ParseShielderCfg(
     c.defenceTicks  = _r.Ticks("defenceSec");
     {
         const BoxDef probe = _r.Box("wallProbe");
-        c.wallProbeW = probe.w;
-        c.wallProbeH = probe.h;
-        c.wallProbeX = probe.cx;
-        c.wallProbeY = probe.cy;
+        c.wallProbeW       = probe.w;
+        c.wallProbeH       = probe.h;
+        c.wallProbeX       = probe.cx;
+        c.wallProbeY       = probe.cy;
     }
     c.shieldFront = _r.Box("shieldFront");
     c.shieldUp    = _r.Box("shieldUp");
@@ -424,4 +459,5 @@ void ParseShielderCfg(
     c.weaponUp      = _r.Weapon("up");
     c.weaponDown    = _r.Weapon("down");
 }
-}
+
+}   // namespace slug

@@ -1,27 +1,32 @@
 #include <cmath>
 #include <string>
-#include "Base/Math.h"
 
+#include "Base/Math.h"
 #include "Game/Enemies/EnemyCommon.h"
 #include "Game/Enemies/EnemyDefParse.h"
 
 namespace slug
 {
+
 namespace
 {
-    enum ePowState : int
+    enum class ePowState
     {
-        kStuck,
-        kEscape,
-        kWalk,
-        kMoveDown,
-        kGlide,
-        kClose,
-        kRun
+        Stuck,
+        Escape,
+        Walk,
+        MoveDown,
+        Glide,
+        Close,
+        Run
     };
 
     // 외형 변형 클립 (aiVariant 1..3). 변형에 해당 슬롯이 없으면 기본 클립을 쓴다
-    [[nodiscard]] int VariantClip_(const Enemy& _e, const PowCfg& _c, const int _slot, const int _base)
+    [[nodiscard]] int VariantClip_(
+        const Enemy&  _e,
+        const PowCfg& _c,
+        const int     _slot,
+        const int     _base)
     {
         const int v = _e.aiVariant;
         if (v >= 1 && v <= PowCfg::kVariantCount)
@@ -35,35 +40,39 @@ namespace
         return _base;
     }
 
-    void Go_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, const int _state)
+    void Go_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env,
+        const ePowState _state)
     {
         const PowCfg& cfg = _def.pow;
-        EnterState(_e, _state);
+        EnterState(_e, static_cast<int>(_state));
         switch (_state)
         {
-            case kStuck:
+            case ePowState::Stuck:
                 SetClip(_e, VariantClip_(_e, cfg, 0, cfg.clipStuck), true);
                 _e.body.velocity.x = 0.f;
                 break;
-            case kEscape:
+            case ePowState::Escape:
                 SetClip(_e, VariantClip_(_e, cfg, 1, cfg.clipEscape), true);
                 _e.body.velocity.x = 0.f;
                 break;
-            case kWalk:
+            case ePowState::Walk:
                 SetClip(_e, VariantClip_(_e, cfg, 2, cfg.clipMove), true);
                 _e.aux  = 0;
                 _e.aux2 = cfg.firstFlipTicks;
                 break;
-            case kMoveDown:
+            case ePowState::MoveDown:
                 SetClip(_e, VariantClip_(_e, cfg, 4, cfg.clipMoveDown), true);
                 _e.body.velocity.x  = 0.f;
                 _e.body.bUseGravity = false;
                 break;
-            case kGlide:
+            case ePowState::Glide:
                 SetClip(_e, VariantClip_(_e, cfg, 3, cfg.clipGlide), true);
                 _e.body.bUseGravity = true;
                 break;
-            case kClose:
+            case ePowState::Close:
             {
                 const float side = DxToPlayer(_e, _env) < 0.f ? 1.f : -1.f;
                 _e.body.position.x += side * cfg.closeNudge;
@@ -72,7 +81,7 @@ namespace
                 _e.body.velocity.x = 0.f;
                 break;
             }
-            case kRun:
+            case ePowState::Run:
                 _e.facing = -1;
                 SetClip(_e, VariantClip_(_e, cfg, 6, cfg.clipRun), true);
                 break;
@@ -81,47 +90,55 @@ namespace
     }
 
     // 플레이어 몸통 박스와 겹치는가 (공중 낙하 중에도 구출 접촉으로 쓴다)
-    bool TouchingPlayer_(Enemy& _e, EnemyEnv& _env)
+    bool TouchingPlayer_(
+        Enemy&    _e,
+        EnemyEnv& _env)
     {
         return _env.ctx.player.bAlive && _e.body.GetBox().Overlaps(_env.ctx.player.bodyBox);
     }
 
-    void Init_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void Init_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         PrepareBody(_e, _def);
-        Go_(_e, _def, _env, kStuck);
+        Go_(_e, _def, _env, ePowState::Stuck);
     }
 
-    void Tick_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void Tick_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         const PowCfg& cfg = _def.pow;
 
-        if (_e.state == kGlide)
+        if (_e.state == static_cast<int>(ePowState::Glide))
         {
             _env.phys.terminalVelocity = cfg.glideMaxFall;
         }
 
-        switch (_e.state)
+        switch (static_cast<ePowState>(_e.state))
         {
-            case kStuck:
+            case ePowState::Stuck:
                 _e.body.velocity.x = 0.f;
                 FacePlayer(_e, _env);
                 // 공중에서 떨어지는 중(착지 전)에도 플레이어와 겹치면 바로 구출
                 if (!_e.bGrounded && TouchingPlayer_(_e, _env))
                 {
-                    Go_(_e, _def, _env, kClose);
+                    Go_(_e, _def, _env, ePowState::Close);
                 }
                 break;
 
-            case kEscape:
+            case ePowState::Escape:
                 _e.body.velocity.x = 0.f;
                 if (ClipFinished(_e, _def))
                 {
-                    Go_(_e, _def, _env, kWalk);
+                    Go_(_e, _def, _env, ePowState::Walk);
                 }
                 break;
 
-            case kWalk:
+            case ePowState::Walk:
             {
                 ++_e.aux;
                 ++_e.aux3;
@@ -135,28 +152,28 @@ namespace
 
                 if (!_e.bGrounded)
                 {
-                    Go_(_e, _def, _env, kGlide);
+                    Go_(_e, _def, _env, ePowState::Glide);
                 }
                 else if (!FloorAhead(_e, _env, cfg.edgeProbeDist, cfg.edgeProbeDrop))
                 {
-                    Go_(_e, _def, _env, kGlide);
+                    Go_(_e, _def, _env, ePowState::Glide);
                     _e.body.velocity.x = static_cast<float>(_e.facing) * cfg.walkSpeed;
                 }
                 else if (_e.bOnOneWay && _e.aux3 >= cfg.dropMinPatrolTicks && DyToPlayer(_e, _env) >= cfg.dropDy)
                 {
-                    Go_(_e, _def, _env, kMoveDown);
+                    Go_(_e, _def, _env, ePowState::MoveDown);
                 }
                 else if (_env.ctx.player.bAlive && _e.body.GetBox().Overlaps(_env.ctx.player.bodyBox))
                 {
-                    Go_(_e, _def, _env, kClose);
+                    Go_(_e, _def, _env, ePowState::Close);
                 }
                 break;
             }
 
-            case kMoveDown:
+            case ePowState::MoveDown:
                 if (TouchingPlayer_(_e, _env))
                 {
-                    Go_(_e, _def, _env, kClose);
+                    Go_(_e, _def, _env, ePowState::Close);
                     break;
                 }
                 _e.body.velocity.x       = 0.f;
@@ -166,20 +183,20 @@ namespace
                 {
                     _e.body.bUseGravity = true;
                     _e.body.velocity.y  = 0.f;
-                    Go_(_e, _def, _env, kGlide);
+                    Go_(_e, _def, _env, ePowState::Glide);
                 }
                 break;
 
-            case kGlide:
+            case ePowState::Glide:
                 if (TouchingPlayer_(_e, _env))
                 {
-                    Go_(_e, _def, _env, kClose);
+                    Go_(_e, _def, _env, ePowState::Close);
                     break;
                 }
                 _e.body.velocity.x = static_cast<float>(_e.facing) * cfg.walkSpeed;
                 break;
 
-            case kClose:
+            case ePowState::Close:
                 _e.body.velocity.x = 0.f;
                 if (ClipReachedFrame(_e, _def, cfg.itemFrame) && !_e.drop.empty())
                 {
@@ -190,23 +207,25 @@ namespace
                 }
                 if (ClipFinished(_e, _def))
                 {
-                    Go_(_e, _def, _env, kRun);
+                    Go_(_e, _def, _env, ePowState::Run);
                 }
                 break;
 
-            case kRun:
+            case ePowState::Run:
             {
                 _e.body.velocity.x = -cfg.runSpeed;
                 if (_e.stateTicks >= cfg.blinkAtTicks && _e.stateTicks < cfg.blinkAtTicks + cfg.blinkForTicks)
                 {
-                    _e.bVisible = (((_e.stateTicks - cfg.blinkAtTicks) / slug::Max(1, cfg.blinkPeriodTicks)) % 2) == 0;
+                    _e.bVisible = (((_e.stateTicks - cfg.blinkAtTicks) / Max(1, cfg.blinkPeriodTicks)) % 2) == 0;
                 }
                 else
                 {
                     _e.bVisible = true;
                 }
                 const float x = _e.body.position.x;
-                if (_e.stateTicks >= cfg.removeAtTicks || x < _env.ctx.cameraView.min.x - cfg.offscreenMargin || x > _env.ctx.cameraView.max.x + cfg.offscreenMargin)
+                if (_e.stateTicks >= cfg.removeAtTicks
+                    || x < _env.ctx.cameraView.min.x - cfg.offscreenMargin
+                    || x > _env.ctx.cameraView.max.x + cfg.offscreenMargin)
                 {
                     _e.life = eEnemyLife::Gone;
                 }
@@ -218,31 +237,40 @@ namespace
 
         const MoveResult move = StepPhysics(_e, _def, _env);
 
-        if (_e.state == kWalk && (move.bHitWallLeft || move.bHitWallRight))
+        if (_e.state == static_cast<int>(ePowState::Walk) && (move.bHitWallLeft || move.bHitWallRight))
         {
             _e.facing = -_e.facing;
             _e.aux    = 0;
         }
-        if ((_e.state == kGlide || _e.state == kMoveDown) && _e.bGrounded && _e.stateTicks > 1)
+        if ((_e.state == static_cast<int>(ePowState::Glide) || _e.state == static_cast<int>(ePowState::MoveDown))
+            && _e.bGrounded
+            && _e.stateTicks > 1)
         {
             _e.body.bUseGravity = true;
-            Go_(_e, _def, _env, kWalk);
+            Go_(_e, _def, _env, ePowState::Walk);
         }
     }
 
-    bool OnHit_(Enemy& _e, const EnemyDef&, EnemyEnv& _env, const HitEvent&)
+    bool OnHit_(
+        Enemy& _e,
+        const EnemyDef&,
+        EnemyEnv& _env,
+        const HitEvent&)
     {
-        if (_e.state == kStuck)
+        if (_e.state == static_cast<int>(ePowState::Stuck))
         {
-            Go_(_e, _env.lib.Get(_e.defIndex), _env, kEscape);
+            Go_(_e, _env.lib.Get(_e.defIndex), _env, ePowState::Escape);
             _env.world.PushEvent(_env.world.MakeEvent(_e, eEnemyEventKind::Freed));
         }
         return true;
     }
 
-    void RegisterHurtboxes_(const Enemy& _e, const EnemyDef& _def, CombatSystem& _combat)
+    void RegisterHurtboxes_(
+        const Enemy&    _e,
+        const EnemyDef& _def,
+        CombatSystem&   _combat)
     {
-        if (_e.state != kStuck || !_e.bGrounded)
+        if (_e.state != static_cast<int>(ePowState::Stuck) || !_e.bGrounded)
         {
             return;
         }
@@ -252,7 +280,8 @@ namespace
         hurtbox.owner = _e.id;
         _combat.AddHurtbox(hurtbox);
     }
-}
+
+}   // namespace
 
 const BehaviorOps kPowOps = {
     .init              = &Init_,
@@ -297,14 +326,15 @@ void ParsePowCfg(
     c.clipRun      = _r.Clip("run");
 
     // 외형 변형: 슬롯별 "<key>_v<n>" 클립 (없으면 -1 -> 기본 클립 사용)
-    constexpr const char* kSlotKeys[PowCfg::kSlotCount] = { "stuck", "escape", "move", "glide", "moveDown", "item", "run" };
+    constexpr ARRAY<const char*, PowCfg::kSlotCount> kSlotKeys = { "stuck", "escape", "move", "glide", "moveDown", "item", "run" };
     for (int v = 0; v < PowCfg::kVariantCount; ++v)
     {
         for (int s = 0; s < PowCfg::kSlotCount; ++s)
         {
-            const std::string key = std::string(kSlotKeys[s]) + "_v" + std::to_string(v + 1);
-            c.clipVariants[v][s]  = _r.ClipOpt(key);
+            const String key     = String(kSlotKeys[s]) + "_v" + std::to_string(v + 1);
+            c.clipVariants[v][s] = _r.ClipOpt(key);
         }
     }
 }
-}
+
+}   // namespace slug

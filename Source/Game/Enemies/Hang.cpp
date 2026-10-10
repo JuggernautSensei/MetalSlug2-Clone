@@ -5,19 +5,24 @@
 
 namespace slug
 {
+
 namespace
 {
-    enum eHangState : int
+    enum class eHangState
     {
-        kIdle,
-        kThrow
+        Idle,
+        Throw
     };
 
-    void Go_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, const int _state)
+    void Go_(
+        Enemy&           _e,
+        const EnemyDef&  _def,
+        EnemyEnv&        _env,
+        const eHangState _state)
     {
         const HangCfg& cfg = _def.hang;
-        EnterState(_e, _state);
-        if (_state == kIdle)
+        EnterState(_e, static_cast<int>(_state));
+        if (_state == eHangState::Idle)
         {
             FacePlayer(_e, _env);
             SetClip(_e, cfg.clipIdle, true);
@@ -30,19 +35,25 @@ namespace
         }
     }
 
-    void Init_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void Init_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         PrepareBody(_e, _def);
         _e.body.bUseGravity = false;
-        Go_(_e, _def, _env, kIdle);
+        Go_(_e, _def, _env, eHangState::Idle);
     }
 
-    void Tick_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void Tick_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         const HangCfg& cfg = _def.hang;
         _e.body.velocity   = { 0.f, 0.f };
 
-        if (_e.state == kIdle)
+        if (_e.state == static_cast<int>(eHangState::Idle))
         {
             FacePlayer(_e, _env);
             if (std::abs(DxToPlayer(_e, _env)) <= cfg.detectX && _e.bActive)
@@ -50,7 +61,7 @@ namespace
                 ++_e.aux;
                 if (_e.aux >= cfg.throwTicks)
                 {
-                    Go_(_e, _def, _env, kThrow);
+                    Go_(_e, _def, _env, eHangState::Throw);
                 }
             }
         }
@@ -62,17 +73,21 @@ namespace
             }
             if (ClipFinished(_e, _def))
             {
-                Go_(_e, _def, _env, kIdle);
+                Go_(_e, _def, _env, eHangState::Idle);
             }
         }
     }
 
-    void OnDeath_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void OnDeath_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         _e.bGrounded = false;
         BeginSoldierDeath(_e, _def, _env);
     }
-}
+
+}   // namespace
 
 const BehaviorOps kHangOps = {
     .init              = &Init_,
@@ -96,4 +111,5 @@ void ParseHangCfg(
     c.clipThrow  = _r.Clip("throw");
     c.weaponBomb = _r.Weapon("bomb");
 }
-}
+
+}   // namespace slug
