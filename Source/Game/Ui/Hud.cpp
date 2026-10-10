@@ -1,33 +1,70 @@
 #include "Game/Ui/Hud.h"
-#include "Base/Types.h"
-#include "Base/RGBA.h"
 
 #include <algorithm>
 #include <format>
 
+#include "Base/RGBA.h"
+#include "Base/Types.h"
 #include "Game/Player/PlayerController.h"
 
 namespace slug
 {
-slug::String FormatScore(
+
+namespace
+{
+    [[nodiscard]] HudItem MakeText_(
+        String           _text,
+        const int        _x,
+        const int        _y,
+        const eTextAlign _align,
+        const eFontColor _color)
+    {
+        HudItem item;
+        item.kind        = eHudItemKind::Text;
+        item.text        = std::move(_text);
+        item.x           = _x;
+        item.y           = _y;
+        item.style.align = _align;
+        item.style.color = _color;
+        item.style.bBold = true;
+        return item;
+    }
+
+    [[nodiscard]] HudItem MakeSprite_(
+        String    _name,
+        const int _centerX,
+        const int _centerY,
+        const int _scale = 1)
+    {
+        HudItem item;
+        item.kind  = eHudItemKind::Sprite;
+        item.text  = std::move(_name);
+        item.x     = _centerX;
+        item.y     = _centerY;
+        item.scale = _scale;
+        return item;
+    }
+}   // namespace
+
+String FormatScore(
     const int _score)
 {
     return std::to_string(std::clamp(_score, 0, 9'999'999));
 }
 
-slug::String FormatAmmo(
+String FormatAmmo(
     const int _ammo)
 {
     return std::to_string(std::clamp(_ammo, 0, 999));
 }
 
-slug::String FormatBombs(
+String FormatBombs(
     const int _bombs)
 {
     return std::to_string(std::clamp(_bombs, 0, 99));
 }
 
-slug::String FormatTimer(
+String FormatTimer(
     const int _seconds)
 {
     return std::format("{:02}", std::clamp(_seconds, 0, 99));
@@ -54,47 +91,11 @@ HudModel MakeHudModel(
     return model;
 }
 
-namespace
-{
-    [[nodiscard]] HudItem MakeText_(
-        slug::String      _text,
-        const int        _x,
-        const int        _y,
-        const eTextAlign _align,
-        const eFontColor _color)
-    {
-        HudItem item;
-        item.kind        = eHudItemKind::Text;
-        item.text        = std::move(_text);
-        item.x           = _x;
-        item.y           = _y;
-        item.style.align = _align;
-        item.style.color = _color;
-        item.style.bBold = true;
-        return item;
-    }
-
-    [[nodiscard]] HudItem MakeSprite_(
-        slug::String _name,
-        const int   _centerX,
-        const int   _centerY,
-        const int   _scale = 1)
-    {
-        HudItem item;
-        item.kind  = eHudItemKind::Sprite;
-        item.text  = std::move(_name);
-        item.x     = _centerX;
-        item.y     = _centerY;
-        item.scale = _scale;
-        return item;
-    }
-}
-
-slug::Vector<HudItem> BuildHudItems(
+Vector<HudItem> BuildHudItems(
     const HudModel& _model,
     const UiLayout& _layout)
 {
-    slug::Vector<HudItem> items;
+    Vector<HudItem> items;
 
     if (_model.bShowPlayer)
     {
@@ -106,7 +107,7 @@ slug::Vector<HudItem> BuildHudItems(
         const int digitsY = _layout.armsPanelY + _layout.digitsDY;
         if (_model.weaponLetter != 0)
         {
-            items.push_back(MakeText_(slug::String(1, _model.weaponLetter), _layout.armsPanelX + _layout.weaponLetterDX, digitsY, eTextAlign::Left, eFontColor::White));
+            items.push_back(MakeText_(String(1, _model.weaponLetter), _layout.armsPanelX + _layout.weaponLetterDX, digitsY, eTextAlign::Left, eFontColor::White));
         }
         if (_model.bInfiniteAmmo)
         {
@@ -162,7 +163,7 @@ slug::Vector<HudItem> BuildHudItems(
         {
             HudItem fill = back;
             fill.w       = fillW;
-            fill.color   = ratio > 0.3f ? slug::RGBA { 60, 200, 255, 255 } : slug::RGBA { 255, 70, 50, 255 };
+            fill.color   = ratio > 0.3f ? RGBA { 60, 200, 255, 255 } : RGBA { 255, 70, 50, 255 };
             items.push_back(fill);
         }
 
@@ -171,4 +172,28 @@ slug::Vector<HudItem> BuildHudItems(
 
     return items;
 }
+
+void DisplayTimer::Reset()
+{
+    m_ticks = kStartSeconds * kTicksPerDigit;
 }
+
+void DisplayTimer::Tick()
+{
+    if (m_ticks > 0)
+    {
+        --m_ticks;
+    }
+}
+
+int DisplayTimer::GetSeconds() const
+{
+    return (m_ticks + kTicksPerDigit - 1) / kTicksPerDigit;
+}
+
+int DisplayTimer::GetRemainingTicks() const
+{
+    return m_ticks;
+}
+
+}   // namespace slug

@@ -1,44 +1,73 @@
 #include "Game/Ui/BitmapFont.h"
-#include "Base/Types.h"
-#include "Base/RGBA.h"
-
-#include <SDL3/SDL.h>
 
 #include <algorithm>
+#include <SDL3/SDL.h>
+
+#include "Base/RGBA.h"
+#include "Base/Types.h"
 
 namespace slug
 {
+
 namespace
 {
-slug::Vector<int> SplitLineLengths(
-    const slug::StringView _text)
-{
-    slug::Vector<int> lengths;
-    int              current = 0;
-    for (const char c: _text)
+    [[nodiscard]] Vector<int> SplitLineLengths_(
+        const StringView _text)
     {
-        if (c == '\n')
+        Vector<int> lengths;
+        int         current = 0;
+        for (const char c: _text)
         {
-            lengths.push_back(current);
-            current = 0;
+            if (c == '\n')
+            {
+                lengths.push_back(current);
+                current = 0;
+            }
+            else
+            {
+                ++current;
+            }
         }
-        else
+        lengths.push_back(current);
+        return lengths;
+    }
+
+    [[nodiscard]] RGBA GetFontFallbackColor_(
+        const eFontColor _color)
+    {
+        switch (_color)
         {
-            ++current;
+            case eFontColor::White: return { 255, 255, 255, 255 };
+            case eFontColor::RedYellow: return { 255, 120, 40, 255 };
+            case eFontColor::YellowWhite: return { 255, 240, 160, 255 };
+            case eFontColor::Red: return { 255, 40, 30, 255 };
+            case eFontColor::Yellow: return { 255, 230, 20, 255 };
+            default: return { 190, 200, 225, 255 };
         }
     }
-    lengths.push_back(current);
-    return lengths;
-}
-}
+
+    [[nodiscard]] const char* GetFontSpriteName_(
+        const eFontColor _color)
+    {
+        switch (_color)
+        {
+            case eFontColor::White: return "Font_White";
+            case eFontColor::RedYellow: return "Font_Red_Yellow";
+            case eFontColor::YellowWhite: return "Font_Yellow_White";
+            case eFontColor::Red: return "Font_Red";
+            case eFontColor::Yellow: return "Font_Yellow";
+            default: return "Font_Normal";
+        }
+    }
+}   // namespace
 
 int MeasureTextWidth(
-    const slug::StringView _text,
-    const TextStyle&      _style)
+    const StringView _text,
+    const TextStyle& _style)
 {
     const int scale = std::max(1, _style.scale);
     int       width = 0;
-    for (const int length: SplitLineLengths(_text))
+    for (const int length: SplitLineLengths_(_text))
     {
         width = std::max(width, fontmap::MeasureChars(length, scale, _style.letterSpacing));
     }
@@ -46,19 +75,19 @@ int MeasureTextWidth(
 }
 
 int MeasureTextHeight(
-    const slug::StringView _text,
-    const TextStyle&      _style)
+    const StringView _text,
+    const TextStyle& _style)
 {
     const int scale = std::max(1, _style.scale);
-    const int lines = static_cast<int>(SplitLineLengths(_text).size());
+    const int lines = static_cast<int>(SplitLineLengths_(_text).size());
     return lines * fontmap::kGlyphSize * scale + (lines - 1) * _style.lineGap * scale;
 }
 
 TextLayout LayoutText(
-    const slug::StringView _text,
-    const int             _x,
-    const int             _y,
-    const TextStyle&      _style)
+    const StringView _text,
+    const int        _x,
+    const int        _y,
+    const TextStyle& _style)
 {
     const int scale   = std::max(1, _style.scale);
     const int cell    = fontmap::kGlyphSize * scale;
@@ -123,13 +152,13 @@ TextLayout LayoutText(
 }
 
 int FitTextScale(
-    const slug::StringView _text,
-    const int             _maxWidth,
-    const int             _maxScale,
-    const int             _letterSpacing)
+    const StringView _text,
+    const int        _maxWidth,
+    const int        _maxScale,
+    const int        _letterSpacing)
 {
     int widest = 1;
-    for (const int length: SplitLineLengths(_text))
+    for (const int length: SplitLineLengths_(_text))
     {
         widest = std::max(widest, length);
     }
@@ -145,37 +174,6 @@ int FitTextScale(
     return best;
 }
 
-namespace
-{
-slug::RGBA GetFontFallbackColor(
-    const eFontColor _color)
-{
-    switch (_color)
-    {
-        case eFontColor::White: return { 255, 255, 255, 255 };
-        case eFontColor::RedYellow: return { 255, 120, 40, 255 };
-        case eFontColor::YellowWhite: return { 255, 240, 160, 255 };
-        case eFontColor::Red: return { 255, 40, 30, 255 };
-        case eFontColor::Yellow: return { 255, 230, 20, 255 };
-        default: return { 190, 200, 225, 255 };
-    }
-}
-
-const char* GetFontSpriteName(
-    const eFontColor _color)
-{
-    switch (_color)
-    {
-        case eFontColor::White: return "Font_White";
-        case eFontColor::RedYellow: return "Font_Red_Yellow";
-        case eFontColor::YellowWhite: return "Font_Yellow_White";
-        case eFontColor::Red: return "Font_Red";
-        case eFontColor::Yellow: return "Font_Yellow";
-        default: return "Font_Normal";
-    }
-}
-}
-
 bool BitmapFont::Init(
     const SpriteLibrary& _sprites)
 {
@@ -183,7 +181,7 @@ bool BitmapFont::Init(
     for (size_t i = 0; i < static_cast<size_t>(eFontColor::Count); ++i)
     {
         m_strips[i] = {};
-        if (const SpriteInfo* pInfo = _sprites.Find(GetFontSpriteName(static_cast<eFontColor>(i))); pInfo && !pInfo->bStandalone)
+        if (const SpriteInfo* pInfo = _sprites.Find(GetFontSpriteName_(static_cast<eFontColor>(i))); pInfo && !pInfo->bStandalone)
         {
             m_strips[i] = pInfo->frame;
             m_bReady    = true;
@@ -237,12 +235,12 @@ AnimFrame BitmapFont::GetTimeDigitFrame(
 }
 
 void BitmapFont::DrawText(
-    Renderer&             _renderer,
-    SpriteBatch&          _sprites,
-    const int             _x,
-    const int             _y,
-    const slug::StringView _text,
-    const TextStyle&      _style) const
+    Renderer&        _renderer,
+    SpriteBatch&     _sprites,
+    const int        _x,
+    const int        _y,
+    const StringView _text,
+    const TextStyle& _style) const
 {
     const TextLayout layout = LayoutText(_text, _x, _y, _style);
 
@@ -261,25 +259,25 @@ void BitmapFont::DrawText(
         }
         else if (quad.ch != ' ' && pNative)
         {
-            slug::RGBA color = GetFontFallbackColor(_style.color);
-            color.a         = _style.alpha;
+            RGBA color = GetFontFallbackColor_(_style.color);
+            color.a    = _style.alpha;
 
-            const float k = static_cast<float>(scale * 2);
-            const char  text[2] = { quad.ch, '\0' };
+            const float          k    = static_cast<float>(scale * 2);
+            const ARRAY<char, 2> text = { quad.ch, '\0' };
             SDL_SetRenderDrawColor(pNative, color.r, color.g, color.b, color.a);
             SDL_SetRenderScale(pNative, k, k);
-            SDL_RenderDebugText(pNative, static_cast<float>(quad.dst.x) / k, static_cast<float>(quad.dst.y) / k, text);
+            SDL_RenderDebugText(pNative, static_cast<float>(quad.dst.x) / k, static_cast<float>(quad.dst.y) / k, text.data());
             SDL_SetRenderScale(pNative, 1.f, 1.f);
         }
     }
 }
 
 void BitmapFont::DrawTimeDigits(
-    SpriteBatch&          _sprites,
-    const int             _centerX,
-    const int             _topY,
-    const slug::StringView _digits,
-    const uint8_t         _alpha) const
+    SpriteBatch&     _sprites,
+    const int        _centerX,
+    const int        _topY,
+    const StringView _digits,
+    const uint8_t    _alpha) const
 {
     constexpr int kCell = 32;
 
@@ -304,4 +302,10 @@ void BitmapFont::DrawTimeDigits(
         x += kCell;
     }
 }
+
+bool BitmapFont::HasSprites() const
+{
+    return m_bReady;
 }
+
+}   // namespace slug

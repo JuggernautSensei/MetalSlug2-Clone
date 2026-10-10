@@ -1,11 +1,10 @@
 #include "Game/Combat/Projectiles.h"
-#include "Base/Types.h"
 
 #include <algorithm>
 #include <cmath>
 
 #include "Base/Math.h"
-
+#include "Base/Types.h"
 #include "World/Geometry.h"
 
 namespace slug
@@ -14,21 +13,21 @@ namespace slug
 namespace
 {
     [[nodiscard]] bool SegmentHitsGround_(
-        const GroundMap&   _ground,
-        const Vec2 _from,
-        const Vec2 _to,
-        Vec2&      _outLastFree)
+        const GroundMap& _ground,
+        const Vec2       _from,
+        const Vec2       _to,
+        Vec2&            _outLastFree)
     {
         const float dx   = _to.x - _from.x;
         const float dy   = _to.y - _from.y;
         const float dist = std::sqrt(dx * dx + dy * dy);
-        const int   n    = slug::Max(1, CeilToInt(dist / 2.f));
+        const int   n    = Max(1, CeilToInt(dist / 2.f));
 
         Vec2 lastFree = _from;
         for (int i = 1; i <= n; ++i)
         {
-            const float        t = static_cast<float>(i) / static_cast<float>(n);
-            const Vec2 p = { _from.x + dx * t, _from.y + dy * t };
+            const float t = static_cast<float>(i) / static_cast<float>(n);
+            const Vec2  p = { _from.x + dx * t, _from.y + dy * t };
             if (_ground.IsSolidAt(p))
             {
                 _outLastFree = lastFree;
@@ -41,10 +40,10 @@ namespace
 
     // 발판 윗면을 가로지르는 선분 (낙하 중에만). 가장 먼저 닿는 윗면과 그 교점을 돌려준다
     [[nodiscard]] bool SegmentHitsPlatform_(
-        slug::Span<const Platform> _platforms,
-        const Vec2                 _from,
-        const Vec2                 _to,
-        Vec2&                      _outTop)
+        Span<const Platform> _platforms,
+        const Vec2           _from,
+        const Vec2           _to,
+        Vec2&                _outTop)
     {
         bool  bHit  = false;
         float bestT = 2.f;
@@ -74,10 +73,10 @@ namespace
         const Vec2 _size)
     {
         return Aabb::FromMinMax(
-            { slug::Min(_a.x, _b.x) - _size.x * 0.5f, slug::Min(_a.y, _b.y) - _size.y * 0.5f },
-            { slug::Max(_a.x, _b.x) + _size.x * 0.5f, slug::Max(_a.y, _b.y) + _size.y * 0.5f });
+            { Min(_a.x, _b.x) - _size.x * 0.5f, Min(_a.y, _b.y) - _size.y * 0.5f },
+            { Max(_a.x, _b.x) + _size.x * 0.5f, Max(_a.y, _b.y) + _size.y * 0.5f });
     }
-}
+}   // namespace
 
 void ProjectileSystem::Clear()
 {
@@ -94,19 +93,19 @@ void ProjectileSystem::SpawnBullet(
     CombatSystem&      _combat)
 {
     Bullet bullet;
-    bullet.position   = _spawn.position;
-    bullet.renderPrev = _spawn.position;
-    bullet.hitFrom    = _spawn.sweepFrom;
-    bullet.velocity   = { _spawn.direction.x * _spawn.speed, _spawn.direction.y * _spawn.speed };
-    bullet.size       = _spawn.size;
-    bullet.range      = _spawn.range;
-    bullet.damage     = _spawn.damage;
-    bullet.team       = _spawn.team;
-    bullet.kind       = _spawn.kind;
-    bullet.owner      = _spawn.owner;
-    bullet.hitId      = _combat.NewHitId();
-    bullet.bPierce    = _spawn.bPierce;
-    bullet.tag        = _spawn.tag;
+    bullet.position    = _spawn.position;
+    bullet.renderPrev  = _spawn.position;
+    bullet.hitFrom     = _spawn.sweepFrom;
+    bullet.velocity    = { _spawn.direction.x * _spawn.speed, _spawn.direction.y * _spawn.speed };
+    bullet.size        = _spawn.size;
+    bullet.range       = _spawn.range;
+    bullet.damage      = _spawn.damage;
+    bullet.team        = _spawn.team;
+    bullet.kind        = _spawn.kind;
+    bullet.owner       = _spawn.owner;
+    bullet.hitId       = _combat.NewHitId();
+    bullet.bPierce     = _spawn.bPierce;
+    bullet.tag         = _spawn.tag;
     bullet.blastSize   = _spawn.blastSize;
     bullet.blastDamage = _spawn.blastDamage;
     bullet.blastTicks  = _spawn.blastTicks;
@@ -140,9 +139,9 @@ void ProjectileSystem::SpawnShot(
 }
 
 void ProjectileSystem::ExplodeBomb_(
-    Bomb&              _bomb,
-    const Vec2 _at,
-    CombatSystem&      _combat)
+    Bomb&         _bomb,
+    const Vec2    _at,
+    CombatSystem& _combat)
 {
     _bomb.bAlive = false;
 
@@ -159,8 +158,8 @@ void ProjectileSystem::ExplodeBomb_(
 }
 
 void ProjectileSystem::SpawnBulletBlast_(
-    const Bullet&      _bullet,
-    CombatSystem&      _combat)
+    const Bullet& _bullet,
+    CombatSystem& _combat)
 {
     if (_bullet.blastSize.x <= 0.f || _bullet.blastSize.y <= 0.f)
     {
@@ -183,7 +182,7 @@ void ProjectileSystem::Step(
     const GroundMap*           _pGround,
     CombatSystem&              _combat,
     const float                _dt,
-    slug::Span<const Platform> _platforms)
+    const Span<const Platform> _platforms)
 {
     for (Bullet& bullet: m_bullets)
     {
@@ -259,7 +258,7 @@ void ProjectileSystem::Step(
                     shot.velocity.y *= scale;
                 }
             }
-            shot.velocity.y = slug::Min(shot.velocity.y + params.gravity * _dt, params.maxFallSpeed);
+            shot.velocity.y = Min(shot.velocity.y + params.gravity * _dt, params.maxFallSpeed);
             shot.position.x += shot.velocity.x * _dt;
             shot.position.y += shot.velocity.y * _dt;
         }
@@ -282,11 +281,11 @@ void ProjectileSystem::Step(
         else if ((_pGround || !_platforms.empty()) && (params.bExplodeOnSolid || bRoll) && (shot.position.x != shot.renderPrev.x || shot.position.y != shot.renderPrev.y))
         {
             // 접촉은 스프라이트 바닥(중심 + groundProbeY) 기준으로 판정한다: 중심으로 판정하면 반쯤 지면에 묻힌 뒤 터진다
-            const float probe = params.groundProbeY;
-            const Vec2  from  = { shot.renderPrev.x, shot.renderPrev.y + probe };
-            const Vec2  to    = { shot.position.x, shot.position.y + probe };
-            Vec2        lastFree = from;
-            Vec2        topHit   = to;
+            const float probe      = params.groundProbeY;
+            const Vec2  from       = { shot.renderPrev.x, shot.renderPrev.y + probe };
+            const Vec2  to         = { shot.position.x, shot.position.y + probe };
+            Vec2        lastFree   = from;
+            Vec2        topHit     = to;
             const bool  bGroundHit = _pGround && SegmentHitsGround_(*_pGround, from, to, lastFree);
             const bool  bPlatHit   = !bGroundHit && SegmentHitsPlatform_(_platforms, from, to, topHit);
             if (bGroundHit || bPlatHit)
@@ -309,16 +308,19 @@ void ProjectileSystem::Step(
                     shot.velocity.y = 0.f;
                     if (!shot.bLanded)
                     {
-                        shot.bLanded   = true;
-                        shot.landedAge = shot.ageTicks;
+                        shot.bLanded    = true;
+                        shot.landedAge  = shot.ageTicks;
                         shot.velocity.x = params.rollDirX * params.rollSpeed;
                     }
                 }
                 else
                 {
-                    shot.bAlive = false;
+                    shot.bAlive   = false;
                     const Vec2 at = bGroundHit ? lastFree : topHit;
-                    m_shotFx.push_back({ { at.x, at.y - probe }, params.visual });
+                    m_shotFx.push_back({
+                        { at.x, at.y - probe },
+                        params.visual
+                    });
                 }
             }
         }
@@ -440,8 +442,8 @@ void ProjectileSystem::Step(
 }
 
 void ProjectileSystem::OnHitEvents(
-    const slug::Span<const HitEvent> _events,
-    CombatSystem&                   _combat)
+    const Span<const HitEvent> _events,
+    CombatSystem&              _combat)
 {
     for (const HitEvent& event: _events)
     {
@@ -524,17 +526,38 @@ int ProjectileSystem::CountShots(
     return count;
 }
 
-slug::Vector<ShotFx> ProjectileSystem::TakeShotFx()
+Vector<ShotFx> ProjectileSystem::TakeShotFx()
 {
-    slug::Vector<ShotFx> out;
+    Vector<ShotFx> out;
     out.swap(m_shotFx);
     return out;
 }
 
-slug::Vector<FxRequest> ProjectileSystem::TakeFx()
+Vector<FxRequest> ProjectileSystem::TakeFx()
 {
-    slug::Vector<FxRequest> out;
+    Vector<FxRequest> out;
     out.swap(m_fx);
     return out;
 }
+
+Span<const Bullet> ProjectileSystem::GetBullets() const
+{
+    return m_bullets;
 }
+
+Span<const Bomb> ProjectileSystem::GetBombs() const
+{
+    return m_bombs;
+}
+
+Span<const Blast> ProjectileSystem::GetBlasts() const
+{
+    return m_blasts;
+}
+
+Span<const Shot> ProjectileSystem::GetShots() const
+{
+    return m_shots;
+}
+
+}   // namespace slug

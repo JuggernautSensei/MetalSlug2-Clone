@@ -59,7 +59,7 @@ bool ShouldFire(
     {
         return true;
     }
-    return _bShotHeld && _tuning.holdRepeatTicks > 0 && _state.ticksSinceShot >= slug::Max(_tuning.fireIntervalTicks, _tuning.holdRepeatTicks);
+    return _bShotHeld && _tuning.holdRepeatTicks > 0 && _state.ticksSinceShot >= Max(_tuning.fireIntervalTicks, _tuning.holdRepeatTicks);
 }
 
 void OnFired(
@@ -90,21 +90,21 @@ BulletSpawn MakeBulletSpawn(
     const eWeapon       _weapon,
     const WeaponTuning& _tuning,
     const uint32_t      _owner,
-    const Vec2  _muzzle,
-    const Vec2  _sweepFrom,
-    const Vec2  _direction)
+    const Vec2          _muzzle,
+    const Vec2          _sweepFrom,
+    const Vec2          _direction)
 {
     BulletSpawn spawn;
-    spawn.team      = eTeam::Player;
-    spawn.owner     = _owner;
-    spawn.position  = _muzzle;
-    spawn.sweepFrom = _sweepFrom;
-    spawn.direction = _direction;
-    spawn.speed     = _tuning.projectileSpeed;
-    spawn.damage    = _tuning.damage;
-    spawn.size      = _tuning.hitSize;
-    spawn.range     = _tuning.range;
-    spawn.bPierce   = _tuning.bPierce;
+    spawn.team        = eTeam::Player;
+    spawn.owner       = _owner;
+    spawn.position    = _muzzle;
+    spawn.sweepFrom   = _sweepFrom;
+    spawn.direction   = _direction;
+    spawn.speed       = _tuning.projectileSpeed;
+    spawn.damage      = _tuning.damage;
+    spawn.size        = _tuning.hitSize;
+    spawn.range       = _tuning.range;
+    spawn.bPierce     = _tuning.bPierce;
     spawn.tag         = static_cast<uint8_t>(_weapon);
     spawn.kind        = eHitKind::Bullet;
     spawn.blastSize   = _tuning.blastSize;
@@ -113,4 +113,10 @@ BulletSpawn MakeBulletSpawn(
     spawn.bTrail      = _weapon == eWeapon::Rocket;
     return spawn;
 }
+
+bool WeaponState::HasFiniteAmmo() const
+{
+    return weapon != eWeapon::Pistol;
 }
+
+}   // namespace slug

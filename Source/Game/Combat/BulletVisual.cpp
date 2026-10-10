@@ -1,11 +1,11 @@
 #include "Game/Combat/BulletVisual.h"
-#include "Base/Math.h"
 
 #include <algorithm>
 #include <cmath>
 #include <string>
 
 #include "Audio/AudioSink.h"
+#include "Base/Math.h"
 #include "Render/Animation.h"
 #include "Render/SpriteBatch.h"
 #include "Render/SpriteLibrary.h"
@@ -17,9 +17,9 @@ namespace
 {
     constexpr float kTickSec = 1.f / 60.f;
 
-    const AnimFrame* PickClipFrame_(
+    [[nodiscard]] const AnimFrame* PickClipFrame_(
         const AnimationLibrary* _pAnims,
-        const std::string&      _name,
+        const String&           _name,
         const int               _ageTicks,
         const bool              _bLoop)
     {
@@ -32,22 +32,22 @@ namespace
         const int index = static_cast<int>(static_cast<float>(_ageTicks) * kTickSec / pClip->frameDuration);
         return &pClip->frames[static_cast<size_t>(_bLoop ? index % count : std::min(index, count - 1))];
     }
-}
+}   // namespace
 
 bool SubmitPlayerBullet(
-    SpriteBatch&        _sprites,
+    SpriteBatch&            _sprites,
     const AnimationLibrary* _pAnims,
-    const SpriteLibrary& _spriteLib,
-    const Bullet&       _bullet,
-    const Vec2  _pos,
-    const int           _layer)
+    const SpriteLibrary&    _spriteLib,
+    const Bullet&           _bullet,
+    const Vec2              _pos,
+    const int               _layer)
 {
     const eWeapon weapon    = static_cast<eWeapon>(_bullet.tag);
     const float   vx        = _bullet.velocity.x;
     const float   vy        = _bullet.velocity.y;
     const bool    bVertical = std::abs(vy) > std::abs(vx);
     const bool    bRight    = vx >= 0.f;
-    const char*   dir       = bVertical ? (vy < 0.f ? "Up" : "Down") : (bRight ? "Right" : "Left");
+    const char*   pDir      = bVertical ? (vy < 0.f ? "Up" : "Down") : (bRight ? "Right" : "Left");
 
     switch (weapon)
     {
@@ -59,8 +59,8 @@ bool SubmitPlayerBullet(
                 degrees += 360.f;
             }
             const int         index = static_cast<int>(std::lround(degrees / 6.f)) % 60;
-            const std::string name  = "HM_Bullet_" + std::to_string(index / 15) + "_" + std::to_string(index % 15);
-            const SpriteInfo* pInfo  = _spriteLib.Find(name);
+            const String      name  = "HM_Bullet_" + std::to_string(index / 15) + "_" + std::to_string(index % 15);
+            const SpriteInfo* pInfo = _spriteLib.Find(name);
             if (!pInfo)
             {
                 return false;
@@ -70,7 +70,7 @@ bool SubmitPlayerBullet(
         }
         case eWeapon::Shotgun:
         {
-            const AnimFrame* pFrame = PickClipFrame_(_pAnims, std::string("ShotGun_Bullet_") + dir, _bullet.ageTicks, false);
+            const AnimFrame* pFrame = PickClipFrame_(_pAnims, String("ShotGun_Bullet_") + pDir, _bullet.ageTicks, false);
             if (!pFrame)
             {
                 return false;
@@ -112,9 +112,9 @@ bool SubmitPlayerBullet(
 }
 
 void PlayShotSfx(
-    IAudioSink& _audio,
+    IAudioSink&   _audio,
     const eWeapon _weapon,
-    const int   _shotIndex)
+    const int     _shotIndex)
 {
     switch (_weapon)
     {
@@ -132,7 +132,7 @@ void PlayShotSfx(
 }
 
 void PlayWeaponPickupSfx(
-    IAudioSink& _audio,
+    IAudioSink&   _audio,
     const eWeapon _weapon)
 {
     if (_weapon == eWeapon::Pistol)
@@ -149,4 +149,5 @@ void PlayWeaponPickupSfx(
         default: break;
     }
 }
-}
+
+}   // namespace slug

@@ -1,12 +1,29 @@
 #include "Game/Sandbox/TrainingTargets.h"
-#include "Base/Types.h"
-#include "Base/Math.h"
 
 #include <cmath>
 #include <cstring>
 
+#include "Base/Math.h"
+#include "Base/Types.h"
+
 namespace slug
 {
+
+namespace
+{
+    void MixHash_(
+        uint64_t& _hash,
+        const int _value)
+    {
+        ARRAY<uint8_t, sizeof(int)> bytes = {};
+        std::memcpy(bytes.data(), &_value, sizeof(int));
+        for (const uint8_t byte: bytes)
+        {
+            _hash ^= byte;
+            _hash *= 1'099'511'628'211ull;
+        }
+    }
+}   // namespace
 
 Vec2 GetDummySize(
     const eDummyKind _kind)
@@ -51,7 +68,7 @@ void TrainingTargets::Clear()
 
 uint32_t TrainingTargets::Add(
     const eDummyKind     _kind,
-    const Vec2   _feet,
+    const Vec2           _feet,
     const bool           _bShooter,
     const SandboxTuning& _tuning)
 {
@@ -90,7 +107,7 @@ void TrainingTargets::RegisterHurtboxes(
             continue;
         }
         Hurtbox hurtbox;
-        hurtbox.box   = Aabb::FromBottomCenter(dummy.feet, dummy.size);
+        hurtbox.box     = Aabb::FromBottomCenter(dummy.feet, dummy.size);
         hurtbox.team    = eTeam::Enemy;
         hurtbox.owner   = dummy.id;
         hurtbox.accepts = AcceptsFor(dummy.kind == eDummyKind::Grunt);
@@ -100,7 +117,7 @@ void TrainingTargets::RegisterHurtboxes(
 
 void TrainingTargets::TickShooters(
     const SandboxTuning& _tuning,
-    const Vec2   _playerFeet,
+    const Vec2           _playerFeet,
     const bool           _bPlayerAlive,
     ProjectileSystem&    _projectiles,
     CombatSystem&        _combat)
@@ -144,8 +161,8 @@ void TrainingTargets::TickShooters(
 }
 
 int TrainingTargets::ApplyEvents(
-    const slug::Span<const HitEvent> _events,
-    const SandboxTuning&            _tuning)
+    const Span<const HitEvent> _events,
+    const SandboxTuning&       _tuning)
 {
     (void)_tuning;
     int score = 0;
@@ -215,24 +232,36 @@ void TrainingTargets::Tick(
 
 uint64_t TrainingTargets::HashState() const
 {
-    uint64_t   hash = 14695981039346656037ull;
-    const auto Mix  = [&hash](const int _value) {
-        unsigned char bytes[sizeof(int)];
-        std::memcpy(bytes, &_value, sizeof(int));
-        for (const unsigned char byte: bytes)
-        {
-            hash ^= byte;
-            hash *= 1099511628211ull;
-        }
-    };
+    uint64_t hash = 14'695'981'039'346'656'037ull;
     for (const TrainingDummy& dummy: m_dummies)
     {
-        Mix(static_cast<int>(dummy.id));
-        Mix(dummy.health.hp);
-        Mix(dummy.deadTicks);
-        Mix(dummy.hitsTaken);
+        MixHash_(hash, static_cast<int>(dummy.id));
+        MixHash_(hash, dummy.health.hp);
+        MixHash_(hash, dummy.deadTicks);
+        MixHash_(hash, dummy.hitsTaken);
     }
-    Mix(m_killCount);
+    MixHash_(hash, m_killCount);
     return hash;
 }
+
+Span<const TrainingDummy> TrainingTargets::GetDummies() const
+{
+    return m_dummies;
 }
+
+Span<TrainingDummy> TrainingTargets::GetDummies()
+{
+    return m_dummies;
+}
+
+int TrainingTargets::GetKillCount() const
+{
+    return m_killCount;
+}
+
+bool TrainingDummy::IsAlive() const
+{
+    return deadTicks < 0 && health.IsAlive();
+}
+
+}   // namespace slug

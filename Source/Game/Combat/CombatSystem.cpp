@@ -1,4 +1,5 @@
 #include "Game/Combat/CombatSystem.h"
+
 #include "Base/Types.h"
 
 namespace slug
@@ -11,7 +12,7 @@ void CombatSystem::BeginTick()
     m_events.clear();
 }
 
-const slug::Vector<HitEvent>& CombatSystem::Resolve()
+const Vector<HitEvent>& CombatSystem::Resolve()
 {
     m_events = m_resolver.Resolve(m_hitboxes, m_hurtboxes);
     return m_events;
@@ -40,4 +41,48 @@ bool CombatSystem::HasTargetIn(
     }
     return false;
 }
+
+void CombatSystem::AddHurtbox(
+    const Hurtbox& _hurtbox)
+{
+    m_hurtboxes.push_back(_hurtbox);
 }
+
+void CombatSystem::AddHitbox(
+    const Hitbox& _hitbox)
+{
+    m_hitboxes.push_back(_hitbox);
+}
+
+uint32_t CombatSystem::NewHitId()
+{
+    return ++m_nextHitId;
+}
+
+void CombatSystem::ReleaseHitId(
+    const uint32_t _hitId)
+{
+    m_resolver.Release(_hitId);
+}
+
+Span<const Hurtbox> CombatSystem::GetHurtboxes() const
+{
+    return m_hurtboxes;
+}
+
+Span<const Hitbox> CombatSystem::GetHitboxes() const
+{
+    return m_hitboxes;
+}
+
+const Vector<HitEvent>& CombatSystem::GetEvents() const
+{
+    return m_events;
+}
+
+HitResolver& CombatSystem::GetResolver()
+{
+    return m_resolver;
+}
+
+}   // namespace slug

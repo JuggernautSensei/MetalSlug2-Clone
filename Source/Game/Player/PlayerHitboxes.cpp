@@ -20,10 +20,10 @@ namespace
             default: return _muzzle.stand;
         }
     }
-}
+}   // namespace
 
 Aabb MakeKnifeTriggerBox(
-    const Vec2 _feet,
+    const Vec2         _feet,
     const int          _facing,
     const float        _bodyHalfWidth,
     const KnifeTuning& _knife)
@@ -35,7 +35,7 @@ Aabb MakeKnifeTriggerBox(
 }
 
 Aabb MakeKnifeSwingBox(
-    const Vec2 _feet,
+    const Vec2         _feet,
     const int          _facing,
     const KnifeTuning& _knife)
 {
@@ -45,7 +45,7 @@ Aabb MakeKnifeSwingBox(
 }
 
 Vec2 GetMuzzlePosition(
-    const Vec2  _feet,
+    const Vec2          _feet,
     const int           _facing,
     const ePose         _pose,
     const eAim          _aim,
@@ -82,21 +82,22 @@ Vec2 GetAimDirection(
 }
 
 Vec2 GetBombReleasePosition(
-    const Vec2 _feet,
-    const int          _facing,
-    const ePose        _pose,
-    const BombTuning&  _bomb)
+    const Vec2        _feet,
+    const int         _facing,
+    const ePose       _pose,
+    const BombTuning& _bomb)
 {
     const float lowering = _pose == ePose::Crouch ? 14.f : 0.f;
     return { _feet.x + _bomb.releaseOffset.x * static_cast<float>(_facing), _feet.y + _bomb.releaseOffset.y + lowering };
 }
 
 Aabb MakePlayerHurtboxBox(
-    const Vec2 _feet,
-    const ePose        _pose,
-    const BodyTuning&  _body)
+    const Vec2        _feet,
+    const ePose       _pose,
+    const BodyTuning& _body)
 {
     const Vec2 size = _pose == ePose::Crouch ? _body.hurtCrouch : _body.hurtStand;
     return Aabb::FromBottomCenter(_feet, size);
 }
-}
+
+}   // namespace slug

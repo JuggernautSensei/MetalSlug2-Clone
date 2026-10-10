@@ -32,7 +32,7 @@ HudModel UiDemoState::MakeModel_() const
 }
 
 void UiDemoState::Tick(
-    GameContext&        _ctx,
+    GameContext& _ctx,
     const InputHistory&)
 {
     ++m_tick;
@@ -71,4 +71,15 @@ void UiDemoState::Render(
     m_ui.SetMissionResults(m_flow.GetResultsView());
     m_ui.DrawOverlays(_ctx);
 }
+
+int UiDemoState::GetTickCount() const
+{
+    return m_tick;
 }
+
+const UiSystem& UiDemoState::GetUi() const
+{
+    return m_ui;
+}
+
+}   // namespace slug

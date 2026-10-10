@@ -1,15 +1,15 @@
+#include "Game/Props/ItemWorld.h"
+
 #include <algorithm>
-#include "Base/Types.h"
-#include "Base/Math.h"
-#include "Base/Random.h"
 #include <cmath>
 #include <cstring>
 #include <string>
-#include <vector>
 
+#include "Base/Math.h"
+#include "Base/Random.h"
+#include "Base/Types.h"
 #include "Game/Player/PlayerController.h"
 #include "Game/Player/PlayerWeapons.h"
-#include "Game/Props/ItemWorld.h"
 #include "Game/Ui/BitmapFont.h"
 
 namespace slug
@@ -17,26 +17,49 @@ namespace slug
 
 namespace
 {
-template<typename RngT>
-float RandRange(RngT& _rng, const float _lo, const float _hi)
-{
-    const double unit = static_cast<double>(_rng.Generate()) / 18446744073709551615.0;
-    return _lo + static_cast<float>(unit) * (_hi - _lo);
-}
+    template<typename RngT>
+    [[nodiscard]] float RandRange_(
+        RngT&       _rng,
+        const float _lo,
+        const float _hi)
+    {
+        const double unit = static_cast<double>(_rng.Generate()) / 18'446'744'073'709'551'615.0;
+        return _lo + static_cast<float>(unit) * (_hi - _lo);
+    }
 
-constexpr int kItemRenderLayer  = 34;
-constexpr int kPopupRenderLayer = 46;
-constexpr float kSupplyBounceVy = -400.f;
-constexpr float kSupplyBounceVx = 75.f;
-constexpr float kRollMinVx      = -50.f;
-constexpr float kRollMaxVx      = 49.f;
-constexpr float kRollStopSpeed  = 1.f;
+    void MixValue_(
+        uint64_t&      _hash,
+        const uint64_t _value)
+    {
+        _hash ^= _value;
+        _hash *= 1'099'511'628'211ull;
+    }
 
-Vec2 BottomAlignedOrigin(const AnimFrame& _frame, const Vec2 _feet)
-{
-    return { _feet.x, _feet.y - static_cast<float>(_frame.h - _frame.pivotY) };
-}
-}
+    void MixFloat_(
+        uint64_t&   _hash,
+        const float _value)
+    {
+        uint32_t bits = 0;
+        static_assert(sizeof(bits) == sizeof(_value));
+        std::memcpy(&bits, &_value, sizeof(bits));
+        MixValue_(_hash, bits);
+    }
+
+    constexpr int   kItemRenderLayer  = 34;
+    constexpr int   kPopupRenderLayer = 46;
+    constexpr float kSupplyBounceVy   = -400.f;
+    constexpr float kSupplyBounceVx   = 75.f;
+    constexpr float kRollMinVx        = -50.f;
+    constexpr float kRollMaxVx        = 49.f;
+    constexpr float kRollStopSpeed    = 1.f;
+
+    [[nodiscard]] Vec2 BottomAlignedOrigin_(
+        const AnimFrame& _frame,
+        const Vec2       _feet)
+    {
+        return { _feet.x, _feet.y - static_cast<float>(_frame.h - _frame.pivotY) };
+    }
+}   // namespace
 
 ItemWorld::ItemWorld(
     const PropDefLibrary* _pLibrary,
@@ -52,7 +75,7 @@ void ItemWorld::Reset(
     m_items.clear();
     m_popups.clear();
     m_fx.clear();
-    m_rng  = slug::RngMt19937 { _seed };
+    m_rng    = RngMt19937 { _seed };
     m_nextId = kItemIdBase;
 }
 
@@ -64,16 +87,16 @@ void ItemWorld::ClearAll()
 }
 
 uint32_t ItemWorld::Spawn(
-    const slug::StringView _name,
-    const Vec2    _feet,
-    const bool            _bBounce)
+    const StringView _name,
+    const Vec2       _feet,
+    const bool       _bBounce)
 {
     if (m_pLibrary == nullptr)
     {
         return 0;
     }
 
-    slug::String itemName { _name };
+    String itemName { _name };
     if (const PropItemGroup* pGroup = m_pLibrary->FindGroup(_name))
     {
         const int pick = static_cast<int>(m_rng.Generate() % static_cast<uint64_t>(pGroup->names.size()));
@@ -87,17 +110,17 @@ uint32_t ItemWorld::Spawn(
     const PropItemDef& def = m_pLibrary->GetItems()[static_cast<size_t>(defIndex)];
 
     PropItem item;
-    item.id       = m_nextId++;
-    item.defIndex = defIndex;
-    item.feet     = _feet;
-    item.bBounce  = _bBounce;
-    item.body.position = _feet;
-    item.body.size     = { 32.f, 32.f };
+    item.id                = m_nextId++;
+    item.defIndex          = defIndex;
+    item.feet              = _feet;
+    item.bBounce           = _bBounce;
+    item.body.position     = _feet;
+    item.body.size         = { 32.f, 32.f };
     item.body.gravityScale = kItemGravity / PhysicsTuning {}.gravity;
 
     if (def.kind == eItemKind::Score && def.bRoll)
     {
-        item.rollVx = RandRange(m_rng, kRollMinVx, kRollMaxVx);
+        item.rollVx = RandRange_(m_rng, kRollMinVx, kRollMaxVx);
     }
     if (_bBounce)
     {
@@ -113,7 +136,7 @@ void ItemWorld::BindAnim_(
     const AnimationLibrary& _anims) const
 {
     const PropItemDef& def = m_pLibrary->GetItems()[static_cast<size_t>(_item.defIndex)];
-    _item.bAnimBound = true;
+    _item.bAnimBound       = true;
     if (def.begin.ref == eVisualRef::Anim)
     {
         _item.bBegun = true;
@@ -151,7 +174,7 @@ void ItemWorld::Tick(
                 item.beginAnim.Update(*_pAnims, _dt);
                 if (item.beginAnim.IsFinished())
                 {
-                    item.bBegun = false;
+                    item.bBegun            = false;
                     const PropItemDef& def = m_pLibrary->GetItems()[static_cast<size_t>(item.defIndex)];
                     if (def.visual.ref == eVisualRef::Anim)
                     {
@@ -196,8 +219,7 @@ void ItemWorld::Tick(
         std::remove_if(
             m_items.begin(),
             m_items.end(),
-            [&](const PropItem& _item)
-            {
+            [&](const PropItem& _item) {
                 if (_item.bPickedUp)
                 {
                     return _item.pickupSec <= 0.f;
@@ -209,7 +231,7 @@ void ItemWorld::Tick(
 
 void ItemWorld::SpawnPopup_(
     const Vec2 _pos,
-    const int          _score)
+    const int  _score)
 {
     ScorePopup popup;
     popup.pos   = _pos;
@@ -217,10 +239,10 @@ void ItemWorld::SpawnPopup_(
     m_popups.push_back(popup);
 }
 
-slug::Vector<ItemPickup> ItemWorld::Collect(
+Vector<ItemPickup> ItemWorld::Collect(
     const Aabb& _playerBox)
 {
-    slug::Vector<ItemPickup> out;
+    Vector<ItemPickup> out;
     if (m_pLibrary == nullptr)
     {
         return out;
@@ -257,15 +279,15 @@ slug::Vector<ItemPickup> ItemWorld::Collect(
         }
         item.bPickedUp = true;
         item.pickupSec = kItemPickupHideSec;
-        m_fx.push_back(ItemFxRequest { slug::String { "Get_Item_Effect" }, item.feet });
+        m_fx.push_back(ItemFxRequest { String { "Get_Item_Effect" }, item.feet });
     }
     m_items.erase(std::remove_if(m_items.begin(), m_items.end(), [](const PropItem& _i) { return !_i.bPickedUp && _i.ageSec >= kItemLifetimeSec; }), m_items.end());
     return out;
 }
 
-slug::Vector<ItemFxRequest> ItemWorld::TakeFx()
+Vector<ItemFxRequest> ItemWorld::TakeFx()
 {
-    slug::Vector<ItemFxRequest> out = std::move(m_fx);
+    Vector<ItemFxRequest> out = std::move(m_fx);
     m_fx.clear();
     return out;
 }
@@ -346,7 +368,7 @@ void ItemWorld::Submit(
         {
             continue;
         }
-        _sprites.Submit(kItemRenderLayer, static_cast<int>(item.feet.y), frame, BottomAlignedOrigin(frame, item.feet));
+        _sprites.Submit(kItemRenderLayer, static_cast<int>(item.feet.y), frame, BottomAlignedOrigin_(frame, item.feet));
     }
 
     if (_pFont == nullptr)
@@ -355,19 +377,19 @@ void ItemWorld::Submit(
     }
     for (const ScorePopup& popup: m_popups)
     {
-        const std::string text = std::to_string(popup.score);
+        const String text = std::to_string(popup.score);
 
-        const int   phase  = static_cast<int>(popup.ageSec / kScorePopupBlinkSec);
+        const int        phase = static_cast<int>(popup.ageSec / kScorePopupBlinkSec);
         const eFontColor color = (phase % 2 == 0) ? eFontColor::Red : eFontColor::Yellow;
-        float       rise   = 0.f;
+        float            rise  = 0.f;
         if (popup.ageSec > kScorePopupRiseDelaySec)
         {
             const float t = popup.ageSec - kScorePopupRiseDelaySec;
             rise          = 0.5f * 500.f * t * t;
         }
 
-        slug::Vector<AnimFrame> glyphs;
-        int                    width = 0;
+        Vector<AnimFrame> glyphs;
+        int               width = 0;
         for (const char ch: text)
         {
             const int glyph = fontmap::GetGlyphIndex(ch);
@@ -391,45 +413,54 @@ void ItemWorld::Submit(
 
 uint64_t ItemWorld::HashState() const
 {
-    uint64_t h = 1469598103934665603ull;
-    auto     mix = [&](uint64_t _v)
-    {
-        h ^= _v;
-        h *= 1099511628211ull;
-    };
-    auto mixF = [&](float _f)
-    {
-        uint32_t bits = 0;
-        static_assert(sizeof(bits) == sizeof(_f));
-        std::memcpy(&bits, &_f, sizeof(bits));
-        mix(bits);
-    };
+    uint64_t h = 1'469'598'103'934'665'603ull;
     for (const PropItem& item: m_items)
     {
-        mix(item.id);
-        mix(static_cast<uint64_t>(item.defIndex));
-        mixF(item.feet.x);
-        mixF(item.feet.y);
-        mixF(item.body.velocity.x);
-        mixF(item.body.velocity.y);
-        mixF(item.ageSec);
-        mix(item.bPickedUp ? 1u : 0u);
-        mixF(item.pickupSec);
+        MixValue_(h, item.id);
+        MixValue_(h, static_cast<uint64_t>(item.defIndex));
+        MixFloat_(h, item.feet.x);
+        MixFloat_(h, item.feet.y);
+        MixFloat_(h, item.body.velocity.x);
+        MixFloat_(h, item.body.velocity.y);
+        MixFloat_(h, item.ageSec);
+        MixValue_(h, item.bPickedUp ? 1u : 0u);
+        MixFloat_(h, item.pickupSec);
     }
     for (const ScorePopup& popup: m_popups)
     {
-        mixF(popup.pos.x);
-        mixF(popup.pos.y);
-        mix(static_cast<uint64_t>(popup.score));
-        mixF(popup.ageSec);
+        MixFloat_(h, popup.pos.x);
+        MixFloat_(h, popup.pos.y);
+        MixValue_(h, static_cast<uint64_t>(popup.score));
+        MixFloat_(h, popup.ageSec);
     }
     return h;
 }
 
+void ItemWorld::SetLibrary(
+    const PropDefLibrary* _pLibrary)
+{
+    m_pLibrary = _pLibrary;
+}
+
+Span<const PropItem> ItemWorld::GetItems() const
+{
+    return m_items;
+}
+
+Span<const ScorePopup> ItemWorld::GetPopups() const
+{
+    return m_popups;
+}
+
+size_t ItemWorld::GetCount() const
+{
+    return m_items.size();
+}
+
 void ApplyItemPickup(
-    PlayerController&   _player,
-    const ItemPickup&   _pickup,
-    const Tuning&       _tuning)
+    PlayerController& _player,
+    const ItemPickup& _pickup,
+    const Tuning&     _tuning)
 {
     switch (_pickup.kind)
     {
@@ -455,4 +486,5 @@ void ApplyItemPickup(
             break;
     }
 }
-}
+
+}   // namespace slug

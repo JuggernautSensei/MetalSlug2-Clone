@@ -1,6 +1,4 @@
 #include "Game/Ui/UiSystem.h"
-#include "Base/Types.h"
-#include "Base/Result.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -8,27 +6,32 @@
 #include <utility>
 
 #include "Base/Log.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
 
 namespace slug
 {
 
 namespace
 {
-    [[nodiscard]] int LoadStandaloneCached_(
-        GameContext&          _ctx,
-        const slug::StringView _name,
-        const slug::StringView _file)
-    {
-        static std::map<std::pair<const SpriteBatch*, slug::String>, int> s_cache;
+    using CacheKey = std::pair<const SpriteBatch*, String>;
+    using CacheMap = std::map<CacheKey, int>;
 
-        const std::pair<const SpriteBatch*, slug::String> key { _ctx.pSprites, slug::String { _name } };
-        if (const auto it = s_cache.find(key); it != s_cache.end())
+    [[nodiscard]] int LoadStandaloneCached_(
+        GameContext&     _ctx,
+        const StringView _name,
+        const StringView _file)
+    {
+        static CacheMap s_cache;
+
+        const CacheKey key { _ctx.pSprites, String { _name } };
+        if (const CacheMap::const_iterator it = s_cache.find(key); it != s_cache.end())
         {
             return it->second;
         }
 
         int handle = -1;
-        if (const slug::Result<int> loaded = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / slug::FilePath { _file }))
+        if (const Result<int> loaded = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / FilePath { _file }))
         {
             handle = loaded.GetValue();
         }
@@ -39,7 +42,7 @@ namespace
         s_cache.emplace(key, handle);
         return handle;
     }
-}
+}   // namespace
 
 void UiSystem::Init(
     const GameContext& _ctx)
@@ -54,7 +57,7 @@ void UiSystem::Init(
         return;
     }
 
-    if (slug::Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot / "Baked"))
+    if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot / "Baked"))
     {
         m_sprites  = library.Take();
         m_bSprites = true;
@@ -74,11 +77,11 @@ void UiSystem::Tick()
 }
 
 void UiSystem::DrawText(
-    GameContext&          _ctx,
-    const int             _x,
-    const int             _y,
-    const slug::StringView _text,
-    const TextStyle&      _style) const
+    GameContext&     _ctx,
+    const int        _x,
+    const int        _y,
+    const StringView _text,
+    const TextStyle& _style) const
 {
     if (_ctx.IsHeadless() || !_ctx.pSprites)
     {
@@ -88,12 +91,12 @@ void UiSystem::DrawText(
 }
 
 bool UiSystem::DrawSprite(
-    GameContext&          _ctx,
-    const slug::StringView _name,
-    const int             _centerX,
-    const int             _centerY,
-    const int             _scale,
-    const uint8_t         _alpha) const
+    GameContext&     _ctx,
+    const StringView _name,
+    const int        _centerX,
+    const int        _centerY,
+    const int        _scale,
+    const uint8_t    _alpha) const
 {
     if (_ctx.IsHeadless() || !_ctx.pSprites)
     {
@@ -116,11 +119,11 @@ bool UiSystem::DrawSprite(
 }
 
 bool UiSystem::DrawStandalone(
-    GameContext&          _ctx,
-    const slug::StringView _name,
-    const int             _x,
-    const int             _y,
-    const uint8_t         _alpha) const
+    GameContext&     _ctx,
+    const StringView _name,
+    const int        _x,
+    const int        _y,
+    const uint8_t    _alpha) const
 {
     if (_ctx.IsHeadless() || !_ctx.pSprites)
     {
@@ -189,8 +192,8 @@ void UiSystem::DrawBanner(
     const int         elapsed = m_banner.GetElapsedTicks();
     const int         lineY0  = spec.centerY >= 0 ? spec.centerY : m_layout.missionLine1Y;
 
-    slug::Vector<slug::String> lines;
-    slug::String               current;
+    Vector<String> lines;
+    String         current;
     for (const char c: spec.text)
     {
         if (c == '\n')
@@ -205,9 +208,9 @@ void UiSystem::DrawBanner(
     }
     lines.push_back(current);
 
-    const int  num = std::max(1, m_layout.missionGlyphNum);
-    const int  den = std::max(1, m_layout.missionGlyphDen);
-    slug::RGBA tint = { 255, 255, 255, 255 };
+    const int num  = std::max(1, m_layout.missionGlyphNum);
+    const int den  = std::max(1, m_layout.missionGlyphDen);
+    RGBA      tint = { 255, 255, 255, 255 };
     if (spec.color == eFontColor::Red)
     {
         tint = { 255, 110, 90, 255 };
@@ -216,24 +219,24 @@ void UiSystem::DrawBanner(
     int globalIndex = 0;
     for (size_t line = 0; line < lines.size(); ++line)
     {
-        const slug::String& text  = lines[line];
-        const int           lineY = lineY0 + static_cast<int>(line) * m_layout.missionLineStride;
+        const String& text  = lines[line];
+        const int     lineY = lineY0 + static_cast<int>(line) * m_layout.missionLineStride;
 
         // 줄 폭: 스프라이트 폭 * 배율 + 간격 (공백은 고정 폭)
         int width = 0;
         for (const char c: text)
         {
-            const slug::String name = MakeMissionGlyphName(c);
-            const SpriteInfo*  pInfo = name.empty() ? nullptr : m_sprites.Find(name);
+            const String      name  = MakeMissionGlyphName(c);
+            const SpriteInfo* pInfo = name.empty() ? nullptr : m_sprites.Find(name);
             width += pInfo ? (pInfo->frame.w * num / den + m_layout.missionGlyphGap) : (c == ' ' ? m_layout.missionSpaceW : 0);
         }
         int x = m_layout.screenW / 2 - width / 2;
 
         for (const char c: text)
         {
-            const GlyphPose pose    = ComputeMissionGlyphPose(elapsed, spec.fadeInTicks, spec.holdTicks, spec.fadeOutTicks, globalIndex++);
-            const slug::String name = MakeMissionGlyphName(c);
-            const SpriteInfo*  pInfo = name.empty() ? nullptr : m_sprites.Find(name);
+            const GlyphPose   pose  = ComputeMissionGlyphPose(elapsed, spec.fadeInTicks, spec.holdTicks, spec.fadeOutTicks, globalIndex++);
+            const String      name  = MakeMissionGlyphName(c);
+            const SpriteInfo* pInfo = name.empty() ? nullptr : m_sprites.Find(name);
             if (!pInfo)
             {
                 x += (c == ' ' ? m_layout.missionSpaceW : 0);
@@ -241,8 +244,8 @@ void UiSystem::DrawBanner(
             }
             if (pose.alpha > 0)
             {
-                const int w = pInfo->frame.w * num / den;
-                const int h = pInfo->frame.h * num / den;
+                const int         w = pInfo->frame.w * num / den;
+                const int         h = pInfo->frame.h * num / den;
                 SpriteDrawOptions options;
                 options.tint   = tint;
                 options.tint.a = pose.alpha;
@@ -261,13 +264,13 @@ void UiSystem::DrawMissionResults(
         return;
     }
 
-    const uint8_t a = m_results.boxAlpha;
+    const uint8_t a   = m_results.boxAlpha;
     const IntRect box = { m_layout.resultsBoxX, m_layout.resultsBoxY, m_layout.resultsBoxW, m_layout.resultsBoxH };
     const int     cx  = box.x + box.w / 2;
 
     // 상자: 어두운 남색 바탕 + 연보라 테두리 (원본 영상 색)
     _ctx.pRenderer->FillRect({ static_cast<float>(box.x), static_cast<float>(box.y) }, { static_cast<float>(box.w), static_cast<float>(box.h) }, { 12, 10, 60, static_cast<uint8_t>(a * 225 / 255) });
-    const slug::RGBA border = { 180, 170, 240, a };
+    const RGBA border = { 180, 170, 240, a };
     _ctx.pRenderer->FillRect({ static_cast<float>(box.x), static_cast<float>(box.y) }, { static_cast<float>(box.w), 2.f }, border);
     _ctx.pRenderer->FillRect({ static_cast<float>(box.x), static_cast<float>(box.y + box.h - 2) }, { static_cast<float>(box.w), 2.f }, border);
     _ctx.pRenderer->FillRect({ static_cast<float>(box.x), static_cast<float>(box.y) }, { 2.f, static_cast<float>(box.h) }, border);
@@ -283,19 +286,19 @@ void UiSystem::DrawMissionResults(
     yellow.color     = eFontColor::Yellow;
     m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, cx, m_layout.resultsPlayerY - fontmap::kGlyphSize / 2, "1P", yellow);
 
-    char countBuf[8] = {};
-    std::snprintf(countBuf, sizeof(countBuf), "%02d", std::clamp(m_results.rescued, 0, 99));
-    m_font.DrawTimeDigits(*_ctx.pSprites, cx, m_layout.resultsCountTopY, countBuf, a);
+    ARRAY<char, 8> countBuf = {};
+    std::snprintf(countBuf.data(), countBuf.size(), "%02d", std::clamp(m_results.rescued, 0, 99));
+    m_font.DrawTimeDigits(*_ctx.pSprites, cx, m_layout.resultsCountTopY, countBuf.data(), a);
     if (m_results.bCounting)
     {
         TextStyle label = white;
-        label.align = eTextAlign::Left;
+        label.align     = eTextAlign::Left;
         m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, cx + 36, m_layout.resultsCountTopY + 12, "X10000", label);
     }
 
-    char scoreBuf[16] = {};
-    std::snprintf(scoreBuf, sizeof(scoreBuf), "%d", std::clamp(m_results.bonusScore, 0, 9'999'999));
-    m_font.DrawTimeDigits(*_ctx.pSprites, cx, m_layout.resultsScoreTopY, scoreBuf, a);
+    ARRAY<char, 16> scoreBuf = {};
+    std::snprintf(scoreBuf.data(), scoreBuf.size(), "%d", std::clamp(m_results.bonusScore, 0, 9'999'999));
+    m_font.DrawTimeDigits(*_ctx.pSprites, cx, m_layout.resultsScoreTopY, scoreBuf.data(), a);
 
     if (m_results.bRankVisible)
     {
@@ -318,7 +321,7 @@ void UiSystem::DrawFade(
     _ctx.pRenderer->FillRect({ 0.f, 0.f }, { static_cast<float>(m_layout.screenW), static_cast<float>(m_layout.screenH) }, { 0, 0, 0, alpha });
 }
 
-void UiSystem::DrawGameOverArt(
+void UiSystem::DrawGameOverArt_(
     GameContext& _ctx) const
 {
     if (_ctx.IsHeadless() || !_ctx.pSprites || !m_art.bVisible || m_art.alpha == 0)
@@ -347,8 +350,63 @@ void UiSystem::DrawOverlays(
     GameContext& _ctx)
 {
     DrawMissionResults(_ctx);
-    DrawGameOverArt(_ctx);
+    DrawGameOverArt_(_ctx);
     DrawFade(_ctx);
     DrawBanner(_ctx);
 }
+
+BannerSystem& UiSystem::GetBanner()
+{
+    return m_banner;
 }
+
+const BannerSystem& UiSystem::GetBanner() const
+{
+    return m_banner;
+}
+
+FadeController& UiSystem::GetFade()
+{
+    return m_fade;
+}
+
+const FadeController& UiSystem::GetFade() const
+{
+    return m_fade;
+}
+
+const UiLayout& UiSystem::GetLayout() const
+{
+    return m_layout;
+}
+
+int UiSystem::GetTick() const
+{
+    return m_tick;
+}
+
+bool UiSystem::HasSprites() const
+{
+    return m_bSprites;
+}
+
+void UiSystem::ShowBanner(
+    const StringView _text,
+    const float      _seconds)
+{
+    m_banner.Show(MakeBannerSpec(_text, _seconds));
+}
+
+void UiSystem::SetMissionResults(
+    const MissionResultsView& _view)
+{
+    m_results = _view;
+}
+
+void UiSystem::SetGameOverArt(
+    const GameOverArtView& _view)
+{
+    m_art = _view;
+}
+
+}   // namespace slug

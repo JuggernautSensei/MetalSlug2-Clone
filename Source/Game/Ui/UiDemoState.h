@@ -5,6 +5,7 @@
 
 namespace slug
 {
+
 class UiDemoState final : public IGameState
 {
 public:
@@ -14,8 +15,8 @@ public:
 
     [[nodiscard]] bool IsFinished() const override { return m_flow.IsDone(); }
 
-    [[nodiscard]] int                GetTickCount() const { return m_tick; }
-    [[nodiscard]] const UiSystem&    GetUi() const { return m_ui; }
+    [[nodiscard]] int             GetTickCount() const;
+    [[nodiscard]] const UiSystem& GetUi() const;
 
 private:
     [[nodiscard]] HudModel MakeModel_() const;
@@ -24,4 +25,5 @@ private:
     ScreenFlow m_flow = {};
     int        m_tick = 0;
 };
-}
+
+}   // namespace slug

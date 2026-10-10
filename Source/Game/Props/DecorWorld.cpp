@@ -1,28 +1,28 @@
-#include <algorithm>
-
 #include "Game/Props/DecorWorld.h"
+
+#include <algorithm>
 
 namespace slug
 {
 
 namespace
 {
-// 끝나지 않는 구간 (단일 clip 장식)
-constexpr float kDecorForeverSec = 1.0e9f;
-// 구간 최소 길이 (0 이하 구간이 무한 전진하는 것을 막는다)
-constexpr float kDecorMinSec     = 0.01f;
-// 한 틱에서 넘길 수 있는 구간 수 상한 (잘못된 데이터 방어)
-constexpr int   kDecorMaxAdvance = 64;
-}
+    // 끝나지 않는 구간 (단일 clip 장식)
+    constexpr float kDecorForeverSec = 1e9f;
+    // 구간 최소 길이 (0 이하 구간이 무한 전진하는 것을 막는다)
+    constexpr float kDecorMinSec = 0.01f;
+    // 한 틱에서 넘길 수 있는 구간 수 상한 (잘못된 데이터 방어)
+    constexpr int kDecorMaxAdvance = 64;
+}   // namespace
 
 DecorSpawn MakeDecorSpawn(
-    const slug::StringView _clip,
-    const eStageLayer      _layer,
-    const Vec2             _pos,
-    const ParamValue*      _pParams)
+    const StringView  _clip,
+    const eStageLayer _layer,
+    const Vec2        _pos,
+    const ParamValue* _pParams)
 {
     DecorSpawn spawn;
-    spawn.clip  = slug::String { _clip };
+    spawn.clip  = String { _clip };
     spawn.layer = _layer;
     spawn.pos   = _pos;
 
@@ -33,7 +33,7 @@ DecorSpawn MakeDecorSpawn(
 
     if (const ParamValue* pVelocity = _pParams->Find("velocity"))
     {
-        pVelocity->TryGetVec2(spawn.velocity);
+        (void)pVelocity->TryGetVec2(spawn.velocity);
     }
     spawn.bFlipX = _pParams->GetBool("flip", false);
     spawn.bLoop  = _pParams->GetBool("loop", false);
@@ -59,7 +59,7 @@ DecorSpawn MakeDecorSpawn(
             }
             if (const ParamValue* pStepVelocity = item.Find("velocity"))
             {
-                pStepVelocity->TryGetVec2(step.velocity);
+                (void)pStepVelocity->TryGetVec2(step.velocity);
             }
             step.bFlipX = item.GetBool("flip", false);
             spawn.sequence.push_back(step);
@@ -72,10 +72,10 @@ uint32_t DecorWorld::Spawn(
     const DecorSpawn& _spawn)
 {
     Instance inst;
-    inst.id     = m_nextId++;
-    inst.layer  = _spawn.layer;
-    inst.pos    = _spawn.pos;
-    inst.bLoop  = _spawn.bLoop;
+    inst.id    = m_nextId++;
+    inst.layer = _spawn.layer;
+    inst.pos   = _spawn.pos;
+    inst.bLoop = _spawn.bLoop;
 
     if (_spawn.sequence.empty())
     {
@@ -100,9 +100,9 @@ void DecorWorld::EnterStep_(
     const AnimationLibrary& _anims) const
 {
     const DecorStep& step = _inst.steps[static_cast<size_t>(_inst.stepIndex)];
-    _inst.velocity   = step.velocity;
-    _inst.bFlipX     = step.bFlipX;
-    _inst.stepLeft  += step.seconds;   // 넘친 시간은 다음 구간으로 넘긴다
+    _inst.velocity        = step.velocity;
+    _inst.bFlipX          = step.bFlipX;
+    _inst.stepLeft += step.seconds;   // 넘친 시간은 다음 구간으로 넘긴다
     _inst.bNeedEnter = false;
 
     const AnimId clip = _anims.Find(step.clip);
@@ -122,9 +122,9 @@ void DecorWorld::Advance_(
         if (!_inst.bLoop)
         {
             // 마지막 구간 종료: 제자리에서 마지막 clip 을 계속 재생한다
-            _inst.bFinished  = true;
-            _inst.velocity   = { 0.f, 0.f };
-            _inst.stepLeft   = kDecorForeverSec;
+            _inst.bFinished = true;
+            _inst.velocity  = { 0.f, 0.f };
+            _inst.stepLeft  = kDecorForeverSec;
             return;
         }
         next = 0;
@@ -175,7 +175,7 @@ void DecorWorld::Submit(
         {
             continue;
         }
-        const int layer = inst.layer == eStageLayer::FarBackground ? kDecorFarLayer : kDecorBackLayer;
+        const int         layer = inst.layer == eStageLayer::FarBackground ? kDecorFarLayer : kDecorBackLayer;
         SpriteDrawOptions options;
         options.bFlipX = inst.bFlipX;
         _sprites.Submit(layer, static_cast<int>(inst.pos.y), *pFrame, inst.pos, options);
@@ -195,11 +195,11 @@ void DecorWorld::Clear()
 }
 
 bool DecorWorld::Get(
-    const uint32_t       _id,
-    Vec2&                _outPos,
-    Vec2&                _outVelocity,
-    slug::StringView&    _outClip,
-    bool&                _bOutFinished) const
+    const uint32_t _id,
+    Vec2&          _outPos,
+    Vec2&          _outVelocity,
+    StringView&    _outClip,
+    bool&          _bOutFinished) const
 {
     for (const Instance& inst: m_items)
     {
@@ -207,13 +207,18 @@ bool DecorWorld::Get(
         {
             continue;
         }
-        _outPos      = inst.pos;
-        _outVelocity = inst.velocity;
-        _outClip     = inst.steps[static_cast<size_t>(inst.stepIndex)].clip;
+        _outPos       = inst.pos;
+        _outVelocity  = inst.velocity;
+        _outClip      = inst.steps[static_cast<size_t>(inst.stepIndex)].clip;
         _bOutFinished = inst.bFinished;
         return true;
     }
     return false;
 }
 
+size_t DecorWorld::GetCount() const
+{
+    return m_items.size();
 }
+
+}   // namespace slug
