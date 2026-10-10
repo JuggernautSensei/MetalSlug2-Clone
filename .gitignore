@@ -7,3 +7,4 @@ Assets/Baked/
 *.user
 *.suo
 build/
+.claude/worktrees/
