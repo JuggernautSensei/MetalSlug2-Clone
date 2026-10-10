@@ -1,13 +1,13 @@
 #pragma once
-#include "Base/Types.h"
 #include "Base/Math.h"
-
+#include "Base/Types.h"
 #include "World/Constants.h"
 #include "World/Geometry.h"
 #include "World/GroundMap.h"
 
 namespace slug
 {
+
 struct Platform
 {
     Aabb box     = {};
@@ -21,9 +21,9 @@ struct Wall
 
 struct PhysicsWorld
 {
-    const GroundMap*          pGround   = nullptr;
-    slug::Span<const Platform> platforms = {};
-    slug::Span<const Wall>     walls     = {};
+    const GroundMap*     pGround   = nullptr;
+    Span<const Platform> platforms = {};
+    Span<const Wall>     walls     = {};
 };
 
 struct Body
@@ -68,8 +68,8 @@ struct MoveResult
     int platformIndex = -1;   // 서 있는 Platform 인덱스 (없으면 -1)
     int wallIndex     = -1;   // 서 있는 Wall 인덱스 (없으면 -1)
 
-    float        groundSlope  = 0.f;
-    Vec2 groundNormal = { 0.f, -1.f };
+    float groundSlope  = 0.f;
+    Vec2  groundNormal = { 0.f, -1.f };
 };
 
 class Physics
@@ -79,4 +79,5 @@ public:
 
     static bool SnapToGround(Body& _body, const PhysicsWorld& _world, float _maxDist);
 };
-}
+
+}   // namespace slug

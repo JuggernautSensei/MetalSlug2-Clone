@@ -1,15 +1,15 @@
 #pragma once
 #include "Base/Math.h"
-
 #include "Game/GameState.h"
 
 namespace slug
 {
+
 class DemoState final : public IGameState
 {
 public:
-    void Tick(GameContext& _ctx, const InputHistory& _input) override;
-    void Render(GameContext& _ctx, float _alpha) override;
+    void               Tick(GameContext& _ctx, const InputHistory& _input) override;
+    void               Render(GameContext& _ctx, float _alpha) override;
     [[nodiscard]] bool IsFinished() const override;
 
     [[nodiscard]] Vec2 GetPosition() const { return m_pos; }
@@ -19,6 +19,7 @@ private:
 
     Vec2 m_prevPos   = { 320.f, 224.f };
     Vec2 m_pos       = { 320.f, 224.f };
-    bool         m_bFinished = false;
+    bool m_bFinished = false;
 };
-}
+
+}   // namespace slug

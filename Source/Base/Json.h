@@ -78,14 +78,14 @@ public:
         return field->Read<T>();
     }
 
-    [[nodiscard]] Result<JsonReader>                      FindField(StringView _key) const;
-    [[nodiscard]] bool                                    HasField(StringView _key) const;
-    [[nodiscard]] Vector<JsonReader>                      GetArray() const;
+    [[nodiscard]] Result<JsonReader>                        FindField(StringView _key) const;
+    [[nodiscard]] bool                                      HasField(StringView _key) const;
+    [[nodiscard]] Vector<JsonReader>                        GetArray() const;
     [[nodiscard]] Vector<std::pair<StringView, JsonReader>> GetObject() const;
 
     [[nodiscard]] size_t GetSize() const;
 
-        [[nodiscard]] bool IsNull() const;
+    [[nodiscard]] bool IsNull() const;
     [[nodiscard]] bool IsBool() const;
     [[nodiscard]] bool IsNumber() const;
     [[nodiscard]] bool IsString() const;
@@ -123,4 +123,5 @@ private:
 
     yyjson_doc* m_pDoc = nullptr;
 };
-}
+
+}   // namespace slug

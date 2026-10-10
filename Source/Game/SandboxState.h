@@ -1,8 +1,7 @@
 #pragma once
-#include "Base/Types.h"
 #include "Base/Handle.h"
 #include "Base/Math.h"
-
+#include "Base/Types.h"
 #include "Core/Tuning.h"
 #include "Game/Combat/CombatSystem.h"
 #include "Game/Combat/Projectiles.h"
@@ -12,32 +11,33 @@
 #include "Game/GameState.h"
 #include "Game/Player/PlayerController.h"
 #include "Game/Player/PlayerRig.h"
+#include "Game/Props/PropWorld.h"
 #include "Game/Sandbox/Effects.h"
 #include "Game/Sandbox/TrainingTargets.h"
 #include "Game/Ui/UiSystem.h"
 #include "Render/Camera.h"
-#include "Game/Props/PropWorld.h"
 #include "Render/SpriteLibrary.h"
 #include "World/GroundMap.h"
 #include "World/Physics.h"
 
 namespace slug
 {
+
 struct SandboxConfig
 {
-    bool                  bLoadBakedGround = true;
-    GroundMap             ground           = {};
-    slug::Vector<Platform> platforms        = {};
-    Aabb                  cameraBounds     = Aabb::FromMinMax({ 0.f, 0.f }, { 3520.f, 448.f });
-    Vec2          spawnFeet        = { 100.f, 378.f };
-    bool                  bSpawnTargets    = true;
-    bool                  bLoadTuningFile  = true;
-    Tuning                tuning           = {};
-    bool                  bBackground      = true;
-    slug::FilePath         enemyDefPath     = {};
-    bool                  bEnemyLab        = false;
-    bool                  bVehicleLab      = false;
-    bool                  bPropLab         = false;
+    bool             bLoadBakedGround = true;
+    GroundMap        ground           = {};
+    Vector<Platform> platforms        = {};
+    Aabb             cameraBounds     = Aabb::FromMinMax({ 0.f, 0.f }, { 3520.f, 448.f });
+    Vec2             spawnFeet        = { 100.f, 378.f };
+    bool             bSpawnTargets    = true;
+    bool             bLoadTuningFile  = true;
+    Tuning           tuning           = {};
+    bool             bBackground      = true;
+    FilePath         enemyDefPath     = {};
+    bool             bEnemyLab        = false;
+    bool             bVehicleLab      = false;
+    bool             bPropLab         = false;
 };
 
 class SandboxState final : public IGameState
@@ -68,7 +68,7 @@ public:
 
     uint32_t AddTarget(eDummyKind _kind, Vec2 _feet, bool _bShooter = false);
 
-    EnemyHandle SpawnEnemy(slug::StringView _defName, Vec2 _feet, const SpawnParams& _params = {});
+    EnemyHandle SpawnEnemy(StringView _defName, Vec2 _feet, const SpawnParams& _params = {});
 
     void RestartGame();
 
@@ -80,27 +80,27 @@ private:
     void                       UpdateWalls_();
     void                       UpdatePropCollision_();
     [[nodiscard]] PhysicsWorld MakePhysicsWorld_() const;
-    [[nodiscard]] Vec2 GetRespawnFeet_() const;
+    [[nodiscard]] Vec2         GetRespawnFeet_() const;
     [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;
     void                       SpawnDebugEnemy_(int _slot, float _aheadPx = 180.f);
 
     void DrawWorld_(GameContext& _ctx, Vec2 _cameraPos, float _alpha);
     void DrawDebugBoxes_(Renderer& _renderer, Vec2 _cameraPos) const;
     void DrawHud_(GameContext& _ctx);
-    void RequestSounds_(GameContext& _ctx, const slug::Vector<FxRequest>& _fx);
+    void RequestSounds_(GameContext& _ctx, const Vector<FxRequest>& _fx);
 
     SandboxConfig m_config  = {};
     Tuning        m_tuning  = {};
     TuningWatcher m_watcher = {};
     bool          m_bWatch  = false;
 
-    GroundMap         m_ground        = {};
-    slug::Vector<Wall> m_walls         = {};
-    slug::Vector<Platform> m_platforms      = {};
-    PropDefLibrary        m_propDefs       = {};
-    PropWorld             m_props          { nullptr, 1 };
-    Camera            m_camera        = {};
-    Vec2      m_prevCameraPos = { 0.f, 0.f };
+    GroundMap        m_ground    = {};
+    Vector<Wall>     m_walls     = {};
+    Vector<Platform> m_platforms = {};
+    PropDefLibrary   m_propDefs  = {};
+    PropWorld        m_props { nullptr, 1 };
+    Camera           m_camera        = {};
+    Vec2             m_prevCameraPos = { 0.f, 0.f };
 
     PlayerController m_player      = {};
     PlayerRig        m_rig         = {};
@@ -108,15 +108,15 @@ private:
     ProjectileSystem m_projectiles = {};
     TrainingTargets  m_targets     = {};
     EnemyDefLibrary  m_enemyLib    = {};
-    EnemyWorld       m_enemies     { &m_enemyLib };
-    int              m_vehicleCursor = 0;              // 숫자키 9: 다음에 뽑을 차량 번호
-    EffectList       m_effects     = {};
-    AnimPlayer       m_bombAnim    = {};
+    EnemyWorld       m_enemies { &m_enemyLib };
+    int              m_vehicleCursor = 0;   // 숫자키 9: 다음에 뽑을 차량 번호
+    EffectList       m_effects       = {};
+    AnimPlayer       m_bombAnim      = {};
 
     SpriteLibrary m_spriteLib = {};
     int           m_bgHandle  = -1;
     bool          m_bRigBound = false;
-    AnimId        m_bombClip  = slug::kNullHandle;
+    AnimId        m_bombClip  = kNullHandle;
 
     UiSystem    m_ui                 = {};
     PlayerStats m_prevStats          = {};
@@ -126,4 +126,5 @@ private:
 
     uint64_t m_tickCount = 0;
 };
-}
+
+}   // namespace slug

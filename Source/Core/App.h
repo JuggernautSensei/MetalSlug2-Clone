@@ -1,9 +1,9 @@
 ﻿#pragma once
 #include <SDL3/SDL.h>
 
+#include "Audio/AudioSystem.h"
 #include "Base/Random.h"
 #include "Base/Types.h"
-#include "Audio/AudioSystem.h"
 #include "Core/FixedStep.h"
 #include "Core/Input.h"
 #include "Core/Replay.h"
@@ -15,6 +15,7 @@
 
 namespace slug
 {
+
 class App final
 {
 public:
@@ -35,14 +36,14 @@ private:
     void Render_(float _alpha);
     void SaveRecording_() const;
 
-    bool            m_bRunning   = false;
-    int             m_returnCode = 0;
-    Vector<String>  m_cmdArgs    = {};
+    bool           m_bRunning   = false;
+    int            m_returnCode = 0;
+    Vector<String> m_cmdArgs    = {};
 
     Renderer         m_renderer = {};
     SpriteBatch      m_sprites  = {};
     AnimationLibrary m_anims    = {};
-    slug::RngMt19937  m_rng      = slug::RngMt19937 { uint64_t { 1 } };
+    RngMt19937       m_rng      = RngMt19937 { uint64_t { 1 } };
     GameContext      m_ctx      = {};
     AudioSystem      m_audio    = {};
     InputSystem      m_input    = {};
@@ -50,23 +51,23 @@ private:
 
     std::unique_ptr<SimRunner> m_pRunner = nullptr;
 
-    slug::String   m_stateName   = {};
-    uint64_t      m_seed        = 1;
-    slug::FilePath m_recordPath  = {};
-    slug::FilePath m_replayPath  = {};
-    bool          m_bReplayHold = false;
-    bool          m_bNoAudio    = false;
+    String   m_stateName   = {};
+    uint64_t m_seed        = 1;
+    FilePath m_recordPath  = {};
+    FilePath m_replayPath  = {};
+    bool     m_bReplayHold = false;
+    bool     m_bNoAudio    = false;
 
     ReplayData m_recording    = {};
     ReplayData m_playback     = {};
     size_t     m_playbackHead = 0;
     bool       m_bPlayback    = false;
 
-    slug::FilePath         m_capturePath      = {};
-    int                   m_captureFrame     = 30;
-    int                   m_renderFrameCount = 0;
-    slug::Vector<uint64_t> m_captureTicks     = {};
-    size_t                m_captureTickHead  = 0;
+    FilePath         m_capturePath      = {};
+    int              m_captureFrame     = 30;
+    int              m_renderFrameCount = 0;
+    Vector<uint64_t> m_captureTicks     = {};
+    size_t           m_captureTickHead  = 0;
 
     bool  m_bPaused        = false;
     bool  m_bStepOnce      = false;
@@ -79,4 +80,5 @@ private:
     int   m_pendingWeapon  = 0;
     float m_fps            = 0.f;
 };
-}
+
+}   // namespace slug

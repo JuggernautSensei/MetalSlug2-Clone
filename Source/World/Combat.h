@@ -3,11 +3,11 @@
 #include <initializer_list>
 
 #include "Base/Types.h"
-
 #include "World/Geometry.h"
 
 namespace slug
 {
+
 enum class eTeam : uint8_t
 {
     Player,
@@ -114,7 +114,7 @@ struct HitEvent
 class HitResolver
 {
 public:
-    [[nodiscard]] slug::Vector<HitEvent> Resolve(slug::Span<const Hitbox> _hitboxes, slug::Span<const Hurtbox> _hurtboxes);
+    [[nodiscard]] Vector<HitEvent> Resolve(Span<const Hitbox> _hitboxes, Span<const Hurtbox> _hurtboxes);
 
     void Release(uint32_t _hitId);
     void Clear();
@@ -124,11 +124,13 @@ public:
 private:
     struct HitRecord
     {
-        bool                  bConsumed = false;
-        slug::Vector<uint64_t> targets   = {};
+        bool             bConsumed = false;
+        Vector<uint64_t> targets   = {};
     };
 
-    slug::HashMap<uint32_t, HitRecord> m_hitRecords = {};
+    using HitRecordMap = HashMap<uint32_t, HitRecord>;
+
+    HitRecordMap m_hitRecords = {};
 };
 
 struct Health
@@ -182,4 +184,5 @@ struct Health
         return applied;
     }
 };
-}
+
+}   // namespace slug

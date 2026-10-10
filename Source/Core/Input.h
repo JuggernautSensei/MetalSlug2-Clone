@@ -1,13 +1,13 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
-
 #include <SDL3/SDL_scancode.h>
 
 #include "Base/Types.h"
 
 namespace slug
 {
+
 enum class eAction : uint8_t
 {
     Left,
@@ -59,7 +59,7 @@ private:
 
     [[nodiscard]] bool IsKeyDown_(SDL_Scancode _key) const;
 
-    slug::ARRAY<bool, kKeyCapacity> m_keyDown = {};
+    ARRAY<bool, kKeyCapacity> m_keyDown = {};
 };
 
 class InputHistory
@@ -80,8 +80,9 @@ public:
 private:
     [[nodiscard]] const InputFrame& GetAgo_(size_t _ago) const;
 
-    slug::ARRAY<InputFrame, kCapacity> m_frames = {};
-    size_t                             m_head   = 0;
-    size_t                             m_count  = 0;
+    ARRAY<InputFrame, kCapacity> m_frames = {};
+    size_t                       m_head   = 0;
+    size_t                       m_count  = 0;
 };
-}
+
+}   // namespace slug

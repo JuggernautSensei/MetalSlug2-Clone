@@ -7,6 +7,7 @@
 
 namespace slug
 {
+
 class VoiceAllocator
 {
 public:
@@ -135,8 +136,9 @@ private:
         return { _slot, _bStolen };
     }
 
-    slug::Vector<Slot> m_slots       = {};
-    int               m_maxPerSound = 4;
-    uint64_t          m_nextSerial  = 1;
+    Vector<Slot> m_slots       = {};
+    int          m_maxPerSound = 4;
+    uint64_t     m_nextSerial  = 1;
 };
-}
+
+}   // namespace slug

@@ -2,12 +2,13 @@
 #include <cstdint>
 #include <optional>
 
+#include "Base/Math.h"
 #include "Base/Result.h"
 #include "Base/Types.h"
-#include "Base/Math.h"
 
 namespace slug
 {
+
 struct GroundBoundsPolicy
 {
     bool bSolidLeft   = false;
@@ -21,14 +22,14 @@ class GroundMap
 public:
     static constexpr uint8_t kSolidMask = 1;
 
-    [[nodiscard]] static slug::Result<GroundMap> Load(const slug::FilePath& _path);
-    [[nodiscard]] static slug::Result<GroundMap> LoadFromMemory(slug::Span<const uint8_t> _fileData);
+    [[nodiscard]] static Result<GroundMap> Load(const FilePath& _path);
+    [[nodiscard]] static Result<GroundMap> LoadFromMemory(Span<const uint8_t> _fileData);
 
-    [[nodiscard]] static GroundMap MakeFromBits(int _width, int _height, slug::Span<const uint8_t> _packedBits);
+    [[nodiscard]] static GroundMap MakeFromBits(int _width, int _height, Span<const uint8_t> _packedBits);
 
     [[nodiscard]] static GroundMap MakeEmpty(int _width, int _height);
 
-    [[nodiscard]] static GroundMap MakeFromRows(slug::Span<const slug::StringView> _rows, char _solid = '#');
+    [[nodiscard]] static GroundMap MakeFromRows(Span<const StringView> _rows, char _solid = '#');
 
     GroundMap() = default;
 
@@ -40,10 +41,10 @@ public:
     [[nodiscard]] bool     IsEmpty() const { return m_width == 0 || m_height == 0; }
     [[nodiscard]] uint64_t CountSolidPixels() const;
 
-    void                                    SetBoundsPolicy(const GroundBoundsPolicy& _policy) { m_policy = _policy; }
+    void SetBoundsPolicy(const GroundBoundsPolicy& _policy) { m_policy = _policy; }
 
     // 무한 꼬리: x >= m_tailFrom 은 [m_tailX, m_tailX + m_tailW) 구간을 주기적으로 반복한다 (보스전 엔드리스 지형).
-    void SetPeriodicTail(int _from, int _tailX, int _tailW);
+    void               SetPeriodicTail(int _from, int _tailX, int _tailW);
     [[nodiscard]] bool HasPeriodicTail() const { return m_tailW > 0; }
 
     [[nodiscard]] bool IsSolid(
@@ -79,13 +80,14 @@ public:
 private:
     [[nodiscard]] bool IsOutOfBoundsSolid_(int _x, int _y) const;
 
-    int                  m_width  = 0;
-    int                  m_height = 0;
-    size_t               m_stride = 0;   // 행당 바이트 수
-    slug::Vector<uint8_t> m_bits   = {};
-    GroundBoundsPolicy   m_policy = {};
-    int                  m_tailFrom = 0;
-    int                  m_tailX    = 0;
-    int                  m_tailW    = 0;
+    int                m_width    = 0;
+    int                m_height   = 0;
+    size_t             m_stride   = 0;   // 행당 바이트 수
+    Vector<uint8_t>    m_bits     = {};
+    GroundBoundsPolicy m_policy   = {};
+    int                m_tailFrom = 0;
+    int                m_tailX    = 0;
+    int                m_tailW    = 0;
 };
-}
+
+}   // namespace slug

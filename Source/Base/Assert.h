@@ -18,17 +18,18 @@ void AssertFail(
 {
     ReportAssertFailure(_expr, std::format(_format, std::forward<Args>(_args)...), _loc);
 }
-}
+
+}   // namespace slug
 
 #ifdef NDEBUG
 #    define SLUG_ASSERT(_cond, ...) ((void)0)
 #else
-#    define SLUG_ASSERT(_cond, ...)                                                      \
-        do                                                                               \
-        {                                                                                \
-            if (!std::is_constant_evaluated() && !(_cond))                               \
-            {                                                                            \
+#    define SLUG_ASSERT(_cond, ...)                                                     \
+        do                                                                              \
+        {                                                                               \
+            if (!std::is_constant_evaluated() && !(_cond))                              \
+            {                                                                           \
                 slug::AssertFail(#_cond, std::source_location::current(), __VA_ARGS__); \
-            }                                                                            \
+            }                                                                           \
         } while (false)
 #endif

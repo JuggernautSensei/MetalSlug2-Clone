@@ -1,14 +1,14 @@
 #include "Render/SpriteBatch.h"
-#include "Base/Types.h"
-#include "Base/Math.h"
-#include "Base/Result.h"
-#include "Base/RGBA.h"
 
 #include <algorithm>
 #include <cmath>
 #include <fstream>
-
 #include <SDL3/SDL.h>
+
+#include "Base/Math.h"
+#include "Base/RGBA.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
 
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
@@ -20,11 +20,12 @@
 
 namespace slug
 {
+
 IntRect ComputeDestRect(
-    const AnimFrame&   _frame,
-    const Vec2 _worldOrigin,
-    const Vec2 _cameraPos,
-    const bool         _bFlipX)
+    const AnimFrame& _frame,
+    const Vec2       _worldOrigin,
+    const Vec2       _cameraPos,
+    const bool       _bFlipX)
 {
     const int originX = FloorToInt(_worldOrigin.x - _cameraPos.x);
     const int originY = FloorToInt(_worldOrigin.y - _cameraPos.y);
@@ -38,7 +39,7 @@ IntRect ComputeDestRect(
 }
 
 void SortSpriteCommands(
-    slug::Vector<SpriteCommand>& _commands)
+    Vector<SpriteCommand>& _commands)
 {
     std::sort(_commands.begin(), _commands.end(), [](const SpriteCommand& _a, const SpriteCommand& _b) {
         if (_a.layer != _b.layer)
@@ -54,12 +55,12 @@ void SortSpriteCommands(
 }
 
 TextureViewRects ComputeTextureView(
-    const int          _texW,
-    const int          _texH,
+    const int  _texW,
+    const int  _texH,
     const Vec2 _texWorldPos,
     const Vec2 _cameraPos,
-    const int          _viewW,
-    const int          _viewH)
+    const int  _viewW,
+    const int  _viewH)
 {
     TextureViewRects result;
     if (_texW <= 0 || _texH <= 0 || _viewW <= 0 || _viewH <= 0)
@@ -91,31 +92,31 @@ namespace
 {
     struct DecodedImage
     {
-        int                  width  = 0;
-        int                  height = 0;
-        slug::Vector<uint8_t> rgba   = {};
+        int             width  = 0;
+        int             height = 0;
+        Vector<uint8_t> rgba   = {};
     };
 
-    [[nodiscard]] slug::Result<DecodedImage> DecodePngFile_(
-        const slug::FilePath& _pngPath)
+    [[nodiscard]] Result<DecodedImage> DecodePngFile_(
+        const FilePath& _pngPath)
     {
         std::ifstream file { _pngPath, std::ios::binary | std::ios::ate };
         if (!file)
         {
-            return slug::Error { eError::FileOpen };
+            return Error { eError::FileOpen };
         }
 
         const std::streamsize size = file.tellg();
         if (size <= 0)
         {
-            return slug::Error { eError::FileRead };
+            return Error { eError::FileRead };
         }
 
-        slug::Vector<uint8_t> encoded(static_cast<size_t>(size));
+        Vector<uint8_t> encoded(static_cast<size_t>(size));
         file.seekg(0, std::ios::beg);
         if (!file.read(reinterpret_cast<char*>(encoded.data()), size))
         {
-            return slug::Error { eError::FileRead };
+            return Error { eError::FileRead };
         }
 
         int      width    = 0;
@@ -125,7 +126,7 @@ namespace
         if (!pPixels)
         {
             SLUG_LOG_ERROR("PNG 디코드 실패: {}", stbi_failure_reason());
-            return slug::Error { eError::InvalidData };
+            return Error { eError::InvalidData };
         }
 
         DecodedImage image;
@@ -138,15 +139,15 @@ namespace
 
     // 같은 소스 사각형을 ADD 블렌드로 한 번 더 그린다. 알파가 0 인 픽셀은 기여하지 않는다.
     void DrawHitFlashPass_(
-        SDL_Renderer*  _pRenderer,
-        SDL_Texture*   _pTexture,
+        SDL_Renderer*    _pRenderer,
+        SDL_Texture*     _pTexture,
         const SDL_FRect& _src,
         const SDL_FRect& _dst,
-        const bool     _bFlipX,
-        const float    _flashAmount)
+        const bool       _bFlipX,
+        const float      _flashAmount)
     {
-        const float    amount = std::clamp(_flashAmount, 0.f, 1.f);
-        const uint8_t  alpha  = static_cast<uint8_t>(std::lround(amount * kHitFlashMaxAlpha * 255.f));
+        const float   amount = std::clamp(_flashAmount, 0.f, 1.f);
+        const uint8_t alpha  = static_cast<uint8_t>(std::lround(amount * kHitFlashMaxAlpha * 255.f));
         if (alpha == 0)
         {
             return;
@@ -157,7 +158,8 @@ namespace
         SDL_RenderTextureRotated(_pRenderer, _pTexture, &_src, &_dst, 0.0, nullptr, _bFlipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
         SDL_SetTextureBlendMode(_pTexture, SDL_BLENDMODE_BLEND);
     }
-}
+
+}   // namespace
 
 SpriteBatch::~SpriteBatch()
 {
@@ -194,41 +196,41 @@ void SpriteBatch::Shutdown()
     m_pRenderer = nullptr;
 }
 
-slug::Result<void> SpriteBatch::AddAtlasPageFromRgba(
-    const int                      _width,
-    const int                      _height,
-    const slug::Span<const uint8_t> _rgba)
+Result<void> SpriteBatch::AddAtlasPageFromRgba(
+    const int                 _width,
+    const int                 _height,
+    const Span<const uint8_t> _rgba)
 {
     if (!m_pRenderer || _width <= 0 || _height <= 0 || _rgba.size() < static_cast<size_t>(_width) * static_cast<size_t>(_height) * 4)
     {
-        return slug::Error { eError::InvalidData };
+        return Error { eError::InvalidData };
     }
 
     SDL_Texture* pTexture = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, _width, _height);
     if (!pTexture)
     {
         SLUG_LOG_ERROR("SDL_CreateTexture 실패: {}", SDL_GetError());
-        return slug::Error { eError::TextureCreate };
+        return Error { eError::TextureCreate };
     }
 
     if (!SDL_UpdateTexture(pTexture, nullptr, _rgba.data(), _width * 4))
     {
         SLUG_LOG_ERROR("SDL_UpdateTexture 실패: {}", SDL_GetError());
         SDL_DestroyTexture(pTexture);
-        return slug::Error { eError::TextureCreate };
+        return Error { eError::TextureCreate };
     }
 
     SDL_SetTextureBlendMode(pTexture, SDL_BLENDMODE_BLEND);
     SDL_SetTextureScaleMode(pTexture, SDL_SCALEMODE_NEAREST);
 
     m_pages.push_back({ pTexture, _width, _height });
-    return slug::Error { slug::kOK };
+    return Error { kOK };
 }
 
-slug::Result<void> SpriteBatch::LoadAtlasPage(
-    const slug::FilePath& _pngPath)
+Result<void> SpriteBatch::LoadAtlasPage(
+    const FilePath& _pngPath)
 {
-    slug::Result<DecodedImage> image = DecodePngFile_(_pngPath);
+    Result<DecodedImage> image = DecodePngFile_(_pngPath);
     if (!image)
     {
         return image.GetError();
@@ -236,27 +238,27 @@ slug::Result<void> SpriteBatch::LoadAtlasPage(
     return AddAtlasPageFromRgba(image->width, image->height, image->rgba);
 }
 
-slug::Result<int> SpriteBatch::AddStandaloneTextureFromRgba(
-    const int                      _width,
-    const int                      _height,
-    const slug::Span<const uint8_t> _rgba)
+Result<int> SpriteBatch::AddStandaloneTextureFromRgba(
+    const int                 _width,
+    const int                 _height,
+    const Span<const uint8_t> _rgba)
 {
     if (!m_pRenderer || _width <= 0 || _height <= 0 || _rgba.size() < static_cast<size_t>(_width) * static_cast<size_t>(_height) * 4)
     {
-        return slug::Error { eError::InvalidData };
+        return Error { eError::InvalidData };
     }
 
     SDL_Texture* pTexture = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, _width, _height);
     if (!pTexture)
     {
         SLUG_LOG_ERROR("SDL_CreateTexture 실패 ({}x{}): {}", _width, _height, SDL_GetError());
-        return slug::Error { eError::TextureCreate };
+        return Error { eError::TextureCreate };
     }
     if (!SDL_UpdateTexture(pTexture, nullptr, _rgba.data(), _width * 4))
     {
         SLUG_LOG_ERROR("SDL_UpdateTexture 실패: {}", SDL_GetError());
         SDL_DestroyTexture(pTexture);
-        return slug::Error { eError::TextureCreate };
+        return Error { eError::TextureCreate };
     }
 
     SDL_SetTextureBlendMode(pTexture, SDL_BLENDMODE_BLEND);
@@ -265,10 +267,10 @@ slug::Result<int> SpriteBatch::AddStandaloneTextureFromRgba(
     return static_cast<int>(m_textures.size()) - 1;
 }
 
-slug::Result<int> SpriteBatch::LoadStandaloneTexture(
-    const slug::FilePath& _pngPath)
+Result<int> SpriteBatch::LoadStandaloneTexture(
+    const FilePath& _pngPath)
 {
-    slug::Result<DecodedImage> image = DecodePngFile_(_pngPath);
+    Result<DecodedImage> image = DecodePngFile_(_pngPath);
     if (!image)
     {
         return image.GetError();
@@ -277,12 +279,12 @@ slug::Result<int> SpriteBatch::LoadStandaloneTexture(
 }
 
 void SpriteBatch::DrawTexture(
-    const int          _handle,
+    const int  _handle,
     const Vec2 _texWorldPos,
     const Vec2 _cameraPos,
-    const int          _viewW,
-    const int          _viewH,
-    const slug::RGBA    _tint) const
+    const int  _viewW,
+    const int  _viewH,
+    const RGBA _tint) const
 {
     if (!m_pRenderer || _handle < 0 || static_cast<size_t>(_handle) >= m_textures.size())
     {
@@ -345,7 +347,7 @@ void SpriteBatch::DrawTextureRepeatX(
     const int viewLeft  = camX;
     const int viewRight = camX + _viewW;
     const int firstK    = viewLeft > from ? (viewLeft - from) / _tileW : 0;
-    for (int k = firstK; ; ++k)
+    for (int k = firstK;; ++k)
     {
         const int segStart = from + k * _tileW;
         if (segStart >= viewRight)
@@ -367,25 +369,25 @@ void SpriteBatch::DrawTextureRepeatX(
     (void)texX;
 }
 
-slug::Result<void> SpriteBatch::LoadAtlasPages(
+Result<void> SpriteBatch::LoadAtlasPages(
     const AnimationLibrary& _library)
 {
-    for (const slug::String& page: _library.GetAtlasPages())
+    for (const String& page: _library.GetAtlasPages())
     {
-        const slug::Result<void> result = LoadAtlasPage(_library.GetRoot() / page);
+        const Result<void> result = LoadAtlasPage(_library.GetRoot() / page);
         if (!result)
         {
             SLUG_LOG_ERROR("아틀라스 페이지 로드 실패: {}", page);
             return result.GetError();
         }
     }
-    return slug::Error { slug::kOK };
+    return Error { kOK };
 }
 
 void SpriteBatch::DrawFrame(
     const AnimFrame&         _frame,
-    const Vec2       _worldOrigin,
-    const Vec2       _cameraPos,
+    const Vec2               _worldOrigin,
+    const Vec2               _cameraPos,
     const SpriteDrawOptions& _options) const
 {
     if (!m_pRenderer || _frame.IsEmpty() || _frame.atlas < 0 || static_cast<size_t>(_frame.atlas) >= m_pages.size())
@@ -412,7 +414,7 @@ void SpriteBatch::DrawFrame(
 
 void SpriteBatch::DrawFrame(
     const AnimFrame&         _frame,
-    const Vec2       _worldOrigin,
+    const Vec2               _worldOrigin,
     const Camera&            _camera,
     const SpriteDrawOptions& _options) const
 {
@@ -448,7 +450,7 @@ void SpriteBatch::Submit(
     const int                _layer,
     const int                _sortKey,
     const AnimFrame&         _frame,
-    const Vec2       _worldOrigin,
+    const Vec2               _worldOrigin,
     const SpriteDrawOptions& _options)
 {
     SpriteCommand command;
@@ -478,4 +480,5 @@ void SpriteBatch::Flush(
 {
     Flush(_camera.GetPosition());
 }
-}
+
+}   // namespace slug

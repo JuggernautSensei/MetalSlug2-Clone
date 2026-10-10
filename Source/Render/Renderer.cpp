@@ -1,14 +1,13 @@
 #include "Render/Renderer.h"
-#include "Base/Types.h"
-#include "Base/Result.h"
-#include "Base/RGBA.h"
 
 #include <SDL3/SDL.h>
 
+#include "Base/Error.h"
 #include "Base/Log.h"
 #include "Base/Math.h"
-
-#include "Base/Error.h"
+#include "Base/RGBA.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
 
 namespace slug
 {
@@ -18,7 +17,7 @@ Renderer::~Renderer()
     Shutdown();
 }
 
-slug::Result<void> Renderer::Init(
+Result<void> Renderer::Init(
     const char* _title,
     const int   _windowScale)
 {
@@ -28,7 +27,7 @@ slug::Result<void> Renderer::Init(
     if (!m_pWindow)
     {
         SLUG_LOG_ERROR("SDL_CreateWindow 실패: {}", SDL_GetError());
-        return slug::Error { eError::WindowCreate };
+        return Error { eError::WindowCreate };
     }
 
     m_pRenderer = SDL_CreateRenderer(m_pWindow, nullptr);
@@ -37,7 +36,7 @@ slug::Result<void> Renderer::Init(
         SLUG_LOG_ERROR("SDL_CreateRenderer 실패: {}", SDL_GetError());
         SDL_DestroyWindow(m_pWindow);
         m_pWindow = nullptr;
-        return slug::Error { eError::RendererCreate };
+        return Error { eError::RendererCreate };
     }
 
     SDL_SetRenderVSync(m_pRenderer, 1);
@@ -45,7 +44,7 @@ slug::Result<void> Renderer::Init(
     SDL_SetRenderDrawBlendMode(m_pRenderer, SDL_BLENDMODE_BLEND);
 
     SLUG_LOG_INFO("렌더러: {} / 창 {}x{}", SDL_GetRendererName(m_pRenderer), kLogicalWidth * scale, kLogicalHeight * scale);
-    return slug::Error { slug::kOK };
+    return Error { kOK };
 }
 
 void Renderer::Shutdown()
@@ -63,7 +62,7 @@ void Renderer::Shutdown()
 }
 
 void Renderer::BeginFrame(
-    const slug::RGBA _clearColor)
+    const RGBA _clearColor)
 {
     SDL_SetRenderDrawColor(m_pRenderer, _clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
     SDL_RenderClear(m_pRenderer);
@@ -77,7 +76,7 @@ void Renderer::EndFrame()
 void Renderer::FillRect(
     const Vec2 _topLeft,
     const Vec2 _size,
-    const slug::RGBA    _color)
+    const RGBA _color)
 {
     const SDL_FRect rect = { std::floor(_topLeft.x), std::floor(_topLeft.y), std::floor(_size.x), std::floor(_size.y) };
     SDL_SetRenderDrawColor(m_pRenderer, _color.r, _color.g, _color.b, _color.a);
@@ -87,7 +86,7 @@ void Renderer::FillRect(
 void Renderer::DrawRect(
     const Vec2 _topLeft,
     const Vec2 _size,
-    const slug::RGBA    _color)
+    const RGBA _color)
 {
     const SDL_FRect rect = { std::floor(_topLeft.x), std::floor(_topLeft.y), std::floor(_size.x), std::floor(_size.y) };
     SDL_SetRenderDrawColor(m_pRenderer, _color.r, _color.g, _color.b, _color.a);
@@ -97,23 +96,23 @@ void Renderer::DrawRect(
 void Renderer::DrawLine(
     const Vec2 _from,
     const Vec2 _to,
-    const slug::RGBA    _color)
+    const RGBA _color)
 {
     SDL_SetRenderDrawColor(m_pRenderer, _color.r, _color.g, _color.b, _color.a);
     SDL_RenderLine(m_pRenderer, std::floor(_from.x) + 0.5f, std::floor(_from.y) + 0.5f, std::floor(_to.x) + 0.5f, std::floor(_to.y) + 0.5f);
 }
 
 void Renderer::DrawDebugText(
-    const Vec2    _topLeft,
-    const slug::StringView _text,
-    const slug::RGBA       _color)
+    const Vec2       _topLeft,
+    const StringView _text,
+    const RGBA       _color)
 {
     SDL_SetRenderDrawColor(m_pRenderer, _color.r, _color.g, _color.b, _color.a);
 
     const float x = std::floor(_topLeft.x);
     float       y = std::floor(_topLeft.y);
 
-    slug::String line;
+    String line;
     for (const char c: _text)
     {
         if (c == '\n')
@@ -143,24 +142,25 @@ bool Renderer::IsInitialized() const
     return m_pRenderer != nullptr;
 }
 
-slug::Result<void> Renderer::SaveScreenshotBmp(
-    const slug::FilePath& _path) const
+Result<void> Renderer::SaveScreenshotBmp(
+    const FilePath& _path) const
 {
     SDL_Surface* pSurface = SDL_RenderReadPixels(m_pRenderer, nullptr);
     if (!pSurface)
     {
         SLUG_LOG_ERROR("SDL_RenderReadPixels 실패: {}", SDL_GetError());
-        return slug::Error { eError::FileRead };
+        return Error { eError::FileRead };
     }
 
-    const slug::String pathUtf8 = _path.string();
-    const bool        bSaved   = SDL_SaveBMP(pSurface, pathUtf8.c_str());
+    const String pathUtf8 = _path.string();
+    const bool   bSaved   = SDL_SaveBMP(pSurface, pathUtf8.c_str());
     SDL_DestroySurface(pSurface);
     if (!bSaved)
     {
         SLUG_LOG_ERROR("SDL_SaveBMP 실패: {}", SDL_GetError());
-        return slug::Error { eError::FileOpen };
+        return Error { eError::FileOpen };
     }
-    return slug::Error { slug::kOK };
+    return Error { kOK };
 }
-}
+
+}   // namespace slug

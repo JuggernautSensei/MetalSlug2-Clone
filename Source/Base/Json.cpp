@@ -2,7 +2,6 @@
 
 #include <fstream>
 #include <iterator>
-
 #include <yyjson.h>
 
 namespace slug
@@ -11,16 +10,18 @@ namespace slug
 namespace
 {
 
-[[nodiscard]] yyjson_read_flag MakeReadFlags_(const eJsonLoadOption _option)
-{
-    yyjson_read_flag flags = YYJSON_READ_ALLOW_BOM;
-    if ((static_cast<uint32_t>(_option) & static_cast<uint32_t>(eJsonLoadOption::AllowComments)) != 0u)
+    [[nodiscard]] yyjson_read_flag MakeReadFlags_(
+        const eJsonLoadOption _option)
     {
-        flags |= YYJSON_READ_ALLOW_COMMENTS;
+        yyjson_read_flag flags = YYJSON_READ_ALLOW_BOM;
+        if ((static_cast<uint32_t>(_option) & static_cast<uint32_t>(eJsonLoadOption::AllowComments)) != 0u)
+        {
+            flags |= YYJSON_READ_ALLOW_COMMENTS;
+        }
+        return flags;
     }
-    return flags;
-}
-}
+
+}   // namespace
 
 JsonReader::JsonReader(
     yyjson_val* _pValue)
@@ -179,7 +180,7 @@ Result<String> JsonReader::ReadString_() const
 }
 
 Result<JsonDeserializer> JsonDeserializer::Load(
-    const StringView     _json,
+    const StringView      _json,
     const eJsonLoadOption _option)
 {
     yyjson_doc* pDoc = yyjson_read_opts(const_cast<char*>(_json.data()), _json.size(), MakeReadFlags_(_option), nullptr, nullptr);
@@ -191,7 +192,7 @@ Result<JsonDeserializer> JsonDeserializer::Load(
 }
 
 Result<JsonDeserializer> JsonDeserializer::LoadFromFile(
-    const FilePath&      _path,
+    const FilePath&       _path,
     const eJsonLoadOption _option)
 {
     std::ifstream file(_path, std::ios::binary);
@@ -243,4 +244,5 @@ JsonReader JsonDeserializer::GetReader() const
 {
     return JsonReader { m_pDoc ? yyjson_doc_get_root(m_pDoc) : nullptr };
 }
-}
+
+}   // namespace slug

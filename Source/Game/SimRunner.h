@@ -4,6 +4,7 @@
 
 namespace slug
 {
+
 class SimRunner
 {
 public:
@@ -14,21 +15,22 @@ public:
     SimRunner& operator=(const SimRunner&) = delete;
 
     void Step(InputFrame _input);
-    void Run(slug::Span<const InputFrame> _inputs);
+    void Run(Span<const InputFrame> _inputs);
 
     void Render(float _alpha);
 
-    [[nodiscard]] IGameState*        GetState() const;
-    [[nodiscard]] uint64_t           GetTickCount() const;
+    [[nodiscard]] IGameState*         GetState() const;
+    [[nodiscard]] uint64_t            GetTickCount() const;
     [[nodiscard]] const InputHistory& GetHistory() const;
-    [[nodiscard]] bool               IsFinished() const;
+    [[nodiscard]] bool                IsFinished() const;
 
 private:
     void SwitchState_(std::unique_ptr<IGameState> _pNext);
 
-    GameContext&              m_ctx;
-    std::unique_ptr<IGameState>   m_pState;
-    InputHistory              m_history   = {};
-    uint64_t                  m_tickCount = 0;
+    GameContext&                m_ctx;
+    std::unique_ptr<IGameState> m_pState;
+    InputHistory                m_history   = {};
+    uint64_t                    m_tickCount = 0;
 };
-}
+
+}   // namespace slug

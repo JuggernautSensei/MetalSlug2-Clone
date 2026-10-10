@@ -1,11 +1,10 @@
 #pragma once
 #include <cstdint>
 
-#include "Base/Result.h"
-#include "Base/RGBA.h"
-#include "Base/Types.h"
 #include "Base/Math.h"
-
+#include "Base/RGBA.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
 #include "Render/Animation.h"
 #include "Render/Camera.h"
 
@@ -14,6 +13,7 @@ struct SDL_Texture;
 
 namespace slug
 {
+
 struct IntRect
 {
     int x = 0;
@@ -34,9 +34,9 @@ inline constexpr float   kHitFlashMaxAlpha = 0.5f;   // flashAmount 1 일 때 AD
 
 struct SpriteDrawOptions
 {
-    bool      bFlipX      = false;
-    slug::RGBA tint        = { 255, 255, 255, 255 };   // 곱셈 색 + 알파
-    float     flashAmount = 0.f;                      // 0 = 끔, 1 = 최대 플래시 (0..1 로 클램프)
+    bool  bFlipX      = false;
+    RGBA  tint        = { 255, 255, 255, 255 };   // 곱셈 색 + 알파
+    float flashAmount = 0.f;                      // 0 = 끔, 1 = 최대 플래시 (0..1 로 클램프)
 };
 
 struct SpriteCommand
@@ -45,11 +45,11 @@ struct SpriteCommand
     int               sortKey = 0;   // 같은 레이어 안의 명시적 정렬 키 (예: 발 y 좌표)
     uint32_t          seq     = 0;   // 제출 순서 (안정 정렬용)
     AnimFrame         frame   = {};
-    Vec2      origin  = { 0.f, 0.f };
+    Vec2              origin  = { 0.f, 0.f };
     SpriteDrawOptions options = {};
 };
 
-void SortSpriteCommands(slug::Vector<SpriteCommand>& _commands);
+void SortSpriteCommands(Vector<SpriteCommand>& _commands);
 
 struct TextureViewRects
 {
@@ -72,15 +72,15 @@ public:
     void Init(SDL_Renderer* _pRenderer);
     void Shutdown();
 
-    [[nodiscard]] slug::Result<void> LoadAtlasPage(const slug::FilePath& _pngPath);
-    [[nodiscard]] slug::Result<void> LoadAtlasPages(const AnimationLibrary& _library);
-    [[nodiscard]] slug::Result<void> AddAtlasPageFromRgba(int _width, int _height, slug::Span<const uint8_t> _rgba);
-    [[nodiscard]] size_t            GetAtlasPageCount() const { return m_pages.size(); }
+    [[nodiscard]] Result<void> LoadAtlasPage(const FilePath& _pngPath);
+    [[nodiscard]] Result<void> LoadAtlasPages(const AnimationLibrary& _library);
+    [[nodiscard]] Result<void> AddAtlasPageFromRgba(int _width, int _height, Span<const uint8_t> _rgba);
+    [[nodiscard]] size_t       GetAtlasPageCount() const { return m_pages.size(); }
 
-    [[nodiscard]] slug::Result<int> LoadStandaloneTexture(const slug::FilePath& _pngPath);
-    [[nodiscard]] slug::Result<int> AddStandaloneTextureFromRgba(int _width, int _height, slug::Span<const uint8_t> _rgba);
+    [[nodiscard]] Result<int> LoadStandaloneTexture(const FilePath& _pngPath);
+    [[nodiscard]] Result<int> AddStandaloneTextureFromRgba(int _width, int _height, Span<const uint8_t> _rgba);
 
-    void DrawTexture(int _handle, Vec2 _texWorldPos, Vec2 _cameraPos, int _viewW, int _viewH, slug::RGBA _tint = { 255, 255, 255, 255 }) const;
+    void DrawTexture(int _handle, Vec2 _texWorldPos, Vec2 _cameraPos, int _viewW, int _viewH, RGBA _tint = { 255, 255, 255, 255 }) const;
     // 텍스처 x >= _fromX 구간을 [_tileX, _tileX + _tileW) 열의 주기 반복으로 그린다 (보스전 엔드리스 배경). _texWorldPos 는 원점 (0,0) 권장.
     void DrawTextureRepeatX(int _handle, Vec2 _texWorldPos, Vec2 _cameraPos, int _viewW, int _viewH, float _fromX, int _tileX, int _tileW) const;
 
@@ -94,7 +94,7 @@ public:
     void Flush(const Camera& _camera);
     void Clear() { m_commands.clear(); }
 
-    [[nodiscard]] const slug::Vector<SpriteCommand>& GetPendingCommands() const { return m_commands; }
+    [[nodiscard]] const Vector<SpriteCommand>& GetPendingCommands() const { return m_commands; }
 
 private:
     struct Page
@@ -104,10 +104,11 @@ private:
         int          height   = 0;
     };
 
-    SDL_Renderer*              m_pRenderer = nullptr;
-    slug::Vector<Page>          m_pages     = {};
-    slug::Vector<Page>          m_textures  = {};
-    slug::Vector<SpriteCommand> m_commands  = {};
-    uint32_t                   m_nextSeq   = 0;
+    SDL_Renderer*         m_pRenderer = nullptr;
+    Vector<Page>          m_pages     = {};
+    Vector<Page>          m_textures  = {};
+    Vector<SpriteCommand> m_commands  = {};
+    uint32_t              m_nextSeq   = 0;
 };
-}
+
+}   // namespace slug

@@ -1,9 +1,9 @@
 ﻿#pragma once
-#include "Base/Random.h"
 #include <memory>
-#include "Base/Types.h"
 
 #include "Audio/AudioSink.h"
+#include "Base/Random.h"
+#include "Base/Types.h"
 #include "Core/Input.h"
 #include "Render/Animation.h"
 #include "Render/Renderer.h"
@@ -11,21 +11,22 @@
 
 namespace slug
 {
+
 struct GameContext
 {
     Renderer*         pRenderer = nullptr;
     SpriteBatch*      pSprites  = nullptr;
     AnimationLibrary* pAnims    = nullptr;
-    slug::RngMt19937*  pRng      = nullptr;
-    slug::FilePath     assetRoot = {};
+    RngMt19937*       pRng      = nullptr;
+    FilePath          assetRoot = {};
     IAudioSink*       pAudio    = nullptr;
 
     float fps           = 0.f;
     bool  bDebugDraw    = false;
     bool  bPaused       = false;
-    int   slowMoDivisor = 1;       // F4: 2 이상이면 느린 재생
+    int   slowMoDivisor = 1;   // F4: 2 이상이면 느린 재생
     int   debugWarp     = 0;
-    int   debugLives    = 0;       // --life N (0 이면 튜닝 값)
+    int   debugLives    = 0;   // --life N (0 이면 튜닝 값)
     int   debugSpawn    = 0;
     int   debugWeapon   = 0;
 
@@ -61,4 +62,5 @@ public:
         return false;
     }
 };
-}
+
+}   // namespace slug

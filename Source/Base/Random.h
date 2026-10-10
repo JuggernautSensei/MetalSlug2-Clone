@@ -42,4 +42,5 @@ template<typename T>
         return static_cast<T>(_rng.Generate() % range) + _min;
     }
 }
-}
+
+}   // namespace slug

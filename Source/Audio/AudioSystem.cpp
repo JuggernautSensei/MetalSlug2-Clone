@@ -1,7 +1,13 @@
 #include "Audio/AudioSystem.h"
-#include "Base/Types.h"
-#include "Base/Result.h"
 
+#include <algorithm>
+
+#include "Base/Error.h"
+#include "Base/Log.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
+
+// miniaudio 구현부는 이 파일에서만 만든다 (stb_vorbis 는 헤더 전용으로 선언만 가져온다).
 #define STB_VORBIS_HEADER_ONLY
 #include <stb_vorbis.c>
 
@@ -10,22 +16,17 @@
 
 #undef STB_VORBIS_HEADER_ONLY
 
-#include <algorithm>
-
-#include "Base/Log.h"
-
-#include "Base/Error.h"
-
 namespace slug
 {
+
 struct AudioSystem::Backend
 {
-    ma_engine             engine        = {};
-    bool                  bEngine       = false;
-    slug::Vector<ma_sound> voices        = {};
-    slug::Vector<char>     voiceInit     = {};
-    ma_sound              bgm           = {};
-    bool                  bBgmInit      = false;
+    ma_engine        engine    = {};
+    bool             bEngine   = false;
+    Vector<ma_sound> voices    = {};
+    Vector<char>     voiceInit = {};
+    ma_sound         bgm       = {};
+    bool             bBgmInit  = false;
 
     ~Backend()
     {
@@ -37,7 +38,8 @@ struct AudioSystem::Backend
         }
     }
 
-    void UninitVoice(const size_t _slot)
+    void UninitVoice(
+        const size_t _slot)
     {
         if (_slot < voiceInit.size() && voiceInit[_slot])
         {
@@ -68,10 +70,10 @@ struct AudioSystem::Backend
 namespace
 {
     [[nodiscard]] ma_result InitSoundFromFile_(
-        ma_engine*            _pEngine,
-        const slug::FilePath&  _path,
-        const ma_uint32       _flags,
-        ma_sound*             _pSound)
+        ma_engine*      _pEngine,
+        const FilePath& _path,
+        const ma_uint32 _flags,
+        ma_sound*       _pSound)
     {
 #if defined(_WIN32)
         return ma_sound_init_from_file_w(_pEngine, _path.c_str(), _flags, nullptr, nullptr, _pSound);
@@ -81,9 +83,9 @@ namespace
     }
 
     [[nodiscard]] ma_result RegisterFile_(
-        ma_engine*           _pEngine,
-        const slug::FilePath& _path,
-        const ma_uint32      _flags)
+        ma_engine*      _pEngine,
+        const FilePath& _path,
+        const ma_uint32 _flags)
     {
 #if defined(_WIN32)
         return ma_resource_manager_register_file_w(ma_engine_get_resource_manager(_pEngine), _path.c_str(), _flags);
@@ -97,7 +99,8 @@ namespace
     {
         return std::clamp(_v, 0.f, 1.f);
     }
-}
+
+}   // namespace
 
 AudioSystem::AudioSystem() = default;
 
@@ -106,7 +109,7 @@ AudioSystem::~AudioSystem()
     Shutdown();
 }
 
-slug::Result<void> AudioSystem::Init(
+Result<void> AudioSystem::Init(
     SoundBank          _bank,
     const AudioConfig& _config)
 {
@@ -125,15 +128,15 @@ slug::Result<void> AudioSystem::Init(
 
     if (!_config.bEnabled)
     {
-        return slug::Error { slug::kOK };
+        return Error { kOK };
     }
 
     std::unique_ptr<Backend> pBackend { new Backend };
-    const ma_engine_config engineConfig = ma_engine_config_init();
+    const ma_engine_config   engineConfig = ma_engine_config_init();
     if (const ma_result result = ma_engine_init(&engineConfig, &pBackend->engine); result != MA_SUCCESS)
     {
         SLUG_LOG_WARN("오디오 장치를 열 수 없어 소리 없이 계속합니다 ({})", ma_result_description(result));
-        return slug::Error { slug::kOK };
+        return Error { kOK };
     }
     pBackend->bEngine = true;
     pBackend->voices.resize(static_cast<size_t>(m_voices.GetCapacity()));
@@ -156,20 +159,20 @@ slug::Result<void> AudioSystem::Init(
         }
     }
 
-    m_pBackend        = std::move(pBackend);
-    m_bDevice         = true;
+    m_pBackend = std::move(pBackend);
+    m_bDevice  = true;
     SLUG_LOG_INFO("오디오: 효과음 {} 개 로드, BGM 스트리밍, 동시 {} 음", preloaded, m_voices.GetCapacity());
-    return slug::Error { slug::kOK };
+    return Error { kOK };
 }
 
-slug::Result<void> AudioSystem::InitFromDirectory(
-    const slug::FilePath& _bakedRoot,
-    const AudioConfig&   _config)
+Result<void> AudioSystem::InitFromDirectory(
+    const FilePath&    _bakedRoot,
+    const AudioConfig& _config)
 {
-    slug::Result<SoundBank> bank = SoundBank::LoadFromDirectory(_bakedRoot);
+    Result<SoundBank> bank = SoundBank::LoadFromDirectory(_bakedRoot);
     if (!bank)
     {
-        return slug::Error { bank.GetError() };
+        return Error { bank.GetError() };
     }
     return Init(bank.Take(), _config);
 }
@@ -238,9 +241,9 @@ void AudioSystem::Update(
 }
 
 void AudioSystem::Play(
-    const slug::StringView _name,
-    const float           _volume,
-    const float           _pitchVariation)
+    const StringView _name,
+    const float      _volume,
+    const float      _pitchVariation)
 {
     if (!m_bInitialized)
     {
@@ -249,7 +252,7 @@ void AudioSystem::Play(
     const int index = m_bank.FindIndex(_name);
     if (index < 0)
     {
-        if (m_warnedMissing.insert(slug::String { _name }).second)
+        if (m_warnedMissing.insert(String { _name }).second)
         {
             SLUG_LOG_TRACE("알 수 없는 효과음 요청: {}", _name);
         }
@@ -274,8 +277,8 @@ void AudioSystem::Play(
         return;
     }
 
-    const SoundEntry& entry = m_bank.Get(index);
-    const size_t      slot  = static_cast<size_t>(acquired.slot);
+    const SoundEntry& entry  = m_bank.Get(index);
+    const size_t      slot   = static_cast<size_t>(acquired.slot);
     ma_sound*         pSound = &m_pBackend->voices[slot];
 
     const ma_uint32 flags = MA_SOUND_FLAG_NO_SPATIALIZATION | (entry.bBgm ? MA_SOUND_FLAG_STREAM : MA_SOUND_FLAG_DECODE);
@@ -295,8 +298,8 @@ void AudioSystem::Play(
 }
 
 void AudioSystem::PlayBgm(
-    const slug::StringView _name,
-    const bool            _bLoop)
+    const StringView _name,
+    const bool       _bLoop)
 {
     if (!m_bInitialized)
     {
@@ -315,7 +318,7 @@ void AudioSystem::PlayBgm(
     }
 
     StopBgm_();
-    m_bgmName  = slug::String { _name };
+    m_bgmName  = String { _name };
     m_bBgmLoop = _bLoop;
     m_bgmFade.Reset();
     m_bgmState = eBgmState::Playing;
@@ -399,4 +402,5 @@ void AudioSystem::StopVoice_(
     }
     m_voices.Release(_slot);
 }
-}
+
+}   // namespace slug

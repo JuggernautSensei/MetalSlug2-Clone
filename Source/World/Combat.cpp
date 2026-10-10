@@ -1,7 +1,8 @@
 #include "World/Combat.h"
-#include "Base/Types.h"
 
 #include <algorithm>
+
+#include "Base/Types.h"
 
 namespace slug
 {
@@ -14,13 +15,14 @@ namespace
     {
         return _hurtbox.owner != kNoOwner ? static_cast<uint64_t>(_hurtbox.owner) : ((1ull << 32) | static_cast<uint64_t>(_index));
     }
-}
 
-slug::Vector<HitEvent> HitResolver::Resolve(
-    const slug::Span<const Hitbox>  _hitboxes,
-    const slug::Span<const Hurtbox> _hurtboxes)
+}   // namespace
+
+Vector<HitEvent> HitResolver::Resolve(
+    const Span<const Hitbox>  _hitboxes,
+    const Span<const Hurtbox> _hurtboxes)
 {
-    slug::Vector<HitEvent> events;
+    Vector<HitEvent> events;
 
     for (size_t i = 0; i < _hitboxes.size(); ++i)
     {
@@ -33,7 +35,7 @@ slug::Vector<HitEvent> HitResolver::Resolve(
         const bool bTracked = hitbox.id != kNoHitId;
         if (bTracked)
         {
-            const auto it = m_hitRecords.find(hitbox.id);
+            const HitRecordMap::iterator it = m_hitRecords.find(hitbox.id);
             if (it != m_hitRecords.end() && it->second.bConsumed)
             {
                 continue;
@@ -64,10 +66,10 @@ slug::Vector<HitEvent> HitResolver::Resolve(
             const uint64_t targetKey = MakeTargetKey_(hurtbox, j);
             if (bTracked)
             {
-                const auto it = m_hitRecords.find(hitbox.id);
+                const HitRecordMap::iterator it = m_hitRecords.find(hitbox.id);
                 if (it != m_hitRecords.end())
                 {
-                    const slug::Vector<uint64_t>& targets = it->second.targets;
+                    const Vector<uint64_t>& targets = it->second.targets;
                     if (std::find(targets.begin(), targets.end(), targetKey) != targets.end())
                     {
                         continue;
@@ -116,4 +118,5 @@ void HitResolver::Clear()
 {
     m_hitRecords.clear();
 }
-}
+
+}   // namespace slug

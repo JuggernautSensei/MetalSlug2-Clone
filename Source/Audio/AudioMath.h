@@ -4,6 +4,7 @@
 
 namespace slug
 {
+
 [[nodiscard]] constexpr float ComputePitch(
     const float _variation,
     const float _unit01)
@@ -78,4 +79,5 @@ struct BgmFader
 
     [[nodiscard]] bool IsDone() const { return bFading && gain <= 0.f; }
 };
-}
+
+}   // namespace slug

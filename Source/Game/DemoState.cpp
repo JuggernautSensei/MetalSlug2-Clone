@@ -1,4 +1,5 @@
 #include "Game/DemoState.h"
+
 #include "Base/Math.h"
 
 namespace slug
@@ -36,8 +37,8 @@ void DemoState::Tick(
 }
 
 void DemoState::Render(
-    GameContext&      _ctx,
-    const float       _alpha)
+    GameContext& _ctx,
+    const float  _alpha)
 {
     Renderer& renderer = *_ctx.pRenderer;
     renderer.BeginFrame({ 24, 28, 40, 255 });
@@ -51,4 +52,5 @@ bool DemoState::IsFinished() const
 {
     return m_bFinished;
 }
-}
+
+}   // namespace slug

@@ -10,10 +10,10 @@
 namespace slug
 {
 
-inline constexpr float kPi        = std::numbers::pi_v<float>;
-inline constexpr float kDeg2Rad   = kPi / 180.f;
-inline constexpr float kRad2Deg   = 180.f / kPi;
-inline constexpr float kEpsilon   = 1e-5f;
+inline constexpr float kPi      = std::numbers::pi_v<float>;
+inline constexpr float kDeg2Rad = kPi / 180.f;
+inline constexpr float kRad2Deg = 180.f / kPi;
+inline constexpr float kEpsilon = 1e-5f;
 
 template<typename T, typename U>
 [[nodiscard]] constexpr std::common_type_t<T, U> Min(const T _x, const U _y)
@@ -106,10 +106,10 @@ struct Vec2
 
     [[nodiscard]] constexpr bool operator==(const Vec2& _other) const = default;
 
-    [[nodiscard]] constexpr float& operator[](const size_t _index) { return _index == 0 ? x : y; }
+    [[nodiscard]] constexpr float&       operator[](const size_t _index) { return _index == 0 ? x : y; }
     [[nodiscard]] constexpr const float& operator[](const size_t _index) const { return _index == 0 ? x : y; }
 
-    [[nodiscard]] constexpr float*       GetPtr()       { return &x; }
+    [[nodiscard]] constexpr float*       GetPtr() { return &x; }
     [[nodiscard]] constexpr const float* GetPtr() const { return &x; }
 
     static const Vec2 kZero;
@@ -129,4 +129,5 @@ inline constexpr Vec2 Vec2::kRight = { 1.f, 0.f };
 inline constexpr Vec2 Vec2::kUp    = { 0.f, 1.f };
 inline constexpr Vec2 Vec2::kUnitX = { 1.f, 0.f };
 inline constexpr Vec2 Vec2::kUnitY = { 0.f, 1.f };
-}
+
+}   // namespace slug

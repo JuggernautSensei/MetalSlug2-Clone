@@ -1,11 +1,12 @@
 #include "Game/SimRunner.h"
+
 #include "Base/Types.h"
 
 namespace slug
 {
 
 SimRunner::SimRunner(
-    GameContext&            _ctx,
+    GameContext&                _ctx,
     std::unique_ptr<IGameState> _pState)
     : m_ctx(_ctx)
     , m_pState(std::move(_pState))
@@ -44,7 +45,7 @@ void SimRunner::Step(
 }
 
 void SimRunner::Run(
-    const slug::Span<const InputFrame> _inputs)
+    const Span<const InputFrame> _inputs)
 {
     for (const InputFrame& input: _inputs)
     {
@@ -95,4 +96,5 @@ void SimRunner::SwitchState_(
         m_pState->OnEnter(m_ctx);
     }
 }
-}
+
+}   // namespace slug

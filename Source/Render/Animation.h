@@ -1,17 +1,18 @@
 #pragma once
 #include <cstdint>
-#include "Base/Assert.h"
 
+#include "Base/Assert.h"
 #include "Base/Handle.h"
 #include "Base/Result.h"
 #include "Base/Types.h"
 
 namespace slug
 {
+
 inline constexpr int64_t kAnimTimeUnitsPerSec = 6'000'000;
 
 struct AnimIdTag;
-using AnimId = slug::Handle<AnimIdTag>;
+using AnimId = Handle<AnimIdTag>;
 
 struct AnimFrame
 {
@@ -31,13 +32,13 @@ struct AnimFrame
 
 struct AnimClip
 {
-    slug::String            name          = {};
-    bool                   bLoop         = false;
-    int                    loopStart     = 0;      // 루프 시 되돌아갈 프레임
-    float                  frameDuration = 0.1f;   // 초, 전 프레임 동일
-    int                    cellW         = 0;
-    int                    cellH         = 0;
-    slug::Vector<AnimFrame> frames        = {};
+    String            name          = {};
+    bool              bLoop         = false;
+    int               loopStart     = 0;      // 루프 시 되돌아갈 프레임
+    float             frameDuration = 0.1f;   // 초, 전 프레임 동일
+    int               cellW         = 0;
+    int               cellH         = 0;
+    Vector<AnimFrame> frames        = {};
 
     [[nodiscard]] int GetFrameCount() const
     {
@@ -73,31 +74,32 @@ struct AnimClip
 class AnimationLibrary
 {
 public:
-    [[nodiscard]] static slug::Result<AnimationLibrary> LoadFromDirectory(const slug::FilePath& _bakedRoot);
+    [[nodiscard]] static Result<AnimationLibrary> LoadFromDirectory(const FilePath& _bakedRoot);
 
-    [[nodiscard]] static slug::Result<AnimationLibrary> LoadFromJson(slug::StringView _animJson);
+    [[nodiscard]] static Result<AnimationLibrary> LoadFromJson(StringView _animJson);
 
     AnimId AddClip(AnimClip _clip);
 
-    [[nodiscard]] AnimId Find(slug::StringView _name) const;
+    [[nodiscard]] AnimId Find(StringView _name) const;
 
     [[nodiscard]] bool            IsValid(AnimId _id) const;
     [[nodiscard]] const AnimClip& Get(AnimId _id) const;
     [[nodiscard]] const AnimClip* GetOrNull(AnimId _id) const;
-    [[nodiscard]] const AnimClip* FindClip(slug::StringView _name) const;
+    [[nodiscard]] const AnimClip* FindClip(StringView _name) const;
 
-    [[nodiscard]] size_t                    GetClipCount() const { return m_clips.size(); }
-    [[nodiscard]] slug::Span<const AnimClip> GetClips() const { return m_clips; }
+    [[nodiscard]] size_t               GetClipCount() const { return m_clips.size(); }
+    [[nodiscard]] Span<const AnimClip> GetClips() const { return m_clips; }
 
-    [[nodiscard]] slug::Span<const slug::String> GetAtlasPages() const { return m_atlasPages; }
-    [[nodiscard]] const slug::FilePath&         GetRoot() const { return m_root; }
-
+    [[nodiscard]] Span<const String> GetAtlasPages() const { return m_atlasPages; }
+    [[nodiscard]] const FilePath&    GetRoot() const { return m_root; }
 
 private:
-    slug::Vector<AnimClip>               m_clips       = {};
-    slug::HashMap<slug::String, uint32_t> m_nameToIndex = {};
-    slug::Vector<slug::String>            m_atlasPages  = {};
-    slug::FilePath                       m_root        = {};
+    using NameMap = HashMap<String, uint32_t>;
+
+    Vector<AnimClip> m_clips       = {};
+    NameMap          m_nameToIndex = {};
+    Vector<String>   m_atlasPages  = {};
+    FilePath         m_root        = {};
 };
 
 class AnimPlayer
@@ -122,9 +124,10 @@ public:
 private:
     void Settle_(const AnimClip& _clip);
 
-    AnimId  m_clip      = slug::kNullHandle;
+    AnimId  m_clip      = kNullHandle;
     int64_t m_timeUnits = 0;
     int     m_frame     = 0;
     bool    m_bFinished = false;
 };
-}
+
+}   // namespace slug

@@ -7,31 +7,34 @@ namespace
 {
     struct KeyBinding
     {
-        eAction    action;
-        SDL_Scancode  key;
+        eAction      action;
+        SDL_Scancode key;
     };
 
-    constexpr KeyBinding kBindings[] = {
-        { eAction::Left, SDL_SCANCODE_A },
-        { eAction::Left, SDL_SCANCODE_LEFT },
-        { eAction::Right, SDL_SCANCODE_D },
-        { eAction::Right, SDL_SCANCODE_RIGHT },
-        { eAction::Up, SDL_SCANCODE_W },
-        { eAction::Up, SDL_SCANCODE_UP },
-        { eAction::Down, SDL_SCANCODE_S },
-        { eAction::Down, SDL_SCANCODE_DOWN },
-        { eAction::Shot, SDL_SCANCODE_J },
-        { eAction::Shot, SDL_SCANCODE_Z },
-        { eAction::Jump, SDL_SCANCODE_K },
-        { eAction::Jump, SDL_SCANCODE_X },
-        { eAction::Bomb, SDL_SCANCODE_L },
-        { eAction::Bomb, SDL_SCANCODE_C },
-        { eAction::Pause, SDL_SCANCODE_ESCAPE },
-        { eAction::Start, SDL_SCANCODE_RETURN },
+    // clang-format off
+    constexpr ARRAY<KeyBinding, 18> kBindings = { {
+        {  eAction::Left,        SDL_SCANCODE_A },
+        {  eAction::Left,     SDL_SCANCODE_LEFT },
+        { eAction::Right,        SDL_SCANCODE_D },
+        { eAction::Right,    SDL_SCANCODE_RIGHT },
+        {    eAction::Up,        SDL_SCANCODE_W },
+        {    eAction::Up,       SDL_SCANCODE_UP },
+        {  eAction::Down,        SDL_SCANCODE_S },
+        {  eAction::Down,     SDL_SCANCODE_DOWN },
+        {  eAction::Shot,        SDL_SCANCODE_J },
+        {  eAction::Shot,        SDL_SCANCODE_Z },
+        {  eAction::Jump,        SDL_SCANCODE_K },
+        {  eAction::Jump,        SDL_SCANCODE_X },
+        {  eAction::Bomb,        SDL_SCANCODE_L },
+        {  eAction::Bomb,        SDL_SCANCODE_C },
+        { eAction::Pause,   SDL_SCANCODE_ESCAPE },
+        { eAction::Start,   SDL_SCANCODE_RETURN },
         { eAction::Start, SDL_SCANCODE_KP_ENTER },
-        { eAction::Start, SDL_SCANCODE_SPACE },
-    };
-}
+        { eAction::Start,    SDL_SCANCODE_SPACE },
+    } };
+    // clang-format on
+
+}   // namespace
 
 void InputSystem::OnKeyDown(
     const SDL_Scancode _key)
@@ -120,8 +123,8 @@ bool InputHistory::WasPressedWithin(
     const eAction _action,
     const int     _frames) const
 {
-    const size_t window = static_cast<size_t>(_frames < 1 ? 1 : (_frames > static_cast<int>(kCapacity) - 1 ? static_cast<int>(kCapacity) - 1 : _frames));
-    const uint16_t mask = static_cast<uint16_t>(1u << static_cast<unsigned>(_action));
+    const size_t   window = static_cast<size_t>(_frames < 1 ? 1 : (_frames > static_cast<int>(kCapacity) - 1 ? static_cast<int>(kCapacity) - 1 : _frames));
+    const uint16_t mask   = static_cast<uint16_t>(1u << static_cast<unsigned>(_action));
 
     for (size_t ago = 0; ago < window && ago < m_count; ++ago)
     {
@@ -135,4 +138,5 @@ bool InputHistory::WasPressedWithin(
     }
     return false;
 }
-}
+
+}   // namespace slug

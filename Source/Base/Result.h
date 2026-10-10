@@ -28,7 +28,7 @@ public:
 
     [[nodiscard]] bool HasValue() const { return m_storage.index() == 0; }
     [[nodiscard]] bool HasError() const { return m_storage.index() == 1; }
-    explicit operator bool() const { return HasValue(); }
+    explicit           operator bool() const { return HasValue(); }
 
     [[nodiscard]] T& GetValue()
     {
@@ -51,9 +51,9 @@ public:
         return std::get<1>(m_storage);
     }
 
-    [[nodiscard]] T&       operator*()       { return GetValue(); }
+    [[nodiscard]] T&       operator*() { return GetValue(); }
     [[nodiscard]] const T& operator*() const { return GetValue(); }
-    [[nodiscard]] T*       operator->()       { return &GetValue(); }
+    [[nodiscard]] T*       operator->() { return &GetValue(); }
     [[nodiscard]] const T* operator->() const { return &GetValue(); }
 
 private:
@@ -74,12 +74,13 @@ public:
     {
     }
 
-    [[nodiscard]] bool IsOK() const { return m_error.IsOK(); }
-    [[nodiscard]] bool HasError() const { return m_error.IsError(); }
+    [[nodiscard]] bool  IsOK() const { return m_error.IsOK(); }
+    [[nodiscard]] bool  HasError() const { return m_error.IsError(); }
     [[nodiscard]] Error GetError() const { return m_error; }
-    explicit operator bool() const { return IsOK(); }
+    explicit            operator bool() const { return IsOK(); }
 
 private:
     Error m_error = {};
 };
-}
+
+}   // namespace slug

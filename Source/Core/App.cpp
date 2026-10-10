@@ -1,18 +1,16 @@
-﻿#include "Core/AssetPath.h"
 #include "Core/App.h"
-#include "Base/Types.h"
-#include "Base/Result.h"
-#include "Base/Random.h"
-
-#include <SDL3/SDL.h>
-
-#include "Base/Log.h"
 
 #include <algorithm>
 #include <cstdlib>
 #include <filesystem>
 #include <format>
+#include <SDL3/SDL.h>
 
+#include "Base/Log.h"
+#include "Base/Random.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
+#include "Core/AssetPath.h"
 #include "Game/StateFactory.h"
 
 namespace slug
@@ -36,6 +34,7 @@ namespace
         }
         return scale;
     }
+
 }   // namespace
 
 int App::Run(
@@ -57,7 +56,7 @@ int App::Run(
     m_returnCode = 0;
     Init_();
 
-    auto lastTime = SteadyClock::now();
+    SteadyClock::time_point lastTime = SteadyClock::now();
     while (m_bRunning)
     {
         PollEvents_();
@@ -65,7 +64,7 @@ int App::Run(
         {
             break;
         }
-        const auto now = SteadyClock::now();
+        const SteadyClock::time_point now = SteadyClock::now();
         Update_(std::chrono::duration<float>(now - lastTime).count());
         lastTime = now;
     }
@@ -107,7 +106,7 @@ void App::PollEvents_()
 
 void App::ParseArgs_()
 {
-    const slug::Span<const slug::String> args = m_cmdArgs;
+    const Span<const String> args = m_cmdArgs;
     for (size_t i = 1; i < args.size(); ++i)
     {
         const bool bHasValue = i + 1 < args.size();
@@ -149,19 +148,31 @@ void App::ParseArgs_()
         }
         else if (args[i] == "--hold" && bHasValue)
         {
-            const slug::String name = args[++i];
+            const String name = args[++i];
             if (name == "J")
+            {
                 m_input.OnKeyDown(SDL_SCANCODE_J);
+            }
             else if (name == "K")
+            {
                 m_input.OnKeyDown(SDL_SCANCODE_K);
+            }
             else if (name == "Up")
+            {
                 m_input.OnKeyDown(SDL_SCANCODE_UP);
+            }
             else if (name == "Down")
+            {
                 m_input.OnKeyDown(SDL_SCANCODE_DOWN);
+            }
             else if (name == "Left")
+            {
                 m_input.OnKeyDown(SDL_SCANCODE_LEFT);
+            }
             else if (name == "Right")
+            {
                 m_input.OnKeyDown(SDL_SCANCODE_RIGHT);
+            }
         }
         else if (args[i] == "--warp" && bHasValue)
         {
@@ -179,12 +190,12 @@ void App::ParseArgs_()
         }
         else if (args[i] == "--capture-ticks" && bHasValue)
         {
-            const slug::String list  = args[++i];
-            size_t             begin = 0;
+            const String list  = args[++i];
+            size_t       begin = 0;
             while (begin < list.size())
             {
                 size_t end = list.find(',', begin);
-                if (end == slug::String::npos)
+                if (end == String::npos)
                 {
                     end = list.size();
                 }
@@ -205,7 +216,7 @@ void App::Init_()
 
     if (!m_replayPath.empty())
     {
-        slug::Result<ReplayData> loaded = LoadReplay(m_replayPath);
+        Result<ReplayData> loaded = LoadReplay(m_replayPath);
         if (!loaded)
         {
             SLUG_LOG_FATAL("리플레이 로드 실패: {}", loaded.GetError().MakeMessage());
@@ -223,11 +234,11 @@ void App::Init_()
     }
     if (m_stateName.empty())
     {
-        const bool bHasBaked = std::filesystem::exists(slug::FindAssetRoot() / "Baked");
-        m_stateName          = bHasBaked ? slug::String { GetDefaultStateName() } : slug::String { "sandbox" };
+        const bool bHasBaked = std::filesystem::exists(FindAssetRoot() / "Baked");
+        m_stateName          = bHasBaked ? String { GetDefaultStateName() } : String { "sandbox" };
     }
 
-    if (const slug::Result<void> result = m_renderer.Init("MyMetalSlug2", ChooseWindowScale_()); !result)
+    if (const Result<void> result = m_renderer.Init("MyMetalSlug2", ChooseWindowScale_()); !result)
     {
         SLUG_LOG_FATAL("렌더러 초기화 실패: {}", result.GetError().MakeMessage());
         m_returnCode = 1;
@@ -235,12 +246,12 @@ void App::Init_()
         return;
     }
 
-    const slug::FilePath bakedRoot = slug::FindAssetRoot() / "Baked";
+    const FilePath bakedRoot = FindAssetRoot() / "Baked";
     m_sprites.Init(m_renderer.GetNative());
-    if (slug::Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(bakedRoot))
+    if (Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(bakedRoot))
     {
         m_anims = library.Take();
-        if (const slug::Result<void> atlas = m_sprites.LoadAtlasPages(m_anims); !atlas)
+        if (const Result<void> atlas = m_sprites.LoadAtlasPages(m_anims); !atlas)
         {
             SLUG_LOG_WARN("아틀라스 로드 실패: {}", atlas.GetError().MakeMessage());
         }
@@ -250,21 +261,21 @@ void App::Init_()
         SLUG_LOG_WARN("Baked 에셋 없음 ({}): Scripts/Bake.ps1 을 실행하세요", bakedRoot.string());
     }
 
-    m_rng                 = slug::RngMt19937 { m_seed };
+    m_rng                 = RngMt19937 { m_seed };
     m_recording.seed      = m_seed;
     m_recording.stateName = m_stateName;
 
-    m_ctx.pRenderer = &m_renderer;
-    m_ctx.pSprites  = &m_sprites;
-    m_ctx.pAnims    = &m_anims;
-    m_ctx.pRng      = &m_rng;
-    m_ctx.assetRoot = slug::FindAssetRoot();
+    m_ctx.pRenderer  = &m_renderer;
+    m_ctx.pSprites   = &m_sprites;
+    m_ctx.pAnims     = &m_anims;
+    m_ctx.pRng       = &m_rng;
+    m_ctx.assetRoot  = FindAssetRoot();
     m_ctx.debugLives = m_debugLives;
 
     {
         AudioConfig audioConfig;
         audioConfig.bEnabled = !m_bNoAudio && m_capturePath.empty();
-        if (const slug::Result<void> audio = m_audio.InitFromDirectory(bakedRoot, audioConfig); audio)
+        if (const Result<void> audio = m_audio.InitFromDirectory(bakedRoot, audioConfig); audio)
         {
             m_ctx.pAudio = &m_audio;
         }
@@ -303,7 +314,7 @@ void App::SaveRecording_() const
     {
         return;
     }
-    if (const slug::Result<void> result = SaveReplay(m_recordPath, m_recording); !result)
+    if (const Result<void> result = SaveReplay(m_recordPath, m_recording); !result)
     {
         SLUG_LOG_ERROR("리플레이 저장 실패: {}", result.GetError().MakeMessage());
         return;
@@ -327,10 +338,16 @@ void App::OnKeyDown_(
         case SDL_SCANCODE_F3: m_bStepOnce = true; return;
         case SDL_SCANCODE_F4: m_bSlowMo = !m_bSlowMo; return;
         case SDL_SCANCODE_F5:
-            if (m_bDebugDraw) { m_pendingWarp = 1; }
+            if (m_bDebugDraw)
+            {
+                m_pendingWarp = 1;
+            }
             return;   // 스테이지: 다음 섹션
         case SDL_SCANCODE_F6:
-            if (m_bDebugDraw) { m_pendingWarp = 2; }
+            if (m_bDebugDraw)
+            {
+                m_pendingWarp = 2;
+            }
             return;   // 스테이지: 보스 아레나
         case SDL_SCANCODE_1: m_pendingSpawn = 1; return;
         case SDL_SCANCODE_2: m_pendingSpawn = 2; return;
@@ -461,9 +478,9 @@ void App::Render_(
     {
         while (m_captureTickHead < m_captureTicks.size() && m_pRunner->GetTickCount() >= m_captureTicks[m_captureTickHead])
         {
-            const uint64_t       tick = m_captureTicks[m_captureTickHead++];
-            const slug::FilePath path = slug::FilePath { std::format("{}_{:05}.bmp", m_capturePath.string(), tick) };
-            if (const slug::Result<void> result = m_renderer.SaveScreenshotBmp(path); !result)
+            const uint64_t tick = m_captureTicks[m_captureTickHead++];
+            const FilePath path = FilePath { std::format("{}_{:05}.bmp", m_capturePath.string(), tick) };
+            if (const Result<void> result = m_renderer.SaveScreenshotBmp(path); !result)
             {
                 SLUG_LOG_ERROR("스크린샷 저장 실패: {}", result.GetError().MakeMessage());
                 m_returnCode = 2;
@@ -476,7 +493,7 @@ void App::Render_(
     }
     else if (!m_capturePath.empty() && m_renderFrameCount == m_captureFrame)
     {
-        if (const slug::Result<void> result = m_renderer.SaveScreenshotBmp(m_capturePath); !result)
+        if (const Result<void> result = m_renderer.SaveScreenshotBmp(m_capturePath); !result)
         {
             SLUG_LOG_ERROR("스크린샷 저장 실패: {}", result.GetError().MakeMessage());
             m_returnCode = 2;
@@ -486,4 +503,5 @@ void App::Render_(
 
     m_renderer.EndFrame();
 }
+
 }   // namespace slug

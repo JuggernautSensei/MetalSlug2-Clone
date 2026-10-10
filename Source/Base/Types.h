@@ -17,7 +17,7 @@ namespace slug
 {
 
 using FilePath = std::filesystem::path;
-namespace fs = std::filesystem;
+namespace fs   = std::filesystem;
 
 using SteadyClock = std::chrono::steady_clock;
 
@@ -38,4 +38,5 @@ using Span = std::span<T, kExtent>;
 
 using String     = std::string;
 using StringView = std::string_view;
-}
+
+}   // namespace slug

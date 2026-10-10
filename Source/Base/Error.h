@@ -34,15 +34,16 @@ public:
     {
     }
 
-    [[nodiscard]] constexpr bool IsOK() const { return m_code == eError::Ok; }
-    [[nodiscard]] constexpr bool IsError() const { return m_code != eError::Ok; }
+    [[nodiscard]] constexpr bool   IsOK() const { return m_code == eError::Ok; }
+    [[nodiscard]] constexpr bool   IsError() const { return m_code != eError::Ok; }
     [[nodiscard]] constexpr eError GetCode() const { return m_code; }
-    [[nodiscard]] String MakeMessage() const;
+    [[nodiscard]] String           MakeMessage() const;
 
-    explicit constexpr operator bool() const { return IsError(); }
+    explicit constexpr           operator bool() const { return IsError(); }
     [[nodiscard]] constexpr bool operator==(const Error& _other) const = default;
 
 private:
     eError m_code = eError::Ok;
 };
-}
+
+}   // namespace slug

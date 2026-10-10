@@ -1,7 +1,4 @@
 #include "Game/SandboxState.h"
-#include "Base/Types.h"
-#include "Base/Result.h"
-#include "Base/RGBA.h"
 
 #include <cmath>
 #include <cstring>
@@ -10,7 +7,9 @@
 
 #include "Base/Log.h"
 #include "Base/Math.h"
-
+#include "Base/RGBA.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
 #include "Game/Combat/BulletVisual.h"
 #include "Game/Player/PlayerHitboxes.h"
 #include "Game/Player/PlayerWeapons.h"
@@ -33,9 +32,9 @@ namespace
     }
 
     [[nodiscard]] Vec2 Lerp_(
-        const Vec2 _a,
-        const Vec2 _b,
-        const float        _t)
+        const Vec2  _a,
+        const Vec2  _b,
+        const float _t)
     {
         return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
     }
@@ -48,16 +47,17 @@ namespace
     }
 
     void DrawBox_(
-        Renderer&          _renderer,
-        const Aabb&        _box,
-        const Vec2 _camera,
-        const slug::RGBA    _color)
+        Renderer&   _renderer,
+        const Aabb& _box,
+        const Vec2  _camera,
+        const RGBA  _color)
     {
         const Vec2 topLeft     = ToScreen_(_box.min, _camera);
         const Vec2 bottomRight = ToScreen_(_box.max, _camera);
-        _renderer.DrawRect(topLeft, { slug::Max(1.f, bottomRight.x - topLeft.x), slug::Max(1.f, bottomRight.y - topLeft.y) }, _color);
+        _renderer.DrawRect(topLeft, { Max(1.f, bottomRight.x - topLeft.x), Max(1.f, bottomRight.y - topLeft.y) }, _color);
     }
-}
+
+}   // namespace
 
 SandboxState::SandboxState() = default;
 
@@ -95,8 +95,8 @@ void SandboxState::BuildWorld_(
     m_bWatch = false;
     if (m_config.bLoadTuningFile && !_ctx.assetRoot.empty())
     {
-        const slug::FilePath path = GetDefaultTuningPath(_ctx.assetRoot);
-        if (slug::Result<Tuning> loaded = LoadTuning(path))
+        const FilePath path = GetDefaultTuningPath(_ctx.assetRoot);
+        if (Result<Tuning> loaded = LoadTuning(path))
         {
             m_tuning = loaded.Take();
             if (!_ctx.IsHeadless())
@@ -116,7 +116,7 @@ void SandboxState::BuildWorld_(
         bool bLoaded = false;
         if (!_ctx.assetRoot.empty())
         {
-            if (slug::Result<GroundMap> ground = GroundMap::Load(_ctx.assetRoot / "Baked" / "Ground" / "Stage0_0.bin"))
+            if (Result<GroundMap> ground = GroundMap::Load(_ctx.assetRoot / "Baked" / "Ground" / "Stage0_0.bin"))
             {
                 m_ground = ground.Take();
                 bLoaded  = true;
@@ -139,7 +139,7 @@ void SandboxState::BuildWorld_(
     m_camera.SetForwardOnly(true);
 
     {
-        slug::FilePath defsPath = m_config.enemyDefPath;
+        FilePath defsPath = m_config.enemyDefPath;
         if (defsPath.empty() && !_ctx.assetRoot.empty())
         {
             defsPath = EnemyDefLibrary::GetDefaultDirectory(_ctx.assetRoot);
@@ -147,8 +147,8 @@ void SandboxState::BuildWorld_(
         m_enemyLib = {};
         if (!defsPath.empty())
         {
-            slug::String message;
-            if (slug::Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
+            String message;
+            if (Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
             {
                 m_enemyLib = lib.Take();
             }
@@ -164,8 +164,8 @@ void SandboxState::BuildWorld_(
 
     if (!_ctx.assetRoot.empty())
     {
-        slug::String message;
-        if (slug::Result<PropDefLibrary> lib = PropDefLibrary::Load(_ctx.assetRoot / "Defs" / "Props" / "Props.json", &message))
+        String message;
+        if (Result<PropDefLibrary> lib = PropDefLibrary::Load(_ctx.assetRoot / "Defs" / "Props" / "Props.json", &message))
         {
             m_propDefs = lib.Take();
         }
@@ -200,14 +200,14 @@ void SandboxState::BuildWorld_(
 
     if (!_ctx.IsHeadless())
     {
-        if (slug::Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot / "Baked"))
+        if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot / "Baked"))
         {
             m_spriteLib = library.Take();
         }
         m_enemies.SetSpriteLibrary(&m_spriteLib);
         if (m_config.bBackground && _ctx.pSprites)
         {
-            if (const slug::Result<int> handle = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / "Textures" / "Stage0_Main.png"))
+            if (const Result<int> handle = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / "Textures" / "Stage0_Main.png"))
             {
                 m_bgHandle = handle.GetValue();
             }
@@ -248,8 +248,8 @@ void SandboxState::RestartGame()
     }
     if (m_config.bVehicleLab)
     {
-        const Vec2 feet = m_player.GetFeet();
-        SpawnParams        left;
+        const Vec2  feet = m_player.GetFeet();
+        SpawnParams left;
         left.facing = -1;
         (void)SpawnEnemy("jeep", { 200.f, feet.y }, left);
         (void)SpawnEnemy("btank", { 380.f, feet.y }, left);
@@ -274,17 +274,17 @@ void SandboxState::AddDefaultTargets_()
 }
 
 uint32_t SandboxState::AddTarget(
-    const eDummyKind   _kind,
-    const Vec2 _feet,
-    const bool         _bShooter)
+    const eDummyKind _kind,
+    const Vec2       _feet,
+    const bool       _bShooter)
 {
     return m_targets.Add(_kind, _feet, _bShooter, m_tuning.sandbox);
 }
 
 EnemyHandle SandboxState::SpawnEnemy(
-    const slug::StringView _defName,
-    const Vec2    _feet,
-    const SpawnParams&    _params)
+    const StringView   _defName,
+    const Vec2         _feet,
+    const SpawnParams& _params)
 {
     const PhysicsWorld world = MakeEnemyPhysicsWorld_();
     return m_enemies.Spawn(_defName, _feet, _params, &world);
@@ -296,27 +296,27 @@ void SandboxState::SpawnDebugEnemy_(
 {
     if (_slot == 8)
     {
-        static constexpr const char* kVehicles[] = { "jeep", "btank", "missle_tank", "sarubia" };
-        constexpr int                kVehicleCount = static_cast<int>(sizeof(kVehicles) / sizeof(kVehicles[0]));
-        const Vec2           feet          = m_player.GetFeet();
-        const slug::StringView        name          = kVehicles[m_vehicleCursor % kVehicleCount];
-        m_vehicleCursor                            = (m_vehicleCursor + 1) % kVehicleCount;
+        static constexpr ARRAY<const char*, 4> kVehicles     = { "jeep", "btank", "missle_tank", "sarubia" };
+        constexpr int                          kVehicleCount = static_cast<int>(kVehicles.size());
+        const Vec2                             feet          = m_player.GetFeet();
+        const StringView                       name          = kVehicles[m_vehicleCursor % kVehicleCount];
+        m_vehicleCursor                                      = (m_vehicleCursor + 1) % kVehicleCount;
         SpawnParams params;
         params.facing = -1;
         (void)SpawnEnemy(name, { feet.x + 420.f, feet.y }, params);
         return;
     }
 
-    static constexpr const char* kSlots[] ={ "soldier_bomb", "soldier_sword", "soldier_missile", "soldier_bzk", "soldier_hang", "flying_bzk", "shielder", "pow" };
-    constexpr int                kSlotCount = static_cast<int>(sizeof(kSlots) / sizeof(kSlots[0]));
+    static constexpr ARRAY<const char*, 8> kSlots     = { "soldier_bomb", "soldier_sword", "soldier_missile", "soldier_bzk", "soldier_hang", "flying_bzk", "shielder", "pow" };
+    constexpr int                          kSlotCount = static_cast<int>(kSlots.size());
     if (_slot < 0 || _slot >= kSlotCount)
     {
         return;
     }
 
-    const slug::StringView name = kSlots[_slot];
-    const Vec2     feet = m_player.GetFeet();
-    Vec2           at   = { feet.x + _aheadPx, feet.y };
+    const StringView name = kSlots[_slot];
+    const Vec2       feet = m_player.GetFeet();
+    Vec2             at   = { feet.x + _aheadPx, feet.y };
     if (name == "flying_bzk")
     {
         at.y = feet.y - 150.f;   // 낙하산: 공중에서 내려온다
@@ -440,22 +440,22 @@ void SandboxState::Tick(
     m_targets.TickShooters(m_tuning.sandbox, m_player.GetFeet(), m_player.IsAlive(), m_projectiles, m_combat);
 
     EnemyContext enemyCtx;
-    enemyCtx.pTuning      = &m_tuning;
-    enemyCtx.physics      = MakeEnemyPhysicsWorld_();
-    enemyCtx.pCombat      = &m_combat;
-    enemyCtx.pProjectiles = &m_projectiles;
-    enemyCtx.player.feet        = m_player.GetFeet();
-    enemyCtx.player.bodyBox     = m_player.GetBodyBox();
-    enemyCtx.player.center      = m_player.GetBodyBox().GetCenter();
-    enemyCtx.player.bAlive      = m_player.IsAlive();
+    enemyCtx.pTuning              = &m_tuning;
+    enemyCtx.physics              = MakeEnemyPhysicsWorld_();
+    enemyCtx.pCombat              = &m_combat;
+    enemyCtx.pProjectiles         = &m_projectiles;
+    enemyCtx.player.feet          = m_player.GetFeet();
+    enemyCtx.player.bodyBox       = m_player.GetBodyBox();
+    enemyCtx.player.center        = m_player.GetBodyBox().GetCenter();
+    enemyCtx.player.bAlive        = m_player.IsAlive();
     enemyCtx.player.bInvulnerable = m_player.GetInvincibleTicks() > 0;
-    enemyCtx.cameraView   = Aabb::FromMinSize(m_camera.GetPositionNoShake(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
-    enemyCtx.pAnims       = _ctx.pAnims;
+    enemyCtx.cameraView           = Aabb::FromMinSize(m_camera.GetPositionNoShake(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
+    enemyCtx.pAnims               = _ctx.pAnims;
     m_enemies.Tick(enemyCtx);
 
     m_projectiles.Step(&m_ground, m_combat, kStepSec);
 
-    const slug::Vector<HitEvent>& events = m_combat.Resolve();
+    const Vector<HitEvent>& events = m_combat.Resolve();
     m_props.OnHitEvents(events);
     (void)m_props.TakeEvents();
     m_enemies.OnHitEvents(events);
@@ -470,7 +470,7 @@ void SandboxState::Tick(
     m_projectiles.OnHitEvents(events, m_combat);
     m_targets.Tick(m_tuning.sandbox);
 
-    const slug::Vector<FxRequest> fx = m_projectiles.TakeFx();
+    const Vector<FxRequest> fx = m_projectiles.TakeFx();
     RequestSounds_(_ctx, fx);
     m_ui.Tick();
     if (_ctx.pAnims)
@@ -540,11 +540,11 @@ void SandboxState::Tick(
 }
 
 void SandboxState::RequestSounds_(
-    GameContext&                  _ctx,
-    const slug::Vector<FxRequest>& _fx)
+    GameContext&             _ctx,
+    const Vector<FxRequest>& _fx)
 {
-    IAudioSink&        audio = _ctx.GetAudio();
-    const PlayerStats& stats = m_player.GetStats();
+    IAudioSink&        audio  = _ctx.GetAudio();
+    const PlayerStats& stats  = m_player.GetStats();
     const eWeapon      weapon = m_player.GetWeapon().weapon;
 
     for (int i = m_prevStats.shotsFired; i < stats.shotsFired; ++i)
@@ -586,7 +586,7 @@ void SandboxState::RequestSounds_(
 
     if (m_player.IsGameOver() && !m_bGameOverAnnounced)
     {
-        m_bGameOverAnnounced = true;
+        m_bGameOverAnnounced          = true;
         const ScreenFlowConfig config = MakeGameOverFlowConfig();
         BannerSpec             spec   = MakeBannerSpec(config.bannerText, static_cast<float>(m_tuning.player.gameOverTicks) / 60.f);
         spec.color                    = config.bannerColor;
@@ -642,9 +642,9 @@ void SandboxState::Render(
 }
 
 void SandboxState::DrawWorld_(
-    GameContext&       _ctx,
-    const Vec2 _cameraPos,
-    const float        _alpha)
+    GameContext& _ctx,
+    const Vec2   _cameraPos,
+    const float  _alpha)
 {
     Renderer&               renderer = *_ctx.pRenderer;
     SpriteBatch&            sprites  = *_ctx.pSprites;
@@ -674,8 +674,8 @@ void SandboxState::DrawWorld_(
             continue;
         }
 
-        const Aabb         box   = Aabb::FromBottomCenter(dummy.feet, dummy.size);
-        const slug::RGBA    color = dummy.flashTicks > 0 ? slug::RGBA { 255, 150, 150, 255 } : (dummy.kind == eDummyKind::Bus ? slug::RGBA { 196, 150, 70, 255 } : slug::RGBA { 96, 120, 70, 255 });
+        const Aabb box   = Aabb::FromBottomCenter(dummy.feet, dummy.size);
+        const RGBA color = dummy.flashTicks > 0 ? RGBA { 255, 150, 150, 255 } : (dummy.kind == eDummyKind::Bus ? RGBA { 196, 150, 70, 255 } : RGBA { 96, 120, 70, 255 });
         const Vec2 tl    = ToScreen_(box.min, _cameraPos);
         renderer.FillRect(tl, dummy.size, color);
         renderer.DrawRect(tl, dummy.size, { 20, 20, 20, 255 });
@@ -712,7 +712,7 @@ void SandboxState::DrawWorld_(
             {
                 continue;
             }
-            const slug::RGBA color = bullet.team == eTeam::Player ? slug::RGBA { 255, 240, 120, 255 } : slug::RGBA { 255, 80, 60, 255 };
+            const RGBA color = bullet.team == eTeam::Player ? RGBA { 255, 240, 120, 255 } : RGBA { 255, 80, 60, 255 };
             renderer.FillRect(ToScreen_({ pos.x - bullet.size.x * 0.5f, pos.y - bullet.size.y * 0.5f }, _cameraPos), bullet.size, color);
         }
 
@@ -741,12 +741,12 @@ void SandboxState::DrawWorld_(
 }
 
 void SandboxState::DrawDebugBoxes_(
-    Renderer&          _renderer,
+    Renderer&  _renderer,
     const Vec2 _cameraPos) const
 {
     for (const Hurtbox& hurtbox: m_combat.GetHurtboxes())
     {
-        DrawBox_(_renderer, hurtbox.box, _cameraPos, hurtbox.bInvulnerable ? slug::RGBA { 120, 200, 255, 255 } : slug::RGBA { 60, 255, 90, 255 });
+        DrawBox_(_renderer, hurtbox.box, _cameraPos, hurtbox.bInvulnerable ? RGBA { 120, 200, 255, 255 } : RGBA { 60, 255, 90, 255 });
     }
     for (const Hitbox& hitbox: m_combat.GetHitboxes())
     {
@@ -756,13 +756,13 @@ void SandboxState::DrawDebugBoxes_(
     const Aabb body = m_player.GetBodyBox();
     DrawBox_(_renderer, body, _cameraPos, { 80, 120, 255, 255 });
 
-    const Vec2 feet = m_player.GetFeet();
-    const float        fh   = m_player.GetBody().footHalfWidth;
+    const Vec2  feet = m_player.GetFeet();
+    const float fh   = m_player.GetBody().footHalfWidth;
     _renderer.DrawLine(ToScreen_({ feet.x - fh, feet.y }, _cameraPos), ToScreen_({ feet.x + fh, feet.y }, _cameraPos), { 255, 255, 0, 255 });
     _renderer.DrawLine(ToScreen_({ feet.x, feet.y - 4.f }, _cameraPos), ToScreen_({ feet.x, feet.y + 4.f }, _cameraPos), { 255, 255, 0, 255 });
 
     const Aabb trigger = MakeKnifeTriggerBox(feet, m_player.GetFacing(), body.GetWidth() * 0.5f, m_tuning.knife);
-    DrawBox_(_renderer, trigger, _cameraPos, m_player.IsKnifeTargetInRange() ? slug::RGBA { 255, 220, 40, 255 } : slug::RGBA { 120, 110, 40, 255 });
+    DrawBox_(_renderer, trigger, _cameraPos, m_player.IsKnifeTargetInRange() ? RGBA { 255, 220, 40, 255 } : RGBA { 120, 110, 40, 255 });
 
     for (const Wall& wall: m_walls)
     {
@@ -781,9 +781,9 @@ void SandboxState::DrawHud_(
 
     if (_ctx.bDebugDraw)
     {
-        const Vec2 vel   = p.GetVelocity();
-        const Vec2 pos   = p.GetFeet();
-        const slug::String  debug = std::format(
+        const Vec2   vel   = p.GetVelocity();
+        const Vec2   pos   = p.GetFeet();
+        const String debug = std::format(
             "STATE {} {}  AIM {}  OVL {}\nPOS {:.1f},{:.1f}  VEL {:.0f},{:.0f}  GND {}\nINV {}  KNIFE-RANGE {}  TICK {}  FPS {:.0f}\nF1 BOX  F2 PAUSE  F3 STEP  F4 SLOW  J SHOT  K JUMP  L BOMB",
             GetStateName(p.GetState()),
             p.GetFacing() > 0 ? "R" : "L",
@@ -811,4 +811,5 @@ void SandboxState::DrawHud_(
 
     m_ui.DrawOverlays(_ctx);
 }
-}
+
+}   // namespace slug

@@ -19,4 +19,5 @@ void ReportAssertFailure(
     std::abort();
 #endif
 }
-}
+
+}   // namespace slug

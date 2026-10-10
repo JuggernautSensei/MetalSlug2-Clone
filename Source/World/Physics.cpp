@@ -8,7 +8,7 @@ namespace slug
 namespace
 {
     constexpr float kOneWayEpsilon = 0.001f;
-    constexpr float kInf           = 1.0e30f;
+    constexpr float kInf           = 1e30f;
 
     struct StepContext
     {
@@ -43,7 +43,7 @@ namespace
     [[nodiscard]] float FootHalf_(
         const Body& _body)
     {
-        return slug::Max(_body.footHalfWidth, 0.5f);
+        return Max(_body.footHalfWidth, 0.5f);
     }
 
     [[nodiscard]] SupportResult FindSupport_(
@@ -64,7 +64,7 @@ namespace
             const GroundMap& ground = *_ctx.world.pGround;
 
             const int col0 = FloorToInt(_x - fh);
-            const int col1 = slug::Max(col0, CeilToInt(_x + fh) - 1);
+            const int col1 = Max(col0, CeilToInt(_x + fh) - 1);
             const int rLo  = CeilToInt(_yMin);
             const int rHi  = FloorToInt(_yMax);
             if (rHi >= rLo)
@@ -148,6 +148,52 @@ namespace
         return best;
     }
 
+    // 좌우 이동 중 막는 블록이 있으면 snapX 를 더 가까운 쪽으로 갱신한다.
+    void TestLateralBlock_(
+        const Aabb&           _testBox,
+        const Aabb&           _block,
+        const float           _oldX,
+        const float           _half,
+        const int             _dir,
+        std::optional<float>& _snapX)
+    {
+        if (!_testBox.Overlaps(_block))
+        {
+            return;
+        }
+
+        const bool bAhead = _dir > 0 ? _block.min.x >= _oldX + _half - kOneWayEpsilon : _block.max.x <= _oldX - _half + kOneWayEpsilon;
+        if (!bAhead)
+        {
+            return;
+        }
+        const float x = _dir > 0 ? _block.min.x - _half : _block.max.x + _half;
+        if (!_snapX || (_dir > 0 ? x < *_snapX : x > *_snapX))
+        {
+            _snapX = x;
+        }
+    }
+
+    // 상승 중 머리가 닿는 블록이 있으면 stopFeet 를 더 낮은 쪽으로 갱신한다.
+    void TestCeilingBlock_(
+        const Aabb& _block,
+        const float _left,
+        const float _right,
+        const float _top0,
+        const float _top1,
+        const float _bodyHeight,
+        float&      _stopFeet)
+    {
+        if (_block.min.x < _right && _block.max.x > _left && _block.max.y > _top1 && _block.max.y <= _top0 + kOneWayEpsilon && _block.min.y < _top0)
+        {
+            const float feetAtBlock = _block.max.y + _bodyHeight;
+            if (_stopFeet == kInf || feetAtBlock > _stopFeet)
+            {
+                _stopFeet = feetAtBlock;
+            }
+        }
+    }
+
     [[nodiscard]] std::optional<float> FindLateralBlock_(
         const StepContext& _ctx,
         const float        _oldX,
@@ -200,34 +246,16 @@ namespace
                 { right, limit }
             };
 
-            auto TestBlock = [&](const Aabb& _block) {
-                if (!testBox.Overlaps(_block))
-                {
-                    return;
-                }
-
-                const bool bAhead = _dir > 0 ? _block.min.x >= _oldX + half - kOneWayEpsilon : _block.max.x <= _oldX - half + kOneWayEpsilon;
-                if (!bAhead)
-                {
-                    return;
-                }
-                const float x = _dir > 0 ? _block.min.x - half : _block.max.x + half;
-                if (!snapX || (_dir > 0 ? x < *snapX : x > *snapX))
-                {
-                    snapX = x;
-                }
-            };
-
             for (const Platform& platform: _ctx.world.platforms)
             {
                 if (!platform.bOneWay)
                 {
-                    TestBlock(platform.box);
+                    TestLateralBlock_(testBox, platform.box, _oldX, half, _dir, snapX);
                 }
             }
             for (const Wall& wall: _ctx.world.walls)
             {
-                TestBlock(wall.box);
+                TestLateralBlock_(testBox, wall.box, _oldX, half, _dir, snapX);
             }
         }
 
@@ -332,7 +360,7 @@ namespace
         }
 
         const int   dir   = _dx > 0.f ? 1 : -1;
-        const int   steps = slug::Max(1, CeilToInt(slug::Abs(_dx)));
+        const int   steps = Max(1, CeilToInt(Abs(_dx)));
         const float s     = _dx / static_cast<float>(steps);
 
         for (int i = 0; i < steps; ++i)
@@ -342,7 +370,7 @@ namespace
 
             if (const std::optional<float> snapX = FindLateralBlock_(_ctx, body.position.x, newX, body.position.y, dir, zone))
             {
-                body.position.x                                                  = dir > 0 ? slug::Max(body.position.x, slug::Min(newX, *snapX)) : slug::Min(body.position.x, slug::Max(newX, *snapX));
+                body.position.x                                                  = dir > 0 ? Max(body.position.x, Min(newX, *snapX)) : Min(body.position.x, Max(newX, *snapX));
                 (dir > 0 ? _ctx.result.bHitWallRight : _ctx.result.bHitWallLeft) = true;
                 body.velocity.x                                                  = 0.f;
                 return;
@@ -373,7 +401,7 @@ namespace
             return;
         }
 
-        const int   steps = slug::Max(1, CeilToInt(slug::Abs(_dy)));
+        const int   steps = Max(1, CeilToInt(Abs(_dy)));
         const float s     = _dy / static_cast<float>(steps);
 
         for (int i = 0; i < steps; ++i)
@@ -415,33 +443,23 @@ namespace
 
                 if (body.bCollideSolids)
                 {
-                    auto TestBlock = [&](const Aabb& _block) {
-                        if (_block.min.x < right && _block.max.x > left && _block.max.y > top1 && _block.max.y <= top0 + kOneWayEpsilon && _block.min.y < top0)
-                        {
-                            const float feetAtBlock = _block.max.y + body.size.y;
-                            if (stopFeet == kInf || feetAtBlock > stopFeet)
-                            {
-                                stopFeet = feetAtBlock;
-                            }
-                        }
-                    };
 
                     for (const Platform& platform: _ctx.world.platforms)
                     {
                         if (!platform.bOneWay)
                         {
-                            TestBlock(platform.box);
+                            TestCeilingBlock_(platform.box, left, right, top0, top1, body.size.y, stopFeet);
                         }
                     }
                     for (const Wall& wall: _ctx.world.walls)
                     {
-                        TestBlock(wall.box);
+                        TestCeilingBlock_(wall.box, left, right, top0, top1, body.size.y, stopFeet);
                     }
                 }
 
                 if (stopFeet != kInf)
                 {
-                    body.position.y = slug::Min(f0, stopFeet);
+                    body.position.y = Min(f0, stopFeet);
                     if (body.velocity.y < 0.f)
                     {
                         body.velocity.y = 0.f;
@@ -453,7 +471,8 @@ namespace
             }
         }
     }
-}
+
+}   // namespace
 
 MoveResult Physics::Step(
     Body&                _body,
@@ -488,7 +507,7 @@ MoveResult Physics::Step(
         if (_body.bUseGravity)
         {
             _body.velocity.y += _tuning.gravity * _body.gravityScale * _dt;
-            _body.velocity.y = slug::Min(_body.velocity.y, _tuning.terminalVelocity);
+            _body.velocity.y = Min(_body.velocity.y, _tuning.terminalVelocity);
         }
         MoveY_(ctx, _body.velocity.y * _dt);
     }
@@ -537,4 +556,5 @@ bool Physics::SnapToGround(
     _body.bGrounded  = true;
     return true;
 }
-}
+
+}   // namespace slug

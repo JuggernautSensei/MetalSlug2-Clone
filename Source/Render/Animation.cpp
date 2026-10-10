@@ -1,15 +1,14 @@
 #include "Render/Animation.h"
-#include "Base/Types.h"
-#include "Base/Assert.h"
-#include "Base/Handle.h"
 
 #include <cmath>
 
-#include "Base/Log.h"
-#include "Base/Json.h"
-#include "Base/Math.h"
-
+#include "Base/Assert.h"
 #include "Base/Error.h"
+#include "Base/Handle.h"
+#include "Base/Json.h"
+#include "Base/Log.h"
+#include "Base/Math.h"
+#include "Base/Types.h"
 
 namespace slug
 {
@@ -25,11 +24,11 @@ namespace
     }
 
     [[nodiscard]] bool ReadInt_(
-        const slug::JsonReader& _object,
-        const slug::StringView  _key,
-        int&                   _out)
+        const JsonReader& _object,
+        const StringView  _key,
+        int&              _out)
     {
-        const slug::Result<double> value = _object.ReadField<double>(_key);
+        const Result<double> value = _object.ReadField<double>(_key);
         if (!value)
         {
             return false;
@@ -39,81 +38,81 @@ namespace
     }
 
     [[nodiscard]] bool ReadOptionalInt_(
-        const slug::JsonReader& _object,
-        const slug::StringView  _key,
-        int&                   _out)
+        const JsonReader& _object,
+        const StringView  _key,
+        int&              _out)
     {
         return !_object.HasField(_key) || ReadInt_(_object, _key, _out);
     }
 
-    [[nodiscard]] slug::Result<AnimFrame> ParseFrame_(
-        const slug::JsonReader& _json)
+    [[nodiscard]] Result<AnimFrame> ParseFrame_(
+        const JsonReader& _json)
     {
         if (!_json.IsObject())
         {
-            return slug::Error { eError::Parse };
+            return Error { eError::Parse };
         }
 
         AnimFrame frame;
         if (!ReadInt_(_json, "atlas", frame.atlas) || !ReadInt_(_json, "x", frame.x) || !ReadInt_(_json, "y", frame.y) || !ReadInt_(_json, "w", frame.w) || !ReadInt_(_json, "h", frame.h) || !ReadInt_(_json, "pivotX", frame.pivotX) || !ReadInt_(_json, "pivotY", frame.pivotY))
         {
-            return slug::Error { eError::Parse };
+            return Error { eError::Parse };
         }
         if (frame.atlas < 0 || frame.w < 0 || frame.h < 0)
         {
-            return slug::Error { eError::InvalidData };
+            return Error { eError::InvalidData };
         }
         return frame;
     }
 
-    [[nodiscard]] slug::Result<AnimClip> ParseClip_(
-        const slug::StringView  _name,
-        const slug::JsonReader& _json)
+    [[nodiscard]] Result<AnimClip> ParseClip_(
+        const StringView  _name,
+        const JsonReader& _json)
     {
         if (!_json.IsObject())
         {
-            return slug::Error { eError::Parse };
+            return Error { eError::Parse };
         }
 
         AnimClip clip;
-        clip.name = slug::String { _name };
+        clip.name = String { _name };
 
         if (_json.HasField("loop"))
         {
-            const slug::Result<bool> bLoop = _json.ReadField<bool>("loop");
+            const Result<bool> bLoop = _json.ReadField<bool>("loop");
             if (!bLoop)
             {
-                return slug::Error { eError::Parse };
+                return Error { eError::Parse };
             }
             clip.bLoop = bLoop.GetValue();
         }
 
         if (!ReadOptionalInt_(_json, "loopStart", clip.loopStart) || !ReadOptionalInt_(_json, "cellW", clip.cellW) || !ReadOptionalInt_(_json, "cellH", clip.cellH))
         {
-            return slug::Error { eError::Parse };
+            return Error { eError::Parse };
         }
 
-        const slug::Result<double> duration = _json.ReadField<double>("frameDuration");
+        const Result<double> duration = _json.ReadField<double>("frameDuration");
         if (!duration)
         {
-            return slug::Error { eError::Parse };
+            return Error { eError::Parse };
         }
         clip.frameDuration = static_cast<float>(duration.GetValue());
         if (!(clip.frameDuration > 0.f))
         {
-            return slug::Error { eError::InvalidData };
+            return Error { eError::InvalidData };
         }
 
-        const slug::Result<slug::JsonReader> frames = _json.FindField("frames");
+        const Result<JsonReader> frames = _json.FindField("frames");
         if (!frames || !frames->IsArray())
         {
-            return slug::Error { eError::Parse };
+            return Error { eError::Parse };
         }
 
         clip.frames.reserve(frames->GetSize());
-        for (const slug::JsonReader frameJson: frames->GetArray())
+        for (const JsonReader frameJson: frames->GetArray())
         {
-            slug::Result<AnimFrame> frame = ParseFrame_(frameJson);
+            Result<AnimFrame> frame = ParseFrame_(frameJson);
             if (!frame)
             {
                 return frame.GetError();
@@ -123,34 +122,36 @@ namespace
 
         if (clip.frames.empty())
         {
-            return slug::Error { eError::InvalidData };
+            return Error { eError::InvalidData };
         }
 
         if (clip.loopStart < 0 || clip.loopStart >= clip.GetFrameCount())
         {
-            clip.loopStart = slug::Clamp(clip.loopStart, 0, clip.GetFrameCount() - 1);
+            clip.loopStart = Clamp(clip.loopStart, 0, clip.GetFrameCount() - 1);
         }
         return clip;
     }
 
-    [[nodiscard]] slug::Result<AnimationLibrary> ParseAnimDocument_(
-        const slug::JsonReader& _root)
+    [[nodiscard]] Result<AnimationLibrary> ParseAnimDocument_(
+        const JsonReader& _root)
     {
         if (!_root.IsObject())
         {
-            return slug::Error { eError::Parse };
+            return Error { eError::Parse };
         }
 
-        const slug::Result<slug::JsonReader> animations = _root.FindField("animations");
+        const Result<JsonReader> animations = _root.FindField("animations");
         if (!animations || !animations->IsObject())
         {
-            return slug::Error { eError::Parse };
+            return Error { eError::Parse };
         }
 
         AnimationLibrary library;
-        for (const auto [name, clipJson]: animations->GetObject())
+        for (const std::pair<StringView, JsonReader>& item: animations->GetObject())
         {
-            slug::Result<AnimClip> clip = ParseClip_(name, clipJson);
+            const StringView  name     = item.first;
+            const JsonReader& clipJson = item.second;
+            Result<AnimClip>  clip     = ParseClip_(name, clipJson);
             if (!clip)
             {
                 SLUG_LOG_ERROR("애니메이션 '{}' 파싱 실패: {}", name, clip.GetError().MakeMessage());
@@ -161,87 +162,88 @@ namespace
         return library;
     }
 
-    [[nodiscard]] slug::Result<slug::Vector<slug::String>> ParseAtlasPages_(
-        const slug::JsonReader& _manifest)
+    [[nodiscard]] Result<Vector<String>> ParseAtlasPages_(
+        const JsonReader& _manifest)
     {
-        slug::Vector<slug::String> pages;
+        Vector<String> pages;
         if (!_manifest.HasField("atlasPages"))
         {
             return pages;
         }
 
-        const slug::Result<slug::JsonReader> list = _manifest.FindField("atlasPages");
+        const Result<JsonReader> list = _manifest.FindField("atlasPages");
         if (!list || !list->IsArray())
         {
-            return slug::Error { eError::Parse };
+            return Error { eError::Parse };
         }
-        for (const slug::JsonReader item: list->GetArray())
+        for (const JsonReader item: list->GetArray())
         {
-            slug::Result<slug::String> page = item.Read<slug::String>();
+            Result<String> page = item.Read<String>();
             if (!page)
             {
-                return slug::Error { eError::Parse };
+                return Error { eError::Parse };
             }
             pages.push_back(page.GetValue());
         }
         return pages;
     }
-}
+
+}   // namespace
 
 int64_t AnimClip::GetFrameDurationUnits() const
 {
     return ToUnits_(static_cast<double>(frameDuration));
 }
 
-slug::Result<AnimationLibrary> AnimationLibrary::LoadFromJson(
-    const slug::StringView _animJson)
+Result<AnimationLibrary> AnimationLibrary::LoadFromJson(
+    const StringView _animJson)
 {
-    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::Load(_animJson);
+    Result<JsonDeserializer> doc = JsonDeserializer::Load(_animJson);
     if (!doc)
     {
-        return slug::Error { eError::Parse };
+        return Error { eError::Parse };
     }
     return ParseAnimDocument_(doc->GetReader());
 }
 
-slug::Result<AnimationLibrary> AnimationLibrary::LoadFromDirectory(
-    const slug::FilePath& _bakedRoot)
+Result<AnimationLibrary> AnimationLibrary::LoadFromDirectory(
+    const FilePath& _bakedRoot)
 {
-    slug::Result<slug::JsonDeserializer> manifestDoc = slug::JsonDeserializer::LoadFromFile(_bakedRoot / "manifest.json");
+    Result<JsonDeserializer> manifestDoc = JsonDeserializer::LoadFromFile(_bakedRoot / "manifest.json");
     if (!manifestDoc)
     {
-        return slug::Error { eError::FileOpen };
+        return Error { eError::FileOpen };
     }
-    const slug::JsonReader manifest = manifestDoc->GetReader();
+    const JsonReader manifest = manifestDoc->GetReader();
     if (!manifest.IsObject())
     {
-        return slug::Error { eError::Parse };
+        return Error { eError::Parse };
     }
 
-    slug::String animFile = "anim.json";
+    String animFile = "anim.json";
     if (manifest.HasField("animations"))
     {
-        slug::Result<slug::String> name = manifest.ReadField<slug::String>("animations");
+        Result<String> name = manifest.ReadField<String>("animations");
         if (!name)
         {
-            return slug::Error { eError::Parse };
+            return Error { eError::Parse };
         }
         animFile = name.GetValue();
     }
 
-    slug::Result<slug::Vector<slug::String>> pages = ParseAtlasPages_(manifest);
+    Result<Vector<String>> pages = ParseAtlasPages_(manifest);
     if (!pages)
     {
         return pages.GetError();
     }
 
-    slug::Result<slug::JsonDeserializer> animDoc = slug::JsonDeserializer::LoadFromFile(_bakedRoot / animFile);
+    Result<JsonDeserializer> animDoc = JsonDeserializer::LoadFromFile(_bakedRoot / animFile);
     if (!animDoc)
     {
-        return slug::Error { eError::FileOpen };
+        return Error { eError::FileOpen };
     }
 
-    slug::Result<AnimationLibrary> library = ParseAnimDocument_(animDoc->GetReader());
+    Result<AnimationLibrary> library = ParseAnimDocument_(animDoc->GetReader());
     if (!library)
     {
         return library.GetError();
@@ -256,7 +258,7 @@ slug::Result<AnimationLibrary> AnimationLibrary::LoadFromDirectory(
 AnimId AnimationLibrary::AddClip(
     AnimClip _clip)
 {
-    if (const auto it = m_nameToIndex.find(_clip.name); it != m_nameToIndex.end())
+    if (const NameMap::iterator it = m_nameToIndex.find(_clip.name); it != m_nameToIndex.end())
     {
         m_clips[it->second] = std::move(_clip);
         return AnimId { it->second, 0 };
@@ -269,12 +271,12 @@ AnimId AnimationLibrary::AddClip(
 }
 
 AnimId AnimationLibrary::Find(
-    const slug::StringView _name) const
+    const StringView _name) const
 {
-    const auto it = m_nameToIndex.find(slug::String { _name });
+    const NameMap::const_iterator it = m_nameToIndex.find(String { _name });
     if (it == m_nameToIndex.end())
     {
-        return slug::kNullHandle;
+        return kNullHandle;
     }
     return AnimId { it->second, 0 };
 }
@@ -299,7 +301,7 @@ const AnimClip* AnimationLibrary::GetOrNull(
 }
 
 const AnimClip* AnimationLibrary::FindClip(
-    const slug::StringView _name) const
+    const StringView _name) const
 {
     return GetOrNull(Find(_name));
 }
@@ -359,7 +361,7 @@ void AnimPlayer::Settle_(
     {
         if (_clip.bLoop)
         {
-            const int     loopStart      = slug::Clamp(_clip.loopStart, 0, count - 1);
+            const int     loopStart      = Clamp(_clip.loopStart, 0, count - 1);
             const int64_t loopStartUnits = durationUnits * loopStart;
             const int64_t loopLenUnits   = totalUnits - loopStartUnits;
             m_timeUnits                  = loopStartUnits + (m_timeUnits - loopStartUnits) % loopLenUnits;
@@ -391,7 +393,7 @@ void AnimPlayer::SetNormalizedTime(
     }
     else
     {
-        t = slug::Clamp(t, 0.0, 1.0);
+        t = Clamp(t, 0.0, 1.0);
     }
 
     m_bFinished = false;
@@ -443,4 +445,5 @@ const AnimFrame* AnimPlayer::GetFrameData(
     }
     return &pClip->frames[static_cast<size_t>(m_frame)];
 }
-}
+
+}   // namespace slug

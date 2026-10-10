@@ -1,77 +1,79 @@
 #include "Audio/SoundBank.h"
-#include "Base/Types.h"
-
-#include "Base/Json.h"
 
 #include "Base/Error.h"
+#include "Base/Json.h"
+#include "Base/Types.h"
 
 namespace slug
 {
 
 namespace
 {
-    [[nodiscard]] slug::Result<SoundBank> Parse_(
-        const slug::JsonReader& _root,
-        const slug::FilePath&   _rootDir)
+    [[nodiscard]] Result<SoundBank> Parse_(
+        const JsonReader& _root,
+        const FilePath&   _rootDir)
     {
-        const slug::Result<slug::JsonReader> sounds = _root.FindField("sounds");
+        const Result<JsonReader> sounds = _root.FindField("sounds");
         if (!sounds || !sounds->IsObject())
         {
-            return slug::Error { eError::Parse };
+            return Error { eError::Parse };
         }
 
         SoundBank bank;
-        for (const auto [name, json]: sounds->GetObject())
+        for (const std::pair<StringView, JsonReader>& item: sounds->GetObject())
         {
+            const StringView  name = item.first;
+            const JsonReader& json = item.second;
             if (!json.IsObject())
             {
-                return slug::Error { eError::Parse };
+                return Error { eError::Parse };
             }
 
-            const slug::Result<slug::String> file = json.ReadField<slug::String>("file");
+            const Result<String> file = json.ReadField<String>("file");
             if (!file || file.GetValue().empty())
             {
-                return slug::Error { eError::Parse };
+                return Error { eError::Parse };
             }
 
             SoundEntry entry;
-            entry.name = slug::String { name };
+            entry.name = String { name };
             entry.file = file.GetValue();
             if (json.HasField("bgm"))
             {
-                const slug::Result<bool> bBgm = json.ReadField<bool>("bgm");
+                const Result<bool> bBgm = json.ReadField<bool>("bgm");
                 if (!bBgm)
                 {
-                    return slug::Error { eError::Parse };
+                    return Error { eError::Parse };
                 }
                 entry.bBgm = bBgm.GetValue();
             }
-            entry.path = _rootDir / slug::FilePath { entry.file };
+            entry.path = _rootDir / FilePath { entry.file };
             bank.Add(std::move(entry));
         }
         return bank;
     }
-}
 
-slug::Result<SoundBank> SoundBank::LoadFromJson(
-    const slug::StringView _json,
-    const slug::FilePath&  _root)
+}   // namespace
+
+Result<SoundBank> SoundBank::LoadFromJson(
+    const StringView _json,
+    const FilePath&  _root)
 {
-    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::Load(_json);
+    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json);
     if (!doc)
     {
-        return slug::Error { eError::Parse };
+        return Error { eError::Parse };
     }
     return Parse_(doc->GetReader(), _root);
 }
 
-slug::Result<SoundBank> SoundBank::LoadFromDirectory(
-    const slug::FilePath& _bakedRoot)
+Result<SoundBank> SoundBank::LoadFromDirectory(
+    const FilePath& _bakedRoot)
 {
-    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::LoadFromFile(_bakedRoot / "sounds.json");
+    Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(_bakedRoot / "sounds.json");
     if (!doc)
     {
-        return slug::Error { eError::FileOpen };
+        return Error { eError::FileOpen };
     }
     return Parse_(doc->GetReader(), _bakedRoot);
 }
@@ -79,7 +81,7 @@ slug::Result<SoundBank> SoundBank::LoadFromDirectory(
 void SoundBank::Add(
     SoundEntry _entry)
 {
-    if (const auto it = m_nameToIndex.find(_entry.name); it != m_nameToIndex.end())
+    if (const NameMap::iterator it = m_nameToIndex.find(_entry.name); it != m_nameToIndex.end())
     {
         m_entries[it->second] = std::move(_entry);
         return;
@@ -89,16 +91,17 @@ void SoundBank::Add(
 }
 
 const SoundEntry* SoundBank::Find(
-    const slug::StringView _name) const
+    const StringView _name) const
 {
     const int index = FindIndex(_name);
     return index < 0 ? nullptr : &m_entries[static_cast<size_t>(index)];
 }
 
 int SoundBank::FindIndex(
-    const slug::StringView _name) const
+    const StringView _name) const
 {
-    const auto it = m_nameToIndex.find(slug::String { _name });
+    const NameMap::const_iterator it = m_nameToIndex.find(String { _name });
     return it == m_nameToIndex.end() ? -1 : static_cast<int>(it->second);
 }
-}
+
+}   // namespace slug

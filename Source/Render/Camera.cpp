@@ -9,19 +9,19 @@ namespace slug
 
 namespace
 {
-    constexpr float kRampStart      = 1.0f;                // px/틱: 스크롤 시작 속도
-    constexpr float kRampAccel      = 0.19f;               // px/틱²: 플레이어를 따라 가속
-    constexpr float kDecayPerTick   = 0.80f;               // 플레이어가 멈추거나 되돌아갈 때 틱마다 곱하는 감속 계수
-    constexpr float kStopSpeed      = 0.05f;               // px/틱 미만이면 정지
-    constexpr float kGlideEnterGap  = 96.f;                // 이 이상 벌어지면 (잠금 해제, 구간 경계 등) 부드럽게 따라잡는다
-    constexpr float kGlideExitGap   = 0.05f;               // 글라이드 도착 판정 (px)
-    constexpr float kGlideAccel     = 1.0f;                // px/틱²: 글라이드 가감속 상한
-    constexpr float kMaxStep        = 12.f;                // px/틱 속도 상한 (글라이드, 수직 추적 공통)
-    constexpr float kStepGrowth     = 1.5f;                // 한 틱에 직전 걸음의 이 배수까지만 커진다
-    constexpr float kStepFloor      = 1.0f;                // 걸음이 작을 때 허용되는 최소 증가폭 (px/틱)
-    constexpr float kMaxSpeedSec    = kMaxStep / kStepSec; // px/s
-    constexpr float kBoundsEase     = 2.f;                 // px/틱: 클램프 영역이 좁아지는 속도 (edge 당)
-    constexpr float kCorrectionSec  = 0.5f;                // 잠금 시 카메라가 영역 밖이면 이 시간에 걸쳐 안으로 들어간다
+    constexpr float kRampStart     = 1.f;                   // px/틱: 스크롤 시작 속도
+    constexpr float kRampAccel     = 0.19f;                 // px/틱²: 플레이어를 따라 가속
+    constexpr float kDecayPerTick  = 0.80f;                 // 플레이어가 멈추거나 되돌아갈 때 틱마다 곱하는 감속 계수
+    constexpr float kStopSpeed     = 0.05f;                 // px/틱 미만이면 정지
+    constexpr float kGlideEnterGap = 96.f;                  // 이 이상 벌어지면 (잠금 해제, 구간 경계 등) 부드럽게 따라잡는다
+    constexpr float kGlideExitGap  = 0.05f;                 // 글라이드 도착 판정 (px)
+    constexpr float kGlideAccel    = 1.f;                   // px/틱²: 글라이드 가감속 상한
+    constexpr float kMaxStep       = 12.f;                  // px/틱 속도 상한 (글라이드, 수직 추적 공통)
+    constexpr float kStepGrowth    = 1.5f;                  // 한 틱에 직전 걸음의 이 배수까지만 커진다
+    constexpr float kStepFloor     = 1.f;                   // 걸음이 작을 때 허용되는 최소 증가폭 (px/틱)
+    constexpr float kMaxSpeedSec   = kMaxStep / kStepSec;   // px/s
+    constexpr float kBoundsEase    = 2.f;                   // px/틱: 클램프 영역이 좁아지는 속도 (edge 당)
+    constexpr float kCorrectionSec = 0.5f;                  // 잠금 시 카메라가 영역 밖이면 이 시간에 걸쳐 안으로 들어간다
 
     [[nodiscard]] float RoundToInt_(
         const float _value)
@@ -45,8 +45,8 @@ namespace
         const float d      = std::abs(_dist);
         const float v      = std::abs(_v0);
         const float tAccel = (4.f * v + std::sqrt(16.f * v * v + 24.f * kGlideAccel * d)) / (2.f * kGlideAccel);
-        const float tVel   = 1.5f * d / slug::Max(1.f, kMaxStep - v);
-        return static_cast<int>(std::ceil(slug::Max(tAccel, tVel)));
+        const float tVel   = 1.5f * d / Max(1.f, kMaxStep - v);
+        return static_cast<int>(std::ceil(Max(tAccel, tVel)));
     }
 
     // 임계감쇠 스프링 (Unity SmoothDamp 와 같은 형태). 속도 상한은 px/s
@@ -62,7 +62,7 @@ namespace
         const float x         = omega * _dt;
         const float e         = 1.f / (1.f + x + 0.48f * x * x + 0.235f * x * x * x);
         const float maxChange = _maxSpeed * _smoothTime;
-        const float change    = slug::Clamp(_current - _target, -maxChange, maxChange);
+        const float change    = Clamp(_current - _target, -maxChange, maxChange);
         const float goal      = _current - change;
         const float temp      = (_velocity + omega * change) * _dt;
         _velocity             = (_velocity - omega * temp) * e;
@@ -97,7 +97,8 @@ namespace
         }
         return _center;
     }
-}
+
+}   // namespace
 
 Camera::Camera(
     const CameraTuning& _tuning)
@@ -160,7 +161,7 @@ void Camera::Unlock()
 }
 
 void Camera::BeginMove(
-    const Vec2 _targetCenter,
+    const Vec2  _targetCenter,
     const float _seconds)
 {
     const int baseTicks = static_cast<int>(std::llround(static_cast<double>(_seconds) / static_cast<double>(kStepSec)));
@@ -172,10 +173,10 @@ void Camera::BeginMove(
     }
 
     // 도착점은 "지금" 유효한 영역이 아니라 가고 있는 최종 영역(잠금 또는 SetBounds 목표) 기준으로 잡는다
-    Aabb targetRect = {};
-    const Vec2 goal = GetTargetRect_(targetRect) ? ClampToRect_(_targetCenter, targetRect) : _targetCenter;
-    const Vec2 v0   = { m_velocity.x, m_velocity.y * kStepSec };   // 현재 속도 (px/틱)
-    const int  minTicks = slug::Max(MinMoveTicks_(goal.x - m_center.x, v0.x), MinMoveTicks_(goal.y - m_center.y, v0.y));
+    Aabb       targetRect = {};
+    const Vec2 goal       = GetTargetRect_(targetRect) ? ClampToRect_(_targetCenter, targetRect) : _targetCenter;
+    const Vec2 v0         = { m_velocity.x, m_velocity.y * kStepSec };   // 현재 속도 (px/틱)
+    const int  minTicks   = Max(MinMoveTicks_(goal.x - m_center.x, v0.x), MinMoveTicks_(goal.y - m_center.y, v0.y));
 
     m_bMoving        = true;
     m_bGlide         = false;
@@ -184,7 +185,7 @@ void Camera::BeginMove(
     m_stepY          = 0.f;
     m_moveRaw        = _targetCenter;
     m_moveTarget     = goal;
-    m_moveTotalTicks = slug::Max(baseTicks, minTicks);
+    m_moveTotalTicks = Max(baseTicks, minTicks);
     m_moveElapsed    = 0;
     m_velocity       = { 0.f, 0.f };
     m_pushSpeed      = 0.f;
@@ -256,9 +257,9 @@ void Camera::ApproachEdge_(
 
     // 좁아지는 쪽: 속도 kBoundsEase 이하, 가감속 kGlideAccel 이하로 제동하며 옮긴다 (카메라가 밀려도 한 프레임에 튀지 않는다)
     const float dir     = dist < 0.f ? -1.f : 1.f;
-    const float vTarget = dir * slug::Min(kBoundsEase, BrakeSpeed_(std::abs(dist)));
-    _vel                = slug::Clamp(vTarget, _vel - kGlideAccel, _vel + kGlideAccel);
-    const float move    = slug::Clamp(_vel, -std::abs(dist), std::abs(dist));
+    const float vTarget = dir * Min(kBoundsEase, BrakeSpeed_(std::abs(dist)));
+    _vel                = Clamp(vTarget, _vel - kGlideAccel, _vel + kGlideAccel);
+    const float move    = Clamp(_vel, -std::abs(dist), std::abs(dist));
     _edge += move;
     _vel = move;
 }
@@ -286,7 +287,7 @@ void Camera::UpdateEffectiveBounds_()
 }
 
 Vec2 Camera::ClampToRect_(
-    const Vec2 _center,
+    const Vec2  _center,
     const Aabb& _bounds) const
 {
     const Vec2 half   = { m_tuning.viewSize.x * 0.5f, m_tuning.viewSize.y * 0.5f };
@@ -294,11 +295,11 @@ Vec2 Camera::ClampToRect_(
 
     const float minX = _bounds.min.x + half.x;
     const float maxX = _bounds.max.x - half.x;
-    result.x         = minX > maxX ? (_bounds.min.x + _bounds.max.x) * 0.5f : slug::Clamp(result.x, minX, maxX);
+    result.x         = minX > maxX ? (_bounds.min.x + _bounds.max.x) * 0.5f : Clamp(result.x, minX, maxX);
 
     const float minY = _bounds.min.y + half.y;
     const float maxY = _bounds.max.y - half.y;
-    result.y         = minY > maxY ? (_bounds.min.y + _bounds.max.y) * 0.5f : slug::Clamp(result.y, minY, maxY);
+    result.y         = minY > maxY ? (_bounds.min.y + _bounds.max.y) * 0.5f : Clamp(result.y, minY, maxY);
     return result;
 }
 
@@ -326,8 +327,8 @@ Vec2 Camera::SnapTopLeft_(
         const float maxX = std::floor(bounds.max.x - m_tuning.viewSize.x);
         const float minY = std::ceil(bounds.min.y);
         const float maxY = std::floor(bounds.max.y - m_tuning.viewSize.y);
-        topLeft.x        = minX > maxX ? RoundToInt_((bounds.min.x + bounds.max.x - m_tuning.viewSize.x) * 0.5f) : slug::Clamp(topLeft.x, minX, maxX);
-        topLeft.y        = minY > maxY ? RoundToInt_((bounds.min.y + bounds.max.y - m_tuning.viewSize.y) * 0.5f) : slug::Clamp(topLeft.y, minY, maxY);
+        topLeft.x        = minX > maxX ? RoundToInt_((bounds.min.x + bounds.max.x - m_tuning.viewSize.x) * 0.5f) : Clamp(topLeft.x, minX, maxX);
+        topLeft.y        = minY > maxY ? RoundToInt_((bounds.min.y + bounds.max.y - m_tuning.viewSize.y) * 0.5f) : Clamp(topLeft.y, minY, maxY);
     }
     return topLeft;
 }
@@ -352,9 +353,9 @@ void Camera::SnapTo(
     m_bPendingLock = false;
     m_bGlide       = false;
     SyncEffectiveBounds_();
-    m_center   = ClampCenter_(_viewCenter);
-    m_stepY    = 0.f;
-    m_velocity = { 0.f, 0.f };
+    m_center    = ClampCenter_(_viewCenter);
+    m_stepY     = 0.f;
+    m_velocity  = { 0.f, 0.f };
     m_pushSpeed = 0.f;
 }
 
@@ -378,17 +379,17 @@ void Camera::StepX_(
         // 제동 곡선 추적: 남은 거리에서 멈출 수 있는 속도 BrakeSpeed_ 와 상한 kMaxStep 중 작은 값을 목표 속도로 삼고,
         // 속도는 틱당 kGlideAccel 이상 바뀌지 않는다. 목표가 움직여도 멈칫하지 않고, 목표를 넘지도 않는다
         const float dir     = gap < 0.f ? -1.f : 1.f;
-        const float vTarget = dir * slug::Min(kMaxStep, BrakeSpeed_(std::abs(gap)));
-        const float vNext   = slug::Clamp(vTarget, m_velocity.x - kGlideAccel, m_velocity.x + kGlideAccel);
-        const float move    = slug::Clamp(vNext, -std::abs(gap), std::abs(gap));
+        const float vTarget = dir * Min(kMaxStep, BrakeSpeed_(std::abs(gap)));
+        const float vNext   = Clamp(vTarget, m_velocity.x - kGlideAccel, m_velocity.x + kGlideAccel);
+        const float move    = Clamp(vNext, -std::abs(gap), std::abs(gap));
         m_center.x += move;
         m_velocity.x = move;
 
         if (std::abs(_desiredX - m_center.x) < kGlideExitGap)
         {
-            m_center.x   = _desiredX;   // 도착: 남은 오차는 보이지 않을 만큼 작다
-            m_bGlide     = false;
-            m_pushSpeed  = 0.f;
+            m_center.x  = _desiredX;   // 도착: 남은 오차는 보이지 않을 만큼 작다
+            m_bGlide    = false;
+            m_pushSpeed = 0.f;
         }
         return;
     }
@@ -406,11 +407,11 @@ void Camera::StepX_(
     if (moveX > m_pushSpeed)
     {
         const float accel = m_pushSpeed <= 0.f ? kRampStart : m_pushSpeed + kRampAccel;
-        m_pushSpeed       = slug::Min(accel, moveX);
+        m_pushSpeed       = Min(accel, moveX);
     }
     else
     {
-        m_pushSpeed = slug::Max(moveX, m_pushSpeed * kDecayPerTick);
+        m_pushSpeed = Max(moveX, m_pushSpeed * kDecayPerTick);
     }
     if (m_pushSpeed < kStopSpeed)
     {
@@ -418,9 +419,9 @@ void Camera::StepX_(
     }
 
     // 한 틱에 직전 속도의 1.5배(최소 1px)를 넘어 빨라지지 않는다 (간격에 막혀 짧아진 걸음 뒤에 갑자기 커지지 않도록)
-    const float limit   = slug::Max(kStepFloor, kStepGrowth * std::abs(m_velocity.x));
+    const float limit = Max(kStepFloor, kStepGrowth * std::abs(m_velocity.x));
     // 제동 곡선: 간격이나 영역 경계에 가까워지면 틱당 감속이 kGlideAccel 을 넘지 않는다 (벽에 부딪혀 한 프레임에 멈추지 않는다)
-    const float stepAbs = slug::Min(slug::Min(std::abs(gap), m_pushSpeed), slug::Min(limit, BrakeSpeed_(std::abs(gap))));
+    const float stepAbs = Min(Min(std::abs(gap), m_pushSpeed), Min(limit, BrakeSpeed_(std::abs(gap))));
     m_velocity.x        = dir * stepAbs;
     m_center.x += m_velocity.x;
 }
@@ -437,8 +438,8 @@ void Camera::Update(
         if (GetTargetRect_(targetRect))
         {
             const Vec2 goalNow = ClampToRect_(m_moveRaw, targetRect);
-            m_moveTarget.x += slug::Clamp(goalNow.x - m_moveTarget.x, -kBoundsEase, kBoundsEase);
-            m_moveTarget.y += slug::Clamp(goalNow.y - m_moveTarget.y, -kBoundsEase, kBoundsEase);
+            m_moveTarget.x += Clamp(goalNow.x - m_moveTarget.x, -kBoundsEase, kBoundsEase);
+            m_moveTarget.y += Clamp(goalNow.y - m_moveTarget.y, -kBoundsEase, kBoundsEase);
         }
 
         ++m_moveElapsed;
@@ -455,10 +456,10 @@ void Camera::Update(
         else
         {
             // Hermite: 시작 속도는 달리던 속도를 이어받고, 도착 속도는 0 이라 멈춤/출발이 한 프레임에 일어나지 않는다
-            const float T  = static_cast<float>(m_moveTotalTicks);
-            const float s  = static_cast<float>(m_moveElapsed) / T;
-            const float s2 = s * s;
-            const float s3 = s2 * s;
+            const float T   = static_cast<float>(m_moveTotalTicks);
+            const float s   = static_cast<float>(m_moveElapsed) / T;
+            const float s2  = s * s;
+            const float s3  = s2 * s;
             const float h00 = 2.f * s3 - 3.f * s2 + 1.f;
             const float h10 = (s3 - 2.f * s2 + s) * T;
             const float h01 = -2.f * s3 + 3.f * s2;
@@ -472,11 +473,11 @@ void Camera::Update(
     }
     else
     {
-        const Vec2 before = m_center;
-        const Vec2 focus  = { m_target.x + m_tuning.targetOffset.x, m_target.y + m_tuning.targetOffset.y };
+        const Vec2  before      = m_center;
+        const Vec2  focus       = { m_target.x + m_tuning.targetOffset.x, m_target.y + m_tuning.targetOffset.y };
         const float focusDeltaX = m_bHasPrevFocus ? focus.x - m_prevFocusX : 0.f;
-        m_prevFocusX    = focus.x;
-        m_bHasPrevFocus = true;
+        m_prevFocusX            = focus.x;
+        m_bHasPrevFocus         = true;
 
         Vec2 desired = {
             ApplyDeadzone_(m_center.x, focus.x, m_tuning.deadzoneHalf.x),
@@ -485,15 +486,15 @@ void Camera::Update(
 
         if (m_bForwardOnly)
         {
-            desired.x = slug::Max(desired.x, m_center.x);
+            desired.x = Max(desired.x, m_center.x);
         }
         if (m_bForwardOnlyY)
         {
-            desired.y = slug::Max(desired.y, m_center.y);
+            desired.y = Max(desired.y, m_center.y);
         }
         if (m_bScrollFloor)
         {
-            desired.x = slug::Max(desired.x, m_scrollFloorX);
+            desired.x = Max(desired.x, m_scrollFloorX);
         }
         desired = ClampCenter_(desired);
 
@@ -511,11 +512,11 @@ void Camera::Update(
             SmoothDamp_(m_center.y, m_velocity.y, desired.y, m_tuning.smoothTime, _dt, kMaxSpeedSec);
 
             // 세로 걸음도 틱당 변화가 kGlideAccel 이하 (데드존 경계·착지로 목표가 튀어도 스프링이 한 번에 튕기지 않는다)
-            const float gapY  = desired.y - yBefore;
-            float       stepY = m_center.y - yBefore;
-            stepY             = slug::Clamp(stepY, m_stepY - kGlideAccel, m_stepY + kGlideAccel);
-            const float reachY = slug::Min(std::abs(gapY), BrakeSpeed_(std::abs(gapY)));
-            stepY              = slug::Clamp(stepY, -reachY, reachY);
+            const float gapY   = desired.y - yBefore;
+            float       stepY  = m_center.y - yBefore;
+            stepY              = Clamp(stepY, m_stepY - kGlideAccel, m_stepY + kGlideAccel);
+            const float reachY = Min(std::abs(gapY), BrakeSpeed_(std::abs(gapY)));
+            stepY              = Clamp(stepY, -reachY, reachY);
             m_center.y         = yBefore + stepY;
             m_stepY            = stepY;
         }
@@ -538,21 +539,25 @@ void Camera::Update(
     if (m_shakeTime < m_shakeDuration)
     {
         m_shakeTime += _dt;
-        const float k = slug::Max(0.f, 1.f - m_shakeTime / m_shakeDuration);
+        const float k = Max(0.f, 1.f - m_shakeTime / m_shakeDuration);
         const float a = m_shakeAmplitude * k;
 
-        auto NextUnit = [this]() {
-            m_shakeSeed ^= m_shakeSeed << 13;
-            m_shakeSeed ^= m_shakeSeed >> 17;
-            m_shakeSeed ^= m_shakeSeed << 5;
-            return static_cast<float>(m_shakeSeed & 0xFFFFu) / 32767.5f - 1.f;   // [-1, 1]
-        };
-        m_shakeOffset = { RoundToInt_(NextUnit() * a), RoundToInt_(NextUnit() * a) };
+        const float shakeX = NextShakeUnit_() * a;
+        const float shakeY = NextShakeUnit_() * a;
+        m_shakeOffset      = { RoundToInt_(shakeX), RoundToInt_(shakeY) };
     }
     else
     {
         m_shakeOffset = { 0.f, 0.f };
     }
+}
+
+float Camera::NextShakeUnit_()
+{
+    m_shakeSeed ^= m_shakeSeed << 13;
+    m_shakeSeed ^= m_shakeSeed >> 17;
+    m_shakeSeed ^= m_shakeSeed << 5;
+    return static_cast<float>(m_shakeSeed & 0xFFFFu) / 32767.5f - 1.f;
 }
 
 void Camera::Shake(
@@ -601,11 +606,11 @@ Vec2 Camera::GetPosition() const
         const float maxY = std::floor(bounds.max.y - m_tuning.viewSize.y);
         if (minX <= maxX)
         {
-            position.x = slug::Clamp(position.x, minX, maxX);
+            position.x = Clamp(position.x, minX, maxX);
         }
         if (minY <= maxY)
         {
-            position.y = slug::Clamp(position.y, minY, maxY);
+            position.y = Clamp(position.y, minY, maxY);
         }
     }
     return position;
@@ -636,4 +641,5 @@ bool Camera::IsVisible(
 {
     return GetViewRect().Expanded(_margin).Overlaps(_worldBox);
 }
-}
+
+}   // namespace slug

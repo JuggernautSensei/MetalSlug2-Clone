@@ -1,18 +1,18 @@
 #pragma once
 #include "Base/Types.h"
-
 #include "Game/GameState.h"
 #include "Game/Ui/UiSystem.h"
 
 namespace slug
 {
+
 struct TitleConfig
 {
-    slug::String nextState      = {};
-    int         fadeInTicks    = 24;    // 처음 화면이 밝아지는 시간
-    int         startFadeTicks = 24;    // 시작 입력 후 암전 시간
-    int         inputDelayTicks = 12;
-    bool        bPlayVoice     = true;
+    String nextState       = {};
+    int    fadeInTicks     = 24;   // 처음 화면이 밝아지는 시간
+    int    startFadeTicks  = 24;   // 시작 입력 후 암전 시간
+    int    inputDelayTicks = 12;
+    bool   bPlayVoice      = true;
 };
 
 class TitleState final : public IGameState
@@ -28,10 +28,10 @@ public:
 
     [[nodiscard]] std::unique_ptr<IGameState> TakeNextState() override;
 
-    [[nodiscard]] bool                     IsStarting() const { return m_bStarting; }
-    [[nodiscard]] int                      GetTickCount() const { return m_tickCount; }
-    [[nodiscard]] const slug::String&       GetSelectedStateName() const { return m_selected; }
-    [[nodiscard]] const UiSystem&          GetUi() const { return m_ui; }
+    [[nodiscard]] bool            IsStarting() const { return m_bStarting; }
+    [[nodiscard]] int             GetTickCount() const { return m_tickCount; }
+    [[nodiscard]] const String&   GetSelectedStateName() const { return m_selected; }
+    [[nodiscard]] const UiSystem& GetUi() const { return m_ui; }
 
 private:
     [[nodiscard]] std::unique_ptr<IGameState> CreateNext_() const;
@@ -39,9 +39,10 @@ private:
     TitleConfig m_config = {};
     UiSystem    m_ui     = {};
 
-    int         m_tickCount = 0;
-    bool        m_bStarting = false;
-    slug::String m_selected  = {};
-    std::unique_ptr<IGameState> m_pNext = nullptr;
+    int                         m_tickCount = 0;
+    bool                        m_bStarting = false;
+    String                      m_selected  = {};
+    std::unique_ptr<IGameState> m_pNext     = nullptr;
 };
-}
+
+}   // namespace slug

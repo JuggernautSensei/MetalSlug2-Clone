@@ -6,6 +6,7 @@
 
 namespace slug
 {
+
 [[nodiscard]] inline int FloorToInt(
     const float _value)
 {
@@ -116,8 +117,8 @@ struct Aabb
             return std::nullopt;
         }
         return Aabb {
-            { slug::Max(min.x, _other.min.x), slug::Max(min.y, _other.min.y) },
-            { slug::Min(max.x, _other.max.x), slug::Min(max.y, _other.max.y) }
+            { Max(min.x, _other.min.x), Max(min.y, _other.min.y) },
+            { Min(max.x, _other.max.x), Min(max.y, _other.max.y) }
         };
     }
 
@@ -152,8 +153,8 @@ struct Aabb
         const Aabb& _other) const
     {
         return Aabb {
-            { slug::Min(min.x, _other.min.x), slug::Min(min.y, _other.min.y) },
-            { slug::Max(max.x, _other.max.x), slug::Max(max.y, _other.max.y) }
+            { Min(min.x, _other.min.x), Min(min.y, _other.min.y) },
+            { Max(max.x, _other.max.x), Max(max.y, _other.max.y) }
         };
     }
 
@@ -172,4 +173,5 @@ struct Aabb
         return min == _other.min && max == _other.max;
     }
 };
-}
+
+}   // namespace slug

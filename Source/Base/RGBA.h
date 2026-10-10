@@ -46,4 +46,5 @@ inline constexpr RGBA RGBA::kBlue    = RGBA { 0, 0, 255, 255 };
 inline constexpr RGBA RGBA::kYellow  = RGBA { 255, 255, 0, 255 };
 inline constexpr RGBA RGBA::kCyan    = RGBA { 0, 255, 255, 255 };
 inline constexpr RGBA RGBA::kMagenta = RGBA { 255, 0, 255, 255 };
-}
+
+}   // namespace slug

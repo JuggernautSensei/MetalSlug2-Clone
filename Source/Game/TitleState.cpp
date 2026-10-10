@@ -1,7 +1,7 @@
 #include "Game/TitleState.h"
-#include "Base/Types.h"
-#include "Base/RGBA.h"
 
+#include "Base/RGBA.h"
+#include "Base/Types.h"
 #include "Game/StateFactory.h"
 #include "Game/Ui/Hud.h"
 
@@ -13,20 +13,28 @@ namespace
 
     constexpr int kGradientBandH = 8;
 
+    [[nodiscard]] uint8_t MixChannel_(
+        const uint8_t _a,
+        const uint8_t _b,
+        const float   _t)
+    {
+        return static_cast<uint8_t>(_a + static_cast<int>((_b - _a) * _t));
+    }
+
     void DrawBackground_(
         Renderer& _renderer)
     {
-        const slug::RGBA top    = { 14, 18, 44, 255 };
-        const slug::RGBA bottom = { 58, 22, 14, 255 };
+        const RGBA top    = { 14, 18, 44, 255 };
+        const RGBA bottom = { 58, 22, 14, 255 };
         for (int y = 0; y < Renderer::kLogicalHeight; y += kGradientBandH)
         {
             const float t     = static_cast<float>(y) / static_cast<float>(Renderer::kLogicalHeight);
-            const auto  mix   = [t](const uint8_t _a, const uint8_t _b) { return static_cast<uint8_t>(_a + static_cast<int>((_b - _a) * t)); };
-            const slug::RGBA color = { mix(top.r, bottom.r), mix(top.g, bottom.g), mix(top.b, bottom.b), 255 };
+            const RGBA  color = { MixChannel_(top.r, bottom.r, t), MixChannel_(top.g, bottom.g, t), MixChannel_(top.b, bottom.b, t), 255 };
             _renderer.FillRect({ 0.f, static_cast<float>(y) }, { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(kGradientBandH) }, color);
         }
     }
-}
+
+}   // namespace
 
 TitleState::TitleState() = default;
 
@@ -94,7 +102,7 @@ void TitleState::Tick(
     if (bStart && m_tickCount > m_config.inputDelayTicks)
     {
         m_bStarting = true;
-        m_selected  = m_config.nextState.empty() ? slug::String { CreateState("stage0") ? "stage0" : "sandbox" } : m_config.nextState;
+        m_selected  = m_config.nextState.empty() ? String { CreateState("stage0") ? "stage0" : "sandbox" } : m_config.nextState;
         _ctx.GetAudio().Play(sfx::kOk);
         m_ui.GetFade().FadeToBlack(m_config.startFadeTicks);
     }
@@ -122,7 +130,7 @@ void TitleState::Render(
     title.scale = FitTextScale(kTitleName, 600, 3);
     m_ui.DrawText(_ctx, layout.screenW / 2, layout.titleNameY, kTitleName, title);
 
-    const int  period = m_bStarting ? 4 : layout.titleBlinkTicks;
+    const int period = m_bStarting ? 4 : layout.titleBlinkTicks;
     if (IsBlinkOn(m_ui.GetTick(), period))
     {
         TextStyle start;
@@ -139,4 +147,5 @@ void TitleState::Render(
 
     m_ui.DrawOverlays(_ctx);
 }
-}
+
+}   // namespace slug

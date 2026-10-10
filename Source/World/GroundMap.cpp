@@ -1,14 +1,13 @@
 #include "World/GroundMap.h"
-#include "Base/Types.h"
-#include "Base/Result.h"
-#include "Base/Assert.h"
 
 #include <cmath>
 #include <fstream>
 
-#include "Base/Math.h"
-
+#include "Base/Assert.h"
 #include "Base/Error.h"
+#include "Base/Math.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
 
 namespace slug
 {
@@ -29,53 +28,54 @@ namespace
     {
         return (static_cast<size_t>(_width) + 7) / 8;
     }
-}
 
-slug::Result<GroundMap> GroundMap::Load(
-    const slug::FilePath& _path)
+}   // namespace
+
+Result<GroundMap> GroundMap::Load(
+    const FilePath& _path)
 {
     std::ifstream file { _path, std::ios::binary | std::ios::ate };
     if (!file)
     {
-        return slug::Error { eError::FileOpen };
+        return Error { eError::FileOpen };
     }
 
     const std::streamsize size = file.tellg();
     if (size < 0)
     {
-        return slug::Error { eError::FileRead };
+        return Error { eError::FileRead };
     }
 
-    slug::Vector<uint8_t> data(static_cast<size_t>(size));
+    Vector<uint8_t> data(static_cast<size_t>(size));
     file.seekg(0, std::ios::beg);
     if (size > 0 && !file.read(reinterpret_cast<char*>(data.data()), size))
     {
-        return slug::Error { eError::FileRead };
+        return Error { eError::FileRead };
     }
 
     return LoadFromMemory(data);
 }
 
-slug::Result<GroundMap> GroundMap::LoadFromMemory(
-    const slug::Span<const uint8_t> _fileData)
+Result<GroundMap> GroundMap::LoadFromMemory(
+    const Span<const uint8_t> _fileData)
 {
     if (_fileData.size() < kHeaderSize || _fileData[0] != 'G' || _fileData[1] != 'R' || _fileData[2] != 'N' || _fileData[3] != 'D')
     {
-        return slug::Error { eError::InvalidData };
+        return Error { eError::InvalidData };
     }
 
     const uint32_t width  = ReadU32Le_(_fileData.data() + 4);
     const uint32_t height = ReadU32Le_(_fileData.data() + 8);
     if (width > static_cast<uint32_t>(kMaxDim) || height > static_cast<uint32_t>(kMaxDim))
     {
-        return slug::Error { eError::InvalidData };
+        return Error { eError::InvalidData };
     }
 
     const size_t stride   = StrideOf_(static_cast<int>(width));
     const size_t dataSize = stride * height;
     if (_fileData.size() - kHeaderSize < dataSize)
     {
-        return slug::Error { eError::InvalidData };
+        return Error { eError::InvalidData };
     }
 
     GroundMap map;
@@ -87,9 +87,9 @@ slug::Result<GroundMap> GroundMap::LoadFromMemory(
 }
 
 GroundMap GroundMap::MakeFromBits(
-    const int                      _width,
-    const int                      _height,
-    const slug::Span<const uint8_t> _packedBits)
+    const int                 _width,
+    const int                 _height,
+    const Span<const uint8_t> _packedBits)
 {
     SLUG_ASSERT(_width >= 0 && _height >= 0, "맵 크기는 음수일 수 없다.\n");
     SLUG_ASSERT(_packedBits.size() >= StrideOf_(_width) * static_cast<size_t>(_height), "비트 배열이 맵 크기보다 작다.\n");
@@ -117,13 +117,13 @@ GroundMap GroundMap::MakeEmpty(
 }
 
 GroundMap GroundMap::MakeFromRows(
-    const slug::Span<const slug::StringView> _rows,
-    const char                             _solid)
+    const Span<const StringView> _rows,
+    const char                   _solid)
 {
     size_t width = 0;
-    for (const slug::StringView row: _rows)
+    for (const StringView row: _rows)
     {
-        width = slug::Max(width, row.size());
+        width = Max(width, row.size());
     }
 
     GroundMap map = MakeEmpty(static_cast<int>(width), static_cast<int>(_rows.size()));
@@ -173,10 +173,10 @@ void GroundMap::FillRect(
     const int  _y1,
     const bool _bSolid)
 {
-    const int x0 = slug::Max(0, slug::Min(_x0, _x1));
-    const int x1 = slug::Min(m_width - 1, slug::Max(_x0, _x1));
-    const int y0 = slug::Max(0, slug::Min(_y0, _y1));
-    const int y1 = slug::Min(m_height - 1, slug::Max(_y0, _y1));
+    const int x0 = Max(0, Min(_x0, _x1));
+    const int x1 = Min(m_width - 1, Max(_x0, _x1));
+    const int y0 = Max(0, Min(_y0, _y1));
+    const int y1 = Min(m_height - 1, Max(_y0, _y1));
     for (int y = y0; y <= y1; ++y)
     {
         for (int x = x0; x <= x1; ++x)
@@ -218,20 +218,20 @@ bool GroundMap::IsRectSolid(
     const int _x1,
     const int _y1) const
 {
-    const int x0 = slug::Min(_x0, _x1);
-    const int x1 = slug::Max(_x0, _x1);
-    const int y0 = slug::Min(_y0, _y1);
-    const int y1 = slug::Max(_y0, _y1);
+    const int x0 = Min(_x0, _x1);
+    const int x1 = Max(_x0, _x1);
+    const int y0 = Min(_y0, _y1);
+    const int y1 = Max(_y0, _y1);
 
     if ((x0 < 0 && m_policy.bSolidLeft) || (x1 >= m_width && m_policy.bSolidRight) || (y0 < 0 && m_policy.bSolidTop) || (y1 >= m_height && m_policy.bSolidBottom))
     {
         return true;
     }
 
-    const int cx0 = slug::Max(x0, 0);
-    const int cx1 = slug::Min(x1, m_width - 1);
-    const int cy0 = slug::Max(y0, 0);
-    const int cy1 = slug::Min(y1, m_height - 1);
+    const int cx0 = Max(x0, 0);
+    const int cx1 = Min(x1, m_width - 1);
+    const int cy0 = Max(y0, 0);
+    const int cy1 = Min(y1, m_height - 1);
     if (cx0 > cx1 || cy0 > cy1)
     {
         return false;
@@ -367,4 +367,5 @@ Vec2 GroundMap::EstimateNormal(
     const float invLen = 1.f / std::sqrt(slope * slope + 1.f);
     return { slope * invLen, -invLen };
 }
-}
+
+}   // namespace slug

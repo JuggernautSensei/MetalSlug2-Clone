@@ -1,17 +1,17 @@
 #include "Game/StateFactory.h"
-#include "Base/Types.h"
 
+#include "Base/Types.h"
 #include "Game/DemoState.h"
 #include "Game/SandboxState.h"
-#include "Game/TitleState.h"
 #include "Game/Stage/StageState.h"
+#include "Game/TitleState.h"
 #include "Game/Ui/UiDemoState.h"
 
 namespace slug
 {
 
 std::unique_ptr<IGameState> CreateState(
-    const slug::StringView _name)
+    const StringView _name)
 {
     if (_name == "demo")
     {
@@ -56,8 +56,9 @@ std::unique_ptr<IGameState> CreateState(
     return nullptr;
 }
 
-slug::StringView GetDefaultStateName()
+StringView GetDefaultStateName()
 {
     return "title";
 }
-}
+
+}   // namespace slug

@@ -1,16 +1,15 @@
 #include "Core/Tuning.h"
-#include "Base/Types.h"
-#include "Base/Math.h"
 
 #include <cmath>
 #include <format>
 #include <optional>
 #include <string>
 
-#include "Base/Log.h"
-#include "Base/Json.h"
-
 #include "Base/Error.h"
+#include "Base/Json.h"
+#include "Base/Log.h"
+#include "Base/Math.h"
+#include "Base/Types.h"
 
 namespace slug
 {
@@ -182,19 +181,19 @@ namespace
     {
     public:
         explicit ReadVisitor(
-            const slug::JsonReader& _root)
+            const JsonReader& _root)
         {
-            m_stack.push_back(_root.IsObject() ? std::optional<slug::JsonReader> { _root } : std::nullopt);
+            m_stack.push_back(_root.IsObject() ? std::optional<JsonReader> { _root } : std::nullopt);
             m_bError = !_root.IsObject();
         }
 
         void Begin(
-            const slug::StringView _key)
+            const StringView _key)
         {
-            std::optional<slug::JsonReader> child;
-            if (const std::optional<slug::JsonReader>& top = m_stack.back(); top && top->HasField(_key))
+            std::optional<JsonReader> child;
+            if (const std::optional<JsonReader>& top = m_stack.back(); top && top->HasField(_key))
             {
-                if (const slug::Result<slug::JsonReader> found = top->FindField(_key); found && found->IsObject())
+                if (const Result<JsonReader> found = top->FindField(_key); found && found->IsObject())
                 {
                     child = found.GetValue();
                 }
@@ -212,8 +211,8 @@ namespace
         }
 
         void Field(
-            const slug::StringView _key,
-            float&                _value)
+            const StringView _key,
+            float&           _value)
         {
             double v = 0.0;
             if (ReadNumber_(_key, v))
@@ -223,8 +222,8 @@ namespace
         }
 
         void Field(
-            const slug::StringView _key,
-            int&                  _value)
+            const StringView _key,
+            int&             _value)
         {
             double v = 0.0;
             if (ReadNumber_(_key, v))
@@ -234,15 +233,15 @@ namespace
         }
 
         void Field(
-            const slug::StringView _key,
-            bool&                 _value)
+            const StringView _key,
+            bool&            _value)
         {
-            const std::optional<slug::JsonReader>& top = m_stack.back();
+            const std::optional<JsonReader>& top = m_stack.back();
             if (!top || !top->HasField(_key))
             {
                 return;
             }
-            const slug::Result<bool> value = top->ReadField<bool>(_key);
+            const Result<bool> value = top->ReadField<bool>(_key);
             if (!value)
             {
                 m_bError = true;
@@ -252,26 +251,26 @@ namespace
         }
 
         void Field(
-            const slug::StringView _key,
-            Vec2&         _value)
+            const StringView _key,
+            Vec2&            _value)
         {
-            const std::optional<slug::JsonReader>& top = m_stack.back();
+            const std::optional<JsonReader>& top = m_stack.back();
             if (!top || !top->HasField(_key))
             {
                 return;
             }
-            const slug::Result<slug::JsonReader> found = top->FindField(_key);
+            const Result<JsonReader> found = top->FindField(_key);
             if (!found || !found->IsArray() || found->GetSize() != 2)
             {
                 m_bError = true;
                 return;
             }
 
-            float values[2] = {};
-            int   index     = 0;
-            for (const slug::JsonReader item: found->GetArray())
+            ARRAY<float, 2> values = {};
+            int             index  = 0;
+            for (const JsonReader item: found->GetArray())
             {
-                const slug::Result<double> number = item.Read<double>();
+                const Result<double> number = item.Read<double>();
                 if (!number)
                 {
                     m_bError = true;
@@ -286,15 +285,15 @@ namespace
 
     private:
         bool ReadNumber_(
-            const slug::StringView _key,
-            double&               _out)
+            const StringView _key,
+            double&          _out)
         {
-            const std::optional<slug::JsonReader>& top = m_stack.back();
+            const std::optional<JsonReader>& top = m_stack.back();
             if (!top || !top->HasField(_key))
             {
                 return false;
             }
-            const slug::Result<double> value = top->ReadField<double>(_key);
+            const Result<double> value = top->ReadField<double>(_key);
             if (!value)
             {
                 m_bError = true;
@@ -304,17 +303,17 @@ namespace
             return true;
         }
 
-        slug::Vector<std::optional<slug::JsonReader>> m_stack  = {};
-        bool                                        m_bError = false;
+        Vector<std::optional<JsonReader>> m_stack  = {};
+        bool                              m_bError = false;
     };
 
     class DumpVisitor
     {
     public:
         void Begin(
-            const slug::StringView _key)
+            const StringView _key)
         {
-            m_path.push_back(slug::String { _key });
+            m_path.push_back(String { _key });
         }
 
         void End()
@@ -323,41 +322,41 @@ namespace
         }
 
         void Field(
-            const slug::StringView _key,
-            const float           _value)
+            const StringView _key,
+            const float      _value)
         {
             Line_(_key, std::format("{:.4f}", _value));
         }
 
         void Field(
-            const slug::StringView _key,
-            const int             _value)
+            const StringView _key,
+            const int        _value)
         {
             Line_(_key, std::to_string(_value));
         }
 
         void Field(
-            const slug::StringView _key,
-            const bool            _value)
+            const StringView _key,
+            const bool       _value)
         {
             Line_(_key, _value ? "true" : "false");
         }
 
         void Field(
-            const slug::StringView _key,
-            const Vec2    _value)
+            const StringView _key,
+            const Vec2       _value)
         {
             Line_(_key, std::format("[{:.4f}, {:.4f}]", _value.x, _value.y));
         }
 
-        [[nodiscard]] const slug::String& GetText() const { return m_text; }
+        [[nodiscard]] const String& GetText() const { return m_text; }
 
     private:
         void Line_(
-            const slug::StringView _key,
-            const slug::String&    _value)
+            const StringView _key,
+            const String&    _value)
         {
-            for (const slug::String& part: m_path)
+            for (const String& part: m_path)
             {
                 m_text += part;
                 m_text += '.';
@@ -368,47 +367,48 @@ namespace
             m_text += '\n';
         }
 
-        slug::Vector<slug::String> m_path = {};
-        slug::String              m_text = {};
+        Vector<String> m_path = {};
+        String         m_text = {};
     };
 
-    [[nodiscard]] slug::Result<Tuning> ParseRoot_(
-        const slug::JsonReader& _root)
+    [[nodiscard]] Result<Tuning> ParseRoot_(
+        const JsonReader& _root)
     {
         Tuning      tuning;
         ReadVisitor visitor { _root };
         Visit_(visitor, tuning);
         if (visitor.HasError())
         {
-            return slug::Error { eError::Parse };
+            return Error { eError::Parse };
         }
         return tuning;
     }
-}
 
-slug::Result<Tuning> ParseTuning(
-    const slug::StringView _json)
+}   // namespace
+
+Result<Tuning> ParseTuning(
+    const StringView _json)
 {
-    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::Load(_json, slug::eJsonLoadOption::AllowComments);
+    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, eJsonLoadOption::AllowComments);
     if (!doc)
     {
-        return slug::Error { eError::Parse };
+        return Error { eError::Parse };
     }
     return ParseRoot_(doc->GetReader());
 }
 
-slug::Result<Tuning> LoadTuning(
-    const slug::FilePath& _path)
+Result<Tuning> LoadTuning(
+    const FilePath& _path)
 {
-    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::LoadFromFile(_path, slug::eJsonLoadOption::AllowComments);
+    Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(_path, eJsonLoadOption::AllowComments);
     if (!doc)
     {
-        return slug::Error { eError::FileOpen };
+        return Error { eError::FileOpen };
     }
     return ParseRoot_(doc->GetReader());
 }
 
-slug::String DumpTuning(
+String DumpTuning(
     const Tuning& _tuning)
 {
     DumpVisitor visitor;
@@ -416,15 +416,15 @@ slug::String DumpTuning(
     return visitor.GetText();
 }
 
-slug::FilePath GetDefaultTuningPath(
-    const slug::FilePath& _assetRoot)
+FilePath GetDefaultTuningPath(
+    const FilePath& _assetRoot)
 {
     return _assetRoot / "Tuning" / "Tuning.json";
 }
 
 void TuningWatcher::Init(
-    slug::FilePath _path,
-    const int     _pollIntervalTicks)
+    FilePath  _path,
+    const int _pollIntervalTicks)
 {
     m_path        = std::move(_path);
     m_interval    = _pollIntervalTicks < 1 ? 1 : _pollIntervalTicks;
@@ -432,8 +432,8 @@ void TuningWatcher::Init(
     m_reloadCount = 0;
     m_bHasStamp   = false;
 
-    std::error_code ec;
-    const auto      stamp = std::filesystem::last_write_time(m_path, ec);
+    std::error_code          ec;
+    const fs::file_time_type stamp = fs::last_write_time(m_path, ec);
     if (!ec)
     {
         m_stamp     = stamp;
@@ -450,8 +450,8 @@ bool TuningWatcher::Poll(
     }
     m_counter = 0;
 
-    std::error_code ec;
-    const auto      stamp = std::filesystem::last_write_time(m_path, ec);
+    std::error_code          ec;
+    const fs::file_time_type stamp = fs::last_write_time(m_path, ec);
     if (ec)
     {
         return false;
@@ -463,7 +463,7 @@ bool TuningWatcher::Poll(
     m_stamp     = stamp;
     m_bHasStamp = true;
 
-    slug::Result<Tuning> loaded = LoadTuning(m_path);
+    Result<Tuning> loaded = LoadTuning(m_path);
     if (!loaded)
     {
         SLUG_LOG_WARN("Tuning 리로드 실패 (이전 값 유지): {}", m_path.string());
@@ -474,4 +474,5 @@ bool TuningWatcher::Poll(
     SLUG_LOG_INFO("Tuning 리로드: {}", m_path.string());
     return true;
 }
-}
+
+}   // namespace slug

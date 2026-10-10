@@ -2,6 +2,7 @@
 
 namespace slug
 {
+
 class FixedStepClock
 {
 public:
@@ -42,4 +43,5 @@ public:
 private:
     double m_accumulatorSec = 0.0;
 };
-}
+
+}   // namespace slug
