@@ -694,20 +694,6 @@ void PlayerController::FireBullet_(
 
     BulletSpawn spawn = MakeBulletSpawn(m_weapon.weapon, _weapon, kPlayerOwnerId, muzzle, chest, direction);
     _ctx.pProjectiles->SpawnBullet(spawn, *_ctx.pCombat);
-    if (m_weapon.weapon == eWeapon::Flame)
-    {
-        // 화염은 크기가 커진 만큼 세 연기 탄의 세로 간격도 넓힌다
-        constexpr ARRAY<float, 2> kSpeedScale = { 0.7f, 1.3f };
-        constexpr ARRAY<float, 2> kLift       = { -8.f, 8.f };
-        for (size_t i = 0; i < kSpeedScale.size(); ++i)
-        {
-            BulletSpawn extra = spawn;
-            extra.speed       = spawn.speed * kSpeedScale[i];
-            extra.position.y += kLift[i];
-            extra.sweepFrom.y += kLift[i];
-            _ctx.pProjectiles->SpawnBullet(extra, *_ctx.pCombat);
-        }
-    }
     ++m_stats.shotsFired;
     OnFired(m_weapon);
     if (m_weapon.weapon == eWeapon::Pistol)

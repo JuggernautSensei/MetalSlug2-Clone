@@ -17,8 +17,43 @@ namespace
 {
     constexpr float kTickSec = 1.f / 60.f;
 
-    // 파이어샷 불꽃 확대 배율 (히트 박스 50x30 과 맞춘다)
-    constexpr float kFlameScale = 1.25f;
+    // 파이어샷 불꽃: 원작 시트(20587.png) 의 Head(머리 4) -> Loop(3, 반복) -> Fade(7) 순서
+    constexpr int   kFlameHeadTicksPerFrame = 2;
+    constexpr int   kFlameLoopTicksPerFrame = 2;
+    constexpr float kFlameFadeTicks         = 14.f;    // 사거리 끝 14틱 동안 Fade 재생
+    constexpr float kFlameForwardShift      = 24.f;    // 불꽃 중심을 총구보다 앞으로 (큰 프레임이 총을 가리지 않게)
+
+    [[nodiscard]] const AnimFrame* PickFlameFrame_(
+        const AnimationLibrary* _pAnims,
+        const Bullet&           _bullet)
+    {
+        const AnimClip* pHead = _pAnims ? _pAnims->FindClip("FlameShot_Orig_Head") : nullptr;
+        const AnimClip* pLoop = _pAnims ? _pAnims->FindClip("FlameShot_Orig_Loop") : nullptr;
+        const AnimClip* pFade = _pAnims ? _pAnims->FindClip("FlameShot_Orig_Fade") : nullptr;
+        if (!pHead || !pLoop || !pFade || pHead->frames.empty() || pLoop->frames.empty() || pFade->frames.empty())
+        {
+            return nullptr;
+        }
+
+        const float speed      = std::max(1.f, std::abs(_bullet.velocity.x) + std::abs(_bullet.velocity.y));
+        const float fadeLength = speed * kFlameFadeTicks / 60.f;
+        const float remaining  = _bullet.range - _bullet.travelled;
+        if (remaining < fadeLength)
+        {
+            const int count = pFade->GetFrameCount();
+            const int index = static_cast<int>((1.f - remaining / fadeLength) * static_cast<float>(count));
+            return &pFade->frames[static_cast<size_t>(std::clamp(index, 0, count - 1))];
+        }
+
+        const int headCount = pHead->GetFrameCount();
+        const int headTicks = headCount * kFlameHeadTicksPerFrame;
+        if (_bullet.ageTicks < headTicks)
+        {
+            return &pHead->frames[static_cast<size_t>(_bullet.ageTicks / kFlameHeadTicksPerFrame)];
+        }
+        const int loopCount = pLoop->GetFrameCount();
+        return &pLoop->frames[static_cast<size_t>(((_bullet.ageTicks - headTicks) / kFlameLoopTicksPerFrame) % loopCount)];
+    }
 
     [[nodiscard]] const AnimFrame* PickClipFrame_(
         const AnimationLibrary* _pAnims,
@@ -93,12 +128,13 @@ bool SubmitPlayerBullet(
         }
         case eWeapon::Flame:
         {
-            const AnimFrame* pFrame = PickClipFrame_(_pAnims, "FlameShot_AttackMotion", _bullet.ageTicks, true);
+            const AnimFrame* pFrame = PickFlameFrame_(_pAnims, _bullet);
             if (!pFrame)
             {
                 return false;
             }
-            _sprites.Submit(_layer, 0, *pFrame, _pos, { .bFlipX = !bRight, .scale = kFlameScale });
+            const Vec2 shifted = { _pos.x + (bRight ? kFlameForwardShift : -kFlameForwardShift), _pos.y };
+            _sprites.Submit(_layer, 0, *pFrame, shifted, { .bFlipX = !bRight });
             return true;
         }
         default:

@@ -74,7 +74,7 @@
         "shotgun": {
             "damage": 14,
             "fireIntervalTicks": 16,
-            "holdRepeatTicks": 20,
+            "holdRepeatTicks": 0,
             "ammo": 30,
             "projectileSpeed": 560,
             "maxAlive": 0,
@@ -86,7 +86,7 @@
         "rocket": {
             "damage": 0,
             "fireIntervalTicks": 24,
-            "holdRepeatTicks": 24,
+            "holdRepeatTicks": 0,
             "ammo": 20,
             "projectileSpeed": 300,
             "maxAlive": 2,
@@ -103,11 +103,11 @@
             "fireIntervalTicks": 8,
             "holdRepeatTicks": 0,
             "ammo": 30,
-            "projectileSpeed": 180,
+            "projectileSpeed": 300,
             "maxAlive": 0,
             "pierce": true,
-            "hitSize": [50, 30],
-            "range": 200,
+            "hitSize": [72, 44],
+            "range": 220,
             "shotOverlayTicks": 14
         },
         "hmgPickupAmmo": 200,

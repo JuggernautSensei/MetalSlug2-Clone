@@ -138,6 +138,16 @@
                 { "name": "POW_V3_Escape_Right", "region": [0, 1292, 578, 44], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 10, "loop": false, "mirror": true },
                 { "name": "POW_V3_Glide_Right", "region": [0, 1340, 578, 39], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 10, "loop": true, "mirror": true }
             ]
+        },
+        {
+            "file": "20587.png",
+            "scale": 2,
+            "key": { "mode": "color", "colors": [[0, 248, 0], [0, 0, 0]], "tol": 0 },
+            "clips": [
+                { "name": "FlameShot_Orig_Head", "frames": [[4, 619, 22, 13], [29, 617, 29, 16], [61, 613, 25, 25], [98, 613, 33, 24]], "pivot": "center", "fps": 30, "loop": false },
+                { "name": "FlameShot_Orig_Loop", "frames": [[144, 609, 39, 30], [189, 608, 43, 32], [236, 608, 46, 32]], "pivot": "center", "fps": 30, "loop": true },
+                { "name": "FlameShot_Orig_Fade", "frames": [[289, 608, 43, 32], [335, 608, 39, 32], [377, 608, 35, 32], [417, 608, 30, 32], [456, 607, 28, 33], [495, 607, 28, 33], [535, 607, 26, 33]], "pivot": "center", "fps": 30, "loop": false }
+            ]
         }
     ]
 }

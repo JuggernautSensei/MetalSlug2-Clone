@@ -264,7 +264,7 @@ TEST(PlayerShot, FlameDoesNotAutoFireOnHold)
     sim.Hold(eAction::Shot);
     sim.Step(120);
     EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);
-    EXPECT_GE(sim.Tune().weapons.flame.hitSize.x, 48.f);   // 확대된 불꽃
+    EXPECT_GE(sim.Tune().weapons.flame.hitSize.x, 60.f);   // 원작 불꽃 크기에 맞춘 판정
 }
 
 TEST(PlayerShot, FiniteAmmoDecreasesAndRevertsToPistol)

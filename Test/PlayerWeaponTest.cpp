@@ -56,21 +56,24 @@ constexpr ARRAY<int, 4> kWeapons = {
 }
 }   // namespace
 
-TEST(PlayerWeapon, HoldRepeatWeaponsFireAtTheirTunedRateWhileHeld)
+TEST(PlayerWeapon, EveryWeaponFiresAtItsTunedIntervalWhenTapped)
 {
-    // 샷건/로켓만 홀드 반복이 있다. 권총/HMG/화염은 연타(또는 버스트)로만 발사한다
-    for (const eWeapon weapon: { eWeapon::Shotgun, eWeapon::Rocket })
+    for (const int raw: kWeapons)
     {
-        const int raw = static_cast<int>(weapon);
-        Sim           sim;
+        const eWeapon weapon = static_cast<eWeapon>(raw);
+        if (weapon == eWeapon::Hmg)
+        {
+            continue;   // HMG 는 버스트 테스트가 따로 있다
+        }
+        Sim sim;
         sim.Player().PickUpWeapon(weapon, sim.Tune());
         const int interval = FireIntervalOf_(sim.Tune(), weapon);
 
-        sim.Hold(eAction::Shot);
         std::vector<int> shotTicks;
         int              lastShots = 0;
-        for (int tick = 0; tick < 60; ++tick)
+        for (int tick = 0; tick < 120; ++tick)
         {
+            sim.Set(eAction::Shot, tick % 2 == 0);   // 매 틱 연타해도 간격 아래로는 못 쏜다
             sim.Step();
             const int shots = sim.Player().GetStats().shotsFired;
             if (shots > lastShots)
@@ -79,17 +82,17 @@ TEST(PlayerWeapon, HoldRepeatWeaponsFireAtTheirTunedRateWhileHeld)
                 lastShots = shots;
             }
         }
-        ASSERT_GE(shotTicks.size(), weapon == eWeapon::Rocket ? 2u : 3u) << "weapon " << raw;
+        ASSERT_GE(shotTicks.size(), 3u) << "weapon " << raw;
         for (size_t i = 1; i < shotTicks.size(); ++i)
         {
-            EXPECT_EQ(shotTicks[i] - shotTicks[i - 1], interval) << "weapon " << raw;
+            EXPECT_GE(shotTicks[i] - shotTicks[i - 1], interval) << "weapon " << raw;
         }
     }
 }
 
 TEST(PlayerWeapon, TapOnlyWeaponsNeverRepeatOnHold)
 {
-    for (const eWeapon weapon: { eWeapon::Pistol, eWeapon::Flame })
+    for (const eWeapon weapon: { eWeapon::Pistol, eWeapon::Shotgun, eWeapon::Rocket, eWeapon::Flame })
     {
         Sim sim;
         sim.Player().PickUpWeapon(weapon, sim.Tune());

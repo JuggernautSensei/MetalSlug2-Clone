@@ -116,7 +116,7 @@ struct WeaponsTuning
     WeaponTuning shotgun = {
         14,
         16,
-        20,
+        0,
         30,
         560.f,
         0,
@@ -128,7 +128,7 @@ struct WeaponsTuning
     WeaponTuning rocket = {
         0,
         24,
-        24,
+        0,
         20,
         300.f,
         2,
@@ -145,11 +145,11 @@ struct WeaponsTuning
         8,
         0,
         30,
-        180.f,
+        300.f,
         0,
         true,
-        { 50.f, 30.f },
-        200.f,
+        { 72.f, 44.f },
+        220.f,
         14
     };
     int hmgPickupAmmo     = 200;
