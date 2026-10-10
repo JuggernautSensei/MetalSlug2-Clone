@@ -6,6 +6,7 @@
 
 namespace slug
 {
+
 struct WeaponState
 {
     static constexpr int kLongAgo = 1'000'000;
@@ -15,7 +16,7 @@ struct WeaponState
     int     bombs          = 0;
     int     ticksSinceShot = kLongAgo;
 
-    [[nodiscard]] bool HasFiniteAmmo() const { return weapon != eWeapon::Pistol; }
+    [[nodiscard]] bool HasFiniteAmmo() const;
 };
 
 void ResetWeapons(WeaponState& _state, const Tuning& _tuning);
@@ -24,11 +25,23 @@ void GiveWeapon(WeaponState& _state, eWeapon _weapon, int _ammo);
 
 void TickWeapon(WeaponState& _state);
 
-[[nodiscard]] bool ShouldFire(const WeaponState& _state, const WeaponTuning& _tuning, int _aliveBullets, bool _bShotBuffered, bool _bShotHeld);
+[[nodiscard]] bool ShouldFire(
+    const WeaponState&  _state,
+    const WeaponTuning& _tuning,
+    int                 _aliveBullets,
+    bool                _bShotBuffered,
+    bool                _bShotHeld);
 
 void OnFired(WeaponState& _state);
 
 [[nodiscard]] eWeapon WeaponFromDebugSlot(int _slot);
 
-[[nodiscard]] BulletSpawn MakeBulletSpawn(eWeapon _weapon, const WeaponTuning& _tuning, uint32_t _owner, Vec2 _muzzle, Vec2 _sweepFrom, Vec2 _direction);
-}
+[[nodiscard]] BulletSpawn MakeBulletSpawn(
+    eWeapon             _weapon,
+    const WeaponTuning& _tuning,
+    uint32_t            _owner,
+    Vec2                _muzzle,
+    Vec2                _sweepFrom,
+    Vec2                _direction);
+
+}   // namespace slug

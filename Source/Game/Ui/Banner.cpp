@@ -1,15 +1,27 @@
 #include "Game/Ui/Banner.h"
-#include "Base/Types.h"
 
 #include <algorithm>
 #include <cmath>
 
+#include "Base/Types.h"
+
 namespace slug
 {
 
+namespace
+{
+    constexpr int kMissionFlyDistance = 170;   // 진입/퇴장 시작 거리 (px)
+    constexpr int kMissionStagger     = 2;     // 글자 사이 진입 지연 (틱)
+    constexpr int kMissionOutStagger  = 1;     // 글자 사이 퇴장 지연 (틱)
+
+    // 글자마다 고정된 날아오는 방향 (상, 하, 좌, 우 순환)
+    constexpr ARRAY<int, 4> kDirX = { 0, 0, -1, 1 };
+    constexpr ARRAY<int, 4> kDirY = { -1, 1, 0, 0 };
+}   // namespace
+
 BannerSpec MakeBannerSpec(
-    const slug::StringView _text,
-    const float           _seconds)
+    const StringView _text,
+    const float      _seconds)
 {
     constexpr int kTicksPerSec = 60;
 
@@ -17,7 +29,7 @@ BannerSpec MakeBannerSpec(
     const int fade  = std::min(18, total / 4);   // 0.3초 또는 총길이의 1/4 중 작은 쪽
 
     BannerSpec spec;
-    spec.text         = slug::String { _text };
+    spec.text         = String { _text };
     spec.fadeInTicks  = fade;
     spec.fadeOutTicks = fade;
     spec.holdTicks    = total - 2 * fade;
@@ -46,17 +58,6 @@ float ComputeBannerAlpha(
     return static_cast<float>(total - _elapsed) / static_cast<float>(_fadeOut);
 }
 
-namespace
-{
-    constexpr int kMissionFlyDistance = 170;   // 진입/퇴장 시작 거리 (px)
-    constexpr int kMissionStagger     = 2;     // 글자 사이 진입 지연 (틱)
-    constexpr int kMissionOutStagger  = 1;     // 글자 사이 퇴장 지연 (틱)
-
-    // 글자마다 고정된 날아오는 방향 (상, 하, 좌, 우 순환)
-    constexpr int kDirX[4] = { 0, 0, -1, 1 };
-    constexpr int kDirY[4] = { -1, 1, 0, 0 };
-}
-
 GlyphPose ComputeMissionGlyphPose(
     const int _elapsed,
     const int _fadeIn,
@@ -64,9 +65,9 @@ GlyphPose ComputeMissionGlyphPose(
     const int _fadeOut,
     const int _index)
 {
-    const int dir    = ((_index % 4) + 4) % 4;
-    const int outAt  = _fadeIn + _hold;
-    const int total  = outAt + _fadeOut;
+    const int dir   = ((_index % 4) + 4) % 4;
+    const int outAt = _fadeIn + _hold;
+    const int total = outAt + _fadeOut;
 
     GlyphPose pose;
     if (_elapsed < 0 || _elapsed >= total)
@@ -90,9 +91,9 @@ GlyphPose ComputeMissionGlyphPose(
         }
         const float t = std::min(1.f, static_cast<float>(_elapsed - delay) / static_cast<float>(span));
         const float k = 1.f - (1.f - t) * (1.f - t) * (1.f - t);   // easeOutCubic
-        pose.dx    = static_cast<int>(std::lround(static_cast<float>(kDirX[dir] * kMissionFlyDistance) * (1.f - k)));
-        pose.dy    = static_cast<int>(std::lround(static_cast<float>(kDirY[dir] * kMissionFlyDistance) * (1.f - k)));
-        pose.alpha = static_cast<uint8_t>(std::clamp(t, 0.f, 1.f) * 255.f + 0.5f);
+        pose.dx       = static_cast<int>(std::lround(static_cast<float>(kDirX[dir] * kMissionFlyDistance) * (1.f - k)));
+        pose.dy       = static_cast<int>(std::lround(static_cast<float>(kDirY[dir] * kMissionFlyDistance) * (1.f - k)));
+        pose.alpha    = static_cast<uint8_t>(std::clamp(t, 0.f, 1.f) * 255.f + 0.5f);
         return pose;
     }
 
@@ -112,17 +113,17 @@ GlyphPose ComputeMissionGlyphPose(
     }
     const float t = std::min(1.f, static_cast<float>(local) / static_cast<float>(span));
     const float k = t * t * t;   // easeInCubic
-    pose.dx    = static_cast<int>(std::lround(static_cast<float>(kDirX[dir] * kMissionFlyDistance) * k));
-    pose.dy    = static_cast<int>(std::lround(static_cast<float>(kDirY[dir] * kMissionFlyDistance) * k));
-    pose.alpha = static_cast<uint8_t>(std::clamp(1.f - t, 0.f, 1.f) * 255.f + 0.5f);
+    pose.dx       = static_cast<int>(std::lround(static_cast<float>(kDirX[dir] * kMissionFlyDistance) * k));
+    pose.dy       = static_cast<int>(std::lround(static_cast<float>(kDirY[dir] * kMissionFlyDistance) * k));
+    pose.alpha    = static_cast<uint8_t>(std::clamp(1.f - t, 0.f, 1.f) * 255.f + 0.5f);
     return pose;
 }
 
-slug::String MakeMissionGlyphName(
+String MakeMissionGlyphName(
     const char _ch)
 {
-    slug::String name = "UI_Mission_";
-    const char   up   = (_ch >= 'a' && _ch <= 'z') ? static_cast<char>(_ch - 'a' + 'A') : _ch;
+    String     name = "UI_Mission_";
+    const char up   = (_ch >= 'a' && _ch <= 'z') ? static_cast<char>(_ch - 'a' + 'A') : _ch;
     if ((up >= 'A' && up <= 'Z') || (up >= '1' && up <= '9'))
     {
         name.push_back(up);
@@ -213,4 +214,30 @@ float BannerSystem::GetAlpha() const
     }
     return ComputeBannerAlpha(m_elapsed, m_current.fadeInTicks, m_current.holdTicks, m_current.fadeOutTicks);
 }
+
+bool BannerSystem::IsActive() const
+{
+    return m_bActive;
 }
+
+int BannerSystem::GetElapsedTicks() const
+{
+    return m_elapsed;
+}
+
+const BannerSpec& BannerSystem::GetCurrent() const
+{
+    return m_current;
+}
+
+size_t BannerSystem::GetQueuedCount() const
+{
+    return m_queue.size();
+}
+
+int BannerSpec::GetTotalTicks() const
+{
+    return fadeInTicks + holdTicks + fadeOutTicks;
+}
+
+}   // namespace slug

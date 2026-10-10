@@ -58,4 +58,5 @@ PlayerCommand PlayerInputBuffer::Read(
     command.bBombBuffered = IsBuffered(eAction::Bomb, _move.bombBufferTicks);
     return command;
 }
-}
+
+}   // namespace slug

@@ -1,12 +1,11 @@
 #include "Game/Player/PlayerRig.h"
-#include "Base/Types.h"
-#include "Base/RGBA.h"
 
 #include <format>
 
 #include "Base/Log.h"
 #include "Base/Math.h"
-
+#include "Base/RGBA.h"
+#include "Base/Types.h"
 #include "World/Constants.h"
 
 namespace slug
@@ -16,54 +15,55 @@ namespace
 {
     struct SlotDef
     {
-        const char* label;
-        const char* patterns[3];
-        bool        bRequired;
-        eRigClip    fallback;
+        const char*           pLabel    = nullptr;
+        ARRAY<const char*, 3> patterns  = {};
+        bool                  bRequired = false;
+        eRigClip              fallback  = eRigClip::Idle;
     };
 
-    constexpr SlotDef kSlots[] = {
-        {              "Idle",                                 { "Player_Stand_Idle_{W}_{S}", nullptr, nullptr },  true,          eRigClip::Idle },
-        {              "Move",                                 { "Player_Stand_Move_{W}_{S}", nullptr, nullptr },  true,          eRigClip::Idle },
-        {            "Lookup",                               { "Player_Stand_Lookup_{W}_{S}", nullptr, nullptr },  true,          eRigClip::Idle },
-        {       "LookUpDiag3",                          { "Player_Stand_Lookingup_3_{W}_{S}", nullptr, nullptr },  true,          eRigClip::Idle },
-        {       "LookUpDiag4",                          { "Player_Stand_Lookingup_4_{W}_{S}", nullptr, nullptr },  true,          eRigClip::Idle },
-        {              "Shot",                                 { "Player_Stand_Shot_{W}_{S}", nullptr, nullptr },  true,          eRigClip::Idle },
-        {            "ShotUp",                              { "Player_Stand_Shot_Up_{W}_{S}", nullptr, nullptr },  true,          eRigClip::Shot },
-        {         "ShotDiag3",                  { "Player_Stand_Shot_Lookingup_3_BT_{W}_{S}", nullptr, nullptr }, false,   eRigClip::LookUpDiag3 },
-        {         "ShotDiag4",                  { "Player_Stand_Shot_Lookingup_4_BT_{W}_{S}", nullptr, nullptr }, false,   eRigClip::LookUpDiag4 },
-        {            "Slash1",                               { "Player_Stand_Slash1_{W}_{S}", nullptr, nullptr },  true,          eRigClip::Idle },
-        {            "Slash2",                               { "Player_Stand_Slash2_{W}_{S}", nullptr, nullptr },  true,        eRigClip::Slash1 },
-        {             "Throw",                                { "Player_Stand_Throw_{W}_{S}", nullptr, nullptr },  true,          eRigClip::Idle },
-        {        "IdleAction",                          { "Player_Stand_Idle_Action_{W}_{S}", nullptr, nullptr },  true,          eRigClip::Idle },
-        {        "CrouchIdle",                                { "Player_Crouch_Idle_{W}_{S}", nullptr, nullptr },  true,          eRigClip::Idle },
-        {        "CrouchMove",                                { "Player_Crouch_Move_{W}_{S}", nullptr, nullptr },  true,    eRigClip::CrouchIdle },
-        {        "CrouchShot",                                { "Player_Crouch_Shot_{W}_{S}", nullptr, nullptr },  true,    eRigClip::CrouchIdle },
-        {      "CrouchSlash1",                              { "Player_Crouch_Slash1_{W}_{S}", nullptr, nullptr },  true,    eRigClip::CrouchIdle },
-        {      "CrouchSlash2",                              { "Player_Crouch_Slash2_{W}_{S}", nullptr, nullptr },  true,  eRigClip::CrouchSlash1 },
-        {       "CrouchThrow",                               { "Player_Crouch_Throw_{W}_{S}", nullptr, nullptr },  true,    eRigClip::CrouchIdle },
-        {          "JumpIdle",                                  { "Player_Jump_Idle_{W}_{S}", nullptr, nullptr },  true,          eRigClip::Idle },
-        {          "JumpMove",                                  { "Player_Jump_Move_{W}_{S}", nullptr, nullptr },  true,      eRigClip::JumpIdle },
-        {      "JumpLookDown",                              { "Player_Jump_Lookdown_{W}_{S}", nullptr, nullptr },  true,      eRigClip::JumpIdle },
-        { "JumpLookDownDiag1",                         { "Player_Jump_Lookingdown_1_{W}_{S}", nullptr, nullptr },  true,  eRigClip::JumpLookDown },
-        { "JumpLookDownDiag2",                         { "Player_Jump_Lookingdown_2_{W}_{S}", nullptr, nullptr },  true,  eRigClip::JumpLookDown },
-        {      "JumpShotDown", { "Player_Jump_Shot_Down_{W}_{S}", "Player_Jump_Shot_Lookdown_{W}_{S}", nullptr },  true,  eRigClip::JumpLookDown },
-        {         "LowerIdle",                               { "Player_Stand_Idle_Lower_{S}", nullptr, nullptr },  true,     eRigClip::LowerIdle },
-        {         "LowerMove",                               { "Player_Stand_Move_Lower_{S}", nullptr, nullptr },  true,     eRigClip::LowerIdle },
-        {     "LowerJumpIdle",                                { "Player_Jump_Idle_Lower_{S}", nullptr, nullptr },  true,     eRigClip::LowerIdle },
-        {     "LowerJumpMove",                                { "Player_Jump_Move_Lower_{S}", nullptr, nullptr },  true, eRigClip::LowerJumpIdle },
-        {             "Death",                              { "Player_Death_byBullet_DG_{S}", nullptr, nullptr },  true,          eRigClip::Idle },
-        {           "Victory",                                        { "Player_Victory_{W}", nullptr, nullptr },  true,          eRigClip::Idle },
+    constexpr ARRAY<SlotDef, kRigClipCount> kSlots = {
+        {
+         { "Idle", { "Player_Stand_Idle_{W}_{S}", nullptr, nullptr }, true, eRigClip::Idle },
+         { "Move", { "Player_Stand_Move_{W}_{S}", nullptr, nullptr }, true, eRigClip::Idle },
+         { "Lookup", { "Player_Stand_Lookup_{W}_{S}", nullptr, nullptr }, true, eRigClip::Idle },
+         { "LookUpDiag3", { "Player_Stand_Lookingup_3_{W}_{S}", nullptr, nullptr }, true, eRigClip::Idle },
+         { "LookUpDiag4", { "Player_Stand_Lookingup_4_{W}_{S}", nullptr, nullptr }, true, eRigClip::Idle },
+         { "Shot", { "Player_Stand_Shot_{W}_{S}", nullptr, nullptr }, true, eRigClip::Idle },
+         { "ShotUp", { "Player_Stand_Shot_Up_{W}_{S}", nullptr, nullptr }, true, eRigClip::Shot },
+         { "ShotDiag3", { "Player_Stand_Shot_Lookingup_3_BT_{W}_{S}", nullptr, nullptr }, false, eRigClip::LookUpDiag3 },
+         { "ShotDiag4", { "Player_Stand_Shot_Lookingup_4_BT_{W}_{S}", nullptr, nullptr }, false, eRigClip::LookUpDiag4 },
+         { "Slash1", { "Player_Stand_Slash1_{W}_{S}", nullptr, nullptr }, true, eRigClip::Idle },
+         { "Slash2", { "Player_Stand_Slash2_{W}_{S}", nullptr, nullptr }, true, eRigClip::Slash1 },
+         { "Throw", { "Player_Stand_Throw_{W}_{S}", nullptr, nullptr }, true, eRigClip::Idle },
+         { "IdleAction", { "Player_Stand_Idle_Action_{W}_{S}", nullptr, nullptr }, true, eRigClip::Idle },
+         { "CrouchIdle", { "Player_Crouch_Idle_{W}_{S}", nullptr, nullptr }, true, eRigClip::Idle },
+         { "CrouchMove", { "Player_Crouch_Move_{W}_{S}", nullptr, nullptr }, true, eRigClip::CrouchIdle },
+         { "CrouchShot", { "Player_Crouch_Shot_{W}_{S}", nullptr, nullptr }, true, eRigClip::CrouchIdle },
+         { "CrouchSlash1", { "Player_Crouch_Slash1_{W}_{S}", nullptr, nullptr }, true, eRigClip::CrouchIdle },
+         { "CrouchSlash2", { "Player_Crouch_Slash2_{W}_{S}", nullptr, nullptr }, true, eRigClip::CrouchSlash1 },
+         { "CrouchThrow", { "Player_Crouch_Throw_{W}_{S}", nullptr, nullptr }, true, eRigClip::CrouchIdle },
+         { "JumpIdle", { "Player_Jump_Idle_{W}_{S}", nullptr, nullptr }, true, eRigClip::Idle },
+         { "JumpMove", { "Player_Jump_Move_{W}_{S}", nullptr, nullptr }, true, eRigClip::JumpIdle },
+         { "JumpLookDown", { "Player_Jump_Lookdown_{W}_{S}", nullptr, nullptr }, true, eRigClip::JumpIdle },
+         { "JumpLookDownDiag1", { "Player_Jump_Lookingdown_1_{W}_{S}", nullptr, nullptr }, true, eRigClip::JumpLookDown },
+         { "JumpLookDownDiag2", { "Player_Jump_Lookingdown_2_{W}_{S}", nullptr, nullptr }, true, eRigClip::JumpLookDown },
+         { "JumpShotDown", { "Player_Jump_Shot_Down_{W}_{S}", "Player_Jump_Shot_Lookdown_{W}_{S}", nullptr }, true, eRigClip::JumpLookDown },
+         { "LowerIdle", { "Player_Stand_Idle_Lower_{S}", nullptr, nullptr }, true, eRigClip::LowerIdle },
+         { "LowerMove", { "Player_Stand_Move_Lower_{S}", nullptr, nullptr }, true, eRigClip::LowerIdle },
+         { "LowerJumpIdle", { "Player_Jump_Idle_Lower_{S}", nullptr, nullptr }, true, eRigClip::LowerIdle },
+         { "LowerJumpMove", { "Player_Jump_Move_Lower_{S}", nullptr, nullptr }, true, eRigClip::LowerJumpIdle },
+         { "Death", { "Player_Death_byBullet_DG_{S}", nullptr, nullptr }, true, eRigClip::Idle },
+         { "Victory", { "Player_Victory_{W}", nullptr, nullptr }, true, eRigClip::Idle },
+         }
     };
-    static_assert(sizeof(kSlots) / sizeof(kSlots[0]) == kRigClipCount, "kSlots 는 eRigClip 과 같은 개수여야 한다.");
 
-    constexpr const char* kPistolTokens[]  = { "DG", nullptr, nullptr };
-    constexpr const char* kHmgTokens[]     = { "MG", "SG", "DG" };
-    constexpr const char* kShotgunTokens[] = { "SG", "DG", nullptr };
-    constexpr const char* kRocketTokens[]  = { "MG", "SG", "DG" };
-    constexpr const char* kFlameTokens[]   = { "SG", "MG", "DG" };
+    constexpr ARRAY<const char*, 3> kPistolTokens  = { "DG", nullptr, nullptr };
+    constexpr ARRAY<const char*, 3> kHmgTokens     = { "MG", "SG", "DG" };
+    constexpr ARRAY<const char*, 3> kShotgunTokens = { "SG", "DG", nullptr };
+    constexpr ARRAY<const char*, 3> kRocketTokens  = { "MG", "SG", "DG" };
+    constexpr ARRAY<const char*, 3> kFlameTokens   = { "SG", "MG", "DG" };
 
-    [[nodiscard]] const char* const* GetTokens_(
+    [[nodiscard]] const ARRAY<const char*, 3>& GetTokens_(
         const eWeapon _weapon)
     {
         switch (_weapon)
@@ -76,21 +76,26 @@ namespace
         }
     }
 
-    [[nodiscard]] slug::String Expand_(
-        const char* _pattern,
-        const char* _weaponToken,
+    void ReplaceKey_(
+        String&          _inOut,
+        const StringView _key,
+        const StringView _value)
+    {
+        const size_t pos = _inOut.find(_key);
+        if (pos != String::npos)
+        {
+            _inOut.replace(pos, _key.size(), _value);
+        }
+    }
+
+    [[nodiscard]] String Expand_(
+        const char* _pPattern,
+        const char* _pWeaponToken,
         const bool  _bRight)
     {
-        slug::String result  = _pattern;
-        const auto  Replace = [&](const slug::StringView _key, const slug::StringView _value) {
-            const size_t pos = result.find(_key);
-            if (pos != slug::String::npos)
-            {
-                result.replace(pos, _key.size(), _value);
-            }
-        };
-        Replace("{W}", _weaponToken);
-        Replace("{S}", _bRight ? "Right" : "Left");
+        String result = _pPattern;
+        ReplaceKey_(result, "{W}", _pWeaponToken);
+        ReplaceKey_(result, "{S}", _bRight ? "Right" : "Left");
         return result;
     }
 
@@ -105,13 +110,13 @@ namespace
     {
         return _facing < 0 ? 0 : 1;
     }
-}
+}   // namespace
 
 const char* GetRigClipName(
     const eRigClip _clip)
 {
     const size_t index = static_cast<size_t>(_clip);
-    return index < kRigClipCount ? kSlots[index].label : "?";
+    return index < kRigClipCount ? kSlots[index].pLabel : "?";
 }
 
 bool PlayerRig::IsSlotRequired(
@@ -120,28 +125,28 @@ bool PlayerRig::IsSlotRequired(
     return kSlots[static_cast<size_t>(_slot)].bRequired;
 }
 
-slug::String PlayerRig::ResolveClipName(
+String PlayerRig::ResolveClipName(
     const AnimationLibrary& _library,
     const eRigClip          _slot,
     const eWeapon           _weapon,
     const int               _facing)
 {
-    const SlotDef&     def    = kSlots[static_cast<size_t>(_slot)];
-    const char* const* tokens = GetTokens_(_weapon);
+    const SlotDef&               def    = kSlots[static_cast<size_t>(_slot)];
+    const ARRAY<const char*, 3>& tokens = GetTokens_(_weapon);
 
-    for (int t = 0; t < 3; ++t)
+    for (size_t t = 0; t < tokens.size(); ++t)
     {
         if (!tokens[t])
         {
             continue;
         }
-        for (const char* pattern: def.patterns)
+        for (const char* pPattern: def.patterns)
         {
-            if (!pattern)
+            if (!pPattern)
             {
                 continue;
             }
-            slug::String name = Expand_(pattern, tokens[t], _facing > 0);
+            String name = Expand_(pPattern, tokens[t], _facing > 0);
             if (!_library.Find(name).IsNull())
             {
                 return name;
@@ -168,8 +173,8 @@ PlayerRig::BindReport PlayerRig::Bind(
             const int facing = side == 0 ? -1 : 1;
             for (size_t s = 0; s < kRigClipCount; ++s)
             {
-                const eRigClip    slot = static_cast<eRigClip>(s);
-                const slug::String name = ResolveClipName(_library, slot, static_cast<eWeapon>(w), facing);
+                const eRigClip slot = static_cast<eRigClip>(s);
+                const String   name = ResolveClipName(_library, slot, static_cast<eWeapon>(w), facing);
 
                 Slot& entry = m_tables[w][static_cast<size_t>(side)][s];
                 entry       = {};
@@ -179,7 +184,7 @@ PlayerRig::BindReport PlayerRig::Bind(
                     {
                         ++report.missingRequired;
                     }
-                    report.missingNames.push_back(std::format("weapon={} facing={} slot={}", w, facing, kSlots[s].label));
+                    report.missingNames.push_back(std::format("weapon={} facing={} slot={}", w, facing, kSlots[s].pLabel));
                     continue;
                 }
 
@@ -194,7 +199,7 @@ PlayerRig::BindReport PlayerRig::Bind(
 
     if (report.missingRequired > 0)
     {
-        SLUG_LOG_WARN("PlayerRig: 필수 클립 {}개 없음 (폴백 사용). 예: {}", report.missingRequired, report.missingNames.empty() ? slug::String {} : report.missingNames.front());
+        SLUG_LOG_WARN("PlayerRig: 필수 클립 {}개 없음 (폴백 사용). 예: {}", report.missingRequired, report.missingNames.empty() ? String {} : report.missingNames.front());
     }
     return report;
 }
@@ -343,9 +348,9 @@ void PlayerRig::Update(
         if (IsAirTimelineSlot_(lowerSlot))
         {
             const AnimClip& clip   = m_pLibrary->Get(lower.id);
-            const float     length = slug::Max(1.f, ClipTicks_(lower.id));
+            const float     length = Max(1.f, ClipTicks_(lower.id));
             const float     start  = _state.bAirFromJump ? 0.f : 0.4f * length;
-            m_lower.SetNormalizedTime(clip, slug::Clamp((static_cast<float>(_state.airTicks) + start) / length, 0.f, 1.f));
+            m_lower.SetNormalizedTime(clip, Clamp((static_cast<float>(_state.airTicks) + start) / length, 0.f, 1.f));
         }
         else
         {
@@ -373,13 +378,13 @@ void PlayerRig::Update(
     const AnimClip& upperClip = m_pLibrary->Get(upper.id);
     if (IsAirTimelineSlot_(upperSlot))
     {
-        const float length = slug::Max(1.f, ClipTicks_(upper.id));
+        const float length = Max(1.f, ClipTicks_(upper.id));
         const float start  = _state.bAirFromJump ? 0.f : 0.4f * length;
-        m_upper.SetNormalizedTime(upperClip, slug::Clamp((static_cast<float>(_state.airTicks) + start) / length, 0.f, 1.f));
+        m_upper.SetNormalizedTime(upperClip, Clamp((static_cast<float>(_state.airTicks) + start) / length, 0.f, 1.f));
     }
     else if (_state.overlay != eOverlay::None && !bDead && !bVictory)
     {
-        const float speed = ClipTicks_(upper.id) / static_cast<float>(slug::Max(1, _state.overlayDurationTicks));
+        const float speed = ClipTicks_(upper.id) / static_cast<float>(Max(1, _state.overlayDurationTicks));
         m_upper.Update(*m_pLibrary, kStepSec, speed);
     }
     else
@@ -393,19 +398,19 @@ void PlayerRig::Update(
 }
 
 void PlayerRig::Submit(
-    SpriteBatch&       _sprites,
-    const Vec2 _feet,
-    const int          _layer,
-    const int          _sortKey,
-    const slug::RGBA    _tint) const
+    SpriteBatch& _sprites,
+    const Vec2   _feet,
+    const int    _layer,
+    const int    _sortKey,
+    const RGBA   _tint) const
 {
     if (!m_pLibrary)
     {
         return;
     }
 
-    const Vec2 origin = GetOrigin(_feet);
-    SpriteDrawOptions  options;
+    const Vec2        origin = GetOrigin(_feet);
+    SpriteDrawOptions options;
     options.tint = _tint;
 
     if (m_bHasLower)
@@ -420,4 +425,36 @@ void PlayerRig::Submit(
         _sprites.Submit(_layer, _sortKey, *pFrame, origin, options);
     }
 }
+
+AnimId PlayerRig::GetUpperClip() const
+{
+    return m_upper.GetClip();
 }
+
+AnimId PlayerRig::GetLowerClip() const
+{
+    return m_lower.GetClip();
+}
+
+int PlayerRig::GetUpperFrame() const
+{
+    return m_upper.GetFrame();
+}
+
+int PlayerRig::GetLowerFrame() const
+{
+    return m_lower.GetFrame();
+}
+
+float PlayerRig::GetOriginLift() const
+{
+    return m_originLift;
+}
+
+Vec2 PlayerRig::GetOrigin(
+    const Vec2 _feet) const
+{
+    return { _feet.x, _feet.y - m_originLift };
+}
+
+}   // namespace slug

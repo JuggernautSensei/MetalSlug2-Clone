@@ -1,11 +1,12 @@
+#include "Game/Props/PropWorld.h"
+
 #include <algorithm>
-#include "Base/Types.h"
-#include "Base/Math.h"
-#include "Base/Random.h"
 #include <cmath>
 #include <cstring>
 
-#include "Game/Props/PropWorld.h"
+#include "Base/Math.h"
+#include "Base/Random.h"
+#include "Base/Types.h"
 #include "Game/Ui/BitmapFont.h"
 
 namespace slug
@@ -13,35 +14,42 @@ namespace slug
 
 namespace
 {
-template<typename RngT>
-float RandRange(RngT& _rng, const float _lo, const float _hi)
-{
-    const double unit = static_cast<double>(_rng.Generate()) / 18446744073709551615.0;
-    return _lo + static_cast<float>(unit) * (_hi - _lo);
-}
+    template<typename RngT>
+    [[nodiscard]] float RandRange_(
+        RngT&       _rng,
+        const float _lo,
+        const float _hi)
+    {
+        const double unit = static_cast<double>(_rng.Generate()) / 18'446'744'073'709'551'615.0;
+        return _lo + static_cast<float>(unit) * (_hi - _lo);
+    }
 
-constexpr float kDebrisGravity    = 1000.f;
-constexpr float kDebrisLifeSec    = 5.f;
-constexpr float kDebrisVxMin      = -250.f;
-constexpr float kDebrisVxMax      = 249.f;
-constexpr float kDebrisVyMin      = -800.f;
-constexpr float kDebrisVyMax      = -301.f;
-constexpr float kHitFlashSec      = 0.5f;   // 피격 연출 최대 길이 (Hit 클립이 없으면 연출 없음)
+    constexpr float kDebrisGravity = 1000.f;
+    constexpr float kDebrisLifeSec = 5.f;
+    constexpr float kDebrisVxMin   = -250.f;
+    constexpr float kDebrisVxMax   = 249.f;
+    constexpr float kDebrisVyMin   = -800.f;
+    constexpr float kDebrisVyMax   = -301.f;
+    constexpr float kHitFlashSec   = 0.5f;   // 피격 연출 최대 길이 (Hit 클립이 없으면 연출 없음)
 
-constexpr size_t kVisualCount = static_cast<size_t>(ePropVisual::Count);
+    constexpr size_t kVisualCount = static_cast<size_t>(ePropVisual::Count);
 
-uint64_t MixHash(uint64_t _h, uint64_t _v)
-{
-    return (_h ^ _v) * 1099511628211ull;
-}
+    [[nodiscard]] uint64_t MixHash_(
+        const uint64_t _h,
+        const uint64_t _v)
+    {
+        return (_h ^ _v) * 1'099'511'628'211ull;
+    }
 
-uint64_t MixFloat(uint64_t _h, float _f)
-{
-    uint32_t bits = 0;
-    std::memcpy(&bits, &_f, sizeof(bits));
-    return MixHash(_h, bits);
-}
-}
+    [[nodiscard]] uint64_t MixFloat_(
+        const uint64_t _h,
+        const float    _f)
+    {
+        uint32_t bits = 0;
+        std::memcpy(&bits, &_f, sizeof(bits));
+        return MixHash_(_h, bits);
+    }
+}   // namespace
 
 PropWorld::PropWorld(
     const PropDefLibrary* _pLibrary,
@@ -63,7 +71,7 @@ void PropWorld::Reset(
     const uint64_t _seed)
 {
     ClearAll();
-    m_rng    = slug::RngMt19937 { _seed };
+    m_rng    = RngMt19937 { _seed };
     m_nextId = kPropOwnerBase;
     m_items.Reset(_seed);
 }
@@ -92,7 +100,7 @@ float PropWorld::RollFloat_(
     const float _lo,
     const float _hi)
 {
-    return RandRange(m_rng, _lo, _hi);
+    return RandRange_(m_rng, _lo, _hi);
 }
 
 int PropWorld::RollInt_(
@@ -153,16 +161,16 @@ int PropWorld::GetHp(
     return pInst != nullptr ? pInst->health.hp : 0;
 }
 
-slug::Vector<PropEvent> PropWorld::TakeEvents()
+Vector<PropEvent> PropWorld::TakeEvents()
 {
-    slug::Vector<PropEvent> out = std::move(m_events);
+    Vector<PropEvent> out = std::move(m_events);
     m_events.clear();
     return out;
 }
 
 PropHandle PropWorld::Spawn(
-    const slug::StringView  _defName,
-    const Vec2     _center,
+    const StringView       _defName,
+    const Vec2             _center,
     const PropSpawnParams& _params)
 {
     if (m_pLibrary == nullptr)
@@ -174,7 +182,7 @@ PropHandle PropWorld::Spawn(
 
 PropHandle PropWorld::SpawnByIndex(
     const int              _defIndex,
-    const Vec2     _center,
+    const Vec2             _center,
     const PropSpawnParams& _params)
 {
     if (m_pLibrary == nullptr || _defIndex < 0 || static_cast<size_t>(_defIndex) >= m_pLibrary->GetDefs().size())
@@ -184,23 +192,23 @@ PropHandle PropWorld::SpawnByIndex(
     const PropDef& def = m_pLibrary->GetDefs()[static_cast<size_t>(_defIndex)];
 
     PropInstance inst;
-    inst.id               = m_nextId++;
-    inst.defIndex         = _defIndex;
-    inst.pos              = _center;
-    inst.bFront           = def.bFront;
-    inst.cullMargin       = def.cullMargin;
-    inst.bExplodeOnDeath  = _params.bExplodeOnDeath;
+    inst.id              = m_nextId++;
+    inst.defIndex        = _defIndex;
+    inst.pos             = _center;
+    inst.bFront          = def.bFront;
+    inst.cullMargin      = def.cullMargin;
+    inst.bExplodeOnDeath = _params.bExplodeOnDeath;
 
     const PropVariant* pVar = nullptr;
     if (!def.variants.empty())
     {
-        const int v = _params.variant >= 0 ? _params.variant : RollInt_(static_cast<int>(def.variants.size()));
-        pVar        = &def.variants[static_cast<size_t>(v)];
+        const int v  = _params.variant >= 0 ? _params.variant : RollInt_(static_cast<int>(def.variants.size()));
+        pVar         = &def.variants[static_cast<size_t>(v)];
         inst.variant = v;
         inst.pos.y += pVar->dy;
     }
 
-    auto& vis = inst.visuals;
+    ARRAY<PropVisual, kVisualCount>& vis             = inst.visuals;
     vis[static_cast<size_t>(ePropVisual::Idle)]      = (pVar && pVar->idle.ref != eVisualRef::None) ? pVar->idle : def.idle;
     vis[static_cast<size_t>(ePropVisual::Damaged)]   = def.damaged;
     vis[static_cast<size_t>(ePropVisual::Destroyed)] = def.destroyed;
@@ -241,11 +249,11 @@ PropHandle PropWorld::SpawnByIndex(
         }
     }
 
-    inst.health               = Health::Make(_params.hp >= 0 ? _params.hp : def.hp);
-    inst.bFalling             = def.bHasFall;
-    inst.fallGravity          = def.fall.gravity;
-    inst.fallHalfHeight       = def.fall.halfHeight;
-    inst.destroyDurationSec   = def.destroyDurationSec;
+    inst.health             = Health::Make(_params.hp >= 0 ? _params.hp : def.hp);
+    inst.bFalling           = def.bHasFall;
+    inst.fallGravity        = def.fall.gravity;
+    inst.fallHalfHeight     = def.fall.halfHeight;
+    inst.destroyDurationSec = def.destroyDurationSec;
 
     m_props.push_back(std::move(inst));
     RebuildCollision_();
@@ -253,15 +261,15 @@ PropHandle PropWorld::SpawnByIndex(
 }
 
 uint32_t PropWorld::SpawnItem(
-    const slug::StringView _name,
-    const Vec2    _feet,
-    const bool            _bBounce)
+    const StringView _name,
+    const Vec2       _feet,
+    const bool       _bBounce)
 {
     return m_items.Spawn(_name, _feet, _bBounce);
 }
 
 bool PropWorld::PartActive_(
-    const PropPart&    _part,
+    const PropPart&     _part,
     const PropInstance& _inst)
 {
     switch (_part.when)
@@ -300,7 +308,7 @@ void PropWorld::RegisterHurtboxes(
 }
 
 void PropWorld::OnHitEvents(
-    const slug::Span<const HitEvent> _events)
+    const Span<const HitEvent> _events)
 {
     if (m_pLibrary == nullptr)
     {
@@ -362,12 +370,12 @@ void PropWorld::OnHitEvents(
 void PropWorld::Destroy_(
     PropInstance&  _inst,
     const PropDef& _def,
-    const Vec2 _center)
+    const Vec2     _center)
 {
-    _inst.bDestroyed        = true;
-    _inst.destroyTimerSec   = 0.f;
-    _inst.bHitPlaying       = false;
-    _inst.bVisualBound      = false;
+    _inst.bDestroyed          = true;
+    _inst.destroyTimerSec     = 0.f;
+    _inst.bHitPlaying         = false;
+    _inst.bVisualBound        = false;
     _inst.bRemoveAfterDestroy = _def.bRemoveOnDestroy;
 
     PropEvent destroyed;
@@ -407,7 +415,7 @@ void PropWorld::Destroy_(
 
 void PropWorld::Detonate_(
     const PropBurst& _burst,
-    const Vec2 _center)
+    const Vec2       _center)
 {
     for (const PropExplosion& e: _burst.explosions)
     {
@@ -426,31 +434,31 @@ void PropWorld::Detonate_(
     {
         PropDebrisPiece piece;
         const int       index = RollInt_(GetDebrisClipCount(_burst.debris.set));
-        piece.clip   = GetDebrisClipName(_burst.debris.set, index);
-        piece.pos    = _center;
-        piece.vel    = { RollFloat_(kDebrisVxMin, kDebrisVxMax), RollFloat_(kDebrisVyMin, kDebrisVyMax) };
+        piece.clip            = GetDebrisClipName(_burst.debris.set, index);
+        piece.pos             = _center;
+        piece.vel             = { RollFloat_(kDebrisVxMin, kDebrisVxMax), RollFloat_(kDebrisVyMin, kDebrisVyMax) };
         m_debris.push_back(std::move(piece));
     }
 }
 
 void PropWorld::QueueDrops_(
-    const PropDef&     _def,
-    const Vec2 _center)
+    const PropDef& _def,
+    const Vec2     _center)
 {
     for (const PropDrop& drop: _def.drops)
     {
         for (int i = 0; i < drop.count; ++i)
         {
-            const float dx = drop.spreadX > 0.f ? RollFloat_(-drop.spreadX, drop.spreadX) : 0.f;
-            const Vec2 feet { _center.x + dx, _center.y };
-            const uint32_t     itemId = m_items.Spawn(drop.item, feet, drop.bBounce);
+            const float    dx = drop.spreadX > 0.f ? RollFloat_(-drop.spreadX, drop.spreadX) : 0.f;
+            const Vec2     feet { _center.x + dx, _center.y };
+            const uint32_t itemId = m_items.Spawn(drop.item, feet, drop.bBounce);
             if (itemId != 0)
             {
                 PropEvent ev;
-                ev.kind = ePropEventKind::DropSpawned;
-                ev.id   = itemId;
-                ev.pos  = feet;
-                ev.name = drop.item;
+                ev.kind  = ePropEventKind::DropSpawned;
+                ev.id    = itemId;
+                ev.pos   = feet;
+                ev.name  = drop.item;
                 ev.value = 1;
                 m_events.push_back(ev);
             }
@@ -496,7 +504,7 @@ void PropWorld::UpdateVisual_(
     }
     const ePropVisual next    = ComputeVisual_(_inst);
     const bool        bChange = !_inst.bVisualBound || next != _inst.visual;
-    _inst.visual = next;
+    _inst.visual              = next;
     if (_pAnims == nullptr)
     {
         return;
@@ -542,9 +550,9 @@ void PropWorld::Tick(
     for (PropDebrisPiece& piece: m_debris)
     {
         piece.ageSec += dt;
-        piece.vel.y  += kDebrisGravity * dt;
-        piece.pos.x  += piece.vel.x * dt;
-        piece.pos.y  += piece.vel.y * dt;
+        piece.vel.y += kDebrisGravity * dt;
+        piece.pos.x += piece.vel.x * dt;
+        piece.pos.y += piece.vel.y * dt;
         if (_ctx.pAnims != nullptr)
         {
             if (!piece.bBound)
@@ -568,14 +576,14 @@ void PropWorld::Tick(
             if (inst.landTimerSec < 0.f)
             {
                 inst.fallVy += inst.fallGravity * dt;
-                inst.pos.y  += inst.fallVy * dt;
+                inst.pos.y += inst.fallVy * dt;
                 if (_ctx.pGround != nullptr)
                 {
                     const std::optional<int> surface = _ctx.pGround->FindGroundY(static_cast<int>(std::floor(inst.pos.x)), static_cast<int>(std::floor(inst.pos.y)), 2000);
                     if (surface && inst.pos.y + inst.fallHalfHeight >= static_cast<float>(*surface))
                     {
-                        inst.pos.y      = static_cast<float>(*surface) - inst.fallHalfHeight;
-                        inst.fallVy     = 0.f;
+                        inst.pos.y        = static_cast<float>(*surface) - inst.fallHalfHeight;
+                        inst.fallVy       = 0.f;
                         inst.landTimerSec = 0.f;
                     }
                 }
@@ -638,8 +646,7 @@ void PropWorld::Tick(
         std::remove_if(
             m_props.begin(),
             m_props.end(),
-            [&](const PropInstance& _p)
-            {
+            [&](const PropInstance& _p) {
                 if (!_p.bRemove)
                 {
                     return false;
@@ -708,7 +715,7 @@ void PropWorld::Submit(
         {
             continue;
         }
-        const PropVisual& pv = inst.visuals[static_cast<size_t>(inst.visual)];
+        const PropVisual& pv    = inst.visuals[static_cast<size_t>(inst.visual)];
         AnimFrame         frame = {};
         if (pv.ref == eVisualRef::Sprite)
         {
@@ -753,9 +760,9 @@ void PropWorld::Submit(
 }
 
 bool ApplyGroundPatch(
-    GroundMap&         _map,
-    const Vec2 _topLeft,
-    const GroundMap&   _footprint)
+    GroundMap&       _map,
+    const Vec2       _topLeft,
+    const GroundMap& _footprint)
 {
     // 발자국(마스크의 고체 픽셀)만 공기로 지운다. 발자국 밖 픽셀은 절대 건드리지 않는다.
     // 가드 (하나라도 걸리면 아무것도 바꾸지 않고 false):
@@ -829,24 +836,87 @@ uint64_t PropWorld::HashState() const
     uint64_t h = 1469598103934665603ull;
     for (const PropInstance& inst: m_props)
     {
-        h = MixHash(h, inst.id);
-        h = MixHash(h, static_cast<uint64_t>(inst.defIndex));
-        h = MixFloat(h, inst.pos.x);
-        h = MixFloat(h, inst.pos.y);
-        h = MixHash(h, static_cast<uint64_t>(inst.health.hp));
-        h = MixHash(h, inst.bDestroyed ? 1u : 0u);
-        h = MixFloat(h, inst.destroyTimerSec);
-        h = MixFloat(h, inst.secondaryTimerSec);
-        h = MixFloat(h, inst.landTimerSec);
-        h = MixHash(h, static_cast<uint64_t>(inst.visual));
+        h = MixHash_(h, inst.id);
+        h = MixHash_(h, static_cast<uint64_t>(inst.defIndex));
+        h = MixFloat_(h, inst.pos.x);
+        h = MixFloat_(h, inst.pos.y);
+        h = MixHash_(h, static_cast<uint64_t>(inst.health.hp));
+        h = MixHash_(h, inst.bDestroyed ? 1u : 0u);
+        h = MixFloat_(h, inst.destroyTimerSec);
+        h = MixFloat_(h, inst.secondaryTimerSec);
+        h = MixFloat_(h, inst.landTimerSec);
+        h = MixHash_(h, static_cast<uint64_t>(inst.visual));
     }
     for (const PropDebrisPiece& piece: m_debris)
     {
-        h = MixFloat(h, piece.pos.x);
-        h = MixFloat(h, piece.pos.y);
-        h = MixFloat(h, piece.vel.x);
-        h = MixFloat(h, piece.vel.y);
+        h = MixFloat_(h, piece.pos.x);
+        h = MixFloat_(h, piece.pos.y);
+        h = MixFloat_(h, piece.vel.x);
+        h = MixFloat_(h, piece.vel.y);
     }
-    return MixHash(h, m_items.HashState());
+    return MixHash_(h, m_items.HashState());
 }
+
+const PropDefLibrary* PropWorld::GetLibrary() const
+{
+    return m_pLibrary;
 }
+
+Span<const Platform> PropWorld::GetPlatforms() const
+{
+    return m_platforms;
+}
+
+Span<const Platform> PropWorld::GetEnemyPlatforms() const
+{
+    return m_enemyPlatforms;
+}
+
+Span<const Wall> PropWorld::GetWalls() const
+{
+    return m_walls;
+}
+
+Span<const PropInstance> PropWorld::GetProps() const
+{
+    return m_props;
+}
+
+size_t PropWorld::GetCount() const
+{
+    return m_props.size();
+}
+
+Span<const PropDebrisPiece> PropWorld::GetDebris() const
+{
+    return m_debris;
+}
+
+ItemWorld& PropWorld::GetItems()
+{
+    return m_items;
+}
+
+const ItemWorld& PropWorld::GetItems() const
+{
+    return m_items;
+}
+
+uint32_t PropWorld::SpawnDecor(
+    const DecorSpawn& _spawn)
+{
+    return m_decor.Spawn(_spawn);
+}
+
+void PropWorld::ClearDecorByLayerMask(
+    const uint32_t _layerMask)
+{
+    m_decor.ClearByLayerMask(_layerMask);
+}
+
+const DecorWorld& PropWorld::GetDecor() const
+{
+    return m_decor;
+}
+
+}   // namespace slug

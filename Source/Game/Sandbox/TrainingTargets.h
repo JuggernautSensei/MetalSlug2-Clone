@@ -1,7 +1,6 @@
 #pragma once
-#include "Base/Types.h"
 #include "Base/Math.h"
-
+#include "Base/Types.h"
 #include "Core/Tuning.h"
 #include "Game/Combat/CombatSystem.h"
 #include "Game/Combat/Projectiles.h"
@@ -10,6 +9,7 @@
 
 namespace slug
 {
+
 enum class eDummyKind : uint8_t
 {
     Grunt,
@@ -22,22 +22,22 @@ inline constexpr uint8_t  kEnemyBulletTag = 100;
 
 struct TrainingDummy
 {
-    uint32_t     id         = kNoOwner;
-    eDummyKind   kind       = eDummyKind::Grunt;
-    bool         bShooter   = false;
-    Vec2 feet       = { 0.f, 0.f };
-    Vec2 size       = { 20.f, 44.f };
-    int          facing     = -1;
-    Health       health     = {};
-    int          flashTicks = 0;    // 피격 번쩍임 남은 틱
-    int          deadTicks  = -1;   // -1: 생존, 0..: 사망 후 경과 틱
-    int          shootTimer = 0;
-    int          hitsTaken  = 0;
-    int          lastDamage = 0;
-    eHitKind     lastKind   = eHitKind::Bullet;
-    AnimPlayer   anim       = {};
+    uint32_t   id         = kNoOwner;
+    eDummyKind kind       = eDummyKind::Grunt;
+    bool       bShooter   = false;
+    Vec2       feet       = { 0.f, 0.f };
+    Vec2       size       = { 20.f, 44.f };
+    int        facing     = -1;
+    Health     health     = {};
+    int        flashTicks = 0;    // 피격 번쩍임 남은 틱
+    int        deadTicks  = -1;   // -1: 생존, 0..: 사망 후 경과 틱
+    int        shootTimer = 0;
+    int        hitsTaken  = 0;
+    int        lastDamage = 0;
+    eHitKind   lastKind   = eHitKind::Bullet;
+    AnimPlayer anim       = {};
 
-    [[nodiscard]] bool IsAlive() const { return deadTicks < 0 && health.IsAlive(); }
+    [[nodiscard]] bool IsAlive() const;
 };
 
 class TrainingTargets
@@ -45,31 +45,41 @@ class TrainingTargets
 public:
     void Clear();
 
-    uint32_t Add(eDummyKind _kind, Vec2 _feet, bool _bShooter, const SandboxTuning& _tuning);
+    uint32_t Add(
+        eDummyKind           _kind,
+        Vec2                 _feet,
+        bool                 _bShooter,
+        const SandboxTuning& _tuning);
 
     void RegisterHurtboxes(CombatSystem& _combat) const;
 
-    void TickShooters(const SandboxTuning& _tuning, Vec2 _playerFeet, bool _bPlayerAlive, ProjectileSystem& _projectiles, CombatSystem& _combat);
+    void TickShooters(
+        const SandboxTuning& _tuning,
+        Vec2                 _playerFeet,
+        bool                 _bPlayerAlive,
+        ProjectileSystem&    _projectiles,
+        CombatSystem&        _combat);
 
-    int ApplyEvents(slug::Span<const HitEvent> _events, const SandboxTuning& _tuning);
+    int ApplyEvents(Span<const HitEvent> _events, const SandboxTuning& _tuning);
 
     void Tick(const SandboxTuning& _tuning);
 
-    [[nodiscard]] slug::Span<const TrainingDummy> GetDummies() const { return m_dummies; }
-    [[nodiscard]] slug::Span<TrainingDummy>       GetDummies() { return m_dummies; }
-    [[nodiscard]] const TrainingDummy*           Find(uint32_t _id) const;
-    [[nodiscard]] int                            GetKillCount() const { return m_killCount; }
-    [[nodiscard]] uint64_t                       HashState() const;
+    [[nodiscard]] Span<const TrainingDummy> GetDummies() const;
+    [[nodiscard]] Span<TrainingDummy>       GetDummies();
+    [[nodiscard]] const TrainingDummy*      Find(uint32_t _id) const;
+    [[nodiscard]] int                       GetKillCount() const;
+    [[nodiscard]] uint64_t                  HashState() const;
 
 private:
     void Revive_(TrainingDummy& _dummy, const SandboxTuning& _tuning) const;
 
-    slug::Vector<TrainingDummy> m_dummies   = {};
-    uint32_t                   m_nextId    = kDummyOwnerBase;
-    int                        m_killCount = 0;
+    Vector<TrainingDummy> m_dummies   = {};
+    uint32_t              m_nextId    = kDummyOwnerBase;
+    int                   m_killCount = 0;
 };
 
-[[nodiscard]] Vec2 GetDummySize(eDummyKind _kind);
-[[nodiscard]] int          GetDummyHp(eDummyKind _kind, const SandboxTuning& _tuning);
-[[nodiscard]] const char*  GetDummyName(eDummyKind _kind);
-}
+[[nodiscard]] Vec2        GetDummySize(eDummyKind _kind);
+[[nodiscard]] int         GetDummyHp(eDummyKind _kind, const SandboxTuning& _tuning);
+[[nodiscard]] const char* GetDummyName(eDummyKind _kind);
+
+}   // namespace slug

@@ -82,4 +82,30 @@ uint8_t FadeController::GetAlpha255() const
 {
     return static_cast<uint8_t>(std::lround(std::clamp(m_alpha, 0.f, 1.f) * 255.f));
 }
+
+float FadeController::GetAlpha() const
+{
+    return m_alpha;
 }
+
+FadeController::ePhase FadeController::GetPhase() const
+{
+    return m_phase;
+}
+
+bool FadeController::IsBusy() const
+{
+    return m_phase == ePhase::FadingToBlack || m_phase == ePhase::FadingToClear;
+}
+
+bool FadeController::IsBlack() const
+{
+    return m_phase == ePhase::Black;
+}
+
+bool FadeController::IsClear() const
+{
+    return m_phase == ePhase::Clear;
+}
+
+}   // namespace slug

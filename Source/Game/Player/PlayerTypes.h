@@ -3,6 +3,7 @@
 
 namespace slug
 {
+
 enum class ePlayerState : uint8_t
 {
     Idle,
@@ -84,4 +85,5 @@ enum class ePose : uint8_t
 }
 
 inline constexpr uint32_t kPlayerOwnerId = 1;
-}
+
+}   // namespace slug

@@ -1,11 +1,11 @@
 #pragma once
 #include "Base/Types.h"
-
 #include "Core/Input.h"
 #include "Core/Tuning.h"
 
 namespace slug
 {
+
 struct PlayerCommand
 {
     int  moveX         = 0;   // -1, 0, +1 (좌우를 동시에 누르면 0)
@@ -33,6 +33,7 @@ public:
 private:
     static constexpr int kNever = 1'000'000;
 
-    slug::ARRAY<int, kActionCount> m_ticksSincePress = {};
+    ARRAY<int, kActionCount> m_ticksSincePress = {};
 };
-}
+
+}   // namespace slug

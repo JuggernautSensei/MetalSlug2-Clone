@@ -1,16 +1,22 @@
 #include "Game/Sandbox/Effects.h"
-#include "Base/Types.h"
-#include "Base/Math.h"
 
 #include <algorithm>
+
+#include "Base/Math.h"
+#include "Base/Types.h"
 
 namespace slug
 {
 
+void EffectList::Clear()
+{
+    m_effects.clear();
+}
+
 void EffectList::Spawn(
     const AnimationLibrary& _library,
-    const slug::StringView   _clipName,
-    const Vec2      _position,
+    const StringView        _clipName,
+    const Vec2              _position,
     const int               _layer)
 {
     const AnimId id = _library.Find(_clipName);
@@ -49,4 +55,10 @@ void EffectList::Submit(
         }
     }
 }
+
+size_t EffectList::GetCount() const
+{
+    return m_effects.size();
 }
+
+}   // namespace slug

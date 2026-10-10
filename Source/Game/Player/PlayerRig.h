@@ -1,9 +1,8 @@
 #pragma once
 #include "Base/Handle.h"
+#include "Base/Math.h"
 #include "Base/RGBA.h"
 #include "Base/Types.h"
-#include "Base/Math.h"
-
 #include "Core/Tuning.h"
 #include "Game/Player/PlayerTypes.h"
 #include "Render/Animation.h"
@@ -11,6 +10,7 @@
 
 namespace slug
 {
+
 enum class eRigClip : uint8_t
 {
     Idle,
@@ -62,10 +62,10 @@ struct RigState
     eOverlay     overlay              = eOverlay::None;
     bool         bSlashSecond         = false;
     uint32_t     overlaySerial        = 0;
-    int          overlayDurationTicks = 0;       // 겹침 동작 클립이 이 틱 수에 맞춰 재생된다
-    int          airTicks             = 0;       // 공중에 뜬 뒤 경과 틱
+    int          overlayDurationTicks = 0;   // 겹침 동작 클립이 이 틱 수에 맞춰 재생된다
+    int          airTicks             = 0;   // 공중에 뜬 뒤 경과 틱
     bool         bAirFromJump         = true;
-    uint32_t     stateSerial          = 0;       // 사망 등 큰 상태 전환마다 증가
+    uint32_t     stateSerial          = 0;   // 사망 등 큰 상태 전환마다 증가
     bool         bIdleAction          = false;
     bool         bVisible             = true;
 };
@@ -75,36 +75,45 @@ class PlayerRig
 public:
     struct BindReport
     {
-        int                      missingRequired = 0;
-        slug::Vector<slug::String> missingNames    = {};
+        int            missingRequired = 0;
+        Vector<String> missingNames    = {};
     };
 
     BindReport Bind(const AnimationLibrary& _library, const RigTuning& _tuning);
 
     void Update(const RigState& _state);
 
-    void Submit(SpriteBatch& _sprites, Vec2 _feet, int _layer, int _sortKey, slug::RGBA _tint = { 255, 255, 255, 255 }) const;
+    void Submit(
+        SpriteBatch& _sprites,
+        Vec2         _feet,
+        int          _layer,
+        int          _sortKey,
+        RGBA         _tint = { 255, 255, 255, 255 }) const;
 
-    [[nodiscard]] AnimId       GetUpperClip() const { return m_upper.GetClip(); }
-    [[nodiscard]] AnimId       GetLowerClip() const { return m_lower.GetClip(); }
-    [[nodiscard]] int          GetUpperFrame() const { return m_upper.GetFrame(); }
-    [[nodiscard]] int          GetLowerFrame() const { return m_lower.GetFrame(); }
-    [[nodiscard]] float        GetOriginLift() const { return m_originLift; }
-    [[nodiscard]] Vec2 GetOrigin(Vec2 _feet) const { return { _feet.x, _feet.y - m_originLift }; }
+    [[nodiscard]] AnimId GetUpperClip() const;
+    [[nodiscard]] AnimId GetLowerClip() const;
+    [[nodiscard]] int    GetUpperFrame() const;
+    [[nodiscard]] int    GetLowerFrame() const;
+    [[nodiscard]] float  GetOriginLift() const;
+    [[nodiscard]] Vec2   GetOrigin(Vec2 _feet) const;
 
     [[nodiscard]] AnimId GetSlotClip(eWeapon _weapon, int _facing, eRigClip _slot) const;
 
-    [[nodiscard]] static slug::String ResolveClipName(const AnimationLibrary& _library, eRigClip _slot, eWeapon _weapon, int _facing);
+    [[nodiscard]] static String ResolveClipName(
+        const AnimationLibrary& _library,
+        eRigClip                _slot,
+        eWeapon                 _weapon,
+        int                     _facing);
 
     [[nodiscard]] static bool IsSlotRequired(eRigClip _slot);
 
 private:
     struct Slot
     {
-        AnimId id       = slug::kNullHandle;
+        AnimId id       = kNullHandle;
         int    baseline = 0;   // 클립 프레임들 중 발 쪽으로 가장 낮은 바닥 (원점 아래 px)
     };
-    using SlotTable = slug::ARRAY<Slot, kRigClipCount>;
+    using SlotTable = ARRAY<Slot, kRigClipCount>;
 
     [[nodiscard]] const SlotTable& GetTable_(eWeapon _weapon, int _facing) const;
     [[nodiscard]] Slot             GetSlot_(const SlotTable& _table, eRigClip _slot) const;
@@ -113,7 +122,7 @@ private:
     const AnimationLibrary* m_pLibrary = nullptr;
     RigTuning               m_tuning   = {};
 
-    slug::ARRAY<slug::ARRAY<SlotTable, 2>, kWeaponCount> m_tables = {};   // [weapon][0 = Left, 1 = Right]
+    ARRAY<ARRAY<SlotTable, 2>, kWeaponCount> m_tables = {};   // [weapon][0 = Left, 1 = Right]
 
     AnimPlayer m_upper     = {};
     AnimPlayer m_lower     = {};
@@ -125,4 +134,5 @@ private:
     uint32_t m_lastStateSerial   = 0;
     float    m_originLift        = 0.f;
 };
-}
+
+}   // namespace slug

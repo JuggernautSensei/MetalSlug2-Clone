@@ -5,6 +5,15 @@
 namespace slug
 {
 
+namespace
+{
+    constexpr int kResultsFadeTicks = 12;    // 상자 페이드 인
+    constexpr int kTicksPerPow      = 6;     // 구출 수 한 명 집계 간격 (0.1초)
+    constexpr int kRankDelayTicks   = 18;    // 집계 끝 -> 보너스/등급 표시
+    constexpr int kRankHoldTicks    = 150;   // 등급 표시 후 대기 (2.5초)
+    constexpr int kPowBonusScore    = 10'000;
+}   // namespace
+
 ScreenFlowConfig MakeGameOverFlowConfig()
 {
     ScreenFlowConfig config;
@@ -14,23 +23,14 @@ ScreenFlowConfig MakeGameOverFlowConfig()
     config.bgmFadeSeconds = 0.5f;
     config.delayTicks     = 0;
     config.artSprite      = "UI_GameOver_Helmet";
-    config.artFadeInTicks = 30;                           // 0.5 s 페이드 인
+    config.artFadeInTicks = 30;                            // 0.5 s 페이드 인
     config.bannerTicks    = config.artFadeInTicks + 180;   // 페이드 인 + 3 s 홀드
     config.fadeTicks      = 40;
     config.holdTicks      = 20;
     return config;
 }
 
-namespace
-{
-    constexpr int kResultsFadeTicks  = 12;    // 상자 페이드 인
-    constexpr int kTicksPerPow       = 6;     // 구출 수 한 명 집계 간격 (0.1초)
-    constexpr int kRankDelayTicks    = 18;    // 집계 끝 -> 보너스/등급 표시
-    constexpr int kRankHoldTicks     = 150;   // 등급 표시 후 대기 (2.5초)
-    constexpr int kPowBonusScore     = 10000;
-}
-
-slug::StringView MissionRankText(
+StringView MissionRankText(
     const int _rescued)
 {
     if (_rescued >= 15)
@@ -49,11 +49,11 @@ int MissionRankBonus(
 {
     if (_rescued >= 15)
     {
-        return 220000;
+        return 220'000;
     }
     if (_rescued >= 8)
     {
-        return 100000;
+        return 100'000;
     }
     return 0;
 }
@@ -75,7 +75,7 @@ MissionResultsView MakeMissionResultsView(
     const int _rescued,
     const int _localTicks)
 {
-    const int rescued = std::max(0, _rescued);
+    const int          rescued = std::max(0, _rescued);
     MissionResultsView view;
     if (_localTicks < 0 || _localTicks >= MissionResultsTicks(rescued))
     {
@@ -96,7 +96,7 @@ MissionResultsView MakeMissionResultsView(
     if (_localTicks >= rankAt && !MissionRankText(rescued).empty())
     {
         view.bRankVisible = true;
-        view.rankText     = slug::String { MissionRankText(rescued) };
+        view.rankText     = String { MissionRankText(rescued) };
     }
     return view;
 }
@@ -203,7 +203,7 @@ void ScreenFlow::BeginBanner_(
     }
     m_phase = eFlowPhase::Banner;
 
-    BannerSpec spec  = MakeBannerSpec(m_config.bannerText, static_cast<float>(m_config.bannerTicks) / 60.f);
+    BannerSpec spec   = MakeBannerSpec(m_config.bannerText, static_cast<float>(m_config.bannerTicks) / 60.f);
     spec.fadeInTicks  = std::min(18, m_config.bannerTicks / 4);
     spec.fadeOutTicks = spec.fadeInTicks;
     spec.holdTicks    = std::max(0, m_config.bannerTicks - 2 * spec.fadeInTicks);
@@ -261,4 +261,30 @@ void ScreenFlow::Advance_(
         m_phase = eFlowPhase::Done;
     }
 }
+
+eFlowPhase ScreenFlow::GetPhase() const
+{
+    return m_phase;
 }
+
+bool ScreenFlow::IsRunning() const
+{
+    return m_phase != eFlowPhase::Idle && m_phase != eFlowPhase::Done;
+}
+
+bool ScreenFlow::IsDone() const
+{
+    return m_phase == eFlowPhase::Done;
+}
+
+int ScreenFlow::GetElapsedTicks() const
+{
+    return m_elapsed;
+}
+
+int ScreenFlowConfig::GetTotalTicks() const
+{
+    return delayTicks + resultsTicks + bannerTicks + fadeTicks + holdTicks;
+}
+
+}   // namespace slug

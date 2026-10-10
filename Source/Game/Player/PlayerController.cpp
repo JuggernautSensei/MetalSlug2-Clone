@@ -1,5 +1,4 @@
 #include "Game/Player/PlayerController.h"
-#include "Base/Types.h"
 
 #include <algorithm>
 #include <bit>
@@ -7,7 +6,7 @@
 #include <cstring>
 
 #include "Base/Math.h"
-
+#include "Base/Types.h"
 #include "Game/Player/PlayerHitboxes.h"
 
 namespace slug
@@ -62,19 +61,19 @@ namespace
         uint64_t& _hash,
         const T&  _value)
     {
-        unsigned char bytes[sizeof(T)];
-        std::memcpy(bytes, &_value, sizeof(T));
-        for (const unsigned char byte: bytes)
+        ARRAY<uint8_t, sizeof(T)> bytes = {};
+        std::memcpy(bytes.data(), &_value, sizeof(T));
+        for (const uint8_t byte: bytes)
         {
             _hash ^= byte;
-            _hash *= 1099511628211ull;
+            _hash *= 1'099'511'628'211ull;
         }
     }
-}
+}   // namespace
 
 void PlayerController::Reset(
-    const Tuning&      _tuning,
-    const Vec2 _spawnFeet)
+    const Tuning& _tuning,
+    const Vec2    _spawnFeet)
 {
     m_pTuning = &_tuning;
 
@@ -90,19 +89,19 @@ void PlayerController::Reset(
     ResetWeapons(m_weapon, _tuning);
     m_stats = {};
 
-    m_state   = ePlayerState::Idle;
-    m_pose    = ePose::Stand;
-    m_aim     = eAim::Forward;
+    m_state     = ePlayerState::Idle;
+    m_pose      = ePose::Stand;
+    m_aim       = eAim::Forward;
     m_aimDegree = 0.f;
-    m_overlay = eOverlay::None;
-    m_facing  = 1;
+    m_overlay   = eOverlay::None;
+    m_facing    = 1;
 
     m_airTicks         = 0;
     m_bCoyoteAvailable = true;
     m_bJumping         = false;
     m_bAirFromJump     = true;
 
-    m_shotTicksLeft      = 0;
+    m_shotTicksLeft       = 0;
     m_knifeTick           = -1;
     m_knifeHitId          = kNoHitId;
     m_bSlashSecond        = false;
@@ -158,7 +157,7 @@ void PlayerController::SetVictory()
 }
 
 bool PlayerController::OnHitEvents(
-    const slug::Span<const HitEvent> _events)
+    const Span<const HitEvent> _events)
 {
     for (const HitEvent& event: _events)
     {
@@ -229,9 +228,9 @@ void PlayerController::Tick(
     m_pendingRelease.clear();
 
     m_input.Update(_input);
-    m_prevFeet      = m_body.position;
-    m_bSlashShown   = false;
-    m_bThrowShown   = false;
+    m_prevFeet    = m_body.position;
+    m_bSlashShown = false;
+    m_bThrowShown = false;
     TickWeapon(m_weapon);
 
     if (m_state == ePlayerState::Dead)
@@ -355,7 +354,7 @@ void PlayerController::TickMovement_(
     }
     const bool  bFiring = _command.bShotHeld || m_shotTicksLeft > 0 || m_throwTick >= 0 || _command.bBombBuffered;
     const float speed   = bCrouch ? (bFiring ? 0.f : move.crouchSpeed) : (bGroundedBefore ? move.runSpeed : move.airSpeed);
-    m_body.velocity.x = static_cast<float>(m_moveX) * speed;
+    m_body.velocity.x   = static_cast<float>(m_moveX) * speed;
 
     const bool bCoyote = m_bCoyoteAvailable && m_airTicks >= 1 && m_airTicks <= move.coyoteTicks;
 
@@ -401,7 +400,7 @@ void PlayerController::TickMovement_(
         m_airTicks         = 0;
         m_bCoyoteAvailable = true;
         m_bJumping         = false;
-        m_pose            = bCrouch ? ePose::Crouch : ePose::Stand;
+        m_pose             = bCrouch ? ePose::Crouch : ePose::Stand;
     }
     else
     {
@@ -419,8 +418,8 @@ void PlayerController::TickMovement_(
 void PlayerController::UpdateAim_(
     const PlayerCommand& _command)
 {
-    const bool bHmg        = m_weapon.weapon == eWeapon::Hmg;
-    float      targetDeg   = 0.f;
+    const bool bHmg      = m_weapon.weapon == eWeapon::Hmg;
+    float      targetDeg = 0.f;
     if (m_pose != ePose::Crouch)
     {
         if (_command.bUpHeld && !_command.bDownHeld)
@@ -435,7 +434,7 @@ void PlayerController::UpdateAim_(
 
     if (bHmg)
     {
-        constexpr float kSweepPerTick = 350.f / 60.f;
+        constexpr float kSweepPerTick  = 350.f / 60.f;
         constexpr float kReturnPerTick = 1000.f / 60.f;
         const float     step           = m_shotTicksLeft > 0 || _command.bShotHeld ? kSweepPerTick : kReturnPerTick;
         m_aimDegree += std::clamp(targetDeg - m_aimDegree, -step, step);
@@ -633,15 +632,15 @@ void PlayerController::TickShot_(
         const float rad = m_aimDegree * (3.14159265f / 180.f);
         direction       = { static_cast<float>(m_facing) * std::cos(rad), -std::sin(rad) };
     }
-    const Vec2 chest     = { m_body.position.x, m_body.position.y - m_body.size.y * 0.6f };
+    const Vec2 chest = { m_body.position.x, m_body.position.y - m_body.size.y * 0.6f };
 
     BulletSpawn spawn = MakeBulletSpawn(m_weapon.weapon, weapon, kPlayerOwnerId, muzzle, chest, direction);
     _ctx.pProjectiles->SpawnBullet(spawn, *_ctx.pCombat);
     if (m_weapon.weapon == eWeapon::Flame)
     {
-        constexpr float kSpeedScale[] = { 0.7f, 1.3f };
-        constexpr float kLift[]       = { -7.f, 7.f };
-        for (int i = 0; i < 2; ++i)
+        constexpr ARRAY<float, 2> kSpeedScale = { 0.7f, 1.3f };
+        constexpr ARRAY<float, 2> kLift       = { -7.f, 7.f };
+        for (size_t i = 0; i < kSpeedScale.size(); ++i)
         {
             BulletSpawn extra = spawn;
             extra.speed       = spawn.speed * kSpeedScale[i];
@@ -683,7 +682,7 @@ RigState PlayerController::MakeRigState() const
             case eOverlay::None: break;
         }
 
-        const int period = slug::Max(1, m_pTuning->player.blinkPeriodTicks);
+        const int period = Max(1, m_pTuning->player.blinkPeriodTicks);
         if (m_invincibleTicks > 0 && m_state != ePlayerState::Victory)
         {
             rig.bVisible = ((m_invincibleTicks / period) % 2) == 1;
@@ -695,7 +694,7 @@ RigState PlayerController::MakeRigState() const
 
 uint64_t PlayerController::HashState() const
 {
-    uint64_t hash = 14695981039346656037ull;
+    uint64_t hash = 14'695'981'039'346'656'037ull;
     HashBytes_(hash, m_body.position.x);
     HashBytes_(hash, m_body.position.y);
     HashBytes_(hash, m_body.velocity.x);
@@ -741,4 +740,138 @@ void PlayerController::PushFeetX(
         }
     }
 }
+
+void PlayerController::AddScore(
+    const int _score)
+{
+    m_score += _score;
 }
+
+void PlayerController::AddBombs(
+    const int _count)
+{
+    m_weapon.bombs += _count;
+}
+
+ePlayerState PlayerController::GetState() const
+{
+    return m_state;
+}
+
+Vec2 PlayerController::GetFeet() const
+{
+    return m_body.position;
+}
+
+Vec2 PlayerController::GetPrevFeet() const
+{
+    return m_prevFeet;
+}
+
+Vec2 PlayerController::GetVelocity() const
+{
+    return m_body.velocity;
+}
+
+int PlayerController::GetFacing() const
+{
+    return m_facing;
+}
+
+bool PlayerController::IsGrounded() const
+{
+    return m_body.bGrounded;
+}
+
+ePose PlayerController::GetPose() const
+{
+    return m_pose;
+}
+
+eAim PlayerController::GetAim() const
+{
+    return m_aim;
+}
+
+eOverlay PlayerController::GetOverlay() const
+{
+    return m_overlay;
+}
+
+const WeaponState& PlayerController::GetWeapon() const
+{
+    return m_weapon;
+}
+
+int PlayerController::GetLives() const
+{
+    return m_lives;
+}
+
+int PlayerController::GetScore() const
+{
+    return m_score;
+}
+
+bool PlayerController::IsAlive() const
+{
+    return m_state != ePlayerState::Dead;
+}
+
+bool PlayerController::IsInvincible() const
+{
+    return m_invincibleTicks > 0 || m_state == ePlayerState::Victory;
+}
+
+int PlayerController::GetInvincibleTicks() const
+{
+    return m_invincibleTicks;
+}
+
+void PlayerController::ExtendInvincibility(
+    const int _ticks)
+{
+    m_invincibleTicks = (_ticks > m_invincibleTicks) ? _ticks : m_invincibleTicks;
+}
+
+bool PlayerController::IsGameOver() const
+{
+    return m_bGameOver;
+}
+
+int PlayerController::GetGameOverTicks() const
+{
+    return m_gameOverTicks;
+}
+
+bool PlayerController::IsKnifeInProgress() const
+{
+    return m_knifeTick >= 0;
+}
+
+bool PlayerController::IsMoving() const
+{
+    return m_bMoving;
+}
+
+const PlayerStats& PlayerController::GetStats() const
+{
+    return m_stats;
+}
+
+const Body& PlayerController::GetBody() const
+{
+    return m_body;
+}
+
+Aabb PlayerController::GetBodyBox() const
+{
+    return m_body.GetBox();
+}
+
+bool PlayerController::IsKnifeTargetInRange() const
+{
+    return m_bKnifeTargetInRange;
+}
+
+}   // namespace slug
