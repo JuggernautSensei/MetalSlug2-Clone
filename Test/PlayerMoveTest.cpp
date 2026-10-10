@@ -1,8 +1,8 @@
-#include "PlayerTestUtil.h"
-#include "Base/Types.h"
+// 플레이어 이동 테스트: 시작 상태, 달리기, 웅크리기, 점프, 조준, 결정성 검증
 #include "Base/Random.h"
-
+#include "Base/Types.h"
 #include "Game/StateFactory.h"
+#include "PlayerTestUtil.h"
 
 using namespace slugtest;
 
@@ -328,7 +328,7 @@ struct JumpMeasure
     int   ticks = 0;
 };
 
-JumpMeasure MeasureJump(
+[[nodiscard]] JumpMeasure MeasureJump_(
     Sim&       _sim,
     const bool _bHold)
 {
@@ -348,13 +348,13 @@ JumpMeasure MeasureJump(
     } while (!_sim.Player().IsGrounded() && ticks < 300);
     return { groundY - minY, ticks };
 }
-}
+}   // namespace
 
 TEST(PlayerJump, HeldJumpApexAndAirTimeFeelRight)
 {
     Sim sim;
     sim.Step(2);
-    const JumpMeasure held = MeasureJump(sim, true);
+    const JumpMeasure held = MeasureJump_(sim, true);
     EXPECT_GE(held.apex, 120.f);
     EXPECT_LE(held.apex, 135.f);
     const float airSec = static_cast<float>(held.ticks) / 60.f;
@@ -366,11 +366,11 @@ TEST(PlayerJump, TapAndHoldJumpTheSameHeight)
 {
     Sim tapSim;
     tapSim.Step(2);
-    const JumpMeasure tap = MeasureJump(tapSim, false);
+    const JumpMeasure tap = MeasureJump_(tapSim, false);
 
     Sim heldSim;
     heldSim.Step(2);
-    const JumpMeasure held = MeasureJump(heldSim, true);
+    const JumpMeasure held = MeasureJump_(heldSim, true);
 
     EXPECT_FLOAT_EQ(tap.apex, held.apex);
     EXPECT_EQ(tap.ticks, held.ticks);
@@ -380,7 +380,7 @@ TEST(PlayerJump, LandsBackOnTheGround)
 {
     Sim sim;
     sim.Step(2);
-    (void)MeasureJump(sim, true);
+    (void)MeasureJump_(sim, true);
     EXPECT_TRUE(sim.Player().IsGrounded());
     EXPECT_FLOAT_EQ(sim.Y(), 378.f);
     EXPECT_EQ(sim.Player().GetState(), ePlayerState::Idle);
@@ -416,22 +416,29 @@ TEST(PlayerJump, FullAirControl)
     EXPECT_EQ(sim.Player().GetFacing(), -1);
 }
 
+namespace
+{
+// 지면 위 38px 에서 시작하는 Sim: 곧 착지하는 점프 버퍼 시험용
+[[nodiscard]] Sim MakeLandingSim_()
+{
+    return Sim { MakeConfig(MakeFlatGround(), { 100.f, 340.f }) };
+}
+}   // namespace
+
 TEST(PlayerJump, JumpBufferTriggersOnLanding)
 {
-    auto Make = [] { return Sim { MakeConfig(MakeFlatGround(), { 100.f, 340.f }) }; };
-
-    Sim       probe   = Make();
-    const int landing = probe.StepUntil(100, [&] { return probe.Player().IsGrounded(); });
+    Sim       probe   = MakeLandingSim_();
+    const int landing = probe.StepUntilGrounded(100);
     ASSERT_GT(landing, 6);   // landing = 착지가 일어난 틱까지 진행한 수
 
-    Sim a = Make();
+    Sim a = MakeLandingSim_();
     a.Step(landing - 3);
     a.Tap(eAction::Jump);
     a.Step(2);   // 눌린 다음 두 틱 → 착지 틱 포함
     EXPECT_EQ(a.Player().GetStats().jumps, 1);
     EXPECT_LT(a.Player().GetVelocity().y, 0.f);
 
-    Sim b = Make();
+    Sim b = MakeLandingSim_();
     b.Step(landing - 8);
     b.Tap(eAction::Jump);
     b.Step(12);
@@ -441,17 +448,16 @@ TEST(PlayerJump, JumpBufferTriggersOnLanding)
 
 TEST(PlayerJump, JumpBufferBoundaryIsFourTicks)
 {
-    auto      Make    = [] { return Sim { MakeConfig(MakeFlatGround(), { 100.f, 340.f }) }; };
-    Sim       probe   = Make();
-    const int landing = probe.StepUntil(100, [&] { return probe.Player().IsGrounded(); });
+    Sim       probe   = MakeLandingSim_();
+    const int landing = probe.StepUntilGrounded(100);
 
-    Sim ok = Make();
+    Sim ok = MakeLandingSim_();
     ok.Step(landing - 4);   // 눌림 틱은 착지 3 틱 전
     ok.Tap(eAction::Jump);
     ok.Step(6);
     EXPECT_EQ(ok.Player().GetStats().jumps, 1);
 
-    Sim late = Make();
+    Sim late = MakeLandingSim_();
     late.Step(landing - 5);   // 한 틱 더 일찍(착지 4 틱 전): 버퍼(4틱)를 벗어난다
     late.Tap(eAction::Jump);
     late.Step(8);
@@ -460,20 +466,20 @@ TEST(PlayerJump, JumpBufferBoundaryIsFourTicks)
 
 namespace
 {
-SandboxConfig MakeLedgeConfig()
+[[nodiscard]] SandboxConfig MakeLedgeConfig_()
 {
     GroundMap ground = GroundMap::MakeEmpty(1600, 448);
     ground.FillRect(0, 378, 399, 447, true);
     ground.FillRect(400, 440, 1599, 447, true);
     return MakeConfig(std::move(ground), { 300.f, 378.f });
 }
-}
+}   // namespace
 
 TEST(PlayerJump, CoyoteJumpWorksShortlyAfterWalkingOffALedge)
 {
-    Sim sim { MakeLedgeConfig() };
+    Sim sim { MakeLedgeConfig_() };
     sim.Hold(eAction::Right);
-    const int walked = sim.StepUntil(200, [&] { return !sim.Player().IsGrounded(); });
+    const int walked = sim.StepUntilAirborne(200);
     ASSERT_GE(walked, 0);   // 이 시점이 낭떠러지를 벗어난 첫 틱 T
 
     sim.Step(2);   // T+1, T+2
@@ -485,9 +491,9 @@ TEST(PlayerJump, CoyoteJumpWorksShortlyAfterWalkingOffALedge)
 
 TEST(PlayerJump, CoyoteJumpIsRejectedLongAfterTheLedge)
 {
-    Sim sim { MakeLedgeConfig() };
+    Sim sim { MakeLedgeConfig_() };
     sim.Hold(eAction::Right);
-    ASSERT_GE(sim.StepUntil(200, [&] { return !sim.Player().IsGrounded(); }), 0);
+    ASSERT_GE(sim.StepUntilAirborne(200), 0);
 
     sim.Step(7);   // T+1 .. T+7
     sim.Hold(eAction::Jump);
@@ -501,9 +507,9 @@ TEST(PlayerJump, CoyoteWindowEndsAfterConfiguredTicks)
     const int coyote = Tuning {}.move.coyoteTicks;
     for (const int offset: { coyote, coyote + 1 })
     {
-        Sim sim { MakeLedgeConfig() };
+        Sim sim { MakeLedgeConfig_() };
         sim.Hold(eAction::Right);
-        ASSERT_GE(sim.StepUntil(200, [&] { return !sim.Player().IsGrounded(); }), 0);
+        ASSERT_GE(sim.StepUntilAirborne(200), 0);
         sim.Step(offset - 1);
         sim.Hold(eAction::Jump);
         sim.Step();
@@ -588,22 +594,22 @@ TEST(PlayerJump, JumpFromOneWayPlatformLandsBackOnIt)
 
 TEST(PlayerJump, WalkingOffALedgeStartsFalling)
 {
-    Sim sim { MakeLedgeConfig() };
+    Sim sim { MakeLedgeConfig_() };
     sim.Hold(eAction::Right);
-    ASSERT_GE(sim.StepUntil(200, [&] { return !sim.Player().IsGrounded(); }), 0);
+    ASSERT_GE(sim.StepUntilAirborne(200), 0);
     EXPECT_EQ(sim.Player().GetState(), ePlayerState::Jump);
     EXPECT_EQ(sim.Player().GetStats().jumps, 0);
 }
 
 namespace
 {
-slug::Vector<InputFrame> MakeNoisyScript(
+[[nodiscard]] slug::Vector<InputFrame> MakeNoisyScript_(
     const int      _ticks,
     const uint64_t _seed)
 {
     slug::RngMt19937         rng { _seed };
     slug::Vector<InputFrame> frames;
-    InputFrame              cur;
+    InputFrame               cur;
     for (int i = 0; i < _ticks; ++i)
     {
         if (i % 8 == 0)
@@ -616,7 +622,7 @@ slug::Vector<InputFrame> MakeNoisyScript(
     return frames;
 }
 
-uint64_t RunScript(
+[[nodiscard]] uint64_t RunScript_(
     const slug::Vector<InputFrame>& _frames)
 {
     SandboxConfig config = MakeFlatConfig();
@@ -628,15 +634,15 @@ uint64_t RunScript(
     }
     return sim.State().HashState();
 }
-}
+}   // namespace
 
 TEST(PlayerDeterminism, SameScriptTwiceGivesIdenticalStateHash)
 {
-    const slug::Vector<InputFrame> script = MakeNoisyScript(1500, 42);
-    EXPECT_EQ(RunScript(script), RunScript(script));
+    const slug::Vector<InputFrame> script = MakeNoisyScript_(1500, 42);
+    EXPECT_EQ(RunScript_(script), RunScript_(script));
 }
 
 TEST(PlayerDeterminism, DifferentScriptsGiveDifferentHashes)
 {
-    EXPECT_NE(RunScript(MakeNoisyScript(1500, 42)), RunScript(MakeNoisyScript(1500, 43)));
+    EXPECT_NE(RunScript_(MakeNoisyScript_(1500, 42)), RunScript_(MakeNoisyScript_(1500, 43)));
 }

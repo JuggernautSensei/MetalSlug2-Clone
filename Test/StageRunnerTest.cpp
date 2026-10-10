@@ -1,9 +1,14 @@
+// StageRunner 테스트: 트리거, 스폰, 웨이브, 게이트, 워프, 타이밍 등 섹션 액션 진행 검증
 #include <cmath>
-#include "Base/Math.h"
-#include "Base/Random.h"
+#include <optional>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include <gtest/gtest.h>
 
+#include "Base/Math.h"
+#include "Base/Random.h"
 #include "StageTestUtil.h"
 
 using namespace slug;
@@ -11,7 +16,7 @@ using namespace slugtest;
 
 namespace
 {
-std::string OneSection(
+[[nodiscard]] std::string OneSection_(
     const std::string& _actions,
     const std::string& _camera = R"J({"initialBounds":[0,0,4000,448]})J")
 {
@@ -19,7 +24,43 @@ std::string OneSection(
 }
 
 constexpr const char* kTallBounds = R"J({"initialBounds":[0,0,4000,1000]})J";
+
+// (x == 100 에만 바닥 352 가 있는) 플레이어 시작 바닥 질의
+[[nodiscard]] std::optional<float> PlayerStartGround_(
+    const float _x,
+    const float)
+{
+    return _x == 100.f ? std::optional<float> { 352.f } : std::nullopt;
 }
+
+// x < 1000 이고 fromY <= 300 일 때만 바닥 300 이 있는 질의 (그 밖은 바닥 없음)
+[[nodiscard]] std::optional<float> SnapGround_(
+    const float _x,
+    const float _fromY)
+{
+    if (_x < 1000.f && _fromY <= 300.f)
+    {
+        return 300.f;
+    }
+    return std::nullopt;
+}
+
+// 시드를 바꿔 웨이브를 70틱 돌린 뒤 스폰된 x 좌표 목록
+[[nodiscard]] std::vector<float> CollectWaveXs_(
+    const std::string& _json,
+    const uint64_t     _seed)
+{
+    RunnerFixture fx { _json };
+    fx.rng.Reseed(_seed);
+    fx.StepAt(5.f, 70);
+    std::vector<float> xs;
+    for (const SpawnLogEntry& entry: fx.host.spawns)
+    {
+        xs.push_back(entry.request.position.x);
+    }
+    return xs;
+}
+}   // namespace
 
 TEST(StageRunnerBegin, AppliesInitialGroundBackdropAndBgm)
 {
@@ -29,7 +70,7 @@ TEST(StageRunnerBegin, AppliesInitialGroundBackdropAndBgm)
 "backdrop":{"initial":"a","modes":{"a":{"sprite":"s","offset":[0,0],"parallaxX":0.1}}},
 "camera":{"initialBounds":[0,0,4000,448],"initialOffset":[7,8]},
 "sections":[{"id":"s0","triggerX":0,"actions":[]}]})J";
-    RunnerFixture fx { json };
+    RunnerFixture     fx { json };
     EXPECT_EQ(fx.host.currentGround, "G0");
     EXPECT_EQ(fx.host.currentBackdrop, "a");
     ASSERT_NE(fx.host.FindEvent("bgm:Stage1_BGM:loop"), nullptr);
@@ -45,17 +86,14 @@ TEST(StageRunnerBegin, ResolvesPlayerStartWithGroundSnap)
 "ground":{"initial":"G0","maps":["G0"]},
 "player":{"x":100,"groundSnap":true,"fromY":10},
 "sections":[{"id":"s0","triggerX":0,"actions":[]}]})J";
-    RunnerFixture fx { json };
-    float         seenFromY = -1.f;
-    fx.host.groundFn = [&seenFromY](float _x, float _fromY) -> std::optional<float> {
-        seenFromY = _fromY;
-        return _x == 100.f ? std::optional<float> { 352.f } : std::nullopt;
-    };
+    RunnerFixture     fx { json };
+    fx.host.groundFn                = PlayerStartGround_;
     const std::optional<Vec2> start = fx.runner.ResolvePlayerStart();
     ASSERT_TRUE(start.has_value());
     EXPECT_FLOAT_EQ(start->x, 100.f);
     EXPECT_FLOAT_EQ(start->y, 352.f);
-    EXPECT_FLOAT_EQ(seenFromY, 10.f);
+    ASSERT_FALSE(fx.host.groundQueries.empty());
+    EXPECT_FLOAT_EQ(fx.host.groundQueries.back().second, 10.f);
 }
 
 TEST(StageRunnerTrigger, FiresOnlyWhenStrictlyGreaterThanTriggerX)
@@ -125,7 +163,7 @@ TEST(StageRunnerTrigger, SameTriggerXKeepsArrayOrder)
 
 TEST(StageRunnerTrigger, ActionsRunInArrayOrder)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"spawn","kind":"prop","def":"first","x":1,"y":1},
         {"type":"spawn","kind":"prop","def":"second","x":1,"y":1},
         {"type":"spawn","kind":"prop","def":"third","x":1,"y":1}])J") };
@@ -140,7 +178,7 @@ TEST(StageRunnerTrigger, ActionsRunInArrayOrder)
 
 TEST(StageRunnerTiming, DelaysAreExactTicks)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"banner","text":"now","seconds":1},
         {"type":"banner","text":"half","seconds":1,"delay":0.5},
         {"type":"banner","text":"one","seconds":1,"delay":1.0},
@@ -166,7 +204,7 @@ TEST(StageRunnerTiming, DelayCountsFromTheTickTheSectionFired)
 
 TEST(StageRunnerTiming, SameDueTickKeepsScheduleOrder)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"banner","text":"X","seconds":1,"delay":1.0},
         {"type":"banner","text":"Y","seconds":1,"delay":1.0},
         {"type":"banner","text":"Z","seconds":1,"delay":0.5}])J") };
@@ -180,7 +218,7 @@ TEST(StageRunnerTiming, SameDueTickKeepsScheduleOrder)
 
 TEST(StageRunnerWave, EntriesSpawnAtTheirDelayWithCameraAnchoredPositions)
 {
-    RunnerFixture fx { OneSection(R"J([{"type":"spawnWave","entries":[
+    RunnerFixture fx { OneSection_(R"J([{"type":"spawnWave","entries":[
         {"delay":3.5,"kind":"enemy","def":"soldier_bomb","camera":{"ax":"right","dx":[-149,-50],"ay":"top","dy":47.5}},
         {"delay":9.0,"kind":"enemy","def":"soldier_sword","camera":{"ax":"left","dx":10,"ay":"bottom","dy":-5}}]}])J") };
     fx.StepAt(5.f, 1);
@@ -189,7 +227,7 @@ TEST(StageRunnerWave, EntriesSpawnAtTheirDelayWithCameraAnchoredPositions)
 
     fx.StepAt(5.f, 209);   // tick 209 까지
     EXPECT_TRUE(fx.host.spawns.empty());
-    fx.StepAt(5.f);        // tick 210
+    fx.StepAt(5.f);   // tick 210
     ASSERT_EQ(fx.host.spawns.size(), 1u);
     EXPECT_EQ(fx.host.spawns[0].tick, 210);
     const SpawnRequest& first = fx.host.spawns[0].request;
@@ -210,7 +248,7 @@ TEST(StageRunnerWave, EntriesSpawnAtTheirDelayWithCameraAnchoredPositions)
 
 TEST(StageRunnerWave, AnchorUsesTheCameraAtSpawnTime)
 {
-    RunnerFixture fx { OneSection(R"J([{"type":"spawnWave","entries":[
+    RunnerFixture fx { OneSection_(R"J([{"type":"spawnWave","entries":[
         {"delay":2.0,"kind":"enemy","def":"e","camera":{"ax":"right","dx":-100,"ay":"top","dy":0}}]}])J") };
     fx.camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
     fx.StepAt(5.f, 1);
@@ -224,22 +262,11 @@ TEST(StageRunnerWave, AnchorUsesTheCameraAtSpawnTime)
 
 TEST(StageRunnerWave, RandomDxIsSeededInRangeAndFixedDxDoesNotDrawRng)
 {
-    const std::string json = OneSection(R"J([{"type":"spawnWave","entries":[
+    const std::string        json = OneSection_(R"J([{"type":"spawnWave","entries":[
         {"delay":1.0,"kind":"enemy","def":"e","camera":{"ax":"left","dx":[100,200],"ay":"top","dy":0},"repeat":{"count":40,"stepX":0}}]}])J");
-    auto Collect = [&json](uint64_t _seed) {
-        RunnerFixture fx { json };
-        fx.rng.Reseed(_seed);
-        fx.StepAt(5.f, 70);
-        std::vector<float> xs;
-        for (const SpawnLogEntry& entry: fx.host.spawns)
-        {
-            xs.push_back(entry.request.position.x);
-        }
-        return xs;
-    };
-    const std::vector<float> a  = Collect(7);
-    const std::vector<float> a2 = Collect(7);
-    const std::vector<float> b  = Collect(8);
+    const std::vector<float> a    = CollectWaveXs_(json, 7);
+    const std::vector<float> a2   = CollectWaveXs_(json, 7);
+    const std::vector<float> b    = CollectWaveXs_(json, 8);
     ASSERT_EQ(a.size(), 40u);
     EXPECT_EQ(a, a2);
     EXPECT_NE(a, b);
@@ -252,7 +279,7 @@ TEST(StageRunnerWave, RandomDxIsSeededInRangeAndFixedDxDoesNotDrawRng)
     }
     EXPECT_TRUE(bVaried);
 
-    RunnerFixture fixed { OneSection(R"J([{"type":"spawnWave","entries":[
+    RunnerFixture fixed { OneSection_(R"J([{"type":"spawnWave","entries":[
         {"delay":1.0,"kind":"enemy","def":"e","camera":{"ax":"left","dx":123,"ay":"top","dy":0}}]}])J") };
     fixed.StepAt(5.f, 70);
     slug::RngMt19937 fresh { uint64_t { 1 } };
@@ -261,7 +288,7 @@ TEST(StageRunnerWave, RandomDxIsSeededInRangeAndFixedDxDoesNotDrawRng)
 
 TEST(StageRunnerWave, WaveEntryRepeatSpawnsCountInstances)
 {
-    RunnerFixture fx { OneSection(R"J([{"type":"spawnWave","entries":[
+    RunnerFixture fx { OneSection_(R"J([{"type":"spawnWave","entries":[
         {"delay":1.0,"kind":"enemy","def":"e","x":100,"y":50,"repeat":{"count":3,"stepX":10,"stepY":1}}]}])J") };
     fx.StepAt(5.f, 100);
     ASSERT_EQ(fx.host.spawns.size(), 3u);
@@ -272,7 +299,7 @@ TEST(StageRunnerWave, WaveEntryRepeatSpawnsCountInstances)
 
 TEST(StageRunnerSpawn, RepeatStepsPositionAndKeepsOriginMode)
 {
-    RunnerFixture fx { OneSection(R"J([{"type":"spawn","kind":"prop","def":"fence","x":100,"y":50,"repeat":{"count":3,"stepX":64,"stepY":2}}])J") };
+    RunnerFixture fx { OneSection_(R"J([{"type":"spawn","kind":"prop","def":"fence","x":100,"y":50,"repeat":{"count":3,"stepX":64,"stepY":2}}])J") };
     fx.StepAt(5.f);
     ASSERT_EQ(fx.host.spawns.size(), 3u);
     EXPECT_FLOAT_EQ(fx.host.spawns[0].request.position.x, 100.f);
@@ -285,7 +312,7 @@ TEST(StageRunnerSpawn, RepeatStepsPositionAndKeepsOriginMode)
 
 TEST(StageRunnerSpawn, OriginConversions)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"spawn","kind":"enemy","def":"big_vehicle","id":"big","x":2995,"y":255,"origin":"legacyCenter","halfHeight":130},
         {"type":"spawn","kind":"prop","def":"truck","x":580,"y":342},
         {"type":"spawn","kind":"enemy","def":"soldier_bomb","x":900,"y":300},
@@ -324,20 +351,12 @@ TEST(StageRunnerSpawn, OriginConversions)
 
 TEST(StageRunnerSpawn, GroundSnapUsesHostAndSkipsWhenNoGround)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"spawn","kind":"enemy","def":"a","x":500,"groundSnap":true},
         {"type":"spawn","kind":"enemy","def":"b","id":"skipme","x":1500,"groundSnap":true},
         {"type":"spawn","kind":"enemy","def":"c","x":600,"groundSnap":true,"fromY":400},
         {"type":"gate","id":"g","waitFor":["skipme"],"actions":[{"type":"banner","text":"opened","seconds":1}]}])J") };
-    std::vector<std::pair<float, float>> queries;
-    fx.host.groundFn = [&queries](float _x, float _fromY) -> std::optional<float> {
-        queries.emplace_back(_x, _fromY);
-        if (_x < 1000.f && _fromY <= 300.f)
-        {
-            return 300.f;
-        }
-        return std::nullopt;
-    };
+    fx.host.groundFn = SnapGround_;
     fx.StepAt(5.f, 3);
     ASSERT_EQ(fx.host.spawns.size(), 1u);
     EXPECT_EQ(fx.host.spawns[0].request.def, "a");
@@ -345,6 +364,7 @@ TEST(StageRunnerSpawn, GroundSnapUsesHostAndSkipsWhenNoGround)
     EXPECT_EQ(fx.runner.GetSkippedCount(), 2);
     EXPECT_EQ(fx.runner.GetSpawnedCount(), 1);
     EXPECT_TRUE(fx.runner.WasSpawnSkipped("skipme"));
+    const std::vector<std::pair<float, float>>& queries = fx.host.groundQueries;
     ASSERT_EQ(queries.size(), 3u);
     EXPECT_FLOAT_EQ(queries[2].second, 400.f);   // fromY 전달
 
@@ -354,7 +374,7 @@ TEST(StageRunnerSpawn, GroundSnapUsesHostAndSkipsWhenNoGround)
 
 TEST(StageRunnerSpawn, HostRefusalCountsAsSkipped)
 {
-    RunnerFixture fx { OneSection(R"J([{"type":"spawn","kind":"enemy","def":"a","id":"x","x":1,"y":1}])J") };
+    RunnerFixture fx { OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","id":"x","x":1,"y":1}])J") };
     fx.host.bRefuseSpawns = true;
     fx.StepAt(5.f);
     EXPECT_EQ(fx.runner.GetSkippedCount(), 1);
@@ -363,7 +383,7 @@ TEST(StageRunnerSpawn, HostRefusalCountsAsSkipped)
 
 TEST(StageRunnerSpawn, ParamsPointerAndLayerArePassedThrough)
 {
-    RunnerFixture fx { OneSection(R"J([{"type":"spawn","kind":"decor","def":"anim_decor","x":1,"y":2,"anim":"Parker","layer":"farBackground","cullMargin":100,"params":{"velocity":[70,-50]}}])J") };
+    RunnerFixture fx { OneSection_(R"J([{"type":"spawn","kind":"decor","def":"anim_decor","x":1,"y":2,"anim":"Parker","layer":"farBackground","cullMargin":100,"params":{"velocity":[70,-50]}}])J") };
     fx.StepAt(5.f);
     ASSERT_EQ(fx.host.spawns.size(), 1u);
     const SpawnRequest& request = fx.host.spawns[0].request;
@@ -386,7 +406,7 @@ const char* kBossGate = R"J([
 
 TEST(StageRunnerGate, RunsActionsWhenTargetIsDefeatedWithDelaysRelativeToThatTick)
 {
-    RunnerFixture fx { OneSection(kBossGate) };
+    RunnerFixture fx { OneSection_(kBossGate) };
     fx.StepAt(5.f, 50);
     EXPECT_EQ(fx.runner.GetOpenGateCount(), 1);
     EXPECT_EQ(fx.runner.GetOpenGateIds().front(), "g");
@@ -403,7 +423,7 @@ TEST(StageRunnerGate, RunsActionsWhenTargetIsDefeatedWithDelaysRelativeToThatTic
 
 TEST(StageRunnerGate, UntilDestroyFinishedNeedsTheSecondCondition)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"spawn","kind":"enemy","def":"boss","id":"boss","x":1,"y":1},
         {"type":"gate","id":"g","waitFor":["boss"],"until":"destroyFinished","actions":[{"type":"banner","text":"done","seconds":1}]}])J") };
     fx.StepAt(5.f);
@@ -418,7 +438,7 @@ TEST(StageRunnerGate, UntilDestroyFinishedNeedsTheSecondCondition)
 
 TEST(StageRunnerGate, WaitsForEveryInstanceOfARepeatedSpawn)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"spawn","kind":"enemy","def":"t","id":"t","x":1,"y":1,"repeat":{"count":3,"stepX":10}},
         {"type":"gate","id":"g","waitFor":["t"],"actions":[{"type":"banner","text":"all","seconds":1}]}])J") };
     fx.StepAt(5.f);
@@ -450,7 +470,7 @@ TEST(StageRunnerGate, WaitsForSpawnsThatHaveNotHappenedYet)
 
 TEST(StageRunnerGate, AbortOnGameOverCancelsAnOpenGate)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"spawn","kind":"enemy","def":"boss","id":"boss","x":1,"y":1},
         {"type":"gate","id":"g","waitFor":["boss"],"abortOnGameOver":true,"actions":[{"type":"banner","text":"finale","seconds":1}]}])J") };
     fx.StepAt(5.f, 5);
@@ -465,7 +485,7 @@ TEST(StageRunnerGate, AbortOnGameOverCancelsAnOpenGate)
 
 TEST(StageRunnerGate, AbortOnGameOverCancelsDelayedFinaleActionsOnly)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"spawn","kind":"enemy","def":"boss","id":"boss","x":1,"y":1},
         {"type":"banner","text":"outside","seconds":1,"delay":3.0},
         {"type":"gate","id":"g","waitFor":["boss"],"abortOnGameOver":true,"actions":[
@@ -486,7 +506,7 @@ TEST(StageRunnerGate, AbortOnGameOverCancelsDelayedFinaleActionsOnly)
 
 TEST(StageRunnerGate, WithoutAbortFlagGameOverDoesNotCancel)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"spawn","kind":"enemy","def":"boss","id":"boss","x":1,"y":1},
         {"type":"gate","id":"g","waitFor":["boss"],"actions":[{"type":"banner","text":"opens","seconds":1}]}])J") };
     fx.StepAt(5.f);
@@ -499,7 +519,7 @@ TEST(StageRunnerGate, WithoutAbortFlagGameOverDoesNotCancel)
 
 TEST(StageRunnerGate, NestedGatesChain)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"spawn","kind":"enemy","def":"a","id":"a","x":1,"y":1},
         {"type":"spawn","kind":"enemy","def":"b","id":"b","x":1,"y":1},
         {"type":"gate","id":"g1","waitFor":["a"],"actions":[
@@ -517,7 +537,7 @@ TEST(StageRunnerGate, NestedGatesChain)
 
 TEST(StageRunnerCommand, SendsToEveryInstance)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"spawn","kind":"enemy","def":"big_vehicle","id":"big","x":1,"y":1,"repeat":{"count":2,"stepX":5}},
         {"type":"command","target":"big","command":"startBattle"}])J") };
     fx.StepAt(5.f);
@@ -528,7 +548,7 @@ TEST(StageRunnerCommand, SendsToEveryInstance)
 
 TEST(StageRunnerClear, ClearWavesCancelsWavesAndGatesButKeepsOtherDelayedActions)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"spawn","kind":"enemy","def":"e","id":"e","x":1,"y":1},
         {"type":"gate","id":"g","waitFor":["e"],"actions":[{"type":"banner","text":"gate","seconds":1}]},
         {"type":"spawnWave","entries":[{"delay":5.0,"kind":"enemy","def":"w","x":1,"y":1},{"delay":0.5,"kind":"enemy","def":"w","x":1,"y":1}]},
@@ -548,7 +568,7 @@ TEST(StageRunnerClear, ClearWavesCancelsWavesAndGatesButKeepsOtherDelayedActions
 
 TEST(StageRunnerClear, ClearLayersGoesToTheHostWithMask)
 {
-    RunnerFixture fx { OneSection(R"J([{"type":"clear","layers":["monster","item"]}])J") };
+    RunnerFixture fx { OneSection_(R"J([{"type":"clear","layers":["monster","item"]}])J") };
     fx.StepAt(5.f);
     ASSERT_EQ(fx.host.clears.size(), 1u);
     EXPECT_EQ(fx.host.clears[0], LayerBit(eStageLayer::Monster) | LayerBit(eStageLayer::Item));
@@ -556,10 +576,10 @@ TEST(StageRunnerClear, ClearLayersGoesToTheHostWithMask)
 
 TEST(StageRunnerFlow, EndStageFinishesTheRunner)
 {
-    RunnerFixture fx { OneSection(R"J([{"type":"banner","text":"bye","seconds":1},{"type":"endStage","next":"title","delay":0.5},{"type":"banner","text":"never","seconds":1,"delay":2.0}])J") };
+    RunnerFixture fx { OneSection_(R"J([{"type":"banner","text":"bye","seconds":1},{"type":"endStage","next":"title","delay":0.5},{"type":"banner","text":"never","seconds":1,"delay":2.0}])J") };
     fx.StepAt(5.f, 30);   // tick 0..29
     EXPECT_FALSE(fx.runner.IsFinished());
-    fx.StepAt(5.f);       // tick 30
+    fx.StepAt(5.f);   // tick 30
     EXPECT_TRUE(fx.runner.IsFinished());
     EXPECT_TRUE(fx.host.bEnded);
     EXPECT_EQ(fx.host.endNext, "title");
@@ -571,14 +591,14 @@ TEST(StageRunnerFlow, EndStageFinishesTheRunner)
 
 TEST(StageRunnerFlow, EndStageDefaultsToTitle)
 {
-    RunnerFixture fx { OneSection(R"J([{"type":"endStage"}])J") };
+    RunnerFixture fx { OneSection_(R"J([{"type":"endStage"}])J") };
     fx.StepAt(5.f);
     EXPECT_EQ(fx.host.endNext, "title");
 }
 
 TEST(StageRunnerActions, SimpleActionsAreForwardedToTheHost)
 {
-    RunnerFixture fx { OneSection(R"J([
+    RunnerFixture fx { OneSection_(R"J([
         {"type":"setGround","name":"G1"},
         {"type":"setBackdrop","mode":"b"},
         {"type":"setCameraOffset","offset":[50,-140]},
@@ -605,7 +625,7 @@ TEST(StageRunnerActions, SimpleActionsAreForwardedToTheHost)
 
 namespace
 {
-const char* kWarpStage = R"J([
+constexpr const char* kWarpStage = R"J([
     {"id":"s0","triggerX":0,"actions":[
         {"type":"spawn","kind":"enemy","def":"e0","x":1,"y":1},
         {"type":"spawn","kind":"prop","def":"p0","x":1,"y":1},
@@ -703,15 +723,36 @@ TEST(StageRunnerWarp, WarpClearsPendingWavesGatesAndNonPermanentLocks)
     EXPECT_EQ(fx.host.CountEvents("banner:pending"), 0);
 }
 
+namespace
+{
+// 보스 워프 후 30틱 진행한 뒤의 (러너 해시, 스폰 수)
+[[nodiscard]] std::pair<uint64_t, size_t> WarpToBossAndHash_()
+{
+    RunnerFixture fx { WrapStage(kWarpStage) };
+    EXPECT_TRUE(fx.runner.WarpToBoss());
+    fx.Step(30);
+    return std::pair<uint64_t, size_t> { fx.runner.HashState(), fx.host.spawns.size() };
+}
+
+// 적이 아닌(항상 생성되는) 스폰의 def 이름 목록
+[[nodiscard]] std::vector<std::string> NonEnemyDefs_(
+    const FakeStageHost& _host)
+{
+    std::vector<std::string> defs;
+    for (const SpawnLogEntry& entry: _host.spawns)
+    {
+        if (entry.request.kind != eEntityKind::Enemy)
+        {
+            defs.push_back(entry.request.def);
+        }
+    }
+    return defs;
+}
+}   // namespace
+
 TEST(StageRunnerWarp, WarpingTwiceFromTheSameStartIsDeterministic)
 {
-    auto Run = []() {
-        RunnerFixture fx { WrapStage(kWarpStage) };
-        EXPECT_TRUE(fx.runner.WarpToBoss());
-        fx.Step(30);
-        return std::pair<uint64_t, size_t> { fx.runner.HashState(), fx.host.spawns.size() };
-    };
-    EXPECT_EQ(Run(), Run());
+    EXPECT_EQ(WarpToBossAndHash_(), WarpToBossAndHash_());
 }
 
 TEST(StageRunnerWarp, WarpingGivesTheSameAlwaysStateAsPlayingThere)
@@ -748,23 +789,12 @@ TEST(StageRunnerWarp, WarpingGivesTheSameAlwaysStateAsPlayingThere)
     EXPECT_EQ(warped.runner.GetLockDepth(), played.runner.GetLockDepth());
     EXPECT_EQ(warped.camera.IsLocked(), played.camera.IsLocked());
 
-    auto AlwaysDefs = [](const FakeStageHost& _host) {
-        std::vector<std::string> defs;
-        for (const SpawnLogEntry& entry: _host.spawns)
-        {
-            if (entry.request.kind != eEntityKind::Enemy)
-            {
-                defs.push_back(entry.request.def);
-            }
-        }
-        return defs;
-    };
-    EXPECT_EQ(AlwaysDefs(warped.host), AlwaysDefs(played.host));
+    EXPECT_EQ(NonEnemyDefs_(warped.host), NonEnemyDefs_(played.host));
 }
 
 TEST(StageRunnerWalls, LeftWallAlwaysAndRightWallOnlyWhenLockedOrAtTheEnd)
 {
-    RunnerFixture fx { OneSection(R"J([{"type":"lockCamera","rect":[320,0,960,448],"delay":1.0}])J") };
+    RunnerFixture fx { OneSection_(R"J([{"type":"lockCamera","rect":[320,0,960,448],"delay":1.0}])J") };
     fx.camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
     fx.camera.SnapTo({ 1000.f, 224.f });
     fx.StepAt(1000.f, 1);
@@ -786,7 +816,7 @@ TEST(StageRunnerWalls, LeftWallAlwaysAndRightWallOnlyWhenLockedOrAtTheEnd)
 
 TEST(StageRunnerWalls, RightWallAtTheBoundsEnd)
 {
-    RunnerFixture fx { OneSection("[]") };
+    RunnerFixture fx { OneSection_("[]") };
     fx.camera.SnapTo({ 3900.f, 224.f });   // 경계 오른쪽 끝(4000)으로 클램프
     fx.StepAt(3900.f, 2);
     EXPECT_TRUE(fx.runner.MakeScreenWalls().bHasRight);

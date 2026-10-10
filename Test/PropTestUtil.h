@@ -1,12 +1,13 @@
+// Prop/Item 테스트 공용 도우미: Props.json 로드, 베이크 라이브러리 로드, 히트/바닥/바디 생성.
 #pragma once
-#include "Core/AssetPath.h"
 #include <string>
-#include "Base/Types.h"
-#include "Base/Math.h"
-#include "Base/Result.h"
 
 #include <gtest/gtest.h>
 
+#include "Base/Math.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
+#include "Core/AssetPath.h"
 #include "Game/Combat/CombatSystem.h"
 #include "Game/Props/ItemWorld.h"
 #include "Game/Props/PropDef.h"
@@ -21,32 +22,39 @@ namespace slugtest
 
 using namespace slug;
 
-inline slug::FilePath PropsJsonPath()
+[[nodiscard]] inline slug::FilePath PropsJsonPath()
 {
     return slug::FindAssetRoot() / "Defs" / "Props" / "Props.json";
 }
 
-inline const PropDefLibrary& GetPropLib()
+namespace prop_test_detail
 {
-    static const PropDefLibrary lib = []()
+
+    [[nodiscard]] inline PropDefLibrary LoadPropLib_()
     {
-        slug::String                     msg;
-        slug::Result<PropDefLibrary>     loaded = PropDefLibrary::Load(PropsJsonPath(), &msg);
+        slug::String                 msg;
+        slug::Result<PropDefLibrary> loaded = PropDefLibrary::Load(PropsJsonPath(), &msg);
         if (!loaded)
         {
             ADD_FAILURE() << "Props.json 로드 실패: " << std::string { msg.c_str() };
             return PropDefLibrary {};
         }
         return loaded.Take();
-    }();
+    }
+
+}   // namespace prop_test_detail
+
+[[nodiscard]] inline const PropDefLibrary& GetPropLib()
+{
+    static const PropDefLibrary lib = prop_test_detail::LoadPropLib_();
     return lib;
 }
 
-inline bool LoadBakedLibs(
+[[nodiscard]] inline bool LoadBakedLibs(
     AnimationLibrary& _anims,
     SpriteLibrary&    _sprites)
 {
-    slug::Result<AnimationLibrary> anims = AnimationLibrary::LoadFromDirectory(slug::FindAssetRoot() / "Baked");
+    slug::Result<AnimationLibrary> anims   = AnimationLibrary::LoadFromDirectory(slug::FindAssetRoot() / "Baked");
     slug::Result<SpriteLibrary>    sprites = SpriteLibrary::LoadFromDirectory(slug::FindAssetRoot() / "Baked");
     if (!anims || !sprites)
     {
@@ -57,7 +65,7 @@ inline bool LoadBakedLibs(
     return true;
 }
 
-inline HitEvent MakeHit(
+[[nodiscard]] inline HitEvent MakeHit(
     const uint32_t _target,
     const int      _damage,
     const eHitKind _kind = eHitKind::Bullet)
@@ -71,7 +79,7 @@ inline HitEvent MakeHit(
     return ev;
 }
 
-inline GroundMap MakeFloorMap(
+[[nodiscard]] inline GroundMap MakeFloorMap(
     const int _w,
     const int _h,
     const int _floorY)
@@ -81,7 +89,7 @@ inline GroundMap MakeFloorMap(
     return map;
 }
 
-inline Body MakeBody(
+[[nodiscard]] inline Body MakeBody(
     const Vec2 _feet)
 {
     Body body;
@@ -89,4 +97,5 @@ inline Body MakeBody(
     body.size     = { 24.f, 40.f };
     return body;
 }
-}
+
+}   // namespace slugtest

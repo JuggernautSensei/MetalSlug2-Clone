@@ -1,13 +1,13 @@
-#include "PlayerTestUtil.h"
+// 플레이어 리그 테스트: 애니메이션 이름 매핑, 발 위치, 포즈 선택 검증
 #include "Base/Types.h"
-
 #include "Game/Player/PlayerRig.h"
+#include "PlayerTestUtil.h"
 
 using namespace slugtest;
 
 namespace
 {
-AnimId Id(
+[[nodiscard]] AnimId Id_(
     const AnimationLibrary& _anims,
     const char*             _name)
 {
@@ -16,14 +16,14 @@ AnimId Id(
     return id;
 }
 
-const AnimFrame& LowerFrame(
+[[nodiscard]] const AnimFrame& LowerFrame_(
     Sim&                    _sim,
     const AnimationLibrary& _anims)
 {
     const PlayerRig& rig = _sim.State().GetRig();
     return _anims.Get(rig.GetLowerClip()).frames[static_cast<size_t>(rig.GetLowerFrame())];
 }
-}
+}   // namespace
 
 TEST(PlayerRigNames, EveryRequiredSlotResolvesForEveryWeaponAndSide)
 {
@@ -88,8 +88,8 @@ TEST(PlayerRigPose, IdleUsesIdleUpperAndLowerClips)
     Sim sim { MakeFlatConfig(), &anims };
     sim.Step(3);
     const PlayerRig& rig = sim.State().GetRig();
-    EXPECT_EQ(rig.GetUpperClip(), Id(anims, "Player_Stand_Idle_DG_Right"));
-    EXPECT_EQ(rig.GetLowerClip(), Id(anims, "Player_Stand_Idle_Lower_Right"));
+    EXPECT_EQ(rig.GetUpperClip(), Id_(anims, "Player_Stand_Idle_DG_Right"));
+    EXPECT_EQ(rig.GetLowerClip(), Id_(anims, "Player_Stand_Idle_Lower_Right"));
 }
 
 TEST(PlayerRigPose, RunSwitchesToRunClipsOnTheSameTickAndFacingPicksTheSide)
@@ -100,14 +100,14 @@ TEST(PlayerRigPose, RunSwitchesToRunClipsOnTheSameTickAndFacingPicksTheSide)
 
     sim.Hold(eAction::Right);
     sim.Step();
-    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Move_DG_Right"));
-    EXPECT_EQ(sim.State().GetRig().GetLowerClip(), Id(anims, "Player_Stand_Move_Lower_Right"));
+    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Move_DG_Right"));
+    EXPECT_EQ(sim.State().GetRig().GetLowerClip(), Id_(anims, "Player_Stand_Move_Lower_Right"));
 
     sim.Release(eAction::Right);
     sim.Hold(eAction::Left);
     sim.Step();
-    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Move_DG_Left"));
-    EXPECT_EQ(sim.State().GetRig().GetLowerClip(), Id(anims, "Player_Stand_Move_Lower_Left"));
+    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Move_DG_Left"));
+    EXPECT_EQ(sim.State().GetRig().GetLowerClip(), Id_(anims, "Player_Stand_Move_Lower_Left"));
 }
 
 TEST(PlayerRigPose, UpperAndLowerShareOnePhaseWhileRunning)
@@ -130,7 +130,7 @@ TEST(PlayerRigPose, UpperKeepsThePhaseAfterAShotOverlayEndsWhileRunning)
     sim.Step(10);
     sim.Tap(eAction::Shot);
     sim.Step(sim.Tune().weapons.pistol.shotOverlayTicks + 3);
-    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Move_DG_Right"));
+    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Move_DG_Right"));
     EXPECT_EQ(sim.State().GetRig().GetUpperFrame(), sim.State().GetRig().GetLowerFrame());
 }
 
@@ -142,27 +142,27 @@ TEST(PlayerRigPose, CrouchJumpAndAirClips)
 
     sim.Hold(eAction::Down);
     sim.Step();
-    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Crouch_Idle_DG_Right"));
+    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Crouch_Idle_DG_Right"));
     sim.Hold(eAction::Right);
     sim.Step();
-    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Crouch_Move_DG_Right"));
+    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Crouch_Move_DG_Right"));
 
     sim.ReleaseAll();
     sim.Step(2);
     sim.Hold(eAction::Jump);
     sim.Step(3);
-    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Jump_Idle_DG_Right"));
-    EXPECT_EQ(sim.State().GetRig().GetLowerClip(), Id(anims, "Player_Jump_Idle_Lower_Right"));
+    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Jump_Idle_DG_Right"));
+    EXPECT_EQ(sim.State().GetRig().GetLowerClip(), Id_(anims, "Player_Jump_Idle_Lower_Right"));
 
     sim.Hold(eAction::Right);
     sim.Step();
-    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Jump_Move_DG_Right"));
-    EXPECT_EQ(sim.State().GetRig().GetLowerClip(), Id(anims, "Player_Jump_Move_Lower_Right"));
+    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Jump_Move_DG_Right"));
+    EXPECT_EQ(sim.State().GetRig().GetLowerClip(), Id_(anims, "Player_Jump_Move_Lower_Right"));
 
     sim.ReleaseAll();
     sim.Hold(eAction::Down);
     sim.Step();
-    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Jump_Lookdown_DG_Right"));
+    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Jump_Lookdown_DG_Right"));
 }
 
 TEST(PlayerRigPose, ShotSlashAndThrowOverlaysPickTheirClips)
@@ -172,33 +172,33 @@ TEST(PlayerRigPose, ShotSlashAndThrowOverlaysPickTheirClips)
         Sim sim { MakeFlatConfig(), &anims };
         sim.Step(2);
         sim.Tap(eAction::Shot);
-        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Shot_DG_Right"));
+        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Shot_DG_Right"));
         sim.Step(sim.Tune().weapons.pistol.shotOverlayTicks + 1);
-        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Idle_DG_Right"));
+        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Idle_DG_Right"));
     }
     {
         Sim sim { MakeFlatConfig(), &anims };
         sim.Step(2);
         sim.Hold(eAction::Up);
         sim.Tap(eAction::Shot);
-        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Shot_Up_DG_Right"));
+        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Shot_Up_DG_Right"));
     }
     {
         Sim sim { MakeFlatConfig(), &anims };
         sim.Step(2);
         sim.Tap(eAction::Bomb);
-        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Throw_DG_Right"));
+        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Throw_DG_Right"));
     }
     {
         Sim sim { MakeFlatConfig(), &anims };
         sim.Step(2);
         sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + 25.f, 378.f });
         sim.Tap(eAction::Shot);
-        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Slash2_DG_Right"));
+        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Slash2_DG_Right"));
         sim.Step(sim.Tune().knife.durationTicks + 2);
         sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + 25.f, 378.f });
         sim.Tap(eAction::Shot);
-        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Slash1_DG_Right"));
+        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Slash1_DG_Right"));
     }
 }
 
@@ -211,7 +211,7 @@ TEST(PlayerRigPose, CrouchAndAirVariantsOfTheOverlays)
         sim.Hold(eAction::Down);
         sim.Step(2);
         sim.Tap(eAction::Shot);
-        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Crouch_Shot_DG_Right"));
+        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Crouch_Shot_DG_Right"));
         sim.Release(eAction::Down);
     }
     {
@@ -221,7 +221,7 @@ TEST(PlayerRigPose, CrouchAndAirVariantsOfTheOverlays)
         sim.Step(8);
         sim.Hold(eAction::Down);
         sim.Tap(eAction::Shot);
-        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Jump_Shot_Down_DG_Right"));
+        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Jump_Shot_Down_DG_Right"));
     }
 }
 
@@ -232,13 +232,13 @@ TEST(PlayerRigPose, HmgUsesMachineGunShotClipAndShotgunItsOwn)
     sim.Step(2);
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Tap(eAction::Shot);
-    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Shot_MG_Right"));
+    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Shot_MG_Right"));
     sim.Step(20);
-    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Idle_SG_Right"));
+    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Idle_SG_Right"));
 
     sim.Player().PickUpWeapon(eWeapon::Shotgun, sim.Tune());
     sim.Tap(eAction::Shot);
-    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Stand_Shot_SG_Right"));
+    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Shot_SG_Right"));
 }
 
 TEST(PlayerRigPose, EveryNewShotRestartsTheShotAnimation)
@@ -267,7 +267,7 @@ TEST(PlayerRigPose, DeathPlaysTheDeathClipAndFacingPicksTheSide)
     sim.ReleaseAll();
     sim.Player().Kill();
     sim.Step();
-    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id(anims, "Player_Death_byBullet_DG_Left"));
+    EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Death_byBullet_DG_Left"));
 }
 
 TEST(PlayerRigFeet, IdleAndRunLowerBodyFeetSitOnTheGround)
@@ -278,7 +278,7 @@ TEST(PlayerRigFeet, IdleAndRunLowerBodyFeetSitOnTheGround)
 
     const PlayerRig& rig = sim.State().GetRig();
     {
-        const AnimFrame& frame  = LowerFrame(sim, anims);
+        const AnimFrame& frame  = LowerFrame_(sim, anims);
         const float      bottom = rig.GetOrigin(sim.Player().GetFeet()).y + static_cast<float>(frame.h - frame.pivotY);
         EXPECT_FLOAT_EQ(bottom, sim.Y());
     }
@@ -288,7 +288,7 @@ TEST(PlayerRigFeet, IdleAndRunLowerBodyFeetSitOnTheGround)
     for (int i = 0; i < 24; ++i)
     {
         sim.Step();
-        const AnimFrame& frame  = LowerFrame(sim, anims);
+        const AnimFrame& frame  = LowerFrame_(sim, anims);
         const float      bottom = rig.GetOrigin(sim.Player().GetFeet()).y + static_cast<float>(frame.h - frame.pivotY);
         EXPECT_LE(bottom, sim.Y() + 0.01f) << "발이 땅을 파고들었다 (tick " << i << ")";
         if (bottom >= sim.Y() - 0.01f)

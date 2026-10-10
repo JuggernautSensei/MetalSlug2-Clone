@@ -1,61 +1,66 @@
+// 탈것 투사체 테스트: 탈것이 쏘는 탄과 폭발의 궤적/판정 검증
 #include <cmath>
-#include "Base/Types.h"
 
+#include "Base/Types.h"
 #include "VehicleTestUtil.h"
 
 using namespace slugtest;
 
 namespace
 {
-    constexpr float kFloorY = 378.f;
+constexpr float kFloorY = 378.f;
 
-    ShotSpawn MakeRoller(const float _dirX, const int _rollTicks, const bool _bExpireFx)
+[[nodiscard]] ShotSpawn MakeRoller_(
+    const float _dirX,
+    const int   _rollTicks,
+    const bool  _bExpireFx)
+{
+    ShotSpawn spawn;
+    spawn.team            = eTeam::Enemy;
+    spawn.owner           = 5;
+    spawn.position        = { 300.f, 200.f };
+    spawn.gravity         = 300.f;
+    spawn.maxFallSpeed    = 300.f;
+    spawn.size            = { 25.f, 25.f };
+    spawn.damage          = 1;
+    spawn.lifetimeTicks   = 1000;
+    spawn.bExplodeOnSolid = false;
+    spawn.rollSpeed       = 100.f;
+    spawn.rollDirX        = _dirX;
+    spawn.rollTicks       = _rollTicks;
+    spawn.bExpireFx       = _bExpireFx;
+    spawn.visual          = 3;
+    return spawn;
+}
+
+struct Field
+{
+    GroundMap        ground = MakeFlatGround(1200, 448, 378);
+    CombatSystem     combat = {};
+    ProjectileSystem ps     = {};
+
+    void Step(
+        const int _count)
     {
-        ShotSpawn spawn;
-        spawn.team            = eTeam::Enemy;
-        spawn.owner           = 5;
-        spawn.position        = { 300.f, 200.f };
-        spawn.gravity         = 300.f;
-        spawn.maxFallSpeed    = 300.f;
-        spawn.size            = { 25.f, 25.f };
-        spawn.damage          = 1;
-        spawn.lifetimeTicks   = 1000;
-        spawn.bExplodeOnSolid = false;
-        spawn.rollSpeed       = 100.f;
-        spawn.rollDirX        = _dirX;
-        spawn.rollTicks       = _rollTicks;
-        spawn.bExpireFx       = _bExpireFx;
-        spawn.visual          = 3;
-        return spawn;
+        for (int i = 0; i < _count; ++i)
+        {
+            combat.BeginTick();
+            ps.Step(&ground, combat, kStepSec);
+        }
     }
 
-    struct Field
+    [[nodiscard]] const Shot* First() const
     {
-        GroundMap        ground = MakeFlatGround(1200, 448, 378);
-        CombatSystem     combat = {};
-        ProjectileSystem ps     = {};
-
-        void Step(const int _count)
-        {
-            for (int i = 0; i < _count; ++i)
-            {
-                combat.BeginTick();
-                ps.Step(&ground, combat, kStepSec);
-            }
-        }
-
-        [[nodiscard]] const Shot* First() const
-        {
-            const slug::Span<const Shot> shots = ps.GetShots();
-            return shots.empty() ? nullptr : &shots[0];
-        }
-    };
-}
+        const slug::Span<const Shot> shots = ps.GetShots();
+        return shots.empty() ? nullptr : &shots[0];
+    }
+};
+}   // namespace
 
 TEST(VehicleProjectile, RollingShotFallsStraightThenLandsOnTheFloor)
 {
     Field f;
-    f.ps.SpawnShot(MakeRoller(-1.f, 600, false), f.combat);
+    f.ps.SpawnShot(MakeRoller_(-1.f, 600, false), f.combat);
     f.Step(40);
     const Shot* pShot = f.First();
     ASSERT_NE(pShot, nullptr);
@@ -72,7 +77,7 @@ TEST(VehicleProjectile, RollingShotFallsStraightThenLandsOnTheFloor)
 TEST(VehicleProjectile, RollingShotKeepsRollingAtTheSpeedInTheChosenDirection)
 {
     Field f;
-    f.ps.SpawnShot(MakeRoller(-1.f, 600, false), f.combat);
+    f.ps.SpawnShot(MakeRoller_(-1.f, 600, false), f.combat);
     f.Step(120);
     const float x0 = f.First()->position.x;
     f.Step(60);
@@ -83,7 +88,7 @@ TEST(VehicleProjectile, RollingShotKeepsRollingAtTheSpeedInTheChosenDirection)
 TEST(VehicleProjectile, RollingShotCanRollRightWhenItsDirectionSaysSo)
 {
     Field f;
-    f.ps.SpawnShot(MakeRoller(1.f, 600, false), f.combat);
+    f.ps.SpawnShot(MakeRoller_(1.f, 600, false), f.combat);
     f.Step(120);
     const float x0 = f.First()->position.x;
     f.Step(60);
@@ -93,7 +98,7 @@ TEST(VehicleProjectile, RollingShotCanRollRightWhenItsDirectionSaysSo)
 TEST(VehicleProjectile, RollingShotIsNotRemovedByTheGroundItRollsOn)
 {
     Field f;
-    f.ps.SpawnShot(MakeRoller(-1.f, 600, false), f.combat);
+    f.ps.SpawnShot(MakeRoller_(-1.f, 600, false), f.combat);
     f.Step(300);
     ASSERT_FALSE(f.ps.GetShots().empty());
     EXPECT_TRUE(f.First()->bAlive);
@@ -102,7 +107,7 @@ TEST(VehicleProjectile, RollingShotIsNotRemovedByTheGroundItRollsOn)
 TEST(VehicleProjectile, RollingShotExpiresRollTicksAfterLandingWithItsFlashWhenRequested)
 {
     Field f;
-    f.ps.SpawnShot(MakeRoller(-1.f, 120, true), f.combat);
+    f.ps.SpawnShot(MakeRoller_(-1.f, 120, true), f.combat);
     f.Step(90);
     ASSERT_TRUE(f.First() != nullptr && f.First()->bLanded);
     const int landedAge = f.First()->landedAge;
@@ -118,7 +123,7 @@ TEST(VehicleProjectile, RollingShotExpiresRollTicksAfterLandingWithItsFlashWhenR
 TEST(VehicleProjectile, RollingShotExpiresSilentlyByDefault)
 {
     Field f;
-    f.ps.SpawnShot(MakeRoller(-1.f, 60, false), f.combat);
+    f.ps.SpawnShot(MakeRoller_(-1.f, 60, false), f.combat);
     f.Step(200);
     EXPECT_TRUE(f.ps.GetShots().empty());
     EXPECT_TRUE(f.ps.TakeShotFx().empty());
@@ -126,11 +131,11 @@ TEST(VehicleProjectile, RollingShotExpiresSilentlyByDefault)
 
 TEST(VehicleProjectile, LifetimeExpiryOfAPlainShotStaysSilentUnlessRequested)
 {
-    Field f;
-    ShotSpawn spawn = MakeRoller(-1.f, 0, false);
-    spawn.rollSpeed = 0.f;
-    spawn.gravity   = 0.f;
-    spawn.velocity  = { 0.f, 0.f };
+    Field     f;
+    ShotSpawn spawn     = MakeRoller_(-1.f, 0, false);
+    spawn.rollSpeed     = 0.f;
+    spawn.gravity       = 0.f;
+    spawn.velocity      = { 0.f, 0.f };
     spawn.lifetimeTicks = 30;
     f.ps.SpawnShot(spawn, f.combat);
     f.Step(40);
@@ -140,8 +145,8 @@ TEST(VehicleProjectile, LifetimeExpiryOfAPlainShotStaysSilentUnlessRequested)
 
 TEST(VehicleProjectile, ANonRollingShotStillBreaksOnTheGroundWithAFlash)
 {
-    Field f;
-    ShotSpawn spawn = MakeRoller(-1.f, 0, false);
+    Field     f;
+    ShotSpawn spawn       = MakeRoller_(-1.f, 0, false);
     spawn.rollSpeed       = 0.f;
     spawn.bExplodeOnSolid = true;
     f.ps.SpawnShot(spawn, f.combat);

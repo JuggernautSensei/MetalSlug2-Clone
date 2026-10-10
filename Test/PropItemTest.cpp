@@ -1,8 +1,9 @@
+// 아이템 테스트: 아이템 낙하, 줍기, 효과 적용과 드롭 결정성 검증
 #include <cmath>
-#include "Base/Types.h"
-#include "Base/Math.h"
 #include <string>
 
+#include "Base/Math.h"
+#include "Base/Types.h"
 #include "Game/Player/PlayerController.h"
 #include "PropTestUtil.h"
 
@@ -10,17 +11,21 @@ using namespace slugtest;
 
 namespace
 {
-
 constexpr float kDt = kStepSec;
 
-PhysicsWorld FloorWorld(const GroundMap& _ground)
+[[nodiscard]] PhysicsWorld FloorWorld_(
+    const GroundMap& _ground)
 {
     PhysicsWorld world;
     world.pGround = &_ground;
     return world;
 }
 
-void TickItems(ItemWorld& _items, const PhysicsWorld& _world, const int _ticks, const float _camLeft = -1.0e9f)
+void TickItems_(
+    ItemWorld&          _items,
+    const PhysicsWorld& _world,
+    const int           _ticks,
+    const float         _camLeft = -1.0e9f)
 {
     for (int i = 0; i < _ticks; ++i)
     {
@@ -28,7 +33,9 @@ void TickItems(ItemWorld& _items, const PhysicsWorld& _world, const int _ticks, 
     }
 }
 
-bool IsFruit(const PropDefLibrary& _lib, const slug::String& _name)
+[[nodiscard]] bool IsFruit_(
+    const PropDefLibrary& _lib,
+    const slug::String&   _name)
 {
     const PropItemGroup* pGroup = _lib.FindGroup("random_fruit");
     if (pGroup == nullptr)
@@ -45,11 +52,41 @@ bool IsFruit(const PropDefLibrary& _lib, const slug::String& _name)
     return false;
 }
 
-Aabb PlayerBoxAt(const Vec2 _feet)
+[[nodiscard]] Aabb PlayerBoxAt_(
+    const Vec2 _feet)
 {
     return Aabb::FromBottomCenter(_feet, { 24.f, 40.f });
 }
+// 같은 시드로 random_score 그룹에서 20개를 뽑은 이름 나열
+[[nodiscard]] std::string NamesFromSeed_(
+    const uint64_t _seed)
+{
+    ItemWorld   items { &GetPropLib(), _seed };
+    std::string out;
+    for (int i = 0; i < 20; ++i)
+    {
+        const PropItem* pItem = items.Find(items.Spawn("random_score", { 100.f, 140.f }));
+        out += GetPropLib().GetItems()[static_cast<size_t>(pItem->defIndex)].name.c_str();
+        out += ';';
+    }
+    return out;
 }
+
+// 아이템 5개를 떨어뜨려 200틱 진행한 뒤의 상태 해시
+[[nodiscard]] uint64_t HashAfterSpawn_(
+    const uint64_t _seed,
+    const char*    _item)
+{
+    const GroundMap ground = MakeFloorMap(400, 200, 140);
+    ItemWorld       items { &GetPropLib(), _seed };
+    for (int i = 0; i < 5; ++i)
+    {
+        items.Spawn(_item, { 100.f + 20.f * static_cast<float>(i), 0.f });
+    }
+    TickItems_(items, FloorWorld_(ground), 200);
+    return items.HashState();
+}
+}   // namespace
 
 TEST(PropItem, UnknownNameSpawnsNothing)
 {
@@ -60,7 +97,7 @@ TEST(PropItem, UnknownNameSpawnsNothing)
 
 TEST(PropItem, SpawnResolvesItemDefinition)
 {
-    ItemWorld items { &GetPropLib(), 1 };
+    ItemWorld      items { &GetPropLib(), 1 };
     const uint32_t id = items.Spawn("item_letter", { 100.f, 140.f });
     ASSERT_NE(id, 0u);
     const PropItem* pItem = items.Find(id);
@@ -76,26 +113,14 @@ TEST(PropItem, RandomGroupPicksOnlyMembers)
         const uint32_t id = items.Spawn("random_fruit", { 100.f, 140.f });
         ASSERT_NE(id, 0u);
         const PropItem* pItem = items.Find(id);
-        EXPECT_TRUE(IsFruit(GetPropLib(), GetPropLib().GetItems()[static_cast<size_t>(pItem->defIndex)].name));
+        EXPECT_TRUE(IsFruit_(GetPropLib(), GetPropLib().GetItems()[static_cast<size_t>(pItem->defIndex)].name));
     }
 }
 
 TEST(PropItem, RandomGroupSequenceIsDeterministicPerSeed)
 {
-    auto names = [](const uint64_t _seed)
-    {
-        ItemWorld items { &GetPropLib(), _seed };
-        std::string out;
-        for (int i = 0; i < 20; ++i)
-        {
-            const PropItem* pItem = items.Find(items.Spawn("random_score", { 100.f, 140.f }));
-            out += GetPropLib().GetItems()[static_cast<size_t>(pItem->defIndex)].name.c_str();
-            out += ';';
-        }
-        return out;
-    };
-    EXPECT_EQ(names(77), names(77));
-    EXPECT_NE(names(77), names(78));
+    EXPECT_EQ(NamesFromSeed_(77), NamesFromSeed_(77));
+    EXPECT_NE(NamesFromSeed_(77), NamesFromSeed_(78));
 }
 
 TEST(PropItem, GroundedItemLandsOnFloorAndStays)
@@ -103,7 +128,7 @@ TEST(PropItem, GroundedItemLandsOnFloorAndStays)
     const GroundMap ground = MakeFloorMap(400, 200, 140);
     ItemWorld       items { &GetPropLib(), 1 };
     const uint32_t  id = items.Spawn("item_letter", { 100.f, 0.f });
-    TickItems(items, FloorWorld(ground), 120);
+    TickItems_(items, FloorWorld_(ground), 120);
     const PropItem* pItem = items.Find(id);
     ASSERT_NE(pItem, nullptr);
     EXPECT_TRUE(pItem->body.bGrounded);
@@ -115,9 +140,9 @@ TEST(PropItem, LifetimeIsFifteenSeconds)
     const GroundMap ground = MakeFloorMap(400, 200, 140);
     ItemWorld       items { &GetPropLib(), 1 };
     items.Spawn("item_letter", { 100.f, 140.f });
-    TickItems(items, FloorWorld(ground), 880);
+    TickItems_(items, FloorWorld_(ground), 880);
     EXPECT_EQ(items.GetCount(), 1u);
-    TickItems(items, FloorWorld(ground), 25);
+    TickItems_(items, FloorWorld_(ground), 25);
     EXPECT_EQ(items.GetCount(), 0u);
 }
 
@@ -126,13 +151,13 @@ TEST(PropItem, ItemsBehindCameraAreRemoved)
     const GroundMap ground = MakeFloorMap(400, 200, 140);
     ItemWorld       items { &GetPropLib(), 1 };
     items.Spawn("item_letter", { 100.f, 140.f });
-    TickItems(items, FloorWorld(ground), 1, 200.f);   // 100 < 200 - 50
+    TickItems_(items, FloorWorld_(ground), 1, 200.f);   // 100 < 200 - 50
     EXPECT_EQ(items.GetCount(), 0u);
 }
 
 TEST(PropItem, BounceSupplyLaunchesUpAndSideways)
 {
-    ItemWorld items { &GetPropLib(), 4 };
+    ItemWorld       items { &GetPropLib(), 4 };
     const PropItem* pItem = items.Find(items.Spawn("bomb_supple", { 100.f, 100.f }, true));
     ASSERT_NE(pItem, nullptr);
     EXPECT_FLOAT_EQ(pItem->body.velocity.y, -400.f);
@@ -144,9 +169,9 @@ TEST(PropItem, RollingFruitSlowsDownAndStops)
     const GroundMap ground = MakeFloorMap(400, 200, 140);
     ItemWorld       items { &GetPropLib(), 6 };
     const uint32_t  id = items.Spawn("item_apple", { 100.f, 140.f });
-    TickItems(items, FloorWorld(ground), 1);
+    TickItems_(items, FloorWorld_(ground), 1);
     const float startX = items.Find(id)->feet.x;
-    TickItems(items, FloorWorld(ground), 600);
+    TickItems_(items, FloorWorld_(ground), 600);
     const PropItem* pItem = items.Find(id);
     ASSERT_NE(pItem, nullptr);
     EXPECT_FLOAT_EQ(pItem->body.velocity.x, 0.f);
@@ -160,11 +185,11 @@ TEST(PropItem, RollingFruitFallsStraightDownBeforeItRolls)
     const uint32_t  id = items.Spawn("item_apple", { 100.f, 40.f });
     for (int i = 0; i < 120 && !items.Find(id)->body.bGrounded; ++i)
     {
-        TickItems(items, FloorWorld(ground), 1);
+        TickItems_(items, FloorWorld_(ground), 1);
         EXPECT_FLOAT_EQ(items.Find(id)->feet.x, 100.f) << "tick " << i;
     }
     EXPECT_TRUE(items.Find(id)->body.bGrounded);
-    TickItems(items, FloorWorld(ground), 600);
+    TickItems_(items, FloorWorld_(ground), 600);
     EXPECT_NE(items.Find(id)->feet.x, 100.f);
 }
 
@@ -173,16 +198,16 @@ TEST(PropItem, ScoreItemCollectedGivesPickupAndPopup)
     const GroundMap ground = MakeFloorMap(400, 200, 140);
     ItemWorld       items { &GetPropLib(), 1 };
     items.Spawn("item_letter", { 100.f, 140.f });
-    TickItems(items, FloorWorld(ground), 2);
+    TickItems_(items, FloorWorld_(ground), 2);
 
-    const slug::Vector<ItemPickup> pickups = items.Collect(PlayerBoxAt({ 100.f, 140.f }));
+    const slug::Vector<ItemPickup> pickups = items.Collect(PlayerBoxAt_({ 100.f, 140.f }));
     ASSERT_EQ(pickups.size(), 1u);
     EXPECT_EQ(pickups[0].kind, eItemKind::Score);
     EXPECT_EQ(pickups[0].score, 1100);
     EXPECT_EQ(items.GetCount(), 0u);
     EXPECT_EQ(items.GetPopups().size(), 1u);
     EXPECT_EQ(items.GetPopups()[0].score, 1100);
-    EXPECT_TRUE(items.Collect(PlayerBoxAt({ 100.f, 140.f })).empty());   // 두 번 줍지 못한다
+    EXPECT_TRUE(items.Collect(PlayerBoxAt_({ 100.f, 140.f })).empty());   // 두 번 줍지 못한다
 }
 
 TEST(PropItem, GunItemShowsPickupEffectThenDisappears)
@@ -190,9 +215,9 @@ TEST(PropItem, GunItemShowsPickupEffectThenDisappears)
     const GroundMap ground = MakeFloorMap(400, 200, 140);
     ItemWorld       items { &GetPropLib(), 1 };
     items.Spawn("gunitem_mg", { 100.f, 140.f });
-    TickItems(items, FloorWorld(ground), 60);
+    TickItems_(items, FloorWorld_(ground), 60);
 
-    const slug::Vector<ItemPickup> pickups = items.Collect(PlayerBoxAt({ 100.f, 140.f }));
+    const slug::Vector<ItemPickup> pickups = items.Collect(PlayerBoxAt_({ 100.f, 140.f }));
     ASSERT_EQ(pickups.size(), 1u);
     EXPECT_EQ(pickups[0].kind, eItemKind::Gun);
     EXPECT_EQ(pickups[0].weapon, eWeapon::Hmg);
@@ -201,27 +226,27 @@ TEST(PropItem, GunItemShowsPickupEffectThenDisappears)
     ASSERT_EQ(fx.size(), 1u);
     EXPECT_EQ(fx[0].clip.c_str(), std::string { "Get_Item_Effect" });
 
-    TickItems(items, FloorWorld(ground), 5);   // 0.06 s 이후
+    TickItems_(items, FloorWorld_(ground), 5);   // 0.06 s 이후
     EXPECT_EQ(items.GetCount(), 0u);
 }
 
 TEST(PropItem, PopupRisesAndExpiresAfterSpec)
 {
     ItemWorld items { &GetPropLib(), 1 };
-    items.Collect(PlayerBoxAt({ 100.f, 140.f }));   // 빈 상태: 팝업 없음
+    (void)items.Collect(PlayerBoxAt_({ 100.f, 140.f }));   // 빈 상태: 팝업 없음
     items.Spawn("item_apple", { 100.f, 140.f });
-    (void)items.Collect(PlayerBoxAt({ 100.f, 140.f }));   // 공중 아이템은 상자 안이면 줍힌다
+    (void)items.Collect(PlayerBoxAt_({ 100.f, 140.f }));   // 공중 아이템은 상자 안이면 줍힌다
     const GroundMap ground = MakeFloorMap(400, 200, 140);
     ASSERT_EQ(items.GetPopups().size(), 1u);
-    TickItems(items, FloorWorld(ground), 150);   // 2.5 s
+    TickItems_(items, FloorWorld_(ground), 150);   // 2.5 s
     EXPECT_EQ(items.GetPopups().size(), 1u);
-    TickItems(items, FloorWorld(ground), 20);    // 2.8 s 이후
+    TickItems_(items, FloorWorld_(ground), 20);   // 2.8 s 이후
     EXPECT_TRUE(items.GetPopups().empty());
 }
 
 TEST(PropItem, PickupGrantsScoreToPlayer)
 {
-    const Tuning tuning {};
+    const Tuning     tuning {};
     PlayerController player;
     player.Reset(tuning, { 100.f, 100.f });
     ItemPickup pickup;
@@ -233,7 +258,7 @@ TEST(PropItem, PickupGrantsScoreToPlayer)
 
 TEST(PropItem, PickupGrantsWeaponWithAmmoAndBombs)
 {
-    const Tuning tuning {};
+    const Tuning     tuning {};
     PlayerController player;
     player.Reset(tuning, { 100.f, 100.f });
     const int bombsBefore = player.GetWeapon().bombs;
@@ -255,7 +280,7 @@ TEST(PropItem, PickupGrantsWeaponWithAmmoAndBombs)
 
 TEST(PropItem, BulletSupplyRefillsOnlyFiniteWeapons)
 {
-    const Tuning tuning {};
+    const Tuning     tuning {};
     PlayerController player;
     player.Reset(tuning, { 100.f, 100.f });
 
@@ -277,17 +302,6 @@ TEST(PropItem, BulletSupplyRefillsOnlyFiniteWeapons)
 
 TEST(PropItem, SameOperationsGiveSameHashAndDifferentOnesDiffer)
 {
-    auto run = [](const uint64_t _seed, const char* _item)
-    {
-        const GroundMap ground = MakeFloorMap(400, 200, 140);
-        ItemWorld       items { &GetPropLib(), _seed };
-        for (int i = 0; i < 5; ++i)
-        {
-            items.Spawn(_item, { 100.f + 20.f * static_cast<float>(i), 0.f });
-        }
-        TickItems(items, FloorWorld(ground), 200);
-        return items.HashState();
-    };
-    EXPECT_EQ(run(3, "random_score"), run(3, "random_score"));
-    EXPECT_NE(run(3, "random_score"), run(4, "random_score"));
+    EXPECT_EQ(HashAfterSpawn_(3, "random_score"), HashAfterSpawn_(3, "random_score"));
+    EXPECT_NE(HashAfterSpawn_(3, "random_score"), HashAfterSpawn_(4, "random_score"));
 }

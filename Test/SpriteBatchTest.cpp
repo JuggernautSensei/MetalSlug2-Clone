@@ -1,16 +1,16 @@
-#include <gtest/gtest.h>
-#include "Base/Types.h"
-#include "Base/Math.h"
-
+// 스프라이트 배치 테스트: 정렬 순서, 목적지 사각형, 기본 옵션, SDL 렌더링 검증
 #include <SDL3/SDL.h>
+#include <gtest/gtest.h>
 
+#include "Base/Math.h"
+#include "Base/Types.h"
 #include "Render/SpriteBatch.h"
 
 using namespace slug;
 
 namespace
 {
-AnimFrame MakeFrame(
+[[nodiscard]] AnimFrame MakeFrame_(
     const int _w,
     const int _h,
     const int _pivotX,
@@ -23,21 +23,36 @@ AnimFrame MakeFrame(
     frame.pivotY = _pivotY;
     return frame;
 }
+
+// 정렬 시험용 명령 하나를 큐에 넣는다. seq 는 제출 순서, frame.x 는 식별용 태그
+void AddCommand_(
+    slug::Vector<SpriteCommand>& _commands,
+    const int                    _layer,
+    const int                    _key,
+    const int                    _tag)
+{
+    SpriteCommand command;
+    command.layer   = _layer;
+    command.sortKey = _key;
+    command.seq     = static_cast<uint32_t>(_commands.size());
+    command.frame.x = _tag;
+    _commands.push_back(command);
 }
+}   // namespace
 
 TEST(SpriteDest, PivotIsSubtractedFromSnappedOrigin)
 {
-    const AnimFrame frame = MakeFrame(40, 52, 21, 50);
+    const AnimFrame frame = MakeFrame_(40, 52, 21, 50);
     const IntRect   rect  = ComputeDestRect(frame, { 100.f, 200.f }, { 0.f, 0.f }, false);
     EXPECT_EQ(rect, (IntRect { 79, 150, 40, 52 }));
 }
 
 TEST(SpriteDest, OriginIsFlooredSoSubpixelMotionNeverChangesSize)
 {
-    const AnimFrame frame = MakeFrame(10, 10, 5, 10);
-    const IntRect   a     = ComputeDestRect(frame, { 100.0f, 50.0f }, { 0.f, 0.f }, false);
+    const AnimFrame frame = MakeFrame_(10, 10, 5, 10);
+    const IntRect   a     = ComputeDestRect(frame, { 100.f, 50.f }, { 0.f, 0.f }, false);
     const IntRect   b     = ComputeDestRect(frame, { 100.99f, 50.99f }, { 0.f, 0.f }, false);
-    const IntRect   c     = ComputeDestRect(frame, { 101.0f, 51.0f }, { 0.f, 0.f }, false);
+    const IntRect   c     = ComputeDestRect(frame, { 101.f, 51.f }, { 0.f, 0.f }, false);
     EXPECT_EQ(a, b);
     EXPECT_EQ(c.x, a.x + 1);
     EXPECT_EQ(c.y, a.y + 1);
@@ -47,7 +62,7 @@ TEST(SpriteDest, OriginIsFlooredSoSubpixelMotionNeverChangesSize)
 
 TEST(SpriteDest, NegativeCoordinatesFloorTowardMinusInfinity)
 {
-    const AnimFrame frame = MakeFrame(10, 10, 0, 0);
+    const AnimFrame frame = MakeFrame_(10, 10, 0, 0);
     const IntRect   rect  = ComputeDestRect(frame, { -0.5f, -1.25f }, { 0.f, 0.f }, false);
     EXPECT_EQ(rect.x, -1);
     EXPECT_EQ(rect.y, -2);
@@ -55,14 +70,14 @@ TEST(SpriteDest, NegativeCoordinatesFloorTowardMinusInfinity)
 
 TEST(SpriteDest, CameraIsSubtracted)
 {
-    const AnimFrame frame = MakeFrame(10, 10, 5, 10);
+    const AnimFrame frame = MakeFrame_(10, 10, 5, 10);
     const IntRect   rect  = ComputeDestRect(frame, { 1000.f, 300.f }, { 960.f, 100.f }, false);
     EXPECT_EQ(rect, (IntRect { 35, 190, 10, 10 }));
 }
 
 TEST(SpriteDest, FlipMirrorsAroundTheOriginKeepingThePivotOnIt)
 {
-    const AnimFrame frame   = MakeFrame(40, 20, 10, 20);
+    const AnimFrame frame   = MakeFrame_(40, 20, 10, 20);
     const IntRect   normal  = ComputeDestRect(frame, { 100.f, 100.f }, { 0.f, 0.f }, false);
     const IntRect   flipped = ComputeDestRect(frame, { 100.f, 100.f }, { 0.f, 0.f }, true);
 
@@ -77,13 +92,13 @@ TEST(SpriteDest, FlipMirrorsAroundTheOriginKeepingThePivotOnIt)
 
 TEST(SpriteDest, FlipOfCenteredPivotIsIdenticalRect)
 {
-    const AnimFrame frame = MakeFrame(40, 20, 20, 20);
+    const AnimFrame frame = MakeFrame_(40, 20, 20, 20);
     EXPECT_EQ(ComputeDestRect(frame, { 50.f, 50.f }, { 0.f, 0.f }, false), ComputeDestRect(frame, { 50.f, 50.f }, { 0.f, 0.f }, true));
 }
 
 TEST(SpriteDest, OddWidthFramesDoNotLoseAPixel)
 {
-    const AnimFrame frame = MakeFrame(41, 10, 20, 10);
+    const AnimFrame frame = MakeFrame_(41, 10, 20, 10);
     const IntRect   a     = ComputeDestRect(frame, { 100.f, 100.f }, { 0.f, 0.f }, false);
     const IntRect   b     = ComputeDestRect(frame, { 100.f, 100.f }, { 0.f, 0.f }, true);
     EXPECT_EQ(a.w, 41);
@@ -94,25 +109,17 @@ TEST(SpriteDest, OddWidthFramesDoNotLoseAPixel)
 TEST(SpriteSort, OrdersByLayerThenSortKeyThenSubmission)
 {
     slug::Vector<SpriteCommand> commands;
-    auto                       Add = [&](const int _layer, const int _key, const int _tag) {
-        SpriteCommand command;
-        command.layer   = _layer;
-        command.sortKey = _key;
-        command.seq     = static_cast<uint32_t>(commands.size());
-        command.frame.x = _tag;
-        commands.push_back(command);
-    };
 
-    Add(2, 0, 0);
-    Add(1, 5, 1);
-    Add(1, 5, 2);   // 키 동점: 제출 순서 유지 (안정)
-    Add(1, 1, 3);
-    Add(0, 99, 4);
-    Add(1, 5, 5);
+    AddCommand_(commands, 2, 0, 0);
+    AddCommand_(commands, 1, 5, 1);
+    AddCommand_(commands, 1, 5, 2);   // 키 동점: 제출 순서 유지 (안정)
+    AddCommand_(commands, 1, 1, 3);
+    AddCommand_(commands, 0, 99, 4);
+    AddCommand_(commands, 1, 5, 5);
 
     SortSpriteCommands(commands);
     ASSERT_EQ(commands.size(), 6u);
-    const int expected[] = { 4, 3, 1, 2, 5, 0 };
+    const ARRAY<int, 6> expected = { 4, 3, 1, 2, 5, 0 };
     for (size_t i = 0; i < commands.size(); ++i)
     {
         EXPECT_EQ(commands[i].frame.x, expected[i]) << "position " << i;
@@ -121,8 +128,8 @@ TEST(SpriteSort, OrdersByLayerThenSortKeyThenSubmission)
 
 TEST(SpriteSort, BatchSubmitAssignsSequenceAndFlushClearsQueue)
 {
-    SpriteBatch batch;
-    AnimFrame   frame = MakeFrame(4, 4, 0, 0);
+    SpriteBatch     batch;
+    const AnimFrame frame = MakeFrame_(4, 4, 0, 0);
     batch.Submit(1, 0, frame, { 0.f, 0.f });
     batch.Submit(0, 0, frame, { 1.f, 0.f });
     batch.Submit(1, 0, frame, { 2.f, 0.f });
@@ -186,18 +193,18 @@ struct SoftwareTarget
     }
 };
 
-slug::Vector<uint8_t> MakeAtlas4x4()
+[[nodiscard]] slug::Vector<uint8_t> MakeAtlas4x4_()
 {
     slug::Vector<uint8_t> pixels(4 * 4 * 4);
     for (int y = 0; y < 4; ++y)
     {
         for (int x = 0; x < 4; ++x)
         {
-            uint8_t* p = &pixels[static_cast<size_t>((y * 4 + x) * 4)];
-            p[0]       = x == 0 ? 255 : 0;
-            p[1]       = x == 0 ? 0 : 255;
-            p[2]       = 0;
-            p[3]       = 255;
+            uint8_t* pPixel = &pixels[static_cast<size_t>((y * 4 + x) * 4)];
+            pPixel[0]       = x == 0 ? 255 : 0;
+            pPixel[1]       = x == 0 ? 0 : 255;
+            pPixel[2]       = 0;
+            pPixel[3]       = 255;
         }
     }
     return pixels;
@@ -206,7 +213,7 @@ slug::Vector<uint8_t> MakeAtlas4x4()
 constexpr uint32_t kRed   = 0xFF0000;
 constexpr uint32_t kGreen = 0x00FF00;
 constexpr uint32_t kBlack = 0x000000;
-}
+}   // namespace
 
 TEST(SpriteBatchSdl, DrawsFrameAtSnappedPositionWithPivot)
 {
@@ -218,11 +225,11 @@ TEST(SpriteBatchSdl, DrawsFrameAtSnappedPositionWithPivot)
 
     SpriteBatch batch;
     batch.Init(target.pRenderer);
-    const slug::Vector<uint8_t> atlas = MakeAtlas4x4();
+    const slug::Vector<uint8_t> atlas = MakeAtlas4x4_();
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
     EXPECT_EQ(batch.GetAtlasPageCount(), 1u);
 
-    AnimFrame frame = MakeFrame(4, 4, 2, 4);   // 원점 = 프레임 하단 중앙
+    const AnimFrame frame = MakeFrame_(4, 4, 2, 4);   // 원점 = 프레임 하단 중앙
     target.Clear();
     batch.DrawFrame(frame, { 10.7f, 20.9f }, Vec2 { 0.f, 0.f });
 
@@ -245,10 +252,10 @@ TEST(SpriteBatchSdl, FlipXMirrorsPixelsAroundOrigin)
 
     SpriteBatch batch;
     batch.Init(target.pRenderer);
-    const slug::Vector<uint8_t> atlas = MakeAtlas4x4();
+    const slug::Vector<uint8_t> atlas = MakeAtlas4x4_();
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
 
-    AnimFrame frame = MakeFrame(4, 4, 2, 4);
+    const AnimFrame frame = MakeFrame_(4, 4, 2, 4);
     target.Clear();
     SpriteDrawOptions options;
     options.bFlipX = true;
@@ -268,12 +275,12 @@ TEST(SpriteBatchSdl, FlushDrawsInSortedOrderLaterOnTop)
 
     SpriteBatch batch;
     batch.Init(target.pRenderer);
-    const slug::Vector<uint8_t> atlas = MakeAtlas4x4();
+    const slug::Vector<uint8_t> atlas = MakeAtlas4x4_();
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
 
-    AnimFrame red   = MakeFrame(1, 1, 0, 0);   // atlas (0,0) = 빨강
-    AnimFrame green = MakeFrame(1, 1, 0, 0);
-    green.x         = 1;   // atlas (1,0) = 초록
+    const AnimFrame red   = MakeFrame_(1, 1, 0, 0);   // atlas (0,0) = 빨강
+    AnimFrame       green = MakeFrame_(1, 1, 0, 0);
+    green.x               = 1;   // atlas (1,0) = 초록
 
     target.Clear();
     batch.Submit(1, 0, red, { 5.f, 5.f });
@@ -300,10 +307,10 @@ TEST(SpriteBatchSdl, EmptyFramesAndMissingPagesAreSkipped)
     batch.Init(target.pRenderer);
     target.Clear();
 
-    AnimFrame empty = MakeFrame(0, 0, 0, 0);
+    const AnimFrame empty = MakeFrame_(0, 0, 0, 0);
     batch.DrawFrame(empty, { 5.f, 5.f }, Vec2 { 0.f, 0.f });   // 크래시 없이 무시
 
-    AnimFrame noPage = MakeFrame(4, 4, 0, 0);
+    AnimFrame noPage = MakeFrame_(4, 4, 0, 0);
     noPage.atlas     = 3;
     batch.DrawFrame(noPage, { 5.f, 5.f }, Vec2 { 0.f, 0.f });
     EXPECT_EQ(target.PixelRgb(5, 5), kBlack);
@@ -345,7 +352,7 @@ TEST(SpriteBatchSdl, HitFlashAddsWarmTintOnlyWhenRequested)
     batch.Init(target.pRenderer);
     const slug::Vector<uint8_t> gray = { 100, 100, 100, 255 };
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(1, 1, gray).IsOK());
-    const AnimFrame frame = MakeFrame(1, 1, 0, 1);
+    const AnimFrame frame = MakeFrame_(1, 1, 0, 1);
 
     target.Clear();
     batch.DrawFrame(frame, { 10.f, 20.f }, Vec2 { 0.f, 0.f });

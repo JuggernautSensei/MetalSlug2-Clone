@@ -1,25 +1,30 @@
+// Prop 월드 테스트: 파괴, 피격, 이벤트와 아이템 드롭 검증
 #include <cmath>
-#include "Base/Types.h"
-#include "Base/Math.h"
-#include "Base/Result.h"
-#include <iterator>
 #include <string>
 
+#include "Base/Math.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
 #include "PropTestUtil.h"
 
 using namespace slugtest;
 
 namespace
 {
-
 constexpr float kDt = kStepSec;
 
-float Width(const Aabb& _box)
+[[nodiscard]] float Width_(
+    const Aabb& _box)
 {
     return _box.max.x - _box.min.x;
 }
 
-void HitN(PropWorld& _world, const PropHandle _id, const int _times, const int _damage, const eHitKind _kind = eHitKind::Bullet)
+void HitN_(
+    PropWorld&       _world,
+    const PropHandle _id,
+    const int        _times,
+    const int        _damage,
+    const eHitKind   _kind = eHitKind::Bullet)
 {
     for (int i = 0; i < _times; ++i)
     {
@@ -28,7 +33,10 @@ void HitN(PropWorld& _world, const PropHandle _id, const int _times, const int _
     }
 }
 
-void TickN(PropWorld& _world, const int _ticks, const PropTickContext* _pCtx = nullptr)
+void TickN_(
+    PropWorld&             _world,
+    const int              _ticks,
+    const PropTickContext* _pCtx = nullptr)
 {
     PropTickContext ctx;
     if (_pCtx != nullptr)
@@ -41,7 +49,9 @@ void TickN(PropWorld& _world, const int _ticks, const PropTickContext* _pCtx = n
     }
 }
 
-bool HasEvent(const slug::Vector<PropEvent>& _events, const ePropEventKind _kind)
+[[nodiscard]] bool HasEvent_(
+    const slug::Vector<PropEvent>& _events,
+    const ePropEventKind           _kind)
 {
     for (const PropEvent& ev: _events)
     {
@@ -53,7 +63,9 @@ bool HasEvent(const slug::Vector<PropEvent>& _events, const ePropEventKind _kind
     return false;
 }
 
-int CountEvents(const slug::Vector<PropEvent>& _events, const ePropEventKind _kind)
+[[nodiscard]] int CountEvents_(
+    const slug::Vector<PropEvent>& _events,
+    const ePropEventKind           _kind)
 {
     int n = 0;
     for (const PropEvent& ev: _events)
@@ -63,7 +75,10 @@ int CountEvents(const slug::Vector<PropEvent>& _events, const ePropEventKind _ki
     return n;
 }
 
-const slug::Vector<HitEvent>* ResolveHitbox(CombatSystem& _combat, PropWorld& _world, const Hitbox& _hitbox)
+[[nodiscard]] const slug::Vector<HitEvent>* ResolveHitbox_(
+    CombatSystem& _combat,
+    PropWorld&    _world,
+    const Hitbox& _hitbox)
 {
     _combat.BeginTick();
     _world.RegisterHurtboxes(_combat);
@@ -72,7 +87,22 @@ const slug::Vector<HitEvent>* ResolveHitbox(CombatSystem& _combat, PropWorld& _w
     _world.OnHitEvents(events);
     return &events;
 }
+
+// 트럭 6대와 보트 1대를 세우고 보트를 부순 뒤 120틱 진행한 상태 해시
+[[nodiscard]] uint64_t HashAfterTrucks_(
+    const uint64_t _seed)
+{
+    PropWorld world { &GetPropLib(), _seed };
+    for (int i = 0; i < 6; ++i)
+    {
+        world.Spawn("truck", { 580.f + 100.f * static_cast<float>(i), 342.f });
+    }
+    const PropHandle boat = world.Spawn("mob_boat", { 4140.f, 545.f });
+    HitN_(world, boat, 1, 60);
+    TickN_(world, 120);
+    return world.HashState();
 }
+}   // namespace
 
 TEST(PropWorld, UnknownDefSpawnsNothing)
 {
@@ -84,27 +114,27 @@ TEST(PropWorld, UnknownDefSpawnsNothing)
 
 TEST(PropWorld, ShopDestroyedAfterFourPistolHits)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld        world { &GetPropLib(), 1 };
     const PropHandle shop = world.Spawn("shop_0", { 1274.f, 228.f });
     ASSERT_NE(shop, kNoProp);
     EXPECT_GE(shop, kPropOwnerBase);
 
-    HitN(world, shop, 3, 3);
+    HitN_(world, shop, 3, 3);
     EXPECT_FALSE(world.IsDestroyed(shop));
     EXPECT_EQ(world.GetHp(shop), 3);
 
-    HitN(world, shop, 1, 3);
+    HitN_(world, shop, 1, 3);
     EXPECT_TRUE(world.IsDestroyed(shop));
     EXPECT_FALSE(world.IsDestroyFinished(shop));
 
-    TickN(world, 31);
+    TickN_(world, 31);
     EXPECT_TRUE(world.IsDestroyFinished(shop));
     EXPECT_EQ(world.GetCount(), 1u);   // 상점 잔해는 남는다 (remove 아님)
 }
 
 TEST(PropWorld, KnifeDoesNotHitTrucks)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld        world { &GetPropLib(), 1 };
     const PropHandle truck = world.Spawn("truck", { 580.f, 342.f });
     ASSERT_NE(truck, kNoProp);
     CombatSystem probe;
@@ -121,8 +151,8 @@ TEST(PropWorld, KnifeDoesNotHitTrucks)
         knife.damage = 8;
         knife.owner  = 1;
         knife.id     = 1;
-        CombatSystem combat;
-        const slug::Vector<HitEvent>* pEvents = ResolveHitbox(combat, world, knife);
+        CombatSystem                  combat;
+        const slug::Vector<HitEvent>* pEvents = ResolveHitbox_(combat, world, knife);
         EXPECT_TRUE(pEvents->empty());
     }
     EXPECT_FALSE(world.IsDestroyed(truck));
@@ -131,59 +161,59 @@ TEST(PropWorld, KnifeDoesNotHitTrucks)
 
 TEST(PropWorld, PistolThreeShotsDestroyATruck)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld        world { &GetPropLib(), 1 };
     const PropHandle truck = world.Spawn("truck", { 580.f, 342.f });
-    HitN(world, truck, 2, 3);
+    HitN_(world, truck, 2, 3);
     EXPECT_FALSE(world.IsDestroyed(truck));
-    HitN(world, truck, 1, 3);
+    HitN_(world, truck, 1, 3);
     EXPECT_TRUE(world.IsDestroyed(truck));
 }
 
 TEST(PropWorld, BombOneHitKillsATruckAndTwoHitsABigHouse)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld        world { &GetPropLib(), 1 };
     const PropHandle truck = world.Spawn("truck", { 580.f, 342.f });
-    HitN(world, truck, 1, 20, eHitKind::Blast);
+    HitN_(world, truck, 1, 20, eHitKind::Blast);
     EXPECT_TRUE(world.IsDestroyed(truck));
 
     const PropHandle house = world.Spawn("big_house", { 2000.f, 342.f });
     ASSERT_NE(house, kNoProp);
-    HitN(world, house, 1, 20, eHitKind::Blast);
+    HitN_(world, house, 1, 20, eHitKind::Blast);
     EXPECT_FALSE(world.IsDestroyed(house));
-    HitN(world, house, 1, 20, eHitKind::Blast);
+    HitN_(world, house, 1, 20, eHitKind::Blast);
     EXPECT_TRUE(world.IsDestroyed(house));
 }
 
 TEST(PropWorld, FenceDiesToOneHitAndIsRemovedAfterFinish)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld        world { &GetPropLib(), 1 };
     const PropHandle fence = world.Spawn("fence", { 3665.f, 342.f }, PropSpawnParams {});
     ASSERT_NE(fence, kNoProp);
-    HitN(world, fence, 1, 2);
+    HitN_(world, fence, 1, 2);
     EXPECT_TRUE(world.IsDestroyed(fence));
-    TickN(world, 1);
+    TickN_(world, 1);
     EXPECT_EQ(world.GetCount(), 0u);
     EXPECT_TRUE(world.IsDestroyFinished(fence));
 }
 
 TEST(PropWorld, ImmortalGuardPostTakesNoDamageAndHasNoHurtbox)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld        world { &GetPropLib(), 1 };
     const PropHandle post = world.Spawn("guard_post", { 5800.f, 541.f });
-    CombatSystem combat;
+    CombatSystem     combat;
     combat.BeginTick();
     world.RegisterHurtboxes(combat);
     EXPECT_TRUE(combat.GetHurtboxes().empty());
-    HitN(world, post, 5, 100);
+    HitN_(world, post, 5, 100);
     EXPECT_FALSE(world.IsDestroyed(post));
     EXPECT_EQ(world.GetPlatforms().size(), 2u);   // 가드 포스트 발판 2개는 항상 있다
 }
 
 TEST(PropWorld, HurtboxesAreNeutralWithPropOwnerAndNoHazard)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld        world { &GetPropLib(), 1 };
     const PropHandle shop = world.Spawn("shop_0", { 1274.f, 228.f });
-    CombatSystem combat;
+    CombatSystem     combat;
     combat.BeginTick();
     world.RegisterHurtboxes(combat);
     ASSERT_EQ(combat.GetHurtboxes().size(), 1u);
@@ -200,62 +230,65 @@ TEST(PropWorld, HurtboxesAreNeutralWithPropOwnerAndNoHazard)
 
 TEST(PropWorld, PlayerHitboxResolvesToPropEvent)
 {
-    PropWorld   world { &GetPropLib(), 1 };
-    CombatSystem combat;
+    PropWorld        world { &GetPropLib(), 1 };
+    CombatSystem     combat;
     const PropHandle shop = world.Spawn("shop_0", { 1274.f, 228.f });
 
     Hitbox hb;
-    hb.box   = Aabb::FromCenterSize({ 1274.f, 128.f }, { 10.f, 10.f });
-    hb.team  = eTeam::Player;
-    hb.kind  = eHitKind::Bullet;
-    hb.damage = 2;
-    hb.owner = 1;
-    hb.id    = combat.NewHitId();
-    const slug::Vector<HitEvent>* pEvents = ResolveHitbox(combat, world, hb);
+    hb.box                                = Aabb::FromCenterSize({ 1274.f, 128.f }, { 10.f, 10.f });
+    hb.team                               = eTeam::Player;
+    hb.kind                               = eHitKind::Bullet;
+    hb.damage                             = 2;
+    hb.owner                              = 1;
+    hb.id                                 = combat.NewHitId();
+    const slug::Vector<HitEvent>* pEvents = ResolveHitbox_(combat, world, hb);
 
     ASSERT_EQ(pEvents->size(), 1u);
     EXPECT_EQ((*pEvents)[0].target, shop);
     EXPECT_EQ(world.GetHp(shop), 10);
     const slug::Vector<PropEvent> events = world.TakeEvents();
-    EXPECT_TRUE(HasEvent(events, ePropEventKind::Damaged));
+    EXPECT_TRUE(HasEvent_(events, ePropEventKind::Damaged));
 }
 
 TEST(PropWorld, EnemyHitboxDoesNotHitProps)
 {
-    PropWorld    world { &GetPropLib(), 1 };
-    CombatSystem combat;
+    PropWorld        world { &GetPropLib(), 1 };
+    CombatSystem     combat;
     const PropHandle shop = world.Spawn("shop_0", { 1274.f, 228.f });
 
     Hitbox hb;
-    hb.box    = Aabb::FromCenterSize({ 1274.f, 128.f }, { 10.f, 10.f });
-    hb.team   = eTeam::Enemy;
-    hb.kind   = eHitKind::Bullet;
-    hb.damage = 99;
-    hb.owner  = 9;
-    hb.id     = combat.NewHitId();
-    const slug::Vector<HitEvent>* pEvents = ResolveHitbox(combat, world, hb);
+    hb.box                                = Aabb::FromCenterSize({ 1274.f, 128.f }, { 10.f, 10.f });
+    hb.team                               = eTeam::Enemy;
+    hb.kind                               = eHitKind::Bullet;
+    hb.damage                             = 99;
+    hb.owner                              = 9;
+    hb.id                                 = combat.NewHitId();
+    const slug::Vector<HitEvent>* pEvents = ResolveHitbox_(combat, world, hb);
     EXPECT_TRUE(pEvents->empty());
     EXPECT_EQ(world.GetHp(shop), 12);
 }
 
 TEST(PropWorld, ParamHitboxOverrideChangesHurtbox)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld       world { &GetPropLib(), 1 };
     PropSpawnParams params;
-    params.hitbox = PropBoxOverride { { 50.f, 50.f }, { 0.f, 0.f } };
-    params.hp     = 15;
+    params.hitbox = PropBoxOverride {
+        { 50.f, 50.f },
+        {  0.f,  0.f }
+    };
+    params.hp             = 15;
     const PropHandle shop = world.Spawn("shop_0", { 100.f, 100.f }, params);
     EXPECT_EQ(world.GetHp(shop), 15);
     CombatSystem combat;
     combat.BeginTick();
     world.RegisterHurtboxes(combat);
     ASSERT_EQ(combat.GetHurtboxes().size(), 1u);
-    EXPECT_FLOAT_EQ(Width(combat.GetHurtboxes()[0].box), 50.f);
+    EXPECT_FLOAT_EQ(Width_(combat.GetHurtboxes()[0].box), 50.f);
 }
 
 TEST(PropWorld, ShopStandBoxIsOneWayPlatformAndGoesAwayOnDestroy)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld        world { &GetPropLib(), 1 };
     const PropHandle shop = world.Spawn("shop_0", { 200.f, 100.f });
     ASSERT_EQ(world.GetPlatforms().size(), 1u);
     const Platform& p = world.GetPlatforms()[0];
@@ -263,46 +296,46 @@ TEST(PropWorld, ShopStandBoxIsOneWayPlatformAndGoesAwayOnDestroy)
     EXPECT_FLOAT_EQ(p.box.min.y, 100.f);
     EXPECT_TRUE(world.GetEnemyPlatforms().empty());
 
-    HitN(world, shop, 15, 2);
-    TickN(world, 1);
+    HitN_(world, shop, 15, 2);
+    TickN_(world, 1);
     EXPECT_TRUE(world.GetPlatforms().empty());
 }
 
 TEST(PropWorld, ShopFiveReplacesStandBoxWhenDestroyed)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld        world { &GetPropLib(), 1 };
     const PropHandle shop = world.Spawn("shop_5", { 2513.f, 181.f });
     ASSERT_EQ(world.GetPlatforms().size(), 1u);
-    EXPECT_FLOAT_EQ(Width(world.GetPlatforms()[0].box), 230.f);
+    EXPECT_FLOAT_EQ(Width_(world.GetPlatforms()[0].box), 230.f);
 
-    HitN(world, shop, 1, 30);
+    HitN_(world, shop, 1, 30);
     ASSERT_EQ(world.GetPlatforms().size(), 1u);
-    EXPECT_FLOAT_EQ(Width(world.GetPlatforms()[0].box), 220.f);
+    EXPECT_FLOAT_EQ(Width_(world.GetPlatforms()[0].box), 220.f);
     EXPECT_FLOAT_EQ(world.GetPlatforms()[0].box.GetCenter().y, 181.f + 130.f);
 }
 
 TEST(PropWorld, HouseRoofOnlyBlocksEnemies)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld        world { &GetPropLib(), 1 };
     const PropHandle house = world.Spawn("house_upper", { 7189.f, 717.f });
     EXPECT_TRUE(world.GetPlatforms().empty());
     ASSERT_EQ(world.GetEnemyPlatforms().size(), 1u);
     EXPECT_FLOAT_EQ(world.GetEnemyPlatforms()[0].box.min.y, 717.f + 3.f - 15.f);
 
-    HitN(world, house, 10, 2);   // HP 20 → 파괴
-    TickN(world, 1);
+    HitN_(world, house, 10, 2);   // HP 20 → 파괴
+    TickN_(world, 1);
     EXPECT_TRUE(world.GetEnemyPlatforms().empty());
 }
 
 TEST(PropWorld, BridgeBlockWallShrinksOnDestroy)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld        world { &GetPropLib(), 1 };
     const PropHandle block = world.Spawn("bridge_block", { 10098.f, 1274.f });
     ASSERT_EQ(world.GetWalls().size(), 1u);
-    EXPECT_FLOAT_EQ(Width(world.GetWalls()[0].box), 135.f);
-    HitN(world, block, 10, 2);
+    EXPECT_FLOAT_EQ(Width_(world.GetWalls()[0].box), 135.f);
+    HitN_(world, block, 10, 2);
     ASSERT_EQ(world.GetWalls().size(), 1u);
-    EXPECT_FLOAT_EQ(Width(world.GetWalls()[0].box), 72.f);
+    EXPECT_FLOAT_EQ(Width_(world.GetWalls()[0].box), 72.f);
     EXPECT_FLOAT_EQ(world.GetWalls()[0].box.GetCenter().x, 10098.f + 30.f);
 }
 
@@ -310,7 +343,7 @@ TEST(PropWorld, PlayerLandsOnOneWayShopPlatform)
 {
     PropWorld world { &GetPropLib(), 1 };
     world.Spawn("shop_0", { 200.f, 100.f });   // 윗면 y = 100
-    const GroundMap  ground = MakeFloorMap(400, 160, 140);
+    const GroundMap    ground = MakeFloorMap(400, 160, 140);
     const PhysicsWorld pw { &ground, world.GetPlatforms(), world.GetWalls() };
 
     Body body = MakeBody({ 230.f, 0.f });
@@ -329,11 +362,11 @@ TEST(PropWorld, PlayerIsBlockedByBridgeWall)
     const GroundMap    ground = MakeFloorMap(400, 200, 160);
     const PhysicsWorld pw { &ground, world.GetPlatforms(), world.GetWalls() };
 
-    Body body = MakeBody({ 50.f, 160.f });
-    bool  bHitWall = false;
+    Body body     = MakeBody({ 50.f, 160.f });
+    bool bHitWall = false;
     for (int i = 0; i < 200; ++i)
     {
-        body.velocity.x = 120.f;
+        body.velocity.x    = 120.f;
         const MoveResult r = Physics::Step(body, pw, PhysicsTuning {}, kDt);
         bHitWall           = bHitWall || r.bHitWallRight;
     }
@@ -344,62 +377,62 @@ TEST(PropWorld, PlayerIsBlockedByBridgeWall)
 
 TEST(PropWorld, MobBoatDropsSixItemsAndBurstsOnDeath)
 {
-    PropWorld world { &GetPropLib(), 3 };
+    PropWorld        world { &GetPropLib(), 3 };
     const PropHandle boat = world.Spawn("mob_boat", { 4140.f, 545.f });
-    HitN(world, boat, 1, 60);
+    HitN_(world, boat, 1, 60);
     EXPECT_TRUE(world.IsDestroyed(boat));
 
     const slug::Vector<PropEvent> events = world.TakeEvents();
-    EXPECT_EQ(CountEvents(events, ePropEventKind::DropSpawned), 6);
+    EXPECT_EQ(CountEvents_(events, ePropEventKind::DropSpawned), 6);
     EXPECT_EQ(world.GetItems().GetCount(), 6u);
     EXPECT_EQ(world.GetDebris().size(), 3u);   // onDestroy 목재 3
 }
 
 TEST(PropWorld, ExplodeOnDeathBoatBurstsAfterTwoSecondsThenRemoved)
 {
-    PropWorld world { &GetPropLib(), 3 };
+    PropWorld       world { &GetPropLib(), 3 };
     PropSpawnParams params;
     params.bExplodeOnDeath = true;
-    const PropHandle boat = world.Spawn("mob_boat", { 4140.f, 545.f }, params);
-    HitN(world, boat, 1, 60);
+    const PropHandle boat  = world.Spawn("mob_boat", { 4140.f, 545.f }, params);
+    HitN_(world, boat, 1, 60);
     (void)world.TakeEvents();
 
-    TickN(world, 110);
+    TickN_(world, 110);
     EXPECT_EQ(world.GetCount(), 1u);   // 아직 2 s 전
-    TickN(world, 15);
+    TickN_(world, 15);
     EXPECT_EQ(world.GetCount(), 0u);   // 2차 폭발 후 제거
     const slug::Vector<PropEvent> events = world.TakeEvents();
-    EXPECT_TRUE(HasEvent(events, ePropEventKind::SecondaryBurst));
-    EXPECT_TRUE(HasEvent(events, ePropEventKind::Removed));
+    EXPECT_TRUE(HasEvent_(events, ePropEventKind::SecondaryBurst));
+    EXPECT_TRUE(HasEvent_(events, ePropEventKind::Removed));
     EXPECT_EQ(world.GetDebris().size(), 8u);   // 3 + 5 (5 s 수명 이내)
 }
 
 TEST(PropWorld, PlainBoatLeavesWreckWithoutSecondaryBurst)
 {
-    PropWorld world { &GetPropLib(), 3 };
+    PropWorld        world { &GetPropLib(), 3 };
     const PropHandle boat = world.Spawn("mob_boat", { 4634.f, 545.f });
-    HitN(world, boat, 1, 60);
-    TickN(world, 300);
+    HitN_(world, boat, 1, 60);
+    TickN_(world, 300);
     EXPECT_EQ(world.GetCount(), 1u);
     EXPECT_TRUE(world.IsDestroyFinished(boat));
-    EXPECT_FALSE(HasEvent(world.TakeEvents(), ePropEventKind::SecondaryBurst));
+    EXPECT_FALSE(HasEvent_(world.TakeEvents(), ePropEventKind::SecondaryBurst));
 }
 
 TEST(PropWorld, ShopFiveSpawnsSignThatFallsToGroundAndDetonates)
 {
-    PropWorld world { &GetPropLib(), 4 };
+    PropWorld        world { &GetPropLib(), 4 };
     const PropHandle shop = world.Spawn("shop_5", { 2513.f, 181.f });
-    HitN(world, shop, 1, 30);
+    HitN_(world, shop, 1, 30);
     EXPECT_EQ(world.GetCount(), 2u);   // 상점 + 낙하 간판
 
-    const GroundMap   ground = MakeFloorMap(3000, 500, 400);
-    PropTickContext   ctx;
-    ctx.pGround = &ground;
+    const GroundMap ground = MakeFloorMap(3000, 500, 400);
+    PropTickContext ctx;
+    ctx.pGround   = &ground;
     bool bRemoved = false;
     for (int i = 0; i < 400 && !bRemoved; ++i)
     {
         world.Tick(ctx);
-        bRemoved = HasEvent(world.TakeEvents(), ePropEventKind::Removed);
+        bRemoved = HasEvent_(world.TakeEvents(), ePropEventKind::Removed);
     }
     EXPECT_TRUE(bRemoved);
     EXPECT_EQ(world.GetCount(), 1u);
@@ -408,20 +441,20 @@ TEST(PropWorld, ShopFiveSpawnsSignThatFallsToGroundAndDetonates)
 
 TEST(PropWorld, GroundHouseDamageStagesAndGroundPatch)
 {
-    PropWorld world { &GetPropLib(), 5 };
-    const Vec2 center { 9830.f, 1269.f };
-    const PropHandle   house = world.Spawn("ground_house", center);
+    PropWorld        world { &GetPropLib(), 5 };
+    const Vec2       center { 9830.f, 1269.f };
+    const PropHandle house = world.Spawn("ground_house", center);
 
-    HitN(world, house, 6, 2);   // 12 dmg → HP 12 (damagedAtHp)
+    HitN_(world, house, 6, 2);   // 12 dmg → HP 12 (damagedAtHp)
     EXPECT_EQ(world.GetHp(house), 12);
     EXPECT_EQ(world.GetDebris().size(), 5u);   // onDamaged 목재 5
-    TickN(world, 1);
+    TickN_(world, 1);
     EXPECT_EQ(world.Get(house)->visual, ePropVisual::Damaged);
 
-    HitN(world, house, 6, 2);
+    HitN_(world, house, 6, 2);
     EXPECT_TRUE(world.IsDestroyed(house));
     const slug::Vector<PropEvent> events = world.TakeEvents();
-    bool bPatch = false;
+    bool                          bPatch = false;
     for (const PropEvent& ev: events)
     {
         if (ev.kind == ePropEventKind::GroundPatch)
@@ -433,14 +466,14 @@ TEST(PropWorld, GroundHouseDamageStagesAndGroundPatch)
         }
     }
     EXPECT_TRUE(bPatch);
-    EXPECT_EQ(CountEvents(events, ePropEventKind::Damaged), 12);
+    EXPECT_EQ(CountEvents_(events, ePropEventKind::Damaged), 12);
 }
 
 TEST(PropWorld, ApplyGroundPatchClearsOnlyTheFootprintAndKeepsTheFloor)
 {
     GroundMap map = GroundMap::MakeEmpty(10, 10);
-    map.FillRect(0, 7, 9, 9, true);   // 바닥 3줄
-    map.FillRect(3, 4, 5, 6, true);   // 집 몸체 (바닥 위 봉우리)
+    map.FillRect(0, 7, 9, 9, true);                       // 바닥 3줄
+    map.FillRect(3, 4, 5, 6, true);                       // 집 몸체 (바닥 위 봉우리)
     GroundMap footprint = GroundMap::MakeEmpty(10, 10);   // 발자국 사각형은 지면 전체 크기, 고체는 3x3 만
     footprint.FillRect(3, 4, 5, 6, true);
     EXPECT_TRUE(ApplyGroundPatch(map, { 0.f, 0.f }, footprint));
@@ -472,9 +505,9 @@ TEST(PropWorld, ApplyGroundPatchRefusesFootprintsThatCutTheFloorOrClearMostOfThe
 
 TEST(PropWorld, TruckVariantPositionShiftMatchesLegacyFinalInit)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld       world { &GetPropLib(), 1 };
     PropSpawnParams params;
-    params.variant = 1;   // loaded: dy -10
+    params.variant         = 1;   // loaded: dy -10
     const PropHandle truck = world.Spawn("truck", { 580.f, 342.f }, params);
     EXPECT_FLOAT_EQ(world.Get(truck)->pos.y, 332.f);
     EXPECT_EQ(world.Get(truck)->variant, 1);
@@ -483,20 +516,8 @@ TEST(PropWorld, TruckVariantPositionShiftMatchesLegacyFinalInit)
 
 TEST(PropWorld, SameSeedGivesSameVariantsDropsAndHash)
 {
-    auto run = [](const uint64_t _seed)
-    {
-        PropWorld world { &GetPropLib(), _seed };
-        for (int i = 0; i < 6; ++i)
-        {
-            world.Spawn("truck", { 580.f + 100.f * static_cast<float>(i), 342.f });
-        }
-        const PropHandle boat = world.Spawn("mob_boat", { 4140.f, 545.f });
-        HitN(world, boat, 1, 60);
-        TickN(world, 120);
-        return world.HashState();
-    };
-    EXPECT_EQ(run(42), run(42));
-    EXPECT_NE(run(42), run(43));
+    EXPECT_EQ(HashAfterTrucks_(42), HashAfterTrucks_(42));
+    EXPECT_NE(HashAfterTrucks_(42), HashAfterTrucks_(43));
 }
 
 TEST(PropWorld, CullingRemovesPropsBehindCameraWithEvents)
@@ -507,15 +528,15 @@ TEST(PropWorld, CullingRemovesPropsBehindCameraWithEvents)
 
     PropTickContext ctx;
     ctx.cameraLeft = 1100.f;   // 1274 > 900 → 남는다
-    TickN(world, 1, &ctx);
+    TickN_(world, 1, &ctx);
     EXPECT_EQ(world.GetCount(), 2u);
 
     ctx.cameraLeft = 1500.f;   // 1274 < 1300 → 제거, 트럭(1810)은 남는다
     world.Tick(ctx);
     EXPECT_EQ(world.GetCount(), 1u);
     const slug::Vector<PropEvent> events = world.TakeEvents();
-    EXPECT_EQ(CountEvents(events, ePropEventKind::Culled), 1);
-    EXPECT_EQ(CountEvents(events, ePropEventKind::Removed), 1);
+    EXPECT_EQ(CountEvents_(events, ePropEventKind::Culled), 1);
+    EXPECT_EQ(CountEvents_(events, ePropEventKind::Removed), 1);
 }
 
 TEST(PropWorld, ClearByLayerAndResetRestoreIds)
@@ -540,7 +561,7 @@ TEST(PropWorld, HashChangesWithDamageAndIsStableWithoutIt)
     a.Spawn("tower", { 10808.f, 1175.f });
     b.Spawn("tower", { 10808.f, 1175.f });
     EXPECT_EQ(a.HashState(), b.HashState());
-    HitN(a, a.GetProps()[0].id, 1, 2);
+    HitN_(a, a.GetProps()[0].id, 1, 2);
     EXPECT_NE(a.HashState(), b.HashState());
 }
 
@@ -554,12 +575,12 @@ TEST(PropWorld, SubmitQueuesSpritesOnLayersFromDefinitions)
     ASSERT_TRUE(static_cast<bool>(defs));
 
     const PropDefLibrary boxLib = defs.Take();
-    PropWorld world { &boxLib, 1 };
+    PropWorld            world { &boxLib, 1 };
     world.Spawn("box", { 10.f, 20.f });
     world.Spawn("front", { 30.f, 40.f });
-    AnimationLibrary anims;
+    AnimationLibrary    anims;
     const SpriteLibrary sprites = spriteLib.Take();
-    SpriteBatch      batch;
+    SpriteBatch         batch;
     world.Submit(batch, anims, sprites);
     const slug::Vector<SpriteCommand>& cmds = batch.GetPendingCommands();
     ASSERT_EQ(cmds.size(), 2u);
