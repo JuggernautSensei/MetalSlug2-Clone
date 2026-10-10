@@ -1,6 +1,7 @@
 #include "Game/Enemies/VehicleCommon.h"
-#include "Base/Types.h"
+
 #include "Base/Math.h"
+#include "Base/Types.h"
 
 namespace slug
 {
@@ -38,15 +39,15 @@ void TickVehicleDeath(
 }
 
 void RequestFxAt(
-    EnemyEnv&          _env,
-    const slug::StringView _clip,
-    const Vec2 _at,
-    const int          _facing,
-    const int          _layer,
-    const float        _delaySec)
+    EnemyEnv&        _env,
+    const StringView _clip,
+    const Vec2       _at,
+    const int        _facing,
+    const int        _layer,
+    const float      _delaySec)
 {
     FxDef fx;
-    fx.clip     = slug::String(_clip);
+    fx.clip     = String(_clip);
     fx.offset   = { 0.f, 0.f };
     fx.delaySec = _delaySec;
     fx.layer    = _layer;
@@ -54,10 +55,11 @@ void RequestFxAt(
 }
 
 Vec2 ScreenToWorld(
-    const EnemyEnv&    _env,
-    const Vec2 _screen)
+    const EnemyEnv& _env,
+    const Vec2      _screen)
 {
     const Aabb& view = _env.ctx.cameraView;
     return { view.min.x + _screen.x, view.min.y + _screen.y };
 }
-}
+
+}   // namespace slug

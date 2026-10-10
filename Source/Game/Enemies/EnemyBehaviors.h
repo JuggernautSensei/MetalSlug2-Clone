@@ -1,10 +1,9 @@
 #pragma once
 #include <optional>
 
+#include "Base/Math.h"
 #include "Base/Random.h"
 #include "Base/Types.h"
-#include "Base/Math.h"
-
 #include "Game/Enemies/EnemyDef.h"
 #include "Game/Enemies/EnemyTypes.h"
 #include "Render/Animation.h"
@@ -19,29 +18,29 @@ class EnemyWorld;
 
 struct EnemyFxRequest
 {
-    slug::String  clip       = {};
-    Vec2 position   = { 0.f, 0.f };
-    int          layer      = 60;
-    int          delayTicks = 0;
+    String clip       = {};
+    Vec2   position   = { 0.f, 0.f };
+    int    layer      = 60;
+    int    delayTicks = 0;
 };
 
 struct EnemyEnv
 {
-    EnemyWorld&             world;
-    const EnemyContext&     ctx;
-    const EnemyDefLibrary&  lib;
-    PhysicsTuning           phys = {};
+    EnemyWorld&            world;
+    const EnemyContext&    ctx;
+    const EnemyDefLibrary& lib;
+    PhysicsTuning          phys = {};
 };
 
 struct EnemyRenderEnv
 {
     SpriteBatch&            sprites;
     const AnimationLibrary& anims;
-    const SpriteLibrary*    pSprites;
+    const SpriteLibrary*    pSprites = nullptr;
     const ProjectileSystem& projectiles;
-    Vec2            feet;
-    float                   alpha;
-    int                     layer;
+    Vec2                    feet  = { 0.f, 0.f };
+    float                   alpha = 0.f;
+    int                     layer = 0;
     float                   flash = 0.f;   // 이 적의 전체 피격 플래시 양 (EnemyWorld::Submit 이 채움)
 };
 
@@ -62,7 +61,8 @@ struct BehaviorOps
     void (*submitParts)(const Enemy& _e, const EnemyDef& _def, const EnemyRenderEnv& _render) = nullptr;
 
     bool (*deathDone)(const Enemy& _e, const EnemyDef& _def) = nullptr;
-    void (*onCommand)(Enemy& _e, const EnemyDef& _def, slug::StringView _command) = nullptr;   // 스테이지 명령 (command 액션)
+
+    void (*onCommand)(Enemy& _e, const EnemyDef& _def, StringView _command) = nullptr;   // 스테이지 명령 (command 액션)
 };
 
 [[nodiscard]] const BehaviorOps& GetBehaviorOps(eEnemyBehavior _behavior);
@@ -77,4 +77,5 @@ extern const BehaviorOps kJeepOps;
 extern const BehaviorOps kBTankOps;
 extern const BehaviorOps kMissleTankOps;
 extern const BehaviorOps kSarubiaOps;
-}
+
+}   // namespace slug

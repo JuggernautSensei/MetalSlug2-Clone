@@ -1,11 +1,11 @@
 #include "Game/Enemies/EnemyCommon.h"
-#include "Base/Types.h"
 
 #include <algorithm>
 #include <cmath>
 #include <format>
 
 #include "Base/Math.h"
+#include "Base/Types.h"
 
 namespace slug
 {
@@ -14,23 +14,34 @@ namespace
 {
     constexpr float kFaceDeadzone = 4.f;   // 플레이어와 가로 거리가 이 이내면 방향을 바꾸지 않는다
 
-    enum eDeathPhase : int
+    // Enemy::deathPhase 에 int 로 저장된다
+    enum class eDeathPhase
     {
-        kDeathNone  = 0,
-        kDeathStand = 1,   // 서서 쓰러지는 중 (fallAt 프레임까지)
-        kDeathFall  = 2,   // 공중에서 낙하 (Die_Fall)
-        kDeathLand  = 3,   // 최종 (시체)
-        kDeathSlash = 4,   // 최종: 칼에 베임
-        kDeathBomb  = 5,   // 최종: 폭발로 날아감
-        kDeathJump  = 6    // 공중 사망 → 착지하면 Land
+        None  = 0,
+        Stand = 1,   // 서서 쓰러지는 중 (fallAt 프레임까지)
+        Fall  = 2,   // 공중에서 낙하 (Die_Fall)
+        Land  = 3,   // 최종 (시체)
+        Slash = 4,   // 최종: 칼에 베임
+        Bomb  = 5,   // 최종: 폭발로 날아감
+        Jump  = 6    // 공중 사망 → 착지하면 Land
     };
 
     [[nodiscard]] bool IsFinalPhase_(
-        const int _phase)
+        const eDeathPhase _phase)
     {
-        return _phase == kDeathLand || _phase == kDeathSlash || _phase == kDeathBomb;
+        return _phase == eDeathPhase::Land || _phase == eDeathPhase::Slash || _phase == eDeathPhase::Bomb;
     }
-}
+
+    void EnterDeathLand_(
+        Enemy&          _e,
+        const DeathDef& _death)
+    {
+        _e.deathPhase = static_cast<int>(eDeathPhase::Land);
+        _e.deathTicks = 0;
+        SetClip(_e, _death.clipLand, true);
+    }
+
+}   // namespace
 
 float DistToPlayer(
     const Enemy&    _e,
@@ -69,8 +80,8 @@ void EnterState(
 }
 
 void SetClip(
-    Enemy&    _e,
-    const int _clip,
+    Enemy&     _e,
+    const int  _clip,
     const bool _bRestart)
 {
     if (_clip != _e.clip || _bRestart)
@@ -131,8 +142,8 @@ bool WallAhead(
     const float     _x,
     const float     _y)
 {
-    const float  dir    = static_cast<float>(_e.facing < 0 ? -1 : 1);
-    const Aabb   probe  = Aabb::FromCenterSize({ _e.body.position.x + _x * dir, _e.body.position.y + _y }, { _w, _h });
+    const float         dir   = static_cast<float>(_e.facing < 0 ? -1 : 1);
+    const Aabb          probe = Aabb::FromCenterSize({ _e.body.position.x + _x * dir, _e.body.position.y + _y }, { _w, _h });
     const PhysicsWorld& world = _env.ctx.physics;
 
     if (world.pGround)
@@ -165,32 +176,32 @@ bool FloorAhead(
     const float     _dist,
     const float     _drop)
 {
-    Body probe        = _e.body;
+    Body probe = _e.body;
     probe.position.x += static_cast<float>(_e.facing < 0 ? -1 : 1) * _dist;
     probe.position.y -= 8.f;
-    probe.bGrounded   = false;
+    probe.bGrounded = false;
     return Physics::SnapToGround(probe, _env.ctx.physics, _drop + 8.f);
 }
 
-slug::String ResolveSide(
-    const slug::String& _name,
-    const int          _facing)
+String ResolveSide(
+    const String& _name,
+    const int     _facing)
 {
     const size_t pos = _name.find("{side}");
-    if (pos == slug::String::npos)
+    if (pos == String::npos)
     {
         return _name;
     }
-    slug::String result = _name;
+    String result = _name;
     result.replace(pos, 6, _facing < 0 ? "Left" : "Right");
     return result;
 }
 
 void RequestFx(
-    EnemyEnv&         _env,
-    const FxDef&      _fx,
-    const Vec2 _origin,
-    const int         _facing)
+    EnemyEnv&    _env,
+    const FxDef& _fx,
+    const Vec2   _origin,
+    const int    _facing)
 {
     if (_fx.clip.empty())
     {
@@ -218,8 +229,8 @@ bool FireWeapon(
     const EnemyDef& _def,
     EnemyEnv&       _env,
     const int       _weapon,
-    const Vec2 _dir,
-    const Vec2 _muzzleExtra)
+    const Vec2      _dir,
+    const Vec2      _muzzleExtra)
 {
     if (_weapon < 0 || !_env.ctx.pProjectiles || !_env.ctx.pCombat || !_env.ctx.player.bAlive)
     {
@@ -232,8 +243,8 @@ bool FireWeapon(
     }
     const ProjectileDef& proj   = _env.lib.GetProjectile(weapon.projectile);
     const float          facing = static_cast<float>(_e.facing < 0 ? -1 : 1);
-    const Vec2   base   = GetMuzzleWorld(_e, _def, _weapon);
-    const Vec2   muzzle = { base.x + _muzzleExtra.x, base.y + _muzzleExtra.y };
+    const Vec2           base   = GetMuzzleWorld(_e, _def, _weapon);
+    const Vec2           muzzle = { base.x + _muzzleExtra.x, base.y + _muzzleExtra.y };
 
     Vec2 dir = weapon.aim == eWeaponAim::Given ? _dir : Vec2 { facing, 0.f };
     if (weapon.tiltThreshold > 0.f)
@@ -292,11 +303,11 @@ bool FireWeapon(
 
     if (weapon.bArc)
     {
-        const float vy0 = proj.v0.y;
-        const float g   = proj.gravity;
-        const float tx  = _env.ctx.player.feet.x;
-        const float ty  = _env.ctx.player.center.y;
-        const float dy  = ty - muzzle.y;
+        const float vy0  = proj.v0.y;
+        const float g    = proj.gravity;
+        const float tx   = _env.ctx.player.feet.x;
+        const float ty   = _env.ctx.player.center.y;
+        const float dy   = ty - muzzle.y;
         const float disc = vy0 * vy0 + 2.f * g * dy;
         float       t    = g > 0.f ? (disc >= 0.f ? (-vy0 + std::sqrt(disc)) / g : -vy0 / g) : 1.f;
         if (t < 0.1f)
@@ -305,7 +316,7 @@ bool FireWeapon(
         }
         const float dx   = tx - muzzle.x;
         const float sign = std::abs(dx) < 1.f ? facing : (dx < 0.f ? -1.f : 1.f);
-        const float vx   = slug::Clamp(std::abs(dx) / t, weapon.arcMinVx, weapon.arcMaxVx);
+        const float vx   = Clamp(std::abs(dx) / t, weapon.arcMinVx, weapon.arcMaxVx);
         spawn.velocity   = { vx * sign, vy0 };
     }
 
@@ -327,10 +338,10 @@ void StartMelee(
 {
     CancelMelee(_e, _env);
     const WeaponDef& weapon = _def.weapons[static_cast<size_t>(_weapon)];
-    _e.meleeWeapon    = _weapon;
-    _e.meleeTicksLeft = SecToTicks(weapon.hitboxLifeSec);
-    _e.meleeOrigin    = _e.body.position;
-    _e.meleeHitId     = _env.ctx.pCombat ? _env.ctx.pCombat->NewHitId() : kNoHitId;
+    _e.meleeWeapon          = _weapon;
+    _e.meleeTicksLeft       = SecToTicks(weapon.hitboxLifeSec);
+    _e.meleeOrigin          = _e.body.position;
+    _e.meleeHitId           = _env.ctx.pCombat ? _env.ctx.pCombat->NewHitId() : kNoHitId;
 }
 
 void TickMelee(
@@ -354,7 +365,7 @@ void TickMelee(
     }
 
     const WeaponDef& weapon = _def.weapons[static_cast<size_t>(_e.meleeWeapon)];
-    const Vec2 origin = weapon.bHitboxFollows ? _e.body.position : _e.meleeOrigin;
+    const Vec2       origin = weapon.bHitboxFollows ? _e.body.position : _e.meleeOrigin;
 
     Hitbox hitbox;
     hitbox.box     = weapon.hitbox.At(origin, _e.facing);
@@ -388,16 +399,16 @@ void BeginSoldierDeath(
     const DeathDef& death = _def.death;
     CancelMelee(_e, _env);
 
-    _e.body.velocity.x = 0.f;
+    _e.body.velocity.x  = 0.f;
     _e.body.bUseGravity = true;
-    _e.deathTicks      = 0;
+    _e.deathTicks       = 0;
 
     if (_e.lastHitKind == eHitKind::Blast && death.clipBomb >= 0)
     {
         const float away = SideToPlayer(_e, _env) < 0 ? 1.f : -1.f;
 
-        _e.deathPhase          = kDeathBomb;
-        _e.aux                 = static_cast<int>(_e.body.position.y);
+        _e.deathPhase = static_cast<int>(eDeathPhase::Bomb);
+        _e.aux        = static_cast<int>(_e.body.position.y);
         _e.body.position.y -= 30.f;
         _e.body.velocity       = { away * 110.f, -430.f };
         _e.body.bCollideGround = false;
@@ -409,19 +420,19 @@ void BeginSoldierDeath(
     }
     else if (_e.lastHitKind == eHitKind::Melee && death.clipSlash >= 0)
     {
-        _e.deathPhase = kDeathSlash;
+        _e.deathPhase = static_cast<int>(eDeathPhase::Slash);
         SetClip(_e, death.clipSlash, true);
     }
     else if (_e.bGrounded && death.clipStand1 >= 0)
     {
         const bool bFirst = death.clipStand2 < 0 || _env.world.Roll(2) == 0;
-        _e.deathPhase     = kDeathStand;
+        _e.deathPhase     = static_cast<int>(eDeathPhase::Stand);
         _e.aux            = bFirst ? death.fallAt1 : death.fallAt2;
         SetClip(_e, bFirst ? death.clipStand1 : death.clipStand2, true);
     }
     else
     {
-        _e.deathPhase = kDeathJump;
+        _e.deathPhase = static_cast<int>(eDeathPhase::Jump);
         SetClip(_e, death.clipJump >= 0 ? death.clipJump : death.clipFall, true);
     }
 
@@ -434,8 +445,8 @@ void BeginSoldierDeath(
     if (_def.bHuman && _e.lastHitKind != eHitKind::Blast)
     {
         EnemyFxRequest request;
-        request.clip     = _e.lastHitKind == eHitKind::Melee ? "Fx_Blood_Splat_" : "Fx_Blood_Hit_";
-        request.clip    += (_e.id & 1u) != 0u ? "Right" : "Left";
+        request.clip = _e.lastHitKind == eHitKind::Melee ? "Fx_Blood_Splat_" : "Fx_Blood_Hit_";
+        request.clip += (_e.id & 1u) != 0u ? "Right" : "Left";
         request.position = { _e.body.position.x, _e.body.position.y - 30.f };
         request.layer    = 60;
         _env.world.RequestFx(std::move(request));
@@ -447,8 +458,8 @@ void TickSoldierDeath(
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
-    const DeathDef& death = _def.death;
-    const bool bFlying = _e.deathPhase == kDeathBomb;
+    const DeathDef& death   = _def.death;
+    const bool      bFlying = _e.deathPhase == static_cast<int>(eDeathPhase::Bomb);
     if (!bFlying)
     {
         _e.body.velocity.x = 0.f;
@@ -466,47 +477,41 @@ void TickSoldierDeath(
         return;
     }
 
-    const auto EnterLand = [&]() {
-        _e.deathPhase = kDeathLand;
-        _e.deathTicks = 0;
-        SetClip(_e, death.clipLand, true);
-    };
-
-    switch (_e.deathPhase)
+    switch (static_cast<eDeathPhase>(_e.deathPhase))
     {
-        case kDeathStand:
+        case eDeathPhase::Stand:
         {
             const int fallTicks = _def.GetClip(_e.clip).TickOfFrame(_e.aux);
             if (_e.clipTicks >= fallTicks)
             {
                 if (_e.bGrounded)
                 {
-                    EnterLand();
+                    EnterDeathLand_(_e, death);
                 }
                 else
                 {
-                    _e.deathPhase = kDeathFall;
+                    _e.deathPhase = static_cast<int>(eDeathPhase::Fall);
                     SetClip(_e, death.clipFall >= 0 ? death.clipFall : death.clipLand, true);
                 }
             }
             break;
         }
-        case kDeathFall:
-        case kDeathJump:
+        case eDeathPhase::Fall:
+        case eDeathPhase::Jump:
             if (_e.bGrounded)
             {
-                EnterLand();
+                EnterDeathLand_(_e, death);
             }
             break;
         default: break;
     }
 
-    if (IsFinalPhase_(_e.deathPhase))
+    if (IsFinalPhase_(static_cast<eDeathPhase>(_e.deathPhase)))
     {
         ++_e.deathTicks;
         const int blinkAt  = SecToTicks(death.blinkAtSec);
         const int blinkFor = SecToTicks(death.blinkForSec);
-        const int period   = slug::Max(1, SecToTicks(death.blinkPeriodSec));
+        const int period   = Max(1, SecToTicks(death.blinkPeriodSec));
         if (_e.deathTicks >= blinkAt && _e.deathTicks < blinkAt + blinkFor)
         {
             _e.bVisible = (((_e.deathTicks - blinkAt) / period) % 2) == 0;
@@ -524,8 +529,8 @@ void TickSoldierDeath(
 
 bool SubmitNamedPart(
     const EnemyRenderEnv& _render,
-    const slug::StringView _name,
-    const Vec2    _origin,
+    const StringView      _name,
+    const Vec2            _origin,
     const int             _ticks,
     const bool            _bLoop,
     const int             _sortKey,
@@ -546,8 +551,8 @@ bool SubmitNamedPart(
         {
             index = static_cast<int>((static_cast<int64_t>(std::max(0, _ticks)) * kAnimUnitsPerTick) / units);
         }
-        const int count = pClip->GetFrameCount();
-        index           = _bLoop ? index % count : std::min(index, count - 1);
+        const int count        = pClip->GetFrameCount();
+        index                  = _bLoop ? index % count : std::min(index, count - 1);
         const AnimFrame& frame = pClip->frames[static_cast<size_t>(index)];
         if (frame.IsEmpty())
         {
@@ -578,7 +583,7 @@ bool SubmitNamedPart(
 
 int GetNamedPartTicks(
     const AnimationLibrary& _anims,
-    const slug::StringView   _name)
+    const StringView        _name)
 {
     const AnimClip* pClip = _anims.FindClip(_name);
     if (!pClip)
@@ -587,4 +592,5 @@ int GetNamedPartTicks(
     }
     return static_cast<int>(pClip->GetTotalDurationUnits() / kAnimUnitsPerTick);
 }
-}
+
+}   // namespace slug

@@ -2,6 +2,7 @@
 
 namespace slug
 {
+
 const BehaviorOps& GetBehaviorOps(
     const eEnemyBehavior _behavior)
 {
@@ -19,7 +20,9 @@ const BehaviorOps& GetBehaviorOps(
         case eEnemyBehavior::Sarubia: return kSarubiaOps;
         case eEnemyBehavior::Count: break;
     }
+
     static const BehaviorOps kEmpty {};
     return kEmpty;
 }
-}
+
+}   // namespace slug

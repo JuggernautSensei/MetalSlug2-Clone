@@ -2,67 +2,71 @@
 #include <format>
 
 #include "Base/Math.h"
-
 #include "Game/Enemies/EnemyCommon.h"
 #include "Game/Enemies/EnemyDefParse.h"
 
 namespace slug
 {
+
 namespace
 {
-    enum eBzkState : int
+    enum class eBzkState
     {
-        kWait,
-        kFall,
-        kIdle,
-        kMove,
-        kHJump,
-        kLanding,
-        kAim,
-        kShotReady,
-        kShot,
-        kRecover
+        Wait,
+        Fall,
+        Idle,
+        Move,
+        HJump,
+        Landing,
+        Aim,
+        ShotReady,
+        Shot,
+        Recover
     };
 
-    void Go_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, const int _state)
+    void Go_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env,
+        const eBzkState _state)
     {
         const BzkCfg& cfg = _def.bzk;
-        EnterState(_e, _state);
+        EnterState(_e, static_cast<int>(_state));
         switch (_state)
         {
-            case kWait:
+            case eBzkState::Wait:
                 SetClip(_e, cfg.clipIdle, true);
                 _e.body.velocity.x = 0.f;
                 break;
-            case kFall:
+            case eBzkState::Fall:
                 SetClip(_e, cfg.clipHJump, true);
                 break;
-            case kIdle:
+            case eBzkState::Idle:
                 FacePlayer(_e, _env);
                 SetClip(_e, cfg.clipIdle, true);
                 _e.body.velocity.x = 0.f;
                 break;
-            case kMove:
+            case eBzkState::Move:
                 FacePlayer(_e, _env);
                 SetClip(_e, cfg.clipMove, true);
                 break;
-            case kHJump:
+            case eBzkState::HJump:
                 FacePlayer(_e, _env);
                 SetClip(_e, cfg.clipHJump, true);
-                _e.aux3 = 0;
+                _e.aux3            = 0;
                 _e.body.velocity.x = 0.f;
                 break;
-            case kLanding:
+            case eBzkState::Landing:
                 SetClip(_e, cfg.clipStandUp, true);
                 _e.body.velocity.x = 0.f;
                 break;
-            case kAim:
+            case eBzkState::Aim:
                 FacePlayer(_e, _env);
                 _e.aux2 = DyToPlayer(_e, _env) > 0.f ? 1 : 0;
                 SetClip(_e, _e.aux2 == 1 ? cfg.clipAimDown : cfg.clipAimUp, true);
                 _e.body.velocity.x = 0.f;
                 break;
-            case kShotReady:
+            case eBzkState::ShotReady:
             {
                 const int posture = _e.aux;
                 int       clip    = cfg.clipReadyF;
@@ -74,7 +78,7 @@ namespace
                 _e.body.velocity.x = 0.f;
                 break;
             }
-            case kShot:
+            case eBzkState::Shot:
             {
                 const int posture = _e.aux;
                 int       clip    = cfg.clipShotF;
@@ -85,21 +89,25 @@ namespace
                 SetClip(_e, clip, true);
                 break;
             }
-            case kRecover:
+            case eBzkState::Recover:
                 SetClip(_e, _e.aux2 == 1 ? cfg.clipRecoverDown : cfg.clipRecoverUp, true);
                 break;
             default: break;
         }
     }
 
-    [[nodiscard]] int ChoosePosture_(const Enemy& _e, const BzkCfg& _cfg, const EnemyEnv& _env, bool& _bDown)
+    [[nodiscard]] int ChoosePosture_(
+        const Enemy&    _e,
+        const BzkCfg&   _cfg,
+        const EnemyEnv& _env,
+        bool&           _bDown)
     {
-        const float cx = _e.body.position.x;
-        const float cy = _e.body.position.y + _cfg.muzzleBase.y;
-        const float dx = std::abs(_env.ctx.player.center.x - cx);
-        const float dy = _env.ctx.player.center.y - cy;
-        _bDown         = dy > 0.f;
-        const float deg = std::atan2(std::abs(dy), slug::Max(dx, 0.001f)) * slug::kRad2Deg;
+        const float cx  = _e.body.position.x;
+        const float cy  = _e.body.position.y + _cfg.muzzleBase.y;
+        const float dx  = std::abs(_env.ctx.player.center.x - cx);
+        const float dy  = _env.ctx.player.center.y - cy;
+        _bDown          = dy > 0.f;
+        const float deg = std::atan2(std::abs(dy), Max(dx, 0.001f)) * kRad2Deg;
         for (int i = 0; i < 4; ++i)
         {
             if (deg < _cfg.angleStep[i])
@@ -110,34 +118,40 @@ namespace
         return 4;
     }
 
-    void Init_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void Init_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         PrepareBody(_e, _def);
-        Go_(_e, _def, _env, kWait);
+        Go_(_e, _def, _env, eBzkState::Wait);
     }
 
-    void Tick_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void Tick_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         const BzkCfg& cfg   = _def.bzk;
         const float   speed = _def.physics.speed;
 
-        switch (_e.state)
+        switch (static_cast<eBzkState>(_e.state))
         {
-            case kWait:
+            case eBzkState::Wait:
                 if (_e.bActive)
                 {
-                    Go_(_e, _def, _env, kIdle);
+                    Go_(_e, _def, _env, eBzkState::Idle);
                 }
                 break;
 
-            case kFall:
+            case eBzkState::Fall:
                 _e.body.velocity.x = 0.f;
                 break;
 
-            case kIdle:
+            case eBzkState::Idle:
                 if (!_e.bGrounded)
                 {
-                    Go_(_e, _def, _env, kFall);
+                    Go_(_e, _def, _env, eBzkState::Fall);
                     break;
                 }
                 FacePlayer(_e, _env);
@@ -145,33 +159,33 @@ namespace
                 {
                     if (DistToPlayer(_e, _env) > cfg.detect)
                     {
-                        Go_(_e, _def, _env, kMove);
+                        Go_(_e, _def, _env, eBzkState::Move);
                     }
                     else
                     {
-                        Go_(_e, _def, _env, Roll(_env, 3) == 2 ? kMove : kAim);
+                        Go_(_e, _def, _env, Roll(_env, 3) == 2 ? eBzkState::Move : eBzkState::Aim);
                     }
                 }
                 break;
 
-            case kMove:
+            case eBzkState::Move:
                 if (!_e.bGrounded)
                 {
-                    Go_(_e, _def, _env, kFall);
+                    Go_(_e, _def, _env, eBzkState::Fall);
                     break;
                 }
                 FacePlayer(_e, _env);
                 if (DistToPlayer(_e, _env) <= cfg.detect)
                 {
-                    Go_(_e, _def, _env, kAim);
+                    Go_(_e, _def, _env, eBzkState::Aim);
                 }
                 else if (WallAhead(_e, _env, cfg.wallProbeW, cfg.wallProbeH, cfg.wallProbeX, cfg.wallProbeY))
                 {
-                    Go_(_e, _def, _env, kHJump);
+                    Go_(_e, _def, _env, eBzkState::HJump);
                 }
                 else if (_e.stateTicks >= cfg.cooldownTicks)
                 {
-                    Go_(_e, _def, _env, kIdle);
+                    Go_(_e, _def, _env, eBzkState::Idle);
                 }
                 else
                 {
@@ -179,7 +193,7 @@ namespace
                 }
                 break;
 
-            case kHJump:
+            case eBzkState::HJump:
                 if (_e.aux3 == 0)
                 {
                     _e.body.velocity.x = 0.f;
@@ -198,14 +212,14 @@ namespace
                 }
                 break;
 
-            case kLanding:
+            case eBzkState::Landing:
                 if (ClipFinished(_e, _def))
                 {
-                    Go_(_e, _def, _env, kIdle);
+                    Go_(_e, _def, _env, eBzkState::Idle);
                 }
                 break;
 
-            case kAim:
+            case eBzkState::Aim:
                 _e.body.velocity.x = 0.f;
                 if (ClipFinished(_e, _def))
                 {
@@ -213,39 +227,39 @@ namespace
                     _e.aux     = ChoosePosture_(_e, cfg, _env, bDown);
                     _e.aux2    = bDown ? 1 : 0;
                     _e.counter = cfg.bullets;
-                    Go_(_e, _def, _env, kShotReady);
+                    Go_(_e, _def, _env, eBzkState::ShotReady);
                 }
                 break;
 
-            case kShotReady:
+            case eBzkState::ShotReady:
                 _e.body.velocity.x = 0.f;
                 if (_e.stateTicks >= cfg.readyTicks)
                 {
-                    Go_(_e, _def, _env, kShot);
+                    Go_(_e, _def, _env, eBzkState::Shot);
                 }
                 break;
 
-            case kShot:
+            case eBzkState::Shot:
                 _e.body.velocity.x = 0.f;
                 if (ClipReachedFrame(_e, _def, cfg.fireFrame))
                 {
                     const float deg = 22.5f * static_cast<float>(_e.aux);
-                    const float rad = deg * slug::kDeg2Rad;
-                    const Vec2 dir = { std::cos(rad) * static_cast<float>(_e.facing), std::sin(rad) * (_e.aux2 == 1 ? 1.f : -1.f) };
+                    const float rad = deg * kDeg2Rad;
+                    const Vec2  dir = { std::cos(rad) * static_cast<float>(_e.facing), std::sin(rad) * (_e.aux2 == 1 ? 1.f : -1.f) };
                     FireWeapon(_e, _def, _env, cfg.weaponRocket, dir, { dir.x * cfg.muzzleDist, dir.y * cfg.muzzleDist });
                     --_e.counter;
                 }
                 if (ClipFinished(_e, _def))
                 {
-                    Go_(_e, _def, _env, _e.counter > 0 ? kShotReady : kRecover);
+                    Go_(_e, _def, _env, _e.counter > 0 ? eBzkState::ShotReady : eBzkState::Recover);
                 }
                 break;
 
-            case kRecover:
+            case eBzkState::Recover:
                 _e.body.velocity.x = 0.f;
                 if (ClipFinished(_e, _def))
                 {
-                    Go_(_e, _def, _env, kIdle);
+                    Go_(_e, _def, _env, eBzkState::Idle);
                 }
                 break;
 
@@ -254,29 +268,33 @@ namespace
 
         (void)StepPhysics(_e, _def, _env);
 
-        switch (_e.state)
+        switch (static_cast<eBzkState>(_e.state))
         {
-            case kFall:
+            case eBzkState::Fall:
                 if (_e.bGrounded)
                 {
-                    Go_(_e, _def, _env, _e.bActive ? kLanding : kWait);
+                    Go_(_e, _def, _env, _e.bActive ? eBzkState::Landing : eBzkState::Wait);
                 }
                 break;
-            case kHJump:
+            case eBzkState::HJump:
                 if (_e.aux3 == 1 && _e.bGrounded && _e.stateTicks > 0)
                 {
-                    Go_(_e, _def, _env, kLanding);
+                    Go_(_e, _def, _env, eBzkState::Landing);
                 }
                 break;
             default: break;
         }
     }
 
-    void OnDeath_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
+    void OnDeath_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env)
     {
         BeginSoldierDeath(_e, _def, _env);
     }
-}
+
+}   // namespace
 
 const BehaviorOps kBzkOps = {
     .init              = &Init_,
@@ -299,15 +317,15 @@ void ParseBzkCfg(
     c.readyTicks    = _r.Ticks("readySec");
     c.jumpFrame     = _r.Int("jumpFrame");
     c.fireFrame     = _r.Int("fireFrame");
-    (void)_r.NumArray("angleStep", c.angleStep, 4);
-    c.muzzleBase    = _r.ReadVec2("muzzleBase", c.muzzleBase);
-    c.muzzleDist    = _r.Num("muzzleDist");
+    (void)_r.NumArray("angleStep", c.angleStep);
+    c.muzzleBase = _r.ReadVec2("muzzleBase", c.muzzleBase);
+    c.muzzleDist = _r.Num("muzzleDist");
     {
         const BoxDef probe = _r.Box("wallProbe");
-        c.wallProbeW = probe.w;
-        c.wallProbeH = probe.h;
-        c.wallProbeX = probe.cx;
-        c.wallProbeY = probe.cy;
+        c.wallProbeW       = probe.w;
+        c.wallProbeH       = probe.h;
+        c.wallProbeX       = probe.cx;
+        c.wallProbeY       = probe.cy;
     }
 
     c.clipIdle        = _r.Clip("idle");
@@ -329,4 +347,5 @@ void ParseBzkCfg(
     }
     c.weaponRocket = _r.Weapon("rocket");
 }
-}
+
+}   // namespace slug
