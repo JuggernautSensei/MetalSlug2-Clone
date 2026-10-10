@@ -1,12 +1,12 @@
-#include "Core/AssetPath.h"
 #include <cstdio>
-#include "Base/Types.h"
-#include "Base/Result.h"
 #include <cstdlib>
+#include <memory>
 
 #include "Base/Log.h"
 #include "Base/Random.h"
-
+#include "Base/Result.h"
+#include "Base/Types.h"
+#include "Core/AssetPath.h"
 #include "Core/Replay.h"
 #include "Core/Tuning.h"
 #include "Game/SimRunner.h"
@@ -22,13 +22,13 @@ int main(
 #endif
     slug::FilePath replayPath;
     slug::String   stateName;
-    uint64_t      maxTicks         = 0;
-    bool          bExpectFinished = false;
+    uint64_t       maxTicks        = 0;
+    bool           bExpectFinished = false;
 
     for (int i = 1; i < _argc; ++i)
     {
         const slug::String arg      = _argv[i];
-        const bool        bHasNext = i + 1 < _argc;
+        const bool         bHasNext = i + 1 < _argc;
         if (arg == "--replay" && bHasNext)
         {
             replayPath = _argv[++i];
@@ -80,7 +80,7 @@ int main(
         SLUG_LOG_WARN("Baked 에셋 없음: 애니메이션 없이 진행");
     }
 
-    slug::RngMt19937   rng { replay.seed };
+    slug::RngMt19937  rng { replay.seed };
     slug::GameContext ctx;
     ctx.pAnims    = &anims;
     ctx.pRng      = &rng;

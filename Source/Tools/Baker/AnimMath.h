@@ -2,10 +2,12 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
-#include <span>
+
+#include "Base/Types.h"
 
 namespace slug::baker
 {
+
 struct Pivot
 {
     int x = 0;
@@ -40,11 +42,11 @@ struct Pivot
 
 struct FrameBox
 {
-    int  w       = 0;
-    int  h       = 0;
-    int  pivotX  = 0;
-    int  pivotY  = 0;
-    bool bEmpty  = false;
+    int  w      = 0;
+    int  h      = 0;
+    int  pivotX = 0;
+    int  pivotY = 0;
+    bool bEmpty = false;
 };
 
 struct DriftResult
@@ -54,20 +56,39 @@ struct DriftResult
     double max = 0.0;   // max(x, y)
 };
 
+namespace anim_math_detail
+{
+    // 프레임의 바닥 중앙 앵커 X (원점 기준)
+    [[nodiscard]] inline double AnchorX_(
+        const FrameBox& _f)
+    {
+        return -static_cast<double>(_f.pivotX) + static_cast<double>(_f.w) * 0.5;
+    }
+
+    // 프레임의 바닥 앵커 Y (원점 기준)
+    [[nodiscard]] inline double AnchorY_(
+        const FrameBox& _f)
+    {
+        return -static_cast<double>(_f.pivotY) + static_cast<double>(_f.h);
+    }
+
+    // 두 프레임 사이의 앵커 변화를 누적 최대로 기록한다.
+    inline void Accumulate_(
+        DriftResult&    _result,
+        const FrameBox& _a,
+        const FrameBox& _b)
+    {
+        _result.x = std::max(_result.x, std::abs(AnchorX_(_b) - AnchorX_(_a)));
+        _result.y = std::max(_result.y, std::abs(AnchorY_(_b) - AnchorY_(_a)));
+    }
+}   // namespace anim_math_detail
+
 [[nodiscard]] inline DriftResult ComputeAnchorDrift(
-    const std::span<const FrameBox> _frames,
-    const bool                      _bLoop,
-    const int                       _loopStart)
+    const Span<const FrameBox> _frames,
+    const bool                 _bLoop,
+    const int                  _loopStart)
 {
     DriftResult result;
-
-    auto anchorX = [](const FrameBox& _f) { return -static_cast<double>(_f.pivotX) + static_cast<double>(_f.w) * 0.5; };
-    auto anchorY = [](const FrameBox& _f) { return -static_cast<double>(_f.pivotY) + static_cast<double>(_f.h); };
-    auto accum   = [&](const FrameBox& _a, const FrameBox& _b)
-    {
-        result.x = std::max(result.x, std::abs(anchorX(_b) - anchorX(_a)));
-        result.y = std::max(result.y, std::abs(anchorY(_b) - anchorY(_a)));
-    };
 
     const FrameBox* pPrev = nullptr;
     for (const FrameBox& frame: _frames)
@@ -78,7 +99,7 @@ struct DriftResult
         }
         if (pPrev != nullptr)
         {
-            accum(*pPrev, frame);
+            anim_math_detail::Accumulate_(result, *pPrev, frame);
         }
         pPrev = &frame;
     }
@@ -88,11 +109,12 @@ struct DriftResult
         const FrameBox& first = _frames[static_cast<size_t>(_loopStart)];
         if (!first.bEmpty && &first != pPrev)
         {
-            accum(*pPrev, first);
+            anim_math_detail::Accumulate_(result, *pPrev, first);
         }
     }
 
     result.max = std::max(result.x, result.y);
     return result;
 }
-}
+
+}   // namespace slug::baker

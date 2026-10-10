@@ -16,8 +16,6 @@
 namespace slug::baker
 {
 
-namespace fs = std::filesystem;
-
 namespace
 {
     using JsonDocPtr = std::unique_ptr<yyjson_doc, decltype(&yyjson_doc_free)>;
@@ -26,9 +24,21 @@ namespace
         yyjson_val* _pValue,
         int&        _out)
     {
-        if (yyjson_is_sint(_pValue)) { _out = static_cast<int>(yyjson_get_sint(_pValue)); return true; }
-        if (yyjson_is_uint(_pValue)) { _out = static_cast<int>(yyjson_get_uint(_pValue)); return true; }
-        if (yyjson_is_real(_pValue)) { _out = static_cast<int>(yyjson_get_real(_pValue)); return true; }
+        if (yyjson_is_sint(_pValue))
+        {
+            _out = static_cast<int>(yyjson_get_sint(_pValue));
+            return true;
+        }
+        if (yyjson_is_uint(_pValue))
+        {
+            _out = static_cast<int>(yyjson_get_uint(_pValue));
+            return true;
+        }
+        if (yyjson_is_real(_pValue))
+        {
+            _out = static_cast<int>(yyjson_get_real(_pValue));
+            return true;
+        }
         return false;
     }
 
@@ -40,7 +50,7 @@ namespace
         {
             return false;
         }
-        int v[4] = {};
+        ARRAY<int, 4> v = {};
         for (size_t i = 0; i < 4; ++i)
         {
             if (!ReadInt_(yyjson_arr_get(_pValue, i), v[i]))
@@ -80,8 +90,14 @@ namespace
         bool&       _out)
     {
         yyjson_val* v = yyjson_obj_get(_pObj, _key);
-        if (v == nullptr) { return true; }
-        if (!yyjson_is_bool(v)) { return false; }
+        if (v == nullptr)
+        {
+            return true;
+        }
+        if (!yyjson_is_bool(v))
+        {
+            return false;
+        }
         _out = yyjson_get_bool(v);
         return true;
     }
@@ -92,28 +108,42 @@ namespace
         double&     _out)
     {
         yyjson_val* v = yyjson_obj_get(_pObj, _key);
-        if (v == nullptr) { return true; }
-        if (yyjson_is_real(v)) { _out = yyjson_get_real(v); return true; }
+        if (v == nullptr)
+        {
+            return true;
+        }
+        if (yyjson_is_real(v))
+        {
+            _out = yyjson_get_real(v);
+            return true;
+        }
         int i = 0;
-        if (ReadInt_(v, i)) { _out = static_cast<double>(i); return true; }
+        if (ReadInt_(v, i))
+        {
+            _out = static_cast<double>(i);
+            return true;
+        }
         return false;
     }
 
     [[nodiscard]] bool ReadName_(
-        yyjson_val*  _pObj,
-        const char*  _key,
-        std::string& _out)
+        yyjson_val* _pObj,
+        const char* _key,
+        String&     _out)
     {
         yyjson_val* v = yyjson_obj_get(_pObj, _key);
-        if (v == nullptr || !yyjson_is_str(v)) { return false; }
+        if (v == nullptr || !yyjson_is_str(v))
+        {
+            return false;
+        }
         _out = yyjson_get_str(v);
         return true;
     }
 
     [[nodiscard]] bool ParseClip_(
-        yyjson_val*     _pClip,
-        SheetClipSpec&  _out,
-        std::string&    _error)
+        yyjson_val*    _pClip,
+        SheetClipSpec& _out,
+        String&        _error)
     {
         if (!ReadName_(_pClip, "name", _out.name) || _out.name.empty())
         {
@@ -123,20 +153,32 @@ namespace
 
         if (yyjson_val* region = yyjson_obj_get(_pClip, "region"))
         {
-            if (!ReadRect_(region, _out.region)) { _error = "clip '" + _out.name + "': region must be [x,y,w,h]"; return false; }
+            if (!ReadRect_(region, _out.region))
+            {
+                _error = "clip '" + _out.name + "': region must be [x,y,w,h]";
+                return false;
+            }
             _out.bHasRegion = true;
         }
 
         if (yyjson_val* frames = yyjson_obj_get(_pClip, "frames"))
         {
-            if (!yyjson_is_arr(frames)) { _error = "clip '" + _out.name + "': frames must be an array"; return false; }
-            size_t idx = 0;
-            size_t max = 0;
-            yyjson_val* f = nullptr;
+            if (!yyjson_is_arr(frames))
+            {
+                _error = "clip '" + _out.name + "': frames must be an array";
+                return false;
+            }
+            size_t      idx = 0;
+            size_t      max = 0;
+            yyjson_val* f   = nullptr;
             yyjson_arr_foreach(frames, idx, max, f)
             {
                 IRect r;
-                if (!ReadRect_(f, r)) { _error = "clip '" + _out.name + "': frame must be [x,y,w,h]"; return false; }
+                if (!ReadRect_(f, r))
+                {
+                    _error = "clip '" + _out.name + "': frame must be [x,y,w,h]";
+                    return false;
+                }
                 _out.frames.push_back(r);
             }
         }
@@ -166,7 +208,7 @@ namespace
             return false;
         }
 
-        std::string pivot;
+        String pivot;
         if (yyjson_obj_get(_pClip, "pivot") != nullptr)
         {
             if (!ReadName_(_pClip, "pivot", pivot) || (pivot != "foot" && pivot != "center"))
@@ -187,7 +229,11 @@ namespace
 
         if (yyjson_val* reg = yyjson_obj_get(_pClip, "register"))
         {
-            if (!yyjson_is_bool(reg)) { _error = "clip '" + _out.name + "': register must be true or false"; return false; }
+            if (!yyjson_is_bool(reg))
+            {
+                _error = "clip '" + _out.name + "': register must be true or false";
+                return false;
+            }
             _out.bRegisterSet = true;
             _out.bRegister    = yyjson_get_bool(reg);
         }
@@ -198,7 +244,7 @@ namespace
         }
         if (yyjson_obj_get(_pClip, "registerTo") != nullptr)
         {
-            std::string ref;
+            String ref;
             if (!ReadName_(_pClip, "registerTo", ref) || (ref != "first" && ref != "prev"))
             {
                 _error = "clip '" + _out.name + "': registerTo must be \"first\" or \"prev\"";
@@ -238,7 +284,7 @@ namespace
     [[nodiscard]] bool ParseSheet_(
         yyjson_val* _pSheet,
         SheetSpec&  _out,
-        std::string& _error)
+        String&     _error)
     {
         if (!ReadName_(_pSheet, "file", _out.file) || _out.file.empty())
         {
@@ -248,31 +294,56 @@ namespace
 
         if (yyjson_val* key = yyjson_obj_get(_pSheet, "key"))
         {
-            std::string mode;
+            String mode;
             if (!yyjson_is_obj(key) || (yyjson_obj_get(key, "mode") && !ReadName_(key, "mode", mode)))
             {
                 _error = _out.file + ": bad key";
                 return false;
             }
-            if (mode == "color") { _out.key.mode = eSheetKeyMode::Color; }
-            else if (mode == "alpha") { _out.key.mode = eSheetKeyMode::Alpha; }
-            else if (mode.empty() || mode == "magenta") { _out.key.mode = eSheetKeyMode::Magenta; }
-            else { _error = _out.file + ": key.mode must be color|alpha|magenta"; return false; }
+            if (mode == "color")
+            {
+                _out.key.mode = eSheetKeyMode::Color;
+            }
+            else if (mode == "alpha")
+            {
+                _out.key.mode = eSheetKeyMode::Alpha;
+            }
+            else if (mode.empty() || mode == "magenta")
+            {
+                _out.key.mode = eSheetKeyMode::Magenta;
+            }
+            else
+            {
+                _error = _out.file + ": key.mode must be color|alpha|magenta";
+                return false;
+            }
 
             if (yyjson_val* colors = yyjson_obj_get(key, "colors"))
             {
-                if (!yyjson_is_arr(colors)) { _error = _out.file + ": key.colors must be an array"; return false; }
-                size_t idx = 0;
-                size_t max = 0;
-                yyjson_val* c = nullptr;
+                if (!yyjson_is_arr(colors))
+                {
+                    _error = _out.file + ": key.colors must be an array";
+                    return false;
+                }
+                size_t      idx = 0;
+                size_t      max = 0;
+                yyjson_val* c   = nullptr;
                 yyjson_arr_foreach(colors, idx, max, c)
                 {
-                    if (!yyjson_is_arr(c) || yyjson_arr_size(c) != 3) { _error = _out.file + ": key.colors entries must be [r,g,b]"; return false; }
-                    std::array<uint8_t, 3> rgbArr = {};
+                    if (!yyjson_is_arr(c) || yyjson_arr_size(c) != 3)
+                    {
+                        _error = _out.file + ": key.colors entries must be [r,g,b]";
+                        return false;
+                    }
+                    ARRAY<uint8_t, 3> rgbArr = {};
                     for (size_t k = 0; k < 3; ++k)
                     {
                         int v = 0;
-                        if (!ReadInt_(yyjson_arr_get(c, k), v) || v < 0 || v > 255) { _error = _out.file + ": key.colors value out of range"; return false; }
+                        if (!ReadInt_(yyjson_arr_get(c, k), v) || v < 0 || v > 255)
+                        {
+                            _error = _out.file + ": key.colors value out of range";
+                            return false;
+                        }
                         rgbArr[k] = static_cast<uint8_t>(v);
                     }
                     _out.key.colors.push_back(rgbArr);
@@ -292,14 +363,22 @@ namespace
 
         if (yyjson_val* exclude = yyjson_obj_get(_pSheet, "exclude"))
         {
-            if (!yyjson_is_arr(exclude)) { _error = _out.file + ": exclude must be an array"; return false; }
-            size_t idx = 0;
-            size_t max = 0;
-            yyjson_val* e = nullptr;
+            if (!yyjson_is_arr(exclude))
+            {
+                _error = _out.file + ": exclude must be an array";
+                return false;
+            }
+            size_t      idx = 0;
+            size_t      max = 0;
+            yyjson_val* e   = nullptr;
             yyjson_arr_foreach(exclude, idx, max, e)
             {
                 IRect r;
-                if (!ReadRect_(e, r)) { _error = _out.file + ": exclude entry must be [x,y,w,h]"; return false; }
+                if (!ReadRect_(e, r))
+                {
+                    _error = _out.file + ": exclude entry must be [x,y,w,h]";
+                    return false;
+                }
                 _out.exclude.push_back(r);
             }
         }
@@ -312,23 +391,35 @@ namespace
 
         if (yyjson_val* prefixes = yyjson_obj_get(_pSheet, "noRegisterPrefixes"))
         {
-            if (!yyjson_is_arr(prefixes)) { _error = _out.file + ": noRegisterPrefixes must be an array"; return false; }
+            if (!yyjson_is_arr(prefixes))
+            {
+                _error = _out.file + ": noRegisterPrefixes must be an array";
+                return false;
+            }
             size_t      idx = 0;
             size_t      max = 0;
             yyjson_val* p   = nullptr;
             yyjson_arr_foreach(prefixes, idx, max, p)
             {
-                if (!yyjson_is_str(p)) { _error = _out.file + ": noRegisterPrefixes entries must be strings"; return false; }
+                if (!yyjson_is_str(p))
+                {
+                    _error = _out.file + ": noRegisterPrefixes entries must be strings";
+                    return false;
+                }
                 _out.noRegisterPrefixes.emplace_back(yyjson_get_str(p));
             }
         }
 
         if (yyjson_val* clips = yyjson_obj_get(_pSheet, "clips"))
         {
-            if (!yyjson_is_arr(clips)) { _error = _out.file + ": clips must be an array"; return false; }
-            size_t idx = 0;
-            size_t max = 0;
-            yyjson_val* c = nullptr;
+            if (!yyjson_is_arr(clips))
+            {
+                _error = _out.file + ": clips must be an array";
+                return false;
+            }
+            size_t      idx = 0;
+            size_t      max = 0;
+            yyjson_val* c   = nullptr;
             yyjson_arr_foreach(clips, idx, max, c)
             {
                 SheetClipSpec clip;
@@ -344,9 +435,9 @@ namespace
     }
 
     // 클립의 시트 좌표계 사각형: 명시 frames 가 있으면 그것, 아니면 auto 슬라이스.
-    [[nodiscard]] std::vector<IRect> ClipRects_(
-        const Image&        _image,
-        const SheetSpec&    _spec,
+    [[nodiscard]] Vector<IRect> ClipRects_(
+        const Image&         _image,
+        const SheetSpec&     _spec,
         const SheetClipSpec& _clip)
     {
         if (!_clip.frames.empty())
@@ -358,46 +449,52 @@ namespace
     }
 
     [[nodiscard]] bool HasValidAnim_(
-        const BakeState&   _state,
-        const std::string& _name)
+        const BakeState& _state,
+        const String&    _name)
     {
         for (const AnimOut& a: _state.anims)
         {
-            if (a.bValid && a.rec.name == _name) { return true; }
+            if (a.bValid && a.rec.name == _name)
+            {
+                return true;
+            }
         }
         return false;
     }
 
     [[nodiscard]] bool HasValidSprite_(
-        const BakeState&   _state,
-        const std::string& _name)
+        const BakeState& _state,
+        const String&    _name)
     {
         for (const SpriteOut& s: _state.sprites)
         {
-            if (s.bValid && s.rec.name == _name) { return true; }
+            if (s.bValid && s.rec.name == _name)
+            {
+                return true;
+            }
         }
         return false;
     }
 
     void InvalidateAnim_(
-        BakeState&         _state,
-        const std::string& _name,
-        const std::string& _reason)
+        BakeState&    _state,
+        const String& _name,
+        const String& _reason)
     {
         for (AnimOut& a: _state.anims)
         {
             if (a.bValid && a.rec.name == _name)
             {
-                a.bValid      = false;
-                a.skipReason  = _reason;
+                a.bValid     = false;
+                a.skipReason = _reason;
             }
         }
     }
 
     void InvalidateSprite_(
-        BakeState&         _state,
-        const std::string& _name,
-        const std::string& _reason)
+        BakeState&    _state,
+        const String& _name,
+        const String& _reason)
     {
         for (SpriteOut& s: _state.sprites)
         {
@@ -410,41 +507,43 @@ namespace
     }
 
     // ---- 미리보기 그리기 (3x5 숫자 글꼴, 소스 해상도 기준) ----
-    constexpr uint8_t kDigitRows[10][5] = {
-        { 0b111, 0b101, 0b101, 0b101, 0b111 },
-        { 0b010, 0b110, 0b010, 0b010, 0b111 },
-        { 0b111, 0b001, 0b111, 0b100, 0b111 },
-        { 0b111, 0b001, 0b111, 0b001, 0b111 },
-        { 0b101, 0b101, 0b111, 0b001, 0b001 },
-        { 0b111, 0b100, 0b111, 0b001, 0b111 },
-        { 0b111, 0b100, 0b111, 0b101, 0b111 },
-        { 0b111, 0b001, 0b001, 0b001, 0b001 },
-        { 0b111, 0b101, 0b111, 0b101, 0b111 },
-        { 0b111, 0b101, 0b111, 0b001, 0b111 }
+    using DigitRows = ARRAY<uint8_t, 5>;
+
+    constexpr ARRAY<DigitRows, 10> kDigitRows = {
+        DigitRows { 0b111, 0b101, 0b101, 0b101, 0b111 },
+        DigitRows { 0b010, 0b110, 0b010, 0b010, 0b111 },
+        DigitRows { 0b111, 0b001, 0b111, 0b100, 0b111 },
+        DigitRows { 0b111, 0b001, 0b111, 0b001, 0b111 },
+        DigitRows { 0b101, 0b101, 0b111, 0b001, 0b001 },
+        DigitRows { 0b111, 0b100, 0b111, 0b001, 0b111 },
+        DigitRows { 0b111, 0b100, 0b111, 0b101, 0b111 },
+        DigitRows { 0b111, 0b001, 0b001, 0b001, 0b001 },
+        DigitRows { 0b111, 0b101, 0b111, 0b101, 0b111 },
+        DigitRows { 0b111, 0b101, 0b111, 0b001, 0b111 }
     };
 
     void PutPixel_(
-        Image&                       _image,
-        const int                    _x,
-        const int                    _y,
-        const std::array<uint8_t, 4>& _color)
+        Image&                   _image,
+        const int                _x,
+        const int                _y,
+        const ARRAY<uint8_t, 4>& _color)
     {
         if (_x < 0 || _y < 0 || _x >= _image.width || _y >= _image.height)
         {
             return;
         }
         uint8_t* p = _image.At(_x, _y);
-        p[0] = _color[0];
-        p[1] = _color[1];
-        p[2] = _color[2];
-        p[3] = _color[3];
+        p[0]       = _color[0];
+        p[1]       = _color[1];
+        p[2]       = _color[2];
+        p[3]       = _color[3];
     }
 
     void DrawOutline_(
-        Image&                        _image,
-        const IRect&                  _rect,
-        const std::array<uint8_t, 4>& _color,
-        const int                     _thickness)
+        Image&                   _image,
+        const IRect&             _rect,
+        const ARRAY<uint8_t, 4>& _color,
+        const int                _thickness)
     {
         for (int t = 0; t < _thickness; ++t)
         {
@@ -463,14 +562,14 @@ namespace
 
     // 사각형 왼쪽 위에 검은 바탕 + 흰 숫자 (2px 셀).
     void DrawLabel_(
-        Image&       _image,
-        const IRect& _rect,
-        const int    _value,
-        const std::array<uint8_t, 4>& _color)
+        Image&                   _image,
+        const IRect&             _rect,
+        const int                _value,
+        const ARRAY<uint8_t, 4>& _color)
     {
-        const std::string text = std::to_string(_value);
-        const int         boxW = static_cast<int>(text.size()) * 8 + 2;
-        const int         boxH = 12;
+        const String text = std::to_string(_value);
+        const int    boxW = static_cast<int>(text.size()) * 8 + 2;
+        const int    boxH = 12;
         for (int y = 0; y < boxH; ++y)
         {
             for (int x = 0; x < boxW; ++x)
@@ -480,7 +579,7 @@ namespace
         }
         for (size_t i = 0; i < text.size(); ++i)
         {
-            const uint8_t* rows = kDigitRows[text[i] - '0'];
+            const DigitRows& rows = kDigitRows[static_cast<size_t>(text[i] - '0')];
             for (int ry = 0; ry < 5; ++ry)
             {
                 for (int rx = 0; rx < 3; ++rx)
@@ -500,13 +599,13 @@ namespace
         }
     }
 
-}
+}   // namespace
 
 slug::Result<void> LoadSheetConfig(
-    const fs::path& _path,
+    const FilePath& _path,
     SheetConfig&    _out)
 {
-    slug::Result<std::string> text = ReadText(_path);
+    slug::Result<String> text = ReadText(_path);
     if (!text)
     {
         Log("ERROR: cannot read {}", _path.string());
@@ -514,16 +613,16 @@ slug::Result<void> LoadSheetConfig(
     }
 
     // 메모장/PowerShell 이 붙이는 UTF-8 BOM 은 건너뛴다.
-    const std::string& json   = *text;
-    const char*        pData  = json.data();
-    size_t             nBytes = json.size();
+    const String& json   = *text;
+    const char*   pData  = json.data();
+    size_t        nBytes = json.size();
     if (nBytes >= 3 && static_cast<uint8_t>(pData[0]) == 0xEF && static_cast<uint8_t>(pData[1]) == 0xBB && static_cast<uint8_t>(pData[2]) == 0xBF)
     {
         pData += 3;
         nBytes -= 3;
     }
-    JsonDocPtr doc(yyjson_read(pData, nBytes, 0), &yyjson_doc_free);
-    yyjson_val*        root = doc ? yyjson_doc_get_root(doc.get()) : nullptr;
+    JsonDocPtr  doc(yyjson_read(pData, nBytes, 0), &yyjson_doc_free);
+    yyjson_val* root = doc ? yyjson_doc_get_root(doc.get()) : nullptr;
     if (root == nullptr || !yyjson_is_obj(root))
     {
         Log("ERROR: {} is not a JSON object", _path.string());
@@ -539,13 +638,13 @@ slug::Result<void> LoadSheetConfig(
 
     _out.path = _path;
     _out.sheets.clear();
-    size_t idx = 0;
-    size_t max = 0;
-    yyjson_val* s = nullptr;
+    size_t      idx = 0;
+    size_t      max = 0;
+    yyjson_val* s   = nullptr;
     yyjson_arr_foreach(sheets, idx, max, s)
     {
         SheetSpec spec;
-        std::string error;
+        String    error;
         if (!ParseSheet_(s, spec, error))
         {
             Log("ERROR: {}: {}", _path.string(), error);
@@ -565,7 +664,7 @@ slug::Result<void> AppendSheetClips(
         return slug::Error { slug::kOK };
     }
 
-    fs::path sheetsPath = _options.sheetsPath;
+    FilePath sheetsPath = _options.sheetsPath;
     if (sheetsPath.empty())
     {
         sheetsPath = slug::FindAssetRoot() / "Source" / "sheets.json";
@@ -589,9 +688,9 @@ slug::Result<void> AppendSheetClips(
     size_t clipCount = 0;
     for (const SheetSpec& spec: config.sheets)
     {
-        const fs::path            imagePath = config.path.parent_path() / spec.file;
-        slug::Result<std::string> bytes     = ReadText(imagePath);
-        Image                     image;
+        const FilePath       imagePath = config.path.parent_path() / spec.file;
+        slug::Result<String> bytes     = ReadText(imagePath);
+        Image                image;
         if (!bytes || !DecodeImageBytes(reinterpret_cast<const uint8_t*>((*bytes).data()), (*bytes).size(), image))
         {
             Log("WARN: sheet {} cannot be decoded", imagePath.string());
@@ -604,7 +703,7 @@ slug::Result<void> AppendSheetClips(
 
         for (const SheetClipSpec& clip: spec.clips)
         {
-            const std::vector<IRect> rects = ClipRects_(image, spec, clip);
+            const Vector<IRect> rects = ClipRects_(image, spec, clip);
             if (rects.empty())
             {
                 Log("WARN: sheet clip {}: no content found in {}", clip.name, spec.file);
@@ -620,13 +719,15 @@ slug::Result<void> AppendSheetClips(
 
             struct Variant
             {
-                std::string name;
-                bool        bFlip = false;
+                String name  = {};
+                bool   bFlip = false;
             };
-            std::vector<Variant> variants = { { clip.name, false } };
+            Vector<Variant> variants = {
+                { clip.name, false }
+            };
             if (clip.bMirror)
             {
-                std::string mirrored;
+                String mirrored;
                 if (MirrorClipName(clip.name, mirrored))
                 {
                     variants.push_back({ mirrored, true });
@@ -649,8 +750,8 @@ slug::Result<void> AppendSheetClips(
 
             for (const Variant& v: variants)
             {
-                const bool bExists = clip.bAsSprite ? HasValidSprite_(_state, v.name) : HasValidAnim_(_state, v.name);
-                const eSheetNameAction action = ResolveSheetName(bExists, clip.bReplace);
+                const bool             bExists = clip.bAsSprite ? HasValidSprite_(_state, v.name) : HasValidAnim_(_state, v.name);
+                const eSheetNameAction action  = ResolveSheetName(bExists, clip.bReplace);
                 if (action == eSheetNameAction::Skip)
                 {
                     Log("WARN: sheet clip {} ({}) skipped: name already exists (set replace:true to override)", v.name, spec.file);
@@ -662,28 +763,35 @@ slug::Result<void> AppendSheetClips(
                 if (!clip.bAsSprite)
                 {
                     const SheetRegStats& st = built.reg;
-                    _state.anomalies.push_back({ "SheetRegistration", v.name,
-                        std::format("content shift {:.1f} -> {:.1f} px, register {}, aligned {}, fallback {}",
-                            st.shiftBefore, st.shiftAfter, bRegister ? "on" : "off", st.alignedFrames, st.fallbackFrames.size()),
-                        st.shiftAfter });
+                    _state.anomalies.push_back({ "SheetRegistration", v.name, std::format("content shift {:.1f} -> {:.1f} px, register {}, aligned {}, fallback {}", st.shiftBefore, st.shiftAfter, bRegister ? "on" : "off", st.alignedFrames, st.fallbackFrames.size()), st.shiftAfter });
                     if (!st.fallbackFrames.empty())
                     {
-                        std::string list;
+                        String list;
                         for (const size_t k: st.fallbackFrames)
                         {
                             list += (list.empty() ? "" : ",") + std::to_string(k);
                         }
-                        _state.anomalies.push_back({ "SheetRegisterFallback", v.name,
-                            "frames [" + list + "] kept rect pivot (score below minScore)", static_cast<double>(st.fallbackFrames.size()) });
+                        _state.anomalies.push_back({ "SheetRegisterFallback", v.name, "frames [" + list + "] kept rect pivot (score below minScore)", static_cast<double>(st.fallbackFrames.size()) });
                     }
                     Log("sheet clip {}: content shift {:.1f} -> {:.1f} px, register {}, aligned {}, fallback {}",
-                        v.name, st.shiftBefore, st.shiftAfter, bRegister ? "on" : "off", st.alignedFrames, st.fallbackFrames.size());
+                        v.name,
+                        st.shiftBefore,
+                        st.shiftAfter,
+                        bRegister ? "on" : "off",
+                        st.alignedFrames,
+                        st.fallbackFrames.size());
                 }
                 if (action == eSheetNameAction::Replace)
                 {
-                    const std::string reason = "replaced by sheet clip from " + spec.file;
-                    if (clip.bAsSprite) { InvalidateSprite_(_state, v.name, reason); }
-                    else { InvalidateAnim_(_state, v.name, reason); }
+                    const String reason = "replaced by sheet clip from " + spec.file;
+                    if (clip.bAsSprite)
+                    {
+                        InvalidateSprite_(_state, v.name, reason);
+                    }
+                    else
+                    {
+                        InvalidateAnim_(_state, v.name, reason);
+                    }
                     _state.anomalies.push_back({ "SheetReplaced", v.name, reason, 0.0 });
                 }
 
@@ -695,18 +803,18 @@ slug::Result<void> AppendSheetClips(
                     }
                     const FrameOut& f = built.frames[0];
                     SpriteOut       sprite;
-                    sprite.rec.name      = v.name;
-                    sprite.rec.texture   = spec.file;
+                    sprite.rec.name       = v.name;
+                    sprite.rec.texture    = spec.file;
                     sprite.rec.sourceFile = config.path.filename().string();
-                    sprite.bValid        = true;
-                    sprite.texW          = image.width;
-                    sprite.texH          = image.height;
-                    sprite.cellW         = f.w;
-                    sprite.cellH         = f.h;
-                    sprite.bCustomPivot  = true;
-                    sprite.pivotX        = f.pivotX;
-                    sprite.pivotY        = f.pivotY;
-                    sprite.image         = std::move(built.trimmed[0]);
+                    sprite.bValid         = true;
+                    sprite.texW           = image.width;
+                    sprite.texH           = image.height;
+                    sprite.cellW          = f.w;
+                    sprite.cellH          = f.h;
+                    sprite.bCustomPivot   = true;
+                    sprite.pivotX         = f.pivotX;
+                    sprite.pivotY         = f.pivotY;
+                    sprite.image          = std::move(built.trimmed[0]);
                     _state.sprites.push_back(std::move(sprite));
                     ++clipCount;
                     continue;
@@ -741,8 +849,8 @@ slug::Result<void> AppendSheetClips(
 
 slug::Result<void> RunSheetPreview(const BakerOptions& _options)
 {
-    const fs::path defaultPath = slug::FindAssetRoot() / "Source" / "sheets.json";
-    fs::path       sheetsPath  = _options.sheetsPath.empty() ? defaultPath : _options.sheetsPath;
+    const FilePath defaultPath = slug::FindAssetRoot() / "Source" / "sheets.json";
+    FilePath       sheetsPath  = _options.sheetsPath.empty() ? defaultPath : _options.sheetsPath;
 
     SheetConfig config;
     config.path = sheetsPath;
@@ -754,13 +862,13 @@ slug::Result<void> RunSheetPreview(const BakerOptions& _options)
         }
     }
 
-    const fs::path arg  = _options.sheetPreview;
-    const std::string want = arg.filename().string();
-    SheetSpec  fallback;
+    const FilePath   arg  = _options.sheetPreview;
+    const String     want = arg.filename().string();
+    SheetSpec        fallback;
     const SheetSpec* pSpec = nullptr;
     for (const SheetSpec& spec: config.sheets)
     {
-        if (fs::path(spec.file).filename().string() == want)
+        if (FilePath(spec.file).filename().string() == want)
         {
             pSpec = &spec;
             break;
@@ -778,19 +886,19 @@ slug::Result<void> RunSheetPreview(const BakerOptions& _options)
     }
     else if (pSpec->clips.empty())
     {
-        fallback      = *pSpec;
+        fallback = *pSpec;
         fallback.clips.push_back(autoClip);
         pSpec = &fallback;
         Log("sheets.json entry for {} has no clips: previewing the key + whole-sheet auto slice", want);
     }
 
-    fs::path imagePath = arg;
+    FilePath imagePath = arg;
     if (!fs::is_regular_file(imagePath))
     {
         imagePath = config.path.parent_path() / pSpec->file;
     }
-    slug::Result<std::string> bytes = ReadText(imagePath);
-    Image                     source;
+    slug::Result<String> bytes = ReadText(imagePath);
+    Image                source;
     if (!bytes || !DecodeImageBytes(reinterpret_cast<const uint8_t*>((*bytes).data()), (*bytes).size(), source))
     {
         Log("ERROR: cannot decode sheet {}", imagePath.string());
@@ -817,15 +925,21 @@ slug::Result<void> RunSheetPreview(const BakerOptions& _options)
         DrawOutline_(canvas, ex, { 255, 0, 0, 255 }, thickness);
     }
 
-    static constexpr std::array<uint8_t, 4> kPalette[] = {
-        { 255, 255, 0, 255 }, { 0, 255, 255, 255 }, { 255, 128, 0, 255 },
-        { 128, 255, 128, 255 }, { 255, 128, 255, 255 }, { 128, 128, 255, 255 }
+    using Color = ARRAY<uint8_t, 4>;
+
+    static constexpr ARRAY<Color, 6> kPalette = {
+        Color { 255, 255,   0, 255 },
+        Color {   0, 255, 255, 255 },
+        Color { 255, 128,   0, 255 },
+        Color { 128, 255, 128, 255 },
+        Color { 255, 128, 255, 255 },
+        Color { 128, 128, 255, 255 }
     };
     for (size_t ci = 0; ci < pSpec->clips.size(); ++ci)
     {
         const SheetClipSpec& clip  = pSpec->clips[ci];
-        const auto           color = kPalette[ci % std::size(kPalette)];
-        const std::vector<IRect> rects = ClipRects_(keyed, *pSpec, clip);
+        const Color&         color = kPalette[ci % kPalette.size()];
+        const Vector<IRect>  rects = ClipRects_(keyed, *pSpec, clip);
         Log("clip {} [{}]: {} rect(s)", clip.name, ci, rects.size());
         for (size_t i = 0; i < rects.size() && i < 200; ++i)
         {
@@ -835,16 +949,16 @@ slug::Result<void> RunSheetPreview(const BakerOptions& _options)
         }
     }
 
-    Image output = _options.sheetPreviewScale > 1 ? ScaleNearest(canvas, _options.sheetPreviewScale) : canvas;
-    const fs::path outDir = slug::FindAssetRoot().parent_path() / "Captures" / "SheetPreview";
+    Image           output = _options.sheetPreviewScale > 1 ? ScaleNearest(canvas, _options.sheetPreviewScale) : canvas;
+    const FilePath  outDir = slug::FindAssetRoot().parent_path() / "Captures" / "SheetPreview";
     std::error_code ec;
     fs::create_directories(outDir, ec);
-    std::vector<uint8_t> png;
+    Vector<uint8_t> png;
     if (!EncodePng(output, png))
     {
         return slug::Error { slug::eError::InvalidData };
     }
-    const fs::path outPath = outDir / (imagePath.stem().string() + ".png");
+    const FilePath outPath = outDir / (imagePath.stem().string() + ".png");
     if (slug::Result<void> r = WriteBytes(outPath, png.data(), png.size()); !r)
     {
         return r;
@@ -853,23 +967,23 @@ slug::Result<void> RunSheetPreview(const BakerOptions& _options)
     return slug::Error { slug::kOK };
 }
 
-slug::Result<std::vector<GroundEdit>> LoadGroundEdits(
-    const fs::path& _path)
+slug::Result<Vector<GroundEdit>> LoadGroundEdits(
+    const FilePath& _path)
 {
-    std::vector<GroundEdit> edits;
+    Vector<GroundEdit> edits;
     if (!fs::exists(_path))
     {
         return edits;
     }
-    slug::Result<std::string> text = ReadText(_path);
+    slug::Result<String> text = ReadText(_path);
     if (!text)
     {
         Log("ERROR: cannot read {}", _path.string());
         return slug::Error { slug::eError::FileOpen };
     }
-    const std::string& json = *text;
-    JsonDocPtr doc(yyjson_read(json.data(), json.size(), 0), &yyjson_doc_free);
-    yyjson_val* root = doc ? yyjson_doc_get_root(doc.get()) : nullptr;
+    const String& json = *text;
+    JsonDocPtr    doc(yyjson_read(json.data(), json.size(), 0), &yyjson_doc_free);
+    yyjson_val*   root = doc ? yyjson_doc_get_root(doc.get()) : nullptr;
     if (root == nullptr || !yyjson_is_obj(root))
     {
         Log("ERROR: {} is not a JSON object", _path.string());
@@ -880,8 +994,8 @@ slug::Result<std::vector<GroundEdit>> LoadGroundEdits(
     {
         return edits;
     }
-    size_t idx = 0;
-    size_t max = 0;
+    size_t      idx  = 0;
+    size_t      max  = 0;
     yyjson_val* item = nullptr;
     yyjson_arr_foreach(arr, idx, max, item)
     {
@@ -890,11 +1004,11 @@ slug::Result<std::vector<GroundEdit>> LoadGroundEdits(
             Log("ERROR: {}: edits[{}] is not an object", _path.string(), idx);
             return slug::Error { slug::eError::InvalidData };
         }
-        GroundEdit edit;
-        const char* map = yyjson_get_str(yyjson_obj_get(item, "map"));
-        const char* op  = yyjson_get_str(yyjson_obj_get(item, "op"));
+        GroundEdit  edit;
+        const char* map  = yyjson_get_str(yyjson_obj_get(item, "map"));
+        const char* op   = yyjson_get_str(yyjson_obj_get(item, "op"));
         yyjson_val* rect = yyjson_obj_get(item, "rect");
-        if (map == nullptr || op == nullptr || rect == nullptr || !yyjson_is_arr(rect) || yyjson_arr_size(rect) != 4 || (std::string(op) != "air" && std::string(op) != "solid"))
+        if (map == nullptr || op == nullptr || rect == nullptr || !yyjson_is_arr(rect) || yyjson_arr_size(rect) != 4 || (String(op) != "air" && String(op) != "solid"))
         {
             Log("ERROR: {}: edits[{}] needs map, op (air|solid), rect [x,y,w,h]", _path.string(), idx);
             return slug::Error { slug::eError::InvalidData };
@@ -909,4 +1023,5 @@ slug::Result<std::vector<GroundEdit>> LoadGroundEdits(
     }
     return edits;
 }
-}
+
+}   // namespace slug::baker

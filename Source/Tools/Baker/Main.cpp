@@ -1,9 +1,9 @@
 #include <cstdio>
-#include "Base/Result.h"
-#include "Core/AssetPath.h"
 #include <cstdlib>
-#include <string>
 
+#include "Base/Result.h"
+#include "Base/Types.h"
+#include "Core/AssetPath.h"
 #include "Tools/Baker/Baker.h"
 #include "Tools/Baker/BakerUtil.h"
 
@@ -11,6 +11,9 @@ namespace
 {
 
 using namespace slug::baker;
+using slug::ARRAY;
+using slug::String;
+using slug::StringView;
 
 void PrintUsage_()
 {
@@ -41,12 +44,78 @@ void PrintUsage_()
 }
 
 [[nodiscard]] bool ParseInt_(
-    const std::string& _text,
-    int&               _out)
+    const String& _text,
+    int&          _out)
 {
     return ParseIntStrict(_text, _out);
 }
-}
+
+// 명령행 인자를 하나씩 소비하는 커서. 옵션 뒤의 값을 읽을 때 오류 메시지까지 처리한다.
+class ArgReader
+{
+public:
+    ArgReader(
+        const int _argc,
+        char**    _argv)
+        : m_argc(_argc)
+        , m_pArgv(_argv)
+    {
+    }
+
+    // 다음 인자로 넘어간다. 더 없으면 false.
+    [[nodiscard]] bool Advance()
+    {
+        ++m_index;
+        if (m_index >= m_argc)
+        {
+            return false;
+        }
+        m_arg = m_pArgv[m_index];
+        return true;
+    }
+
+    [[nodiscard]] const String& GetArg() const
+    {
+        return m_arg;
+    }
+
+    [[nodiscard]] bool NextValue(
+        String& _outValue)
+    {
+        if (m_index + 1 >= m_argc)
+        {
+            Log("ERROR: {} needs a value", m_arg);
+            return false;
+        }
+        ++m_index;
+        _outValue = m_pArgv[m_index];
+        return true;
+    }
+
+    [[nodiscard]] bool NextInt(
+        int& _outValue)
+    {
+        String text;
+        if (!NextValue(text))
+        {
+            return false;
+        }
+        if (!ParseInt_(text, _outValue))
+        {
+            Log("ERROR: {} expects an integer, got '{}'", m_arg, text);
+            return false;
+        }
+        return true;
+    }
+
+private:
+    int    m_argc  = 0;
+    char** m_pArgv = nullptr;
+    int    m_index = 0;
+    String m_arg   = {};
+};
+
+}   // namespace
 
 int main(
     int    _argc,
@@ -56,36 +125,12 @@ int main(
     slug::SetAssetRootFallback(SLUG_ASSET_DIR);
 #endif
     BakerOptions options;
+    ArgReader    reader { _argc, _argv };
 
-    for (int i = 1; i < _argc; ++i)
+    while (reader.Advance())
     {
-        const std::string arg = _argv[i];
-        auto              next = [&](std::string& _value) -> bool
-        {
-            if (i + 1 >= _argc)
-            {
-                Log("ERROR: {} needs a value", arg);
-                return false;
-            }
-            _value = _argv[++i];
-            return true;
-        };
-        auto nextInt = [&](int& _value) -> bool
-        {
-            std::string text;
-            if (!next(text))
-            {
-                return false;
-            }
-            if (!ParseInt_(text, _value))
-            {
-                Log("ERROR: {} expects an integer, got '{}'", arg, text);
-                return false;
-            }
-            return true;
-        };
-
-        std::string value;
+        const String& arg = reader.GetArg();
+        String        value;
         if (arg == "--help" || arg == "-h")
         {
             PrintUsage_();
@@ -93,48 +138,66 @@ int main(
         }
         else if (arg == "--legacy")
         {
-            if (!next(value)) { return 2; }
+            if (!reader.NextValue(value))
+            {
+                return 2;
+            }
             options.legacyRoot = value;
         }
         else if (arg == "--out")
         {
-            if (!next(value)) { return 2; }
+            if (!reader.NextValue(value))
+            {
+                return 2;
+            }
             options.outRoot = value;
         }
         else if (arg == "--only")
         {
-            if (!next(value)) { return 2; }
+            if (!reader.NextValue(value))
+            {
+                return 2;
+            }
             size_t pos = 0;
             while (pos <= value.size())
             {
                 const size_t comma = value.find(',', pos);
-                const std::string token(TrimView(std::string_view(value).substr(pos, comma == std::string::npos ? std::string::npos : comma - pos)));
+                const String token(TrimView(StringView(value).substr(pos, comma == String::npos ? String::npos : comma - pos)));
                 if (!token.empty())
                 {
                     options.only.insert(token);
                 }
-                if (comma == std::string::npos) { break; }
+                if (comma == String::npos)
+                {
+                    break;
+                }
                 pos = comma + 1;
             }
         }
         else if (arg == "--threshold")
         {
-            if (!next(value)) { return 2; }
-            int parts[3] = {};
-            int count    = 0;
-            size_t pos   = 0;
-            while (count < 3 && pos <= value.size())
+            if (!reader.NextValue(value))
+            {
+                return 2;
+            }
+            ARRAY<int, 3> parts = {};
+            size_t        count = 0;
+            size_t        pos   = 0;
+            while (count < parts.size() && pos <= value.size())
             {
                 const size_t comma = value.find(',', pos);
-                if (!ParseInt_(value.substr(pos, comma == std::string::npos ? std::string::npos : comma - pos), parts[count]))
+                if (!ParseInt_(value.substr(pos, comma == String::npos ? String::npos : comma - pos), parts[count]))
                 {
                     break;
                 }
                 ++count;
-                if (comma == std::string::npos) { break; }
+                if (comma == String::npos)
+                {
+                    break;
+                }
                 pos = comma + 1;
             }
-            if (count != 3)
+            if (count != parts.size())
             {
                 Log("ERROR: --threshold expects B,RG,A (e.g. 192,96,128)");
                 return 2;
@@ -144,40 +207,106 @@ int main(
             options.ground.greenMax = parts[1];
             options.ground.alphaMin = parts[2];
         }
-        else if (arg == "--ground-blue-min") { if (!nextInt(options.ground.blueMin)) { return 2; } }
+        else if (arg == "--ground-blue-min")
+        {
+            if (!reader.NextInt(options.ground.blueMin))
+            {
+                return 2;
+            }
+        }
         else if (arg == "--ground-rg-max")
         {
-            if (!nextInt(options.ground.redMax)) { return 2; }
+            if (!reader.NextInt(options.ground.redMax))
+            {
+                return 2;
+            }
             options.ground.greenMax = options.ground.redMax;
         }
-        else if (arg == "--ground-alpha-min") { if (!nextInt(options.ground.alphaMin)) { return 2; } }
-        else if (arg == "--page-size") { if (!nextInt(options.pageSize)) { return 2; } }
-        else if (arg == "--padding") { if (!nextInt(options.padding)) { return 2; } }
-        else if (arg == "--standalone-size") { if (!nextInt(options.standaloneSize)) { return 2; } }
-        else if (arg == "--alpha-threshold") { if (!nextInt(options.alphaThreshold)) { return 2; } }
-        else if (arg == "--no-alpha-magenta-key") { options.bKeyMagentaInAlpha = false; }
+        else if (arg == "--ground-alpha-min")
+        {
+            if (!reader.NextInt(options.ground.alphaMin))
+            {
+                return 2;
+            }
+        }
+        else if (arg == "--page-size")
+        {
+            if (!reader.NextInt(options.pageSize))
+            {
+                return 2;
+            }
+        }
+        else if (arg == "--padding")
+        {
+            if (!reader.NextInt(options.padding))
+            {
+                return 2;
+            }
+        }
+        else if (arg == "--standalone-size")
+        {
+            if (!reader.NextInt(options.standaloneSize))
+            {
+                return 2;
+            }
+        }
+        else if (arg == "--alpha-threshold")
+        {
+            if (!reader.NextInt(options.alphaThreshold))
+            {
+                return 2;
+            }
+        }
+        else if (arg == "--no-alpha-magenta-key")
+        {
+            options.bKeyMagentaInAlpha = false;
+        }
         else if (arg == "--sheets")
         {
-            if (!next(value)) { return 2; }
+            if (!reader.NextValue(value))
+            {
+                return 2;
+            }
             options.sheetsPath = value;
         }
-        else if (arg == "--no-sheets") { options.bNoSheets = true; }
+        else if (arg == "--no-sheets")
+        {
+            options.bNoSheets = true;
+        }
         else if (arg == "--ground-edits")
         {
-            if (!next(value)) { return 2; }
+            if (!reader.NextValue(value))
+            {
+                return 2;
+            }
             options.groundEditsPath = value;
         }
         else if (arg == "--sheet-preview")
         {
-            if (!next(value)) { return 2; }
+            if (!reader.NextValue(value))
+            {
+                return 2;
+            }
             options.sheetPreview = value;
         }
         else if (arg == "--sheet-preview-scale")
         {
-            if (!nextInt(options.sheetPreviewScale)) { return 2; }
-            if (options.sheetPreviewScale < 1) { options.sheetPreviewScale = 1; }
+            if (!reader.NextInt(options.sheetPreviewScale))
+            {
+                return 2;
+            }
+            if (options.sheetPreviewScale < 1)
+            {
+                options.sheetPreviewScale = 1;
+            }
         }
-        else if (arg == "--threads") { if (!nextInt(options.threads)) { return 2; } }
+        else if (arg == "--threads")
+        {
+            if (!reader.NextInt(options.threads))
+            {
+                return 2;
+            }
+        }
         else
         {
             Log("ERROR: unknown argument '{}'", arg);
