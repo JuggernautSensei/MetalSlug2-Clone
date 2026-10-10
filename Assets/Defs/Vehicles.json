@@ -156,8 +156,7 @@
         "shotUp":      { "name": "MissleTank_Up_Shot_{side}",        "frames": 7,  "sec": 0.08 },
         "shotDown":    { "name": "MissleTank_Down_Shot_{side}",      "frames": 7,  "sec": 0.08 },
         "destroyUp":   { "name": "MissleTank_Up_Destroy_{side}",     "frames": 20, "sec": 0.08 },
-        "destroyDown": { "name": "MissleTank_Down_Destroy_{side}",   "frames": 21, "sec": 0.08 },
-        "appear":      { "name": "MTank_Appear_{side}",              "frames": 8,  "sec": 0.0833 }
+        "destroyDown": { "name": "MissleTank_Down_Destroy_{side}",   "frames": 21, "sec": 0.08 }
       },
       "weapons": {
         "up":   { "projectile": "missle_proj_up",   "muzzle": [50, -180], "aim": "facing", "muzzleFx": { "clip": "MissleTank_Up_Proj_Effect_{side}",   "offset": [0, 0] } },

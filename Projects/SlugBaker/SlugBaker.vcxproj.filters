@@ -53,6 +53,9 @@
     <ClInclude Include="..\..\Source\Tools\Baker\JsonWriter.h">
       <Filter>Source\Tools\Baker</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\Tools\Baker\LegacyFixups.h">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\Tools\Baker\LegacyParser.h">
       <Filter>Source\Tools\Baker</Filter>
     </ClInclude>

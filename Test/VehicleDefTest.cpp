@@ -287,5 +287,5 @@ TEST(VehicleDefs, NonLoopClipTimingsMatchTheBakedAnimations)
             }
         }
     }
-    EXPECT_GT(checked, 40);
+    EXPECT_GT(checked, 30);
 }

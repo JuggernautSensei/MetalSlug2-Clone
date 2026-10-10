@@ -222,6 +222,25 @@ inline uint64_t ApplySheetKey(
     return bgCount;
 }
 
+// exclude 사각형 안을 완전 투명으로 지운다. auto 슬라이스뿐 아니라 명시 frames 사각형 안의 라벨 글자도 없앤다
+// (53213.png 의 "DRIVING" 라벨이 MTank_Hill_Driving 첫 프레임에 구워졌던 사고).
+inline void ClearExcluded(
+    Image&               _image,
+    const Vector<IRect>& _exclude)
+{
+    for (const IRect& r: _exclude)
+    {
+        for (int y = std::max(0, r.y); y < std::min(_image.height, r.y + r.h); ++y)
+        {
+            for (int x = std::max(0, r.x); x < std::min(_image.width, r.x + r.w); ++x)
+            {
+                uint8_t* p = _image.At(x, y);
+                p[0] = p[1] = p[2] = p[3] = 0;
+            }
+        }
+    }
+}
+
 inline void FlipHorizontal(Image& _image)
 {
     for (int y = 0; y < _image.height; ++y)

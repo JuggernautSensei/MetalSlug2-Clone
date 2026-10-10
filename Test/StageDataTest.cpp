@@ -449,7 +449,7 @@ TEST(StageDataReal, Stage0AmbientWalkersUseSequenceParams)
         if (action.type == eActionType::Spawn && action.spawn.def == "anim_decor" && action.spawn.params.Has("sequence"))
         {
             ++walkers;
-            if (action.spawn.anim == "Parker_Run")
+            if (action.spawn.anim == "Parker")
             {
                 pOld = &action.spawn;
             }
@@ -459,9 +459,12 @@ TEST(StageDataReal, Stage0AmbientWalkersUseSequenceParams)
     ASSERT_NE(pOld, nullptr);
     const ParamValue* pSequence = pOld->params.Find("sequence");
     ASSERT_NE(pSequence, nullptr);
-    EXPECT_EQ(pSequence->GetSize(), 4u);
-    EXPECT_TRUE(pSequence->At(2).GetBool("flip"));
-    EXPECT_FLOAT_EQ(pSequence->At(0).GetVec2("velocity").x, 45.f);
+    // 영상: 노인은 한동안 서 있다가(Parker 대기) 왼쪽으로 걸어 나간다(Parker_Run_2, 원본 아트가 왼쪽을 본다 -> flip 없음)
+    EXPECT_EQ(pSequence->GetSize(), 2u);
+    EXPECT_EQ(pSequence->At(0).GetString("clip"), "Parker");
+    EXPECT_EQ(pSequence->At(1).GetString("clip"), "Parker_Run_2");
+    EXPECT_FLOAT_EQ(pSequence->At(1).GetVec2("velocity").x, -45.f);
+    EXPECT_FALSE(pSequence->At(1).GetBool("flip"));
 
     const int street = data.FindSection("street");
     ASSERT_GE(street, 0);

@@ -699,6 +699,7 @@ slug::Result<void> AppendSheetClips(
         }
 
         const uint64_t keyedPixels = ApplySheetKey(image, spec.key);
+        ClearExcluded(image, spec.exclude);
         Log("sheet {}: {}x{} keyed {} background px, {} clip(s)", spec.file, image.width, image.height, keyedPixels, spec.clips.size());
 
         for (const SheetClipSpec& clip: spec.clips)

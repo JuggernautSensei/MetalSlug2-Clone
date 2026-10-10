@@ -110,7 +110,7 @@ u8    bits[ceil(width/8) * height]   // 행 우선, 각 행은 바이트 경계 
 - `file`: `sheets.json` 기준 상대 경로(보통 같은 폴더의 PNG). 좌표는 전부 시트 픽셀 좌표(좌상단 원점).
 - `key.mode`: `magenta`(±tol 로 (255,0,255)) / `color`(`colors: [[r,g,b],...]` 각각 ±tol) / `alpha`(알파 0 만 배경).
   배경 픽셀은 RGBA 0 으로 바뀌고, 이후 트림은 알파 기준이다. 키 후 알파 > 0 인 픽셀이 전경.
-- `exclude`: 시트 전체에서 무시할 사각형(라벨 글자, 크레딧 문구 등). 모든 클립에 적용.
+- `exclude`: 시트 전체에서 무시할 사각형(라벨 글자, 크레딧 문구 등). 모든 클립에 적용되며, 시트 키 직후 해당 영역을 투명으로 지운다(auto 뿐 아니라 명시 `frames` 사각형 안의 라벨도 없앤다).
 - `clips[].region`: auto 슬라이스 범위. 생략하면 시트 전체.
 - `clips[].auto` (`true` 또는 객체): 자르기 알고리즘
   1. region 안에서 알파 > 0 & exclude 밖인 픽셀을 전경으로 한다.
@@ -155,7 +155,7 @@ u8    bits[ceil(width/8) * height]   // 행 우선, 각 행은 바이트 경계 
 | 32522.png | 아이템/이펙트/소형 메카 혼합, 1983x19513 | alpha | 미확인 (식별 후 작성) |
 
 파일럿 주의: `Order_Run_Right/Left` 는 레거시 클립(8프레임, 80x78)과 이름이 겹쳐 `replace:false` 로 건너뛴다.
-Running 행을 쓰려면 이름을 바꾸거나 `replace:true` 를 명시해야 한다(레거시 아트 대체). 레거시 `Parker` 는 대체하지 않았다.
+Running 행(소년 달리기, 왼쪽을 보는 3프레임)은 `Order_Boy_Run_Left` (+mirror -> `_Right`)로 잘라 쓴다 (레거시 `Order_Run_*` 는 POW 노인 달리기라 덮어쓰면 안 된다. Docs/AnimAudit.md). 레거시 `Parker` 는 대체하지 않았다.
 fps 값은 임시(원본 재생 속도 미확인)이다.
 배율: 46546.png, 38098.png, 40204.png 는 `"scale": 2` (원본 1x 픽셀아트 → 레거시 2x 크기; 예: Big Shiee 본체 271x208 → 542x416).
 29720.png 는 1x 유지: `UI_Mission_*` 글자는 `UiLayout.h` 의 `missionGlyphNum/Den`(5/3)으로 코드에서 배율을 보정하므로 이중 확대하면 안 된다.
