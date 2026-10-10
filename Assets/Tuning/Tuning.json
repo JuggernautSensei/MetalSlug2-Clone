@@ -47,8 +47,8 @@
     "weapons": {
         "pistol": {
             "damage": 3,
-            "fireIntervalTicks": 4,
-            "holdRepeatTicks": 6,
+            "fireIntervalTicks": 5,
+            "holdRepeatTicks": 0,
             "ammo": 0,
             "projectileSpeed": 800,
             "maxAlive": 4,
@@ -59,20 +59,22 @@
         },
         "hmg": {
             "damage": 2,
-            "fireIntervalTicks": 3,
-            "holdRepeatTicks": 3,
+            "fireIntervalTicks": 7,
+            "holdRepeatTicks": 0,
             "ammo": 200,
             "projectileSpeed": 640,
             "maxAlive": 0,
             "pierce": false,
             "hitSize": [14, 10],
             "range": 460,
-            "shotOverlayTicks": 10
+            "shotOverlayTicks": 28,
+            "burstShots": 4,
+            "burstIntervalTicks": 7
         },
         "shotgun": {
             "damage": 14,
             "fireIntervalTicks": 16,
-            "holdRepeatTicks": 20,
+            "holdRepeatTicks": 0,
             "ammo": 30,
             "projectileSpeed": 560,
             "maxAlive": 0,
@@ -84,7 +86,7 @@
         "rocket": {
             "damage": 0,
             "fireIntervalTicks": 24,
-            "holdRepeatTicks": 24,
+            "holdRepeatTicks": 0,
             "ammo": 20,
             "projectileSpeed": 300,
             "maxAlive": 2,
@@ -98,14 +100,14 @@
         },
         "flame": {
             "damage": 3,
-            "fireIntervalTicks": 3,
-            "holdRepeatTicks": 3,
+            "fireIntervalTicks": 8,
+            "holdRepeatTicks": 0,
             "ammo": 30,
-            "projectileSpeed": 180,
+            "projectileSpeed": 300,
             "maxAlive": 0,
             "pierce": true,
-            "hitSize": [40, 24],
-            "range": 200,
+            "hitSize": [72, 44],
+            "range": 220,
             "shotOverlayTicks": 14
         },
         "hmgPickupAmmo": 200,

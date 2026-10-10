@@ -233,10 +233,11 @@ TEST(PlayerRigPose, HmgUsesMachineGunShotClipAndShotgunItsOwn)
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Tap(eAction::Shot);
     EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Shot_MG_Right"));
-    sim.Step(20);
+    sim.Step(sim.Tune().weapons.hmg.shotOverlayTicks + 2);   // 버스트 연출이 끝나면 대기 자세
     EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Idle_SG_Right"));
 
     sim.Player().PickUpWeapon(eWeapon::Shotgun, sim.Tune());
+    sim.Step(sim.Tune().weapons.shotgun.fireIntervalTicks);   // 직전 HMG 발사의 쿨다운이 지나길 기다린다
     sim.Tap(eAction::Shot);
     EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Shot_SG_Right"));
 }
@@ -247,11 +248,11 @@ TEST(PlayerRigPose, EveryNewShotRestartsTheShotAnimation)
     Sim sim { MakeFlatConfig(), &anims };
     sim.Step(2);
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
-    sim.Hold(eAction::Shot);
-    sim.Step();
-    sim.Step(sim.Tune().weapons.hmg.holdRepeatTicks - 1);   // 다음 발사 직전: 애니메이션이 진행되어 있다
+    sim.Tap(eAction::Shot);
+    sim.Step(sim.Tune().weapons.hmg.burstIntervalTicks * 2);   // 버스트 중간: 애니메이션이 진행되어 있다
     const int beforeFrame = sim.State().GetRig().GetUpperFrame();
-    sim.Step();
+    sim.Step(sim.Tune().weapons.hmg.shotOverlayTicks);
+    sim.Tap(eAction::Shot);
     const int afterFrame = sim.State().GetRig().GetUpperFrame();
     EXPECT_EQ(afterFrame, 0);
     EXPECT_GE(beforeFrame, 0);

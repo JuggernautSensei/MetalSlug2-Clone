@@ -34,6 +34,8 @@ namespace
         _v.Field("blastSize", _w.blastSize);
         _v.Field("blastDamage", _w.blastDamage);
         _v.Field("blastTicks", _w.blastTicks);
+        _v.Field("burstShots", _w.burstShots);
+        _v.Field("burstIntervalTicks", _w.burstIntervalTicks);
     }
 
     template<typename V, typename S>

@@ -56,20 +56,24 @@ constexpr ARRAY<int, 4> kWeapons = {
 }
 }   // namespace
 
-TEST(PlayerWeapon, EveryWeaponFiresAtItsTunedRateWhileHeld)
+TEST(PlayerWeapon, EveryWeaponFiresAtItsTunedIntervalWhenTapped)
 {
     for (const int raw: kWeapons)
     {
         const eWeapon weapon = static_cast<eWeapon>(raw);
-        Sim           sim;
+        if (weapon == eWeapon::Hmg)
+        {
+            continue;   // HMG 는 버스트 테스트가 따로 있다
+        }
+        Sim sim;
         sim.Player().PickUpWeapon(weapon, sim.Tune());
         const int interval = FireIntervalOf_(sim.Tune(), weapon);
 
-        sim.Hold(eAction::Shot);
         std::vector<int> shotTicks;
         int              lastShots = 0;
-        for (int tick = 0; tick < 60; ++tick)
+        for (int tick = 0; tick < 120; ++tick)
         {
+            sim.Set(eAction::Shot, tick % 2 == 0);   // 매 틱 연타해도 간격 아래로는 못 쏜다
             sim.Step();
             const int shots = sim.Player().GetStats().shotsFired;
             if (shots > lastShots)
@@ -78,22 +82,39 @@ TEST(PlayerWeapon, EveryWeaponFiresAtItsTunedRateWhileHeld)
                 lastShots = shots;
             }
         }
-        ASSERT_GE(shotTicks.size(), weapon == eWeapon::Rocket ? 2u : 3u) << "weapon " << raw;
+        ASSERT_GE(shotTicks.size(), 3u) << "weapon " << raw;
         for (size_t i = 1; i < shotTicks.size(); ++i)
         {
-            EXPECT_EQ(shotTicks[i] - shotTicks[i - 1], interval) << "weapon " << raw;
+            EXPECT_GE(shotTicks[i] - shotTicks[i - 1], interval) << "weapon " << raw;
         }
     }
 }
 
-TEST(PlayerWeapon, HmgHoldFiresAboutTwentyTimesPerSecond)
+TEST(PlayerWeapon, TapOnlyWeaponsNeverRepeatOnHold)
 {
+    for (const eWeapon weapon: { eWeapon::Pistol, eWeapon::Shotgun, eWeapon::Rocket, eWeapon::Flame })
+    {
+        Sim sim;
+        sim.Player().PickUpWeapon(weapon, sim.Tune());
+        EXPECT_EQ(sim.Tune().weapons.Get(weapon).holdRepeatTicks, 0);
+        sim.Hold(eAction::Shot);
+        sim.Step(300);
+        EXPECT_EQ(sim.Player().GetStats().shotsFired, 1) << "weapon " << static_cast<int>(weapon);
+    }
+}
+
+TEST(PlayerWeapon, HmgBurstBulletsFollowTheAimAngleOfEachShot)
+{
+    // 버스트 도중 위를 누르면 조준각이 스윕하므로 뒤쪽 탄일수록 더 위를 향한다
     Sim sim;
+    sim.Step(2);
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
-    sim.Hold(eAction::Shot);
-    sim.Step(60);
-    EXPECT_GE(sim.Player().GetStats().shotsFired, 19);
-    EXPECT_LE(sim.Player().GetStats().shotsFired, 21);
+    sim.Tap(eAction::Shot);
+    sim.Hold(eAction::Up);
+    sim.Step(40);
+    const Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
+    ASSERT_GE(bullets.size(), 2u);
+    EXPECT_LT(bullets[bullets.size() - 1].velocity.y, bullets[0].velocity.y);
 }
 
 TEST(PlayerWeapon, PickupAmmoComesFromTuningAndSameWeaponStacks)
@@ -135,8 +156,13 @@ TEST(PlayerWeapon, EmptyWeaponRevertsToPistolAfterExactlyItsAmmo)
         sim.Player().PickUpWeapon(weapon, sim.Tune());
         const int ammo = sim.Tune().weapons.GetPickupAmmo(weapon);
 
-        sim.Hold(eAction::Shot);
-        const int ticks = sim.StepUntilWeapon(4000, eWeapon::Pistol);
+        int ticks = -1;
+        for (int tick = 0; tick < 4000 && ticks < 0; ++tick)
+        {
+            sim.Set(eAction::Shot, tick % 40 == 0);   // 연타 (HMG 는 버스트가 끝난 뒤 다시 누른다)
+            sim.Step();
+            ticks = sim.Player().GetWeapon().weapon == eWeapon::Pistol ? tick : -1;
+        }
         ASSERT_GE(ticks, 0) << "weapon " << raw;
         EXPECT_EQ(sim.Player().GetStats().shotsFired, ammo) << "weapon " << raw;
         EXPECT_EQ(sim.Player().GetWeapon().ammo, 0);
@@ -166,7 +192,7 @@ TEST(PlayerWeapon, HmgShotDamagesAJeepByItsTunedDamage)
     const int hp = DummyOf_(sim, id).health.hp;
     sim.Tap(eAction::Shot);
     sim.Step(30);
-    EXPECT_EQ(DummyOf_(sim, id).health.hp, hp - sim.Tune().weapons.hmg.damage);
+    EXPECT_EQ(DummyOf_(sim, id).health.hp, hp - sim.Tune().weapons.hmg.damage * sim.Tune().weapons.hmg.burstShots);   // 한 번 눌러 버스트 전체가 명중
 }
 
 TEST(PlayerWeapon, ShotgunAndFlamePierceBothJeeps)

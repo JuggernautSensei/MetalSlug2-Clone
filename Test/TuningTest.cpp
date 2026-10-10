@@ -124,7 +124,11 @@ TEST(Tuning, WeaponTablesAreInternallyConsistent)
     }
     EXPECT_EQ(t.weapons.pistol.ammo, 0);
     EXPECT_GE(t.weapons.pistol.damage, 3);
-    EXPECT_LE(t.weapons.hmg.fireIntervalTicks, t.weapons.pistol.fireIntervalTicks);
+    EXPECT_GE(t.weapons.hmg.burstShots, 3);   // HMG 는 한 번 입력에 3~5발 버스트
+    EXPECT_LE(t.weapons.hmg.burstShots, 5);
+    EXPECT_EQ(t.weapons.pistol.holdRepeatTicks, 0);   // 권총/화염/HMG 는 홀드 자동 연사 없음
+    EXPECT_EQ(t.weapons.flame.holdRepeatTicks, 0);
+    EXPECT_EQ(t.weapons.hmg.holdRepeatTicks, 0);
     EXPECT_GT(t.bomb.damage, t.weapons.shotgun.damage);
     EXPECT_GT(t.bomb.initial, 0);
 }

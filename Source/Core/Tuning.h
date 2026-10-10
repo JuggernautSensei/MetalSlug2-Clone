@@ -76,19 +76,21 @@ struct MuzzleTuning
 
 struct WeaponTuning
 {
-    int   damage            = 3;
-    int   fireIntervalTicks = 4;   // 연타해도 이보다 빨리 쏠 수 없다
-    int   holdRepeatTicks   = 6;
-    int   ammo              = 0;       // 0 = 무한
-    float projectileSpeed   = 800.f;   // px/s
-    int   maxAlive          = 4;       // 동시에 살아 있는 탄 수 상한 (0 = 무제한)
-    bool  bPierce           = false;
-    Vec2  hitSize           = { 14.f, 10.f };
-    float range             = 420.f;          // 사거리 px
-    int   shotOverlayTicks  = 14;             // 사격 상체 동작 길이
-    Vec2  blastSize         = { 0.f, 0.f };   // 착탄 폭발 상자 (0 = 폭발 없음)
-    int   blastDamage       = 0;
-    int   blastTicks        = 0;
+    int   damage             = 3;
+    int   fireIntervalTicks  = 5;   // 연타해도 이보다 빨리 쏠 수 없다
+    int   holdRepeatTicks    = 0;   // 0 = 홀드 자동 연사 없음 (연타만 발사)
+    int   ammo               = 0;       // 0 = 무한
+    float projectileSpeed    = 800.f;   // px/s
+    int   maxAlive           = 4;       // 동시에 살아 있는 탄 수 상한 (0 = 무제한)
+    bool  bPierce            = false;
+    Vec2  hitSize            = { 14.f, 10.f };
+    float range              = 420.f;          // 사거리 px
+    int   shotOverlayTicks   = 14;             // 사격 상체 동작 길이
+    Vec2  blastSize          = { 0.f, 0.f };   // 착탄 폭발 상자 (0 = 폭발 없음)
+    int   blastDamage        = 0;
+    int   blastTicks         = 0;
+    int   burstShots         = 0;   // 한 번 입력에 나가는 연속 발수 (0/1 = 단발)
+    int   burstIntervalTicks = 0;   // 연속 발사 사이 간격
 };
 
 struct WeaponsTuning
@@ -96,20 +98,25 @@ struct WeaponsTuning
     WeaponTuning pistol = {};
     WeaponTuning hmg    = {
         2,
-        3,
-        3,
+        7,
+        0,
         200,
         640.f,
         0,
         false,
         { 14.f, 10.f },
         460.f,
-        10
+        28,
+        { 0.f, 0.f },
+        0,
+        0,
+        4,
+        7
     };
     WeaponTuning shotgun = {
         14,
         16,
-        20,
+        0,
         30,
         560.f,
         0,
@@ -121,7 +128,7 @@ struct WeaponsTuning
     WeaponTuning rocket = {
         0,
         24,
-        24,
+        0,
         20,
         300.f,
         2,
@@ -135,14 +142,14 @@ struct WeaponsTuning
     };
     WeaponTuning flame = {
         3,
-        3,
-        3,
+        8,
+        0,
         30,
-        180.f,
+        300.f,
         0,
         true,
-        { 40.f, 24.f },
-        200.f,
+        { 72.f, 44.f },
+        220.f,
         14
     };
     int hmgPickupAmmo     = 200;
