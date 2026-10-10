@@ -27,6 +27,7 @@ struct BakerOptions
     GroundThreshold       ground;
     std::filesystem::path sheetsPath;                    // 비어 있으면 <Assets>/Source/sheets.json (있을 때만 사용)
     bool                  bNoSheets      = false;        // --no-sheets: 시트 패스 생략
+    std::filesystem::path groundEditsPath;               // 비어 있으면 <out>/../Source/GroundEdits.json (있을 때만 사용)
     std::string           sheetPreview;                  // --sheet-preview <file>: 디버그 미리보기만 생성
     int                   sheetPreviewScale = 1;         // 미리보기 배율
 

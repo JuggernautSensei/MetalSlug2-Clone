@@ -24,6 +24,7 @@ void PrintUsage_()
         "  --only <a,b,..>         partial bake: player enemy effect npc sheet sprites ground sounds\n"
         "  --sheets <sheets.json>  raw sprite sheet clips (default: <Assets>/Source/sheets.json when it exists)\n"
         "  --no-sheets             skip the sheet pass\n"
+        "  --ground-edits <json>   ground pixel edits (default: <out>/../Source/GroundEdits.json when it exists)\n"
         "  --sheet-preview <png>   debug: write Captures/SheetPreview/<name>.png with numbered rects (no legacy bake)\n"
         "  --sheet-preview-scale <n>  preview magnification, nearest neighbour (default 1)\n"
         "  --threshold <B,RG,A>    ground solid thresholds: B>=B, R<=RG, G<=RG, A>=A (default 192,96,128)\n"
@@ -161,6 +162,11 @@ int main(
             options.sheetsPath = value;
         }
         else if (arg == "--no-sheets") { options.bNoSheets = true; }
+        else if (arg == "--ground-edits")
+        {
+            if (!next(value)) { return 2; }
+            options.groundEditsPath = value;
+        }
         else if (arg == "--sheet-preview")
         {
             if (!next(value)) { return 2; }

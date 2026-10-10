@@ -3,7 +3,7 @@
 #include "Base/Types.h"
 #include "Base/Result.h"
 
-#include "Game/Enemies/BigShiee.h"
+#include "Game/Enemies/BossShiee.h"
 #include "Game/Enemies/EnemyCommon.h"
 #include "Game/Enemies/EnemyDef.h"
 #include "Game/Enemies/EnemyTypes.h"

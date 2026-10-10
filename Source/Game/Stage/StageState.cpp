@@ -370,6 +370,7 @@ void StageState::Tick(
     enemyCtx.cameraView         = Aabb::FromMinSize(m_camera.GetPositionNoShake(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
     enemyCtx.pAnims             = _ctx.pAnims;
     m_enemies.Tick(enemyCtx);
+    m_runner->AddCameraScroll(m_enemies.TakeCameraScroll());   // 보스 자동 전진 (카메라 하한)
 
     m_projectiles.Step(m_host.GetActiveGround(), m_combat, kStepSec);
 
@@ -579,6 +580,10 @@ void StageState::ConsumeEnemyEvents_(
             {
                 (void)m_props.SpawnItem(event.drop, event.pos, false);
             }
+            break;
+        case eEnemyEventKind::PartDestroyed:
+            m_player.AddScore(event.score);
+            audio.Play(sfx::kEnemyDeath, 0.5f, 0.1f);
             break;
         case eEnemyEventKind::ItemDropped:
             (void)m_props.SpawnItem(event.drop, event.pos, true);

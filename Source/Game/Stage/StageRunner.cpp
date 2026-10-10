@@ -84,6 +84,7 @@ void StageRunner::Begin()
 
     m_pCamera->CancelMove();
     m_pCamera->Unlock();
+    m_pCamera->ClearScrollFloor();
     m_pCamera->SetForwardOnly(config.bForward);
     m_pCamera->SetForwardOnlyY(config.bForward);
     ApplyCameraBounds_();
@@ -218,6 +219,15 @@ void StageRunner::Tick()
     m_pCamera->Update(kStepSec);
 
     ++m_tick;
+}
+
+void StageRunner::AddCameraScroll(
+    const float _dx)
+{
+    if (_dx != 0.f)
+    {
+        m_pCamera->AddScrollFloor(_dx);
+    }
 }
 
 void StageRunner::CancelAbortables_()

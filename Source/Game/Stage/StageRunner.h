@@ -34,6 +34,9 @@ public:
 
     void Tick();
 
+    // 자동 전진 (보스 스크롤): 카메라 중심 x 하한을 _dx 만큼 올린다 (Camera::AddScrollFloor). StageState 가 적 틱 뒤에 호출한다.
+    void AddCameraScroll(float _dx);
+
     bool WarpToSection(int _index);
     bool WarpToSection(slug::StringView _id);
     bool WarpToBoss();

@@ -1,4 +1,6 @@
 #pragma once
+#include <optional>
+
 #include "Base/Random.h"
 #include "Base/Types.h"
 #include "Base/Math.h"
@@ -61,6 +63,8 @@ struct BehaviorOps
 
     bool (*deathDone)(const Enemy& _e, const EnemyDef& _def) = nullptr;
     void (*onCommand)(Enemy& _e, const EnemyDef& _def, slug::StringView _command) = nullptr;   // 스테이지 명령 (command 액션)
+    // 보스 체력 바 비율 (0..1). 전투가 시작되지 않았으면 nullopt. 없으면 바를 그리지 않는다.
+    std::optional<float> (*bossHpRatio)(const Enemy& _e, const EnemyDef& _def) = nullptr;
 };
 
 [[nodiscard]] const BehaviorOps& GetBehaviorOps(eEnemyBehavior _behavior);
@@ -72,7 +76,7 @@ extern const BehaviorOps kFlyingBzkOps;
 extern const BehaviorOps kShielderOps;
 extern const BehaviorOps kPowOps;
 extern const BehaviorOps kBusOps;
-extern const BehaviorOps kBigShieeOps;
+extern const BehaviorOps kBossShieeOps;
 extern const BehaviorOps kJeepOps;
 extern const BehaviorOps kBTankOps;
 extern const BehaviorOps kMissleTankOps;

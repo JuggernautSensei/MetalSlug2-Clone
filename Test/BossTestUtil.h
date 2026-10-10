@@ -13,7 +13,7 @@
 
 #include "Game/Combat/CombatSystem.h"
 #include "Game/Combat/Projectiles.h"
-#include "Game/Enemies/BigShiee.h"
+#include "Game/Enemies/BossShiee.h"
 #include "Game/Enemies/EnemyDef.h"
 #include "Game/Enemies/EnemyWorld.h"
 #include "Render/Animation.h"
@@ -80,6 +80,7 @@ public:
     }
 
     [[nodiscard]] bool IsReady() const { return m_ok; }
+    void SetCameraView(const Aabb& _view) { m_ctx.cameraView = _view; }   // 등장/카메라 기준 테스트용
     [[nodiscard]] const EnemyDefLibrary& GetLib() const { return m_lib; }
     [[nodiscard]] EnemyWorld&            World() { return m_world; }
     [[nodiscard]] ProjectileSystem&      Projectiles() { return m_projectiles; }

@@ -6,7 +6,7 @@
   "ground": {"initial": "Stage0_0", "maps": ["Stage0_0", "Stage0_1"]},
   "backdrop": {"initial": "first", "modes": {"first": {"sprite": "Stage0_Background_0", "offset": [249, -64], "parallaxX": 0.15, "period": 1024}, "second": {"sprite": "Stage0_Background_0", "offset": [700, -130], "parallaxX": 0.15, "period": 1024}, "third": {"sprite": "Stage0_Background_2", "offset": [750, 0], "parallaxX": 0.1}, "fourth": {"sprite": "Stage0_Background_1", "offset": [1100, -30], "parallaxX": 0.1, "period": 1024}}},
   "player": {"x": 100, "groundSnap": true, "fromY": 0, "note": "Legacy start Vec(100,0); the player falls to the ground (same result as groundSnap at x=100)."},
-  "rects": {"bossArena": [13454, 864, 14094, 1312]},
+  "rects": {"bossArena": [12700, 864, 14094, 1312]},
   "camera": {"policy": "forward", "initialBounds": [0, 0, 3520, 448], "initialOffset": [0, 0], "playerMargin": 14, "boundsCurves": [{"id": "downtown_slope", "source": "playerX", "from": "downtown_start", "until": "openland_start", "left": 3180, "right": 14094, "height": 448, "top": [[6500, 311.75], [8610.7843137, 850]], "round": "trunc"}]},
   "sections": [
     {
@@ -292,7 +292,6 @@
     {
       "id": "openland_4", "triggerX": 12350, "note": "Legacy only spawns Sarubia + opens the gate if FindGroundY finds ground; the lockCamera/gate pair is skipped together with the spawn.",
       "actions": [
-        {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 13170, "y": 1274},
         {"type": "spawn", "kind": "enemy", "def": "sarubia", "x": 12540, "groundSnap": true, "fromY": 1100, "id": "sarubia"},
         {"type": "lockCamera", "rect": "current"},
         {"type": "gate", "id": "sarubia_dead", "waitFor": ["sarubia"], "actions": [{"type": "unlockCamera"}]},
@@ -304,16 +303,17 @@
       ]
     },
     {
-      "id": "boss", "triggerX": 13500,
+      "id": "boss", "triggerX": 12900,
+      "note": "Boss Shiee (원작 Mission 4). bossArena 잠금 (카메라 하한 12700..13454 = 전진 여유 754 px). 선체 등장 후 보스가 카메라 자동 전진 (scrollBudget 700 px, 버스트 3 s/2 s) 을 요청. 캐논 파괴 -> 사망 연출 10 s -> boss_dead.",
       "actions": [
         {"type": "clear", "waves": true},
         {"type": "lockCamera", "rect": "bossArena", "permanent": true},
         {"type": "clear", "layers": ["monster"]},
-        {"type": "spawn", "kind": "item", "def": "gunitem_mg", "x": 13574, "y": 1200},
-        {"type": "spawn", "kind": "enemy", "def": "bigshiee", "id": "boss", "x": 13950, "groundSnap": true, "fromY": 1100, "params": {"arena": "bossArena", "positionFromArena": true}},
+        {"type": "spawn", "kind": "item", "def": "gunitem_mg", "x": 12990, "y": 1200},
+        {"type": "spawn", "kind": "enemy", "def": "boss_shiee", "id": "boss", "x": 13000, "groundSnap": true, "fromY": 1100, "params": {"arena": "bossArena"}},
         {"type": "banner", "text": "WARNING", "seconds": 2.5},
         {"type": "gate", "id": "boss_dead", "waitFor": ["boss"], "until": "destroyFinished", "abortOnGameOver": true, "actions": [{"type": "playerInvincible", "seconds": 10.0}, {"type": "endStage", "next": "title"}]},
-        {"type": "spawnWave", "note": "보스전 보급 POW: 36 s 주기 3갈래 (HMG 12 s / 폭탄 24 s / 탄약 36 s → 12 s 마다 교대). 보스 사망 시 endStage 로 끝난다", "entries": [
+        {"type": "spawnWave", "note": "보스전 보급 POW: 36 s 주기 3갈래 (HMG 12 s / 폭탄 24 s / 탄약 36 s). 보스 사망 시 endStage 로 끝난다", "entries": [
           {"delay": 12.0, "every": 36.0, "times": 20, "kind": "npc", "def": "pow", "settle": true, "drop": "gunitem_mg", "camera": {"ax": "left", "dx": [80, 200], "ay": "top", "dy": -20}},
           {"delay": 24.0, "every": 36.0, "times": 20, "kind": "npc", "def": "pow", "settle": true, "drop": "bomb_supple", "camera": {"ax": "left", "dx": [80, 200], "ay": "top", "dy": -20}},
           {"delay": 36.0, "every": 36.0, "times": 20, "kind": "npc", "def": "pow", "settle": true, "drop": "bullet_supple", "camera": {"ax": "left", "dx": [80, 200], "ay": "top", "dy": -20}}

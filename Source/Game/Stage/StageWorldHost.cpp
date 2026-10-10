@@ -31,7 +31,7 @@ namespace
         return _seconds <= 0.f ? 0 : static_cast<int>(std::lround(static_cast<double>(_seconds) * static_cast<double>(kTickRate)));
     }
 
-    constexpr float kBossEntryOffsetX = 300.f;   // bigshiee: Init 이 아레나 기준으로 위치를 다시 잡는다 (이 값은 스폰 좌표용)
+    constexpr float kBossEntryOffsetX = 300.f;   // boss_shiee: Init 이 카메라 기준으로 위치를 다시 잡는다 (이 값은 스폰 좌표용)
 
     [[nodiscard]] Vec2 EnemyFeet_(
         const SpawnRequest& _request)
@@ -59,7 +59,7 @@ namespace
         if (_def == "btank" || _def == "sarubia") return { 40, { 100.f, 100.f } };
         if (_def == "aparch")        return { 15, { 60.f, 40.f } };
         if (_def == "mb_truck")      return { 60, { 180.f, 260.f } };
-        if (_def == "bigshiee")     return { 900, { 596.f, 416.f } };
+        if (_def == "boss_shiee")    return { 450, { 542.f, 416.f } };
         if (_def == "mob_boat")      return { 30, { 150.f, 150.f } };
         if (_def == "big_house")     return { 40, { 310.f, 120.f } };
         if (_def == "ground_house")  return { 20, { 200.f, 150.f } };
@@ -395,7 +395,7 @@ SpawnId StageWorldHost::SpawnEntity(
         params.userTag = id;
 
         Vec2 feet = EnemyFeet_(_request);
-        if (_request.def == "bigshiee")
+        if (_request.def == "boss_shiee")
         {
             if (pParams)
             {

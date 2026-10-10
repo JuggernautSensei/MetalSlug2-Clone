@@ -7,7 +7,6 @@
 
 #include "Base/Log.h"
 
-#include "Game/Enemies/BigShiee.h"
 #include "Game/Enemies/EnemyCommon.h"
 #include "World/Constants.h"
 
@@ -98,6 +97,7 @@ void EnemyWorld::Reset(
     m_nextId      = kEnemyOwnerBase;
     m_bPlayerMinX = false;
     m_bPlayerMaxX = false;
+    m_cameraScroll = 0.f;
 }
 
 EnemyHandle EnemyWorld::Spawn(
@@ -379,6 +379,11 @@ void EnemyWorld::Tick(
             if (ops.tick)
             {
                 ops.tick(e, def, env);
+            }
+            // 체력이 0 이 된 살아 있는 적 (행동이 직접 체력을 깎은 경우, 예: 캐논 헤드) 은 여기서 사망 처리한다
+            if (e.life == eEnemyLife::Alive && e.health.IsDead())
+            {
+                BeginDying_(e, def, env);
             }
         }
         else if (e.life == eEnemyLife::Dying)
@@ -723,19 +728,34 @@ bool EnemyWorld::IsDefeated(
 
 std::optional<float> EnemyWorld::GetBossHpRatio() const
 {
+    if (!m_pLibrary)
+    {
+        return std::nullopt;
+    }
     for (const Enemy& e: m_enemies)
     {
-        if (e.life != eEnemyLife::Alive || e.behavior != eEnemyBehavior::BigShiee || !bigshiee::IsFightStarted(e))
+        if (e.life != eEnemyLife::Alive)
         {
             continue;
         }
-        if (e.health.maxHp <= 0)
+        const BehaviorOps& ops = GetBehaviorOps(e.behavior);
+        if (!ops.bossHpRatio)
         {
-            return 0.f;
+            continue;
         }
-        return std::clamp(static_cast<float>(e.health.hp) / static_cast<float>(e.health.maxHp), 0.f, 1.f);
+        if (const std::optional<float> ratio = ops.bossHpRatio(e, m_pLibrary->Get(e.defIndex)))
+        {
+            return std::clamp(*ratio, 0.f, 1.f);
+        }
     }
     return std::nullopt;
+}
+
+float EnemyWorld::TakeCameraScroll()
+{
+    const float dx = m_cameraScroll;
+    m_cameraScroll = 0.f;
+    return dx;
 }
 
 Health EnemyWorld::GetHealth(

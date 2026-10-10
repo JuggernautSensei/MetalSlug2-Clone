@@ -64,7 +64,8 @@ enum class eEnemyEventKind : uint8_t
     ItemDropped,
     Freed,
     Transformed,
-    Removed
+    Removed,
+    PartDestroyed   // 다부위 보스의 부위 파괴 (점수만 준다, 적 사망/게이트와 무관)
 };
 
 struct EnemyEvent

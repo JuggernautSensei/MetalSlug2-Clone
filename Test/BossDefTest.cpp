@@ -3,7 +3,7 @@
 #include "Base/Types.h"
 #include "Base/Result.h"
 
-#include "Game/Enemies/BigShiee.h"
+#include "Game/Enemies/BossShiee.h"
 #include "Game/Enemies/EnemyCommon.h"
 #include "Game/Enemies/EnemyDef.h"
 #include "Game/Enemies/EnemyTypes.h"
@@ -20,19 +20,20 @@ TEST(BossDef, BothBossDefinitionsParseWithSpecHitPoints)
     const EnemyDefLibrary& lib = rig.GetLib();
 
     const EnemyDef* pBus  = lib.Find("mb_truck");
-    const EnemyDef* pBoss = lib.Find("bigshiee");
+    const EnemyDef* pBoss = lib.Find("boss_shiee");
     ASSERT_NE(pBus, nullptr);
     ASSERT_NE(pBoss, nullptr);
     EXPECT_EQ(pBus->behavior, eEnemyBehavior::Bus);
-    EXPECT_EQ(pBoss->behavior, eEnemyBehavior::BigShiee);
-    EXPECT_EQ(pBus->hp, 380);    // 1P HMG 40 dps x 전투 9.5 s (Docs/Spec_Bus.md 시간 기준)
-    EXPECT_EQ(pBoss->hp, 1300);   // 선체 HP (권총 단독 60~90 s 목표)
-    EXPECT_EQ(pBus->team, eTeam::Enemy);
+    EXPECT_EQ(pBoss->behavior, eEnemyBehavior::BossShiee);
+    EXPECT_EQ(pBus->hp, 380);     // 1P HMG 40 dps x 전투 9.5 s (Docs/Spec_Bus.md)
+    EXPECT_EQ(pBoss->hp, 1000);   // 캐논 헤드 체력 (= bossShiee.cannonHp). 포탑 7 x 120 은 파트별 (권총 3 dmg 기준 pistol-only 60~90 s)
     EXPECT_EQ(pBoss->team, eTeam::Enemy);
     EXPECT_TRUE(pBus->bNoDespawn);
     EXPECT_TRUE(pBoss->bNoDespawn);
+    EXPECT_TRUE(pBoss->bHitFlash);
     EXPECT_GT(pBoss->score, pBus->score);
-    EXPECT_EQ(lib.Find("battleship"), nullptr);   // 구 보스 정의는 제거되었다
+    EXPECT_EQ(lib.Find("bigshiee"), nullptr);       // 구 최종보스 정의는 제거되었다
+    EXPECT_EQ(lib.FindProjectile("bigshiee_tracer"), nullptr);
 }
 
 TEST(BossDef, BusTimingsAndDropLimitsMatchTheSpec)
@@ -46,53 +47,74 @@ TEST(BossDef, BusTimingsAndDropLimitsMatchTheSpec)
     EXPECT_FLOAT_EQ(rig.GetLib().Find("mb_truck")->solid.w, 204.f);   // Bus_Idle 스프라이트 폭 (게임 px)
 }
 
-TEST(BossDef, BigShieeConfigMatchesTheTimeline)
+TEST(BossDef, BossShieeConfigMatchesTheTimeline)
 {
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
-    const BigShieeCfg& c = rig.GetLib().Find("bigshiee")->bigShiee;
-    EXPECT_FLOAT_EQ(c.originDepth, 208.f);            // 발 → 프레임 중심 (416 / 2)
-    EXPECT_FLOAT_EQ(c.homeX, 470.f);                  // 선체 왼쪽 끝 (home - 298) 이 플레이어 벽 165 밖에 있다
-    EXPECT_FLOAT_EQ(c.driveMinX, 445.f);              // 주행 ±25
-    EXPECT_FLOAT_EQ(c.driveMaxX, 495.f);
-    EXPECT_EQ(c.entranceTicks, 150);                  // 2.5 s 등장
-    EXPECT_FLOAT_EQ(c.entranceFromX, 500.f);          // 시작 시 선체 왼쪽 끝이 화면 밖 (470+500-298 = 672 > 640)
-    EXPECT_EQ(c.burstTicks, 132);                     // 포탑 연사 2.2 s
-    EXPECT_EQ(c.assaultTicks, 720);                   // 포탑 연사 12 s
-    EXPECT_EQ(c.deployTicks, 240);                    // 캐논 전개 4 s
-    EXPECT_EQ(c.volleyMinTicks, 240);                 // 볼리 4 s ~ 5 s
-    EXPECT_EQ(c.volleyMaxTicks, 300);
-    EXPECT_FLOAT_EQ(c.enragedRate, 1.25f);            // 격앙 간격 x0.8
-    EXPECT_EQ(c.telegraphTicks, 54);                  // 사격 예고 0.9 s
-    EXPECT_EQ(c.streakStaggerTicks, 15);              // 트레이서 간격 0.25 s
-    EXPECT_FLOAT_EQ(c.streakSpeed, 230.f);
-    EXPECT_FLOAT_EQ(c.shellJitter, 0.f);              // 착탄 = 발사 시점 플레이어 x
-    EXPECT_FLOAT_EQ(c.shellFlightSec, 1.f);
+    const BossShieeCfg& c = rig.GetLib().Find("boss_shiee")->bossShiee;
+    EXPECT_FLOAT_EQ(c.originDepth, 208.f);            // 발 → 선체 중심 (416 / 2)
+    EXPECT_FLOAT_EQ(c.stationX, 330.f);               // 카메라 왼쪽 기준 선체 중심 (원작 350~420 의 설계 보정)
+    EXPECT_FLOAT_EQ(c.entranceFromX, -260.f);         // 등장 시작: 화면 왼쪽 밖
+    EXPECT_EQ(c.entranceTicks, 240);                  // 4 s (원작 257~262 s)
+    EXPECT_FLOAT_EQ(c.scrollSpeed, 18.f);             // 자동 전진 버스트 (원작 16~21 game px/s)
+    EXPECT_EQ(c.scrollOnTicks, 180);
+    EXPECT_EQ(c.scrollOffTicks, 120);
+    EXPECT_FLOAT_EQ(c.scrollBudget, 700.f);           // 아레나 잠금 (12700..14094) 안 여유 754 px 보다 작다
+    EXPECT_EQ(c.turretHp, 120);
+    EXPECT_EQ(c.turretTurnTicks + c.turretFireTicks, 75);   // 사격 예고 합계 1.25 s (>= 0.6 s)
+    EXPECT_EQ(c.turretShootTicks, 60);
+    EXPECT_FLOAT_EQ(c.streakSpeed, 200.f);            // 탄속 <= 260 px/s (느린 탄 = 예고 중 피하기 쉽다)
+    EXPECT_EQ(c.deployAfterDown, 4);
+    EXPECT_EQ(c.assaultMaxTicks, 1800);               // 30 s 뒤 강제 전개
+    EXPECT_EQ(c.deployTicks, 160);                    // 4 단계 x 40 틱
+    EXPECT_EQ(c.cannonHp, 1000);
+    EXPECT_EQ(c.volleyMinTicks, 150);                 // 볼리 2.5 s ~ 3.5 s
+    EXPECT_EQ(c.volleyMaxTicks, 210);
+    EXPECT_EQ(c.volleyAimTicks, 45);                  // Gun_Aim 예고 0.75 s (>= 0.6 s)
     EXPECT_EQ(c.volleyStreaks, 3);
+    EXPECT_EQ(c.streakStaggerTicks, 15);              // 트레이서 간격 0.25 s
     EXPECT_EQ(c.shellEvery, 2);
-    EXPECT_FLOAT_EQ(c.playerWallX, 165.f);            // 플레이어 벽 = 아레나 왼쪽 + 165 (고정)
-    EXPECT_EQ(c.turretHp, 60);
-    EXPECT_EQ(c.cannonHp, 300);
-    EXPECT_FLOAT_EQ(c.turretOffset[0].x, -130.f);
-    EXPECT_FLOAT_EQ(c.turretOffset[6].y, -90.f);
-    EXPECT_FLOAT_EQ(c.destroyChainSec, 8.f);
-    EXPECT_FLOAT_EQ(c.destroyFinishSec, 10.f);
+    EXPECT_FLOAT_EQ(c.shellFlightSec, 1.f);
+    EXPECT_FLOAT_EQ(c.enragedRate, 1.25f);
+    EXPECT_EQ(c.cannonBlastTicks, 150);               // 원작 340.4~343 s
+    EXPECT_EQ(c.splitTicks, 420);                     // 원작 348~350 s (사망 7 s)
+    EXPECT_EQ(c.wreckTicks, 570);
+    EXPECT_EQ(c.finishTicks, 600);                    // 사망 10 s 에 IsDestroyFinished
+    EXPECT_EQ(c.turretScore, 500);
+    EXPECT_EQ(c.cannonScore, 2000);
     EXPECT_FALSE(c.tracerProjectile.empty());
     EXPECT_FALSE(c.shellProjectile.empty());
     EXPECT_FALSE(c.blastProjectile.empty());
 }
 
-TEST(BossDef, BigShieeProjectilesCarryTheShellAndTracerNumbers)
+TEST(BossDef, BossShieeTurretLayoutHasSevenPlacedTurrets)
 {
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
-    const ProjectileDef* pTracer = rig.GetLib().FindProjectile("bigshiee_tracer");
-    const ProjectileDef* pShell  = rig.GetLib().FindProjectile("bigshiee_shell");
-    const ProjectileDef* pBlast  = rig.GetLib().FindProjectile("bigshiee_blast");
+    const BossShieeCfg& c = rig.GetLib().Find("boss_shiee")->bossShiee;
+    // 포탑 A..G 는 서로 다른 위치 (같은 자리에 두 포탑이 겹치면 안 된다)
+    for (int i = 0; i < kBossTurretCount; ++i)
+    {
+        for (int j = i + 1; j < kBossTurretCount; ++j)
+        {
+            const float dx = c.turretOffset[i].x - c.turretOffset[j].x;
+            const float dy = c.turretOffset[i].y - c.turretOffset[j].y;
+            EXPECT_GT(dx * dx + dy * dy, 40.f * 40.f) << "포탑 " << i << " 와 " << j << " 이 너무 가깝다";
+        }
+    }
+}
+
+TEST(BossDef, BossShieeProjectilesCarryTheShellAndTracerNumbers)
+{
+    BossRig rig;
+    ASSERT_TRUE(rig.IsReady());
+    const ProjectileDef* pTracer = rig.GetLib().FindProjectile("boss_tracer");
+    const ProjectileDef* pShell  = rig.GetLib().FindProjectile("boss_shell");
+    const ProjectileDef* pBlast  = rig.GetLib().FindProjectile("boss_blast");
     ASSERT_NE(pTracer, nullptr);
     ASSERT_NE(pShell, nullptr);
     ASSERT_NE(pBlast, nullptr);
-    EXPECT_FLOAT_EQ(pShell->gravity, 1626.f);         // 발사 높이 272 → 1.0 s 비행 (발사 코드가 vy 를 구한다)
+    EXPECT_FLOAT_EQ(pShell->gravity, 1626.f);         // 발사 코드가 vy 를 비행 1.0 s 에서 구한다
     EXPECT_FLOAT_EQ(pTracer->size.x, 14.f);           // 트레이서 판정 14x14
     EXPECT_FLOAT_EQ(pTracer->size.y, 14.f);
     EXPECT_EQ(SecToTicks(pTracer->lifetimeSec), 96);  // 1.6 s
@@ -105,36 +127,38 @@ TEST(BossDef, BigShieeProjectilesCarryTheShellAndTracerNumbers)
 
 TEST(BossDef, BehaviorNameRoundTripsForTheNewBoss)
 {
-    EXPECT_STREQ(GetBehaviorName(eEnemyBehavior::BigShiee), "bigshiee");
-    ASSERT_TRUE(FindBehavior("bigshiee").has_value());
-    EXPECT_EQ(*FindBehavior("bigshiee"), eEnemyBehavior::BigShiee);
-    EXPECT_FALSE(FindBehavior("battleship").has_value());
+    EXPECT_STREQ(GetBehaviorName(eEnemyBehavior::BossShiee), "boss_shiee");
+    ASSERT_TRUE(FindBehavior("boss_shiee").has_value());
+    EXPECT_EQ(*FindBehavior("boss_shiee"), eEnemyBehavior::BossShiee);
+    EXPECT_FALSE(FindBehavior("bigshiee").has_value());
 }
 
 TEST(BossDef, TurretAndCannonOwnersAreDistinctParts)
 {
     const uint32_t id = 2345;
-    for (int i = 0; i < bigshiee::kTurretCount; ++i)
+    for (int i = 0; i < bossshiee::kTurretCount; ++i)
     {
-        EXPECT_EQ(GetPartIndex(bigshiee::TurretOwner(id, i)), i);
-        EXPECT_NE(bigshiee::TurretOwner(id, i), bigshiee::CannonOwner(id));
+        EXPECT_EQ(GetPartIndex(bossshiee::TurretOwner(id, i)), i);
+        EXPECT_NE(bossshiee::TurretOwner(id, i), bossshiee::CannonOwner(id));
     }
-    EXPECT_EQ(GetPartIndex(bigshiee::CannonOwner(id)), bigshiee::kCannonPart);
+    EXPECT_EQ(GetPartIndex(bossshiee::CannonOwner(id)), bossshiee::kCannonPart);
     EXPECT_EQ(GetPartIndex(id), -1);   // 선체는 파트가 아니다
 }
 
-TEST(BossDef, BigShieeClipNamesExistInBakedAssets)
+TEST(BossDef, BossShieeClipNamesExistInBakedAssets)
 {
     SLUG_REQUIRE_BAKED(anims);
     const char* kNames[] = {
-        "BigShiee_Body_Idle", "BigShiee_Body_DriveForward", "BigShiee_Body_DriveBack",
-        "BigShiee_Cannon_Deploy1", "BigShiee_Cannon_Deploy3", "BigShiee_Cannon_Deploy6", "BigShiee_Cannon_Deploy9",
-        "BigShiee_Cannon_Idle", "BigShiee_Cannon_DriveForward", "BigShiee_Cannon_DriveBack",
-        "BigShiee_Turret_A_Idle", "BigShiee_Turret_G_Idle", "BigShiee_Turret_A_Shooting", "BigShiee_Turret_G_Shooting",
-        "BigShiee_Turret_A_Destroyed", "BigShiee_Turret_G_Destroyed",
-        "BigShiee_Gun_Aim", "BigShiee_Gun_Shoot_1", "BigShiee_Gun_Shoot_5",
-        "BigShiee_Fire_ABCD_1", "BigShiee_Fire_EFG_1", "BigShiee_Projectile_Cyan", "BigShiee_Projectile_Orange",
-        "BigShiee_Shell_Flame_1", "BigShiee_Destroyed_Body", "BigShiee_Destroyed_Cannon", "BigShiee_Smoke", "BigShiee_Emblem_Spin_A",
+        "Boss_Body_Idle", "Boss_Body_DriveForward", "Boss_Body_DriveBack",
+        "Boss_Cannon_Deploy1", "Boss_Cannon_Deploy3", "Boss_Cannon_Deploy6", "Boss_Cannon_Deploy9",
+        "Boss_Cannon_Idle", "Boss_Cannon_DriveForward", "Boss_Cannon_DriveBack",
+        "Boss_Turret_A_Idle", "Boss_Turret_G_Idle", "Boss_Turret_A_Turning", "Boss_Turret_G_Turning",
+        "Boss_Turret_A_Shooting", "Boss_Turret_G_Shooting", "Boss_Turret_A_Destroyed", "Boss_Turret_G_Destroyed",
+        "Boss_Turret_B_Idle", "Boss_Turret_C_Idle", "Boss_Turret_D_Idle", "Boss_Turret_E_Idle", "Boss_Turret_F_Idle",
+        "Boss_Gun_Aim", "Boss_Gun_Shoot_1", "Boss_Gun_Shoot_5",
+        "Boss_Fire_ABCD_1", "Boss_Fire_EFG_1", "Boss_Projectile_Cyan", "Boss_Projectile_Orange",
+        "Boss_Shell_Flame_1", "Boss_Destroyed_Body", "Boss_Destroyed_Cannon", "Boss_Wreck", "Boss_Smoke",
+        "Explosion_Small", "Explosion_Mid", "Explosion_Large", "Explosion_Huge",
     };
     for (const char* name: kNames)
     {
@@ -145,8 +169,7 @@ TEST(BossDef, BigShieeClipNamesExistInBakedAssets)
 TEST(BossDef, GunAimHasNineAngleFramesAndShootRowsAreEightFrames)
 {
     SLUG_REQUIRE_BAKED(anims);
-    EXPECT_NEAR(GetNamedPartTicks(anims, "BigShiee_Gun_Aim"), 45, 3);        // 9 프레임 x 5 틱
-    EXPECT_NEAR(GetNamedPartTicks(anims, "BigShiee_Gun_Shoot_1"), 40, 3);    // 8 프레임 x 5 틱
-    EXPECT_NEAR(GetNamedPartTicks(anims, "BigShiee_Turret_A_Shooting"), 70, 4);   // 14 프레임 (사격 예고 0.4 s 는 그 앞부분)
-    EXPECT_NEAR(GetNamedPartTicks(anims, "BigShiee_Cannon_Deploy1"), 40, 3);
+    EXPECT_NEAR(GetNamedPartTicks(anims, "Boss_Gun_Aim"), 45, 3);        // 9 프레임 x 5 틱
+    EXPECT_NEAR(GetNamedPartTicks(anims, "Boss_Gun_Shoot_1"), 34, 3);    // 8 프레임 @ 14 fps (약 34 틱)
+    EXPECT_NEAR(GetNamedPartTicks(anims, "Boss_Cannon_Deploy1"), 40, 3);
 }

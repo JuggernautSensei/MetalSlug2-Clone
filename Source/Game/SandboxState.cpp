@@ -268,7 +268,7 @@ void SandboxState::SpawnBossLab_()
     SpawnParams params;
     params.facing = 1;
     params.arena  = m_config.bossArena;
-    (void)m_enemies.Spawn("bigshiee", { m_config.bossArena.min.x - 300.f, m_config.bossGroundY }, params, nullptr);
+    (void)m_enemies.Spawn("boss_shiee", { m_config.bossArena.min.x - 300.f, m_config.bossGroundY }, params, nullptr);
 }
 
 void SandboxState::AddDefaultTargets_()

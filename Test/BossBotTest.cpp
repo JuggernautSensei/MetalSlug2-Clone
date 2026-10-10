@@ -14,6 +14,7 @@
 #include "Base/Types.h"
 #include "Core/Input.h"
 #include "Game/Combat/Projectiles.h"
+#include "Game/Enemies/BossShiee.h"
 #include "Game/Enemies/EnemyWorld.h"
 #include "Game/Player/PlayerController.h"
 #include "Game/Props/ItemWorld.h"
@@ -37,9 +38,9 @@ constexpr float kJumpSpeed   = 600.f;   // jumpSpeed
 constexpr float kGravity     = 1400.f;  // gravity
 constexpr float kHurtHalfW   = 12.f;    // 플레이어 몸 반폭 (피격 16 의 절반 8 + 여유 4: 경계 근처 탄을 놓치지 않게)
 constexpr float kHurtH       = 62.f;    // 플레이어 몸 높이 (피격 54 + 여유 8)
-constexpr float kStripMin    = 10.f;    // 아레나 왼쪽 기준 하한 (실제 하한은 화면 벽 margin 과 max)
-constexpr float kStripMax    = 160.f;   // 플레이어 벽 165 보다 안쪽
-constexpr float kPreferX     = 85.f;    // 대기 위치
+constexpr float kStripMin    = 10.f;    // 화면 (카메라) 왼쪽 기준 하한 (실제 하한은 화면 벽 margin 과 max)
+constexpr float kStripMax    = 600.f;   // 화면 오른쪽 안쪽 (보스 전 구간 자유 이동: 벽 없음, 카메라 기준 좌표)
+constexpr float kPreferX     = 200.f;   // 대기 위치 (화면 기준)
 constexpr float kBombMinX    = 60.f;    // 이 x 부터 선체 (190~) 에 닿는 폭탄 투척
 constexpr float kJumpPenalty = 20.f;    // 점프 계획의 가산 비용 (같은 안전도면 제자리/이동을 택한다)
 constexpr int   kBombGap     = 50;      // 폭탄 투척 간격 (틱)
@@ -73,6 +74,33 @@ ShotTrack BuildTrack(
         p.x += v.x * kDt;
         p.y += v.y * kDt;
         tr.pos.push_back(p);
+    }
+    return tr;
+}
+
+// 포탑 예고 중인 탄 (Turning/Shooting): 발사 전까지 _delayTicks 틱 동안은 없고, 그 뒤 발사 시점 플레이어 중심을 향해 직선으로 간다.
+// 원작 플레이처럼 포탑이 도는 것을 보고 미리 피한다 (발사 방향은 발사 시점 위치 근사).
+ShotTrack BuildPendingTrack(
+    const Vec2  _from,
+    const Vec2  _target,
+    const float _speed,
+    const int   _delayTicks)
+{
+    ShotTrack tr;
+    tr.hx = 7.f;
+    tr.hy = 7.f;
+    Vec2       d   = { _target.x - _from.x, _target.y - _from.y };
+    const float len = std::sqrt(d.x * d.x + d.y * d.y);
+    d = len < 0.0001f ? Vec2 { -1.f, 0.f } : Vec2 { d.x / len, d.y / len };
+    for (int k = 0; k < kHorizon; ++k)
+    {
+        if (k < _delayTicks)
+        {
+            tr.pos.push_back({ -1.e6f, -1.e6f });
+            continue;
+        }
+        const float t = static_cast<float>(k - _delayTicks + 1) * kDt;
+        tr.pos.push_back({ _from.x + d.x * _speed * t, _from.y + d.y * _speed * t });
     }
     return tr;
 }
@@ -229,14 +257,15 @@ InputFrame DodgeBot::Decide(
     if (!m_bArena)
     {
         _s.GetEnemies().ForEachAlive([&](const Enemy& _e) {
-            if (!m_bArena && _e.behavior == eEnemyBehavior::BigShiee && !_e.arena.IsEmpty())
+            if (!m_bArena && _e.behavior == eEnemyBehavior::BossShiee && !_e.arena.IsEmpty())
             {
                 m_arenaLeft = _e.arena.min.x;
                 m_bArena    = true;
             }
         });
     }
-    const float arenaLeft = m_bArena ? m_arenaLeft : x - 100.f;
+    // 전장 기준점 = 카메라 왼쪽 (보스 자동 전진으로 아레나 좌표는 움직인다. 화면 좌표로 고정하면 전략이 안 흔들린다)
+    const float arenaLeft = m_bArena ? _s.GetCamera().GetPositionNoShake().x : x - 100.f;
 
     // 실제 하한 = 화면 왼쪽 벽 (카메라 왼쪽 + playerMargin) 의 오른쪽 면 + 몸 반폭
     float             lo     = arenaLeft + kStripMin;
@@ -245,11 +274,51 @@ InputFrame DodgeBot::Decide(
     {
         lo = std::max(lo, screen.left.max.x + kHurtHalfW);
     }
-    const float hi         = arenaLeft + kStripMax;
-    const bool  bHullAlive = _s.GetEnemies().CountAlive("bigshiee") > 0;
+    const float hi         = std::max(lo, arenaLeft + kStripMax);
+    const bool  bHullAlive = _s.GetEnemies().CountAlive("boss_shiee") > 0;
 
     // 목표 x: 기본은 대기 위치, 구출/아이템이 안전 구간에 있으면 가장 가까운 그쪽
     float desired  = std::clamp(arenaLeft + kPreferX, lo, hi);
+
+    // 사격 목표 (파츠): 노출된 캐논 우선, 없으면 가장 가까운 살아 있는 포탑. 그 아래로 가서 위로 쏜다 (피스톨은 전방/위만 쏜다)
+    bool  bHasPart = false;
+    float partX    = 0.f;
+    {
+        const EnemyDefLibrary* pLib = _s.GetEnemies().GetLibrary();
+        _s.GetEnemies().ForEachAlive([&](const Enemy& _e) {
+            if (_e.behavior != eEnemyBehavior::BossShiee || !pLib || !bossshiee::IsFightStarted(_e))
+            {
+                return;
+            }
+            const EnemyDef& def = pLib->Get(_e.defIndex);
+            if (_e.state == bossshiee::kCannon && !bossshiee::IsCannonDestroyed(_e))
+            {
+                partX    = bossshiee::GetOrigin(_e, def).x + def.bossShiee.cannonOffset.x;
+                bHasPart = true;
+                return;
+            }
+            float bestD = 1.e9f;
+            for (int i = 0; i < bossshiee::kTurretCount; ++i)
+            {
+                // 예고 중 (돌거나 쏘는 중) 인 포탑 아래에는 서지 않는다 (그 탄이 바로 머리 위로 떨어진다)
+                if (bossshiee::GetTurretHp(_e, i) <= 0 || bossshiee::GetTurretPhase(_e, i) != bossshiee::kTurretIdle)
+                {
+                    continue;
+                }
+                const float cx = bossshiee::GetTurretCentre(_e, def, i).x;
+                if (std::fabs(cx - x) < bestD)
+                {
+                    bestD    = std::fabs(cx - x);
+                    partX    = cx;
+                    bHasPart = true;
+                }
+            }
+        });
+    }
+    if (bHasPart)
+    {
+        desired = std::clamp(partX, lo, hi);
+    }
     float bestDist = 1.e9f;
     const auto consider = [&](const float _tx) {
         if (_tx >= lo - 30.f && _tx <= hi + 30.f)
@@ -289,6 +358,87 @@ InputFrame DodgeBot::Decide(
         if (shot.bAlive && shot.params.team == eTeam::Enemy)
         {
             tracks.push_back(BuildTrack(shot));
+        }
+    }
+
+    // 포탑 예고 중인 탄 (아직 발사 전): 직선 예측에 넣는다
+    {
+        const EnemyDefLibrary* pLib = _s.GetEnemies().GetLibrary();
+        const Vec2 center = player.GetBodyBox().GetCenter();
+        _s.GetEnemies().ForEachAlive([&](const Enemy& _e) {
+            if (_e.behavior != eEnemyBehavior::BossShiee || !pLib || !bossshiee::IsFightStarted(_e))
+            {
+                return;
+            }
+            const EnemyDef& def = pLib->Get(_e.defIndex);
+            for (int i = 0; i < bossshiee::kTurretCount; ++i)
+            {
+                const int phase = bossshiee::GetTurretPhase(_e, i);
+                if (bossshiee::GetTurretHp(_e, i) <= 0 || (phase != bossshiee::kTurretTurning && phase != bossshiee::kTurretShooting))
+                {
+                    continue;
+                }
+                const int ticks = bossshiee::GetTurretTicks(_e, i);
+                const int delay = phase == bossshiee::kTurretTurning ? (def.bossShiee.turretTurnTicks - ticks) + def.bossShiee.turretFireTicks : def.bossShiee.turretFireTicks - ticks;
+                const Vec2 from = { bossshiee::GetTurretCentre(_e, def, i).x + def.bossShiee.turretMuzzle.x, bossshiee::GetTurretCentre(_e, def, i).y + def.bossShiee.turretMuzzle.y };
+                tracks.push_back(BuildPendingTrack(from, center, def.bossShiee.streakSpeed, std::max(0, delay)));
+            }
+            // 캐논 볼리 예고 (Gun_Aim): 트레이서 n 발이 stagger 간격으로 나온다 (부채꼴은 무시하고 중앙 방향으로 근사)
+            const int aimStart = bossshiee::GetAimStartTick(_e);
+            const int clock    = bossshiee::GetFightClock(_e);
+            if (aimStart >= 0 && bossshiee::IsCannonDestroyed(_e) == false && _e.state == bossshiee::kCannon)
+            {
+                const int aimLen = def.bossShiee.volleyAimTicks + def.bossShiee.volleyStreaks * def.bossShiee.streakStaggerTicks;
+                if (clock - aimStart < aimLen)
+                {
+                    const Vec2 muzzle = { bossshiee::GetOrigin(_e, def).x + def.bossShiee.cannonMuzzle.x, bossshiee::GetOrigin(_e, def).y + def.bossShiee.cannonMuzzle.y };
+                    for (int k = 0; k < def.bossShiee.volleyStreaks; ++k)
+                    {
+                        const int fireAt = aimStart + def.bossShiee.volleyAimTicks + k * def.bossShiee.streakStaggerTicks;
+                        tracks.push_back(BuildPendingTrack(muzzle, center, def.bossShiee.streakSpeed, std::max(0, fireAt - clock)));
+                    }
+                }
+            }
+        });
+    }
+
+    // 주황 포탄 착탄 폭발 (60x60, 0.3 s): 비행 중인 포탄의 착지 지점에 미리 넣는다 (폭발은 착지 틱에 나타난다)
+    const EnemyDefLibrary* pShellLib = _s.GetEnemies().GetLibrary();
+    if (const int shellIndex = pShellLib ? pShellLib->FindProjectileIndex("boss_shell") : -1; shellIndex >= 0)
+    {
+        for (const Shot& shot: _s.GetProjectiles().GetShots())
+        {
+            if (!shot.bAlive || shot.params.team != eTeam::Enemy || shot.params.visual != static_cast<uint16_t>(shellIndex + 1))
+            {
+                continue;
+            }
+            const ShotTrack shellTrack = BuildTrack(shot);
+            for (size_t k = 0; k < shellTrack.pos.size(); ++k)
+            {
+                if (shellTrack.pos[k].y >= m_groundY - 2.f)
+                {
+                    ShotTrack blast;
+                    blast.hx = 30.f;
+                    blast.hy = 30.f;
+                    for (size_t j = 0; j < shellTrack.pos.size(); ++j)
+                    {
+                        if (j < k)
+                        {
+                            blast.pos.push_back({ -1.e6f, -1.e6f });
+                        }
+                        else if (j < k + 18)
+                        {
+                            blast.pos.push_back({ shellTrack.pos[k].x, m_groundY - 30.f });
+                        }
+                        else
+                        {
+                            blast.pos.push_back({ -1.e6f, -1.e6f });
+                        }
+                    }
+                    tracks.push_back(blast);
+                    break;
+                }
+            }
         }
     }
 
@@ -369,6 +519,8 @@ InputFrame DodgeBot::Decide(
     frame.Set(eAction::Right, dir > 0 || bTurnTap);
     frame.Set(eAction::Left, dir < 0);
     frame.Set(eAction::Shot, true);
+    // 파츠 바로 아래면 위로 쏜다 (Up = 조준 90 도)
+    frame.Set(eAction::Up, bHasPart && std::fabs(x - partX) <= 14.f);
     if (plan.bJump && bGround)
     {
         frame.Set(eAction::Jump, true);
@@ -376,7 +528,7 @@ InputFrame DodgeBot::Decide(
     }
 
     // 고착 감시: 가고 싶은데 x 가 5 s 동안 그대로 (벽 때문이 아닐 때만)
-    const bool bWallReason = (dir > 0 && x >= std::min(hi, arenaLeft + 165.f) - 3.f) || (dir < 0 && x <= lo + 3.f);
+    const bool bWallReason = (dir > 0 && x >= hi - 3.f) || (dir < 0 && x <= lo + 3.f);
     // 보스 사망 뒤에는 스테이지 흐름이 플레이어 입력을 잠근다 (x 고정) → 고착 감시는 보스가 살아 있는 동안만
     if (dir != 0 && bHullAlive && std::fabs(x - m_lastX) < 0.25f && !bWallReason)
     {
@@ -481,7 +633,7 @@ RunStats RunBot(
     BossBotSim sim(_seed);
     sim.Warp(2);   // F6: 보스 아레나 (DebugWarpToTheBoss 와 같은 워프)
     sim.Step(2);
-    if (sim.State().GetEnemies().CountAlive("bigshiee") == 0)
+    if (sim.State().GetEnemies().CountAlive("boss_shiee") == 0)
     {
         return out;
     }
@@ -498,7 +650,7 @@ RunStats RunBot(
             break;
         }
         const StageState& state = sim.State();
-        if (!out.bDefeated && state.GetEnemies().CountAlive("bigshiee") == 0)
+        if (!out.bDefeated && state.GetEnemies().CountAlive("boss_shiee") == 0)
         {
             out.bDefeated = true;
             out.defeatSec = static_cast<float>(tick) / 60.f;
@@ -559,7 +711,7 @@ void ReportRuns(
 }
 }
 
-TEST(BossBot, PistolAndTenBombsBeatBigShieeFromTheStripOnMostSeeds)
+TEST(BossBot, PistolAndTenBombsBeatBossShieeFromTheStripOnMostSeeds)
 {
     int wins       = 0;
     int stuckTotal = 0;

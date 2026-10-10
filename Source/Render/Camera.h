@@ -48,6 +48,13 @@ public:
 
     void                       SetTarget(const Vec2 _target) { m_target = _target; }
 
+    // 자동 전진 (보스전 스크롤): 카메라 중심 x 의 하한을 _dx 만큼 올린다. 하한보다 왼쪽으로는 가지 않고 (매 틱 강제),
+    // 잠금/경계 안에서만 움직인다. 경계 오른쪽 끝에 닿으면 멈춘다.
+    void  AddScrollFloor(float _dx);
+    void  ClearScrollFloor() { m_bScrollFloor = false; }
+    [[nodiscard]] bool  HasScrollFloor() const { return m_bScrollFloor; }
+    [[nodiscard]] float GetScrollFloorX() const { return m_scrollFloorX; }
+
     void SnapToTarget();
     void SnapTo(Vec2 _viewCenter);
 
@@ -115,5 +122,8 @@ private:
     float        m_shakeTime      = 0.f;
     uint32_t     m_shakeSeed      = 0x9E3779B9u;
     Vec2 m_shakeOffset    = { 0.f, 0.f };
+
+    bool  m_bScrollFloor  = false;
+    float m_scrollFloorX  = 0.f;   // 카메라 중심 x 하한 (AddScrollFloor 로 누적)
 };
 }

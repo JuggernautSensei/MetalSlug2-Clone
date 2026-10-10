@@ -20,7 +20,7 @@ enum class eEnemyBehavior : uint8_t
     Shielder,
     Pow,
     Bus,
-    BigShiee,
+    BossShiee,
     Jeep,
     BTank,
     MissleTank,
@@ -425,52 +425,62 @@ struct BusCfg
     int chainTicks  = 30;    // 사망 후 연쇄 폭발 (0.5 s). 이후 잔해(Bus_Wreck)만 남는다
 };
 
-inline constexpr int kBigShieeTurretCount = 7;   // 포탑 A..G
+inline constexpr int kBossTurretCount = 7;   // 포탑 A..G (피격 파트 0..6)
+inline constexpr int kBossCannonPart  = 7;   // 스컬 캐논 헤드 (피격 파트 7)
 
-struct BigShieeCfg
+// 최종보스 Boss Shiee (Docs/BossLayout.md, Docs/Spec_Boss.md). 시간은 틱(60Hz), 좌표는 화면/원점 기준 px.
+struct BossShieeCfg
 {
-    float    originDepth       = 208.f;    // 발(바닥) → 프레임 중심 (아트 높이 416 의 절반)
-    float    homeX             = 470.f;    // 아레나 왼쪽 기준 중심 x (화면 좌표). 선체 왼쪽 끝이 플레이어 띠 밖에 머물도록 오른쪽에 둔다
-    float    driveMinX         = 445.f;    // 선체 주행 범위 (화면 좌표) = home ±25
-    float    driveMaxX         = 495.f;
-    float    driveSpeed        = 50.f;     // px/s
-    int      driveRestTicks    = 180;      // 목표 도착 후 정지 (3 s)
-    float    entranceFromX     = 500.f;    // 등장 시작 = home + 이 값 (선체 왼쪽 끝이 화면 오른쪽 밖 640 에서 시작한다)
-    int      entranceTicks     = 150;      // 2.5 s
-    int      rumbleTicks       = 15;       // 등장 중 기저 폭발 주기
-    float    playerWallX       = 165.f;    // 플레이어 x 상한 = 아레나 왼쪽 + 이 값 (고정 벽, 보스 주행과 무관. 등장~전투 중에만 건다)
-    int      assaultTicks      = 720;      // 1단계: 포탑 연사 12 s
-    int      burstTicks        = 132;      // 포탑 연사 간격 2.2 s (1 버스트 = 최대 2기 각 트레이서 1발)
-    int      burstCount        = 2;        // 한 번에 발사하는 포탑 수
-    int      deployTicks       = 240;      // 2단계: 캐논 전개 4 s (클립 4 단계)
-    int      volleyMinTicks    = 240;      // 캐논 단계 볼리 간격 4 s ~ 5 s (격앙 x0.8)
-    int      volleyMaxTicks    = 300;
-    int      volleyStreaks     = 3;        // 볼리당 청록 트레이서 수
-    int      shellEvery        = 2;        // N 번째 볼리마다 주황 포탄 1발
-    int      telegraphTicks    = 54;       // 사격 예고 (포탑 Shooting 클립 + 발사 플래시) 0.9 s
-    int      streakStaggerTicks = 15;      // 트레이서 간격 0.25 s
-    float    shellJitter       = 0.f;      // 포탄 착탄 목표 = 발사 시점 플레이어 발 x (± 이 값, 0 = 정확히)
-    float    shellFlightSec    = 1.f;      // 주황 포탄 비행 시간 (발사 → 착탄)
-    float    enragedRate       = 1.25f;    // 격앙 시 볼리 간격 배율 1/1.25 = x0.8 (캐논 파괴 또는 선체 50% 이하, 캐논 단계만)
-    float    streakSpeed       = 230.f;    // 청록 트레이서 속도 px/s
-    int      turretHp          = 60;
-    int      cannonHp          = 300;
-    Vec2     turretOffset[kBigShieeTurretCount] = {};   // 보스 원점 기준 포탑 중심
-    Vec2     turretMuzzle      = { -40.f, -10.f };      // 포탑 중심 기준 포구 (왼쪽 발사)
-    BoxDef   turretBox         = {};                    // 포탑 중심 기준 피격 상자
-    Vec2     cannonOffset      = { -133.f, -75.f };     // 보스 원점 기준 캐논 헤드 중심 (Gun_* 클립 피벗)
-    Vec2     cannonMuzzle      = { -173.f, -64.f };     // 보스 원점 기준 포구
-    BoxDef   cannonBox         = {};                    // 보스 원점 기준 피격 상자
-    BoxDef   hullBox           = {};                    // 보스 원점 기준 선체 피격 상자
-    Vec2     emblemOffset      = { 245.f, 25.f };       // 보스 원점 기준 엠블럼 스핀 오버레이
-    Vec2     wreckCannonOffset = { -150.f, 60.f };      // 잔해 원점 기준 떨어진 캐논 조각
+    float    originDepth        = 208.f;    // 발(바닥) → 선체 중심 (아트 416 높이의 절반)
+    float    stationX           = 330.f;    // 정지 위치: 카메라 왼쪽 기준 선체 중심 x (화면 좌표)
+    float    entranceFromX      = -260.f;   // 등장 시작: 화면 왼쪽 밖 (선체 오른쪽 끝이 화면에 걸친다)
+    int      entranceTicks      = 240;      // 4 s 굴러 들어옴 (원작 257~262 s)
+    int      rumbleTicks        = 30;       // 등장 중 기저 폭발 주기 (0.5 s)
+    float    scrollSpeed        = 18.f;     // 카메라 전진 속도 (px/s, 버스트 중)
+    int      scrollOnTicks      = 180;      // 버스트 3 s
+    int      scrollOffTicks     = 120;      // 휴지 2 s
+    float    scrollBudget       = 700.f;    // 전투 중 카메라 전진 총량 (px). 선체도 같은 양만큼 전진한다
+    int      turretHp           = 60;
+    int      turretFirstTicks   = 120;      // 전투 시작 후 첫 포탑 사격 (2 s)
+    int      turretGapMinTicks  = 84;       // 포탑 사격 간격 1.4 s ~ 2.1 s (한 번에 한 기)
+    int      turretGapMaxTicks  = 126;
+    int      turretTurnTicks    = 45;       // Turning 0.75 s (예고 1)
+    int      turretFireTicks    = 30;       // Shooting 클립 안 발사 시각 0.5 s (예고 합계 1.25 s)
+    int      turretShootTicks   = 60;       // Shooting 클립 길이 (1.0 s)
+    float    streakSpeed        = 230.f;    // 청록 트레이서 속도 (px/s)
+    int      deployAfterDown    = 4;        // 포탑 이 기 이상 파괴 시 캐논 전개
+    int      assaultMaxTicks    = 1800;     // 포탑이 이 시간까지 버티면 (30 s) 캐논 전개 강제
+    int      deployTicks        = 160;      // 캐논 전개 4 단계 x 40 틱 (2.7 s)
+    int      cannonHp           = 450;
+    int      volleyFirstTicks   = 60;       // 캐논 전개 후 첫 볼리까지 1 s
+    int      volleyMinTicks     = 150;      // 볼리 간격 2.5 s ~ 3.5 s
+    int      volleyMaxTicks     = 210;
+    int      volleyAimTicks     = 45;       // Gun_Aim 예고 0.75 s
+    int      volleyStreaks      = 3;        // 볼리당 트레이서 수 (격앙 시 +1)
+    int      streakStaggerTicks = 15;       // 트레이서 간격 0.25 s
+    float    streakSpreadDeg    = 6.f;      // 트레이서 부채꼴 간격
+    int      shellEvery         = 2;        // 볼리 2 번째마다 주황 포탄 1발
+    float    shellFlightSec     = 1.f;      // 주황 포탄 비행 1.0 s (발사 → 착탄)
+    float    enragedRate        = 1.25f;    // 캐논 HP 50% 이하: 볼리 간격 ÷1.25
+    int      gunShootTicks      = 40;       // Gun_Shoot_k 재생 시간
+    int      cannonBlastTicks   = 150;      // 캐논 폭발 연출 2.5 s (원작 340.4~343)
+    int      chainStepTicks     = 12;       // 선체 연쇄 폭발 간격 0.2 s
+    int      splitTicks         = 420;      // 7 s: 선체 분리 (Boss_Destroyed_Body)
+    int      wreckTicks         = 570;      // 9.5 s: 잔해 (Boss_Wreck)
+    int      finishTicks        = 600;      // 10 s: IsDestroyFinished → 스테이지 게이트
+    int      smokeStepTicks     = 30;       // 연기 주기 0.5 s
+    int      turretScore        = 500;      // 포탑 파괴 점수 (PartDestroyed)
+    int      cannonScore        = 2000;     // 캐논 파괴 점수 (PartDestroyed; 보스 사망 점수 def.score 와 별도)
+    Vec2     turretOffset[kBossTurretCount] = {};   // 원점 기준 포탑 중심
+    Vec2     turretMuzzle       = { -40.f, -10.f }; // 포탑 중심 기준 포구 (왼쪽 발사)
+    BoxDef   turretBox          = {};               // 포탑 중심 기준 피격 상자
+    Vec2     cannonOffset       = {};               // 원점 기준 캐논 헤드 (Gun_* 피벗)
+    Vec2     cannonMuzzle       = {};               // 원점 기준 캐논 포구
+    BoxDef   cannonBox          = {};               // 원점 기준 캐논 헤드 피격 상자
+    BoxDef   hullBox            = {};               // 원점 기준 선체 피격 상자 (파괴 불가, 탄만 흡수)
     slug::String tracerProjectile = {};
     slug::String shellProjectile  = {};
     slug::String blastProjectile  = {};
-    float    destroyChainSec   = 8.f;      // 선체 폭발 연쇄 (사망 후)
-    float    destroyStepSec    = 0.2f;
-    float    destroyFinishSec  = 10.f;     // 침몰 포함 IsDestroyFinished
-    float    smokeStepSec      = 0.5f;     // 잔해 연기 주기
 };
 
 // 피격 플래시 (Docs/Spec_HitFlash.md): 블링크 한 주기 = on 6틱 + off 6틱, 피격 시 12틱 유지(재피격 시 갱신).
@@ -508,7 +518,7 @@ struct EnemyDef
     ShielderCfg  shielder  = {};
     PowCfg       pow       = {};
     BusCfg         bus         = {};
-    BigShieeCfg    bigShiee    = {};
+    BossShieeCfg   bossShiee   = {};
     JeepCfg        jeep        = {};
     BTankCfg       btank       = {};
     MissleTankCfg  missleTank  = {};

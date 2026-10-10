@@ -947,7 +947,7 @@ bool EnemyDefParser::ParseEnemy_(
             case eEnemyBehavior::Shielder: ParseShielderCfg(reader, def); break;
             case eEnemyBehavior::Pow: ParsePowCfg(reader, def); break;
             case eEnemyBehavior::Bus: ParseBusCfg(reader, def); break;
-            case eEnemyBehavior::BigShiee: ParseBigShieeCfg(reader, def); break;
+            case eEnemyBehavior::BossShiee: ParseBossShieeCfg(reader, def); break;
             case eEnemyBehavior::Jeep: ParseJeepCfg(reader, def); break;
             case eEnemyBehavior::BTank: ParseBTankCfg(reader, def); break;
             case eEnemyBehavior::MissleTank: ParseMissleTankCfg(reader, def); break;

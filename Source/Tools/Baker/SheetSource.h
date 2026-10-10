@@ -452,6 +452,45 @@ struct BuiltFrames
 namespace slug::baker
 {
 // sheets.json 로딩 + 시트 패스. SheetSource.cpp (SlugBaker 전용).
+// 지형 편집 (Assets/Source/GroundEdits.json): 굽기 전에 지면 원본 비트맵의 사각형을 공기(op "air") 또는 고체(op "solid") 로 바꾼다.
+// 예: 보스 아레나의 잔존 언덕 제거. 재현 가능: 같은 JSON 과 원본 BMP 면 항상 같은 Ground/*.bin 이 나온다.
+struct GroundEdit
+{
+    std::string map;
+    std::string op;
+    int         x = 0;
+    int         y = 0;
+    int         w = 0;
+    int         h = 0;
+};
+
+[[nodiscard]] slug::Result<std::vector<GroundEdit>> LoadGroundEdits(const std::filesystem::path& _path);
+
+inline int ApplyGroundEdits(Image& _img, const std::vector<GroundEdit>& _edits, const std::string& _map)
+{
+    int applied = 0;
+    for (const GroundEdit& edit: _edits)
+    {
+        if (edit.map != _map)
+        {
+            continue;
+        }
+        const uint8_t rgba[4] = { 255, 255, 255, 255 };   // 공기 (흰색은 IsAirPixel)
+        const uint8_t solid[4] = { 0, 0, 255, 255 };      // 고체 (파랑은 IsSolidPixel)
+        const uint8_t* pColor = edit.op == "solid" ? solid : rgba;
+        for (int y = std::max(0, edit.y); y < std::min(_img.height, edit.y + edit.h); ++y)
+        {
+            for (int x = std::max(0, edit.x); x < std::min(_img.width, edit.x + edit.w); ++x)
+            {
+                uint8_t* p = _img.At(x, y);
+                std::memcpy(p, pColor, 4);
+                ++applied;
+            }
+        }
+    }
+    return applied;
+}
+
 [[nodiscard]] slug::Result<void> LoadSheetConfig(
     const std::filesystem::path& _path,
     SheetConfig&                 _out);

@@ -24,7 +24,7 @@ sheet is grid-like; visual counting otherwise). Credit/label areas are listed un
 | 32522.png | 1983x19513 RGBA | (153,217,234) | Large mixed compilation: small olive/brown creatures or items, blue water drops, fire/smoke | none | unidentified | Probe later |
 | 33825.png | 567x2199 RGB | white + (0,251,0) edit markers | Double-decker bus: Idle, Opening, Damaged, Window break, Broken debris, Destroyed + green-tank/bus-garage art | MainTruck_* (10 clips) | Opening, Damaged, Window break, Destroyed | Cut (mid-high) |
 | 38098.png | 288x472 RGBA | alpha | Delivery boy (Order_*) | Order_* (7 baked) | none (pilot done) | Done |
-| 40204.png | 4624x3317 RGBA | (153,217,234) + (0,255,0) | Big Shiee boss (124 clips) | BigShiee_* (124) | none | Done |
+| 40204.png | 4624x3317 RGBA | (153,217,234) + (0,255,0) | Boss Shiee boss (105 clips, 1x 기준 `Boss_*`) | Boss_* (105) | none | Done |
 | 46546.png | 318x516 RGB | magenta (255,0,255) | Parker NPC | Parker, Parker_Run, Parker_Run_2, Parker_Stopping | none (pilot done) | Done |
 | 53213.png | 702x3380 RGB | (153,217,234) | Green tank: Idle, Driving, Accelerating, Shooting, Destroyed, Hill angles, Appearing from hill, Hit | MissleTank_* family (36) | Driving, Accelerating, Hill, Appear, Hit | Cut (mid-high) |
 | 11279.png | 578x2980 RGB | white (255,255,255) + green (0,128,0) credit box | P.O.W./Helpful NPCs: gold POW (Hyakutaro), Rumi/Madoka, Scholar/Doctor, CEO President, tan-suit POW, cyan UNUSED row | Older_* (11, POW) | Bound/cheer/hit/rescue variants | Mid |
@@ -93,7 +93,7 @@ Counts below use the full-file pass. "Done" = already in `sheets.json` (pilot) o
   The pilot entries are duplicates (skipped unless replace:true).
 
 ### 2.6 40204.png (Big Shiee boss) — DONE
-- Size 4624x3317 RGBA. Keys: (153,217,234) and (0,255,0). 124 clips in sheets.json (`BigShiee_*`), details in `Docs/BigShieeSheet.md`.
+- Size 4624x3317 RGBA. Keys: (153,217,234) and (0,255,0). 105 clips in sheets.json (`Boss_*`, 2x), details in `Docs/BossSheet.md`. 구 `BigShiee_*` 항목은 제거되었다.
 
 ### 2.7 46546.png (Parker NPC) — DONE (pilot)
 - Size 318x516 RGB. Key: magenta (255,0,255). Exclude row y 484-516 (label). Clips: Parker_Run (row 0), Parker_Stopping (row 1), Parker_Run_2 (row 9).
@@ -244,7 +244,7 @@ Counts below use the full-file pass. "Done" = already in `sheets.json` (pilot) o
 |---|---|---|
 | 46546.png | Pilot (duplicate of baked Parker) | Parker_Run, Parker_Stopping, Parker_Run_2 |
 | 38098.png | Pilot (duplicate of baked Order_*) | Order_Run_Right (mirror), Order_Stopping, Order_Idle, Order_Recoil, Order_Turn, Order_Run_2 |
-| 40204.png | Written (124 clips) | BigShiee_* |
+| 40204.png | Written (105 clips) | Boss_* |
 | 29720.png | Partial (37 mission glyphs) | UI_Mission_* |
 | 53213.png | Not written | none |
 | 33825.png | Not written | none |

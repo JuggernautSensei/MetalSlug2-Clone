@@ -11,6 +11,7 @@
 
 #include "Core/Input.h"
 #include "Core/Tuning.h"
+#include "Game/Enemies/BossShiee.h"
 #include "Game/Enemies/EnemyWorld.h"
 #include "Game/Player/PlayerController.h"
 #include "Game/Props/PropWorld.h"
@@ -480,7 +481,7 @@ TEST(StageIntegration, WarpChainThroughEverySectionReachesTheBossAndEndsTheStage
     }
     sim.Warp(2);
     sim.Step(2);
-    ASSERT_GT(sim.State().GetEnemies().CountAlive("bigshiee"), 0);
+    ASSERT_GT(sim.State().GetEnemies().CountAlive("boss_shiee"), 0);
 
     const IGameState* pStage = sim.StagePtr();
     sim.State().GetEnemies().KillAll(true);
@@ -549,7 +550,7 @@ TEST(StageIntegration, BossFightSupplyPowsDropOnThePlayersSideAndCanBeRescued)
     IntegrationSim sim(true);
     sim.Warp(2);   // F6: 보스 아레나
     sim.Step(2);
-    ASSERT_GT(sim.State().GetEnemies().CountAlive("bigshiee"), 0);
+    ASSERT_GT(sim.State().GetEnemies().CountAlive("boss_shiee"), 0);
 
     constexpr int kPowClose = 5;   // ePowState::kClose (구출 후 아이템 연출)
     const auto   findPow    = [&]() -> const Enemy* {
@@ -611,7 +612,7 @@ TEST(StageIntegration, DebugWarpToTheBossThenBossDeathEndsTheStageThroughTheFlow
     sim.Warp(2);   // F6: 보스 아레나
     sim.Step(2);
 
-    ASSERT_GT(sim.State().GetEnemies().CountAlive("bigshiee"), 0);
+    ASSERT_GT(sim.State().GetEnemies().CountAlive("boss_shiee"), 0);
 
     const IGameState* pStage = sim.StagePtr();
     sim.State().GetEnemies().KillAll(true);
@@ -639,13 +640,14 @@ TEST(StageIntegration, BossHpBarShowsOnlyDuringTheBossFightAndHidesAfterDeath)
 
     EnemyHandle boss;
     sim.State().GetEnemies().ForEachAlive([&](const Enemy& _e) {
-        if (_e.behavior == eEnemyBehavior::BigShiee)
+        if (_e.behavior == eEnemyBehavior::BossShiee)
         {
             boss = EnemyHandle { _e.id };
         }
     });
     ASSERT_FALSE(boss.IsNull());
 
+    // 선체는 탄을 흡수만 한다 (체력 바 변화 없음)
     HitEvent ev;
     ev.damage       = 650;
     ev.kind         = eHitKind::Bullet;
@@ -654,7 +656,16 @@ TEST(StageIntegration, BossHpBarShowsOnlyDuringTheBossFightAndHidesAfterDeath)
     ev.target       = boss.id;
     ev.hitId        = 0;
     sim.State().GetEnemies().OnHitEvents(slug::Span<const HitEvent> { &ev, 1 });
-    EXPECT_NEAR(sim.State().BuildHudModel().bossHpRatio, 0.5f, 0.01f);
+    EXPECT_NEAR(sim.State().BuildHudModel().bossHpRatio, 1.f, 1e-4f);
+
+    // 포탑 A..D 파괴 (각 120): 바 = (포탑 3 x 120 + 캐논 1000) / (포탑 7 x 120 + 캐논 1000)
+    for (int i = 0; i < 4; ++i)
+    {
+        ev.damage = 120;
+        ev.target = bossshiee::TurretOwner(boss.id, i);
+        sim.State().GetEnemies().OnHitEvents(slug::Span<const HitEvent> { &ev, 1 });
+    }
+    EXPECT_NEAR(sim.State().BuildHudModel().bossHpRatio, 1360.f / 1840.f, 0.01f);
 
     sim.State().GetEnemies().KillAll(true);
     sim.Step(2);

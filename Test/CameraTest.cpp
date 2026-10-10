@@ -706,3 +706,53 @@ TEST(Camera, ForwardOnlyNeverMovesBackwardWhenBoundsShrink)
         prev = camera.GetViewCenter().x;
     }
 }
+
+// 자동 전진 (보스 스크롤): 하한 (AddScrollFloor) 은 카메라를 오른쪽으로만 민다. 정지 target 이어도 하한까지 간다.
+TEST(Camera, ScrollFloorDrivesTheViewRightEvenWithoutAPlayerPush)
+{
+    Camera camera = MakeLevelCamera();
+    camera.SetTarget({ 1000.f, 224.f });   // 플레이어는 움직이지 않는다 (목표 고정)
+    camera.SnapToTarget();
+    const float x0 = camera.GetViewCenter().x;
+    for (int i = 0; i < 60; ++i)
+    {
+        camera.AddScrollFloor(0.3f);      // 18 px/s
+        camera.Update(kStepSec);
+    }
+    EXPECT_TRUE(camera.HasScrollFloor());
+    EXPECT_NEAR(camera.GetScrollFloorX(), x0 + 18.f + 0.f, 0.01f) << "하한은 처음 중심 + 누적 전진량";
+    EXPECT_GE(camera.GetViewCenter().x, camera.GetScrollFloorX() - 0.01f);
+    EXPECT_NEAR(camera.GetViewCenter().x - x0, 18.f, 1.5f) << "1 s 동안 18 px 전진";
+}
+
+TEST(Camera, ScrollFloorNeverMovesTheViewPastTheLockRight)
+{
+    Camera camera = MakeLevelCamera();
+    camera.Lock(Aabb::FromMinMax({ 1000.f, 0.f }, { 1700.f, 448.f }));
+    camera.SetTarget({ 1000.f, 224.f });
+    camera.SnapToTarget();
+    for (int i = 0; i < 60 * 60; ++i)
+    {
+        camera.AddScrollFloor(0.3f);
+        camera.Update(kStepSec);
+    }
+    EXPECT_LE(camera.GetViewCenter().x, 1700.f - 320.f + 0.01f) << "잠금 오른쪽 끝을 넘지 않는다";
+    EXPECT_GE(camera.GetViewCenter().x, 1700.f - 320.f - 0.5f);
+}
+
+TEST(Camera, ClearingTheScrollFloorStopsTheForcedMotion)
+{
+    Camera camera = MakeLevelCamera();
+    camera.SetTarget({ 300.f, 224.f });
+    camera.SnapToTarget();
+    camera.AddScrollFloor(40.f);
+    camera.Update(kStepSec);
+    const float moved = camera.GetViewCenter().x;
+    camera.ClearScrollFloor();
+    EXPECT_FALSE(camera.HasScrollFloor());
+    for (int i = 0; i < 30; ++i)
+    {
+        camera.Update(kStepSec);
+    }
+    EXPECT_LE(camera.GetViewCenter().x, moved + 0.5f) << "하한을 지우면 목표 (플레이어) 쪽으로 돌아간다 (더 가지 않는다)";
+}

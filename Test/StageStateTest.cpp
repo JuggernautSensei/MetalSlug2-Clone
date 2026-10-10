@@ -162,7 +162,7 @@ TEST(StageStateDebug, F6WarpsToTheBossArena)
     sim.Step();
     sim.Ctx().debugWarp = 2;          // F6
     sim.Step();
-    EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 13500.f);
+    EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 12900.f);   // boss 섹션 트리거 (아레나 잠금 12700..14094)
     EXPECT_TRUE(sim.State().GetRunner().GetNextSectionIndex() >= 20);
 }
 

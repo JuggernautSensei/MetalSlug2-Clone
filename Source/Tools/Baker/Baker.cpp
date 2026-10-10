@@ -1086,6 +1086,20 @@ namespace
         };
 
         m_state.grounds.resize(std::size(kSources));
+
+        // 지형 편집 (GroundEdits.json): 굽기 전에 원본 비트맵 사각형을 공기/고체로 바꾼다 (재현 가능한 파이프라인)
+        std::filesystem::path editsPath = m_options.groundEditsPath;
+        if (editsPath.empty())
+        {
+            editsPath = m_options.outRoot.parent_path() / "Source" / "GroundEdits.json";
+        }
+        slug::Result<std::vector<GroundEdit>> edits = LoadGroundEdits(editsPath);
+        if (!edits)
+        {
+            Log("WARN: ground edits failed: {}", editsPath.string());
+            AddAnomaly_("GroundEditsFailed", editsPath.string(), "invalid GroundEdits.json");
+            edits = std::vector<GroundEdit> {};
+        }
         ParallelFor(std::size(kSources), m_options.threads, [&](const size_t _i)
         {
             GroundOut& out = m_state.grounds[_i];
@@ -1109,6 +1123,10 @@ namespace
             }
             Image img = loaded.Take();
             if (mode == eTransparentMode::None) { ForceOpaque(img); }
+            if (const int applied = ApplyGroundEdits(img, *edits, out.source))
+            {
+                Log("ground {}: {} pixel(s) edited ({})", out.key, applied, editsPath.string());
+            }
 
             out.w = img.width;
             out.h = img.height;

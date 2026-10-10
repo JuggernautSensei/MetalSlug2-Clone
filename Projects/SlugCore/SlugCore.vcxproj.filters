@@ -93,7 +93,7 @@
     <ClCompile Include="..\..\Source\Game\DemoState.cpp">
       <Filter>Source\Game</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Game\Enemies\BigShiee.cpp">
+    <ClCompile Include="..\..\Source\Game\Enemies\BossShiee.cpp">
       <Filter>Source\Game\Enemies</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Game\Enemies\Bus.cpp">
@@ -329,7 +329,7 @@
     <ClInclude Include="..\..\Source\Game\DemoState.h">
       <Filter>Source\Game</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\Game\Enemies\BigShiee.h">
+    <ClInclude Include="..\..\Source\Game\Enemies\BossShiee.h">
       <Filter>Source\Game\Enemies</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyBehaviors.h">

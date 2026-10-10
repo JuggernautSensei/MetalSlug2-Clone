@@ -332,11 +332,23 @@ Vec2 Camera::SnapTopLeft_(
     return topLeft;
 }
 
+void Camera::AddScrollFloor(
+    const float _dx)
+{
+    if (!m_bScrollFloor)
+    {
+        m_scrollFloorX = m_center.x;
+        m_bScrollFloor = true;
+    }
+    m_scrollFloorX += _dx;
+}
+
 void Camera::SnapTo(
     const Vec2 _viewCenter)
 {
     // 명시적 순간 이동 (디버그 워프, 재시작, 리스폰). 영역도 즉시 맞춘다
     m_bMoving      = false;
+    m_bScrollFloor = false;
     m_bPendingLock = false;
     m_bGlide       = false;
     SyncEffectiveBounds_();
@@ -479,6 +491,10 @@ void Camera::Update(
         {
             desired.y = slug::Max(desired.y, m_center.y);
         }
+        if (m_bScrollFloor)
+        {
+            desired.x = slug::Max(desired.x, m_scrollFloorX);
+        }
         desired = ClampCenter_(desired);
 
         if (m_tuning.smoothTime <= 0.f)
@@ -504,6 +520,14 @@ void Camera::Update(
             m_stepY            = stepY;
         }
         m_center = ClampCenter_(m_center);
+        if (m_bScrollFloor && m_center.x < m_scrollFloorX)
+        {
+            // 자동 전진: 하한까지 강제로 민다 (보스 스크롤 속도는 작아서 한 틱의 튐은 없다)
+            m_center.x   = m_scrollFloorX;
+            m_center     = ClampCenter_(m_center);
+            m_velocity.x = 0.f;
+            m_pushSpeed  = 0.f;
+        }
 
         if (m_bForwardOnly && !m_bLocked && m_center.x < before.x)
         {

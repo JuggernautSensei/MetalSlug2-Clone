@@ -1,4 +1,6 @@
 #include "Core/AssetPath.h"
+#include "World/GroundMap.h"
+#include <filesystem>
 #include <cmath>
 #include "Base/Types.h"
 #include "Base/Result.h"
@@ -390,7 +392,7 @@ TEST(StageDataReal, BossArenaHasHmgPickupAndNoHouseInsideIt)
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
-    // 보스 섹션: 아레나 왼쪽 +120 바닥에 HMG 픽업 (선체가 들어오기 전에 주울 수 있는 위치)
+    // 보스 섹션: 아레나 (12700~) 안 바닥에 HMG 픽업 (선체가 들어오기 전에 주울 수 있는 위치)
     const StageSection& boss = data.sections.back();
     int hmgCount = 0;
     for (const StageAction& action: boss.actions)
@@ -398,12 +400,12 @@ TEST(StageDataReal, BossArenaHasHmgPickupAndNoHouseInsideIt)
         if (action.type == eActionType::Spawn && action.spawn.kind == eEntityKind::Item && action.spawn.def == "gunitem_mg")
         {
             ++hmgCount;
-            EXPECT_FLOAT_EQ(action.spawn.x, 13454.f + 120.f);
+            EXPECT_FLOAT_EQ(action.spawn.x, 12990.f);
         }
     }
     EXPECT_EQ(hmgCount, 1);
 
-    // openland_4: 아레나(13454~14094) 와 겹치던 big_house(13542) 는 제거 (파괴 불가 소품이 선체 뒤에서 탄을 막았다)
+    // openland_4: 아레나(12700~14094) 와 겹치던 big_house 는 없다 (파괴 불가 소품이 선체 뒤에서 탄을 막았다). 아레나 안 bridge_block 도 뺐다 (지형 평탄화)
     const StageSection& openland4 = data.sections[static_cast<size_t>(data.FindSection("openland_4"))];
     for (const StageAction& action: openland4.actions)
     {
@@ -422,7 +424,7 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
     const StageData data = result.Take();
 
     EXPECT_EQ(data.sections.size(), 21u);
-    EXPECT_EQ(data.CountSpawns(), 178);      // 개활지 POW 5 추가 (openland_start..openland_3), 버스 전 병사 2 제거 (버스는 병사를 내지 않는다)
+    EXPECT_EQ(data.CountSpawns(), 177);      // 개활지 POW 5 추가 (openland_start..openland_3), 버스 전 병사 2 제거 (버스는 병사를 내지 않는다)
     EXPECT_EQ(data.CountWaveEntries(), 34);  // 보스전 보급 POW 웨이브 3 추가, 버스 전 병사 웨이브 1 제거
     EXPECT_EQ(data.CountGates(), 4);
 
@@ -437,12 +439,12 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
 
     EXPECT_EQ(data.sections.front().id, "intro");
     EXPECT_EQ(data.sections.back().id, "boss");
-    EXPECT_FLOAT_EQ(data.sections.back().triggerX, 13500.f);
+    EXPECT_FLOAT_EQ(data.sections.back().triggerX, 12900.f);
     EXPECT_EQ(data.FindSection("bus_start"), 3);
 
     const NamedRect* pArena = data.FindRect("bossArena");
     ASSERT_NE(pArena, nullptr);
-    EXPECT_EQ(pArena->rect, Aabb::FromMinMax({ 13454.f, 864.f }, { 14094.f, 1312.f }));
+    EXPECT_EQ(pArena->rect, Aabb::FromMinMax({ 12700.f, 864.f }, { 14094.f, 1312.f }));
 
     ASSERT_EQ(data.camera.boundsCurves.size(), 1u);
     EXPECT_EQ(data.camera.boundsCurves[0].fromIndex, data.FindSection("downtown_start"));
@@ -504,4 +506,22 @@ TEST(StageDataReal, Stage0KeySemantics)
         }
     }
     EXPECT_TRUE(bFence);
+}
+
+// 지형 편집 (Assets/Source/GroundEdits.json): 보스 아레나 (12744..14094) 의 잔존 언덕을 지워 바닥선 y 1286 이 평평하다.
+TEST(StageDataReal, BossArenaGroundIsFlatAfterTheGroundEdit)
+{
+    const std::filesystem::path root = slug::FindAssetRoot();
+    slug::Result<GroundMap> loaded = GroundMap::Load(root / "Baked" / "Ground" / "Stage0_0.bin");
+    ASSERT_TRUE(loaded);
+    const GroundMap ground = loaded.Take();
+    // 바닥선 y 1286 은 고체, 그 위 (1150..1285) 는 공기 (언덕 제거), 아레나 전 구간
+    for (int x = 12760; x < 14090; x += 7)
+    {
+        EXPECT_TRUE(ground.IsSolid(x, 1290)) << "바닥 아래는 고체: x=" << x;
+        EXPECT_FALSE(ground.IsSolid(x, 1230)) << "언덕이 남아 있다: x=" << x;
+    }
+    // 제거 전 언덕 (13397..13701, 높이 1204) 은 이제 공기
+    EXPECT_FALSE(ground.IsSolid(13550, 1210));
+    EXPECT_TRUE(ground.IsSolid(13550, 1290));
 }

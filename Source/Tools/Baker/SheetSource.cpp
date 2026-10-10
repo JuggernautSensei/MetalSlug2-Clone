@@ -761,4 +761,61 @@ slug::Result<void> RunSheetPreview(const BakerOptions& _options)
     Log("sheet preview: {} ({}x{})", outPath.string(), output.width, output.height);
     return slug::Error { slug::kOK };
 }
+
+slug::Result<std::vector<GroundEdit>> LoadGroundEdits(
+    const fs::path& _path)
+{
+    std::vector<GroundEdit> edits;
+    if (!fs::exists(_path))
+    {
+        return edits;
+    }
+    slug::Result<std::string> text = ReadText(_path);
+    if (!text)
+    {
+        Log("ERROR: cannot read {}", _path.string());
+        return slug::Error { slug::eError::FileOpen };
+    }
+    const std::string& json = *text;
+    JsonDocPtr doc(yyjson_read(json.data(), json.size(), 0), &yyjson_doc_free);
+    yyjson_val* root = doc ? yyjson_doc_get_root(doc.get()) : nullptr;
+    if (root == nullptr || !yyjson_is_obj(root))
+    {
+        Log("ERROR: {} is not a JSON object", _path.string());
+        return slug::Error { slug::eError::InvalidData };
+    }
+    yyjson_val* arr = yyjson_obj_get(root, "edits");
+    if (arr == nullptr || !yyjson_is_arr(arr))
+    {
+        return edits;
+    }
+    size_t idx = 0;
+    size_t max = 0;
+    yyjson_val* item = nullptr;
+    yyjson_arr_foreach(arr, idx, max, item)
+    {
+        if (!yyjson_is_obj(item))
+        {
+            Log("ERROR: {}: edits[{}] is not an object", _path.string(), idx);
+            return slug::Error { slug::eError::InvalidData };
+        }
+        GroundEdit edit;
+        const char* map = yyjson_get_str(yyjson_obj_get(item, "map"));
+        const char* op  = yyjson_get_str(yyjson_obj_get(item, "op"));
+        yyjson_val* rect = yyjson_obj_get(item, "rect");
+        if (map == nullptr || op == nullptr || rect == nullptr || !yyjson_is_arr(rect) || yyjson_arr_size(rect) != 4 || (std::string(op) != "air" && std::string(op) != "solid"))
+        {
+            Log("ERROR: {}: edits[{}] needs map, op (air|solid), rect [x,y,w,h]", _path.string(), idx);
+            return slug::Error { slug::eError::InvalidData };
+        }
+        edit.map = map;
+        edit.op  = op;
+        edit.x   = static_cast<int>(yyjson_get_int(yyjson_arr_get(rect, 0)));
+        edit.y   = static_cast<int>(yyjson_get_int(yyjson_arr_get(rect, 1)));
+        edit.w   = static_cast<int>(yyjson_get_int(yyjson_arr_get(rect, 2)));
+        edit.h   = static_cast<int>(yyjson_get_int(yyjson_arr_get(rect, 3)));
+        edits.push_back(edit);
+    }
+    return edits;
+}
 }

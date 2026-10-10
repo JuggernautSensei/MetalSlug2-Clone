@@ -215,17 +215,26 @@ inline void ClearTransparentColor(Image& _image)
     return count;
 }
 
-// 불투명 픽셀이 전부 같은 RGB 이고 면적이 2500px 이상이며 어둡거나(최대 채널 160 이하) 채도가 높은(최대-최소 96 이상) 프레임은
-// 레거시 폭발/화염의 단색 실루엣으로 보고 소프트 플래시로 바꾼다. 중심(불투명 영역 중심)에서 가장 먼 픽셀까지의 거리 기준으로
-// 0~75% 는 밝은 노랑-흰색(255,248,200), 바깥 25% 에서 주황(255,170,60)으로 보간한다. 알파(모양)는 그대로 둔다. 바꾸면 true.
+// 불투명 픽셀이 전부 같은 RGB 이고 면적이 2500px 이상인 프레임은 레거시 폭발/화염의 단색 원판으로 보고 소프트 플래시로 바꾼다.
+// 중심(불투명 영역 중심)에서 가장 먼 픽셀까지의 거리(maxD)로 정규화한 거리 d 를 쓴다.
+//  - 어둡거나(최대 채널 160 이하) 채도가 높은(최대-최소 96 이상) 프레임: 색은 d 0~0.75 코어(255,248,200), 바깥 주황(255,170,60) 보간.
+//    알파는 d 0.9 까지 유지하고 0.9~1.0 에서 부드럽게 0 으로 줄인다.
+//  - 밝은 단색 프레임(흰색 원판 등): 색은 코어(255,252,225) -> 바깥(255,200,110) 선형 보간.
+//    알파 = 원본 알파 x (1 - smoothstep(d 0.6 -> 1.0)) x 0.9 로 가장자리를 페더한다.
+// 바꾸면 true.
 [[nodiscard]] inline bool ConvertSolidSilhouetteToFlash(Image& _image)
 {
-    constexpr uint64_t kMinArea    = 2500;
-    constexpr int      kDarkMax    = 160;
-    constexpr int      kSatRange   = 96;
-    constexpr double   kFadeStart  = 0.75;
-    constexpr double   kCore[3]    = { 255.0, 248.0, 200.0 };
-    constexpr double   kOrange[3]  = { 255.0, 170.0, 60.0 };
+    constexpr uint64_t kMinArea         = 2500;
+    constexpr int      kDarkMax         = 160;
+    constexpr int      kSatRange        = 96;
+    constexpr double   kFadeStart       = 0.75;
+    constexpr double   kAlphaStart      = 0.90;
+    constexpr double   kLightAlphaStart = 0.60;
+    constexpr double   kLightScale      = 0.9;
+    constexpr double   kCore[3]         = { 255.0, 248.0, 200.0 };
+    constexpr double   kOrange[3]       = { 255.0, 170.0, 60.0 };
+    constexpr double   kLightCore[3]    = { 255.0, 252.0, 225.0 };
+    constexpr double   kLightRim[3]     = { 255.0, 200.0, 110.0 };
 
     uint64_t area = 0;
     uint8_t  first[3] = { 0, 0, 0 };
@@ -253,12 +262,9 @@ inline void ClearTransparentColor(Image& _image)
         return false;
     }
 
-    const int maxC = std::max({ static_cast<int>(first[0]), static_cast<int>(first[1]), static_cast<int>(first[2]) });
-    const int minC = std::min({ static_cast<int>(first[0]), static_cast<int>(first[1]), static_cast<int>(first[2]) });
-    if (maxC > kDarkMax && maxC - minC < kSatRange)
-    {
-        return false;
-    }
+    const int  maxC   = std::max({ static_cast<int>(first[0]), static_cast<int>(first[1]), static_cast<int>(first[2]) });
+    const int  minC   = std::min({ static_cast<int>(first[0]), static_cast<int>(first[1]), static_cast<int>(first[2]) });
+    const bool bLight = maxC > kDarkMax && maxC - minC < kSatRange;
 
     const IRect bounds = FindOpaqueBounds(_image, { 0, 0, _image.width, _image.height });
     const double cx    = bounds.x + (bounds.w - 1) * 0.5;
@@ -281,6 +287,13 @@ inline void ClearTransparentColor(Image& _image)
         return false;
     }
 
+    // _a 이하는 0, _b 이상은 1 인 smoothstep
+    auto smooth = [](const double _x, const double _a, const double _b)
+    {
+        const double t = std::clamp((_x - _a) / (_b - _a), 0.0, 1.0);
+        return t * t * (3.0 - 2.0 * t);
+    };
+
     for (int y = 0; y < _image.height; ++y)
     {
         for (int x = 0; x < _image.width; ++x)
@@ -293,10 +306,23 @@ inline void ClearTransparentColor(Image& _image)
             const double dx = x - cx;
             const double dy = y - cy;
             const double d  = std::sqrt(dx * dx + dy * dy) / maxD;
-            const double t  = (d <= kFadeStart) ? 0.0 : std::min(1.0, (d - kFadeStart) / (1.0 - kFadeStart));
-            for (int c = 0; c < 3; ++c)
+            if (bLight)
             {
-                px[c] = static_cast<uint8_t>(std::lround(kCore[c] + (kOrange[c] - kCore[c]) * t));
+                for (int c = 0; c < 3; ++c)
+                {
+                    px[c] = static_cast<uint8_t>(std::lround(kLightCore[c] + (kLightRim[c] - kLightCore[c]) * d));
+                }
+                const double fade = (1.0 - smooth(d, kLightAlphaStart, 1.0)) * kLightScale;
+                px[3]             = static_cast<uint8_t>(std::lround(px[3] * fade));
+            }
+            else
+            {
+                const double t = (d <= kFadeStart) ? 0.0 : std::min(1.0, (d - kFadeStart) / (1.0 - kFadeStart));
+                for (int c = 0; c < 3; ++c)
+                {
+                    px[c] = static_cast<uint8_t>(std::lround(kCore[c] + (kOrange[c] - kCore[c]) * t));
+                }
+                px[3] = static_cast<uint8_t>(std::lround(px[3] * (1.0 - smooth(d, kAlphaStart, 1.0))));
             }
         }
     }

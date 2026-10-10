@@ -103,7 +103,7 @@ namespace
     }
 }
 
-TEST(BakerSilhouette, FlatDarkDiscBecomesFlashKeepingAlpha)
+TEST(BakerSilhouette, FlatDarkDiscBecomesFlashWithSoftRim)
 {
     Image        img    = MakeDisc_(30, 32, 24, 0);   // 면적 약 2800px, 레거시 Explosion_* f0 과 같은 색
     const Image  before = img;
@@ -113,8 +113,8 @@ TEST(BakerSilhouette, FlatDarkDiscBecomesFlashKeepingAlpha)
     {
         for (int x = 0; x < 64; ++x)
         {
-            EXPECT_EQ(img.At(x, y)[3], before.At(x, y)[3]) << x << "," << y;
-            if (img.At(x, y)[3] != 0)
+            EXPECT_LE(img.At(x, y)[3], before.At(x, y)[3]) << x << "," << y;   // 알파는 줄어들기만 한다
+            if (before.At(x, y)[3] != 0)
             {
                 EXPECT_GE(img.At(x, y)[1], 170) << x << "," << y;   // 전부 밝아졌다
             }
@@ -133,26 +133,56 @@ TEST(BakerSilhouette, FlatDarkDiscBecomesFlashKeepingAlpha)
     EXPECT_EQ(rim[0], 255);
     EXPECT_EQ(rim[1], 170);
     EXPECT_EQ(rim[2], 60);
+    EXPECT_EQ(rim[3], 0);                // 가장자리 알파 0 (d 1.0)
+    EXPECT_EQ(img.At(56, 32)[3], 255);   // d 0.8 은 알파 페이드 전
+    EXPECT_LT(img.At(60, 32)[3], 255);   // d 0.93 부터 페이드
 }
 
-TEST(BakerSilhouette, FlatSaturatedRedConvertsButLightFlatSmallAndMixedDoNot)
+TEST(BakerSilhouette, FlatSaturatedRedConvertsEvenWhenNotDark)
 {
     Image red = MakeDisc_(30, 152, 0, 0);   // 어둡지 않아도 채도가 높으면 실루엣
     EXPECT_TRUE(ConvertSolidSilhouetteToFlash(red));
     EXPECT_EQ(red.At(62, 32)[1], 170);
+    EXPECT_EQ(red.At(32, 32)[3], 255);      // 안쪽 알파는 유지
+}
 
-    Image light = MakeDisc_(30, 248, 248, 248);   // 밝은 단색 원판은 손대지 않는다
-    const Image lightBefore = light;
-    EXPECT_FALSE(ConvertSolidSilhouetteToFlash(light));
-    EXPECT_TRUE(light.pixels == lightBefore.pixels);
+TEST(BakerSilhouette, FlatLightDiscBecomesFeatheredFlash)
+{
+    Image light = MakeDisc_(30, 248, 248, 248);   // 밝은 단색 원판 -> 흰-노랑 코어 + 부드러운 가장자리
+    EXPECT_TRUE(ConvertSolidSilhouetteToFlash(light));
 
-    Image small = MakeDisc_(20, 32, 24, 0);   // 면적 약 1250px < 2500px
-    const Image smallBefore = small;
-    EXPECT_FALSE(ConvertSolidSilhouetteToFlash(small));
-    EXPECT_TRUE(small.pixels == smallBefore.pixels);
+    const uint8_t* centre = light.At(32, 32);
+    EXPECT_EQ(centre[0], 255);
+    EXPECT_EQ(centre[1], 252);
+    EXPECT_EQ(centre[2], 225);
+    EXPECT_NEAR(centre[3], 230, 1);                 // 255 x 0.9
 
-    Image mixed = MakeDisc_(30, 32, 24, 0);   // 한 픽셀만 달라도 단색이 아니다
-    mixed.At(40, 32)[0] = 33;
+    EXPECT_EQ(light.At(50, 32)[3], centre[3]);      // d 0.6 까지는 페이드 전
+    EXPECT_NEAR(light.At(56, 32)[3], 115, 1);       // d 0.8: smoothstep 0.5 -> 255 x 0.5 x 0.9
+    EXPECT_EQ(light.At(62, 32)[3], 0);              // 가장자리 알파 0
+    EXPECT_EQ(light.At(62, 32)[1], 200);            // 가장자리 색은 (255,200,110)
+    EXPECT_EQ(light.At(62, 32)[2], 110);
+
+    for (int x = 32; x < 62; ++x)                   // 중심에서 바깥으로 알파가 단조 감소
+    {
+        EXPECT_GE(light.At(x, 32)[3], light.At(x + 1, 32)[3]) << x;
+    }
+}
+
+TEST(BakerSilhouette, SmallAndMixedFlatFramesAreUnchanged)
+{
+    Image lightSmall = MakeDisc_(20, 248, 248, 248);   // 면적 약 1250px < 2500px (밝은 단색이어도 제외)
+    const Image lightSmallBefore = lightSmall;
+    EXPECT_FALSE(ConvertSolidSilhouetteToFlash(lightSmall));
+    EXPECT_TRUE(lightSmall.pixels == lightSmallBefore.pixels);
+
+    Image darkSmall = MakeDisc_(20, 32, 24, 0);        // 어두운 작은 원판도 제외
+    const Image darkSmallBefore = darkSmall;
+    EXPECT_FALSE(ConvertSolidSilhouetteToFlash(darkSmall));
+    EXPECT_TRUE(darkSmall.pixels == darkSmallBefore.pixels);
+
+    Image mixed = MakeDisc_(30, 248, 248, 248);        // 한 픽셀만 달라도 단색이 아니다
+    mixed.At(40, 32)[0] = 233;
     const Image mixedBefore = mixed;
     EXPECT_FALSE(ConvertSolidSilhouetteToFlash(mixed));
     EXPECT_TRUE(mixed.pixels == mixedBefore.pixels);
