@@ -284,11 +284,11 @@ TEST(BakerSheetRegister, SameSquareAtDifferentOffsetsAndSizesCoincidesAfterRegis
     Image sheet = MakeMagentaSheet(100, 40, {});
     PaintBlob(sheet, { 3, 2, 6, 6 }, 200, 100, 50);
     PaintBlob(sheet, { 37, 11, 6, 6 }, 200, 100, 50);
-    PaintBlob(sheet, { 43, 16, 1, 1 }, 0, 255, 0);       // 꼬리: 트림 bbox 를 키운다
+    PaintBlob(sheet, { 43, 16, 2, 1 }, 0, 255, 0);       // 꼬리: 트림 bbox 를 키운다 (폭 6 -> 8, 중심 피벗 w/2 가 3 -> 4 로 달라진다)
     PaintBlob(sheet, { 80, 5, 6, 6 }, 200, 100, 50);
-    PaintBlob(sheet, { 86, 5, 1, 1 }, 0, 255, 0);
+    PaintBlob(sheet, { 86, 5, 2, 1 }, 0, 255, 0);
     ApplySheetKey(sheet, SheetKey {});
-    const std::vector<IRect> rects = { { 0, 0, 20, 20 }, { 30, 0, 14, 20 }, { 60, 0, 30, 24 } };
+    const std::vector<IRect> rects = { { 0, 0, 20, 20 }, { 30, 0, 16, 20 }, { 60, 0, 30, 24 } };
 
     SheetRegisterOpts reg;
     reg.bEnabled = true;
