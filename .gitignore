@@ -6,3 +6,4 @@ Captures/
 Assets/Baked/
 *.user
 *.suo
+build/

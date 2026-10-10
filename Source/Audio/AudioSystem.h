@@ -77,6 +77,6 @@ private:
     bool        m_bBgmLoop = true;
     BgmFader    m_bgmFade  = {};
 
-    std::unique_ptr<Backend> m_pBackend = nullptr;
+    std::unique_ptr<Backend> m_pBackend;
 };
 }

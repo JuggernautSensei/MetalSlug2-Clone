@@ -201,7 +201,12 @@ public:
         bool bAllowJump  = true;    // 점프 회피 허용 (false 면 좌우 이동만)
     };
 
-    explicit DodgeBot(const Options& _options = {})
+    DodgeBot()
+        : DodgeBot(Options {})
+    {
+    }
+
+    explicit DodgeBot(const Options& _options)
         : m_options(_options)
     {
     }
