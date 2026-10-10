@@ -49,6 +49,7 @@ public:
     bool WarpToSection(int _index);
     bool WarpToSection(StringView _id);
     bool WarpToBoss();
+    bool WarpToX(float _x);   // 디버그: 임의 월드 x 로 워프 (앞 구간은 조용히 적용)
 
     [[nodiscard]] Vec2        ComputeCameraTarget(Vec2 _playerFeet) const;
     [[nodiscard]] ScreenWalls MakeScreenWalls() const;
@@ -120,6 +121,7 @@ private:
     [[nodiscard]] static int64_t ToTicks_(float _seconds);
 
     void FireSection_(int _index, bool _bSilent);
+    bool WarpToSection_(int _index, float _targetX);
     void RunActions_(const Vector<StageAction>& _actions, const ExecContext& _ctx);
     void Execute_(const StageAction& _action, const ExecContext& _ctx);
     void ExecSpawn_(const SpawnSpec& _spec, const ExecContext& _ctx, bool _bWave);

@@ -792,8 +792,34 @@ bool StageRunner::WarpToBoss()
     return index >= 0 && WarpToSection(index);
 }
 
+bool StageRunner::WarpToX(
+    const float _x)
+{
+    int index = m_nextSection;
+    while (index < static_cast<int>(m_pData->sections.size()) && m_pData->sections[static_cast<size_t>(index)].triggerX < _x)
+    {
+        ++index;
+    }
+    if (index >= static_cast<int>(m_pData->sections.size()))
+    {
+        index = static_cast<int>(m_pData->sections.size()) - 1;
+    }
+    return WarpToSection_(index, _x);
+}
+
 bool StageRunner::WarpToSection(
     const int _index)
+{
+    if (_index < 0 || _index >= static_cast<int>(m_pData->sections.size()))
+    {
+        return false;
+    }
+    return WarpToSection_(_index, m_pData->sections[static_cast<size_t>(_index)].triggerX + 1.f);
+}
+
+bool StageRunner::WarpToSection_(
+    const int   _index,
+    const float _targetX)
 {
     if (_index < m_nextSection || _index >= static_cast<int>(m_pData->sections.size()) || m_bFinished)
     {
@@ -814,7 +840,7 @@ bool StageRunner::WarpToSection(
         ++m_nextSection;
     }
 
-    const float targetX = m_pData->sections[static_cast<size_t>(_index)].triggerX + 1.f;
+    const float targetX = _targetX;
     const Aabb  bounds  = GetEffectiveBounds();
     Vec2        feet    = m_pHost->PlayerFeet();
     feet.x              = targetX;

@@ -176,3 +176,5 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
   - `clear` 는 적(Monster 비트, Npc 비트면 포로 포함)과 충돌체를 지운다. 소품/아이템은 지우지 않는다.
   - 원경 장식 (`anim_decor` / `sprite_decor`) 은 플레이스홀더다 (정의/스프라이트 연결 없음). 보스 HP 바 (`bShowBoss`) 는 아직 HUD 에 연결하지 않았다.
   - 무적(`playerInvincible`) 은 플레이어 `ExtendInvincibility` 로 실제 피해를 막는다 (PlayerController 추가 훅 1개).
+- 디버그 `--warp-x X`: 임의 월드 x 로 워프 (앞 구간은 `silent` 로 적용, F1 은 켜지 않는다). 맵 전 구간을 ~200px 간격으로 캡처해 검증할 때 쓴다 (`StageRunner::WarpToX`).
+- 큰 배경 텍스처: `Stage0_Main` (14094x1328) 은 단독 텍스처로 올라가는데, 구형 GPU/드라이버의 최대 텍스처 크기(8192) 를 넘으면 월드 x 8192 이후(최후반부)가 깨진다. `SpriteBatch` 는 단독 텍스처를 가로 2048px 띠로 쪼개 만들고 그릴 때 띠 경계를 이어 붙인다 (출력 픽셀은 동일, `SpriteBatchSdl.WideStandaloneTextureIsSeamlessAcrossStrips`).

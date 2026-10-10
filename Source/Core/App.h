@@ -76,6 +76,7 @@ private:
     int   m_pendingWarp    = 0;
     int   m_debugLives     = 0;
     int   m_startWarpCount = 0;
+    float m_startWarpX     = 0.f;
     int   m_pendingSpawn   = 0;
     int   m_pendingWeapon  = 0;
     float m_fps            = 0.f;

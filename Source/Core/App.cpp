@@ -179,6 +179,11 @@ void App::ParseArgs_()
             m_startWarpCount = std::atoi(args[++i].c_str());
             m_bDebugDraw     = true;
         }
+        else if (args[i] == "--warp-x" && bHasValue)
+        {
+            // 디버그: 월드 x 로 직접 워프 (그 앞 구간은 조용히 적용). 맵 검증용
+            m_startWarpX = static_cast<float>(std::atof(args[++i].c_str()));
+        }
         else if (args[i] == "--life" && bHasValue)
         {
             m_debugLives = std::atoi(args[++i].c_str());
@@ -401,6 +406,13 @@ void App::Update_(
     {
         m_pendingWarp = 1;
         --m_startWarpCount;
+    }
+    m_ctx.debugWarpX  = 0.f;
+    if (m_startWarpX > 0.f)
+    {
+        m_pendingWarp = 3;
+        m_ctx.debugWarpX = m_startWarpX;
+        m_startWarpX     = 0.f;
     }
     m_ctx.debugWarp   = m_pendingWarp;
     m_ctx.debugLives  = m_debugLives;

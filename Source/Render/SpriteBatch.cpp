@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <fstream>
 #include <SDL3/SDL.h>
 
@@ -248,11 +249,11 @@ void SpriteBatch::Shutdown()
         }
     }
     m_pages.clear();
-    for (Page& texture: m_textures)
+    for (StandaloneTexture& texture: m_textures)
     {
-        if (texture.pTexture)
+        for (SDL_Texture* pStrip: texture.strips)
         {
-            SDL_DestroyTexture(texture.pTexture);
+            SDL_DestroyTexture(pStrip);
         }
     }
     m_textures.clear();
@@ -331,23 +332,75 @@ Result<int> SpriteBatch::AddStandaloneTextureFromRgba(
         return Error { eError::InvalidData };
     }
 
-    SDL_Texture* pTexture = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, _width, _height);
-    if (!pTexture)
-    {
-        SLUG_LOG_ERROR("SDL_CreateTexture 실패 ({}x{}): {}", _width, _height, SDL_GetError());
-        return Error { eError::TextureCreate };
-    }
-    if (!SDL_UpdateTexture(pTexture, nullptr, _rgba.data(), _width * 4))
-    {
-        SLUG_LOG_ERROR("SDL_UpdateTexture 실패: {}", SDL_GetError());
-        SDL_DestroyTexture(pTexture);
-        return Error { eError::TextureCreate };
-    }
+    // 가로가 kMaxStripW 를 넘으면 띠로 쪼갠다 (구형 GPU/드라이버의 8192 제한에서 최후반부가 깨지는 문제 방지)
+    constexpr int kMaxStripW = 2048;
+    const int     stripW     = std::min(_width, kMaxStripW);
+    StandaloneTexture texture = {};
+    texture.width             = _width;
+    texture.height            = _height;
+    texture.stripW            = stripW;
 
-    SDL_SetTextureBlendMode(pTexture, SDL_BLENDMODE_BLEND);
-    SDL_SetTextureScaleMode(pTexture, SDL_SCALEMODE_NEAREST);
-    m_textures.push_back({ pTexture, _width, _height });
+    Vector<uint8_t> strip;
+    for (int x = 0; x < _width; x += stripW)
+    {
+        const int w = std::min(stripW, _width - x);
+        strip.resize(static_cast<size_t>(w) * static_cast<size_t>(_height) * 4);
+        for (int y = 0; y < _height; ++y)
+        {
+            std::memcpy(strip.data() + static_cast<size_t>(y) * static_cast<size_t>(w) * 4, _rgba.data() + (static_cast<size_t>(y) * static_cast<size_t>(_width) + static_cast<size_t>(x)) * 4, static_cast<size_t>(w) * 4);
+        }
+
+        SDL_Texture* pTexture = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, w, _height);
+        if (!pTexture || !SDL_UpdateTexture(pTexture, nullptr, strip.data(), w * 4))
+        {
+            SLUG_LOG_ERROR("단독 텍스처 띠 생성 실패 ({}x{} 중 x={}): {}", _width, _height, x, SDL_GetError());
+            if (pTexture)
+            {
+                SDL_DestroyTexture(pTexture);
+            }
+            for (SDL_Texture* pDone: texture.strips)
+            {
+                SDL_DestroyTexture(pDone);
+            }
+            return Error { eError::TextureCreate };
+        }
+        SDL_SetTextureBlendMode(pTexture, SDL_BLENDMODE_BLEND);
+        SDL_SetTextureScaleMode(pTexture, SDL_SCALEMODE_NEAREST);
+        texture.strips.push_back(pTexture);
+    }
+    m_textures.push_back(std::move(texture));
     return static_cast<int>(m_textures.size()) - 1;
+}
+
+void SpriteBatch::DrawStandaloneRect_(
+    const StandaloneTexture& _texture,
+    const SDL_FRect&         _src,
+    const SDL_FRect&         _dst,
+    const RGBA               _tint) const
+{
+    if (_src.w <= 0.f || _src.h <= 0.f)
+    {
+        return;
+    }
+    const float scaleX = _dst.w / _src.w;
+    const int   first  = std::max(0, static_cast<int>(_src.x) / _texture.stripW);
+    const int   last   = std::min(static_cast<int>(_texture.strips.size()) - 1, static_cast<int>(_src.x + _src.w - 0.001f) / _texture.stripW);
+    for (int k = first; k <= last; ++k)
+    {
+        const float stripL = static_cast<float>(k * _texture.stripW);
+        const float l      = std::max(_src.x, stripL);
+        const float r      = std::min(_src.x + _src.w, stripL + static_cast<float>(_texture.stripW));
+        if (r <= l)
+        {
+            continue;
+        }
+        const SDL_FRect src = { l - stripL, _src.y, r - l, _src.h };
+        const SDL_FRect dst = { _dst.x + (l - _src.x) * scaleX, _dst.y, (r - l) * scaleX, _dst.h };
+        SDL_Texture*    pStrip = _texture.strips[static_cast<size_t>(k)];
+        SDL_SetTextureColorMod(pStrip, _tint.r, _tint.g, _tint.b);
+        SDL_SetTextureAlphaMod(pStrip, _tint.a);
+        SDL_RenderTexture(m_pRenderer, pStrip, &src, &dst);
+    }
 }
 
 Result<int> SpriteBatch::LoadStandaloneTexture(
@@ -373,11 +426,7 @@ void SpriteBatch::DrawTexture(
     {
         return;
     }
-    const Page& texture = m_textures[static_cast<size_t>(_handle)];
-    if (!texture.pTexture)
-    {
-        return;
-    }
+    const StandaloneTexture& texture = m_textures[static_cast<size_t>(_handle)];
 
     const TextureViewRects view = ComputeTextureView(texture.width, texture.height, _texWorldPos, _cameraPos, _viewW, _viewH);
     if (!view.bVisible)
@@ -387,9 +436,7 @@ void SpriteBatch::DrawTexture(
 
     const SDL_FRect src = { static_cast<float>(view.src.x), static_cast<float>(view.src.y), static_cast<float>(view.src.w), static_cast<float>(view.src.h) };
     const SDL_FRect dst = { static_cast<float>(view.dst.x), static_cast<float>(view.dst.y), static_cast<float>(view.dst.w), static_cast<float>(view.dst.h) };
-    SDL_SetTextureColorMod(texture.pTexture, _tint.r, _tint.g, _tint.b);
-    SDL_SetTextureAlphaMod(texture.pTexture, _tint.a);
-    SDL_RenderTexture(m_pRenderer, texture.pTexture, &src, &dst);
+    DrawStandaloneRect_(texture, src, dst, _tint);
 }
 
 void SpriteBatch::DrawTextureRepeatX(
@@ -406,11 +453,7 @@ void SpriteBatch::DrawTextureRepeatX(
     {
         return;
     }
-    const Page& texture = m_textures[static_cast<size_t>(_handle)];
-    if (!texture.pTexture)
-    {
-        return;
-    }
+    const StandaloneTexture& texture = m_textures[static_cast<size_t>(_handle)];
 
     const int texX = FloorToInt(_texWorldPos.x);
     const int texY = FloorToInt(_texWorldPos.y);
@@ -445,9 +488,7 @@ void SpriteBatch::DrawTextureRepeatX(
         }
         const SDL_FRect src = { static_cast<float>(_tileX + (x0 - segStart)), static_cast<float>(y0 - texY), static_cast<float>(x1 - x0), static_cast<float>(y1 - y0) };
         const SDL_FRect dst = { static_cast<float>(x0 - camX), static_cast<float>(y0 - camY), static_cast<float>(x1 - x0), static_cast<float>(y1 - y0) };
-        SDL_SetTextureColorMod(texture.pTexture, 255, 255, 255);
-        SDL_SetTextureAlphaMod(texture.pTexture, 255);
-        SDL_RenderTexture(m_pRenderer, texture.pTexture, &src, &dst);
+        DrawStandaloneRect_(texture, src, dst, { 255, 255, 255, 255 });
     }
     (void)texX;
 }

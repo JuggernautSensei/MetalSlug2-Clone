@@ -316,6 +316,50 @@ TEST(SpriteBatchSdl, EmptyFramesAndMissingPagesAreSkipped)
     EXPECT_EQ(target.PixelRgb(5, 5), kBlack);
 }
 
+// 가로로 아주 긴 단독 텍스처(Stage0_Main 14094px) 는 내부에서 띠로 쪼개 그린다: 띠 경계(2048 배수)를 가로질러도 열이 어긋나지 않아야 한다
+TEST(SpriteBatchSdl, WideStandaloneTextureIsSeamlessAcrossStrips)
+{
+    SoftwareTarget target { 64, 4 };
+    if (!target.IsValid())
+    {
+        GTEST_SKIP() << "소프트웨어 렌더러를 만들 수 없는 환경";
+    }
+
+    constexpr int               kW = 5000;
+    constexpr int               kH = 4;
+    slug::Vector<uint8_t> pixels(static_cast<size_t>(kW) * kH * 4);
+    for (int y = 0; y < kH; ++y)
+    {
+        for (int x = 0; x < kW; ++x)
+        {
+            uint8_t* pPixel = &pixels[static_cast<size_t>((y * kW + x) * 4)];
+            pPixel[0]       = static_cast<uint8_t>(x & 0xFF);
+            pPixel[1]       = static_cast<uint8_t>((x >> 8) & 0xFF);
+            pPixel[2]       = 7;
+            pPixel[3]       = 255;
+        }
+    }
+
+    SpriteBatch batch;
+    batch.Init(target.pRenderer);
+    const slug::Result<int> handle = batch.AddStandaloneTextureFromRgba(kW, kH, pixels);
+    ASSERT_FALSE(handle.HasError());
+
+    const slug::ARRAY<int, 3> cams = { 2030, 4070, 4950 };
+    for (const int cam: cams)
+    {
+        target.Clear();
+        batch.DrawTexture(*handle, { 0.f, 0.f }, Vec2 { static_cast<float>(cam), 0.f }, 64, kH);
+        const int visibleW = std::min(64, kW - cam);
+        for (int sx = 0; sx < visibleW; ++sx)
+        {
+            const int      wx       = cam + sx;
+            const uint32_t expected = (static_cast<uint32_t>(wx & 0xFF) << 16) | (static_cast<uint32_t>((wx >> 8) & 0xFF) << 8) | 7u;
+            ASSERT_EQ(target.PixelRgb(sx, 2), expected) << "cam=" << cam << " sx=" << sx;
+        }
+    }
+}
+
 TEST(SpriteBatchSdl, RejectsInvalidAtlasData)
 {
     SoftwareTarget target { 16, 16 };

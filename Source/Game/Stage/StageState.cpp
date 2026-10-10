@@ -490,7 +490,7 @@ void StageState::HandleDebugWarp_(
 
     const int request = _ctx.debugWarp;
     _ctx.debugWarp    = 0;
-    if (request == 0 || !_ctx.bDebugDraw)
+    if (request == 0 || (!_ctx.bDebugDraw && request != 3))
     {
         return;
     }
@@ -503,6 +503,10 @@ void StageState::HandleDebugWarp_(
     else if (request == 2)
     {
         (void)m_runner->WarpToBoss();
+    }
+    else if (request == 3)
+    {
+        (void)m_runner->WarpToX(_ctx.debugWarpX);
     }
     m_host.SetContext(nullptr);
 }

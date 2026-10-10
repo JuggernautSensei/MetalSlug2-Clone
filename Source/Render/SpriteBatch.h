@@ -10,6 +10,7 @@
 
 struct SDL_Renderer;
 struct SDL_Texture;
+struct SDL_FRect;
 
 namespace slug
 {
@@ -104,9 +105,21 @@ private:
         SDL_Texture* pFlashTexture = nullptr;   // 피격 플래시 변환본 (아틀라스 페이지만, 없으면 nullptr)
     };
 
-    SDL_Renderer*         m_pRenderer = nullptr;
-    Vector<Page>          m_pages     = {};
-    Vector<Page>          m_textures  = {};
+    // 단독 텍스처: GPU 최대 텍스처 크기(구형 GPU 는 8192) 를 넘는 가로 긴 이미지(Stage0_Main 14094px)를 세로 띠로 쪼개 들고 있다
+    struct StandaloneTexture
+    {
+        int                  width  = 0;
+        int                  height = 0;
+        int                  stripW = 0;   // 띠 하나의 가로 (마지막 띠는 더 짧을 수 있다)
+        Vector<SDL_Texture*> strips = {};
+    };
+
+    // src(텍스처 좌표) 를 dst 로 그린다. 띠 경계를 가로지르면 띠마다 나눠서 그린다 (가로 배율은 dst.w / src.w).
+    void DrawStandaloneRect_(const StandaloneTexture& _texture, const SDL_FRect& _src, const SDL_FRect& _dst, RGBA _tint) const;
+
+    SDL_Renderer*            m_pRenderer = nullptr;
+    Vector<Page>             m_pages     = {};
+    Vector<StandaloneTexture> m_textures = {};
     Vector<SpriteCommand> m_commands  = {};
     uint32_t              m_nextSeq   = 0;
 };

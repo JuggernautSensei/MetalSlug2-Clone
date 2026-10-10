@@ -26,6 +26,7 @@ struct GameContext
     bool  bPaused       = false;
     int   slowMoDivisor = 1;   // F4: 2 이상이면 느린 재생
     int   debugWarp     = 0;
+    float debugWarpX    = 0.f;   // debugWarp == 3 일 때 목표 월드 x
     int   debugLives    = 0;   // --life N (0 이면 튜닝 값)
     int   debugSpawn    = 0;
     int   debugWeapon   = 0;
