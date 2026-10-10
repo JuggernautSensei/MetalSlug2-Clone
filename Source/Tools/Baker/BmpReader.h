@@ -1,20 +1,20 @@
 #pragma once
 #include <cstdint>
 #include <cstring>
-#include <filesystem>
 #include <fstream>
-#include <vector>
-
-#include "Base/Result.h"
 
 #include "Base/Error.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
 #include "Tools/Baker/Image.h"
 #include "Tools/Baker/PathResolve.h"
 
 namespace slug::baker
 {
+
 namespace bmp_detail
 {
+
     [[nodiscard]] inline uint32_t ReadU32(
         const uint8_t* _p)
     {
@@ -66,10 +66,11 @@ namespace bmp_detail
             return static_cast<uint8_t>((static_cast<uint64_t>(v) * 255u + max / 2u) / max);
         }
     };
-}
+
+}   // namespace bmp_detail
 
 [[nodiscard]] inline slug::Result<Image> DecodeBmp(
-    const std::vector<uint8_t>& _file)
+    const Vector<uint8_t>& _file)
 {
     using namespace bmp_detail;
 
@@ -85,13 +86,13 @@ namespace bmp_detail
         return slug::eError::Parse;
     }
 
-    const int      width    = static_cast<int>(ReadU32(&_file[18]));
-    const int      rawH     = static_cast<int>(ReadU32(&_file[22]));
-    const uint16_t bpp      = ReadU16(&_file[28]);
-    const uint32_t compress = ReadU32(&_file[30]);
+    const int      width      = static_cast<int>(ReadU32(&_file[18]));
+    const int      rawH       = static_cast<int>(ReadU32(&_file[22]));
+    const uint16_t bpp        = ReadU16(&_file[28]);
+    const uint32_t compress   = ReadU32(&_file[30]);
     uint32_t       colorsUsed = ReadU32(&_file[46]);
-    const bool     bTopDown = rawH < 0;
-    const int      height   = bTopDown ? -rawH : rawH;
+    const bool     bTopDown   = rawH < 0;
+    const int      height     = bTopDown ? -rawH : rawH;
 
     if (width <= 0 || height <= 0 || width > 65536 || height > 65536)
     {
@@ -102,7 +103,10 @@ namespace bmp_detail
         return slug::eError::InvalidData;
     }
 
-    Mask mr, mg, mb, ma;
+    Mask mr;
+    Mask mg;
+    Mask mb;
+    Mask ma;
     if (bpp == 32 || bpp == 16)
     {
         if (compress == 3)
@@ -135,7 +139,7 @@ namespace bmp_detail
         }
     }
 
-    std::vector<uint32_t> palette;
+    Vector<uint32_t> palette;
     if (bpp <= 8)
     {
         if (colorsUsed == 0)
@@ -164,7 +168,7 @@ namespace bmp_detail
         return slug::eError::Parse;
     }
 
-    Image img = Image::Make(width, height);
+    Image img           = Image::Make(width, height);
     img.bSourceHasAlpha = (bpp == 32 && ma.bits > 0);
 
     for (int y = 0; y < height; ++y)
@@ -225,7 +229,7 @@ namespace bmp_detail
 }
 
 [[nodiscard]] inline slug::Result<Image> LoadBmpFile(
-    const std::filesystem::path& _path)
+    const FilePath& _path)
 {
     std::ifstream stream(ResolveCaseInsensitive(_path), std::ios::binary | std::ios::ate);
     if (!stream)
@@ -239,7 +243,7 @@ namespace bmp_detail
         return slug::eError::FileRead;
     }
 
-    std::vector<uint8_t> file(static_cast<size_t>(size));
+    Vector<uint8_t> file(static_cast<size_t>(size));
     stream.seekg(0);
     if (!stream.read(reinterpret_cast<char*>(file.data()), size))
     {
@@ -247,4 +251,5 @@ namespace bmp_detail
     }
     return DecodeBmp(file);
 }
-}
+
+}   // namespace slug::baker

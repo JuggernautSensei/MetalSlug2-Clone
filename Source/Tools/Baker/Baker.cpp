@@ -1,11 +1,11 @@
 #include "Tools/Baker/Baker.h"
-#include "Base/Result.h"
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <map>
-#include <unordered_map>
 
+#include "Base/Result.h"
 #include "Tools/Baker/AnimMath.h"
 #include "Tools/Baker/BakerUtil.h"
 #include "Tools/Baker/BmpReader.h"
@@ -16,13 +16,38 @@
 namespace slug::baker
 {
 
-namespace fs = std::filesystem;
-
 namespace
 {
+    using NameIndexMap = std::map<String, size_t>;
+
+    [[nodiscard]] bool IsSolidAt_(
+        const Image&           _img,
+        const GroundThreshold& _th,
+        const int              _x,
+        const int              _y)
+    {
+        if (_x < 0 || _y < 0 || _x >= _img.width || _y >= _img.height)
+        {
+            return false;
+        }
+        const uint8_t* p = _img.At(_x, _y);
+        return IsSolidPixel(p[0], p[1], p[2], p[3], _th);
+    }
+
+    [[nodiscard]] bool InRect_(
+        const int _x,
+        const int _y,
+        const int _refX,
+        const int _refY,
+        const int _w,
+        const int _h)
+    {
+        return _x >= _refX && _y >= _refY && _x < _refX + _w && _y < _refY + _h;
+    }
+
     // 도로 윗면(floorY) 위로 솟은 봉우리 한 덩어리: 시드에서 4-이웃으로 번지는 고체 픽셀 중 y < floorY 인 것.
     // 사각형 (_refX, _refY, _w, _h) 안만 본다. 반환: _w*_h 비트 (1 = 봉우리). 시드가 조건을 만족하지 않으면 빈 벡터.
-    [[nodiscard]] std::vector<uint8_t> BumpFootprint_(
+    [[nodiscard]] Vector<uint8_t> BumpFootprint_(
         const Image&           _img,
         const GroundThreshold& _th,
         const int              _refX,
@@ -33,38 +58,30 @@ namespace
         const int              _seedX,
         const int              _seedY)
     {
-        const auto solidAt = [&](const int _x, const int _y)
-        {
-            if (_x < 0 || _y < 0 || _x >= _img.width || _y >= _img.height)
-            {
-                return false;
-            }
-            const uint8_t* p = _img.At(_x, _y);
-            return IsSolidPixel(p[0], p[1], p[2], p[3], _th);
-        };
-        const auto inRect = [&](const int _x, const int _y)
-        {
-            return _x >= _refX && _y >= _refY && _x < _refX + _w && _y < _refY + _h;
-        };
-        if (!inRect(_seedX, _seedY) || _seedY >= _floorY || !solidAt(_seedX, _seedY))
+        if (!InRect_(_seedX, _seedY, _refX, _refY, _w, _h) || _seedY >= _floorY || !IsSolidAt_(_img, _th, _seedX, _seedY))
         {
             return {};
         }
 
-        std::vector<uint8_t>                bits(static_cast<size_t>(_w) * static_cast<size_t>(_h), 0u);
-        std::vector<std::pair<int, int>>    stack { { _seedX, _seedY } };
+        constexpr ARRAY<int, 4> kDx = { 1, -1, 0, 0 };
+        constexpr ARRAY<int, 4> kDy = { 0, 0, 1, -1 };
+
+        Vector<uint8_t> bits(static_cast<size_t>(_w) * static_cast<size_t>(_h), 0u);
         bits[static_cast<size_t>(_seedY - _refY) * static_cast<size_t>(_w) + static_cast<size_t>(_seedX - _refX)] = 1u;
-        constexpr int kDx[] = { 1, -1, 0, 0 };
-        constexpr int kDy[] = { 0, 0, 1, -1 };
+
+        Vector<std::pair<int, int>> stack;
+        stack.emplace_back(_seedX, _seedY);
         while (!stack.empty())
         {
-            const auto [x, y] = stack.back();
+            const std::pair<int, int> cur = stack.back();
+            const int                 x   = cur.first;
+            const int                 y   = cur.second;
             stack.pop_back();
-            for (int i = 0; i < 4; ++i)
+            for (size_t i = 0; i < kDx.size(); ++i)
             {
                 const int nx = x + kDx[i];
                 const int ny = y + kDy[i];
-                if (!inRect(nx, ny) || ny >= _floorY || !solidAt(nx, ny))
+                if (!InRect_(nx, ny, _refX, _refY, _w, _h) || ny >= _floorY || !IsSolidAt_(_img, _th, nx, ny))
                 {
                     continue;
                 }
@@ -81,19 +98,19 @@ namespace
 
     struct TextureJob
     {
-        const TextureRecord*  pRecord = nullptr;
-        std::vector<size_t>   anims;
-        std::vector<size_t>   sprites;
-        TextureStat           stat;
-        std::vector<Anomaly>  anomalies;
+        const TextureRecord* pRecord   = nullptr;
+        Vector<size_t>       anims     = {};
+        Vector<size_t>       sprites   = {};
+        TextureStat          stat      = {};
+        Vector<Anomaly>      anomalies = {};
     };
 
     [[nodiscard]] bool HasWeaponToken_(
-        const std::string& _name,
-        const std::string& _token)
+        const String& _name,
+        const String& _token)
     {
-        const std::string needle = "_" + _token;
-        for (size_t pos = _name.find(needle); pos != std::string::npos; pos = _name.find(needle, pos + 1))
+        const String needle = "_" + _token;
+        for (size_t pos = _name.find(needle); pos != String::npos; pos = _name.find(needle, pos + 1))
         {
             const size_t end = pos + needle.size();
             if (end == _name.size() || _name[end] == '_')
@@ -105,15 +122,14 @@ namespace
     }
 
     [[nodiscard]] eAnimCategory CategoryOf_(
-        const std::string& _fileName,
-        const std::string& _animName)
+        const String& _fileName,
+        const String& _animName)
     {
-        std::string lower = _fileName;
-        std::transform(lower.begin(), lower.end(), lower.begin(), [](const unsigned char _c) { return static_cast<char>(std::tolower(_c)); });
+        const String lower = detail::LowerAscii(_fileName);
 
         if (lower.starts_with("player"))
         {
-            if (_animName.find("Lower") != std::string::npos)
+            if (_animName.find("Lower") != String::npos)
             {
                 return eAnimCategory::PlayerLower;
             }
@@ -123,29 +139,49 @@ namespace
             }
             return eAnimCategory::Player;
         }
-        if (lower.starts_with("enemy")) { return eAnimCategory::Enemy; }
-        if (lower.starts_with("ect") || lower.starts_with("effect")) { return eAnimCategory::Effect; }
-        if (lower.starts_with("npc")) { return eAnimCategory::Npc; }
+        if (lower.starts_with("enemy"))
+        {
+            return eAnimCategory::Enemy;
+        }
+        if (lower.starts_with("ect") || lower.starts_with("effect"))
+        {
+            return eAnimCategory::Effect;
+        }
+        if (lower.starts_with("npc"))
+        {
+            return eAnimCategory::Npc;
+        }
         return eAnimCategory::Other;
     }
 
-    [[nodiscard]] int AnimFileRank_(const std::string& _fileName)
+    [[nodiscard]] int AnimFileRank_(const String& _fileName)
     {
-        std::string lower = _fileName;
-        std::transform(lower.begin(), lower.end(), lower.begin(), [](const unsigned char _c) { return static_cast<char>(std::tolower(_c)); });
-        if (lower.starts_with("player")) { return 0; }
-        if (lower.starts_with("enemy")) { return 1; }
-        if (lower.starts_with("ect")) { return 2; }
-        if (lower.starts_with("npc")) { return 3; }
+        const String lower = detail::LowerAscii(_fileName);
+        if (lower.starts_with("player"))
+        {
+            return 0;
+        }
+        if (lower.starts_with("enemy"))
+        {
+            return 1;
+        }
+        if (lower.starts_with("ect"))
+        {
+            return 2;
+        }
+        if (lower.starts_with("npc"))
+        {
+            return 3;
+        }
         return 4;
     }
 
-    [[nodiscard]] std::vector<fs::path> ListFiles_(
-        const fs::path&    _dir,
-        const std::string& _extension)
+    [[nodiscard]] Vector<FilePath> ListFiles_(
+        const FilePath& _dir,
+        const String&   _extension)
     {
-        std::vector<fs::path> files;
-        std::error_code       ec;
+        Vector<FilePath> files;
+        std::error_code  ec;
         for (const fs::directory_entry& entry: fs::directory_iterator(_dir, ec))
         {
             if (entry.is_regular_file() && entry.path().extension() == _extension)
@@ -157,51 +193,95 @@ namespace
         return files;
     }
 
+    struct GroundSource
+    {
+        const char* source = nullptr;
+        const char* key    = nullptr;
+    };
+
+    constexpr ARRAY<GroundSource, 2> kGroundSources = {
+        GroundSource { "Stage0_Pixel_0", "Stage0_0" },
+        GroundSource { "Stage0_Pixel_1", "Stage0_1" }
+    };
+
     class Baker
     {
     public:
-        explicit Baker(const BakerOptions& _options)
-            : m_options(_options)
-        {
-        }
+        explicit Baker(
+            const BakerOptions& _options);
+
+        Baker(const Baker&)            = delete;
+        Baker(Baker&&)                 = delete;
+        Baker& operator=(const Baker&) = delete;
+        Baker& operator=(Baker&&)      = delete;
 
         [[nodiscard]] slug::Result<void> Run();
 
     private:
         [[nodiscard]] slug::Result<void> LoadDefinitions_();
-        void                            BuildJobs_();
-        void                            ProcessJob_(TextureJob& _job);
-        void                            MergeUniques_();
+        void                             BuildJobs_();
+        [[nodiscard]] TextureJob*        JobFor_(NameIndexMap& _jobIndex, const String& _texture);
+        void                             ProcessJob_(TextureJob& _job);
+        void                             ProcessJobAt_(size_t _index);
+        void                             FailJob_(TextureJob& _job, const String& _reason);
+        void                             MergeUniques_();
         [[nodiscard]] slug::Result<void> PackAndWriteAtlas_();
+        void                             EncodeAtlasPageAt_(size_t _index);
         [[nodiscard]] slug::Result<void> WriteJsons_();
         [[nodiscard]] slug::Result<void> BakeSounds_();
-        void                            BakeExtraSounds_(std::error_code& _ec);
-        void                            BakeExtraSprites_();
-        void                            BakeGrounds_();
-        void                            BakeGroundPatchMasks_();
-        [[nodiscard]] int               AddUnique_(Image&& _image);
+        void                             BakeExtraSounds_(std::error_code& _ec);
+        void                             BakeExtraSprites_();
+        void                             BakeGrounds_();
+        void                             BakeGroundAt_(size_t _index);
+        void                             BakeGroundPatchMasks_();
+        [[nodiscard]] int                AddUnique_(Image&& _image);
+        void                             AddAnomaly_(
+                                        const String& _type,
+                                        const String& _name,
+                                        const String& _detail,
+                                        double        _value = 0.0);
 
-        void AddAnomaly_(const std::string& _type, const std::string& _name, const std::string& _detail, double _value = 0.0)
-        {
-            std::scoped_lock lock(m_anomalyMutex);
-            m_state.anomalies.push_back({ _type, _name, _detail, _value });
-        }
-
-        [[nodiscard]] fs::path ResourceDataDir_() const { return m_options.legacyRoot / "ResourceData"; }
+        [[nodiscard]] FilePath ResourceDataDir_() const;
 
         const BakerOptions& m_options;
-        BakeState           m_state;
+        BakeState           m_state = {};
         std::mutex          m_anomalyMutex;
 
-        std::vector<TextureRecord>             m_textures;
-        std::map<std::string, size_t>          m_textureIndex;
-        std::vector<TextureJob>                m_jobs;
-        std::unordered_map<uint64_t, std::vector<int>> m_uniqueByHash;
+        Vector<TextureRecord>          m_textures     = {};
+        NameIndexMap                   m_textureIndex = {};
+        Vector<TextureJob>             m_jobs         = {};
+        HashMap<uint64_t, Vector<int>> m_uniqueByHash = {};
+
+        Vector<Image>      m_pageImages = {};
+        std::atomic<bool>  m_bPageFailed { false };
+        FilePath           m_groundEditsPath = {};
+        Vector<GroundEdit> m_groundEdits     = {};
     };
+
+    Baker::Baker(
+        const BakerOptions& _options)
+        : m_options(_options)
+    {
+    }
+
+    void Baker::AddAnomaly_(
+        const String& _type,
+        const String& _name,
+        const String& _detail,
+        const double  _value)
+    {
+        std::scoped_lock lock(m_anomalyMutex);
+        m_state.anomalies.push_back({ _type, _name, _detail, _value });
+    }
+
+    FilePath Baker::ResourceDataDir_() const
+    {
+        return m_options.legacyRoot / "ResourceData";
+    }
 
     slug::Result<void> Baker::LoadDefinitions_()
     {
-        const fs::path dataDir = ResourceDataDir_();
+        const FilePath dataDir = ResourceDataDir_();
         if (!fs::is_directory(dataDir))
         {
             Log("ERROR: legacy ResourceData not found: {}", dataDir.string());
@@ -209,7 +289,7 @@ namespace
         }
 
         {
-            slug::Result<std::string> text = ReadText(dataDir / "TextureData.data");
+            slug::Result<String> text = ReadText(dataDir / "TextureData.data");
             if (!text)
             {
                 Log("ERROR: cannot read TextureData.data");
@@ -217,7 +297,7 @@ namespace
             }
             for (TextureRecord& rec: ParseTextureData(*text, m_state.parseWarnings))
             {
-                if (const auto it = m_textureIndex.find(rec.name); it != m_textureIndex.end())
+                if (const NameIndexMap::const_iterator it = m_textureIndex.find(rec.name); it != m_textureIndex.end())
                 {
                     AddAnomaly_("DuplicateTexture", rec.name, "later TextureData entry overrides the earlier one");
                     m_textures[it->second] = std::move(rec);
@@ -231,25 +311,24 @@ namespace
         }
         m_state.textureCount = m_textures.size();
 
-        std::map<std::string, size_t> animIndex;
-        std::set<std::string>         referencedTextures;
+        NameIndexMap  animIndex;
+        RbSet<String> referencedTextures;
         {
-            std::vector<fs::path> files = ListFiles_(dataDir / "Animation", ".anime");
-            std::stable_sort(files.begin(), files.end(), [](const fs::path& _a, const fs::path& _b)
-            {
+            Vector<FilePath> files = ListFiles_(dataDir / "Animation", ".anime");
+            std::stable_sort(files.begin(), files.end(), [](const FilePath& _a, const FilePath& _b) {
                 return AnimFileRank_(_a.filename().string()) < AnimFileRank_(_b.filename().string());
             });
 
-            for (const fs::path& file: files)
+            for (const FilePath& file: files)
             {
-                slug::Result<std::string> text = ReadText(file);
+                slug::Result<String> text = ReadText(file);
                 if (!text)
                 {
                     Log("WARN: cannot read {}", file.string());
                     continue;
                 }
 
-                const std::string fileName = file.filename().string();
+                const String fileName = file.filename().string();
                 for (AnimRecord& rec: ParseAnimeData(*text, fileName, m_state.parseWarnings))
                 {
                     referencedTextures.insert(rec.texture);
@@ -263,7 +342,7 @@ namespace
                         continue;
                     }
 
-                    if (const auto it = animIndex.find(out.rec.name); it != animIndex.end())
+                    if (const NameIndexMap::const_iterator it = animIndex.find(out.rec.name); it != animIndex.end())
                     {
                         AddAnomaly_("DuplicateName", out.rec.name, "animation defined twice (" + m_state.anims[it->second].rec.sourceFile + " then " + fileName + "); later one wins");
                         m_state.anims[it->second] = std::move(out);
@@ -277,18 +356,18 @@ namespace
             }
         }
 
-        std::map<std::string, size_t> spriteIndex;
+        NameIndexMap spriteIndex;
         {
-            for (const fs::path& file: ListFiles_(dataDir / "Sprite", ".sprite"))
+            for (const FilePath& file: ListFiles_(dataDir / "Sprite", ".sprite"))
             {
-                slug::Result<std::string> text = ReadText(file);
+                slug::Result<String> text = ReadText(file);
                 if (!text)
                 {
                     Log("WARN: cannot read {}", file.string());
                     continue;
                 }
 
-                const std::string fileName = file.filename().string();
+                const String fileName = file.filename().string();
                 for (SpriteRecord& rec: ParseSpriteData(*text, fileName, m_state.parseWarnings))
                 {
                     referencedTextures.insert(rec.texture);
@@ -299,7 +378,7 @@ namespace
 
                     SpriteOut out;
                     out.rec = std::move(rec);
-                    if (const auto it = spriteIndex.find(out.rec.name); it != spriteIndex.end())
+                    if (const NameIndexMap::const_iterator it = spriteIndex.find(out.rec.name); it != spriteIndex.end())
                     {
                         AddAnomaly_("DuplicateName", out.rec.name, "sprite defined twice; later one wins");
                         m_state.sprites[it->second] = std::move(out);
@@ -319,9 +398,9 @@ namespace
                     if (!referencedTextures.contains(tex.name) && !spriteIndex.contains(tex.name))
                     {
                         SpriteOut out;
-                        out.rec.name    = tex.name;
-                        out.rec.texture = tex.name;
-                        out.bImplicit   = true;
+                        out.rec.name          = tex.name;
+                        out.rec.texture       = tex.name;
+                        out.bImplicit         = true;
                         spriteIndex[tex.name] = m_state.sprites.size();
                         m_state.sprites.push_back(std::move(out));
                     }
@@ -333,31 +412,34 @@ namespace
         return slug::Error { slug::kOK };
     }
 
+    TextureJob* Baker::JobFor_(
+        NameIndexMap& _jobIndex,
+        const String& _texture)
+    {
+        const NameIndexMap::const_iterator texIt = m_textureIndex.find(_texture);
+        if (texIt == m_textureIndex.end())
+        {
+            return nullptr;
+        }
+        const std::pair<NameIndexMap::iterator, bool> inserted = _jobIndex.try_emplace(_texture, m_jobs.size());
+        if (inserted.second)
+        {
+            m_jobs.push_back({});
+            m_jobs.back().pRecord = &m_textures[texIt->second];
+        }
+        return &m_jobs[inserted.first->second];
+    }
+
     void Baker::BuildJobs_()
     {
-        std::map<std::string, size_t> jobIndex;
-        auto                          jobFor = [&](const std::string& _texture) -> TextureJob*
-        {
-            const auto texIt = m_textureIndex.find(_texture);
-            if (texIt == m_textureIndex.end())
-            {
-                return nullptr;
-            }
-            const auto [it, bInserted] = jobIndex.try_emplace(_texture, m_jobs.size());
-            if (bInserted)
-            {
-                m_jobs.push_back({});
-                m_jobs.back().pRecord = &m_textures[texIt->second];
-            }
-            return &m_jobs[it->second];
-        };
+        NameIndexMap jobIndex;
 
         m_jobs.reserve(m_textures.size());
 
         for (size_t i = 0; i < m_state.anims.size(); ++i)
         {
             AnimOut& anim = m_state.anims[i];
-            if (TextureJob* pJob = jobFor(anim.rec.texture))
+            if (TextureJob* pJob = JobFor_(jobIndex, anim.rec.texture))
             {
                 pJob->anims.push_back(i);
             }
@@ -370,7 +452,7 @@ namespace
         for (size_t i = 0; i < m_state.sprites.size(); ++i)
         {
             SpriteOut& sprite = m_state.sprites[i];
-            if (TextureJob* pJob = jobFor(sprite.rec.texture))
+            if (TextureJob* pJob = JobFor_(jobIndex, sprite.rec.texture))
             {
                 pJob->sprites.push_back(i);
             }
@@ -388,25 +470,10 @@ namespace
         TextureStat&         stat = _job.stat;
         stat.name                 = tex.name;
 
-        auto fail = [&](const std::string& _reason)
-        {
-            stat.error = _reason;
-            for (const size_t i: _job.anims)
-            {
-                m_state.anims[i].skipReason = _reason;
-                _job.anomalies.push_back({ "MissingFile", m_state.anims[i].rec.name, _reason, 0.0 });
-            }
-            for (const size_t i: _job.sprites)
-            {
-                m_state.sprites[i].skipReason = _reason;
-                _job.anomalies.push_back({ "MissingFile", m_state.sprites[i].rec.name, _reason, 0.0 });
-            }
-        };
-
-        slug::Result<Image> loaded = LoadBmpFile(m_options.legacyRoot / fs::path(tex.path));
+        slug::Result<Image> loaded = LoadBmpFile(m_options.legacyRoot / FilePath(tex.path));
         if (!loaded)
         {
-            fail("cannot load bitmap '" + tex.path + "' (" + loaded.GetError().MakeMessage() + ")");
+            FailJob_(_job, "cannot load bitmap '" + tex.path + "' (" + loaded.GetError().MakeMessage() + ")");
             return;
         }
         Image img = loaded.Take();
@@ -422,25 +489,40 @@ namespace
             case eTransparentMode::ColorKey: ApplyColorKey(img, 255, 0, 255); break;
             case eTransparentMode::Alpha:
             {
-                uint64_t nonZeroAlpha = 0;
-                uint64_t artPixels    = 0;   // 마젠타가 아니고 RGB 가 0 이 아닌 픽셀
-                uint64_t artAlphaZero = 0;   // 그 중 알파가 0 인 픽셀
-                const uint8_t* p      = img.pixels.data();
+                uint64_t       nonZeroAlpha = 0;
+                uint64_t       artPixels    = 0;   // 마젠타가 아니고 RGB 가 0 이 아닌 픽셀
+                uint64_t       artAlphaZero = 0;   // 그 중 알파가 0 인 픽셀
+                const uint8_t* p            = img.pixels.data();
                 for (size_t i = 0, n = img.pixels.size(); i < n; i += 4)
                 {
                     const int a = p[i + 3];
-                    if (a != 0) { ++nonZeroAlpha; }
-                    if (a == 0 && (p[i] | p[i + 1] | p[i + 2]) != 0) { ++stat.hiddenColor; }
+                    if (a != 0)
+                    {
+                        ++nonZeroAlpha;
+                    }
+                    if (a == 0 && (p[i] | p[i + 1] | p[i + 2]) != 0)
+                    {
+                        ++stat.hiddenColor;
+                    }
                     if (a > 0 && a < 255)
                     {
                         ++stat.partialAlpha;
-                        if (std::max({ int(p[i]), int(p[i + 1]), int(p[i + 2]) }) > a) { ++stat.nonPremult; }
+                        if (std::max({ static_cast<int>(p[i]), static_cast<int>(p[i + 1]), static_cast<int>(p[i + 2]) }) > a)
+                        {
+                            ++stat.nonPremult;
+                        }
                     }
-                    if (a == 255 && p[i] == 255 && p[i + 1] == 0 && p[i + 2] == 255) { ++stat.opaqueMagenta; }
+                    if (a == 255 && p[i] == 255 && p[i + 1] == 0 && p[i + 2] == 255)
+                    {
+                        ++stat.opaqueMagenta;
+                    }
                     else if ((p[i] | p[i + 1] | p[i + 2]) != 0)
                     {
                         ++artPixels;
-                        if (a == 0) { ++artAlphaZero; }
+                        if (a == 0)
+                        {
+                            ++artAlphaZero;
+                        }
                     }
                 }
 
@@ -499,9 +581,9 @@ namespace
 
             for (int i = 0; i < count; ++i)
             {
-                const int    col  = r.start + i;
-                const IRect  cell = { col * out.cellW, r.line * out.cellH, out.cellW, out.cellH };
-                FrameOut&    f    = out.frames[static_cast<size_t>(i)];
+                const int   col  = r.start + i;
+                const IRect cell = { col * out.cellW, r.line * out.cellH, out.cellW, out.cellH };
+                FrameOut&   f    = out.frames[static_cast<size_t>(i)];
 
                 if (cell.x + cell.w > img.width || cell.y + cell.h > img.height)
                 {
@@ -512,7 +594,7 @@ namespace
                 const IRect bounds = FindOpaqueBounds(img, cell, m_options.alphaThreshold);
                 if (bounds.IsEmpty())
                 {
-                    f.bEmpty = true;
+                    f.bEmpty          = true;
                     const Pivot pivot = ComputePivot(static_cast<uint32_t>(out.cellW), static_cast<uint32_t>(out.cellH), r.offsetX, r.offsetY, 0, 0);
                     f.pivotX          = pivot.x;
                     f.pivotY          = pivot.y;
@@ -524,9 +606,9 @@ namespace
                 f.w     = bounds.w;
                 f.h     = bounds.h;
 
-                const Pivot pivot = ComputePivot(static_cast<uint32_t>(out.cellW), static_cast<uint32_t>(out.cellH), r.offsetX, r.offsetY, f.trimX, f.trimY);
-                f.pivotX          = pivot.x;
-                f.pivotY          = pivot.y;
+                const Pivot pivot                   = ComputePivot(static_cast<uint32_t>(out.cellW), static_cast<uint32_t>(out.cellH), r.offsetX, r.offsetY, f.trimX, f.trimY);
+                f.pivotX                            = pivot.x;
+                f.pivotY                            = pivot.y;
                 out.trimmed[static_cast<size_t>(i)] = CropImage(img, bounds);
                 if (ConvertSolidSilhouetteToFlash(out.trimmed[static_cast<size_t>(i)]))
                 {
@@ -582,7 +664,7 @@ namespace
                 out.file  = "Textures/" + SanitizeFileName(tex.name) + ".png";
                 if (!bStandaloneWritten)
                 {
-                    std::vector<uint8_t> png;
+                    Vector<uint8_t> png;
                     if (!EncodePng(img, png) || !WriteBytes(m_options.outRoot / out.file, png.data(), png.size()))
                     {
                         out.skipReason = "failed to write standalone PNG";
@@ -605,10 +687,33 @@ namespace
         }
     }
 
+    void Baker::FailJob_(
+        TextureJob&   _job,
+        const String& _reason)
+    {
+        _job.stat.error = _reason;
+        for (const size_t i: _job.anims)
+        {
+            m_state.anims[i].skipReason = _reason;
+            _job.anomalies.push_back({ "MissingFile", m_state.anims[i].rec.name, _reason, 0.0 });
+        }
+        for (const size_t i: _job.sprites)
+        {
+            m_state.sprites[i].skipReason = _reason;
+            _job.anomalies.push_back({ "MissingFile", m_state.sprites[i].rec.name, _reason, 0.0 });
+        }
+    }
+
+    void Baker::ProcessJobAt_(
+        const size_t _index)
+    {
+        ProcessJob_(m_jobs[_index]);
+    }
+
     int Baker::AddUnique_(Image&& _image)
     {
-        const uint64_t hash = HashImage(_image);
-        std::vector<int>& bucket = m_uniqueByHash[hash];
+        const uint64_t hash   = HashImage(_image);
+        Vector<int>&   bucket = m_uniqueByHash[hash];
         for (const int index: bucket)
         {
             if (SameImage(m_state.uniques[static_cast<size_t>(index)], _image))
@@ -658,13 +763,13 @@ namespace
     {
         {
             std::error_code ec;
-            for (const fs::path& old: ListFiles_(m_options.outRoot / "Atlas", ".png"))
+            for (const FilePath& old: ListFiles_(m_options.outRoot / "Atlas", ".png"))
             {
                 fs::remove(old, ec);
             }
         }
 
-        std::vector<PackSize> sizes;
+        Vector<PackSize> sizes;
         sizes.reserve(m_state.uniques.size());
         for (const Image& img: m_state.uniques)
         {
@@ -683,8 +788,8 @@ namespace
         m_state.placements = packed.placements;
         m_state.pageCount  = packed.pageCount;
 
-        std::vector<Image> pages(static_cast<size_t>(packed.pageCount));
-        for (Image& page: pages)
+        m_pageImages.assign(static_cast<size_t>(packed.pageCount), Image {});
+        for (Image& page: m_pageImages)
         {
             page = Image::Make(m_options.pageSize, m_options.pageSize);
         }
@@ -695,23 +800,17 @@ namespace
             {
                 continue;
             }
-            CopyInto(pages[static_cast<size_t>(p.page)], m_state.uniques[i], p.x, p.y);
+            CopyInto(m_pageImages[static_cast<size_t>(p.page)], m_state.uniques[i], p.x, p.y);
         }
 
-        std::atomic<bool> bFailed { false };
+        m_bPageFailed = false;
         for (int i = 0; i < packed.pageCount; ++i)
         {
             m_state.atlasPages.push_back(std::format("Atlas/atlas_{:03d}.png", i));
         }
-        ParallelFor(pages.size(), m_options.threads, [&](const size_t _i)
-        {
-            std::vector<uint8_t> png;
-            if (!EncodePng(pages[_i], png) || !WriteBytes(m_options.outRoot / m_state.atlasPages[_i], png.data(), png.size()))
-            {
-                bFailed = true;
-            }
-        });
-        if (bFailed)
+        ParallelFor(m_pageImages.size(), m_options.threads, *this, &Baker::EncodeAtlasPageAt_);
+        Vector<Image>().swap(m_pageImages);
+        if (m_bPageFailed)
         {
             Log("ERROR: failed to write an atlas page");
             return slug::Error { slug::eError::FileOpen };
@@ -720,6 +819,16 @@ namespace
         const double capacity = static_cast<double>(packed.pageCount) * m_options.pageSize * m_options.pageSize;
         Log("atlas: {} unique images ({} frames total), {} page(s) {}x{}, fill {:.1f}%", m_state.uniques.size(), m_state.totalFrames, packed.pageCount, m_options.pageSize, m_options.pageSize, capacity > 0 ? 100.0 * static_cast<double>(m_state.uniquePixels) / capacity : 0.0);
         return slug::Error { slug::kOK };
+    }
+
+    void Baker::EncodeAtlasPageAt_(
+        const size_t _index)
+    {
+        Vector<uint8_t> png;
+        if (!EncodePng(m_pageImages[_index], png) || !WriteBytes(m_options.outRoot / m_state.atlasPages[_index], png.data(), png.size()))
+        {
+            m_bPageFailed = true;
+        }
     }
 
     slug::Result<void> Baker::WriteJsons_()
@@ -863,7 +972,7 @@ namespace
             w.Field("version", 1);
             w.Key("atlasPages");
             w.BeginArray(true);
-            for (const std::string& page: m_state.atlasPages)
+            for (const String& page: m_state.atlasPages)
             {
                 w.Value(page);
             }
@@ -898,7 +1007,7 @@ namespace
             return slug::Error { slug::kOK };
         }
 
-        slug::Result<std::string> text = ReadText(ResourceDataDir_() / "Sound" / "SoundData.txt");
+        slug::Result<String> text = ReadText(ResourceDataDir_() / "Sound" / "SoundData.txt");
         if (!text)
         {
             Log("WARN: SoundData.txt not found; skipping sounds");
@@ -913,7 +1022,7 @@ namespace
             SoundOut out;
             out.name = rec.name;
 
-            const fs::path src = ResolveCaseInsensitive(m_options.legacyRoot / fs::path(rec.path));
+            const FilePath src = ResolveCaseInsensitive(m_options.legacyRoot / FilePath(rec.path));
             if (!fs::is_regular_file(src, ec))
             {
                 out.error = "missing sound file: " + rec.path;
@@ -922,8 +1031,8 @@ namespace
                 continue;
             }
 
-            const std::string fileName = src.filename().string();
-            out.file                   = "Audio/" + fileName;
+            const String fileName = src.filename().string();
+            out.file              = "Audio/" + fileName;
             fs::copy_file(src, m_options.outRoot / out.file, fs::copy_options::overwrite_existing, ec);
             if (ec)
             {
@@ -933,17 +1042,19 @@ namespace
                 continue;
             }
 
-            std::string lower = rec.name;
-            std::transform(lower.begin(), lower.end(), lower.begin(), [](const unsigned char _c) { return static_cast<char>(std::tolower(_c)); });
-            out.bBgm = lower.find("bgm") != std::string::npos;
-            out.bOk  = true;
+            const String lower = detail::LowerAscii(rec.name);
+            out.bBgm           = lower.find("bgm") != String::npos;
+            out.bOk            = true;
             m_state.sounds.push_back(std::move(out));
         }
 
         BakeExtraSounds_(ec);
 
         size_t ok = 0;
-        for (const SoundOut& s: m_state.sounds) { ok += s.bOk ? 1 : 0; }
+        for (const SoundOut& s: m_state.sounds)
+        {
+            ok += s.bOk ? 1 : 0;
+        }
         Log("sounds: {} of {} copied", ok, m_state.sounds.size());
         return slug::Error { slug::kOK };
     }
@@ -956,18 +1067,18 @@ namespace
             const char* name;
             const char* legacyPath;
             const char* outFile;
-            bool        bBgm;
+            bool        bBgm = false;
         };
-        static constexpr ExtraSound kExtras[] = {
-            { "Sfx_GameOver", "Sounds/NARRATOR MS1,2/sfx-gameover.mp3", "Sfx_GameOver.mp3", false },
-            { "Sfx_PowerUp", "Sounds/NARRATOR MS1,2/sfx-powerup.mp3", "Sfx_PowerUp.mp3", false },
-            { "Sfx_Bingo", "Sounds/NARRATOR MS1,2/sfx-bingo.mp3", "Sfx_Bingo.mp3", false },
-            { "Sfx_LetsGo", "Sounds/NARRATOR MS1,2/sfx-letsgo.mp3", "Sfx_LetsGo.mp3", false },
-            { "Sfx_HereWeGo", "Sounds/NARRATOR MS1,2/sfx-herewego.mp3", "Sfx_HereWeGo.mp3", false },
-            { "Sfx_Yah", "Sounds/NARRATOR MS1,2/sfx-yah.mp3", "Sfx_Yah.mp3", false },
-            { "Sfx_YeeHa", "Sounds/NARRATOR MS1,2/sfx-yeeha.mp3", "Sfx_YeeHa.mp3", false },
-            { "Title_MS3", "Sounds/MS X,3,4,5/MS3_Title.ogg", "Title_MS3.ogg", false },
-            { "Title_MS2", "Sounds/NARRATOR MS1,2/MS2_Title.ogg", "Title_MS2.ogg", false },
+        static constexpr ARRAY<ExtraSound, 9> kExtras = {
+            ExtraSound { "Sfx_GameOver", "Sounds/NARRATOR MS1,2/sfx-gameover.mp3", "Sfx_GameOver.mp3", false },
+            ExtraSound {  "Sfx_PowerUp",  "Sounds/NARRATOR MS1,2/sfx-powerup.mp3",  "Sfx_PowerUp.mp3", false },
+            ExtraSound {    "Sfx_Bingo",    "Sounds/NARRATOR MS1,2/sfx-bingo.mp3",    "Sfx_Bingo.mp3", false },
+            ExtraSound {   "Sfx_LetsGo",   "Sounds/NARRATOR MS1,2/sfx-letsgo.mp3",   "Sfx_LetsGo.mp3", false },
+            ExtraSound { "Sfx_HereWeGo", "Sounds/NARRATOR MS1,2/sfx-herewego.mp3", "Sfx_HereWeGo.mp3", false },
+            ExtraSound {      "Sfx_Yah",      "Sounds/NARRATOR MS1,2/sfx-yah.mp3",      "Sfx_Yah.mp3", false },
+            ExtraSound {    "Sfx_YeeHa",    "Sounds/NARRATOR MS1,2/sfx-yeeha.mp3",    "Sfx_YeeHa.mp3", false },
+            ExtraSound {    "Title_MS3",        "Sounds/MS X,3,4,5/MS3_Title.ogg",    "Title_MS3.ogg", false },
+            ExtraSound {    "Title_MS2",    "Sounds/NARRATOR MS1,2/MS2_Title.ogg",    "Title_MS2.ogg", false },
         };
 
         for (const ExtraSound& extra: kExtras)
@@ -975,16 +1086,16 @@ namespace
             SoundOut out;
             out.name = extra.name;
 
-            const fs::path src = ResolveCaseInsensitive(m_options.legacyRoot / fs::path(extra.legacyPath));
+            const FilePath src = ResolveCaseInsensitive(m_options.legacyRoot / FilePath(extra.legacyPath));
             if (!fs::is_regular_file(src, _ec))
             {
-                out.error = std::string("missing sound file: ") + extra.legacyPath;
+                out.error = String("missing sound file: ") + extra.legacyPath;
                 AddAnomaly_("MissingSound", out.name, out.error);
                 m_state.sounds.push_back(std::move(out));
                 continue;
             }
 
-            out.file = std::string("Audio/") + extra.outFile;
+            out.file = String("Audio/") + extra.outFile;
             fs::copy_file(src, m_options.outRoot / out.file, fs::copy_options::overwrite_existing, _ec);
             if (_ec)
             {
@@ -1006,7 +1117,7 @@ namespace
             return;
         }
 
-        slug::Result<Image> loaded = LoadBmpFile(m_options.legacyRoot / fs::path("Dummy/Main_Title.bmp"));
+        slug::Result<Image> loaded = LoadBmpFile(m_options.legacyRoot / FilePath("Dummy/Main_Title.bmp"));
         if (!loaded)
         {
             Log("WARN: Dummy/Main_Title.bmp not found; skipping TitleBackground");
@@ -1028,7 +1139,7 @@ namespace
         {
             for (int x = 0; x < dstW; ++x)
             {
-                uint32_t sum[4] = { 0, 0, 0, 0 };
+                ARRAY<uint32_t, 4> sum = { 0, 0, 0, 0 };
                 for (int dy = 0; dy < 2; ++dy)
                 {
                     for (int dx = 0; dx < 2; ++dx)
@@ -1058,7 +1169,7 @@ namespace
         out.bFile    = true;
         out.file     = "Textures/TitleBackground.png";
 
-        std::vector<uint8_t> png;
+        Vector<uint8_t> png;
         if (!EncodePng(dst, png) || !WriteBytes(m_options.outRoot / out.file, png.data(), png.size()))
         {
             Log("WARN: failed to write {}", out.file);
@@ -1075,70 +1186,23 @@ namespace
             return;
         }
 
-        struct GroundSource
-        {
-            const char* source;
-            const char* key;
-        };
-        static constexpr GroundSource kSources[] = {
-            { "Stage0_Pixel_0", "Stage0_0" },
-            { "Stage0_Pixel_1", "Stage0_1" },
-        };
-
-        m_state.grounds.resize(std::size(kSources));
+        m_state.grounds.resize(kGroundSources.size());
 
         // 지형 편집 (GroundEdits.json): 굽기 전에 원본 비트맵 사각형을 공기/고체로 바꾼다 (재현 가능한 파이프라인)
-        std::filesystem::path editsPath = m_options.groundEditsPath;
-        if (editsPath.empty())
+        m_groundEditsPath = m_options.groundEditsPath;
+        if (m_groundEditsPath.empty())
         {
-            editsPath = m_options.outRoot.parent_path() / "Source" / "GroundEdits.json";
+            m_groundEditsPath = m_options.outRoot.parent_path() / "Source" / "GroundEdits.json";
         }
-        slug::Result<std::vector<GroundEdit>> edits = LoadGroundEdits(editsPath);
+        slug::Result<Vector<GroundEdit>> edits = LoadGroundEdits(m_groundEditsPath);
         if (!edits)
         {
-            Log("WARN: ground edits failed: {}", editsPath.string());
-            AddAnomaly_("GroundEditsFailed", editsPath.string(), "invalid GroundEdits.json");
-            edits = std::vector<GroundEdit> {};
+            Log("WARN: ground edits failed: {}", m_groundEditsPath.string());
+            AddAnomaly_("GroundEditsFailed", m_groundEditsPath.string(), "invalid GroundEdits.json");
+            edits = Vector<GroundEdit> {};
         }
-        ParallelFor(std::size(kSources), m_options.threads, [&](const size_t _i)
-        {
-            GroundOut& out = m_state.grounds[_i];
-            out.source     = kSources[_i].source;
-            out.key        = kSources[_i].key;
-            out.file       = std::string("Ground/") + out.key + ".bin";
-
-            std::string path = std::string("Stage/map/") + out.source + ".bmp";
-            eTransparentMode mode = eTransparentMode::Alpha;
-            if (const auto it = m_textureIndex.find(out.source); it != m_textureIndex.end())
-            {
-                path = m_textures[it->second].path;
-                mode = m_textures[it->second].mode;
-            }
-
-            slug::Result<Image> loaded = LoadBmpFile(m_options.legacyRoot / fs::path(path));
-            if (!loaded)
-            {
-                out.error = "cannot load " + path;
-                return;
-            }
-            Image img = loaded.Take();
-            if (mode == eTransparentMode::None) { ForceOpaque(img); }
-            if (const int applied = ApplyGroundEdits(img, *edits, out.source))
-            {
-                Log("ground {}: {} pixel(s) edited ({})", out.key, applied, editsPath.string());
-            }
-
-            out.w = img.width;
-            out.h = img.height;
-            const std::vector<uint8_t> bits = BuildGroundBits(img, m_options.ground, &out.stats);
-            const std::vector<uint8_t> file = BuildGroundFile(img.width, img.height, bits);
-            if (!WriteBytes(m_options.outRoot / out.file, file.data(), file.size()))
-            {
-                out.error = "cannot write " + out.file;
-                return;
-            }
-            out.bOk = true;
-        });
+        m_groundEdits = *edits;
+        ParallelFor(kGroundSources.size(), m_options.threads, *this, &Baker::BakeGroundAt_);
 
         for (const GroundOut& g: m_state.grounds)
         {
@@ -1152,6 +1216,50 @@ namespace
                 AddAnomaly_("GroundFailed", g.key, g.error);
             }
         }
+    }
+
+    void Baker::BakeGroundAt_(
+        const size_t _index)
+    {
+        GroundOut& out = m_state.grounds[_index];
+        out.source     = kGroundSources[_index].source;
+        out.key        = kGroundSources[_index].key;
+        out.file       = String("Ground/") + out.key + ".bin";
+
+        String           path = String("Stage/map/") + out.source + ".bmp";
+        eTransparentMode mode = eTransparentMode::Alpha;
+        if (const NameIndexMap::const_iterator it = m_textureIndex.find(out.source); it != m_textureIndex.end())
+        {
+            path = m_textures[it->second].path;
+            mode = m_textures[it->second].mode;
+        }
+
+        slug::Result<Image> loaded = LoadBmpFile(m_options.legacyRoot / FilePath(path));
+        if (!loaded)
+        {
+            out.error = "cannot load " + path;
+            return;
+        }
+        Image img = loaded.Take();
+        if (mode == eTransparentMode::None)
+        {
+            ForceOpaque(img);
+        }
+        if (const int applied = ApplyGroundEdits(img, m_groundEdits, out.source))
+        {
+            Log("ground {}: {} pixel(s) edited ({})", out.key, applied, m_groundEditsPath.string());
+        }
+
+        out.w                      = img.width;
+        out.h                      = img.height;
+        const Vector<uint8_t> bits = BuildGroundBits(img, m_options.ground, &out.stats);
+        const Vector<uint8_t> file = BuildGroundFile(img.width, img.height, bits);
+        if (!WriteBytes(m_options.outRoot / out.file, file.data(), file.size()))
+        {
+            out.error = "cannot write " + out.file;
+            return;
+        }
+        out.bOk = true;
     }
 
     void Baker::BakeGroundPatchMasks_()
@@ -1170,21 +1278,21 @@ namespace
         struct PatchMaskSpec
         {
             const char* sprite;
-            int         w;
-            int         h;
-            int         refX;
-            int         refY;
-            bool        bLegacySnapshot;
-            int         floorY;
-            int         seedX;
-            int         seedY;
+            int         w               = 0;
+            int         h               = 0;
+            int         refX            = 0;
+            int         refY            = 0;
+            bool        bLegacySnapshot = false;
+            int         floorY          = 0;
+            int         seedX           = 0;
+            int         seedY           = 0;
         };
-        static constexpr PatchMaskSpec kSpecs[] = {
-            { "Stage0_House_5_PixelMap", 555, 124, 10204, 1204, true, 0, 0, 0 },
-            { "Stage0_House_4_PixelMap", 1306, 751, 9189, 898, false, 1286, 9830, 1219 },
+        static constexpr ARRAY<PatchMaskSpec, 2> kSpecs = {
+            PatchMaskSpec { "Stage0_House_5_PixelMap",  555, 124, 10204, 1204,  true,    0,    0,    0 },
+            PatchMaskSpec { "Stage0_House_4_PixelMap", 1306, 751,  9189,  898, false, 1286, 9830, 1219 },
         };
 
-        slug::Result<Image> baseLoaded = LoadBmpFile(m_options.legacyRoot / fs::path("Stage/map/Stage0_Pixel_0.bmp"));
+        slug::Result<Image> baseLoaded = LoadBmpFile(m_options.legacyRoot / FilePath("Stage/map/Stage0_Pixel_0.bmp"));
         if (!baseLoaded)
         {
             Log("WARN: ground patch masks skipped: cannot load Stage/map/Stage0_Pixel_0.bmp");
@@ -1193,24 +1301,14 @@ namespace
         }
         const Image base = baseLoaded.Take();
 
-        const auto solidAt = [this](const Image& _img, const int _x, const int _y)
-        {
-            if (_x < 0 || _y < 0 || _x >= _img.width || _y >= _img.height)
-            {
-                return false;
-            }
-            const uint8_t* p = _img.At(_x, _y);
-            return IsSolidPixel(p[0], p[1], p[2], p[3], m_options.ground);
-        };
-
         for (const PatchMaskSpec& spec: kSpecs)
         {
-            Image mask = Image::Make(spec.w, spec.h);
+            Image    mask      = Image::Make(spec.w, spec.h);
             uint64_t footprint = 0;
 
             if (spec.bLegacySnapshot)
             {
-                slug::Result<Image> snapLoaded = LoadBmpFile(m_options.legacyRoot / fs::path(std::string("Stage/map/") + spec.sprite + ".bmp"));
+                slug::Result<Image> snapLoaded = LoadBmpFile(m_options.legacyRoot / FilePath(String("Stage/map/") + spec.sprite + ".bmp"));
                 if (!snapLoaded)
                 {
                     Log("WARN: ground patch mask {} skipped: legacy snapshot missing", spec.sprite);
@@ -1228,10 +1326,13 @@ namespace
                 {
                     for (int x = 0; x < spec.w; ++x)
                     {
-                        if (solidAt(base, spec.refX + x, spec.refY + y) && !solidAt(snap, x, y))
+                        if (IsSolidAt_(base, m_options.ground, spec.refX + x, spec.refY + y) && !IsSolidAt_(snap, m_options.ground, x, y))
                         {
                             uint8_t* p = mask.At(x, y);
-                            p[0] = 0; p[1] = 0; p[2] = 255; p[3] = 255;
+                            p[0]       = 0;
+                            p[1]       = 0;
+                            p[2]       = 255;
+                            p[3]       = 255;
                             ++footprint;
                         }
                     }
@@ -1239,7 +1340,7 @@ namespace
             }
             else
             {
-                const std::vector<uint8_t> bits = BumpFootprint_(base, m_options.ground, spec.refX, spec.refY, spec.w, spec.h, spec.floorY, spec.seedX, spec.seedY);
+                const Vector<uint8_t> bits = BumpFootprint_(base, m_options.ground, spec.refX, spec.refY, spec.w, spec.h, spec.floorY, spec.seedX, spec.seedY);
                 if (bits.empty())
                 {
                     Log("WARN: ground patch mask {} skipped: seed is not a solid pixel above the floor", spec.sprite);
@@ -1253,7 +1354,10 @@ namespace
                         if (bits[static_cast<size_t>(y) * static_cast<size_t>(spec.w) + static_cast<size_t>(x)] != 0u)
                         {
                             uint8_t* p = mask.At(x, y);
-                            p[0] = 0; p[1] = 0; p[2] = 255; p[3] = 255;
+                            p[0]       = 0;
+                            p[1]       = 0;
+                            p[2]       = 255;
+                            p[3]       = 255;
                             ++footprint;
                         }
                     }
@@ -1267,8 +1371,8 @@ namespace
                 continue;
             }
 
-            std::vector<uint8_t> png;
-            const std::string    file = std::string("Textures/") + spec.sprite + ".png";
+            Vector<uint8_t> png;
+            const String    file = String("Textures/") + spec.sprite + ".png";
             if (!EncodePng(mask, png) || !WriteBytes(m_options.outRoot / file, png.data(), png.size()))
             {
                 AddAnomaly_("WriteFailed", spec.sprite, file);
@@ -1280,12 +1384,13 @@ namespace
 
     slug::Result<void> Baker::Run()
     {
-        const auto start = std::chrono::steady_clock::now();
+        const SteadyClock::time_point start = SteadyClock::now();
 
-        std::error_code ec;
-        for (const char* sub: { "Atlas", "Textures", "Ground", "Audio", "Reports" })
+        std::error_code                 ec;
+        constexpr ARRAY<const char*, 5> kSubDirs = { "Atlas", "Textures", "Ground", "Audio", "Reports" };
+        for (const char* pSub: kSubDirs)
         {
-            fs::create_directories(m_options.outRoot / sub, ec);
+            fs::create_directories(m_options.outRoot / pSub, ec);
         }
 
         if (slug::Result<void> r = LoadDefinitions_(); !r)
@@ -1295,7 +1400,7 @@ namespace
         BuildJobs_();
 
         Log("processing {} textures ...", m_jobs.size());
-        ParallelFor(m_jobs.size(), m_options.threads, [&](const size_t _i) { ProcessJob_(m_jobs[_i]); });
+        ParallelFor(m_jobs.size(), m_options.threads, *this, &Baker::ProcessJobAt_);
 
         for (TextureJob& job: m_jobs)
         {
@@ -1314,12 +1419,21 @@ namespace
         size_t validAnims = 0;
         for (const AnimOut& a: m_state.anims)
         {
-            if (a.bValid) { ++validAnims; }
-            else { Log("SKIP anim {}: {}", a.rec.name, a.skipReason); }
+            if (a.bValid)
+            {
+                ++validAnims;
+            }
+            else
+            {
+                Log("SKIP anim {}: {}", a.rec.name, a.skipReason);
+            }
         }
         for (const SpriteOut& s: m_state.sprites)
         {
-            if (!s.bValid) { Log("SKIP sprite {}: {}", s.rec.name, s.skipReason); }
+            if (!s.bValid)
+            {
+                Log("SKIP sprite {}: {}", s.rec.name, s.skipReason);
+            }
         }
         Log("baked animations: {} of {}", validAnims, m_state.anims.size());
 
@@ -1342,10 +1456,10 @@ namespace
             return r;
         }
 
-        m_state.elapsedSec = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+        m_state.elapsedSec = std::chrono::duration<double>(SteadyClock::now() - start).count();
         return WriteReports(m_options, m_state);
     }
-}
+}   // namespace
 
 slug::Result<void> RunBaker(const BakerOptions& _options)
 {
@@ -1356,4 +1470,5 @@ slug::Result<void> RunBaker(const BakerOptions& _options)
     Baker baker(_options);
     return baker.Run();
 }
-}
+
+}   // namespace slug::baker

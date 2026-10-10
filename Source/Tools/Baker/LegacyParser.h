@@ -1,13 +1,13 @@
 #pragma once
 #include <charconv>
 #include <cstdint>
-#include <string>
-#include <string_view>
 #include <utility>
-#include <vector>
+
+#include "Base/Types.h"
 
 namespace slug::baker
 {
+
 enum class eTransparentMode
 {
     None     = 0,   // BitBlt (알파 무시)
@@ -17,46 +17,48 @@ enum class eTransparentMode
 
 struct TextureRecord
 {
-    std::string      name;
-    std::string      path;
+    String           name = {};
+    String           path = {};
     eTransparentMode mode = eTransparentMode::None;
 };
 
 struct AnimRecord
 {
-    std::string name;
-    std::string texture;
-    int         start         = 0;
-    int         end           = 0;
-    int         width         = 0;
-    int         height        = 0;
-    int         line          = 0;   // .anime 에는 보통 없음 (레거시 기본값 0)
-    double      frameDuration = 1.0;
-    bool        bLoop         = true;
-    int         optionIndex   = 0;
-    int         offsetX       = 0;
-    int         offsetY       = 0;
-    std::string sourceFile;
+    String name          = {};
+    String texture       = {};
+    int    start         = 0;
+    int    end           = 0;
+    int    width         = 0;
+    int    height        = 0;
+    int    line          = 0;   // .anime 에는 보통 없음 (레거시 기본값 0)
+    double frameDuration = 1.0;
+    bool   bLoop         = true;
+    int    optionIndex   = 0;
+    int    offsetX       = 0;
+    int    offsetY       = 0;
+    String sourceFile    = {};
 };
 
 struct SpriteRecord
 {
-    std::string name;
-    std::string texture;
-    int         width  = -1;   // -1 = default (텍스처 전체)
-    int         height = -1;
-    int         column = 0;
-    int         line   = 0;
-    std::string sourceFile;
+    String name       = {};
+    String texture    = {};
+    int    width      = -1;   // -1 = default (텍스처 전체)
+    int    height     = -1;
+    int    column     = 0;
+    int    line       = 0;
+    String sourceFile = {};
 };
 
 struct SoundRecord
 {
-    std::string name;
-    std::string path;
+    String name = {};
+    String path = {};
 };
 
-[[nodiscard]] inline std::string_view TrimView(std::string_view _s)
+using KeyValue = std::pair<String, String>;
+
+[[nodiscard]] inline StringView TrimView(StringView _s)
 {
     while (!_s.empty() && (_s.front() == ' ' || _s.front() == '\t' || _s.front() == '\r' || _s.front() == '\n'))
     {
@@ -70,18 +72,18 @@ struct SoundRecord
 }
 
 [[nodiscard]] inline bool ParseIntStrict(
-    const std::string_view _text,
-    int&                   _out)
+    const StringView _text,
+    int&             _out)
 {
-    const std::string_view s = TrimView(_text);
+    const StringView s = TrimView(_text);
     if (s.empty())
     {
         return false;
     }
-    const std::string_view digits = (s.front() == '+') ? s.substr(1) : s;
-    int                    value  = 0;
-    const auto [ptr, ec]          = std::from_chars(digits.data(), digits.data() + digits.size(), value);
-    if (ec != std::errc {} || ptr != digits.data() + digits.size())
+    const StringView             digits = (s.front() == '+') ? s.substr(1) : s;
+    int                          value  = 0;
+    const std::from_chars_result result = std::from_chars(digits.data(), digits.data() + digits.size(), value);
+    if (result.ec != std::errc {} || result.ptr != digits.data() + digits.size())
     {
         return false;
     }
@@ -90,17 +92,17 @@ struct SoundRecord
 }
 
 [[nodiscard]] inline bool ParseDoubleStrict(
-    const std::string_view _text,
-    double&                _out)
+    const StringView _text,
+    double&          _out)
 {
-    const std::string_view s = TrimView(_text);
+    const StringView s = TrimView(_text);
     if (s.empty())
     {
         return false;
     }
-    double value         = 0.0;
-    const auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), value);
-    if (ec != std::errc {} || ptr != s.data() + s.size())
+    double                       value  = 0.0;
+    const std::from_chars_result result = std::from_chars(s.data(), s.data() + s.size(), value);
+    if (result.ec != std::errc {} || result.ptr != s.data() + s.size())
     {
         return false;
     }
@@ -108,9 +110,9 @@ struct SoundRecord
     return true;
 }
 
-[[nodiscard]] inline std::string NormalizePath(const std::string_view _path)
+[[nodiscard]] inline String NormalizePath(const StringView _path)
 {
-    std::string out(TrimView(_path));
+    String out(TrimView(_path));
     for (char& c: out)
     {
         if (c == '\\')
@@ -121,22 +123,22 @@ struct SoundRecord
     return out;
 }
 
-[[nodiscard]] inline std::vector<std::pair<std::string, std::string>> SplitKeyValueLines(
-    std::string_view          _text,
-    std::vector<std::string>* _pWarnings = nullptr)
+[[nodiscard]] inline Vector<KeyValue> SplitKeyValueLines(
+    StringView      _text,
+    Vector<String>* _pWarnings = nullptr)
 {
     if (_text.size() >= 3 && static_cast<unsigned char>(_text[0]) == 0xEF && static_cast<unsigned char>(_text[1]) == 0xBB && static_cast<unsigned char>(_text[2]) == 0xBF)
     {
         _text.remove_prefix(3);
     }
 
-    std::vector<std::pair<std::string, std::string>> lines;
-    size_t                                           lineNo = 0;
+    Vector<KeyValue> lines;
+    size_t           lineNo = 0;
     while (!_text.empty())
     {
-        const size_t           eol  = _text.find('\n');
-        const std::string_view line = TrimView(_text.substr(0, eol));
-        _text                       = (eol == std::string_view::npos) ? std::string_view {} : _text.substr(eol + 1);
+        const size_t     eol  = _text.find('\n');
+        const StringView line = TrimView(_text.substr(0, eol));
+        _text                 = (eol == StringView::npos) ? StringView {} : _text.substr(eol + 1);
         ++lineNo;
 
         if (line.empty())
@@ -144,26 +146,30 @@ struct SoundRecord
             continue;
         }
         const size_t colon = line.find(':');
-        if (colon == std::string_view::npos)
+        if (colon == StringView::npos)
         {
             if (_pWarnings != nullptr)
             {
-                _pWarnings->push_back("line " + std::to_string(lineNo) + ": no ':' -> '" + std::string(line) + "'");
+                _pWarnings->push_back("line " + std::to_string(lineNo) + ": no ':' -> '" + String(line) + "'");
             }
             continue;
         }
-        lines.emplace_back(std::string(TrimView(line.substr(0, colon))), std::string(TrimView(line.substr(colon + 1))));
+        lines.emplace_back(String(TrimView(line.substr(0, colon))), String(TrimView(line.substr(colon + 1))));
     }
     return lines;
 }
 
-[[nodiscard]] inline std::vector<TextureRecord> ParseTextureData(
-    const std::string_view    _text,
-    std::vector<std::string>& _warnings)
+[[nodiscard]] inline Vector<TextureRecord> ParseTextureData(
+    const StringView _text,
+    Vector<String>&  _warnings)
 {
-    std::vector<TextureRecord> records;
-    for (const auto& [key, value]: SplitKeyValueLines(_text, &_warnings))
+    Vector<TextureRecord>  records;
+    const Vector<KeyValue> lines = SplitKeyValueLines(_text, &_warnings);
+    for (const KeyValue& line: lines)
     {
+        const String& key   = line.first;
+        const String& value = line.second;
+
         if (key == "File Name")
         {
             records.push_back({});
@@ -198,14 +204,38 @@ struct SoundRecord
     return records;
 }
 
-[[nodiscard]] inline std::vector<AnimRecord> ParseAnimeData(
-    const std::string_view    _text,
-    const std::string&        _sourceFile,
-    std::vector<std::string>& _warnings)
+namespace legacy_parser_detail
 {
-    std::vector<AnimRecord> records;
-    for (const auto& [key, value]: SplitKeyValueLines(_text, &_warnings))
+
+    // 정수 필드를 읽고, 실패하면 경고를 남긴다.
+    inline void ParseIntOrWarn_(
+        const StringView _kind,
+        const String&    _recordName,
+        const String&    _key,
+        const String&    _value,
+        int&             _out,
+        Vector<String>&  _warnings)
     {
+        if (!ParseIntStrict(_value, _out))
+        {
+            _warnings.push_back(String(_kind) + " '" + _recordName + "': bad integer for " + _key + " '" + _value + "'");
+        }
+    }
+
+}   // namespace legacy_parser_detail
+
+[[nodiscard]] inline Vector<AnimRecord> ParseAnimeData(
+    const StringView _text,
+    const String&    _sourceFile,
+    Vector<String>&  _warnings)
+{
+    Vector<AnimRecord>     records;
+    const Vector<KeyValue> lines = SplitKeyValueLines(_text, &_warnings);
+    for (const KeyValue& line: lines)
+    {
+        const String& key   = line.first;
+        const String& value = line.second;
+
         if (key == "File Name")
         {
             records.push_back({});
@@ -219,24 +249,44 @@ struct SoundRecord
             continue;
         }
 
-        AnimRecord& rec  = records.back();
-        auto        asInt = [&](int& _out)
-        {
-            if (!ParseIntStrict(value, _out))
-            {
-                _warnings.push_back("anime '" + rec.name + "': bad integer for " + key + " '" + value + "'");
-            }
-        };
+        AnimRecord& rec = records.back();
 
-        if (key == "Texture Name") { rec.texture = value; }
-        else if (key == "Start") { asInt(rec.start); }
-        else if (key == "End") { asInt(rec.end); }
-        else if (key == "Width") { asInt(rec.width); }
-        else if (key == "Height") { asInt(rec.height); }
-        else if (key == "Line") { asInt(rec.line); }
-        else if (key == "OptionIndex") { asInt(rec.optionIndex); }
-        else if (key == "OffsetX") { asInt(rec.offsetX); }
-        else if (key == "OffsetY") { asInt(rec.offsetY); }
+        if (key == "Texture Name")
+        {
+            rec.texture = value;
+        }
+        else if (key == "Start")
+        {
+            legacy_parser_detail::ParseIntOrWarn_("anime", rec.name, key, value, rec.start, _warnings);
+        }
+        else if (key == "End")
+        {
+            legacy_parser_detail::ParseIntOrWarn_("anime", rec.name, key, value, rec.end, _warnings);
+        }
+        else if (key == "Width")
+        {
+            legacy_parser_detail::ParseIntOrWarn_("anime", rec.name, key, value, rec.width, _warnings);
+        }
+        else if (key == "Height")
+        {
+            legacy_parser_detail::ParseIntOrWarn_("anime", rec.name, key, value, rec.height, _warnings);
+        }
+        else if (key == "Line")
+        {
+            legacy_parser_detail::ParseIntOrWarn_("anime", rec.name, key, value, rec.line, _warnings);
+        }
+        else if (key == "OptionIndex")
+        {
+            legacy_parser_detail::ParseIntOrWarn_("anime", rec.name, key, value, rec.optionIndex, _warnings);
+        }
+        else if (key == "OffsetX")
+        {
+            legacy_parser_detail::ParseIntOrWarn_("anime", rec.name, key, value, rec.offsetX, _warnings);
+        }
+        else if (key == "OffsetY")
+        {
+            legacy_parser_detail::ParseIntOrWarn_("anime", rec.name, key, value, rec.offsetY, _warnings);
+        }
         else if (key == "FrameDuration")
         {
             if (!ParseDoubleStrict(value, rec.frameDuration))
@@ -247,7 +297,7 @@ struct SoundRecord
         else if (key == "Loop")
         {
             int loop = 1;
-            asInt(loop);
+            legacy_parser_detail::ParseIntOrWarn_("anime", rec.name, key, value, loop, _warnings);
             rec.bLoop = (loop != 0);
         }
         else
@@ -258,14 +308,18 @@ struct SoundRecord
     return records;
 }
 
-[[nodiscard]] inline std::vector<SpriteRecord> ParseSpriteData(
-    const std::string_view    _text,
-    const std::string&        _sourceFile,
-    std::vector<std::string>& _warnings)
+[[nodiscard]] inline Vector<SpriteRecord> ParseSpriteData(
+    const StringView _text,
+    const String&    _sourceFile,
+    Vector<String>&  _warnings)
 {
-    std::vector<SpriteRecord> records;
-    for (const auto& [key, value]: SplitKeyValueLines(_text, &_warnings))
+    Vector<SpriteRecord>   records;
+    const Vector<KeyValue> lines = SplitKeyValueLines(_text, &_warnings);
+    for (const KeyValue& line: lines)
     {
+        const String& key   = line.first;
+        const String& value = line.second;
+
         if (key == "File Name")
         {
             records.push_back({});
@@ -280,19 +334,33 @@ struct SoundRecord
         }
 
         SpriteRecord& rec = records.back();
-        auto          asInt = [&](int& _out)
-        {
-            if (!ParseIntStrict(value, _out))
-            {
-                _warnings.push_back("sprite '" + rec.name + "': bad integer for " + key + " '" + value + "'");
-            }
-        };
 
-        if (key == "Texture Name") { rec.texture = value; }
-        else if (key == "Width") { if (value != "default") asInt(rec.width); }
-        else if (key == "Height") { if (value != "default") asInt(rec.height); }
-        else if (key == "Column") { asInt(rec.column); }
-        else if (key == "Line") { asInt(rec.line); }
+        if (key == "Texture Name")
+        {
+            rec.texture = value;
+        }
+        else if (key == "Width")
+        {
+            if (value != "default")
+            {
+                legacy_parser_detail::ParseIntOrWarn_("sprite", rec.name, key, value, rec.width, _warnings);
+            }
+        }
+        else if (key == "Height")
+        {
+            if (value != "default")
+            {
+                legacy_parser_detail::ParseIntOrWarn_("sprite", rec.name, key, value, rec.height, _warnings);
+            }
+        }
+        else if (key == "Column")
+        {
+            legacy_parser_detail::ParseIntOrWarn_("sprite", rec.name, key, value, rec.column, _warnings);
+        }
+        else if (key == "Line")
+        {
+            legacy_parser_detail::ParseIntOrWarn_("sprite", rec.name, key, value, rec.line, _warnings);
+        }
         else
         {
             _warnings.push_back("sprite '" + rec.name + "': unknown key '" + key + "'");
@@ -301,13 +369,17 @@ struct SoundRecord
     return records;
 }
 
-[[nodiscard]] inline std::vector<SoundRecord> ParseSoundData(
-    const std::string_view    _text,
-    std::vector<std::string>& _warnings)
+[[nodiscard]] inline Vector<SoundRecord> ParseSoundData(
+    const StringView _text,
+    Vector<String>&  _warnings)
 {
-    std::vector<SoundRecord> records;
-    for (const auto& [key, value]: SplitKeyValueLines(_text, &_warnings))
+    Vector<SoundRecord>    records;
+    const Vector<KeyValue> lines = SplitKeyValueLines(_text, &_warnings);
+    for (const KeyValue& line: lines)
     {
+        const String& key   = line.first;
+        const String& value = line.second;
+
         if (key == "Resource Name")
         {
             records.push_back({});
@@ -328,4 +400,5 @@ struct SoundRecord
     }
     return records;
 }
-}
+
+}   // namespace slug::baker

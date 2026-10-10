@@ -7,6 +7,7 @@
 
 namespace slug::baker
 {
+
 struct GroundThreshold
 {
     int blueMin  = 192;   // B >= blueMin
@@ -43,20 +44,20 @@ struct GroundStats
     return _a < _th.alphaMin || (_r >= 192 && _g >= 192 && _b >= 192);
 }
 
-[[nodiscard]] inline std::vector<uint8_t> BuildGroundBits(
+[[nodiscard]] inline Vector<uint8_t> BuildGroundBits(
     const Image&           _image,
     const GroundThreshold& _th,
     GroundStats*           _pStats = nullptr)
 {
-    const int    rowBytes = (_image.width + 7) / 8;
-    GroundStats  stats;
+    const int   rowBytes = (_image.width + 7) / 8;
+    GroundStats stats;
     stats.totalCount = static_cast<uint64_t>(_image.width) * static_cast<uint64_t>(_image.height);
 
-    std::vector<uint8_t> bits(static_cast<size_t>(rowBytes) * static_cast<size_t>(_image.height), 0u);
-    int                  minX = _image.width;
-    int                  minY = _image.height;
-    int                  maxX = -1;
-    int                  maxY = -1;
+    Vector<uint8_t> bits(static_cast<size_t>(rowBytes) * static_cast<size_t>(_image.height), 0u);
+    int             minX = _image.width;
+    int             minY = _image.height;
+    int             maxX = -1;
+    int             maxY = -1;
 
     for (int y = 0; y < _image.height; ++y)
     {
@@ -91,12 +92,12 @@ struct GroundStats
     return bits;
 }
 
-[[nodiscard]] inline std::vector<uint8_t> BuildGroundFile(
-    const int                   _width,
-    const int                   _height,
-    const std::vector<uint8_t>& _bits)
+[[nodiscard]] inline Vector<uint8_t> BuildGroundFile(
+    const int              _width,
+    const int              _height,
+    const Vector<uint8_t>& _bits)
 {
-    std::vector<uint8_t> file(12 + _bits.size());
+    Vector<uint8_t> file(12 + _bits.size());
     std::memcpy(file.data(), "GRND", 4);
     for (int i = 0; i < 4; ++i)
     {
@@ -109,4 +110,5 @@ struct GroundStats
     }
     return file;
 }
-}
+
+}   // namespace slug::baker

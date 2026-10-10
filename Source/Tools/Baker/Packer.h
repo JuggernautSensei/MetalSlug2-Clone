@@ -2,11 +2,12 @@
 #include <algorithm>
 #include <cstdint>
 #include <numeric>
-#include <span>
-#include <vector>
+
+#include "Base/Types.h"
 
 namespace slug::baker
 {
+
 struct PackSize
 {
     int w = 0;
@@ -23,34 +24,33 @@ struct PackPlacement
 
 struct PackResult
 {
-    std::vector<PackPlacement> placements;
-    int                        pageCount = 0;
+    Vector<PackPlacement> placements = {};
+    int                   pageCount  = 0;
 };
 
 [[nodiscard]] inline PackResult PackShelf(
-    const std::span<const PackSize> _sizes,
-    const int                       _pageSize,
-    const int                       _padding)
+    const Span<const PackSize> _sizes,
+    const int                  _pageSize,
+    const int                  _padding)
 {
     struct Shelf
     {
-        int y    = 0;
-        int h    = 0;
+        int y     = 0;
+        int h     = 0;
         int nextX = 0;
     };
     struct Page
     {
-        std::vector<Shelf> shelves;
-        int                nextY = 0;
+        Vector<Shelf> shelves = {};
+        int           nextY   = 0;
     };
 
     PackResult result;
     result.placements.assign(_sizes.size(), {});
 
-    std::vector<size_t> order(_sizes.size());
+    Vector<size_t> order(_sizes.size());
     std::iota(order.begin(), order.end(), size_t { 0 });
-    std::stable_sort(order.begin(), order.end(), [&](const size_t _a, const size_t _b)
-    {
+    std::stable_sort(order.begin(), order.end(), [&](const size_t _a, const size_t _b) {
         if (_sizes[_a].h != _sizes[_b].h)
         {
             return _sizes[_a].h > _sizes[_b].h;
@@ -58,7 +58,7 @@ struct PackResult
         return _sizes[_a].w > _sizes[_b].w;
     });
 
-    std::vector<Page> pages;
+    Vector<Page> pages;
     for (const size_t index: order)
     {
         const PackSize& size = _sizes[index];
@@ -75,9 +75,9 @@ struct PackResult
             continue;
         }
 
-        int    bestPage  = -1;
-        int    bestShelf = -1;
-        long   bestWaste = 0;
+        int  bestPage  = -1;
+        int  bestShelf = -1;
+        long bestWaste = 0;
         for (size_t p = 0; p < pages.size(); ++p)
         {
             Page& page = pages[p];
@@ -126,4 +126,5 @@ struct PackResult
     result.pageCount = static_cast<int>(pages.size());
     return result;
 }
-}
+
+}   // namespace slug::baker

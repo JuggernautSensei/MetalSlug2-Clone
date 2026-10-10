@@ -5,8 +5,11 @@
 #include <cstring>
 #include <vector>
 
+#include "Base/Types.h"
+
 namespace slug::baker
 {
+
 struct IRect
 {
     int x = 0;
@@ -14,16 +17,19 @@ struct IRect
     int w = 0;
     int h = 0;
 
-    [[nodiscard]] bool IsEmpty() const { return w <= 0 || h <= 0; }
+    [[nodiscard]] bool IsEmpty() const
+    {
+        return w <= 0 || h <= 0;
+    }
     [[nodiscard]] bool operator==(const IRect&) const = default;
 };
 
 struct Image
 {
-    int                  width  = 0;
-    int                  height = 0;
-    std::vector<uint8_t> pixels;
-    bool                 bSourceHasAlpha = false;
+    int             width           = 0;
+    int             height          = 0;
+    Vector<uint8_t> pixels          = {};
+    bool            bSourceHasAlpha = false;
 
     [[nodiscard]] static Image Make(
         const int _width,
@@ -36,7 +42,10 @@ struct Image
         return img;
     }
 
-    [[nodiscard]] bool IsEmpty() const { return width <= 0 || height <= 0; }
+    [[nodiscard]] bool IsEmpty() const
+    {
+        return width <= 0 || height <= 0;
+    }
 
     [[nodiscard]] const uint8_t* At(
         const int _x,
@@ -215,6 +224,30 @@ inline void ClearTransparentColor(Image& _image)
     return count;
 }
 
+namespace image_detail
+{
+
+    // _a 이하는 0, _b 이상은 1 인 smoothstep
+    [[nodiscard]] inline double Smoothstep_(
+        const double _x,
+        const double _a,
+        const double _b)
+    {
+        const double t = std::clamp((_x - _a) / (_b - _a), 0.0, 1.0);
+        return t * t * (3.0 - 2.0 * t);
+    }
+
+    // FNV-1a 해시에 값 하나를 섞는다.
+    inline void HashMix_(
+        uint64_t&      _hash,
+        const uint64_t _v)
+    {
+        _hash ^= _v;
+        _hash *= 1099511628211ull;
+    }
+
+}   // namespace image_detail
+
 // 불투명 픽셀이 전부 같은 RGB 이고 면적이 2500px 이상인 프레임은 레거시 폭발/화염의 단색 원판으로 보고 소프트 플래시로 바꾼다.
 // 중심(불투명 영역 중심)에서 가장 먼 픽셀까지의 거리(maxD)로 정규화한 거리 d 를 쓴다.
 //  - 어둡거나(최대 채널 160 이하) 채도가 높은(최대-최소 96 이상) 프레임: 색은 d 0~0.75 코어(255,248,200), 바깥 주황(255,170,60) 보간.
@@ -224,21 +257,21 @@ inline void ClearTransparentColor(Image& _image)
 // 바꾸면 true.
 [[nodiscard]] inline bool ConvertSolidSilhouetteToFlash(Image& _image)
 {
-    constexpr uint64_t kMinArea         = 2500;
-    constexpr int      kDarkMax         = 160;
-    constexpr int      kSatRange        = 96;
-    constexpr double   kFadeStart       = 0.75;
-    constexpr double   kAlphaStart      = 0.90;
-    constexpr double   kLightAlphaStart = 0.60;
-    constexpr double   kLightScale      = 0.9;
-    constexpr double   kCore[3]         = { 255.0, 248.0, 200.0 };
-    constexpr double   kOrange[3]       = { 255.0, 170.0, 60.0 };
-    constexpr double   kLightCore[3]    = { 255.0, 252.0, 225.0 };
-    constexpr double   kLightRim[3]     = { 255.0, 200.0, 110.0 };
+    constexpr uint64_t         kMinArea         = 2500;
+    constexpr int              kDarkMax         = 160;
+    constexpr int              kSatRange        = 96;
+    constexpr double           kFadeStart       = 0.75;
+    constexpr double           kAlphaStart      = 0.90;
+    constexpr double           kLightAlphaStart = 0.60;
+    constexpr double           kLightScale      = 0.9;
+    constexpr ARRAY<double, 3> kCore            = { 255.0, 248.0, 200.0 };
+    constexpr ARRAY<double, 3> kOrange          = { 255.0, 170.0, 60.0 };
+    constexpr ARRAY<double, 3> kLightCore       = { 255.0, 252.0, 225.0 };
+    constexpr ARRAY<double, 3> kLightRim        = { 255.0, 200.0, 110.0 };
 
-    uint64_t area = 0;
-    uint8_t  first[3] = { 0, 0, 0 };
-    uint8_t* p        = _image.pixels.data();
+    uint64_t          area  = 0;
+    ARRAY<uint8_t, 3> first = { 0, 0, 0 };
+    uint8_t*          p     = _image.pixels.data();
     for (size_t i = 0, n = _image.pixels.size(); i < n; i += 4)
     {
         if (p[i + 3] == 0)
@@ -266,10 +299,10 @@ inline void ClearTransparentColor(Image& _image)
     const int  minC   = std::min({ static_cast<int>(first[0]), static_cast<int>(first[1]), static_cast<int>(first[2]) });
     const bool bLight = maxC > kDarkMax && maxC - minC < kSatRange;
 
-    const IRect bounds = FindOpaqueBounds(_image, { 0, 0, _image.width, _image.height });
-    const double cx    = bounds.x + (bounds.w - 1) * 0.5;
-    const double cy    = bounds.y + (bounds.h - 1) * 0.5;
-    double       maxD  = 0.0;
+    const IRect  bounds = FindOpaqueBounds(_image, { 0, 0, _image.width, _image.height });
+    const double cx     = bounds.x + (bounds.w - 1) * 0.5;
+    const double cy     = bounds.y + (bounds.h - 1) * 0.5;
+    double       maxD   = 0.0;
     for (int y = 0; y < _image.height; ++y)
     {
         for (int x = 0; x < _image.width; ++x)
@@ -286,13 +319,6 @@ inline void ClearTransparentColor(Image& _image)
     {
         return false;
     }
-
-    // _a 이하는 0, _b 이상은 1 인 smoothstep
-    auto smooth = [](const double _x, const double _a, const double _b)
-    {
-        const double t = std::clamp((_x - _a) / (_b - _a), 0.0, 1.0);
-        return t * t * (3.0 - 2.0 * t);
-    };
 
     for (int y = 0; y < _image.height; ++y)
     {
@@ -312,7 +338,7 @@ inline void ClearTransparentColor(Image& _image)
                 {
                     px[c] = static_cast<uint8_t>(std::lround(kLightCore[c] + (kLightRim[c] - kLightCore[c]) * d));
                 }
-                const double fade = (1.0 - smooth(d, kLightAlphaStart, 1.0)) * kLightScale;
+                const double fade = (1.0 - image_detail::Smoothstep_(d, kLightAlphaStart, 1.0)) * kLightScale;
                 px[3]             = static_cast<uint8_t>(std::lround(px[3] * fade));
             }
             else
@@ -322,7 +348,7 @@ inline void ClearTransparentColor(Image& _image)
                 {
                     px[c] = static_cast<uint8_t>(std::lround(kCore[c] + (kOrange[c] - kCore[c]) * t));
                 }
-                px[3] = static_cast<uint8_t>(std::lround(px[3] * (1.0 - smooth(d, kAlphaStart, 1.0))));
+                px[3] = static_cast<uint8_t>(std::lround(px[3] * (1.0 - image_detail::Smoothstep_(d, kAlphaStart, 1.0))));
             }
         }
     }
@@ -365,16 +391,11 @@ inline void ClearTransparentColor(Image& _image)
 [[nodiscard]] inline uint64_t HashImage(const Image& _image)
 {
     uint64_t hash = 14695981039346656037ull;
-    auto     mix  = [&hash](const uint64_t _v)
-    {
-        hash ^= _v;
-        hash *= 1099511628211ull;
-    };
-    mix(static_cast<uint64_t>(_image.width));
-    mix(static_cast<uint64_t>(_image.height));
+    image_detail::HashMix_(hash, static_cast<uint64_t>(_image.width));
+    image_detail::HashMix_(hash, static_cast<uint64_t>(_image.height));
     for (const uint8_t byte: _image.pixels)
     {
-        mix(byte);
+        image_detail::HashMix_(hash, byte);
     }
     return hash;
 }
@@ -466,4 +487,5 @@ inline void BlendOver(
         }
     }
 }
-}
+
+}   // namespace slug::baker
