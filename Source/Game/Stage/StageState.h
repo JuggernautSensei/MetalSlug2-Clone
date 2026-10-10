@@ -1,13 +1,12 @@
 #pragma once
-#include "Base/Handle.h"
 #include <cstdint>
+#include <memory>
 #include <optional>
 
-#include "Base/Random.h"
-#include <memory>
-#include "Base/Types.h"
+#include "Base/Handle.h"
 #include "Base/Math.h"
-
+#include "Base/Random.h"
+#include "Base/Types.h"
 #include "Core/Tuning.h"
 #include "Game/Combat/CombatSystem.h"
 #include "Game/Combat/Projectiles.h"
@@ -32,10 +31,16 @@
 
 namespace slug
 {
+
 class StageState final : public IGameState
 {
 public:
     StageState();
+
+    StageState(const StageState&)            = delete;
+    StageState& operator=(const StageState&) = delete;
+    StageState(StageState&&)                 = delete;
+    StageState& operator=(StageState&&)      = delete;
 
     void OnEnter(GameContext& _ctx) override;
     void OnExit(GameContext& _ctx) override;
@@ -43,27 +48,27 @@ public:
     void Render(GameContext& _ctx, float _alpha) override;
 
     [[nodiscard]] std::unique_ptr<IGameState> TakeNextState() override;
-    [[nodiscard]] bool                    IsFinished() const override;
+    [[nodiscard]] bool                        IsFinished() const override;
 
-    [[nodiscard]] bool                     IsLoaded() const { return m_bLoaded; }
-    [[nodiscard]] const StageData&         GetData() const { return m_data; }
-    [[nodiscard]] const StageRunner&       GetRunner() const { return *m_runner; }
-    [[nodiscard]] const StageWorldHost&    GetHost() const { return m_host; }
-    [[nodiscard]] PlayerController&        GetPlayer() { return m_player; }
-    [[nodiscard]] const PlayerController&  GetPlayer() const { return m_player; }
-    [[nodiscard]] const Camera&            GetCamera() const { return m_camera; }
-    [[nodiscard]] const CombatSystem&      GetCombat() const { return m_combat; }
-    [[nodiscard]] const EnemyWorld&        GetEnemies() const { return m_enemies; }
-    [[nodiscard]] EnemyWorld&              GetEnemies() { return m_enemies; }
-    [[nodiscard]] const PropWorld&         GetProps() const { return m_props; }
-    [[nodiscard]] PropWorld&               GetProps() { return m_props; }
-    [[nodiscard]] const ProjectileSystem&  GetProjectiles() const { return m_projectiles; }   // 테스트/봇 관찰용 (읽기 전용)
-    [[nodiscard]] const UiSystem&          GetUi() const { return m_ui; }
-    [[nodiscard]] UiSystem&                GetUi() { return m_ui; }
-    [[nodiscard]] uint64_t                 GetTickCount() const { return m_tickCount; }
-    [[nodiscard]] uint64_t                 HashState() const;
-    [[nodiscard]] HudModel                 BuildHudModel() const;
-    [[nodiscard]] int                      GetRescuedPows() const { return m_rescuedPows; }
+    [[nodiscard]] bool                    IsLoaded() const;
+    [[nodiscard]] const StageData&        GetData() const;
+    [[nodiscard]] const StageRunner&      GetRunner() const;
+    [[nodiscard]] const StageWorldHost&   GetHost() const;
+    [[nodiscard]] PlayerController&       GetPlayer();
+    [[nodiscard]] const PlayerController& GetPlayer() const;
+    [[nodiscard]] const Camera&           GetCamera() const;
+    [[nodiscard]] const CombatSystem&     GetCombat() const;
+    [[nodiscard]] const EnemyWorld&       GetEnemies() const;
+    [[nodiscard]] EnemyWorld&             GetEnemies();
+    [[nodiscard]] const PropWorld&        GetProps() const;
+    [[nodiscard]] PropWorld&              GetProps();
+    [[nodiscard]] const ProjectileSystem& GetProjectiles() const;   // 테스트/봇 관찰용 (읽기 전용)
+    [[nodiscard]] const UiSystem&         GetUi() const;
+    [[nodiscard]] UiSystem&               GetUi();
+    [[nodiscard]] uint64_t                GetTickCount() const;
+    [[nodiscard]] uint64_t                HashState() const;
+    [[nodiscard]] HudModel                BuildHudModel() const;
+    [[nodiscard]] int                     GetRescuedPows() const;
 
 private:
     enum class eEndKind : uint8_t
@@ -75,56 +80,56 @@ private:
 
     struct PatchMask
     {
-        slug::String name    = {};
-        bool        bLoaded = false;
-        GroundMap   mask    = {};
+        String    name    = {};
+        bool      bLoaded = false;
+        GroundMap mask    = {};
     };
 
-    void Load_(GameContext& _ctx);
-    void Restart_(GameContext& _ctx);
-    void HandleDebugWarp_(GameContext& _ctx);
-    void StartFlow_(GameContext& _ctx, eEndKind _kind);
-    [[nodiscard]] bool IsFlowing_() const { return m_endKind != eEndKind::None && !m_flow.IsDone(); }
+    void               Load_(GameContext& _ctx);
+    void               Restart_(GameContext& _ctx);
+    void               HandleDebugWarp_(GameContext& _ctx);
+    void               StartFlow_(GameContext& _ctx, eEndKind _kind);
+    [[nodiscard]] bool IsFlowing_() const;
 
-    void UpdateWalls_();
+    void                       UpdateWalls_();
     [[nodiscard]] PhysicsWorld MakePhysicsWorld_() const;
     [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;
-    [[nodiscard]] Vec2 GetRespawnFeet_() const;
+    [[nodiscard]] Vec2         GetRespawnFeet_() const;
 
-    void ConsumeEnemyEvents_(GameContext& _ctx);
-    void ConsumePropEvents_(GameContext& _ctx);
-    void ApplyGroundPatch_(GameContext& _ctx, const slug::String& _sprite, Vec2 _topLeft);
-    [[nodiscard]] const GroundMap* FindPatchMask_(GameContext& _ctx, const slug::String& _sprite);
-    void RequestSounds_(GameContext& _ctx, const slug::Vector<FxRequest>& _fx);
+    void                           ConsumeEnemyEvents_(GameContext& _ctx);
+    void                           ConsumePropEvents_(GameContext& _ctx);
+    void                           ApplyGroundPatch_(GameContext& _ctx, const String& _sprite, Vec2 _topLeft);
+    [[nodiscard]] const GroundMap* FindPatchMask_(GameContext& _ctx, const String& _sprite);
+    void                           RequestSounds_(GameContext& _ctx, const Vector<FxRequest>& _fx);
 
     void DrawBackdrop_(GameContext& _ctx, Vec2 _cameraPos);
     void DrawWorld_(GameContext& _ctx, Vec2 _cameraPos, float _alpha);
     void DrawDebugBoxes_(Renderer& _renderer, Vec2 _cameraPos) const;
     void DrawHud_(GameContext& _ctx, Vec2 _cameraPos);
 
-    StageData                  m_data    = {};
-    bool                       m_bLoaded = false;
-    bool                       m_bFailed = false;
+    StageData                  m_data       = {};
+    bool                       m_bLoaded    = false;
+    bool                       m_bFailed    = false;
     bool                       m_bTakenNext = false;
-    slug::FilePath              m_assetRoot = {};
-    std::optional<StageRunner> m_runner  = std::nullopt;
-    slug::RngMt19937            m_rng     = slug::RngMt19937 { 0x57A6E0ull };
+    FilePath                   m_assetRoot  = {};
+    std::optional<StageRunner> m_runner     = std::nullopt;
+    RngMt19937                 m_rng        = RngMt19937 { 0x57A6E0ull };
 
-    StageWorldHost    m_host   = {};
-    Tuning            m_tuning = {};
-    Camera            m_camera = {};
-    Vec2      m_prevCameraPos = { 0.f, 0.f };
-    Vec2      m_startFeet     = { 0.f, 0.f };
+    StageWorldHost m_host          = {};
+    Tuning         m_tuning        = {};
+    Camera         m_camera        = {};
+    Vec2           m_prevCameraPos = { 0.f, 0.f };
+    Vec2           m_startFeet     = { 0.f, 0.f };
 
-    slug::Vector<Wall>     m_walls         = {};
-    slug::Vector<Wall>     m_enemyWalls    = {};
-    slug::Vector<Platform> m_playerPlatforms = {};
-    slug::Vector<Platform> m_enemyPlatforms  = {};
+    Vector<Wall>     m_walls           = {};
+    Vector<Wall>     m_enemyWalls      = {};
+    Vector<Platform> m_playerPlatforms = {};
+    Vector<Platform> m_enemyPlatforms  = {};
 
-    EnemyDefLibrary  m_enemyLib = {};
-    PropDefLibrary   m_propDefs = {};
-    EnemyWorld       m_enemies  { &m_enemyLib };
-    PropWorld        m_props    { nullptr, 1 };
+    EnemyDefLibrary m_enemyLib = {};
+    PropDefLibrary  m_propDefs = {};
+    EnemyWorld      m_enemies { &m_enemyLib };
+    PropWorld       m_props { nullptr, 1 };
 
     PlayerController m_player      = {};
     PlayerRig        m_rig         = {};
@@ -133,13 +138,13 @@ private:
     EffectList       m_effects     = {};
     AnimPlayer       m_bombAnim    = {};
 
-    slug::Vector<PatchMask> m_patchMasks = {};
+    Vector<PatchMask> m_patchMasks = {};
 
-    SpriteLibrary m_spriteLib = {};
-    int           m_bgHandle  = -1;
-    slug::Vector<int> m_backdropHandles = {};
-    bool          m_bRigBound = false;
-    AnimId        m_bombClip  = slug::kNullHandle;
+    SpriteLibrary m_spriteLib       = {};
+    int           m_bgHandle        = -1;
+    Vector<int>   m_backdropHandles = {};
+    bool          m_bRigBound       = false;
+    AnimId        m_bombClip        = kNullHandle;
 
     UiSystem    m_ui         = {};
     ScreenFlow  m_flow       = {};
@@ -148,10 +153,11 @@ private:
     eWeapon     m_prevWeapon = eWeapon::Pistol;
     int         m_prevScore  = 0;
 
-    DisplayTimer m_timer          = {};          // 화면 표시용 카운트다운 (사망과 무관)
-    slug::String m_timerSectionId = {};          // 구간이 바뀔 때 타이머를 60 으로 되돌린다
-    int          m_rescuedPows    = 0;           // 구출한 POW 수 (미션 결과 상자)
+    DisplayTimer m_timer          = {};   // 화면 표시용 카운트다운 (사망과 무관)
+    String       m_timerSectionId = {};   // 구간이 바뀔 때 타이머를 60 으로 되돌린다
+    int          m_rescuedPows    = 0;    // 구출한 POW 수 (미션 결과 상자)
 
     uint64_t m_tickCount = 0;
 };
-}
+
+}   // namespace slug

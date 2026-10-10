@@ -1,6 +1,4 @@
 #include "Game/Stage/StageRunner.h"
-#include "Base/Types.h"
-#include "Base/Random.h"
 
 #include <algorithm>
 #include <cmath>
@@ -8,7 +6,8 @@
 
 #include "Base/Assert.h"
 #include "Base/Math.h"
-
+#include "Base/Random.h"
+#include "Base/Types.h"
 #include "World/Constants.h"
 
 namespace slug
@@ -40,13 +39,13 @@ namespace
         std::memcpy(&bits, &_value, sizeof(bits));
         MixU64_(_hash, bits);
     }
-}
+}   // namespace
 
 StageRunner::StageRunner(
     const StageData& _data,
     IStageHost&      _host,
     Camera&          _camera,
-    slug::RngMt19937& _rng)
+    RngMt19937&      _rng)
     : m_pData(&_data)
     , m_pHost(&_host)
     , m_pCamera(&_camera)
@@ -62,21 +61,21 @@ int64_t StageRunner::ToTicks_(
 
 void StageRunner::Begin()
 {
-    m_tick          = 0;
-    m_nextSection   = 0;
-    m_bFinished     = false;
+    m_tick        = 0;
+    m_nextSection = 0;
+    m_bFinished   = false;
     m_pending.clear();
     m_nextSeq       = 1;
     m_waveCutoffSeq = 0;
     m_gates.clear();
     m_records.clear();
-    m_spawnedCount  = 0;
-    m_skippedCount  = 0;
+    m_spawnedCount = 0;
+    m_skippedCount = 0;
     m_locks.clear();
 
     const CameraConfig& config = m_pData->camera;
-    m_base         = config.initialBounds;
-    m_cameraOffset = config.initialOffset;
+    m_base                     = config.initialBounds;
+    m_cameraOffset             = config.initialOffset;
     m_curveActive.assign(config.boundsCurves.size(), 0);
 
     m_groundName   = m_pData->groundInitial;
@@ -125,9 +124,34 @@ Aabb StageRunner::CurrentViewRect_() const
     return Aabb::FromMinSize(m_pCamera->GetPositionNoShake(), m_pCamera->GetTuning().viewSize);
 }
 
+const String& StageRunner::GetGroundName() const
+{
+    return m_groundName;
+}
+
+const String& StageRunner::GetBackdropMode() const
+{
+    return m_backdropMode;
+}
+
+Vec2 StageRunner::GetCameraOffset() const
+{
+    return m_cameraOffset;
+}
+
+const Aabb& StageRunner::GetBaseBounds() const
+{
+    return m_base;
+}
+
 Aabb StageRunner::GetEffectiveBounds() const
 {
     return m_locks.empty() ? m_base : m_locks.back().rect;
+}
+
+int StageRunner::GetLockDepth() const
+{
+    return static_cast<int>(m_locks.size());
 }
 
 bool StageRunner::HasPermanentLock() const
@@ -173,7 +197,7 @@ Vec2 StageRunner::ComputeCameraTarget(
 
 ScreenWalls StageRunner::MakeScreenWalls() const
 {
-    ScreenWalls walls;
+    ScreenWalls walls  = {};
     const float margin = m_pData->camera.playerMargin;
     const Aabb  view   = CurrentViewRect_();
 
@@ -247,7 +271,7 @@ void StageRunner::ProcessPending_()
         return;
     }
 
-    slug::Vector<PendingItem> ready;
+    Vector<PendingItem> ready = {};
     for (size_t i = 0; i < m_pending.size();)
     {
         if (m_pending[i].dueTick <= m_tick)
@@ -270,7 +294,7 @@ void StageRunner::ProcessPending_()
         {
             break;
         }
-        ExecContext ctx;
+        ExecContext ctx  = {};
         ctx.sectionIndex = item.sectionIndex;
         ctx.bSilent      = false;
         ctx.bAbort       = item.bAbortOnGameOver;
@@ -284,9 +308,9 @@ void StageRunner::ProcessPending_()
             ExecSpawn_(item.pWave->spawn, ctx, true);
             if (item.repeatsLeft > 0 && !m_bFinished)
             {
-                PendingItem next  = item;
-                next.dueTick      = item.dueTick + ToTicks_(item.pWave->every);
-                next.repeatsLeft  = item.repeatsLeft - 1;
+                PendingItem next = item;
+                next.dueTick     = item.dueTick + ToTicks_(item.pWave->every);
+                next.repeatsLeft = item.repeatsLeft - 1;
                 m_pending.push_back(next);
             }
         }
@@ -307,7 +331,7 @@ void StageRunner::ProcessCurves_()
     {
         return;
     }
-    const float playerX = m_pHost->PlayerFeet().x;
+    const float playerX  = m_pHost->PlayerFeet().x;
     bool        bChanged = false;
     for (size_t i = 0; i < m_pData->camera.boundsCurves.size(); ++i)
     {
@@ -328,7 +352,7 @@ bool StageRunner::IsGateSatisfied_(
     const GateState& _gate) const
 {
     const StageAction& action = *_gate.pAction;
-    for (const slug::String& stageId: action.waitFor)
+    for (const String& stageId: action.waitFor)
     {
         const SpawnRecord* pRecord = FindRecord_(stageId);
         if (!pRecord)
@@ -360,7 +384,7 @@ void StageRunner::ProcessGates_()
         const GateState gate = m_gates[i];
         m_gates.erase(m_gates.begin() + static_cast<std::ptrdiff_t>(i));
 
-        ExecContext ctx;
+        ExecContext ctx  = {};
         ctx.sectionIndex = gate.sectionIndex;
         ctx.bSilent      = false;
         ctx.bAbort       = gate.bAbortOnGameOver;
@@ -392,15 +416,15 @@ void StageRunner::FireSection_(
         m_pHost->OnSectionEntered(_index, section.id);
     }
 
-    ExecContext ctx;
+    ExecContext ctx  = {};
     ctx.sectionIndex = _index;
     ctx.bSilent      = _bSilent;
     RunActions_(section.actions, ctx);
 }
 
 void StageRunner::RunActions_(
-    const slug::Vector<StageAction>& _actions,
-    const ExecContext&              _ctx)
+    const Vector<StageAction>& _actions,
+    const ExecContext&         _ctx)
 {
     for (const StageAction& action: _actions)
     {
@@ -416,7 +440,7 @@ void StageRunner::RunActions_(
         const int64_t delayTicks = _ctx.bSilent ? 0 : ToTicks_(action.delay);
         if (delayTicks > 0)
         {
-            PendingItem item;
+            PendingItem item      = {};
             item.dueTick          = m_tick + delayTicks;
             item.seq              = m_nextSeq++;
             item.pAction          = &action;
@@ -445,7 +469,7 @@ void StageRunner::Execute_(
                 const int64_t delayTicks = ToTicks_(entry.delay);
                 if (delayTicks > 0 || entry.times > 1)
                 {
-                    PendingItem item;
+                    PendingItem item      = {};
                     item.dueTick          = m_tick + delayTicks;
                     item.seq              = m_nextSeq++;
                     item.pWave            = &entry;
@@ -497,7 +521,7 @@ void StageRunner::Execute_(
 
         case eActionType::Gate:
         {
-            GateState gate;
+            GateState gate        = {};
             gate.pAction          = &_action;
             gate.sectionIndex     = _ctx.sectionIndex;
             gate.bAbortOnGameOver = _action.bAbortOnGameOver || _ctx.bAbort;
@@ -546,7 +570,7 @@ void StageRunner::ExecLock_(
     const StageAction& _action,
     const ExecContext& _ctx)
 {
-    LockEntry entry;
+    LockEntry entry  = {};
     entry.rect       = _action.rect.bCurrent ? CurrentViewRect_() : _action.rect.rect;
     entry.bPermanent = _action.bPermanent;
     m_locks.push_back(entry);
@@ -586,14 +610,14 @@ void StageRunner::ExecClear_(
     }
     if (_action.clearLayers != 0)
     {
-        EntityFilter filter;
-        filter.layerMask = _action.clearLayers;
+        EntityFilter filter = {};
+        filter.layerMask    = _action.clearLayers;
         m_pHost->ClearEntities(filter);
     }
 }
 
 StageRunner::SpawnRecord* StageRunner::FindRecord_(
-    const slug::StringView _stageId)
+    const StringView _stageId)
 {
     for (SpawnRecord& record: m_records)
     {
@@ -606,7 +630,7 @@ StageRunner::SpawnRecord* StageRunner::FindRecord_(
 }
 
 const StageRunner::SpawnRecord* StageRunner::FindRecord_(
-    const slug::StringView _stageId) const
+    const StringView _stageId) const
 {
     for (const SpawnRecord& record: m_records)
     {
@@ -618,15 +642,15 @@ const StageRunner::SpawnRecord* StageRunner::FindRecord_(
     return nullptr;
 }
 
-slug::Span<const SpawnId> StageRunner::FindSpawnIds(
-    const slug::StringView _stageId) const
+Span<const SpawnId> StageRunner::FindSpawnIds(
+    const StringView _stageId) const
 {
     const SpawnRecord* pRecord = FindRecord_(_stageId);
-    return pRecord ? slug::Span<const SpawnId> { pRecord->ids } : slug::Span<const SpawnId> {};
+    return pRecord ? Span<const SpawnId> { pRecord->ids } : Span<const SpawnId> {};
 }
 
 bool StageRunner::WasSpawnSkipped(
-    const slug::StringView _stageId) const
+    const StringView _stageId) const
 {
     const SpawnRecord* pRecord = FindRecord_(_stageId);
     return pRecord && pRecord->ids.empty();
@@ -640,45 +664,45 @@ void StageRunner::ExecSpawn_(
     const int count = _spec.GetCount();
     for (int i = 0; i < count; ++i)
     {
-        SpawnRequest request;
-        request.kind         = _spec.kind;
-        request.def          = _spec.def;
-        request.stageId      = _spec.id;
-        request.facing       = _spec.facing;
-        request.bHasHp       = _spec.bHasHp;
-        request.hp           = _spec.hp;
-        request.drop         = _spec.drop;
-        request.bSettle      = _spec.bSettle;
-        request.bFromCamera  = _spec.bHasCamera;
-        request.bWave        = _bWave;
-        request.bSilent      = _ctx.bSilent;
-        request.repeatIndex  = i;
-        request.sectionIndex = _ctx.sectionIndex;
-        request.bHasLayer    = _spec.bHasLayer;
-        request.layer        = _spec.layer;
-        request.cullMargin   = _spec.cullMargin;
-        request.bHasAmbush   = _spec.bHasAmbush;
-        request.ambush       = _spec.ambush;
-        request.size         = _spec.size;
+        SpawnRequest request   = {};
+        request.kind           = _spec.kind;
+        request.def            = _spec.def;
+        request.stageId        = _spec.id;
+        request.facing         = _spec.facing;
+        request.bHasHp         = _spec.bHasHp;
+        request.hp             = _spec.hp;
+        request.drop           = _spec.drop;
+        request.bSettle        = _spec.bSettle;
+        request.bFromCamera    = _spec.bHasCamera;
+        request.bWave          = _bWave;
+        request.bSilent        = _ctx.bSilent;
+        request.repeatIndex    = i;
+        request.sectionIndex   = _ctx.sectionIndex;
+        request.bHasLayer      = _spec.bHasLayer;
+        request.layer          = _spec.layer;
+        request.cullMargin     = _spec.cullMargin;
+        request.bHasAmbush     = _spec.bHasAmbush;
+        request.ambush         = _spec.ambush;
+        request.size           = _spec.size;
         request.collisionLayer = _spec.collisionLayer;
-        request.anim         = _spec.anim;
-        request.sprite       = _spec.sprite;
-        request.pParams      = &_spec.params;
+        request.anim           = _spec.anim;
+        request.sprite         = _spec.sprite;
+        request.pParams        = &_spec.params;
 
         Vec2 position = { 0.f, 0.f };
-        bool         bSkip    = false;
+        bool bSkip    = false;
         if (_spec.bHasCamera)
         {
-            const Aabb       view = CurrentViewRect_();
-            const CameraAnchor& a = _spec.camera;
-            int dx = a.dxMin;
+            const Aabb          view = CurrentViewRect_();
+            const CameraAnchor& a    = _spec.camera;
+            int                 dx   = a.dxMin;
             if (a.IsRandomX())
             {
-                dx = slug::Random<int>(*m_pRng, a.dxMin, a.dxMax);
+                dx = Random<int>(*m_pRng, a.dxMin, a.dxMax);
             }
             const float baseX = a.ax == eAnchorX::Left ? view.min.x : (a.ax == eAnchorX::Right ? view.max.x : (view.min.x + view.max.x) * 0.5f);
             const float baseY = a.ay == eAnchorY::Top ? view.min.y : (a.ay == eAnchorY::Bottom ? view.max.y : (view.min.y + view.max.y) * 0.5f);
-            position = { baseX + static_cast<float>(dx), baseY + a.dy };
+            position          = { baseX + static_cast<float>(dx), baseY + a.dy };
         }
         else
         {
@@ -752,7 +776,7 @@ void StageRunner::ExecSpawn_(
 }
 
 bool StageRunner::WarpToSection(
-    const slug::StringView _id)
+    const StringView _id)
 {
     const int index = m_pData->FindSection(_id);
     return index >= 0 && WarpToSection(index);
@@ -790,10 +814,10 @@ bool StageRunner::WarpToSection(
         ++m_nextSection;
     }
 
-    const float  targetX = m_pData->sections[static_cast<size_t>(_index)].triggerX + 1.f;
-    const Aabb   bounds  = GetEffectiveBounds();
-    Vec2 feet    = m_pHost->PlayerFeet();
-    feet.x               = targetX;
+    const float targetX = m_pData->sections[static_cast<size_t>(_index)].triggerX + 1.f;
+    const Aabb  bounds  = GetEffectiveBounds();
+    Vec2        feet    = m_pHost->PlayerFeet();
+    feet.x              = targetX;
     if (const std::optional<float> ground = m_pHost->GetGroundFindY(targetX, bounds.min.y))
     {
         feet.y = *ground;
@@ -804,6 +828,21 @@ bool StageRunner::WarpToSection(
     m_pCamera->SetTarget(ComputeCameraTarget(feet));
     m_pCamera->SnapToTarget();
     return true;
+}
+
+bool StageRunner::IsFinished() const
+{
+    return m_bFinished;
+}
+
+int64_t StageRunner::GetTick() const
+{
+    return m_tick;
+}
+
+int StageRunner::GetNextSectionIndex() const
+{
+    return m_nextSection;
 }
 
 std::optional<float> StageRunner::GetNextTriggerX() const
@@ -835,14 +874,29 @@ int StageRunner::GetPendingWaveCount() const
     return count;
 }
 
-slug::Vector<slug::String> StageRunner::GetOpenGateIds() const
+int StageRunner::GetOpenGateCount() const
 {
-    slug::Vector<slug::String> ids;
+    return static_cast<int>(m_gates.size());
+}
+
+Vector<String> StageRunner::GetOpenGateIds() const
+{
+    Vector<String> ids = {};
     for (const GateState& gate: m_gates)
     {
         ids.push_back(gate.pAction->gateId);
     }
     return ids;
+}
+
+int StageRunner::GetSpawnedCount() const
+{
+    return m_spawnedCount;
+}
+
+int StageRunner::GetSkippedCount() const
+{
+    return m_skippedCount;
 }
 
 uint64_t StageRunner::HashState() const
@@ -892,4 +946,5 @@ uint64_t StageRunner::HashState() const
     MixFloat_(hash, center.y);
     return hash;
 }
-}
+
+}   // namespace slug
