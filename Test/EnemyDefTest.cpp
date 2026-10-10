@@ -1,54 +1,56 @@
-﻿#include <cmath>
+// 적 정의 파일 로드, 보병 종류별 값, 행동 이름 변환, 정의 오류 거부와 베이크된 애니메이션 일치를 검증한다.
+
+#include <cmath>
 #include <fstream>
-#include "Base/Types.h"
-#include "Base/Result.h"
 #include <sstream>
 #include <string>
 
+#include "Base/Result.h"
+#include "Base/Types.h"
 #include "EnemyTestUtil.h"
 
 using namespace slugtest;
 
 namespace
 {
-    std::string ReadDefsText()
-    {
-        std::ifstream    file(EnemyDefsPath().string());
-        std::stringstream buffer;
-        buffer << file.rdbuf();
-        return buffer.str();
-    }
-
-    std::string ReplaceOnce(
-        std::string       _text,
-        const std::string _from,
-        const std::string _to)
-    {
-        const size_t pos = _text.find(_from);
-        if (pos == std::string::npos)
-        {
-            return {};
-        }
-        return _text.replace(pos, _from.size(), _to);
-    }
-
-    std::string ResolveSideText(
-        std::string _name,
-        const bool  _bLeft)
-    {
-        const size_t pos = _name.find("{side}");
-        if (pos != std::string::npos)
-        {
-            _name.replace(pos, 6, _bLeft ? "Left" : "Right");
-        }
-        return _name;
-    }
+[[nodiscard]] slug::String ReadDefsText_()
+{
+    std::ifstream     file(EnemyDefsPath().string());
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    return buffer.str();
 }
+
+[[nodiscard]] slug::String ReplaceOnce_(
+    slug::String       _text,
+    const slug::String _from,
+    const slug::String _to)
+{
+    const size_t pos = _text.find(_from);
+    if (pos == slug::String::npos)
+    {
+        return {};
+    }
+    return _text.replace(pos, _from.size(), _to);
+}
+
+[[nodiscard]] slug::String ResolveSideText_(
+    slug::String _name,
+    const bool   _bLeft)
+{
+    const size_t pos = _name.find("{side}");
+    if (pos != slug::String::npos)
+    {
+        _name.replace(pos, 6, _bLeft ? "Left" : "Right");
+    }
+    return _name;
+}
+}   // namespace
 
 TEST(EnemyDefs, LoadsTheInfantryDefinitionsAndGlobals)
 {
     EnemyDefLibrary lib;
-    slug::String     message;
+    slug::String    message;
     ASSERT_TRUE(LoadEnemyLib(lib, &message)) << message.c_str();
     for (const char* name: kInfantryNames)
     {
@@ -72,8 +74,8 @@ TEST(EnemyDefs, BehaviorNamesRoundTrip)
 {
     for (int i = 0; i < static_cast<int>(eEnemyBehavior::Count); ++i)
     {
-        const auto behavior = static_cast<eEnemyBehavior>(i);
-        const auto found    = FindBehavior(GetBehaviorName(behavior));
+        const eEnemyBehavior                behavior = static_cast<eEnemyBehavior>(i);
+        const std::optional<eEnemyBehavior> found    = FindBehavior(GetBehaviorName(behavior));
         ASSERT_TRUE(found.has_value()) << GetBehaviorName(behavior);
         EXPECT_EQ(*found, behavior);
     }
@@ -84,7 +86,7 @@ TEST(EnemyDefs, SecToTicksRoundsToNearestTick)
 {
     EXPECT_EQ(SecToTicks(0.8f), 48);
     EXPECT_EQ(SecToTicks(0.5f), 30);
-    EXPECT_EQ(SecToTicks(1.0f / 60.f), 1);
+    EXPECT_EQ(SecToTicks(1.f / 60.f), 1);
 }
 
 TEST(EnemyDefs, EachSoldierVariantHasItsOwnAi)
@@ -192,7 +194,7 @@ TEST(EnemyDefs, SoldierWeaponsAndTheirHitboxesAreDeclared)
 {
     EnemyDefLibrary lib;
     ASSERT_TRUE(LoadEnemyLib(lib));
-    const EnemyDef& bomb  = lib.Get(lib.FindIndex("soldier_bomb"));
+    const EnemyDef& bomb   = lib.Get(lib.FindIndex("soldier_bomb"));
     const int       attack = bomb.FindWeapon("attack");
     ASSERT_GE(attack, 0);
     EXPECT_GE(bomb.weapons[static_cast<size_t>(attack)].projectile, 0);
@@ -231,24 +233,24 @@ TEST(EnemyDefs, ClipTimingMatchesTheSpecTicks)
 {
     EnemyDefLibrary lib;
     ASSERT_TRUE(LoadEnemyLib(lib));
-    const EnemyDef& def   = lib.Get(lib.FindIndex("soldier_bomb"));
+    const EnemyDef& def       = lib.Get(lib.FindIndex("soldier_bomb"));
     const ClipDef&  throwClip = def.GetClip(def.FindClip("throw"));
     EXPECT_EQ(throwClip.frames, 14);
-    EXPECT_EQ(throwClip.TickOfFrame(10), 48);   // f10 = 0.80 s
+    EXPECT_EQ(throwClip.TickOfFrame(10), 48);      // f10 = 0.80 s
     EXPECT_EQ(throwClip.GetDurationTicks(), 68);   // 14 * 0.08 s = 67.2 틱 → 올림 68
     EXPECT_TRUE(def.GetClip(def.FindClip("idle")).bLoop);
 }
 
 TEST(EnemyDefsErrors, RealFileParsesWithoutMessage)
 {
-    slug::String message;
-    const slug::Result<EnemyDefLibrary> lib = EnemyDefLibrary::Parse(ReadDefsText(), &message);
+    slug::String                        message;
+    const slug::Result<EnemyDefLibrary> lib = EnemyDefLibrary::Parse(ReadDefsText_(), &message);
     EXPECT_TRUE(static_cast<bool>(lib)) << message.c_str();
 }
 
 TEST(EnemyDefsErrors, UnknownKeyInADefinitionIsRejected)
 {
-    const std::string text = ReplaceOnce(ReadDefsText(), "\"behavior\": \"pow\",", "\"behavior\": \"pow\", \"bogus\": 1,");
+    const slug::String text = ReplaceOnce_(ReadDefsText_(), "\"behavior\": \"pow\",", "\"behavior\": \"pow\", \"bogus\": 1,");
     ASSERT_FALSE(text.empty());
     slug::String message;
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text, &message)));
@@ -257,7 +259,7 @@ TEST(EnemyDefsErrors, UnknownKeyInADefinitionIsRejected)
 
 TEST(EnemyDefsErrors, MissingRequiredClipIsRejected)
 {
-    const std::string text = ReplaceOnce(ReadDefsText(), "\"throw\": { \"name\": \"SD_Throw_Bomb_{side}\"", "\"throwX\": { \"name\": \"SD_Throw_Bomb_{side}\"");
+    const slug::String text = ReplaceOnce_(ReadDefsText_(), "\"throw\": { \"name\": \"SD_Throw_Bomb_{side}\"", "\"throwX\": { \"name\": \"SD_Throw_Bomb_{side}\"");
     ASSERT_FALSE(text.empty());
     slug::String message;
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text, &message)));
@@ -266,14 +268,14 @@ TEST(EnemyDefsErrors, MissingRequiredClipIsRejected)
 
 TEST(EnemyDefsErrors, UnknownBehaviorIsRejected)
 {
-    const std::string text = ReplaceOnce(ReadDefsText(), "\"behavior\": \"pow\"", "\"behavior\": \"nope\"");
+    const slug::String text = ReplaceOnce_(ReadDefsText_(), "\"behavior\": \"pow\"", "\"behavior\": \"nope\"");
     ASSERT_FALSE(text.empty());
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text)));
 }
 
 TEST(EnemyDefsErrors, UnusedBehaviorParamIsRejected)
 {
-    const std::string text = ReplaceOnce(ReadDefsText(), "\"detect\": 350, \"closeStop\"", "\"detect\": 350, \"zzz\": 1, \"closeStop\"");
+    const slug::String text = ReplaceOnce_(ReadDefsText_(), "\"detect\": 350, \"closeStop\"", "\"detect\": 350, \"zzz\": 1, \"closeStop\"");
     ASSERT_FALSE(text.empty());
     slug::String message;
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text, &message)));
@@ -282,24 +284,24 @@ TEST(EnemyDefsErrors, UnusedBehaviorParamIsRejected)
 
 TEST(EnemyDefsErrors, UnknownWeaponProjectileIsRejected)
 {
-    const std::string text = ReplaceOnce(ReadDefsText(), "\"projectile\": \"soldier_bomb_proj\"", "\"projectile\": \"nope\"");
+    const slug::String text = ReplaceOnce_(ReadDefsText_(), "\"projectile\": \"soldier_bomb_proj\"", "\"projectile\": \"nope\"");
     ASSERT_FALSE(text.empty());
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text)));
 }
 
 TEST(EnemyDefsErrors, FlyingBzkWithoutItsLandedDefIsRejected)
 {
-    const std::string text = ReplaceOnce(ReadDefsText(), "\"landedDef\": \"soldier_bzk\"", "\"landedDef\": \"nope\"");
+    const slug::String text = ReplaceOnce_(ReadDefsText_(), "\"landedDef\": \"soldier_bzk\"", "\"landedDef\": \"nope\"");
     ASSERT_FALSE(text.empty());
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text)));
 }
 
 TEST(EnemyDefsErrors, DuplicateDefinitionNameIsRejected)
 {
-    std::string text = ReadDefsText();
-    const std::string anchor = "\"pow\": {";
-    const std::string extra  = "\"pow\": { \"kind\": \"npc\", \"behavior\": \"pow\", \"hp\": 1, \"body\": { \"w\": 50, \"h\": 80, \"cx\": 0, \"cy\": -40 } }, ";
-    text = ReplaceOnce(text, anchor, extra + anchor);
+    slug::String       text   = ReadDefsText_();
+    const slug::String anchor = "\"pow\": {";
+    const slug::String extra  = "\"pow\": { \"kind\": \"npc\", \"behavior\": \"pow\", \"hp\": 1, \"body\": { \"w\": 50, \"h\": 80, \"cx\": 0, \"cy\": -40 } }, ";
+    text                      = ReplaceOnce_(text, anchor, extra + anchor);
     ASSERT_FALSE(text.empty());
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text)));
 }
@@ -316,7 +318,7 @@ TEST(EnemyDefsBaked, EveryDefinedClipExistsInTheAnimationLibrary)
             const bool bSided = named.clip.bSided;
             for (const bool bLeft: { true, false })
             {
-                const std::string name = bSided ? ResolveSideText(named.clip.name.c_str(), bLeft) : named.clip.name.c_str();
+                const slug::String name = bSided ? ResolveSideText_(named.clip.name.c_str(), bLeft) : named.clip.name.c_str();
                 EXPECT_TRUE(anims.IsValid(anims.Find(name))) << def.name.c_str() << ": " << name;
                 if (!bSided)
                 {
@@ -329,7 +331,7 @@ TEST(EnemyDefsBaked, EveryDefinedClipExistsInTheAnimationLibrary)
     {
         for (const bool bLeft: { true, false })
         {
-            const std::string fly = ResolveSideText(proj.fly.name.c_str(), bLeft);
+            const slug::String fly = ResolveSideText_(proj.fly.name.c_str(), bLeft);
             EXPECT_TRUE(anims.IsValid(anims.Find(fly))) << proj.name.c_str() << ": " << fly;
         }
     }
@@ -337,7 +339,7 @@ TEST(EnemyDefsBaked, EveryDefinedClipExistsInTheAnimationLibrary)
     {
         for (const FxDef& fx: def.death.fx)
         {
-            EXPECT_TRUE(anims.IsValid(anims.Find(ResolveSideText(fx.clip.c_str(), true)))) << def.name.c_str();
+            EXPECT_TRUE(anims.IsValid(anims.Find(ResolveSideText_(fx.clip.c_str(), true)))) << def.name.c_str();
         }
     }
 }
@@ -351,12 +353,12 @@ TEST(EnemyDefsBaked, ClipFrameCountAndTimingMatchTheBakedAnimation)
     {
         for (const NamedClip& named: def.clips)
         {
-            if (named.clip.name.find("{side}") == std::string::npos)
+            if (named.clip.name.find("{side}") == slug::String::npos)
             {
                 continue;
             }
-            const AnimClip* pLeft  = anims.FindClip(ResolveSideText(named.clip.name.c_str(), true));
-            const AnimClip* pRight = anims.FindClip(ResolveSideText(named.clip.name.c_str(), false));
+            const AnimClip* pLeft  = anims.FindClip(ResolveSideText_(named.clip.name.c_str(), true));
+            const AnimClip* pRight = anims.FindClip(ResolveSideText_(named.clip.name.c_str(), false));
             ASSERT_NE(pLeft, nullptr) << named.clip.name.c_str();
             const bool bLeftOk  = pLeft->GetFrameCount() == named.clip.frames && std::abs(pLeft->frameDuration - named.clip.frameSec) < 0.002f;
             const bool bRightOk = pRight && pRight->GetFrameCount() == named.clip.frames && std::abs(pRight->frameDuration - named.clip.frameSec) < 0.002f;

@@ -1,3 +1,5 @@
+// 고정 스텝 클록과 입력 이력/입력 시스템의 기본 동작을 검증한다.
+
 #include <gtest/gtest.h>
 
 #include "Core/FixedStep.h"
@@ -21,7 +23,7 @@ TEST(FixedStepClock, SubStepDeltasAccumulate)
 
 TEST(FixedStepClock, SameStepCountAtDifferentFrameRates)
 {
-    const double frameRates[] = { 60.0, 144.0, 30.0, 240.0 };
+    const ARRAY<double, 4> frameRates = { 60.0, 144.0, 30.0, 240.0 };
     for (const double fps: frameRates)
     {
         FixedStepClock clock;
@@ -51,14 +53,14 @@ TEST(FixedStepClock, AlphaIsFractionOfStep)
 
 namespace
 {
-    InputFrame Held(
-        const eAction _action)
-    {
-        InputFrame frame;
-        frame.Set(_action, true);
-        return frame;
-    }
+[[nodiscard]] InputFrame Held_(
+    const eAction _action)
+{
+    InputFrame frame;
+    frame.Set(_action, true);
+    return frame;
 }
+}   // namespace
 
 TEST(InputHistory, PressEdgeIsDetectedOnFirstFrame)
 {
@@ -66,11 +68,11 @@ TEST(InputHistory, PressEdgeIsDetectedOnFirstFrame)
     history.Push({});
     EXPECT_FALSE(history.WasPressed(eAction::Jump));
 
-    history.Push(Held(eAction::Jump));
+    history.Push(Held_(eAction::Jump));
     EXPECT_TRUE(history.WasPressed(eAction::Jump));
     EXPECT_TRUE(history.IsHeld(eAction::Jump));
 
-    history.Push(Held(eAction::Jump));
+    history.Push(Held_(eAction::Jump));
     EXPECT_FALSE(history.WasPressed(eAction::Jump));
     EXPECT_TRUE(history.IsHeld(eAction::Jump));
 }
@@ -79,7 +81,7 @@ TEST(InputHistory, PressBufferWindow)
 {
     InputHistory history;
     history.Push({});
-    history.Push(Held(eAction::Jump));
+    history.Push(Held_(eAction::Jump));
     history.Push({});
     history.Push({});
     EXPECT_TRUE(history.WasPressedWithin(eAction::Jump, 4));

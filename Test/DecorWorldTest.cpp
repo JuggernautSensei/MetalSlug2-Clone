@@ -1,3 +1,5 @@
+// 장식 월드의 스폰 파라미터 해석, 시퀀스 이동/반전/루프와 레이어 마스크 정리를 검증한다.
+
 #include <gtest/gtest.h>
 
 #include "Base/Result.h"
@@ -25,8 +27,8 @@ constexpr const char* kDecorJson = R"({
     }
 })";
 
-ParamValue Step(
-    const char* _clip,
+[[nodiscard]] ParamValue Step_(
+    const char*  _clip,
     const double _seconds,
     const double _vx,
     const bool   _bFlip = false)
@@ -46,12 +48,13 @@ ParamValue Step(
 }
 
 // A(0.5s, +60px/s) -> B(0.25s, 정지) -> A(0.5s, -60px/s, 좌우 반전)
-ParamValue MakeWalkParams(const bool _bLoop)
+[[nodiscard]] ParamValue MakeWalkParams_(
+    const bool _bLoop)
 {
     ParamValue sequence = ParamValue::MakeArray();
-    sequence.PushBack(Step("A", 0.5, 60.0));
-    sequence.PushBack(Step("B", 0.25, 0.0));
-    sequence.PushBack(Step("A", 0.5, -60.0, true));
+    sequence.PushBack(Step_("A", 0.5, 60.0));
+    sequence.PushBack(Step_("B", 0.25, 0.0));
+    sequence.PushBack(Step_("A", 0.5, -60.0, true));
 
     ParamValue params = ParamValue::MakeObject();
     params.Set("sequence", sequence);
@@ -59,7 +62,7 @@ ParamValue MakeWalkParams(const bool _bLoop)
     return params;
 }
 
-void RunTicks(
+void RunTicks_(
     DecorWorld&             _world,
     const AnimationLibrary& _lib,
     const int               _ticks)
@@ -69,11 +72,11 @@ void RunTicks(
         _world.Tick(_lib, kStepSec);
     }
 }
-}
+}   // namespace
 
 TEST(DecorSpawnParams, ParsesVelocitySequenceAndFlags)
 {
-    ParamValue params = MakeWalkParams(true);
+    ParamValue params = MakeWalkParams_(true);
     params.Set("velocity", ParamValue::MakeArray());
 
     const DecorSpawn spawn = MakeDecorSpawn("A", eStageLayer::Background, { 100.f, 50.f }, &params);
@@ -91,13 +94,13 @@ TEST(DecorSpawnParams, ParsesVelocitySequenceAndFlags)
 
 TEST(DecorSpawnParams, SkipsStepsWithoutClipAndReadsVelocityWithoutSequence)
 {
-    ParamValue params = ParamValue::MakeObject();
+    ParamValue params   = ParamValue::MakeObject();
     ParamValue velocity = ParamValue::MakeArray();
     velocity.PushBack(ParamValue::MakeNumber(70.0));
     velocity.PushBack(ParamValue::MakeNumber(-50.0));
     params.Set("velocity", velocity);
     ParamValue sequence = ParamValue::MakeArray();
-    ParamValue noClip = ParamValue::MakeObject();
+    ParamValue noClip   = ParamValue::MakeObject();
     noClip.Set("seconds", ParamValue::MakeNumber(1.0));
     sequence.PushBack(noClip);
     params.Set("sequence", sequence);
@@ -113,34 +116,34 @@ TEST(DecorWorld, SequenceAdvancesStepsAndFinishesWithoutLoop)
     const slug::Result<AnimationLibrary> lib = AnimationLibrary::LoadFromJson(kDecorJson);
     ASSERT_TRUE(lib.HasValue());
 
-    ParamValue params = MakeWalkParams(false);
-    DecorWorld world;
+    ParamValue     params = MakeWalkParams_(false);
+    DecorWorld     world;
     const uint32_t id = world.Spawn(MakeDecorSpawn("A", eStageLayer::Background, { 100.f, 50.f }, &params));
 
-    Vec2 pos      = {};
-    Vec2 velocity = {};
+    Vec2       pos      = {};
+    Vec2       velocity = {};
     StringView clip;
-    bool bFinished = false;
+    bool       bFinished = false;
 
-    RunTicks(world, *lib, 20);   // 0.33 s: 첫 구간 (A, +60)
+    RunTicks_(world, *lib, 20);   // 0.33 s: 첫 구간 (A, +60)
     ASSERT_TRUE(world.Get(id, pos, velocity, clip, bFinished));
     EXPECT_EQ(clip, "A");
     EXPECT_NEAR(pos.x, 120.f, 0.5f);
     EXPECT_FALSE(bFinished);
 
-    RunTicks(world, *lib, 20);   // 0.67 s: 둘째 구간 (B, 정지)
+    RunTicks_(world, *lib, 20);   // 0.67 s: 둘째 구간 (B, 정지)
     ASSERT_TRUE(world.Get(id, pos, velocity, clip, bFinished));
     EXPECT_EQ(clip, "B");
     EXPECT_NEAR(pos.x, 129.f, 1.f);   // 구간 전환 틱은 새 속도(0)로 움직인다
     EXPECT_FLOAT_EQ(velocity.x, 0.f);
 
-    RunTicks(world, *lib, 20);   // 1.0 s: 셋째 구간 (A, -60, 반전) 진행 중
+    RunTicks_(world, *lib, 20);   // 1.0 s: 셋째 구간 (A, -60, 반전) 진행 중
     ASSERT_TRUE(world.Get(id, pos, velocity, clip, bFinished));
     EXPECT_EQ(clip, "A");
     EXPECT_FLOAT_EQ(velocity.x, -60.f);
     EXPECT_FALSE(bFinished);
 
-    RunTicks(world, *lib, 30);   // 1.5 s: 시퀀스 끝, 제자리 정지
+    RunTicks_(world, *lib, 30);   // 1.5 s: 시퀀스 끝, 제자리 정지
     ASSERT_TRUE(world.Get(id, pos, velocity, clip, bFinished));
     EXPECT_TRUE(bFinished);
     EXPECT_FLOAT_EQ(velocity.x, 0.f);
@@ -152,15 +155,15 @@ TEST(DecorWorld, SequenceLoopsBackToFirstStep)
     const slug::Result<AnimationLibrary> lib = AnimationLibrary::LoadFromJson(kDecorJson);
     ASSERT_TRUE(lib.HasValue());
 
-    ParamValue params = MakeWalkParams(true);
-    DecorWorld world;
+    ParamValue     params = MakeWalkParams_(true);
+    DecorWorld     world;
     const uint32_t id = world.Spawn(MakeDecorSpawn("A", eStageLayer::Background, { 100.f, 50.f }, &params));
 
-    RunTicks(world, *lib, 90);   // 1.5 s: 한 바퀴 돌고 첫 구간 (A, +60) 으로 복귀
-    Vec2 pos      = {};
-    Vec2 velocity = {};
+    RunTicks_(world, *lib, 90);   // 1.5 s: 한 바퀴 돌고 첫 구간 (A, +60) 으로 복귀
+    Vec2       pos      = {};
+    Vec2       velocity = {};
     StringView clip;
-    bool bFinished = true;
+    bool       bFinished = true;
     ASSERT_TRUE(world.Get(id, pos, velocity, clip, bFinished));
     EXPECT_FALSE(bFinished);
     EXPECT_EQ(clip, "A");
@@ -172,20 +175,20 @@ TEST(DecorWorld, SingleClipMovesAtConstantVelocityAndNeverFinishes)
     const slug::Result<AnimationLibrary> lib = AnimationLibrary::LoadFromJson(kDecorJson);
     ASSERT_TRUE(lib.HasValue());
 
-    ParamValue params = ParamValue::MakeObject();
+    ParamValue params   = ParamValue::MakeObject();
     ParamValue velocity = ParamValue::MakeArray();
     velocity.PushBack(ParamValue::MakeNumber(70.0));
     velocity.PushBack(ParamValue::MakeNumber(-50.0));
     params.Set("velocity", velocity);
 
-    DecorWorld world;
+    DecorWorld     world;
     const uint32_t id = world.Spawn(MakeDecorSpawn("A", eStageLayer::FarBackground, { 100.f, 50.f }, &params));
-    RunTicks(world, *lib, 60);   // 1 s
+    RunTicks_(world, *lib, 60);   // 1 s
 
-    Vec2 pos      = {};
-    Vec2 vel      = {};
+    Vec2       pos = {};
+    Vec2       vel = {};
     StringView clip;
-    bool bFinished = true;
+    bool       bFinished = true;
     ASSERT_TRUE(world.Get(id, pos, vel, clip, bFinished));
     EXPECT_FALSE(bFinished);
     EXPECT_NEAR(pos.x, 170.f, 0.5f);

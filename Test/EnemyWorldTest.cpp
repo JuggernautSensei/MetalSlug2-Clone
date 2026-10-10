@@ -1,3 +1,5 @@
+// 적 월드의 스폰, 활성화, 피격, 처치 이벤트, 방패, POW, 피격 점멸과 1800틱 결정성을 검증한다.
+
 #include <algorithm>
 #include <cmath>
 #include <vector>
@@ -8,13 +10,63 @@ using namespace slugtest;
 
 namespace
 {
-    constexpr float kGroundY = 378.f;   // MakeFlatGround 의 지면 윗면
+constexpr float kGroundY = 378.f;   // MakeFlatGround 의 지면 윗면
 
-    bool OnGround(const Enemy* _pEnemy)
-    {
-        return _pEnemy && _pEnemy->bGrounded && std::abs(_pEnemy->body.position.y - kGroundY) < 0.5f;
-    }
+[[nodiscard]] bool OnGround_(
+    const Enemy* _pEnemy)
+{
+    return _pEnemy && _pEnemy->bGrounded && std::abs(_pEnemy->body.position.y - kGroundY) < 0.5f;
 }
+
+// 높은 체력(20)의 병사를 쓰러뜨리는 데 필요한 타격 횟수를 돌려준다 (로드 실패 -1, 미처치 -2)
+[[nodiscard]] int HitsToKill_(
+    const eHitKind _kind,
+    const int      _damage)
+{
+    EnemyRig rig;
+    if (!rig.IsLoaded())
+    {
+        return -1;
+    }
+    SpawnParams params;
+    params.hp           = 20;
+    const EnemyHandle h = rig.Spawn("soldier_bomb", { 300.f, kGroundY }, params);
+    rig.Step(2);
+    for (int hits = 1; hits <= 20; ++hits)
+    {
+        (void)rig.Strike(h.id, _kind, _damage);
+        rig.Step(1);
+        if (rig.World().IsDefeated(h))
+        {
+            return hits;
+        }
+    }
+    return -2;
+}
+
+// 보병 전 종류를 세워 두고 1800틱 동안 상태 해시를 기록한다 (로드 실패 시 false)
+[[nodiscard]] bool RunHashes_(
+    slug::Vector<uint64_t>& _hashes)
+{
+    EnemyRig rig({ 100.f, kGroundY }, 0.f);
+    if (!rig.IsLoaded())
+    {
+        return false;
+    }
+    float x = 200.f;
+    for (const char* name: kInfantryNames)
+    {
+        (void)rig.Spawn(name, { x, kGroundY });
+        x += 60.f;
+    }
+    for (int i = 0; i < 1800; ++i)
+    {
+        rig.Step(1);
+        _hashes.push_back(rig.World().HashState());
+    }
+    return true;
+}
+}   // namespace
 
 TEST(EnemyWorld, SpawningAnUnknownDefinitionReturnsANullHandle)
 {
@@ -43,7 +95,7 @@ TEST(EnemyWorld, SoldierFallsOntoTheGroundAndIdles)
     ASSERT_TRUE(rig.IsLoaded());
     const EnemyHandle h = rig.Spawn("soldier_bomb", { 300.f, 300.f });
     rig.Step(60);
-    EXPECT_TRUE(OnGround(rig.E(h)));
+    EXPECT_TRUE(OnGround_(rig.E(h)));
     EXPECT_TRUE(rig.E(h)->bActive);
 }
 
@@ -68,7 +120,7 @@ TEST(EnemyWorld, ActivationWaitsForTheScreenThenLatches)
     rig.Step(1);
     EXPECT_TRUE(rig.E(h)->bActive);
 
-    rig.SetView(0.f);     // 다시 멀어져도 활성은 유지된다 (래치)
+    rig.SetView(0.f);   // 다시 멀어져도 활성은 유지된다 (래치)
     rig.Step(10);
     EXPECT_TRUE(rig.E(h)->bActive);
 }
@@ -100,7 +152,7 @@ TEST(EnemyWorld, DelayedSpawnHasNoHurtboxUntilItAppears)
     EnemyRig rig;
     ASSERT_TRUE(rig.IsLoaded());
     SpawnParams params;
-    params.delaySec = 0.5f;
+    params.delaySec     = 0.5f;
     const EnemyHandle h = rig.Spawn("soldier_bomb", { 300.f, kGroundY }, params);
     EXPECT_FALSE(rig.World().IsDefeated(h));
     EXPECT_EQ(rig.Strike(h.id, eHitKind::Bullet, 3), 0u);   // 대기 중에는 맞지 않는다
@@ -114,7 +166,7 @@ TEST(EnemyWorld, CountAliveAndTagDefeatFollowTheSpawns)
     EnemyRig rig;
     ASSERT_TRUE(rig.IsLoaded());
     SpawnParams tagged;
-    tagged.userTag = 5;
+    tagged.userTag      = 5;
     const EnemyHandle a = rig.Spawn("soldier_bomb", { 300.f, kGroundY }, tagged);
     const EnemyHandle b = rig.Spawn("soldier_bomb", { 340.f, kGroundY }, tagged);
     EXPECT_EQ(rig.World().CountAlive("soldier_bomb"), 2);
@@ -216,30 +268,9 @@ TEST(EnemyWorld, PistolAndKnifeEachKillASoldierInOneHit)
 
 TEST(EnemyWorld, HitCountFollowsDamageAgainstAHighHp)
 {
-    const auto HitsToKill = [](const eHitKind _kind, const int _damage) {
-        EnemyRig rig;
-        if (!rig.IsLoaded())
-        {
-            return -1;
-        }
-        SpawnParams params;
-        params.hp           = 20;
-        const EnemyHandle h = rig.Spawn("soldier_bomb", { 300.f, kGroundY }, params);
-        rig.Step(2);
-        for (int hits = 1; hits <= 20; ++hits)
-        {
-            (void)rig.Strike(h.id, _kind, _damage);
-            rig.Step(1);
-            if (rig.World().IsDefeated(h))
-            {
-                return hits;
-            }
-        }
-        return -2;
-    };
-    EXPECT_EQ(HitsToKill(eHitKind::Bullet, 3), 7);
-    EXPECT_EQ(HitsToKill(eHitKind::Melee, 8), 3);
-    EXPECT_EQ(HitsToKill(eHitKind::Blast, 20), 1);
+    EXPECT_EQ(HitsToKill_(eHitKind::Bullet, 3), 7);
+    EXPECT_EQ(HitsToKill_(eHitKind::Melee, 8), 3);
+    EXPECT_EQ(HitsToKill_(eHitKind::Blast, 20), 1);
 }
 
 TEST(EnemyWorld, ShieldBlocksBulletsButNotMelee)
@@ -294,7 +325,7 @@ TEST(EnemyWorld, PowIgnoresEnemyBulletsAndHasNoHurtboxOnceFreed)
     rig.Step(10);
     EXPECT_EQ(rig.Strike(pow.id, eHitKind::Bullet, 1, eTeam::Enemy), 0u);   // 적 탄은 중립 포로에게 닿지 않는다
 
-    (void)rig.Strike(pow.id, eHitKind::Melee, 8);   // 풀려난다
+    (void)rig.Strike(pow.id, eHitKind::Melee, 8);            // 풀려난다
     EXPECT_EQ(rig.Strike(pow.id, eHitKind::Melee, 8), 0u);   // 풀린 뒤에는 Hurtbox 가 없다
     rig.Step(1);
     EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Freed), 1);
@@ -343,32 +374,13 @@ TEST(EnemyWorld, SwordSoldierHitsThePlayerTeamWhenAdjacent)
 
 TEST(EnemyWorld, OneThousandEightHundredTicksAreDeterministic)
 {
-    const auto Run = [](std::vector<uint64_t>& _hashes) {
-        EnemyRig rig({ 100.f, kGroundY }, 0.f);
-        if (!rig.IsLoaded())
-        {
-            return false;
-        }
-        float x = 200.f;
-        for (const char* name: kInfantryNames)
-        {
-            (void)rig.Spawn(name, { x, kGroundY });
-            x += 60.f;
-        }
-        for (int i = 0; i < 1800; ++i)
-        {
-            rig.Step(1);
-            _hashes.push_back(rig.World().HashState());
-        }
-        return true;
-    };
-    std::vector<uint64_t> first;
-    std::vector<uint64_t> second;
-    ASSERT_TRUE(Run(first));
-    ASSERT_TRUE(Run(second));
+    slug::Vector<uint64_t> first;
+    slug::Vector<uint64_t> second;
+    ASSERT_TRUE(RunHashes_(first));
+    ASSERT_TRUE(RunHashes_(second));
     EXPECT_EQ(first, second);
 
-    std::vector<uint64_t> distinct = first;
+    slug::Vector<uint64_t> distinct = first;
     std::sort(distinct.begin(), distinct.end());
     distinct.erase(std::unique(distinct.begin(), distinct.end()), distinct.end());
     EXPECT_GT(distinct.size(), 100u);   // 실제로 상태가 변한다
@@ -410,11 +422,11 @@ TEST(EnemyWorld, PowHitWhileFallingIsNotFreedAndStaysVertical)
 
 TEST(EnemyWorld, PowFallingIntoPlayerIsRescuedMidAirAndGivesItem)
 {
-    constexpr int kClose = 5;   // ePowState::kClose (구출 후 아이템 연출)
+    constexpr int kClose = 5;                 // ePowState::kClose (구출 후 아이템 연출)
     EnemyRig      rig({ 300.f, kGroundY });   // 플레이어가 POW 의 낙하 경로 아래에 서 있다
     ASSERT_TRUE(rig.IsLoaded());
     SpawnParams params;
-    params.drop = "HM";
+    params.drop           = "HM";
     const EnemyHandle pow = rig.Spawn("pow", { 300.f, 150.f }, params);
     ASSERT_FALSE(pow.IsNull());
     ASSERT_FALSE(rig.E(pow)->bGrounded);
@@ -456,7 +468,7 @@ TEST(EnemyHitFlash, OneHitDefinitionNeverFlashesEvenWhenSpawnedWithMoreHp)
     EnemyRig rig;
     ASSERT_TRUE(rig.IsLoaded());
     SpawnParams params;
-    params.hp = 5;
+    params.hp           = 5;
     const EnemyHandle h = rig.Spawn("soldier_bomb", { 300.f, kGroundY }, params);
     rig.Step(2);
     ASSERT_GT(rig.Strike(h.id, eHitKind::Bullet, 1), 0u);
@@ -489,7 +501,7 @@ TEST(EnemyWorld, PowVariantPicksItsOwnClipSetAndDefaultsToOlder)
     ASSERT_NE(pLib, nullptr);
 
     SpawnParams variant;
-    variant.aiVariant = 2;   // 외형 변형 2 (Rumi 계열 클립)
+    variant.aiVariant       = 2;   // 외형 변형 2 (Rumi 계열 클립)
     const EnemyHandle hBase = rig.Spawn("pow", { 300.f, kGroundY });
     const EnemyHandle hVar  = rig.Spawn("pow", { 500.f, kGroundY }, variant);
     rig.Step(1);

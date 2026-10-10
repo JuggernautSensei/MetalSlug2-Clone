@@ -1,13 +1,15 @@
-#include <gtest/gtest.h>
-#include "Base/Types.h"
+// 팀 판정표, 히트/허트박스 해석(관통, 방어, 단일 타격 등), 결정성과 Health 를 검증한다.
 
+#include <gtest/gtest.h>
+
+#include "Base/Types.h"
 #include "World/Combat.h"
 
 using namespace slug;
 
 namespace
 {
-Hitbox MakeHit(
+[[nodiscard]] Hitbox MakeHit_(
     const eTeam    _team,
     const eHitKind _kind,
     const Aabb&    _box,
@@ -27,7 +29,7 @@ Hitbox MakeHit(
     return hit;
 }
 
-Hurtbox MakeHurt(
+[[nodiscard]] Hurtbox MakeHurt_(
     const eTeam    _team,
     const Aabb&    _box,
     const uint32_t _owner)
@@ -39,7 +41,7 @@ Hurtbox MakeHurt(
     return hurt;
 }
 
-Aabb Box(
+[[nodiscard]] Aabb Box_(
     const float _x0,
     const float _y0,
     const float _x1,
@@ -48,14 +50,37 @@ Aabb Box(
     return Aabb::FromMinMax({ _x0, _y0 }, { _x1, _y1 });
 }
 
-slug::Vector<HitEvent> Resolve(
-    HitResolver&                _resolver,
+[[nodiscard]] slug::Vector<HitEvent> Resolve_(
+    HitResolver&                 _resolver,
     const slug::Vector<Hitbox>&  _hits,
     const slug::Vector<Hurtbox>& _hurts)
 {
     return _resolver.Resolve(_hits, _hurts);
 }
+
+// 30프레임 동안 결정적인 히트/허트 박스를 만들어 판정 결과를 로그로 남긴다
+[[nodiscard]] slug::Vector<uint32_t> RunResolverLog_()
+{
+    HitResolver            resolver;
+    slug::Vector<uint32_t> log;
+    for (int frame = 0; frame < 30; ++frame)
+    {
+        slug::Vector<Hitbox>  hits;
+        slug::Vector<Hurtbox> hurts;
+        for (uint32_t i = 0; i < 8; ++i)
+        {
+            const float x = static_cast<float>(frame * 3 + static_cast<int>(i) * 11);
+            hits.push_back(MakeHit_(i % 2 == 0 ? eTeam::Player : eTeam::Enemy, i % 3 == 0 ? eHitKind::Melee : eHitKind::Bullet, Box_(x, 0, x + 14, 10), 1 + i, i % 4 == 0, 1));
+            hurts.push_back(MakeHurt_(i % 2 == 0 ? eTeam::Enemy : eTeam::Player, Box_(x + 6, 0, x + 18, 10), 50 + i));
+        }
+        for (const HitEvent& event: resolver.Resolve(hits, hurts))
+        {
+            log.push_back(event.hitboxIndex * 1000 + event.hurtboxIndex);
+        }
+    }
+    return log;
 }
+}   // namespace
 
 TEST(Combat, TeamMatrix)
 {
@@ -74,8 +99,8 @@ TEST(Combat, TeamMatrix)
 
 TEST(Combat, PlayerBulletHitsEnemyAndReportsDamage)
 {
-    HitResolver resolver;
-    const auto  events = Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 10, 10), 1, false, 3) }, { MakeHurt(eTeam::Enemy, Box(5, 5, 20, 20), 7) });
+    HitResolver                  resolver;
+    const slug::Vector<HitEvent> events = Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 10, 10), 1, false, 3) }, { MakeHurt_(eTeam::Enemy, Box_(5, 5, 20, 20), 7) });
 
     ASSERT_EQ(events.size(), 1u);
     EXPECT_EQ(events[0].hitboxIndex, 0u);
@@ -89,38 +114,38 @@ TEST(Combat, PlayerBulletHitsEnemyAndReportsDamage)
 TEST(Combat, SameTeamIsIgnored)
 {
     HitResolver resolver;
-    EXPECT_TRUE(Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 10, 10), 1) }, { MakeHurt(eTeam::Player, Box(0, 0, 10, 10), 7) }).empty());
-    EXPECT_TRUE(Resolve(resolver, { MakeHit(eTeam::Enemy, eHitKind::Bullet, Box(0, 0, 10, 10), 2) }, { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 7) }).empty());
+    EXPECT_TRUE(Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 10, 10), 1) }, { MakeHurt_(eTeam::Player, Box_(0, 0, 10, 10), 7) }).empty());
+    EXPECT_TRUE(Resolve_(resolver, { MakeHit_(eTeam::Enemy, eHitKind::Bullet, Box_(0, 0, 10, 10), 2) }, { MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 7) }).empty());
 }
 
 TEST(Combat, EnemyBulletHitsPlayer)
 {
-    HitResolver resolver;
-    const auto  events = Resolve(resolver, { MakeHit(eTeam::Enemy, eHitKind::Bullet, Box(0, 0, 10, 10), 1) }, { MakeHurt(eTeam::Player, Box(5, 0, 15, 10), 1) });
+    HitResolver                  resolver;
+    const slug::Vector<HitEvent> events = Resolve_(resolver, { MakeHit_(eTeam::Enemy, eHitKind::Bullet, Box_(0, 0, 10, 10), 1) }, { MakeHurt_(eTeam::Player, Box_(5, 0, 15, 10), 1) });
     EXPECT_EQ(events.size(), 1u);
 }
 
 TEST(Combat, NeutralPropsAcceptPlayerHitsButNotEnemyFire)
 {
-    HitResolver                resolver;
-    const slug::Vector<Hurtbox> prop = { MakeHurt(eTeam::Neutral, Box(0, 0, 10, 10), 50) };
+    HitResolver                 resolver;
+    const slug::Vector<Hurtbox> prop = { MakeHurt_(eTeam::Neutral, Box_(0, 0, 10, 10), 50) };
 
-    EXPECT_EQ(Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 10, 10), 1) }, prop).size(), 1u);
-    EXPECT_EQ(Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Melee, Box(0, 0, 10, 10), 2) }, prop).size(), 1u);
-    EXPECT_TRUE(Resolve(resolver, { MakeHit(eTeam::Enemy, eHitKind::Bullet, Box(0, 0, 10, 10), 3) }, prop).empty());
+    EXPECT_EQ(Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 10, 10), 1) }, prop).size(), 1u);
+    EXPECT_EQ(Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Melee, Box_(0, 0, 10, 10), 2) }, prop).size(), 1u);
+    EXPECT_TRUE(Resolve_(resolver, { MakeHit_(eTeam::Enemy, eHitKind::Bullet, Box_(0, 0, 10, 10), 3) }, prop).empty());
 }
 
 TEST(Combat, NeutralHazardsHitBothSidesButNotTheirOwner)
 {
-    HitResolver                resolver;
+    HitResolver                 resolver;
     const slug::Vector<Hurtbox> hurts = {
-        MakeHurt(eTeam::Player, Box(0, 0, 10, 10), 1),
-        MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 2),
-        MakeHurt(eTeam::Neutral, Box(0, 0, 10, 10), 3),
+        MakeHurt_(eTeam::Player, Box_(0, 0, 10, 10), 1),
+        MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 2),
+        MakeHurt_(eTeam::Neutral, Box_(0, 0, 10, 10), 3),
     };
 
-    auto       hit    = MakeHit(eTeam::Neutral, eHitKind::Hazard, Box(0, 0, 10, 10), 9, true, 1, 3);
-    const auto events = Resolve(resolver, { hit }, hurts);
+    Hitbox                       hit    = MakeHit_(eTeam::Neutral, eHitKind::Hazard, Box_(0, 0, 10, 10), 9, true, 1, 3);
+    const slug::Vector<HitEvent> events = Resolve_(resolver, { hit }, hurts);
     ASSERT_EQ(events.size(), 2u);
     EXPECT_EQ(events[0].target, 1u);
     EXPECT_EQ(events[1].target, 2u);
@@ -129,26 +154,26 @@ TEST(Combat, NeutralHazardsHitBothSidesButNotTheirOwner)
 TEST(Combat, OwnerNeverHitsItself)
 {
     HitResolver resolver;
-    Hurtbox self   = MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 100);
-    auto    hazard = MakeHit(eTeam::Neutral, eHitKind::Blast, Box(0, 0, 10, 10), 1, true, 5, 100);
-    EXPECT_TRUE(Resolve(resolver, { hazard }, { self }).empty());
+    Hurtbox     self   = MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 100);
+    Hitbox      hazard = MakeHit_(eTeam::Neutral, eHitKind::Blast, Box_(0, 0, 10, 10), 1, true, 5, 100);
+    EXPECT_TRUE(Resolve_(resolver, { hazard }, { self }).empty());
 }
 
 TEST(Combat, KnifeHitsEveryEnemyRegardlessOfKind)
 {
-    HitResolver          resolver;
+    HitResolver           resolver;
     slug::Vector<Hurtbox> enemies;
     for (uint32_t i = 0; i < 20; ++i)
     {
         const float x = static_cast<float>(i) * 30.f;
-        enemies.push_back(MakeHurt(eTeam::Enemy, Box(x, 0, x + 24.f, 40), 200 + i));
+        enemies.push_back(MakeHurt_(eTeam::Enemy, Box_(x, 0, x + 24.f, 40), 200 + i));
     }
 
     for (uint32_t i = 0; i < enemies.size(); ++i)
     {
-        const float x      = static_cast<float>(i) * 30.f;
-        const auto  knife  = MakeHit(eTeam::Player, eHitKind::Melee, Box(x + 10.f, 10, x + 30.f, 30), 1000 + i, false, 4);
-        const auto  events = Resolve(resolver, { knife }, enemies);
+        const float                  x      = static_cast<float>(i) * 30.f;
+        const Hitbox                 knife  = MakeHit_(eTeam::Player, eHitKind::Melee, Box_(x + 10.f, 10, x + 30.f, 30), 1000 + i, false, 4);
+        const slug::Vector<HitEvent> events = Resolve_(resolver, { knife }, enemies);
         ASSERT_EQ(events.size(), 1u) << "enemy " << i;
         EXPECT_EQ(events[0].target, 200 + i);
         EXPECT_EQ(events[0].damage, 4);
@@ -159,30 +184,30 @@ TEST(Combat, KnifeHitsEveryEnemyRegardlessOfKind)
 TEST(Combat, HurtboxMayRestrictAcceptedKinds)
 {
     HitResolver resolver;
-    Hurtbox     armored = MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 5);
+    Hurtbox     armored = MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 5);
     armored.accepts     = HitKindMask { eHitKind::Blast, eHitKind::Melee };
 
-    EXPECT_TRUE(Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 10, 10), 1) }, { armored }).empty());
-    EXPECT_EQ(Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Blast, Box(0, 0, 10, 10), 2) }, { armored }).size(), 1u);
-    EXPECT_EQ(Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Melee, Box(0, 0, 10, 10), 3) }, { armored }).size(), 1u);
+    EXPECT_TRUE(Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 10, 10), 1) }, { armored }).empty());
+    EXPECT_EQ(Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Blast, Box_(0, 0, 10, 10), 2) }, { armored }).size(), 1u);
+    EXPECT_EQ(Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Melee, Box_(0, 0, 10, 10), 3) }, { armored }).size(), 1u);
 }
 
 TEST(Combat, InvulnerableHurtboxIgnoresHitsWithoutConsumingThem)
 {
     HitResolver resolver;
-    Hurtbox     shielded   = MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 5);
+    Hurtbox     shielded   = MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 5);
     shielded.bInvulnerable = true;
-    const Hurtbox open     = MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 6);
+    const Hurtbox open     = MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 6);
 
-    const auto events = Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 10, 10), 1) }, { shielded, open });
+    const slug::Vector<HitEvent> events = Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 10, 10), 1) }, { shielded, open });
     ASSERT_EQ(events.size(), 1u);
     EXPECT_EQ(events[0].target, 6u);
 }
 
 TEST(Combat, NonPierceHitboxIsConsumedByFirstHitInIndexOrder)
 {
-    HitResolver resolver;
-    const auto  events = Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 100, 10), 1) }, { MakeHurt(eTeam::Enemy, Box(40, 0, 50, 10), 1), MakeHurt(eTeam::Enemy, Box(10, 0, 20, 10), 2) });
+    HitResolver                  resolver;
+    const slug::Vector<HitEvent> events = Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 100, 10), 1) }, { MakeHurt_(eTeam::Enemy, Box_(40, 0, 50, 10), 1), MakeHurt_(eTeam::Enemy, Box_(10, 0, 20, 10), 2) });
 
     ASSERT_EQ(events.size(), 1u);
     EXPECT_EQ(events[0].hurtboxIndex, 0u);   // 결정적: 가장 낮은 hurtbox 인덱스가 먼저
@@ -190,83 +215,83 @@ TEST(Combat, NonPierceHitboxIsConsumedByFirstHitInIndexOrder)
 
 TEST(Combat, ConsumedBulletDoesNotHitAgainOnLaterFrames)
 {
-    HitResolver                resolver;
-    const slug::Vector<Hitbox>  bullet = { MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 10, 10), 77) };
-    const slug::Vector<Hurtbox> target = { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 1) };
+    HitResolver                 resolver;
+    const slug::Vector<Hitbox>  bullet = { MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 10, 10), 77) };
+    const slug::Vector<Hurtbox> target = { MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 1) };
 
-    EXPECT_EQ(Resolve(resolver, bullet, target).size(), 1u);
-    EXPECT_TRUE(Resolve(resolver, bullet, target).empty());
-    EXPECT_TRUE(Resolve(resolver, bullet, { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 2) }).empty());   // 다른 대상에게도 안 감
+    EXPECT_EQ(Resolve_(resolver, bullet, target).size(), 1u);
+    EXPECT_TRUE(Resolve_(resolver, bullet, target).empty());
+    EXPECT_TRUE(Resolve_(resolver, bullet, { MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 2) }).empty());   // 다른 대상에게도 안 감
 
     resolver.Release(77);   // 새 공격이 같은 id 를 재사용
-    EXPECT_EQ(Resolve(resolver, bullet, target).size(), 1u);
+    EXPECT_EQ(Resolve_(resolver, bullet, target).size(), 1u);
 }
 
 TEST(Combat, PiercingHitboxHitsEachTargetExactlyOnce)
 {
-    HitResolver               resolver;
-    const slug::Vector<Hitbox> laser   = { MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 200, 10), 5, true, 2) };
-    slug::Vector<Hurtbox>      targets = { MakeHurt(eTeam::Enemy, Box(10, 0, 20, 10), 1), MakeHurt(eTeam::Enemy, Box(50, 0, 60, 10), 2) };
+    HitResolver                resolver;
+    const slug::Vector<Hitbox> laser   = { MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 200, 10), 5, true, 2) };
+    slug::Vector<Hurtbox>      targets = { MakeHurt_(eTeam::Enemy, Box_(10, 0, 20, 10), 1), MakeHurt_(eTeam::Enemy, Box_(50, 0, 60, 10), 2) };
 
-    auto events = Resolve(resolver, laser, targets);
+    slug::Vector<HitEvent> events = Resolve_(resolver, laser, targets);
     ASSERT_EQ(events.size(), 2u);
     EXPECT_EQ(events[0].target, 1u);
     EXPECT_EQ(events[1].target, 2u);
 
-    EXPECT_TRUE(Resolve(resolver, laser, targets).empty());
+    EXPECT_TRUE(Resolve_(resolver, laser, targets).empty());
 
-    targets.push_back(MakeHurt(eTeam::Enemy, Box(100, 0, 110, 10), 3));
-    events = Resolve(resolver, laser, targets);
+    targets.push_back(MakeHurt_(eTeam::Enemy, Box_(100, 0, 110, 10), 3));
+    events = Resolve_(resolver, laser, targets);
     ASSERT_EQ(events.size(), 1u);
     EXPECT_EQ(events[0].target, 3u);
 }
 
 TEST(Combat, MeleeSwingSharingAnIdHitsEachTargetOncePerSwing)
 {
-    HitResolver                resolver;
-    const slug::Vector<Hurtbox> enemy = { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 1) };
+    HitResolver                 resolver;
+    const slug::Vector<Hurtbox> enemy = { MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 1) };
 
-    const slug::Vector<Hitbox> swing = { MakeHit(eTeam::Player, eHitKind::Melee, Box(0, 0, 10, 10), 31, false, 4) };
-    int                       total = 0;
+    const slug::Vector<Hitbox> swing = { MakeHit_(eTeam::Player, eHitKind::Melee, Box_(0, 0, 10, 10), 31, false, 4) };
+    int                        total = 0;
     for (int frame = 0; frame < 6; ++frame)
     {
-        total += static_cast<int>(Resolve(resolver, swing, enemy).size());
+        total += static_cast<int>(Resolve_(resolver, swing, enemy).size());
     }
     EXPECT_EQ(total, 1);
 
-    const slug::Vector<Hitbox> nextSwing = { MakeHit(eTeam::Player, eHitKind::Melee, Box(0, 0, 10, 10), 32, false, 4) };
-    EXPECT_EQ(Resolve(resolver, nextSwing, enemy).size(), 1u);
+    const slug::Vector<Hitbox> nextSwing = { MakeHit_(eTeam::Player, eHitKind::Melee, Box_(0, 0, 10, 10), 32, false, 4) };
+    EXPECT_EQ(Resolve_(resolver, nextSwing, enemy).size(), 1u);
 }
 
 TEST(Combat, PierceHitsOnlyOncePerOwnerEvenWithManyHurtboxes)
 {
-    HitResolver                resolver;
-    const slug::Vector<Hurtbox> boss   = { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 9), MakeHurt(eTeam::Enemy, Box(5, 0, 15, 10), 9) };   // 같은 owner 의 두 부위
-    const auto                 events = Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Blast, Box(0, 0, 20, 10), 4, true, 20) }, boss);
+    HitResolver                  resolver;
+    const slug::Vector<Hurtbox>  boss   = { MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 9), MakeHurt_(eTeam::Enemy, Box_(5, 0, 15, 10), 9) };   // 같은 owner 의 두 부위
+    const slug::Vector<HitEvent> events = Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Blast, Box_(0, 0, 20, 10), 4, true, 20) }, boss);
     ASSERT_EQ(events.size(), 1u);
     EXPECT_EQ(events[0].hurtboxIndex, 0u);
 }
 
 TEST(Combat, UntrackedHitboxHitsEveryCall)
 {
-    HitResolver                resolver;
-    const slug::Vector<Hitbox>  zone   = { MakeHit(eTeam::Neutral, eHitKind::Hazard, Box(0, 0, 10, 10), kNoHitId, true, 1, 0) };
-    const slug::Vector<Hurtbox> victim = { MakeHurt(eTeam::Player, Box(0, 0, 10, 10), 1) };
-    EXPECT_EQ(Resolve(resolver, zone, victim).size(), 1u);
-    EXPECT_EQ(Resolve(resolver, zone, victim).size(), 1u);
+    HitResolver                 resolver;
+    const slug::Vector<Hitbox>  zone   = { MakeHit_(eTeam::Neutral, eHitKind::Hazard, Box_(0, 0, 10, 10), kNoHitId, true, 1, 0) };
+    const slug::Vector<Hurtbox> victim = { MakeHurt_(eTeam::Player, Box_(0, 0, 10, 10), 1) };
+    EXPECT_EQ(Resolve_(resolver, zone, victim).size(), 1u);
+    EXPECT_EQ(Resolve_(resolver, zone, victim).size(), 1u);
     EXPECT_EQ(resolver.GetTrackedHitCount(), 0u);
 }
 
 TEST(Combat, EventsAreOrderedByHitboxThenHurtbox)
 {
-    HitResolver               resolver;
+    HitResolver                resolver;
     const slug::Vector<Hitbox> hits = {
-        MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 100, 10), 1, true),
-        MakeHit(eTeam::Player, eHitKind::Melee, Box(0, 0, 100, 10), 2, true),
+        MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 100, 10), 1, true),
+        MakeHit_(eTeam::Player, eHitKind::Melee, Box_(0, 0, 100, 10), 2, true),
     };
-    const slug::Vector<Hurtbox> hurts = { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 1), MakeHurt(eTeam::Enemy, Box(20, 0, 30, 10), 2) };
+    const slug::Vector<Hurtbox> hurts = { MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 1), MakeHurt_(eTeam::Enemy, Box_(20, 0, 30, 10), 2) };
 
-    const auto events = Resolve(resolver, hits, hurts);
+    const slug::Vector<HitEvent> events = Resolve_(resolver, hits, hurts);
     ASSERT_EQ(events.size(), 4u);
     EXPECT_EQ(events[0].hitboxIndex, 0u);
     EXPECT_EQ(events[0].hurtboxIndex, 0u);
@@ -281,34 +306,14 @@ TEST(Combat, EventsAreOrderedByHitboxThenHurtbox)
 TEST(Combat, TouchingEdgesAndEmptyBoxesDoNotHit)
 {
     HitResolver resolver;
-    EXPECT_TRUE(Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Bullet, Box(0, 0, 10, 10), 1) }, { MakeHurt(eTeam::Enemy, Box(10, 0, 20, 10), 1) }).empty());
-    EXPECT_TRUE(Resolve(resolver, { MakeHit(eTeam::Player, eHitKind::Bullet, Box(5, 5, 5, 5), 2) }, { MakeHurt(eTeam::Enemy, Box(0, 0, 10, 10), 1) }).empty());
+    EXPECT_TRUE(Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 10, 10), 1) }, { MakeHurt_(eTeam::Enemy, Box_(10, 0, 20, 10), 1) }).empty());
+    EXPECT_TRUE(Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(5, 5, 5, 5), 2) }, { MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 1) }).empty());
 }
 
 TEST(Combat, ResolverIsDeterministicAcrossIdenticalRuns)
 {
-    auto Run = []() {
-        HitResolver           resolver;
-        slug::Vector<uint32_t> log;
-        for (int frame = 0; frame < 30; ++frame)
-        {
-            slug::Vector<Hitbox>  hits;
-            slug::Vector<Hurtbox> hurts;
-            for (uint32_t i = 0; i < 8; ++i)
-            {
-                const float x = static_cast<float>(frame * 3 + static_cast<int>(i) * 11);
-                hits.push_back(MakeHit(i % 2 == 0 ? eTeam::Player : eTeam::Enemy, i % 3 == 0 ? eHitKind::Melee : eHitKind::Bullet, Box(x, 0, x + 14, 10), 1 + i, i % 4 == 0, 1));
-                hurts.push_back(MakeHurt(i % 2 == 0 ? eTeam::Enemy : eTeam::Player, Box(x + 6, 0, x + 18, 10), 50 + i));
-            }
-            for (const HitEvent& event: resolver.Resolve(hits, hurts))
-            {
-                log.push_back(event.hitboxIndex * 1000 + event.hurtboxIndex);
-            }
-        }
-        return log;
-    };
-    const auto a = Run();
-    const auto b = Run();
+    const slug::Vector<uint32_t> a = RunResolverLog_();
+    const slug::Vector<uint32_t> b = RunResolverLog_();
     EXPECT_FALSE(a.empty());
     EXPECT_EQ(a, b);
 }

@@ -1,17 +1,16 @@
-#include <algorithm>
-#include "Base/Types.h"
-#include "Base/Math.h"
-#include <cmath>
+// 카메라의 추적, 데드존, 경계, 흔들림, 정수 출력과 실제 스테이지 봇 주행 시 끊김 없음을 검증한다.
 
 #include <gtest/gtest.h>
 
-#include "Render/Camera.h"
-
+#include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <memory>
 
+#include "Base/Math.h"
 #include "Base/Random.h"
+#include "Base/Types.h"
 #include "Core/AssetPath.h"
 #include "Core/Input.h"
 #include "Game/Player/PlayerController.h"
@@ -19,19 +18,20 @@
 #include "Game/Stage/StageRunner.h"
 #include "Game/Stage/StageState.h"
 #include "Game/Stage/StageWorldHost.h"
+#include "Render/Camera.h"
 #include "StageTestUtil.h"
 
 using namespace slug;
 
 namespace
 {
-bool IsIntegral(
+[[nodiscard]] bool IsIntegral_(
     const float _value)
 {
     return _value == std::floor(_value);
 }
 
-Camera MakeLevelCamera()
+[[nodiscard]] Camera MakeLevelCamera_()
 {
     Camera camera;
     camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
@@ -39,24 +39,56 @@ Camera MakeLevelCamera()
     camera.SnapToTarget();
     return camera;
 }
+
+// 흔들림을 걸고 60프레임 동안의 카메라 위치를 기록한다
+[[nodiscard]] slug::Vector<Vec2> RunShake_()
+{
+    Camera camera = MakeLevelCamera_();
+    camera.SetTarget({ 2000.f, 224.f });
+    camera.SnapToTarget();
+    camera.Shake(6.f, 0.5f);
+
+    slug::Vector<Vec2> positions;
+    for (int i = 0; i < 60; ++i)
+    {
+        camera.Update();
+        positions.push_back(camera.GetPosition());
+    }
+    return positions;
 }
+
+// 전진 전용 카메라가 움직이는 목표를 600프레임 따라가는 위치 기록
+[[nodiscard]] slug::Vector<Vec2> RunForwardOnly_()
+{
+    Camera camera = MakeLevelCamera_();
+    camera.SetForwardOnly(true);
+    slug::Vector<Vec2> out;
+    for (int i = 0; i < 600; ++i)
+    {
+        camera.SetTarget({ 320.f + static_cast<float>(i) * 2.7f, 224.f });
+        camera.Update();
+        out.push_back(camera.GetPosition());
+    }
+    return out;
+}
+}   // namespace
 
 TEST(Camera, OutputIsAlwaysIntegralWhileFollowingFractionalTarget)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     for (int i = 0; i < 600; ++i)
     {
         camera.SetTarget({ 320.f + static_cast<float>(i) * 3.37f, 224.f + std::sin(static_cast<float>(i) * 0.05f) * 3.1f });
         camera.Update();
         const Vec2 position = camera.GetPosition();
-        ASSERT_TRUE(IsIntegral(position.x)) << "tick " << i << " x=" << position.x;
-        ASSERT_TRUE(IsIntegral(position.y)) << "tick " << i << " y=" << position.y;
+        ASSERT_TRUE(IsIntegral_(position.x)) << "tick " << i << " x=" << position.x;
+        ASSERT_TRUE(IsIntegral_(position.y)) << "tick " << i << " y=" << position.y;
     }
 }
 
 TEST(Camera, FollowConvergesToTargetWithinDeadzone)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetTarget({ 1500.f, 224.f });
     for (int i = 0; i < 600; ++i)
     {
@@ -75,7 +107,7 @@ TEST(Camera, FollowConvergesToTargetWithinDeadzone)
 
 TEST(Camera, HorizontalGlidesWithoutSnapAndVerticalIsSmooth)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetTarget({ 1000.f, 224.f });
     camera.Update();
     EXPECT_GT(camera.GetViewCenter().x, 320.f);   // 큰 간격은 순간 이동 없이 글라이드한다
@@ -96,9 +128,9 @@ TEST(Camera, HorizontalGlidesWithoutSnapAndVerticalIsSmooth)
 
 TEST(Camera, TargetInsideDeadzoneDoesNotMoveTheCamera)
 {
-    Camera             camera = MakeLevelCamera();
-    const Vec2 start  = camera.GetPosition();
-    const float        dz     = camera.GetTuning().deadzoneHalf.x;
+    Camera      camera = MakeLevelCamera_();
+    const Vec2  start  = camera.GetPosition();
+    const float dz     = camera.GetTuning().deadzoneHalf.x;
 
     for (int i = 0; i < 60; ++i)
     {
@@ -110,7 +142,7 @@ TEST(Camera, TargetInsideDeadzoneDoesNotMoveTheCamera)
 
 TEST(Camera, ClampsToBoundsOnBothEnds)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
 
     camera.SetTarget({ 100000.f, 224.f });
     for (int i = 0; i < 2000; ++i)
@@ -129,7 +161,7 @@ TEST(Camera, ClampsToBoundsOnBothEnds)
 
 TEST(Camera, NeverShowsOutsideBoundsAtAnyTick)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     for (int i = 0; i < 1500; ++i)
     {
         camera.SetTarget({ static_cast<float>((i * 37) % 5000) - 500.f, static_cast<float>((i * 11) % 700) - 100.f });
@@ -154,7 +186,7 @@ TEST(Camera, BoundsSmallerThanViewAreCentered)
 
 TEST(Camera, ForwardOnlyNeverMovesBackward)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetForwardOnly(true);
 
     float maxX = camera.GetPositionNoShake().x;
@@ -173,7 +205,7 @@ TEST(Camera, ForwardOnlyNeverMovesBackward)
 
 TEST(Camera, WithoutForwardOnlyCameraFollowsBackward)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetTarget({ 2000.f, 224.f });
     for (int i = 0; i < 600; ++i)
     {
@@ -191,7 +223,7 @@ TEST(Camera, WithoutForwardOnlyCameraFollowsBackward)
 
 TEST(Camera, LockConfinesTheViewAndUnlockRestoresFollowing)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetTarget({ 1000.f, 224.f });
     camera.SnapToTarget();
 
@@ -216,7 +248,7 @@ TEST(Camera, LockConfinesTheViewAndUnlockRestoresFollowing)
 
 TEST(Camera, LockWinsOverForwardOnly)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetForwardOnly(true);
     camera.SetTarget({ 2000.f, 224.f });
     for (int i = 0; i < 600; ++i)
@@ -235,7 +267,7 @@ TEST(Camera, LockWinsOverForwardOnly)
 
 TEST(Camera, SnapToTargetIsImmediateAndClamped)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetTarget({ 2500.f, 224.f });
     camera.SnapToTarget();
     EXPECT_FLOAT_EQ(camera.GetPosition().x, 2500.f - 320.f);
@@ -247,7 +279,7 @@ TEST(Camera, SnapToTargetIsImmediateAndClamped)
 
 TEST(Camera, WorldScreenRoundTripAndVisibility)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetTarget({ 1000.f, 224.f });
     camera.SnapToTarget();
 
@@ -289,29 +321,14 @@ TEST(Camera, ZeroSmoothTimeFollowsInstantly)
 
 TEST(Camera, ShakeIsDeterministicDecaysAndStaysInBounds)
 {
-    auto Run = []() {
-        Camera camera = MakeLevelCamera();
-        camera.SetTarget({ 2000.f, 224.f });
-        camera.SnapToTarget();
-        camera.Shake(6.f, 0.5f);
-
-        slug::Vector<Vec2> positions;
-        for (int i = 0; i < 60; ++i)
-        {
-            camera.Update();
-            positions.push_back(camera.GetPosition());
-        }
-        return positions;
-    };
-
-    const slug::Vector<Vec2> a = Run();
-    const slug::Vector<Vec2> b = Run();
+    const slug::Vector<Vec2> a = RunShake_();
+    const slug::Vector<Vec2> b = RunShake_();
     ASSERT_EQ(a.size(), b.size());
     bool bMoved = false;
     for (size_t i = 0; i < a.size(); ++i)
     {
         ASSERT_EQ(a[i], b[i]) << i;
-        ASSERT_TRUE(IsIntegral(a[i].x) && IsIntegral(a[i].y));
+        ASSERT_TRUE(IsIntegral_(a[i].x) && IsIntegral_(a[i].y));
         ASSERT_GE(a[i].y, 0.f);   // 위쪽 경계 밖이 보이지 않는다
         bMoved = bMoved || a[i].x != 1680.f;
     }
@@ -322,7 +339,7 @@ TEST(Camera, ShakeIsDeterministicDecaysAndStaysInBounds)
 
 TEST(Camera, StopShakeRestoresImmediately)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetTarget({ 2000.f, 224.f });
     camera.SnapToTarget();
     camera.Shake(10.f, 5.f);
@@ -333,26 +350,14 @@ TEST(Camera, StopShakeRestoresImmediately)
 
 TEST(Camera, DeterministicAcrossIdenticalRuns)
 {
-    auto Run = []() {
-        Camera camera = MakeLevelCamera();
-        camera.SetForwardOnly(true);
-        slug::Vector<Vec2> out;
-        for (int i = 0; i < 600; ++i)
-        {
-            camera.SetTarget({ 320.f + static_cast<float>(i) * 2.7f, 224.f });
-            camera.Update();
-            out.push_back(camera.GetPosition());
-        }
-        return out;
-    };
-    EXPECT_EQ(Run(), Run());
+    EXPECT_EQ(RunForwardOnly_(), RunForwardOnly_());
 }
 
 TEST(Camera, ScrollRampsUpWhilePlayerRunsAndStopsInstantlyWhenPlayerStops)
 {
-    Camera camera = MakeLevelCamera();
-    const float half = camera.GetTuning().deadzoneHalf.x;
-    float       x    = 320.f + half + 1.f;
+    Camera      camera = MakeLevelCamera_();
+    const float half   = camera.GetTuning().deadzoneHalf.x;
+    float       x      = 320.f + half + 1.f;
     camera.SetTarget({ x, 224.f });
     camera.Update();
 
@@ -396,10 +401,11 @@ public:
     CameraBotSim()
         : m_rng(uint64_t { 1 })
     {
-        m_ctx.pRng      = &m_rng;
-        m_ctx.assetRoot = slug::FindAssetRoot();
-        m_pState        = new StageState;
-        m_runner        = std::unique_ptr<SimRunner> { new SimRunner { m_ctx, std::unique_ptr<IGameState> { m_pState } } };
+        m_ctx.pRng                         = &m_rng;
+        m_ctx.assetRoot                    = slug::FindAssetRoot();
+        std::unique_ptr<StageState> pOwned = std::make_unique<StageState>();
+        m_pState                           = pOwned.get();
+        m_runner                           = std::make_unique<SimRunner>(m_ctx, std::move(pOwned));
     }
 
     [[nodiscard]] StageState&       State() { return *m_pState; }
@@ -472,34 +478,34 @@ private:
         return false;
     }
 
-    slug::RngMt19937 m_rng;
-    GameContext      m_ctx      = {};
-    InputFrame       m_frame    = {};
-    StageState*      m_pState   = nullptr;
-    uint64_t         m_botTick  = 0;
-    float            m_lastX    = -1.f;
-    int              m_stuckTicks = 0;
-    int              m_jumpTicks  = 0;
-    int              m_backTicks  = 0;
-    std::unique_ptr<SimRunner> m_runner = nullptr;
+    slug::RngMt19937           m_rng        = {};
+    GameContext                m_ctx        = {};
+    InputFrame                 m_frame      = {};
+    StageState*                m_pState     = nullptr;
+    uint64_t                   m_botTick    = 0;
+    float                      m_lastX      = -1.f;
+    int                        m_stuckTicks = 0;
+    int                        m_jumpTicks  = 0;
+    int                        m_backTicks  = 0;
+    std::unique_ptr<SimRunner> m_runner     = nullptr;
 };
-}
+}   // namespace
 
 TEST(CameraRegression, RealStageBotRunHasNoJerkOverFirst5000Ticks)
 {
-    CameraBotSim sim;
-    const Camera& cam      = sim.State().GetCamera();
-    Vec2          prevF    = cam.GetViewCenter();   // 실수 중심 (부드러움 판정 기준)
-    Vec2          prevI    = cam.GetPositionNoShake();   // 화면에 찍히는 정수 좌상단 (보고용)
-    float         prevDx   = 0.f;
-    float         prevDy   = 0.f;
-    float         prevDxI  = 0.f;
-    float         maxStep  = 0.f;
-    float         maxAccel = 0.f;
-    float         maxAccelY = 0.f;
-    float         maxIntStep = 0.f;
+    CameraBotSim  sim;
+    const Camera& cam         = sim.State().GetCamera();
+    Vec2          prevF       = cam.GetViewCenter();        // 실수 중심 (부드러움 판정 기준)
+    Vec2          prevI       = cam.GetPositionNoShake();   // 화면에 찍히는 정수 좌상단 (보고용)
+    float         prevDx      = 0.f;
+    float         prevDy      = 0.f;
+    float         prevDxI     = 0.f;
+    float         maxStep     = 0.f;
+    float         maxAccel    = 0.f;
+    float         maxAccelY   = 0.f;
+    float         maxIntStep  = 0.f;
     float         maxIntAccel = 0.f;
-    int           ticks    = 0;
+    int           ticks       = 0;
     for (int i = 0; i < 5000 && sim.Current() == sim.StagePtr(); ++i)
     {
         sim.BotStep(true, true);
@@ -507,18 +513,18 @@ TEST(CameraRegression, RealStageBotRunHasNoJerkOverFirst5000Ticks)
         {
             break;
         }
-        const Vec2 f   = cam.GetViewCenter();
-        const Vec2 pix = cam.GetPositionNoShake();
+        const Vec2  f   = cam.GetViewCenter();
+        const Vec2  pix = cam.GetPositionNoShake();
         const float dx  = f.x - prevF.x;
         const float dy  = f.y - prevF.y;
         const float dxI = pix.x - prevI.x;
         const float dyI = pix.y - prevI.y;
         if (i >= 120)
         {
-            maxStep    = slug::Max(maxStep, slug::Max(std::abs(dx), std::abs(dy)));
-            maxAccel   = slug::Max(maxAccel, std::abs(dx - prevDx));
-            maxAccelY  = slug::Max(maxAccelY, std::abs(dy - prevDy));
-            maxIntStep = slug::Max(maxIntStep, slug::Max(std::abs(dxI), std::abs(dyI)));
+            maxStep     = slug::Max(maxStep, slug::Max(std::abs(dx), std::abs(dy)));
+            maxAccel    = slug::Max(maxAccel, std::abs(dx - prevDx));
+            maxAccelY   = slug::Max(maxAccelY, std::abs(dy - prevDy));
+            maxIntStep  = slug::Max(maxIntStep, slug::Max(std::abs(dxI), std::abs(dyI)));
             maxIntAccel = slug::Max(maxIntAccel, std::abs(dxI - prevDxI));
             EXPECT_LE(std::abs(dx), 12.f) << "tick " << i;
             EXPECT_LE(std::abs(dy), 12.f) << "tick " << i;
@@ -539,7 +545,7 @@ TEST(CameraRegression, RealStageBotRunHasNoJerkOverFirst5000Ticks)
 
 TEST(Camera, FollowStepsNeverJumpAndForwardOnlyNeverTwitchesOnReverse)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetForwardOnly(true);
     camera.SetTarget({ 320.f, 224.f });
     camera.SnapToTarget();
@@ -555,15 +561,15 @@ TEST(Camera, FollowStepsNeverJumpAndForwardOnlyNeverTwitchesOnReverse)
         }
         else if (i < 130)
         {
-            focus += 0.f;     // 정지
+            focus += 0.f;   // 정지
         }
         else if (i < 170)
         {
-            focus -= 4.f;     // 되돌아감 (전진 전용 카메라는 뒤로 가지 않는다)
+            focus -= 4.f;   // 되돌아감 (전진 전용 카메라는 뒤로 가지 않는다)
         }
         else
         {
-            focus += 2.5f;    // 다시 달리기
+            focus += 2.5f;   // 다시 달리기
         }
         camera.SetTarget({ focus, 224.f });
         camera.Update();
@@ -579,7 +585,7 @@ TEST(Camera, FollowStepsNeverJumpAndForwardOnlyNeverTwitchesOnReverse)
 
 TEST(Camera, StopDeceleratesMonotonicallyAndNeverOvershoots)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetForwardOnly(true);
     const float half = camera.GetTuning().deadzoneHalf.x;
     camera.SetTarget({ 320.f, 224.f });
@@ -593,8 +599,8 @@ TEST(Camera, StopDeceleratesMonotonicallyAndNeverOvershoots)
         camera.Update();
     }
 
-    float prevCenter = camera.GetViewCenter().x;
-    float prevStep   = 1e9f;
+    float prevCenter  = camera.GetViewCenter().x;
+    float prevStep    = 1e9f;
     int   movingTicks = 0;
     for (int i = 0; i < 200; ++i)
     {
@@ -618,7 +624,7 @@ TEST(Camera, StopDeceleratesMonotonicallyAndNeverOvershoots)
 
 TEST(Camera, UnlockAfterLockGlidesWithCappedStepAndSettlesInTime)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetTarget({ 1000.f, 224.f });
     camera.SnapToTarget();
     camera.Lock(Aabb::FromMinMax({ 680.f, 0.f }, { 1320.f, 448.f }));
@@ -653,7 +659,7 @@ TEST(Camera, UnlockAfterLockGlidesWithCappedStepAndSettlesInTime)
 
 TEST(Camera, SetBoundsChangeMovesCameraAtMost2_5PerTick)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetTarget({ 1000.f, 224.f });
     camera.SnapToTarget();
     camera.SetBounds(Aabb::FromMinMax({ 0.f, 100.f }, { 4000.f, 548.f }));
@@ -673,7 +679,7 @@ TEST(Camera, SetBoundsChangeMovesCameraAtMost2_5PerTick)
 
 TEST(Camera, LockWhileCameraOutsideGlidesInInsteadOfJumping)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetTarget({ 2000.f, 224.f });
     camera.SnapToTarget();
     camera.Lock(Aabb::FromMinMax({ 100.f, 0.f }, { 740.f, 448.f }));
@@ -692,7 +698,7 @@ TEST(Camera, LockWhileCameraOutsideGlidesInInsteadOfJumping)
 
 TEST(Camera, ForwardOnlyNeverMovesBackwardWhenBoundsShrink)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetForwardOnly(true);
     camera.SetTarget({ 2000.f, 224.f });
     camera.SnapToTarget();
@@ -710,13 +716,13 @@ TEST(Camera, ForwardOnlyNeverMovesBackwardWhenBoundsShrink)
 // 자동 전진 (보스 스크롤): 하한 (AddScrollFloor) 은 카메라를 오른쪽으로만 민다. 정지 target 이어도 하한까지 간다.
 TEST(Camera, ScrollFloorDrivesTheViewRightEvenWithoutAPlayerPush)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetTarget({ 1000.f, 224.f });   // 플레이어는 움직이지 않는다 (목표 고정)
     camera.SnapToTarget();
     const float x0 = camera.GetViewCenter().x;
     for (int i = 0; i < 60; ++i)
     {
-        camera.AddScrollFloor(0.3f);      // 18 px/s
+        camera.AddScrollFloor(0.3f);   // 18 px/s
         camera.Update(kStepSec);
     }
     EXPECT_TRUE(camera.HasScrollFloor());
@@ -727,7 +733,7 @@ TEST(Camera, ScrollFloorDrivesTheViewRightEvenWithoutAPlayerPush)
 
 TEST(Camera, ScrollFloorNeverMovesTheViewPastTheLockRight)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.Lock(Aabb::FromMinMax({ 1000.f, 0.f }, { 1700.f, 448.f }));
     camera.SetTarget({ 1000.f, 224.f });
     camera.SnapToTarget();
@@ -742,7 +748,7 @@ TEST(Camera, ScrollFloorNeverMovesTheViewPastTheLockRight)
 
 TEST(Camera, ClearingTheScrollFloorStopsTheForcedMotion)
 {
-    Camera camera = MakeLevelCamera();
+    Camera camera = MakeLevelCamera_();
     camera.SetTarget({ 300.f, 224.f });
     camera.SnapToTarget();
     camera.AddScrollFloor(40.f);

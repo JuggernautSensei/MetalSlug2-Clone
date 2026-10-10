@@ -1,10 +1,13 @@
 #pragma once
-#include "Core/AssetPath.h"
-#include "Base/Types.h"
-#include "Base/Math.h"
-#include "Base/Result.h"
+
+// 적 테스트 공용 도구: 정의 로드, 샌드박스 설정, 월드를 직접 구동하는 EnemyRig.
+
 #include <vector>
 
+#include "Base/Math.h"
+#include "Base/Result.h"
+#include "Base/Types.h"
+#include "Core/AssetPath.h"
 #include "Game/Combat/CombatSystem.h"
 #include "Game/Combat/Projectiles.h"
 #include "Game/Enemies/EnemyDef.h"
@@ -17,14 +20,14 @@ namespace slugtest
 
 using namespace slug;
 
-inline slug::FilePath EnemyDefsPath()
+[[nodiscard]] inline slug::FilePath EnemyDefsPath()
 {
     return slug::FindAssetRoot() / "Defs" / "Enemies.json";
 }
 
 inline bool LoadEnemyLib(
     EnemyDefLibrary& _out,
-    slug::String*     _pMessage = nullptr)
+    slug::String*    _pMessage = nullptr)
 {
     slug::Result<EnemyDefLibrary> lib = EnemyDefLibrary::Load(EnemyDefsPath(), _pMessage);
     if (!lib)
@@ -35,7 +38,7 @@ inline bool LoadEnemyLib(
     return true;
 }
 
-inline SandboxConfig MakeEnemyConfig(
+[[nodiscard]] inline SandboxConfig MakeEnemyConfig(
     const Vec2 _spawn = { 100.f, 378.f })
 {
     SandboxConfig config = MakeFlatConfig();
@@ -44,7 +47,7 @@ inline SandboxConfig MakeEnemyConfig(
     return config;
 }
 
-inline constexpr const char* kInfantryNames[] = { "soldier_bomb", "soldier_sword", "soldier_missile", "soldier_bzk", "soldier_hang", "flying_bzk", "shielder", "pow" };
+inline constexpr ARRAY<const char*, 8> kInfantryNames = { "soldier_bomb", "soldier_sword", "soldier_missile", "soldier_bzk", "soldier_hang", "flying_bzk", "shielder", "pow" };
 
 inline constexpr uint32_t kTestPlayerOwner = 1;
 
@@ -52,8 +55,8 @@ class EnemyRig
 {
 public:
     explicit EnemyRig(
-        const Vec2 _player = { 100.f, 378.f },
-        const float        _camLeft = 0.f)
+        const Vec2  _player  = { 100.f, 378.f },
+        const float _camLeft = 0.f)
         : m_world(&m_lib, 7)
         , m_ground(MakeFlatGround(3000))
         , m_player(_player)
@@ -63,30 +66,32 @@ public:
         m_world.SetLibrary(&m_lib);
     }
 
-    [[nodiscard]] bool               IsLoaded() const { return m_bLoaded; }
+    [[nodiscard]] bool                IsLoaded() const { return m_bLoaded; }
     [[nodiscard]] const slug::String& GetMessage() const { return m_message; }
 
-    EnemyWorld&        World() { return m_world; }
-    EnemyDefLibrary&   Lib() { return m_lib; }
-    CombatSystem&      Combat() { return m_combat; }
-    ProjectileSystem&  Projectiles() { return m_projectiles; }
-    std::vector<EnemyEvent>& Events() { return m_events; }
+    [[nodiscard]] EnemyWorld&               World() { return m_world; }
+    [[nodiscard]] EnemyDefLibrary&          Lib() { return m_lib; }
+    [[nodiscard]] CombatSystem&             Combat() { return m_combat; }
+    [[nodiscard]] ProjectileSystem&         Projectiles() { return m_projectiles; }
+    [[nodiscard]] slug::Vector<EnemyEvent>& Events() { return m_events; }
 
-    void SetView(const float _camLeft)
+    void SetView(
+        const float _camLeft)
     {
         m_view = Aabb::FromMinSize({ _camLeft, 0.f }, { 640.f, 448.f });
     }
 
-    EnemyHandle Spawn(
+    [[nodiscard]] EnemyHandle Spawn(
         const char*        _name,
-        const Vec2 _feet,
+        const Vec2         _feet,
         const SpawnParams& _params = {})
     {
         const PhysicsWorld world = MakeWorld_();
         return m_world.Spawn(_name, _feet, _params, &world);
     }
 
-    void Step(const int _count = 1)
+    void Step(
+        const int _count = 1)
     {
         for (int i = 0; i < _count; ++i)
         {
@@ -138,13 +143,14 @@ public:
         hitbox.id     = m_combat.NewHitId();
         m_combat.AddHitbox(hitbox);
         const slug::Vector<HitEvent>& events = m_combat.Resolve();
-        const size_t count = events.size();
+        const size_t                  count  = events.size();
         m_world.OnHitEvents(events);
         CollectEvents_();
         return count;
     }
 
-    int CountEvents(const eEnemyEventKind _kind) const
+    [[nodiscard]] int CountEvents(
+        const eEnemyEventKind _kind) const
     {
         int count = 0;
         for (const EnemyEvent& event: m_events)
@@ -154,7 +160,8 @@ public:
         return count;
     }
 
-    int SumScore(const eEnemyEventKind _kind) const
+    [[nodiscard]] int SumScore(
+        const eEnemyEventKind _kind) const
     {
         int sum = 0;
         for (const EnemyEvent& event: m_events)
@@ -167,29 +174,33 @@ public:
         return sum;
     }
 
-    [[nodiscard]] const Enemy* E(const EnemyHandle _handle) const { return m_world.Get(_handle); }
+    [[nodiscard]] const Enemy* E(
+        const EnemyHandle _handle) const
+    {
+        return m_world.Get(_handle);
+    }
 
 private:
-    PhysicsWorld MakeWorld_() const
+    [[nodiscard]] PhysicsWorld MakeWorld_() const
     {
         PhysicsWorld world;
         world.pGround = &m_ground;
         return world;
     }
 
-    EnemyContext MakeCtx_()
+    [[nodiscard]] EnemyContext MakeCtx_()
     {
         EnemyContext ctx;
-        ctx.physics            = MakeWorld_();
-        ctx.pCombat            = &m_combat;
-        ctx.pProjectiles       = &m_projectiles;
-        ctx.player.feet        = m_player;
-        ctx.player.center      = { m_player.x, m_player.y - 30.f };
-        ctx.player.bodyBox     = Aabb::FromBottomCenter(m_player, { 20.f, 58.f });
-        ctx.player.bAlive      = true;
+        ctx.physics              = MakeWorld_();
+        ctx.pCombat              = &m_combat;
+        ctx.pProjectiles         = &m_projectiles;
+        ctx.player.feet          = m_player;
+        ctx.player.center        = { m_player.x, m_player.y - 30.f };
+        ctx.player.bodyBox       = Aabb::FromBottomCenter(m_player, { 20.f, 58.f });
+        ctx.player.bAlive        = true;
         ctx.player.bInvulnerable = false;
-        ctx.cameraView         = m_view;
-        ctx.pAnims             = nullptr;
+        ctx.cameraView           = m_view;
+        ctx.pAnims               = nullptr;
         return ctx;
     }
 
@@ -210,7 +221,8 @@ private:
         }
     }
 
-    void CountPlayerHits_(const slug::Vector<HitEvent>& _events)
+    void CountPlayerHits_(
+        const slug::Vector<HitEvent>& _events)
     {
         for (const HitEvent& event: _events)
         {
@@ -221,16 +233,16 @@ private:
         }
     }
 
-    EnemyDefLibrary          m_lib       = {};
+    EnemyDefLibrary          m_lib        = {};
     int                      m_playerHits = 0;
-    slug::String              m_message   = {};
-    bool                     m_bLoaded   = false;
+    slug::String             m_message    = {};
+    bool                     m_bLoaded    = false;
     EnemyWorld               m_world;
     GroundMap                m_ground;
-    Vec2             m_player;
+    Vec2                     m_player;
     Aabb                     m_view;
-    CombatSystem             m_combat    = {};
+    CombatSystem             m_combat      = {};
     ProjectileSystem         m_projectiles = {};
-    std::vector<EnemyEvent>  m_events    = {};
+    slug::Vector<EnemyEvent> m_events      = {};
 };
-}
+}   // namespace slugtest

@@ -1,3 +1,5 @@
+// 테스트 실행 진입점. 에셋 루트 폴백을 설정하고 gtest 를 실행한다.
+
 #include <gtest/gtest.h>
 
 #include "Core/AssetPath.h"
