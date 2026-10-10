@@ -27,6 +27,7 @@
         },
         {
             "file": "29720.png",
+            "noRegisterPrefixes": [ "UI_Mission_" ],
             "key": { "mode": "color", "colors": [ [ 255, 255, 255 ], [ 0, 248, 0 ], [ 255, 204, 204 ] ], "tol": 0 },
             "exclude": [],
             "clips": [
@@ -99,6 +100,7 @@
         },
         {
             "file": "40204.png",
+            "noRegisterPrefixes": [ "Boss_Projectile", "Boss_Debris", "Boss_Smoke", "Boss_Fire", "Boss_Spark" ],
             "scale": 2,
             "key": {
                 "mode": "color",
@@ -7719,6 +7721,100 @@
                     "fps": 16,
                     "loop": false
                 }
+            ]
+        },
+        {
+            "file": "20642.png",
+            "noRegisterPrefixes": [ "Heli_Missile", "Heli_Bomb", "Heli_Effect" ],
+            "key": {"mode": "alpha"},
+            "scale": 2,
+            "clips": [
+                { "name": "Heli_Flying", "frames": [[7, 22, 89, 57], [101, 21, 89, 54], [194, 18, 89, 55], [288, 15, 89, 59], [382, 15, 89, 58], [477, 14, 89, 61], [568, 11, 89, 66]], "pivot": "center", "fps": 25, "loop": true },
+                { "name": "Heli_Turning", "frames": [[7, 100, 84, 60], [102, 100, 82, 59], [191, 100, 76, 59], [276, 100, 71, 59], [357, 100, 72, 59], [436, 101, 69, 58], [511, 101, 71, 58]], "pivot": "center", "fps": 14, "loop": false },
+                { "name": "Heli_Launch", "frames": [[10, 187, 17, 5], [31, 187, 16, 6], [50, 187, 16, 8], [71, 187, 20, 12], [94, 187, 27, 16], [128, 187, 32, 19], [166, 187, 36, 18], [208, 187, 39, 16], [252, 187, 40, 17], [297, 187, 40, 17], [340, 187, 40, 18], [384, 187, 40, 16], [429, 187, 40, 18], [473, 187, 40, 19]], "pivot": "center", "fps": 16, "loop": false },
+                { "name": "Heli_Launch_End", "frames": [[473, 187, 40, 19], [429, 187, 40, 18], [384, 187, 40, 16], [340, 187, 40, 18], [297, 187, 40, 17], [252, 187, 40, 17], [208, 187, 39, 16], [166, 187, 36, 18], [128, 187, 32, 19], [94, 187, 27, 16], [71, 187, 20, 12], [50, 187, 16, 8], [31, 187, 16, 6], [10, 187, 17, 5]], "pivot": "center", "fps": 16, "loop": false },
+                { "name": "Heli_Launch_Hold", "frames": [[473, 187, 40, 19]], "pivot": "center", "fps": 1, "loop": true },
+                { "name": "Heli_Missile", "frames": [[7, 432, 44, 18], [62, 432, 44, 18], [117, 432, 44, 18], [172, 432, 44, 18], [227, 432, 44, 18], [282, 432, 44, 18], [337, 432, 44, 18], [392, 432, 44, 18], [447, 432, 44, 18], [502, 432, 44, 18], [557, 432, 44, 18], [612, 432, 44, 18], [667, 432, 44, 18], [722, 432, 44, 18]], "pivot": "center", "fps": 20, "loop": true },
+                { "name": "Heli_Missile_B", "frames": [[7, 455, 46, 18], [62, 455, 46, 18], [117, 455, 46, 18], [161, 455, 46, 18], [216, 455, 46, 18], [271, 455, 46, 18], [326, 455, 46, 18], [381, 455, 46, 18]], "pivot": "center", "fps": 20, "loop": true },
+                { "name": "Heli_Bomb", "frames": [[7, 479, 14, 25], [24, 479, 12, 25], [39, 479, 12, 25], [54, 479, 12, 25], [69, 479, 12, 25], [84, 479, 12, 25], [99, 480, 14, 25]], "pivot": "center", "fps": 12, "loop": true },
+                { "name": "Heli_Effect_Puff", "frames": [[7, 525, 29, 30], [43, 525, 29, 31], [78, 526, 29, 29], [112, 528, 35, 28], [153, 528, 38, 27], [196, 531, 32, 22], [233, 534, 31, 17], [268, 536, 25, 14], [297, 537, 23, 9], [324, 539, 16, 6]], "pivot": "center", "fps": 14, "loop": false },
+                { "name": "Heli_Effect_Smoke", "frames": [[12, 565, 23, 13], [42, 565, 25, 18], [72, 565, 27, 22], [105, 565, 29, 25], [139, 565, 30, 28], [175, 565, 32, 29], [213, 565, 32, 31], [252, 571, 28, 24]], "pivot": "center", "fps": 12, "loop": false },
+                { "name": "Heli_Blade_0", "region": [0, 224, 430, 22], "auto": {"rows": false, "mergeGap": 0, "minPixels": 15}, "fps": 30, "loop": true },
+                { "name": "Heli_Blade_1", "region": [0, 252, 430, 20], "auto": {"rows": false, "mergeGap": 0, "minPixels": 15}, "fps": 30, "loop": true },
+                { "name": "Heli_Blade_2", "region": [0, 282, 430, 20], "auto": {"rows": false, "mergeGap": 0, "minPixels": 15}, "fps": 30, "loop": true },
+                { "name": "Heli_Blade_3", "region": [0, 307, 430, 20], "auto": {"rows": false, "mergeGap": 0, "minPixels": 15}, "fps": 30, "loop": true },
+                { "name": "Heli_Blade_4", "region": [0, 330, 430, 20], "auto": {"rows": false, "mergeGap": 0, "minPixels": 15}, "fps": 30, "loop": true },
+                { "name": "Heli_Blade_5", "region": [0, 352, 430, 22], "auto": {"rows": false, "mergeGap": 0, "minPixels": 15}, "fps": 30, "loop": true },
+                { "name": "Heli_Blade_6", "region": [0, 376, 430, 26], "auto": {"rows": false, "mergeGap": 0, "minPixels": 15}, "fps": 30, "loop": true }
+            ]
+        },
+        {
+            "file": "11302.png",
+            "noRegisterPrefixes": [ "Fx_" ],
+            "key": {"mode": "color", "colors": [[0, 248, 0]], "tol": 0},
+            "scale": 2,
+            "clips": [
+                { "name": "Fx_Mine_Ring", "frames": [[5, 1665, 80, 43], [88, 1665, 80, 43], [171, 1665, 75, 43], [251, 1665, 74, 43], [330, 1665, 77, 43], [410, 1665, 76, 43], [492, 1665, 77, 43]], "pivot": "center", "fps": 14, "loop": false },
+                { "name": "Fx_Mine_Burst", "frames": [[6, 1728, 77, 76], [87, 1726, 76, 78], [168, 1724, 76, 80], [249, 1721, 76, 83], [330, 1718, 77, 86], [412, 1714, 75, 90], [492, 1712, 75, 92]], "pivot": "center", "fps": 14, "loop": false },
+                { "name": "Fx_Mine_Smoke", "frames": [[5, 1821, 71, 59], [85, 1819, 68, 61], [164, 1817, 65, 63], [242, 1814, 61, 66], [321, 1812, 60, 68], [399, 1810, 59, 70], [477, 1808, 58, 72]], "pivot": "center", "fps": 12, "loop": false },
+                { "name": "Fx_FireBomb_Air", "frames": [[5, 2048, 49, 53], [57, 2044, 54, 58], [114, 2050, 51, 51], [168, 2047, 52, 54], [223, 2043, 44, 58], [279, 2043, 46, 58], [335, 2041, 49, 60], [394, 2040, 46, 61], [445, 2043, 45, 58], [494, 2044, 46, 57]], "pivot": "center", "fps": 14, "loop": false },
+                { "name": "Fx_Grenade_Big", "frames": [[63, 1534, 28, 34], [94, 1532, 28, 36], [125, 1524, 29, 44], [157, 1523, 32, 46], [192, 1522, 32, 47], [227, 1522, 32, 47], [262, 1521, 32, 48], [297, 1519, 32, 50], [332, 1516, 32, 53], [367, 1517, 32, 52], [402, 1516, 30, 53], [436, 1516, 30, 52], [471, 1515, 29, 52], [504, 1515, 27, 51], [539, 1514, 26, 37]], "pivot": "center", "fps": 14, "loop": false },
+                { "name": "Fx_Water_Big", "frames": [[8, 2860, 89, 99], [120, 2859, 84, 99], [235, 2857, 75, 97], [345, 2856, 72, 72], [451, 2855, 68, 64]], "pivot": "center", "fps": 14, "loop": false }
+            ]
+        },
+        {
+            "file": "32529.png",
+            "noRegisterPrefixes": [ "Fx_" ],
+            "key": {"mode": "alpha"},
+            "scale": 2,
+            "clips": [
+                { "name": "Fx_Blood_Spray", "frames": [[83, 4, 42, 31], [135, 2, 41, 35], [188, 2, 38, 35], [238, 1, 31, 37], [284, 0, 29, 39], [330, 1, 27, 35], [372, 1, 27, 35]], "pivot": "center", "fps": 18, "loop": false },
+                { "name": "Fx_Blood_Splat_Right", "frames": [[149, 52, 20, 22], [177, 48, 23, 28], [212, 46, 27, 31], [248, 50, 30, 29], [286, 51, 31, 30], [327, 51, 32, 32], [369, 51, 36, 35]], "pivot": "center", "fps": 16, "loop": false, "mirror": true },
+                { "name": "Fx_Blood_Hit_Right", "frames": [[89, 97, 29, 29], [125, 97, 30, 29], [161, 97, 34, 29], [204, 96, 37, 31], [250, 94, 37, 35], [294, 95, 37, 34], [340, 96, 33, 29], [382, 96, 30, 29]], "pivot": "center", "fps": 18, "loop": false, "mirror": true }
+            ]
+        },
+        {
+            "file": "51797.png",
+            "key": {"mode": "alpha"},
+            "scale": 2,
+            "clips": [
+                { "name": "UI_GameOver_Helmet", "frames": [[0, 0, 308, 222]], "pivot": "center", "fps": 1, "loop": false, "asSprite": true },
+                { "name": "UI_GameOver_Plain", "frames": [[309, 0, 308, 222]], "pivot": "center", "fps": 1, "loop": false, "asSprite": true }
+            ]
+        },
+        {
+            "file": "53213.png",
+            "key": {"mode": "color", "colors": [[153, 217, 234]], "tol": 0},
+            "scale": 2,
+            "clips": [
+                { "name": "MTank_Driving", "frames": [[10, 68, 63, 32], [79, 68, 63, 32], [147, 68, 63, 32], [216, 68, 63, 32], [286, 68, 63, 32], [354, 68, 63, 32], [423, 68, 63, 32], [492, 68, 63, 32], [561, 68, 63, 32], [630, 68, 63, 32]], "fps": 12, "loop": true },
+                { "name": "MTank_Accel_Fwd", "frames": [[10, 113, 63, 34], [79, 113, 63, 34], [148, 113, 63, 34], [217, 113, 63, 34], [286, 113, 63, 34], [354, 113, 63, 34], [424, 113, 63, 34], [492, 113, 63, 34]], "fps": 12, "loop": true },
+                { "name": "MTank_Accel_Back", "frames": [[10, 160, 63, 36], [78, 160, 63, 36], [148, 160, 63, 36], [216, 160, 63, 36], [286, 160, 63, 36], [354, 160, 63, 36], [424, 160, 63, 36], [492, 160, 63, 36]], "fps": 12, "loop": true },
+                { "name": "MTank_Appear_Left", "frames": [[95, 790, 29, 18], [138, 782, 48, 26], [204, 776, 54, 32], [278, 772, 56, 36], [344, 768, 57, 46], [415, 764, 63, 49], [490, 766, 65, 49], [564, 768, 66, 48]], "fps": 12, "loop": false, "mirror": true },
+                { "name": "MTank_Hill_Driving", "frames": [[10, 947, 62, 64], [73, 947, 62, 64], [136, 947, 62, 64], [199, 947, 62, 64], [262, 947, 62, 64], [326, 947, 62, 64], [390, 947, 62, 64], [454, 947, 62, 64], [519, 947, 62, 64], [584, 947, 62, 64]], "fps": 12, "loop": true }
+            ]
+        },
+        {
+            "file": "11279.png",
+            "key": {"mode": "color", "colors": [[255, 255, 255]], "tol": 0},
+            "scale": 2,
+            "clips": [
+                { "name": "POW_V1_Stuck_Right", "region": [0, 142, 578, 49], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 8, "loop": true, "mirror": true },
+                { "name": "POW_V1_Move_Right", "region": [0, 245, 578, 41], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 10, "loop": true, "mirror": true },
+                { "name": "POW_V1_Run_Right", "region": [0, 291, 578, 39], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 12, "loop": true, "mirror": true },
+                { "name": "POW_V1_Escape_Right", "region": [0, 398, 578, 39], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 10, "loop": false, "mirror": true },
+                { "name": "POW_V1_Glide_Right", "region": [0, 539, 578, 33], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 10, "loop": true, "mirror": true },
+                { "name": "POW_V1_MoveDown_Right", "region": [0, 575, 578, 40], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 10, "loop": false, "mirror": true },
+                { "name": "POW_V1_Item_Right", "region": [0, 58, 578, 49], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 10, "loop": false, "mirror": true },
+                { "name": "POW_V2_Stuck_Right", "region": [0, 733, 578, 41], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 8, "loop": true, "mirror": true },
+                { "name": "POW_V2_Move_Right", "region": [0, 818, 578, 41], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 10, "loop": true, "mirror": true },
+                { "name": "POW_V2_Run_Right", "region": [0, 902, 578, 36], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 12, "loop": true, "mirror": true },
+                { "name": "POW_V2_Escape_Right", "region": [0, 942, 578, 41], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 10, "loop": false, "mirror": true },
+                { "name": "POW_V3_Stuck_Right", "region": [0, 1041, 578, 42], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 8, "loop": true, "mirror": true },
+                { "name": "POW_V3_Move_Right", "region": [0, 1169, 578, 59], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 10, "loop": true, "mirror": true },
+                { "name": "POW_V3_Run_Right", "region": [0, 1231, 578, 58], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 12, "loop": true, "mirror": true },
+                { "name": "POW_V3_Escape_Right", "region": [0, 1292, 578, 44], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 10, "loop": false, "mirror": true },
+                { "name": "POW_V3_Glide_Right", "region": [0, 1340, 578, 39], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 10, "loop": true, "mirror": true }
             ]
         }
     ]

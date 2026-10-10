@@ -49,6 +49,10 @@ namespace
         PrepareBody(_e, _def);
         _e.aux = kModeDown;
         Go_(_e, _def, kIdle);
+        if (_def.missleTank.clipAppear >= 0)
+        {
+            SetClip(_e, _def.missleTank.clipAppear, true);   // 스폰 연출 (Idle 첫 1 s 안에 끝난다)
+        }
     }
 
     void Tick_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env)
@@ -60,6 +64,10 @@ namespace
         switch (_e.state)
         {
             case kIdle:
+                if (_e.clip == c.clipAppear && c.clipAppear >= 0 && _e.stateTicks >= _def.GetClip(c.clipAppear).GetDurationTicks())
+                {
+                    SetClip(_e, ClipOf_(_e, c), true);   // 스폰 연출 끝: 일반 Idle 로 전환 (상태/타이머는 그대로)
+                }
                 if (dx > c.rangeDx)
                 {
                     _e.stateTicks = 0;   // 사거리 밖: 타이머 리셋
@@ -155,6 +163,7 @@ void ParseMissleTankCfg(
     c.clipShotDown   = _r.Clip("shotDown");
     c.clipDestroyUp  = _r.Clip("destroyUp");
     c.clipDestroyDown = _r.Clip("destroyDown");
+    c.clipAppear      = _r.ClipOpt("appear");
 
     c.weaponUp   = _r.Weapon("up");
     c.weaponDown = _r.Weapon("down");

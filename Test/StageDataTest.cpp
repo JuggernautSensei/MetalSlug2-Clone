@@ -385,35 +385,94 @@ TEST(StageDataReal, OpenlandPowsAreAboutEvery700PxAndCoverTheWeaponMix)
     EXPECT_EQ(drops, std::vector<std::string>(expected.begin(), expected.end()));
 }
 
-TEST(StageDataReal, BossArenaHasHmgPickupAndNoHouseInsideIt)
+TEST(StageDataReal, BossArenaStreetHasItsHousesAndBlocksAheadOfTheCamera)
 {
     StageLoadDiagnostics diag;
     slug::Result<StageData> result = LoadStageFromFile(slug::FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
-    // 보스 섹션: 아레나 (12700~) 안 바닥에 HMG 픽업 (선체가 들어오기 전에 주울 수 있는 위치)
-    const StageSection& boss = data.sections.back();
+    // HMG 픽업은 보스 등장 전 (openland_4, 화면 밖) 에 놓는다. 보스 섹션 자체에는 픽업/적 소품을 넣지 않는다
+    const StageSection& openland4 = data.sections[static_cast<size_t>(data.FindSection("openland_4"))];
     int hmgCount = 0;
-    for (const StageAction& action: boss.actions)
+    int houses   = 0;
+    int blocks   = 0;
+    for (const StageAction& action: openland4.actions)
     {
-        if (action.type == eActionType::Spawn && action.spawn.kind == eEntityKind::Item && action.spawn.def == "gunitem_mg")
+        if (action.type != eActionType::Spawn)
+        {
+            continue;
+        }
+        if (action.spawn.kind == eEntityKind::Item && action.spawn.def == "gunitem_mg")
         {
             ++hmgCount;
             EXPECT_FLOAT_EQ(action.spawn.x, 12990.f);
         }
+        if (action.spawn.kind == eEntityKind::Prop && action.spawn.def == "big_house")
+        {
+            ++houses;
+            EXPECT_GE(action.spawn.x, 13500.f) << "아레나 집은 카메라 밖 (openland_4 시작 시 화면 오른쪽 밖) 에 미리 배치";
+        }
+        if (action.spawn.kind == eEntityKind::Prop && action.spawn.def == "bridge_block")
+        {
+            ++blocks;
+        }
     }
     EXPECT_EQ(hmgCount, 1);
-
-    // openland_4: 아레나(12700~14094) 와 겹치던 big_house 는 없다 (파괴 불가 소품이 선체 뒤에서 탄을 막았다). 아레나 안 bridge_block 도 뺐다 (지형 평탄화)
-    const StageSection& openland4 = data.sections[static_cast<size_t>(data.FindSection("openland_4"))];
-    for (const StageAction& action: openland4.actions)
+    EXPECT_GE(houses, 2) << "13542 와 엔드리스 꼬리 (주기 1024) 의 집";
+    EXPECT_GE(blocks, 2);
+    const StageSection& boss = data.sections.back();
+    for (const StageAction& action: boss.actions)
     {
         if (action.type == eActionType::Spawn)
         {
-            EXPECT_NE(action.spawn.def, "big_house");
+            EXPECT_NE(action.spawn.kind, eEntityKind::Item) << "보스 섹션은 화면에 보이는 픽업을 만들지 않는다";
         }
     }
+}
+
+TEST(StageDataReal, Stage0AmbientWalkersUseSequenceParams)
+{
+    StageLoadDiagnostics diag;
+    slug::Result<StageData> result = LoadStageFromFile(slug::FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    ASSERT_TRUE(result) << diag.message;
+    const StageData data = result.Take();
+
+    // 인트로: 노인(Parker) 과 소년(Order) 이 길을 오간다
+    const int intro = data.FindSection("intro");
+    ASSERT_GE(intro, 0);
+    const SpawnSpec* pOld = nullptr;
+    int walkers = 0;
+    for (const StageAction& action: data.sections[static_cast<size_t>(intro)].actions)
+    {
+        if (action.type == eActionType::Spawn && action.spawn.def == "anim_decor" && action.spawn.params.Has("sequence"))
+        {
+            ++walkers;
+            if (action.spawn.anim == "Parker_Run")
+            {
+                pOld = &action.spawn;
+            }
+        }
+    }
+    EXPECT_EQ(walkers, 2);
+    ASSERT_NE(pOld, nullptr);
+    const ParamValue* pSequence = pOld->params.Find("sequence");
+    ASSERT_NE(pSequence, nullptr);
+    EXPECT_EQ(pSequence->GetSize(), 4u);
+    EXPECT_TRUE(pSequence->At(2).GetBool("flip"));
+    EXPECT_FLOAT_EQ(pSequence->At(0).GetVec2("velocity").x, 45.f);
+
+    const int street = data.FindSection("street");
+    ASSERT_GE(street, 0);
+    int streetWalkers = 0;
+    for (const StageAction& action: data.sections[static_cast<size_t>(street)].actions)
+    {
+        if (action.type == eActionType::Spawn && action.spawn.def == "anim_decor")
+        {
+            ++streetWalkers;
+        }
+    }
+    EXPECT_EQ(streetWalkers, 1);
 }
 
 TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
@@ -424,8 +483,8 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
     const StageData data = result.Take();
 
     EXPECT_EQ(data.sections.size(), 21u);
-    EXPECT_EQ(data.CountSpawns(), 177);      // 개활지 POW 5 추가 (openland_start..openland_3), 버스 전 병사 2 제거 (버스는 병사를 내지 않는다)
-    EXPECT_EQ(data.CountWaveEntries(), 34);  // 보스전 보급 POW 웨이브 3 추가, 버스 전 병사 웨이브 1 제거
+    EXPECT_EQ(data.CountSpawns(), 208);      // 보스전 (엔드리스 아레나): openland_4 집/블록 8 + 보급 아이템 1, 보스 섹션 POW 5 (화면 밖 미리 배치)      // 인트로 보행자 2 + 거리 보행자 1 추가 (anim_decor 는 판정 없는 장식), 거리 병사 (지붕 7 + 지상 7) + 무기 상자 1 + 다리 병사 3 + BTank 1 + MissleTank 3 추가, 매달린 병사 2 제거, 6500~9000 POW 5 제거 (6500~12000 POW 6)
+    EXPECT_EQ(data.CountWaveEntries(), 35);  // 거리 웨이브 3 + 다리 미사일 웨이브 1 추가 (보스 보급 웨이브 3 은 POW 미리 배치로 바뀌었다)
     EXPECT_EQ(data.CountGates(), 4);
 
     EXPECT_EQ(data.name, "Stage0");
@@ -444,7 +503,7 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
 
     const NamedRect* pArena = data.FindRect("bossArena");
     ASSERT_NE(pArena, nullptr);
-    EXPECT_EQ(pArena->rect, Aabb::FromMinMax({ 12700.f, 864.f }, { 14094.f, 1312.f }));
+    EXPECT_EQ(pArena->rect, Aabb::FromMinMax({ 12700.f, 864.f }, { 1000000.f, 1312.f }));   // 엔드리스: 우측 끝 없음
 
     ASSERT_EQ(data.camera.boundsCurves.size(), 1u);
     EXPECT_EQ(data.camera.boundsCurves[0].fromIndex, data.FindSection("downtown_start"));
@@ -508,20 +567,18 @@ TEST(StageDataReal, Stage0KeySemantics)
     EXPECT_TRUE(bFence);
 }
 
-// 지형 편집 (Assets/Source/GroundEdits.json): 보스 아레나 (12744..14094) 의 잔존 언덕을 지워 바닥선 y 1286 이 평평하다.
-TEST(StageDataReal, BossArenaGroundIsFlatAfterTheGroundEdit)
+// 지형은 평탄화하지 않는다 (원작처럼 부서진 지붕/잔해 언덕). 보스 아레나 (12760..14090) 에 고체 언덕이 남아 있다.
+TEST(StageDataReal, BossArenaKeepsTheUnevenTerrainWithoutFlattening)
 {
     const std::filesystem::path root = slug::FindAssetRoot();
-    slug::Result<GroundMap> loaded = GroundMap::Load(root / "Baked" / "Ground" / "Stage0_0.bin");
+    slug::Result<GroundMap> loaded = GroundMap::Load(root / "Baked" / "Ground" / "Stage0_1.bin");
     ASSERT_TRUE(loaded);
     const GroundMap ground = loaded.Take();
-    // 바닥선 y 1286 은 고체, 그 위 (1150..1285) 는 공기 (언덕 제거), 아레나 전 구간
+    int bumpy = 0;
     for (int x = 12760; x < 14090; x += 7)
     {
         EXPECT_TRUE(ground.IsSolid(x, 1290)) << "바닥 아래는 고체: x=" << x;
-        EXPECT_FALSE(ground.IsSolid(x, 1230)) << "언덕이 남아 있다: x=" << x;
+        bumpy += ground.IsSolid(x, 1240) ? 1 : 0;
     }
-    // 제거 전 언덕 (13397..13701, 높이 1204) 은 이제 공기
-    EXPECT_FALSE(ground.IsSolid(13550, 1210));
-    EXPECT_TRUE(ground.IsSolid(13550, 1290));
+    EXPECT_GT(bumpy, 50) << "아레나 지형이 평탄화되면 안 된다 (언덕/잔해 지형 유지)";
 }

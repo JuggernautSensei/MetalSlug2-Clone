@@ -13,7 +13,9 @@ ScreenFlowConfig MakeGameOverFlowConfig()
     config.sfx            = sfx::kGameOver;
     config.bgmFadeSeconds = 0.5f;
     config.delayTicks     = 0;
-    config.bannerTicks    = 120;
+    config.artSprite      = "UI_GameOver_Helmet";
+    config.artFadeInTicks = 30;                           // 0.5 s 페이드 인
+    config.bannerTicks    = config.artFadeInTicks + 180;   // 페이드 인 + 3 s 홀드
     config.fadeTicks      = 40;
     config.holdTicks      = 20;
     return config;
@@ -165,10 +167,40 @@ MissionResultsView ScreenFlow::GetResultsView() const
     return MakeMissionResultsView(m_config.rescuedCount, m_elapsed - m_config.delayTicks);
 }
 
+GameOverArtView ScreenFlow::GetArtView() const
+{
+    GameOverArtView view;
+    if (m_config.artSprite.empty() || m_phase == eFlowPhase::Idle || m_phase == eFlowPhase::Done || m_phase == eFlowPhase::Delay || m_phase == eFlowPhase::Results)
+    {
+        return view;
+    }
+    view.bVisible = true;
+    view.sprite   = m_config.artSprite;
+    view.alpha    = 255;
+    if (m_phase == eFlowPhase::Art)
+    {
+        const int localTicks = m_elapsed - (m_config.delayTicks + m_config.resultsTicks);
+        if (m_config.artFadeInTicks > 0)
+        {
+            view.alpha = static_cast<uint8_t>(std::clamp(localTicks * 255 / m_config.artFadeInTicks, 0, 255));
+        }
+    }
+    return view;
+}
+
 void ScreenFlow::BeginBanner_(
     UiSystem&   _ui,
     IAudioSink& _audio)
 {
+    if (!m_config.artSprite.empty())
+    {
+        m_phase = eFlowPhase::Art;
+        if (!m_config.sfx.empty())
+        {
+            _audio.Play(m_config.sfx);
+        }
+        return;
+    }
     m_phase = eFlowPhase::Banner;
 
     BannerSpec spec  = MakeBannerSpec(m_config.bannerText, static_cast<float>(m_config.bannerTicks) / 60.f);
@@ -216,7 +248,7 @@ void ScreenFlow::Advance_(
     {
         BeginBanner_(_ui, _audio);
     }
-    if (m_phase == eFlowPhase::Banner && m_elapsed >= fadeStart)
+    if ((m_phase == eFlowPhase::Banner || m_phase == eFlowPhase::Art) && m_elapsed >= fadeStart)
     {
         BeginFade_(_ui);
     }

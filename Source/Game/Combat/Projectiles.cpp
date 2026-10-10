@@ -39,6 +39,35 @@ namespace
         return false;
     }
 
+    // 발판 윗면을 가로지르는 선분 (낙하 중에만). 가장 먼저 닿는 윗면과 그 교점을 돌려준다
+    [[nodiscard]] bool SegmentHitsPlatform_(
+        slug::Span<const Platform> _platforms,
+        const Vec2                 _from,
+        const Vec2                 _to,
+        Vec2&                      _outTop)
+    {
+        bool  bHit  = false;
+        float bestT = 2.f;
+        for (const Platform& platform: _platforms)
+        {
+            const float top = platform.box.min.y;
+            if (_to.y <= _from.y || _from.y > top || _to.y < top)
+            {
+                continue;
+            }
+            const float t = (top - _from.y) / (_to.y - _from.y);
+            const float x = _from.x + (_to.x - _from.x) * t;
+            if (t >= bestT || x < platform.box.min.x || x > platform.box.max.x)
+            {
+                continue;
+            }
+            bestT   = t;
+            _outTop = { x, top };
+            bHit    = true;
+        }
+        return bHit;
+    }
+
     [[nodiscard]] Aabb SweptBox_(
         const Vec2 _a,
         const Vec2 _b,
@@ -151,9 +180,10 @@ void ProjectileSystem::SpawnBulletBlast_(
 }
 
 void ProjectileSystem::Step(
-    const GroundMap* _pGround,
-    CombatSystem&    _combat,
-    const float      _dt)
+    const GroundMap*           _pGround,
+    CombatSystem&              _combat,
+    const float                _dt,
+    slug::Span<const Platform> _platforms)
 {
     for (Bullet& bullet: m_bullets)
     {
@@ -249,17 +279,31 @@ void ProjectileSystem::Step(
                 m_shotFx.push_back({ shot.position, params.visual });
             }
         }
-        else if (_pGround && (params.bExplodeOnSolid || bRoll) && (shot.position.x != shot.renderPrev.x || shot.position.y != shot.renderPrev.y))
+        else if ((_pGround || !_platforms.empty()) && (params.bExplodeOnSolid || bRoll) && (shot.position.x != shot.renderPrev.x || shot.position.y != shot.renderPrev.y))
         {
-            Vec2 lastFree;
-            if (SegmentHitsGround_(*_pGround, shot.renderPrev, shot.position, lastFree))
+            // 접촉은 스프라이트 바닥(중심 + groundProbeY) 기준으로 판정한다: 중심으로 판정하면 반쯤 지면에 묻힌 뒤 터진다
+            const float probe = params.groundProbeY;
+            const Vec2  from  = { shot.renderPrev.x, shot.renderPrev.y + probe };
+            const Vec2  to    = { shot.position.x, shot.position.y + probe };
+            Vec2        lastFree = from;
+            Vec2        topHit   = to;
+            const bool  bGroundHit = _pGround && SegmentHitsGround_(*_pGround, from, to, lastFree);
+            const bool  bPlatHit   = !bGroundHit && SegmentHitsPlatform_(_platforms, from, to, topHit);
+            if (bGroundHit || bPlatHit)
             {
                 if (bRoll)
                 {
                     Vec2 standing = shot.position;
-                    for (int guard = 0; guard < 64 && _pGround->IsSolidAt(standing); ++guard)
+                    if (bGroundHit)
                     {
-                        standing.y -= 1.f;
+                        for (int guard = 0; guard < 64 && _pGround->IsSolidAt({ standing.x, standing.y + probe }); ++guard)
+                        {
+                            standing.y -= 1.f;
+                        }
+                    }
+                    else
+                    {
+                        standing.y = topHit.y - probe;   // 발판 윗면에 얹는다
                     }
                     shot.position   = standing;
                     shot.velocity.y = 0.f;
@@ -273,7 +317,8 @@ void ProjectileSystem::Step(
                 else
                 {
                     shot.bAlive = false;
-                    m_shotFx.push_back({ lastFree, params.visual });
+                    const Vec2 at = bGroundHit ? lastFree : topHit;
+                    m_shotFx.push_back({ { at.x, at.y - probe }, params.visual });
                 }
             }
         }

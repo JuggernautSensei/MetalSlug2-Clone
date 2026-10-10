@@ -1,0 +1,580 @@
+File Name:Stage0_Background_0
+Texture Name:Stage0_Background_0
+Width:1118
+Height:320
+Column:0
+Line:0
+
+File Name:Stage0_Background_1
+Texture Name:Stage0_Background_1
+Width:2048
+Height:512
+Column:0
+Line:0
+
+File Name:Stage0_Background_2
+Texture Name:Stage0_Background_2
+Width:768
+Height:704
+Column:0
+Line:0
+
+File Name:Stage0_Block_0
+Texture Name:Stage0_Block
+Width:156
+Height:108
+Column:0
+Line:0
+
+File Name:Stage0_Block_1
+Texture Name:Stage0_Block
+Width:156
+Height:108
+Column:1
+Line:0
+
+File Name:Stage0_Bridge_0
+Texture Name:Stage0_Bridge_0
+Width:262
+Height:142
+Column:0
+Line:0
+
+File Name:Stage0_Bridge_1
+Texture Name:Stage0_Bridge_1
+Width:206
+Height:166
+Column:0
+Line:0
+
+File Name:Stage0_Bridge_2
+Texture Name:Stage0_Bridge_2
+Width:194
+Height:116
+Column:0
+Line:0
+
+File Name:Stage0_House_0_0
+Texture Name:Stage0_House_0
+Width:226
+Height:100
+Column:0
+Line:0
+
+File Name:Stage0_House_0_1
+Texture Name:Stage0_House_0
+Width:226
+Height:100
+Column:1
+Line:0
+
+File Name:Stage0_House_1_0
+Texture Name:Stage0_House_1
+Width:188
+Height:152
+Column:0
+Line:0
+
+File Name:Stage0_House_1_1
+Texture Name:Stage0_House_1
+Width:188
+Height:152
+Column:1
+Line:0
+
+File Name:Stage0_House_2_0
+Texture Name:Stage0_House_2
+Width:218
+Height:176
+Column:0
+Line:0
+
+File Name:Stage0_House_2_1
+Texture Name:Stage0_House_2
+Width:218
+Height:176
+Column:1
+Line:0
+
+File Name:Stage0_House_2_2
+Texture Name:Stage0_House_2
+Width:218
+Height:176
+Column:2
+Line:0
+
+File Name:Stage0_House_3_0
+Texture Name:Stage0_House_3
+Width:220
+Height:178
+Column:0
+Line:0
+
+File Name:Stage0_House_3_1
+Texture Name:Stage0_House_3
+Width:220
+Height:178
+Column:1
+Line:0
+
+File Name:Stage0_House_4_Idle
+Texture Name:Stage0_House_4
+Width:284
+Height:120
+Column:0
+Line:0
+
+File Name:Stage0_House_4_Destroy_0
+Texture Name:Stage0_House_4
+Width:284
+Height:120
+Column:1
+Line:0
+
+File Name:Stage0_House_4_Destroy_1
+Texture Name:Stage0_House_4
+Width:284
+Height:120
+Column:2
+Line:0
+
+File Name:Stage0_House_5_0
+Texture Name:Stage0_House_5
+Width:498
+Height:141
+Column:0
+Line:0
+
+File Name:Stage0_House_5_1
+Texture Name:Stage0_House_5
+Width:498
+Height:141
+Column:1
+Line:0
+
+File Name:Stage0_House_5_2
+Texture Name:Stage0_House_5
+Width:498
+Height:141
+Column:2
+Line:0
+
+File Name:Stage0_Main
+Texture Name:Stage0_Main
+Width:14094
+Height:1328
+Column:0
+Line:0
+
+File Name:Stage0_Pixel_0
+Texture Name:Stage0_Pixel_0
+Width:14094
+Height:1328
+Column:0
+Line:0
+
+File Name:Stage0_Pixel_1
+Texture Name:Stage0_Pixel_1
+Width:14094
+Height:1328
+Column:0
+Line:0
+
+File Name:Stage0_sewer
+Texture Name:Stage0_sewer
+Width:276
+Height:265
+Column:0
+Line:0
+
+File Name:Stage0_Shop_0_0
+Texture Name:Stage0_Shop_0
+Width:262
+Height:256
+Column:0
+Line:0
+
+File Name:Stage0_Shop_0_1
+Texture Name:Stage0_Shop_0
+Width:262
+Height:256
+Column:1
+Line:0
+
+File Name:Stage0_Shop_1_0
+Texture Name:Stage0_Shop_1
+Width:248
+Height:270
+Column:0
+Line:0
+
+File Name:Stage0_Shop_1_1
+Texture Name:Stage0_Shop_1
+Width:248
+Height:270
+Column:1
+Line:0
+
+File Name:Stage0_Shop_2_0
+Texture Name:Stage0_Shop_2
+Width:213
+Height:208
+Column:0
+Line:0
+
+File Name:Stage0_Shop_2_1
+Texture Name:Stage0_Shop_2
+Width:213
+Height:208
+Column:1
+Line:0
+
+File Name:Stage0_Shop_3_0
+Texture Name:Stage0_Shop_3
+Width:372
+Height:275
+Column:0
+Line:0
+
+File Name:Stage0_Shop_3_1
+Texture Name:Stage0_Shop_3
+Width:372
+Height:275
+Column:1
+Line:0
+
+File Name:Stage0_Shop_4_0
+Texture Name:Stage0_Shop_4
+Width:405
+Height:372
+Column:0
+Line:0
+
+File Name:Stage0_Shop_4_1
+Texture Name:Stage0_Shop_4
+Width:405
+Height:372
+Column:1
+Line:0
+
+File Name:Stage0_Shop_5_0
+Texture Name:Stage0_Shop_5
+Width:322
+Height:364
+Column:0
+Line:0
+
+File Name:Stage0_Shop_5_1
+Texture Name:Stage0_Shop_5
+Width:322
+Height:364
+Column:1
+Line:0
+
+File Name:Stage0_Sign_0
+Texture Name:Stage0_Sign
+Width:216
+Height:90
+Column:0
+Line:0
+
+File Name:Stage0_Sign_1
+Texture Name:Stage0_Sign
+Width:216
+Height:90
+Column:1
+Line:0
+
+File Name:Stage0_Tower_0
+Texture Name:Stage0_Tower
+Width:110
+Height:202
+Column:0
+Line:0
+
+File Name:Stage0_Tower_1
+Texture Name:Stage0_Tower
+Width:110
+Height:202
+Column:1
+Line:0
+
+File Name:MainTruck_Die
+Texture Name:MainTruck_Die
+Width:398
+Height:225
+Column:0
+Line:0
+
+File Name:MainTruck_Die_Front
+Texture Name:MainTruck_Die_Front
+Width:374
+Height:169
+Column:0
+Line:0
+
+File Name:MainTruck_Idle_0
+Texture Name:MainTruck_Idle
+Width:234
+Height:293
+Column:0
+Line:0
+
+File Name:MainTruck_Idle_1
+Texture Name:MainTruck_Idle
+Width:234
+Height:293
+Column:1
+Line:0
+
+File Name:MainTruck_Idle_2
+Texture Name:MainTruck_Idle
+Width:234
+Height:293
+Column:2
+Line:0
+
+File Name:MainTruck_Idle_3
+Texture Name:MainTruck_Idle
+Width:234
+Height:293
+Column:3
+Line:0
+
+File Name:MainTruck_Ladder_0
+Texture Name:MainTruck_Ladder
+Width:252
+Height:272
+Column:0
+Line:0
+
+File Name:MainTruck_Ladder_1
+Texture Name:MainTruck_Ladder
+Width:252
+Height:272
+Column:1
+Line:0
+
+File Name:MainTruck_Ladder_2
+Texture Name:MainTruck_Ladder
+Width:252
+Height:272
+Column:2
+Line:0
+
+File Name:MainTruck_Ladder_3
+Texture Name:MainTruck_Ladder
+Width:252
+Height:272
+Column:3
+Line:0
+
+File Name:MainTruck_Not_Begin
+Texture Name:MainTruck_Begin
+Width:400
+Height:288
+Column:0
+Line:0
+
+File Name:Pence0
+Texture Name:Pence
+Width:64
+Height:108
+Column:0
+Line:0
+
+File Name:Pence1
+Texture Name:Pence
+Width:64
+Height:108
+Column:1
+Line:0
+
+File Name:Pence2
+Texture Name:Pence
+Width:64
+Height:108
+Column:2
+Line:0
+
+File Name:Sewer
+Texture Name:Sewer
+Width:276
+Height:265
+Column:0
+Line:0
+
+File Name:Mob_Boat_Idle
+Texture Name:Mob_Boat
+Width:293
+Height:248
+Column:0
+Line:0
+
+File Name:Mob_Boat_Destroy
+Texture Name:Mob_Boat
+Width:293
+Height:248
+Column:1
+Line:0
+
+File Name:Dev_GuardPost
+Texture Name:GuardPost
+Width:228
+Height:220
+Column:0
+Line:0
+
+File Name:Stage0_Block_Idle
+Texture Name:Stage0_Block
+Width:156
+Height:108
+Column:0
+Line:0
+
+File Name:Stage0_Block_Destroy
+Texture Name:Stage0_Block
+Width:156
+Height:108
+Column:1
+Line:0
+
+File Name:Stage0_Bridge_0
+Texture Name:Stage0_Bridge_0
+Width:262
+Height:142
+Column:0
+Line:0
+
+File Name:Stage0_Bridge_1
+Texture Name:Stage0_Bridge_1
+Width:206
+Height:166
+Column:0
+Line:0
+
+File Name:Stage0_Bridge_2
+Texture Name:Stage0_Bridge_2
+Width:194
+Height:116
+Column:0
+Line:0
+
+File Name:Stage0_Bridge_3
+Texture Name:Stage0_Bridge_3
+Width:244
+Height:94
+Column:0
+Line:0
+
+File Name:Stage0_House_0_Idle
+Texture Name:Stage0_House_0
+Width:226
+Height:100
+Column:0
+Line:0
+
+File Name:Stage0_House_0_Destroy
+Texture Name:Stage0_House_0
+Width:226
+Height:100
+Column:1
+Line:0
+
+File Name:Stage0_House_1_Idle
+Texture Name:Stage0_House_1
+Width:188
+Height:152
+Column:0
+Line:0
+
+File Name:Stage0_House_1_Destroy
+Texture Name:Stage0_House_1
+Width:188
+Height:152
+Column:1
+Line:0
+
+File Name:Stage0_House_2_Idle_0
+Texture Name:Stage0_House_2
+Width:218
+Height:176
+Column:0
+Line:0
+
+File Name:Stage0_House_2_Idle_1
+Texture Name:Stage0_House_2
+Width:218
+Height:176
+Column:1
+Line:0
+
+File Name:Stage0_House_2_Destroy
+Texture Name:Stage0_House_2
+Width:218
+Height:176
+Column:2
+Line:0
+
+File Name:Stage0_House_3_Idle
+Texture Name:Stage0_House_3
+Width:220
+Height:178
+Column:0
+Line:0
+
+File Name:Stage0_House_3_Destroy
+Texture Name:Stage0_House_3
+Width:220
+Height:178
+Column:1
+Line:0
+
+File Name:Stage0_House_5_Idle
+Texture Name:Stage0_House_5
+Width:498
+Height:141
+Column:0
+Line:0
+
+File Name:Stage0_House_5_Destroy_0
+Texture Name:Stage0_House_5
+Width:498
+Height:141
+Column:1
+Line:0
+
+File Name:Stage0_House_5_Destroy_1
+Texture Name:Stage0_House_5
+Width:498
+Height:141
+Column:2
+Line:0
+
+File Name:Stage0_Tower_Idle
+Texture Name:Stage0_Tower
+Width:110
+Height:202
+Column:0
+Line:0
+
+File Name:Stage0_Tower_Destroy
+Texture Name:Stage0_Tower
+Width:110
+Height:202
+Column:1
+Line:0
+
+File Name:Stage0_House_5_PixelMap
+Texture Name:Stage0_House_5_PixelMap
+Width:555
+Height:124
+Column:0
+Line:0
+
+File Name:BattleShip_Cannon_Deco
+Texture Name:BattleShip_Cannon_Deco
+Width:76
+Height:28
+Column:0
+Line:0

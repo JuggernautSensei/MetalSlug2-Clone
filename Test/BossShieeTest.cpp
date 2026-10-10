@@ -23,7 +23,7 @@ namespace
     constexpr float kFeetX        = 1000.f;
     constexpr float kFeetY        = 1286.f;
     constexpr float kCamLeft      = 12700.f;
-    constexpr int   kEntranceTick = 240;
+    constexpr int   kEntranceTick = 960;   // 16 s (Boss.json entranceSec)
     constexpr int   kFirstTurret  = 120;
     constexpr int   kTurnTicks    = 45;
     constexpr int   kFireTicks    = 30;
@@ -348,7 +348,7 @@ TEST(BossShiee, NoAttacksOnceThePlayerIsDead)
     EXPECT_EQ(CountShotsOf(rig, "boss_shell"), 0);
 }
 
-TEST(BossShiee, ScrollsOnlyInBurstsAndNeverPastItsBudget)
+TEST(BossShiee, ScrollsContinuouslyAfterTheEntranceAndNeverPastItsBudget)
 {
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
@@ -365,6 +365,7 @@ TEST(BossShiee, ScrollsOnlyInBurstsAndNeverPastItsBudget)
     }
     EXPECT_FALSE(bScrolledDuringEntrance);
 
+    // 엔드리스 드리프트: 끊김 없이 18 px/s (휴지 없음)
     int onTicks = 0;
     for (int t = 0; t < 60 * 30; ++t)
     {
@@ -373,30 +374,29 @@ TEST(BossShiee, ScrollsOnlyInBurstsAndNeverPastItsBudget)
         total += dx;
         onTicks += dx > 0.f ? 1 : 0;
     }
-    EXPECT_NEAR(total, 18.f * 18.f, 30.f) << "30 s 중 버스트 3 s / 휴지 2 s 6 주기 = 18 s 전진 (18 px/s)";
-    EXPECT_GT(onTicks, 0);
-    EXPECT_LT(onTicks, 60 * 30) << "휴지가 있다";
-    EXPECT_LE(total, 700.f + 0.5f);
-    EXPECT_NEAR(static_cast<float>(bossshiee::GetScrollLeftPx(*Boss(rig, h))), 700.f - total, 2.f) << "남은 예산 = budget - 사용분";
+    EXPECT_NEAR(total, 18.f * 30.f, 5.f) << "30 s 동안 18 px/s 연속 전진";
+    EXPECT_EQ(onTicks, 60 * 30) << "휴지 없이 매 틱 전진";
+    EXPECT_NEAR(static_cast<float>(bossshiee::GetScrollLeftPx(*Boss(rig, h))), 100000.f - total, 2.f) << "남은 예산 = budget - 사용분";
 }
 
-TEST(BossShiee, HullMovesWithTheCameraScroll)
+TEST(BossShiee, HullStaysAtItsScreenSpotWhileTheCameraDrifts)
 {
+    // 선체는 화면에 고정 (stationX): 카메라가 움직이면 같은 만큼 월드에서 전진한다. 배경/소품은 반대로 미끄러진다.
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
     const EnemyHandle h = SpawnBoss(rig);
     rig.SetPlayer({ kCamLeft + 100.f, kFeetY });
     ToFight(rig, h);
-    (void)rig.World().TakeCameraScroll();   // 등장/전투 시작 때 쌓인 요청은 버린다
-    const float x0 = Boss(rig, h)->body.position.x;
-    float scrolled = 0.f;
+    (void)rig.World().TakeCameraScroll();
+    Aabb view = Aabb::FromMinSize({ kCamLeft, 864.f }, { 640.f, 448.f });
     for (int t = 0; t < 600; ++t)
     {
+        view.min.x += 0.3f;
+        view.max.x += 0.3f;
+        rig.SetCameraView(view);
         rig.Frame();
-        scrolled += rig.World().TakeCameraScroll();
     }
-    EXPECT_GT(scrolled, 0.f);
-    EXPECT_NEAR(Boss(rig, h)->body.position.x - x0, scrolled, 0.5f) << "선체는 요청한 카메라 전진량만큼 같이 간다 (화면상 정지)";
+    EXPECT_NEAR(Boss(rig, h)->body.position.x - view.min.x, 330.f, 1.f) << "선체의 화면 위치는 stationX 로 고정";
 }
 
 TEST(BossShiee, BossBoundsAndPartsStayInsideTheHurtboxTableWhileTheCannonIsOpen)

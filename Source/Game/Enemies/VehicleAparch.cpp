@@ -21,7 +21,8 @@ namespace
         kMissMove,
         kMissShoot,
         kMissEnd,
-        kBomb
+        kBomb,
+        kTurn
     };
 
     [[nodiscard]] int ClipOf_(const Enemy& _e, const AparchCfg& _c)
@@ -30,6 +31,10 @@ namespace
         {
             case kApproach: return _c.clipMove;
             case kStop: return _c.clipMoveStop;
+            case kMissGun: return _c.clipGun;
+            case kMissShoot: return _c.clipGunHold;
+            case kMissEnd: return _c.clipGunEnd;
+            case kTurn: return _c.clipTurn;
             default: return _c.clipIdle;
         }
     }
@@ -61,6 +66,7 @@ namespace
         (void)_env;
         PrepareBody(_e, _def);
         _e.facing = -1;   // 항상 좌향
+        _e.aux4   = _e.facing;   // 마지막으로 본 향 (향이 바뀌면 kIdle 에서 Turning 연출)
         Go_(_e, _def, kApproach);
     }
 
@@ -104,6 +110,12 @@ namespace
 
             case kIdle:
                 _e.body.velocity = { 0.f, 0.f };
+                if (_e.aux4 != _e.facing)
+                {
+                    _e.aux4 = _e.facing;
+                    Go_(_e, _def, kTurn);
+                    break;
+                }
                 if (_e.stateTicks >= c.idleTicks)
                 {
                     if (_e.aux2 == 0)
@@ -119,6 +131,14 @@ namespace
                         _e.aux3 = c.idleTicks;   // 레거시: 드롭 진입 시 누적 타이머는 PATTERN_TIME(2 s) 그대로 이월된다
                     }
                     Go_(_e, _def, bBomb ? kBomb : kMissGun);
+                }
+                break;
+
+            case kTurn:
+                _e.body.velocity = { 0.f, 0.f };
+                if (Done_(_e, _def))
+                {
+                    Go_(_e, _def, kIdle);
                 }
                 break;
 
@@ -283,6 +303,10 @@ void ParseAparchCfg(
     c.clipMove     = _r.Clip("move");
     c.clipMoveStop = _r.Clip("moveStop");
     c.clipDestroy  = _r.Clip("destroy");
+    c.clipGun      = _r.Clip("gun");
+    c.clipGunHold  = _r.Clip("gunHold");
+    c.clipGunEnd   = _r.Clip("gunEnd");
+    c.clipTurn     = _r.Clip("turn");
 
     c.weaponMissile = _r.Weapon("missile");
     c.weaponDrop    = _r.Weapon("drop");

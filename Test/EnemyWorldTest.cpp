@@ -480,3 +480,28 @@ TEST(EnemyHitFlash, PartFlashIsPerPartAndIgnoresOutOfRangeIndices)
     EXPECT_FLOAT_EQ(PartFlashAmount(e, kEnemyFlashPartCount), 0.f);
     EXPECT_FLOAT_EQ(PartFlashAmount(e, -1), 0.f);
 }
+
+TEST(EnemyWorld, PowVariantPicksItsOwnClipSetAndDefaultsToOlder)
+{
+    EnemyRig rig;
+    ASSERT_TRUE(rig.IsLoaded());
+    const EnemyDefLibrary* pLib = rig.World().GetLibrary();
+    ASSERT_NE(pLib, nullptr);
+
+    SpawnParams variant;
+    variant.aiVariant = 2;   // 외형 변형 2 (Rumi 계열 클립)
+    const EnemyHandle hBase = rig.Spawn("pow", { 300.f, kGroundY });
+    const EnemyHandle hVar  = rig.Spawn("pow", { 500.f, kGroundY }, variant);
+    rig.Step(1);
+
+    const Enemy* pBase = rig.E(hBase);
+    const Enemy* pVar  = rig.E(hVar);
+    ASSERT_NE(pBase, nullptr);
+    ASSERT_NE(pVar, nullptr);
+    ASSERT_EQ(pBase->state, 0);   // kStuck
+    ASSERT_EQ(pVar->state, 0);
+    const EnemyDef& def = pLib->Get(pBase->defIndex);
+    EXPECT_STREQ(def.clips[static_cast<size_t>(pBase->clip)].name.c_str(), "stuck");
+    EXPECT_STREQ(def.clips[static_cast<size_t>(pVar->clip)].name.c_str(), "stuck_v2");
+    EXPECT_EQ(pVar->aiVariant, 2);
+}

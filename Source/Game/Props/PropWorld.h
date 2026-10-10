@@ -7,6 +7,7 @@
 #include "Base/Math.h"
 
 #include "Game/Combat/CombatSystem.h"
+#include "Game/Props/DecorWorld.h"
 #include "Game/Props/ItemWorld.h"
 #include "Game/Props/PropDef.h"
 #include "Game/Sandbox/Effects.h"
@@ -160,6 +161,11 @@ public:
     [[nodiscard]] ItemWorld&       GetItems()       { return m_items; }
     [[nodiscard]] const ItemWorld& GetItems() const { return m_items; }
 
+    // 시각 전용 장식 (anim_decor). 판정/피격 없음.
+    uint32_t SpawnDecor(const DecorSpawn& _spawn) { return m_decor.Spawn(_spawn); }
+    void     ClearDecorByLayerMask(uint32_t _layerMask) { m_decor.ClearByLayerMask(_layerMask); }
+    [[nodiscard]] const DecorWorld& GetDecor() const { return m_decor; }
+
     void ClearByLayer(bool _bFront);
     void ClearAll();
 
@@ -197,6 +203,7 @@ private:
     slug::Vector<Platform>          m_enemyPlatforms = {};
     slug::Vector<Wall>              m_walls          = {};
     ItemWorld                      m_items          { nullptr, uint64_t { 1 } };
+    DecorWorld                     m_decor          = {};
     EffectList                     m_effects        = {};
     slug::RngMt19937                m_rng            = slug::RngMt19937 { uint64_t { 1 } };
     uint32_t                       m_nextId         = kPropOwnerBase;

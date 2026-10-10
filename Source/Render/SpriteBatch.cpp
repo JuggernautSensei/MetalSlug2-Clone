@@ -307,6 +307,66 @@ void SpriteBatch::DrawTexture(
     SDL_RenderTexture(m_pRenderer, texture.pTexture, &src, &dst);
 }
 
+void SpriteBatch::DrawTextureRepeatX(
+    const int   _handle,
+    const Vec2  _texWorldPos,
+    const Vec2  _cameraPos,
+    const int   _viewW,
+    const int   _viewH,
+    const float _fromX,
+    const int   _tileX,
+    const int   _tileW) const
+{
+    if (!m_pRenderer || _handle < 0 || static_cast<size_t>(_handle) >= m_textures.size() || _tileW <= 0)
+    {
+        return;
+    }
+    const Page& texture = m_textures[static_cast<size_t>(_handle)];
+    if (!texture.pTexture)
+    {
+        return;
+    }
+
+    const int texX = FloorToInt(_texWorldPos.x);
+    const int texY = FloorToInt(_texWorldPos.y);
+    const int camX = FloorToInt(_cameraPos.x);
+    const int camY = FloorToInt(_cameraPos.y);
+    const int from = FloorToInt(_fromX);
+
+    // Y 는 전체 높이를 그대로 쓴다 (카메라 세로 범위로 자른다)
+    const int y0 = std::max(texY, camY);
+    const int y1 = std::min(texY + texture.height, camY + _viewH);
+    if (y1 <= y0)
+    {
+        return;
+    }
+
+    // 엔드리스 구간: 세그먼트 k 는 월드 [from + k*tileW, from + (k+1)*tileW) 를 텍스처 열 [_tileX, _tileX+tileW) 로 그린다
+    const int viewLeft  = camX;
+    const int viewRight = camX + _viewW;
+    const int firstK    = viewLeft > from ? (viewLeft - from) / _tileW : 0;
+    for (int k = firstK; ; ++k)
+    {
+        const int segStart = from + k * _tileW;
+        if (segStart >= viewRight)
+        {
+            break;
+        }
+        const int x0 = std::max(segStart, viewLeft);
+        const int x1 = std::min(segStart + _tileW, viewRight);
+        if (x1 <= x0)
+        {
+            continue;
+        }
+        const SDL_FRect src = { static_cast<float>(_tileX + (x0 - segStart)), static_cast<float>(y0 - texY), static_cast<float>(x1 - x0), static_cast<float>(y1 - y0) };
+        const SDL_FRect dst = { static_cast<float>(x0 - camX), static_cast<float>(y0 - camY), static_cast<float>(x1 - x0), static_cast<float>(y1 - y0) };
+        SDL_SetTextureColorMod(texture.pTexture, 255, 255, 255);
+        SDL_SetTextureAlphaMod(texture.pTexture, 255);
+        SDL_RenderTexture(m_pRenderer, texture.pTexture, &src, &dst);
+    }
+    (void)texX;
+}
+
 slug::Result<void> SpriteBatch::LoadAtlasPages(
     const AnimationLibrary& _library)
 {

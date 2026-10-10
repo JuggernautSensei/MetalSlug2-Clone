@@ -1,0 +1,44 @@
+Resource Name:Stage1_BGM
+File Path:Sounds\Stage1_BGM.wav
+
+Resource Name:PlayerGun_HM
+File Path:Sounds\PlayerGun_HM.wav
+
+Resource Name:PlayerGun_FS
+File Path:Sounds\PlayerGun_FS.wav
+
+Resource Name:PlayerGun_EC
+File Path:Sounds\PlayerGun_EC.wav
+
+Resource Name:PlayerGun_SG
+File Path:Sounds\PlayerGun_SG.wav
+
+Resource Name:PlayerGun_RL
+File Path:Sounds\PlayerGun_RL.wav
+
+Resource Name:PlayerBomb
+File Path:Sounds\PlayerBomb.wav
+
+Resource Name:PlayerGunShot
+File Path:Sounds\PlayerGunShot.wav
+
+Resource Name:PlayerGunShot_FS
+File Path:Sounds\PlayerGunShot_FS.wav
+
+Resource Name:PlayerGunDead
+File Path:Sounds\PlayerGunDead.wav
+
+Resource Name:PlayerReload
+File Path:Sounds\PlayerReload.wav
+
+Resource Name:PlayerSlash1
+File Path:Sounds\PlayerSlash1.wav
+
+Resource Name:PlayerSlash2
+File Path:Sounds\PlayerSlash2.wav
+
+Resource Name:OK
+File Path:Sounds\OK.wav
+
+Resource Name:Coin
+File Path:Sounds\Coin.wav

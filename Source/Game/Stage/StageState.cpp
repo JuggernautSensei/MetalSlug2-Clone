@@ -139,7 +139,12 @@ void StageState::Load_(
         const slug::FilePath path = _ctx.assetRoot / "Baked" / "Ground" / (name + ".bin");
         if (slug::Result<GroundMap> map = GroundMap::Load(path))
         {
-            m_host.AddGroundMap(name, map.Take());
+            GroundMap ground = map.Take();
+            if (m_data.endless.bEnabled)
+            {
+                ground.SetPeriodicTail(static_cast<int>(m_data.endless.fromX), static_cast<int>(m_data.endless.tileX), static_cast<int>(m_data.endless.tileW));
+            }
+            m_host.AddGroundMap(name, std::move(ground));
         }
         else
         {
@@ -371,8 +376,17 @@ void StageState::Tick(
     enemyCtx.pAnims             = _ctx.pAnims;
     m_enemies.Tick(enemyCtx);
     m_runner->AddCameraScroll(m_enemies.TakeCameraScroll());   // 보스 자동 전진 (카메라 하한)
+    {
+        float shakeAmplitude = 0.f;
+        float shakeSeconds   = 0.f;
+        m_enemies.TakeCameraShake(shakeAmplitude, shakeSeconds);
+        if (shakeAmplitude > 0.f && shakeSeconds > 0.f)
+        {
+            m_camera.Shake(shakeAmplitude, shakeSeconds);   // 보스 등장 흔들림
+        }
+    }
 
-    m_projectiles.Step(m_host.GetActiveGround(), m_combat, kStepSec);
+    m_projectiles.Step(m_host.GetActiveGround(), m_combat, kStepSec, m_enemyPlatforms);
 
     const slug::Vector<HitEvent>& events = m_combat.Resolve();
     m_props.OnHitEvents(events);
@@ -788,6 +802,10 @@ void StageState::Render(
     if (m_bgHandle >= 0 && _ctx.pSprites)
     {
         _ctx.pSprites->DrawTexture(m_bgHandle, { 0.f, 0.f }, cameraPos, Renderer::kLogicalWidth, Renderer::kLogicalHeight);
+        if (m_data.endless.bEnabled)
+        {
+            _ctx.pSprites->DrawTextureRepeatX(m_bgHandle, { 0.f, 0.f }, cameraPos, Renderer::kLogicalWidth, Renderer::kLogicalHeight, m_data.endless.fromX, static_cast<int>(m_data.endless.tileX), static_cast<int>(m_data.endless.tileW));
+        }
     }
 
     DrawWorld_(_ctx, cameraPos, _alpha);
@@ -1059,6 +1077,7 @@ void StageState::DrawHud_(
     }
 
     m_ui.SetMissionResults(m_flow.GetResultsView());
+    m_ui.SetGameOverArt(m_flow.GetArtView());
     m_ui.DrawOverlays(_ctx);
 }
 }

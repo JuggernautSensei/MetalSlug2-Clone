@@ -248,7 +248,7 @@
 |---|---|
 | 충돌 | `box 100×100` 중심 원점 (**비행: 원점=중심 유지**, 지면 개념 없음), 충돌체 `CL_MONSTER` |
 | HP/점수 | 레거시 50 → 새 **120**(TTK 12 s). 점수 1000 (게이트면 권장 2000) |
-| 렌더 | 본체 `Aparch_Idle/Move/MoveStop/Destroy_Left`(`_Right` 쌍 존재, **항상 Left 사용**), 로터 `Aparch_Flight_Left4`(5f×.04 루프) offset (−18,−54), 포 `Aparch_Gun_Left`/`Aparch_Gun_End_Left`(9f×.08) offset (−6,45) |
+| 렌더 | 본체 `Aparch_Idle/Move/MoveStop/Destroy_Left`(`_Right` 쌍 존재, **항상 Left 사용**), 로터 `Aparch_Flight_Left4`(5f×.04 루프) offset (−18,−54), 포 `Aparch_Gun_Left`/`Aparch_Gun_End_Left`(9f×.08) offset (−6,45). **새 구현**: 클립 `Heli_*` (20642.png 컷), `centerAnchor` 로 pivot = 원점 (발 기준 lift 를 쓰면 기체가 66 px 위로 밀려 화면 밖으로 잘린다, Spec_Heli.md §1) |
 | 활성 | margin **400**, 활성 시 화면 좌표 `(W/2+125, 125)=(445,125)` 로 진입 |
 - 이동: 목표점까지 300 px/s, 남은 거리² ≤10000 이면 `v = max(50, v − 600·dt)`, 거리² ≤400 이면 정지→`Aparch_MoveStop`(6f×.06). 진입 직후 `_timeSum=1`.
 - 패턴 (Idle **2 s** 후, `_patternCnt` 홀/짝 번갈아, 시작 패리티 랜덤):
@@ -256,6 +256,7 @@
   - **폭탄 투하 패턴**: 플레이어 위 추종(`v = (player.x−x, player.y−y−275)·1.5/s`), 0.5 s 틱 `t` 증가, `(t%7)&1` 일 때 `AparchDropProj` 투하(투하 시 `t+=1`). 결과: 투하 시각 **0.5/1.0/1.5, 2.5/3.0/3.5, 4.5/5.0/5.5 s** (3발×3묶음, 묶음 사이 1 s), **6.0 s** 종료→Idle. 스폰 `(10,60)`, 이펙트 `Aparch_DropMissle_Effect`(8f×.06).
 - **AparchProj**: `box 50×20`, 속도 300 일정(좌향), `Aparch_Missle_Left`(2f×.08 루프) 아트 오프셋 (25,0), ±0.1 y 기울임(|dy|>50), 스모크 0.1 s. 소멸: 픽셀/플레이어(`WALL` 포함) → `Explosion_Mid`(0,−35).
 - **AparchDropProj**: `box 30×40`, 정지에서 시작, **중력 300 px/s²**(`vy=300t`), 클립 `Aparch_DropMissle`(12f×.08 루프). 소멸: 픽셀/GROUND(윗면 무시)/WALL/플레이어 → `Explosion_Mid`(0,−35).
+  - **새 구현 (Spec_Heli.md)**: 접촉은 스프라이트 바닥 기준 `groundProbe 25` (중심 아래 25 px) 로 판정 → 지면/발판 윗면에서 터진다. 폭발 fx 는 접촉 중심 기준이므로 offset `(0,−10)` (접촉점 위 35 px, 지면에 놓임). 헬기 본체는 `centerAnchor` (pivot = 원점).
 - 사망: `Aparch_Destroy_Left` + 이동 `(50,−70)` px/s 로 표류, 충돌 OFF, **1.5 s 연쇄 폭발**(0.3 s 마다 `S+M` at `(−30,−20)+rand[0,100)`, 총 6회) → `Explosion_Large`+금속 디브리 5 → 제거.
 - 스폰: `RIVER_MID` `(camRight+250, camTop+125)` + **게이트**(처치까지 카메라 고정), `OPENLAND_3` 일반(게이트 없음). 
 
@@ -293,11 +294,13 @@
 | 항목 | 값 |
 |---|---|
 | 원점 | 발(바닥) − (0, 208). 발 = 지면 1286 (아레나 바닥선). 선체 아트 542x416 중심 = 원점 |
-| 등장 | 카메라 왼쪽 밖 (`entranceFromX` −260, 화면 좌표) 에서 4 s 굴러 들어옴 (`Boss_Body_DriveForward`, 기저 폭발 0.5 s 주기). 정지 `stationX` 330 (카메라 왼쪽 기준) |
-| 피격 | 선체는 **파괴되지 않는다**. 탄/폭탄은 흡수 (체력 변화 없음, 부위 플래시도 없음) |
-| 자동 전진 | 전투 중 (`assault`, `cannon` 단계) `scrollSpeed` 18 px/s 버스트 `scrollOnSec` 3 s / `scrollOffSec` 2 s. 요청량만큼 `EnemyWorld::RequestCameraScroll` → `StageState` → `StageRunner::AddCameraScroll` → `Camera::AddScrollFloor` (카메라 중심 하한, 매 틱 강제). 선체도 같은 양만큼 전진해 **화면상 정지**. 총량 `scrollBudget` 700 px |
-| 아레나 | `rects.bossArena` = [12700, 864, 14094, 1312] (잠금 permanent). 보스 트리거 x 12900 (openland_4 게이트 뒤) |
-| 지형 | `Assets/Source/GroundEdits.json` (SlugBaker `--ground-edits`): `Stage0_Pixel_0` 의 (12744,1150)–(14094,1286) 고체 언덕 제거 → 바닥선 y 1286 평탄 (잔존 언덕 305x82 포함) |
+| 등장 | 카메라 왼쪽 밖 (`entranceFromX` −260, 화면 좌표) 에서 16 s 천천히 굴러 들어옴 (smoothstep, `Boss_Body_DriveForward`, 기저 폭발 0.5 s 주기, 3 틱마다 ±1.5 px 떨림, 카메라 흔들림 2.5 px). 정지 `stationX` 330 (카메라 왼쪽 기준). 원작 영상 t 252→274 |
+| 판정 | 선체에는 **판정이 없다** (탄/폭탄이 통과). 피격 상자는 포탑 A..G 와 캐논 헤드뿐 |
+| 엔드리스 드리프트 | 전투 중 (등장 후 `assault`, `deploy`, `cannon`) `scrollSpeed` 18 px/s 로 **끊김 없이** 우측 전진 (`EnemyWorld::RequestCameraScroll` → `Camera::AddScrollFloor`). 선체는 매 틱 카메라 왼쪽 + `stationX` 에 붙어 **화면상 정지** (`FollowCamera_`, 플레이어가 카메라를 밀어도 같다). 지면/배경/소품은 반대로 미끄러진다 |
+| 아레나 | 보스 섹션: `bossStart` [12700..13340] 로 1.8 s 글라이드 (경고 배너 동시), 그 다음 `bossArena` [12700.., 우측 끝 없음] permanent 잠금. 보스 트리거 x 12900 (openland_4 게이트 뒤). 몬스터 일괄 제거 없음 (남은 적은 그대로 싸운다) |
+| 지형 (엔드리스 꼬리) | 평탄화하지 않는다 (`GroundEdits.json` 편집 없음, 원작처럼 부서진 지붕/잔해 언덕). `world.endless` = {from 14094, tileX 13070, tileW 1024}: 지면 비트맵 (`GroundMap::SetPeriodicTail`) 과 배경 (`SpriteBatch::DrawTextureRepeatX`) 이 x ≥ 14094 에서 [13070, 14094) 타일을 1024 px 주기로 반복. 집/다리 블록은 같은 주기 (블록 x0 = 13170 + 1024k, 집 x0 + 372) 로 openland_4 에서 미리 배치 (화면 밖) |
+
+**렌더 레이어**: 선체 `kBossHullLayer` 2 (모든 동적 객체 뒤), 포탑/캐논 `kBossPartLayer` 11 (선체 위, 소품 `kPropLayerBack` 12 와 플레이어 20 / 탄 30 아래).
 
 **파츠 (각자 체력, 파트 번호)**
 | 파트 | 체력 | 상자 | 비고 |
@@ -317,6 +320,8 @@
 
 **사망 연출 (Dying, 10 s)**: 0–2.5 s 캐논 폭발 (Explosion Mid 12 틱 주기, Huge 1회) → 2.5–9.5 s 선체 연쇄 폭발 (Small/Mid/Large 0.2 s 주기, 연기 `Boss_Smoke` 0.5 s) → 7 s 분리 `Boss_Destroyed_Body` → 9.5 s 잔해 `Boss_Wreck` 고정. 10 s 에 `IsDestroyFinished` → 스테이지 게이트 `boss_dead` → 무적 10 s → `endStage` (RECAPTURED PRISONER / 결과 / MISSION COMPLETE). 캐논 사망 시 `Died` 점수 10000 (def `score`).
 
+**보급 POW**: 36 s 주기 웨이브 대신 화면 밖 월드에 미리 배치 (x 14350, 15350, 16350, 17350, 18350; 팝인 없음). 드리프트로 오른쪽 가장자리에서 들어온다.
+
 **HP 바**: `BehaviorOps::bossHpRatio` 훅 (EnemyWorld::GetBossHpRatio 일반화). 포탑 + 캐논 체력 합 / 최대 합 (전부 살아 있으면 1840/1840, 캐논만 남으면 1000/1840). 등장 전과 사망 후는 숨김.
 
 **보조 기능 (구현 메모)**
@@ -327,6 +332,7 @@
 **검증 (`Test/BossShieeTest.cpp` 12, `BossDefTest.cpp` 9, `BossBotTest.cpp` 4 보고 + 2 기준, `CameraTest.cpp` 3 추가, `StageDataTest` 1 추가)**
 - 등장 (카메라 왼쪽에서 들어와 정지), 포탑 예고 → 발사, 트레이서 속도/조준, 포탑 파괴 점수 1회와 선체 불변, 포탑 4기 → 전개 → 볼리, 주황 포탄, 캐논 피격/사망/연출 10 s, 플레이어 사망 시 무공격, 스크롤 버스트/예산, 선체-카메라 동기, HP 바 공식.
 - 봇 (`BossBotTest.cpp`, 시드 1–5, 결정적): 권총+폭탄 5/5 승 (사망 ≤ 2), 보급 POW 구출 4/5, 권총 단독 0/5 (보고만, 고착 0), 좌우 회피만 3/5. 고착 0 (전 변형).
+- **미달 (엔드리스 개정 후)**: 엔드리스 드리프트 (18 px/s) 와 지붕 발판/벽 반영 (봇 운동 모델이 지형 높이를 따라간다) 뒤 권총+폭탄 3/5 (목표 4/5). 봇은 소품 충돌을 모델링하지 않던 상태에서 맞춘 기준이라 재조정이 필요하다. 전투 자체 (실시간 캡처) 는 포탑/캐논 파괴, 선체 화면 고정, 등장 흔들림, 엔드리스 지형 모두 확인.
 
 **원작 대비 (설계값)**: 포탑/캐논의 정확한 위치 (`Docs/BossLayout.md` 는 육안 합성), 트레이서 200 px/s (원작 속도 미측정), 주행/스크롤 총량 700 px (원작 1021 game px 보다 작다, 설계 보정), 권총 3 dmg 기준 HP (권총 단독 실측 전투 약 45–55 s, 목표 60–90 s 에 근접). 사망 연출은 원작 340–350 s 에 맞췄지만 화면 어둡기 (luma) 는 없다.
 ### 3.3 기타 비행/탈것

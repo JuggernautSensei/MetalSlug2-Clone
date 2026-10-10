@@ -373,3 +373,23 @@ TEST(Geometry, CircleOverlaps)
     EXPECT_TRUE(c.Overlaps(Aabb::FromMinMax({ 4.f, -1.f }, { 10.f, 1.f })));
     EXPECT_FALSE(c.Overlaps(Aabb::FromMinMax({ 4.f, 4.f }, { 10.f, 10.f })));   // 모서리 거리 5.66 > 5
 }
+
+TEST(GroundMap, PeriodicTailRepeatsTheTileBeyondTheWidth)
+{
+    // 폭 16, 타일 [12,16) 의 앞 두 열만 고체. 꼬리 (x >= 16) 는 12 + (x - 16) % 4 로 접힌다.
+    GroundMap map = GroundMap::MakeEmpty(16, 10);
+    for (int y = 0; y < 10; ++y)
+    {
+        map.SetSolid(12, y, true);
+        map.SetSolid(13, y, true);
+    }
+    map.SetPeriodicTail(16, 12, 4);
+    EXPECT_TRUE(map.HasPeriodicTail());
+    EXPECT_TRUE(map.IsSolid(16, 3));    // 12
+    EXPECT_TRUE(map.IsSolid(17, 3));    // 13
+    EXPECT_FALSE(map.IsSolid(18, 3));   // 14
+    EXPECT_FALSE(map.IsSolid(19, 3));   // 15
+    EXPECT_TRUE(map.IsSolid(20, 3));    // 12 (두 번째 반복)
+    EXPECT_FALSE(map.IsSolid(16 + 4 * 100 + 2, 3));   // 주기 반복은 무한
+    EXPECT_TRUE(map.IsSolid(16 + 4 * 100, 3));
+}

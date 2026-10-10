@@ -393,6 +393,13 @@ SpawnId StageWorldHost::SpawnEntity(
         params.hp     = _request.bHasHp ? _request.hp : -1;
         params.drop   = _request.drop;
         params.userTag = id;
+        if (pParams)
+        {
+            if (const ParamValue* pVariant = pParams->Find("variant"))   // POW 외형 변형 (EnemyDef: clipVariants)
+            {
+                params.aiVariant = pVariant->AsInt(0);
+            }
+        }
 
         Vec2 feet = EnemyFeet_(_request);
         if (_request.def == "boss_shiee")
@@ -437,6 +444,13 @@ SpawnId StageWorldHost::SpawnEntity(
             AddRoute_(id, eRouteKind::Item, itemId);
             return id;
         }
+    }
+
+    if (m_pProps && _request.kind == eEntityKind::Decor && _request.def == "anim_decor" && !_request.anim.empty())
+    {
+        // 시각 전용 장식: 판정 없이 PropWorld 의 DecorWorld 가 재생/이동한다 (플레이스홀더 라우트는 기존 그대로 둔다)
+        const eStageLayer layer = _request.bHasLayer ? _request.layer : eStageLayer::Background;
+        m_pProps->SpawnDecor(MakeDecorSpawn(_request.anim, layer, _request.position, pParams));
     }
 
     const SpawnId inner = SpawnPlaceholder_(_request);
@@ -495,6 +509,10 @@ void StageWorldHost::ClearEntities(
     const EntityFilter& _filter)
 {
     std::erase_if(m_placeholderEntities, [&_filter](const PlaceholderEntity& _entity) { return (_filter.layerMask & LayerBit(_entity.layer)) != 0; });
+    if (m_pProps)
+    {
+        m_pProps->ClearDecorByLayerMask(_filter.layerMask);
+    }
 
     if (m_pEnemies && (_filter.layerMask & LayerBit(eStageLayer::Monster)) != 0)
     {

@@ -1,0 +1,875 @@
+File Name:PlayerBombExplosion
+Texture Name:PlayerBombExplosion
+Start:0
+End:26
+Width:110
+Height:210
+FrameDuration:0.02
+Loop:0
+OptionIndex:0
+OffsetX:1
+OffsetY:-99
+
+File Name:Bullet_Destroy_Effect
+Texture Name:Bullet_Destroy_Effect
+Start:0
+End:9
+Width:34
+Height:36
+FrameDuration:0.04
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Bomb_Supplement
+Texture Name:Bomb_Supplement
+Start:0
+End:9
+Width:70
+Height:70
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:PlayerBomb
+Texture Name:PlayerBomb
+Start:0
+End:31
+Width:50
+Height:50
+FrameDuration:0.04
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:FlameShot_AttackMotion
+Texture Name:FlameShot_AttackMotion
+Start:0
+End:25
+Width:110
+Height:110
+FrameDuration:0.04
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:FlameShot_BeginMotion_Right
+Texture Name:FlameShot_BeginMotion_Right
+Start:0
+End:27
+Width:80
+Height:120
+FrameDuration:0.04
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:FlameShot_BeginMotion_Down
+Texture Name:FlameShot_BeginMotion_Down
+Start:0
+End:27
+Width:80
+Height:120
+FrameDuration:0.04
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:FlameShot_BeginMotion_Up
+Texture Name:FlameShot_BeginMotion_Up
+Start:0
+End:27
+Width:80
+Height:120
+FrameDuration:0.04
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:FlameShot_BeginMotion_Left
+Texture Name:FlameShot_BeginMotion_Left
+Start:0
+End:27
+Width:80
+Height:120
+FrameDuration:0.04
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:ItemBoxDestroy
+Texture Name:ItemBox
+Start:1
+End:10
+Width:70
+Height:102
+FrameDuration:0.04
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Bullet_Supplement
+Texture Name:Bullet_Supplement
+Start:0
+End:9
+Width:72
+Height:74
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Mini_Explosion
+Texture Name:Mini_Explosion
+Start:0
+End:27
+Width:50
+Height:50
+FrameDuration:0.045
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Bomb_Supplement_Disappear
+Texture Name:Bomb_Supplement
+Start:10
+End:10
+Width:70
+Height:70
+FrameDuration:0.5
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Bullet_Supplement_Disappear
+Texture Name:Bullet_Supplement
+Start:10
+End:10
+Width:70
+Height:70
+FrameDuration:0.5
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Get_Item_Effect
+Texture Name:Get_Item_Effect
+Start:0
+End:5
+Width:100
+Height:95
+FrameDuration:0.04
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-30
+
+File Name:ShotGun_Bullet_Down
+Texture Name:ShotGun_Bullet_Down
+Start:0
+End:12
+Width:130
+Height:190
+FrameDuration:0.04
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:56
+
+File Name:ShotGun_Bullet_Up
+Texture Name:ShotGun_Bullet_Up
+Start:0
+End:12
+Width:130
+Height:190
+FrameDuration:0.04
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-56
+
+File Name:ShotGun_Bullet_Right
+Texture Name:ShotGun_Bullet_Right
+Start:0
+End:12
+Width:190
+Height:128
+FrameDuration:0.04
+Loop:0
+OptionIndex:0
+OffsetX:46
+OffsetY:0
+
+File Name:ShotGun_Bullet_Left
+Texture Name:ShotGun_Bullet_Left
+Start:0
+End:12
+Width:190
+Height:128
+FrameDuration:0.04
+Loop:0
+OptionIndex:0
+OffsetX:-46
+OffsetY:0
+
+File Name:Explosion_Small
+Texture Name:Explosion_Small
+Start:0
+End:27
+Width:64
+Height:84
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Explosion_Mid
+Texture Name:Explosion_Mid
+Start:0
+End:27
+Width:100
+Height:118
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Explosion_Large
+Texture Name:Explosion_Large
+Start:0
+End:27
+Width:170
+Height:200
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Explosion_Huge
+Texture Name:Explosion_Huge
+Start:0
+End:23
+Width:224
+Height:250
+FrameDuration:0.05
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-50
+
+File Name:LoadedTruck_Down
+Texture Name:LoadedTruck_Down
+Start:0
+End:3
+Width:150
+Height:106
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:LoadedTruck_Hit
+Texture Name:LoadedTruck_Hit
+Start:0
+End:7
+Width:150
+Height:106
+FrameDuration:0.06
+Loop:0
+OptionIndex:4
+OffsetX:0
+OffsetY:0
+
+File Name:LoadedTruck_Idle
+Texture Name:LoadedTruck_Idle
+Start:0
+End:0
+Width:150
+Height:106
+FrameDuration:0.06
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:RefTruck_Down
+Texture Name:RefTruck_Down
+Start:0
+End:3
+Width:146
+Height:122
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:RefTruck_Hit
+Texture Name:RefTruck_Hit
+Start:0
+End:8
+Width:146
+Height:122
+FrameDuration:0.06
+Loop:0
+OptionIndex:4
+OffsetX:0
+OffsetY:0
+
+File Name:RefTruck_Idle
+Texture Name:RefTruck_Idle
+Start:0
+End:0
+Width:146
+Height:122
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Truck_Down
+Texture Name:Truck_Down
+Start:0
+End:3
+Width:150
+Height:84
+FrameDuration:0.08
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Truck_Hit
+Texture Name:Truck_Hit
+Start:0
+End:7
+Width:150
+Height:84
+FrameDuration:0.06
+Loop:0
+OptionIndex:4
+OffsetX:0
+OffsetY:0
+
+File Name:Truck_Idle
+Texture Name:Truck_Idle
+Start:0
+End:0
+Width:150
+Height:84
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Wood1
+Texture Name:Wood1
+Start:0
+End:9
+Width:62
+Height:60
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Wood2
+Texture Name:Wood2
+Start:0
+End:9
+Width:64
+Height:62
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Wood3
+Texture Name:Wood3
+Start:0
+End:9
+Width:72
+Height:72
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Wood4
+Texture Name:Wood4
+Start:0
+End:9
+Width:58
+Height:48
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Wood5
+Texture Name:Wood5
+Start:0
+End:9
+Width:48
+Height:48
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Wood6
+Texture Name:Wood6
+Start:0
+End:9
+Width:32
+Height:24
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Metal1
+Texture Name:Metal1
+Start:0
+End:7
+Width:65
+Height:68
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Metal2
+Texture Name:Metal2
+Start:0
+End:7
+Width:66
+Height:65
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Metal3
+Texture Name:Metal3
+Start:0
+End:7
+Width:72
+Height:62
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Metal4
+Texture Name:Metal4
+Start:0
+End:7
+Width:38
+Height:30
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Metal5
+Texture Name:Metal5
+Start:0
+End:7
+Width:62
+Height:55
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Metal6
+Texture Name:Metal6
+Start:0
+End:7
+Width:36
+Height:31
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Metal7
+Texture Name:Metal7
+Start:0
+End:7
+Width:48
+Height:40
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Metal8
+Texture Name:Metal8
+Start:0
+End:7
+Width:29
+Height:20
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Metal9
+Texture Name:Metal9
+Start:0
+End:9
+Width:49
+Height:35
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Metal10
+Texture Name:Metal10
+Start:0
+End:7
+Width:37
+Height:26
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Metal11
+Texture Name:Metal11
+Start:0
+End:1
+Width:36
+Height:34
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Metal12
+Texture Name:Metal12
+Start:0
+End:1
+Width:24
+Height:28
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:GuardPost
+Texture Name:GuardPost
+Start:0
+End:5
+Width:228
+Height:220
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Rock1
+Texture Name:Rock1
+Start:0
+End:7
+Width:64
+Height:64
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Rock2
+Texture Name:Rock2
+Start:0
+End:7
+Width:66
+Height:66
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Rock3
+Texture Name:Rock3
+Start:0
+End:7
+Width:50
+Height:49
+FrameDuration:0.08
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:On_Water_Collision
+Texture Name:On_Water_Collision
+Start:0
+End:5
+Width:131
+Height:63
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:3
+OffsetY:-40
+
+File Name:On_Water_Idle
+Texture Name:On_Water_Idle
+Start:0
+End:3
+Width:83
+Height:30
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-25
+
+File Name:On_Water_Jump
+Texture Name:On_Water_Jump
+Start:0
+End:4
+Width:125
+Height:59
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-36
+
+File Name:Stage0_Water
+Texture Name:Stage0_Water
+Start:0
+End:7
+Width:1138
+Height:112
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Item_Apple
+Texture Name:Item_Apple
+Start:0
+End:28
+Width:29
+Height:27
+FrameDuration:0.05
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:5
+
+File Name:Item_Banana
+Texture Name:Item_Banana
+Start:0
+End:7
+Width:45
+Height:45
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:7
+
+File Name:Item_Banana_Bundle
+Texture Name:Item_Banana_Bundle
+Start:0
+End:15
+Width:47
+Height:43
+FrameDuration:0.05
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Item_Bread
+Texture Name:Item_Bread
+Start:0
+End:0
+Width:38
+Height:32
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Item_Cabbage
+Texture Name:Item_Cabbage
+Start:0
+End:15
+Width:52
+Height:49
+FrameDuration:0.05
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:0
+
+File Name:Item_Carrot
+Texture Name:Item_Carrot
+Start:0
+End:15
+Width:52
+Height:52
+FrameDuration:0.05
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:7
+
+File Name:Item_Chicken
+Texture Name:Item_Chicken
+Start:0
+End:11
+Width:70
+Height:70
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-15
+
+File Name:Item_Fish
+Texture Name:Item_Fish
+Start:0
+End:5
+Width:60
+Height:40
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-1
+
+File Name:Item_Fruits
+Texture Name:Item_Fruits
+Start:0
+End:0
+Width:56
+Height:46
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-5
+
+File Name:Item_Letter
+Texture Name:Item_Letter
+Start:0
+End:12
+Width:48
+Height:38
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:-6
+OffsetY:0
+
+File Name:Item_Mando_Begin
+Texture Name:Item_Mando_Begin
+Start:0
+End:9
+Width:65
+Height:134
+FrameDuration:0.1
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:-37
+
+File Name:Item_Mando_Idle
+Texture Name:Item_Mando_Idle
+Start:0
+End:8
+Width:40
+Height:78
+FrameDuration:0.1
+Loop:1
+OptionIndex:0
+OffsetX:1
+OffsetY:-17
+
+File Name:Item_Pair
+Texture Name:Item_Pair
+Start:0
+End:15
+Width:35
+Height:32
+FrameDuration:0.05
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:9
+
+File Name:Item_Watermelon
+Texture Name:Item_Watermelon
+Start:0
+End:15
+Width:47
+Height:41
+FrameDuration:0.05
+Loop:1
+OptionIndex:0
+OffsetX:0
+OffsetY:-2
+
+File Name:Rocket_Smoke
+Texture Name:Rocket_Smoke
+Start:0
+End:15
+Width:32
+Height:48
+FrameDuration:0.06
+Loop:0
+OptionIndex:0
+OffsetX:0
+OffsetY:0

@@ -1,0 +1,3174 @@
+File Name:DevBackground
+File Path:Dummy\devBackground.bmp
+UseTransparent:0
+Transparent:default
+
+File Name:Player_Bullet_Basic
+File Path:Charactor\Player_Bullet_Basic.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Bullet_HM
+File Path:Charactor\Player_Bullet_HM.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bullet_Destroy_Effect
+File Path:Effect\Bullet_Destroy_Effect.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bomb_Supplement
+File Path:Items\Bomb_Supplement.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:PlayerBomb
+File Path:Items\Bomb.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:PlayerBombExplosion
+File Path:Effect\Explosion_SFX.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Button1
+File Path:UI\Button1.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:GunItem
+File Path:Items\GunItem.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:FlameShot_AttackMotion
+File Path:SFX\FlameShot_AttackMotion.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:FlameShot_BeginMotion_Down
+File Path:SFX\FlameShot_BeginMotion_Down.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:FlameShot_BeginMotion_Right
+File Path:SFX\FlameShot_BeginMotion_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:FlameShot_BeginMotion_Left
+File Path:SFX\FlameShot_BeginMotion_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:FlameShot_BeginMotion_Up
+File Path:SFX\FlameShot_BeginMotion_Up.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:ItemBox
+File Path:Items\ItemBox.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bullet_Supplement
+File Path:Items\Bullet_Supplement.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Mini_Explosion
+File Path:SFX\Mini_Explosion.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:devBackgroundPixel
+File Path:Dummy\devBackgroundPixel.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Idle_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Crouch_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Idle_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Crouch_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Move_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Crouch_Move_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Move_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Crouch_Move_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Shot_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Crouch_Shot_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Shot_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Crouch_Shot_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Slash1_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Crouch_Slash1_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Slash1_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Crouch_Slash1_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Slash2_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Crouch_Slash2_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Slash2_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Crouch_Slash2_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Throw_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Crouch_Throw_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Throw_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Crouch_Throw_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Death_byBomb_Begin_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Death_byBomb_Begin_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Death_byBomb_Begin_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Death_byBomb_Begin_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Death_byBomb_End_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Death_byBomb_End_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Death_byBomb_End_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Death_byBomb_End_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Death_byBullet_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Death_byBullet_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Death_byBullet_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Death_byBullet_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Idle_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Jump_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Idle_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Jump_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Lookdown_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Jump_Lookdown_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Lookdown_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Jump_Lookdown_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Lookingdown_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Jump_Lookingdown_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Lookingdown_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Jump_Lookingdown_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Move_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Jump_Move_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Move_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Jump_Move_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Shot_Down_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Jump_Shot_Down_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Shot_Down_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Jump_Shot_Down_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Ride_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Ride_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Ride_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Ride_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Idle_Action_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Stand_Idle_Action_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Idle_Action_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Stand_Idle_Action_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Idle_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Stand_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Idle_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Stand_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Lookingup_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Stand_Lookingup_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Lookingup_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Stand_Lookingup_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Lookup_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Stand_Lookup_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Lookup_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Stand_Lookup_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_MoveStop_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Stand_MoveStop_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_MoveStop_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Stand_MoveStop_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Move_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Stand_Move_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Move_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Stand_Move_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Reload_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Stand_Reload_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Reload_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Stand_Reload_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Shot_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Stand_Shot_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Shot_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Stand_Shot_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Shot_Up_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Stand_Shot_Up_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Shot_Up_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Stand_Shot_Up_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Slash1_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Stand_Slash1_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Slash1_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Stand_Slash1_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Slash2_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Stand_Slash2_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Slash2_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Stand_Slash2_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_StartCrouch_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Stand_StartCrouch_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_StartCrouch_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Stand_StartCrouch_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Throw_DG_Left
+File Path:Charactor_new\Default_Gun\Player_Stand_Throw_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Throw_DG_Right
+File Path:Charactor_new\Default_Gun\Player_Stand_Throw_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Victory_DG
+File Path:Charactor_new\Default_Gun\Player_Victory.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Idle_Lower_Left
+File Path:Charactor_new\LowerBody\Player_Jump_Idle_Lower_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Idle_Lower_Right
+File Path:Charactor_new\LowerBody\Player_Jump_Idle_Lower_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Move_Lower_Left
+File Path:Charactor_new\LowerBody\Player_Jump_Move_Lower_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Move_Lower_Right
+File Path:Charactor_new\LowerBody\Player_Jump_Move_Lower_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Idle_Lower_Left
+File Path:Charactor_new\LowerBody\Player_Stand_Idle_Lower_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Idle_Lower_Right
+File Path:Charactor_new\LowerBody\Player_Stand_Idle_Lower_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Move_Lower_Left
+File Path:Charactor_new\LowerBody\Player_Stand_Move_Lower_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Move_Lower_Right
+File Path:Charactor_new\LowerBody\Player_Stand_Move_Lower_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Idle_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Crouch_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Idle_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Crouch_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Move_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Crouch_Move_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Move_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Crouch_Move_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Shot_MG_Left
+File Path:Charactor_new\Special_Gun\Player_Crouch_Shot_MG_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Shot_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Crouch_Shot_SG_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Shot_MG_Right
+File Path:Charactor_new\Special_Gun\Player_Crouch_Shot_MG_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Shot_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Crouch_Shot_SG_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Slash1_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Crouch_Slash1_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Slash1_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Crouch_Slash1_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Slash2_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Crouch_Slash2_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Slash2_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Crouch_Slash2_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Throw_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Crouch_Throw_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Crouch_Throw_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Crouch_Throw_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Idle_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Jump_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Idle_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Jump_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Lookdown_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Jump_Lookdown_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Lookdown_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Jump_Lookdown_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Lookingdown_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Jump_Lookingdown_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Lookingdown_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Jump_Lookingdown_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Move_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Jump_Move_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Move_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Jump_Move_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Shot_Lookdown_MG_Left
+File Path:Charactor_new\Special_Gun\Player_Jump_Shot_Lookdown_MG_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Shot_Lookdown_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Jump_Shot_Lookdown_SG_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Shot_Lookdown_MG_Right
+File Path:Charactor_new\Special_Gun\Player_Jump_Shot_Lookdown_MG_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Shot_Lookdown_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Jump_Shot_Lookdown_SG_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Shot_Lookingdown_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Jump_Shot_Lookingdown_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Jump_Shot_Lookingdown_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Jump_Shot_Lookingdown_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Ride_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Ride_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Ride_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Ride_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Idle_Action_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_Idle_Action_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Idle_Action_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Stand_Idle_Action_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Idle_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Idle_Lookup_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_Idle_Lookup_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Idle_Lookup_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Stand_Idle_Lookup_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Idle_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Stand_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Lookingup_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_Lookingup_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Lookingup_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Stand_Lookingup_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_MoveStop_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_MoveStop_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_MoveStop_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Stand_MoveStop_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Shot_MG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_Shot_MG_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Shot_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_Shot_SG_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Shot_Lookingup_MG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_Shot_Lookingup_MG_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Shot_Lookingup_MG_Right
+File Path:Charactor_new\Special_Gun\Player_Stand_Shot_Lookingup_MG_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Shot_MG_Right
+File Path:Charactor_new\Special_Gun\Player_Stand_Shot_MG_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Shot_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Stand_Shot_SG_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Shot_Up_MG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_Shot_Up_MG_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Shot_Up_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_Shot_Up_SG_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Shot_Up_MG_Right
+File Path:Charactor_new\Special_Gun\Player_Stand_Shot_Up_MG_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Shot_Up_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Stand_Shot_Up_SG_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Slash1_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_Slash1_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Slash1_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Stand_Slash1_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Slash2_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_Slash2_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Slash2_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Stand_Slash2_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_StartCrouch_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_StartCrouch_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_StartCrouch_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Stand_StartCrouch_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Throw_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_Throw_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Throw_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Stand_Throw_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Victory_SG
+File Path:Charactor_new\Special_Gun\Player_Victory.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:HM_Bullet
+File Path:SFX\\HM_Bullet.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Move_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Stand_Move_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Move_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_Move_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Move_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_Move_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Lookup_SG_Right
+File Path:Charactor_new\Special_Gun\Player_Stand_Lookup_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Player_Stand_Lookup_SG_Left
+File Path:Charactor_new\Special_Gun\Player_Stand_Lookup_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Font_Normal
+File Path:UI\Font_Normal.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Font_Red_Yellow
+File Path:UI\Font_Red_Yellow.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Font_White
+File Path:UI\Font_White.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Font_Yellow_White
+File Path:UI\Font_Yellow_White.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:hostageScoreUI
+File Path:UI\hostageScoreUI.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:InfiniteUI
+File Path:UI\InfiniteUI.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:LevelUI
+File Path:UI\LevelUI.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:PlayerHPUI
+File Path:UI\PlayerHPUI.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:PlayerStateUI
+File Path:UI\PlayerStateUI.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:PressStartUI
+File Path:UI\PressStartUI.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:TimeNumberUI
+File Path:UI\TimeNumberUI.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Older_Escape_Left
+File Path:NPC\Older\Older_Escape_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Older_Escape_Right
+File Path:NPC\Older\Older_Escape_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Older_Idle_Left
+File Path:NPC\Older\Older_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Older_Idle_Right
+File Path:NPC\Older\Older_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Older_Item_Left
+File Path:NPC\Older\Older_Item_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Older_Item_Right
+File Path:NPC\Older\Older_Item_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Older_Jump_Left
+File Path:NPC\Older\Older_Jump_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Older_Jump_Right
+File Path:NPC\Older\Older_Jump_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Older_Move_Left
+File Path:NPC\Older\Older_Move_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Older_Move_Right
+File Path:NPC\Older\Older_Move_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Older_MoveDown
+File Path:NPC\Older\Older_MoveDown.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Order_Run_Left
+File Path:NPC\Older\Order_Run_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Order_Run_Right
+File Path:NPC\Older\Order_Run_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Get_Item_Effect
+File Path:Effect\Get_Item_Effect.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:ShotGun_Bullet_Down
+File Path:SFX\ShotGun_Bullet_Down.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:ShotGun_Bullet_Left
+File Path:SFX\ShotGun_Bullet_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:ShotGun_Bullet_Right
+File Path:SFX\ShotGun_Bullet_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:ShotGun_Bullet_Up
+File Path:SFX\ShotGun_Bullet_Up.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Enemy_Chaser_Bullet
+File Path:SFX\Enemy_Chaser_Bullet.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Enemy_Bomb_Exp
+File Path:Effect\Enemy_Bomb_Exp.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Background_0
+File Path:Stage\map\Stage0_Background_0.bmp
+UseTransparent:0
+Transparent:default
+
+File Name:Stage0_Background_1
+File Path:Stage\map\Stage0_Background_1.bmp
+UseTransparent:0
+Transparent:default
+
+File Name:Stage0_Background_2
+File Path:Stage\map\Stage0_Background_2.bmp
+UseTransparent:0
+Transparent:default
+
+File Name:Stage0_Block
+File Path:Stage\map\Stage0_Block.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Bridge_0
+File Path:Stage\map\Stage0_Bridge_0.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Bridge_1
+File Path:Stage\map\Stage0_Bridge_1.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Bridge_2
+File Path:Stage\map\Stage0_Bridge_2.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Bridge_3
+File Path:Stage\map\Stage0_Bridge_3.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_House_0
+File Path:Stage\map\Stage0_House_0.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_House_1
+File Path:Stage\map\Stage0_House_1.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_House_2
+File Path:Stage\map\Stage0_House_2.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_House_3
+File Path:Stage\map\Stage0_House_3.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_House_4
+File Path:Stage\map\Stage0_House_4.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_House_5
+File Path:Stage\map\Stage0_House_5.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Main
+File Path:Stage\map\Stage0_Main.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Pence
+File Path:Stage\map\Stage0_Pence.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Pixel_0
+File Path:Stage\map\Stage0_Pixel_0.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Pixel_1
+File Path:Stage\map\Stage0_Pixel_1.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_sewer
+File Path:Stage\map\Stage0_sewer.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Shop_0
+File Path:Stage\map\Stage0_Shop_0.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Shop_1
+File Path:Stage\map\Stage0_Shop_1.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Shop_2
+File Path:Stage\map\Stage0_Shop_2.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Shop_3
+File Path:Stage\map\Stage0_Shop_3.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Shop_4
+File Path:Stage\map\Stage0_Shop_4.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Shop_5
+File Path:Stage\map\Stage0_Shop_5.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Sign
+File Path:Stage\map\Stage0_Sign.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Tower
+File Path:Stage\map\Stage0_Tower.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:water
+File Path:Stage\map\water.bmp
+UseTransparent:0
+Transparent:default
+
+File Name:Explosion_Small
+File Path:Effect\Explosion_Small.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Explosion_Large
+File Path:Effect\Explosion_Large.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Explosion_Mid
+File Path:Effect\Explosion_Mid.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Truck_Down
+File Path:Stage\gimic\Truck\Truck_Down.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Truck_Hit
+File Path:Stage\gimic\Truck\Truck_Hit.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Truck_Idle
+File Path:Stage\gimic\Truck\Truck_Idle.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:LoadedTruck_Down
+File Path:Stage\gimic\Truck\LoadedTruck_Down.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:LoadedTruck_Hit
+File Path:Stage\gimic\Truck\LoadedTruck_Hit.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:LoadedTruck_Idle
+File Path:Stage\gimic\Truck\LoadedTruck_Idle.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:RefTruck_Down
+File Path:Stage\gimic\Truck\RefTruck_Down.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:RefTruck_Hit
+File Path:Stage\gimic\Truck\RefTruck_Hit.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:RefTruck_Idle
+File Path:Stage\gimic\Truck\RefTruck_Idle.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Explosion_Huge
+File Path:Effect\Explosion_Huge.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:LeftDown_Win_Destroy
+File Path:Stage\gimic\MiniBossTruck\LeftDown_Win_Destroy.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:LeftUp_Win_Destroy
+File Path:Stage\gimic\MiniBossTruck\LeftUp_Win_Destroy.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MainTruck_Begin
+File Path:Stage\gimic\MiniBossTruck\MainTruck_Begin.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MainTruck_Big_Win_Destroy_Begin
+File Path:Stage\gimic\MiniBossTruck\MainTruck_Big_Win_Destroy_Begin.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MainTruck_Big_Win_Destroy_End
+File Path:Stage\gimic\MiniBossTruck\MainTruck_Big_Win_Destroy_End.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MainTruck_Bump
+File Path:Stage\gimic\MiniBossTruck\MainTruck_Bump.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MainTruck_Deco_Destroy
+File Path:Stage\gimic\MiniBossTruck\MainTruck_Deco_Destroy.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MainTruck_Die
+File Path:Stage\gimic\MiniBossTruck\MainTruck_Die.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MainTruck_Die_Front
+File Path:Stage\gimic\MiniBossTruck\MainTruck_Die_Front.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MainTruck_Idle
+File Path:Stage\gimic\MiniBossTruck\MainTruck_Idle.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MainTruck_Ladder
+File Path:Stage\gimic\MiniBossTruck\MainTruck_Ladder.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MainTruck_Sideparts
+File Path:Stage\gimic\MiniBossTruck\MainTruck_Sideparts.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:RightDown_Win_Destroy
+File Path:Stage\gimic\MiniBossTruck\RightDown_Win_Destroy.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:RightUp_Win_Destroy
+File Path:Stage\gimic\MiniBossTruck\RightUp_Win_Destroy.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Wood1
+File Path:Debrics\Wood1.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Wood2
+File Path:Debrics\Wood2.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Wood3
+File Path:Debrics\Wood3.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Wood4
+File Path:Debrics\Wood4.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Wood5
+File Path:Debrics\Wood5.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Wood6
+File Path:Debrics\Wood6.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Metal1
+File Path:Debrics\Metal1.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Metal2
+File Path:Debrics\Metal2.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Metal3
+File Path:Debrics\Metal3.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Metal4
+File Path:Debrics\Metal4.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Metal5
+File Path:Debrics\Metal5.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Metal6
+File Path:Debrics\Metal6.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Metal7
+File Path:Debrics\Metal7.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Metal8
+File Path:Debrics\Metal8.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Metal9
+File Path:Debrics\Metal9.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Metal10
+File Path:Debrics\Metal10.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Metal11
+File Path:Debrics\Metal11.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Metal12
+File Path:Debrics\Metal12.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Pence
+File Path:Stage\map\Stage0_Pence.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sewer
+File Path:Stage\map\Stage0_sewer.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Mob_Boat
+File Path:Stage\gimic\Boat.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:GuardPost
+File Path:Stage\gimic\GuardPost.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Rock1
+File Path:Debrics\Rock1.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Rock2
+File Path:Debrics\Rock2.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Rock3
+File Path:Debrics\Rock3.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_House_4_PixelMap
+File Path:Stage\map\Stage0_House_4_PixelMap.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_House_5_PixelMap
+File Path:Stage\map\Stage0_House_5_PixelMap.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Parker
+File Path:NPC\Parker.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Plane
+File Path:Stage\gimic\Plane.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:On_Water_Jump
+File Path:Effect\On_Water_Jump.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:On_Water_Collision
+File Path:Effect\On_Water_Collision.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:On_Water_Idle
+File Path:Effect\On_Water_Idle.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Stage0_Water
+File Path:Stage\map\water.bmp
+UseTransparent:0
+Transparent:default
+
+File Name:Stage0_House_4_PixelMap
+File Path:Stage\map\Stage0_House_4_PixelMap.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Item_Apple
+File Path:Items\scoreItem\Apple.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Item_Banana
+File Path:Items\scoreItem\Banana.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Item_Banana_Bundle
+File Path:Items\scoreItem\Banana_Bundle.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Item_Bread
+File Path:Items\scoreItem\Bread.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Item_Cabbage
+File Path:Items\scoreItem\Cabbage.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Item_Carrot
+File Path:Items\scoreItem\Carrot.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Item_Chicken
+File Path:Items\scoreItem\Chicken.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Item_Fish
+File Path:Items\scoreItem\Fish.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Item_Fruits
+File Path:Items\scoreItem\Fruits.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Item_Letter
+File Path:Items\scoreItem\Letter.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Item_Mando_Begin
+File Path:Items\scoreItem\Mando_Begin.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Item_Mando_Idle
+File Path:Items\scoreItem\Mando_Idle.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Item_Pair
+File Path:Items\scoreItem\Pair.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Item_Watermelon
+File Path:Items\scoreItem\Watermelon.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Font_Red
+File Path:UI\Font_Red.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Font_Yellow
+File Path:UI\Font_Yellow.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BTank_Animing_Up
+File Path:Enemy\Big_Tank\BTank_Animing_Up.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BTank_Destory
+File Path:Enemy\Big_Tank\BTank_Destory.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BTank_Fire
+File Path:Enemy\Big_Tank\BTank_Fire.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BTank_Idle
+File Path:Enemy\Big_Tank\BTank_Idle.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BTank_Proj
+File Path:Enemy\Big_Tank\BTank_Proj.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BTank_Proj_Effect
+File Path:Enemy\Big_Tank\BTank_Proj_Effect.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BTank_Shot_Effect
+File Path:Enemy\Big_Tank\BTank_Shot_Effect.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_AimmingDown_Left
+File Path:Enemy\MissleTank\MissleTank_AimmingDown_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_AimmingDown_Right
+File Path:Enemy\MissleTank\MissleTank_AimmingDown_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Down_Ready_Shot_Right
+File Path:Enemy\MissleTank\MissleTank_Down_Ready_Shot_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Down_Shot_Left
+File Path:Enemy\MissleTank\MissleTank_Down_Shot_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Down_Shot_Right
+File Path:Enemy\MissleTank\MissleTank_Down_Shot_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Proj
+File Path:Enemy\MissleTank\MissleTank_Proj.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Turn_Left
+File Path:Enemy\MissleTank\MissleTank_Turn_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Turn_Right
+File Path:Enemy\MissleTank\MissleTank_Turn_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Up_Destroy_Left
+File Path:Enemy\MissleTank\MissleTank_Up_Destroy_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Up_Destroy_Right
+File Path:Enemy\MissleTank\MissleTank_Up_Destroy_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Up_Idle_Left
+File Path:Enemy\MissleTank\MissleTank_Up_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Up_Idle_Right
+File Path:Enemy\MissleTank\MissleTank_Up_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Up_MoveStop_Left
+File Path:Enemy\MissleTank\MissleTank_Up_MoveStop_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Up_MoveStop_Right
+File Path:Enemy\MissleTank\MissleTank_Up_MoveStop_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Up_Move_Left
+File Path:Enemy\MissleTank\MissleTank_Up_Move_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Up_Move_Right
+File Path:Enemy\MissleTank\MissleTank_Up_Move_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Up_Proj_Effect_Left
+File Path:Enemy\MissleTank\MissleTank_Up_Proj_Effect_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Up_Proj_Effect_Right
+File Path:Enemy\MissleTank\MissleTank_Up_Proj_Effect_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Up_Ready_Shot_Left
+File Path:Enemy\MissleTank\MissleTank_Up_Ready_Shot_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Up_Ready_Shot_Right
+File Path:Enemy\MissleTank\MissleTank_Up_Ready_Shot_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Down_Proj_Effect_Left
+File Path:Enemy\MissleTank\MissleTank_Down_Proj_Effect_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Up_Shot_Left
+File Path:Enemy\MissleTank\MissleTank_Up_Shot_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Up_Shot_Right
+File Path:Enemy\MissleTank\MissleTank_Up_Shot_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Down_Move_Right
+File Path:Enemy\MissleTank\MissleTank_Down_Move_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Down_Move_Left
+File Path:Enemy\MissleTank\MissleTank_Down_Move_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Down_MoveStop_Right
+File Path:Enemy\MissleTank\MissleTank_Down_MoveStop_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Down_MoveStop_Left
+File Path:Enemy\MissleTank\MissleTank_Down_MoveStop_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Down_Idle_Right
+File Path:Enemy\MissleTank\MissleTank_Down_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Down_Idle_Left
+File Path:Enemy\MissleTank\MissleTank_Down_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Down_Destroy_Right
+File Path:Enemy\MissleTank\MissleTank_Down_Destroy_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Down_Destroy_Left
+File Path:Enemy\MissleTank\MissleTank_Down_Destroy_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_AimmingUp_Right
+File Path:Enemy\MissleTank\MissleTank_AimmingUp_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_AimmingUp_Left
+File Path:Enemy\MissleTank\MissleTank_AimmingUp_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_AimmingDown_Right
+File Path:Enemy\MissleTank\MissleTank_AimmingDown_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_AimmingDown_Left
+File Path:Enemy\MissleTank\MissleTank_AimmingDown_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Down_Ready_Shot_Left
+File Path:Enemy\MissleTank\MissleTank_Down_Ready_Shot_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Down_Proj_Effect_Right
+File Path:Enemy\MissleTank\MissleTank_Down_Proj_Effect_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Proj_0
+File Path:Enemy\MissleTank\MissleTank_Proj_0.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:MissleTank_Proj_1
+File Path:Enemy\MissleTank\MissleTank_Proj_1.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Destroy_Left
+File Path:Enemy\Sarubia\Sarubia_Destroy_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Destroy_Right
+File Path:Enemy\Sarubia\Sarubia_Destroy_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Idle_Left
+File Path:Enemy\Sarubia\Sarubia_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Idle_Right
+File Path:Enemy\Sarubia\Sarubia_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Move_Left
+File Path:Enemy\Sarubia\Sarubia_Move_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Move_Right
+File Path:Enemy\Sarubia\Sarubia_Move_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Move_Start_Left
+File Path:Enemy\Sarubia\Sarubia_Move_Start_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Move_Start_Right
+File Path:Enemy\Sarubia\Sarubia_Move_Start_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Move_Stop_Left
+File Path:Enemy\Sarubia\Sarubia_Move_Stop_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Move_Stop_Right
+File Path:Enemy\Sarubia\Sarubia_Move_Stop_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Turn_Right
+File Path:Enemy\Sarubia\Sarubia_Turn_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Proj_Collision
+File Path:Enemy\Sarubia\Sarubia_Proj_Collision.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Proj_Effect_Left
+File Path:Enemy\Sarubia\Sarubia_Proj_Effect_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Proj_Effect_Right
+File Path:Enemy\Sarubia\Sarubia_Proj_Effect_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Proj_Left
+File Path:Enemy\Sarubia\Sarubia_Proj_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Proj_Right
+File Path:Enemy\Sarubia\Sarubia_Proj_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Proj_Start
+File Path:Enemy\Sarubia\Sarubia_Proj_Start.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Proj_Trash
+File Path:Enemy\Sarubia\Sarubia_Proj_Trash.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Shot_Left
+File Path:Enemy\Sarubia\Sarubia_Shot_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Shot_Right
+File Path:Enemy\Sarubia\Sarubia_Shot_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Shot_Start_Left
+File Path:Enemy\Sarubia\Sarubia_Shot_Start_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Shot_Start_Right
+File Path:Enemy\Sarubia\Sarubia_Shot_Start_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Sarubia_Turn_Left
+File Path:Enemy\Sarubia\Sarubia_Turn_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_DropMissle
+File Path:Enemy\Aparch\Aparch_DropMissle.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_DropMissle_Effect
+File Path:Enemy\Aparch\Aparch_DropMissle_Effect.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Drop_Bomb_Left
+File Path:Enemy\Aparch\Aparch_Drop_Bomb_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Drop_Bomb_Right
+File Path:Enemy\Aparch\Aparch_Drop_Bomb_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Gun_End_Left
+File Path:Enemy\Aparch\Aparch_Gun_End_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Gun_End_Right
+File Path:Enemy\Aparch\Aparch_Gun_End_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Gun_Left
+File Path:Enemy\Aparch\Aparch_Gun_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Gun_Right
+File Path:Enemy\Aparch\Aparch_Gun_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Idle_Left
+File Path:Enemy\Aparch\Aparch_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Idle_Right
+File Path:Enemy\Aparch\Aparch_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Missle_Effect_Left
+File Path:Enemy\Aparch\Aparch_Missle_Effect_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Missle_Effect_Right
+File Path:Enemy\Aparch\Aparch_Missle_Effect_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Missle_Left
+File Path:Enemy\Aparch\Aparch_Missle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Missle_Right
+File Path:Enemy\Aparch\Aparch_Missle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_MoveStop_Left
+File Path:Enemy\Aparch\Aparch_MoveStop_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_MoveStop_Right
+File Path:Enemy\Aparch\Aparch_MoveStop_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Move_Left
+File Path:Enemy\Aparch\Aparch_Move_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Move_Right
+File Path:Enemy\Aparch\Aparch_Move_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Flight_Left1
+File Path:Enemy\Aparch\Aparch_Flight_Left1.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Flight_Left2
+File Path:Enemy\Aparch\Aparch_Flight_Left2.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Flight_Left3
+File Path:Enemy\Aparch\Aparch_Flight_Left3.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Flight_Left4
+File Path:Enemy\Aparch\Aparch_Flight_Left4.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Flight_Left5
+File Path:Enemy\Aparch\Aparch_Flight_Left5.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Flight_Left6
+File Path:Enemy\Aparch\Aparch_Flight_Left6.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Flight_Left7
+File Path:Enemy\Aparch\Aparch_Flight_Left7.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Flight_Right1
+File Path:Enemy\Aparch\Aparch_Flight_Right1.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Flight_Right2
+File Path:Enemy\Aparch\Aparch_Flight_Right2.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Flight_Right3
+File Path:Enemy\Aparch\Aparch_Flight_Right3.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Flight_Right4
+File Path:Enemy\Aparch\Aparch_Flight_Right4.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Flight_Right5
+File Path:Enemy\Aparch\Aparch_Flight_Right5.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Flight_Right6
+File Path:Enemy\Aparch\Aparch_Flight_Right6.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Flight_Right7
+File Path:Enemy\Aparch\Aparch_Flight_Right7.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Turn_Right
+File Path:Enemy\Aparch\Aparch_Turn_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Turn_Left
+File Path:Enemy\Aparch\Aparch_Turn_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Aparch_Destroy
+File Path:Enemy\Aparch\Aparch_Destroy.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Rocket_Smoke
+File Path:Effect\Rocket_Smoke.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Aimming_Left
+File Path:Enemy\Jeep\Jeep_Aimming_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Aimming_Right
+File Path:Enemy\Jeep\Jeep_Aimming_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Destroy_Left
+File Path:Enemy\Jeep\Jeep_Destroy_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Destroy_Right
+File Path:Enemy\Jeep\Jeep_Destroy_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Idle_Left
+File Path:Enemy\Jeep\Jeep_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Idle_Right
+File Path:Enemy\Jeep\Jeep_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Move_Left
+File Path:Enemy\Jeep\Jeep_Move_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Move_Right
+File Path:Enemy\Jeep\Jeep_Move_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Proj_Begin_Left
+File Path:Enemy\Jeep\Jeep_Proj_Begin_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Proj_Begin_Right
+File Path:Enemy\Jeep\Jeep_Proj_Begin_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Proj_Left
+File Path:Enemy\Jeep\Jeep_Proj_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Proj_Right
+File Path:Enemy\Jeep\Jeep_Proj_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Ready_Left
+File Path:Enemy\Jeep\Jeep_Ready_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Ready_Right
+File Path:Enemy\Jeep\Jeep_Ready_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Shot_Left
+File Path:Enemy\Jeep\Jeep_Shot_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Shot_Ready_Left
+File Path:Enemy\Jeep\Jeep_Shot_Ready_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Shot_Ready_Right
+File Path:Enemy\Jeep\Jeep_Shot_Ready_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Shot_Right
+File Path:Enemy\Jeep\Jeep_Shot_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Turn_Left
+File Path:Enemy\Jeep\Jeep_Turn_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_Turn_Right
+File Path:Enemy\Jeep\Jeep_Turn_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_ReAimming_Left
+File Path:Enemy\Jeep\Jeep_ReAimming_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Jeep_ReAimming_Right
+File Path:Enemy\Jeep\Jeep_ReAimming_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Die_Bomb_Left
+File Path:Enemy\Soldier\SD_Die_Bomb_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Die_Bomb_Right
+File Path:Enemy\Soldier\SD_Die_Bomb_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Die_Fall_Left
+File Path:Enemy\Soldier\SD_Die_Fall_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Die_Fall_Right
+File Path:Enemy\Soldier\SD_Die_Fall_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Die_Jump_Left
+File Path:Enemy\Soldier\SD_Die_Jump_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Die_Jump_Right
+File Path:Enemy\Soldier\SD_Die_Jump_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Die_Land_Left
+File Path:Enemy\Soldier\SD_Die_Land_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Die_Land_Right
+File Path:Enemy\Soldier\SD_Die_Land_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Die_Slash_Left
+File Path:Enemy\Soldier\SD_Die_Slash_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Die_Slash_Right
+File Path:Enemy\Soldier\SD_Die_Slash_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Die_Stand_1_Left
+File Path:Enemy\Soldier\SD_Die_Stand_1_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Die_Stand_1_Right
+File Path:Enemy\Soldier\SD_Die_Stand_1_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Die_Stand_2_Left
+File Path:Enemy\Soldier\SD_Die_Stand_2_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Die_Stand_2_Right
+File Path:Enemy\Soldier\SD_Die_Stand_2_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Hang_Idle_Left
+File Path:Enemy\Soldier\SD_Hang_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Hang_Idle_Right
+File Path:Enemy\Soldier\SD_Hang_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Hang_Throw_Bomb_Left
+File Path:Enemy\Soldier\SD_Hang_Throw_Bomb_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Hang_Throw_Bomb_Right
+File Path:Enemy\Soldier\SD_Hang_Throw_Bomb_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Idle_Left
+File Path:Enemy\Soldier\SD_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Idle_Right
+File Path:Enemy\Soldier\SD_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Jump_Left
+File Path:Enemy\Soldier\SD_Jump_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Jump_Right
+File Path:Enemy\Soldier\SD_Jump_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Jump_Slash_Land_Left
+File Path:Enemy\Soldier\SD_Jump_Slash_Land_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Jump_Slash_Land_Right
+File Path:Enemy\Soldier\SD_Jump_Slash_Land_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Jump_Slash_Left
+File Path:Enemy\Soldier\SD_Jump_Slash_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Jump_Slash_Ready_Left
+File Path:Enemy\Soldier\SD_Jump_Slash_Ready_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Jump_Slash_Ready_Right
+File Path:Enemy\Soldier\SD_Jump_Slash_Ready_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Jump_Slash_Right
+File Path:Enemy\Soldier\SD_Jump_Slash_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Land_Left
+File Path:Enemy\Soldier\SD_Land_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Land_Right
+File Path:Enemy\Soldier\SD_Land_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_MoveDown_Left
+File Path:Enemy\Soldier\SD_MoveDown_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_MoveDown_Right
+File Path:Enemy\Soldier\SD_MoveDown_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_MoveJump_Left
+File Path:Enemy\Soldier\SD_MoveJump_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_MoveJump_Right
+File Path:Enemy\Soldier\SD_MoveJump_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_MoveStop_Left
+File Path:Enemy\Soldier\SD_MoveStop_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_MoveStop_Right
+File Path:Enemy\Soldier\SD_MoveStop_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Move_Left
+File Path:Enemy\Soldier\SD_Move_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Move_Right
+File Path:Enemy\Soldier\SD_Move_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Slash_Left
+File Path:Enemy\Soldier\SD_Slash_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Slash_Right
+File Path:Enemy\Soldier\SD_Slash_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Throw_Bomb_Left
+File Path:Enemy\Soldier\SD_Throw_Bomb_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Throw_Bomb_Right
+File Path:Enemy\Soldier\SD_Throw_Bomb_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Throw_Missle_Left
+File Path:Enemy\Soldier\SD_Throw_Missle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Throw_Missle_Right
+File Path:Enemy\Soldier\SD_Throw_Missle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Soldier_Bomb
+File Path:Enemy\Soldier\Soldier_Bomb.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Missle_Left
+File Path:Enemy\Projectile\SD_Missle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:SD_Missle_Right
+File Path:Enemy\Projectile\SD_Missle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Aiming_Down_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Aiming_Down_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Aiming_Down_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Aiming_Down_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Aiming_Up_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Aiming_Up_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Aiming_Up_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Aiming_Up_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Debics
+File Path:Enemy\Bazuka_Solider\Bazuka_Debics.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Fly_Shot_0_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Fly_Shot_0_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Fly_Shot_0_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Fly_Shot_0_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Fly_Shot_1_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Fly_Shot_1_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Fly_Shot_1_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Fly_Shot_1_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Fly_Shot_2_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Fly_Shot_2_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Fly_Shot_2_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Fly_Shot_2_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Fly_Shot_3_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Fly_Shot_3_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Fly_Shot_3_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Fly_Shot_3_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Fly_Shot_4_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Fly_Shot_4_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Fly_Shot_4_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Fly_Shot_4_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Idle_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Idle_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Jump_Forward_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Jump_Forward_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Jump_Forward_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Jump_Forward_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Jump_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Jump_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Jump_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Jump_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Lending_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Lending_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Lending_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Lending_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Move_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Move_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Move_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Move_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Para_Destroy
+File Path:Enemy\Bazuka_Solider\Bazuka_Para_Destroy.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Para_Idle
+File Path:Enemy\Bazuka_Solider\Bazuka_Para_Idle.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Projectile
+File Path:Enemy\Bazuka_Solider\Bazuka_Projectile.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Down0_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Down0_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Down0_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Down0_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Down1_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Down1_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Down1_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Down1_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Down2_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Down2_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Down2_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Down2_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Down3_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Down3_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Down3_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Down3_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Effect
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Effect.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Up0_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Up0_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Up0_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Up0_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Up1_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Up1_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Up1_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Up1_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Up2_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Up2_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Up2_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Up2_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Up3_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Up3_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Shot_Up3_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Shot_Up3_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Stand_Up_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Stand_Up_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Stand_Up_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Stand_Up_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Down_Recover_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Down_Recover_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Down_Recover_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Down_Recover_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Up_Recover_Left
+File Path:Enemy\Bazuka_Solider\Bazuka_Up_Recover_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Bazuka_Up_Recover_Right
+File Path:Enemy\Bazuka_Solider\Bazuka_Up_Recover_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Defence_Down_Left
+File Path:Enemy\Shield_Soldier\Shield_Defence_Down_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Defence_Down_Right
+File Path:Enemy\Shield_Soldier\Shield_Defence_Down_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Defence_Left
+File Path:Enemy\Shield_Soldier\Shield_Defence_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Defence_Right
+File Path:Enemy\Shield_Soldier\Shield_Defence_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Defence_Up_Left
+File Path:Enemy\Shield_Soldier\Shield_Defence_Up_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Defence_Up_Right
+File Path:Enemy\Shield_Soldier\Shield_Defence_Up_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Idle_Left
+File Path:Enemy\Shield_Soldier\Shield_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Idle_Right
+File Path:Enemy\Shield_Soldier\Shield_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Jump_Left
+File Path:Enemy\Shield_Soldier\Shield_Jump_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Jump_Right
+File Path:Enemy\Shield_Soldier\Shield_Jump_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Lend_Left
+File Path:Enemy\Shield_Soldier\Shield_Lend_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Lend_Right
+File Path:Enemy\Shield_Soldier\Shield_Lend_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Move_Left
+File Path:Enemy\Shield_Soldier\Shield_Move_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Move_Right
+File Path:Enemy\Shield_Soldier\Shield_Move_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Move_Stop_Left
+File Path:Enemy\Shield_Soldier\Shield_Move_Stop_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Move_Stop_Right
+File Path:Enemy\Shield_Soldier\Shield_Move_Stop_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Proj
+File Path:Enemy\Shield_Soldier\Shield_Proj.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Proj_Effect_Down
+File Path:Enemy\Shield_Soldier\Shield_Proj_Effect_Down.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Proj_Effect_Left
+File Path:Enemy\Shield_Soldier\Shield_Proj_Effect_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Proj_Effect_Right
+File Path:Enemy\Shield_Soldier\Shield_Proj_Effect_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Proj_Effect_Up
+File Path:Enemy\Shield_Soldier\Shield_Proj_Effect_Up.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_Down_Left
+File Path:Enemy\Shield_Soldier\Shield_Shot_Down_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_Down_Right
+File Path:Enemy\Shield_Soldier\Shield_Shot_Down_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_End_Down_Left
+File Path:Enemy\Shield_Soldier\Shield_Shot_End_Down_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_End_Down_Right
+File Path:Enemy\Shield_Soldier\Shield_Shot_End_Down_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_End_Left
+File Path:Enemy\Shield_Soldier\Shield_Shot_End_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_End_Right
+File Path:Enemy\Shield_Soldier\Shield_Shot_End_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_End_Up_Left
+File Path:Enemy\Shield_Soldier\Shield_Shot_End_Up_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_End_Up_Right
+File Path:Enemy\Shield_Soldier\Shield_Shot_End_Up_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_Left
+File Path:Enemy\Shield_Soldier\Shield_Shot_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_Ready_Down_Left
+File Path:Enemy\Shield_Soldier\Shield_Shot_Ready_Down_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_Ready_Down_Right
+File Path:Enemy\Shield_Soldier\Shield_Shot_Ready_Down_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_Ready_Left
+File Path:Enemy\Shield_Soldier\Shield_Shot_Ready_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_Ready_Right
+File Path:Enemy\Shield_Soldier\Shield_Shot_Ready_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_Ready_Up_Left
+File Path:Enemy\Shield_Soldier\Shield_Shot_Ready_Up_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_Ready_Up_Right
+File Path:Enemy\Shield_Soldier\Shield_Shot_Ready_Up_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_Right
+File Path:Enemy\Shield_Soldier\Shield_Shot_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_Up_Left
+File Path:Enemy\Shield_Soldier\Shield_Shot_Up_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Shot_Up_Right
+File Path:Enemy\Shield_Soldier\Shield_Shot_Up_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_Trash
+File Path:Enemy\Shield_Soldier\Shield_Trash.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_LookUp_Start_Right
+File Path:Enemy\Shield_Soldier\Shield_LookUp_Start_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_LookUp_Start_Left
+File Path:Enemy\Shield_Soldier\Shield_LookUp_Start_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_LookUp_Idle_Right
+File Path:Enemy\Shield_Soldier\Shield_LookUp_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_LookUp_Idle_Left
+File Path:Enemy\Shield_Soldier\Shield_LookUp_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_LookUp_End_Right
+File Path:Enemy\Shield_Soldier\Shield_LookUp_End_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_LookUp_End_Left
+File Path:Enemy\Shield_Soldier\Shield_LookUp_End_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_LookDown_Start_Right
+File Path:Enemy\Shield_Soldier\Shield_LookDown_Start_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_LookDown_Start_Left
+File Path:Enemy\Shield_Soldier\Shield_LookDown_Start_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_LookDown_End_Left
+File Path:Enemy\Shield_Soldier\Shield_LookDown_End_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_LookDown_End_Right
+File Path:Enemy\Shield_Soldier\Shield_LookDown_End_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_LookDown_Idle_Left
+File Path:Enemy\Shield_Soldier\Shield_LookDown_Idle_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Shield_LookDown_Idle_Right
+File Path:Enemy\Shield_Soldier\Shield_LookDown_Idle_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Alian_Bullet_1
+File Path:Enemy\Alian\Alian_Bullet_1.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Alian_Bullet_2
+File Path:Enemy\Alian\Alian_Bullet_2.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Alian_Bullet_3
+File Path:Enemy\Alian\Alian_Bullet_3.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Alian_Bullet_4
+File Path:Enemy\Alian\Alian_Bullet_4.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Alian_Bullet_5
+File Path:Enemy\Alian\Alian_Bullet_5.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Alian_Bullet_6
+File Path:Enemy\Alian\Alian_Bullet_6.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Alian_Bullet_7
+File Path:Enemy\Alian\Alian_Bullet_7.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Alian_Bullet_8
+File Path:Enemy\Alian\Alian_Bullet_8.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Alian_Bullet_9
+File Path:Enemy\Alian\Alian_Bullet_9.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Alian_Die
+File Path:Enemy\Alian\Alian_Die.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Alian_Idle
+File Path:Enemy\Alian\Alian_Idle.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:Alian_Shot_Ready
+File Path:Enemy\Alian\Alian_Shot_Ready.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Antena
+File Path:Enemy\BattleShip\BattleShip_Antena.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Antena_Turn
+File Path:Enemy\BattleShip\BattleShip_Antena_Turn.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Back_Rail_Backward
+File Path:Enemy\BattleShip\BattleShip_Back_Rail_Backward.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Back_Rail_Forward
+File Path:Enemy\BattleShip\BattleShip_Back_Rail_Forward.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Back_Rail_Idle
+File Path:Enemy\BattleShip\BattleShip_Back_Rail_Idle.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Body
+File Path:Enemy\BattleShip\BattleShip_Body.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Bullet
+File Path:Enemy\BattleShip\BattleShip_Bullet.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Bullet_Garbage
+File Path:Enemy\BattleShip\BattleShip_Bullet_Garbage.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Cannon_Destroy_Type1
+File Path:Enemy\BattleShip\BattleShip_Cannon_Destroy_Type1.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Cannon_Destroy_Type2
+File Path:Enemy\BattleShip\BattleShip_Cannon_Destroy_Type2.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Cannon_Destroy_Type3
+File Path:Enemy\BattleShip\BattleShip_Cannon_Destroy_Type3.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Cannon_Destroy_Type4
+File Path:Enemy\BattleShip\BattleShip_Cannon_Destroy_Type4.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Cannon_Destroy_Type5
+File Path:Enemy\BattleShip\BattleShip_Cannon_Destroy_Type5.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Cannon_Destroy_Type6
+File Path:Enemy\BattleShip\BattleShip_Cannon_Destroy_Type6.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Cannon_Destroy_Type7
+File Path:Enemy\BattleShip\BattleShip_Cannon_Destroy_Type7.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Cannon_End
+File Path:Enemy\BattleShip\BattleShip_Cannon_End.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Cannon_Idle
+File Path:Enemy\BattleShip\BattleShip_Cannon_Idle.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Cannon_Shot_0
+File Path:Enemy\BattleShip\BattleShip_Cannon_Shot_0.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Cannon_Shot_1
+File Path:Enemy\BattleShip\BattleShip_Cannon_Shot_1.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Cannon_Shot_2
+File Path:Enemy\BattleShip\BattleShip_Cannon_Shot_2.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Cannon_Shot_3
+File Path:Enemy\BattleShip\BattleShip_Cannon_Shot_3.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Cannon_Shot_4
+File Path:Enemy\BattleShip\BattleShip_Cannon_Shot_4.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Cannon_Start
+File Path:Enemy\BattleShip\BattleShip_Cannon_Start.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_DCannon_Left
+File Path:Enemy\BattleShip\BattleShip_DCannon_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_DCannon_Mid
+File Path:Enemy\BattleShip\BattleShip_DCannon_Mid.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_DCannon_Right
+File Path:Enemy\BattleShip\BattleShip_DCannon_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_DCannon_Shot_Effect_Left
+File Path:Enemy\BattleShip\BattleShip_DCannon_Shot_Effect_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_DCannon_Shot_Effect_Mid
+File Path:Enemy\BattleShip\BattleShip_DCannon_Shot_Effect_Mid.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_DCannon_Shot_Effect_Right
+File Path:Enemy\BattleShip\BattleShip_DCannon_Shot_Effect_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_DCannon_Shot_Left
+File Path:Enemy\BattleShip\BattleShip_DCannon_Shot_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_DCannon_Shot_Mid
+File Path:Enemy\BattleShip\BattleShip_DCannon_Shot_Mid.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_DCannon_Shot_Right
+File Path:Enemy\BattleShip\BattleShip_DCannon_Shot_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Destroy
+File Path:Enemy\BattleShip\BattleShip_Destroy.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Front_Rail_Backward
+File Path:Enemy\BattleShip\BattleShip_Front_Rail_Backward.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Front_Rail_Forward
+File Path:Enemy\BattleShip\BattleShip_Front_Rail_Forward.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Front_Rail_Idle
+File Path:Enemy\BattleShip\BattleShip_Front_Rail_Idle.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Head
+File Path:Enemy\BattleShip\BattleShip_Head.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Head_Swiching_End
+File Path:Enemy\BattleShip\BattleShip_Head_Swiching_End.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Head_Swiching_Start
+File Path:Enemy\BattleShip\BattleShip_Head_Swiching_Start.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Mark_Clicking
+File Path:Enemy\BattleShip\BattleShip_Mark_Clicking.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Mark_Effect
+File Path:Enemy\BattleShip\BattleShip_Mark_Effect.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_SCannon_Left
+File Path:Enemy\BattleShip\BattleShip_SCannon_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_SCannon_Mid
+File Path:Enemy\BattleShip\BattleShip_SCannon_Mid.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_SCannon_Right
+File Path:Enemy\BattleShip\BattleShip_SCannon_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_SCannon_Shot_Effect_Left
+File Path:Enemy\BattleShip\BattleShip_SCannon_Shot_Effect_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_SCannon_Shot_Effect_Mid
+File Path:Enemy\BattleShip\BattleShip_SCannon_Shot_Effect_Mid.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_SCannon_Shot_Effect_Right
+File Path:Enemy\BattleShip\BattleShip_SCannon_Shot_Effect_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_SCannon_Shot_Left
+File Path:Enemy\BattleShip\BattleShip_SCannon_Shot_Left.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_SCannon_Shot_Mid
+File Path:Enemy\BattleShip\BattleShip_SCannon_Shot_Mid.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_SCannon_Shot_Right
+File Path:Enemy\BattleShip\BattleShip_SCannon_Shot_Right.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Support_Type1
+File Path:Enemy\BattleShip\BattleShip_Support_Type1.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Support_Type2
+File Path:Enemy\BattleShip\BattleShip_Support_Type2.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Support_Type3
+File Path:Enemy\BattleShip\BattleShip_Support_Type3.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Switching_Effect
+File Path:Enemy\BattleShip\BattleShip_Switching_Effect.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Tail
+File Path:Enemy\BattleShip\BattleShip_Tail.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_Cannon_Deco
+File Path:Enemy\BattleShip\tes\BattleShip_Cannon_Deco.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_DCannon_TurnLeft
+File Path:Enemy\BattleShip\BattleShip_DCannon_TurnLeft.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_DCannon_TurnRight
+File Path:Enemy\BattleShip\BattleShip_DCannon_TurnRight.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_SCannon_TurnLeft
+File Path:Enemy\BattleShip\BattleShip_SCannon_TurnLeft.bmp
+UseTransparent:2
+Transparent:default
+
+File Name:BattleShip_SCannon_TurnRight
+File Path:Enemy\BattleShip\BattleShip_SCannon_TurnRight.bmp
+UseTransparent:2
+Transparent:default

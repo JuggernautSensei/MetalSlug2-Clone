@@ -771,7 +771,8 @@ TEST(UiSystem, HeadlessTicksAdvanceBannerFadeAndBlinkClock)
 TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
 {
     const ScreenFlowConfig config = MakeGameOverFlowConfig();
-    EXPECT_EQ(config.GetTotalTicks(), 180);   // 3초 후 타이틀 (PlayerSpec)
+    EXPECT_EQ(config.GetTotalTicks(), 270);   // 페이드 인 0.5 s + 홀드 3 s + 페이드 아웃 0.67 s + 대기 0.33 s 후 타이틀
+    EXPECT_EQ(config.artSprite, "UI_GameOver_Helmet");
 
     GameContext ctx;
     UiSystem    ui;
@@ -780,26 +781,34 @@ TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
     ScreenFlow flow;
 
     flow.Start(config, ui, audio);
-    EXPECT_EQ(flow.GetPhase(), eFlowPhase::Banner);
-    EXPECT_TRUE(ui.GetBanner().IsActive());
-    EXPECT_EQ(ui.GetBanner().GetCurrent().text, "GAME OVER");
+    EXPECT_EQ(flow.GetPhase(), eFlowPhase::Art);
+    EXPECT_FALSE(ui.GetBanner().IsActive());   // 배너 대신 전면 아트
+    EXPECT_TRUE(flow.GetArtView().bVisible);
+    EXPECT_EQ(flow.GetArtView().alpha, 0);      // 페이드 인 시작
     EXPECT_EQ(audio.CountPlays(sfx::kGameOver), 1);
     EXPECT_EQ(audio.CountKind(eAudioEvent::FadeOutBgm), 1);
 
     int doneAt = -1;
+    int fullAt = -1;
     for (int tick = 1; tick <= 400 && doneAt < 0; ++tick)
     {
         ui.Tick();
         flow.Tick(ui, audio);
+        if (fullAt < 0 && flow.GetArtView().alpha == 255)
+        {
+            fullAt = tick;
+        }
         if (flow.IsDone())
         {
             doneAt = tick;
         }
     }
-    EXPECT_EQ(doneAt, 180);
+    EXPECT_EQ(fullAt, 30);
+    EXPECT_EQ(doneAt, 270);
     EXPECT_TRUE(ui.GetFade().IsBlack());
     EXPECT_FALSE(ui.GetBanner().IsActive());
     EXPECT_FALSE(flow.IsRunning());
+    EXPECT_FALSE(flow.GetArtView().bVisible);   // 끝난 뒤에는 아트를 그리지 않는다
 }
 
 TEST(UiFlow, PhasesChangeAtExactTicks)

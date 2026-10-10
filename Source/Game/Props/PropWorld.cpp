@@ -77,6 +77,7 @@ void PropWorld::ClearAll()
     m_pendingChildren.clear();
     m_items.ClearAll();
     m_effects.Clear();
+    m_decor.Clear();
     RebuildCollision_();
 }
 
@@ -518,6 +519,10 @@ void PropWorld::UpdateVisual_(
 void PropWorld::Tick(
     const PropTickContext& _ctx)
 {
+    if (_ctx.pAnims != nullptr)
+    {
+        m_decor.Tick(*_ctx.pAnims, _ctx.dt);
+    }
     if (m_pLibrary == nullptr)
     {
         return;
@@ -744,6 +749,7 @@ void PropWorld::Submit(
     }
     m_effects.Submit(_anims, _sprites);
     m_items.Submit(_sprites, _anims, _spriteLib, _pFont);
+    m_decor.Submit(_sprites, _anims);
 }
 
 bool ApplyGroundPatch(

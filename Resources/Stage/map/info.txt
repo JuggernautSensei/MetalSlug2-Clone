@@ -1,0 +1,37 @@
+Stage0_shop_0 (1263, 228)
+Stage0_shop_1 (1479, 230)
+Stage0_shop_2 (1661, 252)
+Stage0_shop_3 (1906, 230)
+Stage0_shop_4 (2224, 185)
+Stage0_shop_5 (2513, 181)
+
+	{
+		const auto& bg = CreateObject<SpriteObject>(ObjectType::Background);
+		bg->SetSprite(L"Stage0_Shop_5_0");
+		bg->SetPos(Vec(2513, 181));
+	}
+	{
+		const auto& bg = CreateObject<SpriteObject>(ObjectType::Background);
+		bg->SetSprite(L"Stage0_Shop_4_0");
+		bg->SetPos(Vec(2224, 185));
+	}
+	{
+		const auto& bg = CreateObject<SpriteObject>(ObjectType::Background);
+		bg->SetSprite(L"Stage0_Shop_3_0");
+		bg->SetPos(Vec(1906, 230));
+	}
+	{
+		const auto& bg = CreateObject<SpriteObject>(ObjectType::Background);
+		bg->SetSprite(L"Stage0_Shop_2_0");
+		bg->SetPos(Vec(1661, 252));
+	}
+	{
+		const auto& bg = CreateObject<SpriteObject>(ObjectType::Background);
+		bg->SetSprite(L"Stage0_Shop_1_0");
+		bg->SetPos(Vec(1479, 229));
+	}
+	{
+		const auto& bg = CreateObject<SpriteObject>(ObjectType::Background);
+		bg->SetSprite(L"Stage0_Shop_0_0");
+		bg->SetPos(Vec(1263, 228));
+	}

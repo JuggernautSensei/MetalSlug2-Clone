@@ -29,6 +29,13 @@ namespace
 
     constexpr int kCannonSource = kBossCannonPart;   // 발사 원천 번호 (포탑 0..6, 캐논 7)
 
+    // 렌더 레이어: 선체는 모든 동적 객체 뒤 (배경 바로 위), 포탑/캐논 파츠는 선체 위 + 소품 (12) 아래. 플레이어 20, 탄 30 이상은 항상 앞.
+    constexpr int   kBossHullLayer   = 2;
+    constexpr int   kBossPartLayer   = 11;
+    constexpr float kEntranceShakeAmp = 2.5f;   // 등장 흔들림 진폭 (px)
+    constexpr float kRumbleJitterPx   = 1.5f;   // 등장 중 선체 떨림 (px)
+    constexpr int   kRumbleJitterTicks = 3;     // 떨림 주기 (틱)
+
     constexpr const char* kTurretIdleClip[kTurretCount]      = { "Boss_Turret_A_Idle", "Boss_Turret_B_Idle", "Boss_Turret_C_Idle", "Boss_Turret_D_Idle", "Boss_Turret_E_Idle", "Boss_Turret_F_Idle", "Boss_Turret_G_Idle" };
     constexpr const char* kTurretTurningClip[kTurretCount]   = { "Boss_Turret_A_Turning", "Boss_Turret_B_Turning", "Boss_Turret_C_Turning", "Boss_Turret_D_Turning", "Boss_Turret_E_Turning", "Boss_Turret_F_Turning", "Boss_Turret_G_Turning" };
     constexpr const char* kTurretShootingClip[kTurretCount]  = { "Boss_Turret_A_Shooting", "Boss_Turret_B_Shooting", "Boss_Turret_C_Shooting", "Boss_Turret_D_Shooting", "Boss_Turret_E_Shooting", "Boss_Turret_F_Shooting", "Boss_Turret_G_Shooting" };
@@ -498,9 +505,13 @@ namespace
     {
         const int   total = std::max(1, _c.entranceTicks);
         const float s     = std::min(1.f, static_cast<float>(_e.stateTicks) / static_cast<float>(total));
-        const float k     = 1.f - s;
-        const float screenX = _c.stationX + (_c.entranceFromX - _c.stationX) * k * k;
+        const float e     = s * s * (3.f - 2.f * s);   // smoothstep: 천천히 들어와 천천히 멈춘다 (화면 왼쪽 밖에서 굴러 들어옴)
+        const float screenX = _c.entranceFromX + (_c.stationX - _c.entranceFromX) * e;
         const float newX    = _env.ctx.cameraView.min.x + screenX;
+        if (_e.stateTicks == 0)
+        {
+            _env.world.RequestCameraShake(kEntranceShakeAmp, static_cast<float>(total) / 60.f);
+        }
         _e.body.velocity.x  = (newX - _e.body.position.x) * 60.f;
         _e.body.position.x  = newX;
 
@@ -529,17 +540,26 @@ namespace
         const bool bOn  = _e.ext[kExtScrollTimer] < _c.scrollOnTicks;
         _e.ext[kExtScrollTimer] = (_e.ext[kExtScrollTimer] + 1) % cycle;
 
-        _e.body.velocity.x = 0.f;
         if (!bOn || _e.ext[kExtScrollLeft] <= 0)
         {
             return;
         }
+        // 엔드리스 드리프트: 카메라 하한을 scrollSpeed 로 민다 (플레이어가 멈춰도 계속 우측으로 간다)
         const int step = std::min(_e.ext[kExtScrollLeft], static_cast<int>(std::lround(_c.scrollSpeed * 1000.f * kStepSec)));
         _e.ext[kExtScrollLeft] -= step;
-        const float dx = static_cast<float>(step) * 0.001f;
-        _e.body.position.x += dx;
-        _e.body.velocity.x  = dx / kStepSec;
-        _env.world.RequestCameraScroll(dx);
+        _env.world.RequestCameraScroll(static_cast<float>(step) * 0.001f);
+    }
+
+    // 선체는 화면에 고정된다 (stationX): 카메라가 어떤 이유로 움직이든 (드리프트 + 플레이어 밀기) 같은 화면 자리에 있다.
+    // 월드 배경/소품/지면은 카메라와 반대로 미끄러진다. 속도는 drive 클립 선택용.
+    void FollowCamera_(
+        Enemy&              _e,
+        const BossShieeCfg& _c,
+        EnemyEnv&           _env)
+    {
+        const float newX   = _env.ctx.cameraView.min.x + _c.stationX;
+        _e.body.velocity.x = (newX - _e.body.position.x) * 60.f;
+        _e.body.position.x = newX;
     }
 
     // 포탑 사격 상태 기계 (예고 Turning -> Shooting -> 발사 -> Idle)
@@ -701,15 +721,18 @@ namespace
             case kAssault:
                 TickTurretCadence_(_e, c, _env);
                 TickScroll_(_e, c, _env);
+                FollowCamera_(_e, c, _env);
                 TickAssault_(_e, c, _env);
                 break;
             case kDeploy:
-                _e.body.velocity.x = 0.f;
+                TickScroll_(_e, c, _env);
+                FollowCamera_(_e, c, _env);
                 TickDeploy_(_e, c);
                 break;
             case kCannon:
                 TickTurretCadence_(_e, c, _env);
                 TickScroll_(_e, c, _env);
+                FollowCamera_(_e, c, _env);
                 TickCannon_(_e, c, _env, _def);
                 break;
             default:
@@ -885,12 +908,7 @@ namespace
             _combat.AddHurtbox(cannon);
         }
 
-        Hurtbox hull;
-        hull.box     = c.hullBox.At(o, 1);
-        hull.team    = _def.team;
-        hull.owner   = _e.id;
-        hull.accepts = AcceptsFor(false);
-        _combat.AddHurtbox(hull);
+        // 선체는 판정이 없다 (탄/폭탄이 통과한다). 피격 상자는 포탑과 캐논뿐이다.
     }
 
     // ---------------------------------------------------------------- 렌더
@@ -903,28 +921,34 @@ namespace
         const BossShieeCfg& c    = _def.bossShiee;
         const Vec2          o    = { _r.feet.x, _r.feet.y - c.originDepth };
         const int           sort = static_cast<int>(_r.feet.y);
-        const int           layer = _r.layer;
         const bool          bScrolling = _e.body.velocity.x > 0.01f;
+        EnemyRenderEnv      hullR = _r;
+        EnemyRenderEnv      partR = _r;
+        hullR.layer = kBossHullLayer;
+        partR.layer = kBossPartLayer;
+        // 등장 중 선체 떨림 (시각 전용, 위치 판정과 무관): 3 틱마다 좌우 1.5 px
+        const float jitter = (_e.state == kEntrance && (_e.stateTicks / kRumbleJitterTicks) % 2 == 0) ? -kRumbleJitterPx : (_e.state == kEntrance ? kRumbleJitterPx : 0.f);
+        const Vec2  hullO  = { o.x + jitter, o.y };
 
         if (_e.life == eEnemyLife::Dying)
         {
             const int t = _e.deathTicks;
             if (t < c.splitTicks)
             {
-                SubmitNamedPart(_r, "Boss_Body_Idle", o, t, true, sort, layer);
+                SubmitNamedPart(hullR, "Boss_Body_Idle", hullO, t, true, sort, hullR.layer);
             }
             else if (t < c.wreckTicks)
             {
-                SubmitNamedPart(_r, "Boss_Destroyed_Body", o, t - c.splitTicks, false, sort, layer);
+                SubmitNamedPart(hullR, "Boss_Destroyed_Body", o, t - c.splitTicks, false, sort, hullR.layer);
             }
             else
             {
-                SubmitNamedPart(_r, "Boss_Wreck", o, kPersistTicks, false, sort, layer);
+                SubmitNamedPart(hullR, "Boss_Wreck", hullO, kPersistTicks, false, sort, hullR.layer);
             }
-            SubmitNamedPart(_r, "Boss_Destroyed_Cannon", { o.x + c.cannonOffset.x, o.y + c.cannonOffset.y }, kPersistTicks, false, sort + 2, layer);
+            SubmitNamedPart(partR, "Boss_Destroyed_Cannon", { o.x + c.cannonOffset.x, o.y + c.cannonOffset.y }, kPersistTicks, false, sort + 2, partR.layer);
             for (int i = 0; i < kTurretCount; ++i)
             {
-                SubmitNamedPart(_r, kTurretWreckClip[i], TurretCentreOf_(_e, c, i), kPersistTicks, false, sort + 3, layer);
+                SubmitNamedPart(partR, kTurretWreckClip[i], TurretCentreOf_(_e, c, i), kPersistTicks, false, sort + 3, partR.layer);
             }
             return;
         }
@@ -933,19 +957,19 @@ namespace
         switch (_e.state)
         {
             case kEntrance:
-                SubmitNamedPart(_r, "Boss_Body_DriveForward", o, _e.stateTicks, true, sort, layer);
+                SubmitNamedPart(hullR, "Boss_Body_DriveForward", hullO, _e.stateTicks, true, sort, hullR.layer);
                 break;
             case kAssault:
-                SubmitNamedPart(_r, bScrolling ? "Boss_Body_DriveForward" : "Boss_Body_Idle", o, _e.stateTicks, true, sort, layer);
+                SubmitNamedPart(hullR, bScrolling ? "Boss_Body_DriveForward" : "Boss_Body_Idle", hullO, _e.stateTicks, true, sort, hullR.layer);
                 break;
             case kDeploy:
             {
                 const int stage = std::min(3, _e.stateTicks / kDeployStageTicks);
-                SubmitNamedPart(_r, kDeployClips[stage], o, _e.stateTicks - stage * kDeployStageTicks, false, sort, layer);
+                SubmitNamedPart(partR, kDeployClips[stage], o, _e.stateTicks - stage * kDeployStageTicks, false, sort, partR.layer);
                 break;
             }
             case kCannon:
-                SubmitNamedPart(_r, bScrolling ? "Boss_Cannon_DriveForward" : "Boss_Cannon_Idle", o, _e.stateTicks, true, sort, layer, false, PartFlashAmount(_e, kCannonPart));
+                SubmitNamedPart(partR, bScrolling ? "Boss_Cannon_DriveForward" : "Boss_Cannon_Idle", o, _e.stateTicks, true, sort, partR.layer, false, PartFlashAmount(_e, kCannonPart));
                 break;
             default: break;
         }
@@ -958,12 +982,12 @@ namespace
             const int  since = _e.ext[kExtLastShot] > 0 ? _e.aux - (_e.ext[kExtLastShot] - 1) : c.gunShootTicks;
             if (since >= 0 && since < c.gunShootTicks)
             {
-                SubmitNamedPart(_r, kGunShoot[std::min(4, bin / 2)], gun, since, false, sort + 2, layer, false, PartFlashAmount(_e, kCannonPart));
+                SubmitNamedPart(partR, kGunShoot[std::min(4, bin / 2)], gun, since, false, sort + 2, partR.layer, false, PartFlashAmount(_e, kCannonPart));
             }
             else if (_e.ext[kExtAimStart] > 0)
             {
                 const int aimed = _e.aux - (_e.ext[kExtAimStart] - 1);
-                SubmitNamedPart(_r, "Boss_Gun_Aim", gun, std::min(aimed, 8 * kAimFrameTicks), true, sort + 2, layer, false, PartFlashAmount(_e, kCannonPart));
+                SubmitNamedPart(partR, "Boss_Gun_Aim", gun, std::min(aimed, 8 * kAimFrameTicks), true, sort + 2, partR.layer, false, PartFlashAmount(_e, kCannonPart));
             }
         }
 
@@ -973,20 +997,20 @@ namespace
             const Vec2 t = TurretCentreOf_(_e, c, i);
             if (TurretHp_(_e, i) <= 0)
             {
-                SubmitNamedPart(_r, kTurretWreckClip[i], t, kPersistTicks, false, sort + 3, layer);
+                SubmitNamedPart(partR, kTurretWreckClip[i], t, kPersistTicks, false, sort + 3, partR.layer);
                 continue;
             }
             const float flash = PartFlashAmount(_e, i);
             switch (TurretPhase_(_e, i))
             {
                 case kTurretTurning:
-                    SubmitNamedPart(_r, kTurretTurningClip[i], t, TurretTicks_(_e, i), false, sort + 3, layer, false, flash);
+                    SubmitNamedPart(partR, kTurretTurningClip[i], t, TurretTicks_(_e, i), false, sort + 3, partR.layer, false, flash);
                     break;
                 case kTurretShooting:
-                    SubmitNamedPart(_r, kTurretShootingClip[i], t, TurretTicks_(_e, i), false, sort + 3, layer, false, flash);
+                    SubmitNamedPart(partR, kTurretShootingClip[i], t, TurretTicks_(_e, i), false, sort + 3, partR.layer, false, flash);
                     break;
                 default:
-                    SubmitNamedPart(_r, kTurretIdleClip[i], t, _e.stateTicks, true, sort + 3, layer, false, flash);
+                    SubmitNamedPart(partR, kTurretIdleClip[i], t, _e.stateTicks, true, sort + 3, partR.layer, false, flash);
                     break;
             }
         }

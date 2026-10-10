@@ -598,3 +598,135 @@ TEST(VehicleHitFlash, LethalHitDoesNotFlash)
     EXPECT_FALSE(rig.E(h)->IsAlive());
     EXPECT_EQ(rig.E(h)->hitFlashTicks, 0);
 }
+
+namespace
+{
+    ShotSpawn MakeFallingShell_(const float _x, const float _groundProbe, const float _maxFall = 3000.f)
+    {
+        ShotSpawn spawn;
+        spawn.position        = { _x, 200.f };
+        spawn.size            = { 30.f, 40.f };
+        spawn.gravity         = 300.f;
+        spawn.maxFallSpeed    = _maxFall;
+        spawn.lifetimeTicks   = 600;
+        spawn.bExplodeOnSolid = true;
+        spawn.groundProbeY    = _groundProbe;
+        spawn.visual          = 1;
+        spawn.damage          = 1;
+        return spawn;
+    }
+
+    // 착탄(FX) 이 나올 때까지 돌리고 그 지점을 돌려준다. 10 s 안에 없으면 false
+    bool RunUntilBurst_(ProjectileSystem& _ps, CombatSystem& _combat, const GroundMap* _pGround, const slug::Span<const Platform> _platforms, Vec2& _outFx)
+    {
+        for (int i = 0; i < 600; ++i)
+        {
+            _combat.BeginTick();
+            _ps.Step(_pGround, _combat, kStepSec, _platforms);
+            const slug::Vector<ShotFx> fx = _ps.TakeShotFx();
+            if (!fx.empty())
+            {
+                _outFx = fx[0].position;
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+TEST(VehicleAparch, HoverKeepsTheWholeSpriteBelowTheHudRow)
+{
+    EnemyDefLibrary lib;
+    ASSERT_TRUE(LoadVehicleLib(lib));
+    const EnemyDef* pDef = lib.Find("aparch");
+    ASSERT_NE(pDef, nullptr);
+    const float hoverY = pDef->aparch.approachY;
+    // 가장 큰 Heli_Flying 프레임의 반높이는 66 px (baked 2x). 윗변이 HUD 줄 (y 50) 밑, 아랫변이 화면 안이어야 한다
+    EXPECT_GE(hoverY, 100.f);
+    EXPECT_LE(hoverY, 130.f);
+    EXPECT_GE(hoverY - 66.f, 50.f);
+    EXPECT_LE(hoverY + 66.f, 448.f);
+}
+
+TEST(VehicleAparch, FlyingSpritesAreCentredOnTheirOriginNotOnTheirFeet)
+{
+    EnemyDefLibrary lib;
+    ASSERT_TRUE(LoadVehicleLib(lib));
+    const EnemyDef* pAparch = lib.Find("aparch");
+    const EnemyDef* pJeep   = lib.Find("jeep");
+    ASSERT_NE(pAparch, nullptr);
+    ASSERT_NE(pJeep, nullptr);
+    EXPECT_TRUE(pAparch->bCenterAnchor) << "헬기 원점은 기체 중심이므로 스프라이트 pivot 을 원점에 둔다";
+    EXPECT_FALSE(pJeep->bCenterAnchor) << "지상 차량은 발 기준 (기존 동작)";
+}
+
+TEST(VehicleAparch, BombSpawnsWithItsSpriteBottomAsTheContactPoint)
+{
+    EnemyDefLibrary lib;
+    ASSERT_TRUE(LoadVehicleLib(lib));
+    const EnemyDef* pDef = lib.Find("aparch");
+    ASSERT_NE(pDef, nullptr);
+    const int drop = pDef->FindWeapon("drop");
+    ASSERT_GE(drop, 0);
+    const int proj = pDef->weapons[static_cast<size_t>(drop)].projectile;
+    ASSERT_GE(proj, 0);
+    EXPECT_FLOAT_EQ(lib.GetProjectile(proj).groundProbeY, 25.f) << "Heli_Bomb 스프라이트 바닥 (pivot y 25)";
+}
+
+TEST(VehicleAparch, BombBurstsWhereItsSpriteBottomTouchesTheGround)
+{
+    ProjectileSystem ps;
+    CombatSystem     combat;
+    const GroundMap  ground = MakeFlatGround(3000);
+    ps.SpawnShot(MakeFallingShell_(300.f, 25.f), combat);
+    Vec2 fx = {};
+    ASSERT_TRUE(RunUntilBurst_(ps, combat, &ground, {}, fx));
+    EXPECT_NEAR(fx.x, 300.f, 0.5f);
+    EXPECT_NEAR(fx.y, kVehicleGroundY - 25.f, 1.5f) << "폭발은 바닥에 닿는 순간 (공중에서 터지지 않는다)";
+}
+
+TEST(VehicleAparch, BombLandsOnTopOfARoofInsteadOfFallingThrough)
+{
+    ProjectileSystem ps;
+    CombatSystem     combat;
+    const GroundMap  ground = MakeFlatGround(3000);
+    const std::vector<Platform> roofs = { { Aabb::FromMinMax({ 250.f, 300.f }, { 350.f, 320.f }), false } };
+    ps.SpawnShot(MakeFallingShell_(300.f, 25.f), combat);
+    Vec2 fx = {};
+    ASSERT_TRUE(RunUntilBurst_(ps, combat, &ground, roofs, fx));
+    EXPECT_NEAR(fx.y, 300.f - 25.f, 1.5f) << "지붕 윗면(300) 에 스프라이트 바닥이 닿는 높이";
+}
+
+TEST(VehicleAparch, BombPassingBesideARoofLandsOnTheGround)
+{
+    ProjectileSystem ps;
+    CombatSystem     combat;
+    const GroundMap  ground = MakeFlatGround(3000);
+    const std::vector<Platform> roofs = { { Aabb::FromMinMax({ 350.f, 300.f }, { 450.f, 320.f }), false } };
+    ps.SpawnShot(MakeFallingShell_(300.f, 25.f), combat);
+    Vec2 fx = {};
+    ASSERT_TRUE(RunUntilBurst_(ps, combat, &ground, roofs, fx));
+    EXPECT_NEAR(fx.y, kVehicleGroundY - 25.f, 1.5f) << "지붕 옆을 지나면 지면에서 터진다";
+}
+
+TEST(VehicleSarubia, GrenadeRollsWithItsSpriteBottomOnTheGround)
+{
+    ProjectileSystem ps;
+    CombatSystem     combat;
+    const GroundMap  ground = MakeFlatGround(3000);
+    ShotSpawn spawn         = MakeFallingShell_(300.f, 14.f, 300.f);
+    spawn.rollSpeed         = 100.f;
+    spawn.rollDirX          = -1.f;
+    spawn.rollTicks         = 300;
+    ps.SpawnShot(spawn, combat);
+    for (int i = 0; i < 120; ++i)
+    {
+        combat.BeginTick();
+        ps.Step(&ground, combat, kStepSec);
+    }
+    ASSERT_EQ(ps.GetShots().size(), 1u);
+    const Shot& shot = ps.GetShots()[0];
+    EXPECT_TRUE(shot.bLanded);
+    EXPECT_NEAR(shot.position.y, kVehicleGroundY - 14.f, 1.5f) << "구르는 수류탄은 스프라이트 바닥이 지면에 있다";
+    EXPECT_LT(shot.position.x, 300.f) << "착지 후 바라보는 쪽(-x)으로 굴러간다";
+}

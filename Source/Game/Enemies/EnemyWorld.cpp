@@ -98,6 +98,8 @@ void EnemyWorld::Reset(
     m_bPlayerMinX = false;
     m_bPlayerMaxX = false;
     m_cameraScroll = 0.f;
+    m_shakeAmplitude = 0.f;
+    m_shakeSeconds   = 0.f;
 }
 
 EnemyHandle EnemyWorld::Spawn(
@@ -552,7 +554,7 @@ void EnemyWorld::Submit(
         {
             continue;
         }
-        const float lift = static_cast<float>(pClip->GetFootBaseline());
+        const float lift = def.bCenterAnchor ? 0.f : static_cast<float>(pClip->GetFootBaseline());   // 중심 앵커 def 는 pivot 을 원점에 둔다
         SpriteDrawOptions options;
         options.flashAmount = HitFlashAmount(e);
         _sprites.Submit(kEnemyLayer, static_cast<int>(feet.y), *pFrame, { feet.x, feet.y - lift }, options);
@@ -756,6 +758,24 @@ float EnemyWorld::TakeCameraScroll()
     const float dx = m_cameraScroll;
     m_cameraScroll = 0.f;
     return dx;
+}
+
+void EnemyWorld::RequestCameraShake(
+    const float _amplitude,
+    const float _seconds)
+{
+    m_shakeAmplitude = std::max(m_shakeAmplitude, _amplitude);
+    m_shakeSeconds   = std::max(m_shakeSeconds, _seconds);
+}
+
+void EnemyWorld::TakeCameraShake(
+    float& _amplitude,
+    float& _seconds)
+{
+    _amplitude       = m_shakeAmplitude;
+    _seconds         = m_shakeSeconds;
+    m_shakeAmplitude = 0.f;
+    m_shakeSeconds   = 0.f;
 }
 
 Health EnemyWorld::GetHealth(

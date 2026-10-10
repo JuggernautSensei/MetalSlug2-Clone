@@ -1,0 +1,76 @@
+File Name:ItemBox
+Texture Name:ItemBox
+Width:70
+Height:102
+Column:0
+Line:0
+
+File Name:GunItem_HM
+Texture Name:GunItem
+Width:44
+Height:40
+Column:0
+Line:0
+
+File Name:GunItem_RL
+Texture Name:GunItem
+Width:44
+Height:40
+Column:1
+Line:0
+
+File Name:GunItem_SG
+Texture Name:GunItem
+Width:44
+Height:40
+Column:2
+Line:0
+
+File Name:GunItem_FS
+Texture Name:GunItem
+Width:44
+Height:40
+Column:3
+Line:0
+
+File Name:GunItem_EC
+Texture Name:GunItem
+Width:44
+Height:40
+Column:4
+Line:0
+
+File Name:GunItem_HM_Disappear
+Texture Name:GunItem
+Width:44
+Height:40
+Column:0
+Line:1
+
+File Name:GunItem_RL_Disappear
+Texture Name:GunItem
+Width:44
+Height:40
+Column:1
+Line:1
+
+File Name:GunItem_SG_Disappear
+Texture Name:GunItem
+Width:44
+Height:40
+Column:2
+Line:1
+
+File Name:GunItem_FS_Disappear
+Texture Name:GunItem
+Width:44
+Height:40
+Column:3
+Line:1
+
+File Name:GunItem_EC_Disappear
+Texture Name:GunItem
+Width:44
+Height:40
+Column:4
+Line:1
