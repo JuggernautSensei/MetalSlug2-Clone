@@ -15,8 +15,8 @@
         {"type": "banner", "text": "MISSION 4", "seconds": 2.5},
         {"type": "spawn", "kind": "prop", "def": "truck", "x": 580, "y": 342},
         {"type": "spawn", "kind": "prop", "def": "truck", "x": 850, "y": 342},
-        {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 386, "y": 341, "anim": "Parker_Run", "layer": "background", "params": {"loop": true, "sequence": [{"clip": "Parker_Run", "seconds": 2.0, "velocity": [45, 0]}, {"clip": "Parker_Stopping", "seconds": 1.5, "velocity": [0, 0]}, {"clip": "Parker_Run", "seconds": 2.0, "velocity": [-45, 0], "flip": true}, {"clip": "Parker_Stopping", "seconds": 1.5, "velocity": [0, 0], "flip": true}]}},
-        {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 1150, "y": 341, "anim": "Order_Run_Left", "layer": "background", "params": {"loop": true, "sequence": [{"clip": "Order_Run_Left", "seconds": 3.0, "velocity": [-60, 0]}, {"clip": "Order_Turn", "seconds": 0.4, "velocity": [0, 0]}, {"clip": "Order_Run_Right", "seconds": 3.0, "velocity": [60, 0]}, {"clip": "Order_Turn", "seconds": 0.4, "velocity": [0, 0]}]}},
+        {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 386, "y": 341, "anim": "Parker", "layer": "background", "params": {"loop": false, "sequence": [{"clip": "Parker", "seconds": 9.6, "velocity": [0, 0]}, {"clip": "Parker_Run_2", "seconds": 12.0, "velocity": [-45, 0]}]}},
+        {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 1150, "y": 341, "anim": "Order_Boy_Run_Left", "layer": "background", "params": {"loop": true, "sequence": [{"clip": "Order_Boy_Run_Left", "seconds": 3.0, "velocity": [-60, 0]}, {"clip": "Order_Turn", "seconds": 0.4, "velocity": [0, 0]}, {"clip": "Order_Boy_Run_Right", "seconds": 3.0, "velocity": [60, 0]}, {"clip": "Order_Turn", "seconds": 0.4, "velocity": [0, 0], "flip": true}]}},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 900, "groundSnap": true},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 1060, "groundSnap": true},
         {"type": "spawnWave", "entries": [{"delay": 7.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
@@ -25,7 +25,7 @@
     {
       "id": "street", "triggerX": 750,
       "actions": [
-        {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 1600, "y": 341, "anim": "Order_Run_2", "layer": "background", "params": {"loop": true, "sequence": [{"clip": "Order_Run_2", "seconds": 2.5, "velocity": [50, 0]}, {"clip": "Order_Idle", "seconds": 2.0, "velocity": [0, 0]}, {"clip": "Order_Run_2", "seconds": 2.5, "velocity": [-50, 0], "flip": true}, {"clip": "Order_Idle", "seconds": 2.0, "velocity": [0, 0], "flip": true}]}},
+        {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 1600, "y": 341, "anim": "Order_Run_2", "layer": "background", "params": {"loop": true, "sequence": [{"clip": "Order_Run_2", "seconds": 2.5, "velocity": [50, 0], "flip": true}, {"clip": "Order_Idle", "seconds": 2.0, "velocity": [0, 0], "flip": true}, {"clip": "Order_Run_2", "seconds": 2.5, "velocity": [-50, 0]}, {"clip": "Order_Idle", "seconds": 2.0, "velocity": [0, 0]}]}},
         {"type": "spawn", "kind": "prop", "def": "shop_5", "x": 2513, "y": 181, "params": {"sprites": ["Stage0_Shop_5_0", "Stage0_Shop_5_1"], "hitbox": {"size": [150, 75], "offset": [0, -200]}, "standBox": {"size": [230, 20], "offset": [35, 55]}}},
         {"type": "spawn", "kind": "prop", "def": "shop_4", "x": 2224, "y": 185, "params": {"sprites": ["Stage0_Shop_4_0", "Stage0_Shop_4_1"], "hitbox": {"size": [200, 75], "offset": [50, -100]}, "standBox": {"size": [250, 20], "offset": [80, 20]}}},
         {"type": "spawn", "kind": "prop", "def": "shop_3", "x": 1906, "y": 230, "params": {"sprites": ["Stage0_Shop_3_0", "Stage0_Shop_3_1"], "hitbox": {"size": [150, 75], "offset": [50, -100]}, "standBox": {"size": [300, 20], "offset": [30, 10]}}},

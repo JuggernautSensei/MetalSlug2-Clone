@@ -17,7 +17,7 @@
             "key": { "mode": "alpha" },
             "exclude": [ [ 0, 400, 288, 72 ], [ 0, 176, 40, 6 ] ],
             "clips": [
-                { "name": "Order_Run_Right", "region": [ 0, 19, 288, 32 ], "auto": { "rows": true, "mergeGap": 0, "minPixels": 30 }, "pivot": "foot", "fps": 10, "mirror": true },
+                { "name": "Order_Boy_Run_Left", "region": [ 0, 19, 288, 32 ], "auto": { "rows": true, "mergeGap": 0, "minPixels": 30 }, "pivot": "foot", "fps": 10, "mirror": true },
                 { "name": "Order_Stopping", "region": [ 0, 84, 288, 32 ], "auto": { "rows": true, "mergeGap": 0, "minPixels": 30 }, "pivot": "foot", "fps": 10 },
                 { "name": "Order_Idle", "region": [ 0, 145, 288, 35 ], "auto": { "rows": true, "mergeGap": 0, "minPixels": 30 }, "pivot": "foot", "fps": 6 },
                 { "name": "Order_Recoil", "region": [ 0, 232, 288, 36 ], "auto": { "rows": true, "mergeGap": 0, "minPixels": 30 }, "pivot": "foot", "fps": 10 },
@@ -108,6 +108,7 @@
             "file": "53213.png",
             "key": {"mode": "color", "colors": [[153, 217, 234]], "tol": 0},
             "scale": 2,
+            "exclude": [[10, 947, 55, 11]],
             "clips": [
                 { "name": "MTank_Driving", "frames": [[10, 68, 63, 32], [79, 68, 63, 32], [147, 68, 63, 32], [216, 68, 63, 32], [286, 68, 63, 32], [354, 68, 63, 32], [423, 68, 63, 32], [492, 68, 63, 32], [561, 68, 63, 32], [630, 68, 63, 32]], "fps": 12, "loop": true },
                 { "name": "MTank_Accel_Fwd", "frames": [[10, 113, 63, 34], [79, 113, 63, 34], [148, 113, 63, 34], [217, 113, 63, 34], [286, 113, 63, 34], [354, 113, 63, 34], [424, 113, 63, 34], [492, 113, 63, 34]], "fps": 12, "loop": true },
@@ -120,6 +121,7 @@
             "file": "11279.png",
             "key": {"mode": "color", "colors": [[255, 255, 255]], "tol": 0},
             "scale": 2,
+            "exclude": [[274, 610, 78, 6], [170, 55, 25, 55], [384, 570, 190, 50]],
             "clips": [
                 { "name": "POW_V1_Stuck_Right", "region": [0, 142, 578, 49], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 8, "loop": true, "mirror": true },
                 { "name": "POW_V1_Move_Right", "region": [0, 245, 578, 41], "auto": {"rows": false, "mergeGap": 0, "minPixels": 60}, "fps": 10, "loop": true, "mirror": true },

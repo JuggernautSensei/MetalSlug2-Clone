@@ -8,6 +8,7 @@
 #include "Base/Result.h"
 #include "Tools/Baker/AnimMath.h"
 #include "Tools/Baker/BakerUtil.h"
+#include "Tools/Baker/LegacyFixups.h"
 #include "Tools/Baker/BmpReader.h"
 #include "Tools/Baker/JsonWriter.h"
 #include "Tools/Baker/PngWriter.h"
@@ -332,6 +333,12 @@ namespace
                 for (AnimRecord& rec: ParseAnimeData(*text, fileName, m_state.parseWarnings))
                 {
                     referencedTextures.insert(rec.texture);
+
+                    // 레거시 오타 보정 (표: LegacyFixups.h). 무엇을 고쳤는지 리포트에 남긴다.
+                    if (const LegacyAnimFixup* pFixup = ApplyLegacyAnimFixup(rec))
+                    {
+                        AddAnomaly_("LegacyAnimFixup", rec.name, pFixup->reason);
+                    }
 
                     AnimOut out;
                     out.category = CategoryOf_(fileName, rec.name);

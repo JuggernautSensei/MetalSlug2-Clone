@@ -142,7 +142,7 @@
       "score": 100,
       "physics": { "gravity": 800, "maxFall": 3000, "speed": 0, "jumpVy": 0, "dropSpeed": 0, "footHalfWidth": 4, "useGravity": false },
       "clips": {
-        "idle":  { "name": "SD_Hang_Idle_{side}",       "frames": 1,  "sec": 0.08, "loop": true },
+        "idle":  { "name": "SD_Hang_Idle_{side}",       "frames": 4,  "sec": 0.1, "loop": true },
         "throw": { "name": "SD_Hang_Throw_Bomb_{side}", "frames": 11, "sec": 0.08 }
       },
       "params": { "detectX": 500, "throwDelaySec": 2.0, "fireFrame": 9 },
@@ -277,8 +277,8 @@
         "escape_v1":   { "name": "POW_V1_Escape_{side}",   "frames": 11, "sec": 0.1 },
         "move_v1":     { "name": "POW_V1_Move_{side}",     "frames": 12, "sec": 0.1,   "loop": true },
         "glide_v1":    { "name": "POW_V1_Glide_{side}",    "frames": 6,  "sec": 0.1,   "loop": true },
-        "moveDown_v1":{ "name": "POW_V1_MoveDown_{side}",  "frames": 15, "sec": 0.1 },
-        "item_v1":     { "name": "POW_V1_Item_{side}",     "frames": 13, "sec": 0.1 },
+        "moveDown_v1":{ "name": "POW_V1_MoveDown_{side}",  "frames": 12, "sec": 0.1 },
+        "item_v1":     { "name": "POW_V1_Item_{side}",     "frames": 10, "sec": 0.1 },
         "run_v1":      { "name": "POW_V1_Run_{side}",      "frames": 14, "sec": 0.0833, "loop": true },
         "stuck_v2":    { "name": "POW_V2_Stuck_{side}",    "frames": 13, "sec": 0.125, "loop": true },
         "escape_v2":   { "name": "POW_V2_Escape_{side}",   "frames": 6,  "sec": 0.1 },
