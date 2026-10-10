@@ -37,9 +37,6 @@ struct SandboxConfig
     slug::FilePath         enemyDefPath     = {};
     bool                  bEnemyLab        = false;
     bool                  bVehicleLab      = false;
-    bool                  bBossLab         = false;
-    Aabb                  bossArena        = Aabb::FromMinMax({ 0.f, 0.f }, { 640.f, 448.f });   // 640x448, 바닥 bossGroundY
-    float                 bossGroundY      = 378.f;
     bool                  bPropLab         = false;
 };
 
@@ -86,7 +83,6 @@ private:
     [[nodiscard]] Vec2 GetRespawnFeet_() const;
     [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;
     void                       SpawnDebugEnemy_(int _slot, float _aheadPx = 180.f);
-    void                       SpawnBossLab_();
 
     void DrawWorld_(GameContext& _ctx, Vec2 _cameraPos, float _alpha);
     void DrawDebugBoxes_(Renderer& _renderer, Vec2 _cameraPos) const;

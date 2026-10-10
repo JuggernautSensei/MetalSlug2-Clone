@@ -108,8 +108,6 @@
     <ClCompile Include="..\..\Source\Game\Combat\CombatSystem.cpp" />
     <ClCompile Include="..\..\Source\Game\Combat\Projectiles.cpp" />
     <ClCompile Include="..\..\Source\Game\DemoState.cpp" />
-    <ClCompile Include="..\..\Source\Game\Enemies\BossShiee.cpp" />
-    <ClCompile Include="..\..\Source\Game\Enemies\Bus.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\Bzk.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\EnemyBehaviors.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\EnemyCommon.cpp" />
@@ -121,7 +119,6 @@
     <ClCompile Include="..\..\Source\Game\Enemies\Pow.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\Shielder.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\Soldier.cpp" />
-    <ClCompile Include="..\..\Source\Game\Enemies\VehicleAparch.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\VehicleBTank.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\VehicleCommon.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\VehicleJeep.cpp" />
@@ -189,7 +186,6 @@
     <ClInclude Include="..\..\Source\Game\Combat\CombatSystem.h" />
     <ClInclude Include="..\..\Source\Game\Combat\Projectiles.h" />
     <ClInclude Include="..\..\Source\Game\DemoState.h" />
-    <ClInclude Include="..\..\Source\Game\Enemies\BossShiee.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyBehaviors.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyCommon.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyDef.h" />

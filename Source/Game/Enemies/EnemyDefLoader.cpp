@@ -946,13 +946,10 @@ bool EnemyDefParser::ParseEnemy_(
             case eEnemyBehavior::FlyingBzk: ParseFlyingBzkCfg(reader, def); break;
             case eEnemyBehavior::Shielder: ParseShielderCfg(reader, def); break;
             case eEnemyBehavior::Pow: ParsePowCfg(reader, def); break;
-            case eEnemyBehavior::Bus: ParseBusCfg(reader, def); break;
-            case eEnemyBehavior::BossShiee: ParseBossShieeCfg(reader, def); break;
             case eEnemyBehavior::Jeep: ParseJeepCfg(reader, def); break;
             case eEnemyBehavior::BTank: ParseBTankCfg(reader, def); break;
             case eEnemyBehavior::MissleTank: ParseMissleTankCfg(reader, def); break;
             case eEnemyBehavior::Sarubia: ParseSarubiaCfg(reader, def); break;
-            case eEnemyBehavior::Aparch: ParseAparchCfg(reader, def); break;
             case eEnemyBehavior::Count: break;
         }
         if (!reader.Finish())

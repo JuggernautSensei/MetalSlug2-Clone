@@ -13,13 +13,10 @@ const BehaviorOps& GetBehaviorOps(
         case eEnemyBehavior::FlyingBzk: return kFlyingBzkOps;
         case eEnemyBehavior::Shielder: return kShielderOps;
         case eEnemyBehavior::Pow: return kPowOps;
-        case eEnemyBehavior::Bus: return kBusOps;
-        case eEnemyBehavior::BossShiee: return kBossShieeOps;
         case eEnemyBehavior::Jeep: return kJeepOps;
         case eEnemyBehavior::BTank: return kBTankOps;
         case eEnemyBehavior::MissleTank: return kMissleTankOps;
         case eEnemyBehavior::Sarubia: return kSarubiaOps;
-        case eEnemyBehavior::Aparch: return kAparchOps;
         case eEnemyBehavior::Count: break;
     }
     static const BehaviorOps kEmpty {};

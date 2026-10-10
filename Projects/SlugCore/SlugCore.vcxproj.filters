@@ -93,12 +93,6 @@
     <ClCompile Include="..\..\Source\Game\DemoState.cpp">
       <Filter>Source\Game</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Game\Enemies\BossShiee.cpp">
-      <Filter>Source\Game\Enemies</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\Game\Enemies\Bus.cpp">
-      <Filter>Source\Game\Enemies</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\Game\Enemies\Bzk.cpp">
       <Filter>Source\Game\Enemies</Filter>
     </ClCompile>
@@ -130,9 +124,6 @@
       <Filter>Source\Game\Enemies</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Game\Enemies\Soldier.cpp">
-      <Filter>Source\Game\Enemies</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\Game\Enemies\VehicleAparch.cpp">
       <Filter>Source\Game\Enemies</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Game\Enemies\VehicleBTank.cpp">
@@ -331,9 +322,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\DemoState.h">
       <Filter>Source\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Game\Enemies\BossShiee.h">
-      <Filter>Source\Game\Enemies</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyBehaviors.h">
       <Filter>Source\Game\Enemies</Filter>

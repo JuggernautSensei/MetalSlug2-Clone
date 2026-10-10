@@ -728,31 +728,6 @@ bool EnemyWorld::IsDefeated(
     return pEnemy->life != eEnemyLife::Alive;
 }
 
-std::optional<float> EnemyWorld::GetBossHpRatio() const
-{
-    if (!m_pLibrary)
-    {
-        return std::nullopt;
-    }
-    for (const Enemy& e: m_enemies)
-    {
-        if (e.life != eEnemyLife::Alive)
-        {
-            continue;
-        }
-        const BehaviorOps& ops = GetBehaviorOps(e.behavior);
-        if (!ops.bossHpRatio)
-        {
-            continue;
-        }
-        if (const std::optional<float> ratio = ops.bossHpRatio(e, m_pLibrary->Get(e.defIndex)))
-        {
-            return std::clamp(*ratio, 0.f, 1.f);
-        }
-    }
-    return std::nullopt;
-}
-
 float EnemyWorld::TakeCameraScroll()
 {
     const float dx = m_cameraScroll;

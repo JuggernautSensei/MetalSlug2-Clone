@@ -255,20 +255,7 @@ void SandboxState::RestartGame()
         (void)SpawnEnemy("btank", { 380.f, feet.y }, left);
         (void)SpawnEnemy("missle_tank", { 500.f, feet.y }, left);
         (void)SpawnEnemy("sarubia", { 600.f, feet.y }, left);
-        (void)SpawnEnemy("aparch", { 420.f, 150.f }, left);
     }
-    if (m_config.bBossLab)
-    {
-        SpawnBossLab_();
-    }
-}
-
-void SandboxState::SpawnBossLab_()
-{
-    SpawnParams params;
-    params.facing = 1;
-    params.arena  = m_config.bossArena;
-    (void)m_enemies.Spawn("boss_shiee", { m_config.bossArena.min.x - 300.f, m_config.bossGroundY }, params, nullptr);
 }
 
 void SandboxState::AddDefaultTargets_()
@@ -309,14 +296,14 @@ void SandboxState::SpawnDebugEnemy_(
 {
     if (_slot == 8)
     {
-        static constexpr const char* kVehicles[] = { "jeep", "btank", "missle_tank", "sarubia", "aparch" };
+        static constexpr const char* kVehicles[] = { "jeep", "btank", "missle_tank", "sarubia" };
         constexpr int                kVehicleCount = static_cast<int>(sizeof(kVehicles) / sizeof(kVehicles[0]));
         const Vec2           feet          = m_player.GetFeet();
         const slug::StringView        name          = kVehicles[m_vehicleCursor % kVehicleCount];
         m_vehicleCursor                            = (m_vehicleCursor + 1) % kVehicleCount;
         SpawnParams params;
         params.facing = -1;
-        (void)SpawnEnemy(name, { feet.x + 420.f, name == "aparch" ? feet.y - 150.f : feet.y }, params);
+        (void)SpawnEnemy(name, { feet.x + 420.f, feet.y }, params);
         return;
     }
 
@@ -789,13 +776,7 @@ void SandboxState::DrawHud_(
     Renderer&               renderer = *_ctx.pRenderer;
     const PlayerController& p        = m_player;
 
-    // StageState::BuildHudModel 과 같은 규칙: 보스가 살아 있으면 보스 HP 바를 표시한다.
     HudModel hud = MakeHudModel(p);
-    if (const std::optional<float> ratio = m_enemies.GetBossHpRatio())
-    {
-        hud.bShowBoss   = true;
-        hud.bossHpRatio = *ratio;
-    }
     m_ui.DrawHud(_ctx, hud);
 
     if (_ctx.bDebugDraw)

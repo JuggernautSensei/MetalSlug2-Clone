@@ -38,7 +38,7 @@ inline bool LoadVehicleLib(
     return true;
 }
 
-inline constexpr const char* kVehicleNames[] = { "jeep", "btank", "missle_tank", "sarubia", "aparch" };
+inline constexpr const char* kVehicleNames[] = { "jeep", "btank", "missle_tank", "sarubia" };
 
 inline constexpr float kVehicleGroundY = 378.f;
 

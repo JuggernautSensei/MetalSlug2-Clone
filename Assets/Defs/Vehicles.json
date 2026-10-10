@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "차량 / 전차 / 헬기 정의 (Docs/EnemySpecs.md §2). 원점 = 발 (헬기는 기체 중심). 연출 offset 은 발 기준 (레거시 중심 기준 offset 에 -(0,F) 를 더한 값). 클립 name 의 {side} 는 Left/Right. HP = TTK x 10 (dpsRef).",
+  "note": "차량 / 전차 정의 (Docs/EnemySpecs.md §2). 원점 = 발. 연출 offset 은 발 기준 (레거시 중심 기준 offset 에 -(0,F) 를 더한 값). 클립 name 의 {side} 는 Left/Right. HP = TTK x 10 (dpsRef).",
   "defs": {
 
     "jeep_proj": {
@@ -251,77 +251,6 @@
         "moveMaxSec": 2.0,
         "shotReadySec": 1.5,
         "fireFrame": 1
-      }
-    },
-
-    "aparch_missile": {
-      "kind": "projectile",
-      "note": "헬기 미사일 (EnemySpecs 2.6): 좌향 300 px/s, 기울임은 무기 tilt.",
-      "box": { "w": 50, "h": 20 },
-      "speed": 300,
-      "anim": { "fly": { "name": "Heli_Missile", "frames": 14, "sec": 0.05, "loop": true } },
-      "onSolid": "explode",
-      "explosion": { "fx": "Explosion_Mid", "offset": [0, -35] }
-    },
-
-    "aparch_drop": {
-      "kind": "projectile",
-      "note": "헬기 폭탄 (EnemySpecs 2.6): 정지에서 직하 낙하, 중력 300. 접촉은 스프라이트 바닥(groundProbe 25 = 스프라이트 반높이) 기준이라 지면/지붕 윗면에서 터진다. 폭발 fx 는 접촉점 위 35 px 중심 (지면 위에 놓임).",
-      "box": { "w": 30, "h": 40 },
-      "gravity": 300,
-      "groundProbe": 25,
-      "anim": { "fly": { "name": "Heli_Bomb", "frames": 7, "sec": 0.0833, "loop": true } },
-      "onSolid": "explode",
-      "explosion": { "fx": "Explosion_Mid", "offset": [0, -10] }
-    },
-
-    "aparch": {
-      "kind": "vehicle",
-      "behavior": "aparch",
-      "centerAnchor": true,
-      "note": "공격 헬기 (EnemySpecs 2.6). 원점 = 기체 중심, 항상 좌향. 스프라이트 pivot 도 원점(centerAnchor). 활성 margin 400. 사망 시 표류하며 연쇄 폭발.",
-      "ttk": 12,
-      "hp": 120,
-      "score": 2000,
-      "body": { "w": 100, "h": 100, "cx": 0, "cy": 0 },
-      "activation": { "marginPx": 400, "latch": true },
-      "physics": { "useGravity": false },
-      "clips": {
-        "idle":     { "name": "Heli_Flying",          "frames": 7,  "sec": 0.04, "loop": true },
-        "move":     { "name": "Heli_Flying",          "frames": 7,  "sec": 0.04, "loop": true },
-        "moveStop": { "name": "Heli_Flying",          "frames": 7,  "sec": 0.04, "loop": true },
-        "destroy":  { "name": "Aparch_Destroy_Left",  "frames": 8,  "sec": 0.06, "loop": true },
-        "turn":     { "name": "Heli_Turning",         "frames": 7,  "sec": 0.0714 },
-        "gun":      { "name": "Heli_Launch",          "frames": 14, "sec": 0.0625 },
-        "gunHold":  { "name": "Heli_Launch_Hold",     "frames": 1,  "sec": 1.0, "loop": true },
-        "gunEnd":   { "name": "Heli_Launch_End",      "frames": 14, "sec": 0.0625 }
-      },
-      "weapons": {
-        "missile": { "projectile": "aparch_missile", "muzzle": [30, 50],  "aim": "facing", "tilt": { "threshold": 50, "dy": 0.1 }, "muzzleFx": { "clip": "Heli_Effect_Puff", "offset": [0, -5] } },
-        "drop":    { "projectile": "aparch_drop",    "muzzle": [-10, 60], "aim": "facing", "muzzleFx": { "clip": "Heli_Effect_Smoke", "offset": [0, 0] } }
-      },
-      "params": {
-        "speed": 300,
-        "decelDist": 100,
-        "arriveDist": 20,
-        "decel": 600,
-        "minSpeed": 50,
-        "approach": [445, 125],
-        "missilePose": [540, 248],
-        "home": [540, 100],
-        "idleSec": 2.0,
-        "gunSec": 1.0,
-        "moveSec": 1.0,
-        "missileIntervalSec": 1.0,
-        "missileShots": 3,
-        "endSec": 1.0,
-        "followGain": 1.5,
-        "bombStepSec": 0.5,
-        "bombSteps": 20,
-        "drift": [50, -70],
-        "chainCount": 6,
-        "chainIntervalSec": 0.3,
-        "removeSec": 1.5
       }
     }
   }

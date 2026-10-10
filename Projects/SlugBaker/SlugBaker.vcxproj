@@ -121,6 +121,7 @@
     <ClInclude Include="..\..\Source\Tools\Baker\JsonWriter.h" />
     <ClInclude Include="..\..\Source\Tools\Baker\LegacyParser.h" />
     <ClInclude Include="..\..\Source\Tools\Baker\Packer.h" />
+    <ClInclude Include="..\..\Source\Tools\Baker\PathResolve.h" />
     <ClInclude Include="..\..\Source\Tools\Baker\PngWriter.h" />
     <ClInclude Include="..\..\Source\Tools\Baker\SheetSource.h" />
   </ItemGroup>

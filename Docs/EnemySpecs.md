@@ -243,22 +243,8 @@
 - 사망: 즉시 `CreateExplosionEffect(pos,(0,−50),50, S1 M1 L1)`, 충돌 OFF, `Sarubia_Destroy`(4f×.12 유지), **2 s** 후 금속 디브리 6+`Explosion_Huge`(0,+20)→제거.
 - 스폰: `OPENLAND_4` `(12790, g−50)` + **카메라 게이트**(`OpenGate`): 처치 시까지 카메라 정지(화면 영역 고정). 새: `gate:{kill:[id]}`.
 
-### 2.6 Aparch (헬기, 중간보스 게이트/일반) — `Aparch.*`, `AparchProj.*`, `AparchDropProj.*`
-| 항목 | 값 |
-|---|---|
-| 충돌 | `box 100×100` 중심 원점 (**비행: 원점=중심 유지**, 지면 개념 없음), 충돌체 `CL_MONSTER` |
-| HP/점수 | 레거시 50 → 새 **120**(TTK 12 s). 점수 1000 (게이트면 권장 2000) |
-| 렌더 | 본체 `Aparch_Idle/Move/MoveStop/Destroy_Left`(`_Right` 쌍 존재, **항상 Left 사용**), 로터 `Aparch_Flight_Left4`(5f×.04 루프) offset (−18,−54), 포 `Aparch_Gun_Left`/`Aparch_Gun_End_Left`(9f×.08) offset (−6,45). **새 구현**: 클립 `Heli_*` (20642.png 컷), `centerAnchor` 로 pivot = 원점 (발 기준 lift 를 쓰면 기체가 66 px 위로 밀려 화면 밖으로 잘린다, Spec_Heli.md §1) |
-| 활성 | margin **400**, 활성 시 화면 좌표 `(W/2+125, 125)=(445,125)` 로 진입 |
-- 이동: 목표점까지 300 px/s, 남은 거리² ≤10000 이면 `v = max(50, v − 600·dt)`, 거리² ≤400 이면 정지→`Aparch_MoveStop`(6f×.06). 진입 직후 `_timeSum=1`.
-- 패턴 (Idle **2 s** 후, `_patternCnt` 홀/짝 번갈아, 시작 패리티 랜덤):
-  - **미사일 패턴**: 포 전개 `Aparch_Gun_Left` **1 s** → 화면 `(W−100, H−200)=(540,248)` 로 이동 **1 s** → 3발: 각각 직전으로부터 **1 s** 간격, 스폰 `pos+(−30,+50)`, 이펙트 `Aparch_Missle_Effect_Left`(10f×.08) `(−30,+45)`, 3발 후 1 s → Idle, 포 수납 `Aparch_Gun_End_Left`, `(W−100,100)` 로 복귀. ≈ 6 s.
-  - **폭탄 투하 패턴**: 플레이어 위 추종(`v = (player.x−x, player.y−y−275)·1.5/s`), 0.5 s 틱 `t` 증가, `(t%7)&1` 일 때 `AparchDropProj` 투하(투하 시 `t+=1`). 결과: 투하 시각 **0.5/1.0/1.5, 2.5/3.0/3.5, 4.5/5.0/5.5 s** (3발×3묶음, 묶음 사이 1 s), **6.0 s** 종료→Idle. 스폰 `(10,60)`, 이펙트 `Aparch_DropMissle_Effect`(8f×.06).
-- **AparchProj**: `box 50×20`, 속도 300 일정(좌향), `Aparch_Missle_Left`(2f×.08 루프) 아트 오프셋 (25,0), ±0.1 y 기울임(|dy|>50), 스모크 0.1 s. 소멸: 픽셀/플레이어(`WALL` 포함) → `Explosion_Mid`(0,−35).
-- **AparchDropProj**: `box 30×40`, 정지에서 시작, **중력 300 px/s²**(`vy=300t`), 클립 `Aparch_DropMissle`(12f×.08 루프). 소멸: 픽셀/GROUND(윗면 무시)/WALL/플레이어 → `Explosion_Mid`(0,−35).
-  - **새 구현 (Spec_Heli.md)**: 접촉은 스프라이트 바닥 기준 `groundProbe 25` (중심 아래 25 px) 로 판정 → 지면/발판 윗면에서 터진다. 폭발 fx 는 접촉 중심 기준이므로 offset `(0,−10)` (접촉점 위 35 px, 지면에 놓임). 헬기 본체는 `centerAnchor` (pivot = 원점).
-- 사망: `Aparch_Destroy_Left` + 이동 `(50,−70)` px/s 로 표류, 충돌 OFF, **1.5 s 연쇄 폭발**(0.3 s 마다 `S+M` at `(−30,−20)+rand[0,100)`, 총 6회) → `Explosion_Large`+금속 디브리 5 → 제거.
-- 스폰: `RIVER_MID` `(camRight+250, camTop+125)` + **게이트**(처치까지 카메라 고정), `OPENLAND_3` 일반(게이트 없음). 
+### 2.6 Aparch (헬기)
+재설계 예정 (RemakePlan 3단계)
 
 ### 2.7 Alian (비행 외계인) — `Alian.*`, `AlianProjectile.*`  ※ Stage0 미배치
 - 원점=중심, 충돌 `box 100×100`(`CL_MONSTER`, 지면 없음). 레거시 HP 10(탄 1발=1) → 새 40(TTK 4 s). 점수 100. 활성 margin 150.
@@ -270,71 +256,12 @@
 
 ## 3. 중간보스/보스
 
-### 3.1 Bus (버스 중간보스) — `Source/Game/Enemies/Bus.cpp`, def `mb_truck` (`Assets/Defs/Boss.json`), 스프라이트 `Assets/Source/33825.png` (컷 맵: `Docs/BusSheet.md`)
-사양 근거: `Docs/Spec_Bus.md` (원작 영상 실측). 이 절은 구현 기준이다.
+### 3.1 Bus (버스 중간보스)
+재설계 예정 (RemakePlan 3단계)
 
-| 항목 | 값 |
-|---|---|
-| 원점/충돌 | 스폰 `(2995,255)` legacyCenter (발 y 385). 원점 = 발 중앙. 벽 `solid 204x260` (발 기준 cx 0, cy -130) 은 **살아 있는 동안만** (`GetSolidBoxes` 는 Alive 만). 사망 (Dying) 후 벽이 사라져 잔해 위를 걸을 수 있다. 피격 박스 = `hurtbox` (204x272) |
-| HP / 점수 | **380** (1P HMG 2 dmg x 20 발/s = 40 dps, 전투 9.5 s). 점수 2000. `hp/8` 마다 한 단계 |
-| 등장 | `bus_create` (x>2244): 버스 스폰 (주차, 벽, 무적), `setGround Stage0_1` silent. `bus_start` (x>2560): `lockCamera [2513,0,3153,448] glide 1.9` (팬 1.9 s 후 카메라 x 2513 고정), `command startBattle`, `gate bus_dead` |
-| 주차 / 팬 | 주차 중 (상태 kParked, kReveal) 피격은 흡수 (`OnHit_`, 피해 없음). startBattle 은 `BehaviorOps.onCommand` 로 전달 (`EnemyWorld::SendCommand`) |
-| 개방 | 팬 종료 뒤 `Bus_Opening` 10 프레임 @7 fps (1.43 s). 개방 직후부터 피격 판정 (`RegisterHurtboxes` 는 기본 경로, 피해는 `OnHit_` 가 결정) |
-| 전투 | 포탄/병사/GO! 없음 (원작에서 확인되지 않음). 플레이어 공격만 |
-| 파손 단계 (stage = `hp/8` 기준) | 0 `Bus_Open` / 1 `Bus_Damaged_1` / 2 `Bus_Damaged_2` + `Bus_WinLeftUp` / 3 `Bus_Ladder_2` + `Bus_WinRightUp` + `Bus_Deco` / 4 `Bus_Ladder_3` + `Bus_WinLeftDown` / 5 `Bus_Damaged_3` + `Bus_BigWin_Begin`→`End` + `Bus_WinRightDown` / 6 `Bus_Smoke` (루프) + `Bus_Bump` + 폭발 Small / 7 `Bus_Smoke` + `Bus_Sideparts` + 폭발 Mid, Large |
-| 사망 | `Died` 이벤트 1회. 연쇄 폭발 (Small 2, Mid 4, Large 4, 0~0.5 s, 중심 발 + (-25,-150)). 0.5 s 후 `Bus_Wreck` (398x222) + `Bus_WreckFront` (발 + 12). 잔해는 남고 (`deathDone` 즉시 true), 게이트 `bus_dead` 가 즉시 열려 `unlockCamera` + `setGround Stage0_1` |
-| 구현 파라미터 | `BusCfg { revealTicks 114, openTicks 86, chainTicks 30 }` = `Boss.json` params `revealSec 1.9 / openSec 1.43 / chainSec 0.5` |
-| 원작 대비 | 원작 전투 9.5 s, HP 250 (2P 기준). 이 프로젝트 HMG 는 원작보다 연사가 빨라 (20 vs 7.7 발/s) 같은 9.5 s 를 맞추려고 HP 380 을 썼다. 개방은 원작 3.5 s 에서 1.43 s (시트에 있는 10 프레임만 사용). |
+### 3.2 Boss Shiee (최종보스, MS2 Mission 4)
+재설계 예정 (RemakePlan 3단계)
 
-### 3.2 Boss Shiee (최종보스, MS2 Mission 4) — `Source/Game/Enemies/BossShiee.*`, def `boss_shiee` (`Assets/Defs/Boss.json`)
-
-구 Big Shiee (`BigShiee.*`, 레일 주행/포탑 연사 방식) 는 **삭제**했다. 원작 영상 `Assets/Source/videoplayback (2).mp4` (t 250–378 s) 의 실측 (`Docs/Spec_Boss.md`) 으로 새로 짰다. 스프라이트: `Boss_*` 105 클립 (`Docs/BossSheet.md`). 위치 실측과 파츠 배치: `Docs/BossLayout.md`. 수치는 모두 def `params` (틱/초 단위는 `*Sec` 키).
-
-**선체 / 카메라 (슬라이딩 아레나)**
-| 항목 | 값 |
-|---|---|
-| 원점 | 발(바닥) − (0, 208). 발 = 지면 1286 (아레나 바닥선). 선체 아트 542x416 중심 = 원점 |
-| 등장 | 카메라 왼쪽 밖 (`entranceFromX` −260, 화면 좌표) 에서 16 s 천천히 굴러 들어옴 (smoothstep, `Boss_Body_DriveForward`, 기저 폭발 0.5 s 주기, 3 틱마다 ±1.5 px 떨림, 카메라 흔들림 2.5 px). 정지 `stationX` 330 (카메라 왼쪽 기준). 원작 영상 t 252→274 |
-| 판정 | 선체에는 **판정이 없다** (탄/폭탄이 통과). 피격 상자는 포탑 A..G 와 캐논 헤드뿐 |
-| 엔드리스 드리프트 | 전투 중 (등장 후 `assault`, `deploy`, `cannon`) `scrollSpeed` 18 px/s 로 **끊김 없이** 우측 전진 (`EnemyWorld::RequestCameraScroll` → `Camera::AddScrollFloor`). 선체는 매 틱 카메라 왼쪽 + `stationX` 에 붙어 **화면상 정지** (`FollowCamera_`, 플레이어가 카메라를 밀어도 같다). 지면/배경/소품은 반대로 미끄러진다 |
-| 아레나 | 보스 섹션: `bossStart` [12700..13340] 로 1.8 s 글라이드 (경고 배너 동시), 그 다음 `bossArena` [12700.., 우측 끝 없음] permanent 잠금. 보스 트리거 x 12900 (openland_4 게이트 뒤). 몬스터 일괄 제거 없음 (남은 적은 그대로 싸운다) |
-| 지형 (엔드리스 꼬리) | 평탄화하지 않는다 (`GroundEdits.json` 편집 없음, 원작처럼 부서진 지붕/잔해 언덕). `world.endless` = {from 14094, tileX 13070, tileW 1024}: 지면 비트맵 (`GroundMap::SetPeriodicTail`) 과 배경 (`SpriteBatch::DrawTextureRepeatX`) 이 x ≥ 14094 에서 [13070, 14094) 타일을 1024 px 주기로 반복. 집/다리 블록은 같은 주기 (블록 x0 = 13170 + 1024k, 집 x0 + 372) 로 openland_4 에서 미리 배치 (화면 밖) |
-
-**렌더 레이어**: 선체 `kBossHullLayer` 2 (모든 동적 객체 뒤), 포탑/캐논 `kBossPartLayer` 11 (선체 위, 소품 `kPropLayerBack` 12 와 플레이어 20 / 탄 30 아래).
-
-**파츠 (각자 체력, 파트 번호)**
-| 파트 | 체력 | 상자 | 비고 |
-|---|---|---|---|
-| 포탑 A..G (0..6) | 120 each (합계 840) | 64 폭 x (포탑 중심 − 25 .. 발) 의 기둥 | 아래에서 쏜 탄도 선체보다 먼저 맞는다. 파괴 시 `Boss_Turret_X_Destroyed` 잔해 + Explosion Small/Mid + `PartDestroyed` 점수 500 |
-| 스컬 캐논 헤드 (7) | 1000 (= `Enemy::health`, def `hp`) | 100 폭 x (헤드 − 75 .. 발) | 포탑 4기 파괴 (`deployAfterDown`) 또는 전투 30 s (`assaultMaxSec`) 뒤 전개 후에만 맞는다. 피격 시 부위 플래시 (황금 깜빡임), 파괴 시 `PartDestroyed` 점수 2000 |
-
-포탑 사격 (단계 기계, 한 번에 한 기 예고): `Turning` 0.75 s (`Boss_Turret_X_Turning`) → `Shooting` (`Boss_Turret_X_Shooting`, 발사 0.5 s 째 = 예고 합계 1.25 s) → 청록 트레이서 1발 (발사 시점 플레이어 중심을 조준, 리드 없음, 부채꼴 없음), 속도 `streakSpeed` 200 px/s (≤ 260), 판정 14x14, 수명 1.6 s, 피해 즉사. 사격 주기 `turretGapMin/MaxSec` 3.6–4.6 s, 첫 발 `turretFirstSec` 2 s. 발사 플래시 `Boss_Fire_ABCD_1` (A–D) / `Boss_Fire_EFG_1` (E–G).
-
-**캐논 (스컬)**
-| 단계 | 시간 | 내용 |
-|---|---|---|
-| 전개 `kDeploy` | 2.67 s (160 틱) | `Boss_Cannon_Deploy1 → 3 → 6 → 9` (각 40 틱). 전개 후 `Boss_Cannon_Idle` (황금 헤드) |
-| 볼리 `kCannon` | 전개 +1 s 첫 볼리, 이후 2.5–3.5 s (`volleyMin/MaxSec`) | 예고 `Boss_Gun_Aim` 0.75 s → 트레이서 3발 (0.25 s 간격, 부채꼴 6° 칸, `Boss_Gun_Shoot_k`) |
-| 주황 포탄 | 볼리 2 번째마다 1발 | 비행 1.0 s 고정 (g 1626), 착탄점 = 발사 시점 플레이어 발 x, 착탄 시 `boss_blast` 60x60 0.3 s |
-| 격앙 | 캐논 HP ≤ 50 % | 볼리 간격 ÷1.25, 트레이서 +1 |
-
-**사망 연출 (Dying, 10 s)**: 0–2.5 s 캐논 폭발 (Explosion Mid 12 틱 주기, Huge 1회) → 2.5–9.5 s 선체 연쇄 폭발 (Small/Mid/Large 0.2 s 주기, 연기 `Boss_Smoke` 0.5 s) → 7 s 분리 `Boss_Destroyed_Body` → 9.5 s 잔해 `Boss_Wreck` 고정. 10 s 에 `IsDestroyFinished` → 스테이지 게이트 `boss_dead` → 무적 10 s → `endStage` (RECAPTURED PRISONER / 결과 / MISSION COMPLETE). 캐논 사망 시 `Died` 점수 10000 (def `score`).
-
-**보급 POW**: 36 s 주기 웨이브 대신 화면 밖 월드에 미리 배치 (x 14350, 15350, 16350, 17350, 18350; 팝인 없음). 드리프트로 오른쪽 가장자리에서 들어온다.
-
-**HP 바**: `BehaviorOps::bossHpRatio` 훅 (EnemyWorld::GetBossHpRatio 일반화). 포탑 + 캐논 체력 합 / 최대 합 (전부 살아 있으면 1840/1840, 캐논만 남으면 1000/1840). 등장 전과 사망 후는 숨김.
-
-**보조 기능 (구현 메모)**
-- 파츠 상자는 파츠 중심에서 발까지 이어지는 기둥 (`RegisterHurtboxes_`): 플레이어가 파츠 아래에서 위로 쏘면 선체 몸통보다 먼저 파츠에 닿는다. 선체 상자는 마지막에 등록 (HitResolver 는 먼저 맞은 상자 하나에만 피해).
-- 체력 0 이 된 살아 있는 적은 `EnemyWorld::Tick` 에서 사망 처리 (generic). 캐논 체력은 `Enemy::health` 로 관리.
-- 피격 플래시는 `TriggerPartHitFlash` (파트 0..7), 포탑/캐논 개별.
-
-**검증 (`Test/BossShieeTest.cpp` 12, `BossDefTest.cpp` 9, `BossBotTest.cpp` 4 보고 + 2 기준, `CameraTest.cpp` 3 추가, `StageDataTest` 1 추가)**
-- 등장 (카메라 왼쪽에서 들어와 정지), 포탑 예고 → 발사, 트레이서 속도/조준, 포탑 파괴 점수 1회와 선체 불변, 포탑 4기 → 전개 → 볼리, 주황 포탄, 캐논 피격/사망/연출 10 s, 플레이어 사망 시 무공격, 스크롤 버스트/예산, 선체-카메라 동기, HP 바 공식.
-- 봇 (`BossBotTest.cpp`, 시드 1–5, 결정적): 권총+폭탄 5/5 승 (사망 ≤ 2), 보급 POW 구출 4/5, 권총 단독 0/5 (보고만, 고착 0), 좌우 회피만 3/5. 고착 0 (전 변형).
-- **미달 (엔드리스 개정 후)**: 엔드리스 드리프트 (18 px/s) 와 지붕 발판/벽 반영 (봇 운동 모델이 지형 높이를 따라간다) 뒤 권총+폭탄 3/5 (목표 4/5). 봇은 소품 충돌을 모델링하지 않던 상태에서 맞춘 기준이라 재조정이 필요하다. 전투 자체 (실시간 캡처) 는 포탑/캐논 파괴, 선체 화면 고정, 등장 흔들림, 엔드리스 지형 모두 확인.
-
-**원작 대비 (설계값)**: 포탑/캐논의 정확한 위치 (`Docs/BossLayout.md` 는 육안 합성), 트레이서 200 px/s (원작 속도 미측정), 주행/스크롤 총량 700 px (원작 1021 game px 보다 작다, 설계 보정), 권총 3 dmg 기준 HP (권총 단독 실측 전투 약 45–55 s, 목표 60–90 s 에 근접). 사망 연출은 원작 340–350 s 에 맞췄지만 화면 어둡기 (luma) 는 없다.
 ### 3.3 기타 비행/탈것
 - 설계 외 `Plane`, `Parker`, `Stage0Lake`, `Sign` 은 장식/연출(§6).
 
@@ -420,11 +347,7 @@
 | Jeep / FixedJeep | 60 | 80 | 8 s | 4 | 500 | - |
 | MissleTank | 50 | 100 | 10 s | 5 | 1000 | - |
 | BTank | 80 | 120 | 12 s | 6 | 1000 | - |
-| Aparch | 50 | 120 | 12 s | 6 | 1000→2000 | 처치까지 카메라 고정 (RIVER_MID) |
 | Sarubia | 80 | 150 | 15 s | 8 | 1000→2000 | 처치까지 카메라 고정 (OPENLAND_4) |
-| MBTruck (버스) | 160 | 250 | 25 s | 13 | 0→2000 | 처치 시 카메라 해제 |
-| Big Shiee 선체 (구 BattleShip) | 250 | 900 | 90 s | 45 | 0→10000 | 아레나 락, 처치 시 게이트 `boss_dead` |
-| Big Shiee 포탑 A..G (각) | - | 60 | 6 s | 3 | 0 | 선택 파괴 (선체 HP 와 무관) |
 | Alian | 10 | 40 | 4 s | 2 | 100 | - |
 | 파괴 구조물 | 10~40 | ×2 | - | - | 0 | - |
 > 샷건(6, 관통) 으로는 보스 150발 이상 → 보스전은 권총/HMG 중심, 폭탄 10발(=200 dmg=22%). 밸런스는 `dpsRef` 로 조정.

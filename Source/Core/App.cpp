@@ -174,7 +174,7 @@ void App::ParseArgs_()
         }
         else if (args[i] == "--warp-boss")
         {
-            m_pendingWarp = 2;   // F6 와 같다: 스테이지 보스 아레나
+            m_pendingWarp = 2;   // F6 와 같다: 스테이지 마지막 구간 (종료 지점)
             m_bDebugDraw  = true;
         }
         else if (args[i] == "--capture-ticks" && bHasValue)

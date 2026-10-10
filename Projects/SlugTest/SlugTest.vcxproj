@@ -108,10 +108,6 @@
     <ClCompile Include="..\..\Test\AudioTest.cpp" />
     <ClCompile Include="..\..\Test\BakerSheetTest.cpp" />
     <ClCompile Include="..\..\Test\BakerTest.cpp" />
-    <ClCompile Include="..\..\Test\BossBotTest.cpp" />
-    <ClCompile Include="..\..\Test\BossDefTest.cpp" />
-    <ClCompile Include="..\..\Test\BossShieeTest.cpp" />
-    <ClCompile Include="..\..\Test\BusTest.cpp" />
     <ClCompile Include="..\..\Test\CameraTest.cpp" />
     <ClCompile Include="..\..\Test\CombatTest.cpp" />
     <ClCompile Include="..\..\Test\CoreTest.cpp" />
@@ -145,7 +141,6 @@
     <ClCompile Include="..\..\Test\VehicleSandboxTest.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Test\BossTestUtil.h" />
     <ClInclude Include="..\..\Test\EnemyTestUtil.h" />
     <ClInclude Include="..\..\Test\PlayerTestUtil.h" />
     <ClInclude Include="..\..\Test\PropTestUtil.h" />

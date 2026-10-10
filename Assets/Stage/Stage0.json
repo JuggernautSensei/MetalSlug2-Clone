@@ -6,7 +6,6 @@
   "ground": {"initial": "Stage0_0", "maps": ["Stage0_0", "Stage0_1"]},
   "backdrop": {"initial": "first", "modes": {"first": {"sprite": "Stage0_Background_0", "offset": [249, -64], "parallaxX": 0.15, "period": 1024}, "second": {"sprite": "Stage0_Background_0", "offset": [700, -130], "parallaxX": 0.15, "period": 1024}, "third": {"sprite": "Stage0_Background_2", "offset": [750, 0], "parallaxX": 0.1}, "fourth": {"sprite": "Stage0_Background_1", "offset": [1100, -30], "parallaxX": 0.1, "period": 1024}}},
   "player": {"x": 100, "groundSnap": true, "fromY": 0, "note": "Legacy start Vec(100,0); the player falls to the ground (same result as groundSnap at x=100)."},
-  "rects": {"bossArena": [12700, 864, 1000000, 1312], "bossStart": [12700, 864, 13340, 1312]},
   "camera": {"policy": "forward", "initialBounds": [0, 0, 3520, 448], "initialOffset": [0, 0], "playerMargin": 14, "boundsCurves": [{"id": "downtown_slope", "source": "playerX", "from": "downtown_start", "until": "openland_start", "left": 3180, "right": 14094, "height": 448, "top": [[6500, 311.75], [8610.7843137, 850]], "round": "trunc"}]},
   "sections": [
     {
@@ -65,22 +64,13 @@
       ]
     },
     {
-      "id": "bus_create", "triggerX": 2244,
+      "id": "ground_swap", "triggerX": 2244,
       "actions": [
-        {"type": "setGround", "name": "Stage0_1", "when": "silent"},
-        {"type": "spawn", "kind": "enemy", "def": "mb_truck", "id": "bus", "x": 2995, "y": 255, "origin": "legacyCenter", "halfHeight": 130}
+        {"type": "setGround", "name": "Stage0_1", "when": "silent"}
       ]
     },
     {
-      "id": "bus_start", "triggerX": 2560,
-      "actions": [
-        {"type": "lockCamera", "rect": [2513, 0, 3153, 448], "glide": 1.9},
-        {"type": "command", "target": "bus", "command": "startBattle"},
-        {"type": "gate", "id": "bus_dead", "waitFor": ["bus"], "actions": [{"type": "unlockCamera"}, {"type": "setGround", "name": "Stage0_1"}]}
-      ]
-    },
-    {
-      "id": "bus_end", "triggerX": 3050,
+      "id": "boardwalk", "triggerX": 3050,
       "actions": [
         {"type": "unlockCamera"},
         {"type": "spawn", "kind": "collider", "def": "box_collider", "x": 3410, "y": 397, "size": [159, 39], "collisionLayer": "wall"},
@@ -103,7 +93,7 @@
         {"type": "spawn", "kind": "enemy", "def": "shielder", "x": 4120, "y": 405},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 3900, "groundSnap": true, "fromY": 450},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 4020, "groundSnap": true, "fromY": 450},
-        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 3360, "y": 377.5, "note": "boardwalk top of bus_end box 3410,397"},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 3360, "y": 377.5, "note": "boardwalk top of boardwalk box 3410,397"},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 3460, "y": 377.5},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bzk", "x": 3380, "y": 494.5, "note": "boardwalk top of wall box 3380,580"}
       ]
@@ -164,10 +154,7 @@
       "actions": [
         {"type": "setBounds", "rect": [3180, 288, 6520, 736]},
         {"type": "spawn", "kind": "npc", "def": "pow", "x": 5800, "y": 40, "settle": true, "drop": "gunitem_fs"},
-        {"type": "spawn", "id": "aparch_river", "kind": "enemy", "def": "aparch", "origin": "legacyCenter", "halfHeight": 50, "camera": {"ax": "right", "dx": 250, "ay": "top", "dy": 125}},
         {"type": "spawn", "kind": "enemy", "def": "jeep", "x": 6000, "groundSnap": true},
-        {"type": "lockCamera", "rect": "current"},
-        {"type": "gate", "id": "aparch_dead", "waitFor": ["aparch_river"], "actions": [{"type": "unlockCamera"}]},
         {"type": "spawnWave", "entries": [{"delay": 6.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
       ]
     },
@@ -306,7 +293,7 @@
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 12480, "y": 1195},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 12580, "y": 1195},
         {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 12861, "y": 1086},
-        {"type": "spawnWave", "entries": [{"delay": 4.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 9.0, "kind": "enemy", "def": "aparch", "origin": "legacyCenter", "halfHeight": 50, "camera": {"ax": "right", "dx": 250, "ay": "top", "dy": 125}}]}
+        {"type": "spawnWave", "entries": [{"delay": 4.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}]}
       ]
     },
     {"id": "openland_4", "triggerX": 12350, "note": "Legacy only spawns Sarubia + opens the gate if FindGroundY finds ground; the lockCamera/gate pair is skipped together with the spawn. 개활지 4 의 집/블록은 화면 오른쪽 밖(카메라 최대 ~12640) 에 미리 배치: 등장 없이 스크롤로 들어온다.",
@@ -329,19 +316,11 @@
   {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 16242, "y": 1274, "note": "개활지 다리 블록 (주기 1024, 엔드리스 꼬리 포함)"},
   {"type": "spawn", "kind": "prop", "def": "big_house", "x": 16614, "y": 1257, "note": "개활지 큰 집 (블록 + 372)"}
 ]},
-    {"id": "boss", "triggerX": 12900, "note": "Boss Shiee (원작 Mission 4). 등장: 경고 배너, bossStart 로 1.8 s 글라이드 후 bossArena (우측 무한) 잠금. 선체는 화면 왼쪽 밖에서 16 s 굴러 들어오고 (등장 흔들림), 이후 카메라가 18 px/s 로 계속 우측 전진 (선체 동행). 판정은 포탑/캐논뿐. POW 는 화면 밖 월드에 미리 배치 (팝인 없음). 캐논 파괴 -> 사망 연출 10 s -> boss_dead -> endStage.",
+    {"id": "stage_end", "triggerX": 12900, "note": "Former boss arena entrance (Boss Shiee removed, redesign planned: Docs/RemakePlan.md stage 3). Reaching it clears the stage: remaining enemies/waves are cleared, the player is invincible while ScreenFlow shows MISSION COMPLETE, then title.",
 "actions": [
   {"type": "clear", "waves": true},
-  {"type": "banner", "text": "WARNING", "seconds": 2.5},
-  {"type": "lockCamera", "rect": "bossStart", "permanent": true, "glide": 1.8},
-  {"type": "lockCamera", "rect": "bossArena", "permanent": true, "delay": 1.8},
-  {"type": "spawn", "kind": "enemy", "def": "boss_shiee", "id": "boss", "x": 13000, "groundSnap": true, "fromY": 1100, "params": {"arena": "bossArena"}},
-  {"type": "gate", "id": "boss_dead", "waitFor": ["boss"], "until": "destroyFinished", "abortOnGameOver": true, "actions": [{"type": "playerInvincible", "seconds": 10.0}, {"type": "endStage", "next": "title"}]},
-  {"type": "spawn", "kind": "npc", "def": "pow", "x": 14350, "y": 1050, "settle": true, "drop": "gunitem_mg", "note": "보스전 보급 POW (화면 밖 월드에 미리 배치, 카메라가 스크롤해 들어온다)"},
-  {"type": "spawn", "kind": "npc", "def": "pow", "x": 15350, "y": 1050, "settle": true, "drop": "bomb_supple", "note": "보스전 보급 POW (화면 밖 월드에 미리 배치, 카메라가 스크롤해 들어온다)"},
-  {"type": "spawn", "kind": "npc", "def": "pow", "x": 16350, "y": 1050, "settle": true, "drop": "bullet_supple", "note": "보스전 보급 POW (화면 밖 월드에 미리 배치, 카메라가 스크롤해 들어온다)"},
-  {"type": "spawn", "kind": "npc", "def": "pow", "x": 17350, "y": 1050, "settle": true, "drop": "gunitem_mg", "note": "보스전 보급 POW (화면 밖 월드에 미리 배치, 카메라가 스크롤해 들어온다)"},
-  {"type": "spawn", "kind": "npc", "def": "pow", "x": 18350, "y": 1050, "settle": true, "drop": "bomb_supple", "note": "보스전 보급 POW (화면 밖 월드에 미리 배치, 카메라가 스크롤해 들어온다)"}
+  {"type": "playerInvincible", "seconds": 10.0},
+  {"type": "endStage", "next": "title"}
 ]}
   ]
 }

@@ -1009,11 +1009,6 @@ void StageState::DrawDebugBoxes_(
 HudModel StageState::BuildHudModel() const
 {
     HudModel model = MakeHudModel(m_player);
-    if (const std::optional<float> ratio = m_enemies.GetBossHpRatio())
-    {
-        model.bShowBoss   = true;
-        model.bossHpRatio = *ratio;
-    }
     model.bShowTimer   = true;
     model.timerSeconds = m_timer.GetSeconds();
     return model;
@@ -1039,7 +1034,7 @@ void StageState::DrawHud_(
             "STAGE {} SECTION {} (#{}/{})  NEXT #{} x>{}  GATES {} [{}]\n"
             "ENEMY {} (SPAWNED {})  PROP {}  ITEM {}  COLL {}  PH {}  SKIPPED {}  LOCK {}  BG {}\n"
             "POS {:.1f},{:.1f}  VEL {:.0f},{:.0f}  GND {}  GROUND {}  TICK {}  FPS {:.0f}\n"
-            "F1 BOX  F2 PAUSE  F3 STEP  F4 SLOW  F5 NEXT SECTION  F6 BOSS ARENA",
+            "F1 BOX  F2 PAUSE  F3 STEP  F4 SLOW  F5 NEXT SECTION  F6 STAGE END",
             m_data.name,
             lastId.empty() ? slug::String { "-" } : lastId,
             m_host.GetLastSectionIndex(),

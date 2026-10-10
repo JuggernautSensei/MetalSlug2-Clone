@@ -125,7 +125,6 @@ private:
     };
 
     [[nodiscard]] SpawnRoute*              FindRouteMut_(SpawnId _id);
-    [[nodiscard]] const NamedRect*         FindRect_(slug::StringView _name) const;
     [[nodiscard]] SpawnId                  AllocId_();
     void                                   AddRoute_(SpawnId _id, eRouteKind _kind, uint32_t _handle);
     [[nodiscard]] SpawnId                  SpawnPlaceholder_(const SpawnRequest& _request);

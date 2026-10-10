@@ -12,7 +12,6 @@
 
 #include "Core/Input.h"
 #include "Core/Tuning.h"
-#include "Game/Enemies/BossShiee.h"
 #include "Game/Enemies/EnemyWorld.h"
 #include "Game/Player/PlayerController.h"
 #include "Game/Props/PropWorld.h"
@@ -334,7 +333,7 @@ TEST(StageIntegration, CameraKeepsUpWithThePlayerAlongTheWholeStage)
     SUCCEED();
 }
 
-TEST(StageIntegration, BotCanWalkTheWholeStageUpToTheBossArena)
+TEST(StageIntegration, BotCanWalkTheWholeStageToTheStageEnd)
 {
     IntegrationSim sim;
     float bestX = 0.f;
@@ -346,118 +345,11 @@ TEST(StageIntegration, BotCanWalkTheWholeStageUpToTheBossArena)
             bestX = std::max(bestX, sim.State().GetPlayer().GetFeet().x);
         }
     }
-    EXPECT_GE(bestX, 13500.f);
+    EXPECT_GE(bestX, 12900.f);
+    EXPECT_NE(sim.Current(), sim.StagePtr()) << "마지막 섹션 (stage_end) 에서 스테이지가 끝나야 한다";
 }
 
-namespace
-{
-// 봇이 보스 아레나 (x >= 12950, 보스 생존) 에 도달할 때까지 전진한다. 도달하면 true.
-bool BotReachesBossArena(IntegrationSim& _sim, const int _maxTicks)
-{
-    for (int i = 0; i < _maxTicks && _sim.Current() == _sim.StagePtr(); ++i)
-    {
-        _sim.BotStep(true, true);
-        if (_sim.Current() != _sim.StagePtr())
-        {
-            return false;
-        }
-        if (_sim.State().GetPlayer().GetFeet().x >= 12950.f && _sim.State().GetEnemies().CountAlive("boss_shiee") > 0)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-const Enemy* FindBoss(const EnemyWorld& _enemies)
-{
-    for (const Enemy& e: _enemies.GetEnemies())
-    {
-        if (e.life != eEnemyLife::Gone && e.behavior == eEnemyBehavior::BossShiee)
-        {
-            return &e;
-        }
-    }
-    return nullptr;
-}
-}
-
-TEST(StageIntegration, BossShieeAppearsAndFightsWhenTheBotWalksIntoTheArena)
-{
-    IntegrationSim sim;
-    ASSERT_TRUE(BotReachesBossArena(sim, 40000)) << "보스가 등장하지 않았다";
-
-    // 등장 (16 s = 960 틱) 이 끝나면 HUD 보스 바가 뜨고 (전투 시작), 포탑/캐논이 사격한다
-    bool bBarShown = false;
-    int  shots     = 0;
-    for (int i = 0; i < 4000 && sim.Current() == sim.StagePtr(); ++i)
-    {
-        sim.BotStep(true, true);
-        if (sim.Current() != sim.StagePtr())
-        {
-            break;
-        }
-        bBarShown = bBarShown || sim.State().GetEnemies().GetBossHpRatio().has_value();
-        if (const Enemy* pBoss = FindBoss(sim.State().GetEnemies()))
-        {
-            shots = std::max(shots, pBoss->shotsFired);
-        }
-    }
-    EXPECT_TRUE(bBarShown) << "전투 시작 전에 보스 바가 떴거나 뜨지 않았다";
-    EXPECT_GT(shots, 0) << "포탑/캐논이 한 번도 쏘지 않았다";
-}
-
-TEST(StageIntegration, BossHullHasNoHitboxOnlyTurretsAndCannonDo)
-{
-    IntegrationSim sim;
-    ASSERT_TRUE(BotReachesBossArena(sim, 40000));
-    sim.BotStep(true, true, 60);
-
-    const Enemy* pBoss = FindBoss(sim.State().GetEnemies());
-    ASSERT_NE(pBoss, nullptr);
-    int hullBoxes = 0;
-    int partBoxes = 0;
-    for (const Hurtbox& hb: sim.State().GetCombat().GetHurtboxes())
-    {
-        if (hb.owner == pBoss->id)
-        {
-            ++hullBoxes;   // 선체 판정은 없다: 탄/폭탄이 선체를 통과한다
-        }
-        else if (GetPartIndex(hb.owner) >= 0 && (hb.owner & kEnemyIdMask) == (pBoss->id & kEnemyIdMask))
-        {
-            ++partBoxes;   // 포탑 A..G 와 캐논 헤드
-        }
-    }
-    EXPECT_EQ(hullBoxes, 0);
-    EXPECT_GE(partBoxes, 1);
-}
-
-TEST(StageIntegration, EndlessTerrainCarriesTheBotPastTheWorldWidth)
-{
-    // 엔드리스 꼬리: 월드 폭 (14094) 을 넘어도 지면과 배경이 주기 반복으로 이어진다. 봇이 발을 헛디디지 않고 16000 까지 간다.
-    IntegrationSim sim;
-    ASSERT_TRUE(BotReachesBossArena(sim, 40000));
-    float bestX = 0.f;
-    float maxFeetY = 0.f;
-    for (int i = 0; i < 90000 && sim.Current() == sim.StagePtr() && bestX < 16000.f; ++i)
-    {
-        sim.BotStep(true, true);
-        if (sim.Current() != sim.StagePtr())
-        {
-            break;
-        }
-        const Vec2 feet = sim.State().GetPlayer().GetFeet();
-        bestX = std::max(bestX, feet.x);
-        if (feet.x >= 14094.f)
-        {
-            maxFeetY = std::max(maxFeetY, feet.y);
-        }
-    }
-    EXPECT_GE(bestX, 16000.f) << "bestX=" << bestX;
-    EXPECT_LT(maxFeetY, 1300.f) << "꼬리 구간에서 바닥 아래로 떨어졌다";
-}
-
-TEST(StageIntegration, BotStillWalksToTheBossAfterEveryOpenlandPropIsDestroyed)
+TEST(StageIntegration, BotStillWalksToTheStageEndAfterEveryOpenlandPropIsDestroyed)
 {
     // 회귀: 개활지(집/큰 집/탑/다리 블록) 의 파괴물을 전부 부숴도 지면 패치가 도로를 뚫어 진행이 막히면 안 된다.
     // 섹션 트리거가 지나야 소품이 나오므로, 봇이 전진하면서 개활지 소품을 매 틱 맞춰 부순다.
@@ -510,12 +402,12 @@ TEST(StageIntegration, BotStillWalksToTheBossAfterEveryOpenlandPropIsDestroyed)
         {
             std::printf("[proof] tick %d feet=(%.1f, %.1f) section=%d\n", i, feet.x, feet.y, sim.State().GetRunner().GetNextSectionIndex());
         }
-        if (!bRoadChecked && feet.x >= 13000.f)
+        if (!bRoadChecked && feet.x >= 12850.f)
         {
-            // 파괴물이 모두 부서진 뒤의 도로: 9000..13450 구간의 바닥 행이 전부 고체여야 한다
+            // 파괴물이 모두 부서진 뒤의 도로: 9000..12850 구간의 바닥 행이 전부 고체여야 한다
             const GroundMap* pGround = sim.State().GetHost().GetActiveGround();
             ASSERT_NE(pGround, nullptr);
-            for (int x = 9000; x < 13450; x += 10)
+            for (int x = 9000; x < 12850; x += 10)
             {
                 ASSERT_TRUE(pGround->IsSolid(x, 1300)) << "도로가 x=" << x << " 에서 뚫렸다";
             }
@@ -523,40 +415,15 @@ TEST(StageIntegration, BotStillWalksToTheBossAfterEveryOpenlandPropIsDestroyed)
         }
     }
     EXPECT_GE(destroyedIds.size(), 6u) << "개활지 파괴물이 충분히 나와야 한다";
-    EXPECT_GE(bestX, 13500.f) << "bestX=" << bestX;
+    EXPECT_GE(bestX, 12900.f) << "bestX=" << bestX;
     EXPECT_LT(maxFeetY, 1300.f) << "플레이어가 도로 아래로 떨어졌다";
     EXPECT_TRUE(bRoadChecked);
-}
-
-TEST(StageIntegration, BusBodyStopsThePlayerWhileAliveAndTheWreckLetsThePlayerThrough)
-{
-    IntegrationSim sim;
-    constexpr float kBusWallLeft = 2995.f - 102.f;   // 본체 반폭 (Bus_Idle 204 px)
-    int tick = 0;
-    for (; tick < 40000 && sim.State().GetEnemies().CountAlive("mb_truck") == 0; ++tick)
-    {
-        sim.BotStep(true, true);
-    }
-    ASSERT_EQ(sim.State().GetEnemies().CountAlive("mb_truck"), 1);
-
-    int violations = 0;
-    for (; tick < 40000 && sim.State().GetEnemies().CountAlive("mb_truck") > 0; ++tick)
-    {
-        sim.BotStep(true, true);
-        if (sim.State().GetPlayer().GetFeet().x >= kBusWallLeft)
-        {
-            ++violations;
-        }
-    }
-    EXPECT_EQ(violations, 0);
-    EXPECT_EQ(sim.State().GetEnemies().CountAlive("mb_truck"), 0);
-    EXPECT_TRUE(sim.State().GetEnemies().GetSolidBoxes().empty());
 }
 
 TEST(StageIntegration, SarubiaGateStartsInsideTheLockedScreenSoItCanBeShot)
 {
     IntegrationSim sim(true);
-    for (int i = 0; i < 19; ++i)
+    for (int i = 0; i < 18; ++i)
     {
         sim.Warp(1);
         sim.BotStep(true, true, 30);
@@ -576,7 +443,7 @@ TEST(StageIntegration, SarubiaGateStartsInsideTheLockedScreenSoItCanBeShot)
     EXPECT_TRUE(bFound);
 }
 
-TEST(StageIntegration, WarpChainThroughEverySectionReachesTheBossAndEndsTheStage)
+TEST(StageIntegration, WarpChainThroughEverySectionReachesTheStageEndAndEndsTheStage)
 {
     IntegrationSim sim(true);
     const int sectionCount = static_cast<int>(sim.State().GetData().sections.size());
@@ -590,10 +457,8 @@ TEST(StageIntegration, WarpChainThroughEverySectionReachesTheBossAndEndsTheStage
     }
     sim.Warp(2);
     sim.Step(2);
-    ASSERT_GT(sim.State().GetEnemies().CountAlive("boss_shiee"), 0);
 
     const IGameState* pStage = sim.StagePtr();
-    sim.State().GetEnemies().KillAll(true);
     for (int i = 0; i < 3000 && sim.Current() == pStage; ++i)
     {
         sim.Step();
@@ -654,54 +519,6 @@ TEST(StageIntegration, ClearWavesCancelsTheWholeTimedRepeat)
     EXPECT_EQ(fx.runner.GetPendingWaveCount(), 0);
 }
 
-TEST(StageIntegration, BossFightSupplyPowsArePlacedAheadOfTheCameraAndScrollInWithoutPopping)
-{
-    // 보급 POW 는 팝인하지 않는다: 등장 시점에 카메라 오른쪽 밖 월드에 미리 있고, 드리프트로 오른쪽 가장자리에서 들어온다.
-    IntegrationSim sim(true);
-    sim.Warp(2);   // F6: 보스 아레나
-    sim.Step(2);
-    ASSERT_GT(sim.State().GetEnemies().CountAlive("boss_shiee"), 0);
-
-    const auto powXs = [&]() {
-        slug::Vector<float> xs;
-        sim.State().GetEnemies().ForEachAlive([&](const Enemy& _e) {
-            if (_e.behavior == eEnemyBehavior::Pow)
-            {
-                xs.push_back(_e.body.position.x);
-            }
-        });
-        return xs;
-    };
-    ASSERT_FALSE(powXs().empty()) << "보스 아레나에 보급 POW 가 미리 배치되어 있어야 한다";
-    const float camRight0 = sim.State().GetCamera().GetPositionNoShake().x + 640.f;
-    for (const float x: powXs())
-    {
-        EXPECT_GE(x, camRight0) << "등장 시점에 화면 안에 POW 가 있으면 팝인이다";
-    }
-
-    // 드리프트로 가장 가까운 POW 가 화면 오른쪽 가장자리에서 들어온다
-    sim.State().GetPlayer().ExtendInvincibility(60 * 200);
-    bool bEntered = false;
-    float entryGap = 0.f;
-    for (int i = 0; i < 60 * 150 && !bEntered; ++i)
-    {
-        sim.State().GetPlayer().ExtendInvincibility(600);
-        sim.Step(1);
-        const float camLeft  = sim.State().GetCamera().GetPositionNoShake().x;
-        for (const float x: powXs())
-        {
-            if (x >= camLeft && x <= camLeft + 640.f)
-            {
-                bEntered = true;
-                entryGap = x - (camLeft + 640.f);
-                break;
-            }
-        }
-    }
-    EXPECT_TRUE(bEntered) << "POW 가 드리프트로 화면에 들어오지 않았다";
-    EXPECT_GT(entryGap, -40.f) << "화면 오른쪽 가장자리 (또는 그 바깥) 에서 들어왔다";
-}
-
 TEST(StageIntegration, PropRoofCarriesThePlayerAboveTheGround)
 {
     IntegrationSim sim(true);
@@ -716,70 +533,18 @@ TEST(StageIntegration, PropRoofCarriesThePlayerAboveTheGround)
     EXPECT_LT(feet.y, 300.f);   // 지면(378)이 아니라 지붕 위
 }
 
-TEST(StageIntegration, DebugWarpToTheBossThenBossDeathEndsTheStageThroughTheFlow)
+TEST(StageIntegration, DebugWarpToTheStageEndEndsTheStageThroughTheFlow)
 {
     IntegrationSim sim(true);
-    sim.Warp(2);   // F6: 보스 아레나
+    sim.Warp(2);   // F6: 마지막 구간 (stage_end)
     sim.Step(2);
 
-    ASSERT_GT(sim.State().GetEnemies().CountAlive("boss_shiee"), 0);
-
     const IGameState* pStage = sim.StagePtr();
-    sim.State().GetEnemies().KillAll(true);
     for (int i = 0; i < 3000 && sim.Current() == pStage; ++i)
     {
         sim.Step();
     }
     EXPECT_NE(sim.Current(), pStage);
-}
-
-TEST(StageIntegration, BossHpBarShowsOnlyDuringTheBossFightAndHidesAfterDeath)
-{
-    IntegrationSim sim(true);
-    sim.Warp(2);   // F6: 보스 아레나
-    sim.Step(2);
-    EXPECT_FALSE(sim.State().BuildHudModel().bShowBoss);   // 입장 중에는 숨김
-
-    for (int i = 0; i < 1200 && !sim.State().GetEnemies().GetBossHpRatio(); ++i)
-    {
-        sim.Step();
-    }
-    const HudModel start = sim.State().BuildHudModel();
-    ASSERT_TRUE(start.bShowBoss);
-    EXPECT_NEAR(start.bossHpRatio, 1.f, 1e-4f);
-
-    EnemyHandle boss;
-    sim.State().GetEnemies().ForEachAlive([&](const Enemy& _e) {
-        if (_e.behavior == eEnemyBehavior::BossShiee)
-        {
-            boss = EnemyHandle { _e.id };
-        }
-    });
-    ASSERT_FALSE(boss.IsNull());
-
-    // 선체는 탄을 흡수만 한다 (체력 바 변화 없음)
-    HitEvent ev;
-    ev.damage       = 650;
-    ev.kind         = eHitKind::Bullet;
-    ev.attackerTeam = eTeam::Player;
-    ev.attacker     = 1;
-    ev.target       = boss.id;
-    ev.hitId        = 0;
-    sim.State().GetEnemies().OnHitEvents(slug::Span<const HitEvent> { &ev, 1 });
-    EXPECT_NEAR(sim.State().BuildHudModel().bossHpRatio, 1.f, 1e-4f);
-
-    // 포탑 A..D 파괴 (각 120): 바 = (포탑 3 x 120 + 캐논 1000) / (포탑 7 x 120 + 캐논 1000)
-    for (int i = 0; i < 4; ++i)
-    {
-        ev.damage = 120;
-        ev.target = bossshiee::TurretOwner(boss.id, i);
-        sim.State().GetEnemies().OnHitEvents(slug::Span<const HitEvent> { &ev, 1 });
-    }
-    EXPECT_NEAR(sim.State().BuildHudModel().bossHpRatio, 1360.f / 1840.f, 0.01f);
-
-    sim.State().GetEnemies().KillAll(true);
-    sim.Step(2);
-    EXPECT_FALSE(sim.State().BuildHudModel().bShowBoss);
 }
 
 TEST(StageIntegration, GameOverRunsTheGameOverFlowAndReturnsToTitle)

@@ -392,7 +392,7 @@ TEST(StageDataReal, BossArenaStreetHasItsHousesAndBlocksAheadOfTheCamera)
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
-    // HMG 픽업은 보스 등장 전 (openland_4, 화면 밖) 에 놓는다. 보스 섹션 자체에는 픽업/적 소품을 넣지 않는다
+    // HMG 픽업은 마지막 구간 전 (openland_4, 화면 밖) 에 놓는다. 마지막 섹션 자체에는 픽업/적 소품을 넣지 않는다
     const StageSection& openland4 = data.sections[static_cast<size_t>(data.FindSection("openland_4"))];
     int hmgCount = 0;
     int houses   = 0;
@@ -421,12 +421,12 @@ TEST(StageDataReal, BossArenaStreetHasItsHousesAndBlocksAheadOfTheCamera)
     EXPECT_EQ(hmgCount, 1);
     EXPECT_GE(houses, 2) << "13542 와 엔드리스 꼬리 (주기 1024) 의 집";
     EXPECT_GE(blocks, 2);
-    const StageSection& boss = data.sections.back();
-    for (const StageAction& action: boss.actions)
+    const StageSection& stageEnd = data.sections.back();
+    for (const StageAction& action: stageEnd.actions)
     {
         if (action.type == eActionType::Spawn)
         {
-            EXPECT_NE(action.spawn.kind, eEntityKind::Item) << "보스 섹션은 화면에 보이는 픽업을 만들지 않는다";
+            EXPECT_NE(action.spawn.kind, eEntityKind::Item) << "마지막 섹션은 화면에 보이는 픽업을 만들지 않는다";
         }
     }
 }
@@ -482,10 +482,10 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
-    EXPECT_EQ(data.sections.size(), 21u);
-    EXPECT_EQ(data.CountSpawns(), 208);      // 보스전 (엔드리스 아레나): openland_4 집/블록 8 + 보급 아이템 1, 보스 섹션 POW 5 (화면 밖 미리 배치)      // 인트로 보행자 2 + 거리 보행자 1 추가 (anim_decor 는 판정 없는 장식), 거리 병사 (지붕 7 + 지상 7) + 무기 상자 1 + 다리 병사 3 + BTank 1 + MissleTank 3 추가, 매달린 병사 2 제거, 6500~9000 POW 5 제거 (6500~12000 POW 6)
-    EXPECT_EQ(data.CountWaveEntries(), 35);  // 거리 웨이브 3 + 다리 미사일 웨이브 1 추가 (보스 보급 웨이브 3 은 POW 미리 배치로 바뀌었다)
-    EXPECT_EQ(data.CountGates(), 4);
+    EXPECT_EQ(data.sections.size(), 20u);
+    EXPECT_EQ(data.CountSpawns(), 200);      // 버스/헬기/보스 스폰 + 보스 섹션 POW 5 제거 (대형 적 재설계 전)
+    EXPECT_EQ(data.CountWaveEntries(), 34);  // 헬기 웨이브 항목 1 제거
+    EXPECT_EQ(data.CountGates(), 1);
 
     EXPECT_EQ(data.name, "Stage0");
     EXPECT_EQ(data.background, "Stage0_Main");
@@ -497,13 +497,9 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
     EXPECT_FLOAT_EQ(data.camera.playerMargin, 14.f);
 
     EXPECT_EQ(data.sections.front().id, "intro");
-    EXPECT_EQ(data.sections.back().id, "boss");
+    EXPECT_EQ(data.sections.back().id, "stage_end");
     EXPECT_FLOAT_EQ(data.sections.back().triggerX, 12900.f);
-    EXPECT_EQ(data.FindSection("bus_start"), 3);
-
-    const NamedRect* pArena = data.FindRect("bossArena");
-    ASSERT_NE(pArena, nullptr);
-    EXPECT_EQ(pArena->rect, Aabb::FromMinMax({ 12700.f, 864.f }, { 1000000.f, 1312.f }));   // 엔드리스: 우측 끝 없음
+    EXPECT_EQ(data.FindSection("boardwalk"), 3);
 
     ASSERT_EQ(data.camera.boundsCurves.size(), 1u);
     EXPECT_EQ(data.camera.boundsCurves[0].fromIndex, data.FindSection("downtown_start"));
@@ -520,42 +516,19 @@ TEST(StageDataReal, Stage0KeySemantics)
     ASSERT_TRUE(result);
     const StageData data = result.Take();
 
-    const StageSection& busCreate = data.sections[static_cast<size_t>(data.FindSection("bus_create"))];
-    EXPECT_EQ(busCreate.actions[0].type, eActionType::SetGround);
-    EXPECT_EQ(busCreate.actions[0].when, eWhen::Silent);
-    EXPECT_EQ(busCreate.actions[1].spawn.def, "mb_truck");
-    EXPECT_EQ(busCreate.actions[1].spawn.origin, eOrigin::LegacyCenter);
-    EXPECT_FLOAT_EQ(busCreate.actions[1].spawn.halfHeight, 130.f);
+    const StageSection& groundSwap = data.sections[static_cast<size_t>(data.FindSection("ground_swap"))];
+    ASSERT_EQ(groundSwap.actions.size(), 1u);
+    EXPECT_EQ(groundSwap.actions[0].type, eActionType::SetGround);
+    EXPECT_EQ(groundSwap.actions[0].when, eWhen::Silent);
 
-    const StageSection& busStart = data.sections[static_cast<size_t>(data.FindSection("bus_start"))];
-    EXPECT_EQ(busStart.actions[0].type, eActionType::LockCamera);
-    EXPECT_FLOAT_EQ(busStart.actions[0].glide, 1.9f);   // 카메라 팬 (Docs/Spec_Bus.md 1절)
-    EXPECT_EQ(busStart.actions[1].type, eActionType::Command);
-    EXPECT_EQ(busStart.actions[1].command, "startBattle");
-    EXPECT_EQ(busStart.actions[2].type, eActionType::Gate);
-    EXPECT_EQ(busStart.actions[2].waitFor.size(), 1u);
+    const StageSection& stageEnd = data.sections.back();
+    ASSERT_FALSE(stageEnd.actions.empty());
+    EXPECT_EQ(stageEnd.actions.back().type, eActionType::EndStage);
+    EXPECT_FLOAT_EQ(stageEnd.actions.back().delay, 0.f);
 
-    const StageSection& boss = data.sections.back();
-    bool bPermanent = false;
-    const StageAction* pGate = nullptr;
-    for (const StageAction& action: boss.actions)
-    {
-        bPermanent = bPermanent || (action.type == eActionType::LockCamera && action.bPermanent);
-        if (action.type == eActionType::Gate)
-        {
-            pGate = &action;
-        }
-    }
-    EXPECT_TRUE(bPermanent);
-    ASSERT_NE(pGate, nullptr);
-    EXPECT_EQ(pGate->until, eGateUntil::DestroyFinished);
-    EXPECT_TRUE(pGate->bAbortOnGameOver);
-    EXPECT_EQ(pGate->actions.back().type, eActionType::EndStage);
-    EXPECT_FLOAT_EQ(pGate->actions.back().delay, 0.f);
-
-    const StageSection& busEnd = data.sections[static_cast<size_t>(data.FindSection("bus_end"))];
+    const StageSection& boardwalk = data.sections[static_cast<size_t>(data.FindSection("boardwalk"))];
     bool bFence = false;
-    for (const StageAction& action: busEnd.actions)
+    for (const StageAction& action: boardwalk.actions)
     {
         if (action.type == eActionType::Spawn && action.spawn.def == "fence")
         {

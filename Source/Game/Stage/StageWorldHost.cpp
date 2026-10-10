@@ -31,8 +31,6 @@ namespace
         return _seconds <= 0.f ? 0 : static_cast<int>(std::lround(static_cast<double>(_seconds) * static_cast<double>(kTickRate)));
     }
 
-    constexpr float kBossEntryOffsetX = 300.f;   // boss_shiee: Init 이 카메라 기준으로 위치를 다시 잡는다 (이 값은 스폰 좌표용)
-
     [[nodiscard]] Vec2 EnemyFeet_(
         const SpawnRequest& _request)
     {
@@ -57,9 +55,6 @@ namespace
         if (_def == "truck")         return { 15, { 80.f, 60.f } };
         if (_def == "missile_tank")  return { 30, { 100.f, 100.f } };
         if (_def == "btank" || _def == "sarubia") return { 40, { 100.f, 100.f } };
-        if (_def == "aparch")        return { 15, { 60.f, 40.f } };
-        if (_def == "mb_truck")      return { 60, { 180.f, 260.f } };
-        if (_def == "boss_shiee")    return { 450, { 542.f, 416.f } };
         if (_def == "mob_boat")      return { 30, { 150.f, 150.f } };
         if (_def == "big_house")     return { 40, { 310.f, 120.f } };
         if (_def == "ground_house")  return { 20, { 200.f, 150.f } };
@@ -284,19 +279,6 @@ void StageWorldHost::AddRoute_(
     m_routes.push_back(route);
 }
 
-const NamedRect* StageWorldHost::FindRect_(
-    const slug::StringView _name) const
-{
-    for (const NamedRect& rect: m_rects)
-    {
-        if (rect.name == _name)
-        {
-            return &rect;
-        }
-    }
-    return nullptr;
-}
-
 PlaceholderEntity* StageWorldHost::FindAlive_(
     const SpawnId _id)
 {
@@ -401,22 +383,7 @@ SpawnId StageWorldHost::SpawnEntity(
             }
         }
 
-        Vec2 feet = EnemyFeet_(_request);
-        if (_request.def == "boss_shiee")
-        {
-            if (pParams)
-            {
-                if (const ParamValue* pArena = pParams->Find("arena"); pArena && pArena->IsString())
-                {
-                    if (const NamedRect* pRect = FindRect_(pArena->AsString()))
-                    {
-                        params.arena = pRect->rect;
-                        feet.x       = pRect->rect.min.x - kBossEntryOffsetX;
-                    }
-                }
-            }
-        }
-
+        const Vec2        feet = EnemyFeet_(_request);
         const EnemyHandle handle = m_pEnemies->Spawn(_request.def, feet, params, nullptr);
         if (!handle.IsNull())
         {
@@ -532,10 +499,6 @@ void StageWorldHost::SendCommand(
         return;
     }
     static bool bWarnedOnce = false;
-    if (_command == "startBattle")
-    {
-        return;
-    }
     if (!bWarnedOnce)
     {
         bWarnedOnce = true;

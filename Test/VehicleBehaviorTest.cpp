@@ -207,7 +207,7 @@ TEST(VehicleBTank, KnifeDoesNotHurtTheTankButBulletsKillItOnTheFifteenth)
 
 TEST(VehicleKnife, NoVehicleAcceptsTheKnife)
 {
-    for (const char* pName: { "jeep", "btank", "missle_tank", "sarubia", "aparch" })
+    for (const char* pName: { "jeep", "btank", "missle_tank", "sarubia" })
     {
         VehicleRig rig({ 100.f, kGround });
         const EnemyHandle h = rig.Spawn(pName, { 400.f, kGround }, Facing(-1));
@@ -368,82 +368,6 @@ TEST(VehicleSarubia, DeathExplodesAtOnceAndLeavesAfterTwoSeconds)
     EXPECT_EQ(rig.E(h), nullptr);
 }
 
-TEST(VehicleAparch, FliesToItsScreenPointWithoutFalling)
-{
-    VehicleRig rig({ 100.f, kGround });
-    const EnemyHandle h = rig.Spawn("aparch", { 1000.f, 125.f }, Facing(-1));
-    rig.Step(200);
-    const Enemy* pEnemy = rig.E(h);
-    ASSERT_NE(pEnemy, nullptr);
-    EXPECT_NEAR(pEnemy->body.position.x, 445.f, 1.f);
-    EXPECT_NEAR(pEnemy->body.position.y, 125.f, 1.f);
-    EXPECT_FALSE(pEnemy->bGrounded);
-}
-
-TEST(VehicleAparch, BombPatternDropsFollowTheLegacyRhythm)
-{
-    VehicleRig rig({ 300.f, kGround });
-    const EnemyHandle h = rig.Spawn("aparch", { 445.f, 125.f }, Facing(-1));
-    SpawnLog log;
-    StepAndLog(rig, h, log, 1500);
-
-    std::vector<int> drops;
-    for (size_t i = 0; i < log.shots.size(); ++i)
-    {
-        if (log.shots[i].params.gravity > 0.f)
-        {
-            drops.push_back(log.ticks[i]);
-        }
-    }
-    // 레거시: 패턴 진입 시 누적 타이머 2 s 가 이월되어 첫 3발은 연속 프레임에 떨어지고, 이후 0.5 s 간격 묶음이 이어진다
-    const int kOffsets[] = { 0, 1, 2, 29, 59, 89, 149, 179, 209 };
-    bool      bFound     = false;
-    for (size_t i = 0; i + 9 <= drops.size() && !bFound; ++i)
-    {
-        bool bAll = true;
-        for (size_t j = 0; j < 9; ++j)
-        {
-            bAll = bAll && std::abs((drops[i + j] - drops[i]) - kOffsets[j]) <= 1;
-        }
-        bFound = bAll;
-    }
-    EXPECT_TRUE(bFound) << "드롭 리듬 9발 (레거시 burst + 0.5 s 묶음)이 연속으로 나와야 한다";
-}
-
-TEST(VehicleAparch, BombPatternHoldsItsHoverHeightAndTracksOnlyX)
-{
-    VehicleRig rig({ 300.f, kGround });
-    const EnemyHandle h = rig.Spawn("aparch", { 445.f, 125.f }, Facing(-1));
-    std::vector<float> xs;
-    std::vector<float> ys;
-    std::vector<int>   dropTicks;
-    for (int t = 0; t < 1500; ++t)
-    {
-        rig.Step(1);
-        const Enemy* pEnemy = rig.E(h);
-        ASSERT_NE(pEnemy, nullptr);
-        xs.push_back(pEnemy->body.position.x);
-        ys.push_back(pEnemy->body.position.y);
-        for (const Shot& shot: rig.Projectiles().GetShots())
-        {
-            if (shot.params.owner == h.id && shot.ageTicks == 1 && shot.params.gravity > 0.f)
-            {
-                dropTicks.push_back(t);
-            }
-        }
-    }
-    ASSERT_GE(dropTicks.size(), 9u);
-    // 첫 묶음 (9발, 약 3.5 s) 구간은 한 폭탄 패턴 안이다: 플레이어 위로 올라가지 않고 호버 y 를 유지한다
-    // (뒤따르는 미사일 패턴은 자세로 이동하므로 구간에서 뺀다)
-    const int first = dropTicks.front();
-    const int last  = dropTicks[8];
-    for (int t = first; t <= last; ++t)
-    {
-        EXPECT_NEAR(ys[static_cast<size_t>(t)], ys[static_cast<size_t>(first)], 0.01f) << "tick " << t;
-    }
-    EXPECT_LT(xs[static_cast<size_t>(last)], xs[static_cast<size_t>(first)]) << "x 는 플레이어(300) 쪽으로 따라가야 한다";
-}
-
 namespace
 {
     // 드롭 발사 시점의 스폰 위치가 헬기 기준 (_offsetX, +60) 인지 확인하고 드롭 발수를 누적한다
@@ -467,101 +391,6 @@ namespace
             }
         }
     }
-}
-
-TEST(VehicleAparch, BombsSpawnTenPixelsAheadAndSixtyBelowWhenFacingLeft)
-{
-    VehicleRig rig({ 300.f, kGround });
-    const EnemyHandle h = rig.Spawn("aparch", { 445.f, 125.f }, Facing(-1));
-    int drops = 0;
-    CheckDropSpawnOffsets_(rig, h, 10.f, 400, drops);
-    EXPECT_GT(drops, 0);
-}
-
-TEST(VehicleAparch, DropMuzzleMirrorsWithFacing)
-{
-    EnemyDefLibrary lib;
-    ASSERT_TRUE(LoadVehicleLib(lib));
-    const EnemyDef* pDef = lib.Find("aparch");
-    ASSERT_NE(pDef, nullptr);
-    const int drop = pDef->FindWeapon("drop");
-    ASSERT_GE(drop, 0);
-
-    // 스폰은 항상 좌향으로 초기화되므로 우향 케이스는 muzzle 계산 함수에 직접 넣어 검증한다
-    Enemy left;
-    left.facing        = -1;
-    left.body.position = { 445.f, 125.f };
-    Enemy right;
-    right.facing        = 1;
-    right.body.position = { 445.f, 125.f };
-
-    const Vec2 l = GetMuzzleWorld(left, *pDef, drop);
-    const Vec2 r = GetMuzzleWorld(right, *pDef, drop);
-    EXPECT_FLOAT_EQ(l.x, 455.f);
-    EXPECT_FLOAT_EQ(l.y, 185.f);
-    EXPECT_FLOAT_EQ(r.x, 435.f);
-    EXPECT_FLOAT_EQ(r.y, 185.f);
-}
-
-TEST(VehicleAparch, MissilePatternFiresThreeLeftwardMissilesOneSecondApart)
-{
-    VehicleRig rig({ 300.f, kGround });
-    const EnemyHandle h = rig.Spawn("aparch", { 445.f, 125.f }, Facing(-1));
-    SpawnLog log;
-    StepAndLog(rig, h, log, 1500);
-
-    std::vector<int> missiles;
-    for (size_t i = 0; i < log.shots.size(); ++i)
-    {
-        if (log.shots[i].params.gravity == 0.f)
-        {
-            missiles.push_back(log.ticks[i]);
-        }
-    }
-    ASSERT_GE(missiles.size(), 3u);
-    EXPECT_NEAR(missiles[1] - missiles[0], 60, 2);
-    EXPECT_NEAR(missiles[2] - missiles[1], 60, 2);
-    for (const Shot& shot: log.shots)
-    {
-        if (shot.params.gravity == 0.f)
-        {
-            EXPECT_LT(shot.velocity.x, -290.f);
-            EXPECT_NEAR(shot.velocity.y, 0.f, 1.f);
-            break;
-        }
-    }
-}
-
-TEST(VehicleAparch, DeathDriftsAndChainsExplosionsBeforeItLeaves)
-{
-    VehicleRig rig({ 100.f, kGround });
-    const EnemyHandle h = rig.Spawn("aparch", { 445.f, 125.f }, Facing(-1));
-    rig.Step(2);
-    for (int i = 0; i < 40; ++i)
-    {
-        (void)rig.Strike(h.id, eHitKind::Bullet, 3);
-    }
-    ASSERT_EQ(rig.E(h)->life, eEnemyLife::Dying);
-    EXPECT_EQ(rig.SumScore(eEnemyEventKind::Died), 2000);
-    const float x0 = rig.E(h)->body.position.x;
-    const float y0 = rig.E(h)->body.position.y;
-    rig.Step(30);
-    EXPECT_NEAR(rig.E(h)->body.position.x - x0, 25.f, 2.f);   // 표류 (50, -70) px/s
-    EXPECT_NEAR(rig.E(h)->body.position.y - y0, -35.f, 2.f);
-    rig.Step(70);
-    EXPECT_EQ(rig.E(h), nullptr) << "1.5 s 뒤 제거";
-}
-
-TEST(VehicleAparch, AttackingItRequiresTheFullHitPointsTotal)
-{
-    VehicleRig rig({ 100.f, kGround });
-    const EnemyHandle h = rig.Spawn("aparch", { 445.f, 125.f }, Facing(-1));
-    rig.Step(2);
-    for (int i = 0; i < 39; ++i)
-    {
-        (void)rig.Strike(h.id, eHitKind::Bullet, 3);
-    }
-    EXPECT_TRUE(rig.E(h)->IsAlive());
 }
 
 TEST(VehicleHitFlash, JeepFlashesOnNonLethalHitRefreshesAndExpires)
@@ -632,81 +461,6 @@ namespace
         }
         return false;
     }
-}
-
-TEST(VehicleAparch, HoverKeepsTheWholeSpriteBelowTheHudRow)
-{
-    EnemyDefLibrary lib;
-    ASSERT_TRUE(LoadVehicleLib(lib));
-    const EnemyDef* pDef = lib.Find("aparch");
-    ASSERT_NE(pDef, nullptr);
-    const float hoverY = pDef->aparch.approachY;
-    // 가장 큰 Heli_Flying 프레임의 반높이는 66 px (baked 2x). 윗변이 HUD 줄 (y 50) 밑, 아랫변이 화면 안이어야 한다
-    EXPECT_GE(hoverY, 100.f);
-    EXPECT_LE(hoverY, 130.f);
-    EXPECT_GE(hoverY - 66.f, 50.f);
-    EXPECT_LE(hoverY + 66.f, 448.f);
-}
-
-TEST(VehicleAparch, FlyingSpritesAreCentredOnTheirOriginNotOnTheirFeet)
-{
-    EnemyDefLibrary lib;
-    ASSERT_TRUE(LoadVehicleLib(lib));
-    const EnemyDef* pAparch = lib.Find("aparch");
-    const EnemyDef* pJeep   = lib.Find("jeep");
-    ASSERT_NE(pAparch, nullptr);
-    ASSERT_NE(pJeep, nullptr);
-    EXPECT_TRUE(pAparch->bCenterAnchor) << "헬기 원점은 기체 중심이므로 스프라이트 pivot 을 원점에 둔다";
-    EXPECT_FALSE(pJeep->bCenterAnchor) << "지상 차량은 발 기준 (기존 동작)";
-}
-
-TEST(VehicleAparch, BombSpawnsWithItsSpriteBottomAsTheContactPoint)
-{
-    EnemyDefLibrary lib;
-    ASSERT_TRUE(LoadVehicleLib(lib));
-    const EnemyDef* pDef = lib.Find("aparch");
-    ASSERT_NE(pDef, nullptr);
-    const int drop = pDef->FindWeapon("drop");
-    ASSERT_GE(drop, 0);
-    const int proj = pDef->weapons[static_cast<size_t>(drop)].projectile;
-    ASSERT_GE(proj, 0);
-    EXPECT_FLOAT_EQ(lib.GetProjectile(proj).groundProbeY, 25.f) << "Heli_Bomb 스프라이트 바닥 (pivot y 25)";
-}
-
-TEST(VehicleAparch, BombBurstsWhereItsSpriteBottomTouchesTheGround)
-{
-    ProjectileSystem ps;
-    CombatSystem     combat;
-    const GroundMap  ground = MakeFlatGround(3000);
-    ps.SpawnShot(MakeFallingShell_(300.f, 25.f), combat);
-    Vec2 fx = {};
-    ASSERT_TRUE(RunUntilBurst_(ps, combat, &ground, {}, fx));
-    EXPECT_NEAR(fx.x, 300.f, 0.5f);
-    EXPECT_NEAR(fx.y, kVehicleGroundY - 25.f, 1.5f) << "폭발은 바닥에 닿는 순간 (공중에서 터지지 않는다)";
-}
-
-TEST(VehicleAparch, BombLandsOnTopOfARoofInsteadOfFallingThrough)
-{
-    ProjectileSystem ps;
-    CombatSystem     combat;
-    const GroundMap  ground = MakeFlatGround(3000);
-    const std::vector<Platform> roofs = { { Aabb::FromMinMax({ 250.f, 300.f }, { 350.f, 320.f }), false } };
-    ps.SpawnShot(MakeFallingShell_(300.f, 25.f), combat);
-    Vec2 fx = {};
-    ASSERT_TRUE(RunUntilBurst_(ps, combat, &ground, roofs, fx));
-    EXPECT_NEAR(fx.y, 300.f - 25.f, 1.5f) << "지붕 윗면(300) 에 스프라이트 바닥이 닿는 높이";
-}
-
-TEST(VehicleAparch, BombPassingBesideARoofLandsOnTheGround)
-{
-    ProjectileSystem ps;
-    CombatSystem     combat;
-    const GroundMap  ground = MakeFlatGround(3000);
-    const std::vector<Platform> roofs = { { Aabb::FromMinMax({ 350.f, 300.f }, { 450.f, 320.f }), false } };
-    ps.SpawnShot(MakeFallingShell_(300.f, 25.f), combat);
-    Vec2 fx = {};
-    ASSERT_TRUE(RunUntilBurst_(ps, combat, &ground, roofs, fx));
-    EXPECT_NEAR(fx.y, kVehicleGroundY - 25.f, 1.5f) << "지붕 옆을 지나면 지면에서 터진다";
 }
 
 TEST(VehicleSarubia, GrenadeRollsWithItsSpriteBottomOnTheGround)

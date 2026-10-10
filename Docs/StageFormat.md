@@ -69,7 +69,7 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
 | `setBackdrop` | `mode` | §4 |
 | `setGround` | `name` | 지면 맵 교체(`ground.maps` 중) |
 | `gate` | `id`, `waitFor:[spawnId]`, `until?`, `actions[]`, `abortOnGameOver?` | `waitFor` 의 모든 스폰이 소멸/격파되면 `actions` 실행(각 `delay` 는 이 시점 기준). `until:"defeated"`(기본, HP≤0 또는 제거) / `"destroyFinished"`(사망 연출 종료). `abortOnGameOver`: 게임오버 시 `actions` 취소(레거시 피날레) |
-| `command` | `target:spawnId`, `command` | 엔티티에 명령. 현재: `mb_truck` `"startBattle"`(포탄/병사 투하 시작) |
+| `command` | `target:spawnId`, `command` | 엔티티에 명령. 현재 사용하는 적 없음 (재설계 예정) |
 | `clear` | `waves?:bool`, `layers?:["monster"]` | 대기 웨이브 취소 / 해당 레이어 오브젝트 전부 제거(레거시: ObjectType::Monster = 적+트럭+보트 포함) |
 | `banner` | `text`(`\n` 줄바꿈), `seconds` | HUD 배너 |
 | `fade` | `to:"black"\|"clear"`, `seconds` | 화면 페이드 |
@@ -82,7 +82,6 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
 |---|---|
 | `SetCameraMove(2790,224, 1s, LOCK)` + 버스 사망 시 `SetCameraLock(false)` | `lockCamera {rect:[2470,0,3110,448], glide:1}` + `gate(bus) → unlockCamera` |
 | `OpenGate` (헬기/사루비아: 현재 뷰로 경계 고정, 사망 시 복원) | `lockCamera {rect:"current"}` + `gate → unlockCamera` |
-| `StartBossFight` (경계=아레나 고정) | `lockCamera {rect:"bossArena", permanent:true}` |
 
 ## 7. spawn 필드
 | 필드 | 필수 | 설명 |
@@ -122,9 +121,7 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
 | `missile_tank` | `MissleTank` | 50 | 100x100 |
 | `btank` | `BTank` | 75 | 100x100, offset y+25 → 발 = pos+75 |
 | `sarubia` | `Sarubia` | 50 | 중간보스 |
-| `aparch` | `Aparch` | 50 | 비행. `legacyCenter` 로 기록 |
 | `mb_truck` | `MBTruck` (버스 중간보스) | 130 | 180x260. `legacyCenter`. 사망 시 지면 `Stage0_1` 교체는 스테이지 데이터(gate)에서, 파괴 이펙트/`MainTruck_Die_Front`(pos+(12,88))는 def 쪽 |
-| `boss_shiee` | `BossShiee` (최종 보스, Boss Shiee) | - | `params.arena` = rect 이름 (있으면 카메라 기준 등장, 없으면 즉시 전투). 등장 위치와 정지점은 카메라 (Init 이 `cameraView` 로 잡는다). 카메라 자동 전진은 보스가 `RequestCameraScroll` 로 요청 (`scrollBudget`). 상세 `Docs/EnemySpecs.md` 3.2 |
 | (미사용) `fixed_jeep` `alian` | `FixedJeep` `Alian` | 30 / 50 | Stage0 DevScene 은 스폰하지 않음 |
 
 **NPC/아이템**: `pow`(= 레거시 `Older`, 충돌체 50x80 → halfHeight 40, 항상 `settle`) / 아이템 ID: `gunitem_mg` `gunitem_sg` `bomb_supple` `bullet_supple` `item_letter` `random_score`(과일 7+애니 6 중 균등) `random_fruit`(apple carrot banana banana_bundle watermelon cabbage pair) `random_anime`(mando letter chicken fish bread fruits).
@@ -150,7 +147,9 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
 **decor / collider**: `anim_decor`(`Parker`, `Stage0_Water`(플레이어 진입 시 물 이펙트 트리거 1050x40, `cullMargin` 100), `Plane`(속도 (70,-50) px/s)), `sprite_decor`(`Sewer`, `frontBackground`), `box_collider`.
 
 ## 10. 섹션 표 (레거시 `gStage0Events`)
-`intro`(0) `street`(750) `bus_create`(2244) `bus_start`(2670) `bus_end`(3050) `bridge`(3300) `bridge_down`(3700) `bridge_mid`(4037) `bridge_end`(4600) `river_start`(5000) `river_mid`(5600) `river_end`(6220) `downtown_start`(6500) `downtown_mid`(7400) `downtown_end`(8700) `openland_start`(8980) `openland_1`(9450) `openland_2`(10350) `openland_3`(11350) `openland_4`(12350) `boss`(13500).
+`intro`(0) `street`(750) `ground_swap`(2244) `boardwalk`(3050) `bridge`(3300) `bridge_down`(3700) `bridge_mid`(4037) `bridge_end`(4600) `river_start`(5000) `river_mid`(5600) `river_end`(6220) `downtown_start`(6500) `downtown_mid`(7400) `downtown_end`(8700) `openland_start`(8980) `openland_1`(9450) `openland_2`(10350) `openland_3`(11350) `openland_4`(12350) `stage_end`(12900).
+
+버스(`bus_*`)/헬기/최종보스 섹션은 삭제했다 (재설계 예정, RemakePlan 3단계). `stage_end` 는 옛 보스 아레나 입구에서 `endStage` 로 스테이지를 끝낸다.
 
 ## 11. 알려진 차이 / 주의
 - 레거시 `rand()` 사용처(드롭 x 지터, 과일/애니 랜덤, 울타리 스프라이트, 트럭 변종, `random_score`)는 스테이지 시드 RNG 로 대체. 재현 가능.
@@ -161,7 +160,7 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
 ## 12. 런타임 (`StageState`, 상태 이름 `stage0`)
 - 구성: `Source/Game/Stage/StageState.*` 가 `Assets/Stage/Stage0.json` 을 `StageRunner` 로 돌린다. 플레이어/전투/투사체/카메라/HUD 는 SandboxState 와 같은 경로. 기본 시작 상태는 `title` (Assets/Baked 가 없으면 `sandbox`), 타이틀 Start → `stage0`.
 - 호스트: `StageWorldHost` (`IStageHost` 구현). 스폰 한 개를 아래 순서로 보낸다. 정의가 없으면 다음 단계로 떨어진다.
-  - `enemy` / `npc` → `EnemyWorld::Spawn` (def 는 Enemies/Vehicles/Boss.json). `params.arena` 는 rect 이름을 풀어 `SpawnParams::arena` 로 준다. `boss_shiee` 은 `params.arena` 가 있으면 카메라 왼쪽 밖에서 굴러 들어온다 (Init 이 카메라 기준으로 위치를 잡는다).
+  - `enemy` / `npc` → `EnemyWorld::Spawn` (def 는 Enemies/Vehicles.json). `params.arena` 는 rect 이름을 풀어 `SpawnParams::arena` 로 준다.
   - `prop` → `PropWorld::Spawn` (Props.json). `params` 의 `sprites` / `hitbox` / `standBox` / `explodeOnDeath` 를 `PropSpawnParams` 로 옮긴다. `hp` 는 def 값을 쓴다 (스테이지 데이터에 hp 덮어쓰기 없음).
   - `item` → `PropWorld::SpawnItem` (아이템 id 또는 `random_*` 그룹). 중심 기준이므로 발 = 중심 + (0, 16).
   - `collider` → 스테이지 충돌체 목록. `collisionLayer: wall` 은 플레이어/적 벽, `groundExceptPlayer` 는 적만 서는 원웨이 바닥. 매 틱 물리 입력에 합친다.
@@ -169,11 +168,11 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
 - 틱 순서: 판정 시작 → 소품 Tick → 벽/발판 안정 저장소 갱신 (`StageState` 멤버 벡터에 복사, 이 틱 동안만 쓴다) → Hurtbox 등록 (플레이스홀더/적/소품, 플레이어 Tick 전) → 플레이어 → 아이템 습득 → 적 → 투사체 Step → Resolve → 피해 적용 (소품/적/플레이스홀더/플레이어/투사체) → 이벤트 소비 → 연출 → `StageRunner::Tick`.
 - 이벤트: 적 `Died` → 점수 + 드롭 아이템 (`drop`), `ItemDropped` (포로) → 튀는 아이템, 소품 `GroundPatch` → Baked/Textures/<sprite>.png 의 파란 픽셀 발자국을 `ApplyGroundPatch` 로 활성 지면에서 공기로 만든다 (발자국 밖은 불변, 바닥을 지우는 마스크는 가드로 거부; PropSpecs §2.3).
 - 게이트: `IsDefeated` / `IsDestroyFinished` 는 라우팅 표로 해당 월드에 묻는다 (적은 EnemyWorld, 소품은 PropWorld, 아이템은 사라짐, 충돌체는 제거됨).
-- 끝 장면: `endStage` → `MISSION COMPLETE` (ScreenFlow, 세계 정지) → `title`. 플레이어 게임 오버 → `GAME OVER` (ScreenFlow) → `title`. Stage0 의 보스 게이트는 `playerInvincible` 뒤 `endStage` 만 한다 (배너/암전은 ScreenFlow 가 맡는다).
-- 디버그: F1 켜진 상태에서 F5 = 다음 섹션으로 워프, F6 = 보스 아레나로 워프 (GameContext::debugWarp). `--warp N` 명령행 옵션은 시작 시 F5 를 N 번 누른 것과 같다 (F1 도 켠다). F1 오버레이에 섹션 id, 열린 게이트, 적/소품/아이템/충돌체/플레이스홀더 개수, 지면 이름이 나온다.
+- 끝 장면: `endStage` → `MISSION COMPLETE` (ScreenFlow, 세계 정지) → `title`. 플레이어 게임 오버 → `GAME OVER` (ScreenFlow) → `title`. Stage0 의 `stage_end` 섹션은 `playerInvincible` 뒤 `endStage` 만 한다 (배너/암전은 ScreenFlow 가 맡는다).
+- 디버그: F1 켜진 상태에서 F5 = 다음 섹션으로 워프, F6 = 마지막 구간(`stage_end`)으로 워프 (`--warp-boss` 도 같다) (GameContext::debugWarp). `--warp N` 명령행 옵션은 시작 시 F5 를 N 번 누른 것과 같다 (F1 도 켠다). F1 오버레이에 섹션 id, 열린 게이트, 적/소품/아이템/충돌체/플레이스홀더 개수, 지면 이름이 나온다.
 - 한계 / 아직 없는 것:
   - `box_collider` (x 1119, y 350, 137x90, wall) 는 윗면 y 305 이 점프 정점 (약 y 303~312) 과 거의 같아 일반 점프로 넘기 어렵다. 데이터(y 가 중심인지 윗면인지) 또는 물리를 확인할 것.
-  - `sendCommand` 중 `startBattle` 은 무시한다 (버스는 문 접촉으로 스스로 시작). 그 밖의 명령은 경고 한 번.
+  - `sendCommand` 는 적에게만 전달한다 (대상 행동의 `onCommand`). 그 밖의 명령은 경고 한 번.
   - `clear` 는 적(Monster 비트, Npc 비트면 포로 포함)과 충돌체를 지운다. 소품/아이템은 지우지 않는다.
   - 원경 장식 (`anim_decor` / `sprite_decor`) 은 플레이스홀더다 (정의/스프라이트 연결 없음). 보스 HP 바 (`bShowBoss`) 는 아직 HUD 에 연결하지 않았다.
   - 무적(`playerInvincible`) 은 플레이어 `ExtendInvincibility` 로 실제 피해를 막는다 (PlayerController 추가 훅 1개).

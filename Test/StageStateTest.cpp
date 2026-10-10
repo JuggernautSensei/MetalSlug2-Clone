@@ -90,7 +90,7 @@ TEST(StageState, LoadsStage0AndStartsAtTheScriptedPlayerStart)
     ASSERT_TRUE(state.IsLoaded());
     EXPECT_FALSE(state.IsFinished());
     EXPECT_EQ(state.GetData().name, "Stage0");
-    EXPECT_EQ(state.GetData().sections.size(), 21u);
+    EXPECT_EQ(state.GetData().sections.size(), 20u);
     EXPECT_NEAR(state.GetPlayer().GetFeet().x, 100.f, 2.f);   // 스크립트 player.x
     EXPECT_GT(state.GetRunner().GetSpawnedCount(), 0);        // intro 의 소품들
     EXPECT_NE(state.GetHost().GetActiveGround(), nullptr);
@@ -156,13 +156,13 @@ TEST(StageStateDebug, WarpRequestIsIgnoredWithoutDebugDraw)
     EXPECT_EQ(sim.State().GetRunner().GetNextSectionIndex(), 1);
 }
 
-TEST(StageStateDebug, F6WarpsToTheBossArena)
+TEST(StageStateDebug, F6WarpsToTheStageEnd)
 {
     StageSim sim { true };
     sim.Step();
     sim.Ctx().debugWarp = 2;          // F6
     sim.Step();
-    EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 12900.f);   // boss 섹션 트리거 (아레나 잠금 12700..14094)
+    EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 12900.f);   // stage_end 섹션 트리거
     EXPECT_TRUE(sim.State().GetRunner().GetNextSectionIndex() >= 20);
 }
 

@@ -41,21 +41,6 @@ std::unique_ptr<IGameState> CreateState(
         config.bVehicleLab = true;
         return std::unique_ptr<IGameState> { new SandboxState { config } };
     }
-    if (_name == "bosslab")
-    {
-        SandboxConfig config;
-        config.bLoadBakedGround = false;
-        config.ground           = GroundMap::MakeEmpty(640, 448);
-        config.ground.FillRect(0, 378, 639, 447, true);
-        config.cameraBounds     = Aabb::FromMinMax({ 0.f, 0.f }, { 640.f, 448.f });
-        config.spawnFeet        = { 540.f, 378.f };
-        config.bSpawnTargets    = false;
-        config.bBackground      = false;
-        config.bBossLab         = true;
-        config.bossArena        = Aabb::FromMinMax({ 0.f, 0.f }, { 640.f, 448.f });
-        config.bossGroundY      = 378.f;
-        return std::unique_ptr<IGameState> { new SandboxState { config } };
-    }
     if (_name == "stage0")
     {
         return std::unique_ptr<IGameState> { new StageState };

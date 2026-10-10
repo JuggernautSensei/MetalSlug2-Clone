@@ -31,7 +31,7 @@ namespace
     }
 }
 
-TEST(VehicleDefs, LoadsTheDefsDirectoryWithAllFiveVehiclesAndTheirProjectiles)
+TEST(VehicleDefs, LoadsTheDefsDirectoryWithAllFourVehiclesAndTheirProjectiles)
 {
     EnemyDefLibrary lib;
     slug::String     message;
@@ -41,9 +41,9 @@ TEST(VehicleDefs, LoadsTheDefsDirectoryWithAllFiveVehiclesAndTheirProjectiles)
         const EnemyDef* pDef = lib.Find(name);
         ASSERT_NE(pDef, nullptr) << name;
         EXPECT_EQ(pDef->team, eTeam::Enemy) << name;
-        EXPECT_TRUE(!pDef->weapons.empty() || std::string(name) == "aparch") << name;
+        EXPECT_FALSE(pDef->weapons.empty()) << name;
     }
-    for (const char* name: { "jeep_proj", "vehicle_btank_shell", "missle_proj_up", "missle_proj_down", "sarubia_grenade", "aparch_missile", "aparch_drop" })
+    for (const char* name: { "jeep_proj", "vehicle_btank_shell", "missle_proj_up", "missle_proj_down", "sarubia_grenade" })
     {
         EXPECT_NE(lib.FindProjectile(name), nullptr) << name;
     }
@@ -62,16 +62,14 @@ TEST(VehicleDefs, HitPointsAndScoresFollowTheSpecTable)
     EXPECT_EQ(Need(lib, "missle_tank").score, 1000);
     EXPECT_EQ(Need(lib, "sarubia").hp, 150);
     EXPECT_EQ(Need(lib, "sarubia").score, 2000);
-    EXPECT_EQ(Need(lib, "aparch").hp, 120);
-    EXPECT_EQ(Need(lib, "aparch").score, 2000);
 }
 
 TEST(VehicleDefs, BehaviorNamesRoundTripThroughTheLoader)
 {
     EnemyDefLibrary lib;
     ASSERT_TRUE(LoadVehicleLib(lib));
-    const eEnemyBehavior expected[] = { eEnemyBehavior::Jeep, eEnemyBehavior::BTank, eEnemyBehavior::MissleTank, eEnemyBehavior::Sarubia, eEnemyBehavior::Aparch };
-    for (size_t i = 0; i < 5; ++i)
+    const eEnemyBehavior expected[] = { eEnemyBehavior::Jeep, eEnemyBehavior::BTank, eEnemyBehavior::MissleTank, eEnemyBehavior::Sarubia };
+    for (size_t i = 0; i < 4; ++i)
     {
         EXPECT_EQ(Need(lib, kVehicleNames[i]).behavior, expected[i]) << kVehicleNames[i];
         const std::optional<eEnemyBehavior> found = FindBehavior(GetBehaviorName(expected[i]));
@@ -90,8 +88,6 @@ TEST(VehicleDefs, BodiesMatchTheSpecHurtboxes)
     EXPECT_FLOAT_EQ(Need(lib, "btank").body.cy, -50.f);
     EXPECT_FLOAT_EQ(Need(lib, "sarubia").body.w, 100.f);
     EXPECT_FLOAT_EQ(Need(lib, "missle_tank").body.h, 100.f);
-    EXPECT_FLOAT_EQ(Need(lib, "aparch").body.cy, 0.f);
-    EXPECT_FLOAT_EQ(Need(lib, "aparch").body.w, 100.f);
 }
 
 TEST(VehicleDefs, ActivationRulesAreDataDriven)
@@ -102,7 +98,6 @@ TEST(VehicleDefs, ActivationRulesAreDataDriven)
     EXPECT_TRUE(Need(lib, "jeep").activation.bLatch);
     EXPECT_LT(Need(lib, "btank").activation.marginPx, 0.f);
     EXPECT_TRUE(Need(lib, "missle_tank").activation.bAlways);
-    EXPECT_FLOAT_EQ(Need(lib, "aparch").activation.marginPx, 400.f);
     EXPECT_FLOAT_EQ(Need(lib, "sarubia").activation.marginPx, 150.f);
 }
 
@@ -119,7 +114,6 @@ TEST(VehicleDefs, EveryVehicleWeaponReferencesARealProjectile)
         }
     }
     EXPECT_EQ(Need(lib, "missle_tank").weapons.size(), 2u);
-    EXPECT_EQ(Need(lib, "aparch").weapons.size(), 2u);
 }
 
 TEST(VehicleDefs, RocketHasTheLegacyIgnitionDelayAndBeginClip)
@@ -175,22 +169,6 @@ TEST(VehicleDefs, RollingGrenadeDeclaresTheSpecFallRollAndExpiry)
     EXPECT_TRUE(pProj->bExpireFx);
     EXPECT_FALSE(pProj->land.name.empty());
     EXPECT_EQ(pProj->explosion.clip, "PlayerBombExplosion");
-}
-
-TEST(VehicleDefs, AparchDropsFallFromRestAndMissilesFlyLeftAtThreeHundred)
-{
-    EnemyDefLibrary lib;
-    ASSERT_TRUE(LoadVehicleLib(lib));
-    const ProjectileDef* pDrop = lib.FindProjectile("aparch_drop");
-    const ProjectileDef* pMiss = lib.FindProjectile("aparch_missile");
-    ASSERT_NE(pDrop, nullptr);
-    ASSERT_NE(pMiss, nullptr);
-    EXPECT_FLOAT_EQ(pDrop->gravity, 300.f);
-    EXPECT_FLOAT_EQ(pDrop->v0.y, 0.f);
-    EXPECT_FLOAT_EQ(pDrop->size.x, 30.f);
-    EXPECT_FLOAT_EQ(pDrop->size.y, 40.f);
-    EXPECT_FLOAT_EQ(pMiss->speed, 300.f);
-    EXPECT_FLOAT_EQ(pMiss->size.x, 50.f);
 }
 
 TEST(VehicleDefs, VehicleDeathsDeclareTheirDelayedEffectsAndRemovalTimes)
@@ -262,7 +240,7 @@ TEST(VehicleDefs, EveryVehicleClipNameExistsInTheBakedAnimations)
             ExpectClipExists(anims, def.GetClip(def.overlayClip).name, name);
         }
     }
-    for (const char* name: { "jeep_proj", "vehicle_btank_shell", "missle_proj_up", "missle_proj_down", "sarubia_grenade", "aparch_missile", "aparch_drop" })
+    for (const char* name: { "jeep_proj", "vehicle_btank_shell", "missle_proj_up", "missle_proj_down", "sarubia_grenade" })
     {
         const ProjectileDef* pProj = lib.FindProjectile(name);
         ASSERT_NE(pProj, nullptr) << name;

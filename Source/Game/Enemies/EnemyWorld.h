@@ -54,9 +54,6 @@ public:
     [[nodiscard]] int CountAlive(const EnemyFilter& _filter = {}) const;
     [[nodiscard]] int CountAlive(slug::StringView _defName) const;
 
-    // 살아 있는 보스의 체력 바 비율 (0..1). 행동의 bossHpRatio 훅이 준다 (전투 전/사망 후는 nullopt).
-    [[nodiscard]] std::optional<float> GetBossHpRatio() const;
-
     // 보스 자동 전진 (카메라 중심 하한 상승량, px). 행동이 틱 중 요청하고 StageState 가 TakeCameraScroll 로 가져가 StageRunner 에 넘긴다.
     void  RequestCameraScroll(float _dx) { m_cameraScroll += _dx; }
     float TakeCameraScroll();

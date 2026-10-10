@@ -286,19 +286,19 @@ TEST(StageRunnerSpawn, RepeatStepsPositionAndKeepsOriginMode)
 TEST(StageRunnerSpawn, OriginConversions)
 {
     RunnerFixture fx { OneSection(R"J([
-        {"type":"spawn","kind":"enemy","def":"mb_truck","id":"bus","x":2995,"y":255,"origin":"legacyCenter","halfHeight":130},
+        {"type":"spawn","kind":"enemy","def":"big_vehicle","id":"big","x":2995,"y":255,"origin":"legacyCenter","halfHeight":130},
         {"type":"spawn","kind":"prop","def":"truck","x":580,"y":342},
         {"type":"spawn","kind":"enemy","def":"soldier_bomb","x":900,"y":300},
-        {"type":"spawn","kind":"enemy","def":"aparch","origin":"legacyCenter","halfHeight":50,"camera":{"ax":"right","dx":250,"ay":"top","dy":125}},
+        {"type":"spawn","kind":"enemy","def":"flyer","origin":"legacyCenter","halfHeight":50,"camera":{"ax":"right","dx":250,"ay":"top","dy":125}},
         {"type":"spawn","kind":"npc","def":"pow","x":10,"y":20,"settle":true,"drop":"gunitem_mg","facing":"left","hp":4}])J") };
     fx.StepAt(5.f);
     ASSERT_EQ(fx.host.spawns.size(), 5u);
 
-    const SpawnRequest& bus = fx.host.spawns[0].request;
-    EXPECT_EQ(bus.positionMode, ePositionMode::Feet);
-    EXPECT_FLOAT_EQ(bus.position.y, 385.f);
-    EXPECT_FLOAT_EQ(bus.halfHeight, 130.f);
-    EXPECT_EQ(bus.stageId, "bus");
+    const SpawnRequest& big = fx.host.spawns[0].request;
+    EXPECT_EQ(big.positionMode, ePositionMode::Feet);
+    EXPECT_FLOAT_EQ(big.position.y, 385.f);
+    EXPECT_FLOAT_EQ(big.halfHeight, 130.f);
+    EXPECT_EQ(big.stageId, "big");
 
     const SpawnRequest& truck = fx.host.spawns[1].request;
     EXPECT_EQ(truck.positionMode, ePositionMode::LegacyCenter);
@@ -308,11 +308,11 @@ TEST(StageRunnerSpawn, OriginConversions)
     EXPECT_EQ(soldier.positionMode, ePositionMode::Feet);
     EXPECT_FLOAT_EQ(soldier.position.y, 300.f);
 
-    const SpawnRequest& aparch = fx.host.spawns[3].request;
-    EXPECT_EQ(aparch.positionMode, ePositionMode::Feet);
-    EXPECT_FLOAT_EQ(aparch.position.x, 640.f + 250.f);
-    EXPECT_FLOAT_EQ(aparch.position.y, 125.f + 50.f);
-    EXPECT_TRUE(aparch.bFromCamera);
+    const SpawnRequest& flyer = fx.host.spawns[3].request;
+    EXPECT_EQ(flyer.positionMode, ePositionMode::Feet);
+    EXPECT_FLOAT_EQ(flyer.position.x, 640.f + 250.f);
+    EXPECT_FLOAT_EQ(flyer.position.y, 125.f + 50.f);
+    EXPECT_TRUE(flyer.bFromCamera);
 
     const SpawnRequest& pow = fx.host.spawns[4].request;
     EXPECT_TRUE(pow.bSettle);
@@ -518,8 +518,8 @@ TEST(StageRunnerGate, NestedGatesChain)
 TEST(StageRunnerCommand, SendsToEveryInstance)
 {
     RunnerFixture fx { OneSection(R"J([
-        {"type":"spawn","kind":"enemy","def":"mb_truck","id":"bus","x":1,"y":1,"repeat":{"count":2,"stepX":5}},
-        {"type":"command","target":"bus","command":"startBattle"}])J") };
+        {"type":"spawn","kind":"enemy","def":"big_vehicle","id":"big","x":1,"y":1,"repeat":{"count":2,"stepX":5}},
+        {"type":"command","target":"big","command":"startBattle"}])J") };
     fx.StepAt(5.f);
     ASSERT_EQ(fx.host.commands.size(), 2u);
     EXPECT_EQ(fx.host.commands[0].second, "startBattle");

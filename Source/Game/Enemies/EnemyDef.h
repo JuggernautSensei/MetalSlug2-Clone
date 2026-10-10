@@ -19,13 +19,10 @@ enum class eEnemyBehavior : uint8_t
     FlyingBzk,
     Shielder,
     Pow,
-    Bus,
-    BossShiee,
     Jeep,
     BTank,
     MissleTank,
     Sarubia,
-    Aparch,
     Count
 };
 
@@ -393,104 +390,6 @@ struct SarubiaCfg
     int weaponGrenade = -1;
 };
 
-struct AparchCfg
-{
-    float speed        = 300.f;   // 접근 속도
-    float decelSq      = 10000.f;
-    float arriveSq     = 400.f;   // 이 거리² 이하면 정지
-    float decel        = 600.f;
-    float minSpeed     = 50.f;
-    float approachX    = 445.f;   // 화면 좌표 (진입 지점)
-    float approachY    = 125.f;
-    float missileX     = 540.f;   // 화면 좌표 (미사일 자세)
-    float missileY     = 248.f;
-    float homeX        = 540.f;   // 화면 좌표 (복귀 지점)
-    float homeY        = 100.f;
-    int   idleTicks    = 120;     // 패턴 사이 2 s
-    int   gunTicks     = 60;      // 포 전개 1 s
-    int   moveTicks    = 60;      // 자세 이동 1 s
-    int   missileIntervalTicks = 60;   // 미사일 간격 1 s (3발)
-    int   missileShots = 3;
-    int   endTicks     = 60;      // 포 수납 + 복귀 1 s
-    float followGain   = 1.5f;    // 폭탄 패턴: 플레이어 x 추적 게인 (y 는 호버 높이 고정)
-    int   bombStepTicks = 30;     // 0.5 s 틱 (폭탄 패턴 리듬)
-    int   bombSteps    = 12;      // 6 s
-    float driftX       = 50.f;    // 사망 표류 (px/s)
-    float driftY       = -70.f;
-    int   chainCount   = 6;       // 사망 연쇄 폭발 횟수
-    int   chainIntervalTicks = 18;   // 0.3 s
-    int   removeTicks  = 90;      // 사망 후 1.5 s 에 제거
-
-    int clipIdle = -1, clipMove = -1, clipMoveStop = -1, clipDestroy = -1;
-    int clipGun = -1, clipGunHold = -1, clipGunEnd = -1, clipTurn = -1;   // 발사 포 전개/유지/수납, 좌우 전환
-    int weaponMissile = -1, weaponDrop = -1;
-};
-
-struct BusCfg
-{
-    int revealTicks = 114;   // startBattle 뒤 카메라 팬 시간 (1.9 s). 끝나면 개방 시작
-    int openTicks   = 86;    // Bus_Opening 길이 (10 프레임 @ 7 fps = 1.43 s)
-    int chainTicks  = 30;    // 사망 후 연쇄 폭발 (0.5 s). 이후 잔해(Bus_Wreck)만 남는다
-};
-
-inline constexpr int kBossTurretCount = 7;   // 포탑 A..G (피격 파트 0..6)
-inline constexpr int kBossCannonPart  = 7;   // 스컬 캐논 헤드 (피격 파트 7)
-
-// 최종보스 Boss Shiee (Docs/BossLayout.md, Docs/Spec_Boss.md). 시간은 틱(60Hz), 좌표는 화면/원점 기준 px.
-struct BossShieeCfg
-{
-    float    originDepth        = 208.f;    // 발(바닥) → 선체 중심 (아트 416 높이의 절반)
-    float    stationX           = 330.f;    // 정지 위치: 카메라 왼쪽 기준 선체 중심 x (화면 좌표)
-    float    entranceFromX      = -260.f;   // 등장 시작: 화면 왼쪽 밖 (선체 오른쪽 끝이 화면에 걸친다)
-    int      entranceTicks      = 240;      // 4 s 굴러 들어옴 (원작 257~262 s)
-    int      rumbleTicks        = 30;       // 등장 중 기저 폭발 주기 (0.5 s)
-    float    scrollSpeed        = 18.f;     // 카메라 전진 속도 (px/s, 버스트 중)
-    int      scrollOnTicks      = 180;      // 버스트 3 s
-    int      scrollOffTicks     = 120;      // 휴지 2 s
-    float    scrollBudget       = 700.f;    // 전투 중 카메라 전진 총량 (px). 선체도 같은 양만큼 전진한다
-    int      turretHp           = 60;
-    int      turretFirstTicks   = 120;      // 전투 시작 후 첫 포탑 사격 (2 s)
-    int      turretGapMinTicks  = 84;       // 포탑 사격 간격 1.4 s ~ 2.1 s (한 번에 한 기)
-    int      turretGapMaxTicks  = 126;
-    int      turretTurnTicks    = 45;       // Turning 0.75 s (예고 1)
-    int      turretFireTicks    = 30;       // Shooting 클립 안 발사 시각 0.5 s (예고 합계 1.25 s)
-    int      turretShootTicks   = 60;       // Shooting 클립 길이 (1.0 s)
-    float    streakSpeed        = 230.f;    // 청록 트레이서 속도 (px/s)
-    int      deployAfterDown    = 4;        // 포탑 이 기 이상 파괴 시 캐논 전개
-    int      assaultMaxTicks    = 1800;     // 포탑이 이 시간까지 버티면 (30 s) 캐논 전개 강제
-    int      deployTicks        = 160;      // 캐논 전개 4 단계 x 40 틱 (2.7 s)
-    int      cannonHp           = 450;
-    int      volleyFirstTicks   = 60;       // 캐논 전개 후 첫 볼리까지 1 s
-    int      volleyMinTicks     = 150;      // 볼리 간격 2.5 s ~ 3.5 s
-    int      volleyMaxTicks     = 210;
-    int      volleyAimTicks     = 45;       // Gun_Aim 예고 0.75 s
-    int      volleyStreaks      = 3;        // 볼리당 트레이서 수 (격앙 시 +1)
-    int      streakStaggerTicks = 15;       // 트레이서 간격 0.25 s
-    float    streakSpreadDeg    = 6.f;      // 트레이서 부채꼴 간격
-    int      shellEvery         = 2;        // 볼리 2 번째마다 주황 포탄 1발
-    float    shellFlightSec     = 1.f;      // 주황 포탄 비행 1.0 s (발사 → 착탄)
-    float    enragedRate        = 1.25f;    // 캐논 HP 50% 이하: 볼리 간격 ÷1.25
-    int      gunShootTicks      = 40;       // Gun_Shoot_k 재생 시간
-    int      cannonBlastTicks   = 150;      // 캐논 폭발 연출 2.5 s (원작 340.4~343)
-    int      chainStepTicks     = 12;       // 선체 연쇄 폭발 간격 0.2 s
-    int      splitTicks         = 420;      // 7 s: 선체 분리 (Boss_Destroyed_Body)
-    int      wreckTicks         = 570;      // 9.5 s: 잔해 (Boss_Wreck)
-    int      finishTicks        = 600;      // 10 s: IsDestroyFinished → 스테이지 게이트
-    int      smokeStepTicks     = 30;       // 연기 주기 0.5 s
-    int      turretScore        = 500;      // 포탑 파괴 점수 (PartDestroyed)
-    int      cannonScore        = 2000;     // 캐논 파괴 점수 (PartDestroyed; 보스 사망 점수 def.score 와 별도)
-    Vec2     turretOffset[kBossTurretCount] = {};   // 원점 기준 포탑 중심
-    Vec2     turretMuzzle       = { -40.f, -10.f }; // 포탑 중심 기준 포구 (왼쪽 발사)
-    BoxDef   turretBox          = {};               // 포탑 중심 기준 피격 상자
-    Vec2     cannonOffset       = {};               // 원점 기준 캐논 헤드 (Gun_* 피벗)
-    Vec2     cannonMuzzle       = {};               // 원점 기준 캐논 포구
-    BoxDef   cannonBox          = {};               // 원점 기준 캐논 헤드 피격 상자
-    BoxDef   hullBox            = {};               // 원점 기준 선체 피격 상자 (파괴 불가, 탄만 흡수)
-    slug::String tracerProjectile = {};
-    slug::String shellProjectile  = {};
-    slug::String blastProjectile  = {};
-};
-
 // 피격 플래시 (Docs/Spec_HitFlash.md): 블링크 한 주기 = on 6틱 + off 6틱, 피격 시 12틱 유지(재피격 시 갱신).
 inline constexpr int kHitFlashTicks       = 12;
 inline constexpr int kHitFlashBlinkTicks  = 6;
@@ -525,13 +424,10 @@ struct EnemyDef
     FlyingBzkCfg flyingBzk = {};
     ShielderCfg  shielder  = {};
     PowCfg       pow       = {};
-    BusCfg         bus         = {};
-    BossShieeCfg   bossShiee   = {};
     JeepCfg        jeep        = {};
     BTankCfg       btank       = {};
     MissleTankCfg  missleTank  = {};
     SarubiaCfg     sarubia     = {};
-    AparchCfg      aparch      = {};
 
     bool bNoDespawn = false;
 

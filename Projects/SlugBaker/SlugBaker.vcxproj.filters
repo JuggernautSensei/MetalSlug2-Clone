@@ -59,6 +59,9 @@
     <ClInclude Include="..\..\Source\Tools\Baker\Packer.h">
       <Filter>Source\Tools\Baker</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\Tools\Baker\PathResolve.h">
+      <Filter>Source\Tools\Baker</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\Tools\Baker\PngWriter.h">
       <Filter>Source\Tools\Baker</Filter>
     </ClInclude>

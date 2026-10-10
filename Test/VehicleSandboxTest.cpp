@@ -22,21 +22,20 @@ namespace
     };
 }
 
-TEST(VehicleSandbox, KeyNineSpawnsTheFiveVehiclesInTurnAndWraps)
+TEST(VehicleSandbox, KeyNineSpawnsTheFourVehiclesInTurnAndWraps)
 {
     DirectState d;
-    for (int press = 0; press < 6; ++press)
+    for (int press = 0; press < 5; ++press)
     {
         d.ctx.debugSpawn = 9;
         d.state.Tick(d.ctx, d.input);
         EXPECT_EQ(d.ctx.debugSpawn, 0);
     }
     const EnemyWorld& enemies = d.state.GetEnemies();
-    EXPECT_EQ(enemies.CountAlive("jeep"), 2) << "여섯 번째는 다시 지프";
+    EXPECT_EQ(enemies.CountAlive("jeep"), 2) << "다섯 번째는 다시 지프";
     EXPECT_EQ(enemies.CountAlive("btank"), 1);
     EXPECT_EQ(enemies.CountAlive("missle_tank"), 1);
     EXPECT_EQ(enemies.CountAlive("sarubia"), 1);
-    EXPECT_EQ(enemies.CountAlive("aparch"), 1);
 }
 
 TEST(VehicleSandbox, KeyTenStillDoesNothing)
@@ -47,7 +46,7 @@ TEST(VehicleSandbox, KeyTenStillDoesNothing)
     EXPECT_EQ(d.state.GetEnemies().GetCount(), 0u);
 }
 
-TEST(VehicleSandbox, GroundVehiclesRestOnTheGroundAndHelicoptersHover)
+TEST(VehicleSandbox, GroundVehiclesRestOnTheGround)
 {
     Sim sim { MakeEnemyConfig() };
     sim.Step(2);
@@ -57,7 +56,6 @@ TEST(VehicleSandbox, GroundVehiclesRestOnTheGroundAndHelicoptersHover)
     const EnemyHandle btank   = sim.State().SpawnEnemy("btank", { 700.f, kGroundY }, left);
     const EnemyHandle missile = sim.State().SpawnEnemy("missle_tank", { 800.f, kGroundY }, left);
     const EnemyHandle saru    = sim.State().SpawnEnemy("sarubia", { 900.f, kGroundY }, left);
-    const EnemyHandle heli    = sim.State().SpawnEnemy("aparch", { 600.f, 150.f }, left);
     sim.Step(30);
     for (const EnemyHandle h: { jeep, btank, missile, saru })
     {
@@ -67,10 +65,6 @@ TEST(VehicleSandbox, GroundVehiclesRestOnTheGroundAndHelicoptersHover)
     }
     EXPECT_TRUE(sim.State().GetEnemies().Get(jeep)->bGrounded);
     EXPECT_TRUE(sim.State().GetEnemies().Get(saru)->bGrounded);
-    const Enemy* pHeli = sim.State().GetEnemies().Get(heli);
-    ASSERT_NE(pHeli, nullptr);
-    EXPECT_FALSE(pHeli->bGrounded);
-    EXPECT_LT(pHeli->body.position.y, kGroundY - 50.f);
 }
 
 TEST(VehicleSandbox, SandboxHashIsDeterministicWithAllVehiclesPresent)
@@ -80,7 +74,7 @@ TEST(VehicleSandbox, SandboxHashIsDeterministicWithAllVehiclesPresent)
         float x = 300.f;
         for (const char* name: kVehicleNames)
         {
-            (void)sim.State().SpawnEnemy(name, { x, name == std::string("aparch") ? 200.f : kGroundY });
+            (void)sim.State().SpawnEnemy(name, { x, kGroundY });
             x += 150.f;
         }
         for (int i = 0; i < 1200; ++i)
