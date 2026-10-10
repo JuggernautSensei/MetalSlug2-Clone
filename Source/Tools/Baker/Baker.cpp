@@ -913,7 +913,7 @@ namespace
             SoundOut out;
             out.name = rec.name;
 
-            const fs::path src = m_options.legacyRoot / fs::path(rec.path);
+            const fs::path src = ResolveCaseInsensitive(m_options.legacyRoot / fs::path(rec.path));
             if (!fs::is_regular_file(src, ec))
             {
                 out.error = "missing sound file: " + rec.path;
@@ -975,7 +975,7 @@ namespace
             SoundOut out;
             out.name = extra.name;
 
-            const fs::path src = m_options.legacyRoot / fs::path(extra.legacyPath);
+            const fs::path src = ResolveCaseInsensitive(m_options.legacyRoot / fs::path(extra.legacyPath));
             if (!fs::is_regular_file(src, _ec))
             {
                 out.error = std::string("missing sound file: ") + extra.legacyPath;

@@ -13,6 +13,7 @@
 #include "Base/Result.h"
 
 #include "Base/Error.h"
+#include "Tools/Baker/PathResolve.h"
 
 namespace slug::baker
 {
@@ -65,7 +66,7 @@ void Log(
 [[nodiscard]] inline slug::Result<std::string> ReadText(
     const std::filesystem::path& _path)
 {
-    std::ifstream stream(_path, std::ios::binary | std::ios::ate);
+    std::ifstream stream(ResolveCaseInsensitive(_path), std::ios::binary | std::ios::ate);
     if (!stream)
     {
         return slug::eError::FileOpen;
