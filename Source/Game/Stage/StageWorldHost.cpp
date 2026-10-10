@@ -508,6 +508,11 @@ void StageWorldHost::SendCommand(
     const SpawnId          _id,
     const slug::StringView  _command)
 {
+    if (const SpawnRoute* pRoute = FindRoute(_id); pRoute && pRoute->kind == eRouteKind::Enemy && m_pEnemies)
+    {
+        m_pEnemies->SendCommand(EnemyHandle { pRoute->handle }, _command);
+        return;
+    }
     static bool bWarnedOnce = false;
     if (_command == "startBattle")
     {

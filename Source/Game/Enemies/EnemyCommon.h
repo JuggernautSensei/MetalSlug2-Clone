@@ -39,6 +39,7 @@ void CancelMelee(Enemy& _e, EnemyEnv& _env);
 void BeginSoldierDeath(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
 void TickSoldierDeath(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
 
-bool SubmitNamedPart(const EnemyRenderEnv& _render, slug::StringView _name, Vec2 _origin, int _ticks, bool _bLoop, int _sortKey, int _layer, bool _bFlipX = false);
+// _partFlash: 이 부위만의 추가 플래시 양 (PartFlashAmount). 적 전체 플래시(_render.flash)와 max 로 합친다.
+bool SubmitNamedPart(const EnemyRenderEnv& _render, slug::StringView _name, Vec2 _origin, int _ticks, bool _bLoop, int _sortKey, int _layer, bool _bFlipX = false, float _partFlash = 0.f);
 [[nodiscard]] int GetNamedPartTicks(const AnimationLibrary& _anims, slug::StringView _name);
 }

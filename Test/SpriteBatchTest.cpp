@@ -325,3 +325,43 @@ TEST(SpriteBatchSdl, RejectsInvalidAtlasData)
     EXPECT_TRUE(batch.LoadAtlasPage("this/file/does/not/exist.png").HasError());
     EXPECT_EQ(batch.GetAtlasPageCount(), 0u);
 }
+
+TEST(SpriteDrawOptionsDefaults, FlashIsOffByDefault)
+{
+    const SpriteDrawOptions options;
+    EXPECT_FLOAT_EQ(options.flashAmount, 0.f);
+    EXPECT_FALSE(options.bFlipX);
+}
+
+TEST(SpriteBatchSdl, HitFlashAddsWarmTintOnlyWhenRequested)
+{
+    SoftwareTarget target { 32, 32 };
+    if (!target.IsValid())
+    {
+        GTEST_SKIP() << "소프트웨어 렌더러를 만들 수 없는 환경";
+    }
+
+    SpriteBatch batch;
+    batch.Init(target.pRenderer);
+    const slug::Vector<uint8_t> gray = { 100, 100, 100, 255 };
+    ASSERT_TRUE(batch.AddAtlasPageFromRgba(1, 1, gray).IsOK());
+    const AnimFrame frame = MakeFrame(1, 1, 0, 1);
+
+    target.Clear();
+    batch.DrawFrame(frame, { 10.f, 20.f }, Vec2 { 0.f, 0.f });
+    EXPECT_EQ(target.PixelRgb(10, 19), 0x646464u);
+
+    target.Clear();
+    SpriteDrawOptions options;
+    options.flashAmount = 1.f;
+    batch.DrawFrame(frame, { 10.f, 20.f }, Vec2 { 0.f, 0.f }, options);
+    // 100 + 0.5 * 100 * (255,110,40) / 255 = (150,122,108)
+    const uint32_t px = target.PixelRgb(10, 19);
+    EXPECT_NEAR(static_cast<int>((px >> 16) & 0xFFu), 150, 2);
+    EXPECT_NEAR(static_cast<int>((px >> 8) & 0xFFu), 122, 2);
+    EXPECT_NEAR(static_cast<int>(px & 0xFFu), 108, 2);
+
+    target.Clear();
+    batch.DrawFrame(frame, { 10.f, 20.f }, Vec2 { 0.f, 0.f });
+    EXPECT_EQ(target.PixelRgb(10, 19), 0x646464u) << "플래시 뒤 블렌드 모드가 BLEND 로 복구되어야 한다";
+}

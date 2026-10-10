@@ -140,7 +140,10 @@ void Camera::Lock(
         return;
     }
     const Vec2 goal = ClampCenter_(m_center);
-    if (std::abs(goal.x - m_center.x) <= 1.f && std::abs(goal.y - m_center.y) <= 1.f)
+    // 움직이던 카메라는 멈추지 않고 감속 이동으로 넘긴다 (순간 정지 = 튐). 정지 상태의 반올림 수준 차이만 순간 보정한다.
+    const bool bNear  = std::abs(goal.x - m_center.x) <= 1.f && std::abs(goal.y - m_center.y) <= 1.f;
+    const bool bStill = std::abs(m_velocity.x) <= 1.f && std::abs(m_velocity.y) <= 1.f;
+    if (bNear && bStill)
     {
         m_center = goal;   // 반올림 수준의 차이는 순간 보정 (보이지 않는다)
     }

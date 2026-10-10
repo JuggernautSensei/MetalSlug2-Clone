@@ -436,3 +436,47 @@ TEST(EnemyWorld, PowFallingIntoPlayerIsRescuedMidAirAndGivesItem)
     EXPECT_GT(rig.CountEvents(eEnemyEventKind::ItemDropped), 0) << "구출 후 아이템이 나오지 않았다";
     EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Freed), 0);
 }
+
+TEST(EnemyHitFlash, BlinkIsSixTicksOnThenSixOffAndEndsWithTheWindow)
+{
+    EXPECT_FALSE(IsHitFlashOn(0));
+    EXPECT_FALSE(IsHitFlashOn(kHitFlashTicks + 1));
+    for (int left = kHitFlashTicks; left >= kHitFlashTicks - kHitFlashBlinkTicks + 1; --left)
+    {
+        EXPECT_TRUE(IsHitFlashOn(left)) << "left=" << left;
+    }
+    for (int left = kHitFlashTicks - kHitFlashBlinkTicks; left >= 1; --left)
+    {
+        EXPECT_FALSE(IsHitFlashOn(left)) << "left=" << left;
+    }
+}
+
+TEST(EnemyHitFlash, OneHitDefinitionNeverFlashesEvenWhenSpawnedWithMoreHp)
+{
+    EnemyRig rig;
+    ASSERT_TRUE(rig.IsLoaded());
+    SpawnParams params;
+    params.hp = 5;
+    const EnemyHandle h = rig.Spawn("soldier_bomb", { 300.f, kGroundY }, params);
+    rig.Step(2);
+    ASSERT_GT(rig.Strike(h.id, eHitKind::Bullet, 1), 0u);
+    EXPECT_FALSE(rig.Lib().Get(rig.World().Get(h)->defIndex).bHitFlash) << "hp 1 정의는 기본적으로 플래시하지 않는다";
+    EXPECT_TRUE(rig.World().Get(h)->IsAlive());
+    EXPECT_EQ(rig.World().Get(h)->hitFlashTicks, 0);
+}
+
+TEST(EnemyHitFlash, PartFlashIsPerPartAndIgnoresOutOfRangeIndices)
+{
+    Enemy e;
+    TriggerPartHitFlash(e, 2);
+    EXPECT_EQ(e.partFlashTicks[2], kHitFlashTicks);
+    EXPECT_EQ(e.partFlashTicks[1], 0);
+    EXPECT_FLOAT_EQ(PartFlashAmount(e, 2), 1.f);
+    EXPECT_FLOAT_EQ(PartFlashAmount(e, 1), 0.f);
+    EXPECT_FLOAT_EQ(HitFlashAmount(e), 0.f);
+
+    TriggerPartHitFlash(e, -1);
+    TriggerPartHitFlash(e, kEnemyFlashPartCount);
+    EXPECT_FLOAT_EQ(PartFlashAmount(e, kEnemyFlashPartCount), 0.f);
+    EXPECT_FLOAT_EQ(PartFlashAmount(e, -1), 0.f);
+}

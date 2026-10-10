@@ -25,7 +25,7 @@ TEST(BossDef, BothBossDefinitionsParseWithSpecHitPoints)
     ASSERT_NE(pBoss, nullptr);
     EXPECT_EQ(pBus->behavior, eEnemyBehavior::Bus);
     EXPECT_EQ(pBoss->behavior, eEnemyBehavior::BigShiee);
-    EXPECT_EQ(pBus->hp, 250);    // Docs/EnemySpecs.md 7 (TTK 25 s)
+    EXPECT_EQ(pBus->hp, 380);    // 1P HMG 40 dps x 전투 9.5 s (Docs/Spec_Bus.md 시간 기준)
     EXPECT_EQ(pBoss->hp, 1300);   // 선체 HP (권총 단독 60~90 s 목표)
     EXPECT_EQ(pBus->team, eTeam::Enemy);
     EXPECT_EQ(pBoss->team, eTeam::Enemy);
@@ -40,18 +40,10 @@ TEST(BossDef, BusTimingsAndDropLimitsMatchTheSpec)
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
     const BusCfg& c = rig.GetLib().Find("mb_truck")->bus;
-    EXPECT_EQ(c.openTicks, 210);             // MainTruck_Begin 3.5 s
-    EXPECT_EQ(c.shellFirstTicks, 120);       // 첫 포탄 2 s
-    EXPECT_EQ(c.shellIntervalTicks, 180);    // 이후 3 s
-    EXPECT_EQ(c.soldierFirstTicks, 180);     // 첫 투하 3 s
-    EXPECT_EQ(c.soldierIntervalTicks, 300);  // 이후 5 s
-    EXPECT_EQ(c.soldierAliveMax, 2);
-    EXPECT_EQ(c.soldierTotalMax, 8);
-    EXPECT_TRUE(c.soldierDef == "soldier_bomb");
-    EXPECT_GE(c.weaponShell, 0);
-    EXPECT_FLOAT_EQ(c.originDepth, 123.f);
-    EXPECT_FLOAT_EQ(c.trigger.cx, -335.f);
-    EXPECT_GT(c.trigger.w, 0.f);
+    EXPECT_EQ(c.revealTicks, 114);   // 카메라 팬 1.9 s
+    EXPECT_EQ(c.openTicks, 86);      // Bus_Opening 10 프레임 @ 7 fps (1.43 s)
+    EXPECT_EQ(c.chainTicks, 30);     // 사망 연쇄 0.5 s
+    EXPECT_FLOAT_EQ(rig.GetLib().Find("mb_truck")->solid.w, 204.f);   // Bus_Idle 스프라이트 폭 (게임 px)
 }
 
 TEST(BossDef, BigShieeConfigMatchesTheTimeline)

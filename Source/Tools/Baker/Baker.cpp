@@ -20,6 +20,65 @@ namespace fs = std::filesystem;
 
 namespace
 {
+    // 도로 윗면(floorY) 위로 솟은 봉우리 한 덩어리: 시드에서 4-이웃으로 번지는 고체 픽셀 중 y < floorY 인 것.
+    // 사각형 (_refX, _refY, _w, _h) 안만 본다. 반환: _w*_h 비트 (1 = 봉우리). 시드가 조건을 만족하지 않으면 빈 벡터.
+    [[nodiscard]] std::vector<uint8_t> BumpFootprint_(
+        const Image&           _img,
+        const GroundThreshold& _th,
+        const int              _refX,
+        const int              _refY,
+        const int              _w,
+        const int              _h,
+        const int              _floorY,
+        const int              _seedX,
+        const int              _seedY)
+    {
+        const auto solidAt = [&](const int _x, const int _y)
+        {
+            if (_x < 0 || _y < 0 || _x >= _img.width || _y >= _img.height)
+            {
+                return false;
+            }
+            const uint8_t* p = _img.At(_x, _y);
+            return IsSolidPixel(p[0], p[1], p[2], p[3], _th);
+        };
+        const auto inRect = [&](const int _x, const int _y)
+        {
+            return _x >= _refX && _y >= _refY && _x < _refX + _w && _y < _refY + _h;
+        };
+        if (!inRect(_seedX, _seedY) || _seedY >= _floorY || !solidAt(_seedX, _seedY))
+        {
+            return {};
+        }
+
+        std::vector<uint8_t>                bits(static_cast<size_t>(_w) * static_cast<size_t>(_h), 0u);
+        std::vector<std::pair<int, int>>    stack { { _seedX, _seedY } };
+        bits[static_cast<size_t>(_seedY - _refY) * static_cast<size_t>(_w) + static_cast<size_t>(_seedX - _refX)] = 1u;
+        constexpr int kDx[] = { 1, -1, 0, 0 };
+        constexpr int kDy[] = { 0, 0, 1, -1 };
+        while (!stack.empty())
+        {
+            const auto [x, y] = stack.back();
+            stack.pop_back();
+            for (int i = 0; i < 4; ++i)
+            {
+                const int nx = x + kDx[i];
+                const int ny = y + kDy[i];
+                if (!inRect(nx, ny) || ny >= _floorY || !solidAt(nx, ny))
+                {
+                    continue;
+                }
+                uint8_t& v = bits[static_cast<size_t>(ny - _refY) * static_cast<size_t>(_w) + static_cast<size_t>(nx - _refX)];
+                if (v == 0u)
+                {
+                    v = 1u;
+                    stack.emplace_back(nx, ny);
+                }
+            }
+        }
+        return bits;
+    }
+
     struct TextureJob
     {
         const TextureRecord*  pRecord = nullptr;
@@ -119,6 +178,7 @@ namespace
         void                            BakeExtraSounds_(std::error_code& _ec);
         void                            BakeExtraSprites_();
         void                            BakeGrounds_();
+        void                            BakeGroundPatchMasks_();
         [[nodiscard]] int               AddUnique_(Image&& _image);
 
         void AddAnomaly_(const std::string& _type, const std::string& _name, const std::string& _detail, double _value = 0.0)
@@ -1076,6 +1136,130 @@ namespace
         }
     }
 
+    void Baker::BakeGroundPatchMasks_()
+    {
+        if (!m_options.Wants("ground"))
+        {
+            return;
+        }
+
+        // 지면 패치 마스크 = 파괴 시 공기가 되는 발자국. 파란 픽셀(alpha 255) = 지울 자리, 나머지는 투명.
+        // 런타임 ApplyGroundPatch 는 이 자리만 지운다 (Docs/PropSpecs.md §2 groundPatch).
+        //   - Stage0_House_5: 레거시 마스크는 '집 몸체를 뺀 지면' 스냅샷이다. 기준 지면과의 차이 = 집 몸체 윗부분.
+        //   - Stage0_House_4: 레거시 마스크는 전부 흰색(빈 마스크)이라 쓸 수 없다. 도로 윗면(floorY) 위로 솟은
+        //     발자국 중심 열의 봉우리 한 덩어리 (4-이웃 연결) 을 기준 지면에서 직접 잡는다.
+        // refX/refY = 런타임 좌상단 (PropWorld 의 center - (size/2 - inset), 실수면 floor). 기준 인스턴스는 Stage0.json 의 첫 배치.
+        struct PatchMaskSpec
+        {
+            const char* sprite;
+            int         w;
+            int         h;
+            int         refX;
+            int         refY;
+            bool        bLegacySnapshot;
+            int         floorY;
+            int         seedX;
+            int         seedY;
+        };
+        static constexpr PatchMaskSpec kSpecs[] = {
+            { "Stage0_House_5_PixelMap", 555, 124, 10204, 1204, true, 0, 0, 0 },
+            { "Stage0_House_4_PixelMap", 1306, 751, 9189, 898, false, 1286, 9830, 1219 },
+        };
+
+        slug::Result<Image> baseLoaded = LoadBmpFile(m_options.legacyRoot / fs::path("Stage/map/Stage0_Pixel_0.bmp"));
+        if (!baseLoaded)
+        {
+            Log("WARN: ground patch masks skipped: cannot load Stage/map/Stage0_Pixel_0.bmp");
+            AddAnomaly_("GroundPatchFailed", "Stage0_Pixel_0", "cannot load Stage/map/Stage0_Pixel_0.bmp");
+            return;
+        }
+        const Image base = baseLoaded.Take();
+
+        const auto solidAt = [this](const Image& _img, const int _x, const int _y)
+        {
+            if (_x < 0 || _y < 0 || _x >= _img.width || _y >= _img.height)
+            {
+                return false;
+            }
+            const uint8_t* p = _img.At(_x, _y);
+            return IsSolidPixel(p[0], p[1], p[2], p[3], m_options.ground);
+        };
+
+        for (const PatchMaskSpec& spec: kSpecs)
+        {
+            Image mask = Image::Make(spec.w, spec.h);
+            uint64_t footprint = 0;
+
+            if (spec.bLegacySnapshot)
+            {
+                slug::Result<Image> snapLoaded = LoadBmpFile(m_options.legacyRoot / fs::path(std::string("Stage/map/") + spec.sprite + ".bmp"));
+                if (!snapLoaded)
+                {
+                    Log("WARN: ground patch mask {} skipped: legacy snapshot missing", spec.sprite);
+                    AddAnomaly_("GroundPatchFailed", spec.sprite, "legacy snapshot missing");
+                    continue;
+                }
+                const Image snap = snapLoaded.Take();
+                if (snap.width != spec.w || snap.height != spec.h)
+                {
+                    Log("WARN: ground patch mask {} skipped: legacy snapshot size mismatch", spec.sprite);
+                    AddAnomaly_("GroundPatchFailed", spec.sprite, "legacy snapshot size mismatch");
+                    continue;
+                }
+                for (int y = 0; y < spec.h; ++y)
+                {
+                    for (int x = 0; x < spec.w; ++x)
+                    {
+                        if (solidAt(base, spec.refX + x, spec.refY + y) && !solidAt(snap, x, y))
+                        {
+                            uint8_t* p = mask.At(x, y);
+                            p[0] = 0; p[1] = 0; p[2] = 255; p[3] = 255;
+                            ++footprint;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                const std::vector<uint8_t> bits = BumpFootprint_(base, m_options.ground, spec.refX, spec.refY, spec.w, spec.h, spec.floorY, spec.seedX, spec.seedY);
+                if (bits.empty())
+                {
+                    Log("WARN: ground patch mask {} skipped: seed is not a solid pixel above the floor", spec.sprite);
+                    AddAnomaly_("GroundPatchFailed", spec.sprite, "seed is not a solid pixel above the floor");
+                    continue;
+                }
+                for (int y = 0; y < spec.h; ++y)
+                {
+                    for (int x = 0; x < spec.w; ++x)
+                    {
+                        if (bits[static_cast<size_t>(y) * static_cast<size_t>(spec.w) + static_cast<size_t>(x)] != 0u)
+                        {
+                            uint8_t* p = mask.At(x, y);
+                            p[0] = 0; p[1] = 0; p[2] = 255; p[3] = 255;
+                            ++footprint;
+                        }
+                    }
+                }
+            }
+
+            if (footprint == 0)
+            {
+                Log("WARN: ground patch mask {} has an empty footprint; not written", spec.sprite);
+                AddAnomaly_("GroundPatchFailed", spec.sprite, "empty footprint");
+                continue;
+            }
+
+            std::vector<uint8_t> png;
+            const std::string    file = std::string("Textures/") + spec.sprite + ".png";
+            if (!EncodePng(mask, png) || !WriteBytes(m_options.outRoot / file, png.data(), png.size()))
+            {
+                AddAnomaly_("WriteFailed", spec.sprite, file);
+                continue;
+            }
+            Log("ground patch {}: footprint {} px ({}x{})", spec.sprite, footprint, spec.w, spec.h);
+        }
+    }
+
     slug::Result<void> Baker::Run()
     {
         const auto start = std::chrono::steady_clock::now();
@@ -1133,6 +1317,7 @@ namespace
             return r;
         }
         BakeGrounds_();
+        BakeGroundPatchMasks_();
 
         if (slug::Result<void> r = WriteJsons_(); !r)
         {

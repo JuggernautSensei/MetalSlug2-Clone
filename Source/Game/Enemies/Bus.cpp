@@ -6,22 +6,25 @@ namespace slug
 {
 namespace
 {
+    // 상태: 주차 (무적, 벽) -> 카메라 팬 대기 -> 개방 연출 -> 전투 (피격 가능, 파손 단계 진행).
+    // 사망은 life == Dying 으로 표현하고 잔해를 계속 그린다.
     enum eBusState : int
     {
-        kClosed,
+        kParked,
+        kReveal,
+        kOpening,
         kBattle
     };
 
-    constexpr int   kStageCount    = 8;       // HP / 8 마다 한 단계. 사망 = 8
-    constexpr float kSoldierFeetDy = 37.5f;   // 병사 발 = 중심 + 37.5 (보병 몸통 높이 75 의 절반)
-    constexpr int   kPersistTicks  = 1 << 20; // 이미 끝난 비루프 연출을 마지막 프레임에 머물게 하는 값
+    constexpr int kStageCount    = 8;         // HP / 8 마다 한 단계. 0..7 = 살아 있는 단계. 사망 시각은 ext[kStageCount] 에 둔다
+    constexpr int kPersistTicks  = 1 << 20;   // 끝난 비루프 연출은 마지막 프레임에 머문다
+    constexpr int kBigBeginTicks = 25;        // Bus_BigWin_Begin 5 프레임 @ 12 fps
 
-    [[nodiscard]] Vec2 OriginOf_(
-        const Enemy&   _e,
-        const BusCfg& _c)
-    {
-        return { _e.body.position.x, _e.body.position.y - _c.originDepth };
-    }
+    // 단계별 본체 스프라이트 (0 = 개방 직후, 7 = 최종). 개방 중에는 Bus_Opening 클립이 본체를 대신한다.
+    constexpr const char* kBodyNames[kStageCount] = {
+        "Bus_Open", "Bus_Damaged_1", "Bus_Damaged_2", "Bus_Ladder_2",
+        "Bus_Ladder_3", "Bus_Damaged_3", "Bus_Smoke", "Bus_Smoke"
+    };
 
     [[nodiscard]] int StageOf_(
         const Health& _h)
@@ -41,11 +44,17 @@ namespace
         return stage;
     }
 
+    [[nodiscard]] Vec2 ChainCenter_(
+        const Vec2 _feet)
+    {
+        return { _feet.x - 25.f, _feet.y - 150.f };   // 본체 상단 (전면 좌측 창 근처)
+    }
+
     void Fx_(
-        EnemyEnv&         _env,
-        const char*       _clip,
-        const Vec2 _at,
-        const int         _delayTicks = 0)
+        EnemyEnv&   _env,
+        const char* _clip,
+        const Vec2  _at,
+        const int   _delayTicks = 0)
     {
         EnemyFxRequest request;
         request.clip       = _clip;
@@ -55,58 +64,54 @@ namespace
     }
 
     [[nodiscard]] Vec2 Scatter_(
-        EnemyEnv&         _env,
-        const Vec2 _c,
-        const float       _half)
+        EnemyEnv&   _env,
+        const Vec2  _c,
+        const float _half)
     {
-        const int span = static_cast<int>(_half) * 2 + 1;
-        const float dx = static_cast<float>(Roll(_env, span) - static_cast<int>(_half));
-        const float dy = static_cast<float>(Roll(_env, span) - static_cast<int>(_half));
+        const int   span = static_cast<int>(_half) * 2 + 1;
+        const float dx   = static_cast<float>(Roll(_env, span) - static_cast<int>(_half));
+        const float dy   = static_cast<float>(Roll(_env, span) - static_cast<int>(_half));
         return { _c.x + dx, _c.y + dy };
     }
 
-    void EnterStage_(
-        Enemy&          _e,
-        const EnemyDef& _def,
-        EnemyEnv&       _env,
-        const int       _stage)
+    // 사망 연쇄 (Small 2, Mid 4, Large 4, 0.5 s 안에 끝난다). Docs/Spec_Bus.md 1절: 사망 시 대폭발 후 잔해.
+    void DeathChain_(
+        const Enemy& _e,
+        EnemyEnv&    _env)
     {
-        const BusCfg&     c      = _def.bus;
-        const Vec2 origin = OriginOf_(_e, c);
-        if (_stage == kStageCount)
+        const Vec2 center = ChainCenter_(_e.body.position);
+        for (int i = 0; i < 2; ++i)
         {
-            const Vec2 center = { origin.x - 25.f, origin.y - 50.f };
-            for (int i = 0; i < 2; ++i)
-            {
-                Fx_(_env, "Explosion_Small", Scatter_(_env, center, 100.f), i * 4);
-            }
-            for (int i = 0; i < 4; ++i)
-            {
-                Fx_(_env, "Explosion_Mid", Scatter_(_env, center, 100.f), 8 + i * 4);
-                Fx_(_env, "Explosion_Large", Scatter_(_env, center, 100.f), 12 + i * 4);
-            }
-            return;
+            Fx_(_env, "Explosion_Small", Scatter_(_env, center, 100.f), i * 4);
         }
-        const Vec2 center = { origin.x - 50.f, origin.y - 50.f };
-        Fx_(_env, "Explosion_Small", Scatter_(_env, center, 75.f));
-        Fx_(_env, "Explosion_Mid", Scatter_(_env, center, 75.f));
-        Fx_(_env, "Explosion_Large", Scatter_(_env, center, 75.f));
-        switch (_stage)
+        for (int i = 0; i < 4; ++i)
         {
-            case 1: Fx_(_env, "LeftUp_Win_Destroy", { origin.x - 20.f, origin.y - 71.f }); break;
-            case 2:
-                Fx_(_env, "RightUp_Win_Destroy", { origin.x + 40.f, origin.y - 65.f });
-                Fx_(_env, "LeftDown_Win_Destroy", { origin.x - 20.f, origin.y + 7.f });
-                break;
-            case 4: Fx_(_env, "RightDown_Win_Destroy", { origin.x + 119.f, origin.y + 36.f }); break;
-            default: break;
+            Fx_(_env, "Explosion_Mid", Scatter_(_env, center, 100.f), 8 + i * 4);
+            Fx_(_env, "Explosion_Large", Scatter_(_env, center, 100.f), 12 + i * 4);
+        }
+    }
+
+    // 단계 진입 기록 (부품 시계). 6 단계 (약 77.6 s) 는 작은 폭발, 7 단계 (약 78.8 s) 는 중간/큰 폭발.
+    void EnterStage_(
+        Enemy&    _e,
+        EnemyEnv& _env,
+        const int _stage)
+    {
+        _e.ext[_stage] = _e.stateTicks;
+        if (_stage == 6)
+        {
+            Fx_(_env, "Explosion_Small", Scatter_(_env, ChainCenter_(_e.body.position), 60.f));
+        }
+        else if (_stage == 7)
+        {
+            Fx_(_env, "Explosion_Mid", Scatter_(_env, ChainCenter_(_e.body.position), 60.f));
+            Fx_(_env, "Explosion_Large", Scatter_(_env, ChainCenter_(_e.body.position), 60.f), 18);
         }
     }
 
     void UpdateStage_(
-        Enemy&          _e,
-        const EnemyDef& _def,
-        EnemyEnv&       _env)
+        Enemy&    _e,
+        EnemyEnv& _env)
     {
         const int stage = StageOf_(_e.health);
         if (stage <= _e.aux)
@@ -115,59 +120,9 @@ namespace
         }
         for (int s = _e.aux + 1; s <= stage; ++s)
         {
-            EnterStage_(_e, _def, _env, s);
+            EnterStage_(_e, _env, s);
         }
-        _e.aux     = stage;
-        _e.ext[0]  = _e.stateTicks;   // 현재 단계 진입 시각 (파츠 연출 시계)
-    }
-
-    void Open_(
-        Enemy& _e)
-    {
-        EnterState(_e, kBattle);
-        _e.clipTicks = 0;          // 문 개방 연출 시계
-    }
-
-    void TickBattle_(
-        Enemy&          _e,
-        const EnemyDef& _def,
-        EnemyEnv&       _env)
-    {
-        const BusCfg& c = _def.bus;
-        if (!_env.ctx.player.bAlive)
-        {
-            return;
-        }
-
-        const int nextShell = c.shellFirstTicks + _e.aux2 * c.shellIntervalTicks;
-        if (_e.stateTicks >= nextShell)
-        {
-            (void)FireWeapon(_e, _def, _env, c.weaponShell);
-            ++_e.aux2;
-        }
-
-        const int nextSoldier = c.soldierFirstTicks + _e.aux4 * c.soldierIntervalTicks;
-        if (_e.stateTicks >= nextSoldier)
-        {
-            ++_e.aux4;
-            const int defIndex = _env.lib.FindIndex(c.soldierDef);
-            if (defIndex >= 0 && _e.aux3 < c.soldierTotalMax)
-            {
-                EnemyFilter filter;
-                filter.defIndex = defIndex;
-                filter.userTag  = _e.id;
-                if (_env.world.CountAlive(filter) < c.soldierAliveMax)
-                {
-                    const Vec2 origin = OriginOf_(_e, c);
-                    SpawnParams        params;
-                    params.facing     = -1;
-                    params.bActivated = true;
-                    params.userTag    = _e.id;
-                    (void)_env.world.SpawnDeferred(defIndex, { origin.x + c.soldierOffset.x, origin.y + c.soldierOffset.y + kSoldierFeetDy }, params);
-                    ++_e.aux3;
-                }
-            }
-        }
+        _e.aux = stage;
     }
 
     void Init_(
@@ -175,12 +130,10 @@ namespace
         const EnemyDef& _def,
         EnemyEnv&       _env)
     {
+        (void)_env;
         PrepareBody(_e, _def);
-        _e.facing  = 1;
-        _e.ext[0]  = 0;
-        _e.aux     = 0;
-        EnterState(_e, kClosed);
-        UpdateStage_(_e, _def, _env);
+        _e.facing = 1;
+        _e.aux    = 0;   // state 기본값 = kParked (명령이 초기화 전에 도착해도 덮어쓰지 않는다)
     }
 
     void Tick_(
@@ -188,20 +141,54 @@ namespace
         const EnemyDef& _def,
         EnemyEnv&       _env)
     {
-        _e.facing = 1;
+        const BusCfg& c  = _def.bus;
+        _e.facing        = 1;
         _e.body.velocity = { 0.f, 0.f };
-        UpdateStage_(_e, _def, _env);
+        UpdateStage_(_e, _env);
 
-        if (_e.state == kClosed)
+        switch (_e.state)
         {
-            const Aabb trigger = _def.bus.trigger.At(OriginOf_(_e, _def.bus), 1);
-            if (_env.ctx.player.bAlive && _env.ctx.player.bodyBox.Overlaps(trigger))
+        case kReveal:
+            if (_e.stateTicks >= c.revealTicks)
             {
-                Open_(_e);
+                EnterState(_e, kOpening);
             }
-            return;
+            break;
+        case kOpening:
+            if (_e.stateTicks >= c.openTicks)
+            {
+                EnterState(_e, kBattle);
+            }
+            break;
+        default:
+            break;
         }
-        TickBattle_(_e, _def, _env);
+    }
+
+    // 스테이지 명령. startBattle 은 카메라 팬 (lockCamera glide) 과 같이 한 번만 온다.
+    void OnCommand_(
+        Enemy&                 _e,
+        const EnemyDef&        _def,
+        const slug::StringView _command)
+    {
+        (void)_def;
+        if (_command == "startBattle" && _e.state == kParked)
+        {
+            EnterState(_e, kReveal);
+        }
+    }
+
+    // 주차 / 팬 중에는 피격을 흡수한다 (벽: 피해 없음). 개방 연출부터 피해를 받는다.
+    bool OnHit_(
+        Enemy&          _e,
+        const EnemyDef& _def,
+        EnemyEnv&       _env,
+        const HitEvent& _event)
+    {
+        (void)_def;
+        (void)_env;
+        (void)_event;
+        return _e.state < kOpening;
     }
 
     void OnDeath_(
@@ -209,12 +196,14 @@ namespace
         const EnemyDef& _def,
         EnemyEnv&       _env)
     {
-        for (int s = _e.aux + 1; s <= kStageCount; ++s)
+        (void)_def;
+        for (int s = _e.aux + 1; s < kStageCount; ++s)
         {
-            EnterStage_(_e, _def, _env, s);
+            _e.ext[s] = _e.stateTicks;
         }
-        _e.aux    = kStageCount;
-        _e.ext[0] = _e.stateTicks;
+        _e.aux              = kStageCount;
+        _e.ext[kStageCount] = _e.stateTicks;
+        DeathChain_(_e, _env);
     }
 
     void TickDying_(
@@ -224,6 +213,7 @@ namespace
     {
     }
 
+    // 잔해는 사망 후 계속 남는다. solid 는 Alive 에서만 적용되므로 잔해 위로 걸어갈 수 있다.
     bool DeathDone_(
         const Enemy&,
         const EnemyDef&)
@@ -231,79 +221,105 @@ namespace
         return true;
     }
 
+    // 단계 진입 뒤 한 번 재생되는 부품. 창 파손 (2~5), 파편 (3, 5, 6, 7), 최종 창 (5).
+    void SubmitStageExtras_(
+        const Enemy&          _e,
+        const EnemyRenderEnv& _render,
+        const Vec2            _feet,
+        const int             _sortKey)
+    {
+        const int stage = _e.aux;
+        const int layer = _render.layer;
+        auto      since = [&_e](const int _s) { return _e.stateTicks - _e.ext[_s]; };
+
+        if (stage >= 2)
+        {
+            SubmitNamedPart(_render, "Bus_WinLeftUp", _feet, since(2), false, _sortKey + 1, layer);
+        }
+        if (stage >= 3)
+        {
+            SubmitNamedPart(_render, "Bus_WinRightUp", _feet, since(3), false, _sortKey + 1, layer);
+            SubmitNamedPart(_render, "Bus_Deco", _feet, since(3), false, _sortKey + 2, layer);
+        }
+        if (stage >= 4)
+        {
+            SubmitNamedPart(_render, "Bus_WinLeftDown", _feet, since(4), false, _sortKey + 1, layer);
+        }
+        if (stage >= 5)
+        {
+            const int t = since(5);
+            if (t < kBigBeginTicks)
+            {
+                SubmitNamedPart(_render, "Bus_BigWin_Begin", _feet, t, false, _sortKey + 2, layer);
+            }
+            else
+            {
+                SubmitNamedPart(_render, "Bus_BigWin_End", _feet, t - kBigBeginTicks, false, _sortKey + 2, layer);
+            }
+            SubmitNamedPart(_render, "Bus_WinRightDown", _feet, since(5), false, _sortKey + 1, layer);
+        }
+        if (stage >= 6)
+        {
+            SubmitNamedPart(_render, "Bus_Bump", _feet, since(6), false, _sortKey + 2, layer);
+        }
+        if (stage >= 7)
+        {
+            SubmitNamedPart(_render, "Bus_Sideparts", _feet, since(7), false, _sortKey + 2, layer);
+        }
+    }
+
     void SubmitParts_(
         const Enemy&          _e,
         const EnemyDef&       _def,
         const EnemyRenderEnv& _render)
     {
-        const BusCfg&     c      = _def.bus;
-        const Vec2 origin = { _render.feet.x, _render.feet.y - c.originDepth };
-        const int         sortKey = static_cast<int>(_render.feet.y);
-        const int         layer   = _render.layer;
-        const int         stage   = _e.aux;
-        const int         sinceStage = _e.stateTicks - _e.ext[0];
+        const Vec2 feet    = _render.feet;
+        const int  sortKey = static_cast<int>(feet.y);
+        const int  layer   = _render.layer;
 
-        if (stage >= kStageCount)
+        if (_e.life == eEnemyLife::Dying)
         {
-            SubmitNamedPart(_render, "MainTruck_Die", { origin.x, origin.y + 60.f }, kPersistTicks, false, sortKey, layer);
-            SubmitNamedPart(_render, "MainTruck_Die_Front", { origin.x + 12.f, origin.y + 88.f }, kPersistTicks, false, sortKey + 1, layer);
+            const int sinceDeath = _e.stateTicks - _e.ext[kStageCount];
+            if (sinceDeath < _def.bus.chainTicks)
+            {
+                SubmitNamedPart(_render, kBodyNames[kStageCount - 1], feet, kPersistTicks, false, sortKey, layer);
+            }
+            else
+            {
+                SubmitNamedPart(_render, "Bus_Wreck", feet, kPersistTicks, false, sortKey, layer);
+                SubmitNamedPart(_render, "Bus_WreckFront", { feet.x + 12.f, feet.y }, kPersistTicks, false, sortKey + 1, layer);
+            }
             return;
         }
 
-        const bool bOpen = _e.state == kBattle;
-        const int  idle  = stage < 3 ? stage : 3;   // Idle_0..3 / Ladder_0..3
-
-        static constexpr const char* kIdleNames[]   = { "MainTruck_Idle_0", "MainTruck_Idle_1", "MainTruck_Idle_2", "MainTruck_Idle_3" };
-        static constexpr const char* kLadderNames[] = { "MainTruck_Ladder_0", "MainTruck_Ladder_1", "MainTruck_Ladder_2", "MainTruck_Ladder_3" };
-        if (!bOpen)
+        if (_e.state == kParked || _e.state == kReveal)
         {
-            SubmitNamedPart(_render, "MainTruck_Not_Begin", origin, kPersistTicks, false, sortKey, layer);
+            SubmitNamedPart(_render, "Bus_Idle", feet, kPersistTicks, false, sortKey, layer);
+            return;
         }
-        else if (_e.clipTicks < c.openTicks)
+        if (_e.state == kOpening)
         {
-            SubmitNamedPart(_render, "MainTruck_Begin", { origin.x - 33.f, origin.y + 1.f }, _e.clipTicks, false, sortKey, layer);
-        }
-        else
-        {
-            SubmitNamedPart(_render, kIdleNames[idle], { origin.x - 33.f, origin.y + 1.f }, kPersistTicks, false, sortKey, layer);
-        }
-        if (bOpen)
-        {
-            SubmitNamedPart(_render, kLadderNames[idle], { origin.x + 54.f, origin.y + 6.f }, kPersistTicks, false, sortKey, layer);
+            SubmitNamedPart(_render, "Bus_Opening", feet, _e.stateTicks, false, sortKey, layer);
+            return;
         }
 
-        if (stage == 2)
-        {
-            SubmitNamedPart(_render, "MainTruck_Deco_Destroy_Stop", origin, kPersistTicks, false, sortKey + 2, layer);
-        }
-        else if (stage >= 3)
-        {
-            SubmitNamedPart(_render, "MainTruck_Deco_Destroy", origin, stage == 3 ? sinceStage : kPersistTicks, false, sortKey + 2, layer);
-        }
-        if (stage >= 5)
-        {
-            SubmitNamedPart(_render, "MainTruck_Big_Win_Destroy_Begin", { origin.x - 18.f, origin.y + 60.f }, stage == 5 ? sinceStage : kPersistTicks, false, sortKey + 2, layer);
-        }
-        if (stage >= 6)
-        {
-            SubmitNamedPart(_render, "MainTruck_Bump", origin, stage == 6 ? sinceStage : kPersistTicks, false, sortKey + 3, layer);
-        }
-        if (stage >= 7)
-        {
-            SubmitNamedPart(_render, "MainTruck_Sideparts", origin, sinceStage, false, sortKey + 3, layer);
-        }
+        const int  stage = _e.aux;
+        const bool bLoop = stage >= kStageCount - 2;   // 연기 본체 (6, 7 단계) 는 반복 재생
+        SubmitNamedPart(_render, kBodyNames[stage], feet, bLoop ? _e.stateTicks : kPersistTicks, bLoop, sortKey, layer);
+        SubmitStageExtras_(_e, _render, feet, sortKey);
     }
 }
 
 const BehaviorOps kBusOps = {
     .init              = &Init_,
     .tick              = &Tick_,
-    .onHit             = nullptr,
+    .onHit             = &OnHit_,
     .onDeath           = &OnDeath_,
     .tickDying         = &TickDying_,
     .registerHurtboxes = nullptr,
     .submitParts       = &SubmitParts_,
     .deathDone         = &DeathDone_,
+    .onCommand         = &OnCommand_,
 };
 
 void ParseBusCfg(
@@ -312,17 +328,8 @@ void ParseBusCfg(
 {
     BusCfg& c = _def.bus;
 
-    c.originDepth          = _r.Num("originDepth");
-    c.trigger              = _r.Box("trigger");
-    c.openTicks            = _r.Ticks("openSec");
-    c.shellFirstTicks      = _r.Ticks("shellFirstSec");
-    c.shellIntervalTicks   = _r.Ticks("shellIntervalSec");
-    c.soldierFirstTicks    = _r.Ticks("soldierFirstSec");
-    c.soldierIntervalTicks = _r.Ticks("soldierIntervalSec");
-    c.soldierAliveMax      = _r.Int("soldierAliveMax");
-    c.soldierTotalMax      = _r.Int("soldierTotalMax");
-    c.soldierOffset        = _r.ReadVec2("soldierOffset", { 0.f, 0.f });
-    c.soldierDef           = _r.Str("soldierDef");
-    c.weaponShell          = _r.Weapon("shell");
+    c.revealTicks = _r.Ticks("revealSec");
+    c.openTicks   = _r.Ticks("openSec");
+    c.chainTicks  = _r.Ticks("chainSec");
 }
 }

@@ -4,32 +4,22 @@
   "defs": {
 
     "mb_truck": {
-      "note": "버스 중간보스 (MBTruck). HP 250 (TTK 25 s), 8단계 파손. 전투 시작 = 문 접촉. 처치 시 Died 이벤트 (스테이지가 지면 교체).",
+      "note": "버스 중간보스 (원작 MS2 Mission 4 더블데커). 주차 (무적, 벽) -> stage startBattle (카메라 팬 1.9 s) -> 개방 1.43 s -> 전투. 8단계 파손 (HP/8), 사망 시 연쇄 폭발 0.5 s 후 잔해 (잔해는 벽이 아니다). 포탄/병사/GO! 없음 (Docs/Spec_Bus.md). HP 380 = 1P HMG (2 dmg x 20 발/s = 40 dps) 로 전투 9.5 s. 원작 2P 기준 HP 250 과 달리 이 프로젝트 HMG 연사가 빠르므로 HP 를 맞춘다 (Docs/Spec_Bus.md 6절 보정). 스프라이트: Assets/Source/33825.png (Docs/BusSheet.md).",
       "kind": "boss",
       "behavior": "bus",
-      "hp": 250,
-      "ttk": 25,
+      "hp": 380,
+      "ttk": 9.5,
       "score": 2000,
       "noDespawn": true,
       "activation": { "mode": "always" },
       "physics": { "useGravity": false },
-      "body": { "w": 180, "h": 260, "cx": 0, "cy": -123 },
-      "solid": { "note": "버스 차체 벽 (닫힘/개방/파손 중 살아 있는 동안 플레이어·적이 못 들어감). 원점 중심 400x260 (닫힌 아트 폭 400). 사망 후 제거: 잔해 위 단차로 올라간다.", "w": 400, "h": 260, "cx": 0, "cy": -123 },
-      "weapons": {
-        "shell":{ "projectile": "bus_shell", "muzzle": [-150, -253], "aim": "facing", "arc": { "minVx": 80, "maxVx": 420 }, "muzzleFx": { "clip": "BTank_Shot_Effect", "offset": [0, 0] } }
-      },
+      "body": { "w": 204, "h": 272, "cx": 0, "cy": -136 },
+      "hurtbox": { "w": 204, "h": 272, "cx": 0, "cy": -136 },
+      "solid": { "note": "살아 있는 동안만 벽 (Alive). 주차 중에도 벽이다. 사망 (Dying) 후 제거되어 잔해 위를 걸을 수 있다.", "w": 204, "h": 260, "cx": 0, "cy": -130 },
       "params": {
-        "originDepth": 123,
-        "trigger": { "w": 420, "h": 260, "cx": -335, "cy": 0 },
-        "openSec": 3.5,
-        "shellFirstSec": 2.0,
-        "shellIntervalSec": 3.0,
-        "soldierFirstSec": 3.0,
-        "soldierIntervalSec": 5.0,
-        "soldierAliveMax": 2,
-        "soldierTotalMax": 8,
-        "soldierOffset": [-150, -40],
-        "soldierDef": "soldier_bomb"
+        "revealSec": 1.9,
+        "openSec": 1.43,
+        "chainSec": 0.5
       }
     },
 
@@ -88,18 +78,6 @@
         "destroyFinishSec": 10.0,
         "smokeStepSec": 0.5
       }
-    },
-
-    "bus_shell": {
-      "kind": "projectile",
-      "note": "버스 포탄 (BTankProjectile 과 같은 포물선: v0 (보정 vx, -200), g 500). 피해 즉사.",
-      "box": { "w": 20, "h": 20 },
-      "v0": [0, -200],
-      "gravity": 500,
-      "maxFall": 3000,
-      "anim": { "fly": { "name": "BTank_Proj", "frames": 3, "sec": 0.05, "loop": true } },
-      "onSolid": "explode",
-      "explosion": { "fx": "BTank_Proj_Effect", "offset": [0, 0] }
     },
 
     "bigshiee_tracer": {

@@ -518,8 +518,10 @@ bool SubmitNamedPart(
     const bool            _bLoop,
     const int             _sortKey,
     const int             _layer,
-    const bool            _bFlipX)
+    const bool            _bFlipX,
+    const float           _partFlash)
 {
+    const float flash = std::max(_render.flash, _partFlash);
     if (const AnimClip* pClip = _render.anims.FindClip(_name))
     {
         if (pClip->frames.empty())
@@ -540,7 +542,8 @@ bool SubmitNamedPart(
             return false;
         }
         SpriteDrawOptions options;
-        options.bFlipX = _bFlipX;
+        options.bFlipX      = _bFlipX;
+        options.flashAmount = flash;
         _render.sprites.Submit(_layer, _sortKey, frame, _origin, options);
         return true;
     }
@@ -551,7 +554,8 @@ bool SubmitNamedPart(
             if (!pSprite->bStandalone && !pSprite->frame.IsEmpty())
             {
                 SpriteDrawOptions options;
-                options.bFlipX = _bFlipX;
+                options.bFlipX      = _bFlipX;
+                options.flashAmount = flash;
                 _render.sprites.Submit(_layer, _sortKey, pSprite->frame, _origin, options);
                 return true;
             }

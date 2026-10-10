@@ -308,7 +308,6 @@
         "missileIntervalSec": 1.0,
         "missileShots": 3,
         "endSec": 1.0,
-        "followOffsetY": 275,
         "followGain": 1.5,
         "bombStepSec": 0.5,
         "bombSteps": 20,

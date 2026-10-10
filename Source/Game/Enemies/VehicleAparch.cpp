@@ -165,8 +165,8 @@ namespace
             case kBomb:
             {
                 const float dx = DxToPlayer(_e, _env);
-                const float dy = DyToPlayer(_e, _env) - c.followOffsetY;
-                _e.body.velocity = { dx * c.followGain, dy * c.followGain };
+                // 호버 높이는 접근 때 정해진 y 를 그대로 유지한다. x 만 플레이어를 따라간다 (y 추적 기믹 없음)
+                _e.body.velocity = { dx * c.followGain, 0.f };
                 _e.body.position = { _e.body.position.x + _e.body.velocity.x * kStepSec, _e.body.position.y + _e.body.velocity.y * kStepSec };
 
                 // 레거시 DROP_MISSLE 과 같은 순서: 타이머 +1 틱, 0.5 s 마다 카운터 +1 (틱당 최대 1회), 홀수(mod 7) 카운터면 투하 후 +1
@@ -267,7 +267,6 @@ void ParseAparchCfg(
     c.missileIntervalTicks = _r.Ticks("missileIntervalSec");
     c.missileShots         = _r.Int("missileShots");
     c.endTicks             = _r.Ticks("endSec");
-    c.followOffsetY        = _r.Num("followOffsetY");
     c.followGain           = _r.Num("followGain");
     c.bombStepTicks        = _r.Ticks("bombStepSec");
     c.bombSteps            = _r.Int("bombSteps");

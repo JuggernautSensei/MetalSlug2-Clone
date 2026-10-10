@@ -746,20 +746,76 @@ void PropWorld::Submit(
     m_items.Submit(_sprites, _anims, _spriteLib, _pFont);
 }
 
-void ApplyGroundPatch(
+bool ApplyGroundPatch(
     GroundMap&         _map,
     const Vec2 _topLeft,
-    const GroundMap&   _patchMask)
+    const GroundMap&   _footprint)
 {
+    // 발자국(마스크의 고체 픽셀)만 공기로 지운다. 발자국 밖 픽셀은 절대 건드리지 않는다.
+    // 가드 (하나라도 걸리면 아무것도 바꾸지 않고 false):
+    //  1) 발자국이 어떤 열의 바닥(발자국 사각형 안 가장 아래 고체 픽셀)을 지우면 거부 (도로가 뚫리는 경우)
+    //  2) 발자국 사각형 안 고체 픽셀의 kMaxClearPercent % 를 넘게 지우면 거부
+    constexpr uint64_t kMaxClearPercent = 50;
+
     const int x0 = static_cast<int>(std::floor(_topLeft.x));
     const int y0 = static_cast<int>(std::floor(_topLeft.y));
-    for (int y = 0; y < _patchMask.GetHeight(); ++y)
+    const int w  = _footprint.GetWidth();
+    const int h  = _footprint.GetHeight();
+
+    uint64_t total   = 0;
+    uint64_t cleared = 0;
+    for (int x = 0; x < w; ++x)
     {
-        for (int x = 0; x < _patchMask.GetWidth(); ++x)
+        const int mx = x0 + x;
+        if (mx < 0 || mx >= _map.GetWidth())
         {
-            _map.SetSolid(x0 + x, y0 + y, _patchMask.IsSolid(x, y));
+            continue;
+        }
+        // 이 열의 바닥 = 지면 맵 전체에서 가장 아래 고체 픽셀
+        int floorY = -1;
+        for (int my = _map.GetHeight() - 1; my >= 0; --my)
+        {
+            if (_map.IsSolid(mx, my))
+            {
+                floorY = my;
+                break;
+            }
+        }
+        const int fy = floorY - y0;
+        if (fy >= 0 && fy < h && _footprint.IsSolid(x, fy))
+        {
+            return false;
+        }
+        for (int y = 0; y < h; ++y)
+        {
+            const int my = y0 + y;
+            if (my < 0 || my >= _map.GetHeight() || !_map.IsSolid(mx, my))
+            {
+                continue;
+            }
+            ++total;
+            if (_footprint.IsSolid(x, y))
+            {
+                ++cleared;
+            }
         }
     }
+    if (total == 0 || cleared * 100u > total * kMaxClearPercent)
+    {
+        return false;
+    }
+
+    for (int y = 0; y < h; ++y)
+    {
+        for (int x = 0; x < w; ++x)
+        {
+            if (_footprint.IsSolid(x, y))
+            {
+                _map.SetSolid(x0 + x, y0 + y, false);
+            }
+        }
+    }
+    return true;
 }
 
 uint64_t PropWorld::HashState() const

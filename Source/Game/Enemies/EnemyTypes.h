@@ -140,6 +140,9 @@ struct Enemy
     int  clipTicks = 0;    // 클립 시작 후 경과 틱
     bool bVisible  = true;
 
+    int  hitFlashTicks = 0;                                 // 전체 피격 플래시 남은 틱 (0 = 없음, 재피격 시 kHitFlashTicks 로 갱신)
+    int  partFlashTicks[kEnemyFlashPartCount] = {};         // 부위별 피격 플래시 남은 틱 (다부위 보스/버스용, TriggerPartHitFlash 참고)
+
     uint32_t meleeHitId    = kNoHitId;
     int      meleeTicksLeft = 0;
     int      meleeWeapon   = -1;
@@ -161,6 +164,43 @@ struct Enemy
     [[nodiscard]] Vec2 GetFeet() const { return body.position; }
     [[nodiscard]] bool         IsAlive() const { return life == eEnemyLife::Alive; }
 };
+
+// 블링크 판정 (순수 함수). _ticksLeft: 남은 틱 (kHitFlashTicks 에서 0 까지 감소).
+// 피격 직후 6틱 on, 다음 6틱 off, 이후 끝.
+[[nodiscard]] constexpr bool IsHitFlashOn(const int _ticksLeft)
+{
+    if (_ticksLeft <= 0 || _ticksLeft > kHitFlashTicks)
+    {
+        return false;
+    }
+    const int elapsed = kHitFlashTicks - _ticksLeft;
+    return (elapsed / kHitFlashBlinkTicks) % 2 == 0;
+}
+
+// 전체 스프라이트 플래시 양 (0 또는 1). 렌더 경로에서 SpriteDrawOptions::flashAmount 로 전달한다.
+[[nodiscard]] inline float HitFlashAmount(const Enemy& _e)
+{
+    return IsHitFlashOn(_e.hitFlashTicks) ? 1.f : 0.f;
+}
+
+// 부위 플래시 양 (_part 가 범위 밖이면 0).
+[[nodiscard]] inline float PartFlashAmount(const Enemy& _e, const int _part)
+{
+    if (_part < 0 || _part >= kEnemyFlashPartCount)
+    {
+        return 0.f;
+    }
+    return IsHitFlashOn(_e.partFlashTicks[_part]) ? 1.f : 0.f;
+}
+
+// 부위 피격 플래시 시작/갱신 (_part 범위 밖이면 무시). 부위 파괴 시 호출자가 0 으로 되돌린다.
+inline void TriggerPartHitFlash(Enemy& _e, const int _part)
+{
+    if (_part >= 0 && _part < kEnemyFlashPartCount)
+    {
+        _e.partFlashTicks[_part] = kHitFlashTicks;
+    }
+}
 
 struct EnemyFilter
 {

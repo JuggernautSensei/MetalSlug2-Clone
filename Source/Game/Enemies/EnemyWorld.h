@@ -39,6 +39,7 @@ public:
     [[nodiscard]] const Enemy* Get(EnemyHandle _handle) const;
 
     [[nodiscard]] bool IsDefeated(EnemyHandle _handle) const;
+    void               SendCommand(EnemyHandle _handle, slug::StringView _command);
     [[nodiscard]] Health GetHealth(EnemyHandle _handle) const;
     [[nodiscard]] bool IsDestroyFinished(EnemyHandle _handle) const;
     void               RequestPlayerMinX(float _minX);

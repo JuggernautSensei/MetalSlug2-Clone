@@ -422,8 +422,8 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
     const StageData data = result.Take();
 
     EXPECT_EQ(data.sections.size(), 21u);
-    EXPECT_EQ(data.CountSpawns(), 180);      // 개활지 POW 5 추가 (openland_start..openland_3)
-    EXPECT_EQ(data.CountWaveEntries(), 35);  // 보스전 보급 POW 웨이브 3 추가
+    EXPECT_EQ(data.CountSpawns(), 178);      // 개활지 POW 5 추가 (openland_start..openland_3), 버스 전 병사 2 제거 (버스는 병사를 내지 않는다)
+    EXPECT_EQ(data.CountWaveEntries(), 34);  // 보스전 보급 POW 웨이브 3 추가, 버스 전 병사 웨이브 1 제거
     EXPECT_EQ(data.CountGates(), 4);
 
     EXPECT_EQ(data.name, "Stage0");
@@ -468,7 +468,9 @@ TEST(StageDataReal, Stage0KeySemantics)
 
     const StageSection& busStart = data.sections[static_cast<size_t>(data.FindSection("bus_start"))];
     EXPECT_EQ(busStart.actions[0].type, eActionType::LockCamera);
-    EXPECT_FLOAT_EQ(busStart.actions[0].glide, 1.f);
+    EXPECT_FLOAT_EQ(busStart.actions[0].glide, 1.9f);   // 카메라 팬 (Docs/Spec_Bus.md 1절)
+    EXPECT_EQ(busStart.actions[1].type, eActionType::Command);
+    EXPECT_EQ(busStart.actions[1].command, "startBattle");
     EXPECT_EQ(busStart.actions[2].type, eActionType::Gate);
     EXPECT_EQ(busStart.actions[2].waitFor.size(), 1u);
 

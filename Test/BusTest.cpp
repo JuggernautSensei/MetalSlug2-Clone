@@ -1,3 +1,15 @@
+#include "Core/AssetPath.h"
+#include <gtest/gtest.h>
+#include "Base/Types.h"
+#include "Base/Result.h"
+
+#include "Game/Enemies/BigShiee.h"
+#include "Game/Enemies/EnemyCommon.h"
+#include "Game/Enemies/EnemyDef.h"
+#include "Game/Enemies/EnemyTypes.h"
+#include "BossTestUtil.h"
+#include "PlayerTestUtil.h"
+
 #include <gtest/gtest.h>
 
 #include "BossTestUtil.h"
@@ -5,12 +17,21 @@
 using namespace slug;
 using namespace slugtest;
 
+// 버스 (mb_truck): 주차 -> startBattle (카메라 팬 1.9 s) -> 개방 1.43 s -> 전투 -> 사망 연쇄 0.5 s -> 잔해.
+// 원작 확인 사항 (Docs/Spec_Bus.md): 포탄/병사/GO! 없음, 주차 중 피격 없음, 잔해는 걸을 수 있다.
+
 namespace
 {
-    constexpr float kBusX      = 600.f;
-    constexpr float kBusFeetY  = 378.f;
-    constexpr float kFarX      = 0.f;     // 트리거에서 떨어진 플레이어 위치
-    constexpr float kTriggerX  = 385.f;   // 트리거에 닿는 플레이어 발 x
+    constexpr int   kParked     = 0;
+    constexpr int   kReveal     = 1;
+    constexpr int   kOpening    = 2;
+    constexpr int   kBattle     = 3;
+    constexpr int   kRevealTicks = 114;   // 1.9 s
+    constexpr int   kOpenTicks   = 86;    // 1.43 s
+    constexpr int   kMaxHp       = 380;
+
+    constexpr float kBusX     = 600.f;
+    constexpr float kBusFeetY = 378.f;
 
     EnemyHandle SpawnBus(BossRig& _rig)
     {
@@ -19,33 +40,18 @@ namespace
         return _rig.SpawnAt("mb_truck", { kBusX, kBusFeetY }, params);
     }
 
-    void OpenBus(BossRig& _rig)
+    void StartBattle(BossRig& _rig, const EnemyHandle _bus)
     {
-        _rig.SetPlayer({ kTriggerX, kBusFeetY });
+        _rig.World().SendCommand(_bus, "startBattle");
         _rig.Frame();
-        _rig.SetPlayer({ kFarX, kBusFeetY });
     }
 
-    int SoldiersAlive(BossRig& _rig, const EnemyHandle _bus)
+    // 명령 후 팬 + 개방이 끝날 때까지 진행한다 (전투 상태 진입).
+    void ToBattle(BossRig& _rig, const EnemyHandle _bus)
     {
-        EnemyFilter filter;
-        filter.defIndex = _rig.GetLib().FindIndex("soldier_bomb");
-        filter.userTag  = _bus.id;
-        return _rig.World().CountAlive(filter);
-    }
-
-    std::vector<EnemyHandle> SoldierHandles(BossRig& _rig, const EnemyHandle _bus)
-    {
-        std::vector<EnemyHandle> out;
-        const int defIndex = _rig.GetLib().FindIndex("soldier_bomb");
-        for (const Enemy& e: _rig.World().GetEnemies())
-        {
-            if (e.defIndex == defIndex && e.userTag == _bus.id && e.life == eEnemyLife::Alive)
-            {
-                out.push_back({ e.id });
-            }
-        }
-        return out;
+        StartBattle(_rig, _bus);
+        _rig.Run(kRevealTicks + kOpenTicks + 2);
+        ASSERT_EQ(_rig.Find(_bus)->state, kBattle);
     }
 
     void HitTick(BossRig& _rig, const uint32_t _id, const int _damage)
@@ -54,171 +60,83 @@ namespace
         _rig.Frame();
     }
 
-    int CountDiedWithTag(BossRig& _rig, const uint32_t _tag)
+    int CountDiedWithTag(BossRig& _rig, const EnemyHandle _bus)
     {
         int n = 0;
         for (const EnemyEvent& ev: _rig.Events())
         {
-            n += (ev.kind == eEnemyEventKind::Died && ev.userTag == _tag) ? 1 : 0;
+            n += (ev.kind == eEnemyEventKind::Died && ev.handle == _bus) ? 1 : 0;
         }
         return n;
     }
 }
 
-TEST(Bus, StaysClosedUntilThePlayerTouchesTheTrigger)
-{
-    BossRig rig;
-    ASSERT_TRUE(rig.IsReady());
-    const EnemyHandle bus = SpawnBus(rig);
-    rig.SetPlayer({ kFarX, kBusFeetY });
-    rig.Run(300);
-    const Enemy* pBus = rig.Find(bus);
-    ASSERT_NE(pBus, nullptr);
-    EXPECT_EQ(pBus->state, 0);            // kClosed
-    EXPECT_EQ(pBus->aux2, 0);             // 포탄 0발
-    EXPECT_EQ(pBus->shotsFired, 0);
-}
-
-TEST(Bus, TouchingTheTriggerOpensTheDoorAndStartsTheBattle)
+TEST(Bus, ParkedBusIgnoresDamageAndStaysSolid)
 {
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
     const EnemyHandle bus = SpawnBus(rig);
     rig.Run(5);
-    OpenBus(rig);
-    const Enemy* pBus = rig.Find(bus);
-    ASSERT_NE(pBus, nullptr);
-    EXPECT_EQ(pBus->state, 1);            // kBattle
-    EXPECT_LE(pBus->stateTicks, 1);       // 전투 시계는 0 에서 시작
+    HitTick(rig, bus.id, 50);
+    EXPECT_EQ(rig.Find(bus)->state, kParked);
+    EXPECT_EQ(rig.Find(bus)->health.hp, kMaxHp);
+    EXPECT_EQ(rig.World().GetSolidBoxes().size(), 1u);
 }
 
-TEST(Bus, TheTriggerOnlyCountsWhileThePlayerIsAlive)
+TEST(Bus, StartBattleWaitsForTheCameraPanThenOpens)
 {
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
     const EnemyHandle bus = SpawnBus(rig);
+    rig.Run(5);
+    StartBattle(rig, bus);
+    EXPECT_EQ(rig.Find(bus)->state, kReveal);
+    rig.Run(kRevealTicks - 2);
+    EXPECT_EQ(rig.Find(bus)->state, kReveal);
     rig.Run(2);
-    rig.SetPlayer({ kTriggerX, kBusFeetY }, false);
+    EXPECT_EQ(rig.Find(bus)->state, kOpening);
+}
+
+TEST(Bus, OpeningLastsOneAndAHalfSecondsThenTheBattleStarts)
+{
+    BossRig rig;
+    ASSERT_TRUE(rig.IsReady());
+    const EnemyHandle bus = SpawnBus(rig);
+    rig.Run(5);
+    StartBattle(rig, bus);
+    rig.Run(kRevealTicks);
+    ASSERT_EQ(rig.Find(bus)->state, kOpening);
+    rig.Run(kOpenTicks - 2);
+    EXPECT_EQ(rig.Find(bus)->state, kOpening);
+    rig.Run(2);
+    EXPECT_EQ(rig.Find(bus)->state, kBattle);
+    EXPECT_LE(rig.Find(bus)->stateTicks, 1);
+}
+
+TEST(Bus, OnlyTheStartBattleCommandStartsTheReveal)
+{
+    BossRig rig;
+    ASSERT_TRUE(rig.IsReady());
+    const EnemyHandle bus = SpawnBus(rig);
+    rig.Run(5);
+    rig.World().SendCommand(bus, "somethingElse");
     rig.Frame();
-    EXPECT_EQ(rig.Find(bus)->state, 0);
+    EXPECT_EQ(rig.Find(bus)->state, kParked);
 }
 
-TEST(Bus, ShellsFireTwoSecondsIntoTheBattleThenEveryThreeSeconds)
+TEST(Bus, DamageIsAcceptedOnlyOnceTheOpeningHasBegun)
 {
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
     const EnemyHandle bus = SpawnBus(rig);
     rig.Run(5);
-    OpenBus(rig);
-
-    int firstAt  = -1;
-    int secondAt = -1;
-    for (int i = 0; i < 400 && secondAt < 0; ++i)
-    {
-        rig.Frame();
-        const Enemy* pBus = rig.Find(bus);
-        if (pBus->shotsFired >= 1 && firstAt < 0)
-        {
-            firstAt = pBus->stateTicks;
-        }
-        if (pBus->shotsFired >= 2 && secondAt < 0)
-        {
-            secondAt = pBus->stateTicks;
-        }
-    }
-    EXPECT_GE(firstAt, 119);    // 2 s
-    EXPECT_LE(firstAt, 123);
-    EXPECT_GE(secondAt - firstAt, 178);   // 이후 3 s 간격
-    EXPECT_LE(secondAt - firstAt, 182);
-}
-
-TEST(Bus, ShellIsLaunchedLeftwardAtThePlayerWithTheBallisticArc)
-{
-    BossRig rig;
-    ASSERT_TRUE(rig.IsReady());
-    const EnemyHandle bus = SpawnBus(rig);
-    rig.Run(5);
-    OpenBus(rig);
-    rig.Run(130);
-    ASSERT_GE(rig.Find(bus)->shotsFired, 1);
-
-    bool bFound = false;
-    for (const Shot& shot: rig.Projectiles().GetShots())
-    {
-        if (shot.params.owner != bus.id)
-        {
-            continue;
-        }
-        bFound = true;
-        EXPECT_LT(shot.params.velocity.x, 0.f);                 // 플레이어 쪽(왼쪽)
-        EXPECT_LE(std::abs(shot.params.velocity.x), 420.f + 0.5f);
-        EXPECT_GE(std::abs(shot.params.velocity.x), 80.f - 0.5f);
-        EXPECT_FLOAT_EQ(shot.params.velocity.y, -200.f);       // 포물선 v0
-        EXPECT_FLOAT_EQ(shot.params.gravity, 500.f);
-        EXPECT_EQ(shot.params.team, eTeam::Enemy);
-        break;
-    }
-    EXPECT_TRUE(bFound);
-}
-
-TEST(Bus, ASoldierIsDroppedThreeSecondsIntoTheBattle)
-{
-    BossRig rig;
-    ASSERT_TRUE(rig.IsReady());
-    const EnemyHandle bus = SpawnBus(rig);
-    rig.Run(5);
-    OpenBus(rig);
-
-    int spawnedAt = -1;
-    for (int i = 0; i < 300 && spawnedAt < 0; ++i)
-    {
-        rig.Frame();
-        if (SoldiersAlive(rig, bus) >= 1)
-        {
-            spawnedAt = rig.Find(bus)->stateTicks;
-        }
-    }
-    EXPECT_GE(spawnedAt, 179);   // 3 s
-    EXPECT_LE(spawnedAt, 184);
-}
-
-TEST(Bus, AtMostTwoDropsAreAliveAtOnceAndKillingThemFreesSlots)
-{
-    BossRig rig;
-    ASSERT_TRUE(rig.IsReady());
-    const EnemyHandle bus = SpawnBus(rig);
-    rig.Run(5);
-    OpenBus(rig);
-    rig.Run(1200);   // 3 s + 5 s 간격 여러 번
-    EXPECT_EQ(SoldiersAlive(rig, bus), 2);   // 생존 상한 2
-
-    for (const EnemyHandle h: SoldierHandles(rig, bus))
-    {
-        rig.Hit(h.id, 1);
-    }
-    EXPECT_EQ(SoldiersAlive(rig, bus), 0);
-    rig.Run(360);
-    EXPECT_GE(SoldiersAlive(rig, bus), 1);
-}
-
-TEST(Bus, TotalDropsAreCappedAtEightEvenWhenAllAreKilled)
-{
-    BossRig rig;
-    ASSERT_TRUE(rig.IsReady());
-    const EnemyHandle bus = SpawnBus(rig);
-    rig.Run(5);
-    OpenBus(rig);
-    for (int i = 0; i < 60 * 60; ++i)
-    {
-        for (const EnemyHandle h: SoldierHandles(rig, bus))
-        {
-            rig.Hit(h.id, 1);
-        }
-        rig.Frame();
-    }
-    EXPECT_EQ(rig.Find(bus)->aux3, 8);       // 누적 투하 8
-    EXPECT_EQ(CountDiedWithTag(rig, bus.id), 8);
-    EXPECT_EQ(SoldiersAlive(rig, bus), 0);
+    StartBattle(rig, bus);
+    rig.Run(kRevealTicks - 2);
+    HitTick(rig, bus.id, 10);
+    EXPECT_EQ(rig.Find(bus)->health.hp, kMaxHp);   // 팬 중에는 무적
+    rig.Run(4);
+    HitTick(rig, bus.id, 10);
+    EXPECT_EQ(rig.Find(bus)->health.hp, kMaxHp - 10);
 }
 
 TEST(Bus, DamageStagesAdvanceEveryEighthOfItsHitPoints)
@@ -226,55 +144,40 @@ TEST(Bus, DamageStagesAdvanceEveryEighthOfItsHitPoints)
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
     const EnemyHandle bus = SpawnBus(rig);
-    rig.Run(2);
-    ASSERT_EQ(rig.Find(bus)->health.maxHp, 250);
+    ToBattle(rig, bus);
+    ASSERT_EQ(rig.Find(bus)->health.maxHp, kMaxHp);
     EXPECT_EQ(rig.Find(bus)->aux, 0);
 
-    HitTick(rig, bus.id, 31);   // hp 219: 아직 1단계 전 (219 * 8 > 250 * 7)
+    HitTick(rig, bus.id, 47);   // hp 333: 아직 0단계 (333 * 8 > 380 * 7)
     EXPECT_EQ(rig.Find(bus)->aux, 0);
-    HitTick(rig, bus.id, 1);    // hp 218: 1단계 (<= 7/8)
+    HitTick(rig, bus.id, 1);    // hp 332: 1단계 (<= 7/8)
     EXPECT_EQ(rig.Find(bus)->aux, 1);
-    HitTick(rig, bus.id, 31);   // hp 187: 2단계 (<= 6/8 = 187.5)
+    HitTick(rig, bus.id, 47);   // hp 285: 2단계 (<= 6/8)
     EXPECT_EQ(rig.Find(bus)->aux, 2);
-    HitTick(rig, bus.id, 62);   // hp 125: 4단계 (<= 4/8)
-    EXPECT_EQ(rig.Find(bus)->health.hp, 125);
+    HitTick(rig, bus.id, 95);   // hp 190: 4단계 (<= 4/8)
+    EXPECT_EQ(rig.Find(bus)->health.hp, 190);
     EXPECT_EQ(rig.Find(bus)->aux, 4);
 }
 
-TEST(Bus, DamageWorksWhileTheDoorIsStillClosed)
+TEST(Bus, DeathStopsEverythingAndEmitsOneDiedEvent)
 {
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
     const EnemyHandle bus = SpawnBus(rig);
-    rig.Run(2);
-    HitTick(rig, bus.id, 50);
-    EXPECT_EQ(rig.Find(bus)->health.hp, 200);
-    EXPECT_EQ(rig.Find(bus)->state, 0);    // 여전히 닫힘
-    EXPECT_EQ(rig.Find(bus)->aux, 1);
-}
+    ToBattle(rig, bus);
+    rig.Run(30);
 
-TEST(Bus, DeathEmitsOneDiedEventAndStopsAllAttacks)
-{
-    BossRig rig;
-    ASSERT_TRUE(rig.IsReady());
-    const EnemyHandle bus = SpawnBus(rig);
-    rig.Run(5);
-    OpenBus(rig);
-    rig.Run(130);
-    const int shotsBefore = rig.Find(bus)->shotsFired;
-
-    rig.Hit(bus.id, 250);
-    EXPECT_EQ(rig.CountEventsOf(eEnemyEventKind::Died, bus), 1);
+    HitTick(rig, bus.id, kMaxHp);
+    EXPECT_EQ(CountDiedWithTag(rig, bus), 1);
     const Enemy* pBus = rig.Find(bus);
     ASSERT_NE(pBus, nullptr);
     EXPECT_EQ(pBus->life, eEnemyLife::Dying);
-    EXPECT_EQ(pBus->aux, 8);   // 사망 단계
+    EXPECT_EQ(pBus->aux, 8);
     EXPECT_TRUE(rig.World().IsDefeated(bus));
 
-    rig.Run(900);
-    EXPECT_EQ(rig.Find(bus)->shotsFired, shotsBefore);
-    EXPECT_EQ(rig.CountEventsOf(eEnemyEventKind::Died, bus), 1);   // Died 는 한 번
-    EXPECT_EQ(SoldiersAlive(rig, bus), 0);
+    rig.Run(300);
+    EXPECT_EQ(CountDiedWithTag(rig, bus), 1);
+    EXPECT_EQ(rig.Find(bus)->shotsFired, 0);
 }
 
 TEST(Bus, DeathCarriesTheConfiguredScore)
@@ -282,48 +185,37 @@ TEST(Bus, DeathCarriesTheConfiguredScore)
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
     const EnemyHandle bus = SpawnBus(rig);
-    rig.Run(2);
-    rig.Hit(bus.id, 250);
+    ToBattle(rig, bus);
+    rig.Hit(bus.id, kMaxHp);
+    bool bFound = false;
     for (const EnemyEvent& ev: rig.Events())
     {
         if (ev.kind == eEnemyEventKind::Died && ev.handle == bus)
         {
+            bFound = true;
             EXPECT_EQ(ev.score, 2000);
             EXPECT_TRUE(ev.defName == "mb_truck");
         }
     }
+    EXPECT_TRUE(bFound);
 }
 
-TEST(Bus, DeathIsDestroyFinishedImmediatelyAsTheWreckStays)
+TEST(Bus, WreckIsWalkableAndTheStageGateSeesTheDeathAtOnce)
 {
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
     const EnemyHandle bus = SpawnBus(rig);
-    rig.Run(2);
-    rig.Hit(bus.id, 250);
-    EXPECT_TRUE(rig.World().IsDestroyFinished(bus));
+    ToBattle(rig, bus);
+    ASSERT_EQ(rig.World().GetSolidBoxes().size(), 1u);
+
+    rig.Hit(bus.id, kMaxHp);
+    rig.Run(1);
+    EXPECT_TRUE(rig.World().GetSolidBoxes().empty());   // 잔해는 벽이 아니다
+    EXPECT_TRUE(rig.World().IsDefeated(bus));
+    EXPECT_TRUE(rig.World().IsDestroyFinished(bus));    // 잔해는 남지만 연출 대기는 없다
 }
 
-TEST(Bus, ShellKillsAnExposedPlayerStandingInItsPath)
-{
-    BossRig rig;
-    ASSERT_TRUE(rig.IsReady());
-    const EnemyHandle bus = SpawnBus(rig);
-    rig.Run(5);
-    OpenBus(rig);
-    rig.SetPlayerInvulnerable(false);
-    rig.SetPlayer({ 300.f, kBusFeetY });
-    rig.Run(400);
-
-    bool bKilledByBus = false;
-    for (const HitEvent& ev: rig.PlayerHits())
-    {
-        bKilledByBus = bKilledByBus || (ev.attacker == bus.id && ev.kind == eHitKind::Bullet);
-    }
-    EXPECT_TRUE(bKilledByBus);
-}
-
-TEST(Bus, SolidBoxCoversTheClosedBodyOnlyWhileTheBusIsAlive)
+TEST(Bus, SolidBoxCoversTheBodyOnlyWhileTheBusIsAlive)
 {
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
@@ -332,22 +224,34 @@ TEST(Bus, SolidBoxCoversTheClosedBodyOnlyWhileTheBusIsAlive)
 
     const slug::Vector<Aabb> boxes = rig.World().GetSolidBoxes();
     ASSERT_EQ(boxes.size(), 1u);
-    EXPECT_FLOAT_EQ(boxes[0].min.x, kBusX - 200.f);
-    EXPECT_FLOAT_EQ(boxes[0].max.x, kBusX + 200.f);
-    EXPECT_FLOAT_EQ(boxes[0].min.y, kBusFeetY - 253.f);
-    EXPECT_FLOAT_EQ(boxes[0].max.y, kBusFeetY + 7.f);
+    EXPECT_FLOAT_EQ(boxes[0].min.x, kBusX - 102.f);
+    EXPECT_FLOAT_EQ(boxes[0].max.x, kBusX + 102.f);
+    EXPECT_FLOAT_EQ(boxes[0].min.y, kBusFeetY - 260.f);
+    EXPECT_FLOAT_EQ(boxes[0].max.y, kBusFeetY);
 
-    rig.Hit(bus.id, 250);
-    rig.Run(1);
-    EXPECT_TRUE(rig.World().GetSolidBoxes().empty());
+    rig.Hit(bus.id, 1);
+    rig.Frame();
+    EXPECT_EQ(rig.World().GetSolidBoxes().size(), 1u);   // 주차 중에도 벽
 }
 
-TEST(Bus, TheSolidBoxStaysAfterOpeningTheDoor)
+TEST(Bus, SolidStaysThroughTheOpeningAndTheBattle)
 {
     BossRig rig;
     ASSERT_TRUE(rig.IsReady());
-    SpawnBus(rig);
-    rig.Run(5);
-    OpenBus(rig);
+    const EnemyHandle bus = SpawnBus(rig);
+    ToBattle(rig, bus);
     EXPECT_EQ(rig.World().GetSolidBoxes().size(), 1u);
+}
+
+TEST(Bus, NoShellsOrSoldiersAreEverFiredDuringTheBattle)
+{
+    BossRig rig;
+    ASSERT_TRUE(rig.IsReady());
+    const EnemyHandle bus = SpawnBus(rig);
+    ToBattle(rig, bus);
+    rig.SetPlayerInvulnerable(false);
+    rig.SetPlayer({ kBusX - 300.f, kBusFeetY });
+    rig.Run(900);
+    EXPECT_EQ(rig.Find(bus)->shotsFired, 0);
+    EXPECT_EQ(rig.World().CountAlive(EnemyFilter {}), 1);   // 버스 자신뿐
 }

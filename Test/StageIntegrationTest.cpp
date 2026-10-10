@@ -4,6 +4,7 @@
 #include "Base/Math.h"
 #include "Base/Random.h"
 #include <optional>
+#include <set>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -209,21 +210,51 @@ TEST(StageIntegration, Stage0UsesRealEnemiesAndPropsInsteadOfPlaceholders)
     }
 }
 
-TEST(StageIntegration, GroundPatchMaskAndApplyClearTheDestroyedHouseFootprint)
+TEST(StageIntegration, GroundHouseFootprintClearsOnlyTheHouseAndKeepsTheStreet)
 {
-    const std::optional<GroundMap> mask = LoadGroundPatchMask(slug::FindAssetRoot() / "Baked" / "Textures" / "Stage0_House_4_PixelMap.png");
+    const slug::FilePath root = slug::FindAssetRoot();
+    const std::optional<GroundMap> mask = LoadGroundPatchMask(root / "Baked" / "Textures" / "Stage0_House_4_PixelMap.png");
     ASSERT_TRUE(mask.has_value());
     EXPECT_EQ(mask->GetWidth(), 1306);
     EXPECT_EQ(mask->GetHeight(), 751);
     EXPECT_FALSE(mask->IsSolid(0, 0));
+    EXPECT_GT(mask->CountSolidPixels(), 5000u);   // 도로 위 봉우리 한 덩어리 (빈 마스크가 아님)
 
-    GroundMap ground = GroundMap::MakeEmpty(2000, 1000);
-    ground.FillRect(0, 0, 1999, 999, true);
-    ApplyGroundPatch(ground, { 100.f, 100.f }, *mask);
-    EXPECT_FALSE(ground.IsSolid(105, 105));    // 발자국 안: 공기
-    EXPECT_TRUE(ground.IsSolid(50, 50));       // 발자국 밖: 그대로 고체
+    slug::Result<GroundMap> loaded = GroundMap::Load(root / "Baked" / "Ground" / "Stage0_0.bin");
+    ASSERT_TRUE(loaded);
+    GroundMap ground = loaded.Take();
+    const uint64_t streetBefore = ground.CountSolidPixels();   // 전체 개수는 봉우리 제거 후 정확히 줄어야 한다
+    EXPECT_TRUE(ground.IsSolid(9830, 1230));                   // 집 몸체 (봉우리)
 
-    EXPECT_FALSE(LoadGroundPatchMask(slug::FindAssetRoot() / "Baked" / "Textures" / "no_such_map.png").has_value());
+    // 집 (9830,1269) 의 지면 패치 좌상단 = center - (size/2 - inset)
+    EXPECT_TRUE(ApplyGroundPatch(ground, { 9189.f, 898.f }, *mask));
+    EXPECT_FALSE(ground.IsSolid(9830, 1230));                  // 몸체: 공기
+    EXPECT_FALSE(ground.IsSolid(9760, 1270));                  // 봉우리 왼쪽 경사: 공기
+    EXPECT_TRUE(ground.IsSolid(9830, 1300));                   // 도로 (발자국 밖): 그대로
+    EXPECT_TRUE(ground.IsSolid(9189, 1300));
+    EXPECT_TRUE(ground.IsSolid(10400, 1300));
+    EXPECT_EQ(ground.CountSolidPixels(), streetBefore - mask->CountSolidPixels());
+}
+
+TEST(StageIntegration, BigHouseFootprintClearsItsCapAndTheStreetStaysSolid)
+{
+    const slug::FilePath root = slug::FindAssetRoot();
+    const std::optional<GroundMap> mask = LoadGroundPatchMask(root / "Baked" / "Textures" / "Stage0_House_5_PixelMap.png");
+    ASSERT_TRUE(mask.has_value());
+    EXPECT_EQ(mask->GetWidth(), 555);
+    EXPECT_EQ(mask->GetHeight(), 124);
+    EXPECT_GT(mask->CountSolidPixels(), 8000u);
+
+    slug::Result<GroundMap> loaded = GroundMap::Load(root / "Baked" / "Ground" / "Stage0_0.bin");
+    ASSERT_TRUE(loaded);
+    GroundMap ground = loaded.Take();
+    EXPECT_TRUE(ground.IsSolid(10450, 1210));    // 집 몸체 윗부분
+    EXPECT_TRUE(ApplyGroundPatch(ground, { 10204.f, 1204.f }, *mask));   // 큰 집 @10470
+    EXPECT_FALSE(ground.IsSolid(10450, 1210));
+    EXPECT_TRUE(ground.IsSolid(10450, 1300));    // 도로는 그대로
+    EXPECT_TRUE(ground.IsSolid(9830, 1230));     // 옆 집 봉우리 (패치 밖) 도 그대로
+
+    EXPECT_FALSE(LoadGroundPatchMask(root / "Baked" / "Textures" / "no_such_map.png").has_value());
 }
 
 TEST(StageIntegration, SpawnedEnemiesStandOnTheGroundAtTheirScriptedFeet)
@@ -316,10 +347,81 @@ TEST(StageIntegration, BotCanWalkTheWholeStageUpToTheBossArena)
     EXPECT_GE(bestX, 13500.f);
 }
 
+TEST(StageIntegration, BotStillWalksToTheBossAfterEveryOpenlandPropIsDestroyed)
+{
+    // 회귀: 개활지(집/큰 집/탑/다리 블록) 의 파괴물을 전부 부숴도 지면 패치가 도로를 뚫어 진행이 막히면 안 된다.
+    // 섹션 트리거가 지나야 소품이 나오므로, 봇이 전진하면서 개활지 소품을 매 틱 맞춰 부순다.
+    IntegrationSim sim(true);   // 워프(F5)는 디버그 모드에서만 동작한다
+    for (int i = 0; i < 40 && sim.State().GetPlayer().GetFeet().x < 8990.f; ++i)
+    {
+        sim.Warp(1);   // F5: 다음 섹션 (개활지 시작까지)
+    }
+    ASSERT_GE(sim.State().GetPlayer().GetFeet().x, 8990.f);
+
+    std::set<uint32_t> destroyedIds;
+    float bestX        = 0.f;
+    float maxFeetY     = 0.f;
+    bool  bRoadChecked = false;
+    for (int i = 0; i < 40000 && sim.Current() == sim.StagePtr(); ++i)
+    {
+        PropWorld& props = sim.State().GetProps();
+        slug::Vector<HitEvent> hits;
+        for (const PropInstance& inst: props.GetProps())
+        {
+            if (inst.pos.x >= 8980.f && inst.pos.x < 13500.f && !inst.bDestroyed)
+            {
+                HitEvent ev;
+                ev.damage       = 9999;
+                ev.kind         = eHitKind::Bullet;
+                ev.attackerTeam = eTeam::Player;
+                ev.attacker     = 1;
+                ev.target       = inst.id;
+                hits.push_back(ev);
+                destroyedIds.insert(inst.id);
+            }
+        }
+        if (!hits.empty())
+        {
+            props.OnHitEvents(slug::Span<const HitEvent> { hits.data(), hits.size() });
+        }
+
+        sim.BotStep(true, true);
+        if (sim.Current() != sim.StagePtr())
+        {
+            break;
+        }
+        const Vec2 feet = sim.State().GetPlayer().GetFeet();
+        bestX = std::max(bestX, feet.x);
+        if (feet.x >= 9000.f)
+        {
+            maxFeetY = std::max(maxFeetY, feet.y);
+        }
+        if (feet.x >= 9000.f && feet.x <= 10600.f && i % 10 == 0)
+        {
+            std::printf("[proof] tick %d feet=(%.1f, %.1f) section=%d\n", i, feet.x, feet.y, sim.State().GetRunner().GetNextSectionIndex());
+        }
+        if (!bRoadChecked && feet.x >= 13000.f)
+        {
+            // 파괴물이 모두 부서진 뒤의 도로: 9000..13450 구간의 바닥 행이 전부 고체여야 한다
+            const GroundMap* pGround = sim.State().GetHost().GetActiveGround();
+            ASSERT_NE(pGround, nullptr);
+            for (int x = 9000; x < 13450; x += 10)
+            {
+                ASSERT_TRUE(pGround->IsSolid(x, 1300)) << "도로가 x=" << x << " 에서 뚫렸다";
+            }
+            bRoadChecked = true;
+        }
+    }
+    EXPECT_GE(destroyedIds.size(), 6u) << "개활지 파괴물이 충분히 나와야 한다";
+    EXPECT_GE(bestX, 13500.f) << "bestX=" << bestX;
+    EXPECT_LT(maxFeetY, 1300.f) << "플레이어가 도로 아래로 떨어졌다";
+    EXPECT_TRUE(bRoadChecked);
+}
+
 TEST(StageIntegration, BusBodyStopsThePlayerWhileAliveAndTheWreckLetsThePlayerThrough)
 {
     IntegrationSim sim;
-    constexpr float kBusWallLeft = 2995.f - 200.f;
+    constexpr float kBusWallLeft = 2995.f - 102.f;   // 본체 반폭 (Bus_Idle 204 px)
     int tick = 0;
     for (; tick < 40000 && sim.State().GetEnemies().CountAlive("mb_truck") == 0; ++tick)
     {

@@ -40,6 +40,7 @@ struct EnemyRenderEnv
     Vec2            feet;
     float                   alpha;
     int                     layer;
+    float                   flash = 0.f;   // 이 적의 전체 피격 플래시 양 (EnemyWorld::Submit 이 채움)
 };
 
 struct BehaviorOps
@@ -59,6 +60,7 @@ struct BehaviorOps
     void (*submitParts)(const Enemy& _e, const EnemyDef& _def, const EnemyRenderEnv& _render) = nullptr;
 
     bool (*deathDone)(const Enemy& _e, const EnemyDef& _def) = nullptr;
+    void (*onCommand)(Enemy& _e, const EnemyDef& _def, slug::StringView _command) = nullptr;   // 스테이지 명령 (command 액션)
 };
 
 [[nodiscard]] const BehaviorOps& GetBehaviorOps(eEnemyBehavior _behavior);

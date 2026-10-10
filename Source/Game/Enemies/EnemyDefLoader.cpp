@@ -72,7 +72,7 @@ namespace
     constexpr const char* kGlobalKeys[] = { "note", "dpsRef", "activationMarginPx", "despawnBehindCameraPx", "despawnBelowCameraPx" };
     constexpr const char* kEnemyKeys[] = {
         "note", "extends", "abstract", "kind", "behavior", "team", "hp", "ttk", "score", "body", "hurtbox", "solid", "activation", "physics",
-        "clips", "weapons", "params", "death", "drops", "overlay", "noDespawn", "human"
+        "clips", "weapons", "params", "death", "drops", "overlay", "noDespawn", "human", "hitFlash"
     };
     constexpr const char* kProjectileKeys[] = {
         "note", "extends", "abstract", "kind", "team", "lethal", "box", "damage", "speed", "speedRamp", "startDelay", "v0", "gravity", "maxFall",
@@ -921,9 +921,10 @@ bool EnemyDefParser::ParseEnemy_(
         }
     }
 
+    def.bHitFlash = def.hp >= kHitFlashMinHp;
     for (const slug::JsonReader& reader: _chain)
     {
-        if (!ReadBool_(name, "", reader, "noDespawn", def.bNoDespawn) || !ReadBool_(name, "", reader, "human", def.bHuman))
+        if (!ReadBool_(name, "", reader, "noDespawn", def.bNoDespawn) || !ReadBool_(name, "", reader, "human", def.bHuman) || !ReadBool_(name, "", reader, "hitFlash", def.bHitFlash))
         {
             return false;
         }

@@ -436,16 +436,38 @@ TEST(PropWorld, GroundHouseDamageStagesAndGroundPatch)
     EXPECT_EQ(CountEvents(events, ePropEventKind::Damaged), 12);
 }
 
-TEST(PropWorld, ApplyGroundPatchWritesOnlyPatchRegion)
+TEST(PropWorld, ApplyGroundPatchClearsOnlyTheFootprintAndKeepsTheFloor)
 {
     GroundMap map = GroundMap::MakeEmpty(10, 10);
-    const GroundMap patch = GroundMap::MakeFromRows(std::array<slug::StringView, 3> { "###", "###", "###" });
-    ApplyGroundPatch(map, { 2.f, 2.f }, patch);
-    EXPECT_TRUE(map.IsSolid(2, 2));
-    EXPECT_TRUE(map.IsSolid(4, 4));
-    EXPECT_FALSE(map.IsSolid(1, 2));
-    EXPECT_FALSE(map.IsSolid(5, 5));
-    EXPECT_EQ(map.CountSolidPixels(), 9u);
+    map.FillRect(0, 7, 9, 9, true);   // 바닥 3줄
+    map.FillRect(3, 4, 5, 6, true);   // 집 몸체 (바닥 위 봉우리)
+    GroundMap footprint = GroundMap::MakeEmpty(10, 10);   // 발자국 사각형은 지면 전체 크기, 고체는 3x3 만
+    footprint.FillRect(3, 4, 5, 6, true);
+    EXPECT_TRUE(ApplyGroundPatch(map, { 0.f, 0.f }, footprint));
+    EXPECT_FALSE(map.IsSolid(3, 4));
+    EXPECT_FALSE(map.IsSolid(5, 6));
+    EXPECT_TRUE(map.IsSolid(0, 7));   // 발자국 밖 바닥은 그대로
+    EXPECT_TRUE(map.IsSolid(9, 9));
+    EXPECT_EQ(map.CountSolidPixels(), 30u);
+}
+
+TEST(PropWorld, ApplyGroundPatchRefusesFootprintsThatCutTheFloorOrClearMostOfTheGround)
+{
+    GroundMap map = GroundMap::MakeEmpty(10, 10);
+    map.FillRect(0, 7, 9, 9, true);
+    map.FillRect(3, 4, 5, 6, true);
+    const uint64_t before = map.CountSolidPixels();
+
+    // 바닥 줄 (y 7..9) 을 지우는 발자국: 거부, 지면 불변
+    const GroundMap cutsFloor = GroundMap::MakeFromRows(std::array<slug::StringView, 3> { "###", "###", "###" });
+    EXPECT_FALSE(ApplyGroundPatch(map, { 0.f, 7.f }, cutsFloor));
+    EXPECT_EQ(map.CountSolidPixels(), before);
+
+    // 빈 사각형이 아니라 전부 채운 마스크 (옛 레거시 흰색 마스크의 일반화): 거부
+    GroundMap everything = GroundMap::MakeEmpty(10, 10);
+    everything.FillRect(0, 0, 9, 9, true);
+    EXPECT_FALSE(ApplyGroundPatch(map, { 0.f, 0.f }, everything));
+    EXPECT_EQ(map.CountSolidPixels(), before);
 }
 
 TEST(PropWorld, TruckVariantPositionShiftMatchesLegacyFinalInit)

@@ -405,8 +405,7 @@ struct AparchCfg
     int   missileIntervalTicks = 60;   // 미사일 간격 1 s (3발)
     int   missileShots = 3;
     int   endTicks     = 60;      // 포 수납 + 복귀 1 s
-    float followOffsetY = 275.f;  // 폭탄 패턴: 플레이어 위 이 높이를 따라다닌다
-    float followGain   = 1.5f;
+    float followGain   = 1.5f;    // 폭탄 패턴: 플레이어 x 추적 게인 (y 는 호버 높이 고정)
     int   bombStepTicks = 30;     // 0.5 s 틱 (폭탄 패턴 리듬)
     int   bombSteps    = 12;      // 6 s
     float driftX       = 50.f;    // 사망 표류 (px/s)
@@ -421,18 +420,9 @@ struct AparchCfg
 
 struct BusCfg
 {
-    float    originDepth        = 123.f;
-    BoxDef   trigger            = {};
-    int      openTicks          = 210;       // MainTruck_Begin 길이 (3.5 s)
-    int      shellFirstTicks    = 120;       // 첫 포탄 (전투 시작 후 2 s)
-    int      shellIntervalTicks = 180;       // 이후 3 s 간격
-    int      soldierFirstTicks  = 180;       // 첫 병사 투하 (3 s)
-    int      soldierIntervalTicks = 300;     // 이후 5 s 간격
-    int      soldierAliveMax    = 2;         // 동시 생존 투하 병사
-    int      soldierTotalMax    = 8;         // 누적 투하 병사
-    Vec2 soldierOffset  = { -150.f, -40.f };   // 원점 기준 투하 위치
-    slug::String  soldierDef     = {};
-    int      weaponShell        = -1;        // 포탄 무기 (Given 이 아닌 Facing + arc)
+    int revealTicks = 114;   // startBattle 뒤 카메라 팬 시간 (1.9 s). 끝나면 개방 시작
+    int openTicks   = 86;    // Bus_Opening 길이 (10 프레임 @ 7 fps = 1.43 s)
+    int chainTicks  = 30;    // 사망 후 연쇄 폭발 (0.5 s). 이후 잔해(Bus_Wreck)만 남는다
 };
 
 inline constexpr int kBigShieeTurretCount = 7;   // 포탑 A..G
@@ -483,6 +473,12 @@ struct BigShieeCfg
     float    smokeStepSec      = 0.5f;     // 잔해 연기 주기
 };
 
+// 피격 플래시 (Docs/Spec_HitFlash.md): 블링크 한 주기 = on 6틱 + off 6틱, 피격 시 12틱 유지(재피격 시 갱신).
+inline constexpr int kHitFlashTicks       = 12;
+inline constexpr int kHitFlashBlinkTicks  = 6;
+inline constexpr int kHitFlashMinHp       = 20;   // 기본 대상: hp >= 20 (차량/보스). 생략 시 이 기준, JSON "hitFlash" 로 덮어쓴다
+inline constexpr int kEnemyFlashPartCount = 8;    // 부위별 플래시 타이머 수 (Enemy::partFlashTicks)
+
 struct EnemyDef
 {
     slug::String    name     = {};
@@ -522,6 +518,7 @@ struct EnemyDef
     bool bNoDespawn = false;
 
     bool bHuman = false;
+    bool bHitFlash = false;   // 피격 시 전체 스프라이트 블링크 (기본 hp >= kHitFlashMinHp)
 
     [[nodiscard]] const ClipDef& GetClip(const int _index) const { return clips[static_cast<size_t>(_index)].clip; }
     [[nodiscard]] int            FindClip(slug::StringView _logicalName) const;

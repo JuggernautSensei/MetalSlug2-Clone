@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <cstdint>
 
 #include "Base/Result.h"
@@ -39,22 +39,22 @@ public:
     [[nodiscard]] bool  IsArray() const { return m_type == eType::Array; }
     [[nodiscard]] bool  IsObject() const { return m_type == eType::Object; }
 
-    [[nodiscard]] bool              AsBool(bool _bDefault = false) const;
-    [[nodiscard]] float             AsFloat(float _default = 0.f) const;
-    [[nodiscard]] int               AsInt(int _default = 0) const;
+    [[nodiscard]] bool                AsBool(bool _bDefault = false) const;
+    [[nodiscard]] float               AsFloat(float _default = 0.f) const;
+    [[nodiscard]] int                 AsInt(int _default = 0) const;
     [[nodiscard]] const slug::String& AsString() const;
 
-    [[nodiscard]] size_t GetSize() const;
-    [[nodiscard]] const ParamValue& At(size_t _index) const;
+    [[nodiscard]] size_t                         GetSize() const;
+    [[nodiscard]] const ParamValue&              At(size_t _index) const;
     [[nodiscard]] slug::Span<const slug::String> GetKeys() const { return m_keys; }
 
     [[nodiscard]] const ParamValue* Find(slug::StringView _key) const;
     [[nodiscard]] bool              Has(const slug::StringView _key) const { return Find(_key) != nullptr; }
 
-    [[nodiscard]] bool             GetBool(slug::StringView _key, bool _bDefault = false) const;
-    [[nodiscard]] int              GetInt(slug::StringView _key, int _default = 0) const;
-    [[nodiscard]] slug::String      GetString(slug::StringView _key, slug::StringView _default = {}) const;
-    [[nodiscard]] Vec2     GetVec2(slug::StringView _key, Vec2 _default = { 0.f, 0.f }) const;
+    [[nodiscard]] bool         GetBool(slug::StringView _key, bool _bDefault = false) const;
+    [[nodiscard]] int          GetInt(slug::StringView _key, int _default = 0) const;
+    [[nodiscard]] slug::String GetString(slug::StringView _key, slug::StringView _default = {}) const;
+    [[nodiscard]] Vec2         GetVec2(slug::StringView _key, Vec2 _default = { 0.f, 0.f }) const;
 
     [[nodiscard]] bool TryGetVec2(Vec2& _out) const;
 
@@ -62,11 +62,11 @@ public:
     [[nodiscard]] static const ParamValue& NullValue();
 
 private:
-    eType                    m_type   = eType::Null;
-    bool                     m_bValue = false;
-    double                   m_number = 0.0;
-    slug::String              m_string = {};
-    slug::Vector<ParamValue>  m_items  = {};
+    eType                      m_type   = eType::Null;
+    bool                       m_bValue = false;
+    double                     m_number = 0.0;
+    slug::String               m_string = {};
+    slug::Vector<ParamValue>   m_items  = {};
     slug::Vector<slug::String> m_keys   = {};
 };
 
@@ -193,7 +193,7 @@ inline constexpr float kDefaultCullMargin = 200.f;
 
 struct SpawnSpec
 {
-    eEntityKind kind = eEntityKind::Enemy;
+    eEntityKind  kind = eEntityKind::Enemy;
     slug::String def  = {};
     slug::String id   = {};
 
@@ -204,27 +204,27 @@ struct SpawnSpec
     bool         bHasCamera = false;
     CameraAnchor camera     = {};
 
-    eOrigin origin     = eOrigin::Feet;
+    eOrigin origin         = eOrigin::Feet;
     bool    bHasHalfHeight = false;
-    float   halfHeight = 0.f;
-    bool    bGroundSnap = false;
-    float   fromY       = 0.f;
-    bool    bSettle     = false;
+    float   halfHeight     = 0.f;
+    bool    bGroundSnap    = false;
+    float   fromY          = 0.f;
+    bool    bSettle        = false;
 
     bool       bHasRepeat = false;
     RepeatSpec repeat     = {};
 
-    int         facing      = 0;   // -1 왼쪽, +1 오른쪽, 0 = def 기본
-    bool        bHasHp      = false;
-    int         hp          = 0;
-    slug::String drop        = {};
-    bool        bHasAmbush  = false;
-    AmbushSpec  ambush      = {};
-    bool        bHasLayer   = false;
-    eStageLayer layer       = eStageLayer::Monster;
-    float       cullMargin  = kDefaultCullMargin;
+    int          facing     = 0;   // -1 왼쪽, +1 오른쪽, 0 = def 기본
+    bool         bHasHp     = false;
+    int          hp         = 0;
+    slug::String drop       = {};
+    bool         bHasAmbush = false;
+    AmbushSpec   ambush     = {};
+    bool         bHasLayer  = false;
+    eStageLayer  layer      = eStageLayer::Monster;
+    float        cullMargin = kDefaultCullMargin;
 
-    Vec2    size           = { 0.f, 0.f };
+    Vec2            size           = { 0.f, 0.f };
     eCollisionLayer collisionLayer = eCollisionLayer::Wall;
 
     slug::String anim   = {};
@@ -239,14 +239,14 @@ struct WaveEntry
 {
     float     delay = 0.f;   // 초 (액션 실행 시각 기준)
     SpawnSpec spawn = {};
-    float     every = 0.f;  // 시간 반복 주기(초). times > 1 이면 필수 (이전 발동 시각 + every)
-    int       times = 1;    // 시간 반복 횟수 (1 = 한 번). 취소는 clear waves 가 전체 반복을 지운다
+    float     every = 0.f;   // 시간 반복 주기(초). times > 1 이면 필수 (이전 발동 시각 + every)
+    int       times = 1;     // 시간 반복 횟수 (1 = 한 번). 취소는 clear waves 가 전체 반복을 지운다
 };
 
 struct RectRef
 {
-    bool        bCurrent = false;
-    Aabb        rect     = {};
+    bool         bCurrent = false;
+    Aabb         rect     = {};
     slug::String name     = {};
 };
 
@@ -256,16 +256,16 @@ struct StageAction
     float       delay = 0.f;   // 초
     eWhen       when  = eWhen::Normal;
 
-    SpawnSpec              spawn = {};
+    SpawnSpec               spawn       = {};
     slug::Vector<WaveEntry> waveEntries = {};
 
     RectRef rect       = {};
-    float   glide      = 0.f;     // LockCamera: 초
+    float   glide      = 0.f;   // LockCamera: 초
     bool    bPermanent = false;
 
-    Vec2 to      = { 0.f, 0.f };   // CameraMove: 목표 뷰 중심
-    float        seconds = 0.f;
-    Vec2 offset  = { 0.f, 0.f };   // SetCameraOffset
+    Vec2  to      = { 0.f, 0.f };   // CameraMove: 목표 뷰 중심
+    float seconds = 0.f;
+    Vec2  offset  = { 0.f, 0.f };   // SetCameraOffset
 
     slug::String text    = {};
     slug::String mode    = {};
@@ -273,32 +273,32 @@ struct StageAction
     slug::String target  = {};
     slug::String command = {};
     slug::String next    = {};
-    bool        bLoop   = true;
+    bool         bLoop   = true;
 
     bool     bClearWaves = false;
     uint32_t clearLayers = 0;   // LayerBit 마스크
 
     eFadeTarget fadeTo = eFadeTarget::Black;
 
-    slug::String              gateId = {};
-    slug::Vector<slug::String> waitFor = {};
-    eGateUntil               until = eGateUntil::Defeated;
-    bool                     bAbortOnGameOver = false;
-    slug::Vector<StageAction> actions = {};
+    slug::String               gateId           = {};
+    slug::Vector<slug::String> waitFor          = {};
+    eGateUntil                 until            = eGateUntil::Defeated;
+    bool                       bAbortOnGameOver = false;
+    slug::Vector<StageAction>  actions          = {};
 };
 
 struct StageSection
 {
-    slug::String              id      = {};
-    float                    triggerX = 0.f;
-    slug::Vector<StageAction> actions = {};
+    slug::String              id       = {};
+    float                     triggerX = 0.f;
+    slug::Vector<StageAction> actions  = {};
 };
 
 struct BackdropMode
 {
-    slug::String  id        = {};
-    slug::String  sprite    = {};
-    Vec2 offset    = { 0.f, 0.f };
+    slug::String id        = {};
+    slug::String sprite    = {};
+    Vec2         offset    = { 0.f, 0.f };
     float        parallaxX = 0.f;
     float        period    = 0.f;   // 가로 반복 간격. 0 이면 스프라이트 너비
 };
@@ -306,21 +306,21 @@ struct BackdropMode
 struct NamedRect
 {
     slug::String name = {};
-    Aabb        rect = {};
+    Aabb         rect = {};
 };
 
 struct BoundsCurve
 {
-    slug::String                id     = {};
-    slug::String                from   = {};
-    slug::String                until  = {};
-    int                        fromIndex  = -1;
-    int                        untilIndex = -1;
-    float                      left   = 0.f;
-    float                      right  = 0.f;
-    float                      height = 0.f;
-    slug::Vector<Vec2>  top    = {};
-    bool                       bTrunc = false;
+    slug::String       id         = {};
+    slug::String       from       = {};
+    slug::String       until      = {};
+    int                fromIndex  = -1;
+    int                untilIndex = -1;
+    float              left       = 0.f;
+    float              right      = 0.f;
+    float              height     = 0.f;
+    slug::Vector<Vec2> top        = {};
+    bool               bTrunc     = false;
 
     [[nodiscard]] float EvaluateTop(float _playerX) const;
 
@@ -329,10 +329,10 @@ struct BoundsCurve
 
 struct CameraConfig
 {
-    bool                     bForward     = true;
-    Aabb                     initialBounds = {};
-    Vec2             initialOffset = { 0.f, 0.f };
-    float                    playerMargin  = 14.f;
+    bool                      bForward      = true;
+    Aabb                      initialBounds = {};
+    Vec2                      initialOffset = { 0.f, 0.f };
+    float                     playerMargin  = 14.f;
     slug::Vector<BoundsCurve> boundsCurves  = {};
 };
 
@@ -350,24 +350,24 @@ struct PlayerStart
 
 struct StageData
 {
-    int         version = 1;
+    int          version = 1;
     slug::String name    = {};
 
-    Vec2 worldSize  = { 0.f, 0.f };
-    Vec2 viewSize   = { 640.f, 448.f };
-    slug::String  background = {};
+    Vec2         worldSize  = { 0.f, 0.f };
+    Vec2         viewSize   = { 640.f, 448.f };
+    slug::String background = {};
 
-    slug::String bgmName = {};
-    bool        bBgmLoop = true;
+    slug::String bgmName  = {};
+    bool         bBgmLoop = true;
 
-    slug::String              groundInitial = {};
+    slug::String               groundInitial = {};
     slug::Vector<slug::String> groundMaps    = {};
 
-    slug::String                backdropInitial = {};
-    slug::Vector<BackdropMode>  backdrops       = {};
+    slug::String               backdropInitial = {};
+    slug::Vector<BackdropMode> backdrops       = {};
 
     PlayerStart             player = {};
-    slug::Vector<NamedRect>  rects  = {};
+    slug::Vector<NamedRect> rects  = {};
     CameraConfig            camera = {};
 
     slug::Vector<StageSection> sections = {};
@@ -399,4 +399,4 @@ struct StageLoadDiagnostics
 
 [[nodiscard]] const char* GetEntityKindName(eEntityKind _kind);
 [[nodiscard]] const char* GetActionTypeName(eActionType _type);
-}
+}   // namespace slug

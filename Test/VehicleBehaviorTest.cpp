@@ -410,6 +410,40 @@ TEST(VehicleAparch, BombPatternDropsFollowTheLegacyRhythm)
     EXPECT_TRUE(bFound) << "드롭 리듬 9발 (레거시 burst + 0.5 s 묶음)이 연속으로 나와야 한다";
 }
 
+TEST(VehicleAparch, BombPatternHoldsItsHoverHeightAndTracksOnlyX)
+{
+    VehicleRig rig({ 300.f, kGround });
+    const EnemyHandle h = rig.Spawn("aparch", { 445.f, 125.f }, Facing(-1));
+    std::vector<float> xs;
+    std::vector<float> ys;
+    std::vector<int>   dropTicks;
+    for (int t = 0; t < 1500; ++t)
+    {
+        rig.Step(1);
+        const Enemy* pEnemy = rig.E(h);
+        ASSERT_NE(pEnemy, nullptr);
+        xs.push_back(pEnemy->body.position.x);
+        ys.push_back(pEnemy->body.position.y);
+        for (const Shot& shot: rig.Projectiles().GetShots())
+        {
+            if (shot.params.owner == h.id && shot.ageTicks == 1 && shot.params.gravity > 0.f)
+            {
+                dropTicks.push_back(t);
+            }
+        }
+    }
+    ASSERT_GE(dropTicks.size(), 9u);
+    // 첫 묶음 (9발, 약 3.5 s) 구간은 한 폭탄 패턴 안이다: 플레이어 위로 올라가지 않고 호버 y 를 유지한다
+    // (뒤따르는 미사일 패턴은 자세로 이동하므로 구간에서 뺀다)
+    const int first = dropTicks.front();
+    const int last  = dropTicks[8];
+    for (int t = first; t <= last; ++t)
+    {
+        EXPECT_NEAR(ys[static_cast<size_t>(t)], ys[static_cast<size_t>(first)], 0.01f) << "tick " << t;
+    }
+    EXPECT_LT(xs[static_cast<size_t>(last)], xs[static_cast<size_t>(first)]) << "x 는 플레이어(300) 쪽으로 따라가야 한다";
+}
+
 namespace
 {
     // 드롭 발사 시점의 스폰 위치가 헬기 기준 (_offsetX, +60) 인지 확인하고 드롭 발수를 누적한다
@@ -528,4 +562,39 @@ TEST(VehicleAparch, AttackingItRequiresTheFullHitPointsTotal)
         (void)rig.Strike(h.id, eHitKind::Bullet, 3);
     }
     EXPECT_TRUE(rig.E(h)->IsAlive());
+}
+
+TEST(VehicleHitFlash, JeepFlashesOnNonLethalHitRefreshesAndExpires)
+{
+    VehicleRig rig({ 100.f, kGround });
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    const EnemyHandle h = rig.Spawn("jeep", { 400.f, kGround }, Facing(-1));
+    ASSERT_NE(rig.E(h), nullptr);
+    EXPECT_TRUE(rig.Lib().Get(rig.E(h)->defIndex).bHitFlash) << "hp 80 차량은 기본 플래시 대상";
+    rig.Step(2);
+    ASSERT_EQ(rig.E(h)->hitFlashTicks, 0);
+
+    ASSERT_GT(rig.Strike(h.id, eHitKind::Bullet, 5), 0u);
+    EXPECT_EQ(rig.E(h)->hitFlashTicks, kHitFlashTicks);
+    EXPECT_TRUE(rig.E(h)->IsAlive());
+
+    rig.Step(5);
+    EXPECT_EQ(rig.E(h)->hitFlashTicks, kHitFlashTicks - 5);
+
+    ASSERT_GT(rig.Strike(h.id, eHitKind::Bullet, 5), 0u);
+    EXPECT_EQ(rig.E(h)->hitFlashTicks, kHitFlashTicks) << "재피격은 타이머를 갱신해야 한다";
+
+    rig.Step(kHitFlashTicks);
+    EXPECT_EQ(rig.E(h)->hitFlashTicks, 0);
+}
+
+TEST(VehicleHitFlash, LethalHitDoesNotFlash)
+{
+    VehicleRig rig({ 100.f, kGround });
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    const EnemyHandle h = rig.Spawn("jeep", { 400.f, kGround }, Facing(-1));
+    rig.Step(2);
+    ASSERT_GT(rig.Strike(h.id, eHitKind::Bullet, 100000), 0u);
+    EXPECT_FALSE(rig.E(h)->IsAlive());
+    EXPECT_EQ(rig.E(h)->hitFlashTicks, 0);
 }

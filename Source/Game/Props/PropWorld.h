@@ -202,5 +202,6 @@ private:
     uint32_t                       m_nextId         = kPropOwnerBase;
 };
 
-void ApplyGroundPatch(GroundMap& _map, Vec2 _topLeft, const GroundMap& _patchMask);
+// 지면 패치: 발자국 마스크의 고체 픽셀만 공기로 만든다 (Docs/PropSpecs.md §2 groundPatch). 가드에 걸리면 변경 없이 false.
+bool ApplyGroundPatch(GroundMap& _map, Vec2 _topLeft, const GroundMap& _footprint);
 }

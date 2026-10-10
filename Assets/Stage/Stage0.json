@@ -50,16 +50,13 @@
       "id": "bus_create", "triggerX": 2244,
       "actions": [
         {"type": "setGround", "name": "Stage0_1", "when": "silent"},
-        {"type": "spawn", "kind": "enemy", "def": "mb_truck", "id": "bus", "x": 2995, "y": 255, "origin": "legacyCenter", "halfHeight": 130},
-        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 2640, "groundSnap": true},
-        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 2790, "groundSnap": true},
-        {"type": "spawnWave", "entries": [{"delay": 4.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+        {"type": "spawn", "kind": "enemy", "def": "mb_truck", "id": "bus", "x": 2995, "y": 255, "origin": "legacyCenter", "halfHeight": 130}
       ]
     },
     {
-      "id": "bus_start", "triggerX": 2670,
+      "id": "bus_start", "triggerX": 2560,
       "actions": [
-        {"type": "lockCamera", "rect": [2470, 0, 3110, 448], "glide": 1.0},
+        {"type": "lockCamera", "rect": [2513, 0, 3153, 448], "glide": 1.9},
         {"type": "command", "target": "bus", "command": "startBattle"},
         {"type": "gate", "id": "bus_dead", "waitFor": ["bus"], "actions": [{"type": "unlockCamera"}, {"type": "setGround", "name": "Stage0_1"}]}
       ]

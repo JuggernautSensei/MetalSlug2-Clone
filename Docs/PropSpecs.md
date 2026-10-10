@@ -36,7 +36,7 @@
 | `drops` | Drop[] | [] | 파괴 시 아이템 (`{item|group, count, spreadX, bounce}`). `bounce`: vy -400, 수평 ±75 |
 | `spawns` | `[{def, offset}]` | [] | 파괴 시 다른 정의 생성 (예: `sign_fall`) |
 | `fall` | `{gravity, landed, afterLandSec, halfHeight}` | 없음 | 낙하체 (hp 없음). 지면(GroundMap)에 닿으면 `landed`, `afterLandSec` 뒤 `onDestroy` 후 제거 |
-| `groundPatch` | `{sprite, size, inset}` | 없음 | 파괴 시 `GroundPatch` 이벤트. 좌상단 = `pos - (size/2 - inset)` |
+| `groundPatch` | `{sprite, size, inset}` | 없음 | 파괴 시 `GroundPatch` 이벤트. 좌상단 = `pos - (size/2 - inset)` (실수면 내림). 마스크 = **발자국** (아래 §2.3) |
 
 ### 2.1 Part
 `{ role, when?, size, offset }`. `role` = 문자열 또는 배열 (배열이면 같은 상자가 여러 역할을 가진다).
@@ -45,6 +45,14 @@
 - `platform`: 원웨이 발판 (플레이어/적) → `GetPlatforms()`.
 - `enemyPlatform`: 원웨이 발판, 적만 → `GetEnemyPlatforms()` (집 지붕).
 - `when`: `intact`(기본, 파괴 전만) / `destroyed`(파괴 후만) / `always`.
+
+### 2.3 groundPatch 의미 (발자국 지우기)
+- 마스크 `Baked/Textures/<sprite>.png` 의 **파란 픽셀(R<80, G<80, B>=200, A>=128) = 파괴 시 공기가 되는 발자국**, 나머지는 무시된다. `ApplyGroundPatch(map, topLeft, footprint)` 는 발자국의 고체 픽셀만 공기로 만들고 **발자국 밖은 절대 건드리지 않는다**.
+- 가드 (걸리면 아무것도 바꾸지 않고 `false`, `StageState` 가 `SLUG_LOG_ERROR`): (1) 발자국이 어떤 열의 바닥 (지면 맵에서 그 열의 가장 아래 고체 픽셀) 을 지우면 거부, (2) 발자국 사각형 안 고체 픽셀의 50 % 를 넘게 지우면 거부. 고체가 0 인 마스크는 로드하지 않는다 (무시).
+- 베이커 (`Source/Tools/Baker` `BakeGroundPatchMasks_`) 가 만든다. 원본은 레거시 `Stage/map/Stage0_Pixel_0.bmp` 기준 지면:
+  - `Stage0_House_5_PixelMap` (큰 집): 레거시 마스크는 '집 몸체를 뺀 지면' 스냅샷이므로 발자국 = 기준 지면 - 스냅샷 (집 몸체 윗부분).
+  - `Stage0_House_4_PixelMap` (지상 집): 레거시 마스크는 전부 흰색이라 쓸 수 없다. 발자국 = 도로 윗면(y 1286) 위로 솟은 중심 열의 봉우리 한 덩어리.
+- 레거시 `BitBlt(SRCCOPY)` 는 사각형 전체를 덮어써 도로를 뚫었다 (이 버그가 softlock 원인). 새 규칙은 그 대신 발자국만 지운다.
 
 ### 2.2 Visual / Burst / Drop
 - Visual: `{ "anim": "<클립>" }` 또는 `{ "sprite": "<스프라이트>" }` (정확히 하나).
@@ -92,7 +100,7 @@
 - **다리(bridge_*) 는 `wall`** (EnemySpecs §5: WALL+HITBOX). 파괴 후에도 충돌 유지. 원웨이 발판 아님.
 - **탑(tower) 발판은 3개** (EnemySpecs: `45-70i`, 꼭대기 y = pos-100). StageFormat §9 의 2개 표기는 옛 요약.
 - 원/상자 충돌은 **외접 AABB 로 근사** (`Hurtbox` 는 AABB 전용). 지면집/큰집 원 상자는 판정이 살짝 넓다.
-- 지면집/큰집의 픽셀맵 패치는 PropWorld 가 적용하지 않는다. `GroundPatch` 이벤트 + `ApplyGroundPatch` 로 호스트가 적용 (알파 마스크는 호스트가 준비).
+- 지면집/큰집의 발자국 패치는 PropWorld 가 적용하지 않는다. `GroundPatch` 이벤트를 `StageState` 가 받아 `ApplyGroundPatch` 로 활성 지면에 적용한다 (§2.3). 개활지 큰 집 (13542) 은 스테이지에 스폰하지 않지만 그 몸체 봉우리 (x 13397..13701, 윗면 y 1204) 는 지면 bin 에 남아 있다. 보스 아레나 엄폐물로 쓰이며 `BossBot` 밸런스 테스트가 이를 전제하므로 제거하지 않는다 (제거하면 보스 봇 승률이 0 이 된다).
 - 무기 보급(`bullet`)은 `PlayerController::PickUpWeapon` 의 무기별 탄 (HMG 200 / SG 30) 을 쓴다. 레거시 '추가 탄' (MG 100 / SG 10) 과 다르다. 정확히 맞추려면 `PlayerController` 에 탄약 추가 메서드가 필요하다.
 - MobBoat 드롭의 bounce 는 vy -400 (레거시 -500, 수평 ±75 포함).
 - 아이템 깜빡임 구간은 10.5 s 부터 수명 끝까지로 해석.

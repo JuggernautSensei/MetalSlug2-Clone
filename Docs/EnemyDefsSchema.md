@@ -22,6 +22,7 @@
 | `originMode` | enum | `feet`(기본) / `center`(비행체) |
 | `human` | bool | `true` 면 사람 대상: 칼(Melee)을 받는다. 생략/`false` 면 차량·보스·건물처럼 칼이 닿지 않고 총/폭탄만 받는다 (`human_base` 가 `true`를 상속) |
 | `hp` | int | 새 HP. `ttk`(초) 병기 시 `hp = ttk × globals.dpsRef` 로 빌드 시 검증/경고 |
+| `hitFlash` | bool | 피격 시 전체 스프라이트 주황 블링크 (on 6틱 / off 6틱, 피격 후 12틱 유지). 생략 시 `hp >= 20` 이면 `true` (차량·보스), 그 아래(보병 등)는 `false`. 부위별 플래시는 코드에서 `TriggerPartHitFlash` 로 건다 |
 | `ttk` | float? | 권총 지속 dps 기준 목표 처치 시간(문서용·검증용) |
 | `score` | int | 처치 점수 |
 | `body` | Box | 이동/지형 충돌 박스 |

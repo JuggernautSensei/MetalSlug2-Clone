@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Base/Random.h"
 #include <memory>
 #include "Base/Types.h"

@@ -636,8 +636,16 @@ const GroundMap* StageState::FindPatchMask_(
     const slug::FilePath path = _ctx.assetRoot / "Baked" / "Textures" / (_sprite + ".png");
     if (std::optional<GroundMap> mask = LoadGroundPatchMask(path))
     {
-        patch.mask    = std::move(*mask);
-        patch.bLoaded = true;
+        if (mask->CountSolidPixels() == 0)
+        {
+            // 빈 발자국은 아무것도 지우지 않는다. 데이터(베이크) 오류이므로 로그로 드러낸다.
+            SLUG_LOG_ERROR("지면 패치 마스크 '{}' 에 발자국 픽셀이 없습니다 (무시)", path.string());
+        }
+        else
+        {
+            patch.mask    = std::move(*mask);
+            patch.bLoaded = true;
+        }
     }
     else
     {
@@ -654,9 +662,9 @@ void StageState::ApplyGroundPatch_(
 {
     GroundMap* pGround = m_host.GetActiveGroundMut();
     const GroundMap* pMask = FindPatchMask_(_ctx, _sprite);
-    if (pGround && pMask)
+    if (pGround && pMask && !ApplyGroundPatch(*pGround, _topLeft, *pMask))
     {
-        ApplyGroundPatch(*pGround, _topLeft, *pMask);
+        SLUG_LOG_ERROR("지면 패치 '{}' 가드에 걸려 적용하지 않았습니다 (바닥을 지우는 마스크)", _sprite.c_str());
     }
 }
 

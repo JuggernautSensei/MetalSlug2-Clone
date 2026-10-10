@@ -26,10 +26,17 @@ struct IntRect
 
 [[nodiscard]] IntRect ComputeDestRect(const AnimFrame& _frame, Vec2 _worldOrigin, Vec2 _cameraPos, bool _bFlipX);
 
+// 피격 플래시: 같은 프레임을 ADD 블렌드로 한 번 더 그린다 (주황 틴트, 스프라이트 알파로 마스크).
+inline constexpr uint8_t kHitFlashR        = 255;
+inline constexpr uint8_t kHitFlashG        = 110;
+inline constexpr uint8_t kHitFlashB        = 40;
+inline constexpr float   kHitFlashMaxAlpha = 0.5f;   // flashAmount 1 일 때 ADD 알파
+
 struct SpriteDrawOptions
 {
-    bool      bFlipX = false;
-    slug::RGBA tint   = { 255, 255, 255, 255 };   // 곱셈 색 + 알파
+    bool      bFlipX      = false;
+    slug::RGBA tint        = { 255, 255, 255, 255 };   // 곱셈 색 + 알파
+    float     flashAmount = 0.f;                      // 0 = 끔, 1 = 최대 플래시 (0..1 로 클램프)
 };
 
 struct SpriteCommand

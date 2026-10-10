@@ -135,6 +135,28 @@ namespace
         stbi_image_free(pPixels);
         return image;
     }
+
+    // 같은 소스 사각형을 ADD 블렌드로 한 번 더 그린다. 알파가 0 인 픽셀은 기여하지 않는다.
+    void DrawHitFlashPass_(
+        SDL_Renderer*  _pRenderer,
+        SDL_Texture*   _pTexture,
+        const SDL_FRect& _src,
+        const SDL_FRect& _dst,
+        const bool     _bFlipX,
+        const float    _flashAmount)
+    {
+        const float    amount = std::clamp(_flashAmount, 0.f, 1.f);
+        const uint8_t  alpha  = static_cast<uint8_t>(std::lround(amount * kHitFlashMaxAlpha * 255.f));
+        if (alpha == 0)
+        {
+            return;
+        }
+        SDL_SetTextureBlendMode(_pTexture, SDL_BLENDMODE_ADD);
+        SDL_SetTextureColorMod(_pTexture, kHitFlashR, kHitFlashG, kHitFlashB);
+        SDL_SetTextureAlphaMod(_pTexture, alpha);
+        SDL_RenderTextureRotated(_pRenderer, _pTexture, &_src, &_dst, 0.0, nullptr, _bFlipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+        SDL_SetTextureBlendMode(_pTexture, SDL_BLENDMODE_BLEND);
+    }
 }
 
 SpriteBatch::~SpriteBatch()
@@ -325,6 +347,7 @@ void SpriteBatch::DrawFrame(
     SDL_SetTextureColorMod(page.pTexture, _options.tint.r, _options.tint.g, _options.tint.b);
     SDL_SetTextureAlphaMod(page.pTexture, _options.tint.a);
     SDL_RenderTextureRotated(m_pRenderer, page.pTexture, &src, &dst, 0.0, nullptr, _options.bFlipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+    DrawHitFlashPass_(m_pRenderer, page.pTexture, src, dst, _options.bFlipX, _options.flashAmount);
 }
 
 void SpriteBatch::DrawFrame(
@@ -358,6 +381,7 @@ void SpriteBatch::DrawFrameRect(
     SDL_SetTextureColorMod(page.pTexture, _options.tint.r, _options.tint.g, _options.tint.b);
     SDL_SetTextureAlphaMod(page.pTexture, _options.tint.a);
     SDL_RenderTextureRotated(m_pRenderer, page.pTexture, &src, &dst, 0.0, nullptr, _options.bFlipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+    DrawHitFlashPass_(m_pRenderer, page.pTexture, src, dst, _options.bFlipX, _options.flashAmount);
 }
 
 void SpriteBatch::Submit(

@@ -142,8 +142,8 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
 | `bridge_block` | `…::BLOCK` | `Stage0_Block_Idle → Stage0_Block_Destroy` | 135x95 offset 0; 파괴 후 72x91 offset (30,0) |
 | `house_upper` `house_open_window` `house_cloth` `house_no_cloth` `house_yellow` | `Stage0House` HOUSE_* | `Stage0_House_{0_Idle, 1_Idle, 2_Idle_0, 2_Idle_1, 3_Idle} → …_Destroy` | HP 10. 지붕 플랫폼(적 전용, GROUND_EXCEPT_PLAYER) 150x30 offset y = 3 / -14 / -27 / -27 / -27 → 윗면 y = pos.y + offset.y - 15 |
 | `ground_mini_house` | `Stage0GroundMiniHouse` | → `Stage0_Bridge_3` | HP 10, 원 r70 offset (40,40) + 벽 20x45 offset (85,-1) |
-| `ground_house` | `Stage0GroundHouse` | `Stage0_House_4_Idle → Destroy_0 (HP≤10) → Destroy_1 (HP≤0)` | HP 20, 원 r110 offset (10,50). 파괴 시 지면 패치 `Stage0_House_4_PixelMap` @ `pos - size/2 + (12,5)` |
-| `big_house` | `Stage0BigHouse` | `Stage0_House_5_Idle → Destroy_0 (HP≤20) → Destroy_1 (HP≤0)` | HP 40, 박스 310x120 offset (10,0) + 원 r120 offset (-110,60),(120,60). 지면 패치 `Stage0_House_5_PixelMap` @ `pos - size/2 + (12,9)`. `cullMargin` 150 |
+| `ground_house` | `Stage0GroundHouse` | `Stage0_House_4_Idle → Destroy_0 (HP≤10) → Destroy_1 (HP≤0)` | HP 20, 원 r110 offset (10,50). 파괴 시 지면 발자국 패치 `Stage0_House_4_PixelMap` @ `pos - size/2 + (12,5)` (발자국만 지운다, PropSpecs §2.3) |
+| `big_house` | `Stage0BigHouse` | `Stage0_House_5_Idle → Destroy_0 (HP≤20) → Destroy_1 (HP≤0)` | HP 40, 박스 310x120 offset (10,0) + 원 r120 offset (-110,60),(120,60). 지면 발자국 패치 `Stage0_House_5_PixelMap` @ `pos - size/2 + (12,9)` (PropSpecs §2.3). `cullMargin` 150 |
 | `tower` | `Stage0Tower` | `Stage0_Tower_Idle → Destroy` | HP 10, 피격 90x210, 플랫폼 80x10 offset (5,45),(5,-25) |
 | `guard_post` | `GuardPost` (애니 `GuardPost`) | - | 플랫폼 130x10 offset (0,-65), 165x10 offset (0,10) |
 
@@ -167,7 +167,7 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
   - `collider` → 스테이지 충돌체 목록. `collisionLayer: wall` 은 플레이어/적 벽, `groundExceptPlayer` 는 적만 서는 원웨이 바닥. 매 틱 물리 입력에 합친다.
   - 그 밖 (`decor` 의 `anim_decor` / `sprite_decor`, 정의가 아직 없는 이름) → `StageWorldHost` 의 플레이스홀더 (상자). 판정 가능 kind 만 평소에도 그린다. 장식 플레이스홀더는 F1 에서만 보인다.
 - 틱 순서: 판정 시작 → 소품 Tick → 벽/발판 안정 저장소 갱신 (`StageState` 멤버 벡터에 복사, 이 틱 동안만 쓴다) → Hurtbox 등록 (플레이스홀더/적/소품, 플레이어 Tick 전) → 플레이어 → 아이템 습득 → 적 → 투사체 Step → Resolve → 피해 적용 (소품/적/플레이스홀더/플레이어/투사체) → 이벤트 소비 → 연출 → `StageRunner::Tick`.
-- 이벤트: 적 `Died` → 점수 + 드롭 아이템 (`drop`), `ItemDropped` (포로) → 튀는 아이템, 소품 `GroundPatch` → Baked/Textures/<sprite>.png 의 파란 픽셀 (RGB_BLUE 규칙) 마스크를 `ApplyGroundPatch` 로 활성 지면에 적용 (집 발자국은 공기로 비워진다).
+- 이벤트: 적 `Died` → 점수 + 드롭 아이템 (`drop`), `ItemDropped` (포로) → 튀는 아이템, 소품 `GroundPatch` → Baked/Textures/<sprite>.png 의 파란 픽셀 발자국을 `ApplyGroundPatch` 로 활성 지면에서 공기로 만든다 (발자국 밖은 불변, 바닥을 지우는 마스크는 가드로 거부; PropSpecs §2.3).
 - 게이트: `IsDefeated` / `IsDestroyFinished` 는 라우팅 표로 해당 월드에 묻는다 (적은 EnemyWorld, 소품은 PropWorld, 아이템은 사라짐, 충돌체는 제거됨).
 - 끝 장면: `endStage` → `MISSION COMPLETE` (ScreenFlow, 세계 정지) → `title`. 플레이어 게임 오버 → `GAME OVER` (ScreenFlow) → `title`. Stage0 의 보스 게이트는 `playerInvincible` 뒤 `endStage` 만 한다 (배너/암전은 ScreenFlow 가 맡는다).
 - 디버그: F1 켜진 상태에서 F5 = 다음 섹션으로 워프, F6 = 보스 아레나로 워프 (GameContext::debugWarp). `--warp N` 명령행 옵션은 시작 시 F5 를 N 번 누른 것과 같다 (F1 도 켠다). F1 오버레이에 섹션 id, 열린 게이트, 적/소품/아이템/충돌체/플레이스홀더 개수, 지면 이름이 나온다.

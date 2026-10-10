@@ -269,28 +269,21 @@
 
 ## 3. 중간보스/보스
 
-### 3.1 MBTruck (버스 중간보스) — `MBTruck.*` (Object 파생, HP 직접 관리)
+### 3.1 Bus (버스 중간보스) — `Source/Game/Enemies/Bus.cpp`, def `mb_truck` (`Assets/Defs/Boss.json`), 스프라이트 `Assets/Source/33825.png` (컷 맵: `Docs/BusSheet.md`)
+사양 근거: `Docs/Spec_Bus.md` (원작 영상 실측). 이 절은 구현 기준이다.
+
 | 항목 | 값 |
 |---|---|
-| 원점/충돌 | 스폰 `(2995,255)`, 지면 y=378 → **F≈123**(원점→지면). 본체 `box 180×260`, 닫힘 상태 offset(−215,0) 트리거(플레이어 접촉으로 개방), 개방 후 **WALL** offset(−30,0) (플레이어 걸어 올라설 수 없음, 총알 피격) |
-| HP | 레거시 160 (스텝 20 ×8) → 새 **250** (TTK 25 s), 8단계 = `hp/8` 마다 파손. 점수 레거시 **없음**(Monster 아님) → 권장 2000 |
-| 개방 | 닫힘 `MainTruck_Not_Begin`(스프라이트) → 접촉 시 `MainTruck_Begin`(25f×.14=3.5 s) → `MainTruck_Idle_0` 스프라이트 + 사다리 `MainTruck_Ladder_0` offset(54,6), 스프라이트 offset(−33,1). 개방 중 피격 HP 는 감소하나 연출 무변화 |
-- **전투**(`SetBattle(true)` 는 플레이어 x>2670 `BUS_START`, 카메라 `(2790,224)` 로 1 s 이동 후 고정; 처치 시 카메라 해제): 플레이어가 사망/게임오버면 타이머 정지.
-  - **포탄**: 첫 **2 s** 후, 이후 **3 s** 간격. 머즐 `pos+(−150,−130)` → 발 기준 `(−150,−253)`. `BTankProjectile`(vy0 −200, 중력 500) 에 속도 보정: `t=(200+√(40000+1000·max(dy,−30)))/500`, `speed=clamp(dx/t,80,420)`, `dx=muzzle.x−player.x`(좌향). 이펙트 `BTank_Shot_Effect`. 피해 즉사.
-  - **병사 투하**: 첫 **3 s**, 이후 **5 s** 간격. 생존 투하 병사 **최대 2**, 누적 **최대 8**. `Soldier(BOMB_THROWER)` 를 `pos+(−150,−40)` 에 생성.
-- **파손 단계**(스프라이트 교체 + 폭발 `CreateExplosionEffect(pos,(−50,−50),150,1,1,1)`; `HP_STD=HP/8`):
-| HP 구간 | 단계 | 변화 |
-|---|---|---|
-| ≤7/8 | Idle_1 | `MainTruck_Idle_1`, 사다리_1, 이펙트 `LeftUp_Win_Destroy` `(−20,−71)` |
-| ≤6/8 | Idle_2 | `Idle_2`, `RightUp_Win_Destroy`(40,−65), `LeftDown_Win_Destroy`(−20,7), 장식 `MainTruck_Deco_Destroy_Stop` |
-| ≤5/8 | Idle_2_Deco | 장식 파괴 `MainTruck_Deco_Destroy`(11f×.06) |
-| ≤4/8 | Idle_3 | `Idle_3`, `RightDown_Win_Destroy`(65+54,30+6), 정지 파츠 `*_Stop` 3종 |
-| ≤3/8 | Win_Dest | 창틀 `MainTruck_Big_Win_Destroy_Begin` offset(−18,60) |
-| ≤2/8 | Bump | 범퍼 `MainTruck_Bump`(6f×.06), 창틀 `…_End` |
-| ≤1/8 | Side | 옆 파츠 `MainTruck_Sideparts`(12f×.06) |
-| 0 | Dead | `MainTruck_Die` 스프라이트 offset(0,60), 사다리 OFF, 폭발 `(−25,−50),200,S2 M4 L4`, **지면 픽셀맵 `Stage0_Pixel_0 → Stage0_Pixel_1`**(잔해 위로 오를 수 있는 단차: x=3000 에서 고체 378→322, 높이 56), 전경 스프라이트 `MainTruck_Die_Front` `pos+(12,88)`, 충돌 OFF |
-- 새: 지면 교체는 `groundPatch`/`GroundMap` 스왑 이벤트(`on_death: swap_ground`). 레거시 버그: `static_pointer_cast<Projectile>` 무검사(칼 UI 타입은 OK), 개방 판정이 모든 겹침.
-- 스폰: `CREATE_BUS` (x>2244) `(2995,255)`.
+| 원점/충돌 | 스폰 `(2995,255)` legacyCenter (발 y 385). 원점 = 발 중앙. 벽 `solid 204x260` (발 기준 cx 0, cy -130) 은 **살아 있는 동안만** (`GetSolidBoxes` 는 Alive 만). 사망 (Dying) 후 벽이 사라져 잔해 위를 걸을 수 있다. 피격 박스 = `hurtbox` (204x272) |
+| HP / 점수 | **380** (1P HMG 2 dmg x 20 발/s = 40 dps, 전투 9.5 s). 점수 2000. `hp/8` 마다 한 단계 |
+| 등장 | `bus_create` (x>2244): 버스 스폰 (주차, 벽, 무적), `setGround Stage0_1` silent. `bus_start` (x>2560): `lockCamera [2513,0,3153,448] glide 1.9` (팬 1.9 s 후 카메라 x 2513 고정), `command startBattle`, `gate bus_dead` |
+| 주차 / 팬 | 주차 중 (상태 kParked, kReveal) 피격은 흡수 (`OnHit_`, 피해 없음). startBattle 은 `BehaviorOps.onCommand` 로 전달 (`EnemyWorld::SendCommand`) |
+| 개방 | 팬 종료 뒤 `Bus_Opening` 10 프레임 @7 fps (1.43 s). 개방 직후부터 피격 판정 (`RegisterHurtboxes` 는 기본 경로, 피해는 `OnHit_` 가 결정) |
+| 전투 | 포탄/병사/GO! 없음 (원작에서 확인되지 않음). 플레이어 공격만 |
+| 파손 단계 (stage = `hp/8` 기준) | 0 `Bus_Open` / 1 `Bus_Damaged_1` / 2 `Bus_Damaged_2` + `Bus_WinLeftUp` / 3 `Bus_Ladder_2` + `Bus_WinRightUp` + `Bus_Deco` / 4 `Bus_Ladder_3` + `Bus_WinLeftDown` / 5 `Bus_Damaged_3` + `Bus_BigWin_Begin`→`End` + `Bus_WinRightDown` / 6 `Bus_Smoke` (루프) + `Bus_Bump` + 폭발 Small / 7 `Bus_Smoke` + `Bus_Sideparts` + 폭발 Mid, Large |
+| 사망 | `Died` 이벤트 1회. 연쇄 폭발 (Small 2, Mid 4, Large 4, 0~0.5 s, 중심 발 + (-25,-150)). 0.5 s 후 `Bus_Wreck` (398x222) + `Bus_WreckFront` (발 + 12). 잔해는 남고 (`deathDone` 즉시 true), 게이트 `bus_dead` 가 즉시 열려 `unlockCamera` + `setGround Stage0_1` |
+| 구현 파라미터 | `BusCfg { revealTicks 114, openTicks 86, chainTicks 30 }` = `Boss.json` params `revealSec 1.9 / openSec 1.43 / chainSec 0.5` |
+| 원작 대비 | 원작 전투 9.5 s, HP 250 (2P 기준). 이 프로젝트 HMG 는 원작보다 연사가 빨라 (20 vs 7.7 발/s) 같은 9.5 s 를 맞추려고 HP 380 을 썼다. 개방은 원작 3.5 s 에서 1.43 s (시트에 있는 10 프레임만 사용). |
 
 ### 3.2 Big Shiee (최종보스, MS2 Mission 4) — `Source/Game/Enemies/BigShiee.*`, def `bigshiee` (`Assets/Defs/Boss.json`)
 

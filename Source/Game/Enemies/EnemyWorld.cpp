@@ -242,16 +242,26 @@ void EnemyWorld::OnHitEvents(
 
         if (ops.onHit && ops.onHit(e, def, env, event))
         {
+            // 행동이 소비한 피격 (부위 피격 등): 부위 플래시만 건다 (선체 플래시 아님)
+            if (def.bHitFlash)
+            {
+                TriggerPartHitFlash(e, GetPartIndex(event.target));
+            }
             continue;
         }
 
-        if (e.health.ApplyDamage(event.damage) > 0)
+        const int applied = e.health.ApplyDamage(event.damage);
+        if (applied > 0)
         {
             e.lastHitKind = event.kind;
         }
         if (e.health.IsDead())
         {
             BeginDying_(e, def, env);
+        }
+        else if (applied > 0 && def.bHitFlash)
+        {
+            e.hitFlashTicks = kHitFlashTicks;
         }
     }
 }
@@ -281,6 +291,21 @@ void EnemyWorld::Tick(
     m_lastCtx     = _ctx;
     m_bPlayerMinX = false;
     m_bPlayerMaxX = false;
+
+    for (Enemy& e: m_enemies)
+    {
+        if (e.hitFlashTicks > 0)
+        {
+            --e.hitFlashTicks;
+        }
+        for (int& ticks: e.partFlashTicks)
+        {
+            if (ticks > 0)
+            {
+                --ticks;
+            }
+        }
+    }
 
     if (_ctx.pProjectiles)
     {
@@ -504,7 +529,7 @@ void EnemyWorld::Submit(
 
         if (ops.submitParts)
         {
-            const EnemyRenderEnv render { _sprites, _anims, m_pSprites, _projectiles, feet, _alpha, kEnemyLayer };
+            const EnemyRenderEnv render { _sprites, _anims, m_pSprites, _projectiles, feet, _alpha, kEnemyLayer, HitFlashAmount(e) };
             ops.submitParts(e, def, render);
         }
         if (e.clip < 0)
@@ -523,7 +548,9 @@ void EnemyWorld::Submit(
             continue;
         }
         const float lift = static_cast<float>(pClip->GetFootBaseline());
-        _sprites.Submit(kEnemyLayer, static_cast<int>(feet.y), *pFrame, { feet.x, feet.y - lift });
+        SpriteDrawOptions options;
+        options.flashAmount = HitFlashAmount(e);
+        _sprites.Submit(kEnemyLayer, static_cast<int>(feet.y), *pFrame, { feet.x, feet.y - lift }, options);
 
         if (def.overlayClip >= 0)
         {
@@ -533,7 +560,7 @@ void EnemyWorld::Submit(
                 const AnimFrame* pOverFrame = &pOver->frames[static_cast<size_t>(BakedFrameAt_(*pOver, static_cast<int64_t>(e.clipTicks) * kAnimUnitsPerTick))];
                 if (!pOverFrame->IsEmpty())
                 {
-                    _sprites.Submit(kOverlayLayer, static_cast<int>(feet.y), *pOverFrame, { feet.x + def.overlayOffset.x, feet.y + def.overlayOffset.y - lift });
+                    _sprites.Submit(kOverlayLayer, static_cast<int>(feet.y), *pOverFrame, { feet.x + def.overlayOffset.x, feet.y + def.overlayOffset.y - lift }, options);
                 }
             }
         }
@@ -652,6 +679,27 @@ slug::Vector<Aabb> EnemyWorld::GetSolidBoxes() const
         }
     }
     return boxes;
+}
+
+void EnemyWorld::SendCommand(
+    const EnemyHandle      _handle,
+    const slug::StringView _command)
+{
+    if (!m_pLibrary)
+    {
+        return;
+    }
+    const size_t idx = FindIndex_(ResolveHandle(_handle).id);
+    if (idx >= m_enemies.size() || m_enemies[idx].life != eEnemyLife::Alive)
+    {
+        return;
+    }
+    Enemy&             e   = m_enemies[idx];
+    const BehaviorOps& ops = GetBehaviorOps(e.behavior);
+    if (ops.onCommand)
+    {
+        ops.onCommand(e, m_pLibrary->Get(e.defIndex), _command);
+    }
 }
 
 bool EnemyWorld::IsDefeated(
