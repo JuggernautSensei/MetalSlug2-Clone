@@ -276,7 +276,7 @@ void EnemyWorld::OnHitEvents(
         }
         else if (applied > 0 && def.bHitFlash)
         {
-            e.hitFlashTicks = kHitFlashTicks;
+            (void)StartHitFlash(e.hitFlashTicks);
         }
     }
 }
@@ -309,16 +309,10 @@ void EnemyWorld::Tick(
 
     for (Enemy& e: m_enemies)
     {
-        if (e.hitFlashTicks > 0)
-        {
-            --e.hitFlashTicks;
-        }
+        TickHitFlash(e.hitFlashTicks);
         for (int& ticks: e.partFlashTicks)
         {
-            if (ticks > 0)
-            {
-                --ticks;
-            }
+            TickHitFlash(ticks);
         }
     }
 

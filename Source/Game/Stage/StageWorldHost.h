@@ -6,6 +6,7 @@
 #include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Combat/CombatSystem.h"
+#include "Game/Combat/HitFlash.h"
 #include "Game/Stage/StageData.h"
 #include "Game/Stage/StageHost.h"
 #include "World/GroundMap.h"
@@ -36,7 +37,7 @@ struct PlaceholderEntity
     Vec2        size       = { 40.f, 75.f };
     Health      health     = {};
     bool        bHittable  = true;
-    int         flashTicks = 0;   // 피격 번쩍임 남은 틱
+    int         flashTicks = 0;   // 피격 번쩍임 타이머 (HitFlash.h)
     int         deadTicks  = -1;
 
     [[nodiscard]] Aabb GetBox() const;

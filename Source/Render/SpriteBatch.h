@@ -26,17 +26,16 @@ struct IntRect
 
 [[nodiscard]] IntRect ComputeDestRect(const AnimFrame& _frame, Vec2 _worldOrigin, Vec2 _cameraPos, bool _bFlipX);
 
-// 피격 플래시: 같은 프레임을 ADD 블렌드로 한 번 더 그린다 (주황 틴트, 스프라이트 알파로 마스크).
-inline constexpr uint8_t kHitFlashR        = 255;
-inline constexpr uint8_t kHitFlashG        = 110;
-inline constexpr uint8_t kHitFlashB        = 40;
-inline constexpr float   kHitFlashMaxAlpha = 0.5f;   // flashAmount 1 일 때 ADD 알파
+// 피격 플래시: 원작은 스프라이트 전체를 밝기 기준 주황 램프로 바꿔 그린다 (Docs/Spec_HitFlash.md, 버스 실측).
+// 아틀라스 페이지마다 램프 변환본 텍스처를 한 벌 더 만들어 두고, flashAmount 가 켜진 프레임은 변환본으로 그린다.
+// 입력 RGB 의 평균 밝기 L 을 램프로 매핑한 색을 돌려준다 (알파는 그대로).
+[[nodiscard]] RGBA ApplyHitFlashRamp(RGBA _color);
 
 struct SpriteDrawOptions
 {
     bool  bFlipX      = false;
     RGBA  tint        = { 255, 255, 255, 255 };   // 곱셈 색 + 알파
-    float flashAmount = 0.f;                      // 0 = 끔, 1 = 최대 플래시 (0..1 로 클램프)
+    float flashAmount = 0.f;                      // 0.5 이상이면 플래시 변환본으로 그린다 (0 = 끔)
 };
 
 struct SpriteCommand
@@ -99,9 +98,10 @@ public:
 private:
     struct Page
     {
-        SDL_Texture* pTexture = nullptr;
-        int          width    = 0;
-        int          height   = 0;
+        SDL_Texture* pTexture      = nullptr;
+        int          width         = 0;
+        int          height        = 0;
+        SDL_Texture* pFlashTexture = nullptr;   // 피격 플래시 변환본 (아틀라스 페이지만, 없으면 nullptr)
     };
 
     SDL_Renderer*         m_pRenderer = nullptr;

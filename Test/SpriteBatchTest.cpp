@@ -340,7 +340,7 @@ TEST(SpriteDrawOptionsDefaults, FlashIsOffByDefault)
     EXPECT_FALSE(options.bFlipX);
 }
 
-TEST(SpriteBatchSdl, HitFlashAddsWarmTintOnlyWhenRequested)
+TEST(SpriteBatchSdl, HitFlashDrawsOrangeRampVariantOnlyWhenRequested)
 {
     SoftwareTarget target { 32, 32 };
     if (!target.IsValid())
@@ -362,13 +362,33 @@ TEST(SpriteBatchSdl, HitFlashAddsWarmTintOnlyWhenRequested)
     SpriteDrawOptions options;
     options.flashAmount = 1.f;
     batch.DrawFrame(frame, { 10.f, 20.f }, Vec2 { 0.f, 0.f }, options);
-    // 100 + 0.5 * 100 * (255,110,40) / 255 = (150,122,108)
-    const uint32_t px = target.PixelRgb(10, 19);
-    EXPECT_NEAR(static_cast<int>((px >> 16) & 0xFFu), 150, 2);
-    EXPECT_NEAR(static_cast<int>((px >> 8) & 0xFFu), 122, 2);
-    EXPECT_NEAR(static_cast<int>(px & 0xFFu), 108, 2);
+    // 평균 밝기 100 -> 램프 (약 225,137,44): 밝기 100 회색이 주황으로 바뀐다
+    const RGBA     expected = ApplyHitFlashRamp({ 100, 100, 100, 255 });
+    const uint32_t px       = target.PixelRgb(10, 19);
+    EXPECT_NEAR(static_cast<int>((px >> 16) & 0xFFu), expected.r, 2);
+    EXPECT_NEAR(static_cast<int>((px >> 8) & 0xFFu), expected.g, 2);
+    EXPECT_NEAR(static_cast<int>(px & 0xFFu), expected.b, 2);
+    EXPECT_GT(expected.r, 200);
+    EXPECT_LT(expected.b, 80);
 
     target.Clear();
     batch.DrawFrame(frame, { 10.f, 20.f }, Vec2 { 0.f, 0.f });
-    EXPECT_EQ(target.PixelRgb(10, 19), 0x646464u) << "플래시 뒤 블렌드 모드가 BLEND 로 복구되어야 한다";
+    EXPECT_EQ(target.PixelRgb(10, 19), 0x646464u) << "플래시 뒤에도 일반 프레임은 원래 색이어야 한다";
+}
+
+TEST(SpriteBatchSdl, HitFlashRampIsMonotoneKeepsAlphaAndMapsBlackToDarkOrange)
+{
+    int prevR = -1;
+    for (int v = 0; v <= 255; ++v)
+    {
+        const RGBA c = ApplyHitFlashRamp({ static_cast<uint8_t>(v), static_cast<uint8_t>(v), static_cast<uint8_t>(v), 77 });
+        EXPECT_EQ(c.a, 77);
+        EXPECT_GE(static_cast<int>(c.r), prevR) << "v=" << v;
+        EXPECT_GE(c.r, c.g);
+        EXPECT_GE(c.g, c.b);
+        prevR = c.r;
+    }
+    const RGBA black = ApplyHitFlashRamp({ 0, 0, 0, 255 });
+    EXPECT_GT(black.r, 120) << "원작: 어두운 픽셀도 붉은 주황으로 크게 떠오른다";
+    EXPECT_LT(black.b, 10);
 }

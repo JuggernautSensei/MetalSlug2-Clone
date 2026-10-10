@@ -137,29 +137,90 @@ namespace
         return image;
     }
 
-    // 같은 소스 사각형을 ADD 블렌드로 한 번 더 그린다. 알파가 0 인 픽셀은 기여하지 않는다.
-    void DrawHitFlashPass_(
-        SDL_Renderer*    _pRenderer,
-        SDL_Texture*     _pTexture,
-        const SDL_FRect& _src,
-        const SDL_FRect& _dst,
-        const bool       _bFlipX,
-        const float      _flashAmount)
+    // 피격 플래시 램프 노드 (원작 버스 피격 프레임 실측: 입력 평균 밝기 L -> 출력 RGB)
+    struct FlashRampNode
     {
-        const float   amount = std::clamp(_flashAmount, 0.f, 1.f);
-        const uint8_t alpha  = static_cast<uint8_t>(std::lround(amount * kHitFlashMaxAlpha * 255.f));
-        if (alpha == 0)
+        int l = 0;
+        int r = 0;
+        int g = 0;
+        int b = 0;
+    };
+
+    const ARRAY<FlashRampNode, 17> kFlashRamp = { {
+        { 0, 145, 52, 0 },
+        { 8, 151, 56, 0 },
+        { 24, 159, 61, 0 },
+        { 40, 186, 80, 3 },
+        { 56, 190, 90, 9 },
+        { 72, 200, 106, 21 },
+        { 88, 216, 126, 36 },
+        { 104, 228, 140, 47 },
+        { 120, 243, 154, 54 },
+        { 136, 249, 163, 65 },
+        { 152, 249, 182, 98 },
+        { 168, 253, 198, 115 },
+        { 184, 254, 210, 130 },
+        { 200, 255, 221, 145 },
+        { 216, 255, 234, 167 },
+        { 232, 255, 248, 207 },
+        { 255, 255, 255, 235 },
+    } };
+
+    uint8_t LerpChannel_(
+        const int _from,
+        const int _to,
+        const int _t,
+        const int _span)
+    {
+        return static_cast<uint8_t>(_from + (_to - _from) * _t / _span);
+    }
+
+    // 플래시 변환본 RGBA 를 만든다 (알파 0 픽셀은 그대로 둔다).
+    Vector<uint8_t> BuildFlashRgba_(
+        const Span<const uint8_t> _rgba,
+        const size_t              _pixelCount)
+    {
+        Vector<uint8_t> out(_pixelCount * 4);
+        for (size_t i = 0; i < _pixelCount; ++i)
         {
-            return;
+            const size_t o = i * 4;
+            const RGBA   c = ApplyHitFlashRamp({ _rgba[o], _rgba[o + 1], _rgba[o + 2], _rgba[o + 3] });
+            out[o]         = c.r;
+            out[o + 1]     = c.g;
+            out[o + 2]     = c.b;
+            out[o + 3]     = c.a;
         }
-        SDL_SetTextureBlendMode(_pTexture, SDL_BLENDMODE_ADD);
-        SDL_SetTextureColorMod(_pTexture, kHitFlashR, kHitFlashG, kHitFlashB);
-        SDL_SetTextureAlphaMod(_pTexture, alpha);
-        SDL_RenderTextureRotated(_pRenderer, _pTexture, &_src, &_dst, 0.0, nullptr, _bFlipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
-        SDL_SetTextureBlendMode(_pTexture, SDL_BLENDMODE_BLEND);
+        return out;
+    }
+
+    // 텍스처 선택: 플래시가 켜졌고 변환본이 있으면 변환본.
+    SDL_Texture* PickTexture_(
+        SDL_Texture* const _pNormal,
+        SDL_Texture* const _pFlash,
+        const float        _flashAmount)
+    {
+        return (_flashAmount >= 0.5f && _pFlash) ? _pFlash : _pNormal;
     }
 
 }   // namespace
+
+RGBA ApplyHitFlashRamp(
+    const RGBA _color)
+{
+    const int l = (static_cast<int>(_color.r) + static_cast<int>(_color.g) + static_cast<int>(_color.b)) / 3;
+    for (size_t i = 1; i < kFlashRamp.size(); ++i)
+    {
+        const FlashRampNode& hi = kFlashRamp[i];
+        if (l <= hi.l)
+        {
+            const FlashRampNode& lo   = kFlashRamp[i - 1];
+            const int            span = hi.l - lo.l;
+            const int            t    = l - lo.l;
+            return { LerpChannel_(lo.r, hi.r, t, span), LerpChannel_(lo.g, hi.g, t, span), LerpChannel_(lo.b, hi.b, t, span), _color.a };
+        }
+    }
+    return { 255, 255, 235, _color.a };
+}
 
 SpriteBatch::~SpriteBatch()
 {
@@ -180,6 +241,10 @@ void SpriteBatch::Shutdown()
         if (page.pTexture)
         {
             SDL_DestroyTexture(page.pTexture);
+        }
+        if (page.pFlashTexture)
+        {
+            SDL_DestroyTexture(page.pFlashTexture);
         }
     }
     m_pages.clear();
@@ -223,7 +288,25 @@ Result<void> SpriteBatch::AddAtlasPageFromRgba(
     SDL_SetTextureBlendMode(pTexture, SDL_BLENDMODE_BLEND);
     SDL_SetTextureScaleMode(pTexture, SDL_SCALEMODE_NEAREST);
 
-    m_pages.push_back({ pTexture, _width, _height });
+    // 피격 플래시 변환본 (실패해도 일반 페이지는 쓸 수 있다: 그 경우 플래시만 생략된다)
+    SDL_Texture*          pFlash = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, _width, _height);
+    const Vector<uint8_t> flashRgba = BuildFlashRgba_(_rgba, static_cast<size_t>(_width) * static_cast<size_t>(_height));
+    if (pFlash && SDL_UpdateTexture(pFlash, nullptr, flashRgba.data(), _width * 4))
+    {
+        SDL_SetTextureBlendMode(pFlash, SDL_BLENDMODE_BLEND);
+        SDL_SetTextureScaleMode(pFlash, SDL_SCALEMODE_NEAREST);
+    }
+    else
+    {
+        if (pFlash)
+        {
+            SDL_DestroyTexture(pFlash);
+        }
+        pFlash = nullptr;
+        SLUG_LOG_ERROR("플래시 변환 텍스처 생성 실패: {}", SDL_GetError());
+    }
+
+    m_pages.push_back({ pTexture, _width, _height, pFlash });
     return Error { kOK };
 }
 
@@ -406,10 +489,10 @@ void SpriteBatch::DrawFrame(
     const SDL_FRect src = { static_cast<float>(_frame.x), static_cast<float>(_frame.y), static_cast<float>(_frame.w), static_cast<float>(_frame.h) };
     const SDL_FRect dst = { static_cast<float>(dest.x), static_cast<float>(dest.y), static_cast<float>(dest.w), static_cast<float>(dest.h) };
 
-    SDL_SetTextureColorMod(page.pTexture, _options.tint.r, _options.tint.g, _options.tint.b);
-    SDL_SetTextureAlphaMod(page.pTexture, _options.tint.a);
-    SDL_RenderTextureRotated(m_pRenderer, page.pTexture, &src, &dst, 0.0, nullptr, _options.bFlipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
-    DrawHitFlashPass_(m_pRenderer, page.pTexture, src, dst, _options.bFlipX, _options.flashAmount);
+    SDL_Texture* const pDraw = PickTexture_(page.pTexture, page.pFlashTexture, _options.flashAmount);
+    SDL_SetTextureColorMod(pDraw, _options.tint.r, _options.tint.g, _options.tint.b);
+    SDL_SetTextureAlphaMod(pDraw, _options.tint.a);
+    SDL_RenderTextureRotated(m_pRenderer, pDraw, &src, &dst, 0.0, nullptr, _options.bFlipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
 }
 
 void SpriteBatch::DrawFrame(
@@ -440,10 +523,10 @@ void SpriteBatch::DrawFrameRect(
     const SDL_FRect src = { static_cast<float>(_frame.x), static_cast<float>(_frame.y), static_cast<float>(_frame.w), static_cast<float>(_frame.h) };
     const SDL_FRect dst = { static_cast<float>(_dest.x), static_cast<float>(_dest.y), static_cast<float>(_dest.w), static_cast<float>(_dest.h) };
 
-    SDL_SetTextureColorMod(page.pTexture, _options.tint.r, _options.tint.g, _options.tint.b);
-    SDL_SetTextureAlphaMod(page.pTexture, _options.tint.a);
-    SDL_RenderTextureRotated(m_pRenderer, page.pTexture, &src, &dst, 0.0, nullptr, _options.bFlipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
-    DrawHitFlashPass_(m_pRenderer, page.pTexture, src, dst, _options.bFlipX, _options.flashAmount);
+    SDL_Texture* const pDraw = PickTexture_(page.pTexture, page.pFlashTexture, _options.flashAmount);
+    SDL_SetTextureColorMod(pDraw, _options.tint.r, _options.tint.g, _options.tint.b);
+    SDL_SetTextureAlphaMod(pDraw, _options.tint.a);
+    SDL_RenderTextureRotated(m_pRenderer, pDraw, &src, &dst, 0.0, nullptr, _options.bFlipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
 }
 
 void SpriteBatch::Submit(

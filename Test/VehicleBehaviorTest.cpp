@@ -412,7 +412,7 @@ void CheckDropSpawnOffsets_(
 }
 }   // namespace
 
-TEST(VehicleHitFlash, JeepFlashesOnNonLethalHitRefreshesAndExpires)
+TEST(VehicleHitFlash, JeepFlashesOnNonLethalHitBlinksUnderFireAndExpires)
 {
     VehicleRig rig({ 100.f, kGround });
     ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
@@ -426,11 +426,28 @@ TEST(VehicleHitFlash, JeepFlashesOnNonLethalHitRefreshesAndExpires)
     EXPECT_EQ(rig.E(h)->hitFlashTicks, kHitFlashTicks);
     EXPECT_TRUE(rig.E(h)->IsAlive());
 
-    rig.Step(5);
-    EXPECT_EQ(rig.E(h)->hitFlashTicks, kHitFlashTicks - 5);
+    rig.Step(1);
+    EXPECT_TRUE(IsHitFlashOn(rig.E(h)->hitFlashTicks)) << "피격 다음 틱부터 켜져 있다";
+    EXPECT_FLOAT_EQ(HitFlashAmount(*rig.E(h)), 1.f);
 
-    ASSERT_GT(rig.Strike(h.id, eHitKind::Bullet, 5), 0u);
-    EXPECT_EQ(rig.E(h)->hitFlashTicks, kHitFlashTicks) << "재피격은 타이머를 갱신해야 한다";
+    rig.Step(kHitFlashOnTicks);
+    EXPECT_FALSE(IsHitFlashOn(rig.E(h)->hitFlashTicks)) << "ON 구간이 끝나면 꺼진다 (계속 켜져 있으면 안 된다)";
+    EXPECT_FLOAT_EQ(HitFlashAmount(*rig.E(h)), 0.f);
+
+    // 연사: 4 틱 간격으로 쏘아도 반드시 꺼지는 틱이 나타난다 (버그: 계속 빨간 채로 유지)
+    int onTicks  = 0;
+    int offTicks = 0;
+    for (int i = 0; i < 48; ++i)
+    {
+        if (i % 4 == 0)
+        {
+            ASSERT_GT(rig.Strike(h.id, eHitKind::Bullet, 1), 0u);
+        }
+        rig.Step(1);
+        (HitFlashAmount(*rig.E(h)) > 0.f ? onTicks : offTicks) += 1;
+    }
+    EXPECT_GT(onTicks, 10);
+    EXPECT_GT(offTicks, 5) << "연사 중에도 깜빡여야 한다";
 
     rig.Step(kHitFlashTicks);
     EXPECT_EQ(rig.E(h)->hitFlashTicks, 0);

@@ -449,18 +449,74 @@ TEST(EnemyWorld, PowFallingIntoPlayerIsRescuedMidAirAndGivesItem)
     EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Freed), 0);
 }
 
-TEST(EnemyHitFlash, BlinkIsSixTicksOnThenSixOffAndEndsWithTheWindow)
+TEST(EnemyHitFlash, SingleHitIsOneOnPulseThenOffUntilNextHit)
 {
+    int timer = 0;
+    ASSERT_TRUE(StartHitFlash(timer));
+    EXPECT_EQ(timer, kHitFlashTicks);
+
+    int onTicks = 0;
+    for (int i = 0; i < 20; ++i)
+    {
+        TickHitFlash(timer);
+        if (IsHitFlashOn(timer))
+        {
+            ++onTicks;
+        }
+    }
+    EXPECT_EQ(onTicks, kHitFlashOnTicks) << "피격 한 번 = 켜진 틱 kHitFlashOnTicks 개 (영상 약 2 프레임)";
+    EXPECT_EQ(timer, 0);
     EXPECT_FALSE(IsHitFlashOn(0));
-    EXPECT_FALSE(IsHitFlashOn(kHitFlashTicks + 1));
-    for (int left = kHitFlashTicks; left >= kHitFlashTicks - kHitFlashBlinkTicks + 1; --left)
+}
+
+TEST(EnemyHitFlash, ContinuousFireKeepsBlinkingInsteadOfStayingOn)
+{
+    // 원작 HMG 연사 (영상 약 4~8 틱 간격). 이전 구현은 재피격마다 타이머를 채워 항상 ON 이었다.
+    for (int interval: { 2, 3, 4, 6, 8 })
     {
-        EXPECT_TRUE(IsHitFlashOn(left)) << "left=" << left;
+        int timer     = 0;
+        int onTicks   = 0;
+        int offTicks  = 0;
+        int toggles   = 0;
+        bool bPrevOn  = false;
+        for (int tick = 0; tick < 120; ++tick)
+        {
+            if (tick % interval == 0)
+            {
+                (void)StartHitFlash(timer);
+            }
+            TickHitFlash(timer);
+            const bool bOn = IsHitFlashOn(timer);
+            (bOn ? onTicks : offTicks) += 1;
+            if (tick > 0 && bOn != bPrevOn)
+            {
+                ++toggles;
+            }
+            bPrevOn = bOn;
+        }
+        EXPECT_GT(offTicks, 20) << "interval=" << interval << " 연사 중에도 꺼지는 틱이 있어야 한다";
+        EXPECT_GT(onTicks, 20) << "interval=" << interval;
+        EXPECT_GE(toggles, 10) << "interval=" << interval << " 깜빡임이 반복되어야 한다";
     }
-    for (int left = kHitFlashTicks - kHitFlashBlinkTicks; left >= 1; --left)
+}
+
+TEST(EnemyHitFlash, HitDuringOnPulseIsIgnoredAndHitDuringGapRestarts)
+{
+    int timer = 0;
+    ASSERT_TRUE(StartHitFlash(timer));
+    TickHitFlash(timer);
+    ASSERT_TRUE(IsHitFlashOn(timer));
+    const int before = timer;
+    EXPECT_FALSE(StartHitFlash(timer)) << "ON 중 재피격은 타이머를 늘리지 않는다";
+    EXPECT_EQ(timer, before);
+
+    while (IsHitFlashOn(timer))
     {
-        EXPECT_FALSE(IsHitFlashOn(left)) << "left=" << left;
+        TickHitFlash(timer);
     }
+    EXPECT_GT(timer, 0) << "ON 이 끝나면 gap 구간";
+    EXPECT_TRUE(StartHitFlash(timer)) << "gap 중 재피격은 새 펄스를 시작한다";
+    EXPECT_EQ(timer, kHitFlashTicks);
 }
 
 TEST(EnemyHitFlash, OneHitDefinitionNeverFlashesEvenWhenSpawnedWithMoreHp)
@@ -483,6 +539,7 @@ TEST(EnemyHitFlash, PartFlashIsPerPartAndIgnoresOutOfRangeIndices)
     TriggerPartHitFlash(e, 2);
     EXPECT_EQ(e.partFlashTicks[2], kHitFlashTicks);
     EXPECT_EQ(e.partFlashTicks[1], 0);
+    TickHitFlash(e.partFlashTicks[2]);   // 피격은 Tick 앞에서 처리되므로 보이는 첫 값은 한 틱 뒤
     EXPECT_FLOAT_EQ(PartFlashAmount(e, 2), 1.f);
     EXPECT_FLOAT_EQ(PartFlashAmount(e, 1), 0.f);
     EXPECT_FLOAT_EQ(HitFlashAmount(e), 0.f);

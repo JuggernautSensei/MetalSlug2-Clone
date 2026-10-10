@@ -185,7 +185,7 @@ int TrainingTargets::ApplyEvents(
                 ++dummy.hitsTaken;
                 dummy.lastDamage = applied;
                 dummy.lastKind   = event.kind;
-                dummy.flashTicks = 5;
+                (void)StartHitFlash(dummy.flashTicks);
             }
             if (dummy.health.IsDead() && dummy.deadTicks < 0)
             {
@@ -215,10 +215,7 @@ void TrainingTargets::Tick(
 {
     for (TrainingDummy& dummy: m_dummies)
     {
-        if (dummy.flashTicks > 0)
-        {
-            --dummy.flashTicks;
-        }
+        TickHitFlash(dummy.flashTicks);
         if (dummy.deadTicks >= 0)
         {
             ++dummy.deadTicks;

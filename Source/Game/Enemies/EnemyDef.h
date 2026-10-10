@@ -5,6 +5,7 @@
 #include "Base/Math.h"
 #include "Base/Result.h"
 #include "Base/Types.h"
+#include "Game/Combat/HitFlash.h"
 #include "World/Combat.h"
 #include "World/Geometry.h"
 
@@ -471,9 +472,7 @@ struct SarubiaCfg
     int weaponGrenade = -1;
 };
 
-// 피격 플래시 (Docs/Spec_HitFlash.md): 블링크 한 주기 = on 6틱 + off 6틱, 피격 시 12틱 유지(재피격 시 갱신).
-inline constexpr int kHitFlashTicks       = 12;
-inline constexpr int kHitFlashBlinkTicks  = 6;
+// 피격 플래시 타이밍은 Game/Combat/HitFlash.h (피격당 ON 펄스 1회, Docs/Spec_HitFlash.md).
 inline constexpr int kHitFlashMinHp       = 20;   // 기본 대상: hp >= 20 (차량/보스). 생략 시 이 기준, JSON "hitFlash" 로 덮어쓴다
 inline constexpr int kEnemyFlashPartCount = 8;    // 부위별 플래시 타이머 수 (Enemy::partFlashTicks)
 

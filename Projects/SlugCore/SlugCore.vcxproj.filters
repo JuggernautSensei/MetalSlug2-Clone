@@ -317,6 +317,9 @@
     <ClInclude Include="..\..\Source\Game\Combat\CombatSystem.h">
       <Filter>Source\Game\Combat</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Combat\HitFlash.h">
+      <Filter>Source\Game\Combat</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\Game\Combat\Projectiles.h">
       <Filter>Source\Game\Combat</Filter>
     </ClInclude>

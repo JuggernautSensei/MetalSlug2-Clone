@@ -238,7 +238,7 @@ int StageWorldHost::ApplyPlaceholderEvents(
 
         if (pEntity->health.ApplyDamage(event.damage) > 0)
         {
-            pEntity->flashTicks = 5;
+            (void)StartHitFlash(pEntity->flashTicks);
         }
         if (pEntity->health.IsDead())
         {
@@ -253,10 +253,7 @@ void StageWorldHost::TickPlaceholders()
 {
     for (PlaceholderEntity& entity: m_placeholderEntities)
     {
-        if (entity.flashTicks > 0)
-        {
-            --entity.flashTicks;
-        }
+        TickHitFlash(entity.flashTicks);
         if (entity.deadTicks >= 0)
         {
             ++entity.deadTicks;

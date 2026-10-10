@@ -3,6 +3,7 @@
 #include "Base/Types.h"
 #include "Core/Tuning.h"
 #include "Game/Combat/CombatSystem.h"
+#include "Game/Combat/HitFlash.h"
 #include "Game/Combat/Projectiles.h"
 #include "Render/Animation.h"
 #include "World/Combat.h"
@@ -29,7 +30,7 @@ struct TrainingDummy
     Vec2       size       = { 20.f, 44.f };
     int        facing     = -1;
     Health     health     = {};
-    int        flashTicks = 0;    // 피격 번쩍임 남은 틱
+    int        flashTicks = 0;    // 피격 번쩍임 타이머 (HitFlash.h)
     int        deadTicks  = -1;   // -1: 생존, 0..: 사망 후 경과 틱
     int        shootTimer = 0;
     int        hitsTaken  = 0;

@@ -660,10 +660,7 @@ void SandboxState::DrawWorld_(
                 const AnimClip*   pClip = pAnims->GetOrNull(dummy.anim.GetClip());
                 const float       lift  = pClip ? static_cast<float>(pClip->GetFootBaseline()) : 0.f;
                 SpriteDrawOptions options;
-                if (dummy.flashTicks > 0)
-                {
-                    options.tint = { 255, 110, 110, 255 };
-                }
+                options.flashAmount = IsHitFlashOn(dummy.flashTicks) ? 1.f : 0.f;
                 sprites.Submit(10, static_cast<int>(dummy.feet.y), *pFrame, { dummy.feet.x, dummy.feet.y - lift }, options);
             }
             continue;
@@ -675,7 +672,7 @@ void SandboxState::DrawWorld_(
         }
 
         const Aabb box   = Aabb::FromBottomCenter(dummy.feet, dummy.size);
-        const RGBA color = dummy.flashTicks > 0 ? RGBA { 255, 150, 150, 255 } : (dummy.kind == eDummyKind::Bus ? RGBA { 196, 150, 70, 255 } : RGBA { 96, 120, 70, 255 });
+        const RGBA color = IsHitFlashOn(dummy.flashTicks) ? RGBA { 255, 150, 150, 255 } : (dummy.kind == eDummyKind::Bus ? RGBA { 196, 150, 70, 255 } : RGBA { 96, 120, 70, 255 });
         const Vec2 tl    = ToScreen_(box.min, _cameraPos);
         renderer.FillRect(tl, dummy.size, color);
         renderer.DrawRect(tl, dummy.size, { 20, 20, 20, 255 });

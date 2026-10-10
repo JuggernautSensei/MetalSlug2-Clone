@@ -184,6 +184,7 @@
     <ClInclude Include="..\..\Source\Core\Tuning.h" />
     <ClInclude Include="..\..\Source\Game\Combat\BulletVisual.h" />
     <ClInclude Include="..\..\Source\Game\Combat\CombatSystem.h" />
+    <ClInclude Include="..\..\Source\Game\Combat\HitFlash.h" />
     <ClInclude Include="..\..\Source\Game\Combat\Projectiles.h" />
     <ClInclude Include="..\..\Source\Game\DemoState.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyBehaviors.h" />

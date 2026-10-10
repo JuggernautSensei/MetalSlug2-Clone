@@ -64,7 +64,7 @@ namespace
     [[nodiscard]] RGBA GetPlaceholderColor_(
         const PlaceholderEntity& _entity)
     {
-        if (_entity.flashTicks > 0)
+        if (IsHitFlashOn(_entity.flashTicks))
         {
             return { 255, 150, 150, 255 };
         }
