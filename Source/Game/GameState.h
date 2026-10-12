@@ -9,17 +9,15 @@
 #include "Render/Renderer.h"
 #include "Render/SpriteBatch.h"
 
-class AsyncLoader;
-
 struct GameContext
 {
-    Renderer*         pRenderer = nullptr;
-    SpriteBatch*      pSprites  = nullptr;
-    AnimationLibrary* pAnims    = nullptr;
-    RngMt19937*       pRng      = nullptr;
-    FilePath          assetRoot = {};
-    IAudioSink*       pAudio    = nullptr;
-    AsyncLoader*      pLoader   = nullptr;   // nullptr 이면 동기 로드
+    Renderer*         pRenderer   = nullptr;
+    SpriteBatch*      pSprites    = nullptr;
+    AnimationLibrary* pAnims      = nullptr;
+    RngMt19937*       pRng        = nullptr;
+    FilePath          assetRoot   = {};
+    IAudioSink*       pAudio      = nullptr;
+    int               loadWorkers = 1;
 
     float    fps           = 0.f;
     bool     bDebugDraw    = false;

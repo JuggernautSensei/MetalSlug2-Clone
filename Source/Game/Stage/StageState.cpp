@@ -12,7 +12,6 @@
 #include "Base/RGBA.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
-#include "Core/AsyncLoader.h"
 #include "Game/Combat/BulletVisual.h"
 #include "Game/Enemies/BigShiee.h"
 #include "Game/Player/PlayerHitboxes.h"
@@ -185,28 +184,42 @@ void StageState::Load_(
     }
     m_data = data.Take();
 
-    // 원경 텍스처는 디코드가 오래 걸리므로 (Stage0_Main 14094px) 먼저 워커에 맡기고, 아래 지면/정의 로드와 겹친다.
-    // 핸들은 동기 로드와 같은 순서 (원경 -> 배경 레이어) 로 등록된다.
     // 스프라이트 크기 정보는 헤드리스에서도 필요하다 (소품 컬링이 크기를 본다: 결과가 모드와 무관해야 한다)
     if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot))
     {
         m_spriteLib = library.Take();
     }
     m_props.SetSpriteLibrary(&m_spriteLib);
-    if (!_ctx.IsHeadless())
+    if (!_ctx.IsHeadless() && _ctx.pSprites)
     {
-        if (_ctx.pSprites && _ctx.pLoader)
+        // 핸들은 원경 -> 배경 레이어 순서로 등록된다
+        const ScopedPhaseTimer textureTimer { "stage-textures", "all" };
+        const FilePath         bgPath = _ctx.assetRoot / "Textures" / (m_data.background + ".png");
+        Vector<FilePath>       paths  = { bgPath };
+        Vector<size_t>         owners = {};
+        for (size_t i = 0; i < m_data.backdrops.size(); ++i)
         {
-            m_bgHandle = -1;
-            m_backdropHandles.assign(m_data.backdrops.size(), -1);
-            _ctx.pSprites->LoadStandaloneTextureAsync(_ctx.assetRoot / "Textures" / (m_data.background + ".png"), *_ctx.pLoader, &m_bgHandle);
-            for (size_t i = 0; i < m_data.backdrops.size(); ++i)
+            const SpriteInfo* pInfo = m_spriteLib.Find(m_data.backdrops[i].sprite);
+            if (pInfo && pInfo->bStandalone)
             {
-                const SpriteInfo* pInfo = m_spriteLib.Find(m_data.backdrops[i].sprite);
-                if (pInfo && pInfo->bStandalone)
-                {
-                    _ctx.pSprites->LoadStandaloneTextureAsync(_ctx.assetRoot / FilePath { pInfo->file }, *_ctx.pLoader, &m_backdropHandles[i]);
-                }
+                paths.push_back(_ctx.assetRoot / FilePath { pInfo->file });
+                owners.push_back(i);
+            }
+        }
+
+        const Vector<int> handles = _ctx.pSprites->LoadStandaloneTexturesParallel(paths, _ctx.loadWorkers);
+        m_bgHandle                = handles[0];
+        if (m_bgHandle < 0)
+        {
+            SLUG_LOG_WARN("원경 '{}' 을 읽지 못했습니다", bgPath.string());
+        }
+        m_backdropHandles.assign(m_data.backdrops.size(), -1);
+        for (size_t k = 0; k < owners.size(); ++k)
+        {
+            m_backdropHandles[owners[k]] = handles[k + 1];
+            if (handles[k + 1] < 0)
+            {
+                SLUG_LOG_WARN("원경 스프라이트 '{}' 을 읽지 못했습니다", m_data.backdrops[owners[k]].sprite);
             }
         }
     }
@@ -302,54 +315,7 @@ void StageState::Load_(
 
     if (!_ctx.IsHeadless())
     {
-        const ScopedPhaseTimer textureTimer { "stage-textures", "all" };
         m_enemies.SetSpriteLibrary(&m_spriteLib);
-        if (_ctx.pSprites && _ctx.pLoader)
-        {
-            _ctx.pLoader->WaitAll();
-            if (m_bgHandle < 0)
-            {
-                SLUG_LOG_WARN("원경 '{}' 을 읽지 못했습니다", (_ctx.assetRoot / "Textures" / (m_data.background + ".png")).string());
-            }
-            for (size_t i = 0; i < m_backdropHandles.size(); ++i)
-            {
-                const SpriteInfo* pInfo = m_spriteLib.Find(m_data.backdrops[i].sprite);
-                if (pInfo && pInfo->bStandalone && m_backdropHandles[i] < 0)
-                {
-                    SLUG_LOG_WARN("원경 스프라이트 '{}' 을 읽지 못했습니다", m_data.backdrops[i].sprite);
-                }
-            }
-        }
-        else if (_ctx.pSprites)
-        {
-            const FilePath bgPath = _ctx.assetRoot / "Textures" / (m_data.background + ".png");
-            if (const Result<int> handle = _ctx.pSprites->LoadStandaloneTexture(bgPath))
-            {
-                m_bgHandle = handle.GetValue();
-            }
-            else
-            {
-                SLUG_LOG_WARN("원경 '{}' 을 읽지 못했습니다", bgPath.string());
-            }
-
-            m_backdropHandles.clear();
-            for (const BackdropMode& mode: m_data.backdrops)
-            {
-                int handle = -1;
-                if (const SpriteInfo* pInfo = m_spriteLib.Find(mode.sprite); pInfo && pInfo->bStandalone)
-                {
-                    if (const Result<int> loaded = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / FilePath { pInfo->file }))
-                    {
-                        handle = loaded.GetValue();
-                    }
-                    else
-                    {
-                        SLUG_LOG_WARN("원경 스프라이트 '{}' 을 읽지 못했습니다", mode.sprite);
-                    }
-                }
-                m_backdropHandles.push_back(handle);
-            }
-        }
     }
 
     m_bLoaded = true;

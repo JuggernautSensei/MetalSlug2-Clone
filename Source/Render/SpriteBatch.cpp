@@ -21,8 +21,6 @@
 #include "Base/Log.h"
 #include "Base/PhaseTimer.h"
 
-#include "Core/AsyncLoader.h"
-
 namespace
 {
 [[nodiscard]] SDL_FlipMode FlipFlags_(
@@ -474,6 +472,32 @@ Result<void> SpriteBatch::LoadAtlasPagesParallel(
     return Error { kOK };
 }
 
+Vector<int> SpriteBatch::LoadStandaloneTexturesParallel(
+    const Span<const FilePath> _paths,
+    const int                  _numWorkers)
+{
+    Vector<int>  handles(_paths.size(), -1);
+    const size_t chunk = static_cast<size_t>(std::max(1, _numWorkers));
+    for (size_t begin = 0; begin < _paths.size(); begin += chunk)
+    {
+        const size_t                       count  = std::min(chunk, _paths.size() - begin);
+        const Vector<Result<DecodedImage>> images = DecodeImages(Span<const FilePath> { _paths.data() + begin, count }, false, _numWorkers);
+        for (size_t i = 0; i < count; ++i)
+        {
+            if (!images[i])
+            {
+                continue;
+            }
+            if (const Result<int> added = AddStandaloneTexture(images[i].GetValue()))
+            {
+                handles[begin + i] = added.GetValue();
+                TraceStandalone_(added.GetValue(), _paths[begin + i], images[i]->width, images[i]->height, images[i]->rgba);
+            }
+        }
+    }
+    return handles;
+}
+
 Result<void> SpriteBatch::LoadAtlasPage(
     const FilePath& _pngPath)
 {
@@ -683,139 +707,6 @@ Result<void> SpriteBatch::LoadAtlasPages(
         }
     }
     return Error { kOK };
-}
-
-class AtlasPageLoadJob final : public IAsyncLoadJob
-{
-public:
-    AtlasPageLoadJob(SpriteBatch* _pBatch, FilePath _path, size_t _expectedPage);
-
-    void Execute() override;
-    void Complete() override;
-
-private:
-    SpriteBatch* m_pBatch       = nullptr;
-    FilePath     m_path         = {};
-    size_t       m_expectedPage = 0;
-    DecodedImage m_image        = {};
-    bool         m_bDecoded     = false;
-};
-
-AtlasPageLoadJob::AtlasPageLoadJob(
-    SpriteBatch* const _pBatch,
-    FilePath           _path,
-    const size_t       _expectedPage)
-    : m_pBatch(_pBatch)
-    , m_path(std::move(_path))
-    , m_expectedPage(_expectedPage)
-{
-}
-
-void AtlasPageLoadJob::Execute()
-{
-    Result<DecodedImage> image = DecodePngFile_(m_path);
-    if (!image)
-    {
-        return;
-    }
-    m_image = image.Take();
-    {
-        const ScopedPhaseTimer timer { "flash-build", m_path.filename().string() };
-        m_image.flashRgba = BuildHitFlashRgba(m_image.rgba, static_cast<size_t>(m_image.width) * static_cast<size_t>(m_image.height));
-    }
-    m_bDecoded = true;
-}
-
-void AtlasPageLoadJob::Complete()
-{
-    // 앞 페이지가 실패했으면 동기 로드처럼 거기서 멈춘다 (페이지 번호가 어긋나지 않게)
-    if (m_pBatch->GetAtlasPageCount() != m_expectedPage)
-    {
-        return;
-    }
-    if (!m_bDecoded || !m_pBatch->AddAtlasPage(m_image))
-    {
-        SLUG_LOG_ERROR("아틀라스 페이지 로드 실패: {}", m_path.filename().string());
-        return;
-    }
-    TraceAtlasPage_(m_expectedPage, m_path, m_image.width, m_image.height, m_image.rgba);
-}
-
-class StandaloneTextureLoadJob final : public IAsyncLoadJob
-{
-public:
-    StandaloneTextureLoadJob(SpriteBatch* _pBatch, FilePath _path, int* _pOutHandle);
-
-    void Execute() override;
-    void Complete() override;
-
-private:
-    SpriteBatch* m_pBatch     = nullptr;
-    FilePath     m_path       = {};
-    int*         m_pOutHandle = nullptr;
-    DecodedImage m_image      = {};
-    bool         m_bDecoded   = false;
-};
-
-StandaloneTextureLoadJob::StandaloneTextureLoadJob(
-    SpriteBatch* const _pBatch,
-    FilePath           _path,
-    int* const         _pOutHandle)
-    : m_pBatch(_pBatch)
-    , m_path(std::move(_path))
-    , m_pOutHandle(_pOutHandle)
-{
-}
-
-void StandaloneTextureLoadJob::Execute()
-{
-    Result<DecodedImage> image = DecodePngFile_(m_path);
-    if (image)
-    {
-        m_image    = image.Take();
-        m_bDecoded = true;
-    }
-}
-
-void StandaloneTextureLoadJob::Complete()
-{
-    int handle = -1;
-    if (m_bDecoded)
-    {
-        const Result<int> added = m_pBatch->AddStandaloneTexture(m_image);
-        if (added)
-        {
-            handle = added.GetValue();
-            TraceStandalone_(handle, m_path, m_image.width, m_image.height, m_image.rgba);
-        }
-    }
-    if (m_pOutHandle)
-    {
-        *m_pOutHandle = handle;
-    }
-}
-
-void SpriteBatch::LoadAtlasPagesAsync(
-    const AnimationLibrary& _library,
-    AsyncLoader&            _loader)
-{
-    size_t expected = m_pages.size();
-    for (const String& page: _library.GetAtlasPages())
-    {
-        _loader.Submit(Scoped<IAsyncLoadJob> { new AtlasPageLoadJob(this, _library.GetRoot() / page, expected++) });
-    }
-}
-
-void SpriteBatch::LoadStandaloneTextureAsync(
-    const FilePath& _pngPath,
-    AsyncLoader&    _loader,
-    int* const      _pOutHandle)
-{
-    if (_pOutHandle)
-    {
-        *_pOutHandle = -1;
-    }
-    _loader.Submit(Scoped<IAsyncLoadJob> { new StandaloneTextureLoadJob(this, _pngPath, _pOutHandle) });
 }
 
 void SpriteBatch::DrawFrame(

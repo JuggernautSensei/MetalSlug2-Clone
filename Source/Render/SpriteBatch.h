@@ -11,7 +11,6 @@
 struct SDL_Renderer;
 struct SDL_Texture;
 struct SDL_FRect;
-class AsyncLoader;
 
 struct IntRect
 {
@@ -115,12 +114,8 @@ public:
     [[nodiscard]] Result<int> LoadStandaloneTexture(const FilePath& _pngPath);
     [[nodiscard]] Result<int> AddStandaloneTextureFromRgba(int _width, int _height, Span<const uint8_t> _rgba);
     [[nodiscard]] Result<int> AddStandaloneTexture(const DecodedImage& _image);
-
-    // 비동기 로드: PNG 디코드(+플래시 변환본) 는 워커에서, 텍스처 생성/등록은 메인 스레드에서 제출 순서대로 한다.
-    // 결과는 _loader.WaitAll() 이후 확정된다 (페이지 번호/핸들은 동기 로드와 같은 순서). 워커가 0 이면 그 자리에서 끝난다.
-    void LoadAtlasPagesAsync(const AnimationLibrary& _library, AsyncLoader& _loader);
-    // 로드 실패 시 *_pOutHandle 은 -1. 완료 전까지 _pOutHandle 이 가리키는 메모리는 그대로 있어야 한다.
-    void LoadStandaloneTextureAsync(const FilePath& _pngPath, AsyncLoader& _loader, int* _pOutHandle);
+    // 경로 순서대로 병렬 디코드 후 핸들을 순서대로 만든다. 실패한 항목의 핸들은 -1
+    [[nodiscard]] Vector<int> LoadStandaloneTexturesParallel(Span<const FilePath> _paths, int _numWorkers);
 
     void DrawTexture(int _handle, Vec2 _texWorldPos, Vec2 _cameraPos, int _viewW, int _viewH, RGBA _tint = { 255, 255, 255, 255 }) const;
     // 텍스처 x >= _fromX 구간을 [_tileX, _tileX + _tileW) 열의 주기 반복으로 그린다 (보스전 엔드리스 배경). _texWorldPos 는 원점 (0,0) 권장.

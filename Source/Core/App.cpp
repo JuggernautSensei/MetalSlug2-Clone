@@ -375,10 +375,10 @@ void App::Init_()
     m_recording.seed      = m_seed;
     m_recording.stateName = m_stateName;
 
-    m_ctx.pRenderer = &m_renderer;
-    m_ctx.pSprites  = &m_sprites;
-    m_ctx.pAnims    = &m_anims;
-    m_ctx.pLoader   = &m_loader;
+    m_ctx.pRenderer   = &m_renderer;
+    m_ctx.pSprites    = &m_sprites;
+    m_ctx.pAnims      = &m_anims;
+    m_ctx.loadWorkers = numWorkers;
     m_editor.SetAnimLibrary(m_bEditor ? &m_anims : nullptr);
     m_ctx.pRng       = &m_rng;
     m_ctx.assetRoot  = FindAssetRoot();
