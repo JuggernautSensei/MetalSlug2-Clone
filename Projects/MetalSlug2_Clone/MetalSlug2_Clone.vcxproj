@@ -118,7 +118,6 @@
     <ClCompile Include="..\..\Source\Game\Combat\HitFlash.cpp" />
     <ClCompile Include="..\..\Source\World\Geometry.cpp" />
     <ClCompile Include="..\..\Source\Audio\VoiceAllocator.cpp" />
-    <ClCompile Include="..\..\Source\Audio\AudioSink.cpp" />
     <ClCompile Include="..\..\Source\Audio\AudioMath.cpp" />
     <ClCompile Include="..\..\Source\Core\FixedStep.cpp" />
     <ClCompile Include="..\..\Source\Main.cpp" />
@@ -212,7 +211,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\Audio\AudioMath.h" />
-    <ClInclude Include="..\..\Source\Audio\AudioSink.h" />
     <ClInclude Include="..\..\Source\Audio\AudioSystem.h" />
     <ClInclude Include="..\..\Source\Audio\SoundBank.h" />
     <ClInclude Include="..\..\Source\Audio\VoiceAllocator.h" />

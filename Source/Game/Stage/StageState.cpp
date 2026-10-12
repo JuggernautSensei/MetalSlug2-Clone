@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <format>
 
-#include "Audio/AudioSink.h"
+#include "Audio/AudioSystem.h"
 #include "Base/Log.h"
 #include "Base/Math.h"
 #include "Base/PhaseTimer.h"
@@ -737,7 +737,7 @@ Vec2 StageState::GetRespawnFeet_() const
 void StageState::ConsumeEnemyEvents_(
     GameContext& _ctx)
 {
-    IAudioSink& audio = _ctx.GetAudio();
+    AudioSystem& audio = _ctx.GetAudio();
     for (const String& sound: m_enemies.TakeSounds())
     {
         audio.Play(sound, 1.f, 0.03f);
@@ -774,7 +774,7 @@ void StageState::ConsumeEnemyEvents_(
 void StageState::ConsumePropEvents_(
     GameContext& _ctx)
 {
-    IAudioSink& audio = _ctx.GetAudio();
+    AudioSystem& audio = _ctx.GetAudio();
     for (const PropEvent& event: m_props.TakeEvents())
     {
         switch (event.kind)
@@ -850,7 +850,7 @@ void StageState::RequestSounds_(
     GameContext&             _ctx,
     const Vector<FxRequest>& _fx)
 {
-    IAudioSink&        audio  = _ctx.GetAudio();
+    AudioSystem&        audio  = _ctx.GetAudio();
     const PlayerStats& stats  = m_player.GetStats();
     const eWeapon      weapon = m_player.GetWeapon().weapon;
 

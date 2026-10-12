@@ -44,7 +44,7 @@ private:
     AnimationLibrary m_anims    = {};
     RngMt19937       m_rng      = RngMt19937 { uint64_t { 1 } };
     GameContext      m_ctx      = {};
-    AudioSystem      m_audio    = {};
+    AudioSystem      m_audio;
     InputSystem      m_input    = {};
     FixedStepClock   m_clock    = {};
 

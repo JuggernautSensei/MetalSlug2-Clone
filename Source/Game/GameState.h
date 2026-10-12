@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-#include "Audio/AudioSink.h"
+#include "Audio/AudioSystem.h"
 #include "Base/Types.h"
 #include "Core/Input.h"
 #include "Game/Player/PlayerTypes.h"
@@ -16,7 +16,7 @@ struct GameContext
     AnimationLibrary* pAnims      = nullptr;
     RngMt19937*       pRng        = nullptr;
     FilePath          assetRoot   = {};
-    IAudioSink*       pAudio      = nullptr;
+    AudioSystem*       pAudio      = nullptr;
     int               loadWorkers = 1;
 
     float    fps           = 0.f;
@@ -33,7 +33,7 @@ struct GameContext
 
     [[nodiscard]] bool IsHeadless() const;
 
-    [[nodiscard]] IAudioSink& GetAudio() const;
+    [[nodiscard]] AudioSystem& GetAudio() const;
 };
 
 class IGameState

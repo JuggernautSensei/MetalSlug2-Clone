@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#include "Audio/AudioSink.h"
+#include "Audio/AudioSystem.h"
 #include "Base/Types.h"
 #include "Game/Ui/BitmapFont.h"
 #include "Game/Ui/UiSystem.h"
@@ -49,8 +49,8 @@ struct ScreenFlowConfig
 class ScreenFlow
 {
 public:
-    void Start(const ScreenFlowConfig& _config, UiSystem& _ui, IAudioSink& _audio);
-    void Tick(UiSystem& _ui, IAudioSink& _audio);
+    void Start(const ScreenFlowConfig& _config, UiSystem& _ui, AudioSystem& _audio);
+    void Tick(UiSystem& _ui, AudioSystem& _audio);
     void Reset();
 
     [[nodiscard]] eFlowPhase         GetPhase() const;
@@ -61,9 +61,9 @@ public:
     [[nodiscard]] GameOverArtView    GetArtView() const;
 
 private:
-    void BeginBanner_(UiSystem& _ui, IAudioSink& _audio);
+    void BeginBanner_(UiSystem& _ui, AudioSystem& _audio);
     void BeginFade_(UiSystem& _ui);
-    void Advance_(UiSystem& _ui, IAudioSink& _audio);
+    void Advance_(UiSystem& _ui, AudioSystem& _audio);
 
     ScreenFlowConfig m_config  = {};
     eFlowPhase       m_phase   = eFlowPhase::Idle;

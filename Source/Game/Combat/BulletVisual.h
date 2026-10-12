@@ -4,7 +4,7 @@
 #include "Game/Combat/Projectiles.h"
 
 class AnimationLibrary;
-class IAudioSink;
+class AudioSystem;
 class SpriteBatch;
 class SpriteLibrary;
 
@@ -16,6 +16,6 @@ bool SubmitPlayerBullet(
     Vec2                    _pos,
     int                     _depth);
 
-void PlayShotSfx(IAudioSink& _audio, eWeapon _weapon, int _shotIndex);
+void PlayShotSfx(AudioSystem& _audio, eWeapon _weapon, int _shotIndex);
 
-void PlayWeaponPickupSfx(IAudioSink& _audio, eWeapon _weapon);
+void PlayWeaponPickupSfx(AudioSystem& _audio, eWeapon _weapon);

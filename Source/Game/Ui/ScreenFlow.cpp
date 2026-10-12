@@ -122,7 +122,7 @@ void ScreenFlow::Reset()
 void ScreenFlow::Start(
     const ScreenFlowConfig& _config,
     UiSystem&               _ui,
-    IAudioSink&             _audio)
+    AudioSystem&             _audio)
 {
     m_config  = _config;
     m_elapsed = 0;
@@ -142,7 +142,7 @@ void ScreenFlow::Start(
 
 void ScreenFlow::Tick(
     UiSystem&   _ui,
-    IAudioSink& _audio)
+    AudioSystem& _audio)
 {
     if (!IsRunning())
     {
@@ -184,7 +184,7 @@ GameOverArtView ScreenFlow::GetArtView() const
 
 void ScreenFlow::BeginBanner_(
     UiSystem&   _ui,
-    IAudioSink& _audio)
+    AudioSystem& _audio)
 {
     if (!m_config.artSprite.empty())
     {
@@ -219,7 +219,7 @@ void ScreenFlow::BeginFade_(
 
 void ScreenFlow::Advance_(
     UiSystem&   _ui,
-    IAudioSink& _audio)
+    AudioSystem& _audio)
 {
     const int resultsStart = m_config.delayTicks;
     const int bannerStart  = resultsStart + m_config.resultsTicks;

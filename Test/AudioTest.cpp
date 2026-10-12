@@ -5,7 +5,7 @@
 #include <filesystem>
 
 #include "Audio/AudioMath.h"
-#include "Audio/AudioSink.h"
+#include "Audio/AudioSystem.h"
 #include "Audio/AudioSystem.h"
 #include "Audio/SoundBank.h"
 #include "Audio/VoiceAllocator.h"
@@ -269,50 +269,39 @@ TEST(AudioMath, BgmFaderZeroSecondsIsImmediate)
     EXPECT_TRUE(fader.Update(0.f));
 }
 
-TEST(AudioSinks, NullAudioAcceptsEverythingSilently)
-{
-    NullAudio& null = NullAudio::Get();
-    null.Play("anything", 1.f, 0.5f);
-    null.PlayBgm("bgm", true);
-    null.FadeOutBgm(2.f);
-    null.ChangeBgm("bgm2", 2.f, true);
-    null.StopBgm();
-    null.AllStop();
-    SUCCEED();
-}
-
 TEST(AudioSinks, TestAudioRecordsEventsInOrder)
 {
-    TestAudio audio;
+    AudioSystem audio { true };
     audio.Play("A", 0.5f, 0.1f);
     audio.PlayBgm("Song", true);
     audio.Play("B");
     audio.FadeOutBgm(1.5f);
     audio.StopBgm();
 
-    ASSERT_EQ(audio.GetEvents().size(), 5u);
-    EXPECT_EQ(audio.GetEvents()[0].kind, eAudioEvent::Play);
-    EXPECT_EQ(audio.GetEvents()[0].name, "A");
-    EXPECT_FLOAT_EQ(audio.GetEvents()[0].volume, 0.5f);
-    EXPECT_FLOAT_EQ(audio.GetEvents()[0].pitchVariation, 0.1f);
-    EXPECT_EQ(audio.GetEvents()[1].kind, eAudioEvent::PlayBgm);
-    EXPECT_TRUE(audio.GetEvents()[1].bLoop);
-    EXPECT_EQ(audio.GetEvents()[3].kind, eAudioEvent::FadeOutBgm);
-    EXPECT_FLOAT_EQ(audio.GetEvents()[3].seconds, 1.5f);
-    EXPECT_EQ(audio.GetPlayCount(), 2);
-    EXPECT_EQ(audio.CountPlays("A"), 1);
-    EXPECT_TRUE(audio.GetCurrentBgm().empty());
+    ASSERT_EQ(audio.events.size(), 5u);
+    EXPECT_EQ(audio.events[0].kind, eAudioEvent::Play);
+    EXPECT_EQ(audio.events[0].name, "A");
+    EXPECT_FLOAT_EQ(audio.events[0].volume, 0.5f);
+    EXPECT_FLOAT_EQ(audio.events[0].pitchVariation, 0.1f);
+    EXPECT_EQ(audio.events[1].kind, eAudioEvent::PlayBgm);
+    EXPECT_TRUE(audio.events[1].bLoop);
+    EXPECT_EQ(audio.events[3].kind, eAudioEvent::FadeOutBgm);
+    EXPECT_FLOAT_EQ(audio.events[3].seconds, 1.5f);
+    EXPECT_EQ(CountKind(audio, eAudioEvent::Play), 2);
+    EXPECT_EQ(CountPlays(audio, "A"), 1);
+    EXPECT_TRUE(LastBgm(audio).empty());
 }
 
-TEST(AudioSinks, GameContextFallsBackToNullAudio)
+TEST(AudioSinks, GameContextFallsBackToSilentAudio)
 {
     GameContext ctx;
-    EXPECT_EQ(&ctx.GetAudio(), &NullAudio::Get());
+    EXPECT_FALSE(ctx.GetAudio().IsInitialized());
+    ctx.GetAudio().Play("anything", 1.f, 0.5f);
 
-    TestAudio audio;
+    AudioSystem audio { true };
     ctx.pAudio = &audio;
     ctx.GetAudio().Play("X");
-    EXPECT_EQ(audio.CountPlays("X"), 1);
+    EXPECT_EQ(CountPlays(audio, "X"), 1);
 }
 
 TEST(AudioSystemDry, UninitializedSystemIsAnInertNoOp)
@@ -409,7 +398,7 @@ TEST(AudioSystemDry, MissingDirectoryReturnsErrorButSystemStaysInert)
 struct AudioSim
 {
     explicit AudioSim(
-        IAudioSink* _pAudio)
+        AudioSystem* _pAudio)
         : rng(uint64_t { 1 })
     {
         ctx.pRng                    = &rng;
@@ -444,7 +433,7 @@ TEST(AudioDeterminism, SameStateHashWithNullTestAndDryAudio)
     AudioSim withNull { nullptr };
     withNull.RunScript(600);
 
-    TestAudio testAudio;
+    AudioSystem testAudio { true };
     AudioSim  withTest { &testAudio };
     withTest.RunScript(600);
 
@@ -455,13 +444,13 @@ TEST(AudioDeterminism, SameStateHashWithNullTestAndDryAudio)
 
     EXPECT_EQ(withNull.pState->HashState(), withTest.pState->HashState());
     EXPECT_EQ(withNull.pState->HashState(), withDry.pState->HashState());
-    EXPECT_GT(testAudio.GetPlayCount(), 0);   // 소리 요청은 실제로 나갔다
+    EXPECT_GT(CountKind(testAudio, eAudioEvent::Play), 0);   // 소리 요청은 실제로 나갔다
 }
 
 TEST(AudioDeterminism, SimulationDoesNotConsumeSimRngForAudio)
 {
     AudioSim  a { nullptr };
-    TestAudio testAudio;
+    AudioSystem testAudio { true };
     AudioSim  b { &testAudio };
     a.RunScript(300);
     b.RunScript(300);
@@ -470,7 +459,7 @@ TEST(AudioDeterminism, SimulationDoesNotConsumeSimRngForAudio)
 
 TEST(AudioSandbox, PistolShotRequestsShotSound)
 {
-    TestAudio audio;
+    AudioSystem audio { true };
     AudioSim  sim { &audio };
 
     InputFrame shot;
@@ -481,12 +470,12 @@ TEST(AudioSandbox, PistolShotRequestsShotSound)
     {
         sim.runner->Step({});
     }
-    EXPECT_GE(audio.CountPlays(kPistolShot), 1);
+    EXPECT_GE(CountPlays(audio, kPistolShot), 1);
 }
 
 TEST(AudioSandbox, BombThrowRequestsBombThrowName)
 {
-    TestAudio audio;
+    AudioSystem audio { true };
     AudioSim  sim { &audio };
 
     InputFrame bomb;
@@ -496,18 +485,18 @@ TEST(AudioSandbox, BombThrowRequestsBombThrowName)
     {
         sim.runner->Step({});
     }
-    EXPECT_EQ(audio.CountPlays(kBombThrow), 1);
+    EXPECT_EQ(CountPlays(audio, kBombThrow), 1);
 }
 
 TEST(AudioSandbox, EntersWithStageBgmAndStopsOnExit)
 {
-    TestAudio audio;
+    AudioSystem audio { true };
     {
         AudioSim sim { &audio };
-        EXPECT_EQ(audio.GetCurrentBgm(), kBgmStage);
+        EXPECT_EQ(LastBgm(audio), kBgmStage);
     }
-    EXPECT_GE(audio.CountKind(eAudioEvent::AllStop), 1);
-    EXPECT_TRUE(audio.GetCurrentBgm().empty());
+    EXPECT_GE(CountKind(audio, eAudioEvent::AllStop), 1);
+    EXPECT_TRUE(LastBgm(audio).empty());
 }
 
 TEST(AudioDevice, RealEnginePlaysEverySoundWithoutFailing)

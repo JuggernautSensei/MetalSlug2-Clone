@@ -5,9 +5,10 @@ bool GameContext::IsHeadless() const
     return pRenderer == nullptr;
 }
 
-IAudioSink& GameContext::GetAudio() const
+AudioSystem& GameContext::GetAudio() const
 {
-    return pAudio ? *pAudio : NullAudio::Get();
+    static AudioSystem s_silent;
+    return pAudio ? *pAudio : s_silent;
 }
 
 void IGameState::OnEnter(GameContext&)

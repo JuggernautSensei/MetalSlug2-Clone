@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "Audio/AudioSink.h"
+#include "Audio/AudioSystem.h"
 #include "Base/Log.h"
 #include "Base/Math.h"
 #include "Base/Types.h"

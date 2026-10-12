@@ -4,7 +4,7 @@
 #include <cmath>
 #include <string>
 
-#include "Audio/AudioSink.h"
+#include "Audio/AudioSystem.h"
 #include "Base/Math.h"
 #include "Render/Animation.h"
 #include "Render/SpriteBatch.h"
@@ -168,7 +168,7 @@ bool SubmitPlayerBullet(
 }
 
 void PlayShotSfx(
-    IAudioSink&   _audio,
+    AudioSystem&   _audio,
     const eWeapon _weapon,
     const int     _shotIndex)
 {
@@ -188,7 +188,7 @@ void PlayShotSfx(
 }
 
 void PlayWeaponPickupSfx(
-    IAudioSink&   _audio,
+    AudioSystem&   _audio,
     const eWeapon _weapon)
 {
     if (_weapon == eWeapon::Pistol)

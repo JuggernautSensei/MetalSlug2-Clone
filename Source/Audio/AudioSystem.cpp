@@ -103,7 +103,10 @@ namespace
 }
 }   // namespace
 
-AudioSystem::AudioSystem() = default;
+AudioSystem::AudioSystem(const bool _bRecord)
+    : bRecord(_bRecord)
+{
+}
 
 AudioSystem::~AudioSystem()
 {
@@ -186,7 +189,7 @@ void AudioSystem::Shutdown()
     {
         return;
     }
-    AllStop();
+    AllStop_();
     m_pBackend.Reset();
     m_bDevice      = false;
     m_bInitialized = false;
@@ -236,7 +239,7 @@ void AudioSystem::Update(
             StopBgm_();
             if (bPending)
             {
-                PlayBgm(pendingName, bLoop);
+                PlayBgm_(pendingName, bLoop);
             }
         }
         else if (m_bDevice && m_pBackend && m_pBackend->bBgmInit && !m_bBgmLoop && ma_sound_at_end(&m_pBackend->bgm) == MA_TRUE)
@@ -255,6 +258,10 @@ void AudioSystem::Play(
     const float      _volume,
     const float      _pitchVariation)
 {
+    if (bRecord)
+    {
+        events.push_back({ eAudioEvent::Play, String { _name }, _volume, _pitchVariation, false, 0.f });
+    }
     if (!m_bInitialized)
     {
         return;
@@ -311,6 +318,17 @@ void AudioSystem::PlayBgm(
     const StringView _name,
     const bool       _bLoop)
 {
+    if (bRecord)
+    {
+        events.push_back({ eAudioEvent::PlayBgm, String { _name }, 1.f, 0.f, _bLoop, 0.f });
+    }
+    PlayBgm_(_name, _bLoop);
+}
+
+void AudioSystem::PlayBgm_(
+    const StringView _name,
+    const bool       _bLoop)
+{
     if (!m_bInitialized)
     {
         return;
@@ -353,12 +371,20 @@ void AudioSystem::PlayBgm(
 
 void AudioSystem::StopBgm()
 {
+    if (bRecord)
+    {
+        events.push_back({ eAudioEvent::StopBgm, {}, 1.f, 0.f, false, 0.f });
+    }
     StopBgm_();
 }
 
 void AudioSystem::FadeOutBgm(
     const float _seconds)
 {
+    if (bRecord)
+    {
+        events.push_back({ eAudioEvent::FadeOutBgm, {}, 1.f, 0.f, false, _seconds });
+    }
     if (m_bgmState != eBgmState::Playing)
     {
         return;
@@ -377,6 +403,10 @@ void AudioSystem::ChangeBgm(
     const float      _fadeOutSec,
     const bool       _bLoop)
 {
+    if (bRecord)
+    {
+        events.push_back({ eAudioEvent::ChangeBgm, String { _name }, 1.f, 0.f, _bLoop, _fadeOutSec });
+    }
     if (!m_bInitialized || m_bank.FindIndex(_name) < 0)
     {
         return;
@@ -384,7 +414,7 @@ void AudioSystem::ChangeBgm(
 
     if (m_bgmState == eBgmState::Stopped || _fadeOutSec <= 0.f)
     {
-        PlayBgm(_name, _bLoop);
+        PlayBgm_(_name, _bLoop);
         return;
     }
 
@@ -394,13 +424,23 @@ void AudioSystem::ChangeBgm(
         {
             return;
         }
-        FadeOutBgm(_fadeOutSec);
+        m_bgmState = eBgmState::FadingOut;
+        m_bgmFade.BeginFadeOut(_fadeOutSec);
     }
     m_pendingBgm   = String { _name };
     m_bPendingLoop = _bLoop;
 }
 
 void AudioSystem::AllStop()
+{
+    if (bRecord)
+    {
+        events.push_back({ eAudioEvent::AllStop, {}, 1.f, 0.f, false, 0.f });
+    }
+    AllStop_();
+}
+
+void AudioSystem::AllStop_()
 {
     for (int slot = 0; slot < m_voices.GetCapacity(); ++slot)
     {

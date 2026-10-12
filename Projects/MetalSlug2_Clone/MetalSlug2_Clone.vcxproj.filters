@@ -69,9 +69,6 @@
     <ClCompile Include="..\..\Source\Audio\VoiceAllocator.cpp">
       <Filter>Source\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Audio\AudioSink.cpp">
-      <Filter>Source\Audio</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\Audio\AudioMath.cpp">
       <Filter>Source\Audio</Filter>
     </ClCompile>
@@ -339,9 +336,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\Audio\AudioMath.h">
-      <Filter>Source\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Audio\AudioSink.h">
       <Filter>Source\Audio</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Audio\AudioSystem.h">

@@ -4,7 +4,7 @@
 
 #include <gtest/gtest.h>
 
-#include "Audio/AudioSink.h"
+#include "Audio/AudioSystem.h"
 #include "Base/Math.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
@@ -112,7 +112,7 @@ void AdvanceFlowTo_(
     int&        _t,
     UiSystem&   _ui,
     ScreenFlow& _flow,
-    TestAudio&  _audio,
+    AudioSystem& _audio,
     const int   _tick)
 {
     while (_t < _tick)
@@ -795,7 +795,7 @@ TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
     GameContext ctx;
     UiSystem    ui;
     ui.Init(ctx);
-    TestAudio  audio;
+    AudioSystem  audio { true };
     ScreenFlow flow;
 
     flow.Start(config, ui, audio);
@@ -803,8 +803,8 @@ TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
     EXPECT_FALSE(ui.GetBanner().IsActive());   // 배너 대신 전면 아트
     EXPECT_TRUE(flow.GetArtView().bVisible);
     EXPECT_EQ(flow.GetArtView().alpha, 0);   // 페이드 인 시작
-    EXPECT_EQ(audio.CountPlays(kGameOver), 1);
-    EXPECT_EQ(audio.CountKind(eAudioEvent::FadeOutBgm), 1);
+    EXPECT_EQ(CountPlays(audio, kGameOver), 1);
+    EXPECT_EQ(CountKind(audio, eAudioEvent::FadeOutBgm), 1);
 
     int doneAt = -1;
     int fullAt = -1;
@@ -842,13 +842,13 @@ TEST(UiFlow, PhasesChangeAtExactTicks)
     GameContext ctx;
     UiSystem    ui;
     ui.Init(ctx);
-    TestAudio  audio;
+    AudioSystem  audio { true };
     ScreenFlow flow;
     flow.Start(config, ui, audio);
 
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Delay);
     EXPECT_FALSE(ui.GetBanner().IsActive());
-    EXPECT_EQ(audio.CountPlays("Jingle"), 0);
+    EXPECT_EQ(CountPlays(audio, "Jingle"), 0);
 
     struct Step
     {
@@ -878,7 +878,7 @@ TEST(UiFlow, PhasesChangeAtExactTicks)
         }
         EXPECT_EQ(flow.GetPhase(), step.phase) << "tick " << step.tick;
     }
-    EXPECT_EQ(audio.CountPlays("Jingle"), 1);   // 배너 시작 때 한 번만
+    EXPECT_EQ(CountPlays(audio, "Jingle"), 1);   // 배너 시작 때 한 번만
     EXPECT_TRUE(ui.GetFade().IsBlack());
 }
 
@@ -892,12 +892,12 @@ TEST(UiFlow, MissionCompleteShowsResultsBeforeTheCompleteBanner)
     GameContext ctx;
     UiSystem    ui;
     ui.Init(ctx);
-    TestAudio  audio;
+    AudioSystem  audio { true };
     ScreenFlow flow;
     flow.Start(config, ui, audio);
 
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Delay);
-    EXPECT_EQ(audio.CountKind(eAudioEvent::StopBgm), 1);   // bgmFadeSeconds == 0 → 즉시 정지
+    EXPECT_EQ(CountKind(audio, eAudioEvent::StopBgm), 1);   // bgmFadeSeconds == 0 → 즉시 정지
     EXPECT_FALSE(flow.GetResultsView().bBoxVisible);
 
     int t = 0;
@@ -924,7 +924,7 @@ TEST(UiFlow, MissionCompleteShowsResultsBeforeTheCompleteBanner)
     EXPECT_FALSE(flow.GetResultsView().bBoxVisible);
     EXPECT_TRUE(ui.GetBanner().IsActive());
     EXPECT_EQ(ui.GetBanner().GetCurrent().text, "MISSION 4\nCOMPLETE!");
-    EXPECT_EQ(audio.CountPlays(kMissionComplete), 1);
+    EXPECT_EQ(CountPlays(audio, kMissionComplete), 1);
 
     AdvanceFlowTo_(t, ui, flow, audio, config.GetTotalTicks());
     EXPECT_TRUE(flow.IsDone());
@@ -974,7 +974,7 @@ TEST(UiResults, ScreenFlowExposesResultsViewOnlyDuringResultsPhase)
     GameContext ctx;
     UiSystem    ui;
     ui.Init(ctx);
-    TestAudio  audio;
+    AudioSystem  audio { true };
     ScreenFlow flow;
     flow.Start(MakeMissionCompleteFlowConfig(5), ui, audio);
     EXPECT_FALSE(flow.GetResultsView().bBoxVisible);   // 지연 단계
@@ -1046,7 +1046,7 @@ TEST(UiFlow, TickBeforeStartAndAfterDoneIsHarmless)
     GameContext ctx;
     UiSystem    ui;
     ui.Init(ctx);
-    TestAudio  audio;
+    AudioSystem  audio { true };
     ScreenFlow flow;
     flow.Tick(ui, audio);
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Idle);
@@ -1103,7 +1103,7 @@ struct TitleSim
 
     RngMt19937        rng = RngMt19937 { std::mt19937_64::default_seed };
     GameContext       ctx;
-    TestAudio         audio;
+    AudioSystem         audio { true };
     TitleState*       pTitle = nullptr;
     Scoped<SimRunner> runner = nullptr;
 };
@@ -1136,7 +1136,7 @@ TEST(UiTitle, ShotPressStartsFadeThenSwitchesStateExactlyAfterFade)
     sim.Step(eAction::Shot, true);
     EXPECT_TRUE(sim.pTitle->IsStarting());
     EXPECT_EQ(sim.pTitle->GetSelectedStateName(), "sandbox");
-    EXPECT_EQ(sim.audio.CountPlays(kOk), 1);
+    EXPECT_EQ(CountPlays(sim.audio, kOk), 1);
     sim.Step(eAction::Shot, false);
 
     int switchedAt = -1;
@@ -1161,7 +1161,7 @@ TEST(UiTitle, StartActionAlsoWorksAndHeldKeyDoesNotRetrigger)
     EXPECT_TRUE(sim.pTitle->IsStarting());
     sim.Step(eAction::Start, true);
     sim.Step(eAction::Start, true);
-    EXPECT_EQ(sim.audio.CountPlays(kOk), 1);
+    EXPECT_EQ(CountPlays(sim.audio, kOk), 1);
 }
 
 TEST(UiTitle, InputsDuringEntryDelayAreIgnored)
@@ -1205,7 +1205,7 @@ TEST(UiTitle, EntersWithBlackAndFadesIn)
     EXPECT_GT(sim.pTitle->GetUi().GetFade().GetAlpha(), 0.9f);   // 검정에서 시작
     sim.Idle(sim.pTitle->GetUi().GetFade().IsBusy() ? 40 : 0);
     EXPECT_TRUE(sim.pTitle->GetUi().GetFade().IsClear());
-    EXPECT_EQ(sim.audio.CountPlays(kTitleVoice), 1);
+    EXPECT_EQ(CountPlays(sim.audio, kTitleVoice), 1);
 }
 
 TEST(UiTitle, IsRegisteredInStateFactory)

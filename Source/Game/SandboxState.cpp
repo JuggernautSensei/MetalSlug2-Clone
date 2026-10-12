@@ -757,7 +757,7 @@ void SandboxState::RequestSounds_(
     GameContext&             _ctx,
     const Vector<FxRequest>& _fx)
 {
-    IAudioSink&        audio  = _ctx.GetAudio();
+    AudioSystem&        audio  = _ctx.GetAudio();
     const PlayerStats& stats  = m_player.GetStats();
     const eWeapon      weapon = m_player.GetWeapon().weapon;
 

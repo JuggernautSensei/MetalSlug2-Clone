@@ -124,7 +124,6 @@
     <ClCompile Include="..\..\Source\Game\Combat\HitFlash.cpp" />
     <ClCompile Include="..\..\Source\World\Geometry.cpp" />
     <ClCompile Include="..\..\Source\Audio\VoiceAllocator.cpp" />
-    <ClCompile Include="..\..\Source\Audio\AudioSink.cpp" />
     <ClCompile Include="..\..\Source\Audio\AudioMath.cpp" />
     <ClCompile Include="..\..\Source\Core\FixedStep.cpp" />
     <ClCompile Include="..\..\Source\Audio\AudioSystem.cpp"><PrecompiledHeader Condition="'$(Configuration)'=='Debug'">NotUsing</PrecompiledHeader><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
@@ -267,7 +266,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\Audio\AudioMath.h" />
-    <ClInclude Include="..\..\Source\Audio\AudioSink.h" />
     <ClInclude Include="..\..\Source\Audio\AudioSystem.h" />
     <ClInclude Include="..\..\Source\Audio\SoundBank.h" />
     <ClInclude Include="..\..\Source\Audio\VoiceAllocator.h" />
