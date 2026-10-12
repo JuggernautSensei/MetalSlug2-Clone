@@ -206,7 +206,6 @@ public:
         String message;
         enemyLib = EnemyDefLibrary::LoadDirectory(EnemyDefLibrary::GetDefaultDirectory(FindAssetRoot()), &message).Take();
         enemies.SetLibrary(&enemyLib);
-        props.SetLibrary(&propLib);
 
         host.AddGroundMap("G0", MakeFlat_());
         host.AddGroundMap("G1", MakeFlat_());
@@ -240,8 +239,8 @@ public:
     StageRunner      runner;
     EnemyDefLibrary  enemyLib = {};
     PropDefLibrary   propLib  = {};
-    EnemyWorld       enemies { nullptr };
-    PropWorld        props { nullptr, 1 };
+    EnemyWorld       enemies { &enemyLib };
+    PropWorld        props { &propLib, 1 };
     PlayerController player = {};
     Tuning           tuning = {};
 };

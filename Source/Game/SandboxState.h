@@ -118,7 +118,7 @@ private:
     Vector<Wall>     m_walls     = {};
     Vector<Platform> m_platforms = {};
     PropDefLibrary   m_propDefs  = {};
-    PropWorld        m_props { nullptr, 1 };
+    PropWorld        m_props { &m_propDefs, 1 };
     Camera           m_camera        = {};
     Vec2             m_prevCameraPos = { 0.f, 0.f };
 

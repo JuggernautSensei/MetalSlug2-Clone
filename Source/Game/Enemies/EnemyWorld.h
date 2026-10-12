@@ -22,7 +22,7 @@ class EnemyWorld
 {
 public:
     explicit EnemyWorld(
-        const EnemyDefLibrary* _pLibrary = nullptr,
+        const EnemyDefLibrary* _pLibrary,
         uint64_t               _seed     = 1);
 
     void                                 SetLibrary(const EnemyDefLibrary* _pLibrary);

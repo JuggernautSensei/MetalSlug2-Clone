@@ -86,11 +86,13 @@ EnemyWorld::EnemyWorld(
     : m_pLibrary(_pLibrary)
     , m_rng(_seed)
 {
+    JUG_ASSERT(_pLibrary != nullptr, "EnemyWorld 는 정의 라이브러리 없이 만들 수 없다.\n");
 }
 
 void EnemyWorld::SetLibrary(
     const EnemyDefLibrary* _pLibrary)
 {
+    JUG_ASSERT(_pLibrary != nullptr, "정의 라이브러리는 null 일 수 없다.\n");
     m_pLibrary    = _pLibrary;
     m_bAnimsBound = false;
     m_clipIds.clear();
@@ -129,10 +131,6 @@ EnemyHandle EnemyWorld::Spawn(
     const SpawnParams&  _params,
     const PhysicsWorld* _pSnapWorld)
 {
-    if (!m_pLibrary)
-    {
-        return {};
-    }
     return SpawnByIndex(m_pLibrary->FindIndex(_defName), _feet, _params, _pSnapWorld);
 }
 
@@ -142,7 +140,7 @@ EnemyHandle EnemyWorld::SpawnByIndex(
     const SpawnParams&  _params,
     const PhysicsWorld* _pSnapWorld)
 {
-    if (!m_pLibrary || _defIndex < 0 || static_cast<size_t>(_defIndex) >= m_pLibrary->GetDefCount())
+    if (_defIndex < 0 || static_cast<size_t>(_defIndex) >= m_pLibrary->GetDefCount())
     {
         SLUG_LOG_WARN("EnemyWorld::Spawn: 알 수 없는 정의 (index {})", _defIndex);
         return {};
@@ -211,10 +209,6 @@ void EnemyWorld::Create_(
 void EnemyWorld::RegisterHurtboxes(
     CombatSystem& _combat) const
 {
-    if (!m_pLibrary)
-    {
-        return;
-    }
     for (const Enemy& e: m_enemies)
     {
         if (e.life != eEnemyLife::Alive)
@@ -255,10 +249,6 @@ void EnemyWorld::RegisterHurtboxes(
 void EnemyWorld::OnHitEvents(
     const Span<const HitEvent> _events)
 {
-    if (!m_pLibrary)
-    {
-        return;
-    }
     for (const HitEvent& event: _events)
     {
         if (!IsEnemyOwner(event.target))
@@ -389,10 +379,6 @@ void TickExtraBoxes_(
 void EnemyWorld::Tick(
     const EnemyContext& _ctx)
 {
-    if (!m_pLibrary)
-    {
-        return;
-    }
     m_lastCtx     = _ctx;
     m_bPlayerMinX = false;
     m_bPlayerMaxX = false;
@@ -634,36 +620,33 @@ void EnemyWorld::BindAnims(
     m_clipIds.clear();
     m_projFlyIds.clear();
     m_projBeginIds.clear();
-    if (m_pLibrary)
+    m_clipIds.resize(m_pLibrary->GetDefCount());
+    for (size_t d = 0; d < m_pLibrary->GetDefCount(); ++d)
     {
-        m_clipIds.resize(m_pLibrary->GetDefCount());
-        for (size_t d = 0; d < m_pLibrary->GetDefCount(); ++d)
+        const EnemyDef& def = m_pLibrary->Get(static_cast<int>(d));
+        m_clipIds[d].resize(def.clips.size());
+        for (size_t c = 0; c < def.clips.size(); ++c)
         {
-            const EnemyDef& def = m_pLibrary->Get(static_cast<int>(d));
-            m_clipIds[d].resize(def.clips.size());
-            for (size_t c = 0; c < def.clips.size(); ++c)
-            {
-                for (int side = 0; side < 2; ++side)
-                {
-                    const String name     = ResolveSide(def.clips[c].clip.name, side == 0 ? -1 : 1);
-                    m_clipIds[d][c][side] = _anims.Find(name);
-                }
-            }
-        }
-
-        m_projFlyIds.resize(m_pLibrary->GetProjectileCount());
-        m_projBeginIds.resize(m_pLibrary->GetProjectileCount());
-        m_projLandIds.resize(m_pLibrary->GetProjectileCount());
-        for (size_t p = 0; p < m_pLibrary->GetProjectileCount(); ++p)
-        {
-            const ProjectileDef& proj = m_pLibrary->GetProjectile(static_cast<int>(p));
             for (int side = 0; side < 2; ++side)
             {
-                const int facing        = side == 0 ? -1 : 1;
-                m_projFlyIds[p][side]   = proj.fly.name.empty() ? AnimId {} : _anims.Find(ResolveSide(proj.fly.name, facing));
-                m_projBeginIds[p][side] = proj.begin.name.empty() ? AnimId {} : _anims.Find(ResolveSide(proj.begin.name, facing));
-                m_projLandIds[p][side]  = proj.land.name.empty() ? AnimId {} : _anims.Find(ResolveSide(proj.land.name, facing));
+                const String name     = ResolveSide(def.clips[c].clip.name, side == 0 ? -1 : 1);
+                m_clipIds[d][c][side] = _anims.Find(name);
             }
+        }
+    }
+
+    m_projFlyIds.resize(m_pLibrary->GetProjectileCount());
+    m_projBeginIds.resize(m_pLibrary->GetProjectileCount());
+    m_projLandIds.resize(m_pLibrary->GetProjectileCount());
+    for (size_t p = 0; p < m_pLibrary->GetProjectileCount(); ++p)
+    {
+        const ProjectileDef& proj = m_pLibrary->GetProjectile(static_cast<int>(p));
+        for (int side = 0; side < 2; ++side)
+        {
+            const int facing        = side == 0 ? -1 : 1;
+            m_projFlyIds[p][side]   = proj.fly.name.empty() ? AnimId {} : _anims.Find(ResolveSide(proj.fly.name, facing));
+            m_projBeginIds[p][side] = proj.begin.name.empty() ? AnimId {} : _anims.Find(ResolveSide(proj.begin.name, facing));
+            m_projLandIds[p][side]  = proj.land.name.empty() ? AnimId {} : _anims.Find(ResolveSide(proj.land.name, facing));
         }
     }
     m_boundClipCount = _anims.GetClipCount();
@@ -676,10 +659,6 @@ void EnemyWorld::Submit(
     const ProjectileSystem& _projectiles,
     const float             _alpha)
 {
-    if (!m_pLibrary)
-    {
-        return;
-    }
     if (!m_bAnimsBound || m_boundClipCount != _anims.GetClipCount())
     {
         BindAnims(_anims);
@@ -819,7 +798,7 @@ bool EnemyWorld::FireWeaponNow(
     const int         _weapon)
 {
     const size_t idx = FindIndex_(_handle.id);
-    if (!m_pLibrary || idx >= m_enemies.size())
+    if (idx >= m_enemies.size())
     {
         return false;
     }
@@ -839,7 +818,7 @@ bool EnemyWorld::PlayMotion(
     const int         _fireFrame)
 {
     const size_t idx = FindIndex_(_handle.id);
-    if (!m_pLibrary || idx >= m_enemies.size())
+    if (idx >= m_enemies.size())
     {
         return false;
     }
@@ -911,10 +890,6 @@ EnemyHandle EnemyWorld::ResolveHandle(
 Vector<Aabb> EnemyWorld::GetSolidBoxes() const
 {
     Vector<Aabb> boxes;
-    if (!m_pLibrary)
-    {
-        return boxes;
-    }
     for (const Enemy& e: m_enemies)
     {
         if (e.life != eEnemyLife::Alive)
@@ -947,10 +922,6 @@ void EnemyWorld::SendCommand(
     const EnemyHandle _handle,
     const StringView  _command)
 {
-    if (!m_pLibrary)
-    {
-        return;
-    }
     const size_t idx = FindIndex_(ResolveHandle(_handle).id);
     if (idx >= m_enemies.size() || m_enemies[idx].life != eEnemyLife::Alive)
     {
@@ -1027,7 +998,7 @@ bool EnemyWorld::IsDestroyFinished(
     {
         return true;
     }
-    if (pEnemy->life != eEnemyLife::Dying || !m_pLibrary)
+    if (pEnemy->life != eEnemyLife::Dying)
     {
         return false;
     }
@@ -1080,7 +1051,7 @@ int EnemyWorld::CountAlive(
         {
             continue;
         }
-        if (_filter.bHostileOnly && m_pLibrary && m_pLibrary->Get(e.defIndex).team != eTeam::Enemy)
+        if (_filter.bHostileOnly && m_pLibrary->Get(e.defIndex).team != eTeam::Enemy)
         {
             continue;
         }
@@ -1093,7 +1064,7 @@ int EnemyWorld::CountAlive(
     const StringView _defName) const
 {
     EnemyFilter filter;
-    filter.defIndex     = m_pLibrary ? m_pLibrary->FindIndex(_defName) : -1;
+    filter.defIndex     = m_pLibrary->FindIndex(_defName);
     filter.bHostileOnly = false;
     if (filter.defIndex < 0)
     {
@@ -1132,10 +1103,6 @@ void EnemyWorld::RefreshBodies(
 void EnemyWorld::ClearMonsters(
     const bool _bIncludeNpc)
 {
-    if (!m_pLibrary)
-    {
-        return;
-    }
     size_t keep = 0;
     for (size_t i = 0; i < m_enemies.size(); ++i)
     {
@@ -1158,10 +1125,6 @@ void EnemyWorld::ClearMonsters(
 void EnemyWorld::KillAll(
     const bool _bAwardScore)
 {
-    if (!m_pLibrary)
-    {
-        return;
-    }
     size_t keep = 0;
     for (size_t i = 0; i < m_enemies.size(); ++i)
     {
@@ -1275,7 +1238,7 @@ EnemyEvent EnemyWorld::MakeEvent(
     event.pos      = _e.body.position;
     event.drop     = _e.drop;
     event.userTag  = _e.userTag;
-    if (m_pLibrary && _e.defIndex >= 0)
+    if (_e.defIndex >= 0)
     {
         const EnemyDef& def = m_pLibrary->Get(_e.defIndex);
         event.defName       = def.name;

@@ -141,7 +141,7 @@ private:
     EnemyDefLibrary m_enemyLib = {};
     PropDefLibrary  m_propDefs = {};
     EnemyWorld      m_enemies { &m_enemyLib };
-    PropWorld       m_props { nullptr, 1 };
+    PropWorld       m_props { &m_propDefs, 1 };
 
     PlayerController m_player      = {};
     PlayerRig        m_rig         = {};

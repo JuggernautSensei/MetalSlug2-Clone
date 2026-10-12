@@ -173,7 +173,6 @@ void SandboxState::BuildWorld_(
         }
     }
     m_props.Reset(1);
-    m_props.SetLibrary(&m_propDefs);
     if (m_config.bPropLab)
     {
         m_props.Spawn("shop_0", { 1274.f, 228.f });

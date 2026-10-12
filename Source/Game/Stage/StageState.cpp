@@ -290,7 +290,6 @@ void StageState::Load_(
         {
             SLUG_LOG_WARN("소품 정의를 읽지 못해 플레이스홀더로 배치합니다: {}", message);
         }
-        m_props.SetLibrary(&m_propDefs);
     }
 
     m_host.BindPlayer(&m_player, &m_tuning);
@@ -508,7 +507,7 @@ void StageState::Tick(
     if (m_config.bAutoDamage)
     {
         // 연습장 전용: 화면 안에 들어온 망루를 캐논 한 발 (피해 24) 로 친다
-        const int        towerDef = m_props.GetLibrary() ? m_props.GetLibrary()->FindIndex("tower") : -1;
+        const int        towerDef = m_props.GetLibrary()->FindIndex("tower");
         const float      right    = m_camera.GetPositionNoShake().x + static_cast<float>(Renderer::kLogicalWidth) - kAutoTowerMarginPx;
         Vector<HitEvent> towerHits;
         for (const PropInstance& prop: m_props.GetProps())

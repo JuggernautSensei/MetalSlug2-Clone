@@ -134,8 +134,8 @@ class PropWorld
 
 public:
     explicit PropWorld(
-        const PropDefLibrary* _pLibrary = nullptr,
-        uint64_t              _seed     = 1);
+        const PropDefLibrary* _pLibrary,
+        uint64_t              _seed = 1);
 
     void                                SetLibrary(const PropDefLibrary* _pLibrary);
     [[nodiscard]] const PropDefLibrary* GetLibrary() const;
@@ -228,7 +228,7 @@ private:
     Vector<Platform>        m_platforms       = {};
     Vector<Platform>        m_enemyPlatforms  = {};
     Vector<Wall>            m_walls           = {};
-    ItemWorld               m_items { nullptr, uint64_t { 1 } };
+    ItemWorld               m_items;
     DecorWorld              m_decor   = {};
     EffectList              m_effects = {};
     RngMt19937              m_rng     = RngMt19937 { uint64_t { 1 } };

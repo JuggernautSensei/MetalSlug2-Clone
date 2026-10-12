@@ -52,11 +52,13 @@ PropWorld::PropWorld(
     , m_items(_pLibrary, _seed)
     , m_rng(_seed)
 {
+    JUG_ASSERT(_pLibrary != nullptr, "PropWorld 는 정의 라이브러리 없이 만들 수 없다.\n");
 }
 
 void PropWorld::SetLibrary(
     const PropDefLibrary* _pLibrary)
 {
+    JUG_ASSERT(_pLibrary != nullptr, "정의 라이브러리는 null 일 수 없다.\n");
     m_pLibrary = _pLibrary;
     m_items.SetLibrary(_pLibrary);
 }
@@ -167,10 +169,6 @@ PropHandle PropWorld::Spawn(
     const Vec2             _center,
     const PropSpawnParams& _params)
 {
-    if (m_pLibrary == nullptr)
-    {
-        return kNoProp;
-    }
     return SpawnByIndex(m_pLibrary->FindIndex(_defName), _center, _params);
 }
 
@@ -179,7 +177,7 @@ PropHandle PropWorld::SpawnByIndex(
     const Vec2             _center,
     const PropSpawnParams& _params)
 {
-    if (m_pLibrary == nullptr || _defIndex < 0 || static_cast<size_t>(_defIndex) >= m_pLibrary->GetDefs().size())
+    if (_defIndex < 0 || static_cast<size_t>(_defIndex) >= m_pLibrary->GetDefs().size())
     {
         return kNoProp;
     }
@@ -308,10 +306,6 @@ void PropWorld::RegisterHurtboxes(
 void PropWorld::OnHitEvents(
     const Span<const HitEvent> _events)
 {
-    if (m_pLibrary == nullptr)
-    {
-        return;
-    }
     for (const HitEvent& ev: _events)
     {
         const size_t idx = FindIndex_(ev.target);
@@ -529,10 +523,6 @@ void PropWorld::Tick(
     if (_ctx.pAnims != nullptr)
     {
         m_decor.Tick(*_ctx.pAnims, _ctx.dt);
-    }
-    if (m_pLibrary == nullptr)
-    {
-        return;
     }
     const float dt = _ctx.dt;
 

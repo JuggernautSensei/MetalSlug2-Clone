@@ -62,6 +62,7 @@ ItemWorld::ItemWorld(
     : m_pLibrary(_pLibrary)
     , m_rng(_seed)
 {
+    JUG_ASSERT(_pLibrary != nullptr, "ItemWorld 는 정의 라이브러리 없이 만들 수 없다.\n");
 }
 
 void ItemWorld::Reset(
@@ -87,11 +88,6 @@ uint32_t ItemWorld::Spawn(
     const bool       _bBounce,
     const int        _z)
 {
-    if (m_pLibrary == nullptr)
-    {
-        return 0;
-    }
-
     String itemName { _name };
     if (const PropItemGroup* pGroup = m_pLibrary->FindGroup(_name))
     {
@@ -257,10 +253,6 @@ Vector<ItemPickup> ItemWorld::Collect(
     const Aabb& _playerBox)
 {
     Vector<ItemPickup> out;
-    if (m_pLibrary == nullptr)
-    {
-        return out;
-    }
     for (PropItem& item: m_items)
     {
         if (item.bPickedUp)
@@ -340,10 +332,6 @@ void ItemWorld::Submit(
     const SpriteLibrary&    _spriteLib,
     const BitmapFont*       _pFont) const
 {
-    if (m_pLibrary == nullptr)
-    {
-        return;
-    }
     for (const PropItem& item: m_items)
     {
         const PropItemDef& def = m_pLibrary->GetItems()[static_cast<size_t>(item.defIndex)];
@@ -468,6 +456,7 @@ uint64_t ItemWorld::HashState() const
 void ItemWorld::SetLibrary(
     const PropDefLibrary* _pLibrary)
 {
+    JUG_ASSERT(_pLibrary != nullptr, "정의 라이브러리는 null 일 수 없다.\n");
     m_pLibrary = _pLibrary;
 }
 

@@ -76,8 +76,8 @@ class ItemWorld
 {
 public:
     explicit ItemWorld(
-        const PropDefLibrary* _pLibrary = nullptr,
-        uint64_t              _seed     = 1);
+        const PropDefLibrary* _pLibrary,
+        uint64_t              _seed = 1);
 
     void SetLibrary(const PropDefLibrary* _pLibrary);
     void Reset(uint64_t _seed = 1);
