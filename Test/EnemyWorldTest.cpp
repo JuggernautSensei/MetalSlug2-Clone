@@ -8,14 +8,16 @@
 
 constexpr float kGroundY = 378.f;   // MakeFlatGround 의 지면 윗면
 
-[[nodiscard]] static bool OnGround_(
+namespace
+{
+[[nodiscard]] bool OnGround_(
     const Enemy* _pEnemy)
 {
     return _pEnemy && _pEnemy->bGrounded && std::abs(_pEnemy->body.position.y - kGroundY) < 0.5f;
 }
 
 // 높은 체력(20)의 병사를 쓰러뜨리는 데 필요한 타격 횟수를 돌려준다 (로드 실패 -1, 미처치 -2)
-[[nodiscard]] static int HitsToKill_(
+[[nodiscard]] int HitsToKill_(
     const eHitKind _kind,
     const int      _damage)
 {
@@ -41,7 +43,7 @@ constexpr float kGroundY = 378.f;   // MakeFlatGround 의 지면 윗면
 }
 
 // 보병 전 종류를 세워 두고 1800틱 동안 상태 해시를 기록한다 (로드 실패 시 false)
-[[nodiscard]] static bool RunHashes_(
+[[nodiscard]] bool RunHashes_(
     Vector<uint64_t>& _hashes)
 {
     EnemyRig rig({ 100.f, kGroundY }, 0.f);
@@ -62,6 +64,7 @@ constexpr float kGroundY = 378.f;   // MakeFlatGround 의 지면 윗면
     }
     return true;
 }
+}   // namespace
 
 TEST(EnemyWorld, SpawningAnUnknownDefinitionReturnsANullHandle)
 {

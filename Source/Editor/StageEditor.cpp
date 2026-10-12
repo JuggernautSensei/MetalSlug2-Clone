@@ -193,7 +193,9 @@ struct Extractor
     }
 };
 
-[[nodiscard]] static String WsBefore_(
+namespace
+{
+[[nodiscard]] String WsBefore_(
     const String& _text,
     const int     _pos)
 {
@@ -205,11 +207,12 @@ struct Extractor
     return _text.substr(static_cast<size_t>(start), static_cast<size_t>(_pos - start));
 }
 
-[[nodiscard]] static bool IsWs_(
+[[nodiscard]] bool IsWs_(
     const char _c)
 {
     return _c == ' ' || _c == '\t' || _c == '\n' || _c == '\r';
 }
+}   // namespace
 
 struct Replacement
 {
@@ -217,7 +220,9 @@ struct Replacement
     int    end   = 0;
     String text  = {};
 };
-static void ApplyReplacements_(
+namespace
+{
+void ApplyReplacements_(
     String&              _text,
     Vector<Replacement>& _list)
 {
@@ -230,7 +235,7 @@ static void ApplyReplacements_(
     }
 }
 
-[[nodiscard]] static String ReadFile_(
+[[nodiscard]] String ReadFile_(
     const FilePath& _path,
     bool&           _bOk)
 {
@@ -239,7 +244,7 @@ static void ApplyReplacements_(
     return String { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
 }
 
-[[nodiscard]] static ImU32 KindColor_(
+[[nodiscard]] ImU32 KindColor_(
     const String& _kind)
 {
     if (_kind == "enemy")
@@ -273,13 +278,13 @@ static void ApplyReplacements_(
     return IM_COL32(235, 90, 235, 255);
 }
 
-[[nodiscard]] static const Vector<String>& Kinds_()
+[[nodiscard]] const Vector<String>& Kinds_()
 {
     static const Vector<String> kinds = { "enemy", "npc", "prop", "item", "decor", "collider" };
     return kinds;
 }
 
-static bool ComboStr_(
+bool ComboStr_(
     const char*           _label,
     int&                  _index,
     const Vector<String>& _items)
@@ -301,14 +306,14 @@ static bool ComboStr_(
     return bChanged;
 }
 
-[[nodiscard]] static double Snap_(
+[[nodiscard]] double Snap_(
     const double _value,
     const double _step)
 {
     return std::round(_value / _step) * _step;
 }
 
-[[nodiscard]] static int ReadInt_(
+[[nodiscard]] int ReadInt_(
     const JsonReader& _r,
     const char*       _key,
     const int         _default)
@@ -317,7 +322,7 @@ static bool ComboStr_(
     return v ? v.GetValue() : _default;
 }
 
-[[nodiscard]] static bool ReadFrame_(
+[[nodiscard]] bool ReadFrame_(
     const JsonReader& _r,
     StageSpriteFrame& _out)
 {
@@ -348,7 +353,7 @@ static bool ComboStr_(
     return _out.w > 0 && _out.h > 0;
 }
 
-[[nodiscard]] static String VisualName_(
+[[nodiscard]] String VisualName_(
     const JsonReader& _r)
 {
     for (const char* key: { "sprite", "anim" })
@@ -362,7 +367,7 @@ static bool ComboStr_(
     return String {};
 }
 
-[[nodiscard]] static String ClipName_(
+[[nodiscard]] String ClipName_(
     const JsonReader& _clips,
     const char*       _key)
 {
@@ -378,7 +383,7 @@ static bool ComboStr_(
     return String {};
 }
 
-[[nodiscard]] static String IdleClip_(
+[[nodiscard]] String IdleClip_(
     const JsonReader& _defs,
     const JsonReader& _def,
     const int         _depth)
@@ -407,7 +412,7 @@ static bool ComboStr_(
     return String {};
 }
 
-[[nodiscard]] static String FirstClip_(
+[[nodiscard]] String FirstClip_(
     const JsonReader& _def)
 {
     const Result<JsonReader> clips = _def.FindField("clips");
@@ -424,6 +429,7 @@ static bool ComboStr_(
     }
     return String {};
 }
+}   // namespace
 
 bool StageEntity::IsPlaceable() const
 {

@@ -6,13 +6,15 @@
 #include "Editor/MotionEditor.h"
 #include "Game/Enemies/EnemyDef.h"
 
-static const char* const kMotionJson =
+namespace
+{
+const char* const kMotionJson =
     "{\"defs\": {\"a\": {\"clips\": {\"throw\": {\"name\": \"X\", \"frames\": 4, \"sec\": 0.08}},\n"
     "  \"params\": {\"parts\": {\"cover\": {\"depth\": 16, \"sort\": 3}}},\n"
     "  \"weapons\": {\"attack\": {\"projectile\": \"p\", \"muzzle\": [0, -37], \"aim\": \"facing\","
     " \"muzzleFx\": {\"clip\": \"F\", \"offset\": [1, 2]}}}}}}";
 
-[[nodiscard]] static MotionWeaponValues BaseValues_()
+[[nodiscard]] MotionWeaponValues BaseValues_()
 {
     MotionWeaponValues v;
     v.muzzle   = { 0.f, -37.f };
@@ -20,6 +22,7 @@ static const char* const kMotionJson =
     v.fxOffset = { 1.f, 2.f };
     return v;
 }
+}   // namespace
 
 TEST(MotionEditorTest, UneditedApplyIsByteIdentical)
 {

@@ -11,7 +11,9 @@
 #include "Render/SpriteBatch.h"
 #include "World/Constants.h"
 
-[[nodiscard]] static PhysicsTuning MakePhysicsTuning_(
+namespace
+{
+[[nodiscard]] PhysicsTuning MakePhysicsTuning_(
     const MoveTuning& _move)
 {
     PhysicsTuning tuning;
@@ -24,7 +26,7 @@
     return tuning;
 }
 
-[[nodiscard]] static bool IsRegionBlocked_(
+[[nodiscard]] bool IsRegionBlocked_(
     const PhysicsWorld& _world,
     const Aabb&         _region)
 {
@@ -54,7 +56,7 @@
 }
 
 template<typename T>
-static void HashBytes_(
+void HashBytes_(
     uint64_t& _hash,
     const T&  _value)
 {
@@ -66,6 +68,7 @@ static void HashBytes_(
         _hash *= 1'099'511'628'211ull;
     }
 }
+}   // namespace
 
 void PlayerController::Reset(
     const Tuning& _tuning,

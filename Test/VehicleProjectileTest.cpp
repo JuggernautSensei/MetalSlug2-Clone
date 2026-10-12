@@ -6,7 +6,9 @@
 
 constexpr float kFloorY = 378.f;
 
-[[nodiscard]] static ShotSpawn MakeRoller_(
+namespace
+{
+[[nodiscard]] ShotSpawn MakeRoller_(
     const float _dirX,
     const int   _rollTicks,
     const bool  _bExpireFx)
@@ -28,6 +30,7 @@ constexpr float kFloorY = 378.f;
     spawn.visual          = 3;
     return spawn;
 }
+}   // namespace
 
 struct Field
 {

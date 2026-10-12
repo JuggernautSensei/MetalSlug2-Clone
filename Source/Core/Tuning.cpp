@@ -11,8 +11,10 @@
 #include "Base/Math.h"
 #include "Base/Types.h"
 
+namespace
+{
 template<typename V, typename W>
-static void VisitWeapon_(
+void VisitWeapon_(
     V& _v,
     W& _w)
 {
@@ -50,7 +52,7 @@ static void VisitWeapon_(
 }
 
 template<typename V, typename S>
-static void VisitMuzzleSet_(
+void VisitMuzzleSet_(
     V& _v,
     S& _s)
 {
@@ -62,7 +64,7 @@ static void VisitMuzzleSet_(
 }
 
 template<typename V, typename T>
-static void Visit_(
+void Visit_(
     V& _v,
     T& _t)
 {
@@ -200,6 +202,7 @@ static void Visit_(
     _v.Field("diagUpVariant", _t.rig.diagUpVariant);
     _v.End();
 }
+}   // namespace
 
 class TuningReadVisitor
 {
@@ -395,7 +398,9 @@ private:
     String         m_text = {};
 };
 
-[[nodiscard]] static Result<Tuning> ParseRoot_(
+namespace
+{
+[[nodiscard]] Result<Tuning> ParseRoot_(
     const JsonReader& _root)
 {
     Tuning            tuning;
@@ -407,6 +412,7 @@ private:
     }
     return tuning;
 }
+}   // namespace
 
 Result<Tuning> ParseTuning(
     const StringView _json)

@@ -6,19 +6,21 @@
 #include "Core/AssetPath.h"
 #include "Editor/StageEditor.h"
 
-[[nodiscard]] static String ReadAll_(
+namespace
+{
+[[nodiscard]] String ReadAll_(
     const FilePath& _path)
 {
     std::ifstream file { _path, std::ios::binary };
     return String { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
 }
 
-[[nodiscard]] static FilePath Stage0Path_()
+[[nodiscard]] FilePath Stage0Path_()
 {
     return FindAssetRoot() / "Stage" / "Stage0.json";
 }
 
-[[nodiscard]] static int FirstMovable_(
+[[nodiscard]] int FirstMovable_(
     const StageDocument& _doc)
 {
     for (size_t i = 0; i < _doc.GetEntities().size(); ++i)
@@ -31,6 +33,7 @@
     }
     return -1;
 }
+}   // namespace
 
 TEST(StageEditorTest, UneditedDocumentSavesByteIdentical)
 {
@@ -197,7 +200,9 @@ TEST(StageEditorTest, UnknownFieldsAndLayoutSurvive)
     EXPECT_EQ(doc.GetText(), text);
 }
 
-[[nodiscard]] static int FindSectionWithRect_(
+namespace
+{
+[[nodiscard]] int FindSectionWithRect_(
     const StageDocument& _doc)
 {
     for (size_t i = 0; i < _doc.GetSections().size(); ++i)
@@ -215,6 +220,7 @@ TEST(StageEditorTest, UnknownFieldsAndLayoutSurvive)
     }
     return -1;
 }
+}   // namespace
 
 TEST(StageEditorTest, SectionMoveChangesOnlyItsNumbers)
 {

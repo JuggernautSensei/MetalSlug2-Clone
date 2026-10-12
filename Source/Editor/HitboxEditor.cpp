@@ -17,17 +17,19 @@
 #include "Game/SandboxState.h"
 #include "Base/RGBA.h"
 
-static constexpr ARRAY<const char*, 6> kHitboxFileDirs  = { "Tuning", "Defs", "Defs", "Defs", "Defs", "Defs" };
-static constexpr ARRAY<const char*, 6> kHitboxFileNames = { "Tuning.json", "Enemies.json", "BigShiee.json", "Bus.json", "Helicopter.json", "Vehicles.json" };
+namespace
+{
+constexpr ARRAY<const char*, 6> kHitboxFileDirs  = { "Tuning", "Defs", "Defs", "Defs", "Defs", "Defs" };
+constexpr ARRAY<const char*, 6> kHitboxFileNames = { "Tuning.json", "Enemies.json", "BigShiee.json", "Bus.json", "Helicopter.json", "Vehicles.json" };
 
-static bool IsNumberNode_(
+bool IsNumberNode_(
     const Vector<JsonNode>& _nodes,
     const int               _index)
 {
     return _index >= 0 && _nodes[static_cast<size_t>(_index)].type == 'n';
 }
 
-static int FindKey_(
+int FindKey_(
     const JsonNode&  _object,
     const StringView _key)
 {
@@ -41,7 +43,7 @@ static int FindKey_(
     return -1;
 }
 
-static double ParseNumber_(
+double ParseNumber_(
     const String& _text)
 {
     double value = 0.0;
@@ -49,7 +51,7 @@ static double ParseNumber_(
     return value;
 }
 
-static String RenderExtraBox_(
+String RenderExtraBox_(
     const ExtraBoxDef& _box)
 {
     String out = std::format("{{ \"id\": \"{}\", \"kind\": \"{}\", \"w\": {}, \"h\": {}, \"offset\": [{}, {}]",
@@ -73,7 +75,7 @@ static String RenderExtraBox_(
     return out + " }";
 }
 
-static String RenderExtraBoxes_(
+String RenderExtraBoxes_(
     const Vector<ExtraBoxDef>& _boxes)
 {
     String out = "[";
@@ -84,11 +86,12 @@ static String RenderExtraBoxes_(
     return out + "]";
 }
 
-static bool IsSizeKey_(
+bool IsSizeKey_(
     const String& _key)
 {
     return _key.find("Size") != String::npos || _key.starts_with("hurt");
 }
+}   // namespace
 
 enum class eHitboxKind : int
 {
@@ -105,7 +108,9 @@ struct HitboxTitle
     eHitboxKind kind = eHitboxKind::Other;
 };
 
-static HitboxTitle MakeHitboxTitle_(
+namespace
+{
+HitboxTitle MakeHitboxTitle_(
     const HitboxEntry& _entry)
 {
     const size_t dot = _entry.label.rfind('.');
@@ -151,7 +156,7 @@ static HitboxTitle MakeHitboxTitle_(
     return t;
 }
 
-static RGBA HitboxKindColor_(
+RGBA HitboxKindColor_(
     const eHitboxKind _kind)
 {
     switch (_kind)
@@ -163,6 +168,7 @@ static RGBA HitboxKindColor_(
     }
     return { 255, 255, 255, 255 };
 }
+}   // namespace
 
 bool HitboxEntry::HasField(
     const eHitboxField _field) const

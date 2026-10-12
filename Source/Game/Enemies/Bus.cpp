@@ -32,7 +32,9 @@ constexpr uint32_t kStairSoldierTag  = 0x42555300u;   // 계단 병사 (생존 �
 constexpr int      kVariantClimb     = 2;             // Soldier.cpp: 계단 오른 뒤 일반 AI
 constexpr int      kVariantClimbStay = 3;             // 계단 오른 뒤 승강대에서 제자리 투척
 
-[[nodiscard]] static Vec2 Local_(
+namespace
+{
+[[nodiscard]] Vec2 Local_(
     const BusCfg& _c,
     const Vec2    _feet,
     const Vec2    _at)
@@ -40,7 +42,7 @@ constexpr int      kVariantClimbStay = 3;             // 계단 오른 뒤 승�
     return { _feet.x + (_at.x - _c.anchor.x) * _c.pxPerSheetPx, _feet.y + (_at.y - _c.anchor.y) * _c.pxPerSheetPx };
 }
 
-static void SubmitPart_(
+void SubmitPart_(
     const EnemyRenderEnv& _render,
     const EnemyPartDepth& _depth,
     const StringView      _clip,
@@ -52,7 +54,7 @@ static void SubmitPart_(
 }
 
 // 차체 단계 (0 = 개방 상태, 1..3 = 파손 D1..D3)
-[[nodiscard]] static int BodyLevel_(
+[[nodiscard]] int BodyLevel_(
     const int _stage)
 {
     if (_stage <= 0)
@@ -66,14 +68,14 @@ static void SubmitPart_(
     return _stage >= 4 ? 2 : 1;
 }
 
-[[nodiscard]] static String Named_(
+[[nodiscard]] String Named_(
     const char* _base,
     const int   _level)
 {
     return String(_base) + std::to_string(_level);
 }
 
-static void SpawnBursts_(
+void SpawnBursts_(
     EnemyEnv&       _env,
     const Enemy&    _e,
     const EnemyDef& _def,
@@ -99,7 +101,7 @@ static void SpawnBursts_(
     }
 }
 
-static void EnterStage_(
+void EnterStage_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
@@ -109,7 +111,7 @@ static void EnterStage_(
     SpawnBursts_(_env, _e, _def, _stage, false);
 }
 
-static void Init_(
+void Init_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -127,7 +129,7 @@ static void Init_(
 
 // 계단 병사 한 명을 버스 오른쪽 화면 밖에 낸다 (결정적 난수로 종류 선택).
 // 대검병은 계단을 올라 지붕을 건너 내려오고, 폭탄병은 승강대에 서서 던지고, 바주카병도 계단을 올라 승강대(버스 위)에서 로켓을 쏜다 (Bzk.cpp Climb).
-static void SpawnStairSoldier_(
+void SpawnStairSoldier_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -167,7 +169,7 @@ static void SpawnStairSoldier_(
     (void)_env.world.SpawnDeferred(defIndex, { feet.x + c.soldierSpawn.x, feet.y + c.soldierSpawn.y }, params);
 }
 
-static void TickSoldiers_(
+void TickSoldiers_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -189,7 +191,7 @@ static void TickSoldiers_(
 }
 
 // 체력이 단계 문턱 이하로 내려가면 단계를 올린다 (한 틱에 여러 단계 가능).
-static void UpdateStage_(
+void UpdateStage_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -202,7 +204,7 @@ static void UpdateStage_(
     }
 }
 
-static void Tick_(
+void Tick_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -228,7 +230,7 @@ static void Tick_(
     TickSoldiers_(_e, _def, _env);
 }
 
-static void OnDeath_(
+void OnDeath_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -237,7 +239,7 @@ static void OnDeath_(
     SpawnBursts_(_env, _e, _def, 0, true);
 }
 
-static void TickDying_(
+void TickDying_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -248,14 +250,14 @@ static void TickDying_(
     ++_e.deathTicks;
 }
 
-static bool DeathDone_(
+bool DeathDone_(
     const Enemy&    _e,
     const EnemyDef& _def)
 {
     return _e.deathTicks >= _def.bus.destroyDoneTicks;
 }
 
-static void SubmitDebris_(
+void SubmitDebris_(
     const Enemy&          _e,
     const EnemyDef&       _def,
     const EnemyRenderEnv& _render)
@@ -283,7 +285,7 @@ static void SubmitDebris_(
 
 // 파손 단계 차체. 개방 단계와 같은 구조: 계단 (BackD 의 x >= coverMaxX) -> 몸통 (BodyD) -> 병사 -> 앞면 덮개 (BackD 의 x < coverMaxX = 개방 단계 Bus_OpenTop 에 해당).
 // Bus_BackD* 는 이름과 달리 뒷벽이 아니라 앞면 덮개 + 계단 그림이다 (Bus_BodyD* 는 승강대 기둥/좌석까지 든 전체 몸통)
-static void SubmitDamaged_(
+void SubmitDamaged_(
     const EnemyRenderEnv& _render,
     const BusCfg&         _c,
     const int             _level,
@@ -307,7 +309,7 @@ static void SubmitDamaged_(
     }
 }
 
-static void SubmitLive_(
+void SubmitLive_(
     const Enemy&          _e,
     const EnemyDef&       _def,
     const EnemyRenderEnv& _render)
@@ -372,7 +374,7 @@ static void SubmitLive_(
     }
 }
 
-static void SubmitParts_(
+void SubmitParts_(
     const Enemy&          _e,
     const EnemyDef&       _def,
     const EnemyRenderEnv& _render)
@@ -393,6 +395,7 @@ static void SubmitParts_(
     }
     SubmitLive_(_e, _def, _render);
 }
+}   // namespace
 
 const BehaviorOps kBusOps = {
     .init              = &Init_,
@@ -404,7 +407,9 @@ const BehaviorOps kBusOps = {
     .deathDone         = &DeathDone_,
 };
 
-static bool ReadNumField_(
+namespace
+{
+bool ReadNumField_(
     const JsonReader& _o,
     const StringView  _key,
     float&            _out)
@@ -422,7 +427,7 @@ static bool ReadNumField_(
     return true;
 }
 
-static bool ReadIntField_(
+bool ReadIntField_(
     const JsonReader& _o,
     const StringView  _key,
     int&              _out)
@@ -436,7 +441,7 @@ static bool ReadIntField_(
     return true;
 }
 
-static bool ReadStrField_(
+bool ReadStrField_(
     const JsonReader& _o,
     const StringView  _key,
     String&           _out)
@@ -450,7 +455,7 @@ static bool ReadStrField_(
     return true;
 }
 
-static bool ReadVecField_(
+bool ReadVecField_(
     const JsonReader& _o,
     const StringView  _key,
     Vec2&             _out)
@@ -475,7 +480,7 @@ static bool ReadVecField_(
     return true;
 }
 
-static void ParseBursts_(
+void ParseBursts_(
     DefReader&           _r,
     const StringView     _key,
     Vector<BusBurstDef>& _out)
@@ -504,7 +509,7 @@ static void ParseBursts_(
     _out = std::move(list);
 }
 
-static void ParseDebris_(
+void ParseDebris_(
     DefReader&            _r,
     Vector<BusDebrisDef>& _out)
 {
@@ -532,7 +537,7 @@ static void ParseDebris_(
     _out = std::move(list);
 }
 
-static void ParseInnerSoldiers_(
+void ParseInnerSoldiers_(
     DefReader&                  _r,
     Vector<BusInnerSoldierDef>& _out)
 {
@@ -560,7 +565,7 @@ static void ParseInnerSoldiers_(
     _out = std::move(list);
 }
 
-static void ParseWindows_(
+void ParseWindows_(
     DefReader&            _r,
     Vector<BusWindowDef>& _out)
 {
@@ -587,6 +592,7 @@ static void ParseWindows_(
     }
     _out = std::move(list);
 }
+}   // namespace
 
 void ParseBusCfg(
     DefReader& _r,

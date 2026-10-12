@@ -35,7 +35,9 @@ struct OldSpot
 
 constexpr float kTol = 1e-5f;
 
-static void ExpectBursts_(
+namespace
+{
+void ExpectBursts_(
     const Vector<BusBurstDef>& _got,
     const OldBurst*            _want,
     const size_t               _count)
@@ -50,6 +52,7 @@ static void ExpectBursts_(
         EXPECT_NEAR(_got[i].delaySec, static_cast<float>(_want[i].delayTicks) / 60.f, kTol) << i;
     }
 }
+}   // namespace
 
 TEST(BusData, LoadedTablesEqualTheOldHardCodedValues)
 {

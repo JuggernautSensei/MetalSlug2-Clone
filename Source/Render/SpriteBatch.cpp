@@ -21,12 +21,15 @@
 
 #include "Core/AsyncLoader.h"
 
-[[nodiscard]] static SDL_FlipMode FlipFlags_(
+namespace
+{
+[[nodiscard]] SDL_FlipMode FlipFlags_(
     const SpriteDrawOptions& _options)
 {
     const int flags = (_options.bFlipX ? static_cast<int>(SDL_FLIP_HORIZONTAL) : 0) | (_options.bFlipY ? static_cast<int>(SDL_FLIP_VERTICAL) : 0);
     return static_cast<SDL_FlipMode>(flags);
 }
+}   // namespace
 
 IntRect ComputeDestRect(
     const AnimFrame& _frame,
@@ -103,7 +106,9 @@ struct DecodedImage
     Vector<uint8_t> rgba   = {};
 };
 
-[[nodiscard]] static Result<DecodedImage> DecodePngFile_(
+namespace
+{
+[[nodiscard]] Result<DecodedImage> DecodePngFile_(
     const FilePath& _pngPath)
 {
     const ScopedPhaseTimer timer { "png-decode", _pngPath.filename().string() };
@@ -144,6 +149,7 @@ struct DecodedImage
     stbi_image_free(pPixels);
     return image;
 }
+}   // namespace
 
 // 피격 플래시 램프 노드 (원작 버스 피격 프레임 실측: 입력 평균 밝기 L -> 출력 RGB)
 struct FlashRampNode
@@ -154,7 +160,9 @@ struct FlashRampNode
     int b = 0;
 };
 
-static const ARRAY<FlashRampNode, 17> kFlashRamp = {
+namespace
+{
+const ARRAY<FlashRampNode, 17> kFlashRamp = {
     {
      { 0, 145, 52, 0 },
      { 8, 151, 56, 0 },
@@ -176,7 +184,7 @@ static const ARRAY<FlashRampNode, 17> kFlashRamp = {
      }
 };
 
-static uint8_t LerpChannel_(
+uint8_t LerpChannel_(
     const int _from,
     const int _to,
     const int _t,
@@ -184,6 +192,7 @@ static uint8_t LerpChannel_(
 {
     return static_cast<uint8_t>(_from + (_to - _from) * _t / _span);
 }
+}   // namespace
 
 Vector<uint8_t> BuildHitFlashRgba(
     const Span<const uint8_t> _rgba,
@@ -202,14 +211,17 @@ Vector<uint8_t> BuildHitFlashRgba(
     return out;
 }
 
+namespace
+{
 // 텍스처 선택: 플래시가 켜졌고 변환본이 있으면 변환본.
-static SDL_Texture* PickTexture_(
+SDL_Texture* PickTexture_(
     SDL_Texture* const _pNormal,
     SDL_Texture* const _pFlash,
     const float        _flashAmount)
 {
     return (_flashAmount >= 0.5f && _pFlash) ? _pFlash : _pNormal;
 }
+}   // namespace
 
 RGBA ApplyHitFlashRamp(
     const RGBA _color)

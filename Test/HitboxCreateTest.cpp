@@ -9,7 +9,9 @@
 #include "Editor/MotionEditor.h"
 #include "EnemyTestUtil.h"
 
-[[nodiscard]] static String DefsText_()
+namespace
+{
+[[nodiscard]] String DefsText_()
 {
     std::ifstream     file(EnemyDefsPath().string());
     std::stringstream buffer;
@@ -17,7 +19,7 @@
     return buffer.str();
 }
 
-[[nodiscard]] static String WithBoxes_(
+[[nodiscard]] String WithBoxes_(
     const String& _boxes)
 {
     String       text = DefsText_();
@@ -30,6 +32,7 @@
     text.insert(at + key.size(), " \"hitboxes\": " + _boxes + ",");
     return text;
 }
+}   // namespace
 
 TEST(HitboxCreate, LoaderAcceptsAndRejectsKeys)
 {

@@ -12,7 +12,9 @@
 
 constexpr float kSpawnSnapPx = 16.f;   // 스폰 시 발 아래 지면에 붙이는 최대 거리
 
-[[nodiscard]] static Vec2 Lerp_(
+namespace
+{
+[[nodiscard]] Vec2 Lerp_(
     const Vec2  _a,
     const Vec2  _b,
     const float _t)
@@ -20,7 +22,7 @@ constexpr float kSpawnSnapPx = 16.f;   // 스폰 시 발 아래 지면에 붙이
     return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
 }
 
-[[nodiscard]] static int FrameAt_(
+[[nodiscard]] int FrameAt_(
     const AnimClip& _clip,
     const int64_t   _timeUnits)
 {
@@ -43,13 +45,13 @@ constexpr float kSpawnSnapPx = 16.f;   // 스폰 시 발 아래 지면에 붙이
 }
 
 // +y (아래) 를 향한 그림을 속도 방향에 맞추는 시계 방향 회전 (도, 아래 = 0)
-[[nodiscard]] static float RotationDeg_(
+[[nodiscard]] float RotationDeg_(
     const Vec2 _velocity)
 {
     return std::atan2(-_velocity.x, _velocity.y) * (180.f / 3.14159265f);
 }
 
-[[nodiscard]] static PhysicsTuning MakePhys_(
+[[nodiscard]] PhysicsTuning MakePhys_(
     const EnemyDef& _def)
 {
     PhysicsTuning tuning;
@@ -58,7 +60,7 @@ constexpr float kSpawnSnapPx = 16.f;   // 스폰 시 발 아래 지면에 붙이
     return tuning;
 }
 
-static void MixHash_(
+void MixHash_(
     uint64_t&     _hash,
     const int64_t _value)
 {
@@ -71,11 +73,12 @@ static void MixHash_(
     }
 }
 
-[[nodiscard]] static int SideIndex_(
+[[nodiscard]] int SideIndex_(
     const int _facing)
 {
     return _facing < 0 ? 0 : 1;
 }
+}   // namespace
 
 EnemyWorld::EnemyWorld(
     const EnemyDefLibrary* _pLibrary,
@@ -319,7 +322,9 @@ void EnemyWorld::BeginDying_(
     }
 }
 
-static void ReleaseExtraBoxHit_(
+namespace
+{
+void ReleaseExtraBoxHit_(
     Enemy&    _e,
     EnemyEnv& _env)
 {
@@ -330,7 +335,7 @@ static void ReleaseExtraBoxHit_(
     _e.boxHitId = kNoHitId;
 }
 
-static void TickExtraBoxes_(
+void TickExtraBoxes_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -379,6 +384,7 @@ static void TickExtraBoxes_(
         ReleaseExtraBoxHit_(_e, _env);
     }
 }
+}   // namespace
 
 void EnemyWorld::Tick(
     const EnemyContext& _ctx)

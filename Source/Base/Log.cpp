@@ -71,8 +71,11 @@ void InstallCoreLogger()
     jug::SetCoreLogger(&g_coreLogger);
 }
 
-static std::FILE*         g_pEventLog = nullptr;
-static unsigned long long g_EventTick = 0;
+namespace
+{
+std::FILE*         g_pEventLog = nullptr;
+unsigned long long g_EventTick = 0;
+}   // namespace
 
 bool OpenEventLog(
     const std::string_view _path)

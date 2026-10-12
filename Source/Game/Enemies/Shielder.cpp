@@ -19,7 +19,9 @@ enum class eShielderState
     LookEnd
 };
 
-[[nodiscard]] static int PickDir_(
+namespace
+{
+[[nodiscard]] int PickDir_(
     const int _dir,
     const int _fwd,
     const int _up,
@@ -28,7 +30,7 @@ enum class eShielderState
     return _dir == 1 ? _up : (_dir == 2 ? _down : _fwd);
 }
 
-[[nodiscard]] static int StateClip_(
+[[nodiscard]] int StateClip_(
     const Enemy&       _e,
     const ShielderCfg& _c)
 {
@@ -50,14 +52,14 @@ enum class eShielderState
     }
 }
 
-[[nodiscard]] static bool StateDone_(
+[[nodiscard]] bool StateDone_(
     const Enemy&    _e,
     const EnemyDef& _def)
 {
     return _e.stateTicks >= _def.GetClip(StateClip_(_e, _def.shielder)).GetDurationTicks();
 }
 
-static void Go_(
+void Go_(
     Enemy&               _e,
     const EnemyDef&      _def,
     EnemyEnv&            _env,
@@ -112,7 +114,7 @@ static void Go_(
     SetClip(_e, StateClip_(_e, cfg), true);
 }
 
-static void Init_(
+void Init_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -121,7 +123,7 @@ static void Init_(
     Go_(_e, _def, _env, eShielderState::Wait);
 }
 
-static void Tick_(
+void Tick_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -335,7 +337,7 @@ static void Tick_(
     SetClip(_e, wantClip);
 }
 
-static bool OnHit_(
+bool OnHit_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&,
@@ -349,7 +351,7 @@ static bool OnHit_(
     return false;
 }
 
-static void OnDeath_(
+void OnDeath_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -358,7 +360,7 @@ static void OnDeath_(
     BeginSoldierDeath(_e, _def, _env);
 }
 
-static void RegisterHurtboxes_(
+void RegisterHurtboxes_(
     const Enemy&    _e,
     const EnemyDef& _def,
     CombatSystem&   _combat)
@@ -381,6 +383,7 @@ static void RegisterHurtboxes_(
     body.owner = _e.id;
     _combat.AddHurtbox(body);
 }
+}   // namespace
 
 const BehaviorOps kShielderOps = {
     .init              = &Init_,

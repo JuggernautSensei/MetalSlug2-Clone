@@ -18,14 +18,16 @@
 constexpr int   kLabProbeDepth = 64;
 constexpr float kLabPlayerGap  = 120.f;
 
-[[nodiscard]] static Vec2 LabToScreen_(
+namespace
+{
+[[nodiscard]] Vec2 LabToScreen_(
     const Vec2 _world,
     const Vec2 _camera)
 {
     return { std::floor(_world.x - _camera.x), std::floor(_world.y - _camera.y) };
 }
 
-static void LabDrawBox_(
+void LabDrawBox_(
     Renderer&   _renderer,
     const Aabb& _box,
     const Vec2  _camera,
@@ -36,7 +38,7 @@ static void LabDrawBox_(
     _renderer.DrawRect(topLeft, { Max(1.f, bottomRight.x - topLeft.x), Max(1.f, bottomRight.y - topLeft.y) }, _color);
 }
 
-static void LabDrawText_(
+void LabDrawText_(
     Renderer&        _renderer,
     const Vec2       _topLeft,
     const StringView _text,
@@ -46,7 +48,7 @@ static void LabDrawText_(
     _renderer.DrawDebugText(_topLeft, _text, _color);
 }
 
-[[nodiscard]] static const char* LabLifeName_(
+[[nodiscard]] const char* LabLifeName_(
     const eEnemyLife _life)
 {
     switch (_life)
@@ -59,11 +61,12 @@ static void LabDrawText_(
     return "?";
 }
 
-[[nodiscard]] static String LabMakeStateText_(
+[[nodiscard]] String LabMakeStateText_(
     const Enemy& _e)
 {
     return std::format("st{} t{} c{} hp{}", _e.state, _e.stateTicks, _e.counter, _e.health.hp);
 }
+}   // namespace
 
 void EnemyLab::Init(
     SimRunner*      _pRunner,

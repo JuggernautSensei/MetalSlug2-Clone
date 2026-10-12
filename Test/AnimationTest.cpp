@@ -7,7 +7,9 @@
 #include "Render/Animation.h"
 #include "World/Constants.h"
 
-[[nodiscard]] static AnimClip MakeClip_(
+namespace
+{
+[[nodiscard]] AnimClip MakeClip_(
     const char* _name,
     const int   _frameCount,
     const float _frameDuration,
@@ -33,6 +35,7 @@
     }
     return clip;
 }
+}   // namespace
 
 constexpr const char* kSampleJson = R"({
         "version": 1,
@@ -52,7 +55,9 @@ constexpr const char* kSampleJson = R"({
         }
     })";
 
-[[nodiscard]] static int ExpectedLoopFrame_(
+namespace
+{
+[[nodiscard]] int ExpectedLoopFrame_(
     const int64_t _ticks,
     const int64_t _durationUnits,
     const int     _frameCount)
@@ -60,6 +65,7 @@ constexpr const char* kSampleJson = R"({
     const int64_t frame = (_ticks * (kAnimTimeUnitsPerSec / 60)) / _durationUnits;
     return static_cast<int>(frame % _frameCount);
 }
+}   // namespace
 
 TEST(AnimationLibrary, ParsesJsonWithFramesAndPivots)
 {

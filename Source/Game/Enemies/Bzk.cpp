@@ -23,7 +23,9 @@ enum class eBzkState
 // aiVariant 2 = 버스 계단 바주카병: Climb (스폰 -> arena.min -> arena.max, 물리 없음) 뒤 Fall 로 승강대에 선다.
 constexpr int kVariantClimb = 2;
 
-static void Go_(
+namespace
+{
+void Go_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
@@ -101,7 +103,7 @@ static void Go_(
 }
 
 // 버스 계단 바주카병: arena.min (계단 아래) -> arena.max (승강대) 를 병사 속도로 걷는다 (물리/중력 없음). 끝나면 낙하.
-static void TickClimb_(
+void TickClimb_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -116,7 +118,7 @@ static void TickClimb_(
     ClimbLeap(_e, _def);
 }
 
-[[nodiscard]] static int ChoosePosture_(
+[[nodiscard]] int ChoosePosture_(
     const Enemy&    _e,
     const BzkCfg&   _cfg,
     const EnemyEnv& _env,
@@ -138,7 +140,7 @@ static void TickClimb_(
     return 4;
 }
 
-static void Init_(
+void Init_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -147,7 +149,7 @@ static void Init_(
     Go_(_e, _def, _env, _e.aiVariant >= kVariantClimb ? eBzkState::Climb : eBzkState::Wait);
 }
 
-static void Tick_(
+void Tick_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -318,13 +320,14 @@ static void Tick_(
     }
 }
 
-static void OnDeath_(
+void OnDeath_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
     BeginSoldierDeath(_e, _def, _env);
 }
+}   // namespace
 
 const BehaviorOps kBzkOps = {
     .init              = &Init_,

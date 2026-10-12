@@ -9,7 +9,9 @@
 #include "Game/SimRunner.h"
 #include "Game/StateFactory.h"
 
-[[nodiscard]] static Vector<InputFrame> MakeScript_()
+namespace
+{
+[[nodiscard]] Vector<InputFrame> MakeScript_()
 {
     Vector<InputFrame> frames;
     for (int i = 0; i < 240; ++i)
@@ -23,7 +25,7 @@
     return frames;
 }
 
-[[nodiscard]] static Vec2 RunDemo_(
+[[nodiscard]] Vec2 RunDemo_(
     const Vector<InputFrame>& _frames)
 {
     RngMt19937  rng { uint64_t { 7 } };
@@ -35,6 +37,7 @@
     runner.Run(_frames);
     return pDemo->GetPosition();
 }
+}   // namespace
 
 TEST(Replay, SerializeRoundTrip)
 {

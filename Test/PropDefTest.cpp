@@ -5,18 +5,21 @@
 #include "Base/Types.h"
 #include "PropTestUtil.h"
 
-[[nodiscard]] static std::string Wrap_(
+namespace
+{
+[[nodiscard]] std::string Wrap_(
     const std::string& _defs)
 {
     return std::string { "{ \"version\": 1, \"defs\": { " } + _defs + " } }";
 }
 
-[[nodiscard]] static Result<PropDefLibrary> ParseText_(
+[[nodiscard]] Result<PropDefLibrary> ParseText_(
     const std::string& _text,
     String*            _pMessage = nullptr)
 {
     return PropDefLibrary::Parse(StringView { _text.c_str(), _text.size() }, _pMessage);
 }
+}   // namespace
 
 TEST(PropDef, StageDefNamesAllPresent)
 {

@@ -5,8 +5,10 @@
 #include "Base/Math.h"
 #include "Base/Types.h"
 
+namespace
+{
 // 잔해 한 틱 진행: 중력 + 이동만 한다 (지면 판정 없음, 화면 밖으로 나가면 Update 가 제거).
-static void StepDebris_(
+void StepDebris_(
     Effect&     _effect,
     const float _dt)
 {
@@ -15,6 +17,7 @@ static void StepDebris_(
     _effect.position.x += _effect.velocity.x * _dt;
     _effect.position.y += _effect.velocity.y * _dt;
 }
+}   // namespace
 
 void EffectList::Clear()
 {

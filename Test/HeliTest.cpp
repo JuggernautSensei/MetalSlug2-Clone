@@ -14,13 +14,16 @@ constexpr int   kStateBomb   = 0;   // Heli.cpp 의 eHeliState 순서와 같다 
 constexpr int   kStateLow    = 1;
 constexpr int   kStateVolley = 4;
 
-[[nodiscard]] static SpawnParams HeliParams_()
+namespace
+{
+[[nodiscard]] SpawnParams HeliParams_()
 {
     SpawnParams params;
     params.facing     = -1;
     params.bActivated = true;
     return params;
 }
+}   // namespace
 
 struct HeliLog
 {
@@ -33,7 +36,9 @@ struct HeliLog
     int                missiles   = 0;
 };
 
-[[nodiscard]] static HeliLog RunHeli_(
+namespace
+{
+[[nodiscard]] HeliLog RunHeli_(
     VehicleRig&       _rig,
     const EnemyHandle _heli,
     const int         _ticks)
@@ -71,11 +76,12 @@ struct HeliLog
     return log;
 }
 
-[[nodiscard]] static const EnemyDef& HeliDef_(
+[[nodiscard]] const EnemyDef& HeliDef_(
     VehicleRig& _rig)
 {
     return _rig.Lib().Get(_rig.Lib().FindIndex("heli"));
 }
+}   // namespace
 
 TEST(Heli, DefinitionLoadsWithHeliAndBombDefs)
 {

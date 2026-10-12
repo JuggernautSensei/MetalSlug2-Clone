@@ -155,7 +155,9 @@ private:
     int      m_sleepMs = 0;
 };
 
-static void RunOrderedLoad_(
+namespace
+{
+void RunOrderedLoad_(
     const int _workers)
 {
     constexpr int kJobs = 40;
@@ -190,6 +192,7 @@ static void RunOrderedLoad_(
         EXPECT_EQ(log.executeOffMain.load(), 0);
     }
 }
+}   // namespace
 
 TEST(AsyncLoader, ResultsAreDeliveredInSubmissionOrderOnMainThread)
 {

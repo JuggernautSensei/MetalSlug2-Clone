@@ -6,7 +6,9 @@
 #include "Base/RGBA.h"
 #include "Base/Types.h"
 
-[[nodiscard]] static Vector<int> SplitLineLengths_(
+namespace
+{
+[[nodiscard]] Vector<int> SplitLineLengths_(
     const StringView _text)
 {
     Vector<int> lengths;
@@ -27,7 +29,7 @@
     return lengths;
 }
 
-[[nodiscard]] static RGBA GetFontFallbackColor_(
+[[nodiscard]] RGBA GetFontFallbackColor_(
     const eFontColor _color)
 {
     switch (_color)
@@ -41,7 +43,7 @@
     }
 }
 
-[[nodiscard]] static const char* GetFontSpriteName_(
+[[nodiscard]] const char* GetFontSpriteName_(
     const eFontColor _color)
 {
     switch (_color)
@@ -54,6 +56,7 @@
         default: return "Font_Normal";
     }
 }
+}   // namespace
 
 int MeasureTextWidth(
     const StringView _text,

@@ -26,13 +26,15 @@ enum class eDeathPhase
     Jump  = 6    // 공중 사망 → 착지하면 Land
 };
 
-[[nodiscard]] static bool IsFinalPhase_(
+namespace
+{
+[[nodiscard]] bool IsFinalPhase_(
     const eDeathPhase _phase)
 {
     return _phase == eDeathPhase::Land || _phase == eDeathPhase::Slash || _phase == eDeathPhase::Bomb;
 }
 
-static void EnterDeathLand_(
+void EnterDeathLand_(
     Enemy&          _e,
     const DeathDef& _death)
 {
@@ -40,6 +42,7 @@ static void EnterDeathLand_(
     _e.deathTicks = 0;
     SetClip(_e, _death.clipLand, true);
 }
+}   // namespace
 
 float DistToPlayer(
     const Enemy&    _e,

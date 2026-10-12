@@ -10,7 +10,9 @@
 #include "Render/Animation.h"
 #include "Render/SpriteBatch.h"
 
-[[nodiscard]] static Vec2 Lerp_(
+namespace
+{
+[[nodiscard]] Vec2 Lerp_(
     const Vec2  _a,
     const Vec2  _b,
     const float _t)
@@ -18,7 +20,7 @@
     return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
 }
 
-[[nodiscard]] static const AnimFrame* GetFrame_(
+[[nodiscard]] const AnimFrame* GetFrame_(
     const AnimationLibrary& _anims,
     const StringView        _name,
     const int               _frame)
@@ -32,7 +34,7 @@
     return &pClip->frames[static_cast<size_t>(index)];
 }
 
-[[nodiscard]] static const AnimFrame* GetClipFrame_(
+[[nodiscard]] const AnimFrame* GetClipFrame_(
     const AnimationLibrary& _anims,
     const eSlugClip         _clip,
     const int               _frame)
@@ -41,7 +43,7 @@
 }
 
 // 클립 이름과 경과 틱으로 프레임을 고른다 (클립 자신의 프레임 길이를 따른다)
-[[nodiscard]] static const AnimFrame* GetTimedFrame_(
+[[nodiscard]] const AnimFrame* GetTimedFrame_(
     const AnimationLibrary& _anims,
     const StringView        _name,
     const int               _ageTicks)
@@ -56,7 +58,7 @@
     return &pClip->frames[static_cast<size_t>(index)];
 }
 
-static void SubmitFx_(
+void SubmitFx_(
     SpriteBatch&            _sprites,
     const AnimationLibrary& _anims,
     const SlugFx&           _fx,
@@ -124,6 +126,7 @@ static void SubmitFx_(
         }
     }
 }
+}   // namespace
 
 eSlugClip GetSlugBodyClip(
     const eSlugPose _pose)

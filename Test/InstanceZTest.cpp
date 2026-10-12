@@ -9,7 +9,9 @@
 #include "StageTestUtil.h"
 #include "VehicleTestUtil.h"
 
-[[nodiscard]] static Vector<int> SubmittedDepths_(
+namespace
+{
+[[nodiscard]] Vector<int> SubmittedDepths_(
     VehicleRig&             _rig,
     const AnimationLibrary& _anims)
 {
@@ -23,6 +25,7 @@
     std::sort(depths.begin(), depths.end());
     return depths;
 }
+}   // namespace
 
 TEST(InstanceZ, SoldierSubmitsAtInstanceZ)
 {

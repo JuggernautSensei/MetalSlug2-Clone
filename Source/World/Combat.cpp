@@ -4,12 +4,15 @@
 
 #include "Base/Types.h"
 
-[[nodiscard]] static uint64_t MakeTargetKey_(
+namespace
+{
+[[nodiscard]] uint64_t MakeTargetKey_(
     const Hurtbox& _hurtbox,
     const size_t   _index)
 {
     return _hurtbox.owner != kNoOwner ? static_cast<uint64_t>(_hurtbox.owner) : ((1ull << 32) | static_cast<uint64_t>(_index));
 }
+}   // namespace
 
 Vector<HitEvent> HitResolver::Resolve(
     const Span<const Hitbox>  _hitboxes,

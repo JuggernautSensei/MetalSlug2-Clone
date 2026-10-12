@@ -52,8 +52,10 @@ constexpr ARRAY<SlotDef, kRigClipCount> kSlots = {
      }
 };
 
+namespace
+{
 // 표의 행 수가 kRigClipCount 보다 적으면 남은 행이 0 으로 채워진다. 모든 행이 채워졌는지 확인한다.
-[[nodiscard]] static constexpr bool AreSlotsFilled_()
+[[nodiscard]] constexpr bool AreSlotsFilled_()
 {
     for (const SlotDef& slot: kSlots)
     {
@@ -64,6 +66,7 @@ constexpr ARRAY<SlotDef, kRigClipCount> kSlots = {
     }
     return true;
 }
+}   // namespace
 
 static_assert(AreSlotsFilled_(), "kSlots must have a row for every eRigClip.");
 
@@ -73,7 +76,9 @@ constexpr ARRAY<const char*, 3> kShotgunTokens = { "SG", "DG", nullptr };
 constexpr ARRAY<const char*, 3> kRocketTokens  = { "MG", "SG", "DG" };
 constexpr ARRAY<const char*, 3> kFlameTokens   = { "SG", "MG", "DG" };
 
-[[nodiscard]] static const ARRAY<const char*, 3>& GetTokens_(
+namespace
+{
+[[nodiscard]] const ARRAY<const char*, 3>& GetTokens_(
     const eWeapon _weapon)
 {
     switch (_weapon)
@@ -86,7 +91,7 @@ constexpr ARRAY<const char*, 3> kFlameTokens   = { "SG", "MG", "DG" };
     }
 }
 
-static void ReplaceKey_(
+void ReplaceKey_(
     String&          _inOut,
     const StringView _key,
     const StringView _value)
@@ -98,7 +103,7 @@ static void ReplaceKey_(
     }
 }
 
-[[nodiscard]] static String Expand_(
+[[nodiscard]] String Expand_(
     const char* _pPattern,
     const char* _pWeaponToken,
     const bool  _bRight)
@@ -109,17 +114,18 @@ static void ReplaceKey_(
     return result;
 }
 
-[[nodiscard]] static bool IsAirTimelineSlot_(
+[[nodiscard]] bool IsAirTimelineSlot_(
     const eRigClip _slot)
 {
     return _slot == eRigClip::JumpIdle || _slot == eRigClip::JumpMove || _slot == eRigClip::LowerJumpIdle || _slot == eRigClip::LowerJumpMove;
 }
 
-[[nodiscard]] static int FacingIndex_(
+[[nodiscard]] int FacingIndex_(
     const int _facing)
 {
     return _facing < 0 ? 0 : 1;
 }
+}   // namespace
 
 const char* GetRigClipName(
     const eRigClip _clip)

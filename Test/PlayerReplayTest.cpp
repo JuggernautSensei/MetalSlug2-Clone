@@ -49,12 +49,14 @@ private:
     Vector<InputFrame> m_frames = {};
 };
 
-[[nodiscard]] static FilePath RepoRoot_()
+namespace
+{
+[[nodiscard]] FilePath RepoRoot_()
 {
     return FindAssetRoot().parent_path();
 }
 
-static void Write_(
+void Write_(
     const FilePath& _path,
     const Script&   _script)
 {
@@ -62,7 +64,7 @@ static void Write_(
     ASSERT_TRUE(static_cast<bool>(SaveReplay(_path, _script.Build()))) << _path.string();
 }
 
-[[nodiscard]] static Script MakeRegressionScript_()
+[[nodiscard]] Script MakeRegressionScript_()
 {
     Script s { 900 };
     s.Hold(eAction::Right, 0, 50);    // 보병(330) 앞까지
@@ -80,6 +82,7 @@ static void Write_(
     s.Tap(eAction::Bomb, 385);
     return s;
 }
+}   // namespace
 
 TEST(PlayerReplay, WriteRegressionAndVisualScripts)
 {

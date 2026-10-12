@@ -23,7 +23,9 @@ constexpr const char* kDecorJson = R"({
     }
 })";
 
-[[nodiscard]] static ParamValue Step_(
+namespace
+{
+[[nodiscard]] ParamValue Step_(
     const char*  _clip,
     const double _seconds,
     const double _vx,
@@ -44,7 +46,7 @@ constexpr const char* kDecorJson = R"({
 }
 
 // A(0.5s, +60px/s) -> B(0.25s, 정지) -> A(0.5s, -60px/s, 좌우 반전)
-[[nodiscard]] static ParamValue MakeWalkParams_(
+[[nodiscard]] ParamValue MakeWalkParams_(
     const bool _bLoop)
 {
     ParamValue sequence = ParamValue::MakeArray();
@@ -58,7 +60,7 @@ constexpr const char* kDecorJson = R"({
     return params;
 }
 
-static void RunTicks_(
+void RunTicks_(
     DecorWorld&             _world,
     const AnimationLibrary& _lib,
     const int               _ticks)
@@ -68,6 +70,7 @@ static void RunTicks_(
         _world.Tick(_lib, kStepSec);
     }
 }
+}   // namespace
 
 TEST(DecorSpawnParams, ParsesVelocitySequenceAndFlags)
 {

@@ -8,7 +8,9 @@
 #include "Game/Player/PlayerHitboxes.h"
 #include "PlayerTestUtil.h"
 
-[[nodiscard]] static const TrainingDummy& Dummy_(
+namespace
+{
+[[nodiscard]] const TrainingDummy& Dummy_(
     Sim&           _sim,
     const uint32_t _id)
 {
@@ -18,13 +20,13 @@
     return pDummy ? *pDummy : kEmpty;
 }
 
-[[nodiscard]] static size_t BulletCount_(
+[[nodiscard]] size_t BulletCount_(
     Sim& _sim)
 {
     return _sim.State().GetProjectiles().GetBullets().size();
 }
 
-[[nodiscard]] static bool HasMeleeHitbox_(
+[[nodiscard]] bool HasMeleeHitbox_(
     Sim& _sim)
 {
     for (const Hitbox& hitbox: _sim.State().GetCombat().GetHitboxes())
@@ -37,7 +39,7 @@
     return false;
 }
 
-static void UnlimitedBullets_(
+void UnlimitedBullets_(
     Sim& _sim)
 {
     _sim.Tune().weapons.pistol.maxAlive = 0;
@@ -45,7 +47,7 @@ static void UnlimitedBullets_(
 }
 
 // 조준각/발사 위치를 정확히 검사하는 테스트용: HMG 흩뿌림과 위치 흔들림을 끈다 (난수 흩뿌림 자체는 HmgShotsKeepAimAngleAndJitterAcrossTheAimDirection 가 본다)
-static void NoSpread_(
+void NoSpread_(
     Sim& _sim)
 {
     _sim.Tune().weapons.hmg.spreadDeg    = 0.f;
@@ -53,7 +55,7 @@ static void NoSpread_(
 }
 
 // 무작위 입력 3000틱 스크립트 (시드 고정)
-[[nodiscard]] static Vector<InputFrame> MakeNoisyScript_()
+[[nodiscard]] Vector<InputFrame> MakeNoisyScript_()
 {
     RngMt19937         rng { uint64_t { 7 } };
     Vector<InputFrame> frames;
@@ -71,7 +73,7 @@ static void NoSpread_(
 }
 
 // 더미가 죽을 때까지 진행한다. 죽은 틱 수를, 끝내 안 죽으면 -1 을 돌려준다.
-[[nodiscard]] static int StepUntilDummyDead_(
+[[nodiscard]] int StepUntilDummyDead_(
     Sim&           _sim,
     const uint32_t _id,
     const int      _maxTicks)
@@ -88,7 +90,7 @@ static void NoSpread_(
 }
 
 // 다음 탄이 발사될 때까지 틱을 진행하고, 그 탄의 발사각(도, 위가 +)을 돌려준다. 발사가 없으면 NaN
-[[nodiscard]] static float StepUntilShotAngleDeg_(
+[[nodiscard]] float StepUntilShotAngleDeg_(
     Sim&      _sim,
     const int _maxTicks)
 {
@@ -105,6 +107,7 @@ static void NoSpread_(
     }
     return std::nanf("");
 }
+}   // namespace
 
 TEST(PlayerShot, FirstShotSpawnsABulletOnTheSameTick)
 {

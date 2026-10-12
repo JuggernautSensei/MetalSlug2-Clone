@@ -12,13 +12,15 @@
 
 constexpr int kMaxParentDepth = 5;
 
-static std::optional<FilePath>& FallbackRoot_()
+namespace
+{
+std::optional<FilePath>& FallbackRoot_()
 {
     static std::optional<FilePath> s_root;
     return s_root;
 }
 
-static FilePath ExecutableDir_()
+FilePath ExecutableDir_()
 {
 #if defined(_WIN32)
     ARRAY<wchar_t, MAX_PATH * 4> buffer = {};
@@ -33,12 +35,13 @@ static FilePath ExecutableDir_()
     return std::filesystem::current_path();
 }
 
-static bool IsAssetRoot_(
+bool IsAssetRoot_(
     const FilePath& _assets)
 {
     std::error_code ec;
     return std::filesystem::exists(_assets / "manifest.json", ec) || std::filesystem::exists(_assets / "Tuning" / "Tuning.json", ec);
 }
+}   // namespace
 
 FilePath FindAssetRoot()
 {

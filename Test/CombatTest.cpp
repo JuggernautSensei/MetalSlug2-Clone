@@ -5,7 +5,9 @@
 #include "Base/Types.h"
 #include "World/Combat.h"
 
-[[nodiscard]] static Hitbox MakeHit_(
+namespace
+{
+[[nodiscard]] Hitbox MakeHit_(
     const eTeam    _team,
     const eHitKind _kind,
     const Aabb&    _box,
@@ -25,7 +27,7 @@
     return hit;
 }
 
-[[nodiscard]] static Hurtbox MakeHurt_(
+[[nodiscard]] Hurtbox MakeHurt_(
     const eTeam    _team,
     const Aabb&    _box,
     const uint32_t _owner)
@@ -37,7 +39,7 @@
     return hurt;
 }
 
-[[nodiscard]] static Aabb Box_(
+[[nodiscard]] Aabb Box_(
     const float _x0,
     const float _y0,
     const float _x1,
@@ -46,7 +48,7 @@
     return Aabb::FromMinMax({ _x0, _y0 }, { _x1, _y1 });
 }
 
-[[nodiscard]] static Vector<HitEvent> Resolve_(
+[[nodiscard]] Vector<HitEvent> Resolve_(
     HitResolver&           _resolver,
     const Vector<Hitbox>&  _hits,
     const Vector<Hurtbox>& _hurts)
@@ -55,7 +57,7 @@
 }
 
 // 30프레임 동안 결정적인 히트/허트 박스를 만들어 판정 결과를 로그로 남긴다
-[[nodiscard]] static Vector<uint32_t> RunResolverLog_()
+[[nodiscard]] Vector<uint32_t> RunResolverLog_()
 {
     HitResolver      resolver;
     Vector<uint32_t> log;
@@ -76,6 +78,7 @@
     }
     return log;
 }
+}   // namespace
 
 TEST(Combat, TeamMatrix)
 {

@@ -11,8 +11,10 @@
 #include "Game/Player/PlayerWeapons.h"
 #include "Game/Ui/BitmapFont.h"
 
+namespace
+{
 template<typename RngT>
-[[nodiscard]] static float RandRange_(
+[[nodiscard]] float RandRange_(
     RngT&       _rng,
     const float _lo,
     const float _hi)
@@ -21,7 +23,7 @@ template<typename RngT>
     return _lo + static_cast<float>(unit) * (_hi - _lo);
 }
 
-static void MixValue_(
+void MixValue_(
     uint64_t&      _hash,
     const uint64_t _value)
 {
@@ -29,7 +31,7 @@ static void MixValue_(
     _hash *= 1'099'511'628'211ull;
 }
 
-static void MixFloat_(
+void MixFloat_(
     uint64_t&   _hash,
     const float _value)
 {
@@ -38,17 +40,21 @@ static void MixFloat_(
     std::memcpy(&bits, &_value, sizeof(bits));
     MixValue_(_hash, bits);
 }
+}   // namespace
 
 constexpr float kSupplyBounceVy = -400.f;
 constexpr float kRollMinVx      = -50.f;
 constexpr float kRollMaxVx      = 49.f;
 
-[[nodiscard]] static Vec2 BottomAlignedOrigin_(
+namespace
+{
+[[nodiscard]] Vec2 BottomAlignedOrigin_(
     const AnimFrame& _frame,
     const Vec2       _feet)
 {
     return { _feet.x, _feet.y - static_cast<float>(_frame.h - _frame.pivotY) };
 }
+}   // namespace
 
 ItemWorld::ItemWorld(
     const PropDefLibrary* _pLibrary,

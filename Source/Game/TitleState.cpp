@@ -7,7 +7,9 @@
 
 constexpr int kGradientBandH = 8;
 
-[[nodiscard]] static uint8_t MixChannel_(
+namespace
+{
+[[nodiscard]] uint8_t MixChannel_(
     const uint8_t _a,
     const uint8_t _b,
     const float   _t)
@@ -15,7 +17,7 @@ constexpr int kGradientBandH = 8;
     return static_cast<uint8_t>(_a + static_cast<int>((_b - _a) * _t));
 }
 
-static void DrawBackground_(
+void DrawBackground_(
     Renderer& _renderer)
 {
     const RGBA top    = { 14, 18, 44, 255 };
@@ -27,6 +29,7 @@ static void DrawBackground_(
         _renderer.FillRect({ 0.f, static_cast<float>(y) }, { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(kGradientBandH) }, color);
     }
 }
+}   // namespace
 
 TitleState::TitleState() = default;
 

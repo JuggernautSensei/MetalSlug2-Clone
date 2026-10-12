@@ -342,7 +342,9 @@ bool StageData::HasGroundMap(
     return false;
 }
 
-[[nodiscard]] static int CountSpawnsIn_(
+namespace
+{
+[[nodiscard]] int CountSpawnsIn_(
     const Vector<StageAction>& _actions)
 {
     int count = 0;
@@ -360,7 +362,7 @@ bool StageData::HasGroundMap(
     return count;
 }
 
-[[nodiscard]] static int CountWaveEntriesIn_(
+[[nodiscard]] int CountWaveEntriesIn_(
     const Vector<StageAction>& _actions)
 {
     int count = 0;
@@ -381,7 +383,7 @@ bool StageData::HasGroundMap(
     return count;
 }
 
-[[nodiscard]] static int CountGatesIn_(
+[[nodiscard]] int CountGatesIn_(
     const Vector<StageAction>& _actions)
 {
     int count = 0;
@@ -395,6 +397,7 @@ bool StageData::HasGroundMap(
     }
     return count;
 }
+}   // namespace
 
 int StageData::CountSpawns() const
 {
@@ -476,8 +479,10 @@ struct EnumEntry
     E          value;
 };
 
+namespace
+{
 template<typename E, size_t N>
-[[nodiscard]] static bool LookupEnum_(
+[[nodiscard]] bool LookupEnum_(
     const ARRAY<EnumEntry<E>, N>& _table,
     const StringView              _name,
     E&                            _out)
@@ -494,7 +499,7 @@ template<typename E, size_t N>
 }
 
 template<typename E, size_t N>
-[[nodiscard]] static String ListEnum_(
+[[nodiscard]] String ListEnum_(
     const ARRAY<EnumEntry<E>, N>& _table)
 {
     String list = {};
@@ -508,6 +513,7 @@ template<typename E, size_t N>
     }
     return list;
 }
+}   // namespace
 
 constexpr ARRAY<EnumEntry<eEntityKind>, 6> kKindTable = {
     EnumEntry<eEntityKind> {    "enemy",    eEntityKind::Enemy },
@@ -578,19 +584,21 @@ constexpr ARRAY<EnumEntry<eFadeTarget>, 2> kFadeTable = {
     EnumEntry<eFadeTarget> { "clear", eFadeTarget::Clear }
 };
 
-[[nodiscard]] static bool IsCreature_(
+namespace
+{
+[[nodiscard]] bool IsCreature_(
     const eEntityKind _kind)
 {
     return _kind == eEntityKind::Enemy || _kind == eEntityKind::Npc;
 }
 
-[[nodiscard]] static eOrigin DefaultOrigin_(
+[[nodiscard]] eOrigin DefaultOrigin_(
     const eEntityKind _kind)
 {
     return IsCreature_(_kind) ? eOrigin::Feet : eOrigin::LegacyCenter;
 }
 
-[[nodiscard]] static eWhen DefaultWhen_(
+[[nodiscard]] eWhen DefaultWhen_(
     const StageAction& _action)
 {
     switch (_action.type)
@@ -614,7 +622,7 @@ constexpr ARRAY<EnumEntry<eFadeTarget>, 2> kFadeTable = {
     }
 }
 
-[[nodiscard]] static ParamValue ToParam_(
+[[nodiscard]] ParamValue ToParam_(
     const JsonReader& _json)
 {
     if (_json.IsBool())
@@ -649,6 +657,7 @@ constexpr ARRAY<EnumEntry<eFadeTarget>, 2> kFadeTable = {
     }
     return ParamValue {};
 }
+}   // namespace
 
 class Parser
 {
@@ -2318,7 +2327,9 @@ bool Parser::Validate_()
     return true;
 }
 
-[[nodiscard]] static Result<StageData> MakeFailure_(
+namespace
+{
+[[nodiscard]] Result<StageData> MakeFailure_(
     StageLoadDiagnostics* const _pDiag,
     const String&               _message,
     const eError                _code)
@@ -2329,6 +2340,7 @@ bool Parser::Validate_()
     }
     return Error { _code };
 }
+}   // namespace
 
 Result<StageData> LoadStageFromJson(
     const StringView            _json,

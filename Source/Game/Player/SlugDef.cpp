@@ -9,9 +9,11 @@
 #include "Base/Math.h"
 #include "Base/Types.h"
 
+namespace
+{
 // 수치 목록. 읽기/쓰기 방문자가 같은 목록을 쓰므로 키가 어긋나지 않는다.
 template<typename V, typename T>
-static void Visit_(
+void Visit_(
     V& _v,
     T& _t)
 {
@@ -107,6 +109,7 @@ static void Visit_(
     _v.Field("frontReach", _t.crush.frontReach);
     _v.End();
 }
+}   // namespace
 
 class SlugDefReadVisitor
 {
@@ -324,7 +327,9 @@ private:
     Vector<bool> m_bFirst = {};
 };
 
-[[nodiscard]] static Result<SlugTuning> ParseRoot_(
+namespace
+{
+[[nodiscard]] Result<SlugTuning> ParseRoot_(
     const JsonReader& _root)
 {
     SlugTuning         tuning;
@@ -336,6 +341,7 @@ private:
     }
     return tuning;
 }
+}   // namespace
 
 Result<SlugTuning> ParseSlugTuning(
     const StringView _json)

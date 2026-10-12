@@ -29,19 +29,21 @@ struct SupportResult
     int      wallIndex     = -1;
 };
 
-[[nodiscard]] static float HalfWidthOf_(
+namespace
+{
+[[nodiscard]] float HalfWidthOf_(
     const Body& _body)
 {
     return _body.size.x * 0.5f;
 }
 
-[[nodiscard]] static float FootHalf_(
+[[nodiscard]] float FootHalf_(
     const Body& _body)
 {
     return Max(_body.footHalfWidth, 0.5f);
 }
 
-[[nodiscard]] static SupportResult FindSupport_(
+[[nodiscard]] SupportResult FindSupport_(
     const StepContext& _ctx,
     const float        _x,
     const float        _yMin,
@@ -144,7 +146,7 @@ struct SupportResult
 }
 
 // 좌우 이동 중 막는 블록이 있으면 snapX 를 더 가까운 쪽으로 갱신한다.
-static void TestLateralBlock_(
+void TestLateralBlock_(
     const Aabb&           _testBox,
     const Aabb&           _block,
     const float           _oldX,
@@ -170,7 +172,7 @@ static void TestLateralBlock_(
 }
 
 // 상승 중 머리가 닿는 블록이 있으면 stopFeet 를 더 낮은 쪽으로 갱신한다.
-static void TestCeilingBlock_(
+void TestCeilingBlock_(
     const Aabb& _block,
     const float _left,
     const float _right,
@@ -189,7 +191,7 @@ static void TestCeilingBlock_(
     }
 }
 
-[[nodiscard]] static std::optional<float> FindLateralBlock_(
+[[nodiscard]] std::optional<float> FindLateralBlock_(
     const StepContext& _ctx,
     const float        _oldX,
     const float        _newX,
@@ -257,7 +259,7 @@ static void TestCeilingBlock_(
     return snapX;
 }
 
-[[nodiscard]] static bool IsHeadBlocked_(
+[[nodiscard]] bool IsHeadBlocked_(
     const StepContext& _ctx,
     const float        _x,
     const float        _oldFeet,
@@ -304,7 +306,7 @@ static void TestCeilingBlock_(
     return false;
 }
 
-static void SetSupport_(
+void SetSupport_(
     StepContext&         _ctx,
     const SupportResult& _support)
 {
@@ -313,7 +315,7 @@ static void SetSupport_(
     _ctx.result.wallIndex     = _support.wallIndex;
 }
 
-[[nodiscard]] static bool Resettle_(
+[[nodiscard]] bool Resettle_(
     StepContext& _ctx,
     const float  _x)
 {
@@ -344,7 +346,7 @@ static void SetSupport_(
     return true;
 }
 
-static void MoveX_(
+void MoveX_(
     StepContext& _ctx,
     const float  _dx)
 {
@@ -386,7 +388,7 @@ static void MoveX_(
     }
 }
 
-static void MoveY_(
+void MoveY_(
     StepContext& _ctx,
     const float  _dy)
 {
@@ -466,6 +468,7 @@ static void MoveY_(
         }
     }
 }
+}   // namespace
 
 MoveResult Physics::Step(
     Body&                _body,

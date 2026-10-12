@@ -11,7 +11,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-[[nodiscard]] static Vec2 ReadVec2_(
+namespace
+{
+[[nodiscard]] Vec2 ReadVec2_(
     const ParamValue& _value,
     const Vec2        _default)
 {
@@ -22,7 +24,7 @@
     return { _value.At(0).AsFloat(), _value.At(1).AsFloat() };
 }
 
-[[nodiscard]] static PropBoxOverride ReadBox_(
+[[nodiscard]] PropBoxOverride ReadBox_(
     const ParamValue& _value)
 {
     PropBoxOverride box = {};
@@ -40,6 +42,7 @@
     }
     return box;
 }
+}   // namespace
 
 PropSpawnParams MakePropSpawnParams(
     const ParamValue* const _pParams,

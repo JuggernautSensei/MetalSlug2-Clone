@@ -8,13 +8,16 @@
 
 constexpr float kGround = 378.f;
 
-[[nodiscard]] static SpawnParams Facing_(
+namespace
+{
+[[nodiscard]] SpawnParams Facing_(
     const int _facing)
 {
     SpawnParams params;
     params.facing = _facing;
     return params;
 }
+}   // namespace
 
 struct SpawnLog
 {
@@ -22,7 +25,9 @@ struct SpawnLog
     std::vector<Shot> shots = {};
 };
 
-static void StepAndLog_(
+namespace
+{
+void StepAndLog_(
     VehicleRig&       _rig,
     const EnemyHandle _owner,
     SpawnLog&         _log,
@@ -42,7 +47,7 @@ static void StepAndLog_(
     }
 }
 
-[[nodiscard]] static EnemyHandle SpawnJeepFacingThePlayer_(
+[[nodiscard]] EnemyHandle SpawnJeepFacingThePlayer_(
     VehicleRig& _rig,
     const Vec2  _player,
     const float _x)
@@ -52,7 +57,7 @@ static void StepAndLog_(
 }
 
 // _owner 가 쏜 첫 수류탄의 x. 없으면 -1
-[[nodiscard]] static float GrenadeX_(
+[[nodiscard]] float GrenadeX_(
     VehicleRig&       _rig,
     const EnemyHandle _owner)
 {
@@ -65,6 +70,7 @@ static void StepAndLog_(
     }
     return -1.f;
 }
+}   // namespace
 
 TEST(VehicleJeep, DrivesAtTwoHundredPixelsPerSecondTowardTheEdgeOnThePlayersSide)
 {
@@ -204,14 +210,17 @@ TEST(VehicleJeep, OffscreenRightActivationRunsToTheRightEdgeFirst)
     EXPECT_GT(rig.E(h)->body.position.x, 1000.f);
 }
 
+namespace
+{
 // 우향 전차의 스프라이트 반전 / FX 반전 / 방향 전환
-static void SubmitTank_(
+void SubmitTank_(
     VehicleRig&             _rig,
     const AnimationLibrary& _anims,
     SpriteBatch&            _sprites)
 {
     _rig.World().Submit(_sprites, _anims, _rig.Projectiles(), 0.f);
 }
+}   // namespace
 
 TEST(VehicleBTank, LeftFacingTankDrawsUnflipped)
 {
@@ -300,7 +309,9 @@ TEST(VehicleKnife, NoVehicleAcceptsTheKnife)
     }
 }
 
-[[nodiscard]] static int CountDebris_(
+namespace
+{
+[[nodiscard]] int CountDebris_(
     const EnemyWorld& _world)
 {
     int count = 0;
@@ -310,6 +321,7 @@ TEST(VehicleKnife, NoVehicleAcceptsTheKnife)
     }
     return count;
 }
+}   // namespace
 
 // 탱크 파괴: 폭발은 플레이어(20)보다 앞 레이어, 금속 잔해는 위로 솟구쳤다가 중력으로 떨어져 지면을 지나 화면 하단 밖으로 사라진다 (수명 5 s 전에).
 // VehicleRig 는 애니 라이브러리가 없어 이펙트를 만들지 않으므로, 실제 애니로 EnemyWorld 를 직접 구동한다.
@@ -518,8 +530,10 @@ TEST(VehicleSarubia, DeathExplodesAtOnceAndLeavesAfterTwoSeconds)
     EXPECT_EQ(rig.E(h), nullptr);
 }
 
+namespace
+{
 // 드롭 발사 시점의 스폰 위치가 헬기 기준 (_offsetX, +60) 인지 확인하고 드롭 발수를 누적한다
-static void CheckDropSpawnOffsets_(
+void CheckDropSpawnOffsets_(
     VehicleRig&       _rig,
     const EnemyHandle _h,
     const float       _offsetX,
@@ -544,6 +558,7 @@ static void CheckDropSpawnOffsets_(
         }
     }
 }
+}   // namespace
 
 TEST(VehicleHitFlash, JeepFlashesOnNonLethalHitBlinksUnderFireAndExpires)
 {
@@ -597,7 +612,9 @@ TEST(VehicleHitFlash, LethalHitDoesNotFlash)
     EXPECT_EQ(rig.E(h)->hitFlashTicks, 0);
 }
 
-static ShotSpawn MakeFallingShell_(
+namespace
+{
+ShotSpawn MakeFallingShell_(
     const float _x,
     const float _groundProbe,
     const float _maxFall = 3000.f)
@@ -616,7 +633,7 @@ static ShotSpawn MakeFallingShell_(
 }
 
 // 착탄(FX) 이 나올 때까지 돌리고 그 지점을 돌려준다. 10 s 안에 없으면 false
-static bool RunUntilBurst_(
+bool RunUntilBurst_(
     ProjectileSystem&          _ps,
     CombatSystem&              _combat,
     const GroundMap*           _pGround,
@@ -636,6 +653,7 @@ static bool RunUntilBurst_(
     }
     return false;
 }
+}   // namespace
 
 TEST(VehicleSarubia, GrenadeRollsWithItsSpriteBottomOnTheGround)
 {

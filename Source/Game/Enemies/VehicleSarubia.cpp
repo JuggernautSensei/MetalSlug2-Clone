@@ -15,7 +15,9 @@ enum class eSarubiaState
     Shot
 };
 
-[[nodiscard]] static int ClipOf_(
+namespace
+{
+[[nodiscard]] int ClipOf_(
     const Enemy&      _e,
     const SarubiaCfg& _c)
 {
@@ -31,7 +33,7 @@ enum class eSarubiaState
     }
 }
 
-static void Go_(
+void Go_(
     Enemy&              _e,
     const EnemyDef&     _def,
     const eSarubiaState _state)
@@ -40,14 +42,14 @@ static void Go_(
     SetClip(_e, ClipOf_(_e, _def.sarubia), true);
 }
 
-[[nodiscard]] static bool Done_(
+[[nodiscard]] bool Done_(
     const Enemy&    _e,
     const EnemyDef& _def)
 {
     return _e.clip >= 0 && _e.stateTicks >= _def.GetClip(_e.clip).GetDurationTicks();
 }
 
-static void Init_(
+void Init_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -57,7 +59,7 @@ static void Init_(
     Go_(_e, _def, eSarubiaState::Idle);
 }
 
-static void Tick_(
+void Tick_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -149,13 +151,14 @@ static void Tick_(
     (void)StepPhysics(_e, _def, _env);
 }
 
-static void OnDeath_(
+void OnDeath_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
     BeginVehicleDeath(_e, _def, _env, _def.sarubia.clipDestroy);
 }
+}   // namespace
 
 const BehaviorOps kSarubiaOps = {
     .init      = &Init_,

@@ -7,7 +7,9 @@
 #include "Base/PhaseTimer.h"
 #include "Base/Types.h"
 
-[[nodiscard]] static bool ReadInt_(
+namespace
+{
+[[nodiscard]] bool ReadInt_(
     const JsonReader& _object,
     const StringView  _key,
     int&              _out)
@@ -21,7 +23,7 @@
     return true;
 }
 
-[[nodiscard]] static Result<SpriteLibrary> Parse_(
+[[nodiscard]] Result<SpriteLibrary> Parse_(
     const JsonReader& _root)
 {
     const Result<JsonReader> sprites = _root.FindField("sprites");
@@ -67,6 +69,7 @@
 
     return library;
 }
+}   // namespace
 
 Result<SpriteLibrary> SpriteLibrary::LoadFromJson(
     const StringView _json)

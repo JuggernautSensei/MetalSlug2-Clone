@@ -9,7 +9,9 @@ enum class eHangState
     Throw
 };
 
-static void Go_(
+namespace
+{
+void Go_(
     Enemy&           _e,
     const EnemyDef&  _def,
     EnemyEnv&        _env,
@@ -30,7 +32,7 @@ static void Go_(
     }
 }
 
-static void Init_(
+void Init_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -40,7 +42,7 @@ static void Init_(
     Go_(_e, _def, _env, eHangState::Idle);
 }
 
-static void Tick_(
+void Tick_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -73,7 +75,7 @@ static void Tick_(
     }
 }
 
-static void OnDeath_(
+void OnDeath_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -81,6 +83,7 @@ static void OnDeath_(
     _e.bGrounded = false;
     BeginSoldierDeath(_e, _def, _env);
 }
+}   // namespace
 
 const BehaviorOps kHangOps = {
     .init              = &Init_,

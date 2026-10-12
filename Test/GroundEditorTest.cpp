@@ -8,7 +8,9 @@
 #include "Editor/GroundEditor.h"
 #include "Game/Stage/StageMapping.h"
 
-[[nodiscard]] static std::set<std::pair<int, int>> GroundTestSolidSet_(
+namespace
+{
+[[nodiscard]] std::set<std::pair<int, int>> GroundTestSolidSet_(
     const GroundMaskDocument& _doc)
 {
     std::set<std::pair<int, int>> out;
@@ -25,10 +27,11 @@
     return out;
 }
 
-[[nodiscard]] static FilePath GroundTestMaskPath_()
+[[nodiscard]] FilePath GroundTestMaskPath_()
 {
     return FindAssetRoot() / "Ground" / "Stage0_0.png";
 }
+}   // namespace
 
 TEST(GroundEditorTest, RealMaskSavesAndReloadsWithIdenticalPixels)
 {

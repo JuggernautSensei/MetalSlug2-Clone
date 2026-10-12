@@ -18,13 +18,15 @@
 
 constexpr float kTickRate = 60.f;
 
-[[nodiscard]] static int SecondsToTicks_(
+namespace
+{
+[[nodiscard]] int SecondsToTicks_(
     const float _seconds)
 {
     return _seconds <= 0.f ? 0 : static_cast<int>(std::lround(static_cast<double>(_seconds) * static_cast<double>(kTickRate)));
 }
 
-[[nodiscard]] static Vec2 EnemyFeet_(
+[[nodiscard]] Vec2 EnemyFeet_(
     const SpawnRequest& _request)
 {
     if (_request.positionMode == ePositionMode::LegacyCenter)
@@ -33,6 +35,7 @@ constexpr float kTickRate = 60.f;
     }
     return _request.position;
 }
+}   // namespace
 
 struct DefaultSpec
 {
@@ -40,7 +43,9 @@ struct DefaultSpec
     Vec2 size = { 40.f, 40.f };
 };
 
-[[nodiscard]] static DefaultSpec MakeSpec_(
+namespace
+{
+[[nodiscard]] DefaultSpec MakeSpec_(
     const int   _hp,
     const float _width,
     const float _height)
@@ -51,7 +56,7 @@ struct DefaultSpec
     return spec;
 }
 
-[[nodiscard]] static DefaultSpec GetDefaultSpec_(
+[[nodiscard]] DefaultSpec GetDefaultSpec_(
     const StringView  _def,
     const eEntityKind _kind)
 {
@@ -108,7 +113,7 @@ struct DefaultSpec
     return {};
 }
 
-[[nodiscard]] static eStageLayer GetDefaultLayer_(
+[[nodiscard]] eStageLayer GetDefaultLayer_(
     const eEntityKind _kind)
 {
     switch (_kind)
@@ -123,11 +128,12 @@ struct DefaultSpec
     return eStageLayer::Monster;
 }
 
-[[nodiscard]] static bool IsHittableKind_(
+[[nodiscard]] bool IsHittableKind_(
     const eEntityKind _kind)
 {
     return _kind == eEntityKind::Enemy || _kind == eEntityKind::Npc || _kind == eEntityKind::Prop;
 }
+}   // namespace
 
 Aabb PlaceholderEntity::GetBox() const
 {

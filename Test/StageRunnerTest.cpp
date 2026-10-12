@@ -10,17 +10,22 @@
 #include "Base/Math.h"
 #include "StageTestUtil.h"
 
-[[nodiscard]] static std::string OneSection_(
+namespace
+{
+[[nodiscard]] std::string OneSection_(
     const std::string& _actions,
     const std::string& _camera = R"J({"initialBounds":[0,0,4000,448]})J")
 {
     return WrapStage(R"J([{"id":"s0","triggerX":0,"actions":)J" + _actions + "}]", _camera);
 }
+}   // namespace
 
 constexpr const char* kTallBounds = R"J({"initialBounds":[0,0,4000,1000]})J";
 
+namespace
+{
 // (x == 100 에만 바닥 352 가 있는) 플레이어 시작 바닥 질의
-[[nodiscard]] static std::optional<float> PlayerStartGround_(
+[[nodiscard]] std::optional<float> PlayerStartGround_(
     const float _x,
     const float)
 {
@@ -28,7 +33,7 @@ constexpr const char* kTallBounds = R"J({"initialBounds":[0,0,4000,1000]})J";
 }
 
 // x < 1000 이고 fromY <= 300 일 때만 바닥 300 이 있는 질의 (그 밖은 바닥 없음)
-[[nodiscard]] static std::optional<float> SnapGround_(
+[[nodiscard]] std::optional<float> SnapGround_(
     const float _x,
     const float _fromY)
 {
@@ -40,7 +45,7 @@ constexpr const char* kTallBounds = R"J({"initialBounds":[0,0,4000,1000]})J";
 }
 
 // 시드를 바꿔 웨이브를 70틱 돌린 뒤 스폰된 x 좌표 목록
-[[nodiscard]] static std::vector<float> CollectWaveXs_(
+[[nodiscard]] std::vector<float> CollectWaveXs_(
     const std::string& _json,
     const uint64_t     _seed)
 {
@@ -54,6 +59,7 @@ constexpr const char* kTallBounds = R"J({"initialBounds":[0,0,4000,1000]})J";
     }
     return xs;
 }
+}   // namespace
 
 TEST(StageRunnerBegin, AppliesInitialGroundBackdropAndBgm)
 {
@@ -388,11 +394,14 @@ TEST(StageRunnerSpawn, ParamsPointerAndLayerArePassedThrough)
     EXPECT_FLOAT_EQ(request.pParams->GetVec2("velocity").x, 70.f);
 }
 
-static const char* kBossGate = R"J([
+namespace
+{
+const char* kBossGate = R"J([
     {"type":"spawn","kind":"enemy","def":"boss","id":"boss","x":1,"y":1},
     {"type":"gate","id":"g","waitFor":["boss"],"actions":[
         {"type":"banner","text":"now","seconds":1},
         {"type":"banner","text":"later","seconds":1,"delay":0.5}]}])J";
+}   // namespace
 
 TEST(StageRunnerGate, RunsActionsWhenTargetIsDefeatedWithDelaysRelativeToThatTick)
 {
@@ -731,8 +740,10 @@ TEST(StageRunnerWarp, WarpClearsPendingWavesGatesAndNonPermanentLocks)
     EXPECT_EQ(fx.host.CountEvents("banner:pending"), 0);
 }
 
+namespace
+{
 // 보스 워프 후 30틱 진행한 뒤의 (러너 해시, 스폰 수)
-[[nodiscard]] static std::pair<uint64_t, size_t> WarpToBossAndHash_()
+[[nodiscard]] std::pair<uint64_t, size_t> WarpToBossAndHash_()
 {
     RunnerFixture fx { WrapStage(kWarpStage) };
     EXPECT_TRUE(fx.runner.WarpToBoss());
@@ -741,7 +752,7 @@ TEST(StageRunnerWarp, WarpClearsPendingWavesGatesAndNonPermanentLocks)
 }
 
 // 적이 아닌(항상 생성되는) 스폰의 def 이름 목록
-[[nodiscard]] static std::vector<std::string> NonEnemyDefs_(
+[[nodiscard]] std::vector<std::string> NonEnemyDefs_(
     const FakeStageHost& _host)
 {
     std::vector<std::string> defs;
@@ -754,6 +765,7 @@ TEST(StageRunnerWarp, WarpClearsPendingWavesGatesAndNonPermanentLocks)
     }
     return defs;
 }
+}   // namespace
 
 TEST(StageRunnerWarp, WarpingTwiceFromTheSameStartIsDeterministic)
 {

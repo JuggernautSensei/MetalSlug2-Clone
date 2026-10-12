@@ -46,7 +46,9 @@ struct Circle
     }
 };
 
-[[nodiscard]] static Circle MakeCircle_(
+namespace
+{
+[[nodiscard]] Circle MakeCircle_(
     const float _x,
     const float _y,
     const float _radius)
@@ -56,6 +58,7 @@ struct Circle
     circle.radius = _radius;
     return circle;
 }
+}   // namespace
 
 TEST(GroundMap, MakeFromBitsUsesLsbAsLeftmostPixel)
 {

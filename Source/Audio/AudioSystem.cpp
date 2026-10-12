@@ -70,7 +70,9 @@ struct AudioSystem::Backend
     }
 };
 
-[[nodiscard]] static ma_result InitSoundFromFile_(
+namespace
+{
+[[nodiscard]] ma_result InitSoundFromFile_(
     ma_engine*      _pEngine,
     const FilePath& _path,
     const ma_uint32 _flags,
@@ -83,7 +85,7 @@ struct AudioSystem::Backend
 #endif
 }
 
-[[nodiscard]] static ma_result RegisterFile_(
+[[nodiscard]] ma_result RegisterFile_(
     ma_engine*      _pEngine,
     const FilePath& _path,
     const ma_uint32 _flags)
@@ -95,11 +97,12 @@ struct AudioSystem::Backend
 #endif
 }
 
-[[nodiscard]] static float Clamp01_(
+[[nodiscard]] float Clamp01_(
     const float _v)
 {
     return std::clamp(_v, 0.f, 1.f);
 }
+}   // namespace
 
 class SoundRegisterJob final : public IAsyncLoadJob
 {

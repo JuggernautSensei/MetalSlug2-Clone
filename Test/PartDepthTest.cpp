@@ -12,7 +12,9 @@
 #include "Render/SpriteBatch.h"
 #include "VehicleTestUtil.h"
 
-[[nodiscard]] static String ReadText_(
+namespace
+{
+[[nodiscard]] String ReadText_(
     const FilePath& _path)
 {
     std::ifstream file { _path, std::ios::binary };
@@ -20,7 +22,7 @@
 }
 
 // Defs/*.json 를 임시 폴더로 복사하고 _name 파일만 _text 로 바꿔 적재한다
-[[nodiscard]] static bool LoadPatched_(
+[[nodiscard]] bool LoadPatched_(
     const char*      _name,
     const String&    _text,
     EnemyDefLibrary& _out,
@@ -50,7 +52,7 @@
     return true;
 }
 
-[[nodiscard]] static String WithHeliParams_(
+[[nodiscard]] String WithHeliParams_(
     const String& _insert)
 {
     String       text = ReadText_(VehicleDefsDir() / "Helicopter.json");
@@ -60,7 +62,7 @@
     return text;
 }
 
-[[nodiscard]] static Vector<int> HeliDepths_(
+[[nodiscard]] Vector<int> HeliDepths_(
     VehicleRig&             _rig,
     const AnimationLibrary& _anims)
 {
@@ -74,6 +76,7 @@
     std::sort(depths.begin(), depths.end());
     return depths;
 }
+}   // namespace
 
 TEST(PartDepth, PlayerZShiftsBulletDepthByTheSameDelta)
 {

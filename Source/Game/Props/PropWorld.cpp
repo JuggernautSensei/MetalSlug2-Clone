@@ -9,8 +9,10 @@
 #include "Base/Types.h"
 #include "Game/Ui/BitmapFont.h"
 
+namespace
+{
 template<typename RngT>
-[[nodiscard]] static float RandRange_(
+[[nodiscard]] float RandRange_(
     RngT&       _rng,
     const float _lo,
     const float _hi)
@@ -18,19 +20,22 @@ template<typename RngT>
     const double unit = static_cast<double>(_rng.Generate()) / 18'446'744'073'709'551'615.0;
     return _lo + static_cast<float>(unit) * (_hi - _lo);
 }
+}   // namespace
 
 constexpr float kHitFlashSec = 0.5f;   // 피격 연출 최대 길이 (Hit 클립이 없으면 연출 없음)
 
 constexpr size_t kVisualCount = static_cast<size_t>(ePropVisual::Count);
 
-[[nodiscard]] static uint64_t MixHash_(
+namespace
+{
+[[nodiscard]] uint64_t MixHash_(
     const uint64_t _h,
     const uint64_t _v)
 {
     return (_h ^ _v) * 1'099'511'628'211ull;
 }
 
-[[nodiscard]] static uint64_t MixFloat_(
+[[nodiscard]] uint64_t MixFloat_(
     const uint64_t _h,
     const float    _f)
 {
@@ -38,6 +43,7 @@ constexpr size_t kVisualCount = static_cast<size_t>(ePropVisual::Count);
     std::memcpy(&bits, &_f, sizeof(bits));
     return MixHash_(_h, bits);
 }
+}   // namespace
 
 PropWorld::PropWorld(
     const PropDefLibrary* _pLibrary,
@@ -713,7 +719,9 @@ int PropWorld::SortKey(
     return static_cast<int>(_inst.pos.y + _inst.sortOffsetY);
 }
 
-[[nodiscard]] static bool ResolveFrame_(
+namespace
+{
+[[nodiscard]] bool ResolveFrame_(
     const PropInstance&     _inst,
     const AnimationLibrary* _pAnims,
     const SpriteLibrary*    _pSprites,
@@ -744,6 +752,7 @@ int PropWorld::SortKey(
     }
     return !_out.IsEmpty();
 }
+}   // namespace
 
 bool PropWorld::GetVisualBounds(
     const PropInstance&     _inst,

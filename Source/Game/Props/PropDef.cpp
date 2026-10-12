@@ -34,7 +34,9 @@ String GetDebrisClipName(
 using KeyList    = std::initializer_list<StringView>;
 using JsonMember = std::pair<StringView, JsonReader>;
 
-[[nodiscard]] static eDebrisSet ParseDebrisSet_(
+namespace
+{
+[[nodiscard]] eDebrisSet ParseDebrisSet_(
     const StringView _s,
     bool&            _bOk)
 {
@@ -55,7 +57,7 @@ using JsonMember = std::pair<StringView, JsonReader>;
     return eDebrisSet::Wood;
 }
 
-[[nodiscard]] static String MissingAsset_(
+[[nodiscard]] String MissingAsset_(
     const AnimationLibrary& _anims,
     const SpriteLibrary&    _sprites,
     const PropVisual&       _visual,
@@ -72,7 +74,7 @@ using JsonMember = std::pair<StringView, JsonReader>;
     return {};
 }
 
-[[nodiscard]] static String MissingBurstAsset_(
+[[nodiscard]] String MissingBurstAsset_(
     const AnimationLibrary& _anims,
     const SpriteLibrary&    _sprites,
     const PropBurst&        _burst,
@@ -96,6 +98,7 @@ using JsonMember = std::pair<StringView, JsonReader>;
     }
     return {};
 }
+}   // namespace
 
 class PropDefParser
 {

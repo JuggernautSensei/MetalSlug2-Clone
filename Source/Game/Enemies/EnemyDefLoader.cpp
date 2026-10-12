@@ -226,7 +226,9 @@ constexpr ARRAY<const char*, 3> kArcKeys       = { "note", "minVx", "maxVx" };
 constexpr ARRAY<const char*, 8> kExtraBoxKeys  = { "note", "id", "kind", "w", "h", "offset", "frames", "damage" };
 constexpr ARRAY<const char*, 8> kHitboxKeys    = { "note", "w", "h", "cx", "cy", "lifeSec", "damage", "follow" };
 
-[[nodiscard]] static bool Contains_(
+namespace
+{
+[[nodiscard]] bool Contains_(
     const Span<const char* const> _list,
     const StringView              _key)
 {
@@ -239,6 +241,7 @@ constexpr ARRAY<const char*, 8> kHitboxKeys    = { "note", "w", "h", "cx", "cy",
     }
     return false;
 }
+}   // namespace
 
 EnemyDefParser::EnemyDefParser(
     EnemyDefLibrary& _library)

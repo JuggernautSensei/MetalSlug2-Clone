@@ -7,7 +7,9 @@
 #include "Base/Types.h"
 #include "World/Physics.h"
 
-[[nodiscard]] static GroundMap MakeFlat_(
+namespace
+{
+[[nodiscard]] GroundMap MakeFlat_(
     const int _w      = 400,
     const int _h      = 160,
     const int _floorY = 100)
@@ -17,7 +19,7 @@
     return map;
 }
 
-[[nodiscard]] static Body MakeBody_(
+[[nodiscard]] Body MakeBody_(
     const float _x,
     const float _feetY)
 {
@@ -26,7 +28,7 @@
     return body;
 }
 
-[[nodiscard]] static MoveResult Tick_(
+[[nodiscard]] MoveResult Tick_(
     Body&               _body,
     const PhysicsWorld& _world,
     const float         _vx = 0.f)
@@ -35,7 +37,7 @@
     return Physics::Step(_body, _world);
 }
 
-[[nodiscard]] static PhysicsWorld WorldOf_(
+[[nodiscard]] PhysicsWorld WorldOf_(
     const GroundMap& _map)
 {
     PhysicsWorld world;
@@ -43,7 +45,7 @@
     return world;
 }
 
-[[nodiscard]] static Body StandingOn_(
+[[nodiscard]] Body StandingOn_(
     const PhysicsWorld& _world,
     const float         _x,
     const float         _y)
@@ -52,6 +54,7 @@
     EXPECT_TRUE(Physics::SnapToGround(body, _world, 64.f));
     return body;
 }
+}   // namespace
 
 TEST(Physics, FreeFallAppliesGravityPerStep)
 {
@@ -193,7 +196,9 @@ TEST(Physics, StandingStillStaysGroundedWithoutDrift)
     EXPECT_FLOAT_EQ(body.position.y, 100.f);
 }
 
-[[nodiscard]] static GroundMap MakeRamp45_(
+namespace
+{
+[[nodiscard]] GroundMap MakeRamp45_(
     const int _rampStart = 50,
     const int _rampEnd   = 90,
     const int _baseY     = 100)
@@ -215,7 +220,7 @@ TEST(Physics, StandingStillStaysGroundedWithoutDrift)
     return map;
 }
 
-[[nodiscard]] static int RampSurfaceAt_(
+[[nodiscard]] int RampSurfaceAt_(
     const int _c,
     const int _rampStart = 50,
     const int _rampEnd   = 90,
@@ -231,6 +236,7 @@ TEST(Physics, StandingStillStaysGroundedWithoutDrift)
     }
     return _baseY;
 }
+}   // namespace
 
 TEST(Physics, WalksUpA45DegreeRampWithoutLeavingTheGround)
 {
@@ -768,13 +774,15 @@ struct Snapshot
     [[nodiscard]] bool operator==(const Snapshot&) const = default;
 };
 
-[[nodiscard]] static Snapshot Capture_(
+namespace
+{
+[[nodiscard]] Snapshot Capture_(
     const Body& _body)
 {
     return { std::bit_cast<uint32_t>(_body.position.x), std::bit_cast<uint32_t>(_body.position.y), std::bit_cast<uint32_t>(_body.velocity.x), std::bit_cast<uint32_t>(_body.velocity.y), _body.bGrounded };
 }
 
-[[nodiscard]] static Vector<Snapshot> RunScenario_()
+[[nodiscard]] Vector<Snapshot> RunScenario_()
 {
     GroundMap map = MakeRamp45_(50, 90, 100);
     map.FillRect(260, 100, 330, 199, false);   // 구덩이
@@ -808,6 +816,7 @@ struct Snapshot
     }
     return history;
 }
+}   // namespace
 
 TEST(Physics, SameInputsProduceBitIdenticalResultsAfter600Steps)
 {

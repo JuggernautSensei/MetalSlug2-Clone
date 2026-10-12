@@ -33,20 +33,22 @@ constexpr int kExtIdleTick = 9;   // 호버 idle 위상 (렌더 전용, 해시�
 constexpr float kFixedScale = 16.f;
 constexpr int   kCurveSteps = 12;
 
-[[nodiscard]] static int Pack_(
+namespace
+{
+[[nodiscard]] int Pack_(
     const float _value)
 {
     return static_cast<int>(std::lround(static_cast<double>(_value * kFixedScale)));
 }
 
-[[nodiscard]] static float Unpack_(
+[[nodiscard]] float Unpack_(
     const int _value)
 {
     return static_cast<float>(_value) / kFixedScale;
 }
 
 // 곡선 표 (균등 간격 13점) 선형 보간
-[[nodiscard]] static float SampleCurve_(
+[[nodiscard]] float SampleCurve_(
     const ARRAY<float, 13>& _curve,
     const float             _u)
 {
@@ -56,34 +58,34 @@ constexpr int   kCurveSteps = 12;
     return _curve[static_cast<size_t>(index)] + (_curve[static_cast<size_t>(index) + 1] - _curve[static_cast<size_t>(index)]) * t;
 }
 
-[[nodiscard]] static float Sign_(
+[[nodiscard]] float Sign_(
     const int _facing)
 {
     return _facing < 0 ? -1.f : 1.f;
 }
 
-[[nodiscard]] static float HoverY_(
+[[nodiscard]] float HoverY_(
     const HeliCfg&  _c,
     const EnemyEnv& _env)
 {
     return _env.ctx.cameraView.min.y + _c.hoverDy;
 }
 
-[[nodiscard]] static float FollowTargetX_(
+[[nodiscard]] float FollowTargetX_(
     const HeliCfg&  _c,
     const EnemyEnv& _env)
 {
     return _env.ctx.player.feet.x + _c.followDx;
 }
 
-static void SetPodTicks_(
+void SetPodTicks_(
     Enemy&    _e,
     const int _ticks)
 {
     _e.ext[kExtPodTicks] = _ticks;
 }
 
-static void Go_(
+void Go_(
     Enemy&           _e,
     const EnemyDef&  _def,
     const eHeliState _state)
@@ -105,7 +107,7 @@ static void Go_(
 }
 
 // 현재 위치 → 목표로 이동 곡선을 시작한다
-static void BeginMove_(
+void BeginMove_(
     Enemy&           _e,
     const EnemyDef&  _def,
     const EnemyEnv&  _env,
@@ -121,7 +123,7 @@ static void BeginMove_(
 }
 
 // 곡선 이동 한 틱. 끝났으면 true
-[[nodiscard]] static bool StepMove_(
+[[nodiscard]] bool StepMove_(
     Enemy&         _e,
     const HeliCfg& _c)
 {
@@ -133,7 +135,7 @@ static void BeginMove_(
 }
 
 // 폭격 중 이동: 호버 높이까지 내려오고, 플레이어 x 를 천천히 따라간다
-static void StepFollow_(
+void StepFollow_(
     Enemy&          _e,
     const HeliCfg&  _c,
     const EnemyEnv& _env)
@@ -151,7 +153,7 @@ static void StepFollow_(
     }
 }
 
-static void DropBomb_(
+void DropBomb_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -170,14 +172,14 @@ static void DropBomb_(
 }
 
 // 연속 투하 한 주기 = 폭탄 burstCount 발 (bombIntervalTicks 간격) + 휴지
-[[nodiscard]] static int BurstPeriod_(
+[[nodiscard]] int BurstPeriod_(
     const HeliCfg& _c)
 {
     return Max(1, _c.burstCount * _c.bombIntervalTicks + _c.burstRestTicks);
 }
 
 // _first 틱부터 연속 투하를 시작해 _bursts 번 하고 마지막 휴지까지 끝나는 틱
-[[nodiscard]] static int BurstPhaseEnd_(
+[[nodiscard]] int BurstPhaseEnd_(
     const HeliCfg& _c,
     const int      _first,
     const int      _bursts)
@@ -186,7 +188,7 @@ static void DropBomb_(
 }
 
 // 이 틱에 폭탄을 떨어뜨리는가
-[[nodiscard]] static bool IsBombTick_(
+[[nodiscard]] bool IsBombTick_(
     const HeliCfg& _c,
     const int      _ticks,
     const int      _first)
@@ -200,14 +202,14 @@ static void DropBomb_(
     return k < _c.burstCount * _c.bombIntervalTicks && k % _c.bombIntervalTicks == 0;
 }
 
-[[nodiscard]] static int FirstBombTicks_(
+[[nodiscard]] int FirstBombTicks_(
     const Enemy&   _e,
     const HeliCfg& _c)
 {
     return _e.ext[kExtCycle] == 0 ? _c.firstBombTicks : _c.reBombTicks;
 }
 
-static void StepBombing_(
+void StepBombing_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
@@ -226,7 +228,7 @@ static void StepBombing_(
     DropBomb_(_e, _def, _env);
 }
 
-[[nodiscard]] static float LowTargetX_(
+[[nodiscard]] float LowTargetX_(
     const Enemy&    _e,
     const HeliCfg&  _c,
     const EnemyEnv& _env)
@@ -236,7 +238,7 @@ static void StepBombing_(
 }
 
 // 저공 이동: 저공 높이까지 내려오며 목표 가장자리로 일정 속도로 간다
-static void StepLow_(
+void StepLow_(
     Enemy&          _e,
     const HeliCfg&  _c,
     const EnemyEnv& _env)
@@ -252,7 +254,7 @@ static void StepLow_(
 }
 
 // 고공 구간 끝: 화면 중앙의 먼 쪽 가장자리로 가로지르는 저공 구간 시작
-static void BeginLow_(
+void BeginLow_(
     Enemy&          _e,
     const EnemyDef& _def,
     const EnemyEnv& _env)
@@ -263,7 +265,7 @@ static void BeginLow_(
 }
 
 // 플레이어가 반대쪽에 머물면 선회한다
-[[nodiscard]] static bool WantsTurn_(
+[[nodiscard]] bool WantsTurn_(
     Enemy&          _e,
     const HeliCfg&  _c,
     const EnemyEnv& _env)
@@ -280,7 +282,7 @@ static void BeginLow_(
     return _e.aux3 >= _c.turnWaitTicks;
 }
 
-static void Init_(
+void Init_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -296,7 +298,7 @@ static void Init_(
     Go_(_e, _def, eHeliState::Bomb);
 }
 
-static void Tick_(
+void Tick_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -408,7 +410,7 @@ static void Tick_(
     }
 }
 
-static void OnDeath_(
+void OnDeath_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -419,7 +421,7 @@ static void OnDeath_(
 }
 
 // 지금 몸통이 보여 주는 Pitch 프레임 (비행 클립이면 idle 왕복, Pitch 클립이면 재생 중인 프레임, 그 밖이면 -1)
-[[nodiscard]] static int ShownPitchFrame_(
+[[nodiscard]] int ShownPitchFrame_(
     const Enemy&            _e,
     const EnemyDef&         _def,
     const AnimationLibrary& _anims)
@@ -443,7 +445,7 @@ static void OnDeath_(
     return -1;
 }
 
-static const AnimFrame* BodyFrame_(
+const AnimFrame* BodyFrame_(
     const Enemy&            _e,
     const EnemyDef&         _def,
     const AnimationLibrary& _anims)
@@ -462,7 +464,7 @@ static const AnimFrame* BodyFrame_(
     return &pClip->frames[static_cast<size_t>(Min(shown, pClip->GetFrameCount() - 1))];
 }
 
-static void SubmitParts_(
+void SubmitParts_(
     const Enemy&          _e,
     const EnemyDef&       _def,
     const EnemyRenderEnv& _render)
@@ -486,6 +488,7 @@ static void SubmitParts_(
     const String rotorName = c.rotorRowPrefix.empty() || shown < 0 ? ResolveSide(_def.GetClip(c.clipRotor).name, _e.facing) : c.rotorRowPrefix + std::to_string(shown);
     (void)SubmitNamedPart(_render, rotorName, rotor, _e.clipTicks, true, feetKey + c.partRotor.sort, c.partRotor.depth);
 }
+}   // namespace
 
 const BehaviorOps kHeliOps = {
     .init              = &Init_,

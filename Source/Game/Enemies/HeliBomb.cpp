@@ -5,8 +5,10 @@
 #include "Game/Enemies/EnemyDefParse.h"
 #include "Game/Enemies/VehicleCommon.h"
 
+namespace
+{
 // 지면/벽 접촉 검사 (발판은 보지 않는다: 강가 감시초소 같은 구조물 발판에 막혀 플레이어에게 닿지 못하던 문제). _to 는 접촉 판정 점의 현재 위치
-[[nodiscard]] static bool Touches_(
+[[nodiscard]] bool Touches_(
     const PhysicsWorld& _world,
     const Vec2          _to)
 {
@@ -24,7 +26,7 @@
     return false;
 }
 
-static void AddBombHitbox_(
+void AddBombHitbox_(
     const Enemy&   _e,
     const Vec2     _size,
     const int      _damage,
@@ -46,7 +48,7 @@ static void AddBombHitbox_(
     _env.ctx.pCombat->AddHitbox(hitbox);
 }
 
-static void Init_(
+void Init_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -58,7 +60,7 @@ static void Init_(
     SetClip(_e, _def.heliBomb.clipFall, true);
 }
 
-static void Tick_(
+void Tick_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -93,7 +95,7 @@ static void Tick_(
     AddBombHitbox_(_e, c.hitSize, c.blastDamage, eHitKind::Bullet, _env);
 }
 
-static void OnDeath_(
+void OnDeath_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -103,7 +105,7 @@ static void OnDeath_(
     _e.aux      = 0;   // 폭발 상자 경과 틱
 }
 
-static void TickDying_(
+void TickDying_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -122,6 +124,7 @@ static void TickDying_(
     _e.meleeHitId = kNoHitId;
     _e.life       = eEnemyLife::Gone;
 }
+}   // namespace
 
 const BehaviorOps kHeliBombOps = {
     .init      = &Init_,

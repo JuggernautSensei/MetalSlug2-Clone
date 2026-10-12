@@ -12,13 +12,15 @@
 
 constexpr double kUnitsPerSec = static_cast<double>(kAnimTimeUnitsPerSec);
 
-[[nodiscard]] static int64_t ToUnits_(
+namespace
+{
+[[nodiscard]] int64_t ToUnits_(
     const double _sec)
 {
     return static_cast<int64_t>(std::llround(_sec * kUnitsPerSec));
 }
 
-[[nodiscard]] static bool ReadInt_(
+[[nodiscard]] bool ReadInt_(
     const JsonReader& _object,
     const StringView  _key,
     int&              _out)
@@ -32,7 +34,7 @@ constexpr double kUnitsPerSec = static_cast<double>(kAnimTimeUnitsPerSec);
     return true;
 }
 
-[[nodiscard]] static bool ReadOptionalInt_(
+[[nodiscard]] bool ReadOptionalInt_(
     const JsonReader& _object,
     const StringView  _key,
     int&              _out)
@@ -40,7 +42,7 @@ constexpr double kUnitsPerSec = static_cast<double>(kAnimTimeUnitsPerSec);
     return !_object.HasField(_key) || ReadInt_(_object, _key, _out);
 }
 
-[[nodiscard]] static Result<AnimFrame> ParseFrame_(
+[[nodiscard]] Result<AnimFrame> ParseFrame_(
     const JsonReader& _json)
 {
     if (!_json.IsObject())
@@ -60,7 +62,7 @@ constexpr double kUnitsPerSec = static_cast<double>(kAnimTimeUnitsPerSec);
     return frame;
 }
 
-[[nodiscard]] static Result<AnimClip> ParseClip_(
+[[nodiscard]] Result<AnimClip> ParseClip_(
     const StringView  _name,
     const JsonReader& _json)
 {
@@ -127,7 +129,7 @@ constexpr double kUnitsPerSec = static_cast<double>(kAnimTimeUnitsPerSec);
     return clip;
 }
 
-[[nodiscard]] static Result<AnimationLibrary> ParseAnimDocument_(
+[[nodiscard]] Result<AnimationLibrary> ParseAnimDocument_(
     const JsonReader& _root)
 {
     if (!_root.IsObject())
@@ -157,7 +159,7 @@ constexpr double kUnitsPerSec = static_cast<double>(kAnimTimeUnitsPerSec);
     return library;
 }
 
-[[nodiscard]] static Result<Vector<String>> ParseAtlasPages_(
+[[nodiscard]] Result<Vector<String>> ParseAtlasPages_(
     const JsonReader& _manifest)
 {
     Vector<String> pages;
@@ -182,6 +184,7 @@ constexpr double kUnitsPerSec = static_cast<double>(kAnimTimeUnitsPerSec);
     }
     return pages;
 }
+}   // namespace
 
 int64_t AnimClip::GetFrameDurationUnits() const
 {

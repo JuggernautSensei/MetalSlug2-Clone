@@ -6,7 +6,10 @@
 #include "Game/GameState.h"
 #include "Game/Player/PlayerController.h"
 
-static constexpr int kLethalHits = 6;
+namespace
+{
+constexpr int kLethalHits = 6;
+}   // namespace
 
 struct GodHarness
 {

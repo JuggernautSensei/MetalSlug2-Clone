@@ -24,7 +24,9 @@
 #include "PlayerTestUtil.h"
 #include "TestAudio.h"
 
-[[nodiscard]] static const HudItem* FindItem_(
+namespace
+{
+[[nodiscard]] const HudItem* FindItem_(
     const Vector<HudItem>& _items,
     const eHudItemKind     _kind,
     const StringView       _text)
@@ -39,7 +41,7 @@
     return nullptr;
 }
 
-[[nodiscard]] static int CountKind_(
+[[nodiscard]] int CountKind_(
     const Vector<HudItem>& _items,
     const eHudItemKind     _kind)
 {
@@ -51,7 +53,7 @@
     return count;
 }
 
-[[nodiscard]] static Vec2 SpriteSize_(
+[[nodiscard]] Vec2 SpriteSize_(
     const StringView _name)
 {
     static const std::map<String, Vec2> kSizes = {
@@ -65,14 +67,14 @@
     return it == kSizes.end() ? Vec2 { 0.f, 0.f } : it->second;
 }
 
-[[nodiscard]] static bool InsideScreen_(
+[[nodiscard]] bool InsideScreen_(
     const IntRect&  _r,
     const UiLayout& _layout)
 {
     return _r.x >= 0 && _r.y >= 0 && _r.x + _r.w <= _layout.screenW && _r.y + _r.h <= _layout.screenH;
 }
 
-[[nodiscard]] static bool ItemFits_(
+[[nodiscard]] bool ItemFits_(
     const HudItem&  _item,
     const UiLayout& _layout)
 {
@@ -96,7 +98,7 @@
     return false;
 }
 
-[[nodiscard]] static HudModel MakeModel_()
+[[nodiscard]] HudModel MakeModel_()
 {
     HudModel model;
     model.lives = 3;
@@ -106,7 +108,7 @@
 }
 
 // Banner/Results 등 단계 흐름을 _tick 에 닿을 때까지 한 틱씩 진행한다. _t 는 지금까지 진행한 틱 수
-static void AdvanceFlowTo_(
+void AdvanceFlowTo_(
     int&        _t,
     UiSystem&   _ui,
     ScreenFlow& _flow,
@@ -122,7 +124,7 @@ static void AdvanceFlowTo_(
 }
 
 // HUD 항목 중 Rect 종류만 골라낸다
-[[nodiscard]] static Vector<HudItem> HudRects_(
+[[nodiscard]] Vector<HudItem> HudRects_(
     const Vector<HudItem>& _items)
 {
     Vector<HudItem> rects;
@@ -135,6 +137,7 @@ static void AdvanceFlowTo_(
     }
     return rects;
 }
+}   // namespace
 
 TEST(UiFont, GlyphIndexMapsLettersDigitsAndZero)
 {
@@ -1105,12 +1108,15 @@ struct TitleSim
     std::unique_ptr<SimRunner> runner = nullptr;
 };
 
-[[nodiscard]] static TitleConfig SandboxTitleConfig_()
+namespace
+{
+[[nodiscard]] TitleConfig SandboxTitleConfig_()
 {
     TitleConfig config;
     config.nextState = "sandbox";
     return config;
 }
+}   // namespace
 
 TEST(UiTitle, StaysOnTitleWithoutInput)
 {

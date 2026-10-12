@@ -16,7 +16,9 @@
 #include "Game/Enemies/EnemyDef.h"
 #include "Render/Animation.h"
 
-[[nodiscard]] static bool Load_(
+namespace
+{
+[[nodiscard]] bool Load_(
     AnimationLibrary& _out)
 {
     Result<AnimationLibrary> lib = AnimationLibrary::LoadFromDirectory(FindAssetRoot());
@@ -29,14 +31,14 @@
 }
 
 // 클립 이름의 첫 토큰 (엔티티 계열): "MissleTank_Up_Idle_Left" -> "MissleTank"
-[[nodiscard]] static String FamilyOf_(
+[[nodiscard]] String FamilyOf_(
     const String& _name)
 {
     const size_t pos = _name.find('_');
     return pos == String::npos ? _name : _name.substr(0, pos);
 }
 
-[[nodiscard]] static bool BottomAnchor_(
+[[nodiscard]] bool BottomAnchor_(
     const AnimClip& _clip,
     int&            _out)
 {
@@ -55,6 +57,7 @@
     _out = low;
     return bAny;
 }
+}   // namespace
 
 TEST(AnimIntegrity, AtlasRectanglesNeverOverlapAndStayInsidePages)
 {

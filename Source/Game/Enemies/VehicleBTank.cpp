@@ -13,7 +13,9 @@ enum class eBTankState
     Fire
 };
 
-[[nodiscard]] static int ClipOf_(
+namespace
+{
+[[nodiscard]] int ClipOf_(
     const Enemy&    _e,
     const BTankCfg& _c)
 {
@@ -26,7 +28,7 @@ enum class eBTankState
     }
 }
 
-static void Go_(
+void Go_(
     Enemy&            _e,
     const EnemyDef&   _def,
     const eBTankState _state)
@@ -41,7 +43,7 @@ static void Go_(
     }
 }
 
-static void Init_(
+void Init_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -52,7 +54,7 @@ static void Init_(
     Go_(_e, _def, eBTankState::Closed);
 }
 
-static void Tick_(
+void Tick_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -117,13 +119,14 @@ static void Tick_(
     (void)StepPhysics(_e, _def, _env);
 }
 
-static void OnDeath_(
+void OnDeath_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
     BeginVehicleDeath(_e, _def, _env, _def.btank.clipDestroy);
 }
+}   // namespace
 
 const BehaviorOps kBTankOps = {
     .init      = &Init_,

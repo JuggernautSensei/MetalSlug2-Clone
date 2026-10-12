@@ -28,14 +28,16 @@ constexpr const char* kBankJson = R"({
       }
     })";
 
-[[nodiscard]] static SoundBank MakeBank_()
+namespace
+{
+[[nodiscard]] SoundBank MakeBank_()
 {
     Result<SoundBank> bank = SoundBank::LoadFromJson(kBankJson, "root");
     EXPECT_TRUE(static_cast<bool>(bank));
     return bank.Take();
 }
 
-[[nodiscard]] static AudioConfig MakeDryConfig_()
+[[nodiscard]] AudioConfig MakeDryConfig_()
 {
     AudioConfig config;
     config.bEnabled    = false;
@@ -44,10 +46,11 @@ constexpr const char* kBankJson = R"({
     return config;
 }
 
-[[nodiscard]] static FilePath Root_()
+[[nodiscard]] FilePath Root_()
 {
     return FindAssetRoot();
 }
+}   // namespace
 
 TEST(AudioBank, ParsesEntriesNamesFilesAndBgmFlag)
 {

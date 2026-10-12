@@ -11,17 +11,20 @@
 #include "StageTestUtil.h"
 #include "World/GroundMap.h"
 
-[[nodiscard]] static std::string OneSection_(
+namespace
+{
+[[nodiscard]] std::string OneSection_(
     const std::string& _actions)
 {
     return WrapStage(R"J([{"id":"s0","triggerX":0,"actions":)J" + _actions + "}]");
 }
 
-[[nodiscard]] static const StageAction& FirstAction_(
+[[nodiscard]] const StageAction& FirstAction_(
     const StageData& _data)
 {
     return _data.sections.at(0).actions.at(0);
 }
+}   // namespace
 
 TEST(StageData, LoadsMinimalStageWithDefaults)
 {

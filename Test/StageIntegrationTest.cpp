@@ -506,7 +506,9 @@ TEST(StageIntegration, SarubiaGateStartsInsideTheLockedScreenSoItCanBeShot)
     EXPECT_TRUE(bFound);
 }
 
-static const Enemy* FindSarubia_(
+namespace
+{
+const Enemy* FindSarubia_(
     IntegrationSim& _sim)
 {
     for (const Enemy& enemy: _sim.State().GetEnemies().GetEnemies())
@@ -518,6 +520,7 @@ static const Enemy* FindSarubia_(
     }
     return nullptr;
 }
+}   // namespace
 
 // R2-17 재현: 실제 Stage0 흐름에서 사루비아가 플레이어 총알에 체력이 줄고 결국 죽는지
 TEST(StageIntegration, SarubiaLosesHpToPlayerBulletsAndDiesInStage0)
@@ -702,8 +705,10 @@ TEST(StageIntegration, GameOverRunsTheGameOverFlowAndReturnsToTitle)
     EXPECT_NE(sim.Current(), pStage);
 }
 
+namespace
+{
 // 스크립트 봇을 3000틱 돌리며 매 틱의 상태 해시를 모은다
-[[nodiscard]] static std::vector<uint64_t> RunBotHashes_()
+[[nodiscard]] std::vector<uint64_t> RunBotHashes_()
 {
     IntegrationSim        sim;
     std::vector<uint64_t> hashes;
@@ -715,6 +720,7 @@ TEST(StageIntegration, GameOverRunsTheGameOverFlowAndReturnsToTitle)
     }
     return hashes;
 }
+}   // namespace
 
 TEST(StageIntegration, ScriptedBotRunIsDeterministicOver3000Ticks)
 {
@@ -724,8 +730,10 @@ TEST(StageIntegration, ScriptedBotRunIsDeterministicOver3000Ticks)
     EXPECT_EQ(first, second);
 }
 
+namespace
+{
 // 살아 있는 behavior 적 하나에 판정 피해를 준다 (해제 조건 검증용, 정상 피격 경로 OnHitEvents 사용)
-[[nodiscard]] static bool KillFirstAlive_(
+[[nodiscard]] bool KillFirstAlive_(
     StageState&          _state,
     const eEnemyBehavior _behavior)
 {
@@ -752,7 +760,7 @@ TEST(StageIntegration, ScriptedBotRunIsDeterministicOver3000Ticks)
     return true;
 }
 
-[[nodiscard]] static bool HasAlive_(
+[[nodiscard]] bool HasAlive_(
     const StageState&    _state,
     const eEnemyBehavior _behavior)
 {
@@ -765,6 +773,7 @@ TEST(StageIntegration, ScriptedBotRunIsDeterministicOver3000Ticks)
     }
     return false;
 }
+}   // namespace
 
 TEST(StageIntegration, HeliSpawnsAtTheHeliTriggerAndLocksTheCamera)
 {
@@ -1254,9 +1263,11 @@ private:
     Vector<BossEntryTrackedItem> m_items    = {};
 };
 
+namespace
+{
 // 보스 아레나 트리거 (x 13700) 까지 간다. 사루비아 락 (openland_4, 플레이어 x 는 13066 을 못 넘는다) 은 남은 적을 치워 푼다.
 // _pRecorder 가 있으면 마지막 접근 구간 (사루비아 정리 뒤) 의 틱을 기록한다
-static void ReachBossArena_(
+void ReachBossArena_(
     IntegrationSim&    _sim,
     BossEntryRecorder* _pRecorder = nullptr)
 {
@@ -1282,7 +1293,7 @@ static void ReachBossArena_(
 }
 
 // 보스 진입 후 _ticks 틱을 기록한다
-static void RecordBossEntry_(
+void RecordBossEntry_(
     IntegrationSim&    _sim,
     BossEntryRecorder& _rec,
     const int          _ticks)
@@ -1294,6 +1305,7 @@ static void RecordBossEntry_(
         _rec.Sample(_sim);
     }
 }
+}   // namespace
 
 TEST(StageIntegration, BossEntryDumpWritesCsvWhenRequested)
 {
@@ -1336,7 +1348,9 @@ TEST(StageIntegration, BossSpawnsAtTheArenaTriggerAfterSarubiaAndLocksTheCamera)
     EXPECT_EQ(sim.Current(), sim.StagePtr()) << "보스가 살아 있는 동안 스테이지는 끝나지 않는다";
 }
 
-static int CountPropsInView_(
+namespace
+{
+int CountPropsInView_(
     IntegrationSim& _sim)
 {
     const Vec2 cam   = _sim.State().GetCamera().GetPositionNoShake();
@@ -1350,6 +1364,7 @@ static int CountPropsInView_(
     }
     return count;
 }
+}   // namespace
 
 TEST(StageIntegration, BossArenaEntryNeverRemovesAVisiblePropOrItem)
 {

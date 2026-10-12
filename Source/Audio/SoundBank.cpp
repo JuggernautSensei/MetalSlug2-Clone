@@ -4,7 +4,9 @@
 #include "Base/Json.h"
 #include "Base/Types.h"
 
-[[nodiscard]] static Result<SoundBank> Parse_(
+namespace
+{
+[[nodiscard]] Result<SoundBank> Parse_(
     const JsonReader& _root,
     const FilePath&   _rootDir)
 {
@@ -47,6 +49,7 @@
     }
     return bank;
 }
+}   // namespace
 
 Result<SoundBank> SoundBank::LoadFromJson(
     const StringView _json,

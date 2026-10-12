@@ -8,7 +8,9 @@ struct GravityCase
     bool        bSpawn   = true;   // false 면 플래그만 검사 (비행체/보스는 자체 이동이 있다)
 };
 
-static constexpr ARRAY<GravityCase, 15> kCases = {
+namespace
+{
+constexpr ARRAY<GravityCase, 15> kCases = {
     {
      { "soldier_bomb", true, true },
      { "soldier_sword", true, true },
@@ -27,6 +29,7 @@ static constexpr ARRAY<GravityCase, 15> kCases = {
      { "bigshiee", false, false },
      }
 };
+}   // namespace
 
 TEST(GravityTrait, DefFlagFollowsTheRule)
 {

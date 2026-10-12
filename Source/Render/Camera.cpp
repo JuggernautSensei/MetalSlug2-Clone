@@ -18,14 +18,16 @@ constexpr float kMaxSpeedSec   = kMaxStep / kStepSec;   // px/s
 constexpr float kBoundsEase    = 2.f;                   // px/틱: 클램프 영역이 좁아지는 속도 (edge 당)
 constexpr float kCorrectionSec = 0.5f;                  // 잠금 시 카메라가 영역 밖이면 이 시간에 걸쳐 안으로 들어간다
 
-[[nodiscard]] static float RoundToInt_(
+namespace
+{
+[[nodiscard]] float RoundToInt_(
     const float _value)
 {
     return std::floor(_value + 0.5f);
 }
 
 // 남은 간격 _gap 에서 감속 kGlideAccel 로 틱 단위 이산 적분하며 정확히 멈출 수 있는 최대 속도 (v + (v-a) + ... = gap)
-[[nodiscard]] static float BrakeSpeed_(
+[[nodiscard]] float BrakeSpeed_(
     const float _gap)
 {
     return (-kGlideAccel + std::sqrt(kGlideAccel * kGlideAccel + 8.f * kGlideAccel * _gap)) * 0.5f;
@@ -33,7 +35,7 @@ constexpr float kCorrectionSec = 0.5f;                  // 잠금 시 카메라�
 
 // 한 축의 이동(거리 _dist, 시작 속도 _v0 px/틱)을 가속도 kGlideAccel·속도 kMaxStep 상한 안에서 끝내는 최소 틱 수
 // Hermite 곡선: 시작 가속도 = (6·D − 4·T·v0)/T², 속도 ≈ 1.5·D/T + v0
-[[nodiscard]] static int MinMoveTicks_(
+[[nodiscard]] int MinMoveTicks_(
     const float _dist,
     const float _v0)
 {
@@ -45,7 +47,7 @@ constexpr float kCorrectionSec = 0.5f;                  // 잠금 시 카메라�
 }
 
 // 임계감쇠 스프링 (Unity SmoothDamp 와 같은 형태). 속도 상한은 px/s
-static void SmoothDamp_(
+void SmoothDamp_(
     float&      _current,
     float&      _velocity,
     const float _target,
@@ -77,7 +79,7 @@ static void SmoothDamp_(
     _current = out;
 }
 
-[[nodiscard]] static float ApplyDeadzone_(
+[[nodiscard]] float ApplyDeadzone_(
     const float _center,
     const float _focus,
     const float _half)
@@ -92,6 +94,7 @@ static void SmoothDamp_(
     }
     return _center;
 }
+}   // namespace
 
 Camera::Camera(
     const CameraTuning& _tuning)

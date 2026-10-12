@@ -141,7 +141,9 @@ TEST(Tuning, KnifeKillsAGruntInOneSlash)
     EXPECT_GE(t.knife.damage, t.sandbox.gruntHp);
 }
 
-static void WriteFile_(
+namespace
+{
+void WriteFile_(
     const FilePath& _path,
     const String&   _text)
 {
@@ -149,13 +151,14 @@ static void WriteFile_(
     out << _text;
 }
 
-static void Touch_(
+void Touch_(
     const FilePath& _path,
     const int       _seconds)
 {
     std::error_code ec;
     std::filesystem::last_write_time(_path, std::filesystem::last_write_time(_path, ec) + std::chrono::seconds(_seconds), ec);
 }
+}   // namespace
 
 TEST(TuningWatcher, ReloadsWhenTheFileChangesAndKeepsOldValuesOnBadJson)
 {

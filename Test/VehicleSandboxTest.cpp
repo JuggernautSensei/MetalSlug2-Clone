@@ -18,8 +18,10 @@ struct VehicleDirectState
     }
 };
 
+namespace
+{
 // 모든 탈것을 세워 두고 1200틱 동안 매 틱의 상태 해시를 _hashes 에 모은다
-static void RunHashes_(
+void RunHashes_(
     std::vector<uint64_t>& _hashes)
 {
     Sim   sim { MakeEnemyConfig({ 100.f, kGroundY }) };
@@ -35,6 +37,7 @@ static void RunHashes_(
         _hashes.push_back(sim.State().HashState());
     }
 }
+}   // namespace
 
 TEST(VehicleSandbox, KeyNineSpawnsTheFourVehiclesInTurnAndWraps)
 {

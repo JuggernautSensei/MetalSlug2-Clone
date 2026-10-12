@@ -8,11 +8,14 @@
 
 constexpr float kGroundY = 378.f;
 
-[[nodiscard]] static bool OnGround_(
+namespace
+{
+[[nodiscard]] bool OnGround_(
     const Enemy* _pEnemy)
 {
     return _pEnemy && _pEnemy->bGrounded && std::abs(_pEnemy->body.position.y - kGroundY) < 0.5f;
 }
+}   // namespace
 
 struct EnemyDirectState
 {
@@ -26,8 +29,10 @@ struct EnemyDirectState
     }
 };
 
+namespace
+{
 // 플레이어가 죽을 때까지 최대 _maxTicks 틱을 진행한다 (Sim::StepUntil 과 같은 규약: 경과 틱, 실패 -1)
-[[nodiscard]] static int StepUntilPlayerDead_(
+[[nodiscard]] int StepUntilPlayerDead_(
     Sim&      _sim,
     const int _maxTicks)
 {
@@ -43,7 +48,7 @@ struct EnemyDirectState
 }
 
 // 보병 전 종류를 세워 두고 1200틱 동안 샌드박스 상태 해시를 기록한다
-static void RunHashes_(
+void RunHashes_(
     Vector<uint64_t>& _hashes)
 {
     Sim   sim { MakeEnemyConfig({ 100.f, kGroundY }) };
@@ -59,6 +64,7 @@ static void RunHashes_(
         _hashes.push_back(sim.State().HashState());
     }
 }
+}   // namespace
 
 TEST(EnemySandbox, LoadsTheDefinitionFileAndSpawnsEveryInfantryKind)
 {

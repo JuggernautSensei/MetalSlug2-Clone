@@ -18,7 +18,9 @@
 
 constexpr size_t kMaxUndo = 200;
 
-[[nodiscard]] static Result<AnimFrame> ParseFrame_(
+namespace
+{
+[[nodiscard]] Result<AnimFrame> ParseFrame_(
     const JsonReader& _frame)
 {
     if (!_frame.IsObject() || _frame.GetSize() != 7)
@@ -40,7 +42,7 @@ constexpr size_t kMaxUndo = 200;
     return f;
 }
 
-[[nodiscard]] static Result<AnimEditClip> ParseClip_(
+[[nodiscard]] Result<AnimEditClip> ParseClip_(
     const StringView  _name,
     const JsonReader& _clip)
 {
@@ -98,7 +100,7 @@ constexpr size_t kMaxUndo = 200;
 }
 
 // 가장 짧게 왕복되는 표기 (0.1, 0.08333333333333333, 1)
-static void AppendNumber_(
+void AppendNumber_(
     String&      _out,
     const double _value)
 {
@@ -107,7 +109,7 @@ static void AppendNumber_(
     _out.append(buf.data(), r.ptr);
 }
 
-static void AppendString_(
+void AppendString_(
     String&          _out,
     const StringView _text)
 {
@@ -123,13 +125,14 @@ static void AppendString_(
     _out += '"';
 }
 
-static void AppendField_(
+void AppendField_(
     String&          _out,
     const StringView _key,
     const int        _value)
 {
     _out += std::format("      \"{}\": {},\n", _key, _value);
 }
+}   // namespace
 
 Result<void> AnimDocument::LoadFromText(
     const StringView _json)

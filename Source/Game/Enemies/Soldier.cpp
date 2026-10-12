@@ -26,20 +26,22 @@ constexpr int kVariantStay      = 1;
 constexpr int kVariantClimb     = 2;
 constexpr int kVariantClimbStay = 3;
 
-static void Go_(
+namespace
+{
+void Go_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
     eSoldierState   _state);
 
-[[nodiscard]] static float AbsDx_(
+[[nodiscard]] float AbsDx_(
     const Enemy&    _e,
     const EnemyEnv& _env)
 {
     return std::abs(DxToPlayer(_e, _env));
 }
 
-static void Reposition_(
+void Reposition_(
     Enemy&              _e,
     const EnemyDef&     _def,
     EnemyEnv&           _env,
@@ -61,7 +63,7 @@ static void Reposition_(
     }
 }
 
-static void Go_(
+void Go_(
     Enemy&              _e,
     const EnemyDef&     _def,
     EnemyEnv&           _env,
@@ -147,7 +149,7 @@ static void Go_(
 }
 
 // 버스 계단 병사: 스폰 위치 -> arena.min (계단 아래) -> arena.max (계단 위) 를 일정 속도로 걷는다 (물리/중력 없음). 끝나면 낙하로 넘어가 일반 AI.
-static void TickClimb_(
+void TickClimb_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -162,7 +164,7 @@ static void TickClimb_(
     ClimbLeap(_e, _def);
 }
 
-static void DecideBomb_(
+void DecideBomb_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -218,7 +220,7 @@ static void DecideBomb_(
     }
 }
 
-static void DecideSword_(
+void DecideSword_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -296,7 +298,7 @@ static void DecideSword_(
     }
 }
 
-static void DecideMissile_(
+void DecideMissile_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -338,7 +340,7 @@ static void DecideMissile_(
     }
 }
 
-static void Init_(
+void Init_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -347,7 +349,7 @@ static void Init_(
     Go_(_e, _def, _env, _e.aiVariant >= kVariantClimb ? eSoldierState::Climb : eSoldierState::Fall);
 }
 
-static void Tick_(
+void Tick_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -525,13 +527,14 @@ static void Tick_(
     TickMelee(_e, _def, _env);
 }
 
-static void OnDeath_(
+void OnDeath_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
     BeginSoldierDeath(_e, _def, _env);
 }
+}   // namespace
 
 const BehaviorOps kSoldierOps = {
     .init              = &Init_,

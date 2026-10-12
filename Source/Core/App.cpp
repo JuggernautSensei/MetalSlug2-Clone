@@ -12,7 +12,9 @@
 #include "Core/AssetPath.h"
 #include "Game/StateFactory.h"
 
-[[nodiscard]] static int ChooseWindowScale_()
+namespace
+{
+[[nodiscard]] int ChooseWindowScale_()
 {
     const SDL_DisplayID display = SDL_GetPrimaryDisplay();
     SDL_Rect            usable  = {};
@@ -28,6 +30,7 @@
     }
     return scale;
 }
+}   // namespace
 
 int App::Run(
     const int _argc,

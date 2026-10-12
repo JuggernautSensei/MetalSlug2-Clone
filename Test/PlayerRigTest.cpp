@@ -3,7 +3,9 @@
 #include "Game/Player/PlayerRig.h"
 #include "PlayerTestUtil.h"
 
-[[nodiscard]] static AnimId Id_(
+namespace
+{
+[[nodiscard]] AnimId Id_(
     const AnimationLibrary& _anims,
     const char*             _name)
 {
@@ -12,13 +14,14 @@
     return id;
 }
 
-[[nodiscard]] static const AnimFrame& LowerFrame_(
+[[nodiscard]] const AnimFrame& LowerFrame_(
     Sim&                    _sim,
     const AnimationLibrary& _anims)
 {
     const PlayerRig& rig = _sim.State().GetRig();
     return _anims.Get(rig.GetLowerClip()).frames[static_cast<size_t>(rig.GetLowerFrame())];
 }
+}   // namespace
 
 TEST(PlayerRigNames, EveryRequiredSlotResolvesForEveryWeaponAndSide)
 {

@@ -21,10 +21,12 @@
 #include "Game/Stage/StageData.h"
 #include "Render/SpriteBatch.h"
 
-static constexpr ARRAY<const char*, 6> kDepthFileDirs  = { "Defs", "Defs", "Defs", "Defs", "Defs", "Defs/Props" };
-static constexpr ARRAY<const char*, 6> kDepthFileNames = { "Enemies.json", "BigShiee.json", "Bus.json", "Helicopter.json", "Vehicles.json", "Props.json" };
+namespace
+{
+constexpr ARRAY<const char*, 6> kDepthFileDirs  = { "Defs", "Defs", "Defs", "Defs", "Defs", "Defs/Props" };
+constexpr ARRAY<const char*, 6> kDepthFileNames = { "Enemies.json", "BigShiee.json", "Bus.json", "Helicopter.json", "Vehicles.json", "Props.json" };
 
-static void AddConst_(
+void AddConst_(
     Vector<DepthRow>& _rows,
     const char*       _name,
     const int         _value)
@@ -35,7 +37,7 @@ static void AddConst_(
     _rows.push_back(row);
 }
 
-static void Collect_(
+void Collect_(
     const Vector<JsonNode>& _nodes,
     const int               _index,
     const String&           _path,
@@ -69,6 +71,7 @@ static void Collect_(
         }
     }
 }
+}   // namespace
 
 void DepthEditor::Load_(
     const FilePath& _assetRoot)

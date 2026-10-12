@@ -20,13 +20,15 @@
 #include "Render/Camera.h"
 #include "StageTestUtil.h"
 
-[[nodiscard]] static bool IsIntegral_(
+namespace
+{
+[[nodiscard]] bool IsIntegral_(
     const float _value)
 {
     return _value == std::floor(_value);
 }
 
-[[nodiscard]] static Camera MakeLevelCamera_()
+[[nodiscard]] Camera MakeLevelCamera_()
 {
     Camera camera;
     camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
@@ -36,7 +38,7 @@
 }
 
 // 흔들림을 걸고 60프레임 동안의 카메라 위치를 기록한다
-[[nodiscard]] static Vector<Vec2> RunShake_()
+[[nodiscard]] Vector<Vec2> RunShake_()
 {
     Camera camera = MakeLevelCamera_();
     camera.SetTarget({ 2000.f, 224.f });
@@ -53,7 +55,7 @@
 }
 
 // 전진 전용 카메라가 움직이는 목표를 600프레임 따라가는 위치 기록
-[[nodiscard]] static Vector<Vec2> RunForwardOnly_()
+[[nodiscard]] Vector<Vec2> RunForwardOnly_()
 {
     Camera camera = MakeLevelCamera_();
     camera.SetForwardOnly(true);
@@ -66,6 +68,7 @@
     }
     return out;
 }
+}   // namespace
 
 TEST(Camera, OutputIsAlwaysIntegralWhileFollowingFractionalTarget)
 {

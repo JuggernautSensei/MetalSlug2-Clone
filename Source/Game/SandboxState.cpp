@@ -19,7 +19,9 @@
 #include "Game/Ui/ScreenFlow.h"
 #include "World/Constants.h"
 
-[[nodiscard]] static CameraTuning MakeCameraTuning_(
+namespace
+{
+[[nodiscard]] CameraTuning MakeCameraTuning_(
     const CameraSettings& _settings)
 {
     CameraTuning tuning;
@@ -29,7 +31,7 @@
     return tuning;
 }
 
-[[nodiscard]] static Vec2 Lerp_(
+[[nodiscard]] Vec2 Lerp_(
     const Vec2  _a,
     const Vec2  _b,
     const float _t)
@@ -37,14 +39,14 @@
     return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
 }
 
-[[nodiscard]] static Vec2 ToScreen_(
+[[nodiscard]] Vec2 ToScreen_(
     const Vec2 _world,
     const Vec2 _camera)
 {
     return { std::floor(_world.x - _camera.x), std::floor(_world.y - _camera.y) };
 }
 
-static void DrawBox_(
+void DrawBox_(
     Renderer&   _renderer,
     const Aabb& _box,
     const Vec2  _camera,
@@ -54,6 +56,7 @@ static void DrawBox_(
     const Vec2 bottomRight = ToScreen_(_box.max, _camera);
     _renderer.DrawRect(topLeft, { Max(1.f, bottomRight.x - topLeft.x), Max(1.f, bottomRight.y - topLeft.y) }, _color);
 }
+}   // namespace
 
 SandboxState::SandboxState() = default;
 

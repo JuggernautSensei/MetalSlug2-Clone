@@ -13,12 +13,18 @@
 // 각자 체력/발사/파괴를 가진다 (선체에 구워지지 않았다). 주포는 포탑이 다 부서진 뒤 선수가 열리며 올라온다.
 // 모든 파츠는 음수 레이어로 그려 StageState 가 지면 텍스처보다 먼저 그린다 (하늘 < 선체 < 지붕/지면 < 플레이어).
 
+namespace
+{
 // 보스 파츠(포탑/주포)는 총알과 폭발만 받는다. 칼질(근접)은 선체 보스의 장갑에 먹히지 않는다 (R3-07)
-static const HitKindMask kBigShieeAccepts = HitKindMask { eHitKind::Bullet, eHitKind::Blast };
+const HitKindMask kBigShieeAccepts = HitKindMask { eHitKind::Bullet, eHitKind::Blast };
+}   // namespace
 
 // 낙하산 인질 정의 (Assets/Defs/BigShiee.json) 와 구출 시 드롭 무기 (헤비머신건 / 로켓 / 샷건 / 화염)
-constexpr StringView              kChuteDef   = "pow_chute";
-static const ARRAY<StringView, 4> kChuteDrops = { "gunitem_mg", "gunitem_rl", "gunitem_sg", "gunitem_fs" };
+constexpr StringView kChuteDef = "pow_chute";
+namespace
+{
+const ARRAY<StringView, 4> kChuteDrops = { "gunitem_mg", "gunitem_rl", "gunitem_sg", "gunitem_fs" };
+}   // namespace
 
 constexpr int kTurnMax      = 8;   // Turn 클립 프레임 수 - 1 (0 = 왼쪽, kTurnMid = 위, 8 = 오른쪽)
 constexpr int kTurnMid      = 4;
@@ -28,7 +34,10 @@ constexpr int kCasingDepth  = 54;   // 포구 연기 (Boss_Smoke_Small) 와 같�
 constexpr int kShotFrames   = 8;    // 사격 클립 칸 수 (애니메이션이 없는 환경의 기본값)
 constexpr int kYawMax       = 8;    // 주포 yaw 프레임 (Boss_Cannon_Aim 0..8, 사격 행 r = yaw 2r)
 
-static const char* const kLetters = "ABCDEFG";
+namespace
+{
+const char* const kLetters = "ABCDEFG";
+}   // namespace
 
 struct TurretNames
 {
@@ -39,7 +48,9 @@ struct TurretNames
     String           puff = {};
 };
 
-[[nodiscard]] static ARRAY<TurretNames, kBigShieeTurretCount> MakeNames_()
+namespace
+{
+[[nodiscard]] ARRAY<TurretNames, kBigShieeTurretCount> MakeNames_()
 {
     ARRAY<TurretNames, kBigShieeTurretCount> names = {};
     for (size_t i = 0; i < names.size(); ++i)
@@ -57,7 +68,7 @@ struct TurretNames
     return names;
 }
 
-[[nodiscard]] static const TurretNames& GetNames_(
+[[nodiscard]] const TurretNames& GetNames_(
     const char _letter)
 {
     static const ARRAY<TurretNames, kBigShieeTurretCount> kNames = MakeNames_();
@@ -65,13 +76,13 @@ struct TurretNames
     return kNames[index];
 }
 
-[[nodiscard]] static eBigShieePhase Phase_(
+[[nodiscard]] eBigShieePhase Phase_(
     const Enemy& _e)
 {
     return static_cast<eBigShieePhase>(_e.state);
 }
 
-[[nodiscard]] static int& Slot_(
+[[nodiscard]] int& Slot_(
     Enemy&    _e,
     const int _base,
     const int _index = 0)
@@ -79,7 +90,7 @@ struct TurretNames
     return _e.ext[static_cast<size_t>(_base + _index)];
 }
 
-[[nodiscard]] static int GetSlot_(
+[[nodiscard]] int GetSlot_(
     const Enemy& _e,
     const int    _base,
     const int    _index = 0)
@@ -87,14 +98,14 @@ struct TurretNames
     return _e.ext[static_cast<size_t>(_base + _index)];
 }
 
-[[nodiscard]] static eBigShieeTurretMode GetTurretMode_(
+[[nodiscard]] eBigShieeTurretMode GetTurretMode_(
     const Enemy& _e,
     const int    _i)
 {
     return static_cast<eBigShieeTurretMode>(GetSlot_(_e, kBigShieeExtMode, _i));
 }
 
-static void SetTurretMode_(
+void SetTurretMode_(
     Enemy&                    _e,
     const int                 _i,
     const eBigShieeTurretMode _mode)
@@ -103,13 +114,13 @@ static void SetTurretMode_(
     Slot_(_e, kBigShieeExtTicks, _i) = 0;
 }
 
-[[nodiscard]] static eBigShieeCannonMode GetCannonMode_(
+[[nodiscard]] eBigShieeCannonMode GetCannonMode_(
     const Enemy& _e)
 {
     return static_cast<eBigShieeCannonMode>(GetSlot_(_e, kBigShieeExtCannonMode));
 }
 
-[[nodiscard]] static const char* CannonModeName_(
+[[nodiscard]] const char* CannonModeName_(
     const eBigShieeCannonMode _mode)
 {
     switch (_mode)
@@ -122,7 +133,7 @@ static void SetTurretMode_(
     }
 }
 
-static void SetCannonMode_(
+void SetCannonMode_(
     Enemy&                    _e,
     const eBigShieeCannonMode _mode)
 {
@@ -131,7 +142,7 @@ static void SetCannonMode_(
     Slot_(_e, kBigShieeExtCannonTicks) = 0;
 }
 
-[[nodiscard]] static Vec2 World_(
+[[nodiscard]] Vec2 World_(
     const Vec2 _origin,
     const Vec2 _rel)
 {
@@ -139,7 +150,7 @@ static void SetCannonMode_(
 }
 
 // 키 표 (x = 초, y = 값) 를 선형 보간한다. 범위 밖은 양 끝 값.
-[[nodiscard]] static float Interp_(
+[[nodiscard]] float Interp_(
     const Span<const Vec2> _keys,
     const float            _t)
 {
@@ -163,13 +174,13 @@ static void SetCannonMode_(
     return _keys.back().y;
 }
 
-[[nodiscard]] static float LastKeyTime_(
+[[nodiscard]] float LastKeyTime_(
     const Span<const Vec2> _keys)
 {
     return _keys.empty() ? 0.f : _keys.back().x;
 }
 
-[[nodiscard]] static int AliveTurrets_(
+[[nodiscard]] int AliveTurrets_(
     const Enemy& _e)
 {
     int count = 0;
@@ -183,21 +194,21 @@ static void SetCannonMode_(
     return count;
 }
 
-[[nodiscard]] static float AgeSec_(
+[[nodiscard]] float AgeSec_(
     const Enemy& _e)
 {
     return static_cast<float>(_e.aux) * kStepSec;
 }
 
 // 주포 단계 기준 시간 (초). 전개 전이면 음수.
-[[nodiscard]] static float DeploySec_(
+[[nodiscard]] float DeploySec_(
     const Enemy& _e)
 {
     const int start = GetSlot_(_e, kBigShieeExtDeployStart);
     return start < 0 ? -1.f : static_cast<float>(_e.aux - start) * kStepSec;
 }
 
-[[nodiscard]] static bool IsScrollPaused_(
+[[nodiscard]] bool IsScrollPaused_(
     const Enemy&       _e,
     const BigShieeCfg& _c)
 {
@@ -224,7 +235,7 @@ static void SetCannonMode_(
 }
 
 // 누적 스크롤이 예산에 닿았으면 카메라는 더 가지 않는다 (아레나 끝)
-[[nodiscard]] static bool IsScrollStopped_(
+[[nodiscard]] bool IsScrollStopped_(
     const Enemy&       _e,
     const BigShieeCfg& _c)
 {
@@ -232,7 +243,7 @@ static void SetCannonMode_(
 }
 
 // 클립 길이 (틱). 애니메이션 라이브러리가 없는 환경 (헤드리스 테스트) 에서는 기본값
-[[nodiscard]] static int ClipTicks_(
+[[nodiscard]] int ClipTicks_(
     const EnemyEnv&  _env,
     const StringView _name,
     const int        _fallback)
@@ -241,7 +252,7 @@ static void SetCannonMode_(
 }
 
 // 사격 클립 길이 (틱). 마지막 칸은 Aim 자세를 2 px 옮긴 복사본이라 (칸 6 이 Aim 과 같은 그림) 보여 주지 않고 Aim 으로 돌아간다
-[[nodiscard]] static int ShotTicks_(
+[[nodiscard]] int ShotTicks_(
     const EnemyEnv&  _env,
     const StringView _name)
 {
@@ -250,7 +261,7 @@ static void SetCannonMode_(
     return std::max(1, ClipTicks_(_env, _name, 34) * std::max(1, count - 1) / std::max(1, count));
 }
 
-[[nodiscard]] static int RandTicks_(
+[[nodiscard]] int RandTicks_(
     EnemyEnv&              _env,
     const ARRAY<float, 2>& _rangeSec)
 {
@@ -259,7 +270,7 @@ static void SetCannonMode_(
     return lo + Roll(_env, std::max(1, hi - lo + 1));
 }
 
-static bool SubmitFrame_(
+bool SubmitFrame_(
     const EnemyRenderEnv& _render,
     const StringView      _name,
     const int             _frame,
@@ -284,7 +295,7 @@ static bool SubmitFrame_(
     return true;
 }
 
-static void Init_(
+void Init_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -323,7 +334,7 @@ static void Init_(
 
 // 포탄: 포구에서 플레이어 쪽으로 올라갔다 떨어지는 곡사 (weapon "shell" 의 arc)
 // 무기 정의의 포구 오프셋 (weapons.<name>.muzzle) 에 상관없이 월드 _muzzle 에서 나가도록 FireWeapon 의 추가 오프셋을 구한다
-[[nodiscard]] static Vec2 ExtraFromWorld_(
+[[nodiscard]] Vec2 ExtraFromWorld_(
     const Enemy&    _e,
     const EnemyDef& _def,
     const int       _weapon,
@@ -338,7 +349,7 @@ static void Init_(
 }
 
 // 조준 위치 (Turn 프레임 0 / 4 / 8): 플레이어 발 x - 포구 x 가 turretAimBandPx 안이면 위, 밖이면 왼쪽/오른쪽. 플레이어가 없으면 지금 위치
-[[nodiscard]] static int AimPos_(
+[[nodiscard]] int AimPos_(
     const Enemy&             _e,
     const BigShieeCfg&       _c,
     const BigShieeTurretCfg& _turret,
@@ -358,14 +369,14 @@ static void Init_(
 }
 
 // 포구 x: 머리가 왼쪽이면 muzzle.x, 위면 0, 오른쪽이면 반대편 (muzzle.x 는 왼쪽을 본 자세 기준)
-[[nodiscard]] static float MuzzleX_(
+[[nodiscard]] float MuzzleX_(
     const BigShieeTurretCfg& _turret,
     const int                _pos)
 {
     return _pos <= 0 ? _turret.muzzle.x : (_pos >= kTurnMax ? -_turret.muzzle.x : 0.f);
 }
 
-static void FireShell_(
+void FireShell_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
@@ -382,7 +393,7 @@ static void FireShell_(
     (void)FireWeapon(_e, _def, _env, weapon, { 0.f, 0.f }, ExtraFromWorld_(_e, _def, weapon, muzzle));
 }
 
-static void TickTurret_(
+void TickTurret_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
@@ -451,7 +462,7 @@ static void TickTurret_(
 }
 
 // 한 번에 한 문: 원작은 포탑이 번갈아 1~2발씩 쏜다 (일제사격 없음)
-static void TickVolley_(
+void TickVolley_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -481,7 +492,7 @@ static void TickVolley_(
 }
 
 // 낙하산 인질 보급: 카메라 위쪽 밖, 화면 오른쪽 가장자리 근처로 떨어뜨린다 (지연 스폰: 틱 루프 중 Enemy 벡터를 바꾸지 않는다)
-static void TickChute_(
+void TickChute_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -522,7 +533,7 @@ static void TickChute_(
     (void)_env.world.SpawnDeferred(index, feet, params);
 }
 
-[[nodiscard]] static bool CannonVulnerable_(
+[[nodiscard]] bool CannonVulnerable_(
     const Enemy& _e)
 {
     const eBigShieeCannonMode mode = GetCannonMode_(_e);
@@ -534,7 +545,7 @@ static void TickChute_(
 }
 
 // 포구 기준 플레이어 방향각 (도, 수직 아래 = 0, 오른쪽 +)
-[[nodiscard]] static float PlayerAngleDeg_(
+[[nodiscard]] float PlayerAngleDeg_(
     const Enemy&       _e,
     const BigShieeCfg& _c,
     const EnemyEnv&    _env)
@@ -546,7 +557,7 @@ static void TickChute_(
 }
 
 // Aim 프레임 yaw (0..8) 의 방향각: 짝수는 사격 행 각도, 홀수는 이웃 두 행의 가운데
-[[nodiscard]] static float YawDeg_(
+[[nodiscard]] float YawDeg_(
     const BigShieeCfg& _c,
     const int          _yaw)
 {
@@ -558,7 +569,7 @@ static void TickChute_(
     return (_c.cannonAimDeg[low] + _c.cannonAimDeg[low + 1]) * 0.5f;
 }
 
-[[nodiscard]] static int NearestYaw_(
+[[nodiscard]] int NearestYaw_(
     const BigShieeCfg& _c,
     const float        _deg)
 {
@@ -574,7 +585,7 @@ static void TickChute_(
 }
 
 // 이 틱에 맞출 yaw: 발사 차례면 플레이어에 가장 가까운 사격 행의 yaw (짝수), 아니면 플레이어를 바라보는 yaw
-[[nodiscard]] static int TargetYaw_(
+[[nodiscard]] int TargetYaw_(
     const Enemy&       _e,
     const BigShieeCfg& _c,
     const EnemyEnv&    _env,
@@ -601,7 +612,7 @@ static void TickChute_(
 }
 
 // 목표 yaw 쪽으로 cannonTurnTicks 마다 한 칸씩 돈다
-static void TurnCannon_(
+void TurnCannon_(
     Enemy&             _e,
     const BigShieeCfg& _c,
     const int          _target)
@@ -622,7 +633,7 @@ static void TurnCannon_(
 }
 
 // 탄피가 지면에 닿기까지 (초)
-[[nodiscard]] static float CasingLandSec_(
+[[nodiscard]] float CasingLandSec_(
     const Enemy&       _e,
     const BigShieeCfg& _c)
 {
@@ -633,7 +644,7 @@ static void TurnCannon_(
 }
 
 // 탄피 현재 위치/프레임. 없거나 사라졌으면 false (출발 틱 이후 지면까지 낙하 + casingLingerSec)
-static bool CasingNow_(
+bool CasingNow_(
     const Enemy&       _e,
     const BigShieeCfg& _c,
     Vec2&              _outAt,
@@ -660,7 +671,7 @@ static bool CasingNow_(
 }
 
 // 고폭탄: 사격 행의 각도로 나가고 (스프라이트도 같은 방향으로 돈다), 포구는 행의 포신 위치
-static void FireMissile_(
+void FireMissile_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -688,7 +699,7 @@ static void FireMissile_(
     EventLogFormat("bigshiee.casing", "\"x\":{:.1f},\"y\":{:.1f}", casing.x, casing.y);
 }
 
-static void TickCannon_(
+void TickCannon_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -750,7 +761,7 @@ static void TickCannon_(
     }
 }
 
-static void Tick_(
+void Tick_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -915,7 +926,7 @@ static void Tick_(
 }
 
 // 포탑/주포 피격. 포탑은 자체 체력, 주포는 보스 체력 (e.health). 소비한 피격은 true (부위 플래시는 EnemyWorld 가 건다)
-static bool OnHit_(
+bool OnHit_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
@@ -963,7 +974,7 @@ static bool OnHit_(
     return true;
 }
 
-static void RegisterHurtboxes_(
+void RegisterHurtboxes_(
     const Enemy&    _e,
     const EnemyDef& _def,
     CombatSystem&   _combat)
@@ -1002,7 +1013,7 @@ static void RegisterHurtboxes_(
 }
 
 // 사망 연출 (사망 시점 기준 초): 주포 상단 화염 -> 선체 연쇄 폭발 -> 주포 붕괴 + 잔해 -> 연기 구름
-static void OnDeath_(
+void OnDeath_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -1015,7 +1026,7 @@ static void OnDeath_(
     RequestFxAt(_env, "Explosion_Large", top, _e.facing, 57, 0.15f);
 }
 
-static void TickDying_(
+void TickDying_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -1069,7 +1080,7 @@ static void TickDying_(
     }
 }
 
-static bool DeathDone_(
+bool DeathDone_(
     const Enemy&    _e,
     const EnemyDef& _def)
 {
@@ -1077,7 +1088,7 @@ static bool DeathDone_(
 }
 
 // 선체 셀: 전개 중에는 선수가 열리는 순서 (D1 -> D3 -> D6 -> D9) 로 바뀌고 끝나면 열린 상태
-static void SubmitHull_(
+void SubmitHull_(
     const Enemy&          _e,
     const BigShieeCfg&    _c,
     const EnemyRenderEnv& _render,
@@ -1108,7 +1119,7 @@ static void SubmitHull_(
     SubmitNamedPart(_render, clip, _feet, ticks, bLoop, _c.partHull.sort, _c.partHull.depth);
 }
 
-static void SubmitTurret_(
+void SubmitTurret_(
     const Enemy&          _e,
     const BigShieeCfg&    _c,
     const EnemyRenderEnv& _render,
@@ -1149,7 +1160,7 @@ static void SubmitTurret_(
 }
 
 // 전개 틱을 클립 틱으로 바꾼다 (cannonDeployTicks 가 클립 길이와 다르면 늘이거나 줄인다)
-[[nodiscard]] static int DeployClipTicks_(
+[[nodiscard]] int DeployClipTicks_(
     const BigShieeCfg&    _c,
     const EnemyRenderEnv& _render,
     const int             _ticks)
@@ -1162,7 +1173,7 @@ static void SubmitTurret_(
     return _ticks * clipTicks / _c.cannonDeployTicks;
 }
 
-static void SubmitCannon_(
+void SubmitCannon_(
     const Enemy&          _e,
     const BigShieeCfg&    _c,
     const EnemyRenderEnv& _render,
@@ -1192,7 +1203,7 @@ static void SubmitCannon_(
     }
 }
 
-static void SubmitCasing_(
+void SubmitCasing_(
     const Enemy&          _e,
     const BigShieeCfg&    _c,
     const EnemyRenderEnv& _render)
@@ -1221,7 +1232,7 @@ static void SubmitCasing_(
     _render.sprites.SubmitStandalone(kCasingDepth + _render.zOffset, 0, handle, { frame * cellW, 0, cellW, pInfo->height }, at, options);
 }
 
-static void SubmitParts_(
+void SubmitParts_(
     const Enemy&          _e,
     const EnemyDef&       _def,
     const EnemyRenderEnv& _render)
@@ -1265,6 +1276,7 @@ static void SubmitParts_(
     SubmitCannon_(_e, c, _render, feet, PartFlashAmount(_e, kBigShieeCannonPart));
     SubmitCasing_(_e, c, _render);
 }
+}   // namespace
 
 const BehaviorOps kBigShieeOps = {
     .init              = &Init_,
@@ -1277,9 +1289,11 @@ const BehaviorOps kBigShieeOps = {
     .deathDone         = &DeathDone_,
 };
 
+namespace
+{
 // [t0, v0, t1, v1, ...] 키 표를 읽는다 (가변 길이, 최대 kCapacity 쌍). 읽은 쌍 수를 돌려준다 (키가 없으면 -1)
 template<size_t kCapacity>
-static int ReadKeys_(
+int ReadKeys_(
     DefReader&              _r,
     const StringView        _key,
     ARRAY<Vec2, kCapacity>& _out)
@@ -1296,6 +1310,7 @@ static int ReadKeys_(
     }
     return count / 2;
 }
+}   // namespace
 
 void ParseBigShieeCfg(
     DefReader& _r,

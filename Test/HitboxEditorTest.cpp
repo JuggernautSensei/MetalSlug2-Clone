@@ -8,14 +8,16 @@
 #include "Core/AssetPath.h"
 #include "Editor/HitboxEditor.h"
 
-[[nodiscard]] static String ReadAllText_(
+namespace
+{
+[[nodiscard]] String ReadAllText_(
     const FilePath& _path)
 {
     std::ifstream file { _path, std::ios::binary };
     return String { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
 }
 
-[[nodiscard]] static int FindEntry_(
+[[nodiscard]] int FindEntry_(
     const HitboxDocument& _doc,
     const StringView      _owner,
     const StringView      _label)
@@ -30,6 +32,7 @@
     }
     return -1;
 }
+}   // namespace
 
 TEST(HitboxEditorTest, UneditedTuningAndDefsSaveByteIdentical)
 {

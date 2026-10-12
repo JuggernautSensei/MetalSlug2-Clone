@@ -6,11 +6,14 @@
 #include "Base/Math.h"
 #include "Base/Types.h"
 
-[[nodiscard]] static size_t StrideOf_(
+namespace
+{
+[[nodiscard]] size_t StrideOf_(
     const int _width)
 {
     return (static_cast<size_t>(_width) + 7) / 8;
 }
+}   // namespace
 
 GroundMap GroundMap::MakeFromBits(
     const int                 _width,

@@ -19,7 +19,9 @@ constexpr int kSmokeInterval  = 16;
 constexpr int kFireInterval   = 11;
 constexpr int kHitAgeNone     = -1;
 
-[[nodiscard]] static PhysicsTuning MakePhysicsTuning_(
+namespace
+{
+[[nodiscard]] PhysicsTuning MakePhysicsTuning_(
     const SlugMoveTuning& _move)
 {
     PhysicsTuning tuning;
@@ -33,7 +35,7 @@ constexpr int kHitAgeNone     = -1;
 }
 
 // -180..180 으로 접은 각도 차이
-[[nodiscard]] static float WrapDegree_(
+[[nodiscard]] float WrapDegree_(
     const float _degree)
 {
     float value = std::fmod(_degree + 180.f, 360.f);
@@ -45,7 +47,7 @@ constexpr int kHitAgeNone     = -1;
 }
 
 template<typename T>
-static void HashBytes_(
+void HashBytes_(
     uint64_t& _hash,
     const T&  _value)
 {
@@ -59,7 +61,7 @@ static void HashBytes_(
 }
 
 // 연기/불꽃이 올라오는 자리 (차량 몸통 위쪽 여러 점을 번갈아 쓴다)
-[[nodiscard]] static Vec2 GetDamageFxOffset_(
+[[nodiscard]] Vec2 GetDamageFxOffset_(
     const int _index)
 {
     static constexpr ARRAY<Vec2, 4> kOffsets = {
@@ -72,6 +74,7 @@ static void HashBytes_(
     };
     return kOffsets[static_cast<size_t>(_index) % kOffsets.size()];
 }
+}   // namespace
 
 void SlugVehicle::Init(
     const SlugTuning& _tuning,

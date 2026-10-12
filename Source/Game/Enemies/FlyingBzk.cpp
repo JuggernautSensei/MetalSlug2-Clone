@@ -11,7 +11,9 @@ enum class eFlyingState
     Shot
 };
 
-[[nodiscard]] static bool IsOnScreen_(
+namespace
+{
+[[nodiscard]] bool IsOnScreen_(
     const Enemy&    _e,
     const EnemyEnv& _env)
 {
@@ -19,7 +21,7 @@ enum class eFlyingState
     return _env.ctx.cameraView.Contains(center);
 }
 
-static void UpdatePosture_(
+void UpdatePosture_(
     Enemy&              _e,
     const FlyingBzkCfg& _cfg,
     const EnemyEnv&     _env)
@@ -37,7 +39,7 @@ static void UpdatePosture_(
     }
 }
 
-static void Go_(
+void Go_(
     Enemy&             _e,
     const EnemyDef&    _def,
     const eFlyingState _state)
@@ -47,7 +49,7 @@ static void Go_(
     SetClip(_e, _state == eFlyingState::Shot ? cfg.clipShot[_e.aux2] : cfg.clipReady[_e.aux2], true);
 }
 
-static void Init_(
+void Init_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&)
@@ -58,7 +60,7 @@ static void Init_(
     Go_(_e, _def, eFlyingState::Descend);
 }
 
-static void Tick_(
+void Tick_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -155,7 +157,7 @@ static void Tick_(
     }
 }
 
-static void OnDeath_(
+void OnDeath_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -165,7 +167,7 @@ static void OnDeath_(
 }
 
 // 낙하 인질 (bNoHurtbox) 은 판정 상자를 등록하지 않아 총알/폭발이 닿지 않는다. 일반 낙하산 병은 기본 판정 그대로
-static void RegisterHurtboxes_(
+void RegisterHurtboxes_(
     const Enemy&    _e,
     const EnemyDef& _def,
     CombatSystem&   _combat)
@@ -181,6 +183,7 @@ static void RegisterHurtboxes_(
     hurtbox.accepts = AcceptsFor(_def.bHuman);
     _combat.AddHurtbox(hurtbox);
 }
+}   // namespace
 
 const BehaviorOps kFlyingBzkOps = {
     .init              = &Init_,

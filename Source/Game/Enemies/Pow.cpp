@@ -16,8 +16,10 @@ enum class ePowState
     Run
 };
 
+namespace
+{
 // 외형 변형 클립 (aiVariant 1..3). 변형에 해당 슬롯이 없으면 기본 클립을 쓴다
-[[nodiscard]] static int VariantClip_(
+[[nodiscard]] int VariantClip_(
     const Enemy&  _e,
     const PowCfg& _c,
     const int     _slot,
@@ -35,7 +37,7 @@ enum class ePowState
     return _base;
 }
 
-static void Go_(
+void Go_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
@@ -85,14 +87,14 @@ static void Go_(
 }
 
 // 플레이어 몸통 박스와 겹치는가 (공중 낙하 중에도 구출 접촉으로 쓴다)
-static bool TouchingPlayer_(
+bool TouchingPlayer_(
     Enemy&    _e,
     EnemyEnv& _env)
 {
     return _env.ctx.player.bAlive && _e.body.GetBox().Overlaps(_env.ctx.player.bodyBox);
 }
 
-static void Init_(
+void Init_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -101,7 +103,7 @@ static void Init_(
     Go_(_e, _def, _env, ePowState::Stuck);
 }
 
-static void Tick_(
+void Tick_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -246,7 +248,7 @@ static void Tick_(
     }
 }
 
-static bool OnHit_(
+bool OnHit_(
     Enemy& _e,
     const EnemyDef&,
     EnemyEnv& _env,
@@ -260,7 +262,7 @@ static bool OnHit_(
     return true;
 }
 
-static void RegisterHurtboxes_(
+void RegisterHurtboxes_(
     const Enemy&    _e,
     const EnemyDef& _def,
     CombatSystem&   _combat)
@@ -275,6 +277,7 @@ static void RegisterHurtboxes_(
     hurtbox.owner = _e.id;
     _combat.AddHurtbox(hurtbox);
 }
+}   // namespace
 
 const BehaviorOps kPowOps = {
     .init              = &Init_,

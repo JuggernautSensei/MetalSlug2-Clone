@@ -20,7 +20,9 @@ constexpr int         kFlameHeadTicks    = 2;      // 머리/반복 프레임 �
 constexpr float       kFlameFadeTicks    = 8.f;    // 사거리 끝 8틱 동안 Fade 재생
 constexpr float       kFlameForwardShift = 24.f;   // 불꽃 중심을 총구보다 앞으로 (큰 프레임이 총을 가리지 않게)
 
-[[nodiscard]] static const AnimFrame* PickFlameFrame_(
+namespace
+{
+[[nodiscard]] const AnimFrame* PickFlameFrame_(
     const AnimationLibrary* _pAnims,
     const Bullet&           _bullet)
 {
@@ -55,7 +57,7 @@ constexpr float       kFlameForwardShift = 24.f;   // 불꽃 중심을 총구보
     return &pClip->frames[static_cast<size_t>(kFlameHeadFrames + loopStep)];
 }
 
-[[nodiscard]] static const AnimFrame* PickClipFrame_(
+[[nodiscard]] const AnimFrame* PickClipFrame_(
     const AnimationLibrary* _pAnims,
     const String&           _name,
     const int               _ageTicks,
@@ -70,6 +72,7 @@ constexpr float       kFlameForwardShift = 24.f;   // 불꽃 중심을 총구보
     const int index = static_cast<int>(static_cast<float>(_ageTicks) * kTickSec / pClip->frameDuration);
     return &pClip->frames[static_cast<size_t>(_bLoop ? index % count : std::min(index, count - 1))];
 }
+}   // namespace
 
 bool SubmitPlayerBullet(
     SpriteBatch&            _sprites,

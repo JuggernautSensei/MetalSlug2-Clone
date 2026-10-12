@@ -18,7 +18,9 @@
 
 constexpr float kCamLeft = 1000.f;
 
-static void LoadBossLib_(
+namespace
+{
+void LoadBossLib_(
     EnemyRig& _rig)
 {
     String                  message;
@@ -27,7 +29,7 @@ static void LoadBossLib_(
     _rig.Lib() = lib.Take();
 }
 
-[[nodiscard]] static EnemyHandle SpawnBoss_(
+[[nodiscard]] EnemyHandle SpawnBoss_(
     EnemyRig& _rig)
 {
     SpawnParams params;
@@ -36,14 +38,14 @@ static void LoadBossLib_(
     return _rig.Spawn("bigshiee", { kCamLeft + 300.f, 378.f }, params);
 }
 
-[[nodiscard]] static uint32_t PartOwner_(
+[[nodiscard]] uint32_t PartOwner_(
     const EnemyHandle _handle,
     const int         _part)
 {
     return MakePartOwner(_handle.id, static_cast<uint32_t>(_part));
 }
 
-static void KillAllTurrets_(
+void KillAllTurrets_(
     EnemyRig&         _rig,
     const EnemyHandle _boss)
 {
@@ -54,6 +56,7 @@ static void KillAllTurrets_(
         }
     }
 }
+}   // namespace
 
 TEST(BigShiee, LoadsDefinitionWithSevenTurretsFacingRight)
 {
@@ -482,8 +485,10 @@ TEST(BigShiee, ChuteDropsLandInsideTheScrollingViewNearTheLeftEdge)
 
 // ---- 주포 머리 (yaw 추적 / 발사 각도 == 사격 행 == 미사일 스프라이트) ----
 
+namespace
+{
 // 포탑을 다 부수고 주포 전개가 시작되기 직전까지 진행한다 (플레이어는 _playerFeet)
-[[nodiscard]] static EnemyHandle StartCannon_(
+[[nodiscard]] EnemyHandle StartCannon_(
     EnemyRig&  _rig,
     const Vec2 _playerFeet)
 {
@@ -496,7 +501,7 @@ TEST(BigShiee, ChuteDropsLandInsideTheScrollingViewNearTheLeftEdge)
 }
 
 // 플레이어를 보스 포구에서 _deg 방향 (수직 아래 0, 오른쪽 +) 의 지면 위 한 점으로 옮긴다
-static void PlacePlayerAtAngle_(
+void PlacePlayerAtAngle_(
     EnemyRig&         _rig,
     const EnemyHandle _boss,
     const float       _deg)
@@ -509,19 +514,20 @@ static void PlacePlayerAtAngle_(
     _rig.SetPlayer({ muzzle.x + std::tan(_deg * 3.14159265f / 180.f) * dy, feetY });
 }
 
-static int CannonYaw_(
+int CannonYaw_(
     const EnemyRig&   _rig,
     const EnemyHandle _boss)
 {
     return _rig.E(_boss)->ext[kBigShieeExtCannonYaw];
 }
 
-static eBigShieeCannonMode CannonMode_(
+eBigShieeCannonMode CannonMode_(
     const EnemyRig&   _rig,
     const EnemyHandle _boss)
 {
     return static_cast<eBigShieeCannonMode>(_rig.E(_boss)->ext[kBigShieeExtCannonMode]);
 }
+}   // namespace
 
 TEST(BigShiee, CannonHeadYawFollowsThePlayerSide)
 {
@@ -841,13 +847,16 @@ TEST(BigShieeSync, LidOpensFirstThenCannonRisesThenMissilesFireOnFootageCadence)
 
 // ---- 카메라 예산 (아레나 끝) + 선체 왕복 ----
 
-[[nodiscard]] static float BossScreenX_(
+namespace
+{
+[[nodiscard]] float BossScreenX_(
     const EnemyRig&   _rig,
     const EnemyHandle _boss,
     const float       _camLeft)
 {
     return _rig.E(_boss)->body.position.x - _camLeft;
 }
+}   // namespace
 
 TEST(BigShieeScroll, StopsAfterBudgetThenShuttles)
 {
@@ -942,7 +951,9 @@ TEST(BigShieeScroll, ReversesOnceAfterTheCannonDeploys)
 
 // ---- 포탑 조준 (플레이어 쪽으로 머리를 돌려 Shot1/2/3) ----
 
-[[nodiscard]] static int ExpectedAimPos_(
+namespace
+{
+[[nodiscard]] int ExpectedAimPos_(
     const Enemy&             _boss,
     const BigShieeCfg&       _c,
     const BigShieeTurretCfg& _turret,
@@ -957,7 +968,7 @@ TEST(BigShieeScroll, ReversesOnceAfterTheCannonDeploys)
 }
 
 // 플레이어 x = 선체 원점 + _anchorX. 포탑이 Shot 에 들어갈 때마다 머리 위치가 플레이어 쪽 구간과 맞는지 보고, 본 위치별 (0 / 4 / 8) 횟수를 돌려준다
-[[nodiscard]] static ARRAY<int, 3> RunTurretAim_(
+[[nodiscard]] ARRAY<int, 3> RunTurretAim_(
     const float _anchorX,
     float&      _outShellVx)
 {
@@ -1001,6 +1012,7 @@ TEST(BigShieeScroll, ReversesOnceAfterTheCannonDeploys)
     }
     return seen;
 }
+}   // namespace
 
 TEST(BigShieeTurretAim, FacesPlayerSideLeft)
 {
@@ -1141,8 +1153,10 @@ TEST(BigShieeCasing, HopsSlightlyThenFallsToTheGroundLineAtTwoPointFourScale)
     EXPECT_FLOAT_EQ(missile.scale, 1.f) << "미사일은 원래 크기";
 }
 
+namespace
+{
 // 사용자가 모션 창에서 고치는 weapons.missile.muzzle 이 실제 발사 위치다: 값을 (dx, dy) 옮기면 모든 사격 행에서 첫 위치가 정확히 (dx*facing, dy) 만큼 옮겨 간다
-[[nodiscard]] static Vec2 FirstMissileAt_(
+[[nodiscard]] Vec2 FirstMissileAt_(
     const float _dx,
     const float _dy,
     const float _deg,
@@ -1170,6 +1184,7 @@ TEST(BigShieeCasing, HopsSlightlyThenFallsToTheGroundLineAtTwoPointFourScale)
     }
     return { -9999.f, -9999.f };
 }
+}   // namespace
 
 TEST(BigShieeMissile, WeaponMuzzleIsTheRealLaunchOffsetForEveryRow)
 {

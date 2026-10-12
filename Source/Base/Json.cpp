@@ -6,7 +6,9 @@
 
 #include "Base/PhaseTimer.h"
 
-[[nodiscard]] static yyjson_read_flag MakeReadFlags_(
+namespace
+{
+[[nodiscard]] yyjson_read_flag MakeReadFlags_(
     const eJsonLoadOption _option)
 {
     yyjson_read_flag flags = YYJSON_READ_ALLOW_BOM;
@@ -16,6 +18,7 @@
     }
     return flags;
 }
+}   // namespace
 
 JsonReader::JsonReader(
     yyjson_val* _pValue)

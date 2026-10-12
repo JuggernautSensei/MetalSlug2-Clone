@@ -15,14 +15,16 @@ constexpr float    kStairAnchorX = 2400.f;   // 평지 길이 (3000) 안에서 �
 constexpr uint32_t kStairTag     = 0x42555300u;
 constexpr int      kStateParked  = 0;   // Bus.cpp 의 eBusState 순서
 
-[[nodiscard]] static SpawnParams BusParams_()
+namespace
+{
+[[nodiscard]] SpawnParams BusParams_()
 {
     SpawnParams params;
     params.facing = -1;
     return params;
 }
 
-[[nodiscard]] static std::vector<const Enemy*> StairSoldiers_(
+[[nodiscard]] std::vector<const Enemy*> StairSoldiers_(
     VehicleRig& _rig)
 {
     std::vector<const Enemy*> out;
@@ -35,6 +37,7 @@ constexpr int      kStateParked  = 0;   // Bus.cpp 의 eBusState 순서
     }
     return out;
 }
+}   // namespace
 
 TEST(Bus, StaysAtItsSpawnAnchorWithoutSlidingIn)
 {
@@ -187,11 +190,14 @@ TEST(Bus, BazookaSoldiersClimbTheStairsToTheRoofAndFireRockets)
     EXPECT_TRUE(bFiredRocket) << "바주카병이 버스 위에서 플레이어를 향해 로켓을 쏴야 한다";
 }
 
-[[nodiscard]] static float RoofY_(
+namespace
+{
+[[nodiscard]] float RoofY_(
     VehicleRig& _rig)
 {
     return kGround + _rig.Lib().Get(_rig.Lib().FindIndex("bus")).bus.roofTop.y;
 }
+}   // namespace
 
 TEST(Bus, StairSoldiersClimbToTheRoofWithoutGettingStuck)
 {

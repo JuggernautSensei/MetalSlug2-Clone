@@ -14,8 +14,10 @@
 #include "Game/StateFactory.h"
 #include "Render/Animation.h"
 
+namespace
+{
 // FNV-1a 64: 회귀 기준선 해시 (tick 수, 종료 여부, 상태의 DebugHash 를 섞는다)
-static uint64_t FnvMix(
+uint64_t FnvMix_(
     uint64_t       _hash,
     const uint64_t _value)
 {
@@ -28,7 +30,7 @@ static uint64_t FnvMix(
 }
 
 // 결정적 합성 입력: 오른쪽 이동 + 주기적 점프/사격/폭탄. _flipPeriod > 0 이면 그 주기로 좌우를 번갈아 걷는다.
-static InputFrame MakeScriptedFrame(
+InputFrame MakeScriptedFrame_(
     const uint64_t _tick,
     const uint64_t _flipPeriod)
 {
@@ -41,6 +43,7 @@ static InputFrame MakeScriptedFrame(
     frame.Set(eAction::Bomb, (_tick % 420) == 300);
     return frame;
 }
+}   // namespace
 
 int RunHeadless(
     const int _argc,
@@ -85,7 +88,7 @@ int RunHeadless(
             const uint64_t flipPeriod = std::strtoull(_argv[i + 4], nullptr, 10);
             for (uint64_t tick = 0; tick < ticks; ++tick)
             {
-                data.frames.push_back(MakeScriptedFrame(tick, flipPeriod));
+                data.frames.push_back(MakeScriptedFrame_(tick, flipPeriod));
             }
             if (const Result<void> saved = SaveReplay(_argv[i + 1], data); !saved)
             {
@@ -154,9 +157,9 @@ int RunHeadless(
     }
 
     uint64_t hash = 14695981039346656037ull;
-    hash          = FnvMix(hash, runner.GetTickCount());
-    hash          = FnvMix(hash, runner.IsFinished() ? 1ull : 0ull);
-    hash          = FnvMix(hash, runner.GetState() != nullptr ? runner.GetState()->DebugHash() : 0ull);
+    hash          = FnvMix_(hash, runner.GetTickCount());
+    hash          = FnvMix_(hash, runner.IsFinished() ? 1ull : 0ull);
+    hash          = FnvMix_(hash, runner.GetState() != nullptr ? runner.GetState()->DebugHash() : 0ull);
     std::printf("ticks=%llu finished=%d hash=%016llx\n", static_cast<unsigned long long>(runner.GetTickCount()), runner.IsFinished() ? 1 : 0, static_cast<unsigned long long>(hash));
     if (bExpectFinished && !runner.IsFinished())
     {

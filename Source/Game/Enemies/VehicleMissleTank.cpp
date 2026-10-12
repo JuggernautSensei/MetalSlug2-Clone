@@ -16,13 +16,15 @@ enum class eMissleTankState
 constexpr int kModeDown = 0;
 constexpr int kModeUp   = 1;
 
-[[nodiscard]] static bool IsUp_(
+namespace
+{
+[[nodiscard]] bool IsUp_(
     const Enemy& _e)
 {
     return _e.aux == kModeUp;
 }
 
-[[nodiscard]] static int ClipOf_(
+[[nodiscard]] int ClipOf_(
     const Enemy&         _e,
     const MissleTankCfg& _c)
 {
@@ -36,7 +38,7 @@ constexpr int kModeUp   = 1;
     }
 }
 
-static void Go_(
+void Go_(
     Enemy&                 _e,
     const EnemyDef&        _def,
     const eMissleTankState _state)
@@ -45,7 +47,7 @@ static void Go_(
     SetClip(_e, ClipOf_(_e, _def.missleTank), true);
 }
 
-static void Init_(
+void Init_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -60,7 +62,7 @@ static void Init_(
     }
 }
 
-static void Tick_(
+void Tick_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -137,13 +139,14 @@ static void Tick_(
     (void)StepPhysics(_e, _def, _env);
 }
 
-static void OnDeath_(
+void OnDeath_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
     BeginVehicleDeath(_e, _def, _env, IsUp_(_e) ? _def.missleTank.clipDestroyUp : _def.missleTank.clipDestroyDown);
 }
+}   // namespace
 
 const BehaviorOps kMissleTankOps = {
     .init      = &Init_,

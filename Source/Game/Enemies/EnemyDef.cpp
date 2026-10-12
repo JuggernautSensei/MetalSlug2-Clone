@@ -465,7 +465,10 @@ const EnemyGlobals& EnemyDefLibrary::GetGlobals() const
     return m_globals;
 }
 
-static constexpr ARRAY<const char*, kBigShieeTurretCount> kTurretPartNames = { "turretA", "turretB", "turretC", "turretD", "turretE", "turretF", "turretG" };
+namespace
+{
+constexpr ARRAY<const char*, kBigShieeTurretCount> kTurretPartNames = { "turretA", "turretB", "turretC", "turretD", "turretE", "turretF", "turretG" };
+}   // namespace
 
 void GetEnemyPartSlots(
     EnemyDef&              _def,

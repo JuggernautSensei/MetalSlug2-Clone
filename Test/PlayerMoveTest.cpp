@@ -394,7 +394,9 @@ struct JumpMeasure
     int   ticks = 0;
 };
 
-[[nodiscard]] static JumpMeasure MeasureJump_(
+namespace
+{
+[[nodiscard]] JumpMeasure MeasureJump_(
     Sim&       _sim,
     const bool _bHold)
 {
@@ -414,6 +416,7 @@ struct JumpMeasure
     } while (!_sim.Player().IsGrounded() && ticks < 300);
     return { groundY - minY, ticks };
 }
+}   // namespace
 
 TEST(PlayerJump, HeldJumpApexAndAirTimeFeelRight)
 {
@@ -481,11 +484,14 @@ TEST(PlayerJump, FullAirControl)
     EXPECT_EQ(sim.Player().GetFacing(), -1);
 }
 
+namespace
+{
 // 지면 위 38px 에서 시작하는 Sim: 곧 착지하는 점프 버퍼 시험용
-[[nodiscard]] static Sim MakeLandingSim_()
+[[nodiscard]] Sim MakeLandingSim_()
 {
     return Sim { MakeConfig(MakeFlatGround(), { 100.f, 340.f }) };
 }
+}   // namespace
 
 TEST(PlayerJump, JumpBufferTriggersOnLanding)
 {
@@ -526,13 +532,16 @@ TEST(PlayerJump, JumpBufferBoundaryIsFourTicks)
     EXPECT_EQ(late.Player().GetStats().jumps, 0);
 }
 
-[[nodiscard]] static SandboxConfig MakeLedgeConfig_()
+namespace
+{
+[[nodiscard]] SandboxConfig MakeLedgeConfig_()
 {
     GroundMap ground = GroundMap::MakeEmpty(1600, 448);
     ground.FillRect(0, 378, 399, 447, true);
     ground.FillRect(400, 440, 1599, 447, true);
     return MakeConfig(std::move(ground), { 300.f, 378.f });
 }
+}   // namespace
 
 TEST(PlayerJump, CoyoteJumpWorksShortlyAfterWalkingOffALedge)
 {
@@ -660,7 +669,9 @@ TEST(PlayerJump, WalkingOffALedgeStartsFalling)
     EXPECT_EQ(sim.Player().GetStats().jumps, 0);
 }
 
-[[nodiscard]] static Vector<InputFrame> MakeNoisyScript_(
+namespace
+{
+[[nodiscard]] Vector<InputFrame> MakeNoisyScript_(
     const int      _ticks,
     const uint64_t _seed)
 {
@@ -679,7 +690,7 @@ TEST(PlayerJump, WalkingOffALedgeStartsFalling)
     return frames;
 }
 
-[[nodiscard]] static uint64_t RunScript_(
+[[nodiscard]] uint64_t RunScript_(
     const Vector<InputFrame>& _frames)
 {
     SandboxConfig config = MakeFlatConfig();
@@ -691,6 +702,7 @@ TEST(PlayerJump, WalkingOffALedgeStartsFalling)
     }
     return sim.State().HashState();
 }
+}   // namespace
 
 TEST(PlayerDeterminism, SameScriptTwiceGivesIdenticalStateHash)
 {

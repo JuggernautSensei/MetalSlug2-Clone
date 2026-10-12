@@ -21,13 +21,15 @@
 constexpr float  kMotionPickRadius = 8.f;
 constexpr double kMotionEpsilon    = 0.00005;
 
-static double MotionRound_(
+namespace
+{
+double MotionRound_(
     const double _value)
 {
     return std::round(_value * 10000.0) / 10000.0;
 }
 
-static int MotionKey_(
+int MotionKey_(
     const JsonNode&  _node,
     const StringView _key)
 {
@@ -46,7 +48,7 @@ static int MotionKey_(
     return -1;
 }
 
-static int MotionPath_(
+int MotionPath_(
     const Vector<JsonNode>& _nodes,
     const int               _root,
     const Vector<String>&   _path)
@@ -63,7 +65,7 @@ static int MotionPath_(
     return index;
 }
 
-static Vector<String> MotionJoin_(
+Vector<String> MotionJoin_(
     Vector<String>   _base,
     const StringView _a,
     const StringView _b = {})
@@ -76,7 +78,7 @@ static Vector<String> MotionJoin_(
     return _base;
 }
 
-static void MotionInsertMember_(
+void MotionInsertMember_(
     String&                 _text,
     const Vector<JsonNode>& _nodes,
     const int               _object,
@@ -92,7 +94,7 @@ static void MotionInsertMember_(
     _text.insert(static_cast<size_t>(last.end), ", " + _member);
 }
 
-static bool MotionPatchNumber_(
+bool MotionPatchNumber_(
     String&               _text,
     const Vector<String>& _path,
     const double          _value)
@@ -118,7 +120,7 @@ static bool MotionPatchNumber_(
     return true;
 }
 
-static bool MotionPatchBool_(
+bool MotionPatchBool_(
     String&               _text,
     const Vector<String>& _path,
     const bool            _value)
@@ -139,7 +141,7 @@ static bool MotionPatchBool_(
     return true;
 }
 
-static void MotionCollectParams_(
+void MotionCollectParams_(
     const Vector<JsonNode>& _nodes,
     const int               _object,
     const Vector<String>&   _path,
@@ -181,7 +183,7 @@ static void MotionCollectParams_(
     }
 }
 
-static bool MotionPatchVec2_(
+bool MotionPatchVec2_(
     String&        _text,
     Vector<String> _path,
     const Vec2     _value)
@@ -195,7 +197,7 @@ static bool MotionPatchVec2_(
     return MotionPatchNumber_(_text, _path, static_cast<double>(_value.y));
 }
 
-static String MotionRenderEffects_(
+String MotionRenderEffects_(
     const Vector<WeaponEffect>& _effects)
 {
     String out = "[";
@@ -213,7 +215,7 @@ static String MotionRenderEffects_(
     return out + "]";
 }
 
-static bool MotionSameEffects_(
+bool MotionSameEffects_(
     const Vector<WeaponEffect>& _a,
     const Vector<WeaponEffect>& _b)
 {
@@ -233,7 +235,7 @@ static bool MotionSameEffects_(
     return true;
 }
 
-static bool MotionPatchString_(
+bool MotionPatchString_(
     String&               _text,
     const Vector<String>& _object,
     const StringView      _key,
@@ -266,7 +268,7 @@ static bool MotionPatchString_(
     return true;
 }
 
-static bool MotionPatchEffects_(
+bool MotionPatchEffects_(
     String&                     _text,
     const Vector<String>&       _weapon,
     const Vector<WeaponEffect>& _effects)
@@ -317,6 +319,7 @@ static bool MotionPatchEffects_(
     }
     return true;
 }
+}   // namespace
 
 Result<void> MotionDocument::Load(
     const FilePath& _path)
@@ -399,8 +402,10 @@ bool MotionDocument::ApplyPartDepth(
     return MotionPatchNumber_(m_text, MotionJoin_(part, "depth"), static_cast<double>(_depth)) && MotionPatchNumber_(m_text, MotionJoin_(part, "sort"), static_cast<double>(_sort));
 }
 
+namespace
+{
 // obj 객체의 정수 키 하나: 있으면 제자리 교체, 없고 기본값과 다르면 끼워 넣는다
-static bool MotionSetInt_(
+bool MotionSetInt_(
     String&               _text,
     const Vector<String>& _object,
     const StringView      _key,
@@ -424,6 +429,7 @@ static bool MotionSetInt_(
     }
     return true;
 }
+}   // namespace
 
 bool MotionDocument::SetPartDepth(
     const StringView _def,
@@ -519,7 +525,9 @@ bool MotionDocument::IsDirty() const
     return m_text != m_savedText;
 }
 
-static MotionWeaponValues MotionRead_(
+namespace
+{
+MotionWeaponValues MotionRead_(
     const WeaponDef& _w)
 {
     MotionWeaponValues v;
@@ -531,7 +539,7 @@ static MotionWeaponValues MotionRead_(
     return v;
 }
 
-static bool MotionIsAttackClip_(
+bool MotionIsAttackClip_(
     const String& _name)
 {
     static constexpr ARRAY<const char*, 6> kKeys = { "shot", "ready", "fire", "attack", "throw", "slash" };
@@ -545,17 +553,17 @@ static bool MotionIsAttackClip_(
     return false;
 }
 
-static ImVec4 MotionColor_(
+ImVec4 MotionColor_(
     const RGBA _c)
 {
     return ImVec4 { _c.r / 255.f, _c.g / 255.f, _c.b / 255.f, 1.f };
 }
 
-static const RGBA kMotionMuzzleColor = { 255, 80, 80, 255 };
-static const RGBA kMotionFxColor     = { 255, 200, 40, 255 };
-static const RGBA kMotionEffectColor = { 80, 255, 255, 255 };
+const RGBA kMotionMuzzleColor = { 255, 80, 80, 255 };
+const RGBA kMotionFxColor     = { 255, 200, 40, 255 };
+const RGBA kMotionEffectColor = { 80, 255, 255, 255 };
 
-static EnemyPartDepth* MotionPart_(
+EnemyPartDepth* MotionPart_(
     BusCfg&          _c,
     const StringView _name)
 {
@@ -593,6 +601,7 @@ static EnemyPartDepth* MotionPart_(
     }
     return nullptr;
 }
+}   // namespace
 
 void MotionEditor::SetAnimLibrary(
     const AnimationLibrary* _pAnims)
@@ -704,7 +713,9 @@ void MotionEditor::Save_(
     m_status = std::format("저장됨 {}건 (상속/없는 항목 {}건은 파일 미반영)", saved, skipped);
 }
 
-static const char* MotionParamKo_(
+namespace
+{
+const char* MotionParamKo_(
     const String& _key)
 {
     if (_key == "fireFrame")
@@ -746,7 +757,7 @@ static const char* MotionParamKo_(
     return nullptr;
 }
 
-static String MotionParamPrefix_(
+String MotionParamPrefix_(
     const String& _label)
 {
     size_t end = 0;
@@ -756,6 +767,7 @@ static String MotionParamPrefix_(
     }
     return _label.substr(0, end);
 }
+}   // namespace
 
 void MotionEditor::DrawParams_(
     EnemyLab&     _lab,

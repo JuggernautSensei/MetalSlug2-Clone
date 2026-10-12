@@ -6,7 +6,9 @@
 #include "Base/Math.h"
 #include "Base/Types.h"
 
-static void MixHash_(
+namespace
+{
+void MixHash_(
     uint64_t& _hash,
     const int _value)
 {
@@ -18,6 +20,7 @@ static void MixHash_(
         _hash *= 1'099'511'628'211ull;
     }
 }
+}   // namespace
 
 Vec2 GetDummySize(
     const eDummyKind _kind)

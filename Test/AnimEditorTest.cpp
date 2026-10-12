@@ -9,12 +9,15 @@
 #include "Core/AssetPath.h"
 #include "Editor/AnimEditor.h"
 
-[[nodiscard]] static String ReadAll_(
+namespace
+{
+[[nodiscard]] String ReadAll_(
     const FilePath& _path)
 {
     std::ifstream file { _path, std::ios::binary };
     return String { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
 }
+}   // namespace
 
 TEST(AnimEditorTest, LoadEditSaveReloadOnlyPivotDiffers)
 {
@@ -93,7 +96,9 @@ TEST(AnimEditorTest, LoadEditSaveReloadOnlyPivotDiffers)
     }
 }
 
-static constexpr const char* kHotJson = R"({
+namespace
+{
+constexpr const char* kHotJson = R"({
   "version": 1,
   "animations": {
     "Hot_A": {
@@ -111,13 +116,14 @@ static constexpr const char* kHotJson = R"({
 }
 )";
 
-static void WriteText_(
+void WriteText_(
     const FilePath& _path,
     const String&   _text)
 {
     std::ofstream file { _path, std::ios::binary | std::ios::trunc };
     file << _text;
 }
+}   // namespace
 
 TEST(AnimEditorHotReload, PivotEditAppliesToTheLibraryOnTheNextPoll)
 {

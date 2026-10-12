@@ -9,7 +9,9 @@
 
 constexpr float kDt = kStepSec;
 
-[[nodiscard]] static PhysicsWorld FloorWorld_(
+namespace
+{
+[[nodiscard]] PhysicsWorld FloorWorld_(
     const GroundMap& _ground)
 {
     PhysicsWorld world;
@@ -17,7 +19,7 @@ constexpr float kDt = kStepSec;
     return world;
 }
 
-static void TickItems_(
+void TickItems_(
     ItemWorld&          _items,
     const PhysicsWorld& _world,
     const int           _ticks,
@@ -29,7 +31,7 @@ static void TickItems_(
     }
 }
 
-[[nodiscard]] static bool IsFruit_(
+[[nodiscard]] bool IsFruit_(
     const PropDefLibrary& _lib,
     const String&         _name)
 {
@@ -48,13 +50,13 @@ static void TickItems_(
     return false;
 }
 
-[[nodiscard]] static Aabb PlayerBoxAt_(
+[[nodiscard]] Aabb PlayerBoxAt_(
     const Vec2 _feet)
 {
     return Aabb::FromBottomCenter(_feet, { 24.f, 40.f });
 }
 // 같은 시드로 random_score 그룹에서 20개를 뽑은 이름 나열
-[[nodiscard]] static std::string NamesFromSeed_(
+[[nodiscard]] std::string NamesFromSeed_(
     const uint64_t _seed)
 {
     ItemWorld   items { &GetPropLib(), _seed };
@@ -69,7 +71,7 @@ static void TickItems_(
 }
 
 // 아이템 5개를 떨어뜨려 200틱 진행한 뒤의 상태 해시
-[[nodiscard]] static uint64_t HashAfterSpawn_(
+[[nodiscard]] uint64_t HashAfterSpawn_(
     const uint64_t _seed,
     const char*    _item)
 {
@@ -82,6 +84,7 @@ static void TickItems_(
     TickItems_(items, FloorWorld_(ground), 200);
     return items.HashState();
 }
+}   // namespace
 
 TEST(PropItem, UnknownNameSpawnsNothing)
 {

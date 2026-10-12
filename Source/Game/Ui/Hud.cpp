@@ -7,7 +7,9 @@
 #include "Base/Types.h"
 #include "Game/Player/PlayerController.h"
 
-[[nodiscard]] static HudItem MakeText_(
+namespace
+{
+[[nodiscard]] HudItem MakeText_(
     String           _text,
     const int        _x,
     const int        _y,
@@ -25,7 +27,7 @@
     return item;
 }
 
-[[nodiscard]] static HudItem MakeSprite_(
+[[nodiscard]] HudItem MakeSprite_(
     String    _name,
     const int _centerX,
     const int _centerY,
@@ -39,6 +41,7 @@
     item.scale = _scale;
     return item;
 }
+}   // namespace
 
 String FormatScore(
     const int _score)

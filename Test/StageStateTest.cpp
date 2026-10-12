@@ -59,7 +59,9 @@ private:
     std::unique_ptr<SimRunner> m_runner = nullptr;
 };
 
-[[nodiscard]] static SpawnRequest MakeRequest_(
+namespace
+{
+[[nodiscard]] SpawnRequest MakeRequest_(
     const char*       _def,
     const eEntityKind _kind,
     const Vec2        _position)
@@ -71,7 +73,7 @@ private:
     return request;
 }
 
-[[nodiscard]] static HitEvent MakeHit_(
+[[nodiscard]] HitEvent MakeHit_(
     const SpawnId _target,
     const int     _damage)
 {
@@ -80,6 +82,7 @@ private:
     event.damage = _damage;
     return event;
 }
+}   // namespace
 
 TEST(StageState, LoadsStage0AndStartsAtTheScriptedPlayerStart)
 {

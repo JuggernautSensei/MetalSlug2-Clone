@@ -12,7 +12,9 @@
 using CacheKey = std::pair<const SpriteBatch*, String>;
 using CacheMap = std::map<CacheKey, int>;
 
-[[nodiscard]] static int LoadStandaloneCached_(
+namespace
+{
+[[nodiscard]] int LoadStandaloneCached_(
     GameContext&     _ctx,
     const StringView _name,
     const StringView _file)
@@ -37,6 +39,7 @@ using CacheMap = std::map<CacheKey, int>;
     s_cache.emplace(key, handle);
     return handle;
 }
+}   // namespace
 
 void UiSystem::Init(
     const GameContext& _ctx)

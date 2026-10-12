@@ -8,7 +8,9 @@
 #include "Render/SpriteBatch.h"
 #include "World/Geometry.h"
 
-[[nodiscard]] static bool SegmentHitsGround_(
+namespace
+{
+[[nodiscard]] bool SegmentHitsGround_(
     const GroundMap& _ground,
     const Vec2       _from,
     const Vec2       _to,
@@ -35,7 +37,7 @@
 }
 
 // 발판 윗면을 가로지르는 선분 (낙하 중에만). 가장 먼저 닿는 윗면과 그 교점을 돌려준다
-[[nodiscard]] static bool SegmentHitsPlatform_(
+[[nodiscard]] bool SegmentHitsPlatform_(
     Span<const Platform> _platforms,
     const Vec2           _from,
     const Vec2           _to,
@@ -63,7 +65,7 @@
     return bHit;
 }
 
-[[nodiscard]] static Aabb SweptBox_(
+[[nodiscard]] Aabb SweptBox_(
     const Vec2 _a,
     const Vec2 _b,
     const Vec2 _size)
@@ -72,6 +74,7 @@
         { Min(_a.x, _b.x) - _size.x * 0.5f, Min(_a.y, _b.y) - _size.y * 0.5f },
         { Max(_a.x, _b.x) + _size.x * 0.5f, Max(_a.y, _b.y) + _size.y * 0.5f });
 }
+}   // namespace
 
 void ProjectileSystem::Clear()
 {

@@ -13,7 +13,9 @@ constexpr double kTicksPerSec = 60.0;
 constexpr float kWallDepth   = 64.f;
 constexpr float kWallExtentY = 4000.f;
 
-static void MixU64_(
+namespace
+{
+void MixU64_(
     uint64_t&      _hash,
     const uint64_t _value)
 {
@@ -24,7 +26,7 @@ static void MixU64_(
     }
 }
 
-static void MixFloat_(
+void MixFloat_(
     uint64_t&   _hash,
     const float _value)
 {
@@ -32,6 +34,7 @@ static void MixFloat_(
     std::memcpy(&bits, &_value, sizeof(bits));
     MixU64_(_hash, bits);
 }
+}   // namespace
 
 StageRunner::StageRunner(
     const StageData& _data,

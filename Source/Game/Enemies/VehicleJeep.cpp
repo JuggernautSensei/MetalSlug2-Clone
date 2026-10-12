@@ -19,7 +19,9 @@ enum class eJeepState
     TurnAfterShot
 };
 
-[[nodiscard]] static int ClipOf_(
+namespace
+{
+[[nodiscard]] int ClipOf_(
     const Enemy&   _e,
     const JeepCfg& _c)
 {
@@ -38,7 +40,7 @@ enum class eJeepState
     }
 }
 
-static void Go_(
+void Go_(
     Enemy&           _e,
     const EnemyDef&  _def,
     const eJeepState _state)
@@ -47,14 +49,14 @@ static void Go_(
     SetClip(_e, ClipOf_(_e, _def.jeep), true);
 }
 
-[[nodiscard]] static bool Done_(
+[[nodiscard]] bool Done_(
     const Enemy&    _e,
     const EnemyDef& _def)
 {
     return _e.clip >= 0 && _e.stateTicks >= _def.GetClip(_e.clip).GetDurationTicks();
 }
 
-[[nodiscard]] static float TargetX_(
+[[nodiscard]] float TargetX_(
     const Enemy&   _e,
     const JeepCfg& _c,
     const Aabb&    _view)
@@ -63,7 +65,7 @@ static void Go_(
 }
 
 // 주차 지점(가장자리 + edgeInset) 이거나 그보다 바깥이면 그쪽 가장자리 (-1 왼쪽 / +1 오른쪽), 화면 안쪽이면 0
-[[nodiscard]] static int ParkSide_(
+[[nodiscard]] int ParkSide_(
     const Enemy&   _e,
     const JeepCfg& _c,
     const Aabb&    _view)
@@ -76,14 +78,14 @@ static void Go_(
     return x >= _view.max.x - _c.edgeInset - _c.targetTol ? 1 : 0;
 }
 
-[[nodiscard]] static bool PlayerOnFireSide_(
+[[nodiscard]] bool PlayerOnFireSide_(
     const Enemy&    _e,
     const EnemyEnv& _env)
 {
     return DxToPlayer(_e, _env) * static_cast<float>(_e.facing) < 0.f;
 }
 
-static void Init_(
+void Init_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -93,7 +95,7 @@ static void Init_(
     Go_(_e, _def, eJeepState::Wait);
 }
 
-static void Tick_(
+void Tick_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
@@ -238,13 +240,14 @@ static void Tick_(
     (void)StepPhysics(_e, _def, _env);
 }
 
-static void OnDeath_(
+void OnDeath_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
     BeginVehicleDeath(_e, _def, _env, _def.jeep.clipDestroy);
 }
+}   // namespace
 
 const BehaviorOps kJeepOps = {
     .init      = &Init_,

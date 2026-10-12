@@ -5,7 +5,9 @@
 #include "Base/Types.h"
 #include "VehicleTestUtil.h"
 
-[[nodiscard]] static const EnemyDef& Need_(
+namespace
+{
+[[nodiscard]] const EnemyDef& Need_(
     const EnemyDefLibrary& _lib,
     const char*            _name)
 {
@@ -16,7 +18,7 @@
 }
 
 // 지연(delaySec > 0) 이펙트가 몇 개인지 센다
-[[nodiscard]] static int CountDelayed_(
+[[nodiscard]] int CountDelayed_(
     const EnemyDef& _def)
 {
     int count = 0;
@@ -27,7 +29,7 @@
     return count;
 }
 
-static void ExpectClipExists_(
+void ExpectClipExists_(
     const AnimationLibrary& _anims,
     const String&           _name,
     const char*             _owner)
@@ -43,6 +45,7 @@ static void ExpectClipExists_(
         EXPECT_TRUE(_anims.IsValid(_anims.Find(name))) << _owner << ": " << name.c_str();
     }
 }
+}   // namespace
 
 TEST(VehicleDefs, LoadsTheDefsDirectoryWithAllFourVehiclesAndTheirProjectiles)
 {

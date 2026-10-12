@@ -15,7 +15,9 @@
 #include "Render/SpriteBatch.h"
 #include "Render/SpriteLibrary.h"
 
-[[nodiscard]] static const TrainingDummy& DummyOf_(
+namespace
+{
+[[nodiscard]] const TrainingDummy& DummyOf_(
     Sim&           _sim,
     const uint32_t _id)
 {
@@ -25,11 +27,12 @@
     return pDummy ? *pDummy : kEmpty;
 }
 
-[[nodiscard]] static size_t BulletsOf_(
+[[nodiscard]] size_t BulletsOf_(
     Sim& _sim)
 {
     return _sim.State().GetProjectiles().GetBullets().size();
 }
+}   // namespace
 
 constexpr ARRAY<int, 4> kWeapons = {
     static_cast<int>(eWeapon::Hmg),
@@ -38,8 +41,10 @@ constexpr ARRAY<int, 4> kWeapons = {
     static_cast<int>(eWeapon::Flame),
 };
 
+namespace
+{
 // 무기를 집고 90틱 동안 쏜 뒤의 상태 해시
-[[nodiscard]] static uint64_t HashAfterShooting_(
+[[nodiscard]] uint64_t HashAfterShooting_(
     const eWeapon _weapon)
 {
     Sim sim;
@@ -49,13 +54,14 @@ constexpr ARRAY<int, 4> kWeapons = {
     return sim.State().HashState();
 }
 
-[[nodiscard]] static int FireIntervalOf_(
+[[nodiscard]] int FireIntervalOf_(
     const Tuning& _tuning,
     const eWeapon _weapon)
 {
     const WeaponTuning& weapon = _tuning.weapons.Get(_weapon);
     return Max(weapon.fireIntervalTicks, weapon.holdRepeatTicks);
 }
+}   // namespace
 
 TEST(PlayerWeapon, EveryWeaponFiresAtItsTunedIntervalWhenTapped)
 {
@@ -460,7 +466,9 @@ TEST(PlayerWeapon, DeterminismHashIsStableAndSeesTheWeapon)
     EXPECT_NE(HashAfterShooting_(eWeapon::Hmg), HashAfterShooting_(eWeapon::Shotgun));
 }
 
-[[nodiscard]] static Bullet MakeVisualBullet_(
+namespace
+{
+[[nodiscard]] Bullet MakeVisualBullet_(
     const eWeapon _weapon,
     const Vec2    _velocity,
     const int     _ageTicks,
@@ -477,6 +485,7 @@ TEST(PlayerWeapon, DeterminismHashIsStableAndSeesTheWeapon)
     bullet.range      = _range;
     return bullet;
 }
+}   // namespace
 
 // 파이어샷 회귀: 원작 시트 클립(FlameShot_Orig_*)이 베이크 산출물에 있고, 머리/반복/페이드 모든 단계가 그려져야 한다.
 // (시트를 바꾼 뒤 Assets 의 anim.json 에 없으면 클립이 없어 불꽃이 보이지 않았다)
@@ -581,7 +590,9 @@ struct RasterFixture_
     }
 };
 
-[[nodiscard]] static PixelBox_ DrawAndMeasure_(
+namespace
+{
+[[nodiscard]] PixelBox_ DrawAndMeasure_(
     RasterFixture_&         _fx,
     const AnimationLibrary& _anims,
     const eWeapon           _weapon,
@@ -625,6 +636,7 @@ struct RasterFixture_
     }
     return box;
 }
+}   // namespace
 
 // 파이어샷이 실제로 화면에 칠해지는가 (머리/반복/페이드 세 단계 모두 픽셀이 남는다)
 TEST(PlayerWeaponVisual, FlameShotIsRasterisedAtEveryStage)
@@ -661,8 +673,10 @@ TEST(PlayerWeaponVisual, RocketFiredUpIsDrawnTallNotWide)
     EXPECT_GT(fwd.Width(), fwd.Height());
 }
 
+namespace
+{
 // 파이어샷 입자가 나온 틱 목록 (입자는 스폰된 틱에 ageTicks == 1 로 보인다)
-[[nodiscard]] static std::vector<int> FlameSpawnTicks_(
+[[nodiscard]] std::vector<int> FlameSpawnTicks_(
     Sim&      _sim,
     const int _ticks)
 {
@@ -682,7 +696,7 @@ TEST(PlayerWeaponVisual, RocketFiredUpIsDrawnTallNotWide)
 }
 
 // 같은 입력으로 파이어샷을 쏜 뒤 _ticks 틱 시점의 탄 목록 (결정성 비교용)
-[[nodiscard]] static std::vector<Bullet> FlameBulletsAfter_(
+[[nodiscard]] std::vector<Bullet> FlameBulletsAfter_(
     const int _ticks)
 {
     Sim sim;
@@ -692,6 +706,7 @@ TEST(PlayerWeaponVisual, RocketFiredUpIsDrawnTallNotWide)
     const Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
     return std::vector<Bullet>(bullets.begin(), bullets.end());
 }
+}   // namespace
 
 // 샷건 판정은 조준 방향에 따라 돈다: 가로는 가로로 길고, 위/아래는 세로로 길고, 대각은 큰 쪽 기준 정사각
 TEST(PlayerWeapon, ShotgunHitboxTurnsWithTheAimDirection)

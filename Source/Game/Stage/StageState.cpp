@@ -26,7 +26,9 @@ constexpr int   kAutoTowerDamage    = 24;      // bAutoDamage: 망루 한 방 (�
 constexpr float kAutoTowerMarginPx  = 120.f;   // 화면 오른쪽에서 이만큼 안쪽에 들어오면 친다
 constexpr int   kAutoTurretInterval = 12;      // bAutoDamage: 포탑 단계 피해 간격 (틱). 주포는 6 틱
 
-[[nodiscard]] static CameraTuning MakeCameraTuning_(
+namespace
+{
+[[nodiscard]] CameraTuning MakeCameraTuning_(
     const CameraSettings& _settings)
 {
     CameraTuning tuning = {};
@@ -36,7 +38,7 @@ constexpr int   kAutoTurretInterval = 12;      // bAutoDamage: 포탑 단계 피
     return tuning;
 }
 
-[[nodiscard]] static Vec2 Lerp_(
+[[nodiscard]] Vec2 Lerp_(
     const Vec2  _a,
     const Vec2  _b,
     const float _t)
@@ -44,14 +46,14 @@ constexpr int   kAutoTurretInterval = 12;      // bAutoDamage: 포탑 단계 피
     return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
 }
 
-[[nodiscard]] static Vec2 ToScreen_(
+[[nodiscard]] Vec2 ToScreen_(
     const Vec2 _world,
     const Vec2 _camera)
 {
     return { std::floor(_world.x - _camera.x), std::floor(_world.y - _camera.y) };
 }
 
-static void DrawBox_(
+void DrawBox_(
     Renderer&   _renderer,
     const Aabb& _box,
     const Vec2  _camera,
@@ -62,7 +64,7 @@ static void DrawBox_(
     _renderer.DrawRect(topLeft, { Max(1.f, bottomRight.x - topLeft.x), Max(1.f, bottomRight.y - topLeft.y) }, _color);
 }
 
-[[nodiscard]] static RGBA GetPlaceholderColor_(
+[[nodiscard]] RGBA GetPlaceholderColor_(
     const PlaceholderEntity& _entity)
 {
     if (IsHitFlashOn(_entity.flashTicks))
@@ -76,7 +78,7 @@ static void DrawBox_(
     return _entity.kind == eEntityKind::Npc ? RGBA { 120, 170, 230, 255 } : RGBA { 96, 120, 70, 255 };
 }
 
-[[nodiscard]] static String JoinIds_(
+[[nodiscard]] String JoinIds_(
     const Vector<String>& _ids)
 {
     String joined = {};
@@ -90,6 +92,7 @@ static void DrawBox_(
     }
     return joined;
 }
+}   // namespace
 
 StageState::StageState() = default;
 

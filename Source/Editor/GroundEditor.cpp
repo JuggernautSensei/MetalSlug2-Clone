@@ -27,7 +27,9 @@ constexpr float kGroundMaxZoom    = 16.f;
 constexpr float kGroundGridZoom   = 8.f;
 constexpr int   kGroundMaxBrush   = 16;
 
-static void AppendBigEndian32_(
+namespace
+{
+void AppendBigEndian32_(
     Vector<uint8_t>& _out,
     const uint32_t   _value)
 {
@@ -37,7 +39,7 @@ static void AppendBigEndian32_(
     _out.push_back(static_cast<uint8_t>(_value));
 }
 
-static void AppendPngChunk_(
+void AppendPngChunk_(
     Vector<uint8_t>&       _out,
     const char*            _type,
     const Vector<uint8_t>& _body)
@@ -54,7 +56,7 @@ static void AppendPngChunk_(
 }
 
 // 원본 마스크와 같은 8비트 팔레트 PNG: 인덱스 0 = 공기(흰색), 1 = 땅(파랑).
-[[nodiscard]] static bool EncodePalettePng_(
+[[nodiscard]] bool EncodePalettePng_(
     const Vector<uint8_t>& _pixels,
     const int              _width,
     const int              _height,
@@ -94,7 +96,7 @@ static void AppendPngChunk_(
     return true;
 }
 
-[[nodiscard]] static bool ReadWholeFile_(
+[[nodiscard]] bool ReadWholeFile_(
     const FilePath&        _path,
     Vector<unsigned char>& _out)
 {
@@ -112,6 +114,7 @@ static void AppendPngChunk_(
     file.seekg(0, std::ios::beg);
     return static_cast<bool>(file.read(reinterpret_cast<char*>(_out.data()), size));
 }
+}   // namespace
 
 Result<void> GroundMaskDocument::Load(
     const FilePath& _path)

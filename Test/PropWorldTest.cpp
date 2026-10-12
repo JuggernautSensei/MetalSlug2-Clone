@@ -13,13 +13,15 @@
 
 constexpr float kDt = kStepSec;
 
-[[nodiscard]] static float Width_(
+namespace
+{
+[[nodiscard]] float Width_(
     const Aabb& _box)
 {
     return _box.max.x - _box.min.x;
 }
 
-static void HitN_(
+void HitN_(
     PropWorld&       _world,
     const PropHandle _id,
     const int        _times,
@@ -33,7 +35,7 @@ static void HitN_(
     }
 }
 
-static void TickN_(
+void TickN_(
     PropWorld&             _world,
     const int              _ticks,
     const PropTickContext* _pCtx = nullptr)
@@ -49,7 +51,7 @@ static void TickN_(
     }
 }
 
-[[nodiscard]] static bool HasEvent_(
+[[nodiscard]] bool HasEvent_(
     const Vector<PropEvent>& _events,
     const ePropEventKind     _kind)
 {
@@ -63,7 +65,7 @@ static void TickN_(
     return false;
 }
 
-[[nodiscard]] static int CountEvents_(
+[[nodiscard]] int CountEvents_(
     const Vector<PropEvent>& _events,
     const ePropEventKind     _kind)
 {
@@ -75,7 +77,7 @@ static void TickN_(
     return n;
 }
 
-[[nodiscard]] static const Vector<HitEvent>* ResolveHitbox_(
+[[nodiscard]] const Vector<HitEvent>* ResolveHitbox_(
     CombatSystem& _combat,
     PropWorld&    _world,
     const Hitbox& _hitbox)
@@ -89,7 +91,7 @@ static void TickN_(
 }
 
 // 트럭 6대와 보트 1대를 세우고 보트를 부순 뒤 120틱 진행한 상태 해시
-[[nodiscard]] static uint64_t HashAfterTrucks_(
+[[nodiscard]] uint64_t HashAfterTrucks_(
     const uint64_t _seed)
 {
     PropWorld world { &GetPropLib(), _seed };
@@ -102,6 +104,7 @@ static void TickN_(
     TickN_(world, 120);
     return world.HashState();
 }
+}   // namespace
 
 TEST(PropWorld, UnknownDefSpawnsNothing)
 {

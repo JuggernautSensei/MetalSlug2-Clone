@@ -6,7 +6,9 @@
 #include "Base/Types.h"
 #include "Render/SpriteBatch.h"
 
-[[nodiscard]] static AnimFrame MakeFrame_(
+namespace
+{
+[[nodiscard]] AnimFrame MakeFrame_(
     const int _w,
     const int _h,
     const int _pivotX,
@@ -21,7 +23,7 @@
 }
 
 // 정렬 시험용 명령 하나를 큐에 넣는다. seq 는 제출 순서, frame.x 는 식별용 태그
-static void AddCommand_(
+void AddCommand_(
     Vector<SpriteCommand>& _commands,
     const int              _depth,
     const int              _key,
@@ -34,6 +36,7 @@ static void AddCommand_(
     command.frame.x = _tag;
     _commands.push_back(command);
 }
+}   // namespace
 
 TEST(SpriteDest, PivotIsSubtractedFromSnappedOrigin)
 {
@@ -203,7 +206,9 @@ struct SoftwareTarget
     }
 };
 
-[[nodiscard]] static Vector<uint8_t> MakeAtlas4x4_()
+namespace
+{
+[[nodiscard]] Vector<uint8_t> MakeAtlas4x4_()
 {
     Vector<uint8_t> pixels(4 * 4 * 4);
     for (int y = 0; y < 4; ++y)
@@ -219,6 +224,7 @@ struct SoftwareTarget
     }
     return pixels;
 }
+}   // namespace
 
 constexpr uint32_t kRed   = 0xFF0000;
 constexpr uint32_t kGreen = 0x00FF00;

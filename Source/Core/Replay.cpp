@@ -9,8 +9,10 @@
 constexpr ARRAY<char, 4> kMagic   = { 'S', 'R', 'E', 'P' };
 constexpr uint32_t       kVersion = 1;
 
+namespace
+{
 template<typename T>
-static void Append_(
+void Append_(
     Vector<uint8_t>& _bytes,
     const T          _value)
 {
@@ -18,6 +20,7 @@ static void Append_(
     _bytes.resize(offset + sizeof(T));
     std::memcpy(_bytes.data() + offset, &_value, sizeof(T));
 }
+}   // namespace
 
 class Reader
 {

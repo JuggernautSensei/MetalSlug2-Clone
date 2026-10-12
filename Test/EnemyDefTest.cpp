@@ -9,7 +9,9 @@
 #include "Base/Types.h"
 #include "EnemyTestUtil.h"
 
-[[nodiscard]] static String ReadDefsText_()
+namespace
+{
+[[nodiscard]] String ReadDefsText_()
 {
     std::ifstream     file(EnemyDefsPath().string());
     std::stringstream buffer;
@@ -17,7 +19,7 @@
     return buffer.str();
 }
 
-[[nodiscard]] static String ReplaceOnce_(
+[[nodiscard]] String ReplaceOnce_(
     String       _text,
     const String _from,
     const String _to)
@@ -30,7 +32,7 @@
     return _text.replace(pos, _from.size(), _to);
 }
 
-[[nodiscard]] static String ResolveSideText_(
+[[nodiscard]] String ResolveSideText_(
     String     _name,
     const bool _bLeft)
 {
@@ -41,6 +43,7 @@
     }
     return _name;
 }
+}   // namespace
 
 TEST(EnemyDefs, LoadsTheInfantryDefinitionsAndGlobals)
 {

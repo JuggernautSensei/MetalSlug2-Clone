@@ -49,13 +49,16 @@ TEST(FixedStepClock, AlphaIsFractionOfStep)
     EXPECT_NEAR(clock.GetAlpha(), 0.25f, 1e-3f);
 }
 
-[[nodiscard]] static InputFrame Held_(
+namespace
+{
+[[nodiscard]] InputFrame Held_(
     const eAction _action)
 {
     InputFrame frame;
     frame.Set(_action, true);
     return frame;
 }
+}   // namespace
 
 TEST(InputHistory, PressEdgeIsDetectedOnFirstFrame)
 {

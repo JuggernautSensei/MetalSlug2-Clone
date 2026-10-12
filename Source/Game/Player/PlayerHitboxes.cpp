@@ -4,7 +4,9 @@
 
 constexpr float kInvSqrt2 = 0.70710678f;
 
-[[nodiscard]] static const MuzzleSet& GetSet_(
+namespace
+{
+[[nodiscard]] const MuzzleSet& GetSet_(
     const ePose         _pose,
     const MuzzleTuning& _muzzle)
 {
@@ -15,6 +17,7 @@ constexpr float kInvSqrt2 = 0.70710678f;
         default: return _muzzle.stand;
     }
 }
+}   // namespace
 
 Aabb MakeKnifeTriggerBox(
     const Vec2         _feet,
