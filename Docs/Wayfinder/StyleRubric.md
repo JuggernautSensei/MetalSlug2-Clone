@@ -53,3 +53,13 @@
 ## 6. 검증
 - 주석/서식만 바꾸는 패스: `Scripts/CodeDiff.ps1` 전후 동일 + 빌드.
 - 코드가 바뀌는 패스: `Scripts/Verify.ps1` PASS (+ 로드 관련은 `Scripts/TraceLoad.ps1`).
+
+## 8. 작성자 지문 ("내가 짰다" 느낌의 기준, JugX/JugGfx/JugNet 에서 뽑음)
+- 이름 접두: 포인터 `p`(`m_pGraphics`, `_pLayer`), bool `b`(`_bEnable`), enum 타입 `e`, 상수 `k`, 전역 `g_`, 개수 `num`(`numMaxConnections`), 단위 접미사 `Sec`, 널 허용 값 `~OrNull`, 비어도 되는 값 `~OrEmpty`.
+- 핸들 변수는 줄임말(`hh`, `ch`, `vlh`, `texh`), 한 글자 변수는 `i`, `e`(예외 없음) 정도만.
+- 구조: 클래스 위쪽에 `JUG_CLASS(X, NO_COPY, NO_MOVE)`, private 중첩 구조체 → `public:`, 기능 그룹은 `// ===` 배너 3줄(헤더에서만, 필요한 곳에).
+- 설정은 `Desc` 평문 구조체 하나, 기본값은 선언부에 (`= {}`, `= nullptr`, `= 0`).
+- 사전조건은 함수 진입부 `JUG_ASSERT(cond, "문장.\n")`, 에러는 반환값(`Error`/`Result`), 예외 없음.
+- 반복문은 `for (const T& x: xs)`(콜론 앞 공백 없음), 분기는 `if (const T v = ...; cond)` 허용.
+- 단순 getter/setter 도 .cpp, 빈 virtual 훅도 .cpp 에 빈 본문으로.
+- 한 파일은 작고 평평하게, 한 클래스는 한 가지 일만.
