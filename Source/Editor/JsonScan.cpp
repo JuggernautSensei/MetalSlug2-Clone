@@ -59,11 +59,11 @@ int JsonScanner::Value_(
     const int idx = static_cast<int>(nodes.size());
     nodes.emplace_back();
     nodes[static_cast<size_t>(idx)].begin = static_cast<int>(m_pos);
-    const char c = m_text[m_pos];
+    const char c                          = m_text[m_pos];
     if (c == '{' || c == '[')
     {
-        const bool bObject = (c == '{');
-        const char close   = bObject ? '}' : ']';
+        const bool bObject                   = (c == '{');
+        const char close                     = bObject ? '}' : ']';
         nodes[static_cast<size_t>(idx)].type = bObject ? 'o' : 'a';
         ++m_pos;
         for (;;)

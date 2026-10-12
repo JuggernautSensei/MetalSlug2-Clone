@@ -40,8 +40,8 @@ struct ItemPickup
 
 struct ItemFxRequest
 {
-    String clip = {};
-    Vec2   pos  = { 0.f, 0.f };
+    String clip    = {};
+    Vec2   pos     = { 0.f, 0.f };
     int    zOffset = 0;   // 아이템 z 의 기본 depth 대비 이동량
 };
 

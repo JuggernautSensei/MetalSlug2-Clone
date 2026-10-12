@@ -9,7 +9,6 @@
 #include "Core/Tuning.h"
 #include "Render/SpriteBatch.h"
 
-
 TEST(Tuning, EmptyObjectGivesAllDefaults)
 {
     Result<Tuning> parsed = ParseTuning("{}");
@@ -19,7 +18,7 @@ TEST(Tuning, EmptyObjectGivesAllDefaults)
 
 TEST(Tuning, PartialOverridesOnlyChangeTheNamedKeys)
 {
-    const char*          json   = R"({
+    const char*    json   = R"({
         "move": { "runSpeed": 99.5, "coyoteTicks": 7 },
         "weapons": { "pistol": { "damage": 5, "pierce": true, "hitSize": [20, 9] } },
         "muzzle": { "stand": { "forward": [31, -33] } },
@@ -152,7 +151,7 @@ static void WriteFile_(
 
 static void Touch_(
     const FilePath& _path,
-    const int             _seconds)
+    const int       _seconds)
 {
     std::error_code ec;
     std::filesystem::last_write_time(_path, std::filesystem::last_write_time(_path, ec) + std::chrono::seconds(_seconds), ec);

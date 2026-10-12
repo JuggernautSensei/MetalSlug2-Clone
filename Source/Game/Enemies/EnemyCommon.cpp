@@ -137,7 +137,7 @@ bool ClimbStep(
         return false;
     }
 
-    _e.body.position = target;
+    _e.body.position   = target;
     const bool bHasEnd = _e.climbEnd.y != 0.f;
     if (_e.aux == 0 || (_e.aux == 1 && bHasEnd))
     {
@@ -307,8 +307,8 @@ void RequestFx(
     {
         // 잔해는 위로 솟구쳤다가 떨어진다 (EffectList 가 중력 처리). 난수는 월드 RNG 로 뽑아 리플레이가 결정적이다.
         // 범위는 건물 잔해(PropWorld)와 같은 kDebrisVx*/kDebrisVy* 공용 상수를 쓴다.
-        const float vx = kDebrisVxMin + static_cast<float>(_env.world.Roll(static_cast<int>(kDebrisVxMax - kDebrisVxMin) + 1));
-        const float vy = kDebrisVyMax - static_cast<float>(_env.world.Roll(static_cast<int>(kDebrisVyMax - kDebrisVyMin) + 1));
+        const float vx   = kDebrisVxMin + static_cast<float>(_env.world.Roll(static_cast<int>(kDebrisVxMax - kDebrisVxMin) + 1));
+        const float vy   = kDebrisVyMax - static_cast<float>(_env.world.Roll(static_cast<int>(kDebrisVyMax - kDebrisVyMin) + 1));
         request.velocity = { vx, vy };
     }
     _env.world.RequestFx(std::move(request));
@@ -577,7 +577,7 @@ void BeginSoldierDeath(
     // 위치는 피격 상자(body) 중심 기준 + 상수 보정. 엔티티 원점은 발이므로 발 기준 body.cy 를 더한 뒤 kBloodOffsetY 로 가슴 높이까지 올린다.
     if (_def.bHuman && _e.lastHitKind != eHitKind::Blast)
     {
-        const float side = _e.facing < 0 ? -1.f : 1.f;
+        const float    side = _e.facing < 0 ? -1.f : 1.f;
         EnemyFxRequest request;
         request.clip = _e.lastHitKind == eHitKind::Melee ? "Fx_Blood_Splat_" : "Fx_Blood_Hit_";
         request.clip += (_e.id & 1u) != 0u ? "Right" : "Left";

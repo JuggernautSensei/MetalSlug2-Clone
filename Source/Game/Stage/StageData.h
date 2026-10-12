@@ -282,13 +282,13 @@ struct StageAction
     float seconds = 0.f;
     Vec2  offset  = { 0.f, 0.f };   // SetCameraOffset
 
-    String text    = {};
-    String mode    = {};
-    String name    = {};
-    String target  = {};
-    String command = {};
-    String next    = {};
-    bool   bLoop   = true;
+    String text       = {};
+    String mode       = {};
+    String name       = {};
+    String target     = {};
+    String command    = {};
+    String next       = {};
+    bool   bLoop      = true;
     float  fadeOutSec = 0.f;   // PlayBgm: > 0 이면 현재 BGM 을 줄인 뒤 교체
 
     bool     bClearWaves = false;
@@ -378,10 +378,10 @@ struct StageData
     int    version = 1;
     String name    = {};
 
-    Vec2        worldSize  = { 0.f, 0.f };
-    Vec2        viewSize   = { 640.f, 448.f };
-    String      background = {};
-    EndlessTail endless    = {};
+    Vec2        worldSize    = { 0.f, 0.f };
+    Vec2        viewSize     = { 640.f, 448.f };
+    String      background   = {};
+    EndlessTail endless      = {};
     int         terrainDepth = kDefaultTerrainDepth;   // 지형의 depth: 이보다 작은 depth 의 스프라이트 (보스 선체) 는 지형 텍스처보다 먼저 그려 모래가 덮는다
 
     String bgmName  = {};

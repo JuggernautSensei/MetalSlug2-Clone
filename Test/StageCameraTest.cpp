@@ -9,7 +9,6 @@
 #include "Core/AssetPath.h"
 #include "StageTestUtil.h"
 
-
 constexpr const char* kTall = R"J({"initialBounds":[0,0,4000,1000]})J";
 
 [[nodiscard]] static std::string OneSection_(

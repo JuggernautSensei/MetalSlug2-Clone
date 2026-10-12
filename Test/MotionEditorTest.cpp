@@ -39,8 +39,8 @@ TEST(MotionEditorTest, MuzzleChangeTouchesOnlyThatNumber)
     MotionWeaponValues v = BaseValues_();
     v.muzzle.y           = -40.f;
     ASSERT_TRUE(doc.ApplyWeapon("a", "attack", v));
-    String expected = kMotionJson;
-    const size_t at = expected.find("[0, -37]");
+    String       expected = kMotionJson;
+    const size_t at       = expected.find("[0, -37]");
     expected.replace(at, 8, "[0, -40]");
     EXPECT_EQ(doc.GetText(), expected);
 }
@@ -51,7 +51,10 @@ TEST(MotionEditorTest, EffectsInsertEditRemoveRoundTrip)
     ASSERT_TRUE(doc.LoadFromText(kMotionJson));
     MotionWeaponValues v = BaseValues_();
     v.motionClip         = "throw";
-    v.effects.push_back({ "E", { 3.f, 4.f }, 2, 60 });
+    v.effects.push_back({
+        "E", { 3.f, 4.f },
+         2, 60
+    });
     ASSERT_TRUE(doc.ApplyWeapon("a", "attack", v));
     EXPECT_NE(doc.GetText().find("\"motionClip\": \"throw\""), String::npos);
     EXPECT_NE(doc.GetText().find("\"effects\": [{ \"clip\": \"E\", \"offset\": [3, 4], \"frame\": 2 }]"), String::npos);
@@ -83,10 +86,13 @@ TEST(MotionEditorTest, EffectsLoadFromRealDefFile)
     v.bHasFx     = true;
     v.fxOffset   = { 0.f, 0.f };
     v.motionClip = "shot";
-    v.effects.push_back({ "Bazuka_Shot_Effect", { 7.f, -9.f }, 1, 60 });
+    v.effects.push_back({
+        "Bazuka_Shot_Effect", { 7.f, -9.f },
+         1, 60
+    });
     ASSERT_TRUE(doc.ApplyWeapon("soldier_bzk", "rocket", v));
 
-    String message;
+    String                        message;
     const Result<EnemyDefLibrary> lib = EnemyDefLibrary::Parse(doc.GetText(), &message);
     ASSERT_TRUE(lib) << message;
     const EnemyDef* pDef = lib->Find("soldier_bzk");

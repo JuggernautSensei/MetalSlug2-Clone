@@ -15,13 +15,13 @@ SandboxConfig MakeConfig(
     const Vec2 _spawn)
 {
     SandboxConfig config;
-    config.bLoadGround = false;
-    config.cameraBounds     = Aabb::FromMinMax({ 0.f, 0.f }, { static_cast<float>(_ground.GetWidth()), 448.f });
-    config.ground           = std::move(_ground);
-    config.spawnFeet        = _spawn;
-    config.bSpawnTargets    = false;
-    config.bLoadTuningFile  = false;
-    config.bBackground      = false;
+    config.bLoadGround     = false;
+    config.cameraBounds    = Aabb::FromMinMax({ 0.f, 0.f }, { static_cast<float>(_ground.GetWidth()), 448.f });
+    config.ground          = std::move(_ground);
+    config.spawnFeet       = _spawn;
+    config.bSpawnTargets   = false;
+    config.bLoadTuningFile = false;
+    config.bBackground     = false;
     return config;
 }
 
@@ -33,7 +33,7 @@ SandboxConfig MakeFlatConfig()
 Sim::Sim(
     SandboxConfig     _config,
     AnimationLibrary* _pAnims)
-: m_rng(uint64_t { 1 })
+    : m_rng(uint64_t { 1 })
 {
     m_ctx.pRng   = &m_rng;
     m_ctx.pAnims = _pAnims;

@@ -10,10 +10,10 @@ static constexpr int kLethalHits = 6;
 
 struct GodHarness
 {
-    Tuning           tuning = {};
-    PlayerController player = {};
+    Tuning           tuning  = {};
+    PlayerController player  = {};
     InputHistory     history = {};
-    eGodMode         mode   = eGodMode::Off;
+    eGodMode         mode    = eGodMode::Off;
 
     explicit GodHarness(const eGodMode _mode)
         : mode(_mode)

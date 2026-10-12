@@ -7,7 +7,7 @@ FilePath VehicleDefsDir()
 
 bool LoadVehicleLib(
     EnemyDefLibrary& _out,
-    String*    _pMessage)
+    String*          _pMessage)
 {
     Result<EnemyDefLibrary> lib = EnemyDefLibrary::LoadDirectory(VehicleDefsDir(), _pMessage);
     if (!lib)
@@ -21,7 +21,7 @@ bool LoadVehicleLib(
 VehicleRig::VehicleRig(
     const Vec2  _player,
     const float _camLeft)
-: m_world(&m_lib, 7)
+    : m_world(&m_lib, 7)
     , m_ground(MakeFlatGround(3000))
     , m_player(
           _player)
@@ -145,7 +145,7 @@ size_t VehicleRig::Strike(
     hitbox.id     = m_combat.NewHitId();
     m_combat.AddHitbox(hitbox);
     const Vector<HitEvent>& events = m_combat.Resolve();
-    const size_t                  count  = events.size();
+    const size_t            count  = events.size();
     m_world.OnHitEvents(events);
     CollectEvents_();
     return count;
@@ -213,13 +213,13 @@ PhysicsWorld VehicleRig::MakeWorld_() const
 EnemyContext VehicleRig::MakeCtx_()
 {
     EnemyContext ctx;
-    ctx.physics              = MakeWorld_();
+    ctx.physics = MakeWorld_();
     m_walls.clear();
     for (const Aabb& box: m_world.GetSolidBoxes())
     {
         m_walls.push_back({ box });
     }
-    ctx.physics.walls = m_walls;
+    ctx.physics.walls        = m_walls;
     ctx.pCombat              = &m_combat;
     ctx.pProjectiles         = &m_projectiles;
     ctx.player.feet          = m_player;

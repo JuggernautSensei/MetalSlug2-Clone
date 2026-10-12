@@ -66,45 +66,45 @@ TEST(BusData, LoadedTablesEqualTheOldHardCodedValues)
     EXPECT_EQ(c.fxDepth, 60);
 
     const ARRAY<OldBurst, 12> bursts = {
-        OldBurst { 2, "Explosion_Large", 51.f, -5.f, 0 },
-        OldBurst { 2, "Explosion_Large", 42.f, 86.f, 0 },
-        OldBurst { 2, "Explosion_Large", 87.f, 70.f, 0 },
-        OldBurst { 3, "Explosion_Large", 21.f, 72.f, 0 },
-        OldBurst { 3, "Explosion_Mid", 91.f, 113.f, 0 },
-        OldBurst { 4, "Explosion_Large", 50.f, 95.f, 0 },
-        OldBurst { 4, "Explosion_Mid", 80.f, 100.f, 6 },
+        OldBurst { 2, "Explosion_Large", 51.f,  -5.f, 0 },
+        OldBurst { 2, "Explosion_Large", 42.f,  86.f, 0 },
+        OldBurst { 2, "Explosion_Large", 87.f,  70.f, 0 },
+        OldBurst { 3, "Explosion_Large", 21.f,  72.f, 0 },
+        OldBurst { 3,   "Explosion_Mid", 91.f, 113.f, 0 },
+        OldBurst { 4, "Explosion_Large", 50.f,  95.f, 0 },
+        OldBurst { 4,   "Explosion_Mid", 80.f, 100.f, 6 },
         OldBurst { 5, "Explosion_Large", 42.f, 101.f, 0 },
-        OldBurst { 6, "Explosion_Mid", 45.f, 100.f, 0 },
-        OldBurst { 7, "Explosion_Mid", 9.f, 116.f, 0 },
-        OldBurst { 7, "Explosion_Mid", 78.f, 95.f, 3 },
-        OldBurst { 6, "Explosion_Small", 80.f, 40.f, 4 }
+        OldBurst { 6,   "Explosion_Mid", 45.f, 100.f, 0 },
+        OldBurst { 7,   "Explosion_Mid",  9.f, 116.f, 0 },
+        OldBurst { 7,   "Explosion_Mid", 78.f,  95.f, 3 },
+        OldBurst { 6, "Explosion_Small", 80.f,  40.f, 4 }
     };
     ExpectBursts_(c.bursts, bursts.data(), bursts.size());
 
     const ARRAY<OldBurst, 10> death = {
-        OldBurst { 0, "Explosion_Large", 20.f, -10.f, 0 },
-        OldBurst { 0, "Explosion_Large", 75.f, 0.f, 0 },
-        OldBurst { 0, "Explosion_Large", 48.f, 35.f, 2 },
-        OldBurst { 0, "Explosion_Large", 10.f, 60.f, 3 },
-        OldBurst { 0, "Explosion_Large", 90.f, 55.f, 3 },
-        OldBurst { 0, "Explosion_Large", 30.f, 95.f, 5 },
-        OldBurst { 0, "Explosion_Large", 70.f, 100.f, 6 },
-        OldBurst { 0, "Explosion_Large", 48.f, 125.f, 8 },
-        OldBurst { 0, "Explosion_Mid", 40.f, 20.f, 14 },
-        OldBurst { 0, "Explosion_Mid", 60.f, 80.f, 18 }
+        OldBurst { 0, "Explosion_Large", 20.f, -10.f,  0 },
+        OldBurst { 0, "Explosion_Large", 75.f,   0.f,  0 },
+        OldBurst { 0, "Explosion_Large", 48.f,  35.f,  2 },
+        OldBurst { 0, "Explosion_Large", 10.f,  60.f,  3 },
+        OldBurst { 0, "Explosion_Large", 90.f,  55.f,  3 },
+        OldBurst { 0, "Explosion_Large", 30.f,  95.f,  5 },
+        OldBurst { 0, "Explosion_Large", 70.f, 100.f,  6 },
+        OldBurst { 0, "Explosion_Large", 48.f, 125.f,  8 },
+        OldBurst { 0,   "Explosion_Mid", 40.f,  20.f, 14 },
+        OldBurst { 0,   "Explosion_Mid", 60.f,  80.f, 18 }
     };
     ExpectBursts_(c.deathBursts, death.data(), death.size());
 
     const ARRAY<OldDebris, 9> debris = {
-        OldDebris { "Bus_DebGrille", 52.f, 112.f, -60.f, -520.f, 14.f },
-        OldDebris { "Bus_DebBumper", 52.f, 124.f, 90.f, -430.f, 10.f },
-        OldDebris { "Bus_DebFrameA", 30.f, 30.f, -170.f, -640.f, 12.f },
-        OldDebris { "Bus_DebFrameB", 75.f, 28.f, 160.f, -600.f, 12.f },
-        OldDebris { "Bus_DebChunk", 20.f, 70.f, -220.f, -480.f, 16.f },
-        OldDebris { "Bus_DebChunk", 80.f, 60.f, 240.f, -520.f, 16.f },
-        OldDebris { "Bus_DebChunk", 50.f, 20.f, 30.f, -700.f, 16.f },
-        OldDebris { "Bus_DebBar", 15.f, 105.f, -140.f, -380.f, 10.f },
-        OldDebris { "Bus_DebBar", 90.f, 100.f, 130.f, -420.f, 10.f }
+        OldDebris { "Bus_DebGrille", 52.f, 112.f,  -60.f, -520.f, 14.f },
+        OldDebris { "Bus_DebBumper", 52.f, 124.f,   90.f, -430.f, 10.f },
+        OldDebris { "Bus_DebFrameA", 30.f,  30.f, -170.f, -640.f, 12.f },
+        OldDebris { "Bus_DebFrameB", 75.f,  28.f,  160.f, -600.f, 12.f },
+        OldDebris {  "Bus_DebChunk", 20.f,  70.f, -220.f, -480.f, 16.f },
+        OldDebris {  "Bus_DebChunk", 80.f,  60.f,  240.f, -520.f, 16.f },
+        OldDebris {  "Bus_DebChunk", 50.f,  20.f,   30.f, -700.f, 16.f },
+        OldDebris {    "Bus_DebBar", 15.f, 105.f, -140.f, -380.f, 10.f },
+        OldDebris {    "Bus_DebBar", 90.f, 100.f,  130.f, -420.f, 10.f }
     };
     ASSERT_EQ(c.debris.size(), debris.size());
     for (size_t i = 0; i < debris.size(); ++i)

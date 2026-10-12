@@ -8,7 +8,6 @@
 #include "Game/Player/PlayerHitboxes.h"
 #include "PlayerTestUtil.h"
 
-
 [[nodiscard]] static const TrainingDummy& Dummy_(
     Sim&           _sim,
     const uint32_t _id)
@@ -58,7 +57,7 @@ static void NoSpread_(
 {
     RngMt19937         rng { uint64_t { 7 } };
     Vector<InputFrame> frames;
-    InputFrame               cur;
+    InputFrame         cur;
     for (int i = 0; i < 3000; ++i)
     {
         if (i % 3 == 0)
@@ -100,7 +99,7 @@ static void NoSpread_(
         if (_sim.Player().GetStats().shotsFired > before)
         {
             const Span<const Bullet> bullets = _sim.State().GetProjectiles().GetBullets();
-            const Vec2                     v       = bullets[bullets.size() - 1].velocity;
+            const Vec2               v       = bullets[bullets.size() - 1].velocity;
             return std::atan2(-v.y, std::abs(v.x)) * 180.f / 3.14159265f;
         }
     }
@@ -121,7 +120,7 @@ TEST(PlayerShot, FirstShotSpawnsABulletOnTheSameTick)
 
 TEST(PlayerShot, PistolNeverHasMoreThanMaxAliveBullets)
 {
-    Sim sim;
+    Sim          sim;
     const size_t cap  = static_cast<size_t>(sim.Tune().weapons.pistol.maxAlive);
     size_t       peak = 0;
     for (int i = 0; i < 200; ++i)
@@ -283,9 +282,9 @@ void ExpectHmgJitterIsPerpendicular_(
     const Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
     ASSERT_GE(bullets.size(), 3u);
 
-    const Vec2  velocity  = bullets[0].velocity;
-    const float speed     = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-    const Vec2  direction = { velocity.x / speed, velocity.y / speed };
+    const Vec2     velocity  = bullets[0].velocity;
+    const float    speed     = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+    const Vec2     direction = { velocity.x / speed, velocity.y / speed };
     std::set<long> angles;
     std::set<long> offsets;
     for (const Bullet& bullet: bullets)
@@ -471,7 +470,7 @@ TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToNinety)
     int                shots = 1;
     {
         const Span<const Bullet> first = sim.State().GetProjectiles().GetBullets();
-        const Vec2                     v     = first[first.size() - 1].velocity;
+        const Vec2               v     = first[first.size() - 1].velocity;
         angles.push_back(std::atan2(-v.y, std::abs(v.x)) * 180.f / 3.14159265f);
     }
     for (int tick = 0; tick < 40; ++tick)
@@ -480,15 +479,15 @@ TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToNinety)
         const int fired = sim.Player().GetStats().shotsFired;
         if (fired > shots)
         {
-            shots                                  = fired;
+            shots                            = fired;
             const Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
-            const Vec2                     v       = bullets[bullets.size() - 1].velocity;
+            const Vec2               v       = bullets[bullets.size() - 1].velocity;
             angles.push_back(std::atan2(-v.y, std::abs(v.x)) * 180.f / 3.14159265f);
         }
     }
 
     ASSERT_GE(angles.size(), 4u);
-    EXPECT_LT(angles.front(), 10.f);          // 처음엔 거의 정면
+    EXPECT_LT(angles.front(), 10.f);   // 처음엔 거의 정면
     // 발사 간격 4틱 x 3~5발: 조준각은 350도/s 로 쓸고 가며 마지막 발은 대각 중간이거나 똑바로 위 (90도에서 멈춘다)
     EXPECT_GE(angles.back(), 40.f);
     EXPECT_LE(angles.back(), 90.5f);
@@ -680,8 +679,8 @@ TEST(PlayerKnife, TappedShotOnAVehicleKeepsFiringThePistol)
 {
     Sim sim;
     sim.Step(2);
-    const uint32_t id = sim.State().AddTarget(eDummyKind::Jeep, { sim.X() + 60.f, 378.f });
-    int killed = -1;
+    const uint32_t id     = sim.State().AddTarget(eDummyKind::Jeep, { sim.X() + 60.f, 378.f });
+    int            killed = -1;
     for (int tick = 0; tick < 200 && killed < 0; ++tick)
     {
         sim.Set(eAction::Shot, tick % 6 == 0);   // 권총은 연타해야 계속 나간다
@@ -823,7 +822,7 @@ TEST(PlayerKnife, KnifeIsMeleeAndHitsEveryTeamItCanHit)
     bulletOnly.owner   = 2002;
     bulletOnly.accepts = HitKindMask { eHitKind::Bullet };
 
-    HitResolver                  resolver;
+    HitResolver            resolver;
     const Vector<Hitbox>   hits   = { swing };
     const Vector<Hurtbox>  hurts  = { enemy, neutral, bulletOnly };
     const Vector<HitEvent> events = resolver.Resolve(hits, hurts);
@@ -983,7 +982,7 @@ struct Harness
     }
 
     bool Tick(
-        const InputFrame            _input  = {},
+        const InputFrame      _input  = {},
         const Vector<Hitbox>& _inject = {})
     {
         history.Push(_input);
@@ -1003,7 +1002,7 @@ struct Harness
         }
         projectiles.Step(&ground, combat, kStepSec);
         const Vector<HitEvent>& events = combat.Resolve();
-        const bool                    bDied  = player.OnHitEvents(events);
+        const bool              bDied  = player.OnHitEvents(events);
         projectiles.OnHitEvents(events, combat);
         ++ticks;
         return bDied;

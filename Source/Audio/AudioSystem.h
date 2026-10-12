@@ -12,14 +12,14 @@ class AsyncLoader;
 
 struct AudioConfig
 {
-    bool         bEnabled = true;
-    AsyncLoader* pLoader  = nullptr;   // 있으면 효과음 등록(디코드)을 워커 스레드에서 한다
-    int      maxVoices    = 16;   // 동시에 울리는 효과음 상한
-    int      maxPerSound  = 4;    // 같은 소리의 동시 상한 (권총 연사 등)
-    float    masterVolume = 1.f;
-    float    sfxVolume    = 1.f;
-    float    bgmVolume    = 0.6f;
-    uint32_t pitchSeed    = 0x9E3779B9u;   // 피치 변동용 오디오 전용 RNG (시뮬레이션 RNG 와 무관)
+    bool         bEnabled     = true;
+    AsyncLoader* pLoader      = nullptr;   // 있으면 효과음 등록(디코드)을 워커 스레드에서 한다
+    int          maxVoices    = 16;        // 동시에 울리는 효과음 상한
+    int          maxPerSound  = 4;         // 같은 소리의 동시 상한 (권총 연사 등)
+    float        masterVolume = 1.f;
+    float        sfxVolume    = 1.f;
+    float        bgmVolume    = 0.6f;
+    uint32_t     pitchSeed    = 0x9E3779B9u;   // 피치 변동용 오디오 전용 RNG (시뮬레이션 RNG 와 무관)
 };
 
 class AudioSystem final : public IAudioSink
@@ -44,8 +44,8 @@ public:
     void AllStop() override;
     void ChangeBgm(StringView _name, float _fadeOutSec, bool _bLoop = true) override;
 
-    [[nodiscard]] bool IsInitialized() const;
-    [[nodiscard]] bool IsBgmFadingOut() const;
+    [[nodiscard]] bool          IsInitialized() const;
+    [[nodiscard]] bool          IsBgmFadingOut() const;
     [[nodiscard]] const String& GetCurrentBgm() const;   // 재생 중(페이드 중 포함)인 BGM 이름, 없으면 빈 문자열
 
 private:

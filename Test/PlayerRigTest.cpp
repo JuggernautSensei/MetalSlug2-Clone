@@ -3,7 +3,6 @@
 #include "Game/Player/PlayerRig.h"
 #include "PlayerTestUtil.h"
 
-
 [[nodiscard]] static AnimId Id_(
     const AnimationLibrary& _anims,
     const char*             _name)

@@ -2,15 +2,15 @@
 
 void TestAudio::Play(
     const StringView _name,
-    const float            _volume,
-    const float            _pitchVariation)
+    const float      _volume,
+    const float      _pitchVariation)
 {
     m_events.push_back({ eAudioEvent::Play, String { _name }, _volume, _pitchVariation, false, 0.f });
 }
 
 void TestAudio::PlayBgm(
     const StringView _name,
-    const bool             _bLoop)
+    const bool       _bLoop)
 {
     m_events.push_back({ eAudioEvent::PlayBgm, String { _name }, 1.f, 0.f, _bLoop, 0.f });
     m_bgm = String { _name };

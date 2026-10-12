@@ -21,11 +21,11 @@ struct MotionWeaponValues
 // params 의 값 하나: 숫자('n'), 불('b'), [x, y] 두 숫자('v')
 struct MotionParam
 {
-    String         label = {};   // 점 경로 (예: parts.body.depth)
-    Vector<String> path  = {};   // params 아래 키 경로
-    char           type  = 'n';
-    bool           bInt  = false;
-    ARRAY<double, 2> v   = {};
+    String           label = {};   // 점 경로 (예: parts.body.depth)
+    Vector<String>   path  = {};   // params 아래 키 경로
+    char             type  = 'n';
+    bool             bInt  = false;
+    ARRAY<double, 2> v     = {};
 };
 
 // 정의 JSON 텍스트를 그대로 들고 바뀐 값의 토큰만 제자리 교체한다 (무편집 저장은 바이트 동일).
@@ -82,12 +82,12 @@ private:
 
     const AnimationLibrary* m_pAnims = nullptr;
 
-    Vector<FilePath>       m_paths    = {};
-    Vector<MotionDocument> m_docs     = {};
-    Vector<String>         m_changed  = {};
-    String                 m_status   = {};
-    ARRAY<char, 64>        m_filter   = {};
-    bool                   m_bLoaded  = false;
+    Vector<FilePath>       m_paths   = {};
+    Vector<MotionDocument> m_docs    = {};
+    Vector<String>         m_changed = {};
+    String                 m_status  = {};
+    ARRAY<char, 64>        m_filter  = {};
+    bool                   m_bLoaded = false;
 
     Vector<MotionParam> m_params    = {};
     String              m_paramDef  = {};

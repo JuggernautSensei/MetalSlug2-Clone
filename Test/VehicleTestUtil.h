@@ -16,12 +16,11 @@
 #include "PlayerTestUtil.h"
 #include "World/Constants.h"
 
-
 [[nodiscard]] FilePath VehicleDefsDir();
 
 [[nodiscard]] bool LoadVehicleLib(
     EnemyDefLibrary& _out,
-    String*    _pMessage = nullptr);
+    String*          _pMessage = nullptr);
 
 inline constexpr ARRAY<const char*, 4> kVehicleNames = { "jeep", "btank", "missle_tank", "sarubia" };
 
@@ -34,7 +33,7 @@ public:
         const Vec2  _player  = { 100.f, 378.f },
         const float _camLeft = 0.f);
 
-    [[nodiscard]] bool                IsLoaded() const;
+    [[nodiscard]] bool          IsLoaded() const;
     [[nodiscard]] const String& GetMessage() const;
 
     [[nodiscard]] EnemyWorld&              World();
@@ -96,7 +95,7 @@ private:
     EnemyDefLibrary         m_lib        = {};
     int                     m_playerHits = 0;
     int                     m_ticks      = 0;
-    String            m_message    = {};
+    String                  m_message    = {};
     bool                    m_bLoaded    = false;
     EnemyWorld              m_world;
     GroundMap               m_ground;

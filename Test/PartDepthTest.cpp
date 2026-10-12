@@ -115,8 +115,8 @@ TEST(PartDepth, HeliPartOverrideChangesOnlyThatPart)
     ASSERT_NE(std::find(before.begin(), before.end(), 16), before.end()) << "rotor/pod depth 16";
 
     rig.Lib().FindMutable("heli")->heli.partRotor.depth = 18;
-    Vector<int> expected = before;
-    *std::find(expected.begin(), expected.end(), 16) = 18;
+    Vector<int> expected                                = before;
+    *std::find(expected.begin(), expected.end(), 16)    = 18;
     std::sort(expected.begin(), expected.end());
     EXPECT_EQ(HeliDepths_(rig, anims), expected);
 }

@@ -13,12 +13,12 @@
 constexpr float kTickSec = 1.f / 60.f;
 
 // 파이어샷 입자: 베이크된 큰 불꽃 클립(FlameShot_AttackMotion, 26프레임, 최대 94x94) 을 Head -> Loop(반복) -> Fade 로 쓴다
-constexpr const char* kFlameClip          = "FlameShot_AttackMotion";
-constexpr int         kFlameHeadFrames    = 4;    // 머리: 앞 4프레임 (입자 생성 직후)
-constexpr int         kFlameFadeFrames    = 6;    // 꼬리: 마지막 6프레임 (사거리 끝)
-constexpr int         kFlameHeadTicks     = 2;    // 머리/반복 프레임 하나당 틱
-constexpr float       kFlameFadeTicks     = 8.f;  // 사거리 끝 8틱 동안 Fade 재생
-constexpr float       kFlameForwardShift  = 24.f;   // 불꽃 중심을 총구보다 앞으로 (큰 프레임이 총을 가리지 않게)
+constexpr const char* kFlameClip         = "FlameShot_AttackMotion";
+constexpr int         kFlameHeadFrames   = 4;      // 머리: 앞 4프레임 (입자 생성 직후)
+constexpr int         kFlameFadeFrames   = 6;      // 꼬리: 마지막 6프레임 (사거리 끝)
+constexpr int         kFlameHeadTicks    = 2;      // 머리/반복 프레임 하나당 틱
+constexpr float       kFlameFadeTicks    = 8.f;    // 사거리 끝 8틱 동안 Fade 재생
+constexpr float       kFlameForwardShift = 24.f;   // 불꽃 중심을 총구보다 앞으로 (큰 프레임이 총을 가리지 않게)
 
 [[nodiscard]] static const AnimFrame* PickFlameFrame_(
     const AnimationLibrary* _pAnims,
@@ -145,8 +145,8 @@ bool SubmitPlayerBullet(
                 return false;
             }
             // 수명에 따라 표시 배율이 커진다 (판정 성장과 같은 진행도: travelled / range)
-            const float t     = _bullet.range > 0.f ? std::clamp(_bullet.travelled / _bullet.range, 0.f, 1.f) : 1.f;
-            const float scale = Lerp(_bullet.scaleStart, _bullet.scaleEnd, t);
+            const float t       = _bullet.range > 0.f ? std::clamp(_bullet.travelled / _bullet.range, 0.f, 1.f) : 1.f;
+            const float scale   = Lerp(_bullet.scaleStart, _bullet.scaleEnd, t);
             const Vec2  shifted = { _pos.x + (bRight ? kFlameForwardShift : -kFlameForwardShift), _pos.y };
             _sprites.Submit(_depth, 0, *pFrame, shifted, { .bFlipX = !bRight, .scale = scale });
             return true;

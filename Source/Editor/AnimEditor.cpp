@@ -25,8 +25,8 @@ constexpr size_t kMaxUndo = 200;
     {
         return Error { eError::InvalidData };
     }
-    AnimFrame               f;
-    const ARRAY<int*, 7>    fields = { &f.atlas, &f.x, &f.y, &f.w, &f.h, &f.pivotX, &f.pivotY };
+    AnimFrame                  f;
+    const ARRAY<int*, 7>       fields = { &f.atlas, &f.x, &f.y, &f.w, &f.h, &f.pivotX, &f.pivotY };
     const ARRAY<StringView, 7> names  = { "atlas", "x", "y", "w", "h", "pivotX", "pivotY" };
     for (size_t i = 0; i < fields.size(); ++i)
     {
@@ -124,9 +124,9 @@ static void AppendString_(
 }
 
 static void AppendField_(
-    String&         _out,
+    String&          _out,
     const StringView _key,
-    const int       _value)
+    const int        _value)
 {
     _out += std::format("      \"{}\": {},\n", _key, _value);
 }

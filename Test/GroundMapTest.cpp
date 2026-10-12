@@ -10,7 +10,6 @@
 #include "World/Geometry.h"
 #include "World/GroundMap.h"
 
-
 struct Lcg
 {
     uint32_t state = 12345u;

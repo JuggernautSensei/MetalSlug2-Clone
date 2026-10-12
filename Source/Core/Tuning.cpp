@@ -398,7 +398,7 @@ private:
 [[nodiscard]] static Result<Tuning> ParseRoot_(
     const JsonReader& _root)
 {
-    Tuning      tuning;
+    Tuning            tuning;
     TuningReadVisitor visitor { _root };
     Visit_(visitor, tuning);
     if (visitor.HasError())
@@ -454,7 +454,7 @@ void TuningWatcher::Init(
     m_reloadCount = 0;
     m_bHasStamp   = false;
 
-    std::error_code          ec;
+    std::error_code                       ec;
     const std::filesystem::file_time_type stamp = std::filesystem::last_write_time(m_path, ec);
     if (!ec)
     {
@@ -472,7 +472,7 @@ bool TuningWatcher::Poll(
     }
     m_counter = 0;
 
-    std::error_code          ec;
+    std::error_code                       ec;
     const std::filesystem::file_time_type stamp = std::filesystem::last_write_time(m_path, ec);
     if (ec)
     {

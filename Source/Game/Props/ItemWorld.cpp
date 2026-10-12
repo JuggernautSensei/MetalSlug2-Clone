@@ -39,9 +39,9 @@ static void MixFloat_(
     MixValue_(_hash, bits);
 }
 
-constexpr float kSupplyBounceVy   = -400.f;
-constexpr float kRollMinVx        = -50.f;
-constexpr float kRollMaxVx        = 49.f;
+constexpr float kSupplyBounceVy = -400.f;
+constexpr float kRollMinVx      = -50.f;
+constexpr float kRollMaxVx      = 49.f;
 
 [[nodiscard]] static Vec2 BottomAlignedOrigin_(
     const AnimFrame& _frame,
@@ -216,8 +216,8 @@ void ItemWorld::Tick(
             // 착지 직후(굴림 속도 대기 중)에는 대기 중인 굴림 속도로 계산한다
             const float speedX = item.rollVx != 0.f ? item.rollVx : item.body.velocity.x;
             item.spinScale     = item.body.bGrounded
-                ? std::clamp(std::abs(speedX) / tuning.rollSpinRefSpeed, 0.f, 1.f)
-                : 1.f;
+                                   ? std::clamp(std::abs(speedX) / tuning.rollSpinRefSpeed, 0.f, 1.f)
+                                   : 1.f;
         }
     }
 

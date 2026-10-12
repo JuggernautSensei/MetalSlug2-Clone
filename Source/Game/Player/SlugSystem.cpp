@@ -20,7 +20,7 @@ int SlugSystem::Spawn(
     {
         return -1;
     }
-    const int index = static_cast<int>(m_slugs.size());
+    const int   index = static_cast<int>(m_slugs.size());
     SlugVehicle slug;
     slug.Init(m_tuning, _feet, _facing, kSlugOwnerBase + static_cast<uint32_t>(index), _hp);
     m_slugs.push_back(std::move(slug));

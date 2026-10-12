@@ -5,8 +5,8 @@
 
 #include "Base/Math.h"
 
-constexpr float kDegToRad        = 3.14159265f / 180.f;
-constexpr float kDiagonalRatio   = 0.6f;   // 짧은 축/긴 축 비율이 이 이상이면 대각 조준으로 보고 정사각 판정을 쓴다 (약 31~59도)
+constexpr float kDegToRad      = 3.14159265f / 180.f;
+constexpr float kDiagonalRatio = 0.6f;   // 짧은 축/긴 축 비율이 이 이상이면 대각 조준으로 보고 정사각 판정을 쓴다 (약 31~59도)
 
 // 조준 방향에 따라 판정 상자를 돌린다: 세로(위/아래) 조준은 w/h 를 바꾸고, 대각은 큰 쪽 기준 정사각
 [[nodiscard]] static Vec2 OrientSize_(

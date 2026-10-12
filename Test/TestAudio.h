@@ -15,12 +15,12 @@ enum class eAudioEvent : uint8_t
 
 struct AudioEvent
 {
-    eAudioEvent  kind           = eAudioEvent::Play;
-    String name           = {};
-    float        volume         = 1.f;   // Play
-    float        pitchVariation = 0.f;   // Play
-    bool         bLoop          = false;
-    float        seconds        = 0.f;   // FadeOutBgm
+    eAudioEvent kind           = eAudioEvent::Play;
+    String      name           = {};
+    float       volume         = 1.f;   // Play
+    float       pitchVariation = 0.f;   // Play
+    bool        bLoop          = false;
+    float       seconds        = 0.f;   // FadeOutBgm
 };
 
 class TestAudio final : public IAudioSink
@@ -28,12 +28,12 @@ class TestAudio final : public IAudioSink
 public:
     void Play(
         const StringView _name,
-        const float            _volume         = 1.f,
-        const float            _pitchVariation = 0.f) override;
+        const float      _volume         = 1.f,
+        const float      _pitchVariation = 0.f) override;
 
     void PlayBgm(
         const StringView _name,
-        const bool             _bLoop = true) override;
+        const bool       _bLoop = true) override;
 
     void StopBgm() override;
 

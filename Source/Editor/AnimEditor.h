@@ -62,8 +62,8 @@ private:
 
     void PushUndo_(int _clip);
 
-    Vector<AnimEditClip> m_clips = {};
-    Vector<UndoEntry>    m_undo  = {};
+    Vector<AnimEditClip> m_clips       = {};
+    Vector<UndoEntry>    m_undo        = {};
     int                  m_version     = 1;
     bool                 m_bDirty      = false;
     int                  m_revision    = 0;
@@ -96,32 +96,32 @@ public:
     void Draw();
 
 private:
-    void           DrawList_();
-    void           DrawDetail_();
-    void           DrawCanvas_(const AnimEditClip& _clip);
-    void           HandleKeys_(int _clipIndex);
-    void           Save_();
-    void           SyncLibrary_();
-    void           RememberMtime_();
+    void                       DrawList_();
+    void                       DrawDetail_();
+    void                       DrawCanvas_(const AnimEditClip& _clip);
+    void                       HandleKeys_(int _clipIndex);
+    void                       Save_();
+    void                       SyncLibrary_();
+    void                       RememberMtime_();
     [[nodiscard]] SDL_Texture* GetPage_(int _atlas);
 
-    SDL_Renderer*        m_pRenderer = nullptr;
-    AnimDocument         m_doc       = {};
-    FilePath             m_path      = {};
-    Vector<SDL_Texture*> m_pages     = {};
-    Vector<int>          m_pageW     = {};
-    Vector<int>          m_pageH     = {};
-    String               m_status    = {};
-    ARRAY<char, 64>      m_filter    = {};
-    int                  m_selected  = -1;
-    int                  m_frame     = 0;
-    int                  m_zoom      = 3;
-    bool                 m_bPlaying  = false;
-    bool                 m_bOnion    = true;
-    float                m_playTimer = 0.f;
-    bool                 m_bLoaded   = false;
-    AnimationLibrary*    m_pLibrary  = nullptr;
-    int                  m_syncedRevision = 0;
-    int                  m_pollFrames     = 0;
-    std::filesystem::file_time_type m_mtime = {};
+    SDL_Renderer*                   m_pRenderer      = nullptr;
+    AnimDocument                    m_doc            = {};
+    FilePath                        m_path           = {};
+    Vector<SDL_Texture*>            m_pages          = {};
+    Vector<int>                     m_pageW          = {};
+    Vector<int>                     m_pageH          = {};
+    String                          m_status         = {};
+    ARRAY<char, 64>                 m_filter         = {};
+    int                             m_selected       = -1;
+    int                             m_frame          = 0;
+    int                             m_zoom           = 3;
+    bool                            m_bPlaying       = false;
+    bool                            m_bOnion         = true;
+    float                           m_playTimer      = 0.f;
+    bool                            m_bLoaded        = false;
+    AnimationLibrary*               m_pLibrary       = nullptr;
+    int                             m_syncedRevision = 0;
+    int                             m_pollFrames     = 0;
+    std::filesystem::file_time_type m_mtime          = {};
 };

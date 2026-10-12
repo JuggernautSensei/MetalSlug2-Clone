@@ -73,39 +73,39 @@ struct MuzzleTuning
 
 struct WeaponTuning
 {
-    int   damage             = 3;
-    int   fireIntervalTicks  = 5;   // 연타해도 이보다 빨리 쏠 수 없다
-    int   holdRepeatTicks    = 0;   // 0 = 홀드 자동 연사 없음 (연타만 발사)
-    int   ammo               = 0;       // 0 = 무한
-    float projectileSpeed    = 800.f;   // px/s
-    int   maxAlive           = 4;       // 동시에 살아 있는 탄 수 상한 (0 = 무제한)
-    bool  bPierce            = false;
-    Vec2  hitSize            = { 14.f, 10.f };
-    float range              = 420.f;          // 사거리 px
-    int   shotOverlayTicks   = 14;             // 사격 상체 동작 길이 (버스트 무기는 발수 x burstIntervalTicks 를 쓴다)
-    Vec2  blastSize          = { 0.f, 0.f };   // 착탄 폭발 상자 (0 = 폭발 없음)
-    int   blastDamage        = 0;
-    int   blastTicks         = 0;
+    int   damage            = 3;
+    int   fireIntervalTicks = 5;       // 연타해도 이보다 빨리 쏠 수 없다
+    int   holdRepeatTicks   = 0;       // 0 = 홀드 자동 연사 없음 (연타만 발사)
+    int   ammo              = 0;       // 0 = 무한
+    float projectileSpeed   = 800.f;   // px/s
+    int   maxAlive          = 4;       // 동시에 살아 있는 탄 수 상한 (0 = 무제한)
+    bool  bPierce           = false;
+    Vec2  hitSize           = { 14.f, 10.f };
+    float range             = 420.f;          // 사거리 px
+    int   shotOverlayTicks  = 14;             // 사격 상체 동작 길이 (버스트 무기는 발수 x burstIntervalTicks 를 쓴다)
+    Vec2  blastSize         = { 0.f, 0.f };   // 착탄 폭발 상자 (0 = 폭발 없음)
+    int   blastDamage       = 0;
+    int   blastTicks        = 0;
     // 연속 발사(버스트): 한 번 입력에 나가는 발수는 [burstShotsMin, burstShotsMax] 의 결정적 난수 (0/1 = 단발)
     int   burstShotsMin      = 0;
     int   burstShotsMax      = 0;
-    int   burstIntervalTicks = 0;      // 버스트 안의 발사 간격 (버스트 길이 = 발수 x 간격, 사격 모션 길이도 이에 맞춘다)
-    float spreadDeg          = 0.f;    // 탄마다 조준각에 더하는 난수 흩뿌림 (±도)
+    int   burstIntervalTicks = 0;              // 버스트 안의 발사 간격 (버스트 길이 = 발수 x 간격, 사격 모션 길이도 이에 맞춘다)
+    float spreadDeg          = 0.f;            // 탄마다 조준각에 더하는 난수 흩뿌림 (±도)
     Vec2  muzzleJitter       = { 0.f, 0.f };   // 탄마다 발사 시작점에 더하는 난수 오프셋 (±px)
     Vec2  muzzleAdjust       = { 0.f, 0.f };   // 정면 조준일 때 총구 보정 (px, 오른쪽 향함 기준. 왼쪽이면 x 부호 반전)
     // 파이어샷 분출 (flame 전용): 입력 1회 = 입자 particleCount 개를 particleIntervalTicks 간격으로 흩뿌린다 (탄약은 1발)
     int   particleCount         = 0;
     int   particleIntervalTicks = 0;
-    float particleSpeedMin      = 0.f;            // 입자 속도 범위 (px/s, 결정적 난수)
+    float particleSpeedMin      = 0.f;   // 입자 속도 범위 (px/s, 결정적 난수)
     float particleSpeedMax      = 0.f;
-    int   particleLifeMinTicks  = 0;              // 입자 수명 범위 (틱). 사거리 = 속도 x 수명
+    int   particleLifeMinTicks  = 0;   // 입자 수명 범위 (틱). 사거리 = 속도 x 수명
     int   particleLifeMaxTicks  = 0;
     int   hitReleaseTicks       = 0;              // 한 입력의 공유 판정 ID 를 이 간격마다 풀어 같은 대상이 다시 맞게 한다 (0 = 풀지 않음)
     Vec2  particleHitSizeEnd    = { 0.f, 0.f };   // 수명 끝의 판정 크기 (시작은 hitSize)
     float particleScaleStart    = 1.f;            // 수명 시작/끝의 표시 배율 (판정과 무관)
     float particleScaleEnd      = 1.f;
-    float speedAccel            = 0.f;            // 발사 후 가속 (px/s², 0 = 등속). 탄 방향으로 speedMax 까지
-    float speedMax              = 0.f;            // 가속 상한 (px/s). 0 이면 상한 없음
+    float speedAccel            = 0.f;   // 발사 후 가속 (px/s², 0 = 등속). 탄 방향으로 speedMax 까지
+    float speedMax              = 0.f;   // 가속 상한 (px/s). 0 이면 상한 없음
 };
 
 struct WeaponsTuning
@@ -122,14 +122,14 @@ struct WeaponsTuning
         .hitSize            = { 14.f, 10.f },
         .range              = 460.f,
         .shotOverlayTicks   = 20,
-        .blastSize          = { 0.f, 0.f },
+        .blastSize          = {  0.f,  0.f },
         .blastDamage        = 0,
         .blastTicks         = 0,
         .burstShotsMin      = 3,
         .burstShotsMax      = 5,
         .burstIntervalTicks = 4,
-        .muzzleJitter       = { 0.f, 6.f },
-        .muzzleAdjust       = { 6.f, 10.f },   // MG 정면 사격 클립의 총구 실측 (44,-51) -> (50,-41)
+        .muzzleJitter       = {  0.f,  6.f },
+        .muzzleAdjust       = {  6.f, 10.f }, // MG 정면 사격 클립의 총구 실측 (44,-51) -> (50,-41)
     };
     WeaponTuning shotgun = {
         14,
@@ -169,11 +169,11 @@ struct WeaponsTuning
         .projectileSpeed       = 300.f,
         .maxAlive              = 0,
         .bPierce               = true,
-        .hitSize               = { 60.f, 50.f },
+        .hitSize               = {  60.f, 50.f },
         .range                 = 220.f,
         .shotOverlayTicks      = 24,
         .spreadDeg             = 8.f,
-        .muzzleJitter          = { 0.f, 4.f },
+        .muzzleJitter          = {   0.f,  4.f },
         .particleCount         = 12,
         .particleIntervalTicks = 2,
         .particleSpeedMin      = 260.f,
@@ -237,15 +237,15 @@ struct PlayerTuning
     int   respawnInvincible = 120;     // 리스폰 무적 틱
     int   blinkPeriodTicks  = 4;       // 무적 깜빡임 주기
     float respawnOffsetX    = 100.f;   // 카메라 왼쪽 + 이 값
-    float respawnDropY      = 160.f;    // 카메라 위쪽에서 이만큼 위
+    float respawnDropY      = 160.f;   // 카메라 위쪽에서 이만큼 위
     int   gameOverTicks     = 180;
     int   idleActionTicks   = 480;   // 가만히 있을 때 대기 연출 시작
     int   idleActionLength  = 100;   // 대기 연출 길이 (틱). 끝나면 다시 대기 시간을 센다
     // 시작 낙하산: 착지 발 위치보다 이만큼 위에서 일정 속도로 내려온다. 공격키로 낙하산이 깜빡이며 사라지고 조작이 시작된다.
     float chuteStartHeightPx    = 260.f;
     float chuteFallSpeedPxSec   = 110.f;
-    int   chuteBlinkTicks       = 24;    // 낙하산 소멸 깜빡임 총 틱 (끝나면 제거)
-    int   chuteBlinkPeriodTicks = 3;     // 깜빡임 반주기 (켜짐/꺼짐 각각 이 틱 수)
+    int   chuteBlinkTicks       = 24;                // 낙하산 소멸 깜빡임 총 틱 (끝나면 제거)
+    int   chuteBlinkPeriodTicks = 3;                 // 깜빡임 반주기 (켜짐/꺼짐 각각 이 틱 수)
     Vec2  chuteOffset           = { 0.f, -110.f };   // 낙하산 원점 = 발 + 이 값 (렌더 전용)
 };
 
@@ -270,9 +270,9 @@ struct SandboxTuning
 
 struct ItemTuning
 {
-    float rollFrictionPerSec = 0.5f;    // 굴러가는 점수 아이템 감속률 (1/s). v -= v * rate * dt
-    float rollSpinRefSpeed   = 50.f;    // 이 속도 이상이면 회전 애니 1배속. 그보다 느리면 속도에 비례해 느려진다
-    float rollStopSpeed      = 1.f;     // 이 속도 미만이면 수평 정지 (회전도 함께 멈춘다)
+    float rollFrictionPerSec = 0.5f;   // 굴러가는 점수 아이템 감속률 (1/s). v -= v * rate * dt
+    float rollSpinRefSpeed   = 50.f;   // 이 속도 이상이면 회전 애니 1배속. 그보다 느리면 속도에 비례해 느려진다
+    float rollStopSpeed      = 1.f;    // 이 속도 미만이면 수평 정지 (회전도 함께 멈춘다)
 };
 
 struct RigTuning

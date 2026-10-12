@@ -28,8 +28,8 @@ String SlugErrorCategory::MakeMessage(
 }
 
 bool HasErrorCode(
-    const Error&  _error,
-    const eError  _code)
+    const Error& _error,
+    const eError _code)
 {
     if (_code == eError::Ok)
     {

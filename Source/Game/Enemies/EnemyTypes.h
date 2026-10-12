@@ -47,7 +47,7 @@ struct SpawnParams
     Aabb     arena      = {};
     Vec2     climbEnd   = { 0.f, 0.f };   // 계단 병사: arena.max 뒤 마지막 오름 목표 (y 가 0 이면 없음)
     Vec2     roofSpan   = { 0.f, 0.f };   // 계단 병사: 지붕 발판의 월드 x 범위 [최소, 최대] (최대 <= 최소 이면 없음)
-    int      z          = kDefaultZ;   // 인스턴스 depth (kDefaultZ: 종류 기본값)
+    int      z          = kDefaultZ;      // 인스턴스 depth (kDefaultZ: 종류 기본값)
 };
 
 enum class eEnemyEventKind : uint8_t

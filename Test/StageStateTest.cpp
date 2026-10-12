@@ -52,7 +52,7 @@ public:
     }
 
 private:
-    RngMt19937           m_rng = RngMt19937 { std::mt19937_64::default_seed };
+    RngMt19937                 m_rng    = RngMt19937 { std::mt19937_64::default_seed };
     GameContext                m_ctx    = {};
     InputFrame                 m_frame  = {};
     StageState*                m_pState = nullptr;

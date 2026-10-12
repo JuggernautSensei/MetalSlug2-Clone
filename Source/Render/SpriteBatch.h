@@ -41,23 +41,23 @@ struct SpriteDrawOptions
 };
 
 // 깊이 축: 작을수록 뒤. 모든 그리기는 하나의 depth 값을 가진다 (Docs/DepthSpec.md)
-inline constexpr int kBackdropDepth = -1000;   // 배경 (지형 텍스처보다 뒤)
-inline constexpr int kHudDepth      = 1000;    // HUD/UI (스프라이트 위)
-inline constexpr int kPlayerDepth       = 20;   // 플레이어 몸
-inline constexpr int kPlayerBulletDepth = 30;   // 플레이어/슬러그 탄
-inline constexpr int kPlayerBombDepth   = 31;   // 슬러그 포탄
-inline constexpr int kBulletHitDepth    = 55;   // 탄 소멸 이펙트
-inline constexpr int kBombBlastDepth   = 60;   // 폭탄 폭발 이펙트
-inline constexpr int kEnemyShotDepth    = 32;   // 적 투사체 (탄 30/폭탄 31 위)
+inline constexpr int kBackdropDepth     = -1000;   // 배경 (지형 텍스처보다 뒤)
+inline constexpr int kHudDepth          = 1000;    // HUD/UI (스프라이트 위)
+inline constexpr int kPlayerDepth       = 20;      // 플레이어 몸
+inline constexpr int kPlayerBulletDepth = 30;      // 플레이어/슬러그 탄
+inline constexpr int kPlayerBombDepth   = 31;      // 슬러그 포탄
+inline constexpr int kBulletHitDepth    = 55;      // 탄 소멸 이펙트
+inline constexpr int kBombBlastDepth    = 60;      // 폭탄 폭발 이펙트
+inline constexpr int kEnemyShotDepth    = 32;      // 적 투사체 (탄 30/폭탄 31 위)
 
 struct SpriteCommand
 {
-    int               depth   = 0;
-    int               sortKey = 0;   // 같은 depth 안의 동점 처리 1순위 (예: 발 y 좌표), 2순위는 seq
-    uint32_t          seq     = 0;   // 제출 순서 (동점 처리 2순위)
-    AnimFrame         frame   = {};
-    Vec2              origin  = { 0.f, 0.f };
-    SpriteDrawOptions options = {};
+    int               depth         = 0;
+    int               sortKey       = 0;   // 같은 depth 안의 동점 처리 1순위 (예: 발 y 좌표), 2순위는 seq
+    uint32_t          seq           = 0;   // 제출 순서 (동점 처리 2순위)
+    AnimFrame         frame         = {};
+    Vec2              origin        = { 0.f, 0.f };
+    SpriteDrawOptions options       = {};
     int               standalone    = -1;   // >= 0 이면 frame 대신 이 단독 텍스처의 standaloneSrc 를 origin 가운데로 그린다
     IntRect           standaloneSrc = {};
 };
@@ -109,8 +109,8 @@ public:
     void DrawTextureRepeatX(int _handle, Vec2 _texWorldPos, Vec2 _cameraPos, int _viewW, int _viewH, float _fromX, int _tileX, int _tileW) const;
 
     // 단독 텍스처 (sprites.json 의 file 항목) 를 에셋 루트 기준 상대 경로로 한 번만 읽는다. 실패하면 -1
-    void               SetAssetRoot(const FilePath& _root);
-    [[nodiscard]] int  FindStandalone(const String& _relativeFile);
+    void              SetAssetRoot(const FilePath& _root);
+    [[nodiscard]] int FindStandalone(const String& _relativeFile);
     // 단독 텍스처의 _src 구간을 _worldCenter 가 구간 가운데에 오도록 제출한다
     void SubmitStandalone(int _depth, int _sortKey, int _handle, const IntRect& _src, Vec2 _worldCenter, const SpriteDrawOptions& _options = {});
 
@@ -151,11 +151,11 @@ private:
     void DrawStandaloneRect_(const StandaloneTexture& _texture, const SDL_FRect& _src, const SDL_FRect& _dst, RGBA _tint) const;
     void DrawCommand_(const SpriteCommand& _command, Vec2 _cameraPos) const;
 
-    SDL_Renderer*            m_pRenderer = nullptr;
-    Vector<Page>             m_pages     = {};
-    Vector<StandaloneTexture> m_textures = {};
-    Vector<SpriteCommand> m_commands  = {};
-    FilePath              m_assetRoot = {};
-    HashMap<String, int>  m_namedStandalones = {};
-    uint32_t              m_nextSeq   = 0;
+    SDL_Renderer*             m_pRenderer        = nullptr;
+    Vector<Page>              m_pages            = {};
+    Vector<StandaloneTexture> m_textures         = {};
+    Vector<SpriteCommand>     m_commands         = {};
+    FilePath                  m_assetRoot        = {};
+    HashMap<String, int>      m_namedStandalones = {};
+    uint32_t                  m_nextSeq          = 0;
 };

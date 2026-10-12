@@ -33,7 +33,7 @@
 
 TEST(HitboxEditorTest, UneditedTuningAndDefsSaveByteIdentical)
 {
-    const FilePath root = FindAssetRoot();
+    const FilePath           root  = FindAssetRoot();
     const ARRAY<FilePath, 3> paths = { root / "Tuning" / "Tuning.json", root / "Defs" / "Enemies.json", root / "Defs" / "BigShiee.json" };
     for (const FilePath& path: paths)
     {
@@ -74,7 +74,7 @@ TEST(HitboxEditorTest, TuningHurtStandChangeTouchesOnlyThatNumber)
     ASSERT_TRUE(doc.Save(tmp));
     HitboxDocument reloaded;
     ASSERT_TRUE(reloaded.Load(tmp, "Player"));
-    const String saved = ReadAllText_(tmp);
+    const String    saved = ReadAllText_(tmp);
     std::error_code ec;
     std::filesystem::remove(tmp, ec);
 

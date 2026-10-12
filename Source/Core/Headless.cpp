@@ -33,7 +33,7 @@ static InputFrame MakeScriptedFrame(
     const uint64_t _flipPeriod)
 {
     InputFrame frame;
-    const bool       bLeft = _flipPeriod > 0 && ((_tick / _flipPeriod) % 2) == 1;
+    const bool bLeft = _flipPeriod > 0 && ((_tick / _flipPeriod) % 2) == 1;
     frame.Set(bLeft ? eAction::Left : eAction::Right, true);
     frame.Set(eAction::Jump, (_tick % 150) < 12 && _tick > 60);
     frame.Set(eAction::Shot, (_tick % 10) < 3);
@@ -51,13 +51,13 @@ int RunHeadless(
 #endif
     FilePath replayPath;
     String   stateName;
-    uint64_t       maxTicks        = 0;
-    bool           bExpectFinished = false;
+    uint64_t maxTicks        = 0;
+    bool     bExpectFinished = false;
 
     for (int i = 1; i < _argc; ++i)
     {
         const String arg      = _argv[i];
-        const bool         bHasNext = i + 1 < _argc;
+        const bool   bHasNext = i + 1 < _argc;
         if (arg == "--replay" && bHasNext)
         {
             replayPath = _argv[++i];
@@ -79,8 +79,8 @@ int RunHeadless(
         {
             // --gen-replay <out> <state> <ticks> <flipPeriod>: 합성 입력 리플레이를 만든다 (회귀 기준선 생성용)
             ReplayData data;
-            data.seed      = 12345;
-            data.stateName = _argv[i + 2];
+            data.seed                 = 12345;
+            data.stateName            = _argv[i + 2];
             const uint64_t ticks      = std::strtoull(_argv[i + 3], nullptr, 10);
             const uint64_t flipPeriod = std::strtoull(_argv[i + 4], nullptr, 10);
             for (uint64_t tick = 0; tick < ticks; ++tick)
@@ -142,8 +142,8 @@ int RunHeadless(
         return 1;
     }
 
-    SimRunner runner { ctx, std::move(pState) };
-    const uint64_t  limit = maxTicks > 0 ? maxTicks : replay.frames.size();
+    SimRunner      runner { ctx, std::move(pState) };
+    const uint64_t limit = maxTicks > 0 ? maxTicks : replay.frames.size();
     for (uint64_t tick = 0; tick < limit && tick < replay.frames.size(); ++tick)
     {
         runner.Step(replay.frames[tick]);

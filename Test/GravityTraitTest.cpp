@@ -1,7 +1,6 @@
 // 중력 특성 테스트: 지상형 정의는 공중 스폰 시 지면으로 떨어지고, 비중력 정의는 떨어지지 않는다
 #include "VehicleTestUtil.h"
 
-
 struct GravityCase
 {
     const char* name     = "";
@@ -9,23 +8,25 @@ struct GravityCase
     bool        bSpawn   = true;   // false 면 플래그만 검사 (비행체/보스는 자체 이동이 있다)
 };
 
-static constexpr ARRAY<GravityCase, 15> kCases = { {
-    { "soldier_bomb", true, true },
-    { "soldier_sword", true, true },
-    { "soldier_missile", true, true },
-    { "soldier_bzk", true, true },
-    { "shielder", true, true },
-    { "pow", true, true },
-    { "jeep", true, true },
-    { "btank", true, true },
-    { "missle_tank", true, true },
-    { "sarubia", true, true },
-    { "soldier_hang", false, true },
-    { "flying_bzk", false, false },
-    { "heli", false, false },
-    { "heli_bomb", false, false },
-    { "bigshiee", false, false },
-} };
+static constexpr ARRAY<GravityCase, 15> kCases = {
+    {
+     { "soldier_bomb", true, true },
+     { "soldier_sword", true, true },
+     { "soldier_missile", true, true },
+     { "soldier_bzk", true, true },
+     { "shielder", true, true },
+     { "pow", true, true },
+     { "jeep", true, true },
+     { "btank", true, true },
+     { "missle_tank", true, true },
+     { "sarubia", true, true },
+     { "soldier_hang", false, true },
+     { "flying_bzk", false, false },
+     { "heli", false, false },
+     { "heli_bomb", false, false },
+     { "bigshiee", false, false },
+     }
+};
 
 TEST(GravityTrait, DefFlagFollowsTheRule)
 {

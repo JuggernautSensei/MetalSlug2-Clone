@@ -16,12 +16,11 @@
 #include "Render/Animation.h"
 #include "World/Constants.h"
 
-
 [[nodiscard]] FilePath EnemyDefsPath();
 
 bool LoadEnemyLib(
     EnemyDefLibrary& _out,
-    String*    _pMessage = nullptr);
+    String*          _pMessage = nullptr);
 
 [[nodiscard]] SandboxConfig MakeEnemyConfig(
     const Vec2 _spawn = { 100.f, 378.f });
@@ -37,13 +36,13 @@ public:
         const Vec2  _player  = { 100.f, 378.f },
         const float _camLeft = 0.f);
 
-    [[nodiscard]] bool                IsLoaded() const;
+    [[nodiscard]] bool          IsLoaded() const;
     [[nodiscard]] const String& GetMessage() const;
 
-    [[nodiscard]] EnemyWorld&               World();
-    [[nodiscard]] EnemyDefLibrary&          Lib();
-    [[nodiscard]] CombatSystem&             Combat();
-    [[nodiscard]] ProjectileSystem&         Projectiles();
+    [[nodiscard]] EnemyWorld&         World();
+    [[nodiscard]] EnemyDefLibrary&    Lib();
+    [[nodiscard]] CombatSystem&       Combat();
+    [[nodiscard]] ProjectileSystem&   Projectiles();
     [[nodiscard]] Vector<EnemyEvent>& Events();
 
     void SetView(
@@ -92,16 +91,16 @@ private:
     void CountPlayerHits_(
         const Vector<HitEvent>& _events);
 
-    EnemyDefLibrary          m_lib        = {};
-    int                      m_playerHits = 0;
-    String             m_message    = {};
-    bool                     m_bLoaded    = false;
-    EnemyWorld               m_world;
-    GroundMap                m_ground;
-    Vec2                     m_player;
-    Aabb                     m_view;
-    const AnimationLibrary*  m_pAnims = nullptr;
-    CombatSystem             m_combat      = {};
-    ProjectileSystem         m_projectiles = {};
-    Vector<EnemyEvent> m_events      = {};
+    EnemyDefLibrary         m_lib        = {};
+    int                     m_playerHits = 0;
+    String                  m_message    = {};
+    bool                    m_bLoaded    = false;
+    EnemyWorld              m_world;
+    GroundMap               m_ground;
+    Vec2                    m_player;
+    Aabb                    m_view;
+    const AnimationLibrary* m_pAnims      = nullptr;
+    CombatSystem            m_combat      = {};
+    ProjectileSystem        m_projectiles = {};
+    Vector<EnemyEvent>      m_events      = {};
 };

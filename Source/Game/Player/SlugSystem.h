@@ -26,14 +26,14 @@ public:
     // 폭탄 보급 상자를 탑승 중에 먹으면 캐논탄이 된다. 처리했으면 true (플레이어 폭탄은 늘지 않는다).
     bool OnBombSupply(int _amount);
 
-    [[nodiscard]] int           GetCount() const;
-    [[nodiscard]] SlugVehicle&  Get(int _index);
-    [[nodiscard]] const SlugVehicle& Get(int _index) const;
+    [[nodiscard]] int                     GetCount() const;
+    [[nodiscard]] SlugVehicle&            Get(int _index);
+    [[nodiscard]] const SlugVehicle&      Get(int _index) const;
     [[nodiscard]] Span<const SlugVehicle> GetAll() const;
-    [[nodiscard]] int           GetRiddenIndex() const;
-    [[nodiscard]] const SlugVehicle* GetRiddenOrNull() const;
-    [[nodiscard]] SlugVehicle*       GetRiddenOrNull();
-    [[nodiscard]] bool          IsRiding() const;
+    [[nodiscard]] int                     GetRiddenIndex() const;
+    [[nodiscard]] const SlugVehicle*      GetRiddenOrNull() const;
+    [[nodiscard]] SlugVehicle*            GetRiddenOrNull();
+    [[nodiscard]] bool                    IsRiding() const;
 
     // 적 지형 충돌용: 차량 몸통을 벽으로 (보병이 올라타지 못하게)
     [[nodiscard]] Vector<Wall> MakeEnemyWalls() const;
@@ -43,7 +43,7 @@ public:
     [[nodiscard]] uint64_t HashState() const;
 
 private:
-    SlugTuning         m_tuning        = {};
-    Vector<SlugVehicle> m_slugs        = {};
-    int                m_riddenIndex   = -1;
+    SlugTuning          m_tuning      = {};
+    Vector<SlugVehicle> m_slugs       = {};
+    int                 m_riddenIndex = -1;
 };

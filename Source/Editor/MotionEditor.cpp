@@ -157,8 +157,8 @@ static void MotionCollectParams_(
         p.path.push_back(object.keys[i]);
         if (kid.type == 'n')
         {
-            p.v[0]  = std::strtod(kid.str.c_str(), nullptr);
-            p.bInt  = kid.str.find_first_of(".eE") == String::npos;
+            p.v[0] = std::strtod(kid.str.c_str(), nullptr);
+            p.bInt = kid.str.find_first_of(".eE") == String::npos;
             _out.push_back(p);
         }
         else if (kid.type == 'l' && (kid.str == "true" || kid.str == "false"))
@@ -295,7 +295,7 @@ static bool MotionPatchEffects_(
     Vector<WeaponEffect> old;
     for (const int itemIndex: array.kids)
     {
-        const JsonNode& item   = scanner.nodes[static_cast<size_t>(itemIndex)];
+        const JsonNode& item = scanner.nodes[static_cast<size_t>(itemIndex)];
         WeaponEffect    e;
         const int       clip   = MotionKey_(item, "clip");
         const int       offset = MotionKey_(item, "offset");
@@ -671,7 +671,7 @@ void MotionEditor::Save_(
             else
             {
                 const EnemyPartDepth* pPart = MotionPart_(pDef->bus, name);
-                bDone                     = pPart != nullptr && doc.ApplyPartDepth(def, name, pPart->depth, pPart->sort);
+                bDone                       = pPart != nullptr && doc.ApplyPartDepth(def, name, pPart->depth, pPart->sort);
             }
             if (bDone)
             {
@@ -793,7 +793,7 @@ void MotionEditor::DrawParams_(
             ImGui::SeparatorText(group.c_str());
             prefix = group;
         }
-        const char* pKo    = MotionParamKo_(p.path.back());
+        const char*  pKo   = MotionParamKo_(p.path.back());
         const String label = pKo != nullptr ? std::format("{} ({})###{}", pKo, p.label, p.label) : p.label;
         ImGui::PushID(i);
         bool bEdit = false;
@@ -1132,14 +1132,14 @@ void MotionEditor::DrawOverlay(
     const Vec2  camRaw = pState->GetCamera().GetPositionNoShake();
     const Vec2  camera = { std::floor(camRaw.x), std::floor(camRaw.y) };
 
-    float      mouseX   = 0.f;
-    float      mouseY   = 0.f;
-    const bool bDown    = (SDL_GetMouseState(&mouseX, &mouseY) & SDL_BUTTON_LMASK) != 0;
-    const bool bClick   = bDown && !m_bPrevDown;
-    m_bPrevDown         = bDown;
-    float      logicalX = 0.f;
-    float      logicalY = 0.f;
-    const bool bMouse   = SDL_RenderCoordinatesFromWindow(_renderer.GetNative(), mouseX, mouseY, &logicalX, &logicalY) && !ImGui::GetIO().WantCaptureMouse;
+    float      mouseX     = 0.f;
+    float      mouseY     = 0.f;
+    const bool bDown      = (SDL_GetMouseState(&mouseX, &mouseY) & SDL_BUTTON_LMASK) != 0;
+    const bool bClick     = bDown && !m_bPrevDown;
+    m_bPrevDown           = bDown;
+    float      logicalX   = 0.f;
+    float      logicalY   = 0.f;
+    const bool bMouse     = SDL_RenderCoordinatesFromWindow(_renderer.GetNative(), mouseX, mouseY, &logicalX, &logicalY) && !ImGui::GetIO().WantCaptureMouse;
     const Vec2 mouseWorld = { logicalX + camera.x, logicalY + camera.y };
 
     if (!bDown)
@@ -1165,11 +1165,11 @@ void MotionEditor::DrawOverlay(
             {
                 local = w.effects[static_cast<size_t>(kind - 2)].offset;
             }
-            const Vec2 at    = { feet.x + local.x * facing, feet.y + local.y };
-            const RGBA color = kind == 0 ? kMotionMuzzleColor : (kind == 1 ? kMotionFxColor : kMotionEffectColor);
-            const bool bSel  = m_pickWeapon == wi && ((kind == 0 && m_pick == ePick::Muzzle) || (kind == 1 && m_pick == ePick::MuzzleFx) || (kind >= 2 && m_pick == ePick::Effect && m_pickEffect == kind - 2));
-            const Vec2 s     = { std::floor(at.x - camera.x), std::floor(at.y - camera.y) };
-            const float r    = bSel ? 9.f : 6.f;
+            const Vec2  at    = { feet.x + local.x * facing, feet.y + local.y };
+            const RGBA  color = kind == 0 ? kMotionMuzzleColor : (kind == 1 ? kMotionFxColor : kMotionEffectColor);
+            const bool  bSel  = m_pickWeapon == wi && ((kind == 0 && m_pick == ePick::Muzzle) || (kind == 1 && m_pick == ePick::MuzzleFx) || (kind >= 2 && m_pick == ePick::Effect && m_pickEffect == kind - 2));
+            const Vec2  s     = { std::floor(at.x - camera.x), std::floor(at.y - camera.y) };
+            const float r     = bSel ? 9.f : 6.f;
             _renderer.DrawLine({ s.x - r, s.y }, { s.x + r, s.y }, color);
             _renderer.DrawLine({ s.x, s.y - r }, { s.x, s.y + r }, color);
             const String label = kind == 0 ? w.name + " muzzle" : (kind == 1 ? w.name + " fx" : std::format("{} fx{}", w.name, kind - 2));

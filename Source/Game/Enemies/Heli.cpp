@@ -122,8 +122,8 @@ static void BeginMove_(
 
 // 곡선 이동 한 틱. 끝났으면 true
 [[nodiscard]] static bool StepMove_(
-    Enemy&          _e,
-    const HeliCfg&  _c)
+    Enemy&         _e,
+    const HeliCfg& _c)
 {
     const float u      = static_cast<float>(_e.stateTicks) / static_cast<float>(Max(1, _c.moveTicks));
     const Vec2  start  = { Unpack_(_e.ext[kExtStartX]), Unpack_(_e.ext[kExtStartY]) };
@@ -246,7 +246,7 @@ static void StepLow_(
     {
         _e.body.position.y = Min(_e.body.position.y + _c.descendSpeedY * kStepSec, lowY);
     }
-    const float dx = LowTargetX_(_e, _c, _env) - _e.body.position.x;
+    const float dx   = LowTargetX_(_e, _c, _env) - _e.body.position.x;
     const float step = Min(_c.lowSpeed * kStepSec, std::abs(dx));
     _e.body.position.x += (dx < 0.f ? -step : step);
 }
@@ -257,7 +257,7 @@ static void BeginLow_(
     const EnemyDef& _def,
     const EnemyEnv& _env)
 {
-    const Aabb& view = _env.ctx.cameraView;
+    const Aabb& view    = _env.ctx.cameraView;
     _e.ext[kExtPassDir] = _e.body.position.x < (view.min.x + view.max.x) * 0.5f ? 1 : -1;
     Go_(_e, _def, eHeliState::Low);
 }
@@ -324,9 +324,9 @@ static void Tick_(
             }
             else if (WantsTurn_(_e, c, _env))
             {
-                _e.aux3                = 0;
-                _e.ext[kExtBombTime]   = _e.stateTicks;
-                _e.ext[kExtTurnFlip]   = 0;
+                _e.aux3              = 0;
+                _e.ext[kExtBombTime] = _e.stateTicks;
+                _e.ext[kExtTurnFlip] = 0;
                 Go_(_e, _def, eHeliState::Turn);
             }
             break;
@@ -347,7 +347,7 @@ static void Tick_(
             const bool bFlipped = _e.ext[kExtTurnFlip] != 0;
             if (!bFlipped && ClipFinished(_e, _def))
             {
-                _e.facing          = -_e.facing;
+                _e.facing            = -_e.facing;
                 _e.ext[kExtTurnFlip] = 1;
                 SetClip(_e, c.clipTurnOut, true);
             }
@@ -362,7 +362,7 @@ static void Tick_(
         case eHeliState::PodOut:
             if (_e.stateTicks >= c.podOutTicks)
             {
-                const Aabb& view   = _env.ctx.cameraView;
+                const Aabb& view    = _env.ctx.cameraView;
                 const float targetX = _e.facing < 0 ? view.max.x - c.sideMargin : view.min.x + c.sideMargin;
                 const float targetY = Clamp(_env.ctx.player.center.y + c.targetDyPlayer, view.min.y + c.targetMinY, view.min.y + c.targetMaxY);
                 BeginMove_(_e, _def, _env, eHeliState::Move, { targetX, targetY });
@@ -448,8 +448,8 @@ static const AnimFrame* BodyFrame_(
     const EnemyDef&         _def,
     const AnimationLibrary& _anims)
 {
-    const HeliCfg& c = _def.heli;
-    const int shown = ShownPitchFrame_(_e, _def, _anims);
+    const HeliCfg& c     = _def.heli;
+    const int      shown = ShownPitchFrame_(_e, _def, _anims);
     if (_e.clip != c.clipFly || shown < 0)
     {
         return nullptr;
@@ -481,7 +481,7 @@ static void SubmitParts_(
         const Vec2 at = { _render.feet.x + c.podOffset.x * sign, _render.feet.y + c.podOffset.y };
         (void)SubmitNamedPart(_render, ResolveSide(_def.GetClip(c.clipPod).name, _e.facing), at, _e.ext[kExtPodTicks], false, feetKey + c.partPod.sort, c.partPod.depth);
     }
-    const Vec2 rotor = { _render.feet.x + c.rotorOffset.x * sign, _render.feet.y + c.rotorOffset.y };
+    const Vec2   rotor     = { _render.feet.x + c.rotorOffset.x * sign, _render.feet.y + c.rotorOffset.y };
     const int    shown     = ShownPitchFrame_(_e, _def, _render.anims);
     const String rotorName = c.rotorRowPrefix.empty() || shown < 0 ? ResolveSide(_def.GetClip(c.clipRotor).name, _e.facing) : c.rotorRowPrefix + std::to_string(shown);
     (void)SubmitNamedPart(_render, rotorName, rotor, _e.clipTicks, true, feetKey + c.partRotor.sort, c.partRotor.depth);
@@ -523,12 +523,12 @@ void ParseHeliCfg(
     c.bombMuzzle        = _r.ReadVec2("bombMuzzle", c.bombMuzzle);
     c.bombMinY          = _r.Num("bombMinY", c.bombMinY);
 
-    c.podOutTicks     = _r.Ticks("podOutSec", 0.2f);
-    c.moveTicks       = Max(1, _r.Ticks("moveSec", 1.17f));
-    c.sideMargin      = _r.Num("sideMargin", c.sideMargin);
-    c.targetDyPlayer  = _r.Num("targetDyPlayer", c.targetDyPlayer);
-    c.targetMinY      = _r.Num("targetMinY", c.targetMinY);
-    c.targetMaxY      = _r.Num("targetMaxY", c.targetMaxY);
+    c.podOutTicks    = _r.Ticks("podOutSec", 0.2f);
+    c.moveTicks      = Max(1, _r.Ticks("moveSec", 1.17f));
+    c.sideMargin     = _r.Num("sideMargin", c.sideMargin);
+    c.targetDyPlayer = _r.Num("targetDyPlayer", c.targetDyPlayer);
+    c.targetMinY     = _r.Num("targetMinY", c.targetMinY);
+    c.targetMaxY     = _r.Num("targetMaxY", c.targetMaxY);
     (void)_r.NumArray("xCurve", c.xCurve);
     (void)_r.NumArray("yCurve", c.yCurve);
     c.missiles        = _r.Int("missiles", c.missiles);

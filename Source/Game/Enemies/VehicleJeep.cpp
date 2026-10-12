@@ -124,7 +124,7 @@ static void Tick_(
         case eJeepState::IdleAndMove:
             if (_e.stateTicks >= c.idleTicks)
             {
-                const int park = _e.aux2 == 0 ? ParkSide_(_e, c, view) : 0;   // 첫 주행: 락 글라이드로 뒤처진 카메라 보정
+                const int park = _e.aux2 == 0 ? ParkSide_(_e, c, view) : 0;                  // 첫 주행: 락 글라이드로 뒤처진 카메라 보정
                 _e.aux         = park != 0 ? park : (DxToPlayer(_e, _env) < 0.f ? -1 : 1);   // 플레이어가 왼쪽이면 좌측 가장자리
                 const int dir  = park != 0 ? -park : _e.aux;
                 Go_(_e, _def, _e.facing == dir ? eJeepState::Move : eJeepState::TurnToMove);
@@ -259,15 +259,15 @@ void ParseJeepCfg(
 {
     JeepCfg& c = _def.jeep;
 
-    c.speed     = _r.Num("speed");
-    c.targetTol = _r.Num("targetTol");
-    c.edgeInset = _r.Num("edgeInset");
-    c.idleTicks = _r.Ticks("idleSec");
-    c.waitTicks = _r.Ticks("waitSec");
+    c.speed          = _r.Num("speed");
+    c.targetTol      = _r.Num("targetTol");
+    c.edgeInset      = _r.Num("edgeInset");
+    c.idleTicks      = _r.Ticks("idleSec");
+    c.waitTicks      = _r.Ticks("waitSec");
     c.firstWaitTicks = _r.Ticks("firstWaitSec", 0.f);
-    c.bullets   = _r.Int("bullets");
-    c.fireFrame = _r.Int("fireFrame");
-    c.rocketShiftX = _r.Num("rocketShiftX", c.rocketShiftX);
+    c.bullets        = _r.Int("bullets");
+    c.fireFrame      = _r.Int("fireFrame");
+    c.rocketShiftX   = _r.Num("rocketShiftX", c.rocketShiftX);
 
     c.clipIdle      = _r.Clip("idle");
     c.clipMove      = _r.Clip("move");

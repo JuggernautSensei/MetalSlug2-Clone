@@ -6,34 +6,36 @@
 #include "Base/Math.h"
 #include "Base/Types.h"
 
-constexpr ARRAY<SlugClipInfo, static_cast<size_t>(eSlugClip::Count)> kClipTable = { {
-    { "Slug_Idle", 3, 6 },
-    { "Slug_Drive", 20, 20 },
-    { "Slug_AccelFwd", 4, 15 },
-    { "Slug_AccelBack", 4, 15 },
-    { "Slug_Elev", 10, 15 },
-    { "Slug_Jump", 4, 12 },
-    { "Slug_Land", 4, 15 },
-    { "Slug_Crouch", 9, 24 },
-    { "Slug_LowIdle", 3, 6 },
-    { "Slug_LowDrive", 20, 20 },
-    { "Slug_LowAccelFwd", 4, 15 },
-    { "Slug_LowAccelBack", 4, 15 },
-    { "Slug_Enter", 7, 12 },
-    { "Slug_HitFront", 16, 30 },
-    { "Slug_HitBack", 10, 30 },
-    { "Slug_AirHitA", 14, 30 },
-    { "Slug_AirHitB", 12, 30 },
-    { "Slug_Vulcan_Idle", 32, 1 },
-    { "Slug_Bullet", 17, 30 },
-    { "Slug_CannonFx_0", 18, 30 },
-    { "Slug_CannonFx_Air", 3, 30 },
-    { "Slug_CannonFx_Crouch", 16, 30 },
-    { "Slug_VulcanDebris", 11, 24 },
-    { "Slug_Explosion", 30, 30 },
-    { "Slug_In", 17, 14 },
-    { "Slug_Out", 17, 14 },
-} };
+constexpr ARRAY<SlugClipInfo, static_cast<size_t>(eSlugClip::Count)> kClipTable = {
+    {
+     { "Slug_Idle", 3, 6 },
+     { "Slug_Drive", 20, 20 },
+     { "Slug_AccelFwd", 4, 15 },
+     { "Slug_AccelBack", 4, 15 },
+     { "Slug_Elev", 10, 15 },
+     { "Slug_Jump", 4, 12 },
+     { "Slug_Land", 4, 15 },
+     { "Slug_Crouch", 9, 24 },
+     { "Slug_LowIdle", 3, 6 },
+     { "Slug_LowDrive", 20, 20 },
+     { "Slug_LowAccelFwd", 4, 15 },
+     { "Slug_LowAccelBack", 4, 15 },
+     { "Slug_Enter", 7, 12 },
+     { "Slug_HitFront", 16, 30 },
+     { "Slug_HitBack", 10, 30 },
+     { "Slug_AirHitA", 14, 30 },
+     { "Slug_AirHitB", 12, 30 },
+     { "Slug_Vulcan_Idle", 32, 1 },
+     { "Slug_Bullet", 17, 30 },
+     { "Slug_CannonFx_0", 18, 30 },
+     { "Slug_CannonFx_Air", 3, 30 },
+     { "Slug_CannonFx_Crouch", 16, 30 },
+     { "Slug_VulcanDebris", 11, 24 },
+     { "Slug_Explosion", 30, 30 },
+     { "Slug_In", 17, 14 },
+     { "Slug_Out", 17, 14 },
+     }
+};
 
 const SlugClipInfo& GetSlugClipInfo(
     const eSlugClip _clip)

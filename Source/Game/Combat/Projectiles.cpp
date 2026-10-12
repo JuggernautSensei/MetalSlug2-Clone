@@ -88,31 +88,31 @@ void ProjectileSystem::SpawnBullet(
     CombatSystem&      _combat)
 {
     Bullet bullet;
-    bullet.position    = _spawn.position;
-    bullet.renderPrev  = _spawn.position;
-    bullet.hitFrom     = _spawn.sweepFrom;
-    bullet.velocity    = { _spawn.direction.x * _spawn.speed, _spawn.direction.y * _spawn.speed };
-    bullet.accel       = _spawn.accel;
-    bullet.maxSpeed    = _spawn.maxSpeed;
-    bullet.size        = _spawn.size;
-    bullet.range       = _spawn.range;
-    bullet.damage      = _spawn.damage;
-    bullet.team        = _spawn.team;
-    bullet.kind        = _spawn.kind;
-    bullet.owner       = _spawn.owner;
+    bullet.position     = _spawn.position;
+    bullet.renderPrev   = _spawn.position;
+    bullet.hitFrom      = _spawn.sweepFrom;
+    bullet.velocity     = { _spawn.direction.x * _spawn.speed, _spawn.direction.y * _spawn.speed };
+    bullet.accel        = _spawn.accel;
+    bullet.maxSpeed     = _spawn.maxSpeed;
+    bullet.size         = _spawn.size;
+    bullet.range        = _spawn.range;
+    bullet.damage       = _spawn.damage;
+    bullet.team         = _spawn.team;
+    bullet.kind         = _spawn.kind;
+    bullet.owner        = _spawn.owner;
     bullet.bSharedHitId = _spawn.hitId != kNoHitId;
     bullet.hitId        = bullet.bSharedHitId ? _spawn.hitId : _combat.NewHitId();
     bullet.sizeStart    = _spawn.size;
     bullet.sizeEnd      = _spawn.sizeEnd;
     bullet.scaleStart   = _spawn.scaleStart;
     bullet.scaleEnd     = _spawn.scaleEnd;
-    bullet.bPierce     = _spawn.bPierce;
-    bullet.tag         = _spawn.tag;
-    bullet.blastSize   = _spawn.blastSize;
-    bullet.blastDamage = _spawn.blastDamage;
-    bullet.blastTicks  = _spawn.blastTicks;
-    bullet.bTrail      = _spawn.bTrail;
-    bullet.z           = _spawn.z;
+    bullet.bPierce      = _spawn.bPierce;
+    bullet.tag          = _spawn.tag;
+    bullet.blastSize    = _spawn.blastSize;
+    bullet.blastDamage  = _spawn.blastDamage;
+    bullet.blastTicks   = _spawn.blastTicks;
+    bullet.bTrail       = _spawn.bTrail;
+    bullet.z            = _spawn.z;
     m_bullets.push_back(bullet);
 }
 

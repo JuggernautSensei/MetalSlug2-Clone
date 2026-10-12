@@ -3,7 +3,6 @@
 #include "Game/StateFactory.h"
 #include "PlayerTestUtil.h"
 
-
 TEST(PlayerStart, StartsWithPistolAndTenBombs)
 {
     Sim sim;
@@ -27,7 +26,7 @@ TEST(PlayerStart, StartsGroundedIdleFacingRightWithThreeLives)
 // 시작 낙하산: 낙하 중 입력 잠금, 공격키로 깜빡이며 소멸 후 조작, 착지 시 자동 소멸
 TEST(PlayerChute, DescendsSlowlyFromStartHeightWithoutPhysics)
 {
-    Sim sim;
+    Sim         sim;
     const float landY = sim.Y();
     sim.Player().BeginChuteDescent(sim.Tune());
     EXPECT_EQ(sim.Player().GetChutePhase(), eChutePhase::Descend);
@@ -63,10 +62,10 @@ TEST(PlayerChute, AttackBlinksChuteThenVanishes)
     sim.Player().BeginChuteDescent(sim.Tune());
     sim.Tap(eAction::Shot);
 
-    const int   blinkTicks = sim.Tune().player.chuteBlinkTicks;
-    int         toggles    = 0;
-    bool        bLastVis   = sim.Player().IsChuteVisible(sim.Tune());
-    int         guard      = 0;
+    const int blinkTicks = sim.Tune().player.chuteBlinkTicks;
+    int       toggles    = 0;
+    bool      bLastVis   = sim.Player().IsChuteVisible(sim.Tune());
+    int       guard      = 0;
     while (sim.Player().GetChutePhase() != eChutePhase::None && guard < blinkTicks + 4)
     {
         sim.Step();
@@ -85,7 +84,7 @@ TEST(PlayerChute, AttackBlinksChuteThenVanishes)
 
 TEST(PlayerChute, LandingReleasesChuteAndStartsNormalPlay)
 {
-    Sim sim;
+    Sim         sim;
     const float landY = sim.Y();
     sim.Player().BeginChuteDescent(sim.Tune());
     sim.Step(400);
@@ -667,7 +666,7 @@ TEST(PlayerJump, WalkingOffALedgeStartsFalling)
 {
     RngMt19937         rng { _seed };
     Vector<InputFrame> frames;
-    InputFrame               cur;
+    InputFrame         cur;
     for (int i = 0; i < _ticks; ++i)
     {
         if (i % 8 == 0)

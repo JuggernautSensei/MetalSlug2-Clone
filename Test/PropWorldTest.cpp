@@ -11,7 +11,6 @@
 #include "Game/Stage/StageData.h"
 #include "PropTestUtil.h"
 
-
 constexpr float kDt = kStepSec;
 
 [[nodiscard]] static float Width_(
@@ -52,7 +51,7 @@ static void TickN_(
 
 [[nodiscard]] static bool HasEvent_(
     const Vector<PropEvent>& _events,
-    const ePropEventKind           _kind)
+    const ePropEventKind     _kind)
 {
     for (const PropEvent& ev: _events)
     {
@@ -66,7 +65,7 @@ static void TickN_(
 
 [[nodiscard]] static int CountEvents_(
     const Vector<PropEvent>& _events,
-    const ePropEventKind           _kind)
+    const ePropEventKind     _kind)
 {
     int n = 0;
     for (const PropEvent& ev: _events)
@@ -151,7 +150,7 @@ TEST(PropWorld, KnifeDoesNotHitTrucks)
         knife.damage = 8;
         knife.owner  = 1;
         knife.id     = 1;
-        CombatSystem                  combat;
+        CombatSystem            combat;
         const Vector<HitEvent>* pEvents = ResolveHitbox_(combat, world, knife);
         EXPECT_TRUE(pEvents->empty());
     }
@@ -236,12 +235,12 @@ TEST(PropWorld, PlayerHitboxResolvesToPropEvent)
     const PropHandle shop = world.Spawn("shop_0", { 1274.f, 228.f });
 
     Hitbox hb;
-    hb.box                                = Aabb::FromCenterSize({ 1274.f, 128.f }, { 10.f, 10.f });
-    hb.team                               = eTeam::Player;
-    hb.kind                               = eHitKind::Bullet;
-    hb.damage                             = 2;
-    hb.owner                              = 1;
-    hb.id                                 = combat.NewHitId();
+    hb.box                          = Aabb::FromCenterSize({ 1274.f, 128.f }, { 10.f, 10.f });
+    hb.team                         = eTeam::Player;
+    hb.kind                         = eHitKind::Bullet;
+    hb.damage                       = 2;
+    hb.owner                        = 1;
+    hb.id                           = combat.NewHitId();
     const Vector<HitEvent>* pEvents = ResolveHitbox_(combat, world, hb);
 
     ASSERT_EQ(pEvents->size(), 1u);
@@ -258,12 +257,12 @@ TEST(PropWorld, EnemyHitboxDoesNotHitProps)
     const PropHandle shop = world.Spawn("shop_0", { 1274.f, 228.f });
 
     Hitbox hb;
-    hb.box                                = Aabb::FromCenterSize({ 1274.f, 128.f }, { 10.f, 10.f });
-    hb.team                               = eTeam::Enemy;
-    hb.kind                               = eHitKind::Bullet;
-    hb.damage                             = 99;
-    hb.owner                              = 9;
-    hb.id                                 = combat.NewHitId();
+    hb.box                          = Aabb::FromCenterSize({ 1274.f, 128.f }, { 10.f, 10.f });
+    hb.team                         = eTeam::Enemy;
+    hb.kind                         = eHitKind::Bullet;
+    hb.damage                       = 99;
+    hb.owner                        = 9;
+    hb.id                           = combat.NewHitId();
     const Vector<HitEvent>* pEvents = ResolveHitbox_(combat, world, hb);
     EXPECT_TRUE(pEvents->empty());
     EXPECT_EQ(world.GetHp(shop), 12);
@@ -455,7 +454,7 @@ TEST(PropWorld, GroundHouseDamageStagesAndGroundPatch)
     HitN_(world, house, 6, 2);
     EXPECT_TRUE(world.IsDestroyed(house));
     const Vector<PropEvent> events = world.TakeEvents();
-    bool                          bPatch = false;
+    bool                    bPatch = false;
     for (const PropEvent& ev: events)
     {
         if (ev.kind == ePropEventKind::GroundPatch)
@@ -625,7 +624,7 @@ TEST(PropWorld, SubmitQueuesSpritesOnLayersFromDefinitions)
 // 상자 (crate): 측면은 막히지 않고 위에서만 착지한다 (Stage0 box_collider 대체)
 TEST(PropWorld, CrateIsOneWayPlatformNotWall)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld        world { &GetPropLib(), 1 };
     const PropHandle crate = world.Spawn("crate", { 1119.f, 350.f });
     ASSERT_NE(crate, kNoProp);
     EXPECT_EQ(world.GetWalls().size(), 0u);
@@ -639,7 +638,7 @@ TEST(PropWorld, CrateLetsBodyWalkThroughAndLandOnTop)
 {
     PropWorld world { &GetPropLib(), 1 };
     world.Spawn("crate", { 1119.f, 350.f });
-    const GroundMap ground = MakeFloorMap(2000, 500, 378);
+    const GroundMap  ground = MakeFloorMap(2000, 500, 378);
     Vector<Platform> platforms;
     for (const Platform& p: world.GetPlatforms())
     {
@@ -679,7 +678,7 @@ TEST(PropWorld, OtherWallPropsKeepTheirWalls)
 // 건물 깊이 규칙: 먼저 나오는(작은 x) 가게가 앞에 그려진다 = 그리기 키가 더 크다. shop_2 의 y 보정은 없다.
 TEST(PropWorld, BuildingSortKeyPutsSmallerXInFront)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld        world { &GetPropLib(), 1 };
     const PropHandle s1 = world.Spawn("shop_1", { 1489.f, 230.f });
     const PropHandle s2 = world.Spawn("shop_2", { 1661.f, 252.f });
     ASSERT_NE(world.Get(s1), nullptr);
@@ -691,7 +690,7 @@ TEST(PropWorld, BuildingSortKeyPutsSmallerXInFront)
 // 건물 깊이 규칙: 같은 x 에서는 y 가 작은(뒤쪽) 쪽이 먼저 그려진다
 TEST(PropWorld, BuildingSortKeyTiesBreakByY)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld        world { &GetPropLib(), 1 };
     const PropHandle back  = world.Spawn("shop_0", { 1274.f, 200.f });
     const PropHandle front = world.Spawn("shop_0", { 1274.f, 260.f });
     ASSERT_NE(world.Get(back), nullptr);
@@ -702,8 +701,8 @@ TEST(PropWorld, BuildingSortKeyTiesBreakByY)
 // 실제 Stage0 의 가게 6채: x 가 커질수록 그리기 키가 엄격히 작아진다 (앞 → 뒤 = x 오름차순)
 TEST(PropWorldStage0, ShopsDrawFrontToBackByX)
 {
-    StageLoadDiagnostics    diag;
-    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    StageLoadDiagnostics diag;
+    Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
@@ -721,7 +720,7 @@ TEST(PropWorldStage0, ShopsDrawFrontToBackByX)
     ASSERT_EQ(shops.size(), 6u);
     std::sort(shops.begin(), shops.end(), [](const SpawnSpec& _a, const SpawnSpec& _b) { return _a.x < _b.x; });
 
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld        world { &GetPropLib(), 1 };
     std::vector<int> keys;
     for (const SpawnSpec& shop: shops)
     {
@@ -737,7 +736,7 @@ TEST(PropWorldStage0, ShopsDrawFrontToBackByX)
 
 TEST(PropWorld, SortKeyWithoutOffsetIsCenterY)
 {
-    PropWorld world { &GetPropLib(), 1 };
+    PropWorld        world { &GetPropLib(), 1 };
     const PropHandle boat = world.Spawn("mob_boat", { 1000.f, 300.f });
     ASSERT_NE(world.Get(boat), nullptr);
     EXPECT_EQ(PropWorld::SortKey(*world.Get(boat)), 300);

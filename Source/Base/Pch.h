@@ -36,8 +36,8 @@
 #include "Base/Types.h"
 #include "Base/Handle.h"
 
-using jug::Random;
-using jug::RngMt19937;
 using jug::Error;
-using jug::Result;
 using jug::kOK;
+using jug::Random;
+using jug::Result;
+using jug::RngMt19937;

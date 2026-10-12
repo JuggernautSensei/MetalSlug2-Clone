@@ -9,7 +9,6 @@
 #include "Base/Types.h"
 #include "EnemyTestUtil.h"
 
-
 [[nodiscard]] static String ReadDefsText_()
 {
     std::ifstream     file(EnemyDefsPath().string());
@@ -32,8 +31,8 @@
 }
 
 [[nodiscard]] static String ResolveSideText_(
-    String _name,
-    const bool   _bLeft)
+    String     _name,
+    const bool _bLeft)
 {
     const size_t pos = _name.find("{side}");
     if (pos != String::npos)
@@ -46,7 +45,7 @@
 TEST(EnemyDefs, LoadsTheInfantryDefinitionsAndGlobals)
 {
     EnemyDefLibrary lib;
-    String    message;
+    String          message;
     ASSERT_TRUE(LoadEnemyLib(lib, &message)) << message.c_str();
     for (const char* name: kInfantryNames)
     {
@@ -297,7 +296,7 @@ TEST(EnemyDefsErrors, DuplicateDefinitionNameIsRejected)
     String       text   = ReadDefsText_();
     const String anchor = "\"pow\": {";
     const String extra  = "\"pow\": { \"kind\": \"npc\", \"behavior\": \"pow\", \"hp\": 1, \"body\": { \"w\": 50, \"h\": 80, \"cx\": 0, \"cy\": -40 } }, ";
-    text                      = ReplaceOnce_(text, anchor, extra + anchor);
+    text                = ReplaceOnce_(text, anchor, extra + anchor);
     ASSERT_FALSE(text.empty());
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text)));
 }

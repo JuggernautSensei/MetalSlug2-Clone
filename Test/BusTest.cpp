@@ -9,12 +9,11 @@
 #include "Render/SpriteBatch.h"
 #include "VehicleTestUtil.h"
 
-
-constexpr float    kGround      = 378.f;
-constexpr float    kAnchorX     = 2985.f;
+constexpr float    kGround       = 378.f;
+constexpr float    kAnchorX      = 2985.f;
 constexpr float    kStairAnchorX = 2400.f;   // 평지 길이 (3000) 안에서 계단 끝까지 올라가도록
-constexpr uint32_t kStairTag    = 0x42555300u;
-constexpr int      kStateParked = 0;   // Bus.cpp 의 eBusState 순서
+constexpr uint32_t kStairTag     = 0x42555300u;
+constexpr int      kStateParked  = 0;   // Bus.cpp 의 eBusState 순서
 
 [[nodiscard]] static SpawnParams BusParams_()
 {
@@ -85,7 +84,7 @@ TEST(Bus, SpawnsStairSoldiersOffScreenOnTheRightAndCapsTheCount)
 {
     VehicleRig rig({ 2700.f, kGround }, 2496.f);
     ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
-    const EnemyHandle h = rig.Spawn("bus", { kAnchorX, kGround }, BusParams_());
+    const EnemyHandle h        = rig.Spawn("bus", { kAnchorX, kGround }, BusParams_());
     size_t            maxCount = 0;
     float             firstX   = -1.f;
     for (int i = 0; i < 900; ++i)
@@ -155,7 +154,7 @@ TEST(Bus, BazookaSoldiersClimbTheStairsToTheRoofAndFireRockets)
         VehicleRig rig({ 2100.f, kGround }, 2000.f);
         ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
         rig.World().ReseedRng(seed);
-        const EnemyHandle h = rig.Spawn("bus", { 2400.f, kGround }, BusParams_());
+        const EnemyHandle h        = rig.Spawn("bus", { 2400.f, kGround }, BusParams_());
         const int         bzkIndex = rig.World().GetLibrary()->FindIndex("soldier_bzk");
         ASSERT_GE(bzkIndex, 0);
         for (int i = 0; i < 900 && !bFiredRocket; ++i)
@@ -284,8 +283,8 @@ TEST(Bus, StairSoldiersOnTheLandingAreDrawnInFrontOfTheBodyAndBehindTheCoverInEv
     SLUG_REQUIRE_BAKED(anims);
     VehicleRig rig({ 2100.f, kGround }, 2000.f);
     ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
-    const EnemyHandle h = rig.Spawn("bus", { kStairAnchorX, kGround }, BusParams_());
-    const BusCfg&     c = rig.Lib().Get(rig.Lib().FindIndex("bus")).bus;
+    const EnemyHandle h     = rig.Spawn("bus", { kStairAnchorX, kGround }, BusParams_());
+    const BusCfg&     c     = rig.Lib().Get(rig.Lib().FindIndex("bus")).bus;
     const float       roofY = kGround + c.stairsTop.y;   // 계단 끝 승강대 (지붕 없음)
 
     const int wantStages[3] = { 0, 1, 4 };
@@ -392,7 +391,7 @@ TEST(Bus, StairSoldierTraceWritesCsvWhenRequested)
     }
     const std::string path = pPath;
     std::free(pPath);
-    std::ofstream     out(path);
+    std::ofstream out(path);
     out << "tick,id,def,x,y,state,grounded,shots\n";
     VehicleRig rig({ 2100.f, kGround }, 2000.f);
     ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
@@ -445,8 +444,8 @@ TEST(Bus, BlastKilledSoldierIsRemovedOnlyAfterFallingOutOfTheCamera)
     ASSERT_NE(rig.E(h), nullptr);
     (void)rig.Strike(h.id, eHitKind::Blast, 999);
 
-    float lastY     = kGround;
-    bool  bGone     = false;
+    float lastY      = kGround;
+    bool  bGone      = false;
     float viewBottom = 0.f;
     for (int tick = 0; tick < 900 && !bGone; ++tick)
     {

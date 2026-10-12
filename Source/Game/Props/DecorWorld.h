@@ -28,8 +28,8 @@ struct DecorSpawn
     Vec2              pos      = { 0.f, 0.f };   // 엔티티 원점 (애니 pivot 기준)
     Vec2              velocity = { 0.f, 0.f };
     bool              bFlipX   = false;
-    bool              bLoop    = false;   // sequence 끝나면 처음부터 반복
-    float             scale    = 1.f;     // 배율 (1 = 원본, 피벗 고정)
+    bool              bLoop    = false;       // sequence 끝나면 처음부터 반복
+    float             scale    = 1.f;         // 배율 (1 = 원본, 피벗 고정)
     int               z        = kDefaultZ;   // 그리기 depth (kDefaultZ: 레이어 기본 kDecorFarDepth/kDecorBackDepth)
     Vector<DecorStep> sequence = {};
 };

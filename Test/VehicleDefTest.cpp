@@ -5,7 +5,6 @@
 #include "Base/Types.h"
 #include "VehicleTestUtil.h"
 
-
 [[nodiscard]] static const EnemyDef& Need_(
     const EnemyDefLibrary& _lib,
     const char*            _name)
@@ -30,7 +29,7 @@
 
 static void ExpectClipExists_(
     const AnimationLibrary& _anims,
-    const String&     _name,
+    const String&           _name,
     const char*             _owner)
 {
     if (_name.empty())
@@ -48,7 +47,7 @@ static void ExpectClipExists_(
 TEST(VehicleDefs, LoadsTheDefsDirectoryWithAllFourVehiclesAndTheirProjectiles)
 {
     EnemyDefLibrary lib;
-    String    message;
+    String          message;
     ASSERT_TRUE(LoadVehicleLib(lib, &message)) << message.c_str();
     for (const char* name: kVehicleNames)
     {
@@ -200,7 +199,7 @@ TEST(VehicleDefs, VehicleDeathsDeclareTheirDelayedEffectsAndRemovalTimes)
 
 TEST(VehicleDefs, AnUnknownBehaviorParameterFailsTheLoadWithTheDefinitionName)
 {
-    const char*                         kJson = R"({
+    const char*                   kJson = R"({
       "version": 1,
       "defs": {
         "dummy_shell": { "kind": "projectile", "box": { "w": 10, "h": 10 }, "speed": 100,
@@ -274,8 +273,8 @@ TEST(VehicleDefs, NonLoopClipTimingsMatchTheAnimations)
             }
             for (int side = 0; side < (clip.bSided ? 2 : 1); ++side)
             {
-                const String resolved = clip.bSided ? ResolveSide(clip.name, side == 0 ? -1 : 1) : clip.name;
-                const AnimClip*    pAnim    = anims.GetOrNull(anims.Find(resolved));
+                const String    resolved = clip.bSided ? ResolveSide(clip.name, side == 0 ? -1 : 1) : clip.name;
+                const AnimClip* pAnim    = anims.GetOrNull(anims.Find(resolved));
                 ASSERT_NE(pAnim, nullptr) << resolved.c_str();
                 EXPECT_EQ(pAnim->GetFrameCount(), clip.frames) << resolved.c_str();
                 EXPECT_NEAR(static_cast<double>(pAnim->GetFrameDurationUnits()), static_cast<double>(clip.frameUnits), 1000.0) << resolved.c_str();

@@ -9,7 +9,6 @@
 #include "StageTestUtil.h"
 #include "VehicleTestUtil.h"
 
-
 [[nodiscard]] static Vector<int> SubmittedDepths_(
     VehicleRig&             _rig,
     const AnimationLibrary& _anims)
@@ -54,7 +53,7 @@ TEST(InstanceZ, BusPartsKeepRelativeOffset)
     (void)lifted.Spawn("bus", { 2985.f, 378.f }, busParams);
     base.Step(30);
     lifted.Step(30);
-    Vector<int> a = SubmittedDepths_(base, anims);
+    Vector<int>       a = SubmittedDepths_(base, anims);
     const Vector<int> b = SubmittedDepths_(lifted, anims);
     ASSERT_FALSE(a.empty());
     ASSERT_EQ(a.size(), b.size());

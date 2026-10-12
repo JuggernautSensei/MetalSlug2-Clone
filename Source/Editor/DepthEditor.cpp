@@ -145,10 +145,10 @@ void DepthEditor::Patch_(
 }
 
 void DepthEditor::PatchPart_(
-    const StringView       _def,
-    const StringView       _part,
-    const EnemyPartDepth&  _value,
-    const EnemyPartDepth&  _default)
+    const StringView      _def,
+    const StringView      _part,
+    const EnemyPartDepth& _value,
+    const EnemyPartDepth& _default)
 {
     for (size_t i = 0; i < m_texts.size(); ++i)
     {
@@ -197,8 +197,8 @@ void DepthEditor::DrawParts_(
         return;
     }
     ImGui::TextDisabled("depth = absolute layer at default z; sort = tie key (feet-sorted parts: offset added to feet y). Instance z shifts all parts.");
-    EnemyDefLibrary&     lib = pState->GetEnemyLibMutable();
-    Vector<String>       names;
+    EnemyDefLibrary& lib = pState->GetEnemyLibMutable();
+    Vector<String>   names;
     for (const EnemyDef& def: lib.GetDefs())
     {
         names.push_back(def.name);

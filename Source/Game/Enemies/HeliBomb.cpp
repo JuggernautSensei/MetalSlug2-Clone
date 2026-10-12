@@ -25,11 +25,11 @@
 }
 
 static void AddBombHitbox_(
-    const Enemy&         _e,
-    const Vec2           _size,
-    const int            _damage,
-    const eHitKind       _kind,
-    EnemyEnv&            _env)
+    const Enemy&   _e,
+    const Vec2     _size,
+    const int      _damage,
+    const eHitKind _kind,
+    EnemyEnv&      _env)
 {
     if (!_env.ctx.pCombat || _e.meleeHitId == kNoHitId)
     {
@@ -69,19 +69,24 @@ static void Tick_(
         return;
     }
 
-    _e.body.velocity.y   = Min(_e.body.velocity.y + c.gravity * kStepSec, c.maxFall);
+    _e.body.velocity.y = Min(_e.body.velocity.y + c.gravity * kStepSec, c.maxFall);
     _e.body.position.y += _e.body.velocity.y * kStepSec;
 
     const Vec2 probeTo = { _e.body.position.x, _e.body.position.y + c.groundProbeY };
     // 플레이어 바로 위에서 떨어지는 폭탄은 그 머리 위 구조물(강 한가운데 건물 등)에 막히지 않고 플레이어 발 높이까지 내려와 터진다
-    const EnemyPlayerInfo& player = _env.ctx.player;
-    const bool        bAimed   = player.bAlive && std::abs(probeTo.x - player.feet.x) <= c.hitSize.x * 0.5f + c.blastSize.x * 0.5f;
-    const bool        bPassing = bAimed && probeTo.y < player.feet.y;
-    const bool        bArrived = bAimed && probeTo.y >= player.feet.y;
+    const EnemyPlayerInfo& player   = _env.ctx.player;
+    const bool             bAimed   = player.bAlive && std::abs(probeTo.x - player.feet.x) <= c.hitSize.x * 0.5f + c.blastSize.x * 0.5f;
+    const bool             bPassing = bAimed && probeTo.y < player.feet.y;
+    const bool             bArrived = bAimed && probeTo.y >= player.feet.y;
     if (bArrived || (!bPassing && Touches_(_env.ctx.physics, probeTo)))
     {
         // 착지: 지면에 먼지를 깔고 터진다 (사망 처리 → onDeath)
-        RequestFx(_env, FxDef { c.groundFx, { 0.f, c.groundProbeY + c.groundFxDy }, 0.f, 57 }, _e.body.position, _e.facing);
+        RequestFx(_env, FxDef {
+                            c.groundFx, { 0.f, c.groundProbeY + c.groundFxDy },
+                             0.f, 57
+        },
+                  _e.body.position,
+                  _e.facing);
         (void)_e.health.ApplyDamage(_e.health.hp);
         return;
     }

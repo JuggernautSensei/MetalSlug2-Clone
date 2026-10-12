@@ -21,13 +21,13 @@ public:
     [[nodiscard]] Result<void> Save(const FilePath& _path);
     void                       Create(int _width, int _height);
 
-    [[nodiscard]] int  GetWidth() const;
-    [[nodiscard]] int  GetHeight() const;
-    [[nodiscard]] bool IsInside(int _x, int _y) const;
-    [[nodiscard]] bool IsSolid(int _x, int _y) const;
-    [[nodiscard]] bool IsDirty() const;
-    [[nodiscard]] bool CanUndo() const;
-    [[nodiscard]] bool CanRedo() const;
+    [[nodiscard]] int                    GetWidth() const;
+    [[nodiscard]] int                    GetHeight() const;
+    [[nodiscard]] bool                   IsInside(int _x, int _y) const;
+    [[nodiscard]] bool                   IsSolid(int _x, int _y) const;
+    [[nodiscard]] bool                   IsDirty() const;
+    [[nodiscard]] bool                   CanUndo() const;
+    [[nodiscard]] bool                   CanRedo() const;
     [[nodiscard]] const Vector<uint8_t>& GetPixels() const;
 
     // 연속 호출을 하나의 undo 단위로 묶는다. 안 부르면 각 편집이 한 단위.
@@ -48,17 +48,17 @@ private:
     void SetPixel_(int _x, int _y, uint8_t _value);
     void MarkColumn_(int _x);
 
-    Vector<uint8_t>                  m_pixels      = {};
-    Vector<Vector<GroundPixelChange>> m_history    = {};
-    Vector<GroundPixelChange>        m_stroke      = {};
-    size_t                           m_applied     = 0;
-    size_t                           m_savedApplied = 0;
-    int                              m_width       = 0;
-    int                              m_height      = 0;
-    int                              m_dirtyX0     = 0;
-    int                              m_dirtyX1     = -1;
-    bool                             m_bInStroke   = false;
-    bool                             m_bSavedLost  = false;
+    Vector<uint8_t>                   m_pixels       = {};
+    Vector<Vector<GroundPixelChange>> m_history      = {};
+    Vector<GroundPixelChange>         m_stroke       = {};
+    size_t                            m_applied      = 0;
+    size_t                            m_savedApplied = 0;
+    int                               m_width        = 0;
+    int                               m_height       = 0;
+    int                               m_dirtyX0      = 0;
+    int                               m_dirtyX1      = -1;
+    bool                              m_bInStroke    = false;
+    bool                              m_bSavedLost   = false;
 };
 
 enum class eGroundTool
@@ -96,27 +96,27 @@ private:
     void HandleCanvasInput_(int _pixelX, int _pixelY, bool _bHovered);
     void CommitDrag_(int _pixelX, int _pixelY);
 
-    SDL_Renderer*      m_pRenderer = nullptr;
-    GroundMaskDocument m_doc       = {};
-    String             m_name      = {};
-    String             m_status    = {};
-    Vector<String>     m_names     = {};
+    SDL_Renderer*      m_pRenderer  = nullptr;
+    GroundMaskDocument m_doc        = {};
+    String             m_name       = {};
+    String             m_status     = {};
+    Vector<String>     m_names      = {};
     Vector<MaskStrip>  m_maskStrips = {};
-    Vector<MaskStrip>  m_bgStrips  = {};
-    eGroundTool        m_tool      = eGroundTool::Pencil;
-    int                m_brush     = 1;
-    int                m_bgH       = 0;
-    int                m_startX    = 0;
-    int                m_startY    = 0;
-    int                m_lastX     = 0;
-    int                m_lastY     = 0;
-    float              m_zoom      = 1.f;
-    float              m_scrollX   = 0.f;
-    float              m_scrollY   = 0.f;
-    bool               m_bShowBg   = true;
-    bool               m_bShowMask = true;
-    bool               m_bDragging = false;
+    Vector<MaskStrip>  m_bgStrips   = {};
+    eGroundTool        m_tool       = eGroundTool::Pencil;
+    int                m_brush      = 1;
+    int                m_bgH        = 0;
+    int                m_startX     = 0;
+    int                m_startY     = 0;
+    int                m_lastX      = 0;
+    int                m_lastY      = 0;
+    float              m_zoom       = 1.f;
+    float              m_scrollX    = 0.f;
+    float              m_scrollY    = 0.f;
+    bool               m_bShowBg    = true;
+    bool               m_bShowMask  = true;
+    bool               m_bDragging  = false;
     bool               m_bDragSolid = true;
-    bool               m_bHasLast  = false;
-    bool               m_bBgLoaded = false;
+    bool               m_bHasLast   = false;
+    bool               m_bBgLoaded  = false;
 };

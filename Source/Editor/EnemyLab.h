@@ -24,21 +24,21 @@ public:
     void SetAutoSpawn(const String& _defName);
 
     // UI 없는 조작 (테스트 대상)
-    EnemyHandle Spawn(SandboxState& _state, StringView _defName, Vec2 _feet, int _facing, int _z = kDefaultZ);
-    EnemyHandle SpawnNearPlayer(SandboxState& _state, StringView _defName, float _offsetX, int _facing, int _z = kDefaultZ);
-    void        KillAll(SandboxState& _state);
-    void        Clear(SandboxState& _state);
-    int         RespawnLast(SandboxState& _state);
-    bool        ReloadDefs(SandboxState& _state);
-    bool        ReloadDefsKeep(SandboxState& _state);   // 적을 유지한 채 교체, 정의 구성이 바뀌었으면 재스폰 경로
-    void        SetAutoReloadBlocked(bool _bBlocked);
-    void        SetMouseCaptured(bool _bCaptured);   // 다른 편집기가 월드 클릭을 쓰는 중이면 선택/스폰을 막는다
+    EnemyHandle       Spawn(SandboxState& _state, StringView _defName, Vec2 _feet, int _facing, int _z = kDefaultZ);
+    EnemyHandle       SpawnNearPlayer(SandboxState& _state, StringView _defName, float _offsetX, int _facing, int _z = kDefaultZ);
+    void              KillAll(SandboxState& _state);
+    void              Clear(SandboxState& _state);
+    int               RespawnLast(SandboxState& _state);
+    bool              ReloadDefs(SandboxState& _state);
+    bool              ReloadDefsKeep(SandboxState& _state);   // 적을 유지한 채 교체, 정의 구성이 바뀌었으면 재스폰 경로
+    void              SetAutoReloadBlocked(bool _bBlocked);
+    void              SetMouseCaptured(bool _bCaptured);   // 다른 편집기가 월드 클릭을 쓰는 중이면 선택/스폰을 막는다
     [[nodiscard]] int GetDefIndex() const;
-    void        ForgetSet();
-    void        SelectAt(const SandboxState& _state, Vec2 _world);
+    void              ForgetSet();
+    void              SelectAt(const SandboxState& _state, Vec2 _world);
 
-    [[nodiscard]] EnemyHandle GetSelected() const;
-    [[nodiscard]] size_t      GetSetCount() const;
+    [[nodiscard]] EnemyHandle     GetSelected() const;
+    [[nodiscard]] size_t          GetSetCount() const;
     [[nodiscard]] const FilePath& GetAssetRoot() const;
 
     void                SetPaused(bool _bPaused);
@@ -89,7 +89,7 @@ private:
 
     bool    m_bAutoBlocked   = false;
     bool    m_bMouseCaptured = false;
-    int64_t m_defsStamp    = 0;
+    int64_t m_defsStamp      = 0;
 
     bool m_bPrevMouseDown = false;
     int  m_frame          = 0;

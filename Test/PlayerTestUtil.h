@@ -14,7 +14,6 @@
 #include "Game/SimRunner.h"
 #include "Render/Animation.h"
 
-
 // 조준 키를 누른 뒤 조준각이 목표각에 닿을 때까지 기다리는 틱 (HMG 는 연속 조준각이라 시간이 걸린다)
 inline constexpr int kAimSettleTicks = 20;
 
@@ -90,7 +89,7 @@ public:
     [[nodiscard]] float Y();
 
 private:
-    RngMt19937           m_rng     = RngMt19937 { std::mt19937_64::default_seed };
+    RngMt19937                 m_rng     = RngMt19937 { std::mt19937_64::default_seed };
     GameContext                m_ctx     = {};
     SandboxState*              m_pState  = nullptr;
     std::unique_ptr<SimRunner> m_pRunner = nullptr;
@@ -100,9 +99,9 @@ private:
 [[nodiscard]] bool LoadAnims(
     AnimationLibrary& _out);
 
-#define SLUG_REQUIRE_BAKED(_anims)                                                           \
-    AnimationLibrary _anims;                                                                 \
-    if (!LoadAnims(_anims))                                                   \
-    {                                                                                        \
+#define SLUG_REQUIRE_BAKED(_anims)     \
+    AnimationLibrary _anims;           \
+    if (!LoadAnims(_anims))            \
+    {                                  \
         GTEST_SKIP() << "Assets 없음"; \
     }

@@ -39,9 +39,9 @@ public:
 
 private:
     void LogImpl(
-        const eLogLevel        _level,
-        const jug::StringView  _msg,
-        const bool             _bEndOfLog) override
+        const eLogLevel       _level,
+        const jug::StringView _msg,
+        const bool            _bEndOfLog) override
     {
         if (_bEndOfLog)
         {
@@ -71,8 +71,8 @@ void InstallCoreLogger()
     jug::SetCoreLogger(&g_coreLogger);
 }
 
-static std::FILE*         g_pEventLog   = nullptr;
-static unsigned long long g_EventTick   = 0;
+static std::FILE*         g_pEventLog = nullptr;
+static unsigned long long g_EventTick = 0;
 
 bool OpenEventLog(
     const std::string_view _path)

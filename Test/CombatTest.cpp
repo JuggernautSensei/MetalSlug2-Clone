@@ -5,7 +5,6 @@
 #include "Base/Types.h"
 #include "World/Combat.h"
 
-
 [[nodiscard]] static Hitbox MakeHit_(
     const eTeam    _team,
     const eHitKind _kind,
@@ -48,7 +47,7 @@
 }
 
 [[nodiscard]] static Vector<HitEvent> Resolve_(
-    HitResolver&                 _resolver,
+    HitResolver&           _resolver,
     const Vector<Hitbox>&  _hits,
     const Vector<Hurtbox>& _hurts)
 {
@@ -58,7 +57,7 @@
 // 30프레임 동안 결정적인 히트/허트 박스를 만들어 판정 결과를 로그로 남긴다
 [[nodiscard]] static Vector<uint32_t> RunResolverLog_()
 {
-    HitResolver            resolver;
+    HitResolver      resolver;
     Vector<uint32_t> log;
     for (int frame = 0; frame < 30; ++frame)
     {
@@ -95,7 +94,7 @@ TEST(Combat, TeamMatrix)
 
 TEST(Combat, PlayerBulletHitsEnemyAndReportsDamage)
 {
-    HitResolver                  resolver;
+    HitResolver            resolver;
     const Vector<HitEvent> events = Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 10, 10), 1, false, 3) }, { MakeHurt_(eTeam::Enemy, Box_(5, 5, 20, 20), 7) });
 
     ASSERT_EQ(events.size(), 1u);
@@ -116,14 +115,14 @@ TEST(Combat, SameTeamIsIgnored)
 
 TEST(Combat, EnemyBulletHitsPlayer)
 {
-    HitResolver                  resolver;
+    HitResolver            resolver;
     const Vector<HitEvent> events = Resolve_(resolver, { MakeHit_(eTeam::Enemy, eHitKind::Bullet, Box_(0, 0, 10, 10), 1) }, { MakeHurt_(eTeam::Player, Box_(5, 0, 15, 10), 1) });
     EXPECT_EQ(events.size(), 1u);
 }
 
 TEST(Combat, NeutralPropsAcceptPlayerHitsButNotEnemyFire)
 {
-    HitResolver                 resolver;
+    HitResolver           resolver;
     const Vector<Hurtbox> prop = { MakeHurt_(eTeam::Neutral, Box_(0, 0, 10, 10), 50) };
 
     EXPECT_EQ(Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 10, 10), 1) }, prop).size(), 1u);
@@ -133,14 +132,14 @@ TEST(Combat, NeutralPropsAcceptPlayerHitsButNotEnemyFire)
 
 TEST(Combat, NeutralHazardsHitBothSidesButNotTheirOwner)
 {
-    HitResolver                 resolver;
+    HitResolver           resolver;
     const Vector<Hurtbox> hurts = {
         MakeHurt_(eTeam::Player, Box_(0, 0, 10, 10), 1),
         MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 2),
         MakeHurt_(eTeam::Neutral, Box_(0, 0, 10, 10), 3),
     };
 
-    Hitbox                       hit    = MakeHit_(eTeam::Neutral, eHitKind::Hazard, Box_(0, 0, 10, 10), 9, true, 1, 3);
+    Hitbox                 hit    = MakeHit_(eTeam::Neutral, eHitKind::Hazard, Box_(0, 0, 10, 10), 9, true, 1, 3);
     const Vector<HitEvent> events = Resolve_(resolver, { hit }, hurts);
     ASSERT_EQ(events.size(), 2u);
     EXPECT_EQ(events[0].target, 1u);
@@ -157,7 +156,7 @@ TEST(Combat, OwnerNeverHitsItself)
 
 TEST(Combat, KnifeHitsEveryEnemyRegardlessOfKind)
 {
-    HitResolver           resolver;
+    HitResolver     resolver;
     Vector<Hurtbox> enemies;
     for (uint32_t i = 0; i < 20; ++i)
     {
@@ -167,8 +166,8 @@ TEST(Combat, KnifeHitsEveryEnemyRegardlessOfKind)
 
     for (uint32_t i = 0; i < enemies.size(); ++i)
     {
-        const float                  x      = static_cast<float>(i) * 30.f;
-        const Hitbox                 knife  = MakeHit_(eTeam::Player, eHitKind::Melee, Box_(x + 10.f, 10, x + 30.f, 30), 1000 + i, false, 4);
+        const float            x      = static_cast<float>(i) * 30.f;
+        const Hitbox           knife  = MakeHit_(eTeam::Player, eHitKind::Melee, Box_(x + 10.f, 10, x + 30.f, 30), 1000 + i, false, 4);
         const Vector<HitEvent> events = Resolve_(resolver, { knife }, enemies);
         ASSERT_EQ(events.size(), 1u) << "enemy " << i;
         EXPECT_EQ(events[0].target, 200 + i);
@@ -202,7 +201,7 @@ TEST(Combat, InvulnerableHurtboxIgnoresHitsWithoutConsumingThem)
 
 TEST(Combat, NonPierceHitboxIsConsumedByFirstHitInIndexOrder)
 {
-    HitResolver                  resolver;
+    HitResolver            resolver;
     const Vector<HitEvent> events = Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 100, 10), 1) }, { MakeHurt_(eTeam::Enemy, Box_(40, 0, 50, 10), 1), MakeHurt_(eTeam::Enemy, Box_(10, 0, 20, 10), 2) });
 
     ASSERT_EQ(events.size(), 1u);
@@ -211,7 +210,7 @@ TEST(Combat, NonPierceHitboxIsConsumedByFirstHitInIndexOrder)
 
 TEST(Combat, ConsumedBulletDoesNotHitAgainOnLaterFrames)
 {
-    HitResolver                 resolver;
+    HitResolver           resolver;
     const Vector<Hitbox>  bullet = { MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 10, 10), 77) };
     const Vector<Hurtbox> target = { MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 1) };
 
@@ -225,7 +224,7 @@ TEST(Combat, ConsumedBulletDoesNotHitAgainOnLaterFrames)
 
 TEST(Combat, PiercingHitboxHitsEachTargetExactlyOnce)
 {
-    HitResolver                resolver;
+    HitResolver          resolver;
     const Vector<Hitbox> laser   = { MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 200, 10), 5, true, 2) };
     Vector<Hurtbox>      targets = { MakeHurt_(eTeam::Enemy, Box_(10, 0, 20, 10), 1), MakeHurt_(eTeam::Enemy, Box_(50, 0, 60, 10), 2) };
 
@@ -244,11 +243,11 @@ TEST(Combat, PiercingHitboxHitsEachTargetExactlyOnce)
 
 TEST(Combat, MeleeSwingSharingAnIdHitsEachTargetOncePerSwing)
 {
-    HitResolver                 resolver;
+    HitResolver           resolver;
     const Vector<Hurtbox> enemy = { MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 1) };
 
     const Vector<Hitbox> swing = { MakeHit_(eTeam::Player, eHitKind::Melee, Box_(0, 0, 10, 10), 31, false, 4) };
-    int                        total = 0;
+    int                  total = 0;
     for (int frame = 0; frame < 6; ++frame)
     {
         total += static_cast<int>(Resolve_(resolver, swing, enemy).size());
@@ -261,7 +260,7 @@ TEST(Combat, MeleeSwingSharingAnIdHitsEachTargetOncePerSwing)
 
 TEST(Combat, PierceHitsOnlyOncePerOwnerEvenWithManyHurtboxes)
 {
-    HitResolver                  resolver;
+    HitResolver            resolver;
     const Vector<Hurtbox>  boss   = { MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 9), MakeHurt_(eTeam::Enemy, Box_(5, 0, 15, 10), 9) };   // 같은 owner 의 두 부위
     const Vector<HitEvent> events = Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Blast, Box_(0, 0, 20, 10), 4, true, 20) }, boss);
     ASSERT_EQ(events.size(), 1u);
@@ -270,7 +269,7 @@ TEST(Combat, PierceHitsOnlyOncePerOwnerEvenWithManyHurtboxes)
 
 TEST(Combat, UntrackedHitboxHitsEveryCall)
 {
-    HitResolver                 resolver;
+    HitResolver           resolver;
     const Vector<Hitbox>  zone   = { MakeHit_(eTeam::Neutral, eHitKind::Hazard, Box_(0, 0, 10, 10), kNoHitId, true, 1, 0) };
     const Vector<Hurtbox> victim = { MakeHurt_(eTeam::Player, Box_(0, 0, 10, 10), 1) };
     EXPECT_EQ(Resolve_(resolver, zone, victim).size(), 1u);
@@ -280,7 +279,7 @@ TEST(Combat, UntrackedHitboxHitsEveryCall)
 
 TEST(Combat, EventsAreOrderedByHitboxThenHurtbox)
 {
-    HitResolver                resolver;
+    HitResolver          resolver;
     const Vector<Hitbox> hits = {
         MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 100, 10), 1, true),
         MakeHit_(eTeam::Player, eHitKind::Melee, Box_(0, 0, 100, 10), 2, true),

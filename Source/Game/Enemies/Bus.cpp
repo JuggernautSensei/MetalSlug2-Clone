@@ -26,7 +26,7 @@ constexpr int kLandTicks = 6;    // 계단 착지 3 프레임 x 2 틱
 constexpr int kPersist   = 1 << 20;
 
 // ext 슬롯 0..7 = 단계 진입 틱. 그 뒤는 병사 타이머.
-constexpr int kExtNextSoldier = 8;    // 다음 병사를 낼 수 있는 틱
+constexpr int kExtNextSoldier = 8;   // 다음 병사를 낼 수 있는 틱
 
 constexpr uint32_t kStairSoldierTag  = 0x42555300u;   // 계단 병사 (생존 수 세기)
 constexpr int      kVariantClimb     = 2;             // Soldier.cpp: 계단 오른 뒤 일반 AI
@@ -42,7 +42,7 @@ constexpr int      kVariantClimbStay = 3;             // 계단 오른 뒤 승�
 
 static void SubmitPart_(
     const EnemyRenderEnv& _render,
-    const EnemyPartDepth&   _depth,
+    const EnemyPartDepth& _depth,
     const StringView      _clip,
     const Vec2            _at,
     const int             _ticks,
@@ -533,8 +533,8 @@ static void ParseDebris_(
 }
 
 static void ParseInnerSoldiers_(
-    DefReader&                   _r,
-    Vector<BusInnerSoldierDef>&  _out)
+    DefReader&                  _r,
+    Vector<BusInnerSoldierDef>& _out)
 {
     const JsonReader* pList = _r.FindRaw("innerSoldiers");
     if (!pList)

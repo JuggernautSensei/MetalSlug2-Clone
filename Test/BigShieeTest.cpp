@@ -16,7 +16,6 @@
 #include "Game/Props/PropWorld.h"
 #include "Render/Animation.h"
 
-
 constexpr float kCamLeft = 1000.f;
 
 static void LoadBossLib_(
@@ -140,8 +139,8 @@ TEST(BigShiee, FiresLobbedShellsOneVolleyAtATime)
 {
     EnemyRig rig({ kCamLeft + 100.f, 378.f }, kCamLeft);
     LoadBossLib_(rig);
-    const EnemyHandle boss = SpawnBoss_(rig);
-    int maxShots = 0;
+    const EnemyHandle boss     = SpawnBoss_(rig);
+    int               maxShots = 0;
     for (int t = 0; t < 1200; ++t)
     {
         rig.Step(1);
@@ -310,8 +309,8 @@ TEST(BigShiee, ChuteHostageShowsTheTiedStuckPoseWithoutParachuteWhileDescending)
     const int powDef   = rig.Lib().FindIndex("pow");
     ASSERT_GE(chuteDef, 0);
     ASSERT_GE(powDef, 0);
-    const EnemyDef& def  = rig.Lib().Get(chuteDef);
-    const EnemyDef& pow  = rig.Lib().Get(powDef);
+    const EnemyDef& def   = rig.Lib().Get(chuteDef);
+    const EnemyDef& pow   = rig.Lib().Get(powDef);
     const int       stuck = pow.FindClip("stuck");
     ASSERT_GE(stuck, 0);
     EXPECT_EQ(def.overlayClip, -1) << "낙하산 오버레이 없음";
@@ -337,15 +336,15 @@ TEST(BigShiee, ChuteHostageFallsFreelyAcceleratingThenLandsAsPowWithItsDrop)
     const float maxStep = def.flyingBzk.fallMaxSpeed * (1.f / 60.f);
 
     SpawnParams params;
-    params.facing     = 1;
-    params.bActivated = true;
-    params.drop       = "gunitem_mg";
+    params.facing            = 1;
+    params.bActivated        = true;
+    params.drop              = "gunitem_mg";
     const EnemyHandle handle = rig.Spawn("pow_chute", { kCamLeft + 300.f, -40.f }, params);
 
-    float prevY    = -40.f;
-    float prevStep = 0.f;
-    bool  bLanded  = false;
-    float landedY  = 0.f;
+    float  prevY    = -40.f;
+    float  prevStep = 0.f;
+    bool   bLanded  = false;
+    float  landedY  = 0.f;
     String landedDrop;
     for (int t = 0; t < 60 * 10 && !bLanded; ++t)
     {
@@ -502,11 +501,11 @@ static void PlacePlayerAtAngle_(
     const EnemyHandle _boss,
     const float       _deg)
 {
-    const Enemy*       pBoss  = _rig.E(_boss);
-    const EnemyDef&    def    = _rig.Lib().Get(_rig.Lib().FindIndex("bigshiee"));
-    const Vec2         muzzle = { pBoss->body.position.x + def.bigShiee.cannonAimOrigin.x, pBoss->body.position.y + def.bigShiee.cannonAimOrigin.y };
-    const float        feetY  = 378.f;
-    const float        dy     = (feetY - 30.f) - muzzle.y;
+    const Enemy*    pBoss  = _rig.E(_boss);
+    const EnemyDef& def    = _rig.Lib().Get(_rig.Lib().FindIndex("bigshiee"));
+    const Vec2      muzzle = { pBoss->body.position.x + def.bigShiee.cannonAimOrigin.x, pBoss->body.position.y + def.bigShiee.cannonAimOrigin.y };
+    const float     feetY  = 378.f;
+    const float     dy     = (feetY - 30.f) - muzzle.y;
     _rig.SetPlayer({ muzzle.x + std::tan(_deg * 3.14159265f / 180.f) * dy, feetY });
 }
 
@@ -602,10 +601,10 @@ TEST(BigShiee, CannonTurnsOneFramePerTurnTicksAndOnlyFiresWhenAligned)
 
 TEST(BigShiee, MissileFliesAlongTheFiringRowAngleWithMatchingSprite)
 {
-    EnemyRig          probe({ kCamLeft + 100.f, 378.f }, kCamLeft);
+    EnemyRig probe({ kCamLeft + 100.f, 378.f }, kCamLeft);
     LoadBossLib_(probe);
-    const EnemyDef&   def        = probe.Lib().Get(probe.Lib().FindIndex("bigshiee"));
-    const int         weapon     = def.FindWeapon("missile");
+    const EnemyDef& def    = probe.Lib().Get(probe.Lib().FindIndex("bigshiee"));
+    const int       weapon = def.FindWeapon("missile");
     ASSERT_GE(weapon, 0);
     const int            projIndex = def.weapons[static_cast<size_t>(weapon)].projectile;
     const ProjectileDef& proj      = probe.Lib().GetProjectile(projIndex);
@@ -628,7 +627,7 @@ TEST(BigShiee, MissileFliesAlongTheFiringRowAngleWithMatchingSprite)
                 {
                     continue;
                 }
-                bSeen = true;
+                bSeen                 = true;
                 const float launchDeg = std::atan2(shot.velocity.x, shot.velocity.y) * (180.f / 3.14159265f);
                 EXPECT_NEAR(launchDeg, deg, 0.05f) << "행 " << row << ": 발사 방향 == 행 각도";
                 EXPECT_EQ(rig.E(boss)->ext[kBigShieeExtCannonRow], row) << "사격 행 == 발사한 행";
@@ -650,12 +649,12 @@ TEST(BigShiee, EachShotStartsAndEndsOnItsPairedAimFrame)
     rig.SetAnims(&anims);
     const EnemyHandle boss = StartCannon_(rig, { kCamLeft + 100.f, 378.f });
 
-    int                       prevYaw  = -1;
-    eBigShieeCannonMode       prevMode = eBigShieeCannonMode::Hidden;
-    int                       shots    = 0;
-    int                       afterRow = -1;
-    int                       shotLen  = 0;
-    ARRAY<bool, 5>            rowSeen  = {};
+    int                 prevYaw  = -1;
+    eBigShieeCannonMode prevMode = eBigShieeCannonMode::Hidden;
+    int                 shots    = 0;
+    int                 afterRow = -1;
+    int                 shotLen  = 0;
+    ARRAY<bool, 5>      rowSeen  = {};
     for (int tick = 0; tick < 3600 && shots < 14; ++tick)
     {
         PlacePlayerAtAngle_(rig, boss, 60.f * std::sin(static_cast<float>(tick) / 140.f));
@@ -666,7 +665,7 @@ TEST(BigShiee, EachShotStartsAndEndsOnItsPairedAimFrame)
         if (mode == eBigShieeCannonMode::Shot && prevMode != eBigShieeCannonMode::Shot)
         {
             ++shots;
-            shotLen = 0;
+            shotLen                           = 0;
             rowSeen[static_cast<size_t>(row)] = true;
             EXPECT_EQ(prevYaw, row * 2) << "쏘기 직전 틱에 이미 그 행의 Aim 프레임이 보였다 (샷 " << shots << ")";
             EXPECT_EQ(prevMode, eBigShieeCannonMode::Ready);
@@ -707,14 +706,14 @@ TEST(BigShiee, MissileTravelDirectionMatchesTheBarrelArtWithinFiveDegrees)
     const ARRAY<float, 5> kBarrelDeg = { -47.f, -22.f, 0.f, 22.f, 47.f };
     EnemyRig              probe({ kCamLeft + 100.f, 378.f }, kCamLeft);
     LoadBossLib_(probe);
-    const EnemyDef&       def       = probe.Lib().Get(probe.Lib().FindIndex("bigshiee"));
-    const int             projIndex = def.weapons[static_cast<size_t>(def.FindWeapon("missile"))].projectile;
+    const EnemyDef& def       = probe.Lib().Get(probe.Lib().FindIndex("bigshiee"));
+    const int       projIndex = def.weapons[static_cast<size_t>(def.FindWeapon("missile"))].projectile;
     for (int row = 0; row < 5; ++row)
     {
         EXPECT_NEAR(def.bigShiee.cannonAimDeg[static_cast<size_t>(row)], kBarrelDeg[static_cast<size_t>(row)], 5.f) << "행 " << row;
 
         EnemyRig          rig({ kCamLeft + 100.f, 378.f }, kCamLeft);
-        const EnemyHandle boss = StartCannon_(rig, { kCamLeft + 100.f, 378.f });
+        const EnemyHandle boss   = StartCannon_(rig, { kCamLeft + 100.f, 378.f });
         Vec2              first  = {};
         Vec2              last   = {};
         bool              bFirst = false;
@@ -750,9 +749,9 @@ TEST(BigShiee, MissileTravelDirectionMatchesTheBarrelArtWithinFiveDegrees)
 
 TEST(BigShiee, ReadyHeadFollowsThePlayerAngleWithoutMirroring)
 {
-    EnemyRig          rig({ kCamLeft + 100.f, 378.f }, kCamLeft);
-    const EnemyHandle boss = StartCannon_(rig, { kCamLeft + 100.f, 378.f });
-    const BigShieeCfg& c   = rig.Lib().Get(rig.Lib().FindIndex("bigshiee")).bigShiee;
+    EnemyRig           rig({ kCamLeft + 100.f, 378.f }, kCamLeft);
+    const EnemyHandle  boss = StartCannon_(rig, { kCamLeft + 100.f, 378.f });
+    const BigShieeCfg& c    = rig.Lib().Get(rig.Lib().FindIndex("bigshiee")).bigShiee;
     for (int tick = 0; tick < 900 && CannonMode_(rig, boss) != eBigShieeCannonMode::Ready; ++tick)
     {
         PlacePlayerAtAngle_(rig, boss, 0.f);
@@ -774,9 +773,9 @@ TEST(BigShiee, ReadyHeadFollowsThePlayerAngleWithoutMirroring)
         {
             continue;   // 사격 중에는 행 프레임에 묶인다 (위 테스트가 본다)
         }
-        const int   yaw    = CannonYaw_(rig, boss);
-        const float low    = c.cannonAimDeg[static_cast<size_t>(yaw / 2)];
-        const float shown  = yaw % 2 == 0 ? low : (low + c.cannonAimDeg[static_cast<size_t>(yaw / 2 + 1)]) * 0.5f;
+        const int   yaw   = CannonYaw_(rig, boss);
+        const float low   = c.cannonAimDeg[static_cast<size_t>(yaw / 2)];
+        const float shown = yaw % 2 == 0 ? low : (low + c.cannonAimDeg[static_cast<size_t>(yaw / 2 + 1)]) * 0.5f;
         EXPECT_NEAR(shown, deg, 14.f) << "플레이어 " << deg << " 도: 보이는 머리 yaw " << yaw << " (좌우가 뒤집히지 않는다)";
         EXPECT_EQ(deg < -6.f, shown < 0.f) << deg;
     }
@@ -793,11 +792,11 @@ TEST(BigShieeSync, LidOpensFirstThenCannonRisesThenMissilesFireOnFootageCadence)
     const EnemyDef&   def  = rig.Lib().Get(rig.Lib().FindIndex("bigshiee"));
     const int         proj = def.weapons[static_cast<size_t>(def.FindWeapon("missile"))].projectile;
 
-    int lidStart    = -1;
-    int deployStart = -1;
-    int readyStart  = -1;
+    int           lidStart     = -1;
+    int           deployStart  = -1;
+    int           readyStart   = -1;
     ARRAY<int, 4> missileTicks = { -1, -1, -1, -1 };
-    int missiles = 0;
+    int           missiles     = 0;
     for (int tick = 0; tick < 1200 && missiles < 3; ++tick)
     {
         PlacePlayerAtAngle_(rig, boss, -50.f);   // 머리는 왼쪽 (Aim 0) 그대로: 영상처럼 조준 회전 없이 바로 대기
@@ -822,8 +821,8 @@ TEST(BigShieeSync, LidOpensFirstThenCannonRisesThenMissilesFireOnFootageCadence)
                 continue;
             }
             missileTicks[static_cast<size_t>(missiles++)] = tick;
-            const int row = pBoss->ext[kBigShieeExtCannonRow];
-            const Vec2 muzzle = def.weapons[static_cast<size_t>(def.FindWeapon("missile"))].muzzle;
+            const int  row                                = pBoss->ext[kBigShieeExtCannonRow];
+            const Vec2 muzzle                             = def.weapons[static_cast<size_t>(def.FindWeapon("missile"))].muzzle;
             EXPECT_NEAR(shot.position.x, pBoss->body.position.x + muzzle.x + def.bigShiee.cannonMuzzleX[static_cast<size_t>(row)] - def.bigShiee.cannonMuzzleX[2], 6.f) << "고폭탄은 weapons.missile.muzzle + 행 변화량에서 나간다";
             EXPECT_NEAR(shot.position.y, pBoss->body.position.y + muzzle.y, 6.f);
         }
@@ -1062,11 +1061,11 @@ TEST(BigShieeMissile, AcceleratesFromMuzzleToGround)
 {
     EnemyRig rig({ kCamLeft + 100.f, 378.f }, kCamLeft);
     LoadBossLib_(rig);
-    const EnemyHandle boss   = StartCannon_(rig, { kCamLeft + 100.f, 378.f });
-    const EnemyDef&   def    = rig.Lib().Get(rig.Lib().FindIndex("bigshiee"));
-    const int         weapon = def.FindWeapon("missile");
-    const int         proj   = def.weapons[static_cast<size_t>(weapon)].projectile;
-    const ProjectileDef& pd  = rig.Lib().GetProjectile(proj);
+    const EnemyHandle    boss   = StartCannon_(rig, { kCamLeft + 100.f, 378.f });
+    const EnemyDef&      def    = rig.Lib().Get(rig.Lib().FindIndex("bigshiee"));
+    const int            weapon = def.FindWeapon("missile");
+    const int            proj   = def.weapons[static_cast<size_t>(weapon)].projectile;
+    const ProjectileDef& pd     = rig.Lib().GetProjectile(proj);
     ASSERT_GT(pd.rampMax, pd.rampFrom);
     float first = -1.f;
     float last  = -1.f;
@@ -1100,12 +1099,12 @@ TEST(BigShieeCasing, SpawnsOnEachShotAndFallsOffTheScreenWithin120Ticks)
 {
     EnemyRig rig({ kCamLeft + 100.f, 378.f }, kCamLeft);
     LoadBossLib_(rig);
-    const EnemyHandle boss = StartCannon_(rig, { kCamLeft + 100.f, 378.f });
-    const EnemyDef&    def = rig.Lib().Get(rig.Lib().FindIndex("bigshiee"));
-    const BigShieeCfg& c   = def.bigShiee;
-    const Vec2         muzzle = def.weapons[static_cast<size_t>(def.FindWeapon("missile"))].muzzle;
-    int lastTick = 0;
-    int spawns   = 0;
+    const EnemyHandle  boss     = StartCannon_(rig, { kCamLeft + 100.f, 378.f });
+    const EnemyDef&    def      = rig.Lib().Get(rig.Lib().FindIndex("bigshiee"));
+    const BigShieeCfg& c        = def.bigShiee;
+    const Vec2         muzzle   = def.weapons[static_cast<size_t>(def.FindWeapon("missile"))].muzzle;
+    int                lastTick = 0;
+    int                spawns   = 0;
     for (int tick = 0; tick < 1200 && spawns < 2; ++tick)
     {
         PlacePlayerAtAngle_(rig, boss, 0.f);
@@ -1114,7 +1113,7 @@ TEST(BigShieeCasing, SpawnsOnEachShotAndFallsOffTheScreenWithin120Ticks)
         if (casing != lastTick)
         {
             ++spawns;
-            lastTick = casing;
+            lastTick           = casing;
             const Enemy* pBoss = rig.E(boss);
             const int    row   = pBoss->ext[kBigShieeExtCannonRow];
             EXPECT_NEAR(static_cast<float>(pBoss->ext[kBigShieeExtCasingX]), pBoss->body.position.x + muzzle.x + c.cannonMuzzleX[static_cast<size_t>(row)] - c.cannonMuzzleX[2] + c.casingOffset.x, 2.f);
@@ -1149,9 +1148,9 @@ TEST(BigShieeCasing, HopsSlightlyThenFallsToTheGroundLineAtTwoPointFourScale)
     const float _deg,
     int&        _outRow)
 {
-    EnemyRig rig({ kCamLeft + 100.f, 378.f }, kCamLeft);
-    const EnemyHandle boss = StartCannon_(rig, { kCamLeft + 100.f, 378.f });
-    EnemyDef*         pDef = rig.Lib().FindMutable("bigshiee");
+    EnemyRig          rig({ kCamLeft + 100.f, 378.f }, kCamLeft);
+    const EnemyHandle boss   = StartCannon_(rig, { kCamLeft + 100.f, 378.f });
+    EnemyDef*         pDef   = rig.Lib().FindMutable("bigshiee");
     const int         weapon = pDef->FindWeapon("missile");
     pDef->weapons[static_cast<size_t>(weapon)].muzzle.x += _dx;
     pDef->weapons[static_cast<size_t>(weapon)].muzzle.y += _dy;
@@ -1191,10 +1190,10 @@ TEST(BigShieeMissile, FrontRowLaunchesAtTheWeaponMuzzleAndOtherRowsShiftByTheirD
 {
     EnemyRig rig;
     LoadBossLib_(rig);
-    const EnemyDef&    def    = rig.Lib().Get(rig.Lib().FindIndex("bigshiee"));
-    const Vec2         muzzle = def.weapons[static_cast<size_t>(def.FindWeapon("missile"))].muzzle;
-    int                row    = -1;
-    const Vec2         front  = FirstMissileAt_(0.f, 0.f, 0.f, row);
+    const EnemyDef& def    = rig.Lib().Get(rig.Lib().FindIndex("bigshiee"));
+    const Vec2      muzzle = def.weapons[static_cast<size_t>(def.FindWeapon("missile"))].muzzle;
+    int             row    = -1;
+    const Vec2      front  = FirstMissileAt_(0.f, 0.f, 0.f, row);
     EXPECT_EQ(row, 2);
     EXPECT_NEAR(front.x, muzzle.x, 1.f);
     EXPECT_NEAR(front.y, muzzle.y, 6.f);

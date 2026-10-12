@@ -188,12 +188,12 @@ constexpr ARRAY<const char*, 27> kProjectileKeys = {
     "rotate",
     "scale"
 };
-constexpr ARRAY<const char*, 11> kKnownKinds     = { "walker", "vehicle", "turret", "flyer", "boss", "prop", "npc", "item", "projectile", "effect", "debris" };
-constexpr ARRAY<const char*, 4>  kActivationKeys = { "note", "mode", "marginPx", "latch" };
-constexpr ARRAY<const char*, 8>  kPhysicsKeys    = { "note", "gravity", "maxFall", "speed", "jumpVy", "dropSpeed", "footHalfWidth", "useGravity" };
-constexpr ARRAY<const char*, 10> kWeaponKeys     = { "note", "projectile", "muzzle", "aim", "tilt", "arc", "muzzleFx", "hitbox", "motionClip", "effects" };
+constexpr ARRAY<const char*, 11> kKnownKinds       = { "walker", "vehicle", "turret", "flyer", "boss", "prop", "npc", "item", "projectile", "effect", "debris" };
+constexpr ARRAY<const char*, 4>  kActivationKeys   = { "note", "mode", "marginPx", "latch" };
+constexpr ARRAY<const char*, 8>  kPhysicsKeys      = { "note", "gravity", "maxFall", "speed", "jumpVy", "dropSpeed", "footHalfWidth", "useGravity" };
+constexpr ARRAY<const char*, 10> kWeaponKeys       = { "note", "projectile", "muzzle", "aim", "tilt", "arc", "muzzleFx", "hitbox", "motionClip", "effects" };
 constexpr ARRAY<const char*, 5>  kWeaponEffectKeys = { "note", "clip", "offset", "frame", "depth" };
-constexpr ARRAY<const char*, 17> kDeathKeys      = {
+constexpr ARRAY<const char*, 17> kDeathKeys        = {
     "note",
     "bomb",
     "slash",
@@ -223,7 +223,7 @@ constexpr ARRAY<const char*, 3> kDropKeys      = { "note", "item", "count" };
 constexpr ARRAY<const char*, 3> kOverlayKeys   = { "note", "clip", "offset" };
 constexpr ARRAY<const char*, 3> kTiltKeys      = { "note", "threshold", "dy" };
 constexpr ARRAY<const char*, 3> kArcKeys       = { "note", "minVx", "maxVx" };
-constexpr ARRAY<const char*, 8> kExtraBoxKeys = { "note", "id", "kind", "w", "h", "offset", "frames", "damage" };
+constexpr ARRAY<const char*, 8> kExtraBoxKeys  = { "note", "id", "kind", "w", "h", "offset", "frames", "damage" };
 constexpr ARRAY<const char*, 8> kHitboxKeys    = { "note", "w", "h", "cx", "cy", "lifeSec", "damage", "follow" };
 
 [[nodiscard]] static bool Contains_(
@@ -1249,7 +1249,7 @@ bool EnemyDefParser::ParseEnemy_(
         }
     }
 
-    def.bHitFlash = def.hp >= kHitFlashMinHp;
+    def.bHitFlash     = def.hp >= kHitFlashMinHp;
     bool   bNoOverlay = false;
     String artFacing;
     for (const JsonReader& reader: _chain)

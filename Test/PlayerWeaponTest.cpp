@@ -15,7 +15,6 @@
 #include "Render/SpriteBatch.h"
 #include "Render/SpriteLibrary.h"
 
-
 [[nodiscard]] static const TrainingDummy& DummyOf_(
     Sim&           _sim,
     const uint32_t _id)
@@ -232,11 +231,11 @@ TEST(PlayerWeapon, HmgShotDamagesAJeepByItsTunedDamage)
     Sim            sim;
     const uint32_t id = sim.State().AddTarget(eDummyKind::Jeep, { 260.f, 378.f });
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
-    const int hp = DummyOf_(sim, id).health.hp;
+    const int hp                        = DummyOf_(sim, id).health.hp;
     sim.Tune().weapons.hmg.spreadDeg    = 0.f;   // 흩뿌림으로 빗나가는 탄을 빼고 발수 x 피해만 본다
     sim.Tune().weapons.hmg.muzzleJitter = { 0.f, 0.f };
     sim.Tap(eAction::Shot);
-    sim.Step(90);   // 버스트 끝까지 + 마지막 탄이 날아가 닿을 때까지
+    sim.Step(90);                                                                                                      // 버스트 끝까지 + 마지막 탄이 날아가 닿을 때까지
     EXPECT_EQ(DummyOf_(sim, id).health.hp, hp - sim.Tune().weapons.hmg.damage * sim.Player().GetStats().shotsFired);   // 한 번 눌러 버스트 전체가 명중 (발수는 난수)
 }
 
@@ -389,8 +388,8 @@ TEST(PlayerWeapon, AimStatesFireEveryWeaponInTheExpectedDirection)
         for (const Aim& aim: aims)
         {
             Sim sim;
-            sim.Tune().weapons.hmg.spreadDeg    = 0.f;   // 방향 검사는 흩뿌림 없이 (흩뿌림은 PlayerCombat 테스트가 본다)
-            sim.Tune().weapons.hmg.muzzleJitter = { 0.f, 0.f };
+            sim.Tune().weapons.hmg.spreadDeg      = 0.f;   // 방향 검사는 흩뿌림 없이 (흩뿌림은 PlayerCombat 테스트가 본다)
+            sim.Tune().weapons.hmg.muzzleJitter   = { 0.f, 0.f };
             sim.Tune().weapons.flame.spreadDeg    = 0.f;   // 파이어샷 입자 흩뿌림도 방향 검사에서는 끈다
             sim.Tune().weapons.flame.muzzleJitter = { 0.f, 0.f };
             sim.Step(2);
@@ -499,7 +498,7 @@ TEST(PlayerWeaponVisual, FlameShotClipsExistInOutputAndEveryStageDraws)
     const SpriteLibrary sprites;   // 파이어샷은 스프라이트 이름을 쓰지 않는다
     SpriteBatch         batch;
     const Vec2          at = { 0.f, 0.f };
-    EXPECT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Flame, { 300.f, 0.f }, 0, 0.f, 220.f), at, 30));   // 머리
+    EXPECT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Flame, { 300.f, 0.f }, 0, 0.f, 220.f), at, 30));      // 머리
     EXPECT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Flame, { 300.f, 0.f }, 20, 100.f, 220.f), at, 30));   // 반복
     EXPECT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Flame, { 300.f, 0.f }, 60, 210.f, 220.f), at, 30));   // 사거리 끝 페이드
     EXPECT_EQ(batch.GetPendingCommands().size(), 3u);
@@ -517,14 +516,14 @@ TEST(PlayerWeaponVisual, RocketSpriteRotatesToItsFlightDirection)
     };
     const float kDiag = 640.f * 0.70710678f;
     for (const Case& c: {
-             Case { { 640.f, 0.f }, 0.f },
-             Case { { -640.f, 0.f }, 0.f },
-             Case { { 0.f, -640.f }, -90.f },
-             Case { { 0.f, 640.f }, 90.f },
-             Case { { kDiag, -kDiag }, -45.f },
-             Case { { -kDiag, -kDiag }, 45.f },
-             Case { { -kDiag, kDiag }, -45.f },   // 왼쪽 아래: 왼쪽 클립을 반시계 45도
-         })
+             Case {     { 640.f, 0.f },   0.f },
+             Case {    { -640.f, 0.f },   0.f },
+             Case {    { 0.f, -640.f }, -90.f },
+             Case {     { 0.f, 640.f },  90.f },
+             Case {  { kDiag, -kDiag }, -45.f },
+             Case { { -kDiag, -kDiag },  45.f },
+             Case {  { -kDiag, kDiag }, -45.f }, // 왼쪽 아래: 왼쪽 클립을 반시계 45도
+    })
     {
         SpriteBatch batch;
         ASSERT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Rocket, c.velocity, 0, 0.f, 420.f), { 0.f, 0.f }, 30));
@@ -596,9 +595,9 @@ struct RasterFixture_
     {
         return box;
     }
-    SDL_Renderer* pRenderer = _fx.pRenderer;
-    SDL_Surface*  pSurface  = _fx.pSurface;
-    SpriteBatch&  batch     = _fx.batch;
+    SDL_Renderer*       pRenderer = _fx.pRenderer;
+    SDL_Surface*        pSurface  = _fx.pSurface;
+    SpriteBatch&        batch     = _fx.batch;
     const SpriteLibrary sprites;
     SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
     SDL_RenderClear(pRenderer);
@@ -664,7 +663,7 @@ TEST(PlayerWeaponVisual, RocketFiredUpIsDrawnTallNotWide)
 
 // 파이어샷 입자가 나온 틱 목록 (입자는 스폰된 틱에 ageTicks == 1 로 보인다)
 [[nodiscard]] static std::vector<int> FlameSpawnTicks_(
-    Sim&     _sim,
+    Sim&      _sim,
     const int _ticks)
 {
     std::vector<int> spawnTicks;

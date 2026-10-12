@@ -298,7 +298,7 @@ void App::Init_()
     if (m_stateName.empty())
     {
         const bool bHasAssets = std::filesystem::exists(FindAssetRoot() / "manifest.json");
-        m_stateName         = bHasAssets ? String { GetDefaultStateName() } : String { "sandbox" };
+        m_stateName           = bHasAssets ? String { GetDefaultStateName() } : String { "sandbox" };
     }
 
     // 아틀라스 디코드는 렌더러가 필요 없으므로 창/디바이스 생성보다 먼저 워커에 맡긴다 (텍스처 생성은 메인 스레드에서 나중에).
@@ -374,10 +374,10 @@ void App::Init_()
     m_recording.seed      = m_seed;
     m_recording.stateName = m_stateName;
 
-    m_ctx.pRenderer  = &m_renderer;
-    m_ctx.pSprites   = &m_sprites;
-    m_ctx.pAnims     = &m_anims;
-    m_ctx.pLoader    = &m_loader;
+    m_ctx.pRenderer = &m_renderer;
+    m_ctx.pSprites  = &m_sprites;
+    m_ctx.pAnims    = &m_anims;
+    m_ctx.pLoader   = &m_loader;
     m_editor.SetAnimLibrary(m_bEditor ? &m_anims : nullptr);
     m_ctx.pRng       = &m_rng;
     m_ctx.assetRoot  = FindAssetRoot();
@@ -524,20 +524,20 @@ void App::Update_(
         m_pendingWarp = 1;
         --m_startWarpCount;
     }
-    m_ctx.debugWarpX  = 0.f;
+    m_ctx.debugWarpX = 0.f;
     if (m_startWarpX > 0.f)
     {
-        m_pendingWarp = 3;
+        m_pendingWarp    = 3;
         m_ctx.debugWarpX = m_startWarpX;
         m_startWarpX     = 0.f;
     }
-    m_ctx.debugWarp   = m_pendingWarp;
-    m_ctx.debugLives  = m_debugLives;
-    m_pendingWarp     = 0;
-    m_ctx.godMode     = m_bEditor ? m_editor.GetGodMode() : eGodMode::Off;
+    m_ctx.debugWarp     = m_pendingWarp;
+    m_ctx.debugLives    = m_debugLives;
+    m_pendingWarp       = 0;
+    m_ctx.godMode       = m_bEditor ? m_editor.GetGodMode() : eGodMode::Off;
     m_ctx.bInfiniteAmmo = m_bEditor;
-    m_ctx.debugWeapon = m_pendingWeapon;
-    m_pendingWeapon   = 0;
+    m_ctx.debugWeapon   = m_pendingWeapon;
+    m_pendingWeapon     = 0;
     if (m_pendingSpawn > 0)
     {
         m_ctx.debugSpawn = m_pendingSpawn;

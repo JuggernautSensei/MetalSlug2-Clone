@@ -6,7 +6,6 @@
 
 #include "EnemyTestUtil.h"
 
-
 constexpr float kGroundY = 378.f;
 
 [[nodiscard]] static bool OnGround_(
@@ -85,8 +84,8 @@ TEST(EnemySandbox, LoadsTheDefinitionFileAndSpawnsEveryInfantryKind)
 
 TEST(EnemySandbox, GroundedKindsRestOnTheGround)
 {
-    Sim                       sim { MakeEnemyConfig() };
-    float                     x = 260.f;
+    Sim                 sim { MakeEnemyConfig() };
+    float               x = 260.f;
     Vector<EnemyHandle> handles;
     Vector<const char*> names;
     for (const char* name: { "soldier_bomb", "soldier_sword", "soldier_missile", "soldier_bzk", "shielder", "pow" })

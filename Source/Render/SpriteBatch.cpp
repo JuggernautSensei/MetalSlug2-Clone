@@ -154,25 +154,27 @@ struct FlashRampNode
     int b = 0;
 };
 
-static const ARRAY<FlashRampNode, 17> kFlashRamp = { {
-    { 0, 145, 52, 0 },
-    { 8, 151, 56, 0 },
-    { 24, 159, 61, 0 },
-    { 40, 186, 80, 3 },
-    { 56, 190, 90, 9 },
-    { 72, 200, 106, 21 },
-    { 88, 216, 126, 36 },
-    { 104, 228, 140, 47 },
-    { 120, 243, 154, 54 },
-    { 136, 249, 163, 65 },
-    { 152, 249, 182, 98 },
-    { 168, 253, 198, 115 },
-    { 184, 254, 210, 130 },
-    { 200, 255, 221, 145 },
-    { 216, 255, 234, 167 },
-    { 232, 255, 248, 207 },
-    { 255, 255, 255, 235 },
-} };
+static const ARRAY<FlashRampNode, 17> kFlashRamp = {
+    {
+     { 0, 145, 52, 0 },
+     { 8, 151, 56, 0 },
+     { 24, 159, 61, 0 },
+     { 40, 186, 80, 3 },
+     { 56, 190, 90, 9 },
+     { 72, 200, 106, 21 },
+     { 88, 216, 126, 36 },
+     { 104, 228, 140, 47 },
+     { 120, 243, 154, 54 },
+     { 136, 249, 163, 65 },
+     { 152, 249, 182, 98 },
+     { 168, 253, 198, 115 },
+     { 184, 254, 210, 130 },
+     { 200, 255, 221, 145 },
+     { 216, 255, 234, 167 },
+     { 232, 255, 248, 207 },
+     { 255, 255, 255, 235 },
+     }
+};
 
 static uint8_t LerpChannel_(
     const int _from,
@@ -310,7 +312,7 @@ Result<void> SpriteBatch::AddAtlasPageFromRgba(
     SDL_SetTextureScaleMode(pTexture, SDL_SCALEMODE_NEAREST);
 
     // 피격 플래시 변환본 (실패해도 일반 페이지는 쓸 수 있다: 그 경우 플래시만 생략된다)
-    SDL_Texture*          pFlash = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, _width, _height);
+    SDL_Texture* pFlash = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, _width, _height);
     if (pFlash && _flashRgba.size() >= static_cast<size_t>(_width) * static_cast<size_t>(_height) * 4 && SDL_UpdateTexture(pFlash, nullptr, _flashRgba.data(), _width * 4))
     {
         SDL_SetTextureBlendMode(pFlash, SDL_BLENDMODE_BLEND);
@@ -354,12 +356,12 @@ Result<int> SpriteBatch::AddStandaloneTextureFromRgba(
     const ScopedPhaseTimer timer { "gpu-upload", "standalone" };
 
     // 가로가 kMaxStripW 를 넘으면 띠로 쪼갠다 (구형 GPU/드라이버의 8192 제한에서 최후반부가 깨지는 문제 방지)
-    constexpr int kMaxStripW = 2048;
-    const int     stripW     = std::min(_width, kMaxStripW);
-    StandaloneTexture texture = {};
-    texture.width             = _width;
-    texture.height            = _height;
-    texture.stripW            = stripW;
+    constexpr int     kMaxStripW = 2048;
+    const int         stripW     = std::min(_width, kMaxStripW);
+    StandaloneTexture texture    = {};
+    texture.width                = _width;
+    texture.height               = _height;
+    texture.stripW               = stripW;
 
     Vector<uint8_t> strip;
     for (int x = 0; x < _width; x += stripW)
@@ -415,8 +417,8 @@ void SpriteBatch::DrawStandaloneRect_(
         {
             continue;
         }
-        const SDL_FRect src = { l - stripL, _src.y, r - l, _src.h };
-        const SDL_FRect dst = { _dst.x + (l - _src.x) * scaleX, _dst.y, (r - l) * scaleX, _dst.h };
+        const SDL_FRect src    = { l - stripL, _src.y, r - l, _src.h };
+        const SDL_FRect dst    = { _dst.x + (l - _src.x) * scaleX, _dst.y, (r - l) * scaleX, _dst.h };
         SDL_Texture*    pStrip = _texture.strips[static_cast<size_t>(k)];
         SDL_SetTextureColorMod(pStrip, _tint.r, _tint.g, _tint.b);
         SDL_SetTextureAlphaMod(pStrip, _tint.a);
@@ -701,8 +703,8 @@ void SpriteBatch::DrawFrame(
     if (_options.rotationDeg != 0.f)
     {
         // 피벗 점(프레임 기준점)이 월드 원점에 놓인 채 돈다. dst 좌표계에서 피벗 위치를 중심으로 준다 (배율 적용된 dst 기준)
-        const float             s      = bScaled ? _options.scale : 1.f;
-        const SDL_FPoint        center = { cx * s, cy * s };
+        const float      s      = bScaled ? _options.scale : 1.f;
+        const SDL_FPoint center = { cx * s, cy * s };
         SDL_RenderTextureRotated(m_pRenderer, pDraw, &src, &dst, static_cast<double>(_options.rotationDeg), &center, FlipFlags_(_options));
         return;
     }

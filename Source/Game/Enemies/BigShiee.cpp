@@ -17,16 +17,16 @@
 static const HitKindMask kBigShieeAccepts = HitKindMask { eHitKind::Bullet, eHitKind::Blast };
 
 // 낙하산 인질 정의 (Assets/Defs/BigShiee.json) 와 구출 시 드롭 무기 (헤비머신건 / 로켓 / 샷건 / 화염)
-constexpr StringView kChuteDef     = "pow_chute";
+constexpr StringView              kChuteDef   = "pow_chute";
 static const ARRAY<StringView, 4> kChuteDrops = { "gunitem_mg", "gunitem_rl", "gunitem_sg", "gunitem_fs" };
 
-constexpr int   kTurnMax        = 8;     // Turn 클립 프레임 수 - 1 (0 = 왼쪽, kTurnMid = 위, 8 = 오른쪽)
-constexpr int   kTurnMid        = 4;
-constexpr int   kAimRows        = 5;     // 주포 사격 행 (Boss_Cannon_Shot1..5, 왼쪽 .. 오른쪽)
-constexpr int   kCasingFrames   = 6;     // Boss_CasingStrip 칸 수
-constexpr int   kCasingDepth    = 54;    // 포구 연기 (Boss_Smoke_Small) 와 같은 깊이
-constexpr int   kShotFrames     = 8;     // 사격 클립 칸 수 (애니메이션이 없는 환경의 기본값)
-constexpr int   kYawMax         = 8;     // 주포 yaw 프레임 (Boss_Cannon_Aim 0..8, 사격 행 r = yaw 2r)
+constexpr int kTurnMax      = 8;   // Turn 클립 프레임 수 - 1 (0 = 왼쪽, kTurnMid = 위, 8 = 오른쪽)
+constexpr int kTurnMid      = 4;
+constexpr int kAimRows      = 5;    // 주포 사격 행 (Boss_Cannon_Shot1..5, 왼쪽 .. 오른쪽)
+constexpr int kCasingFrames = 6;    // Boss_CasingStrip 칸 수
+constexpr int kCasingDepth  = 54;   // 포구 연기 (Boss_Smoke_Small) 와 같은 깊이
+constexpr int kShotFrames   = 8;    // 사격 클립 칸 수 (애니메이션이 없는 환경의 기본값)
+constexpr int kYawMax       = 8;    // 주포 yaw 프레임 (Boss_Cannon_Aim 0..8, 사격 행 r = yaw 2r)
 
 static const char* const kLetters = "ABCDEFG";
 
@@ -34,9 +34,9 @@ struct TurretNames
 {
     ARRAY<String, 3> idle = {};   // Idle1 (왼쪽) / Idle2 (위) / Idle3 (오른쪽)
     ARRAY<String, 3> shot = {};   // Shot1 / Shot2 / Shot3
-    String turn      = {};
-    String dead      = {};
-    String puff      = {};
+    String           turn = {};
+    String           dead = {};
+    String           puff = {};
 };
 
 [[nodiscard]] static ARRAY<TurretNames, kBigShieeTurretCount> MakeNames_()
@@ -50,9 +50,9 @@ struct TurretNames
             names[i].idle[a] = "Boss_Turret_" + letter + "_Idle" + std::to_string(a + 1);
             names[i].shot[a] = "Boss_Turret_" + letter + "_Shot" + std::to_string(a + 1);
         }
-        names[i].turn       = "Boss_Turret_" + letter + "_Turn";
-        names[i].dead       = "Boss_Turret_" + letter + "_Dead";
-        names[i].puff       = i < 4 ? "Boss_Blast_ABCD1" : "Boss_Blast_EFG1";
+        names[i].turn = "Boss_Turret_" + letter + "_Turn";
+        names[i].dead = "Boss_Turret_" + letter + "_Dead";
+        names[i].puff = i < 4 ? "Boss_Blast_ABCD1" : "Boss_Blast_EFG1";
     }
     return names;
 }
@@ -61,7 +61,7 @@ struct TurretNames
     const char _letter)
 {
     static const ARRAY<TurretNames, kBigShieeTurretCount> kNames = MakeNames_();
-    const size_t index = static_cast<size_t>(std::clamp(_letter - 'A', 0, kBigShieeTurretCount - 1));
+    const size_t                                          index  = static_cast<size_t>(std::clamp(_letter - 'A', 0, kBigShieeTurretCount - 1));
     return kNames[index];
 }
 
@@ -300,9 +300,9 @@ static void Init_(
     for (int i = 0; i < kBigShieeTurretCount; ++i)
     {
         const BigShieeTurretCfg& turret = c.turrets[static_cast<size_t>(i)];
-        Slot_(_e, kBigShieeExtHp, i)   = turret.hp;
-        Slot_(_e, kBigShieeExtMode, i) = static_cast<int>(eBigShieeTurretMode::Idle);
-        Slot_(_e, kBigShieeExtPos, i)  = turret.side * kTurnMax;
+        Slot_(_e, kBigShieeExtHp, i)    = turret.hp;
+        Slot_(_e, kBigShieeExtMode, i)  = static_cast<int>(eBigShieeTurretMode::Idle);
+        Slot_(_e, kBigShieeExtPos, i)   = turret.side * kTurnMax;
     }
     Slot_(_e, kBigShieeExtNextVolley)  = SecToTicks(c.firstVolleySec);
     Slot_(_e, kBigShieeExtNextChute)   = SecToTicks(c.chuteFirstSec);
@@ -388,9 +388,9 @@ static void TickTurret_(
     EnemyEnv&       _env,
     const int       _i)
 {
-    const BigShieeCfg&       c      = _def.bigShiee;
-    const BigShieeTurretCfg& turret = c.turrets[static_cast<size_t>(_i)];
-    const eBigShieeTurretMode mode  = GetTurretMode_(_e, _i);
+    const BigShieeCfg&        c      = _def.bigShiee;
+    const BigShieeTurretCfg&  turret = c.turrets[static_cast<size_t>(_i)];
+    const eBigShieeTurretMode mode   = GetTurretMode_(_e, _i);
     if (mode == eBigShieeTurretMode::Dead)
     {
         return;
@@ -461,7 +461,7 @@ static void TickVolley_(
     {
         return;
     }
-    ARRAY<int, kBigShieeTurretCount> idle = {};
+    ARRAY<int, kBigShieeTurretCount> idle  = {};
     int                              count = 0;
     for (int i = 0; i < kBigShieeTurretCount; ++i)
     {
@@ -505,17 +505,17 @@ static void TickChute_(
     const float fallSec  = descend > 0.f ? fallDist / descend : 0.f;
     const float scroll   = AgeSec_(_e) >= c.scrollStartSec && !IsScrollPaused_(_e, c) && !IsScrollStopped_(_e, c) ? c.scrollSpeed * fallSec : 0.f;
 
-    const int    spread = std::max(1, static_cast<int>(c.chuteSpreadX));
-    const float  dx     = static_cast<float>(Roll(_env, 2 * spread + 1) - spread);
-    float        x      = view.max.x + scroll - c.chuteRightMarginX + dx;
-    const float  lo     = view.min.x + scroll + c.chuteEdgeX;
-    const float  hi     = view.max.x + scroll - c.chuteEdgeX;
+    const int   spread = std::max(1, static_cast<int>(c.chuteSpreadX));
+    const float dx     = static_cast<float>(Roll(_env, 2 * spread + 1) - spread);
+    float       x      = view.max.x + scroll - c.chuteRightMarginX + dx;
+    const float lo     = view.min.x + scroll + c.chuteEdgeX;
+    const float hi     = view.max.x + scroll - c.chuteEdgeX;
     if (lo <= hi)
     {
         x = std::clamp(x, lo, hi);
     }
-    const Vec2   feet   = { x, view.min.y - c.chuteStartAboveY };
-    SpawnParams  params;
+    const Vec2  feet = { x, view.min.y - c.chuteStartAboveY };
+    SpawnParams params;
     params.facing     = 1;
     params.bActivated = true;
     params.drop       = String(kChuteDrops[static_cast<size_t>(Roll(_env, static_cast<int>(kChuteDrops.size())))]);
@@ -626,9 +626,9 @@ static void TurnCannon_(
     const Enemy&       _e,
     const BigShieeCfg& _c)
 {
-    const float fromY   = static_cast<float>(GetSlot_(_e, kBigShieeExtCasingY));
-    const float drop    = std::max(0.f, _e.body.position.y + _c.casingGroundDy - fromY);
-    const float disc    = _c.casingVel.y * _c.casingVel.y + 2.f * _c.casingGravity * drop;
+    const float fromY = static_cast<float>(GetSlot_(_e, kBigShieeExtCasingY));
+    const float drop  = std::max(0.f, _e.body.position.y + _c.casingGroundDy - fromY);
+    const float disc  = _c.casingVel.y * _c.casingVel.y + 2.f * _c.casingGravity * drop;
     return (-_c.casingVel.y + std::sqrt(disc)) / _c.casingGravity;
 }
 
@@ -681,7 +681,7 @@ static void FireMissile_(
     RequestFxAt(_env, "Bazuka_Shot_Effect", muzzle, _e.facing, 55);
     RequestFxAt(_env, "Boss_Smoke_Small", muzzle, _e.facing, 54);
     // 탄피: 포구 옆에서 튀어 나온다
-    const Vec2 casing                  = { muzzle.x + c.casingOffset.x, muzzle.y + c.casingOffset.y };
+    const Vec2 casing                 = { muzzle.x + c.casingOffset.x, muzzle.y + c.casingOffset.y };
     Slot_(_e, kBigShieeExtCasingTick) = _e.aux;
     Slot_(_e, kBigShieeExtCasingX)    = static_cast<int>(std::lround(casing.x));
     Slot_(_e, kBigShieeExtCasingY)    = static_cast<int>(std::lround(casing.y));
@@ -837,7 +837,7 @@ static void Tick_(
             }
         }
     }
-    Slot_(_e, kBigShieeExtMoving)  = std::abs(speed) > 12.f ? 1 : 0;
+    Slot_(_e, kBigShieeExtMoving) = std::abs(speed) > 12.f ? 1 : 0;
     Slot_(_e, kBigShieeExtSpeedX) = static_cast<int>(std::lround(speed));
 
     if (_e.aux % 30 == 0)
@@ -868,13 +868,13 @@ static void Tick_(
         const float ratio = maxHp > 0 ? static_cast<float>(curHp) / static_cast<float>(maxHp) : 1.f;
         if (ratio < c.lowHpFxBelow && _e.aux >= GetSlot_(_e, kBigShieeExtNextDmgFx))
         {
-            const float k   = Clamp(1.f - ratio / c.lowHpFxBelow, 0.f, 1.f);
-            const float sec = c.lowHpFxSec[0] + (c.lowHpFxSec[1] - c.lowHpFxSec[0]) * k;
+            const float k                    = Clamp(1.f - ratio / c.lowHpFxBelow, 0.f, 1.f);
+            const float sec                  = c.lowHpFxSec[0] + (c.lowHpFxSec[1] - c.lowHpFxSec[0]) * k;
             Slot_(_e, kBigShieeExtNextDmgFx) = _e.aux + std::max(1, SecToTicks(sec));
-            const float w = c.lowHpFxArea[2] - c.lowHpFxArea[0];
-            const float h = c.lowHpFxArea[3] - c.lowHpFxArea[1];
-            const float rx = c.lowHpFxArea[0] + w * static_cast<float>(Roll(_env, 1000)) / 1000.f;
-            const float ry = c.lowHpFxArea[1] + h * static_cast<float>(Roll(_env, 1000)) / 1000.f;
+            const float w                    = c.lowHpFxArea[2] - c.lowHpFxArea[0];
+            const float h                    = c.lowHpFxArea[3] - c.lowHpFxArea[1];
+            const float rx                   = c.lowHpFxArea[0] + w * static_cast<float>(Roll(_env, 1000)) / 1000.f;
+            const float ry                   = c.lowHpFxArea[1] + h * static_cast<float>(Roll(_env, 1000)) / 1000.f;
             RequestFxAt(_env, c.lowHpFxClip.c_str(), World_(_e.body.position, { rx, ry }), _e.facing, 57);
         }
     }
@@ -940,11 +940,11 @@ static bool OnHit_(
             Slot_(_e, kBigShieeExtLastKill)  = _e.aux;
             EventLogFormat("bigshiee.turret_dead", "\"turret\":{}", part);
 
-            const BigShieeTurretCfg& turret = c.turrets[static_cast<size_t>(part)];
-            const Vec2               at     = World_(_e.body.position, { turret.anchor.x + c.turretBlastOffset.x, turret.anchor.y + c.turretBlastOffset.y });
+            const BigShieeTurretCfg& turret    = c.turrets[static_cast<size_t>(part)];
+            const Vec2               at        = World_(_e.body.position, { turret.anchor.x + c.turretBlastOffset.x, turret.anchor.y + c.turretBlastOffset.y });
             EnemyEvent               destroyed = _env.world.MakeEvent(_e, eEnemyEventKind::PartDestroyed);
-            destroyed.score = c.turretScore;
-            destroyed.pos   = at;
+            destroyed.score                    = c.turretScore;
+            destroyed.pos                      = at;
             _env.world.PushEvent(destroyed);
             RequestFxAt(_env, turret.bTwin ? "Explosion_Large" : "Explosion_Mid", at, _e.facing, 56);
             RequestFxAt(_env, "Boss_Smoke_Big", { at.x + c.turretSmokeOffset.x, at.y + c.turretSmokeOffset.y }, _e.facing, 54, 0.25f);
@@ -1010,7 +1010,7 @@ static void OnDeath_(
     const BigShieeCfg& c = _def.bigShiee;
     _e.deathTicks        = 0;
     EventLogFormat("bigshiee.death", "\"x\":{:.1f}", _e.body.position.x);
-    const Vec2 top       = World_(_e.body.position, { c.cannonBoxOffset.x, c.cannonBoxOffset.y - c.cannonBoxSize.y * 0.4f });
+    const Vec2 top = World_(_e.body.position, { c.cannonBoxOffset.x, c.cannonBoxOffset.y - c.cannonBoxSize.y * 0.4f });
     RequestFxAt(_env, "PlayerBombExplosion", { top.x + c.deathFlameOffset.x, top.y + c.deathFlameOffset.y }, _e.facing, 56);
     RequestFxAt(_env, "Explosion_Large", top, _e.facing, 57, 0.15f);
 }
@@ -1023,8 +1023,8 @@ static void TickDying_(
     const BigShieeCfg& c = _def.bigShiee;
     _e.body.velocity     = { 0.f, 0.f };
     ++_e.deathTicks;
-    const float t        = static_cast<float>(_e.deathTicks) * kStepSec;
-    const Vec2  origin   = _e.body.position;
+    const float t      = static_cast<float>(_e.deathTicks) * kStepSec;
+    const Vec2  origin = _e.body.position;
 
     const bool bWreck = t >= c.dyingWreckSec;
     if (bWreck && static_cast<float>(_e.deathTicks - 1) * kStepSec < c.dyingWreckSec)
@@ -1083,12 +1083,12 @@ static void SubmitHull_(
     const EnemyRenderEnv& _render,
     const Vec2            _feet)
 {
-    const bool          bMoving = GetSlot_(_e, kBigShieeExtMoving) != 0;
-    const eBigShieePhase phase  = Phase_(_e);
-    const int           age     = _e.aux;
-    const char*         clip    = bMoving ? "Boss_Hull_Drive" : "Boss_Hull_Idle";
-    bool                bLoop   = true;
-    int                 ticks   = age;
+    const bool           bMoving = GetSlot_(_e, kBigShieeExtMoving) != 0;
+    const eBigShieePhase phase   = Phase_(_e);
+    const int            age     = _e.aux;
+    const char*          clip    = bMoving ? "Boss_Hull_Drive" : "Boss_Hull_Idle";
+    bool                 bLoop   = true;
+    int                  ticks   = age;
 
     if (_e.life == eEnemyLife::Dying)
     {
@@ -1214,7 +1214,7 @@ static void SubmitCasing_(
     {
         return;
     }
-    const int cellW = pInfo->width / kCasingFrames;
+    const int         cellW = pInfo->width / kCasingFrames;
     SpriteDrawOptions options;
     options.tint.a = static_cast<uint8_t>(std::lround(alpha * 255.f));
     options.scale  = _c.casingScale;
@@ -1304,12 +1304,12 @@ void ParseBigShieeCfg(
     BigShieeCfg& c = _def.bigShiee;
 
     // 포탑 7 개 고정: 문자/방향/쌍발/앵커/상자/포구/체력
-    ARRAY<float, kBigShieeTurretCount * 2> anchors = {};
-    ARRAY<float, kBigShieeTurretCount * 4> boxes   = {};
-    ARRAY<float, kBigShieeTurretCount * 2> muzzles = {};
-    ARRAY<float, kBigShieeTurretCount>     sides   = {};
-    ARRAY<float, kBigShieeTurretCount>     twins   = {};
-    ARRAY<float, kBigShieeTurretCount>     hps     = {};
+    ARRAY<float, kBigShieeTurretCount * 2> anchors  = {};
+    ARRAY<float, kBigShieeTurretCount * 4> boxes    = {};
+    ARRAY<float, kBigShieeTurretCount * 2> muzzles  = {};
+    ARRAY<float, kBigShieeTurretCount>     sides    = {};
+    ARRAY<float, kBigShieeTurretCount>     twins    = {};
+    ARRAY<float, kBigShieeTurretCount>     hps      = {};
     const bool                             bAnchors = _r.NumArray("turretAnchor", anchors);
     const bool                             bBoxes   = _r.NumArray("turretBox", boxes);
     const bool                             bMuzzles = _r.NumArray("turretMuzzle", muzzles);
@@ -1382,27 +1382,27 @@ void ParseBigShieeCfg(
     c.reverseSpeed    = _r.Num("reverseSpeed", c.reverseSpeed);
 
     (void)_r.NumArray("volleyIntervalSec", c.volleyIntervalSec);
-    c.firstVolleySec = _r.Num("firstVolleySec", c.firstVolleySec);
-    c.prepTicks      = _r.Int("prepTicks", c.prepTicks);
-    c.turnFrameTicks = std::max(1, _r.Int("turnFrameTicks", c.turnFrameTicks));
-    c.shotTicks      = _r.Int("shotTicks", c.shotTicks);
-    c.fireTick       = _r.Int("fireTick", c.fireTick);
-    c.pairGapTicks   = _r.Int("pairGapTicks", c.pairGapTicks);
+    c.firstVolleySec   = _r.Num("firstVolleySec", c.firstVolleySec);
+    c.prepTicks        = _r.Int("prepTicks", c.prepTicks);
+    c.turnFrameTicks   = std::max(1, _r.Int("turnFrameTicks", c.turnFrameTicks));
+    c.shotTicks        = _r.Int("shotTicks", c.shotTicks);
+    c.fireTick         = _r.Int("fireTick", c.fireTick);
+    c.pairGapTicks     = _r.Int("pairGapTicks", c.pairGapTicks);
     c.turretAimBandPx  = _r.Num("turretAimBandPx", c.turretAimBandPx);
     c.turretTrackTicks = _r.Int("turretTrackTicks", c.turretTrackTicks);
 
-    c.cannonAnchor      = _r.ReadVec2("cannonAnchor", c.cannonAnchor);
-    c.cannonBoxSize     = _r.ReadVec2("cannonBoxSize", c.cannonBoxSize);
-    c.cannonBoxOffset   = _r.ReadVec2("cannonBoxOffset", c.cannonBoxOffset);
-    c.cannonAimOrigin   = _r.ReadVec2("cannonAimOrigin", c.cannonAimOrigin);
-    c.deployDelaySec    = _r.Num("deployDelaySec", c.deployDelaySec);
-    c.firstMissileSec   = _r.Num("firstMissileSec", c.firstMissileSec);
-    c.missileIntervalSec = _r.Num("missileIntervalSec", c.missileIntervalSec);
-    c.missileFireTick   = _r.Int("missileFireTick", c.missileFireTick);
-    c.hullStepTicks     = std::max(1, _r.Int("hullStepTicks", c.hullStepTicks));
+    c.cannonAnchor         = _r.ReadVec2("cannonAnchor", c.cannonAnchor);
+    c.cannonBoxSize        = _r.ReadVec2("cannonBoxSize", c.cannonBoxSize);
+    c.cannonBoxOffset      = _r.ReadVec2("cannonBoxOffset", c.cannonBoxOffset);
+    c.cannonAimOrigin      = _r.ReadVec2("cannonAimOrigin", c.cannonAimOrigin);
+    c.deployDelaySec       = _r.Num("deployDelaySec", c.deployDelaySec);
+    c.firstMissileSec      = _r.Num("firstMissileSec", c.firstMissileSec);
+    c.missileIntervalSec   = _r.Num("missileIntervalSec", c.missileIntervalSec);
+    c.missileFireTick      = _r.Int("missileFireTick", c.missileFireTick);
+    c.hullStepTicks        = std::max(1, _r.Int("hullStepTicks", c.hullStepTicks));
     c.cannonDeployDelaySec = _r.Num("cannonDeployDelaySec", c.cannonDeployDelaySec);
-    c.cannonDeployTicks = _r.Int("cannonDeployTicks", c.cannonDeployTicks);
-    c.cannonTurnTicks   = std::max(1, _r.Int("cannonTurnTicks", c.cannonTurnTicks));
+    c.cannonDeployTicks    = _r.Int("cannonDeployTicks", c.cannonDeployTicks);
+    c.cannonTurnTicks      = std::max(1, _r.Int("cannonTurnTicks", c.cannonTurnTicks));
     (void)_r.NumArray("cannonAimDeg", c.cannonAimDeg);
     (void)_r.NumArray("cannonMuzzleX", c.cannonMuzzleX);
 
@@ -1429,12 +1429,12 @@ void ParseBigShieeCfg(
     c.wreckOffset           = _r.ReadVec2("wreckOffset", c.wreckOffset);
     c.cannonWreckOffset     = _r.ReadVec2("cannonWreckOffset", c.cannonWreckOffset);
 
-    c.chuteFirstSec    = _r.Num("chuteFirstSec", c.chuteFirstSec);
-    c.chuteIntervalSec = _r.Num("chuteIntervalSec", c.chuteIntervalSec);
-    c.chuteSpreadX     = _r.Num("chuteSpreadX", c.chuteSpreadX);
+    c.chuteFirstSec     = _r.Num("chuteFirstSec", c.chuteFirstSec);
+    c.chuteIntervalSec  = _r.Num("chuteIntervalSec", c.chuteIntervalSec);
+    c.chuteSpreadX      = _r.Num("chuteSpreadX", c.chuteSpreadX);
     c.chuteRightMarginX = _r.Num("chuteRightMarginX", c.chuteRightMarginX);
-    c.chuteStartAboveY = _r.Num("chuteStartAboveY", c.chuteStartAboveY);
-    c.chuteEdgeX       = _r.Num("chuteEdgeX", c.chuteEdgeX);
+    c.chuteStartAboveY  = _r.Num("chuteStartAboveY", c.chuteStartAboveY);
+    c.chuteEdgeX        = _r.Num("chuteEdgeX", c.chuteEdgeX);
 
     c.turretBlastOffset = _r.ReadVec2("turretBlastOffset", c.turretBlastOffset);
     c.turretSmokeOffset = _r.ReadVec2("turretSmokeOffset", c.turretSmokeOffset);

@@ -18,8 +18,8 @@ struct EnemyFxRequest
     Vec2   position   = { 0.f, 0.f };
     int    depth      = 60;
     int    delayTicks = 0;
-    bool   bFlipX     = false;            // 그림 좌우 반전 (FxDef.mirror)
-    bool   bDebris    = false;            // 잔해 연출 (velocity 로 날린다)
+    bool   bFlipX     = false;          // 그림 좌우 반전 (FxDef.mirror)
+    bool   bDebris    = false;          // 잔해 연출 (velocity 로 날린다)
     Vec2   velocity   = { 0.f, 0.f };   // px/s
 };
 
@@ -28,7 +28,7 @@ struct EnemyEnv
     EnemyWorld&            world;
     const EnemyContext&    ctx;
     const EnemyDefLibrary& lib;
-    PhysicsTuning          phys = {};
+    PhysicsTuning          phys    = {};
     int                    zOffset = 0;   // 인스턴스 z - 기본 z: 이 적이 요청하는 FX/투사체 depth 에 더한다
 };
 
@@ -38,11 +38,11 @@ struct EnemyRenderEnv
     const AnimationLibrary& anims;
     const SpriteLibrary*    pSprites = nullptr;
     const ProjectileSystem& projectiles;
-    Vec2                    feet  = { 0.f, 0.f };
-    float                   alpha = 0.f;
-    int                     depth = 0;
-    float                   flash = 0.f;   // 이 적의 전체 피격 플래시 양 (EnemyWorld::Submit 이 채움)
-    int                     zOffset = 0;   // 인스턴스 z - 기본 z: 모든 부품 depth 에 더한다
+    Vec2                    feet    = { 0.f, 0.f };
+    float                   alpha   = 0.f;
+    int                     depth   = 0;
+    float                   flash   = 0.f;   // 이 적의 전체 피격 플래시 양 (EnemyWorld::Submit 이 채움)
+    int                     zOffset = 0;     // 인스턴스 z - 기본 z: 모든 부품 depth 에 더한다
 };
 
 struct BehaviorOps

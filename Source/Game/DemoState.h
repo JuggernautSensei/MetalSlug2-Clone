@@ -9,7 +9,7 @@ public:
     void               Render(GameContext& _ctx, float _alpha) override;
     [[nodiscard]] bool IsFinished() const override;
 
-    [[nodiscard]] Vec2 GetPosition() const;
+    [[nodiscard]] Vec2     GetPosition() const;
     [[nodiscard]] uint64_t DebugHash() const override;
 
 private:

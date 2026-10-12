@@ -83,10 +83,10 @@ public:
 
     virtual void WarpPlayer(Vec2 _feet) = 0;
 
-    virtual void SetBackdrop(StringView _modeId)                 = 0;
-    virtual void ShowBanner(const String& _text, float _seconds) = 0;   // _text 의 '\n' 은 줄바꿈
-    virtual void FadeTo(eFadeTarget _target, float _seconds)     = 0;
-    virtual void PlayBgm(StringView _name, bool _bLoop)          = 0;
+    virtual void SetBackdrop(StringView _modeId)                             = 0;
+    virtual void ShowBanner(const String& _text, float _seconds)             = 0;   // _text 의 '\n' 은 줄바꿈
+    virtual void FadeTo(eFadeTarget _target, float _seconds)                 = 0;
+    virtual void PlayBgm(StringView _name, bool _bLoop)                      = 0;
     virtual void ChangeBgm(StringView _name, bool _bLoop, float _fadeOutSec) = 0;
     virtual void PlaySfx(StringView _name)                                   = 0;
 

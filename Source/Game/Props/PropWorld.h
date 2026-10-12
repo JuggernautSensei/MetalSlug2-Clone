@@ -60,18 +60,18 @@ enum class ePropVisual : uint8_t
 
 struct PropInstance
 {
-    PropHandle                                                 id         = kNoProp;
-    int                                                        defIndex   = -1;
-    int                                                        variant    = -1;
-    Vec2                                                       pos        = { 0.f, 0.f };   // 스프라이트 중심 (legacyCenter, 변종 dy 반영)
-    int                                                        depth      = kPropDepthBack;   // 인스턴스 z
-    bool                                                       bFront     = false;            // def 기본 depth 가 앞 (ClearByLayer 용)
-    float                                                      cullMargin = 200.f;
-    float                                                      sortOffsetY = 0.f;   // def.sortOffsetY 복사
-    bool                                                       bSortByX    = false; // def.bSortByX 복사 (건물 깊이 규칙)
-    Health                                                     health     = {};
-    ARRAY<PropVisual, static_cast<size_t>(ePropVisual::Count)> visuals    = {};
-    Vector<PropPart>                                           parts      = {};
+    PropHandle                                                 id          = kNoProp;
+    int                                                        defIndex    = -1;
+    int                                                        variant     = -1;
+    Vec2                                                       pos         = { 0.f, 0.f };     // 스프라이트 중심 (legacyCenter, 변종 dy 반영)
+    int                                                        depth       = kPropDepthBack;   // 인스턴스 z
+    bool                                                       bFront      = false;            // def 기본 depth 가 앞 (ClearByLayer 용)
+    float                                                      cullMargin  = 200.f;
+    float                                                      sortOffsetY = 0.f;     // def.sortOffsetY 복사
+    bool                                                       bSortByX    = false;   // def.bSortByX 복사 (건물 깊이 규칙)
+    Health                                                     health      = {};
+    ARRAY<PropVisual, static_cast<size_t>(ePropVisual::Count)> visuals     = {};
+    Vector<PropPart>                                           parts       = {};
 
     ePropVisual visual            = ePropVisual::Idle;
     bool        bVisualBound      = false;
@@ -116,12 +116,12 @@ struct PropDebrisPiece
 
 struct PropTickContext
 {
-    const GroundMap*        pGround    = nullptr;
-    const AnimationLibrary* pAnims     = nullptr;
-    float                   cameraLeft = -1e9f;   // 이 x 에서 cullMargin 만큼 더 왼쪽 객체는 제거
-    float                   cameraBottom = 1e9f;  // 카메라 하단 y. 잔해는 이 값 + kDebrisCullBelowMargin 을 넘으면 제거 (미설정이면 y 컬링 없음)
-    float                   dt         = kStepSec;
-    const ItemTuning*       pItemTuning = nullptr;   // null 이면 기본값
+    const GroundMap*        pGround      = nullptr;
+    const AnimationLibrary* pAnims       = nullptr;
+    float                   cameraLeft   = -1e9f;   // 이 x 에서 cullMargin 만큼 더 왼쪽 객체는 제거
+    float                   cameraBottom = 1e9f;    // 카메라 하단 y. 잔해는 이 값 + kDebrisCullBelowMargin 을 넘으면 제거 (미설정이면 y 컬링 없음)
+    float                   dt           = kStepSec;
+    const ItemTuning*       pItemTuning  = nullptr;   // null 이면 기본값
 };
 
 class PropWorld
@@ -163,8 +163,8 @@ public:
     void SetSpriteLibrary(const SpriteLibrary* _pSprites);
     // 현재 시각 요소의 월드 사각형. 그릴 것이 없으면 false
     [[nodiscard]] bool GetVisualBounds(const PropInstance& _inst, const AnimationLibrary* _pAnims, Aabb& _out) const;
-    void RegisterHurtboxes(CombatSystem& _combat) const;
-    void OnHitEvents(Span<const HitEvent> _events);
+    void               RegisterHurtboxes(CombatSystem& _combat) const;
+    void               OnHitEvents(Span<const HitEvent> _events);
 
     [[nodiscard]] Span<const Platform> GetPlatforms() const;
     [[nodiscard]] Span<const Platform> GetEnemyPlatforms() const;

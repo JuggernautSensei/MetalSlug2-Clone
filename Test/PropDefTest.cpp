@@ -5,7 +5,6 @@
 #include "Base/Types.h"
 #include "PropTestUtil.h"
 
-
 [[nodiscard]] static std::string Wrap_(
     const std::string& _defs)
 {
@@ -14,7 +13,7 @@
 
 [[nodiscard]] static Result<PropDefLibrary> ParseText_(
     const std::string& _text,
-    String*      _pMessage = nullptr)
+    String*            _pMessage = nullptr)
 {
     return PropDefLibrary::Parse(StringView { _text.c_str(), _text.size() }, _pMessage);
 }
@@ -205,11 +204,11 @@ TEST(PropDef, RejectsGunItemWithoutWeaponAndUnknownKind)
 
 TEST(PropDef, SpawnParamsParseStageOverrides)
 {
-    const PropDefLibrary&                lib = GetPropLib();
+    const PropDefLibrary&    lib = GetPropLib();
     Result<JsonDeserializer> doc = JsonDeserializer::Load(R"({ "hp": 30, "sprites": ["A", "B"], "hitbox": { "size": [150, 75], "offset": [0, -200] }, "standBox": { "size": [230, 20], "offset": [35, 55] } })");
     ASSERT_TRUE(static_cast<bool>(doc));
     PropSpawnParams params;
-    String    err;
+    String          err;
     ASSERT_TRUE(lib.ParseSpawnParams("shop_5", doc->GetReader(), params, err)) << std::string { err.c_str() };
     EXPECT_EQ(params.hp, 30);
     EXPECT_EQ(params.idleSprite.c_str(), std::string { "A" });
@@ -222,11 +221,11 @@ TEST(PropDef, SpawnParamsParseStageOverrides)
 
 TEST(PropDef, SpawnParamsRejectUnknownKeysAndBadVariant)
 {
-    const PropDefLibrary&                lib = GetPropLib();
+    const PropDefLibrary&    lib = GetPropLib();
     Result<JsonDeserializer> doc = JsonDeserializer::Load(R"({ "playerWaterTrigger": { "size": [1050, 40] } })");
     ASSERT_TRUE(static_cast<bool>(doc));
     PropSpawnParams params;
-    String    err;
+    String          err;
     EXPECT_FALSE(lib.ParseSpawnParams("shop_0", doc->GetReader(), params, err));
     EXPECT_NE(std::string { err.c_str() }.find("playerWaterTrigger"), std::string::npos);
 

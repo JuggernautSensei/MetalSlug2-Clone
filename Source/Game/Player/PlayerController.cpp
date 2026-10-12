@@ -97,9 +97,9 @@ void PlayerController::Reset(
     m_bJumping         = false;
     m_bAirFromJump     = true;
 
-    m_shotTicksLeft       = 0;
-    m_burstLeft           = 0;
-    m_burstTimer          = 0;
+    m_shotTicksLeft = 0;
+    m_burstLeft     = 0;
+    m_burstTimer    = 0;
     EndFlame_();
     m_knifeTick           = -1;
     m_knifeHitId          = kNoHitId;
@@ -141,9 +141,9 @@ void PlayerController::BeginChuteDescent(
     m_chuteLandFeet = m_body.position;
 
     m_body.position.y -= _tuning.player.chuteStartHeightPx;
-    m_body.velocity   = { 0.f, 0.f };
-    m_body.bGrounded  = false;
-    m_prevFeet        = m_body.position;
+    m_body.velocity  = { 0.f, 0.f };
+    m_body.bGrounded = false;
+    m_prevFeet       = m_body.position;
 
     m_chutePhase       = eChutePhase::Descend;
     m_chuteBlinkTicks  = 0;
@@ -188,11 +188,11 @@ void PlayerController::TickChuteDescend_(
 {
     // 낙하 중에는 물리/충돌을 타지 않는다. 일정한 낮은 속도로 착지점까지 내려간다.
     m_body.position.y += _tuning.player.chuteFallSpeedPxSec * kStepSec;
-    m_body.velocity    = { 0.f, 0.f };
-    m_lastMove         = {};
-    m_state            = ePlayerState::Jump;
-    m_pose             = ePose::Air;
-    m_airTicks         = 1;
+    m_body.velocity = { 0.f, 0.f };
+    m_lastMove      = {};
+    m_state         = ePlayerState::Jump;
+    m_pose          = ePose::Air;
+    m_airTicks      = 1;
 
     if (m_body.position.y >= m_chuteLandFeet.y)
     {
@@ -229,7 +229,7 @@ void PlayerController::SetVictory()
     m_burstLeft     = 0;
     m_burstTimer    = 0;
     EndFlame_();
-    m_throwTick     = -1;
+    m_throwTick = -1;
     if (m_knifeTick >= 0)
     {
         m_pendingRelease.push_back(m_knifeHitId);
@@ -267,11 +267,11 @@ void PlayerController::Kill()
     m_state = ePlayerState::Dead;
     ++m_stateSerial;
     ++m_stats.deaths;
-    m_deadTicks       = 0;
-    m_overlay         = eOverlay::None;
-    m_shotTicksLeft   = 0;
-    m_burstLeft       = 0;
-    m_burstTimer      = 0;
+    m_deadTicks     = 0;
+    m_overlay       = eOverlay::None;
+    m_shotTicksLeft = 0;
+    m_burstLeft     = 0;
+    m_burstTimer    = 0;
     EndFlame_();
     m_throwTick       = -1;
     m_body.velocity.x = 0.f;
@@ -935,8 +935,8 @@ void PlayerController::FireBullet_(
 {
     const Tuning& tuning = *_ctx.pTuning;
 
-    Vec2       muzzle    = MakeMuzzle_(tuning, _weapon);
-    Vec2       direction = GetAimDirection(m_aim, m_facing);
+    Vec2 muzzle    = MakeMuzzle_(tuning, _weapon);
+    Vec2 direction = GetAimDirection(m_aim, m_facing);
     if (m_weapon.weapon == eWeapon::Hmg)
     {
         const float rad = m_aimDegree * (3.14159265f / 180.f);

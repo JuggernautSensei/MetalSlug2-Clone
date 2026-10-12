@@ -16,7 +16,7 @@ bool Editor::Init(
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
+    ImGuiIO& io    = ImGui::GetIO();
     io.IniFilename = nullptr;
     io.Fonts->AddFontDefault();
     ImFontConfig koreanFont;
@@ -34,7 +34,7 @@ bool Editor::Init(
     m_animEditor.Init(_pRenderer);
     m_stageEditor.Init(_pRenderer);
     m_groundEditor.Init(_pRenderer);
-    m_bInit     = true;
+    m_bInit = true;
     return true;
 }
 
@@ -161,10 +161,10 @@ void Editor::Frame(
         ImGui::ShowDemoWindow(&m_bShowDemo);
     }
 
-    const ImGuiIO&     io      = ImGui::GetIO();
-    const ImGuiWindow* pNav    = ImGui::GetCurrentContext()->NavWindow;
-    const bool         bFocus  = pNav != nullptr && (pNav->Flags & ImGuiWindowFlags_DockNodeHost) == 0;
-    m_bOwnsKeyboard            = io.WantCaptureKeyboard || io.WantTextInput || bFocus;
+    const ImGuiIO&     io     = ImGui::GetIO();
+    const ImGuiWindow* pNav   = ImGui::GetCurrentContext()->NavWindow;
+    const bool         bFocus = pNav != nullptr && (pNav->Flags & ImGuiWindowFlags_DockNodeHost) == 0;
+    m_bOwnsKeyboard           = io.WantCaptureKeyboard || io.WantTextInput || bFocus;
 
     ImGui::Render();
     ImGuiSdlRendererViewports_RenderMain(ImGui::GetDrawData());
@@ -239,10 +239,10 @@ void Editor::DrawEditorWindow_(
         ImGui::Separator();
         if (ImGui::BeginTabBar("EditorTabs"))
         {
-            const ImGuiTabItemFlags animFlags = (m_pendingTab == "animation") ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
-            const ImGuiTabItemFlags mapFlags  = (m_pendingTab == "map") ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
+            const ImGuiTabItemFlags animFlags      = (m_pendingTab == "animation") ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
+            const ImGuiTabItemFlags mapFlags       = (m_pendingTab == "map") ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
             const ImGuiTabItemFlags collisionFlags = (m_pendingTab == "collision") ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
-            const ImGuiTabItemFlags aiFlags = (m_pendingTab == "ai") ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
+            const ImGuiTabItemFlags aiFlags        = (m_pendingTab == "ai") ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
             m_pendingTab.clear();
             if (ImGui::BeginTabItem("Animation", nullptr, animFlags))
             {

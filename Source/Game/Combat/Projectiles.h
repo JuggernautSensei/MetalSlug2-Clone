@@ -24,7 +24,7 @@ struct BulletSpawn
     int      blastDamage = 0;
     int      blastTicks  = 0;
     bool     bTrail      = false;
-    uint32_t hitId       = kNoHitId;   // kNoHitId 이면 새 ID 를 받는다 (파이어샷 분출은 한 입력의 입자들이 공유)
+    uint32_t hitId       = kNoHitId;       // kNoHitId 이면 새 ID 를 받는다 (파이어샷 분출은 한 입력의 입자들이 공유)
     Vec2     sizeEnd     = { 0.f, 0.f };   // 0 이면 판정 크기 고정. 아니면 사거리 진행에 따라 size -> sizeEnd 로 커진다
     float    scaleStart  = 1.f;            // 표시 배율 (판정과 무관)
     float    scaleEnd    = 1.f;
@@ -35,26 +35,26 @@ struct BulletSpawn
 
 struct Bullet
 {
-    Vec2     position    = { 0.f, 0.f };
-    Vec2     renderPrev  = { 0.f, 0.f };
-    Vec2     hitFrom     = { 0.f, 0.f };
-    Vec2     velocity    = { 0.f, 0.f };   // px/s
-    Vec2     size        = { 14.f, 10.f };
-    float    travelled   = 0.f;
-    float    range       = 400.f;
-    int      damage      = 1;
-    eTeam    team        = eTeam::Player;
-    eHitKind kind        = eHitKind::Bullet;
-    uint32_t owner       = kNoOwner;
-    uint32_t hitId       = kNoHitId;
-    bool     bPierce     = false;
-    bool     bAlive      = true;
-    uint8_t  tag         = 0;
-    Vec2     blastSize   = { 0.f, 0.f };
-    int      blastDamage = 0;
-    int      blastTicks  = 0;
-    bool     bTrail      = false;
-    int      ageTicks    = 0;
+    Vec2     position     = { 0.f, 0.f };
+    Vec2     renderPrev   = { 0.f, 0.f };
+    Vec2     hitFrom      = { 0.f, 0.f };
+    Vec2     velocity     = { 0.f, 0.f };   // px/s
+    Vec2     size         = { 14.f, 10.f };
+    float    travelled    = 0.f;
+    float    range        = 400.f;
+    int      damage       = 1;
+    eTeam    team         = eTeam::Player;
+    eHitKind kind         = eHitKind::Bullet;
+    uint32_t owner        = kNoOwner;
+    uint32_t hitId        = kNoHitId;
+    bool     bPierce      = false;
+    bool     bAlive       = true;
+    uint8_t  tag          = 0;
+    Vec2     blastSize    = { 0.f, 0.f };
+    int      blastDamage  = 0;
+    int      blastTicks   = 0;
+    bool     bTrail       = false;
+    int      ageTicks     = 0;
     bool     bSharedHitId = false;   // 공유 판정 ID 는 탄이 죽어도 풀지 않는다 (분출 쪽이 풀어준다)
     Vec2     sizeStart    = { 0.f, 0.f };
     Vec2     sizeEnd      = { 0.f, 0.f };

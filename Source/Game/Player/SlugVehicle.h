@@ -55,14 +55,14 @@ struct SlugFx
 // 사운드 연동용 누적 통계 (플레이어 PlayerStats 와 같은 방식으로 호스트가 차이를 본다)
 struct SlugStats
 {
-    int vulcanShots  = 0;
-    int cannonShots  = 0;
-    int jumps        = 0;
-    int hits         = 0;
-    int boards       = 0;
-    int exits        = 0;
-    int explosions   = 0;
-    int emptyClicks  = 0;   // 탄이 없는데 캐논 버튼을 누른 횟수
+    int vulcanShots = 0;
+    int cannonShots = 0;
+    int jumps       = 0;
+    int hits        = 0;
+    int boards      = 0;
+    int exits       = 0;
+    int explosions  = 0;
+    int emptyClicks = 0;   // 탄이 없는데 캐논 버튼을 누른 횟수
 };
 
 class SlugVehicle
@@ -86,45 +86,45 @@ public:
     void PushFeetXMax(float _maxX);
     void ForceHp(int _hp);
 
-    [[nodiscard]] eSlugMode  GetMode() const;
-    [[nodiscard]] bool       IsDriven() const;
-    [[nodiscard]] bool       IsAlive() const;
-    [[nodiscard]] uint32_t   GetOwnerId() const;
-    [[nodiscard]] Vec2       GetFeet() const;
-    [[nodiscard]] Vec2       GetPrevFeet() const;
-    [[nodiscard]] int        GetZ() const;   // 몸통 depth (kDefaultZ: kSlugBodyDepth). 부품/FX/화살표/탄은 같은 이동량을 따른다
-    void                     SetZ(int _z);
-    [[nodiscard]] Vec2       GetVelocity() const;
-    [[nodiscard]] int        GetFacing() const;
-    [[nodiscard]] bool       IsGrounded() const;
-    [[nodiscard]] int        GetHp() const;
-    [[nodiscard]] int        GetMaxHp() const;
-    [[nodiscard]] float      GetHpRatio() const;
-    [[nodiscard]] int        GetCannonAmmo() const;
-    [[nodiscard]] int        GetCannonCooldown() const;
-    [[nodiscard]] float      GetVulcanAngle() const;
-    [[nodiscard]] float      GetVulcanTargetAngle() const;
-    [[nodiscard]] int        GetVulcanShotAge() const;
-    [[nodiscard]] bool       IsVulcanVisible() const;
-    [[nodiscard]] bool       IsBodyVisible() const;
-    [[nodiscard]] int        GetCrouchLevel() const;
-    [[nodiscard]] eSlugPose  GetPose() const;
-    [[nodiscard]] int        GetPoseFrame() const;
-    [[nodiscard]] int        GetFlashTicks() const;
-    [[nodiscard]] bool       IsBlinkWhite() const;
-    [[nodiscard]] int        GetDamageStage() const;   // 0 정상, 1 연기, 2 불꽃 (OUT 화살표 깜빡임)
-    [[nodiscard]] bool       ShouldShowInArrow() const;
-    [[nodiscard]] bool       ShouldShowOutArrow() const;
-    [[nodiscard]] int        GetTick() const;
-    [[nodiscard]] Aabb       GetBodyBox() const;
-    [[nodiscard]] Aabb       GetBoardBox() const;
-    [[nodiscard]] Hurtbox    MakeHurtbox() const;
-    [[nodiscard]] Vec2       GetVulcanMount() const;
-    [[nodiscard]] Vec2       GetVulcanMuzzle() const;
-    [[nodiscard]] Vec2       GetCannonMuzzle() const;
-    [[nodiscard]] const SlugStats&       GetStats() const;
-    [[nodiscard]] Span<const SlugFx>     GetFx() const;
-    [[nodiscard]] const Body&            GetBody() const;
+    [[nodiscard]] eSlugMode          GetMode() const;
+    [[nodiscard]] bool               IsDriven() const;
+    [[nodiscard]] bool               IsAlive() const;
+    [[nodiscard]] uint32_t           GetOwnerId() const;
+    [[nodiscard]] Vec2               GetFeet() const;
+    [[nodiscard]] Vec2               GetPrevFeet() const;
+    [[nodiscard]] int                GetZ() const;   // 몸통 depth (kDefaultZ: kSlugBodyDepth). 부품/FX/화살표/탄은 같은 이동량을 따른다
+    void                             SetZ(int _z);
+    [[nodiscard]] Vec2               GetVelocity() const;
+    [[nodiscard]] int                GetFacing() const;
+    [[nodiscard]] bool               IsGrounded() const;
+    [[nodiscard]] int                GetHp() const;
+    [[nodiscard]] int                GetMaxHp() const;
+    [[nodiscard]] float              GetHpRatio() const;
+    [[nodiscard]] int                GetCannonAmmo() const;
+    [[nodiscard]] int                GetCannonCooldown() const;
+    [[nodiscard]] float              GetVulcanAngle() const;
+    [[nodiscard]] float              GetVulcanTargetAngle() const;
+    [[nodiscard]] int                GetVulcanShotAge() const;
+    [[nodiscard]] bool               IsVulcanVisible() const;
+    [[nodiscard]] bool               IsBodyVisible() const;
+    [[nodiscard]] int                GetCrouchLevel() const;
+    [[nodiscard]] eSlugPose          GetPose() const;
+    [[nodiscard]] int                GetPoseFrame() const;
+    [[nodiscard]] int                GetFlashTicks() const;
+    [[nodiscard]] bool               IsBlinkWhite() const;
+    [[nodiscard]] int                GetDamageStage() const;   // 0 정상, 1 연기, 2 불꽃 (OUT 화살표 깜빡임)
+    [[nodiscard]] bool               ShouldShowInArrow() const;
+    [[nodiscard]] bool               ShouldShowOutArrow() const;
+    [[nodiscard]] int                GetTick() const;
+    [[nodiscard]] Aabb               GetBodyBox() const;
+    [[nodiscard]] Aabb               GetBoardBox() const;
+    [[nodiscard]] Hurtbox            MakeHurtbox() const;
+    [[nodiscard]] Vec2               GetVulcanMount() const;
+    [[nodiscard]] Vec2               GetVulcanMuzzle() const;
+    [[nodiscard]] Vec2               GetCannonMuzzle() const;
+    [[nodiscard]] const SlugStats&   GetStats() const;
+    [[nodiscard]] Span<const SlugFx> GetFx() const;
+    [[nodiscard]] const Body&        GetBody() const;
 
     [[nodiscard]] uint64_t HashState() const;
 
@@ -167,40 +167,40 @@ private:
 
     PlayerInputBuffer m_input = {};
 
-    int   m_airTicks      = 0;
-    bool  m_bCoyote       = true;
-    bool  m_bJumping      = false;
-    int   m_landTicks     = 0;
-    int   m_crouchLevel   = 8;   // 0 = 선 자세, 8 = 완전히 눌린 자세 (Slug_Crouch 프레임 번호)
-    int   m_crouchTimer   = 0;
-    int   m_moveX         = 0;
-    float m_driveFrame    = 0.f;
-    int   m_accelDir      = 0;   // +1 가속 중, -1 감속 중, 0 일정
-    float m_accelPhase    = 0.f; // 가속/감속 프레임 위치 0..3
+    int   m_airTicks    = 0;
+    bool  m_bCoyote     = true;
+    bool  m_bJumping    = false;
+    int   m_landTicks   = 0;
+    int   m_crouchLevel = 8;   // 0 = 선 자세, 8 = 완전히 눌린 자세 (Slug_Crouch 프레임 번호)
+    int   m_crouchTimer = 0;
+    int   m_moveX       = 0;
+    float m_driveFrame  = 0.f;
+    int   m_accelDir    = 0;     // +1 가속 중, -1 감속 중, 0 일정
+    float m_accelPhase  = 0.f;   // 가속/감속 프레임 위치 0..3
 
-    float m_vulcanAngle     = 0.f;   // 도, 0 = 오른쪽, +90 = 위 (몸이 보는 방향과 무관)
-    float m_vulcanTarget    = 0.f;
-    int   m_vulcanCooldown  = 0;
-    int   m_vulcanShotAge   = 1000;   // 마지막 발사 뒤 경과 틱 (총구 불꽃 클립 위치)
-    int   m_cannonCooldown  = 0;
-    int   m_cannonAmmo      = 0;
+    float m_vulcanAngle    = 0.f;   // 도, 0 = 오른쪽, +90 = 위 (몸이 보는 방향과 무관)
+    float m_vulcanTarget   = 0.f;
+    int   m_vulcanCooldown = 0;
+    int   m_vulcanShotAge  = 1000;   // 마지막 발사 뒤 경과 틱 (총구 불꽃 클립 위치)
+    int   m_cannonCooldown = 0;
+    int   m_cannonAmmo     = 0;
 
-    int      m_hp             = 100;
-    int      m_flashTicks     = 0;
-    int      m_invincibleTicks = 0;
-    eGodMode m_godMode         = eGodMode::Off;   // 에디터 디버그 (해시 제외)
-    int      m_hitAge         = -1;   // 피격 경직 클립 경과 틱 (-1 = 없음)
-    bool     m_bHitFront      = true;
-    int      m_exitCooldown   = 0;
-    int      m_parkAnimTicks  = 0;
+    int      m_hp                = 100;
+    int      m_flashTicks        = 0;
+    int      m_invincibleTicks   = 0;
+    eGodMode m_godMode           = eGodMode::Off;   // 에디터 디버그 (해시 제외)
+    int      m_hitAge            = -1;              // 피격 경직 클립 경과 틱 (-1 = 없음)
+    bool     m_bHitFront         = true;
+    int      m_exitCooldown      = 0;
+    int      m_parkAnimTicks     = 0;
     int      m_selfDestructTicks = -1;
-    bool     m_bExploded      = false;
-    int      m_blastTicksLeft = 0;
-    uint32_t m_blastHitId     = kNoHitId;
-    bool     m_bReleaseCrush  = false;
+    bool     m_bExploded         = false;
+    int      m_blastTicksLeft    = 0;
+    uint32_t m_blastHitId        = kNoHitId;
+    bool     m_bReleaseCrush     = false;
 
-    uint32_t m_crushHitId  = kNoHitId;
-    int      m_crushTimer  = 0;
+    uint32_t m_crushHitId = kNoHitId;
+    int      m_crushTimer = 0;
 
     eSlugPose m_pose      = eSlugPose::ParkedOpen;
     int       m_poseFrame = 0;

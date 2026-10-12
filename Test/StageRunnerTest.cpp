@@ -10,7 +10,6 @@
 #include "Base/Math.h"
 #include "StageTestUtil.h"
 
-
 [[nodiscard]] static std::string OneSection_(
     const std::string& _actions,
     const std::string& _camera = R"J({"initialBounds":[0,0,4000,448]})J")

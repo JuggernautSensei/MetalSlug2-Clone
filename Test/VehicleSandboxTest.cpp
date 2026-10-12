@@ -4,7 +4,6 @@
 
 #include "VehicleTestUtil.h"
 
-
 constexpr float kGroundY = 378.f;
 
 struct VehicleDirectState

@@ -394,7 +394,7 @@ void HitboxDocument::Collect_(
     }
     for (size_t i = 0; i < node.kids.size(); ++i)
     {
-        const String&   key       = node.keys[i];
+        const String& key = node.keys[i];
         if (key == "hitboxes")
         {
             continue;
@@ -597,8 +597,8 @@ void HitboxEditor::DrawEntries_(
             bOwnerActive  = true;
         }
         ImGui::PushID(i);
-        const HitboxTitle title = MakeHitboxTitle_(entry);
-        const RGBA        tint  = HitboxKindColor_(title.kind);
+        const HitboxTitle title    = MakeHitboxTitle_(entry);
+        const RGBA        tint     = HitboxKindColor_(title.kind);
         const ImVec2      blockMin = ImGui::GetCursorScreenPos();
         ImGui::TextColored(ImVec4 { tint.r / 255.f, tint.g / 255.f, tint.b / 255.f, 1.f }, "%s", title.ko.c_str());
         if (ImGui::IsItemHovered())
@@ -612,20 +612,20 @@ void HitboxEditor::DrawEntries_(
         {
             size[0] -= 1.f;
             size[1] -= 1.f;
-            bEdited  = true;
+            bEdited = true;
         }
         ImGui::SameLine();
         if (ImGui::SmallButton("+"))
         {
             size[0] += 1.f;
             size[1] += 1.f;
-            bEdited  = true;
+            bEdited = true;
         }
         ARRAY<float, 2> offset  = { static_cast<float>(entry.value[2]), static_cast<float>(entry.value[3]) };
         bool            bOffset = false;
         if (entry.HasField(eHitboxField::Cx))
         {
-            bOffset  = ImGui::DragFloat2("cx, cy", offset.data(), 0.5f, -4000.f, 4000.f, "%.1f");
+            bOffset = ImGui::DragFloat2("cx, cy", offset.data(), 0.5f, -4000.f, 4000.f, "%.1f");
         }
         const ImVec2 blockMax = { blockMin.x + ImGui::GetContentRegionAvail().x, ImGui::GetCursorScreenPos().y };
         if (bEdited || bOffset || ImGui::IsAnyItemActive() || (ImGui::IsWindowHovered() && ImGui::IsMouseHoveringRect(blockMin, blockMax)))
@@ -708,10 +708,10 @@ void HitboxEditor::DrawExtraBoxes_(
     if (ImGui::Button("+ 추가"))
     {
         ExtraBoxDef box;
-        box.id     = std::format("box{}", pDef->hitboxes.size() + 1);
-        box.kind   = m_newKind == 1 ? eExtraBoxKind::Attack : eExtraBoxKind::Hurt;
-        box.box    = { 30.f, 30.f, 0.f, -20.f };
-        m_boxSel   = static_cast<int>(pDef->hitboxes.size());
+        box.id   = std::format("box{}", pDef->hitboxes.size() + 1);
+        box.kind = m_newKind == 1 ? eExtraBoxKind::Attack : eExtraBoxKind::Hurt;
+        box.box  = { 30.f, 30.f, 0.f, -20.f };
+        m_boxSel = static_cast<int>(pDef->hitboxes.size());
         pDef->hitboxes.push_back(box);
         bChanged = true;
     }

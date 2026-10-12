@@ -11,13 +11,13 @@
 #include "Game/Player/SlugRender.h"
 #include "Render/SpriteBatch.h"
 
-constexpr int   kCrouchLevels    = 8;
-constexpr int   kExplosionTicks  = 66;   // Slug_Explosion 30프레임 @ 30fps = 60틱 + 여유
-constexpr int   kFxSmokeTicks    = 54;
-constexpr int   kFxFireTicks     = 40;
-constexpr int   kSmokeInterval   = 16;
-constexpr int   kFireInterval    = 11;
-constexpr int   kHitAgeNone      = -1;
+constexpr int kCrouchLevels   = 8;
+constexpr int kExplosionTicks = 66;   // Slug_Explosion 30프레임 @ 30fps = 60틱 + 여유
+constexpr int kFxSmokeTicks   = 54;
+constexpr int kFxFireTicks    = 40;
+constexpr int kSmokeInterval  = 16;
+constexpr int kFireInterval   = 11;
+constexpr int kHitAgeNone     = -1;
 
 [[nodiscard]] static PhysicsTuning MakePhysicsTuning_(
     const SlugMoveTuning& _move)
@@ -62,12 +62,14 @@ static void HashBytes_(
 [[nodiscard]] static Vec2 GetDamageFxOffset_(
     const int _index)
 {
-    static constexpr ARRAY<Vec2, 4> kOffsets = { {
-        { -30.f, -78.f },
-        { 18.f, -84.f },
-        { -8.f, -66.f },
-        { 34.f, -70.f },
-    } };
+    static constexpr ARRAY<Vec2, 4> kOffsets = {
+        {
+         { -30.f, -78.f },
+         { 18.f, -84.f },
+         { -8.f, -66.f },
+         { 34.f, -70.f },
+         }
+    };
     return kOffsets[static_cast<size_t>(_index) % kOffsets.size()];
 }
 
@@ -85,26 +87,26 @@ void SlugVehicle::Init(
     m_modeTicks = 0;
     m_tick      = 0;
 
-    m_body                = {};
-    m_body.position       = _feet;
-    m_body.size           = { _tuning.body.standSize.x, _tuning.body.crouchSize.y };
-    m_body.footHalfWidth  = _tuning.body.footHalfWidth;
-    m_prevFeet            = _feet;
-    m_lastMove            = {};
-    m_facing              = _facing < 0 ? -1 : 1;
+    m_body               = {};
+    m_body.position      = _feet;
+    m_body.size          = { _tuning.body.standSize.x, _tuning.body.crouchSize.y };
+    m_body.footHalfWidth = _tuning.body.footHalfWidth;
+    m_prevFeet           = _feet;
+    m_lastMove           = {};
+    m_facing             = _facing < 0 ? -1 : 1;
 
     m_input.Reset();
 
-    m_airTicks   = 0;
-    m_bCoyote    = true;
-    m_bJumping   = false;
-    m_landTicks  = 0;
+    m_airTicks    = 0;
+    m_bCoyote     = true;
+    m_bJumping    = false;
+    m_landTicks   = 0;
     m_crouchLevel = kCrouchLevels;
     m_crouchTimer = 0;
-    m_moveX      = 0;
-    m_driveFrame = 0.f;
-    m_accelDir   = 0;
-    m_accelPhase = 0.f;
+    m_moveX       = 0;
+    m_driveFrame  = 0.f;
+    m_accelDir    = 0;
+    m_accelPhase  = 0.f;
 
     m_vulcanAngle    = m_facing > 0 ? 0.f : 180.f;
     m_vulcanTarget   = m_vulcanAngle;
@@ -147,19 +149,19 @@ void SlugVehicle::BeginBoarding()
     m_mode      = eSlugMode::Boarding;
     m_modeTicks = 0;
     m_input.Reset();
-    m_moveX            = 0;
-    m_body.velocity.x  = 0.f;
-    m_crouchLevel      = kCrouchLevels;
-    m_crouchTimer      = 0;
-    m_vulcanCooldown   = 0;
-    m_cannonCooldown   = 0;
-    m_parkAnimTicks    = 0;
+    m_moveX             = 0;
+    m_body.velocity.x   = 0.f;
+    m_crouchLevel       = kCrouchLevels;
+    m_crouchTimer       = 0;
+    m_vulcanCooldown    = 0;
+    m_cannonCooldown    = 0;
+    m_parkAnimTicks     = 0;
     m_selfDestructTicks = -1;
     ++m_stats.boards;
 }
 
 void SlugVehicle::Tick(
-    const SlugContext& _ctx,
+    const SlugContext&  _ctx,
     const InputHistory& _input)
 {
     ++m_tick;
@@ -195,7 +197,7 @@ void SlugVehicle::TickCommon_(
     if (m_hitAge != kHitAgeNone)
     {
         ++m_hitAge;
-        const eSlugClip clip = m_bHitFront ? eSlugClip::HitFront : eSlugClip::HitBack;
+        const eSlugClip clip  = m_bHitFront ? eSlugClip::HitFront : eSlugClip::HitBack;
         const int       ticks = GetSlugClipInfo(clip).frames * 60 / Max(1, GetSlugClipInfo(clip).fps);
         if (m_hitAge >= ticks)
         {
@@ -238,8 +240,8 @@ void SlugVehicle::TickParked_(
     const SlugContext& _ctx)
 {
     const PlayerCommand idle = {};
-    m_moveX                   = 0;
-    m_body.velocity.x         = 0.f;
+    m_moveX                  = 0;
+    m_body.velocity.x        = 0.f;
     UpdateCrouch_(true);
     Move_(_ctx, idle);
 
@@ -270,8 +272,8 @@ void SlugVehicle::TickBoarding_(
 {
     ++m_modeTicks;
     const PlayerCommand idle = {};
-    m_moveX                   = 0;
-    m_body.velocity.x         = 0.f;
+    m_moveX                  = 0;
+    m_body.velocity.x        = 0.f;
     Move_(_ctx, idle);
     if (m_modeTicks >= m_tuning.board.boardTicks)
     {
@@ -282,7 +284,7 @@ void SlugVehicle::TickBoarding_(
 }
 
 void SlugVehicle::TickDriven_(
-    const SlugContext& _ctx,
+    const SlugContext&  _ctx,
     const InputHistory& _input)
 {
     ++m_modeTicks;
@@ -409,10 +411,10 @@ void SlugVehicle::Move_(
         m_input.Consume(eAction::Jump);
     }
 
-    const float t         = static_cast<float>(m_crouchLevel) / static_cast<float>(kCrouchLevels);
-    m_body.size           = { m_tuning.body.standSize.x, Lerp(m_tuning.body.standSize.y, m_tuning.body.crouchSize.y, t) };
-    m_body.footHalfWidth  = m_tuning.body.footHalfWidth;
-    m_lastMove            = Physics::Step(m_body, _ctx.physics, MakePhysicsTuning_(move));
+    const float t        = static_cast<float>(m_crouchLevel) / static_cast<float>(kCrouchLevels);
+    m_body.size          = { m_tuning.body.standSize.x, Lerp(m_tuning.body.standSize.y, m_tuning.body.crouchSize.y, t) };
+    m_body.footHalfWidth = m_tuning.body.footHalfWidth;
+    m_lastMove           = Physics::Step(m_body, _ctx.physics, MakePhysicsTuning_(move));
 
     if (m_body.bGrounded)
     {
@@ -449,9 +451,9 @@ void SlugVehicle::UpdateVulcan_(
     const SlugContext&   _ctx,
     const PlayerCommand& _command)
 {
-    const bool bLow = m_crouchLevel >= kCrouchLevels / 2;
-    const int  dirX = _command.moveX != 0 ? _command.moveX : m_facing;
-    const bool bUp  = _command.bUpHeld && !bLow;
+    const bool bLow  = m_crouchLevel >= kCrouchLevels / 2;
+    const int  dirX  = _command.moveX != 0 ? _command.moveX : m_facing;
+    const bool bUp   = _command.bUpHeld && !bLow;
     const bool bDown = _command.bDownHeld && !m_body.bGrounded;
 
     float target = dirX > 0 ? 0.f : 180.f;
@@ -551,7 +553,7 @@ void SlugVehicle::FireCannon_(
     }
     const SlugCannonTuning& cannon = m_tuning.cannon;
 
-    float vy = -cannon.riseSpeed;
+    float vy      = -cannon.riseSpeed;
     int   variant = 0;
     if (_command.bUpHeld && m_crouchLevel < kCrouchLevels / 2)
     {
@@ -823,7 +825,7 @@ void SlugVehicle::UpdatePose_()
 
     if (!bGrounded)
     {
-        m_pose = eSlugPose::Jump;
+        m_pose         = eSlugPose::Jump;
         const float vy = m_body.velocity.y;
         m_poseFrame    = vy < -260.f ? 0 : (vy < -60.f ? 1 : (vy < 80.f ? 2 : 3));
         return;
@@ -1109,7 +1111,7 @@ Aabb SlugVehicle::GetBoardBox() const
 
 Hurtbox SlugVehicle::MakeHurtbox() const
 {
-    const float t = static_cast<float>(m_crouchLevel) / static_cast<float>(kCrouchLevels);
+    const float t    = static_cast<float>(m_crouchLevel) / static_cast<float>(kCrouchLevels);
     const Vec2  size = { m_tuning.body.hurtStand.x, Lerp(m_tuning.body.hurtStand.y, m_tuning.body.hurtCrouch.y, t) };
 
     Hurtbox hurtbox;

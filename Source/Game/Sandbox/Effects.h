@@ -11,7 +11,7 @@ inline constexpr float kDebrisVxMin           = -250.f;   // 초기 수평 속�
 inline constexpr float kDebrisVxMax           = 249.f;
 inline constexpr float kDebrisVyMin           = -800.f;   // 초기 수직 속도 범위 (px/s, 위쪽은 음수)
 inline constexpr float kDebrisVyMax           = -301.f;
-inline constexpr float kDebrisCullBelowMargin = 100.f;    // 카메라 하단에서 이만큼 더 내려가면 제거
+inline constexpr float kDebrisCullBelowMargin = 100.f;   // 카메라 하단에서 이만큼 더 내려가면 제거
 
 class GroundMap;
 
@@ -37,7 +37,7 @@ public:
         const AnimationLibrary& _library,
         StringView              _clipName,
         Vec2                    _position,
-        int                     _depth = 50,
+        int                     _depth  = 50,
         bool                    _bFlipX = false);
 
     // 잔해 연출: 생성 시 _velocity 로 날린다. 지면에서 멈추지 않고 중력으로 떨어진다.
@@ -57,7 +57,7 @@ public:
         float                   _cullBelowY = 1.0e9f);
     void Submit(const AnimationLibrary& _library, SpriteBatch& _sprites) const;
 
-    [[nodiscard]] size_t            GetCount() const;
+    [[nodiscard]] size_t             GetCount() const;
     [[nodiscard]] Span<const Effect> GetEffects() const;
 
 private:

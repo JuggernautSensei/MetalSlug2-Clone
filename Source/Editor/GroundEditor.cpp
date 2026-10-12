@@ -548,7 +548,7 @@ void GroundEditor::LoadMask_(
 void GroundEditor::LoadBackground_(
     const String& _maskName)
 {
-    m_bBgLoaded = true;
+    m_bBgLoaded                              = true;
     const FilePath                 stagePath = FindAssetRoot() / "Stage" / (_maskName.substr(0, _maskName.find('_')) + ".json");
     const Result<JsonDeserializer> stage     = JsonDeserializer::LoadFromFile(stagePath);
     if (!stage)
@@ -899,13 +899,17 @@ void GroundEditor::DrawView_()
             const int y1 = std::max(m_startY, pixelY);
             pDraw->AddRect(ImVec2 { originX + (static_cast<float>(x0) - sx) * zoom, originY + (static_cast<float>(y0) - sy) * zoom },
                            ImVec2 { originX + (static_cast<float>(x1 + 1) - sx) * zoom, originY + (static_cast<float>(y1 + 1) - sy) * zoom },
-                           IM_COL32(255, 255, 0, 255), 0.f, 0, 2.f);
+                           IM_COL32(255, 255, 0, 255),
+                           0.f,
+                           0,
+                           2.f);
         }
         if (m_bDragging && m_tool == eGroundTool::Line)
         {
             pDraw->AddLine(ImVec2 { originX + (static_cast<float>(m_startX) + 0.5f - sx) * zoom, originY + (static_cast<float>(m_startY) + 0.5f - sy) * zoom },
                            ImVec2 { originX + (static_cast<float>(pixelX) + 0.5f - sx) * zoom, originY + (static_cast<float>(pixelY) + 0.5f - sy) * zoom },
-                           IM_COL32(255, 255, 0, 255), std::max(1.f, static_cast<float>(m_brush) * zoom));
+                           IM_COL32(255, 255, 0, 255),
+                           std::max(1.f, static_cast<float>(m_brush) * zoom));
         }
     }
 

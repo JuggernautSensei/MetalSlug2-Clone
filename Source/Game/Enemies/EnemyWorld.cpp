@@ -10,7 +10,7 @@
 #include "Game/Enemies/EnemyCommon.h"
 #include "World/Constants.h"
 
-constexpr float kSpawnSnapPx  = 16.f;   // 스폰 시 발 아래 지면에 붙이는 최대 거리
+constexpr float kSpawnSnapPx = 16.f;   // 스폰 시 발 아래 지면에 붙이는 최대 거리
 
 [[nodiscard]] static Vec2 Lerp_(
     const Vec2  _a,

@@ -7,7 +7,6 @@
 #include "Base/Types.h"
 #include "World/Physics.h"
 
-
 [[nodiscard]] static GroundMap MakeFlat_(
     const int _w      = 400,
     const int _h      = 160,
@@ -787,7 +786,7 @@ struct Snapshot
     PhysicsWorld world = WorldOf_(map);
     world.platforms    = Span<const Platform> { &oneWay, 1 };
 
-    Body                   body = MakeBody_(20.f, 100.f);
+    Body             body = MakeBody_(20.f, 100.f);
     Vector<Snapshot> history;
     for (int i = 0; i < 600; ++i)
     {
@@ -825,6 +824,6 @@ TEST(Physics, SameInputsProduceBitIdenticalResultsAfter600Steps)
 TEST(Physics, ScenarioActuallyMovesTheBody)
 {
     const Vector<Snapshot> history = RunScenario_();
-    const float                  endX    = std::bit_cast<float>(history.back().x);
+    const float            endX    = std::bit_cast<float>(history.back().x);
     EXPECT_GT(endX, 100.f);
 }

@@ -21,17 +21,17 @@ struct GameContext
     IAudioSink*       pAudio    = nullptr;
     AsyncLoader*      pLoader   = nullptr;   // nullptr 이면 동기 로드
 
-    float fps           = 0.f;
-    bool  bDebugDraw    = false;
-    bool  bPaused       = false;
-    int   slowMoDivisor = 1;   // F4: 2 이상이면 느린 재생
-    int   debugWarp     = 0;
-    float debugWarpX    = 0.f;   // debugWarp == 3 일 때 목표 월드 x
-    int   debugLives    = 0;   // --life N (0 이면 튜닝 값)
-    int   debugSpawn    = 0;
-    int   debugWeapon   = 0;
-    eGodMode godMode    = eGodMode::Off;   // --editor 에서만 설정된다
-    bool     bInfiniteAmmo = false;   // --editor 에서만 설정된다
+    float    fps           = 0.f;
+    bool     bDebugDraw    = false;
+    bool     bPaused       = false;
+    int      slowMoDivisor = 1;   // F4: 2 이상이면 느린 재생
+    int      debugWarp     = 0;
+    float    debugWarpX    = 0.f;   // debugWarp == 3 일 때 목표 월드 x
+    int      debugLives    = 0;     // --life N (0 이면 튜닝 값)
+    int      debugSpawn    = 0;
+    int      debugWeapon   = 0;
+    eGodMode godMode       = eGodMode::Off;   // --editor 에서만 설정된다
+    bool     bInfiniteAmmo = false;           // --editor 에서만 설정된다
 
     [[nodiscard]] bool IsHeadless() const;
 

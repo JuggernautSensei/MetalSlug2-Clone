@@ -292,7 +292,7 @@ void SandboxState::RestartGame()
         SpawnParams params;
         params.facing = -1;
         // 스폰 = 정지 앵커 (처음부터 그 자리). 앵커는 화면 왼쪽 끝 + 489
-        m_busHandle   = SpawnEnemy("bus", { m_config.cameraBounds.max.x - 640.f + 489.f, 378.f }, params);
+        m_busHandle = SpawnEnemy("bus", { m_config.cameraBounds.max.x - 640.f + 489.f, 378.f }, params);
         if (m_config.bBusBot)
         {
             m_player.PickUpWeapon(eWeapon::Hmg, m_tuning);
@@ -390,10 +390,10 @@ bool SandboxState::ReloadEnemyDefsKeep(
     {
         return false;
     }
-    const Span<const EnemyDef>        newDefs  = lib.GetDefs();
-    const Span<const EnemyDef>        oldDefs  = m_enemyLib.GetDefs();
-    const Span<const ProjectileDef>   newProjs = lib.GetProjectiles();
-    const Span<const ProjectileDef>   oldProjs = m_enemyLib.GetProjectiles();
+    const Span<const EnemyDef>      newDefs  = lib.GetDefs();
+    const Span<const EnemyDef>      oldDefs  = m_enemyLib.GetDefs();
+    const Span<const ProjectileDef> newProjs = lib.GetProjectiles();
+    const Span<const ProjectileDef> oldProjs = m_enemyLib.GetProjectiles();
     if (newDefs.size() != oldDefs.size() || newProjs.size() != oldProjs.size())
     {
         return false;
@@ -542,7 +542,7 @@ void SandboxState::Tick(
     if (m_config.bHeliBot)
     {
         // 봇: 120 틱마다 좌우로 걷고 위로 계속 사격한다 (헬기 랩 캡처용, 오른쪽 이동으로 시작)
-        InputFrame frame = {};
+        InputFrame frame  = {};
         const bool bRight = (m_tickCount / 120) % 2 == 0;
         frame.Set(eAction::Right, bRight);
         frame.Set(eAction::Left, !bRight);
@@ -564,11 +564,11 @@ void SandboxState::Tick(
     m_combat.BeginTick();
     {
         PropTickContext propCtx;
-        propCtx.pGround    = &m_ground;
-        propCtx.pAnims     = _ctx.pAnims;
-        propCtx.cameraLeft = m_camera.GetPositionNoShake().x;
+        propCtx.pGround      = &m_ground;
+        propCtx.pAnims       = _ctx.pAnims;
+        propCtx.cameraLeft   = m_camera.GetPositionNoShake().x;
         propCtx.cameraBottom = m_camera.GetPositionNoShake().y + Renderer::kLogicalHeight;
-        propCtx.pItemTuning = &m_tuning.items;
+        propCtx.pItemTuning  = &m_tuning.items;
         m_props.Tick(propCtx);
     }
     UpdateWalls_();
@@ -587,12 +587,12 @@ void SandboxState::Tick(
     m_props.RegisterHurtboxes(m_combat);
 
     PlayerContext playerCtx;
-    playerCtx.pTuning      = &m_tuning;
-    playerCtx.physics      = MakePhysicsWorld_();
-    playerCtx.pCombat      = &m_combat;
-    playerCtx.pProjectiles = &m_projectiles;
-    playerCtx.respawnFeet  = GetRespawnFeet_();
-    playerCtx.godMode      = _ctx.godMode;
+    playerCtx.pTuning       = &m_tuning;
+    playerCtx.physics       = MakePhysicsWorld_();
+    playerCtx.pCombat       = &m_combat;
+    playerCtx.pProjectiles  = &m_projectiles;
+    playerCtx.respawnFeet   = GetRespawnFeet_();
+    playerCtx.godMode       = _ctx.godMode;
     playerCtx.bInfiniteAmmo = _ctx.bInfiniteAmmo;
 
     SlugContext slugCtx;
@@ -658,8 +658,8 @@ void SandboxState::Tick(
         enemyCtx.player.center        = enemyCtx.player.bodyBox.GetCenter();
         enemyCtx.player.bInvulnerable = pRidden->GetMode() != eSlugMode::Driven;
     }
-    enemyCtx.cameraView           = Aabb::FromMinSize(m_camera.GetPositionNoShake(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
-    enemyCtx.pAnims               = _ctx.pAnims;
+    enemyCtx.cameraView = Aabb::FromMinSize(m_camera.GetPositionNoShake(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
+    enemyCtx.pAnims     = _ctx.pAnims;
     m_enemies.Tick(enemyCtx);
 
     m_projectiles.Step(&m_ground, m_combat, kStepSec);

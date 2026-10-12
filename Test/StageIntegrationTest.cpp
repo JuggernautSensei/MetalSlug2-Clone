@@ -182,7 +182,7 @@ private:
         return false;
     }
 
-    RngMt19937           m_rng = RngMt19937 { std::mt19937_64::default_seed };
+    RngMt19937                 m_rng        = RngMt19937 { std::mt19937_64::default_seed };
     GameContext                m_ctx        = {};
     InputFrame                 m_frame      = {};
     StageState*                m_pState     = nullptr;
@@ -236,7 +236,7 @@ public:
     StageData        data;
     StageWorldHost   host   = {};
     Camera           camera = {};
-    RngMt19937 rng = RngMt19937 { std::mt19937_64::default_seed };
+    RngMt19937       rng    = RngMt19937 { std::mt19937_64::default_seed };
     StageRunner      runner;
     EnemyDefLibrary  enemyLib = {};
     PropDefLibrary   propLib  = {};
@@ -263,7 +263,7 @@ TEST(StageIntegration, Stage0UsesRealEnemiesAndPropsInsteadOfPlaceholders)
 
 TEST(StageIntegration, GroundHouseFootprintClearsOnlyTheHouseAndKeepsTheStreet)
 {
-    const FilePath           root = FindAssetRoot();
+    const FilePath                 root = FindAssetRoot();
     const std::optional<GroundMap> mask = LoadGroundMask(root / "Textures" / "Stage0_House_4_PixelMap.png");
     ASSERT_TRUE(mask.has_value());
     EXPECT_EQ(mask->GetWidth(), 1306);
@@ -289,7 +289,7 @@ TEST(StageIntegration, GroundHouseFootprintClearsOnlyTheHouseAndKeepsTheStreet)
 
 TEST(StageIntegration, BigHouseFootprintClearsItsCapAndTheStreetStaysSolid)
 {
-    const FilePath           root = FindAssetRoot();
+    const FilePath                 root = FindAssetRoot();
     const std::optional<GroundMap> mask = LoadGroundMask(root / "Textures" / "Stage0_House_5_PixelMap.png");
     ASSERT_TRUE(mask.has_value());
     EXPECT_EQ(mask->GetWidth(), 555);
@@ -422,7 +422,7 @@ TEST(StageIntegration, BotStillWalksToTheStageEndAfterEveryOpenlandPropIsDestroy
     int                bossTicks    = 0;
     for (int i = 0; i < 60000 && sim.Current() == sim.StagePtr(); ++i)
     {
-        PropWorld&             props = sim.State().GetProps();
+        PropWorld&       props = sim.State().GetProps();
         Vector<HitEvent> hits;
         for (const PropInstance& inst: props.GetProps())
         {
@@ -530,7 +530,6 @@ TEST(StageIntegration, SarubiaLosesHpToPlayerBulletsAndDiesInStage0)
         sim.BotStep(true, true, 30);
     }
     sim.BotStep(true, true, 300);
-
 
     const Enemy* pStart = FindSarubia_(sim);
     ASSERT_NE(pStart, nullptr);
@@ -869,7 +868,7 @@ TEST(StageIntegration, BusStairSoldierTraceWritesCsvWhenRequested)
     }
     const std::string path = pPath;
     std::free(pPath);
-    std::ofstream  out(path);
+    std::ofstream out(path);
     out << "tick,id,def,x,y,state,grounded,camLeft\n";
     IntegrationSim sim(true);
     const int      busSection = sim.State().GetData().FindSection("bus");
@@ -916,18 +915,18 @@ TEST(StageIntegration, BusStairSoldiersReachTheRoofAndNeverEnterTheBusBodyWithTh
     }
     ASSERT_GE(sim.State().GetPlayer().GetFeet().x, 2700.f);
 
-    int   roofTicks   = 0;
-    int   awayTicks   = 0;
-    int   badTicks    = 0;
-    float firstBadX   = 0.f;
-    float firstBadY   = 0.f;
+    int   roofTicks = 0;
+    int   awayTicks = 0;
+    int   badTicks  = 0;
+    float firstBadX = 0.f;
+    float firstBadY = 0.f;
     for (int tick = 0; tick < 1800; ++tick)
     {
         sim.BotStep(false, tick > 200);
-        float busX   = 0.f;
-        float busY   = 0.f;
-        float roofY  = 0.f;
-        bool  bBus   = false;
+        float busX  = 0.f;
+        float busY  = 0.f;
+        float roofY = 0.f;
+        bool  bBus  = false;
         for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
         {
             if (enemy.behavior == eEnemyBehavior::Bus && enemy.life == eEnemyLife::Alive)
@@ -1299,7 +1298,7 @@ static void RecordBossEntry_(
 TEST(StageIntegration, BossEntryDumpWritesCsvWhenRequested)
 {
     // C15_DUMP=<path> 이면 보스 진입 구간의 카메라/제거 이벤트를 CSV 로 남긴다 (진단용, 평소엔 건너뛴다)
-    char*  pPath = nullptr;
+    char*  pPath  = nullptr;
     size_t length = 0;
     if (_dupenv_s(&pPath, &length, "C15_DUMP") != 0 || pPath == nullptr)
     {

@@ -70,36 +70,36 @@ struct AudioSystem::Backend
     }
 };
 
-    [[nodiscard]] static ma_result InitSoundFromFile_(
-        ma_engine*      _pEngine,
-        const FilePath& _path,
-        const ma_uint32 _flags,
-        ma_sound*       _pSound)
-    {
+[[nodiscard]] static ma_result InitSoundFromFile_(
+    ma_engine*      _pEngine,
+    const FilePath& _path,
+    const ma_uint32 _flags,
+    ma_sound*       _pSound)
+{
 #if defined(_WIN32)
-        return ma_sound_init_from_file_w(_pEngine, _path.c_str(), _flags, nullptr, nullptr, _pSound);
+    return ma_sound_init_from_file_w(_pEngine, _path.c_str(), _flags, nullptr, nullptr, _pSound);
 #else
-        return ma_sound_init_from_file(_pEngine, _path.string().c_str(), _flags, nullptr, nullptr, _pSound);
+    return ma_sound_init_from_file(_pEngine, _path.string().c_str(), _flags, nullptr, nullptr, _pSound);
 #endif
-    }
+}
 
-    [[nodiscard]] static ma_result RegisterFile_(
-        ma_engine*      _pEngine,
-        const FilePath& _path,
-        const ma_uint32 _flags)
-    {
+[[nodiscard]] static ma_result RegisterFile_(
+    ma_engine*      _pEngine,
+    const FilePath& _path,
+    const ma_uint32 _flags)
+{
 #if defined(_WIN32)
-        return ma_resource_manager_register_file_w(ma_engine_get_resource_manager(_pEngine), _path.c_str(), _flags);
+    return ma_resource_manager_register_file_w(ma_engine_get_resource_manager(_pEngine), _path.c_str(), _flags);
 #else
-        return ma_resource_manager_register_file(ma_engine_get_resource_manager(_pEngine), _path.string().c_str(), _flags);
+    return ma_resource_manager_register_file(ma_engine_get_resource_manager(_pEngine), _path.string().c_str(), _flags);
 #endif
-    }
+}
 
-    [[nodiscard]] static float Clamp01_(
-        const float _v)
-    {
-        return std::clamp(_v, 0.f, 1.f);
-    }
+[[nodiscard]] static float Clamp01_(
+    const float _v)
+{
+    return std::clamp(_v, 0.f, 1.f);
+}
 
 class SoundRegisterJob final : public IAsyncLoadJob
 {

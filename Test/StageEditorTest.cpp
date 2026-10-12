@@ -6,7 +6,6 @@
 #include "Core/AssetPath.h"
 #include "Editor/StageEditor.h"
 
-
 [[nodiscard]] static String ReadAll_(
     const FilePath& _path)
 {
@@ -109,7 +108,6 @@ TEST(StageEditorTest, AddDuplicateDeleteRoundTrip)
     const String original = doc.GetText();
     const size_t count    = doc.GetEntities().size();
 
-
     const int added = doc.Add("soldier_bomb", "enemy", 1, 1234.0, 56.5);
     ASSERT_GE(added, 0);
     ASSERT_EQ(doc.GetEntities().size(), count + 1);
@@ -120,7 +118,6 @@ TEST(StageEditorTest, AddDuplicateDeleteRoundTrip)
     EXPECT_EQ(e.x, 1234.0);
     EXPECT_EQ(e.y, 56.5);
 
-
     const FilePath tmp = std::filesystem::temp_directory_path() / "slug_stageeditor_3.json";
     ASSERT_TRUE(doc.Save(tmp));
     StageDocument reloaded;
@@ -130,10 +127,8 @@ TEST(StageEditorTest, AddDuplicateDeleteRoundTrip)
     std::error_code ec;
     std::filesystem::remove(tmp, ec);
 
-
     ASSERT_TRUE(doc.Delete(added));
     EXPECT_EQ(doc.GetText(), original);
-
 
     int withId = -1;
     for (size_t i = 0; i < doc.GetEntities().size(); ++i)
@@ -154,7 +149,6 @@ TEST(StageEditorTest, AddDuplicateDeleteRoundTrip)
     EXPECT_NE(copy.id, src.id);
     ASSERT_TRUE(doc.Delete(dup));
     EXPECT_EQ(doc.GetText(), original);
-
 
     ASSERT_TRUE(doc.Delete(FirstMovable_(doc)));
     EXPECT_NE(doc.GetText(), original);
@@ -192,14 +186,12 @@ TEST(StageEditorTest, UnknownFieldsAndLayoutSurvive)
     EXPECT_NE(doc.GetText().find("\"x\": 11.5, \"y\": 20, \"note\": \"hi\", \"future\": {\"k\": 1}"), String::npos);
     EXPECT_NE(doc.GetText().find("\"mystery\": {\"a\": [1, 2, {\"b\": null}], \"c\": \"x\\\"y\"},"), String::npos);
 
-
     ASSERT_TRUE(doc.Delete(2));
     EXPECT_EQ(doc.GetEntities().size(), 2u);
     EXPECT_NE(doc.GetText().find("]}\n      ]\n"), String::npos);
     doc.Undo();
     doc.Undo();
     EXPECT_EQ(doc.GetText(), text);
-
 
     EXPECT_FALSE(doc.LoadFromText("{\"sections\": [}"));
     EXPECT_EQ(doc.GetText(), text);
@@ -210,7 +202,7 @@ TEST(StageEditorTest, UnknownFieldsAndLayoutSurvive)
 {
     for (size_t i = 0; i < _doc.GetSections().size(); ++i)
     {
-        const StageEditSection& s = _doc.GetSections()[i];
+        const StageEditSection& s      = _doc.GetSections()[i];
         bool                    bSpawn = false;
         for (const StageEntity& e: _doc.GetEntities())
         {
@@ -235,7 +227,7 @@ TEST(StageEditorTest, SectionMoveChangesOnlyItsNumbers)
     const String original = doc.GetText();
     const int    sec      = FindSectionWithRect_(doc);
     ASSERT_GE(sec, 0);
-    const StageEditSection s0       = doc.GetSections()[static_cast<size_t>(sec)];
+    const StageEditSection    s0    = doc.GetSections()[static_cast<size_t>(sec)];
     const Vector<StageEntity> ents0 = Vector<StageEntity>(doc.GetEntities().begin(), doc.GetEntities().end());
     Vector<double>            triggers;
     for (const StageEditSection& t: doc.GetSections())
@@ -257,7 +249,7 @@ TEST(StageEditorTest, SectionMoveChangesOnlyItsNumbers)
     }
     for (size_t i = 0; i < ents0.size(); ++i)
     {
-        const StageEntity& a = doc.GetEntities()[i];
+        const StageEntity& a      = doc.GetEntities()[i];
         const bool         bMoved = ents0[i].section == sec && ents0[i].bHasX;
         EXPECT_EQ(a.x, bMoved ? ents0[i].x + 13.0 : ents0[i].x);
         EXPECT_EQ(a.y, ents0[i].y);

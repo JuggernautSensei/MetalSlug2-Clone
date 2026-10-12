@@ -9,7 +9,6 @@
 #include "Game/SimRunner.h"
 #include "Game/StateFactory.h"
 
-
 [[nodiscard]] static Vector<InputFrame> MakeScript_()
 {
     Vector<InputFrame> frames;
@@ -27,8 +26,8 @@
 [[nodiscard]] static Vec2 RunDemo_(
     const Vector<InputFrame>& _frames)
 {
-    RngMt19937 rng { uint64_t { 7 } };
-    GameContext      ctx;
+    RngMt19937  rng { uint64_t { 7 } };
+    GameContext ctx;
     ctx.pRng = &rng;
 
     DemoState* pDemo = new DemoState;
@@ -61,11 +60,11 @@ TEST(Replay, SerializeRoundTrip)
 TEST(Replay, RejectsBadMagicAndTruncation)
 {
     ReplayData replay;
-    replay.frames               = MakeScript_();
+    replay.frames         = MakeScript_();
     Vector<uint8_t> bytes = SerializeReplay(replay);
 
     Vector<uint8_t> badMagic = bytes;
-    badMagic[0]                    = 'X';
+    badMagic[0]              = 'X';
     EXPECT_FALSE(DeserializeReplay(badMagic).HasValue());
 
     Vector<uint8_t> truncated(bytes.begin(), bytes.begin() + static_cast<std::ptrdiff_t>(bytes.size() / 2));
@@ -77,8 +76,8 @@ TEST(Replay, RejectsBadMagicAndTruncation)
 TEST(SimRunner, SameInputsGiveIdenticalResult)
 {
     const Vector<InputFrame> script = MakeScript_();
-    const Vec2                     a      = RunDemo_(script);
-    const Vec2                     b      = RunDemo_(script);
+    const Vec2               a      = RunDemo_(script);
+    const Vec2               b      = RunDemo_(script);
     EXPECT_FLOAT_EQ(a.x, b.x);
     EXPECT_FLOAT_EQ(a.y, b.y);
     EXPECT_FLOAT_EQ(a.x, 320.f + 120.f);

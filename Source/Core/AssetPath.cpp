@@ -10,35 +10,35 @@
 #    include <windows.h>
 #endif
 
-    constexpr int kMaxParentDepth = 5;
+constexpr int kMaxParentDepth = 5;
 
-    static std::optional<FilePath>& FallbackRoot_()
-    {
-        static std::optional<FilePath> s_root;
-        return s_root;
-    }
+static std::optional<FilePath>& FallbackRoot_()
+{
+    static std::optional<FilePath> s_root;
+    return s_root;
+}
 
-    static FilePath ExecutableDir_()
-    {
+static FilePath ExecutableDir_()
+{
 #if defined(_WIN32)
-        ARRAY<wchar_t, MAX_PATH * 4> buffer = {};
-        const DWORD                  length = ::GetModuleFileNameW(nullptr, buffer.data(), static_cast<DWORD>(buffer.size()));
-        if (length > 0 && length < buffer.size())
-        {
-            return FilePath {
-                std::wstring { buffer.data(), length }
-            }.parent_path();
-        }
-#endif
-        return std::filesystem::current_path();
-    }
-
-    static bool IsAssetRoot_(
-        const FilePath& _assets)
+    ARRAY<wchar_t, MAX_PATH * 4> buffer = {};
+    const DWORD                  length = ::GetModuleFileNameW(nullptr, buffer.data(), static_cast<DWORD>(buffer.size()));
+    if (length > 0 && length < buffer.size())
     {
-        std::error_code ec;
-        return std::filesystem::exists(_assets / "manifest.json", ec) || std::filesystem::exists(_assets / "Tuning" / "Tuning.json", ec);
+        return FilePath {
+            std::wstring { buffer.data(), length }
+        }.parent_path();
     }
+#endif
+    return std::filesystem::current_path();
+}
+
+static bool IsAssetRoot_(
+    const FilePath& _assets)
+{
+    std::error_code ec;
+    return std::filesystem::exists(_assets / "manifest.json", ec) || std::filesystem::exists(_assets / "Tuning" / "Tuning.json", ec);
+}
 
 FilePath FindAssetRoot()
 {

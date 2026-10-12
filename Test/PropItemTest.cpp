@@ -7,7 +7,6 @@
 #include "Game/Player/PlayerController.h"
 #include "PropTestUtil.h"
 
-
 constexpr float kDt = kStepSec;
 
 [[nodiscard]] static PhysicsWorld FloorWorld_(
@@ -32,7 +31,7 @@ static void TickItems_(
 
 [[nodiscard]] static bool IsFruit_(
     const PropDefLibrary& _lib,
-    const String&   _name)
+    const String&         _name)
 {
     const PropItemGroup* pGroup = _lib.FindGroup("random_fruit");
     if (pGroup == nullptr)
@@ -164,7 +163,7 @@ TEST(PropItem, BounceSupplyKeepsXWhileRisingAndFalling)
 {
     const GroundMap ground = MakeFloorMap(400, 200, 140);
     ItemWorld       items { &GetPropLib(), 4 };
-    const uint32_t  id = items.Spawn("bomb_supple", { 100.f, 140.f }, true);
+    const uint32_t  id   = items.Spawn("bomb_supple", { 100.f, 140.f }, true);
     float           minY = 1.0e9f;
     for (int i = 0; i < 240; ++i)
     {
@@ -327,7 +326,7 @@ TEST(PropItem, RollingSpinSlowsDownAndFreezesWhenStopped)
 {
     const GroundMap ground = MakeFloorMap(400, 200, 140);
     ItemWorld       items { &GetPropLib(), 6 };
-    const uint32_t  id = items.Spawn("item_apple", { 100.f, 140.f });
+    const uint32_t  id   = items.Spawn("item_apple", { 100.f, 140.f });
     float           prev = 2.f;
     for (int i = 0; i < 600; ++i)
     {

@@ -17,7 +17,6 @@
 #include "World/GroundMap.h"
 #include "World/Physics.h"
 
-
 [[nodiscard]] FilePath PropsJsonPath();
 
 [[nodiscard]] PropDefLibrary LoadPropLib_();

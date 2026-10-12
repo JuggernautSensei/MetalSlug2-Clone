@@ -10,10 +10,10 @@
 #include "Render/Animation.h"
 #include "Render/SpriteBatch.h"
 
-inline constexpr int kEnemyDepth   = 15;   // 플레이어(20) 뒤, 지면 위
-inline constexpr int kOverlayDepth = 14;   // 낙하산 등 오버레이: 병사 몸(15) 뒤
+inline constexpr int kEnemyDepth   = 15;                // 플레이어(20) 뒤, 지면 위
+inline constexpr int kOverlayDepth = 14;                // 낙하산 등 오버레이: 병사 몸(15) 뒤
 inline constexpr int kShotDepth    = kEnemyShotDepth;   // 기존 탄(30)/폭탄(31) 위
-inline constexpr int kTrailDepth   = 29;   // 투사체 꼬리: 탄 뒤
+inline constexpr int kTrailDepth   = 29;                // 투사체 꼬리: 탄 뒤
 
 // 적 종류별 기본 z (BigShiee 는 선체 depth, 나머지는 kEnemyDepth)
 [[nodiscard]] int GetEnemyDefaultZ(eEnemyBehavior _behavior);
@@ -61,7 +61,7 @@ public:
     void SetSpriteLibrary(const SpriteLibrary* _pSprites);
 
     [[nodiscard]] const Enemy* Get(EnemyHandle _handle) const;
-    bool                      SetZ(EnemyHandle _handle, int _z);   // 인스턴스 depth 를 즉시 바꾼다
+    bool                       SetZ(EnemyHandle _handle, int _z);   // 인스턴스 depth 를 즉시 바꾼다
 
     [[nodiscard]] bool        IsDefeated(EnemyHandle _handle) const;
     void                      SendCommand(EnemyHandle _handle, StringView _command);
@@ -140,12 +140,12 @@ public:
 private:
     struct MotionPlay
     {
-        uint32_t id        = 0;
-        int      weapon    = -1;
-        int      clip      = -1;
-        int      ticks     = 0;
-        int      fireTick  = 0;
-        int      endTick   = 0;
+        uint32_t id       = 0;
+        int      weapon   = -1;
+        int      clip     = -1;
+        int      ticks    = 0;
+        int      fireTick = 0;
+        int      endTick  = 0;
     };
 
     MotionPlay m_play = {};

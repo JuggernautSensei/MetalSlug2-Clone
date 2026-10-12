@@ -20,7 +20,6 @@
 #include "Render/Camera.h"
 #include "StageTestUtil.h"
 
-
 [[nodiscard]] static bool IsIntegral_(
     const float _value)
 {
@@ -471,7 +470,7 @@ private:
         return false;
     }
 
-    RngMt19937           m_rng        = RngMt19937 { std::mt19937_64::default_seed };
+    RngMt19937                 m_rng        = RngMt19937 { std::mt19937_64::default_seed };
     GameContext                m_ctx        = {};
     InputFrame                 m_frame      = {};
     StageState*                m_pState     = nullptr;

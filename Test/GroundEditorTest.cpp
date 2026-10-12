@@ -8,7 +8,6 @@
 #include "Editor/GroundEditor.h"
 #include "Game/Stage/StageMapping.h"
 
-
 [[nodiscard]] static std::set<std::pair<int, int>> GroundTestSolidSet_(
     const GroundMaskDocument& _doc)
 {
@@ -67,7 +66,9 @@ TEST(GroundEditorTest, PencilEraserRectAndFillProduceExpectedPixels)
     doc.Create(20, 10);
 
     doc.Stamp(5, 5, 1, true);
-    EXPECT_EQ(GroundTestSolidSet_(doc), (std::set<std::pair<int, int>> { { 5, 5 } }));
+    EXPECT_EQ(GroundTestSolidSet_(doc), (std::set<std::pair<int, int>> {
+                                            { 5, 5 }
+    }));
 
     doc.Stamp(5, 5, 1, false);
     EXPECT_TRUE(GroundTestSolidSet_(doc).empty());

@@ -5,7 +5,6 @@
 #include "Core/FixedStep.h"
 #include "Core/Input.h"
 
-
 TEST(FixedStepClock, OneStepPerSixtiethOfSecond)
 {
     FixedStepClock clock;

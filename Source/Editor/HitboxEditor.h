@@ -43,9 +43,9 @@ public:
     // 정의 객체의 "hitboxes" 배열을 _boxes 로 맞춘다 (없으면 삽입, 비면 제거, 같으면 무변경). 정의가 이 파일에 없으면 false.
     bool ApplyExtraBoxes(StringView _def, const Vector<ExtraBoxDef>& _boxes);
 
-    [[nodiscard]] const String&             GetText() const;
-    [[nodiscard]] Span<const HitboxEntry>   GetEntries() const;
-    [[nodiscard]] bool                      IsDirty() const;
+    [[nodiscard]] const String&           GetText() const;
+    [[nodiscard]] Span<const HitboxEntry> GetEntries() const;
+    [[nodiscard]] bool                    IsDirty() const;
 
 private:
     [[nodiscard]] bool Reparse_();
@@ -71,21 +71,21 @@ private:
     void DrawExtraBoxes_(SandboxState& _state, HitboxDocument& _doc);
     void DrawExtraOverlay_(EnemyLab& _lab, Renderer& _renderer);
 
-    Vector<String>         m_fileNames  = {};
-    Vector<FilePath>       m_filePaths  = {};
-    Vector<HitboxDocument> m_docs       = {};
-    String                 m_status     = {};
-    int                    m_fileIndex  = 0;
-    int                    m_ownerIndex = 0;
-    int                    m_activeFile = -1;
+    Vector<String>         m_fileNames   = {};
+    Vector<FilePath>       m_filePaths   = {};
+    Vector<HitboxDocument> m_docs        = {};
+    String                 m_status      = {};
+    int                    m_fileIndex   = 0;
+    int                    m_ownerIndex  = 0;
+    int                    m_activeFile  = -1;
     int                    m_activeEntry = -1;
-    bool                   m_bLoaded    = false;
+    bool                   m_bLoaded     = false;
 
-    String   m_ownerName  = {};
-    int      m_newKind    = 0;
-    int      m_boxSel     = -1;
-    bool     m_bBoxDrag   = false;
-    bool     m_bPrevDown  = false;
-    uint32_t m_dragEnemy  = 0;
-    Vec2     m_dragGrab   = { 0.f, 0.f };
+    String   m_ownerName = {};
+    int      m_newKind   = 0;
+    int      m_boxSel    = -1;
+    bool     m_bBoxDrag  = false;
+    bool     m_bPrevDown = false;
+    uint32_t m_dragEnemy = 0;
+    Vec2     m_dragGrab  = { 0.f, 0.f };
 };

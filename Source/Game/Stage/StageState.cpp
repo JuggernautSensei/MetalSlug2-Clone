@@ -22,9 +22,9 @@
 #include "Game/Ui/Hud.h"
 #include "World/Constants.h"
 
-constexpr int   kAutoTowerDamage  = 24;    // bAutoDamage: 망루 한 방 (슬러그 캐논 피해)
-constexpr float kAutoTowerMarginPx = 120.f;  // 화면 오른쪽에서 이만큼 안쪽에 들어오면 친다
-constexpr int kAutoTurretInterval = 12;   // bAutoDamage: 포탑 단계 피해 간격 (틱). 주포는 6 틱
+constexpr int   kAutoTowerDamage    = 24;      // bAutoDamage: 망루 한 방 (슬러그 캐논 피해)
+constexpr float kAutoTowerMarginPx  = 120.f;   // 화면 오른쪽에서 이만큼 안쪽에 들어오면 친다
+constexpr int   kAutoTurretInterval = 12;      // bAutoDamage: 포탑 단계 피해 간격 (틱). 주포는 6 틱
 
 [[nodiscard]] static CameraTuning MakeCameraTuning_(
     const CameraSettings& _settings)
@@ -252,7 +252,7 @@ void StageState::Load_(
         const ScopedPhaseTimer enemyTimer { "enemy-defs", "all" };
         String                 message  = {};
         const FilePath         defsPath = EnemyDefLibrary::GetDefaultDirectory(_ctx.assetRoot);
-        m_enemyLib              = {};
+        m_enemyLib                      = {};
         if (Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
         {
             m_enemyLib = lib.Take();
@@ -539,8 +539,8 @@ void StageState::Tick(
     if (m_config.bAutoDamage)
     {
         // 연습장 전용: 화면 안에 들어온 망루를 캐논 한 발 (피해 24) 로 친다
-        const int towerDef = m_props.GetLibrary() ? m_props.GetLibrary()->FindIndex("tower") : -1;
-        const float right  = m_camera.GetPositionNoShake().x + static_cast<float>(Renderer::kLogicalWidth) - kAutoTowerMarginPx;
+        const int        towerDef = m_props.GetLibrary() ? m_props.GetLibrary()->FindIndex("tower") : -1;
+        const float      right    = m_camera.GetPositionNoShake().x + static_cast<float>(Renderer::kLogicalWidth) - kAutoTowerMarginPx;
         Vector<HitEvent> towerHits;
         for (const PropInstance& prop: m_props.GetProps())
         {

@@ -6,7 +6,6 @@
 #include "Base/Math.h"
 #include "VehicleTestUtil.h"
 
-
 constexpr float kGround = 378.f;
 
 [[nodiscard]] static SpawnParams Facing_(
@@ -196,7 +195,7 @@ TEST(VehicleJeep, EntersFromOffscreenLeftWithoutIdlingAndShootsRightAfterTheAimH
 
 TEST(VehicleJeep, OffscreenRightActivationRunsToTheRightEdgeFirst)
 {
-    VehicleRig rig({ 800.f, kGround }, 500.f);
+    VehicleRig        rig({ 800.f, kGround }, 500.f);
     const EnemyHandle h = rig.Spawn("jeep", { 1200.f, kGround }, Facing_(-1));
     rig.Step(3);
     EXPECT_EQ(rig.E(h)->state, 2);
@@ -217,7 +216,7 @@ static void SubmitTank_(
 TEST(VehicleBTank, LeftFacingTankDrawsUnflipped)
 {
     SLUG_REQUIRE_BAKED(anims);
-    VehicleRig        rig({ 100.f, kGround });
+    VehicleRig rig({ 100.f, kGround });
     (void)rig.Spawn("btank", { 400.f, kGround }, Facing_(-1));
     rig.Step(120);
     SpriteBatch sprites;
@@ -259,8 +258,8 @@ TEST(VehicleBTank, ShellFliesLeftwardAsALob)
     const Shot& shell = log.shots.front();
     EXPECT_NEAR(shell.velocity.x, -400.f, 1.f);
     EXPECT_LT(shell.velocity.y, -180.f);   // 발사 직후 위로
-    const EnemyDef& tankDef  = rig.Lib().Get(rig.Lib().FindIndex("btank"));
-    const float     muzzleX  = tankDef.weapons[static_cast<size_t>(tankDef.FindWeapon("shell"))].muzzle.x;
+    const EnemyDef& tankDef = rig.Lib().Get(rig.Lib().FindIndex("btank"));
+    const float     muzzleX = tankDef.weapons[static_cast<size_t>(tankDef.FindWeapon("shell"))].muzzle.x;
     EXPECT_NEAR(shell.position.x, 1000.f - muzzleX - 400.f / 60.f, 1.5f) << "머즐은 전차 왼쪽 muzzle.x (첫 틱에 한 틱 전진)";
 }
 
@@ -319,14 +318,14 @@ TEST(VehicleDebris, TankDebrisFliesUpFallsBelowScreenAndDisappears)
     SLUG_REQUIRE_BAKED(anims);
     EnemyDefLibrary lib;
     ASSERT_TRUE(LoadVehicleLib(lib));
-    GroundMap       ground = MakeFlatGround(3000);
-    PhysicsWorld    physics;
+    GroundMap    ground = MakeFlatGround(3000);
+    PhysicsWorld physics;
     physics.pGround = &ground;
 
     EnemyWorld world(&lib, 7);
     world.SetLibrary(&lib);
     SpawnParams params;
-    params.facing = -1;
+    params.facing       = -1;
     const EnemyHandle h = world.Spawn("btank", { 400.f, kGround }, params, &physics);
     ASSERT_FALSE(h.IsNull());
 
@@ -618,11 +617,11 @@ static ShotSpawn MakeFallingShell_(
 
 // 착탄(FX) 이 나올 때까지 돌리고 그 지점을 돌려준다. 10 s 안에 없으면 false
 static bool RunUntilBurst_(
-    ProjectileSystem&                _ps,
-    CombatSystem&                    _combat,
-    const GroundMap*                 _pGround,
+    ProjectileSystem&          _ps,
+    CombatSystem&              _combat,
+    const GroundMap*           _pGround,
     const Span<const Platform> _platforms,
-    Vec2&                            _outFx)
+    Vec2&                      _outFx)
 {
     for (int i = 0; i < 600; ++i)
     {

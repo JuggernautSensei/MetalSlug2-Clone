@@ -16,7 +16,6 @@
 #include "Game/Enemies/EnemyDef.h"
 #include "Render/Animation.h"
 
-
 [[nodiscard]] static bool Load_(
     AnimationLibrary& _out)
 {
@@ -153,8 +152,8 @@ TEST(AnimIntegrity, EveryDefClipExistsWithMatchingFrameCountAndSingleFamily)
             const ClipDef& clip = named.clip;
             for (int side = 0; side < (clip.bSided ? 2 : 1); ++side)
             {
-                const String    name  = clip.bSided ? ResolveSide(clip.name, side == 0 ? -1 : 1) : clip.name;
-                const AnimClip* p = lib.FindClip(name);
+                const String    name = clip.bSided ? ResolveSide(clip.name, side == 0 ? -1 : 1) : clip.name;
+                const AnimClip* p    = lib.FindClip(name);
                 ASSERT_NE(p, nullptr) << def.name.c_str() << ": " << name.c_str();
                 EXPECT_EQ(p->GetFrameCount(), clip.frames) << def.name.c_str() << ": " << name.c_str();
             }
@@ -186,12 +185,12 @@ TEST(AnimIntegrity, StageDecorSequencesStayWithinOneActor)
 
     // 배우별 허용 클립 (이름 규칙: 클립 이름으로는 같은 'Order_' 여도 몸이 다르다)
     const std::map<String, std::set<String>> actors = {
-        { "Parker", { "Parker", "Parker_Run", "Parker_Run_2", "Parker_Stopping" } },
-        { "Kid", { "Order_Boy_Run_Left", "Order_Boy_Run_Right", "Order_Idle", "Order_Turn", "Order_Run_2", "Order_Stopping", "Order_Recoil" } },
+        { "Parker",                                                                { "Parker", "Parker_Run", "Parker_Run_2", "Parker_Stopping" } },
+        {    "Kid", { "Order_Boy_Run_Left", "Order_Boy_Run_Right", "Order_Idle", "Order_Turn", "Order_Run_2", "Order_Stopping", "Order_Recoil" } },
     };
 
-    int decorCount = 0;
-    const Result<JsonReader> sections = doc->GetReader().FindField("sections");
+    int                      decorCount = 0;
+    const Result<JsonReader> sections   = doc->GetReader().FindField("sections");
     ASSERT_TRUE(sections);
     for (const JsonReader section: sections->GetArray())
     {
@@ -212,7 +211,7 @@ TEST(AnimIntegrity, StageDecorSequencesStayWithinOneActor)
             const AnimClip* pStart = lib.FindClip(anim.GetValue());
             ASSERT_NE(pStart, nullptr) << anim.GetValue().c_str();
 
-            const String actor = anim.GetValue().rfind("Parker", 0) == 0 ? "Parker" : (anim.GetValue().rfind("Order_", 0) == 0 ? "Kid" : "");
+            const String             actor  = anim.GetValue().rfind("Parker", 0) == 0 ? "Parker" : (anim.GetValue().rfind("Order_", 0) == 0 ? "Kid" : "");
             const Result<JsonReader> params = action.FindField("params");
             if (!params)
             {

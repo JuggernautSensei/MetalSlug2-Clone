@@ -33,7 +33,7 @@
 
 TEST(HitboxCreate, LoaderAcceptsAndRejectsKeys)
 {
-    String message;
+    String                        message;
     const Result<EnemyDefLibrary> ok = EnemyDefLibrary::Parse(WithBoxes_("[{\"id\": \"head\", \"kind\": \"hurt\", \"w\": 10, \"h\": 12, \"offset\": [1, -20]}, {\"kind\": \"attack\", \"w\": 8, \"h\": 8, \"frames\": [2, 3], \"damage\": 2}]"), &message);
     ASSERT_TRUE(static_cast<bool>(ok)) << message.c_str();
     const EnemyDef* pDef = ok->Find("soldier_bomb");
@@ -58,11 +58,11 @@ TEST(HitboxCreate, DocumentInsertsReplacesRemovesAndStaysIdenticalWhenUnedited)
     EXPECT_EQ(doc.GetText(), text);
 
     ExtraBoxDef box;
-    box.id   = "head";
-    box.box  = { 30.f, 30.f, 0.f, -20.f };
+    box.id  = "head";
+    box.box = { 30.f, 30.f, 0.f, -20.f };
     boxes.push_back(box);
     ASSERT_TRUE(doc.ApplyExtraBoxes("soldier_bomb", boxes));
-    String message;
+    String                        message;
     const Result<EnemyDefLibrary> lib = EnemyDefLibrary::Parse(doc.GetText(), &message);
     ASSERT_TRUE(static_cast<bool>(lib)) << message.c_str();
     ASSERT_NE(lib->Find("soldier_bomb"), nullptr);

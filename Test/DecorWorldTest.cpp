@@ -8,7 +8,6 @@
 #include "Render/Animation.h"
 #include "World/Constants.h"
 
-
 // 프레임 2장짜리 클립 A/B 와 1장짜리 T
 constexpr const char* kDecorJson = R"({
     "version": 1,

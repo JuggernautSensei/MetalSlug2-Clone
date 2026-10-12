@@ -10,13 +10,12 @@
 #include "EnemyTestUtil.h"
 #include "Game/SimRunner.h"
 
-
 TEST(EnemyLabTest, SpawnByNameCreatesOneEnemyAtThePosition)
 {
-    Sim       sim { MakeEnemyConfig() };
-    EnemyLab  lab;
-    const size_t before = sim.State().GetEnemies().GetCount();
-    const EnemyHandle h = lab.Spawn(sim.State(), "soldier_sword", { 400.f, 378.f }, 1);
+    Sim               sim { MakeEnemyConfig() };
+    EnemyLab          lab;
+    const size_t      before = sim.State().GetEnemies().GetCount();
+    const EnemyHandle h      = lab.Spawn(sim.State(), "soldier_sword", { 400.f, 378.f }, 1);
     ASSERT_FALSE(h.IsNull());
     EXPECT_EQ(sim.State().GetEnemies().GetCount(), before + 1);
     const Enemy* pEnemy = sim.State().GetEnemies().Get(h);
@@ -38,11 +37,11 @@ TEST(EnemyLabTest, UnknownDefSpawnsNothing)
 
 TEST(EnemyLabTest, SpawnNearPlayerUsesTheOffset)
 {
-    Sim         sim { MakeEnemyConfig() };
-    EnemyLab    lab;
-    const Vec2  feet = sim.State().GetPlayer().GetFeet();
-    const EnemyHandle h = lab.SpawnNearPlayer(sim.State(), "soldier_sword", 150.f, -1);
-    const Enemy* pEnemy = sim.State().GetEnemies().Get(h);
+    Sim               sim { MakeEnemyConfig() };
+    EnemyLab          lab;
+    const Vec2        feet   = sim.State().GetPlayer().GetFeet();
+    const EnemyHandle h      = lab.SpawnNearPlayer(sim.State(), "soldier_sword", 150.f, -1);
+    const Enemy*      pEnemy = sim.State().GetEnemies().Get(h);
     ASSERT_NE(pEnemy, nullptr);
     EXPECT_NEAR(pEnemy->body.position.x, feet.x + 150.f, 0.5f);
 }
@@ -76,8 +75,8 @@ TEST(EnemyLabTest, RespawnLastRestoresTheSet)
 
 TEST(EnemyLabTest, SelectAtPicksTheEnemyUnderThePoint)
 {
-    Sim      sim { MakeEnemyConfig() };
-    EnemyLab lab;
+    Sim               sim { MakeEnemyConfig() };
+    EnemyLab          lab;
     const EnemyHandle h = lab.Spawn(sim.State(), "soldier_sword", { 400.f, 378.f }, -1);
     lab.SelectAt(sim.State(), { 400.f, 360.f });
     EXPECT_EQ(lab.GetSelected(), h);
@@ -133,8 +132,8 @@ TEST(EnemyLabTest, EnterAndLeaveSwitchTheRunnerState)
 {
     GameContext ctx;
     ctx.assetRoot = FindAssetRoot();
-    SimRunner   runner { ctx, std::unique_ptr<IGameState> { new SandboxState { MakeEnemyConfig() } } };
-    EnemyLab    lab;
+    SimRunner runner { ctx, std::unique_ptr<IGameState> { new SandboxState { MakeEnemyConfig() } } };
+    EnemyLab  lab;
     lab.Init(&runner, "sandbox", FindAssetRoot());
     IGameState* pFirst = runner.GetState();
     ASSERT_NE(lab.GetSandbox(), nullptr);

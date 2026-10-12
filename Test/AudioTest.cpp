@@ -18,7 +18,6 @@
 #include "PlayerTestUtil.h"
 #include "TestAudio.h"
 
-
 constexpr const char* kBankJson = R"({
       "version": 1,
       "sounds": {
@@ -386,7 +385,7 @@ TEST(AudioSystemDry, DisabledConfigNeverOpensADevice)
 
 TEST(AudioSystemDry, InitFromDirectoryOrError)
 {
-    AudioSystem              audio;
+    AudioSystem        audio;
     const Result<void> result = audio.InitFromDirectory(Root_(), MakeDryConfig_());
     if (!result)
     {
@@ -431,7 +430,7 @@ struct AudioSim
         }
     }
 
-    RngMt19937           rng    = RngMt19937 { std::mt19937_64::default_seed };
+    RngMt19937                 rng    = RngMt19937 { std::mt19937_64::default_seed };
     GameContext                ctx    = {};
     SandboxState*              pState = nullptr;
     std::unique_ptr<SimRunner> runner = nullptr;

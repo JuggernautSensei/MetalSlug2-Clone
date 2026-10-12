@@ -11,9 +11,9 @@
 
 struct QueueRecord
 {
-    int                 producer = 0;
-    int                 seq      = 0;
-    std::thread::id     runner   = {};
+    int             producer = 0;
+    int             seq      = 0;
+    std::thread::id runner   = {};
 };
 
 class QueueRecordTask final : public IMainThreadTask
@@ -68,8 +68,8 @@ TEST(MainThreadQueue, ConcurrentProducersRunEachTaskOnceOnDrainingThreadInOrder)
     constexpr int kProducers = 8;
     constexpr int kPerThread = 2000;
 
-    MainThreadQueue     queue;
-    Vector<QueueRecord> records;
+    MainThreadQueue       queue;
+    Vector<QueueRecord>   records;
     Vector<QueueProducer> producers;
     for (int p = 0; p < kProducers; ++p)
     {
@@ -110,12 +110,12 @@ TEST(MainThreadQueue, ConcurrentProducersRunEachTaskOnceOnDrainingThreadInOrder)
 
 struct LoadLog
 {
-    std::mutex            mutex          = {};
-    Vector<int>           completeOrder  = {};
+    std::mutex              mutex           = {};
+    Vector<int>             completeOrder   = {};
     Vector<std::thread::id> completeThreads = {};
-    std::atomic<int>      executeOffMain = 0;
-    std::atomic<int>      destroyed      = 0;
-    std::thread::id       mainThread     = {};
+    std::atomic<int>        executeOffMain  = 0;
+    std::atomic<int>        destroyed       = 0;
+    std::thread::id         mainThread      = {};
 };
 
 class OrderedLoadJob final : public IAsyncLoadJob
@@ -224,8 +224,8 @@ public:
 
     static constexpr int kJobs = 60;
 
-    std::atomic<bool> m_bDone      = false;
-    int               m_destroyed  = 0;
+    std::atomic<bool> m_bDone     = false;
+    int               m_destroyed = 0;
 };
 
 TEST(AsyncLoader, ShutdownWithPendingJobsDoesNotDeadlockOrLeak)

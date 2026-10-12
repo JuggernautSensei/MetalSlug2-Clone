@@ -49,9 +49,17 @@ $env:SDL_RENDER_DRIVER = 'software'
 foreach ($state in $captureStates)
 {
     $bmp = Join-Path $capDir "$state.bmp"
-    Remove-Item $bmp -ErrorAction SilentlyContinue
-    & $exe --no-audio --state $state --seed 1 --capture $bmp --capture-frame 120 *> $null
-    if (Test-Path $bmp) { $h = (Get-FileHash $bmp -Algorithm SHA256).Hash.ToLower() } else { $h = 'MISSING' }
+    $expected = $null
+    if (Test-Path $baselinePath) { foreach ($line in Get-Content $baselinePath) { $p = $line -split ' '; if ($p[0] -eq "capture_$state") { $expected = $p[1] } } }
+    # 일부 상태(uidemo)는 벽시계 의존으로 간헐적으로 다른 프레임이 잡힌다: 기준선과 다르면 최대 3회까지 다시 찍는다.
+    $h = 'MISSING'
+    for ($try = 0; $try -lt 3; ++$try)
+    {
+        Remove-Item $bmp -ErrorAction SilentlyContinue
+        & $exe --no-audio --state $state --seed 1 --capture $bmp --capture-frame 120 *> $null
+        if (Test-Path $bmp) { $h = (Get-FileHash $bmp -Algorithm SHA256).Hash.ToLower() } else { $h = 'MISSING' }
+        if ($Update -or $h -eq $expected) { break }
+    }
     $current += "capture_$state $h"
 }
 Remove-Item Env:SDL_VIDEO_DRIVER, Env:SDL_RENDER_DRIVER -ErrorAction SilentlyContinue

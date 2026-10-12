@@ -226,7 +226,7 @@ class JsonWriter
 public:
     JsonWriter()
     {
-        m_text = "{\n";
+        m_text  = "{\n";
         m_depth = 1;
         m_bFirst.push_back(true);
     }
@@ -319,15 +319,15 @@ private:
         m_text += std::format("\"{}\": {}", String { _key }, _value);
     }
 
-    String      m_text   = {};
-    int         m_depth  = 0;
+    String       m_text   = {};
+    int          m_depth  = 0;
     Vector<bool> m_bFirst = {};
 };
 
 [[nodiscard]] static Result<SlugTuning> ParseRoot_(
     const JsonReader& _root)
 {
-    SlugTuning  tuning;
+    SlugTuning         tuning;
     SlugDefReadVisitor visitor { _root };
     Visit_(visitor, tuning);
     if (visitor.HasError())

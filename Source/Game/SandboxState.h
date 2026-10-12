@@ -24,29 +24,29 @@
 
 struct SandboxConfig
 {
-    bool             bLoadGround = true;
-    GroundMap        ground           = {};
-    Vector<Platform> platforms        = {};
-    Aabb             cameraBounds     = Aabb::FromMinMax({ 0.f, 0.f }, { 3520.f, 448.f });
-    Vec2             spawnFeet        = { 100.f, 378.f };
-    bool             bSpawnTargets    = true;
-    bool             bLoadTuningFile  = true;
-    Tuning           tuning           = {};
-    bool             bBackground      = true;
-    FilePath         enemyDefPath     = {};
-    bool             bEnemyLab        = false;
-    bool             bVehicleLab      = false;
-    bool             bPropLab         = false;
-    bool             bBusLab          = false;   // 버스 중간보스 연습장: 실제 스테이지 좌표, 카메라 락, 사망 후 Stage0_1 지면
-    bool             bBusBot          = false;   // 버스 랩 전용: 플레이어가 버스 앞까지 걸어가 HMG 로 계속 사격 (캡처 비교용 봇 입력, 무적)
-    bool             bHeliLab         = false;
-    bool             bHeliBot         = false;   // 헬기 랩 전용: 플레이어가 좌우로 걸으며 위로 사격 (캡처 비교용 봇 입력)
-    int              heliHp           = -1;      // 헬기 랩 전용: 헬기 체력 (-1: 정의 기본값)
-    bool             bGodMode         = false;   // 랩 전용: 플레이어 무적 (캡처 비교용)
-    bool             bSlugLab         = false;   // sluglab: 평지에 주차된 SV-001 과 표적
-    Vector<Vec2>     slugFeet         = {};      // 시작할 때 놓을 주차 SV-001 발 위치
-    SlugTuning       slugTuning       = {};      // bLoadSlugFile 이 꺼져 있거나 파일이 없을 때 쓰는 값
-    bool             bLoadSlugFile    = true;
+    bool             bLoadGround     = true;
+    GroundMap        ground          = {};
+    Vector<Platform> platforms       = {};
+    Aabb             cameraBounds    = Aabb::FromMinMax({ 0.f, 0.f }, { 3520.f, 448.f });
+    Vec2             spawnFeet       = { 100.f, 378.f };
+    bool             bSpawnTargets   = true;
+    bool             bLoadTuningFile = true;
+    Tuning           tuning          = {};
+    bool             bBackground     = true;
+    FilePath         enemyDefPath    = {};
+    bool             bEnemyLab       = false;
+    bool             bVehicleLab     = false;
+    bool             bPropLab        = false;
+    bool             bBusLab         = false;   // 버스 중간보스 연습장: 실제 스테이지 좌표, 카메라 락, 사망 후 Stage0_1 지면
+    bool             bBusBot         = false;   // 버스 랩 전용: 플레이어가 버스 앞까지 걸어가 HMG 로 계속 사격 (캡처 비교용 봇 입력, 무적)
+    bool             bHeliLab        = false;
+    bool             bHeliBot        = false;   // 헬기 랩 전용: 플레이어가 좌우로 걸으며 위로 사격 (캡처 비교용 봇 입력)
+    int              heliHp          = -1;      // 헬기 랩 전용: 헬기 체력 (-1: 정의 기본값)
+    bool             bGodMode        = false;   // 랩 전용: 플레이어 무적 (캡처 비교용)
+    bool             bSlugLab        = false;   // sluglab: 평지에 주차된 SV-001 과 표적
+    Vector<Vec2>     slugFeet        = {};      // 시작할 때 놓을 주차 SV-001 발 위치
+    SlugTuning       slugTuning      = {};      // bLoadSlugFile 이 꺼져 있거나 파일이 없을 때 쓰는 값
+    bool             bLoadSlugFile   = true;
 };
 
 class SandboxState final : public IGameState
@@ -84,7 +84,7 @@ public:
 
     void RestartGame();
 
-    [[nodiscard]] bool             ReloadEnemyDefs(const FilePath& _assetRoot);
+    [[nodiscard]] bool ReloadEnemyDefs(const FilePath& _assetRoot);
     // 정의/투사체 이름 목록이 같을 때만 적을 유지한 채 정의를 교체한다. 다르면 false (아무것도 바꾸지 않음)
     [[nodiscard]] bool             ReloadEnemyDefsKeep(const FilePath& _assetRoot);
     [[nodiscard]] const GroundMap& GetGround() const;
@@ -129,7 +129,7 @@ private:
     TrainingTargets  m_targets     = {};
     EnemyDefLibrary  m_enemyLib    = {};
     EnemyWorld       m_enemies { &m_enemyLib };
-    EnemyHandle      m_busHandle     = {};      // buslab: 버스 (파괴 연출이 끝나면 카메라 락을 푼다)
+    EnemyHandle      m_busHandle     = {};   // buslab: 버스 (파괴 연출이 끝나면 카메라 락을 푼다)
     bool             m_bBusUnlocked  = false;
     int              m_vehicleCursor = 0;   // 숫자키 9: 다음에 뽑을 차량 번호
     EffectList       m_effects       = {};

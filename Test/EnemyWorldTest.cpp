@@ -6,7 +6,6 @@
 
 #include "EnemyTestUtil.h"
 
-
 constexpr float kGroundY = 378.f;   // MakeFlatGround 의 지면 윗면
 
 [[nodiscard]] static bool OnGround_(
@@ -470,10 +469,10 @@ TEST(EnemyHitFlash, ContinuousFireKeepsBlinkingInsteadOfStayingOn)
     // 원작 HMG 연사 (영상 약 4~8 틱 간격). 이전 구현은 재피격마다 타이머를 채워 항상 ON 이었다.
     for (int interval: { 2, 3, 4, 6, 8 })
     {
-        int timer     = 0;
-        int onTicks   = 0;
-        int offTicks  = 0;
-        int toggles   = 0;
+        int  timer    = 0;
+        int  onTicks  = 0;
+        int  offTicks = 0;
+        int  toggles  = 0;
         bool bPrevOn  = false;
         for (int tick = 0; tick < 120; ++tick)
         {

@@ -195,7 +195,7 @@ void EnemyLab::PollDefFiles_(
     {
         return;
     }
-    int64_t     stamp = 0;
+    int64_t         stamp = 0;
     std::error_code ec;
     for (const std::filesystem::directory_entry& entry: std::filesystem::directory_iterator(m_assetRoot / "Defs", ec))
     {
@@ -673,8 +673,8 @@ void EnemyLab::DrawOverlay(
             }
             if (solidDef.behavior == eEnemyBehavior::Bus)
             {
-                const Vec2 a = { e.body.position.x + solidDef.bus.stairsBase.x, e.body.position.y + solidDef.bus.stairsBase.y };
-                const Vec2 b = { e.body.position.x + solidDef.bus.stairsTop.x, e.body.position.y + solidDef.bus.stairsTop.y };
+                const Vec2 a  = { e.body.position.x + solidDef.bus.stairsBase.x, e.body.position.y + solidDef.bus.stairsBase.y };
+                const Vec2 b  = { e.body.position.x + solidDef.bus.stairsTop.x, e.body.position.y + solidDef.bus.stairsTop.y };
                 const Vec2 lo = LabToScreen_({ Min(a.x, b.x), Min(a.y, b.y) }, camera);
                 const Vec2 hi = LabToScreen_({ Max(a.x, b.x), Max(a.y, b.y) }, camera);
                 _renderer.FillRect(lo, { Max(1.f, hi.x - lo.x), Max(1.f, hi.y - lo.y) }, { 255, 160, 0, 70 });

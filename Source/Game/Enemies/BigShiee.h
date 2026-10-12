@@ -13,18 +13,18 @@ enum class eBigShieePhase : int
 enum class eBigShieeTurretMode : int
 {
     Idle,
-    Prep,       // 사격 준비 (제자리)
-    Turn,       // 머리를 플레이어 쪽 조준 위치 (Turn 프레임 0 = 왼쪽, 4 = 위, 8 = 오른쪽) 로 한 칸씩 돌린다
-    Shot,       // 발사 연출 (Shot1 = 왼쪽, Shot2 = 위, Shot3 = 오른쪽) + 포탄
+    Prep,   // 사격 준비 (제자리)
+    Turn,   // 머리를 플레이어 쪽 조준 위치 (Turn 프레임 0 = 왼쪽, 4 = 위, 8 = 오른쪽) 로 한 칸씩 돌린다
+    Shot,   // 발사 연출 (Shot1 = 왼쪽, Shot2 = 위, Shot3 = 오른쪽) + 포탄
     Dead
 };
 
 enum class eBigShieeCannonMode : int
 {
     Hidden,
-    Deploy,     // Boss_Cannon_Deploy
-    Aim,        // 전개 직후 플레이어 쪽으로 머리를 돌린다 (Boss_Cannon_Aim 프레임, 한 칸씩)
-    Ready,      // 대기: 현재 yaw 프레임 유지, 플레이어가 움직이면 따라 돈다
+    Deploy,   // Boss_Cannon_Deploy
+    Aim,      // 전개 직후 플레이어 쪽으로 머리를 돌린다 (Boss_Cannon_Aim 프레임, 한 칸씩)
+    Ready,    // 대기: 현재 yaw 프레임 유지, 플레이어가 움직이면 따라 돈다
     Shot
 };
 
@@ -51,7 +51,7 @@ inline constexpr int kBigShieeExtLidStart    = 42;   // 선수 (뚜껑) 가 열�
 inline constexpr int kBigShieeExtCasingTick  = 44;   // 탄피가 튄 시각 (aux 기준 틱, 아직 없으면 0)
 inline constexpr int kBigShieeExtCasingX     = 45;   // 탄피 출발 월드 x (반올림)
 inline constexpr int kBigShieeExtCasingY     = 46;   // 탄피 출발 월드 y (반올림)
-inline constexpr int kBigShieeExtNextDmgFx    = 47;   // 다음 소폭발 (딸피 연출) 시각 (aux 기준 틱)
+inline constexpr int kBigShieeExtNextDmgFx   = 47;   // 다음 소폭발 (딸피 연출) 시각 (aux 기준 틱)
 inline constexpr int kBigShieeExtDriftTicks  = 43;   // 카메라가 멈춘 뒤 선체가 스스로 왼쪽으로 흐른 틱 수 (shuttleDriftSec 에 닿으면 돌진)
 
 // Enemy 필드 용도: aux = 생성 후 전체 틱, state = 단계, deathTicks = 사망 후 틱, health = 주포 체력 (보스 체력)

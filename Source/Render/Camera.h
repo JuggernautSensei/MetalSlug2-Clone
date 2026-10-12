@@ -47,11 +47,11 @@ public:
 
     // 자동 전진 (보스전 스크롤): 카메라 중심 x 의 하한을 _dx 만큼 올린다. 하한보다 왼쪽으로는 가지 않고 (매 틱 강제),
     // 잠금/경계 안에서만 움직인다. 경계 오른쪽 끝에 닿으면 멈춘다.
-    void                AddScrollFloor(float _dx);
+    void AddScrollFloor(float _dx);
 
     // 잠금 영역을 가로로 _dx 만큼 옮긴다 (보스전 자동 스크롤: 잠금 사각형이 카메라와 함께 오른쪽으로 간다). 잠금 중이 아니면 무시.
     // 활강 중이면 목표/대기 중인 잠금도 같이 옮긴다.
-    void ShiftLock(float _dx);
+    void                ShiftLock(float _dx);
     void                ClearScrollFloor();
     [[nodiscard]] bool  HasScrollFloor() const;
     [[nodiscard]] float GetScrollFloorX() const;

@@ -9,10 +9,9 @@
 #include "Render/Animation.h"
 #include "VehicleTestUtil.h"
 
-
-constexpr float kGround    = 378.f;
-constexpr int   kStateBomb = 0;   // Heli.cpp 의 eHeliState 순서와 같다 (Bomb, Low, PodOut, Move, Volley, MoveBack, Turn)
-constexpr int   kStateLow  = 1;
+constexpr float kGround      = 378.f;
+constexpr int   kStateBomb   = 0;   // Heli.cpp 의 eHeliState 순서와 같다 (Bomb, Low, PodOut, Move, Volley, MoveBack, Turn)
+constexpr int   kStateLow    = 1;
 constexpr int   kStateVolley = 4;
 
 [[nodiscard]] static SpawnParams HeliParams_()
@@ -25,13 +24,13 @@ constexpr int   kStateVolley = 4;
 
 struct HeliLog
 {
-    std::vector<int>   bombTicks   = {};   // 새 폭탄이 보인 틱
-    std::vector<float> bombX       = {};
-    std::vector<int>   bombStates  = {};   // 그때 헬기 상태
-    std::vector<int>   states      = {};   // 틱별 헬기 상태
-    std::vector<float> ys          = {};   // 틱별 헬기 y
-    std::vector<float> xs          = {};
-    int                missiles    = 0;
+    std::vector<int>   bombTicks  = {};   // 새 폭탄이 보인 틱
+    std::vector<float> bombX      = {};
+    std::vector<int>   bombStates = {};   // 그때 헬기 상태
+    std::vector<int>   states     = {};   // 틱별 헬기 상태
+    std::vector<float> ys         = {};   // 틱별 헬기 y
+    std::vector<float> xs         = {};
+    int                missiles   = 0;
 };
 
 [[nodiscard]] static HeliLog RunHeli_(
@@ -39,9 +38,9 @@ struct HeliLog
     const EnemyHandle _heli,
     const int         _ticks)
 {
-    HeliLog               log;
-    std::set<uint32_t>    seenBombs;
-    std::set<uint32_t>    seenShots;
+    HeliLog            log;
+    std::set<uint32_t> seenBombs;
+    std::set<uint32_t> seenShots;
     for (int i = 0; i < _ticks; ++i)
     {
         _rig.Step(1);
@@ -252,8 +251,8 @@ TEST(HeliFx, DestructionSpawnsALargeExplosionAndStaggeredBursts)
     EnemyWorld world(&lib, 7);
     world.SetLibrary(&lib);
     SpawnParams params;
-    params.facing     = -1;
-    params.bActivated = true;
+    params.facing       = -1;
+    params.bActivated   = true;
     const EnemyHandle h = world.Spawn("heli", { 400.f, 120.f }, params, &physics);
     ASSERT_FALSE(h.IsNull());
 

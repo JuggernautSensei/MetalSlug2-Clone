@@ -24,10 +24,9 @@
 #include "PlayerTestUtil.h"
 #include "TestAudio.h"
 
-
 [[nodiscard]] static const HudItem* FindItem_(
     const Vector<HudItem>& _items,
-    const eHudItemKind           _kind,
+    const eHudItemKind     _kind,
     const StringView       _text)
 {
     for (const HudItem& item: _items)
@@ -42,7 +41,7 @@
 
 [[nodiscard]] static int CountKind_(
     const Vector<HudItem>& _items,
-    const eHudItemKind           _kind)
+    const eHudItemKind     _kind)
 {
     int count = 0;
     for (const HudItem& item: _items)
@@ -551,8 +550,8 @@ TEST(UiFade, IdleTicksDoNothing)
 
 TEST(UiHud, PistolShowsInfiniteSymbolAndNoAmmoDigits)
 {
-    const UiLayout              layout;
-    const HudModel              model = MakeModel_();
+    const UiLayout        layout;
+    const HudModel        model = MakeModel_();
     const Vector<HudItem> items = BuildHudItems(model, layout);
 
     EXPECT_NE(FindItem_(items, eHudItemKind::Sprite, "InfiniteUI_Red"), nullptr);
@@ -580,7 +579,7 @@ TEST(UiHud, FiniteWeaponShowsAmmoDigitsRightAlignedInsteadOfInfinity)
 
 TEST(UiHud, BombScoreAndLivesTexts)
 {
-    const UiLayout              layout;
+    const UiLayout        layout;
     const Vector<HudItem> items = BuildHudItems(MakeModel_(), layout);
 
     const HudItem* pBombs = FindItem_(items, eHudItemKind::Text, "10");
@@ -612,10 +611,10 @@ TEST(UiHud, TimerOnlyWhenRequested)
     HudModel       model = MakeModel_();
     EXPECT_EQ(CountKind_(BuildHudItems(model, layout), eHudItemKind::TimeDigits), 0);
 
-    model.bShowTimer                   = true;
-    model.timerSeconds                 = 7;
+    model.bShowTimer             = true;
+    model.timerSeconds           = 7;
     const Vector<HudItem> items  = BuildHudItems(model, layout);
-    const HudItem*              pTimer = FindItem_(items, eHudItemKind::TimeDigits, "07");
+    const HudItem*        pTimer = FindItem_(items, eHudItemKind::TimeDigits, "07");
     ASSERT_NE(pTimer, nullptr);
     EXPECT_EQ(pTimer->x, layout.timerCenterX);
 }
@@ -627,9 +626,9 @@ TEST(UiHud, InsertCoinIsStaticTopRightTextThatNeverBlinks)
 
     for (const int tick: { 0, layout.pressStartBlinkTicks, layout.pressStartBlinkTicks * 3 })
     {
-        model.uiTick                      = tick;
+        model.uiTick                = tick;
         const Vector<HudItem> items = BuildHudItems(model, layout);
-        const HudItem*              pCoin = FindItem_(items, eHudItemKind::Text, "INSERT COIN");
+        const HudItem*        pCoin = FindItem_(items, eHudItemKind::Text, "INSERT COIN");
         ASSERT_NE(pCoin, nullptr) << tick;
         EXPECT_EQ(pCoin->x, layout.insertCoinRightX);
         EXPECT_EQ(pCoin->y, layout.insertCoinY);
@@ -671,7 +670,7 @@ TEST(UiHud, PlayerBlockCanBeHiddenAndLevelSpriteOptional)
     model.bShowInsertCoin = false;
     EXPECT_TRUE(BuildHudItems(model, layout).empty());
 
-    model.levelSprite                 = "LEVEL_1";
+    model.levelSprite           = "LEVEL_1";
     const Vector<HudItem> items = BuildHudItems(model, layout);
     ASSERT_EQ(items.size(), 1u);
     EXPECT_EQ(items[0].text, "LEVEL_1");
@@ -684,11 +683,11 @@ TEST(UiHud, BossBarFillScalesWithRatioAndFrameDrawsLast)
     HudModel       model = MakeModel_();
     model.bShowBoss      = true;
 
-    model.bossHpRatio                 = 1.f;
+    model.bossHpRatio           = 1.f;
     const Vector<HudItem> full  = BuildHudItems(model, layout);
-    model.bossHpRatio                 = 0.5f;
+    model.bossHpRatio           = 0.5f;
     const Vector<HudItem> half  = BuildHudItems(model, layout);
-    model.bossHpRatio                 = 0.f;
+    model.bossHpRatio           = 0.f;
     const Vector<HudItem> empty = BuildHudItems(model, layout);
 
     const Vector<HudItem> fullRects  = HudRects_(full);
@@ -744,7 +743,7 @@ TEST(UiHud, TypicalModelFitsAndPanelDoesNotOverlapScoreBlock)
 
 TEST(UiHud, MakeHudModelReadsPlayerController)
 {
-    Sim  sim;
+    Sim            sim;
     const HudModel model = MakeHudModel(sim.Player());
     EXPECT_TRUE(model.bInfiniteAmmo);
     EXPECT_EQ(model.lives, 3);
@@ -1099,7 +1098,7 @@ struct TitleSim
 
     [[nodiscard]] bool IsStillTitle() const { return runner->GetState() == pTitle; }
 
-    RngMt19937           rng = RngMt19937 { std::mt19937_64::default_seed };
+    RngMt19937                 rng = RngMt19937 { std::mt19937_64::default_seed };
     GameContext                ctx;
     TestAudio                  audio;
     TitleState*                pTitle = nullptr;

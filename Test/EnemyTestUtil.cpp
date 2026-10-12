@@ -7,7 +7,7 @@ FilePath EnemyDefsPath()
 
 bool LoadEnemyLib(
     EnemyDefLibrary& _out,
-    String*    _pMessage)
+    String*          _pMessage)
 {
     Result<EnemyDefLibrary> lib = EnemyDefLibrary::Load(EnemyDefsPath(), _pMessage);
     if (!lib)
@@ -30,7 +30,7 @@ SandboxConfig MakeEnemyConfig(
 EnemyRig::EnemyRig(
     const Vec2  _player,
     const float _camLeft)
-: m_world(&m_lib, 7)
+    : m_world(&m_lib, 7)
     , m_ground(MakeFlatGround(3000))
     , m_player(_player)
     , m_view(Aabb::FromMinSize({ _camLeft, 0.f }, { 640.f, 448.f }))
@@ -157,7 +157,7 @@ size_t EnemyRig::Strike(
     hitbox.id     = m_combat.NewHitId();
     m_combat.AddHitbox(hitbox);
     const Vector<HitEvent>& events = m_combat.Resolve();
-    const size_t                  count  = events.size();
+    const size_t            count  = events.size();
     m_world.OnHitEvents(events);
     CollectEvents_();
     return count;

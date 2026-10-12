@@ -9,7 +9,6 @@
 #include "Core/AssetPath.h"
 #include "Editor/AnimEditor.h"
 
-
 [[nodiscard]] static String ReadAll_(
     const FilePath& _path)
 {
@@ -42,9 +41,9 @@ TEST(AnimEditorTest, LoadEditSaveReloadOnlyPivotDiffers)
     EXPECT_EQ(text1, ReadAll_(source));
 
     // 피벗 하나만 수정
-    const int clipIndex = 0;
-    const int frame     = 0;
-    const AnimFrame before = reloaded.GetClips()[clipIndex].frames[frame];
+    const int       clipIndex = 0;
+    const int       frame     = 0;
+    const AnimFrame before    = reloaded.GetClips()[clipIndex].frames[frame];
     reloaded.SetPivot(clipIndex, frame, before.pivotX + 3, before.pivotY - 2);
     EXPECT_TRUE(reloaded.IsDirty());
     ASSERT_TRUE(reloaded.Save(tmp3));
@@ -64,8 +63,8 @@ TEST(AnimEditorTest, LoadEditSaveReloadOnlyPivotDiffers)
         ASSERT_EQ(a.frames.size(), b.frames.size());
         for (size_t f = 0; f < a.frames.size(); ++f)
         {
-            const AnimFrame& fa = a.frames[f];
-            const AnimFrame& fb = b.frames[f];
+            const AnimFrame& fa      = a.frames[f];
+            const AnimFrame& fb      = b.frames[f];
             const bool       bEdited = (c == static_cast<size_t>(clipIndex) && f == static_cast<size_t>(frame));
             EXPECT_EQ(fa.atlas, fb.atlas);
             EXPECT_EQ(fa.x, fb.x);

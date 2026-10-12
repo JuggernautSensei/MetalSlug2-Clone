@@ -31,11 +31,11 @@
 // 상태 변형 (연습장): 다른 스테이지 파일, 봇 입력, 무적. 기본값은 정규 스테이지 (stage0)
 struct StageStateConfig
 {
-    String stageFile = "Stage0.json";   // Assets/Stage/ 아래 파일 이름
-    bool   bBot      = false;           // 봇 입력: 보스 아레나로 걸어가 포탑/주포 아래에서 위로 쏜다 (보스 랩 캡처용)
-    bool   bGod      = false;           // 플레이어 무적 (비교 캡처용)
-    bool   bHmg      = false;           // 헤비머신건으로 시작
-    bool   bAutoDamage = false;         // 보스 파트에 일정 속도 (약 20 dps) 로 판정 피해를 준다 (보스전 전 과정을 결정적으로 캡처하는 용도)
+    String stageFile   = "Stage0.json";   // Assets/Stage/ 아래 파일 이름
+    bool   bBot        = false;           // 봇 입력: 보스 아레나로 걸어가 포탑/주포 아래에서 위로 쏜다 (보스 랩 캡처용)
+    bool   bGod        = false;           // 플레이어 무적 (비교 캡처용)
+    bool   bHmg        = false;           // 헤비머신건으로 시작
+    bool   bAutoDamage = false;           // 보스 파트에 일정 속도 (약 20 dps) 로 판정 피해를 준다 (보스전 전 과정을 결정적으로 캡처하는 용도)
 };
 
 class StageState final : public IGameState
@@ -94,11 +94,11 @@ private:
     };
 
     [[nodiscard]] const InputHistory& MakeBotInput_();
-    void               Load_(GameContext& _ctx);
-    void               Restart_(GameContext& _ctx);
-    void               HandleDebugWarp_(GameContext& _ctx);
-    void               StartFlow_(GameContext& _ctx, eEndKind _kind);
-    [[nodiscard]] bool IsFlowing_() const;
+    void                              Load_(GameContext& _ctx);
+    void                              Restart_(GameContext& _ctx);
+    void                              HandleDebugWarp_(GameContext& _ctx);
+    void                              StartFlow_(GameContext& _ctx, eEndKind _kind);
+    [[nodiscard]] bool                IsFlowing_() const;
 
     void                       UpdateWalls_();
     [[nodiscard]] PhysicsWorld MakePhysicsWorld_() const;

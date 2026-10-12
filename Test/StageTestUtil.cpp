@@ -48,7 +48,7 @@ void FakeStageHost::ClearEntities(
 }
 
 void FakeStageHost::SendCommand(
-    const SpawnId          _id,
+    const SpawnId    _id,
     const StringView _command)
 {
     commands.emplace_back(_id, std::string { _command });
@@ -109,7 +109,7 @@ void FakeStageHost::SetBackdrop(
 
 void FakeStageHost::ShowBanner(
     const String& _text,
-    const float         _seconds)
+    const float   _seconds)
 {
     Log_("banner:" + _text + ":" + std::to_string(_seconds));
 }
@@ -123,7 +123,7 @@ void FakeStageHost::FadeTo(
 
 void FakeStageHost::PlayBgm(
     const StringView _name,
-    const bool             _bLoop)
+    const bool       _bLoop)
 {
     Log_("bgm:" + std::string { _name } + (_bLoop ? ":loop" : ":once"));
 }
@@ -151,7 +151,7 @@ void FakeStageHost::EndStage(
 }
 
 void FakeStageHost::OnSectionEntered(
-    const int              _index,
+    const int        _index,
     const StringView _id)
 {
     Log_("section:" + std::to_string(_index) + ":" + std::string { _id });
@@ -223,8 +223,8 @@ std::string WrapStage(
 StageData MustLoad(
     const std::string& _json)
 {
-    StageLoadDiagnostics    diag;
-    Result<StageData> result = LoadStageFromJson(_json, &diag);
+    StageLoadDiagnostics diag;
+    Result<StageData>    result = LoadStageFromJson(_json, &diag);
     if (!result)
     {
         ADD_FAILURE() << "stage load failed: " << diag.message;
@@ -236,14 +236,14 @@ StageData MustLoad(
 std::string LoadError(
     const std::string& _json)
 {
-    StageLoadDiagnostics          diag;
+    StageLoadDiagnostics    diag;
     const Result<StageData> result = LoadStageFromJson(_json, &diag);
     return result ? std::string {} : (diag.message.empty() ? std::string { "<no message>" } : diag.message);
 }
 
 RunnerFixture::RunnerFixture(
     const std::string& _json)
-: data(MustLoad(_json))
+    : data(MustLoad(_json))
     , rng(uint64_t { 1 })
     , runner(data, host, camera, rng)
 {

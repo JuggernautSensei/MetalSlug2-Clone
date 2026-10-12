@@ -28,8 +28,8 @@ constexpr float  kRulerHeight = 20.f;
 struct Extractor
 {
     const Vector<JsonNode>& n;
-    Vector<StageEntity>& entities;
-    Vector<StageEditRect>* pRects = nullptr;
+    Vector<StageEntity>&    entities;
+    Vector<StageEditRect>*  pRects = nullptr;
 
     [[nodiscard]] int Find(const int _obj, const StringView _key) const
     {
@@ -104,15 +104,15 @@ struct Extractor
         {
             return;
         }
-        const JsonNode& o  = n[static_cast<size_t>(_obj)];
-        e.section       = _section;
-        e.where         = _where;
-        e.begin         = o.begin;
-        e.end           = o.end;
-        e.bCanCopy      = !_bPlayer;
-        e.bFaceLeft     = (Str(Find(_obj, "facing")) == "left");
-        const int idN   = Find(_obj, "id");
-        e.id            = Str(idN);
+        const JsonNode& o = n[static_cast<size_t>(_obj)];
+        e.section         = _section;
+        e.where           = _where;
+        e.begin           = o.begin;
+        e.end             = o.end;
+        e.bCanCopy        = !_bPlayer;
+        e.bFaceLeft       = (Str(Find(_obj, "facing")) == "left");
+        const int idN     = Find(_obj, "id");
+        e.id              = Str(idN);
         if (idN >= 0 && n[static_cast<size_t>(idN)].type == 's')
         {
             e.idBegin = n[static_cast<size_t>(idN)].begin;
@@ -221,8 +221,7 @@ static void ApplyReplacements_(
     String&              _text,
     Vector<Replacement>& _list)
 {
-    std::sort(_list.begin(), _list.end(), [](const Replacement& _a, const Replacement& _b)
-    {
+    std::sort(_list.begin(), _list.end(), [](const Replacement& _a, const Replacement& _b) {
         return _a.begin > _b.begin;
     });
     for (const Replacement& r: _list)
@@ -484,8 +483,8 @@ bool StageDocument::CanUndo() const
 String StageDocument::FormatNumber(
     const double _value)
 {
-    ARRAY<char, 64>            buf = {};
-    std::to_chars_result       r   = {};
+    ARRAY<char, 64>      buf = {};
+    std::to_chars_result r   = {};
     if (_value == std::floor(_value) && std::fabs(_value) < 1e9)
     {
         r = std::to_chars(buf.data(), buf.data() + buf.size(), static_cast<long long>(_value));
@@ -500,22 +499,22 @@ String StageDocument::FormatNumber(
 bool StageDocument::Reparse_()
 {
     JsonScanner scanner { m_text };
-    const int root = scanner.Parse();
+    const int   root = scanner.Parse();
     if (root < 0 || scanner.nodes[static_cast<size_t>(root)].type != 'o')
     {
         return false;
     }
     const Vector<JsonNode>& n = scanner.nodes;
 
-    Vector<StageEntity>  entities;
+    Vector<StageEntity>      entities;
     Vector<StageEditSection> sections;
-    Vector<String>       groundMaps;
-    Extractor            ex { n, entities };
+    Vector<String>           groundMaps;
+    Extractor                ex { n, entities };
 
-    int worldW = 0;
-    int worldH = 0;
-    const int world = ex.Find(root, "world");
-    const int size  = ex.Find(world, "size");
+    int       worldW = 0;
+    int       worldH = 0;
+    const int world  = ex.Find(root, "world");
+    const int size   = ex.Find(world, "size");
     if (size >= 0 && n[static_cast<size_t>(size)].kids.size() == 2)
     {
         double w = 0.0;
@@ -554,18 +553,18 @@ bool StageDocument::Reparse_()
         for (const int s: n[static_cast<size_t>(sectionsNode)].kids)
         {
             StageEditSection section;
-            section.id = ex.Str(ex.Find(s, "id"));
+            section.id         = ex.Str(ex.Find(s, "id"));
             const int triggerN = ex.Find(s, "triggerX");
             if (ex.Num(triggerN, section.triggerX))
             {
                 section.triggerBegin = n[static_cast<size_t>(triggerN)].begin;
                 section.triggerEnd   = n[static_cast<size_t>(triggerN)].end;
             }
-            ex.pRects = &section.rects;
+            ex.pRects         = &section.rects;
             const int actions = ex.Find(s, "actions");
             if (actions >= 0)
             {
-                const JsonNode& a   = n[static_cast<size_t>(actions)];
+                const JsonNode& a  = n[static_cast<size_t>(actions)];
                 section.arrayBegin = a.begin;
                 if (!a.kids.empty())
                 {
@@ -717,7 +716,7 @@ int StageDocument::Add(
         return -1;
     }
     const StageEditSection& s    = m_sections[static_cast<size_t>(_section)];
-    const String        text = "{\"type\": \"spawn\", \"kind\": \"" + String { _kind } + "\", \"def\": \"" + String { _def } + "\", \"x\": " + FormatNumber(_x) + ", \"y\": " + FormatNumber(_y) + "}";
+    const String            text = "{\"type\": \"spawn\", \"kind\": \"" + String { _kind } + "\", \"def\": \"" + String { _def } + "\", \"x\": " + FormatNumber(_x) + ", \"y\": " + FormatNumber(_y) + "}";
 
     const String before = m_text;
     int          objPos = 0;
@@ -1041,10 +1040,10 @@ bool StageDocument::SetTriggerX(
 }
 
 bool StageDocument::SetRect(
-    const int                     _section,
-    const int                     _rect,
-    const ARRAY<double, 4>&       _v,
-    const bool                    _bUndo)
+    const int               _section,
+    const int               _rect,
+    const ARRAY<double, 4>& _v,
+    const bool              _bUndo)
 {
     if (_section < 0 || _section >= static_cast<int>(m_sections.size()) || _rect < 0 || _rect >= static_cast<int>(m_sections[static_cast<size_t>(_section)].rects.size()))
     {
@@ -1095,8 +1094,8 @@ void StageDocument::Undo()
 void StageEditor::Init(
     SDL_Renderer* _pRenderer)
 {
-    m_pRenderer = _pRenderer;
-    const FilePath dir = FindAssetRoot() / "Stage";
+    m_pRenderer         = _pRenderer;
+    const FilePath  dir = FindAssetRoot() / "Stage";
     std::error_code ec;
     for (const std::filesystem::directory_entry& entry: std::filesystem::directory_iterator(dir, ec))
     {
@@ -1263,14 +1262,13 @@ void StageEditor::LoadDefs_()
                 const Result<String> first = list[0].Read<String>();
                 if (first && m_defSprite.contains("item/" + first.GetValue()))
                 {
-                    const String value = m_defSprite["item/" + first.GetValue()];
+                    const String value                        = m_defSprite["item/" + first.GetValue()];
                     m_defSprite["item/" + String { g.first }] = value;
                 }
             }
         }
     }
-    std::sort(m_defs.begin(), m_defs.end(), [](const DefInfo& _a, const DefInfo& _b)
-    {
+    std::sort(m_defs.begin(), m_defs.end(), [](const DefInfo& _a, const DefInfo& _b) {
         return _a.name < _b.name;
     });
 }
@@ -1438,21 +1436,21 @@ bool StageEditor::PickSection_(
     int&        _rect,
     int&        _mask) const
 {
-    constexpr float tol      = 5.f;
+    constexpr float              tol      = 5.f;
     Span<const StageEditSection> sections = m_doc.GetSections();
     for (int i = 0; i < static_cast<int>(sections.size()); ++i)
     {
         const StageEditSection& s = sections[static_cast<size_t>(i)];
         for (int r = 0; r < static_cast<int>(s.rects.size()); ++r)
         {
-            const StageEditRect& rc = s.rects[static_cast<size_t>(r)];
-            const float ax = _originX + (static_cast<float>(rc.v[0]) - m_scrollX) * m_zoom;
-            const float ay = _originY + (static_cast<float>(rc.v[1]) - m_scrollY) * m_zoom;
-            const float bx = _originX + (static_cast<float>(rc.v[2]) - m_scrollX) * m_zoom;
-            const float by = _originY + (static_cast<float>(rc.v[3]) - m_scrollY) * m_zoom;
-            const bool  bInY = _my >= ay - tol && _my <= by + tol;
-            const bool  bInX = _mx >= ax - tol && _mx <= bx + tol;
-            int         mask = 0;
+            const StageEditRect& rc   = s.rects[static_cast<size_t>(r)];
+            const float          ax   = _originX + (static_cast<float>(rc.v[0]) - m_scrollX) * m_zoom;
+            const float          ay   = _originY + (static_cast<float>(rc.v[1]) - m_scrollY) * m_zoom;
+            const float          bx   = _originX + (static_cast<float>(rc.v[2]) - m_scrollX) * m_zoom;
+            const float          by   = _originY + (static_cast<float>(rc.v[3]) - m_scrollY) * m_zoom;
+            const bool           bInY = _my >= ay - tol && _my <= by + tol;
+            const bool           bInX = _mx >= ax - tol && _mx <= bx + tol;
+            int                  mask = 0;
             mask |= (bInY && std::fabs(_mx - ax) <= tol) ? 1 : 0;
             mask |= (bInX && std::fabs(_my - ay) <= tol) ? 2 : 0;
             mask |= (bInY && std::fabs(_mx - bx) <= tol) ? 4 : 0;
@@ -1468,10 +1466,10 @@ bool StageEditor::PickSection_(
     }
     for (int i = 0; i < static_cast<int>(sections.size()); ++i)
     {
-        const StageEditSection& s  = sections[static_cast<size_t>(i)];
-        const float             px = _originX + (static_cast<float>(s.triggerX) - m_scrollX) * m_zoom;
-        const float             ty = _originY + static_cast<float>(i % 3) * 12.f;
-        const float             tw = ImGui::CalcTextSize(s.id.c_str()).x;
+        const StageEditSection& s      = sections[static_cast<size_t>(i)];
+        const float             px     = _originX + (static_cast<float>(s.triggerX) - m_scrollX) * m_zoom;
+        const float             ty     = _originY + static_cast<float>(i % 3) * 12.f;
+        const float             tw     = ImGui::CalcTextSize(s.id.c_str()).x;
         const bool              bLine  = std::fabs(_mx - px) <= tol;
         const bool              bLabel = _mx >= px && _mx <= px + tw + 6.f && _my >= ty && _my <= ty + 14.f;
         if (bLine || bLabel)
@@ -1559,7 +1557,7 @@ void StageEditor::LoadGround_(
     m_groundStrips.clear();
     m_solid.clear();
     m_groundW = m_groundH = 0;
-    m_ground  = _name;
+    m_ground              = _name;
     if (!_name.empty())
     {
         LoadStrips_(FindAssetRoot() / "Ground" / (_name + ".png"), true, m_groundStrips, m_groundW, m_groundH);
@@ -1701,9 +1699,9 @@ void StageEditor::Draw()
     ImGui::TextUnformatted("Stage map editor: see the \"Stage Map\" window.");
     ImGui::TextWrapped("%s%s", m_doc.IsDirty() ? "[modified] " : "", m_status.c_str());
 
-    const ImGuiIO& io = ImGui::GetIO();
-    const ImGuiViewport* pHost = ImGui::GetMainViewport();
-    const bool bSmall = io.DisplaySize.x < 900.f;
+    const ImGuiIO&       io     = ImGui::GetIO();
+    const ImGuiViewport* pHost  = ImGui::GetMainViewport();
+    const bool           bSmall = io.DisplaySize.x < 900.f;
     ImGui::SetNextWindowPos(ImVec2 { pHost->Pos.x + (bSmall ? 0.f : 344.f), pHost->Pos.y + 40.f }, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2 { bSmall ? io.DisplaySize.x : std::max(480.f, io.DisplaySize.x - 360.f), std::max(320.f, io.DisplaySize.y - 56.f) }, ImGuiCond_FirstUseEver);
     if (ImGui::Begin("Stage Map"))
@@ -1816,8 +1814,8 @@ void StageEditor::DrawPanel_()
         const StageEntity e = m_doc.GetEntities()[static_cast<size_t>(m_selected)];
         ImGui::Text("%s  (%s)", e.def.c_str(), e.kind.c_str());
         ImGui::TextDisabled("%s%s%s", e.where.c_str(), e.id.empty() ? "" : "  id=", e.id.c_str());
-        double x = e.x;
-        double y = e.y;
+        double x     = e.x;
+        double y     = e.y;
         bool   bEdit = false;
         ImGui::BeginDisabled(!e.bHasX);
         bEdit |= ImGui::InputDouble("X", &x, 1.0, 8.0, "%.2f");
@@ -1969,7 +1967,7 @@ void StageEditor::DrawView_()
     ImGui::SameLine();
     ImGui::Checkbox("Sprites", &m_bShowSprites);
     ImGui::SameLine();
-    int groundIndex = 0;
+    int            groundIndex = 0;
     Vector<String> maps;
     for (const String& m: m_doc.GetGroundMaps())
     {
@@ -1998,10 +1996,10 @@ void StageEditor::DrawView_()
         return;
     }
     ImGui::InvisibleButton("canvas", canvasSize, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight | ImGuiButtonFlags_MouseButtonMiddle);
-    const bool   bHovered = ImGui::IsItemHovered();
-    const ImGuiIO& io     = ImGui::GetIO();
-    const float  originX  = canvasPos.x;
-    const float  originY  = canvasPos.y + kRulerHeight;
+    const bool     bHovered = ImGui::IsItemHovered();
+    const ImGuiIO& io       = ImGui::GetIO();
+    const float    originX  = canvasPos.x;
+    const float    originY  = canvasPos.y + kRulerHeight;
     if (bHovered && io.MouseWheel != 0.f)
     {
         if (io.KeyShift)
@@ -2129,25 +2127,24 @@ void StageEditor::DrawView_()
     }
     for (int i = 0; i < static_cast<int>(sections.size()); ++i)
     {
-        const float px = std::round(originX + (static_cast<float>(sections[static_cast<size_t>(i)].triggerX) - sx) * zoom);
+        const float px  = std::round(originX + (static_cast<float>(sections[static_cast<size_t>(i)].triggerX) - sx) * zoom);
         const ImU32 col = (i == m_section) ? IM_COL32(255, 200, 60, 230) : IM_COL32(120, 160, 255, 140);
         pDraw->AddLine(ImVec2 { px, originY }, ImVec2 { px, canvasPos.y + canvasSize.y }, col);
         pDraw->AddText(ImVec2 { px + 3.f, originY + 2.f + static_cast<float>(i % 3) * 12.f }, col, sections[static_cast<size_t>(i)].id.c_str());
     }
-    const float     mouseWorldX = sx + (io.MousePos.x - originX) / zoom;
-    const float     mouseWorldY = sy + (io.MousePos.y - originY) / zoom;
-    Span<const StageEntity> entities = m_doc.GetEntities();
-    int             hit      = -1;
-    float           hitDist  = 11.f;
-    Vector<int> order;
+    const float             mouseWorldX = sx + (io.MousePos.x - originX) / zoom;
+    const float             mouseWorldY = sy + (io.MousePos.y - originY) / zoom;
+    Span<const StageEntity> entities    = m_doc.GetEntities();
+    int                     hit         = -1;
+    float                   hitDist     = 11.f;
+    Vector<int>             order;
     for (int i = 0; i < static_cast<int>(entities.size()); ++i)
     {
         order.push_back(i);
     }
-    std::stable_sort(order.begin(), order.end(), [&](const int _a, const int _b)
-    {
-        const StageEntity& a = entities[static_cast<size_t>(_a)];
-        const StageEntity& b = entities[static_cast<size_t>(_b)];
+    std::stable_sort(order.begin(), order.end(), [&](const int _a, const int _b) {
+        const StageEntity& a  = entities[static_cast<size_t>(_a)];
+        const StageEntity& b  = entities[static_cast<size_t>(_b)];
         const int          za = EffectiveZ_(a);
         const int          zb = EffectiveZ_(b);
         return za != zb ? za < zb : MarkerY_(a) < MarkerY_(b);
@@ -2187,7 +2184,7 @@ void StageEditor::DrawView_()
         }
     }
     pDraw->PopClipRect();
-    const double step1 = io.KeyShift ? 8.0 : 1.0;
+    const double step1    = io.KeyShift ? 8.0 : 1.0;
     const bool   bInRuler = io.MousePos.y < originY;
     if (bHovered && !bInRuler && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
     {
@@ -2224,12 +2221,12 @@ void StageEditor::DrawView_()
             int mask = 0;
             if (PickSection_(io.MousePos.x, io.MousePos.y, originX, originY, sec, rect, mask))
             {
-                m_section     = sec;
-                m_secDrag     = sec;
-                m_rectDrag    = rect;
-                m_edgeMask    = mask;
-                m_secMode     = io.KeyAlt ? 2 : (io.KeyShift ? 1 : 0);
-                m_bSecUndone  = false;
+                m_section                 = sec;
+                m_secDrag                 = sec;
+                m_rectDrag                = rect;
+                m_edgeMask                = mask;
+                m_secMode                 = io.KeyAlt ? 2 : (io.KeyShift ? 1 : 0);
+                m_bSecUndone              = false;
                 const StageEditSection& s = sections[static_cast<size_t>(sec)];
                 if (rect < 0)
                 {
@@ -2239,8 +2236,8 @@ void StageEditor::DrawView_()
                 else
                 {
                     const StageEditRect& rc = s.rects[static_cast<size_t>(rect)];
-                    m_secGrabX = ((mask & 1) != 0 ? rc.v[0] : rc.v[2]) - static_cast<double>(mouseWorldX);
-                    m_secGrabY = ((mask & 2) != 0 ? rc.v[1] : rc.v[3]) - static_cast<double>(mouseWorldY);
+                    m_secGrabX              = ((mask & 1) != 0 ? rc.v[0] : rc.v[2]) - static_cast<double>(mouseWorldX);
+                    m_secGrabY              = ((mask & 2) != 0 ? rc.v[1] : rc.v[3]) - static_cast<double>(mouseWorldY);
                 }
             }
             else
@@ -2270,10 +2267,10 @@ void StageEditor::DrawView_()
                 ARRAY<double, 4>       v   = old;
                 const double           wx  = Snap_(static_cast<double>(mouseWorldX) + m_secGrabX, snap);
                 const double           wy  = Snap_(static_cast<double>(mouseWorldY) + m_secGrabY, snap);
-                v[0] = (m_edgeMask & 1) != 0 ? wx : v[0];
-                v[1] = (m_edgeMask & 2) != 0 ? wy : v[1];
-                v[2] = (m_edgeMask & 4) != 0 ? wx : v[2];
-                v[3] = (m_edgeMask & 8) != 0 ? wy : v[3];
+                v[0]                       = (m_edgeMask & 1) != 0 ? wx : v[0];
+                v[1]                       = (m_edgeMask & 2) != 0 ? wy : v[1];
+                v[2]                       = (m_edgeMask & 4) != 0 ? wx : v[2];
+                v[3]                       = (m_edgeMask & 8) != 0 ? wy : v[3];
                 if (v != old && m_doc.SetRect(m_secDrag, m_rectDrag, v, !m_bSecUndone))
                 {
                     m_bSecUndone = true;

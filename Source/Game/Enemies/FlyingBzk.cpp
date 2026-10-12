@@ -206,14 +206,14 @@ void ParseFlyingBzkCfg(
     c.fireFrame         = _r.Int("fireFrame");
     (void)_r.NumArray("postureDeg", c.postureDeg);
     (void)_r.NumArray("fireDeg", c.fireDeg);
-    c.windowDeg  = _r.Num("windowDeg");
-    c.muzzleBase = _r.ReadVec2("muzzleBase", c.muzzleBase);
-    c.muzzleDist = _r.Num("muzzleDist");
-    c.landProbe  = _r.Num("landProbe");
-    c.landedDef  = _r.Str("landedDef");
+    c.windowDeg    = _r.Num("windowDeg");
+    c.muzzleBase   = _r.ReadVec2("muzzleBase", c.muzzleBase);
+    c.muzzleDist   = _r.Num("muzzleDist");
+    c.landProbe    = _r.Num("landProbe");
+    c.landedDef    = _r.Str("landedDef");
     c.fallGravity  = _r.Num("fallGravity", c.fallGravity);
     c.fallMaxSpeed = _r.Num("fallMaxSpeed", c.fallMaxSpeed);
-    c.bNoHurtbox = _r.Bool("noHurtbox", false);
+    c.bNoHurtbox   = _r.Bool("noHurtbox", false);
 
     for (int i = 0; i < 5; ++i)
     {

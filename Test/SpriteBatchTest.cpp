@@ -6,7 +6,6 @@
 #include "Base/Types.h"
 #include "Render/SpriteBatch.h"
 
-
 [[nodiscard]] static AnimFrame MakeFrame_(
     const int _w,
     const int _h,
@@ -24,9 +23,9 @@
 // 정렬 시험용 명령 하나를 큐에 넣는다. seq 는 제출 순서, frame.x 는 식별용 태그
 static void AddCommand_(
     Vector<SpriteCommand>& _commands,
-    const int                    _depth,
-    const int                    _key,
-    const int                    _tag)
+    const int              _depth,
+    const int              _key,
+    const int              _tag)
 {
     SpriteCommand command;
     command.depth   = _depth;
@@ -375,8 +374,8 @@ TEST(SpriteBatchSdl, WideStandaloneTextureIsSeamlessAcrossStrips)
         GTEST_SKIP() << "소프트웨어 렌더러를 만들 수 없는 환경";
     }
 
-    constexpr int               kW = 5000;
-    constexpr int               kH = 4;
+    constexpr int   kW = 5000;
+    constexpr int   kH = 4;
     Vector<uint8_t> pixels(static_cast<size_t>(kW) * kH * 4);
     for (int y = 0; y < kH; ++y)
     {

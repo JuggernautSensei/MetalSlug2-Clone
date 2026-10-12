@@ -11,7 +11,6 @@
 #include "StageTestUtil.h"
 #include "World/GroundMap.h"
 
-
 [[nodiscard]] static std::string OneSection_(
     const std::string& _actions)
 {
@@ -48,7 +47,7 @@ TEST(StageData, NoteKeyIsAllowedEverywhere)
 
 TEST(StageData, SpawnDefaultsDependOnKind)
 {
-    const StageData                  data = MustLoad(OneSection_(R"J([
+    const StageData            data = MustLoad(OneSection_(R"J([
         {"type":"spawn","kind":"enemy","def":"soldier_bomb","x":10,"groundSnap":true},
         {"type":"spawn","kind":"prop","def":"truck","x":10,"y":20},
         {"type":"spawn","kind":"npc","def":"pow","x":10,"y":20,"settle":true},
@@ -74,7 +73,7 @@ TEST(StageData, SpawnDefaultsDependOnKind)
 
 TEST(StageData, NonSpawnActionDefaultsToWhenRule)
 {
-    const StageData                  data = MustLoad(OneSection_(R"J([
+    const StageData            data = MustLoad(OneSection_(R"J([
         {"type":"setBounds","rect":[0,0,1000,448]},
         {"type":"setBackdrop","mode":"b"},
         {"type":"setCameraOffset","offset":[1,2]},
@@ -128,7 +127,7 @@ TEST(StageData, ShouldRunActionTruthTable)
 
 TEST(StageData, CameraAnchorParsesFixedAndRangeDx)
 {
-    const StageData                data = MustLoad(OneSection_(R"J([
+    const StageData          data = MustLoad(OneSection_(R"J([
         {"type":"spawnWave","entries":[
             {"delay":1,"kind":"enemy","def":"a","camera":{"ax":"right","dx":[-149,-50],"ay":"top","dy":47.5}},
             {"delay":2,"kind":"enemy","def":"b","camera":{"ax":"left","dx":250,"ay":"bottom","dy":-3}},
@@ -168,7 +167,7 @@ TEST(StageData, ParamsKeepNestedStructure)
 
 TEST(StageData, RectsResolveNamesAndCurrent)
 {
-    const StageData                  data = MustLoad(OneSection_(R"J([
+    const StageData            data = MustLoad(OneSection_(R"J([
         {"type":"lockCamera","rect":"arena","permanent":true},
         {"type":"lockCamera","rect":"current","glide":0.5},
         {"type":"setBounds","rect":[10,20,30,40]}])J"));
@@ -221,7 +220,7 @@ TEST(StageData, BoundsCurveResolvesSectionIndicesAndEvaluates)
 
 TEST(StageDataErrors, InvalidJsonSyntax)
 {
-    StageLoadDiagnostics          diag;
+    StageLoadDiagnostics    diag;
     const Result<StageData> result = LoadStageFromJson("{ not json", &diag);
     ASSERT_FALSE(result);
     EXPECT_TRUE(HasErrorCode(result.GetError(), eError::Parse));
@@ -304,7 +303,7 @@ TEST(StageDataErrors, WaveTimeRepeatRules)
 
 TEST(StageData, WaveEntryParsesEveryAndTimesWithOneTimeDefault)
 {
-    const StageData                data = MustLoad(OneSection_(R"J([
+    const StageData          data = MustLoad(OneSection_(R"J([
         {"type":"spawnWave","entries":[
             {"delay":12,"every":36,"times":20,"kind":"npc","def":"pow","x":1,"y":2},
             {"delay":1,"kind":"enemy","def":"b","x":1,"y":2}]}])J"));
@@ -361,7 +360,7 @@ TEST(StageDataErrors, GroundAndBackdropInitialMustExist)
 
 TEST(StageDataErrors, MissingFileIsReported)
 {
-    StageLoadDiagnostics          diag;
+    StageLoadDiagnostics    diag;
     const Result<StageData> result = LoadStageFromFile("does/not/exist/Stage.json", &diag);
     ASSERT_FALSE(result);
     EXPECT_TRUE(HasErrorCode(result.GetError(), eError::FileOpen));
@@ -369,8 +368,8 @@ TEST(StageDataErrors, MissingFileIsReported)
 
 TEST(StageDataReal, OpenlandPowsAreAboutEvery700PxAndCoverTheWeaponMix)
 {
-    StageLoadDiagnostics    diag;
-    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    StageLoadDiagnostics diag;
+    Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
@@ -405,8 +404,8 @@ TEST(StageDataReal, OpenlandPowsAreAboutEvery700PxAndCoverTheWeaponMix)
 
 TEST(StageDataReal, OpenlandHousesAndBlocksStayAlignedWithTheGroundMaskBumps)
 {
-    StageLoadDiagnostics    diag;
-    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    StageLoadDiagnostics diag;
+    Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
@@ -448,8 +447,8 @@ TEST(StageDataReal, OpenlandHousesAndBlocksStayAlignedWithTheGroundMaskBumps)
 
 TEST(StageDataReal, BossArenaStreetHasItsHousesAndBlocksAheadOfTheCamera)
 {
-    StageLoadDiagnostics    diag;
-    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    StageLoadDiagnostics diag;
+    Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
@@ -494,8 +493,8 @@ TEST(StageDataReal, BossArenaStreetHasItsHousesAndBlocksAheadOfTheCamera)
 
 TEST(StageDataReal, Stage0AmbientWalkersUseSequenceParams)
 {
-    StageLoadDiagnostics    diag;
-    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    StageLoadDiagnostics diag;
+    Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
@@ -541,8 +540,8 @@ TEST(StageDataReal, Stage0AmbientWalkersUseSequenceParams)
 
 TEST(StageDataReal, BossArenaIsBehindTheSarubiaLockAndClearsOnlyAfterTheBossIsDestroyed)
 {
-    StageLoadDiagnostics    diag;
-    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    StageLoadDiagnostics diag;
+    Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
@@ -575,10 +574,10 @@ TEST(StageDataReal, BossArenaIsBehindTheSarubiaLockAndClearsOnlyAfterTheBossIsDe
 // 강 지프는 heli_river 락 왼쪽 끝 (5357) 보다 60 px 왼쪽 밖에서 나타난다
 TEST(StageDataReal, RiverJeepSpawnsSixtyPixelsLeftOfTheHeliLock)
 {
-    StageLoadDiagnostics    diag;
-    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    StageLoadDiagnostics diag;
+    Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag.message;
-    const StageData data  = result.Take();
+    const StageData data   = result.Take();
     bool            bFound = false;
     for (const StageSection& section: data.sections)
     {
@@ -597,8 +596,8 @@ TEST(StageDataReal, RiverJeepSpawnsSixtyPixelsLeftOfTheHeliLock)
 
 TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
 {
-    StageLoadDiagnostics    diag;
-    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    StageLoadDiagnostics diag;
+    Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 

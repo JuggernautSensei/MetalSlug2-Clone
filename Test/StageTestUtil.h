@@ -16,7 +16,6 @@
 #include "Game/Stage/StageRunner.h"
 #include "Render/Camera.h"
 
-
 struct SpawnLogEntry
 {
     int64_t      tick = 0;
@@ -79,7 +78,7 @@ public:
         const EntityFilter& _filter) override;
 
     void SendCommand(
-        const SpawnId          _id,
+        const SpawnId    _id,
         const StringView _command) override;
 
     void SetGround(
@@ -104,7 +103,7 @@ public:
 
     void ShowBanner(
         const String& _text,
-        const float         _seconds) override;
+        const float   _seconds) override;
 
     void FadeTo(
         const eFadeTarget _target,
@@ -112,7 +111,7 @@ public:
 
     void PlayBgm(
         const StringView _name,
-        const bool             _bLoop) override;
+        const bool       _bLoop) override;
 
     void ChangeBgm(
         const StringView _name,
@@ -126,7 +125,7 @@ public:
         const StringView _nextState) override;
 
     void OnSectionEntered(
-        const int              _index,
+        const int        _index,
         const StringView _id) override;
 
     [[nodiscard]] int CountEvents(
@@ -169,9 +168,9 @@ public:
         const float _x,
         const int   _count = 1);
 
-    StageData        data;
-    FakeStageHost    host;
-    Camera           camera;
-    RngMt19937 rng = RngMt19937 { std::mt19937_64::default_seed };
-    StageRunner      runner;
+    StageData     data;
+    FakeStageHost host;
+    Camera        camera;
+    RngMt19937    rng = RngMt19937 { std::mt19937_64::default_seed };
+    StageRunner   runner;
 };

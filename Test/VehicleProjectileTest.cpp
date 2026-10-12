@@ -4,7 +4,6 @@
 #include "Base/Types.h"
 #include "VehicleTestUtil.h"
 
-
 constexpr float kFloorY = 378.f;
 
 [[nodiscard]] static ShotSpawn MakeRoller_(
