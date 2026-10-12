@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <cstring>
 #include <fstream>
 #include <SDL3/SDL.h>
@@ -149,7 +150,53 @@ namespace
     stbi_image_free(pPixels);
     return image;
 }
+
+bool g_bTraceLoad = false;
+
+[[nodiscard]] uint64_t HashRgba_(
+    const Span<const uint8_t> _rgba)
+{
+    uint64_t hash = 14695981039346656037ull;
+    for (const uint8_t byte: _rgba)
+    {
+        hash ^= byte;
+        hash *= 1099511628211ull;
+    }
+    return hash;
+}
+
+void TraceAtlasPage_(
+    const size_t              _page,
+    const FilePath&           _path,
+    const int                 _width,
+    const int                 _height,
+    const Span<const uint8_t> _rgba)
+{
+    if (g_bTraceLoad)
+    {
+        std::fprintf(stderr, "[tex] atlas page=%zu file=%s %dx%d rgba=%016llx\n", _page, _path.filename().string().c_str(), _width, _height, static_cast<unsigned long long>(HashRgba_(_rgba)));
+    }
+}
+
+void TraceStandalone_(
+    const int                 _handle,
+    const FilePath&           _path,
+    const int                 _width,
+    const int                 _height,
+    const Span<const uint8_t> _rgba)
+{
+    if (g_bTraceLoad)
+    {
+        std::fprintf(stderr, "[tex] standalone handle=%d file=%s %dx%d rgba=%016llx\n", _handle, _path.filename().string().c_str(), _width, _height, static_cast<unsigned long long>(HashRgba_(_rgba)));
+    }
+}
 }   // namespace
+
+void SetLoadTraceEnabled(
+    const bool _bEnabled)
+{
+    g_bTraceLoad = _bEnabled;
+}
 
 // 피격 플래시 램프 노드 (원작 버스 피격 프레임 실측: 입력 평균 밝기 L -> 출력 RGB)
 struct FlashRampNode
@@ -352,7 +399,13 @@ Result<void> SpriteBatch::LoadAtlasPage(
     {
         return image.GetError();
     }
-    return AddAtlasPageFromRgba(image->width, image->height, image->rgba);
+    const size_t       page   = m_pages.size();
+    const Result<void> result = AddAtlasPageFromRgba(image->width, image->height, image->rgba);
+    if (result)
+    {
+        TraceAtlasPage_(page, _pngPath, image->width, image->height, image->rgba);
+    }
+    return result;
 }
 
 Result<int> SpriteBatch::AddStandaloneTextureFromRgba(
@@ -446,7 +499,12 @@ Result<int> SpriteBatch::LoadStandaloneTexture(
     {
         return image.GetError();
     }
-    return AddStandaloneTextureFromRgba(image->width, image->height, image->rgba);
+    const Result<int> result = AddStandaloneTextureFromRgba(image->width, image->height, image->rgba);
+    if (result)
+    {
+        TraceStandalone_(result.GetValue(), _pngPath, image->width, image->height, image->rgba);
+    }
+    return result;
 }
 
 void SpriteBatch::DrawTexture(
@@ -596,7 +654,9 @@ void AtlasPageLoadJob::Complete()
     if (!m_bDecoded || !m_pBatch->AddAtlasPageFromRgba(m_image.width, m_image.height, m_image.rgba, m_flash))
     {
         SLUG_LOG_ERROR("아틀라스 페이지 로드 실패: {}", m_path.filename().string());
+        return;
     }
+    TraceAtlasPage_(m_expectedPage, m_path, m_image.width, m_image.height, m_image.rgba);
 }
 
 class StandaloneTextureLoadJob final : public IAsyncLoadJob
@@ -644,6 +704,7 @@ void StandaloneTextureLoadJob::Complete()
         if (added)
         {
             handle = added.GetValue();
+            TraceStandalone_(handle, m_path, m_image.width, m_image.height, m_image.rgba);
         }
     }
     if (m_pOutHandle)

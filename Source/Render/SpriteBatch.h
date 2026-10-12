@@ -74,6 +74,9 @@ struct TextureViewRects
 // 아틀라스 페이지의 피격 플래시 변환본 RGBA. 순수 CPU 작업이라 워커 스레드에서 불러도 된다.
 [[nodiscard]] Vector<uint8_t> BuildHitFlashRgba(Span<const uint8_t> _rgba, size_t _pixelCount);
 
+// --trace-load: 텍스처 로드마다 "[tex] ..." 한 줄을 stderr 로 남긴다 (꺼져 있으면 아무 일도 하지 않는다)
+void SetLoadTraceEnabled(bool _bEnabled);
+
 [[nodiscard]] TextureViewRects ComputeTextureView(int _texW, int _texH, Vec2 _texWorldPos, Vec2 _cameraPos, int _viewW, int _viewH);
 
 class SpriteBatch

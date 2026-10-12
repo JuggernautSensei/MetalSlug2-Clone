@@ -188,6 +188,10 @@ void App::ParseArgs_()
         {
             m_bNoAsyncLoad = true;
         }
+        else if (args[i] == "--trace-load")
+        {
+            SetLoadTraceEnabled(true);
+        }
         else if (args[i] == "--capture" && bHasValue)
         {
             m_capturePath = args[++i];
