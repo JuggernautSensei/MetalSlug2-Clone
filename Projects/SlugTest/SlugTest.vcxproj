@@ -73,7 +73,7 @@
       <PrecompiledHeaderFile>TestPch.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>TestPch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(SolutionDir)Test;$(SolutionDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Test;$(SolutionDir)Source;$(SolutionDir)VendorJugX;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
@@ -98,7 +98,7 @@
       <PrecompiledHeaderFile>TestPch.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>TestPch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(SolutionDir)Test;$(SolutionDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Test;$(SolutionDir)Source;$(SolutionDir)VendorJugX;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
@@ -374,6 +374,11 @@
     <ClInclude Include="..\..\Test\StageTestUtil.h" />
     <ClInclude Include="..\..\Test\TestAudio.h" />
     <ClInclude Include="..\..\Test\VehicleTestUtil.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JugX\JugX.vcxproj">
+      <Project>{5B1E3A6C-7D42-4F0B-9C58-2E9A4D7B1F63}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(VcpkgRoot)scripts\buildsystems\msbuild\vcpkg.targets" Condition="Exists('$(VcpkgRoot)scripts\buildsystems\msbuild\vcpkg.targets') And !Exists('$(LOCALAPPDATA)\vcpkg\vcpkg.user.targets')" />

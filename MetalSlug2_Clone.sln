@@ -6,6 +6,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MetalSlug2_Clone", "Project
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SlugTest", "Projects\SlugTest\SlugTest.vcxproj", "{A8A1C747-F01F-452B-AC29-33D90D36896A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JugX", "Projects\JugX\JugX.vcxproj", "{5B1E3A6C-7D42-4F0B-9C58-2E9A4D7B1F63}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -20,6 +22,10 @@ Global
 		{A8A1C747-F01F-452B-AC29-33D90D36896A}.Debug|x64.Build.0 = Debug|x64
 		{A8A1C747-F01F-452B-AC29-33D90D36896A}.Release|x64.ActiveCfg = Release|x64
 		{A8A1C747-F01F-452B-AC29-33D90D36896A}.Release|x64.Build.0 = Release|x64
+		{5B1E3A6C-7D42-4F0B-9C58-2E9A4D7B1F63}.Debug|x64.ActiveCfg = Debug|x64
+		{5B1E3A6C-7D42-4F0B-9C58-2E9A4D7B1F63}.Debug|x64.Build.0 = Debug|x64
+		{5B1E3A6C-7D42-4F0B-9C58-2E9A4D7B1F63}.Release|x64.ActiveCfg = Release|x64
+		{5B1E3A6C-7D42-4F0B-9C58-2E9A4D7B1F63}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
