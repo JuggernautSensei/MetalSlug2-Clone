@@ -122,7 +122,6 @@
     <ClCompile Include="..\..\Source\Game\GameState.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\EnemyTypes.cpp" />
     <ClCompile Include="..\..\Source\Game\Combat\HitFlash.cpp" />
-    <ClCompile Include="..\..\Source\Base\Result.cpp" />
     <ClCompile Include="..\..\Source\World\Geometry.cpp" />
     <ClCompile Include="..\..\Source\Audio\VoiceAllocator.cpp" />
     <ClCompile Include="..\..\Source\Audio\AudioSink.cpp" />
@@ -131,7 +130,7 @@
     <ClCompile Include="..\..\Source\Audio\AudioSystem.cpp"><PrecompiledHeader Condition="'$(Configuration)'=='Debug'">NotUsing</PrecompiledHeader><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
     <ClCompile Include="..\..\Source\Audio\SoundBank.cpp" />
     <ClCompile Include="..\..\Source\Audio\StbVorbisImpl.cpp"><PrecompiledHeader>NotUsing</PrecompiledHeader><ForcedIncludeFiles></ForcedIncludeFiles><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
-    <ClCompile Include="..\..\Source\Base\Error.cpp" />
+    <ClCompile Include="..\..\Source\Base\SlugError.cpp" />
     <ClCompile Include="..\..\Source\Base\Json.cpp" />
     <ClCompile Include="..\..\Source\Base\Log.cpp" />
     <ClCompile Include="..\..\Source\Base\PhaseTimer.cpp" />
@@ -275,7 +274,7 @@
     <ClInclude Include="..\..\Source\Audio\AudioSystem.h" />
     <ClInclude Include="..\..\Source\Audio\SoundBank.h" />
     <ClInclude Include="..\..\Source\Audio\VoiceAllocator.h" />
-    <ClInclude Include="..\..\Source\Base\Error.h" />
+    <ClInclude Include="..\..\Source\Base\SlugError.h" />
     <ClInclude Include="..\..\Source\Base\Handle.h" />
     <ClInclude Include="..\..\Source\Base\Json.h" />
     <ClInclude Include="..\..\Source\Base\Log.h" />
@@ -283,7 +282,6 @@
     <ClInclude Include="..\..\Source\Core\AsyncLoader.h" />
     <ClInclude Include="..\..\Source\Core\MainThreadQueue.h" />
     <ClInclude Include="..\..\Source\Base\Math.h" />
-    <ClInclude Include="..\..\Source\Base\Result.h" />
     <ClInclude Include="..\..\Source\Base\RGBA.h" />
     <ClInclude Include="..\..\Source\Base\Types.h" />
     <ClInclude Include="..\..\Source\Core\App.h" />

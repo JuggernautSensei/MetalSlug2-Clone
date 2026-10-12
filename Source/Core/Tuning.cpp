@@ -5,7 +5,7 @@
 #include <optional>
 #include <string>
 
-#include "Base/Error.h"
+#include "Base/SlugError.h"
 #include "Base/Json.h"
 #include "Base/Log.h"
 #include "Base/Math.h"

@@ -30,9 +30,14 @@
 #include <JugX/Assert.h>
 #include <JugX/Handle.h>
 #include <JugX/Random.h>
+#include <JugX/Error.h>
+#include <JugX/Result.h>
 
 #include "Base/Types.h"
 #include "Base/Handle.h"
 
 using jug::Random;
 using jug::RngMt19937;
+using jug::Error;
+using jug::Result;
+using jug::kOK;

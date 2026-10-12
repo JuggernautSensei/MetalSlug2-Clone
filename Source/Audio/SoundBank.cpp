@@ -1,6 +1,6 @@
 #include "Audio/SoundBank.h"
 
-#include "Base/Error.h"
+#include "Base/SlugError.h"
 #include "Base/Json.h"
 #include "Base/Types.h"
 

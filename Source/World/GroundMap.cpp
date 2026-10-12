@@ -2,9 +2,8 @@
 
 #include <cmath>
 
-#include "Base/Error.h"
+#include "Base/SlugError.h"
 #include "Base/Math.h"
-#include "Base/Result.h"
 #include "Base/Types.h"
 
 [[nodiscard]] static size_t StrideOf_(

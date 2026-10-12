@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <filesystem>
 
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Render/Animation.h"
 

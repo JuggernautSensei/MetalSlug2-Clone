@@ -1,7 +1,7 @@
 // 플레이어 리플레이 테스트: 녹화된 입력을 재생했을 때 결과가 비트 단위로 같은지 검증
 #include <filesystem>
 
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
 #include "Core/Replay.h"

@@ -4,7 +4,7 @@
 #include <format>
 #include <optional>
 
-#include "Base/Error.h"
+#include "Base/SlugError.h"
 #include "Base/Json.h"
 #include "Base/Math.h"
 #include "Base/Types.h"

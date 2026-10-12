@@ -3,7 +3,7 @@
 
 #include "Base/Math.h"
 #include "Base/RGBA.h"
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Render/Animation.h"
 #include "Render/Camera.h"

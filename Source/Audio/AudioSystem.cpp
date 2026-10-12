@@ -2,11 +2,10 @@
 
 #include <algorithm>
 
-#include "Base/Error.h"
+#include "Base/SlugError.h"
 #include "Base/Log.h"
 #include "Base/PhaseTimer.h"
 #include "Core/AsyncLoader.h"
-#include "Base/Result.h"
 #include "Base/Types.h"
 
 // miniaudio 구현부는 이 파일에서만 만든다 (stb_vorbis 는 헤더 전용으로 선언만 가져온다).

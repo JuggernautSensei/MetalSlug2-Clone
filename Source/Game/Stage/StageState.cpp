@@ -10,7 +10,7 @@
 #include "Base/Math.h"
 #include "Base/PhaseTimer.h"
 #include "Base/RGBA.h"
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Core/AsyncLoader.h"
 #include "Game/Combat/BulletVisual.h"

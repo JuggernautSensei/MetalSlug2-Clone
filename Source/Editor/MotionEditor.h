@@ -1,6 +1,6 @@
 #pragma once
 #include "Base/Math.h"
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Game/Enemies/EnemyDef.h"
 

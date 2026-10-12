@@ -1,5 +1,5 @@
 #pragma once
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Editor/JsonScan.h"
 #include "Game/Enemies/EnemyDef.h"

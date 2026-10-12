@@ -1,8 +1,14 @@
-#include "Base/Error.h"
+#include "Base/SlugError.h"
 
-String Error::MakeMessage() const
+StringView SlugErrorCategory::GetName() const noexcept
 {
-    switch (m_code)
+    return "Slug";
+}
+
+String SlugErrorCategory::MakeMessage(
+    const int _err) const
+{
+    switch (static_cast<eError>(_err))
     {
         case eError::Ok: return "ok";
         case eError::SdlInit: return "SDL 초기화 실패";
@@ -21,27 +27,13 @@ String Error::MakeMessage() const
     return "알 수 없는 에러";
 }
 
-Error::Error(const eError _code)
-: m_code(_code)
+bool HasErrorCode(
+    const Error&  _error,
+    const eError  _code)
 {
-}
-
-bool Error::IsOK() const
-{
-    return m_code == eError::Ok;
-}
-
-bool Error::IsError() const
-{
-    return m_code != eError::Ok;
-}
-
-eError Error::GetCode() const
-{
-    return m_code;
-}
-
-Error::operator bool() const
-{
-    return IsError();
+    if (_code == eError::Ok)
+    {
+        return _error.IsOK();
+    }
+    return _error == Error { _code };
 }

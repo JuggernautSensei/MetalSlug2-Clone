@@ -4,9 +4,8 @@
 
 #include <cstdint>
 
-#include "Base/Error.h"
+#include "Base/SlugError.h"
 #include "Base/Math.h"
-#include "Base/Result.h"
 #include "Base/Types.h"
 #include "World/Geometry.h"
 #include "World/GroundMap.h"

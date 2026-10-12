@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Game/Props/DecorWorld.h"
 #include "Game/Stage/StageData.h"
 #include "Render/Animation.h"

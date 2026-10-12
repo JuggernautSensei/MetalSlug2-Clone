@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "Base/Log.h"
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 
 using CacheKey = std::pair<const SpriteBatch*, String>;

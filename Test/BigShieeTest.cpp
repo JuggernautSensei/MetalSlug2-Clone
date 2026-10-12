@@ -6,7 +6,7 @@
 #include <cmath>
 #include <cstdlib>
 
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
 #include "EnemyTestUtil.h"

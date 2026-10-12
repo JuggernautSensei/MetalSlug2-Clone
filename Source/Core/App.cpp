@@ -7,7 +7,7 @@
 #include <SDL3/SDL.h>
 
 #include "Base/Log.h"
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
 #include "Game/StateFactory.h"

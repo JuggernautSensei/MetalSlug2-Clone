@@ -63,9 +63,6 @@
     <ClCompile Include="..\..\Source\Game\Combat\HitFlash.cpp">
       <Filter>Source\Game\Combat</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Base\Result.cpp">
-      <Filter>Source\Base</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\World\Geometry.cpp">
       <Filter>Source\World</Filter>
     </ClCompile>
@@ -90,7 +87,7 @@
     <ClCompile Include="..\..\Source\Audio\StbVorbisImpl.cpp">
       <Filter>Source\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Base\Error.cpp">
+    <ClCompile Include="..\..\Source\Base\SlugError.cpp">
       <Filter>Source\Base</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Base\Json.cpp">
@@ -362,7 +359,7 @@
     <ClInclude Include="..\..\Source\Audio\VoiceAllocator.h">
       <Filter>Source\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\Base\Error.h">
+    <ClInclude Include="..\..\Source\Base\SlugError.h">
       <Filter>Source\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Base\Handle.h">
@@ -384,9 +381,6 @@
       <Filter>Source\Core</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Base\Math.h">
-      <Filter>Source\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Base\Result.h">
       <Filter>Source\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Base\RGBA.h">

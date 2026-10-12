@@ -2,11 +2,10 @@
 
 #include <SDL3/SDL.h>
 
-#include "Base/Error.h"
+#include "Base/SlugError.h"
 #include "Base/Log.h"
 #include "Base/Math.h"
 #include "Base/RGBA.h"
-#include "Base/Result.h"
 #include "Base/Types.h"
 
 Renderer::~Renderer()

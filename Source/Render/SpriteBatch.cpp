@@ -8,7 +8,7 @@
 
 #include "Base/Math.h"
 #include "Base/RGBA.h"
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 
 #pragma warning(disable : 4505)
@@ -19,7 +19,6 @@
 #include "Base/Log.h"
 #include "Base/PhaseTimer.h"
 
-#include "Base/Error.h"
 #include "Core/AsyncLoader.h"
 
 [[nodiscard]] static SDL_FlipMode FlipFlags_(

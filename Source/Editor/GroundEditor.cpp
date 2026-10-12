@@ -119,7 +119,7 @@ Result<void> GroundMaskDocument::Load(
     Vector<unsigned char> encoded;
     if (!ReadWholeFile_(_path, encoded))
     {
-        return eError::FileOpen;
+        return Error { eError::FileOpen };
     }
     int      width    = 0;
     int      height   = 0;
@@ -127,7 +127,7 @@ Result<void> GroundMaskDocument::Load(
     stbi_uc* pPixels  = stbi_load_from_memory(encoded.data(), static_cast<int>(encoded.size()), &width, &height, &channels, 4);
     if (pPixels == nullptr || width <= 0 || height <= 0)
     {
-        return eError::Parse;
+        return Error { eError::Parse };
     }
     Create(width, height);
     for (size_t i = 0; i < m_pixels.size(); ++i)
@@ -136,7 +136,7 @@ Result<void> GroundMaskDocument::Load(
         m_pixels[i]      = (p[0] < 80 && p[1] < 80 && p[2] >= 200 && p[3] >= 128) ? 1 : 0;
     }
     stbi_image_free(pPixels);
-    return Result<void> {};
+    return Error { kOK };
 }
 
 Result<void> GroundMaskDocument::Save(
@@ -145,22 +145,22 @@ Result<void> GroundMaskDocument::Save(
     Vector<uint8_t> png;
     if (m_width <= 0 || !EncodePalettePng_(m_pixels, m_width, m_height, png))
     {
-        return eError::InvalidData;
+        return Error { eError::InvalidData };
     }
     std::ofstream file { _path, std::ios::binary | std::ios::trunc };
     if (!file)
     {
-        return eError::FileOpen;
+        return Error { eError::FileOpen };
     }
     file.write(reinterpret_cast<const char*>(png.data()), static_cast<std::streamsize>(png.size()));
     file.close();
     if (!file)
     {
-        return eError::FileOpen;
+        return Error { eError::FileOpen };
     }
     m_savedApplied = m_applied;
     m_bSavedLost   = false;
-    return Result<void> {};
+    return Error { kOK };
 }
 
 void GroundMaskDocument::Create(

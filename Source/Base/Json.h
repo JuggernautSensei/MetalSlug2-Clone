@@ -3,7 +3,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 
 struct yyjson_doc;

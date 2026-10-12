@@ -5,7 +5,7 @@
 #include "Audio/AudioSink.h"
 #include "Audio/SoundBank.h"
 #include "Audio/VoiceAllocator.h"
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 
 class AsyncLoader;

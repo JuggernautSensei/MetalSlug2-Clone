@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 
 struct SDL_Renderer;

@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "EnemyTestUtil.h"
 

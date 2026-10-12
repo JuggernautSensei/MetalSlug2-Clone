@@ -2,7 +2,7 @@
 #include <cstdint>
 
 #include "Base/Math.h"
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "World/Geometry.h"
 

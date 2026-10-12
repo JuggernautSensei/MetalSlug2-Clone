@@ -1,7 +1,7 @@
 // 탈것 정의 테스트: 적 정의 JSON 로드와 탈것별 필드 검증
 #include <cmath>
 
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "VehicleTestUtil.h"
 

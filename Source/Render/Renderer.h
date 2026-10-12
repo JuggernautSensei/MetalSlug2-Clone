@@ -1,7 +1,7 @@
 #pragma once
 #include "Base/Math.h"
 #include "Base/RGBA.h"
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 
 struct SDL_Window;

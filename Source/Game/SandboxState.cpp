@@ -8,7 +8,7 @@
 #include "Base/Log.h"
 #include "Base/Math.h"
 #include "Base/RGBA.h"
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Game/Combat/BulletVisual.h"
 #include "Game/Player/PlayerHitboxes.h"

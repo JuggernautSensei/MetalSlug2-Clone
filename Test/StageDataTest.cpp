@@ -4,8 +4,7 @@
 
 #include <gtest/gtest.h>
 
-#include "Base/Error.h"
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
 #include "Game/Stage/StageMapping.h"
@@ -225,7 +224,7 @@ TEST(StageDataErrors, InvalidJsonSyntax)
     StageLoadDiagnostics          diag;
     const Result<StageData> result = LoadStageFromJson("{ not json", &diag);
     ASSERT_FALSE(result);
-    EXPECT_EQ(result.GetError().GetCode(), eError::Parse);
+    EXPECT_TRUE(HasErrorCode(result.GetError(), eError::Parse));
     EXPECT_NE(diag.message.find("syntax"), std::string::npos);
 }
 
@@ -365,7 +364,7 @@ TEST(StageDataErrors, MissingFileIsReported)
     StageLoadDiagnostics          diag;
     const Result<StageData> result = LoadStageFromFile("does/not/exist/Stage.json", &diag);
     ASSERT_FALSE(result);
-    EXPECT_EQ(result.GetError().GetCode(), eError::FileOpen);
+    EXPECT_TRUE(HasErrorCode(result.GetError(), eError::FileOpen));
 }
 
 TEST(StageDataReal, OpenlandPowsAreAboutEvery700PxAndCoverTheWeaponMix)

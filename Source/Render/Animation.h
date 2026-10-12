@@ -2,7 +2,7 @@
 #include <cstdint>
 
 #include "Base/Handle.h"
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 
 inline constexpr int64_t kAnimTimeUnitsPerSec = 6'000'000;

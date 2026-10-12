@@ -3,7 +3,7 @@
 #include <optional>
 
 #include "Base/Math.h"
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Game/Combat/HitFlash.h"
 #include "Game/Enemies/BigShieeCfg.h"

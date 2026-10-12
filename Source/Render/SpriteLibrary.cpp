@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include "Base/Error.h"
+#include "Base/SlugError.h"
 #include "Base/Json.h"
 #include "Base/PhaseTimer.h"
 #include "Base/Types.h"

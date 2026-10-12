@@ -3,8 +3,7 @@
 #include <cstring>
 #include <fstream>
 
-#include "Base/Error.h"
-#include "Base/Result.h"
+#include "Base/SlugError.h"
 #include "Base/Types.h"
 
 constexpr ARRAY<char, 4> kMagic   = { 'S', 'R', 'E', 'P' };
