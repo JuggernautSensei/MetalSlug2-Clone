@@ -234,7 +234,7 @@ void SandboxState::RestartGame()
         // 원작 락: 카메라 오른쪽 끝 3136 에서 멈춘다. 버스 앵커는 화면 왼쪽 끝 + 489 = 2985 (Stage0_1 잔해 지형의 중심과 같다)
         SpawnParams params;
         params.facing = -1;
-        m_busHandle = SpawnEnemy("bus", { m_config.cameraBounds.max.x - 640.f + 489.f, 378.f }, params);
+        m_busHandle   = SpawnEnemy("bus", { m_config.cameraBounds.max.x - 640.f + 489.f, 378.f }, params);
         if (m_config.bBusBot)
         {
             m_player.PickUpWeapon(eWeapon::Hmg, m_tuning);
@@ -676,7 +676,7 @@ void SandboxState::RequestSounds_(
     GameContext&             _ctx,
     const Vector<FxRequest>& _fx)
 {
-    AudioSystem&        audio  = _ctx.GetAudio();
+    AudioSystem&       audio  = _ctx.GetAudio();
     const PlayerStats& stats  = m_player.GetStats();
     const eWeapon      weapon = m_player.GetWeapon().weapon;
 

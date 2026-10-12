@@ -66,15 +66,15 @@ public:
     [[nodiscard]] Aabb GetViewRect() const;
 
 private:
-    [[nodiscard]] Aabb  GetActiveBounds_(bool& _bHasBounds) const;
-    [[nodiscard]] Vec2  ClampCenter_(Vec2 _center) const;
-    [[nodiscard]] Vec2  ClampToRect_(Vec2 _center, const Aabb& _bounds) const;
-    [[nodiscard]] Vec2  SnapTopLeft_(Vec2 _center) const;
-    [[nodiscard]] bool  GetTargetRect_(Aabb& _rect) const;
-    void                SyncEffectiveBounds_();
-    void                UpdateEffectiveBounds_();
-    void                ApproachEdge_(float& _edge, float& _vel, float _target, float _sign);
-    void                StepX_(float _desiredX, float _focusDeltaX);
+    [[nodiscard]] Aabb GetActiveBounds_(bool& _bHasBounds) const;
+    [[nodiscard]] Vec2 ClampCenter_(Vec2 _center) const;
+    [[nodiscard]] Vec2 ClampToRect_(Vec2 _center, const Aabb& _bounds) const;
+    [[nodiscard]] Vec2 SnapTopLeft_(Vec2 _center) const;
+    [[nodiscard]] bool GetTargetRect_(Aabb& _rect) const;
+    void               SyncEffectiveBounds_();
+    void               UpdateEffectiveBounds_();
+    void               ApproachEdge_(float& _edge, float& _vel, float _target, float _sign);
+    void               StepX_(float _desiredX, float _focusDeltaX);
 
     CameraTuning m_tuning = {};
 

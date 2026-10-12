@@ -14,7 +14,7 @@ inline constexpr int kDecorBackDepth = 11;
 struct DecorStep
 {
     String clip     = {};
-    float  seconds  = 1.f;            // 구간 길이 (초)
+    float  seconds  = 1.f;   // 구간 길이 (초)
     Vec2   velocity = { 0.f, 0.f };
     bool   bFlipX   = false;
 };
@@ -27,7 +27,7 @@ struct DecorSpawn
     Vec2              velocity = { 0.f, 0.f };
     bool              bFlipX   = false;
     bool              bLoop    = false;
-    float             scale    = 1.f;         // 배율 (1 = 원본, 피벗 고정)
+    float             scale    = 1.f;   // 배율 (1 = 원본, 피벗 고정)
     int               z        = kDefaultZ;
     Vector<DecorStep> sequence = {};
 };

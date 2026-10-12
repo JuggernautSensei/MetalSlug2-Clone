@@ -109,5 +109,4 @@ struct Health
     [[nodiscard]] bool IsAlive() const;
 
     int ApplyDamage(int _damage);
-
 };

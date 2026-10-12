@@ -15,7 +15,7 @@ enum class eHeliState
     Move,
     Volley,
     MoveBack,
-    Turn        // 방향 전환 (원작 미관측: 시트의 Turning 프레임 기반)
+    Turn   // 방향 전환 (원작 미관측: 시트의 Turning 프레임 기반)
 };
 
 // Enemy::ext 슬롯 (좌표는 1/16 px 고정소수점으로 저장)

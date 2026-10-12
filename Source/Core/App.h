@@ -45,26 +45,26 @@ private:
     RngMt19937       m_rng      = RngMt19937 { uint64_t { 1 } };
     GameContext      m_ctx      = {};
     AudioSystem      m_audio;
-    InputSystem      m_input    = {};
-    FixedStepClock   m_clock    = {};
+    InputSystem      m_input = {};
+    FixedStepClock   m_clock = {};
 
     Scoped<SimRunner> m_pRunner = nullptr;
 
-    String   m_stateName        = {};
-    uint64_t m_seed             = 1;
-    FilePath m_recordPath       = {};
-    FilePath m_replayPath       = {};
-    bool     m_bReplayHold      = false;
-    bool     m_bNoAudio         = false;
-    bool     m_bNoAsyncLoad     = false;
-    bool     m_bEditor          = false;
-    bool     m_bEditorKeys      = false;
-    String   m_editorAnim       = {};
-    String   m_editorTab        = {};
-    String   m_editorStage      = {};
-    String   m_editorLabSpawn   = {};
-    String   m_editorGod        = {};
-    Editor   m_editor           = {};
+    String   m_stateName      = {};
+    uint64_t m_seed           = 1;
+    FilePath m_recordPath     = {};
+    FilePath m_replayPath     = {};
+    bool     m_bReplayHold    = false;
+    bool     m_bNoAudio       = false;
+    bool     m_bNoAsyncLoad   = false;
+    bool     m_bEditor        = false;
+    bool     m_bEditorKeys    = false;
+    String   m_editorAnim     = {};
+    String   m_editorTab      = {};
+    String   m_editorStage    = {};
+    String   m_editorLabSpawn = {};
+    String   m_editorGod      = {};
+    Editor   m_editor         = {};
 
     ReplayData m_recording    = {};
     ReplayData m_playback     = {};

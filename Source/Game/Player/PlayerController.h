@@ -126,10 +126,10 @@ private:
     void                   TickChuteDescend_(const Tuning& _tuning);
     void                   StartChuteRelease_();
 
-    Body       m_body      = {};
-    Vec2       m_prevFeet  = { 0.f, 0.f };
-    int        m_z         = kDefaultZ;
-    MoveResult m_lastMove  = {};
+    Body       m_body     = {};
+    Vec2       m_prevFeet = { 0.f, 0.f };
+    int        m_z        = kDefaultZ;
+    MoveResult m_lastMove = {};
 
     eChutePhase m_chutePhase      = eChutePhase::None;
     Vec2        m_chuteLandFeet   = { 0.f, 0.f };
@@ -157,7 +157,7 @@ private:
     int        m_burstLeft           = 0;
     int        m_burstTimer          = 0;
     bool       m_bBurstAir           = false;
-    int        m_flameTick           = -1;                                             // 파이어샷 분출 경과 틱 (-1 = 분출 없음). 입자 스폰/판정 해제/종료의 기준
+    int        m_flameTick           = -1;   // 파이어샷 분출 경과 틱 (-1 = 분출 없음). 입자 스폰/판정 해제/종료의 기준
     bool       m_bFlameStop          = false;
     bool       m_bFlameAir           = false;
     uint32_t   m_flameHitId          = kNoHitId;

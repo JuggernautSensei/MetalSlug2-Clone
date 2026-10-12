@@ -106,7 +106,7 @@ struct SlugDamageTuning
     int   meleeDamage          = 8;
     int   blastDamage          = 20;
     int   hazardDamage         = 12;
-    int   hitInvincibleTicks   = 18;      // 피격 직후 짧은 무적 (연타 방지)
+    int   hitInvincibleTicks   = 18;   // 피격 직후 짧은 무적 (연타 방지)
     float smokeRatio           = 0.50f;
     float fireRatio            = 0.25f;
     int   ejectInvincibleTicks = 90;

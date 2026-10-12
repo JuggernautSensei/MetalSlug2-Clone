@@ -23,7 +23,7 @@
 
 constexpr int   kAutoTowerDamage    = 24;
 constexpr float kAutoTowerMarginPx  = 120.f;
-constexpr int   kAutoTurretInterval = 12;      // bAutoDamage: 포탑 단계 피해 간격 (틱). 주포는 6 틱
+constexpr int   kAutoTurretInterval = 12;   // bAutoDamage: 포탑 단계 피해 간격 (틱). 주포는 6 틱
 
 namespace
 {
@@ -785,7 +785,7 @@ void StageState::RequestSounds_(
     GameContext&             _ctx,
     const Vector<FxRequest>& _fx)
 {
-    AudioSystem&        audio  = _ctx.GetAudio();
+    AudioSystem&       audio  = _ctx.GetAudio();
     const PlayerStats& stats  = m_player.GetStats();
     const eWeapon      weapon = m_player.GetWeapon().weapon;
 

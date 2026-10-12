@@ -109,11 +109,11 @@ namespace
 
 // Banner/Results 등 단계 흐름을 _tick 에 닿을 때까지 한 틱씩 진행한다. _t 는 지금까지 진행한 틱 수
 void AdvanceFlowTo_(
-    int&        _t,
-    UiSystem&   _ui,
-    ScreenFlow& _flow,
+    int&         _t,
+    UiSystem&    _ui,
+    ScreenFlow&  _flow,
     AudioSystem& _audio,
-    const int   _tick)
+    const int    _tick)
 {
     while (_t < _tick)
     {
@@ -727,8 +727,8 @@ TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
     GameContext ctx;
     UiSystem    ui;
     ui.Init(ctx);
-    AudioSystem  audio { true };
-    ScreenFlow flow;
+    AudioSystem audio { true };
+    ScreenFlow  flow;
 
     flow.Start(config, ui, audio);
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Art);
@@ -774,8 +774,8 @@ TEST(UiFlow, PhasesChangeAtExactTicks)
     GameContext ctx;
     UiSystem    ui;
     ui.Init(ctx);
-    AudioSystem  audio { true };
-    ScreenFlow flow;
+    AudioSystem audio { true };
+    ScreenFlow  flow;
     flow.Start(config, ui, audio);
 
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Delay);
@@ -824,8 +824,8 @@ TEST(UiFlow, MissionCompleteShowsResultsBeforeTheCompleteBanner)
     GameContext ctx;
     UiSystem    ui;
     ui.Init(ctx);
-    AudioSystem  audio { true };
-    ScreenFlow flow;
+    AudioSystem audio { true };
+    ScreenFlow  flow;
     flow.Start(config, ui, audio);
 
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Delay);
@@ -906,8 +906,8 @@ TEST(UiResults, ScreenFlowExposesResultsViewOnlyDuringResultsPhase)
     GameContext ctx;
     UiSystem    ui;
     ui.Init(ctx);
-    AudioSystem  audio { true };
-    ScreenFlow flow;
+    AudioSystem audio { true };
+    ScreenFlow  flow;
     flow.Start(MakeMissionCompleteFlowConfig(5), ui, audio);
     EXPECT_FALSE(flow.GetResultsView().bBoxVisible);
     for (int i = 0; i < 60; ++i)
@@ -978,8 +978,8 @@ TEST(UiFlow, TickBeforeStartAndAfterDoneIsHarmless)
     GameContext ctx;
     UiSystem    ui;
     ui.Init(ctx);
-    AudioSystem  audio { true };
-    ScreenFlow flow;
+    AudioSystem audio { true };
+    ScreenFlow  flow;
     flow.Tick(ui, audio);
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Idle);
     EXPECT_FALSE(flow.IsRunning());
@@ -1035,7 +1035,7 @@ struct TitleSim
 
     RngMt19937        rng = RngMt19937 { std::mt19937_64::default_seed };
     GameContext       ctx;
-    AudioSystem         audio { true };
+    AudioSystem       audio { true };
     TitleState*       pTitle = nullptr;
     Scoped<SimRunner> runner = nullptr;
 };

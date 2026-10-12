@@ -198,4 +198,3 @@ int Health::ApplyDamage(
     hp -= applied;
     return applied;
 }
-

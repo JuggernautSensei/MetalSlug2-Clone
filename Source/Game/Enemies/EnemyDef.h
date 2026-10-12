@@ -317,8 +317,8 @@ struct FlyingBzkCfg
     float           muzzleDist        = 50.f;
     float           landProbe         = 1.f;
     String          landedDef         = {};
-    float           fallGravity       = 0.f;     // px/s^2. 0 이면 descendSpeed 등속 낙하, 양수면 descendSpeed 에서 시작해 가속
-    float           fallMaxSpeed      = 0.f;     // 가속 낙하의 최대 속도 px/s (fallGravity > 0 일 때)
+    float           fallGravity       = 0.f;   // px/s^2. 0 이면 descendSpeed 등속 낙하, 양수면 descendSpeed 에서 시작해 가속
+    float           fallMaxSpeed      = 0.f;   // 가속 낙하의 최대 속도 px/s (fallGravity > 0 일 때)
     bool            bNoHurtbox        = false;
 
     ARRAY<int, 5> clipReady    = { -1, -1, -1, -1, -1 };
@@ -425,12 +425,12 @@ struct JeepCfg
     float speed          = 200.f;   // 주행 px/s
     float targetTol      = 10.f;
     float edgeInset      = 75.f;
-    int   idleTicks      = 60;      // Idle / IdleAndMove 대기 (1 s)
-    int   waitTicks      = 120;     // 사격 쌍 사이 휴지 (2 s)
+    int   idleTicks      = 60;    // Idle / IdleAndMove 대기 (1 s)
+    int   waitTicks      = 120;   // 사격 쌍 사이 휴지 (2 s)
     int   bullets        = 4;
     int   fireFrame      = 1;
     float rocketShiftX   = 20.f;
-    int   firstWaitTicks = 0;       // 조준 후 첫 발 전 대기 (0 = 없음)
+    int   firstWaitTicks = 0;   // 조준 후 첫 발 전 대기 (0 = 없음)
 
     int clipIdle      = -1;
     int clipMove      = -1;
@@ -462,8 +462,8 @@ struct MissleTankCfg
 {
     float rangeDx     = 600.f;
     float farDx       = 300.f;
-    int   detectTicks = 60;      // Idle 누적 (1 s)
-    int   readyTicks  = 120;     // 발사 준비 (2 s)
+    int   detectTicks = 60;    // Idle 누적 (1 s)
+    int   readyTicks  = 120;   // 발사 준비 (2 s)
     int   bullets     = 5;
     int   fireFrame   = 2;
 
@@ -484,11 +484,11 @@ struct MissleTankCfg
 
 struct SarubiaCfg
 {
-    int   cooldownTicks  = 120;     // Idle 2 s
+    int   cooldownTicks  = 120;   // Idle 2 s
     float chaseDx        = 500.f;
     float stopDx         = 400.f;
-    int   moveMaxTicks   = 120;     // 전진 최대 2 s
-    int   shotReadyTicks = 90;      // 사격 준비 1.5 s
+    int   moveMaxTicks   = 120;   // 전진 최대 2 s
+    int   shotReadyTicks = 90;    // 사격 준비 1.5 s
     int   fireFrame      = 1;
 
     int clipIdle      = -1;
@@ -612,10 +612,10 @@ struct BusCfg
     EnemyPartDepth partDebris       = { 15, 20 };
 
     float openViewDx       = -100.f;
-    int   openDelayTicks   = 10;       // 개방 트리거 후 개방 시작까지 (원작 0.17 s)
+    int   openDelayTicks   = 10;   // 개방 트리거 후 개방 시작까지 (원작 0.17 s)
     int   stairsDelayTicks = 46;
     int   wreckAfterTicks  = 6;
-    int   destroyDoneTicks = 60;       // 사망 후 파괴 연출 종료 (카메라 락 해제 시점, 원작 약 1.0 s)
+    int   destroyDoneTicks = 60;   // 사망 후 파괴 연출 종료 (카메라 락 해제 시점, 원작 약 1.0 s)
 
     ARRAY<int, kStageCount> stageHp = { 112, 100, 85, 62, 48, 34, 24 };
 
@@ -627,14 +627,14 @@ struct BusCfg
     Vec2   soldierSpawn      = { 230.f, 0.f };
     Vec2   stairsBase        = { 186.f, 0.f };
     Vec2   stairsTop         = { 100.f, -106.f };
-    float  landingW          = 34.f;                // 승강대 벽 폭 (0 이면 없음). 윗면 = stairsTop.y, 중심 x = stairsTop.x
+    float  landingW          = 34.f;   // 승강대 벽 폭 (0 이면 없음). 윗면 = stairsTop.y, 중심 x = stairsTop.x
     int    soldierFirstTicks = 40;
-    int    soldierGapTicks   = 170;                 // 병사 스폰 간격 (약 2.8 s)
-    int    soldierMax        = 2;                   // 동시에 살아 있는 계단 병사 수 (병사 종류 무관)
-    int    swordPercent      = 40;                  // 스폰 병사가 대검병인 확률 (%)
-    int    bazookaPercent    = 30;                  // 스폰 병사가 바주카병인 확률 (%), 나머지는 폭탄병
+    int    soldierGapTicks   = 170;   // 병사 스폰 간격 (약 2.8 s)
+    int    soldierMax        = 2;     // 동시에 살아 있는 계단 병사 수 (병사 종류 무관)
+    int    swordPercent      = 40;    // 스폰 병사가 대검병인 확률 (%)
+    int    bazookaPercent    = 30;    // 스폰 병사가 바주카병인 확률 (%), 나머지는 폭탄병
     int    soldierLastStage  = 5;
-    Vec2   roofTop           = { 0.f, 0.f };        // 계단 병사가 마지막에 오르는 지붕 위 점 (앵커 기준). y 가 0 이면 지붕 없음 (승강대까지만)
+    Vec2   roofTop           = { 0.f, 0.f };   // 계단 병사가 마지막에 오르는 지붕 위 점 (앵커 기준). y 가 0 이면 지붕 없음 (승강대까지만)
     Vec2   roofSpan          = { 0.f, 0.f };
 };
 
@@ -659,10 +659,10 @@ struct HeliCfg
     float bombMinY          = 8.f;
 
     float lowDy         = 200.f;
-    float lowSpeed      = 90.f;    // 가로지르는 속도 px/s
+    float lowSpeed      = 90.f;   // 가로지르는 속도 px/s
     float lowMargin     = 90.f;
-    float descendSpeedY = 70.f;    // 저공으로 내려오는 속도 px/s
-    int   startLow      = 0;       // 1: 고공을 건너뛰고 저공 구간부터 시작
+    float descendSpeedY = 70.f;   // 저공으로 내려오는 속도 px/s
+    int   startLow      = 0;      // 1: 고공을 건너뛰고 저공 구간부터 시작
 
     int              podOutTicks     = 12;
     int              moveTicks       = 70;
@@ -675,13 +675,13 @@ struct HeliCfg
     int              missiles        = 2;
     int              puffToMissile   = 10;
     int              missileInterval = 126;
-    int              volleyEndTicks  = 90;                // 마지막 발사 연기 후 복귀까지 (원작 미관측: 가정값)
+    int              volleyEndTicks  = 90;   // 마지막 발사 연기 후 복귀까지 (원작 미관측: 가정값)
     Vec2             puffOffset      = { 55.f, 40.f };
-    int              turnWaitTicks   = 24;                // 플레이어가 반대쪽에 이만큼 머물면 선회 (원작 미관측: 가정값)
+    int              turnWaitTicks   = 24;   // 플레이어가 반대쪽에 이만큼 머물면 선회 (원작 미관측: 가정값)
     float            turnDx          = 60.f;
     Vec2             podOffset       = { 9.f, 32.f };
     Vec2             rotorOffset     = { 18.f, -50.f };
-    int              idlePitchFrom   = 0;                 // 비행 (fly) 클립일 때 Pitch 프레임 from..to 를 왕복한다 (from == to 면 끔)
+    int              idlePitchFrom   = 0;   // 비행 (fly) 클립일 때 Pitch 프레임 from..to 를 왕복한다 (from == to 면 끔)
     int              idlePitchTo     = 0;
     int              idleStepTicks   = 12;
     String           rotorRowPrefix  = {};   // 비면 rotor 클립 고정. 아니면 prefix + 표시 중인 Pitch 프레임 번호 클립 (Heli_Rotor_0..6)
@@ -733,7 +733,7 @@ struct ExtraBoxDef
     String        id        = {};
     eExtraBoxKind kind      = eExtraBoxKind::Hurt;
     BoxDef        box       = {};
-    int           frameFrom = 0;    // 공격 상자 전용: 클립 프레임 범위, frameTo < 0 이면 항상
+    int           frameFrom = 0;   // 공격 상자 전용: 클립 프레임 범위, frameTo < 0 이면 항상
     int           frameTo   = -1;
     int           damage    = 1;
 };
@@ -822,7 +822,6 @@ public:
     [[nodiscard]] static Result<EnemyDefLibrary> Load(const FilePath& _path, String* _pMessage = nullptr);
 
     [[nodiscard]] static Result<EnemyDefLibrary> LoadDirectory(const FilePath& _dir, String* _pMessage = nullptr);
-
 
     [[nodiscard]] static FilePath GetDefaultDirectory(const FilePath& _assetRoot);
 

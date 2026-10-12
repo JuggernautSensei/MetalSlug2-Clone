@@ -129,7 +129,7 @@ struct Enemy
     int  clipTicks = 0;
     bool bVisible  = true;
 
-    int                              hitFlashTicks  = 0;    // 전체 피격 플래시 남은 틱 (0 = 없음, 피격 시 kHitFlashTicks 로 채움, ON 중 재피격은 무시: Game/Combat/HitFlash.h)
+    int                              hitFlashTicks  = 0;   // 전체 피격 플래시 남은 틱 (0 = 없음, 피격 시 kHitFlashTicks 로 채움, ON 중 재피격은 무시: Game/Combat/HitFlash.h)
     ARRAY<int, kEnemyFlashPartCount> partFlashTicks = {};
 
     uint32_t meleeHitId     = kNoHitId;

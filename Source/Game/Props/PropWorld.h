@@ -118,7 +118,7 @@ struct PropTickContext
     const GroundMap*        pGround      = nullptr;
     const AnimationLibrary* pAnims       = nullptr;
     float                   cameraLeft   = -1e9f;
-    float                   cameraBottom = 1e9f;    // 카메라 하단 y. 잔해는 이 값 + kDebrisCullBelowMargin 을 넘으면 제거 (미설정이면 y 컬링 없음)
+    float                   cameraBottom = 1e9f;   // 카메라 하단 y. 잔해는 이 값 + kDebrisCullBelowMargin 을 넘으면 제거 (미설정이면 y 컬링 없음)
     float                   dt           = kStepSec;
     const ItemTuning*       pItemTuning  = nullptr;   // null 이면 기본값
 };
@@ -147,7 +147,7 @@ public:
     void Tick(const PropTickContext& _ctx);
 
     // 스프라이트 크기 조회용 (컬링이 화면에 걸친 소품을 지우지 않게 한다). 없으면 pos 기준 컬링만 한다
-    void SetSpriteLibrary(const SpriteLibrary* _pSprites);
+    void               SetSpriteLibrary(const SpriteLibrary* _pSprites);
     [[nodiscard]] bool GetVisualBounds(const PropInstance& _inst, const AnimationLibrary* _pAnims, Aabb& _out) const;
     void               RegisterHurtboxes(CombatSystem& _combat) const;
     void               OnHitEvents(Span<const HitEvent> _events);
@@ -171,8 +171,8 @@ public:
     [[nodiscard]] const ItemWorld& GetItems() const;
 
     // 시각 전용 장식 (anim_decor). 판정/피격 없음.
-    uint32_t                        SpawnDecor(const DecorSpawn& _spawn);
-    void                            ClearDecorByLayerMask(uint32_t _layerMask);
+    uint32_t SpawnDecor(const DecorSpawn& _spawn);
+    void     ClearDecorByLayerMask(uint32_t _layerMask);
 
     void ClearAll();
 

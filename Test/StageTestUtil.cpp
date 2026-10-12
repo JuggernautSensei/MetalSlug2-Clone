@@ -218,8 +218,8 @@ String WrapStage(
 StageData MustLoad(
     const String& _json)
 {
-    String diag;
-    Result<StageData>    result = LoadStageFromJson(_json, &diag);
+    String            diag;
+    Result<StageData> result = LoadStageFromJson(_json, &diag);
     if (!result)
     {
         ADD_FAILURE() << "stage load failed: " << diag;
@@ -231,7 +231,7 @@ StageData MustLoad(
 String LoadError(
     const String& _json)
 {
-    String diag;
+    String                  diag;
     const Result<StageData> result = LoadStageFromJson(_json, &diag);
     return result ? String {} : (diag.empty() ? String { "<no message>" } : diag);
 }

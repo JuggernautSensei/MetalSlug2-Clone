@@ -49,7 +49,7 @@ public:
 private:
     void Begin_(BannerSpec _spec);
 
-    BannerSpec         m_current = {};
-    int                m_elapsed = 0;
-    bool               m_bActive = false;
+    BannerSpec m_current = {};
+    int        m_elapsed = 0;
+    bool       m_bActive = false;
 };

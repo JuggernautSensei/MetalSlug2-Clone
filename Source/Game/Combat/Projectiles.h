@@ -29,8 +29,8 @@ struct BulletSpawn
     float    scaleStart  = 1.f;            // 표시 배율 (판정과 무관)
     float    scaleEnd    = 1.f;
     int      z           = kDefaultZ;
-    float    accel       = 0.f;         // px/s² (진행 방향). 0 = 등속
-    float    maxSpeed    = 0.f;         // accel 로 오르는 속도 상한 (0 = 상한 없음)
+    float    accel       = 0.f;   // px/s² (진행 방향). 0 = 등속
+    float    maxSpeed    = 0.f;   // accel 로 오르는 속도 상한 (0 = 상한 없음)
 };
 
 struct Bullet

@@ -38,7 +38,7 @@ public:
     // 무한 꼬리: x >= m_tailFrom 은 [m_tailX, m_tailX + m_tailW) 구간을 주기적으로 반복한다 (보스전 엔드리스 지형).
     void               SetPeriodicTail(int _from, int _tailX, int _tailW);
     [[nodiscard]] bool HasPeriodicTail() const;
-    void MaterializeTail(int _periods);
+    void               MaterializeTail(int _periods);
 
     [[nodiscard]] bool IsSolid(const int _x, const int _y) const;
 

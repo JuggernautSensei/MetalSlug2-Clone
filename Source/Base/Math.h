@@ -116,8 +116,6 @@ struct Vec2
     [[nodiscard]] __forceinline constexpr float*       GetPtr() { return &x; }
     [[nodiscard]] __forceinline constexpr const float* GetPtr() const { return &x; }
 
-
     float x = 0.f;
     float y = 0.f;
 };
-

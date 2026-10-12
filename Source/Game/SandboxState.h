@@ -41,7 +41,7 @@ struct SandboxConfig
     bool             bBusBot         = false;
     bool             bHeliLab        = false;
     bool             bHeliBot        = false;
-    int              heliHp          = -1;      // 헬기 랩 전용: 헬기 체력 (-1: 정의 기본값)
+    int              heliHp          = -1;   // 헬기 랩 전용: 헬기 체력 (-1: 정의 기본값)
     bool             bGodMode        = false;
     bool             bSlugLab        = false;
     Vector<Vec2>     slugFeet        = {};

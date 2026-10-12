@@ -35,7 +35,7 @@ struct StageStateConfig
     bool   bBot        = false;
     bool   bGod        = false;
     bool   bHmg        = false;
-    bool   bAutoDamage = false;           // 보스 파트에 일정 속도 (약 20 dps) 로 판정 피해를 준다 (보스전 전 과정을 결정적으로 캡처하는 용도)
+    bool   bAutoDamage = false;   // 보스 파트에 일정 속도 (약 20 dps) 로 판정 피해를 준다 (보스전 전 과정을 결정적으로 캡처하는 용도)
 };
 
 class StageState final : public IGameState

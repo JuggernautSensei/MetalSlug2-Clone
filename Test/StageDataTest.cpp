@@ -223,7 +223,7 @@ TEST(StageData, BoundsCurveResolvesSectionIndicesAndEvaluates)
 
 TEST(StageDataErrors, InvalidJsonSyntax)
 {
-    String diag;
+    String                  diag;
     const Result<StageData> result = LoadStageFromJson("{ not json", &diag);
     ASSERT_FALSE(result);
     EXPECT_TRUE(HasErrorCode(result.GetError(), eError::Parse));
@@ -363,7 +363,7 @@ TEST(StageDataErrors, GroundAndBackdropInitialMustExist)
 
 TEST(StageDataErrors, MissingFileIsReported)
 {
-    String diag;
+    String                  diag;
     const Result<StageData> result = LoadStageFromFile("does/not/exist/Stage.json", &diag);
     ASSERT_FALSE(result);
     EXPECT_TRUE(HasErrorCode(result.GetError(), eError::FileOpen));
@@ -371,8 +371,8 @@ TEST(StageDataErrors, MissingFileIsReported)
 
 TEST(StageDataReal, OpenlandPowsAreAboutEvery700PxAndCoverTheWeaponMix)
 {
-    String diag;
-    Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    String            diag;
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
@@ -407,8 +407,8 @@ TEST(StageDataReal, OpenlandPowsAreAboutEvery700PxAndCoverTheWeaponMix)
 
 TEST(StageDataReal, OpenlandHousesAndBlocksStayAlignedWithTheGroundMaskBumps)
 {
-    String diag;
-    Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    String            diag;
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
@@ -450,8 +450,8 @@ TEST(StageDataReal, OpenlandHousesAndBlocksStayAlignedWithTheGroundMaskBumps)
 
 TEST(StageDataReal, BossArenaStreetHasItsHousesAndBlocksAheadOfTheCamera)
 {
-    String diag;
-    Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    String            diag;
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
@@ -496,8 +496,8 @@ TEST(StageDataReal, BossArenaStreetHasItsHousesAndBlocksAheadOfTheCamera)
 
 TEST(StageDataReal, Stage0AmbientWalkersUseSequenceParams)
 {
-    String diag;
-    Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    String            diag;
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
@@ -543,8 +543,8 @@ TEST(StageDataReal, Stage0AmbientWalkersUseSequenceParams)
 
 TEST(StageDataReal, BossArenaIsBehindTheSarubiaLockAndClearsOnlyAfterTheBossIsDestroyed)
 {
-    String diag;
-    Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    String            diag;
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
@@ -577,8 +577,8 @@ TEST(StageDataReal, BossArenaIsBehindTheSarubiaLockAndClearsOnlyAfterTheBossIsDe
 // 강 지프는 heli_river 락 왼쪽 끝 (5357) 보다 60 px 왼쪽 밖에서 나타난다
 TEST(StageDataReal, RiverJeepSpawnsSixtyPixelsLeftOfTheHeliLock)
 {
-    String diag;
-    Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    String            diag;
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag;
     const StageData data   = result.Take();
     bool            bFound = false;
@@ -599,8 +599,8 @@ TEST(StageDataReal, RiverJeepSpawnsSixtyPixelsLeftOfTheHeliLock)
 
 TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
 {
-    String diag;
-    Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    String            diag;
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 

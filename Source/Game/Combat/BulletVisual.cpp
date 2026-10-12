@@ -14,8 +14,8 @@ constexpr float kTickSec = 1.f / 60.f;
 
 // 파이어샷 입자: 베이크된 큰 불꽃 클립(FlameShot_AttackMotion, 26프레임, 최대 94x94) 을 Head -> Loop(반복) -> Fade 로 쓴다
 constexpr const char* kFlameClip         = "FlameShot_AttackMotion";
-constexpr int         kFlameHeadFrames   = 4;      // 머리: 앞 4프레임 (입자 생성 직후)
-constexpr int         kFlameFadeFrames   = 6;      // 꼬리: 마지막 6프레임 (사거리 끝)
+constexpr int         kFlameHeadFrames   = 4;   // 머리: 앞 4프레임 (입자 생성 직후)
+constexpr int         kFlameFadeFrames   = 6;   // 꼬리: 마지막 6프레임 (사거리 끝)
 constexpr int         kFlameHeadTicks    = 2;
 constexpr float       kFlameFadeTicks    = 8.f;
 constexpr float       kFlameForwardShift = 24.f;   // 불꽃 중심을 총구보다 앞으로 (큰 프레임이 총을 가리지 않게)
@@ -167,7 +167,7 @@ bool SubmitPlayerBullet(
 }
 
 void PlayShotSfx(
-    AudioSystem&   _audio,
+    AudioSystem&  _audio,
     const eWeapon _weapon,
     const int     _shotIndex)
 {
@@ -187,7 +187,7 @@ void PlayShotSfx(
 }
 
 void PlayWeaponPickupSfx(
-    AudioSystem&   _audio,
+    AudioSystem&  _audio,
     const eWeapon _weapon)
 {
     if (_weapon == eWeapon::Pistol)

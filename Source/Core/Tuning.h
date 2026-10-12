@@ -100,9 +100,9 @@ struct WeaponTuning
     float particleSpeedMax      = 0.f;
     int   particleLifeMinTicks  = 0;   // 입자 수명 범위 (틱). 사거리 = 속도 x 수명
     int   particleLifeMaxTicks  = 0;
-    int   hitReleaseTicks       = 0;              // 한 입력의 공유 판정 ID 를 이 간격마다 풀어 같은 대상이 다시 맞게 한다 (0 = 풀지 않음)
+    int   hitReleaseTicks       = 0;   // 한 입력의 공유 판정 ID 를 이 간격마다 풀어 같은 대상이 다시 맞게 한다 (0 = 풀지 않음)
     Vec2  particleHitSizeEnd    = { 0.f, 0.f };
-    float particleScaleStart    = 1.f;            // 수명 시작/끝의 표시 배율 (판정과 무관)
+    float particleScaleStart    = 1.f;   // 수명 시작/끝의 표시 배율 (판정과 무관)
     float particleScaleEnd      = 1.f;
     float speedAccel            = 0.f;   // 발사 후 가속 (px/s², 0 = 등속). 탄 방향으로 speedMax 까지
     float speedMax              = 0.f;   // 가속 상한 (px/s). 0 이면 상한 없음

@@ -126,10 +126,10 @@ private:
     void FlushFx_(const AnimationLibrary* _pAnims);
     void SpawnShotTrails_(const ProjectileSystem& _projectiles, const AnimationLibrary& _anims);
 
-    const EnemyDefLibrary* m_pLibrary       = nullptr;
-    const SpriteLibrary*   m_pSprites       = nullptr;
-    EnemyContext           m_lastCtx        = {};
-    float                  m_cameraScroll   = 0.f;
+    const EnemyDefLibrary* m_pLibrary     = nullptr;
+    const SpriteLibrary*   m_pSprites     = nullptr;
+    EnemyContext           m_lastCtx      = {};
+    float                  m_cameraScroll = 0.f;
 
     Vector<Enemy>          m_enemies    = {};
     Vector<EnemyEvent>     m_events     = {};

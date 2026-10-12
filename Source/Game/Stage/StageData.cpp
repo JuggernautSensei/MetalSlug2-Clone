@@ -2318,8 +2318,8 @@ namespace
 }   // namespace
 
 Result<StageData> LoadStageFromJson(
-    const StringView     _json,
-    String* const _pMessage)
+    const StringView _json,
+    String* const    _pMessage)
 {
     if (_pMessage)
     {
@@ -2342,8 +2342,8 @@ Result<StageData> LoadStageFromJson(
 }
 
 Result<StageData> LoadStageFromFile(
-    const FilePath&      _path,
-    String* const _pMessage)
+    const FilePath& _path,
+    String* const   _pMessage)
 {
     std::ifstream file { _path, std::ios::binary };
     if (!file)

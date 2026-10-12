@@ -180,7 +180,7 @@ int TrainingTargets::ApplyEvents(
             if (applied > 0)
             {
                 ++dummy.hitsTaken;
-                dummy.lastKind   = event.kind;
+                dummy.lastKind = event.kind;
                 (void)StartHitFlash(dummy.flashTicks);
             }
             if (dummy.health.IsDead() && dummy.deadTicks < 0)

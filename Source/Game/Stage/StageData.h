@@ -30,12 +30,12 @@ public:
     void PushBack(ParamValue _value);
     void Set(String _key, ParamValue _value);
 
-    [[nodiscard]] bool  IsNull() const;
-    [[nodiscard]] bool  IsBool() const;
-    [[nodiscard]] bool  IsNumber() const;
-    [[nodiscard]] bool  IsString() const;
-    [[nodiscard]] bool  IsArray() const;
-    [[nodiscard]] bool  IsObject() const;
+    [[nodiscard]] bool IsNull() const;
+    [[nodiscard]] bool IsBool() const;
+    [[nodiscard]] bool IsNumber() const;
+    [[nodiscard]] bool IsString() const;
+    [[nodiscard]] bool IsArray() const;
+    [[nodiscard]] bool IsObject() const;
 
     [[nodiscard]] bool AsBool(bool _bDefault = false) const;
 
@@ -45,8 +45,8 @@ public:
 
     [[nodiscard]] const String& AsString() const;
 
-    [[nodiscard]] size_t             GetSize() const;
-    [[nodiscard]] const ParamValue&  At(size_t _index) const;
+    [[nodiscard]] size_t            GetSize() const;
+    [[nodiscard]] const ParamValue& At(size_t _index) const;
 
     [[nodiscard]] const ParamValue* Find(StringView _key) const;
     [[nodiscard]] bool              Has(StringView _key) const;

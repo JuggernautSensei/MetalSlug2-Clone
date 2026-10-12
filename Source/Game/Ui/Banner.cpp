@@ -6,8 +6,8 @@
 #include "Base/Types.h"
 
 constexpr int kMissionFlyDistance = 170;
-constexpr int kMissionStagger     = 2;     // 글자 사이 진입 지연 (틱)
-constexpr int kMissionOutStagger  = 1;     // 글자 사이 퇴장 지연 (틱)
+constexpr int kMissionStagger     = 2;   // 글자 사이 진입 지연 (틱)
+constexpr int kMissionOutStagger  = 1;   // 글자 사이 퇴장 지연 (틱)
 
 constexpr ARRAY<int, 4> kDirX = { 0, 0, -1, 1 };
 constexpr ARRAY<int, 4> kDirY = { -1, 1, 0, 0 };

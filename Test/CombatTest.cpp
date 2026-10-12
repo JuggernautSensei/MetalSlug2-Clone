@@ -334,4 +334,3 @@ TEST(Health, NonPositiveDamageIsIgnored)
     EXPECT_EQ(health.ApplyDamage(-5), 0);
     EXPECT_EQ(health.hp, 10);
 }
-

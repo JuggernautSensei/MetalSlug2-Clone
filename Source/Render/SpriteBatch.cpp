@@ -458,7 +458,7 @@ bool SpriteBatch::LoadAtlasPagesParallel(
         const Vector<Result<DecodedImage>> images = DecodeImages(Span<const FilePath> { paths.data() + begin, count }, true, _numWorkers);
         for (size_t i = 0; i < count; ++i)
         {
-            const FilePath& path  = paths[begin + i];
+            const FilePath& path   = paths[begin + i];
             const bool      bAdded = images[i].HasValue() && AddAtlasPage(images[i].GetValue()).IsOK();
             if (!bAdded)
             {

@@ -105,7 +105,7 @@ public:
     AudioSystem(const AudioSystem&)            = delete;
     AudioSystem& operator=(const AudioSystem&) = delete;
 
-    void Init(SoundBank _bank, const AudioConfig& _config);
+    void                       Init(SoundBank _bank, const AudioConfig& _config);
     [[nodiscard]] Result<void> InitFromDirectory(const FilePath& _bakedRoot, const AudioConfig& _config);
     void                       Shutdown();
 
@@ -119,7 +119,7 @@ public:
     void ChangeBgm(StringView _name, float _fadeOutSec, bool _bLoop = true);
 
     bool               bRecord;   // 테스트가 요청 순서를 검사한다 (장치 없이도 기록)
-    Vector<AudioEvent> events  = {};
+    Vector<AudioEvent> events = {};
 
     [[nodiscard]] bool          IsInitialized() const;
     [[nodiscard]] bool          IsBgmFadingOut() const;

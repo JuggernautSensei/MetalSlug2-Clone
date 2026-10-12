@@ -26,11 +26,11 @@ const ARRAY<StringView, 4> kChuteDrops = { "gunitem_mg", "gunitem_rl", "gunitem_
 
 constexpr int kTurnMax      = 8;   // Turn 클립 프레임 수 - 1 (0 = 왼쪽, kTurnMid = 위, 8 = 오른쪽)
 constexpr int kTurnMid      = 4;
-constexpr int kAimRows      = 5;    // 주포 사격 행 (Boss_Cannon_Shot1..5, 왼쪽 .. 오른쪽)
+constexpr int kAimRows      = 5;   // 주포 사격 행 (Boss_Cannon_Shot1..5, 왼쪽 .. 오른쪽)
 constexpr int kCasingFrames = 6;
 constexpr int kCasingDepth  = 54;
 constexpr int kShotFrames   = 8;
-constexpr int kYawMax       = 8;    // 주포 yaw 프레임 (Boss_Cannon_Aim 0..8, 사격 행 r = yaw 2r)
+constexpr int kYawMax       = 8;   // 주포 yaw 프레임 (Boss_Cannon_Aim 0..8, 사격 행 r = yaw 2r)
 
 namespace
 {

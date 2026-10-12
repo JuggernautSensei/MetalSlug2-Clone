@@ -129,7 +129,7 @@ struct PropDef
     String name        = {};
     int    hp          = 0;   // 0 이면 피격 불가 (불사)
     float  cullMargin  = 200.f;
-    float  sortOffsetY = 0.f;              // 같은 레이어 안 그리기 순서 키 = pos.y + sortOffsetY (개별 보정용)
+    float  sortOffsetY = 0.f;   // 같은 레이어 안 그리기 순서 키 = pos.y + sortOffsetY (개별 보정용)
     bool   bSortByX    = false;
     int    depth       = kPropDepthBack;
 
@@ -216,9 +216,9 @@ public:
 
     [[nodiscard]] static Result<PropDefLibrary> Load(const FilePath& _path, String* _pMessageOrNull = nullptr);
     [[nodiscard]] static Result<PropDefLibrary> Parse(StringView _json, String* _pMessageOrNull = nullptr);
-    [[nodiscard]] const PropDef*      Find(StringView _name) const;
-    [[nodiscard]] int                 FindIndex(StringView _name) const;
-    [[nodiscard]] Span<const PropDef> GetDefs() const;
+    [[nodiscard]] const PropDef*                Find(StringView _name) const;
+    [[nodiscard]] int                           FindIndex(StringView _name) const;
+    [[nodiscard]] Span<const PropDef>           GetDefs() const;
 
     [[nodiscard]] const PropItemDef*      FindItem(StringView _name) const;
     [[nodiscard]] int                     FindItemIndex(StringView _name) const;

@@ -65,7 +65,6 @@ public:
     [[nodiscard]] bool WasPressedWithin(eAction _action, int _frames) const;
 
 private:
-
     ARRAY<InputFrame, kCapacity> m_frames = {};
     size_t                       m_head   = 0;
     size_t                       m_count  = 0;

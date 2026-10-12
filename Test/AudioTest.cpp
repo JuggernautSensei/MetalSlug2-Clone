@@ -431,7 +431,7 @@ TEST(AudioDeterminism, SameStateHashWithNullTestAndDryAudio)
     withNull.RunScript(600);
 
     AudioSystem testAudio { true };
-    AudioSim  withTest { &testAudio };
+    AudioSim    withTest { &testAudio };
     withTest.RunScript(600);
 
     AudioSystem dry;
@@ -446,9 +446,9 @@ TEST(AudioDeterminism, SameStateHashWithNullTestAndDryAudio)
 
 TEST(AudioDeterminism, SimulationDoesNotConsumeSimRngForAudio)
 {
-    AudioSim  a { nullptr };
+    AudioSim    a { nullptr };
     AudioSystem testAudio { true };
-    AudioSim  b { &testAudio };
+    AudioSim    b { &testAudio };
     a.RunScript(300);
     b.RunScript(300);
     EXPECT_EQ(a.rng.Generate(), b.rng.Generate());
@@ -457,7 +457,7 @@ TEST(AudioDeterminism, SimulationDoesNotConsumeSimRngForAudio)
 TEST(AudioSandbox, PistolShotRequestsShotSound)
 {
     AudioSystem audio { true };
-    AudioSim  sim { &audio };
+    AudioSim    sim { &audio };
 
     InputFrame shot;
     shot.Set(eAction::Shot, true);
@@ -473,7 +473,7 @@ TEST(AudioSandbox, PistolShotRequestsShotSound)
 TEST(AudioSandbox, BombThrowRequestsBombThrowName)
 {
     AudioSystem audio { true };
-    AudioSim  sim { &audio };
+    AudioSim    sim { &audio };
 
     InputFrame bomb;
     bomb.Set(eAction::Bomb, true);

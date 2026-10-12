@@ -17,9 +17,9 @@ public:
 
     [[nodiscard]] bool HasTargetIn(eTeam _attackerTeam, eHitKind _kind, const Aabb& _box, uint32_t _ignoreOwner = kNoOwner) const;
 
-    [[nodiscard]] Span<const Hurtbox>     GetHurtboxes() const;
-    [[nodiscard]] Span<const Hitbox>      GetHitboxes() const;
-    [[nodiscard]] HitResolver&            GetResolver();
+    [[nodiscard]] Span<const Hurtbox> GetHurtboxes() const;
+    [[nodiscard]] Span<const Hitbox>  GetHitboxes() const;
+    [[nodiscard]] HitResolver&        GetResolver();
 
 private:
     HitResolver      m_resolver  = {};

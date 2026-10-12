@@ -19,7 +19,7 @@ inline constexpr int kBigShieeDepthDisc    = -96;
 struct BigShieeTurretCfg
 {
     char  letter    = 'A';
-    int   side      = 0;                  // 초기 방향: 0 = 왼쪽 (Idle1 계열), 1 = 오른쪽 (Idle3 계열). 쏘기 전에 플레이어 쪽으로 돈다
+    int   side      = 0;   // 초기 방향: 0 = 왼쪽 (Idle1 계열), 1 = 오른쪽 (Idle3 계열). 쏘기 전에 플레이어 쪽으로 돈다
     bool  bTwin     = true;
     Vec2  anchor    = { 0.f, 0.f };
     Vec2  boxSize   = { 70.f, 56.f };
@@ -54,7 +54,7 @@ struct BigShieeCfg
     // 자동 스크롤 (카메라): 보스가 살아 있는 동안 px/s. 멈춤 구간은 보스 생성 기준 (시작, 길이) 초
     float          scrollSpeed         = 20.f;
     float          scrollStartSec      = 1.4f;
-    float          scrollBudgetPx      = 0.f;    // 보스 생성 뒤 누적 스크롤이 이만큼이면 카메라가 멈춘다 (아레나 끝). 0 = 끝없이
+    float          scrollBudgetPx      = 0.f;   // 보스 생성 뒤 누적 스크롤이 이만큼이면 카메라가 멈춘다 (아레나 끝). 0 = 끝없이
     ARRAY<Vec2, 8> scrollPauses        = {};
     int            numScrollPauses     = 0;
     float          deployPauseDelaySec = 0.8f;
@@ -85,7 +85,7 @@ struct BigShieeCfg
     int             fireTick          = 16;
     int             pairGapTicks      = 10;
     float           turretAimBandPx   = 72.f;
-    int             turretTrackTicks  = 0;      // 쉬는 포탑이 조준 위치로 한 칸 도는 최소 간격 (틱). 0 = 쉬는 동안 안 돈다
+    int             turretTrackTicks  = 0;   // 쉬는 포탑이 조준 위치로 한 칸 도는 최소 간격 (틱). 0 = 쉬는 동안 안 돈다
 
     Vec2            cannonAnchor         = { 30.f, -170.f };   // 주포 받침 (선체 원점 기준). 선체 가운데 상부 (X 문양 쪽 오른쪽) 에서 올라온다
     Vec2            cannonBoxSize        = { 120.f, 190.f };
@@ -95,9 +95,9 @@ struct BigShieeCfg
     float           firstMissileSec      = 1.2f;
     float           missileIntervalSec   = 3.0f;
     int             missileFireTick      = 20;
-    int             hullStepTicks        = 15;                                  // 전개 중 선체 셀 (D1 -> D3 -> D6 -> D9 -> Open) 이 바뀌는 간격 (틱)
-    float           cannonDeployDelaySec = 0.f;                                 // 선수가 열리기 시작한 뒤 주포 전개 (Boss_Cannon_Deploy) 가 시작되기까지 (0 = 동시)
-    int             cannonDeployTicks    = 0;                                   // 주포 전개 길이 (틱). 0 = Boss_Cannon_Deploy 클립 길이
+    int             hullStepTicks        = 15;    // 전개 중 선체 셀 (D1 -> D3 -> D6 -> D9 -> Open) 이 바뀌는 간격 (틱)
+    float           cannonDeployDelaySec = 0.f;   // 선수가 열리기 시작한 뒤 주포 전개 (Boss_Cannon_Deploy) 가 시작되기까지 (0 = 동시)
+    int             cannonDeployTicks    = 0;     // 주포 전개 길이 (틱). 0 = Boss_Cannon_Deploy 클립 길이
     int             cannonTurnTicks      = 4;
     ARRAY<float, 5> cannonAimDeg         = { -47.f, -22.f, 0.f, 22.f, 47.f };   // 사격 행 (Shot1..5) 별 발사 각도: 수직 아래 0, 오른쪽 +. 홀수 yaw 는 이웃 두 행의 가운데
     ARRAY<float, 5> cannonMuzzleX        = { -42.f, -24.f, 0.f, 24.f, 42.f };

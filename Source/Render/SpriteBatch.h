@@ -32,9 +32,9 @@ struct SpriteDrawOptions
     bool  bFlipX      = false;
     bool  bFlipY      = false;
     RGBA  tint        = { 255, 255, 255, 255 };
-    float flashAmount = 0.f;                      // 0.5 이상이면 플래시 변환본으로 그린다 (0 = 끔)
-    float rotationDeg = 0.f;                      // 시계 방향 회전 (도, 0 = 없음). 피벗(frame.pivotX/Y) 점을 중심으로 돈다 (로켓 진행 방향)
-    float scale       = 1.f;                      // 배율 (1 = 원본). 피벗 점을 고정한 채 확대/축소한다 (원작 비행기 등 원근 축소용)
+    float flashAmount = 0.f;   // 0.5 이상이면 플래시 변환본으로 그린다 (0 = 끔)
+    float rotationDeg = 0.f;   // 시계 방향 회전 (도, 0 = 없음). 피벗(frame.pivotX/Y) 점을 중심으로 돈다 (로켓 진행 방향)
+    float scale       = 1.f;   // 배율 (1 = 원본). 피벗 점을 고정한 채 확대/축소한다 (원작 비행기 등 원근 축소용)
 };
 
 // 깊이 축: 작을수록 뒤. 모든 그리기는 하나의 depth 값을 가진다 (Docs/DepthSpec.md)
@@ -116,7 +116,7 @@ public:
 
     void              SetAssetRoot(const FilePath& _root);
     [[nodiscard]] int FindStandalone(const String& _relativeFile);
-    void SubmitStandalone(int _depth, int _sortKey, int _handle, const IntRect& _src, Vec2 _worldCenter, const SpriteDrawOptions& _options = {});
+    void              SubmitStandalone(int _depth, int _sortKey, int _handle, const IntRect& _src, Vec2 _worldCenter, const SpriteDrawOptions& _options = {});
 
     void DrawFrame(const AnimFrame& _frame, Vec2 _worldOrigin, Vec2 _cameraPos, const SpriteDrawOptions& _options = {}) const;
     void DrawFrame(const AnimFrame& _frame, Vec2 _worldOrigin, const Camera& _camera, const SpriteDrawOptions& _options = {}) const;

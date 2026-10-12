@@ -3,7 +3,7 @@
 #include <algorithm>
 
 constexpr int kResultsFadeTicks = 12;
-constexpr int kTicksPerPow      = 6;     // 구출 수 한 명 집계 간격 (0.1초)
+constexpr int kTicksPerPow      = 6;   // 구출 수 한 명 집계 간격 (0.1초)
 constexpr int kRankDelayTicks   = 18;
 constexpr int kRankHoldTicks    = 150;   // 등급 표시 후 대기 (2.5초)
 constexpr int kPowBonusScore    = 10'000;
@@ -122,7 +122,7 @@ void ScreenFlow::Reset()
 void ScreenFlow::Start(
     const ScreenFlowConfig& _config,
     UiSystem&               _ui,
-    AudioSystem&             _audio)
+    AudioSystem&            _audio)
 {
     m_config  = _config;
     m_elapsed = 0;
@@ -141,7 +141,7 @@ void ScreenFlow::Start(
 }
 
 void ScreenFlow::Tick(
-    UiSystem&   _ui,
+    UiSystem&    _ui,
     AudioSystem& _audio)
 {
     if (!IsRunning())
@@ -183,7 +183,7 @@ GameOverArtView ScreenFlow::GetArtView() const
 }
 
 void ScreenFlow::BeginBanner_(
-    UiSystem&   _ui,
+    UiSystem&    _ui,
     AudioSystem& _audio)
 {
     if (!m_config.artSprite.empty())
@@ -218,7 +218,7 @@ void ScreenFlow::BeginFade_(
 }
 
 void ScreenFlow::Advance_(
-    UiSystem&   _ui,
+    UiSystem&    _ui,
     AudioSystem& _audio)
 {
     const int resultsStart = m_config.delayTicks;

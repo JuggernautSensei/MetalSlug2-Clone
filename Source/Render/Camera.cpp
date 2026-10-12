@@ -5,14 +5,14 @@
 #include "Base/Math.h"
 #include "Render/Renderer.h"
 
-constexpr float kRampStart     = 1.f;                   // px/틱: 스크롤 시작 속도
-constexpr float kRampAccel     = 0.19f;                 // px/틱²: 플레이어를 따라 가속
+constexpr float kRampStart     = 1.f;     // px/틱: 스크롤 시작 속도
+constexpr float kRampAccel     = 0.19f;   // px/틱²: 플레이어를 따라 가속
 constexpr float kDecayPerTick  = 0.80f;
-constexpr float kStopSpeed     = 0.05f;                 // px/틱 미만이면 정지
+constexpr float kStopSpeed     = 0.05f;   // px/틱 미만이면 정지
 constexpr float kGlideEnterGap = 96.f;
 constexpr float kGlideExitGap  = 0.05f;
-constexpr float kGlideAccel    = 1.f;                   // px/틱²: 글라이드 가감속 상한
-constexpr float kMaxStep       = 12.f;                  // px/틱 속도 상한 (글라이드, 수직 추적 공통)
+constexpr float kGlideAccel    = 1.f;    // px/틱²: 글라이드 가감속 상한
+constexpr float kMaxStep       = 12.f;   // px/틱 속도 상한 (글라이드, 수직 추적 공통)
 constexpr float kStepGrowth    = 1.5f;
 constexpr float kStepFloor     = 1.f;                   // 걸음이 작을 때 허용되는 최소 증가폭 (px/틱)
 constexpr float kMaxSpeedSec   = kMaxStep / kStepSec;   // px/s
