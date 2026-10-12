@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <format>
+#include <thread>
 #include <SDL3/SDL.h>
 
 #include "Base/Log.h"
@@ -308,22 +309,15 @@ void App::Init_()
         m_stateName           = bHasAssets ? String { GetDefaultStateName() } : String { "sandbox" };
     }
 
-    // 아틀라스 디코드는 렌더러가 필요 없으므로 창/디바이스 생성보다 먼저 워커에 맡긴다 (텍스처 생성은 메인 스레드에서 나중에).
-    // 워커가 없는 동기 폴백은 제출 즉시 텍스처까지 만들므로 렌더러 초기화 뒤로 미룬다.
-    const FilePath assetRoot = FindAssetRoot();
-    m_loader.Start(m_bNoAsyncLoad ? 0 : AsyncLoader::ChooseWorkerCount());
-    SLUG_LOG_INFO("[load] workers {}", m_loader.GetWorkerCount());
-    bool bAnimsLoaded    = false;
-    bool bAtlasSubmitted = false;
+    const FilePath assetRoot  = FindAssetRoot();
+    const int      numWorkers = m_bNoAsyncLoad ? 1 : std::clamp(static_cast<int>(std::thread::hardware_concurrency()) - 1, 1, 8);
+    m_loader.Start(m_bNoAsyncLoad ? 0 : numWorkers);
+    SLUG_LOG_INFO("[load] workers {}", numWorkers);
+    bool bAnimsLoaded = false;
     if (Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(assetRoot))
     {
         m_anims      = library.Take();
         bAnimsLoaded = true;
-        if (m_loader.GetWorkerCount() > 0)
-        {
-            m_sprites.LoadAtlasPagesAsync(m_anims, m_loader);
-            bAtlasSubmitted = true;
-        }
     }
     else
     {
@@ -372,9 +366,9 @@ void App::Init_()
     SLUG_LOG_INFO("[load] renderer-init since-run-start {:.1f} ms", rendererMs);
     m_sprites.Init(m_renderer.GetNative());
     m_sprites.SetAssetRoot(assetRoot);
-    if (bAnimsLoaded && !bAtlasSubmitted)
+    if (bAnimsLoaded)
     {
-        m_sprites.LoadAtlasPagesAsync(m_anims, m_loader);
+        (void)m_sprites.LoadAtlasPagesParallel(m_anims, numWorkers);
     }
 
     m_rng                 = RngMt19937 { m_seed };
