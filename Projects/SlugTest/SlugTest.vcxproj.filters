@@ -51,9 +51,6 @@
     <ClCompile Include="..\..\Test\CombatTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Test\AsyncLoadTest.cpp">
-      <Filter>Test</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Test\CoreTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>

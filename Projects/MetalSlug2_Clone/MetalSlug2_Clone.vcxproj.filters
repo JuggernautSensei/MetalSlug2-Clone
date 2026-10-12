@@ -108,12 +108,6 @@
     <ClCompile Include="..\..\Source\Core\App.cpp">
       <Filter>Source\Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Core\AsyncLoader.cpp">
-      <Filter>Source\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\Core\MainThreadQueue.cpp">
-      <Filter>Source\Core</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\Editor\AnimEditor.cpp">
       <Filter>Source\Editor</Filter>
     </ClCompile>
@@ -373,12 +367,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source\Base\PhaseTimer.h">
       <Filter>Source\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Core\AsyncLoader.h">
-      <Filter>Source\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Core\MainThreadQueue.h">
-      <Filter>Source\Core</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Base\Math.h">
       <Filter>Source\Base</Filter>

@@ -3,10 +3,8 @@
 
 #include "Audio/AudioSystem.h"
 #include "Base/Types.h"
-#include "Core/AsyncLoader.h"
 #include "Core/FixedStep.h"
 #include "Core/Input.h"
-#include "Core/MainThreadQueue.h"
 #include "Core/Replay.h"
 #include "Editor/Editor.h"
 #include "Game/GameState.h"
@@ -19,9 +17,6 @@ class App final
 {
 public:
     int Run(int _argc, char** _argv);
-
-    // 아무 스레드에서나 부를 수 있다. 작업은 메인 스레드에서 프레임마다 (로딩 대기 중에도) 실행된다.
-    void SubmitToMainThread(Scoped<IMainThreadTask> _pTask);
 
 private:
     [[nodiscard]] bool InitSystems_();
@@ -44,8 +39,6 @@ private:
     int            m_returnCode = 0;
     Vector<String> m_cmdArgs    = {};
 
-    MainThreadQueue  m_mainQueue = {};
-    AsyncLoader      m_loader { m_mainQueue };
     Renderer         m_renderer = {};
     SpriteBatch      m_sprites  = {};
     AnimationLibrary m_anims    = {};

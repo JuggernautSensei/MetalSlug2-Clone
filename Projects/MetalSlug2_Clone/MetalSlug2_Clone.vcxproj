@@ -130,8 +130,6 @@
     <ClCompile Include="..\..\Source\Base\Log.cpp" />
     <ClCompile Include="..\..\Source\Base\PhaseTimer.cpp" />
     <ClCompile Include="..\..\Source\Core\App.cpp" />
-    <ClCompile Include="..\..\Source\Core\AsyncLoader.cpp" />
-    <ClCompile Include="..\..\Source\Core\MainThreadQueue.cpp" />
     <ClCompile Include="..\..\Source\Editor\AnimEditor.cpp" />
     <ClCompile Include="..\..\Source\Editor\GroundEditor.cpp" />
     <ClCompile Include="..\..\Source\Editor\EnemyLab.cpp" />
@@ -223,8 +221,6 @@
     <ClInclude Include="..\..\Source\Base\Json.h" />
     <ClInclude Include="..\..\Source\Base\Log.h" />
     <ClInclude Include="..\..\Source\Base\PhaseTimer.h" />
-    <ClInclude Include="..\..\Source\Core\AsyncLoader.h" />
-    <ClInclude Include="..\..\Source\Core\MainThreadQueue.h" />
     <ClInclude Include="..\..\Source\Base\Math.h" />
     <ClInclude Include="..\..\Source\Base\RGBA.h" />
     <ClInclude Include="..\..\Source\Base\Types.h" />

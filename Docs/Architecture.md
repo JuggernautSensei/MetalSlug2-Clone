@@ -33,7 +33,7 @@ main
 Source/
   Base/    공용 유틸. JugX 로 대체된 것(Types, Handle, Result/Error, Random, Assert, Log 코어)과
            게임 고유 유틸(Json, Math(Vec2), RGBA, PhaseTimer, EventLog)
-  Core/    App(루프), Headless, Input, Replay, FixedStep, AssetPath, Tuning, AsyncLoader
+  Core/    App(루프), Headless, Input, Replay, FixedStep, AssetPath, Tuning
   Render/  Renderer(SDL), SpriteBatch(그리기), Animation, SpriteLibrary, Camera
   Audio/   AudioSystem(miniaudio), SoundBank, VoiceAllocator
   World/   GroundMap(지면 마스크), Physics, Combat, Geometry
@@ -54,7 +54,7 @@ Vendor/JugX   서브모듈. 정적 라이브러리(Projects/JugX)로 빌드되�
 ```
 Assets/
   manifest.json → anim.json → AnimationLibrary (에디터가 같은 객체를 직접 수정, 1초마다 파일 변경 감지)
-  Atlas/atlas_000..015.png → (워커 스레드 디코드) → SpriteBatch 텍스처 페이지
+  Atlas/atlas_000..015.png → (병렬 디코드) → SpriteBatch 텍스처 페이지
   sprites.json → SpriteLibrary
   sounds.json + Audio/*.ogg → SoundBank → AudioSystem
   Stage/<이름>.json → StageData(파서) → StageState(배치/스폰)
@@ -64,16 +64,14 @@ Assets/
 ```
 에디터 저장은 JSON 원문 텍스트를 제자리에서 고치는 방식(서식·키 순서 보존)이라 `JsonScan` 같은 별도 코드가 있다.
 
-## 6. 비동기 로딩이 지금 하는 일 (가장 복잡한 부분)
+## 6. 이미지 로딩
 ```
-메인: Submit(작업) ──▶ 워커 스레드들: PNG 디코드(+피격 플래시 이미지 생성)
-                         └ 끝나면 "끝났다" 통지를 MainThreadQueue 에 넣음
-메인: DrainAll() 로 통지를 받아, 제출 순서대로 연속된 앞쪽부터 Complete()
-      → SDL_CreateTexture (GPU 업로드는 메인 스레드에서만 가능)
+DecodeImages(경로 목록): 여러 스레드가 PNG 읽기+디코드(+피격 플래시 이미지) → 경로 순서 그대로 반환
+메인: 결과를 순서대로 SDL_CreateTexture (GPU 업로드는 메인 스레드에서만 가능)
 ```
-- 대상은 아틀라스 16장, Stage 단독 텍스처, 오디오 효과음 등록.
-- 결과는 제출 순서대로 확정되므로 텍스처 번호가 일정하다(결정성).
-- 이 구조(작업 인터페이스 + 통지 큐 + 순서 재조립, 약 600줄)가 2단계에서 `ImageLoader` 하나로 줄어든다.
+- 대상은 아틀라스 16장(`LoadAtlasPagesParallel`)과 Stage 단독 텍스처(`LoadStandaloneTexturesParallel`). 오디오 효과음은 순서대로 동기 등록한다.
+- 한 번에 `워커 수`장씩 디코드해 메모리 상한을 둔다. `--no-async-load` 는 워커 1개(순차).
+- 결과는 경로 순서대로 확정되므로 텍스처 번호가 일정하다(결정성).
 
 ## 7. 검증 장치 (동작 불변을 지키는 방법)
 `powershell -NoProfile -File Scripts/Verify.ps1` 한 번으로:
@@ -96,6 +94,6 @@ Assets/
 ## 9. 2단계에서 바뀔 큰 그림 (계획)
 ```
 Core/App.cpp(657줄, 책임 8가지)  →  App/ { GameApp, Layer, SimLayer, EditorLayer, LaunchDesc, InputSource, CaptureController, DebugKeys, SimSession }
-AsyncLoader + MainThreadQueue    →  ImageLoader (워커: 파일 읽기+디코드 / 메인: 순서대로 Take → GPU 생성)
+옛 비동기 로더(작업+통지 큐)    →  (완료) 병렬 디코드 함수 + 메인에서 순서대로 GPU 텍스처 생성
 Core ↔ Game 순환                 →  App(최상위) → Editor → Game → Render/Audio/World → Core → JugX
 ```

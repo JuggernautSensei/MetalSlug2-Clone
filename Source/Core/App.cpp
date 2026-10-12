@@ -71,12 +71,6 @@ int App::Run(
     return m_returnCode;
 }
 
-void App::SubmitToMainThread(
-    Scoped<IMainThreadTask> _pTask)
-{
-    m_mainQueue.Submit(std::move(_pTask));
-}
-
 bool App::InitSystems_()
 {
     if (!SDL_SetAppMetadata("MetalSlug2 (Clone)", "0.1.0", "com.mymetalslug2.game"))
@@ -311,7 +305,6 @@ void App::Init_()
 
     const FilePath assetRoot  = FindAssetRoot();
     const int      numWorkers = m_bNoAsyncLoad ? 1 : std::clamp(static_cast<int>(std::thread::hardware_concurrency()) - 1, 1, 8);
-    m_loader.Start(m_bNoAsyncLoad ? 0 : numWorkers);
     SLUG_LOG_INFO("[load] workers {}", numWorkers);
     bool bAnimsLoaded = false;
     if (Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(assetRoot))
@@ -397,8 +390,6 @@ void App::Init_()
         }
     }
 
-    m_loader.WaitAll();
-
     Scoped<IGameState> pState = CreateState(m_stateName);
     if (!pState)
     {
@@ -420,7 +411,6 @@ void App::Init_()
 void App::Shutdown_()
 {
     SaveRecording_();
-    m_loader.Shutdown();
     m_pRunner.Reset();
     m_ctx.pAudio = nullptr;
     m_audio.Shutdown();
@@ -503,7 +493,6 @@ void App::OnFocusLost_()
 void App::Update_(
     const float _deltaTimeSec)
 {
-    m_mainQueue.DrainAll();
     m_audio.Update(_deltaTimeSec);
 
     if (!m_pRunner)
