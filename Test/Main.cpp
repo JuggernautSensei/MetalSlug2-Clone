@@ -2,12 +2,14 @@
 
 #include <gtest/gtest.h>
 
+#include "Base/Log.h"
 #include "Core/AssetPath.h"
 
 int main(
     int    _argc,
     char** _argv)
 {
+    InstallCoreLogger();
 #ifdef SLUG_ASSET_DIR
     SetAssetRootFallback(SLUG_ASSET_DIR);
 #endif

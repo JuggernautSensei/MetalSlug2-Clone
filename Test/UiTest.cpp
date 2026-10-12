@@ -6,7 +6,6 @@
 
 #include "Audio/AudioSink.h"
 #include "Base/Math.h"
-#include "Base/Random.h"
 #include "Base/Result.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
@@ -1100,7 +1099,7 @@ struct TitleSim
 
     [[nodiscard]] bool IsStillTitle() const { return runner->GetState() == pTitle; }
 
-    RngMt19937           rng;
+    RngMt19937           rng = RngMt19937 { std::mt19937_64::default_seed };
     GameContext                ctx;
     TestAudio                  audio;
     TitleState*                pTitle = nullptr;

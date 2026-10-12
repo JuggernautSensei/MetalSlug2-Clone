@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <cstdint>
 
-#include "Base/Assert.h"
 #include "Base/Types.h"
 
 class VoiceAllocator

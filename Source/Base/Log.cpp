@@ -1,6 +1,9 @@
 #include "Base/Log.h"
 
 #include <cstdio>
+#include <format>
+
+#include <JugX/CoreLogger.h>
 
 void LogMessage(
     const eLogLevel        _level,
@@ -16,6 +19,56 @@ void LogMessage(
         case eLogLevel::Fatal: pPrefix = "[fatal] "; break;
     }
     std::fprintf(stderr, "%s%.*s\n", pPrefix, static_cast<int>(_message.size()), _message.data());
+}
+
+namespace
+{
+
+class SlugCoreLogger final : public jug::Logger
+{
+public:
+    SlugCoreLogger()
+    {
+        SetPattern(jug::Flags<jug::eLogPattern> {});
+    }
+
+    void Flush() override
+    {
+        std::fflush(stderr);
+    }
+
+private:
+    void LogImpl(
+        const eLogLevel        _level,
+        const jug::StringView  _msg,
+        const bool             _bEndOfLog) override
+    {
+        if (_bEndOfLog)
+        {
+            LogMessage(_level, _msg);
+        }
+    }
+
+    void VLogImpl(
+        const eLogLevel        _level,
+        const jug::StringView  _msg,
+        const std::format_args _args,
+        const bool             _bEndOfLog) override
+    {
+        if (_bEndOfLog)
+        {
+            LogMessage(_level, std::vformat(_msg, _args));
+        }
+    }
+};
+
+SlugCoreLogger g_coreLogger;
+
+}   // namespace
+
+void InstallCoreLogger()
+{
+    jug::SetCoreLogger(&g_coreLogger);
 }
 
 static std::FILE*         g_pEventLog   = nullptr;

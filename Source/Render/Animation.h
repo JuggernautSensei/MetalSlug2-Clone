@@ -1,7 +1,6 @@
 #pragma once
 #include <cstdint>
 
-#include "Base/Assert.h"
 #include "Base/Handle.h"
 #include "Base/Result.h"
 #include "Base/Types.h"

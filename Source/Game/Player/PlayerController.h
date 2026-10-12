@@ -1,6 +1,5 @@
 #pragma once
 #include "Base/Math.h"
-#include "Base/Random.h"
 #include "Base/Types.h"
 #include "Core/Input.h"
 #include "Core/Tuning.h"
@@ -159,7 +158,7 @@ private:
 
     int      m_shotTicksLeft       = 0;
     int      m_shotOverlayTicks    = 0;       // 현재 사격 상체 동작의 전체 길이 (버스트: 발수 x 간격)
-    RngMt19937 m_shotRng           = {};      // 탄 흩뿌림/발수 난수 (버스트 시작마다 MakeShotSeed_ 로 재시드)
+    RngMt19937 m_shotRng           = RngMt19937 { std::mt19937_64::default_seed };      // 탄 흩뿌림/발수 난수 (버스트 시작마다 MakeShotSeed_ 로 재시드)
     int      m_burstLeft           = 0;       // 연속 사격(버스트)에서 아직 나가지 않은 발수
     int      m_burstTimer          = 0;       // 다음 버스트 탄까지 남은 틱
     bool     m_bBurstAir           = false;   // 버스트를 시작할 때 공중이었는가 (착지/이륙하면 캔슬)
@@ -167,7 +166,7 @@ private:
     bool       m_bFlameStop        = false;   // 점프/칼/폭탄으로 끊김: 새 입자는 더 나오지 않는다
     bool       m_bFlameAir         = false;   // 분출을 시작할 때 공중이었는가 (지상<->공중 전환이면 끊는다)
     uint32_t   m_flameHitId        = kNoHitId;   // 분출 입자들이 공유하는 판정 ID (releaseTicks 마다 풀려 대상이 다시 맞는다)
-    RngMt19937 m_flameRng          = {};      // 입자 방향/속도/수명 난수 (분출마다 MakeShotSeed_ 로 재시드)
+    RngMt19937 m_flameRng          = RngMt19937 { std::mt19937_64::default_seed };      // 입자 방향/속도/수명 난수 (분출마다 MakeShotSeed_ 로 재시드)
     int      m_knifeTick           = -1;   // -1: 베기 없음, 0.. : 발동 후 경과 틱
     uint32_t m_knifeHitId          = kNoHitId;
     bool     m_bSlashSecond        = false;

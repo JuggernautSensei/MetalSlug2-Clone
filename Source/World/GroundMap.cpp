@@ -2,7 +2,6 @@
 
 #include <cmath>
 
-#include "Base/Assert.h"
 #include "Base/Error.h"
 #include "Base/Math.h"
 #include "Base/Result.h"
@@ -19,8 +18,8 @@ GroundMap GroundMap::MakeFromBits(
     const int                 _height,
     const Span<const uint8_t> _packedBits)
 {
-    SLUG_ASSERT(_width >= 0 && _height >= 0, "맵 크기는 음수일 수 없다.\n");
-    SLUG_ASSERT(_packedBits.size() >= StrideOf_(_width) * static_cast<size_t>(_height), "비트 배열이 맵 크기보다 작다.\n");
+    JUG_ASSERT(_width >= 0 && _height >= 0, "맵 크기는 음수일 수 없다.\n");
+    JUG_ASSERT(_packedBits.size() >= StrideOf_(_width) * static_cast<size_t>(_height), "비트 배열이 맵 크기보다 작다.\n");
 
     GroundMap map;
     map.m_width  = _width;
@@ -34,7 +33,7 @@ GroundMap GroundMap::MakeEmpty(
     const int _width,
     const int _height)
 {
-    SLUG_ASSERT(_width >= 0 && _height >= 0, "맵 크기는 음수일 수 없다.\n");
+    JUG_ASSERT(_width >= 0 && _height >= 0, "맵 크기는 음수일 수 없다.\n");
 
     GroundMap map;
     map.m_width  = _width;
@@ -73,7 +72,7 @@ void GroundMap::SetPeriodicTail(
     const int _tailX,
     const int _tailW)
 {
-    SLUG_ASSERT(_tailW > 0 && _tailX >= 0 && _tailX + _tailW <= m_width, "주기 꼬리는 비트맵 안의 구간이어야 한다.\n");
+    JUG_ASSERT(_tailW > 0 && _tailX >= 0 && _tailX + _tailW <= m_width, "주기 꼬리는 비트맵 안의 구간이어야 한다.\n");
     m_tailFrom = _from;
     m_tailX    = _tailX;
     m_tailW    = _tailW;

@@ -943,7 +943,7 @@ void PlayerController::FireBullet_(
         direction       = { static_cast<float>(m_facing) * std::cos(rad), -std::sin(rad) };
         if (_weapon.muzzleJitter.y > 0.f)
         {
-            const float offset = Random<float>(m_shotRng, -_weapon.muzzleJitter.y, _weapon.muzzleJitter.y);
+            const float offset = Random<float>(m_shotRng) * (_weapon.muzzleJitter.y - -_weapon.muzzleJitter.y) + -_weapon.muzzleJitter.y;
             muzzle.x += -direction.y * offset;
             muzzle.y += direction.x * offset;
         }

@@ -9,7 +9,6 @@
 #include <gtest/gtest.h>
 
 #include "Base/Math.h"
-#include "Base/Random.h"
 #include "Base/Result.h"
 #include "Base/Types.h"
 #include "Game/Stage/StageData.h"
@@ -173,6 +172,6 @@ public:
     StageData        data;
     FakeStageHost    host;
     Camera           camera;
-    RngMt19937 rng;
+    RngMt19937 rng = RngMt19937 { std::mt19937_64::default_seed };
     StageRunner      runner;
 };

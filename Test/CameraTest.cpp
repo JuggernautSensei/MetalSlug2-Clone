@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "Base/Math.h"
-#include "Base/Random.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
 #include "Core/Input.h"
@@ -472,7 +471,7 @@ private:
         return false;
     }
 
-    RngMt19937           m_rng        = {};
+    RngMt19937           m_rng        = RngMt19937 { std::mt19937_64::default_seed };
     GameContext                m_ctx        = {};
     InputFrame                 m_frame      = {};
     StageState*                m_pState     = nullptr;

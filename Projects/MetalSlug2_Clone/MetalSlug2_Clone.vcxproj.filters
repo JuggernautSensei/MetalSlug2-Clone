@@ -81,9 +81,6 @@
     <ClCompile Include="..\..\Source\Core\FixedStep.cpp">
       <Filter>Source\Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Base\Random.cpp">
-      <Filter>Source\Base</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\Audio\AudioSystem.cpp">
       <Filter>Source\Audio</Filter>
     </ClCompile>
@@ -92,9 +89,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source\Audio\StbVorbisImpl.cpp">
       <Filter>Source\Audio</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\Base\Assert.cpp">
-      <Filter>Source\Base</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Base\Error.cpp">
       <Filter>Source\Base</Filter>
@@ -368,9 +362,6 @@
     <ClInclude Include="..\..\Source\Audio\VoiceAllocator.h">
       <Filter>Source\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\Base\Assert.h">
-      <Filter>Source\Base</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source\Base\Error.h">
       <Filter>Source\Base</Filter>
     </ClInclude>
@@ -393,9 +384,6 @@
       <Filter>Source\Core</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Base\Math.h">
-      <Filter>Source\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Base\Random.h">
       <Filter>Source\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Base\Result.h">

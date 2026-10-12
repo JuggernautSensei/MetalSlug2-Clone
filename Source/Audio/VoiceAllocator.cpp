@@ -22,7 +22,7 @@ VoiceAllocator::Acquired VoiceAllocator::Acquire(
     if (CountSound(_soundId) >= m_maxPerSound)
     {
         const int oldest = FindOldest_(_soundId);
-        SLUG_ASSERT(oldest >= 0, "stealable voice not found");
+        JUG_ASSERT(oldest >= 0, "stealable voice not found");
         return Take_(oldest, _soundId, true);
     }
 

@@ -149,8 +149,9 @@ BulletSpawn MakeFlameParticleSpawn(
     const uint32_t      _hitId,
     RngMt19937&         _rng)
 {
+    // 실수 범위 난수는 Random<float>(rng) * 범위 + min 으로 직접 계산 (JugX Random<T>(rng, min, max) 의 실수 경로가 컴파일되지 않음)
     // 방향: 기준 방향을 +-spreadDeg 안에서 무작위로 돌린다 (순서 고정: 각도, 세로 지터, 속도, 수명)
-    const float spreadRad = Random<float>(_rng, -_tuning.spreadDeg, _tuning.spreadDeg) * kDegToRad;
+    const float spreadRad = (Random<float>(_rng) * (_tuning.spreadDeg - -_tuning.spreadDeg) + -_tuning.spreadDeg) * kDegToRad;
     const float c         = std::cos(spreadRad);
     const float s         = std::sin(spreadRad);
     const Vec2  direction = { _direction.x * c - _direction.y * s, _direction.x * s + _direction.y * c };
@@ -158,9 +159,9 @@ BulletSpawn MakeFlameParticleSpawn(
     Vec2 muzzle = _muzzle;
     if (_tuning.muzzleJitter.y > 0.f)
     {
-        muzzle.y += Random<float>(_rng, -_tuning.muzzleJitter.y, _tuning.muzzleJitter.y);
+        muzzle.y += Random<float>(_rng) * (_tuning.muzzleJitter.y - -_tuning.muzzleJitter.y) + -_tuning.muzzleJitter.y;
     }
-    const float speed = Random<float>(_rng, _tuning.particleSpeedMin, _tuning.particleSpeedMax);
+    const float speed = Random<float>(_rng) * (_tuning.particleSpeedMax - _tuning.particleSpeedMin) + _tuning.particleSpeedMin;
     const int   life  = Random<int>(_rng, _tuning.particleLifeMinTicks, _tuning.particleLifeMaxTicks);
 
     BulletSpawn spawn = MakeBulletSpawn(eWeapon::Flame, _tuning, _owner, muzzle, _sweepFrom, direction);

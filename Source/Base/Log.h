@@ -3,16 +3,14 @@
 #include <string_view>
 #include <utility>
 
-enum class eLogLevel
-{
-    Trace,
-    Info,
-    Warn,
-    Error,
-    Fatal
-};
+#include <JugX/Logger.h>
+
+using jug::eLogLevel;
 
 void LogMessage(eLogLevel _level, std::string_view _message);
+
+// JugX 코어 로거(JUG_CORE_LOG_*, JUG_ASSERT 실패 출력)를 LogMessage 로 보낸다. 로그 첫 사용 전에 호출한다.
+void InstallCoreLogger();
 
 template<typename... Args>
 void LogFormat(

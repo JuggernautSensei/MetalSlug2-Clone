@@ -9,7 +9,6 @@
 #include "Audio/AudioSystem.h"
 #include "Audio/SoundBank.h"
 #include "Audio/VoiceAllocator.h"
-#include "Base/Random.h"
 #include "Base/Result.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
@@ -432,7 +431,7 @@ struct AudioSim
         }
     }
 
-    RngMt19937           rng    = {};
+    RngMt19937           rng    = RngMt19937 { std::mt19937_64::default_seed };
     GameContext                ctx    = {};
     SandboxState*              pState = nullptr;
     std::unique_ptr<SimRunner> runner = nullptr;

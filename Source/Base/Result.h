@@ -1,7 +1,6 @@
 #pragma once
 #include <variant>
 
-#include "Base/Assert.h"
 #include "Base/Error.h"
 
 template<typename T>
@@ -29,22 +28,22 @@ public:
 
     [[nodiscard]] T& GetValue()
     {
-        SLUG_ASSERT(HasValue(), "Result does not contain a value");
+        JUG_ASSERT(HasValue(), "Result does not contain a value");
         return std::get<0>(m_storage);
     }
     [[nodiscard]] const T& GetValue() const
     {
-        SLUG_ASSERT(HasValue(), "Result does not contain a value");
+        JUG_ASSERT(HasValue(), "Result does not contain a value");
         return std::get<0>(m_storage);
     }
     [[nodiscard]] T Take()
     {
-        SLUG_ASSERT(HasValue(), "Result does not contain a value");
+        JUG_ASSERT(HasValue(), "Result does not contain a value");
         return std::move(std::get<0>(m_storage));
     }
     [[nodiscard]] Error GetError() const
     {
-        SLUG_ASSERT(HasError(), "Result does not contain an error");
+        JUG_ASSERT(HasError(), "Result does not contain an error");
         return std::get<1>(m_storage);
     }
 

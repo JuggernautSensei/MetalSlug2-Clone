@@ -2,7 +2,6 @@
 
 #include <cmath>
 
-#include "Base/Assert.h"
 #include "Base/Error.h"
 #include "Base/Handle.h"
 #include "Base/Json.h"
@@ -286,7 +285,7 @@ bool AnimationLibrary::IsValid(
 const AnimClip& AnimationLibrary::Get(
     const AnimId _id) const
 {
-    SLUG_ASSERT(IsValid(_id), "유효하지 않은 AnimId 이다.\n");
+    JUG_ASSERT(IsValid(_id), "유효하지 않은 AnimId 이다.\n");
     return m_clips[_id.GetIndex()];
 }
 

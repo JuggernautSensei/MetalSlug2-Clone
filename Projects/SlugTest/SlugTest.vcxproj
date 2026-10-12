@@ -128,11 +128,9 @@
     <ClCompile Include="..\..\Source\Audio\AudioSink.cpp" />
     <ClCompile Include="..\..\Source\Audio\AudioMath.cpp" />
     <ClCompile Include="..\..\Source\Core\FixedStep.cpp" />
-    <ClCompile Include="..\..\Source\Base\Random.cpp" />
     <ClCompile Include="..\..\Source\Audio\AudioSystem.cpp"><PrecompiledHeader Condition="'$(Configuration)'=='Debug'">NotUsing</PrecompiledHeader><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
     <ClCompile Include="..\..\Source\Audio\SoundBank.cpp" />
     <ClCompile Include="..\..\Source\Audio\StbVorbisImpl.cpp"><PrecompiledHeader>NotUsing</PrecompiledHeader><ForcedIncludeFiles></ForcedIncludeFiles><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
-    <ClCompile Include="..\..\Source\Base\Assert.cpp" />
     <ClCompile Include="..\..\Source\Base\Error.cpp" />
     <ClCompile Include="..\..\Source\Base\Json.cpp" />
     <ClCompile Include="..\..\Source\Base\Log.cpp" />
@@ -277,7 +275,6 @@
     <ClInclude Include="..\..\Source\Audio\AudioSystem.h" />
     <ClInclude Include="..\..\Source\Audio\SoundBank.h" />
     <ClInclude Include="..\..\Source\Audio\VoiceAllocator.h" />
-    <ClInclude Include="..\..\Source\Base\Assert.h" />
     <ClInclude Include="..\..\Source\Base\Error.h" />
     <ClInclude Include="..\..\Source\Base\Handle.h" />
     <ClInclude Include="..\..\Source\Base\Json.h" />
@@ -286,7 +283,6 @@
     <ClInclude Include="..\..\Source\Core\AsyncLoader.h" />
     <ClInclude Include="..\..\Source\Core\MainThreadQueue.h" />
     <ClInclude Include="..\..\Source\Base\Math.h" />
-    <ClInclude Include="..\..\Source\Base\Random.h" />
     <ClInclude Include="..\..\Source\Base\Result.h" />
     <ClInclude Include="..\..\Source\Base\RGBA.h" />
     <ClInclude Include="..\..\Source\Base\Types.h" />

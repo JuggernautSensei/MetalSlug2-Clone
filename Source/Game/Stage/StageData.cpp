@@ -7,7 +7,6 @@
 #include <sstream>
 #include <utility>
 
-#include "Base/Assert.h"
 #include "Base/Error.h"
 #include "Base/Json.h"
 #include "Base/Math.h"
@@ -57,7 +56,7 @@ ParamValue ParamValue::MakeObject()
 void ParamValue::PushBack(
     ParamValue _value)
 {
-    SLUG_ASSERT(
+    JUG_ASSERT(
         m_type == eType::Array,
         "PushBack requires an array value");
     m_items.push_back(std::move(_value));
@@ -67,7 +66,7 @@ void ParamValue::Set(
     String     _key,
     ParamValue _value)
 {
-    SLUG_ASSERT(
+    JUG_ASSERT(
         m_type == eType::Object,
         "Set requires an object value");
     for (size_t i = 0; i < m_keys.size(); ++i)

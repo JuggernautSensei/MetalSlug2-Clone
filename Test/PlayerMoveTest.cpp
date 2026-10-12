@@ -1,5 +1,4 @@
 // 플레이어 이동 테스트: 시작 상태, 달리기, 웅크리기, 점프, 조준, 결정성 검증
-#include "Base/Random.h"
 #include "Base/Types.h"
 #include "Game/StateFactory.h"
 #include "PlayerTestUtil.h"

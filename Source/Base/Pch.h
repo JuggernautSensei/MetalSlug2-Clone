@@ -29,6 +29,10 @@
 #include <JugX/Typedef.h>
 #include <JugX/Assert.h>
 #include <JugX/Handle.h>
+#include <JugX/Random.h>
 
 #include "Base/Types.h"
 #include "Base/Handle.h"
+
+using jug::Random;
+using jug::RngMt19937;
