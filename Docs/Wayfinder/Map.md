@@ -114,7 +114,7 @@ AI가 고친 코드베이스를 **사용자 본인이 이해하고 직접 유지
 - `Source/` = Base, Core, Render, Audio, World, Game, Editor. 네임스페이스·auto·변수 람다·C 배열 없음, 헤더는 선언만.
 - 에디터(`--editor`): Animation(anim.json) / Map(Stage/*.json) / Collision(Ground/*.png) / AI(Defs 핫 리로드), 저장 Ctrl+S.
 - 회귀: `Scripts/Regress.ps1` + `Test/Replays` + `Docs/Wayfinder/Baseline.txt` (enemylab_fight, stage0_walk).
-- 남은 문서: `Docs/` 의 CodingStyle, AssetFormat, StageFormat, EnemyDefsSchema, PropSpecs, PlayerSpec. 진입점은 루트 `README.md`.
+- 남은 문서: `Docs/` 의 CodingStyle, AssetFormat, StageFormat, EnemyDefsSchema, PropSpecs. 진입점은 루트 `README.md`.
 - 루트의 `Feedback/`(빈 폴더)와 `CMakeLists.txt` 는 정리됨.
 - 남은 일: B13 최종 회귀(클린 빌드, 해시, 에디터 스모크), git 용량 처분.
 
