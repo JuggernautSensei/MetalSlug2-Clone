@@ -32,27 +32,13 @@ class EffectList
 public:
     void Clear();
 
-    void Spawn(
-        const AnimationLibrary& _library,
-        StringView              _clipName,
-        Vec2                    _position,
-        int                     _depth  = 50,
-        bool                    _bFlipX = false);
+    void Spawn(const AnimationLibrary& _library, StringView _clipName, Vec2 _position, int _depth = 50, bool _bFlipX = false);
 
-    void SpawnDebris(
-        const AnimationLibrary& _library,
-        StringView              _clipName,
-        Vec2                    _position,
-        int                     _depth,
-        Vec2                    _velocity,
-        bool                    _bFlipX = false);
+    void SpawnDebris(const AnimationLibrary& _library, StringView _clipName, Vec2 _position, int _depth, Vec2 _velocity, bool _bFlipX = false);
 
     // _cullBelowY: 잔해는 y 가 이 값 + kDebrisCullBelowMargin 을 넘으면 제거한다 (카메라 하단 y 를 넘긴다).
     // 잔해 클립은 루프이므로 IsFinished 로 제거하지 않고, 수명(kDebrisLifeSec) 은 안전망으로 둔다.
-    void Update(
-        const AnimationLibrary& _library,
-        float                   _dt,
-        float                   _cullBelowY = 1.0e9f);
+    void Update(const AnimationLibrary& _library, float _dt, float _cullBelowY = 1.0e9f);
     void Submit(const AnimationLibrary& _library, SpriteBatch& _sprites) const;
 
     [[nodiscard]] size_t             GetCount() const;

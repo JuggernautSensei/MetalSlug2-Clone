@@ -20,21 +20,13 @@ struct Aabb
     Vec2 min = { 0.f, 0.f };
     Vec2 max = { 0.f, 0.f };
 
-    [[nodiscard]] static Aabb FromMinMax(
-        const Vec2 _min,
-        const Vec2 _max);
+    [[nodiscard]] static Aabb FromMinMax(const Vec2 _min, const Vec2 _max);
 
-    [[nodiscard]] static Aabb FromMinSize(
-        const Vec2 _min,
-        const Vec2 _size);
+    [[nodiscard]] static Aabb FromMinSize(const Vec2 _min, const Vec2 _size);
 
-    [[nodiscard]] static Aabb FromCenterSize(
-        const Vec2 _center,
-        const Vec2 _size);
+    [[nodiscard]] static Aabb FromCenterSize(const Vec2 _center, const Vec2 _size);
 
-    [[nodiscard]] static Aabb FromBottomCenter(
-        const Vec2 _bottomCenter,
-        const Vec2 _size);
+    [[nodiscard]] static Aabb FromBottomCenter(const Vec2 _bottomCenter, const Vec2 _size);
 
     [[nodiscard]] float GetWidth() const;
 
@@ -64,6 +56,5 @@ struct Aabb
         return _other.min.x >= min.x && _other.max.x <= max.x && _other.min.y >= min.y && _other.max.y <= max.y;
     }
 
-    [[nodiscard]] bool operator==(
-        const Aabb& _other) const;
+    [[nodiscard]] bool operator==(const Aabb& _other) const;
 };

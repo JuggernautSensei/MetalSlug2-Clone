@@ -132,29 +132,17 @@ class PropWorld
     };
 
 public:
-    explicit PropWorld(
-        const PropDefLibrary* _pLibrary,
-        uint64_t              _seed = 1);
+    explicit PropWorld(const PropDefLibrary* _pLibrary, uint64_t _seed = 1);
 
     void                                SetLibrary(const PropDefLibrary* _pLibrary);
     [[nodiscard]] const PropDefLibrary* GetLibrary() const;
 
     void Reset(uint64_t _seed = 1);
 
-    PropHandle Spawn(
-        StringView             _defName,
-        Vec2                   _center,
-        const PropSpawnParams& _params = {});
-    PropHandle SpawnByIndex(
-        int                    _defIndex,
-        Vec2                   _center,
-        const PropSpawnParams& _params = {});
+    PropHandle Spawn(StringView _defName, Vec2 _center, const PropSpawnParams& _params = {});
+    PropHandle SpawnByIndex(int _defIndex, Vec2 _center, const PropSpawnParams& _params = {});
 
-    uint32_t SpawnItem(
-        StringView _name,
-        Vec2       _feet,
-        bool       _bBounce = false,
-        int        _z       = kDefaultZ);
+    uint32_t SpawnItem(StringView _name, Vec2 _feet, bool _bBounce = false, int _z = kDefaultZ);
 
     void Tick(const PropTickContext& _ctx);
 
@@ -188,11 +176,7 @@ public:
 
     void ClearAll();
 
-    void Submit(
-        SpriteBatch&            _sprites,
-        const AnimationLibrary& _anims,
-        const SpriteLibrary&    _spriteLib,
-        const BitmapFont*       _pFont = nullptr);
+    void Submit(SpriteBatch& _sprites, const AnimationLibrary& _anims, const SpriteLibrary& _spriteLib, const BitmapFont* _pFont = nullptr);
 
     [[nodiscard]] static int SortKey(const PropInstance& _inst);
 

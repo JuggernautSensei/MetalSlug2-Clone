@@ -37,14 +37,11 @@ public:
     [[nodiscard]] bool  IsArray() const;
     [[nodiscard]] bool  IsObject() const;
 
-    [[nodiscard]] bool AsBool(
-        bool _bDefault = false) const;
+    [[nodiscard]] bool AsBool(bool _bDefault = false) const;
 
-    [[nodiscard]] float AsFloat(
-        float _default = 0.f) const;
+    [[nodiscard]] float AsFloat(float _default = 0.f) const;
 
-    [[nodiscard]] int AsInt(
-        int _default = 0) const;
+    [[nodiscard]] int AsInt(int _default = 0) const;
 
     [[nodiscard]] const String& AsString() const;
 
@@ -54,21 +51,13 @@ public:
     [[nodiscard]] const ParamValue* Find(StringView _key) const;
     [[nodiscard]] bool              Has(StringView _key) const;
 
-    [[nodiscard]] bool GetBool(
-        StringView _key,
-        bool       _bDefault = false) const;
+    [[nodiscard]] bool GetBool(StringView _key, bool _bDefault = false) const;
 
-    [[nodiscard]] int GetInt(
-        StringView _key,
-        int        _default = 0) const;
+    [[nodiscard]] int GetInt(StringView _key, int _default = 0) const;
 
-    [[nodiscard]] String GetString(
-        StringView _key,
-        StringView _default = {}) const;
+    [[nodiscard]] String GetString(StringView _key, StringView _default = {}) const;
 
-    [[nodiscard]] Vec2 GetVec2(
-        StringView _key,
-        Vec2       _default = { 0.f, 0.f }) const;
+    [[nodiscard]] Vec2 GetVec2(StringView _key, Vec2 _default = { 0.f, 0.f }) const;
 
     [[nodiscard]] bool TryGetVec2(Vec2& _out) const;
 
@@ -113,8 +102,7 @@ enum class eStageLayer : uint8_t
     Count
 };
 
-[[nodiscard]] uint32_t LayerBit(
-    const eStageLayer _layer);
+[[nodiscard]] uint32_t LayerBit(const eStageLayer _layer);
 
 enum class eCollisionLayer : uint8_t
 {
@@ -407,16 +395,10 @@ struct StageData
     [[nodiscard]] int CountGates() const;
 };
 
-[[nodiscard]] Result<StageData> LoadStageFromJson(
-    StringView _json,
-    String* _pMessage = nullptr);
+[[nodiscard]] Result<StageData> LoadStageFromJson(StringView _json, String* _pMessage = nullptr);
 
-[[nodiscard]] Result<StageData> LoadStageFromFile(
-    const FilePath& _path,
-    String* _pMessage = nullptr);
+[[nodiscard]] Result<StageData> LoadStageFromFile(const FilePath& _path, String* _pMessage = nullptr);
 
-[[nodiscard]] bool ShouldRunAction(
-    const eWhen _when,
-    const bool  _bSilent);
+[[nodiscard]] bool ShouldRunAction(const eWhen _when, const bool _bSilent);
 
 [[nodiscard]] const char* GetActionTypeName(eActionType _type);

@@ -30,25 +30,9 @@ public:
     void DrawFade(GameContext& _ctx);
     void DrawOverlays(GameContext& _ctx);
 
-    void DrawText(
-        GameContext&     _ctx,
-        int              _x,
-        int              _y,
-        StringView       _text,
-        const TextStyle& _style) const;
-    bool DrawSprite(
-        GameContext& _ctx,
-        StringView   _name,
-        int          _centerX,
-        int          _centerY,
-        int          _scale = 1,
-        uint8_t      _alpha = 255) const;
-    bool DrawStandalone(
-        GameContext& _ctx,
-        StringView   _name,
-        int          _x,
-        int          _y,
-        uint8_t      _alpha = 255) const;
+    void DrawText(GameContext& _ctx, int _x, int _y, StringView _text, const TextStyle& _style) const;
+    bool DrawSprite(GameContext& _ctx, StringView _name, int _centerX, int _centerY, int _scale = 1, uint8_t _alpha = 255) const;
+    bool DrawStandalone(GameContext& _ctx, StringView _name, int _x, int _y, uint8_t _alpha = 255) const;
 
     [[nodiscard]] BannerSystem&         GetBanner();
     [[nodiscard]] const BannerSystem&   GetBanner() const;

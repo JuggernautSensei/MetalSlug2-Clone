@@ -22,11 +22,7 @@ struct ScreenWalls
 class StageRunner
 {
 public:
-    StageRunner(
-        const StageData& _data,
-        IStageHost&      _host,
-        Camera&          _camera,
-        RngMt19937&      _rng);
+    StageRunner(const StageData& _data, IStageHost& _host, Camera& _camera, RngMt19937& _rng);
 
     StageRunner(const StageRunner&)            = delete;
     StageRunner& operator=(const StageRunner&) = delete;

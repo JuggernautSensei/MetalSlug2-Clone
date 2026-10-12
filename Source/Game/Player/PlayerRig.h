@@ -80,12 +80,7 @@ public:
 
     void Update(const RigState& _state);
 
-    void Submit(
-        SpriteBatch& _sprites,
-        Vec2         _feet,
-        int          _depth,
-        int          _sortKey,
-        RGBA         _tint = { 255, 255, 255, 255 }) const;
+    void Submit(SpriteBatch& _sprites, Vec2 _feet, int _depth, int _sortKey, RGBA _tint = { 255, 255, 255, 255 }) const;
 
     [[nodiscard]] AnimId GetUpperClip() const;
     [[nodiscard]] AnimId GetLowerClip() const;
@@ -96,11 +91,7 @@ public:
 
     [[nodiscard]] AnimId GetSlotClip(eWeapon _weapon, int _facing, eRigClip _slot) const;
 
-    [[nodiscard]] static String ResolveClipName(
-        const AnimationLibrary& _library,
-        eRigClip                _slot,
-        eWeapon                 _weapon,
-        int                     _facing);
+    [[nodiscard]] static String ResolveClipName(const AnimationLibrary& _library, eRigClip _slot, eWeapon _weapon, int _facing);
 
     [[nodiscard]] static bool IsSlotRequired(eRigClip _slot);
 

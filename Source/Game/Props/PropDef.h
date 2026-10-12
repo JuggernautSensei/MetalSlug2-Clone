@@ -214,12 +214,8 @@ class PropDefLibrary
 public:
     PropDefLibrary() = default;
 
-    [[nodiscard]] static Result<PropDefLibrary> Load(
-        const FilePath& _path,
-        String*         _pMessageOrNull = nullptr);
-    [[nodiscard]] static Result<PropDefLibrary> Parse(
-        StringView _json,
-        String*    _pMessageOrNull = nullptr);
+    [[nodiscard]] static Result<PropDefLibrary> Load(const FilePath& _path, String* _pMessageOrNull = nullptr);
+    [[nodiscard]] static Result<PropDefLibrary> Parse(StringView _json, String* _pMessageOrNull = nullptr);
     [[nodiscard]] const PropDef*      Find(StringView _name) const;
     [[nodiscard]] int                 FindIndex(StringView _name) const;
     [[nodiscard]] Span<const PropDef> GetDefs() const;
@@ -230,11 +226,7 @@ public:
 
     [[nodiscard]] const PropItemGroup* FindGroup(StringView _name) const;
 
-    [[nodiscard]] bool ParseSpawnParams(
-        StringView        _defName,
-        const JsonReader& _params,
-        PropSpawnParams&  _out,
-        String&           _error) const;
+    [[nodiscard]] bool ParseSpawnParams(StringView _defName, const JsonReader& _params, PropSpawnParams& _out, String& _error) const;
 
     [[nodiscard]] String FindMissingAsset(const AnimationLibrary& _anims, const SpriteLibrary& _sprites) const;
 

@@ -20,30 +20,19 @@ inline constexpr int kTrailDepth   = 29;
 class EnemyWorld
 {
 public:
-    explicit EnemyWorld(
-        const EnemyDefLibrary* _pLibrary,
-        uint64_t               _seed     = 1);
+    explicit EnemyWorld(const EnemyDefLibrary* _pLibrary, uint64_t _seed = 1);
 
     void                                 SetLibrary(const EnemyDefLibrary* _pLibrary);
     [[nodiscard]] const EnemyDefLibrary* GetLibrary() const;
 
-    void Reset(
-        uint64_t _seed = 1);
+    void Reset(uint64_t _seed = 1);
 
     // 테스트 전용: 전투 중 난수열만 바꾼다 (적 목록 유지)
     void ReseedRng(uint64_t _seed);
 
-    EnemyHandle Spawn(
-        StringView          _defName,
-        Vec2                _feet,
-        const SpawnParams&  _params     = {},
-        const PhysicsWorld* _pSnapWorld = nullptr);
+    EnemyHandle Spawn(StringView _defName, Vec2 _feet, const SpawnParams& _params = {}, const PhysicsWorld* _pSnapWorld = nullptr);
 
-    EnemyHandle SpawnByIndex(
-        int                 _defIndex,
-        Vec2                _feet,
-        const SpawnParams&  _params     = {},
-        const PhysicsWorld* _pSnapWorld = nullptr);
+    EnemyHandle SpawnByIndex(int _defIndex, Vec2 _feet, const SpawnParams& _params = {}, const PhysicsWorld* _pSnapWorld = nullptr);
 
     void RegisterHurtboxes(CombatSystem& _combat) const;
     void Tick(const EnemyContext& _ctx);
@@ -51,11 +40,7 @@ public:
 
     void BindAnims(const AnimationLibrary& _anims);
 
-    void Submit(
-        SpriteBatch&            _sprites,
-        const AnimationLibrary& _anims,
-        const ProjectileSystem& _projectiles,
-        float                   _alpha);
+    void Submit(SpriteBatch& _sprites, const AnimationLibrary& _anims, const ProjectileSystem& _projectiles, float _alpha);
 
     void SetSpriteLibrary(const SpriteLibrary* _pSprites);
 
@@ -68,8 +53,7 @@ public:
     [[nodiscard]] bool        IsTagDefeated(uint32_t _userTag) const;
     [[nodiscard]] EnemyHandle ResolveHandle(EnemyHandle _handle) const;
 
-    [[nodiscard]] int CountAlive(
-        const EnemyFilter& _filter = {}) const;
+    [[nodiscard]] int CountAlive(const EnemyFilter& _filter = {}) const;
 
     [[nodiscard]] int CountAlive(StringView _defName) const;
 
@@ -91,15 +75,11 @@ public:
     [[nodiscard]] Vector<EnemyEvent> TakeEvents();
     [[nodiscard]] Vector<String>     TakeSounds();
 
-    void ClearMonsters(
-        bool _bIncludeNpc = false);
+    void ClearMonsters(bool _bIncludeNpc = false);
 
-    void RefreshBodies(
-        int  _defIndex,
-        Vec2 _size);
+    void RefreshBodies(int _defIndex, Vec2 _size);
 
-    void KillAll(
-        bool _bAwardScore = false);
+    void KillAll(bool _bAwardScore = false);
 
     [[nodiscard]] uint64_t HashState() const;
 
@@ -139,12 +119,7 @@ private:
 
     [[nodiscard]] size_t FindIndex_(uint32_t _id) const;
 
-    void Create_(
-        uint32_t            _id,
-        int                 _defIndex,
-        Vec2                _feet,
-        const SpawnParams&  _params,
-        const PhysicsWorld* _pSnapWorld);
+    void Create_(uint32_t _id, int _defIndex, Vec2 _feet, const SpawnParams& _params, const PhysicsWorld* _pSnapWorld);
 
     void BeginDying_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
     void RemoveGone_();

@@ -16,11 +16,7 @@ struct ParamEntry
 class DefReader
 {
 public:
-    DefReader(
-        StringView          _defName,
-        EnemyDef&           _def,
-        Vector<ParamEntry>& _params,
-        String&             _error);
+    DefReader(StringView _defName, EnemyDef& _def, Vector<ParamEntry>& _params, String& _error);
 
     [[nodiscard]] float             Num(StringView _key);
     [[nodiscard]] float             Num(StringView _key, float _default);
@@ -49,12 +45,7 @@ public:
 private:
     [[nodiscard]] ParamEntry* Find_(StringView _key);
 
-    void ReadBoxField_(
-        const ParamEntry& _entry,
-        StringView        _key,
-        StringView        _name,
-        float&            _out,
-        bool              _bRequired);
+    void ReadBoxField_(const ParamEntry& _entry, StringView _key, StringView _name, float& _out, bool _bRequired);
 
     String              m_defName;
     EnemyDef&           m_def;

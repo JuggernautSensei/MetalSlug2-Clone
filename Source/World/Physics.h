@@ -43,8 +43,7 @@ struct Body
 
     [[nodiscard]] Aabb GetBox() const;
 
-    void RequestDropThrough(
-        const int _steps = PhysicsTuning {}.dropThroughSteps);
+    void RequestDropThrough(const int _steps = PhysicsTuning {}.dropThroughSteps);
 };
 
 struct MoveResult

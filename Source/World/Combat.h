@@ -39,9 +39,7 @@ private:
 inline constexpr uint32_t kNoOwner = 0;
 inline constexpr uint32_t kNoHitId = 0;
 
-[[nodiscard]] bool CanTeamHit(
-    eTeam _attacker,
-    eTeam _target);
+[[nodiscard]] bool CanTeamHit(eTeam _attacker, eTeam _target);
 
 struct Hitbox
 {
@@ -104,14 +102,12 @@ struct Health
     int hp    = 1;
     int maxHp = 1;
 
-    [[nodiscard]] static Health Make(
-        int _maxHp);
+    [[nodiscard]] static Health Make(int _maxHp);
 
     [[nodiscard]] bool IsDead() const;
 
     [[nodiscard]] bool IsAlive() const;
 
-    int ApplyDamage(
-        int _damage);
+    int ApplyDamage(int _damage);
 
 };

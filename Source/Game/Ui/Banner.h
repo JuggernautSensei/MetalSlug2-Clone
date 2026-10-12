@@ -19,11 +19,7 @@ struct BannerSpec
 
 [[nodiscard]] BannerSpec MakeBannerSpec(StringView _text, float _seconds);
 
-[[nodiscard]] float ComputeBannerAlpha(
-    int _elapsed,
-    int _fadeIn,
-    int _hold,
-    int _fadeOut);
+[[nodiscard]] float ComputeBannerAlpha(int _elapsed, int _fadeIn, int _hold, int _fadeOut);
 
 struct GlyphPose
 {
@@ -32,12 +28,7 @@ struct GlyphPose
     uint8_t alpha = 0;   // 0..255
 };
 
-[[nodiscard]] GlyphPose ComputeMissionGlyphPose(
-    int _elapsed,
-    int _fadeIn,
-    int _hold,
-    int _fadeOut,
-    int _index);
+[[nodiscard]] GlyphPose ComputeMissionGlyphPose(int _elapsed, int _fadeIn, int _hold, int _fadeOut, int _index);
 
 // 미션 폰트 스프라이트 이름 (UI_Mission_A..Z, _1.._9, _Excl, _Question). 지원하지 않는 글자는 빈 문자열.
 [[nodiscard]] String MakeMissionGlyphName(char _ch);

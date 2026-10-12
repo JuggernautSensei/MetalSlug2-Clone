@@ -8,13 +8,7 @@ class AudioSystem;
 class SpriteBatch;
 class SpriteLibrary;
 
-bool SubmitPlayerBullet(
-    SpriteBatch&            _sprites,
-    const AnimationLibrary* _pAnims,
-    const SpriteLibrary&    _spriteLib,
-    const Bullet&           _bullet,
-    Vec2                    _pos,
-    int                     _depth);
+bool SubmitPlayerBullet(SpriteBatch& _sprites, const AnimationLibrary* _pAnims, const SpriteLibrary& _spriteLib, const Bullet& _bullet, Vec2 _pos, int _depth);
 
 void PlayShotSfx(AudioSystem& _audio, eWeapon _weapon, int _shotIndex);
 

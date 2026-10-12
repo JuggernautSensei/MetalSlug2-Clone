@@ -4,13 +4,9 @@
 #include "Game/Enemies/EnemyBehaviors.h"
 #include "Game/Enemies/EnemyWorld.h"
 
-[[nodiscard]] float DxToPlayer(
-    const Enemy&    _e,
-    const EnemyEnv& _env);
+[[nodiscard]] float DxToPlayer(const Enemy& _e, const EnemyEnv& _env);
 
-[[nodiscard]] float DyToPlayer(
-    const Enemy&    _e,
-    const EnemyEnv& _env);
+[[nodiscard]] float DyToPlayer(const Enemy& _e, const EnemyEnv& _env);
 
 [[nodiscard]] float DistToPlayer(const Enemy& _e, const EnemyEnv& _env);
 
@@ -19,10 +15,7 @@ void              FacePlayer(Enemy& _e, const EnemyEnv& _env);
 
 void EnterState(Enemy& _e, int _state);
 
-void SetClip(
-    Enemy& _e,
-    int    _clip,
-    bool   _bRestart = false);
+void SetClip(Enemy& _e, int _clip, bool _bRestart = false);
 
 [[nodiscard]] bool ClipReachedFrame(const Enemy& _e, const EnemyDef& _def, int _frame);
 [[nodiscard]] bool ClipFinished(const Enemy& _e, const EnemyDef& _def);
@@ -42,50 +35,24 @@ void HoldOnRoof(Enemy& _e);
 MoveResult StepPhysics(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
 void       PrepareBody(Enemy& _e, const EnemyDef& _def);
 
-[[nodiscard]] bool WallAhead(
-    const Enemy&    _e,
-    const EnemyEnv& _env,
-    float           _w,
-    float           _h,
-    float           _x,
-    float           _y);
+[[nodiscard]] bool WallAhead(const Enemy& _e, const EnemyEnv& _env, float _w, float _h, float _x, float _y);
 
-[[nodiscard]] bool FloorAhead(
-    const Enemy&    _e,
-    const EnemyEnv& _env,
-    float           _dist,
-    float           _drop);
+[[nodiscard]] bool FloorAhead(const Enemy& _e, const EnemyEnv& _env, float _dist, float _drop);
 
-[[nodiscard]] int Roll(
-    EnemyEnv& _env,
-    const int _n);
+[[nodiscard]] int Roll(EnemyEnv& _env, const int _n);
 
-void RequestFx(
-    EnemyEnv&    _env,
-    const FxDef& _fx,
-    Vec2         _origin,
-    int          _facing);
+void RequestFx(EnemyEnv& _env, const FxDef& _fx, Vec2 _origin, int _facing);
 
 [[nodiscard]] String ResolveSide(const String& _name, int _facing);
 
-bool FireWeapon(
-    Enemy&          _e,
-    const EnemyDef& _def,
-    EnemyEnv&       _env,
-    int             _weapon,
-    Vec2            _dir         = { 0.f, 0.f },
-    Vec2            _muzzleExtra = { 0.f, 0.f });
+bool FireWeapon(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, int _weapon, Vec2 _dir = { 0.f, 0.f }, Vec2 _muzzleExtra = { 0.f, 0.f });
 
 [[nodiscard]] Vec2 GetMuzzleWorld(const Enemy& _e, const EnemyDef& _def, int _weapon);
 
 // 무기의 effects: motionClip 의 frame 이 시작되는 틱에 이펙트를 낸다 (effects 가 없으면 아무것도 안 한다)
 void TickWeaponEffects(const Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
 
-void StartMelee(
-    Enemy&          _e,
-    const EnemyDef& _def,
-    EnemyEnv&       _env,
-    int             _weapon);
+void StartMelee(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, int _weapon);
 
 void TickMelee(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
 void CancelMelee(Enemy& _e, EnemyEnv& _env);

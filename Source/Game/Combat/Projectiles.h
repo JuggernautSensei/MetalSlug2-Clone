@@ -180,11 +180,7 @@ public:
     void SpawnShot(const ShotSpawn& _spawn, CombatSystem& _combat);
 
     // _platforms: 적/스테이지 발판(지붕). 낙하 중인 shell 은 윗면을 가로지르면 그 위에 착지한다 (빈 span = 지형만)
-    void Step(
-        const GroundMap*     _pGround,
-        CombatSystem&        _combat,
-        float                _dt,
-        Span<const Platform> _platforms = {});
+    void Step(const GroundMap* _pGround, CombatSystem& _combat, float _dt, Span<const Platform> _platforms = {});
 
     void OnHitEvents(Span<const HitEvent> _events, CombatSystem& _combat);
 

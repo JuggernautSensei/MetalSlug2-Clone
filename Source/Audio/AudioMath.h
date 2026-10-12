@@ -2,9 +2,7 @@
 #include <algorithm>
 #include <cstdint>
 
-[[nodiscard]] float ComputePitch(
-    const float _variation,
-    const float _unit01);
+[[nodiscard]] float ComputePitch(const float _variation, const float _unit01);
 
 class AudioRng
 {

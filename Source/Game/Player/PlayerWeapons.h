@@ -22,24 +22,13 @@ void GiveWeapon(WeaponState& _state, eWeapon _weapon, int _ammo);
 
 void TickWeapon(WeaponState& _state);
 
-[[nodiscard]] bool ShouldFire(
-    const WeaponState&  _state,
-    const WeaponTuning& _tuning,
-    int                 _aliveBullets,
-    bool                _bShotBuffered,
-    bool                _bShotHeld);
+[[nodiscard]] bool ShouldFire(const WeaponState& _state, const WeaponTuning& _tuning, int _aliveBullets, bool _bShotBuffered, bool _bShotHeld);
 
 void OnFired(WeaponState& _state);
 
 [[nodiscard]] eWeapon WeaponFromDebugSlot(int _slot);
 
-[[nodiscard]] BulletSpawn MakeBulletSpawn(
-    eWeapon             _weapon,
-    const WeaponTuning& _tuning,
-    uint32_t            _owner,
-    Vec2                _muzzle,
-    Vec2                _sweepFrom,
-    Vec2                _direction);
+[[nodiscard]] BulletSpawn MakeBulletSpawn(eWeapon _weapon, const WeaponTuning& _tuning, uint32_t _owner, Vec2 _muzzle, Vec2 _sweepFrom, Vec2 _direction);
 
 // 파이어샷 분출 입자 하나 (방향/속도/수명은 _rng 에서 결정적으로 뽑는다, _hitId 는 분출 전체가 공유)
 [[nodiscard]] BulletSpawn MakeFlameParticleSpawn(

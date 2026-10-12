@@ -817,17 +817,11 @@ struct EnemyGlobals
 class EnemyDefLibrary
 {
 public:
-    [[nodiscard]] static Result<EnemyDefLibrary> Parse(
-        StringView _json,
-        String*    _pMessage = nullptr);
+    [[nodiscard]] static Result<EnemyDefLibrary> Parse(StringView _json, String* _pMessage = nullptr);
 
-    [[nodiscard]] static Result<EnemyDefLibrary> Load(
-        const FilePath& _path,
-        String*         _pMessage = nullptr);
+    [[nodiscard]] static Result<EnemyDefLibrary> Load(const FilePath& _path, String* _pMessage = nullptr);
 
-    [[nodiscard]] static Result<EnemyDefLibrary> LoadDirectory(
-        const FilePath& _dir,
-        String*         _pMessage = nullptr);
+    [[nodiscard]] static Result<EnemyDefLibrary> LoadDirectory(const FilePath& _dir, String* _pMessage = nullptr);
 
 
     [[nodiscard]] static FilePath GetDefaultDirectory(const FilePath& _assetRoot);

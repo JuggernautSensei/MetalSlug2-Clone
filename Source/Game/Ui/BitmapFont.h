@@ -41,13 +41,9 @@ inline constexpr int kGlyphSize    = 16;
 inline constexpr int kGlyphColumns = 35;
 inline constexpr int kGlyphRows    = 2;   // 0 = 굵게, 1 = 가늘게
 
-[[nodiscard]] int GetGlyphIndex(
-    const char _ch);
+[[nodiscard]] int GetGlyphIndex(const char _ch);
 
-[[nodiscard]] int MeasureChars(
-    const int _charCount,
-    const int _scale,
-    const int _letterSpacing = 0);
+[[nodiscard]] int MeasureChars(const int _charCount, const int _scale, const int _letterSpacing = 0);
 
 struct GlyphQuad
 {
@@ -66,11 +62,7 @@ struct TextLayout
     IntRect           bounds = {};
 };
 
-[[nodiscard]] TextLayout LayoutText(
-    StringView       _text,
-    int              _x,
-    int              _y,
-    const TextStyle& _style);
+[[nodiscard]] TextLayout LayoutText(StringView _text, int _x, int _y, const TextStyle& _style);
 
 class BitmapFont
 {
@@ -79,20 +71,9 @@ public:
 
     [[nodiscard]] bool HasSprites() const;
 
-    void DrawText(
-        Renderer&        _renderer,
-        SpriteBatch&     _sprites,
-        int              _x,
-        int              _y,
-        StringView       _text,
-        const TextStyle& _style) const;
+    void DrawText(Renderer& _renderer, SpriteBatch& _sprites, int _x, int _y, StringView _text, const TextStyle& _style) const;
 
-    void DrawTimeDigits(
-        SpriteBatch& _sprites,
-        int          _centerX,
-        int          _topY,
-        StringView   _digits,
-        uint8_t      _alpha = 255) const;
+    void DrawTimeDigits(SpriteBatch& _sprites, int _centerX, int _topY, StringView _digits, uint8_t _alpha = 255) const;
 
     [[nodiscard]] AnimFrame GetGlyphFrame(eFontColor _color, bool _bBold, int _glyph) const;
     [[nodiscard]] AnimFrame GetTimeDigitFrame(int _digit) const;

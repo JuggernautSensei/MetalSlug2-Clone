@@ -27,11 +27,7 @@ public:
     [[nodiscard]] uint8_t GetAlpha255() const;
 
 private:
-    void Begin_(
-        float  _target,
-        int    _ticks,
-        ePhase _movingPhase,
-        ePhase _donePhase);
+    void Begin_(float _target, int _ticks, ePhase _movingPhase, ePhase _donePhase);
 
     float  m_alpha     = 0.f;
     float  m_target    = 0.f;

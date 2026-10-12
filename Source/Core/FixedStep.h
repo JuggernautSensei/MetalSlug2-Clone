@@ -7,8 +7,7 @@ public:
     static constexpr double kMaxFrameSec      = 0.25;   // 긴 정지(디버거 등) 후 따라잡기 폭주 방지
     static constexpr int    kMaxStepsPerFrame = 5;
 
-    [[nodiscard]] int Advance(
-        double _deltaTimeSec);
+    [[nodiscard]] int Advance(double _deltaTimeSec);
 
     [[nodiscard]] float GetAlpha() const;
 

@@ -25,12 +25,9 @@ struct InputFrame
 {
     uint16_t held = 0;
 
-    [[nodiscard]] bool IsHeld(
-        const eAction _action) const;
+    [[nodiscard]] bool IsHeld(const eAction _action) const;
 
-    void Set(
-        const eAction _action,
-        const bool    _bHeld);
+    void Set(const eAction _action, const bool _bHeld);
 
     [[nodiscard]] constexpr bool operator==(const InputFrame&) const = default;
 };

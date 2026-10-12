@@ -88,9 +88,7 @@ struct HudItem
 
 [[nodiscard]] Vector<HudItem> BuildHudItems(const HudModel& _model, const UiLayout& _layout);
 
-[[nodiscard]] bool IsBlinkOn(
-    const int _tick,
-    const int _periodTicks);
+[[nodiscard]] bool IsBlinkOn(const int _tick, const int _periodTicks);
 
 [[nodiscard]] String FormatScore(int _score);
 [[nodiscard]] String FormatAmmo(int _ammo);

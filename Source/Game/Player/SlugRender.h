@@ -19,24 +19,10 @@ inline constexpr int kSlugArrowZOffset = kSlugArrowDepth - kSlugBodyDepth;
 
 [[nodiscard]] eSlugClip GetSlugBodyClip(eSlugPose _pose);
 
-void SubmitSlug(
-    SpriteBatch&            _sprites,
-    const AnimationLibrary& _anims,
-    const SlugVehicle&      _slug,
-    float                   _alpha);
+void SubmitSlug(SpriteBatch& _sprites, const AnimationLibrary& _anims, const SlugVehicle& _slug, float _alpha);
 
 [[nodiscard]] bool IsSlugOwner(uint32_t _owner);
 
-bool SubmitSlugBullet(
-    SpriteBatch&            _sprites,
-    const AnimationLibrary& _anims,
-    const Bullet&           _bullet,
-    Vec2                    _position,
-    int                     _depth);
+bool SubmitSlugBullet(SpriteBatch& _sprites, const AnimationLibrary& _anims, const Bullet& _bullet, Vec2 _position, int _depth);
 
-bool SubmitSlugShell(
-    SpriteBatch&            _sprites,
-    const AnimationLibrary& _anims,
-    const Bomb&             _bomb,
-    Vec2                    _position,
-    int                     _depth);
+bool SubmitSlugShell(SpriteBatch& _sprites, const AnimationLibrary& _anims, const Bomb& _bomb, Vec2 _position, int _depth);

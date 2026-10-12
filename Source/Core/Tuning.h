@@ -190,11 +190,9 @@ struct WeaponsTuning
     int rocketPickupAmmo  = 20;
     int flamePickupAmmo   = 30;
 
-    [[nodiscard]] int GetPickupAmmo(
-        const eWeapon _weapon) const;
+    [[nodiscard]] int GetPickupAmmo(const eWeapon _weapon) const;
 
-    [[nodiscard]] const WeaponTuning& Get(
-        const eWeapon _weapon) const;
+    [[nodiscard]] const WeaponTuning& Get(const eWeapon _weapon) const;
 };
 
 struct KnifeTuning

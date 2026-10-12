@@ -47,16 +47,12 @@ enum class ePose : uint8_t
     Air
 };
 
-[[nodiscard]] const char* GetStateName(
-    const ePlayerState _state);
+[[nodiscard]] const char* GetStateName(const ePlayerState _state);
 
-[[nodiscard]] const char* GetOverlayName(
-    const eOverlay _overlay);
+[[nodiscard]] const char* GetOverlayName(const eOverlay _overlay);
 
-[[nodiscard]] const char* GetAimName(
-    const eAim _aim);
+[[nodiscard]] const char* GetAimName(const eAim _aim);
 
-[[nodiscard]] const char* GetGodModeName(
-    const eGodMode _mode);
+[[nodiscard]] const char* GetGodModeName(const eGodMode _mode);
 
 inline constexpr uint32_t kPlayerOwnerId = 1;

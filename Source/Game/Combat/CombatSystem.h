@@ -15,11 +15,7 @@ public:
     [[nodiscard]] uint32_t NewHitId();
     void                   ReleaseHitId(uint32_t _hitId);
 
-    [[nodiscard]] bool HasTargetIn(
-        eTeam       _attackerTeam,
-        eHitKind    _kind,
-        const Aabb& _box,
-        uint32_t    _ignoreOwner = kNoOwner) const;
+    [[nodiscard]] bool HasTargetIn(eTeam _attackerTeam, eHitKind _kind, const Aabb& _box, uint32_t _ignoreOwner = kNoOwner) const;
 
     [[nodiscard]] Span<const Hurtbox>     GetHurtboxes() const;
     [[nodiscard]] Span<const Hitbox>      GetHitboxes() const;

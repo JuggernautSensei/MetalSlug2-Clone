@@ -15,19 +15,13 @@ public:
 
     VoiceAllocator() = default;
 
-    VoiceAllocator(
-        const int _capacity,
-        const int _maxPerSound);
+    VoiceAllocator(const int _capacity, const int _maxPerSound);
 
-    void Reset(
-        const int _capacity,
-        const int _maxPerSound);
+    void Reset(const int _capacity, const int _maxPerSound);
 
-    [[nodiscard]] Acquired Acquire(
-        const int _soundId);
+    [[nodiscard]] Acquired Acquire(const int _soundId);
 
-    void Release(
-        const int _slot);
+    void Release(const int _slot);
 
     [[nodiscard]] int  GetCapacity() const;
     [[nodiscard]] bool IsActive(const int _slot) const;
@@ -35,8 +29,7 @@ public:
 
     [[nodiscard]] int GetActiveCount() const;
 
-    [[nodiscard]] int CountSound(
-        const int _soundId) const;
+    [[nodiscard]] int CountSound(const int _soundId) const;
 
 private:
     struct Slot
@@ -46,13 +39,9 @@ private:
         uint64_t serial  = 0;   // 시작 순서 (작을수록 오래됨)
     };
 
-    [[nodiscard]] int FindOldest_(
-        const int _soundId) const;
+    [[nodiscard]] int FindOldest_(const int _soundId) const;
 
-    [[nodiscard]] Acquired Take_(
-        const int  _slot,
-        const int  _soundId,
-        const bool _bStolen);
+    [[nodiscard]] Acquired Take_(const int _slot, const int _soundId, const bool _bStolen);
 
     Vector<Slot> m_slots       = {};
     int          m_maxPerSound = 4;

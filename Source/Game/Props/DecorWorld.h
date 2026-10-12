@@ -38,11 +38,7 @@ struct DecorSpawn
 //  sequence: [{ "clip", "seconds", "velocity": [vx, vy], "flip" }, ...]
 //  loop: bool (sequence 반복)
 //  flip: bool (단일 clip 좌우 반전)
-[[nodiscard]] DecorSpawn MakeDecorSpawn(
-    StringView        _clip,
-    eStageLayer       _layer,
-    Vec2              _pos,
-    const ParamValue* _pParams);
+[[nodiscard]] DecorSpawn MakeDecorSpawn(StringView _clip, eStageLayer _layer, Vec2 _pos, const ParamValue* _pParams);
 
 class DecorWorld
 {
@@ -76,12 +72,7 @@ public:
 
     [[nodiscard]] size_t GetCount() const;
 
-    [[nodiscard]] bool Get(
-        uint32_t    _id,
-        Vec2&       _outPos,
-        Vec2&       _outVelocity,
-        StringView& _outClip,
-        bool&       _bOutFinished) const;
+    [[nodiscard]] bool Get(uint32_t _id, Vec2& _outPos, Vec2& _outVelocity, StringView& _outClip, bool& _bOutFinished) const;
 
 private:
     void EnterStep_(Instance& _inst, const AnimationLibrary& _anims) const;

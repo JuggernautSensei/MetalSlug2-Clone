@@ -42,20 +42,11 @@ class TrainingTargets
 public:
     void Clear();
 
-    uint32_t Add(
-        eDummyKind           _kind,
-        Vec2                 _feet,
-        bool                 _bShooter,
-        const SandboxTuning& _tuning);
+    uint32_t Add(eDummyKind _kind, Vec2 _feet, bool _bShooter, const SandboxTuning& _tuning);
 
     void RegisterHurtboxes(CombatSystem& _combat) const;
 
-    void TickShooters(
-        const SandboxTuning& _tuning,
-        Vec2                 _playerFeet,
-        bool                 _bPlayerAlive,
-        ProjectileSystem&    _projectiles,
-        CombatSystem&        _combat);
+    void TickShooters(const SandboxTuning& _tuning, Vec2 _playerFeet, bool _bPlayerAlive, ProjectileSystem& _projectiles, CombatSystem& _combat);
 
     int ApplyEvents(Span<const HitEvent> _events, const SandboxTuning& _tuning);
 
