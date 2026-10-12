@@ -223,11 +223,11 @@ TEST(StageData, BoundsCurveResolvesSectionIndicesAndEvaluates)
 
 TEST(StageDataErrors, InvalidJsonSyntax)
 {
-    StageLoadDiagnostics    diag;
+    String diag;
     const Result<StageData> result = LoadStageFromJson("{ not json", &diag);
     ASSERT_FALSE(result);
     EXPECT_TRUE(HasErrorCode(result.GetError(), eError::Parse));
-    EXPECT_NE(diag.message.find("syntax"), String::npos);
+    EXPECT_NE(diag.find("syntax"), String::npos);
 }
 
 TEST(StageDataErrors, UnknownTopLevelKey)
@@ -363,7 +363,7 @@ TEST(StageDataErrors, GroundAndBackdropInitialMustExist)
 
 TEST(StageDataErrors, MissingFileIsReported)
 {
-    StageLoadDiagnostics    diag;
+    String diag;
     const Result<StageData> result = LoadStageFromFile("does/not/exist/Stage.json", &diag);
     ASSERT_FALSE(result);
     EXPECT_TRUE(HasErrorCode(result.GetError(), eError::FileOpen));
@@ -371,9 +371,9 @@ TEST(StageDataErrors, MissingFileIsReported)
 
 TEST(StageDataReal, OpenlandPowsAreAboutEvery700PxAndCoverTheWeaponMix)
 {
-    StageLoadDiagnostics diag;
+    String diag;
     Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
-    ASSERT_TRUE(result) << diag.message;
+    ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
     Vector<float>  xs;
@@ -407,9 +407,9 @@ TEST(StageDataReal, OpenlandPowsAreAboutEvery700PxAndCoverTheWeaponMix)
 
 TEST(StageDataReal, OpenlandHousesAndBlocksStayAlignedWithTheGroundMaskBumps)
 {
-    StageLoadDiagnostics diag;
+    String diag;
     Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
-    ASSERT_TRUE(result) << diag.message;
+    ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
     std::optional<GroundMap> mask = LoadGroundMask(FindAssetRoot() / "Ground" / "Stage0_0.png");
@@ -450,9 +450,9 @@ TEST(StageDataReal, OpenlandHousesAndBlocksStayAlignedWithTheGroundMaskBumps)
 
 TEST(StageDataReal, BossArenaStreetHasItsHousesAndBlocksAheadOfTheCamera)
 {
-    StageLoadDiagnostics diag;
+    String diag;
     Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
-    ASSERT_TRUE(result) << diag.message;
+    ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
     // HMG 픽업은 마지막 구간 전 (openland_4, 화면 밖) 에 놓는다. 마지막 섹션 자체에는 픽업/적 소품을 넣지 않는다
@@ -496,9 +496,9 @@ TEST(StageDataReal, BossArenaStreetHasItsHousesAndBlocksAheadOfTheCamera)
 
 TEST(StageDataReal, Stage0AmbientWalkersUseSequenceParams)
 {
-    StageLoadDiagnostics diag;
+    String diag;
     Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
-    ASSERT_TRUE(result) << diag.message;
+    ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
     // 인트로: 노인(Parker) 이 길을 오간다 (어린 소년 NPC 는 삭제했다)
@@ -543,9 +543,9 @@ TEST(StageDataReal, Stage0AmbientWalkersUseSequenceParams)
 
 TEST(StageDataReal, BossArenaIsBehindTheSarubiaLockAndClearsOnlyAfterTheBossIsDestroyed)
 {
-    StageLoadDiagnostics diag;
+    String diag;
     Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
-    ASSERT_TRUE(result) << diag.message;
+    ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
     // 사루비아 락 (openland_4, 오른쪽 끝 13080, 플레이어 최대 13066) 안에서는 아레나 트리거에 닿을 수 없다
@@ -577,9 +577,9 @@ TEST(StageDataReal, BossArenaIsBehindTheSarubiaLockAndClearsOnlyAfterTheBossIsDe
 // 강 지프는 heli_river 락 왼쪽 끝 (5357) 보다 60 px 왼쪽 밖에서 나타난다
 TEST(StageDataReal, RiverJeepSpawnsSixtyPixelsLeftOfTheHeliLock)
 {
-    StageLoadDiagnostics diag;
+    String diag;
     Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
-    ASSERT_TRUE(result) << diag.message;
+    ASSERT_TRUE(result) << diag;
     const StageData data   = result.Take();
     bool            bFound = false;
     for (const StageSection& section: data.sections)
@@ -599,9 +599,9 @@ TEST(StageDataReal, RiverJeepSpawnsSixtyPixelsLeftOfTheHeliLock)
 
 TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
 {
-    StageLoadDiagnostics diag;
+    String diag;
     Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
-    ASSERT_TRUE(result) << diag.message;
+    ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
     // 기대값은 현행 Stage0.json 을 센 결과 (spawn 은 repeat.count 펼침 포함, 게이트 안 spawn 포함)

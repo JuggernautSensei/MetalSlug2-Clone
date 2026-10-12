@@ -174,11 +174,11 @@ void StageState::Load_(
     m_assetRoot = _ctx.assetRoot;
 
     const ScopedPhaseTimer stageTimer { "stage-load", m_config.stageFile };
-    StageLoadDiagnostics   diag = {};
-    Result<StageData>      data = LoadStageFromFile(_ctx.assetRoot / "Stage" / m_config.stageFile, &diag);
+    String                 loadMessage;
+    Result<StageData>      data = LoadStageFromFile(_ctx.assetRoot / "Stage" / m_config.stageFile, &loadMessage);
     if (!data)
     {
-        SLUG_LOG_ERROR("{} 을 읽지 못했습니다: {}", m_config.stageFile, diag.message);
+        SLUG_LOG_ERROR("{} 을 읽지 못했습니다: {}", m_config.stageFile, loadMessage);
         m_bFailed = true;
         return;
     }

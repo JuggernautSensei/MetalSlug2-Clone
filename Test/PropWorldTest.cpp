@@ -704,9 +704,9 @@ TEST(PropWorld, BuildingSortKeyTiesBreakByY)
 // 실제 Stage0 의 가게 6채: x 가 커질수록 그리기 키가 엄격히 작아진다 (앞 → 뒤 = x 오름차순)
 TEST(PropWorldStage0, ShopsDrawFrontToBackByX)
 {
-    StageLoadDiagnostics diag;
+    String diag;
     Result<StageData>    result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
-    ASSERT_TRUE(result) << diag.message;
+    ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
     Vector<SpawnSpec> shops;

@@ -223,11 +223,11 @@ String WrapStage(
 StageData MustLoad(
     const String& _json)
 {
-    StageLoadDiagnostics diag;
+    String diag;
     Result<StageData>    result = LoadStageFromJson(_json, &diag);
     if (!result)
     {
-        ADD_FAILURE() << "stage load failed: " << diag.message;
+        ADD_FAILURE() << "stage load failed: " << diag;
         return {};
     }
     return result.Take();
@@ -236,9 +236,9 @@ StageData MustLoad(
 String LoadError(
     const String& _json)
 {
-    StageLoadDiagnostics    diag;
+    String diag;
     const Result<StageData> result = LoadStageFromJson(_json, &diag);
-    return result ? String {} : (diag.message.empty() ? String { "<no message>" } : diag.message);
+    return result ? String {} : (diag.empty() ? String { "<no message>" } : diag);
 }
 
 RunnerFixture::RunnerFixture(

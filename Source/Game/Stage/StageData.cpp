@@ -2330,55 +2330,55 @@ bool Parser::Validate_()
 namespace
 {
 [[nodiscard]] Result<StageData> MakeFailure_(
-    StageLoadDiagnostics* const _pDiag,
-    const String&               _message,
-    const eError                _code)
+    String* const _pMessage,
+    const String& _message,
+    const eError  _code)
 {
-    if (_pDiag)
+    if (_pMessage)
     {
-        _pDiag->message = _message;
+        *_pMessage = _message;
     }
     return Error { _code };
 }
 }   // namespace
 
 Result<StageData> LoadStageFromJson(
-    const StringView            _json,
-    StageLoadDiagnostics* const _pDiag)
+    const StringView     _json,
+    String* const _pMessage)
 {
-    if (_pDiag)
+    if (_pMessage)
     {
-        _pDiag->message.clear();
+        _pMessage->clear();
     }
 
     Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, eJsonLoadOption::AllowBOM);
     if (!doc)
     {
-        return MakeFailure_(_pDiag, "JSON syntax error", eError::Parse);
+        return MakeFailure_(_pMessage, "JSON syntax error", eError::Parse);
     }
 
     StageData data = {};
     Parser    parser { data };
     if (!parser.Parse(doc->GetReader()))
     {
-        return MakeFailure_(_pDiag, parser.GetError(), eError::StageInvalid);
+        return MakeFailure_(_pMessage, parser.GetError(), eError::StageInvalid);
     }
     return data;
 }
 
 Result<StageData> LoadStageFromFile(
-    const FilePath&             _path,
-    StageLoadDiagnostics* const _pDiag)
+    const FilePath&      _path,
+    String* const _pMessage)
 {
     std::ifstream file { _path, std::ios::binary };
     if (!file)
     {
-        return MakeFailure_(_pDiag, std::format("cannot open '{}'", _path.string()), eError::FileOpen);
+        return MakeFailure_(_pMessage, std::format("cannot open '{}'", _path.string()), eError::FileOpen);
     }
     std::ostringstream buffer;
     buffer << file.rdbuf();
     const String text = buffer.str();
-    return LoadStageFromJson(text, _pDiag);
+    return LoadStageFromJson(text, _pMessage);
 }
 
 uint32_t LayerBit(

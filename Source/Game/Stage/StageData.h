@@ -409,18 +409,13 @@ struct StageData
     [[nodiscard]] int CountGates() const;
 };
 
-struct StageLoadDiagnostics
-{
-    String message = {};
-};
-
 [[nodiscard]] Result<StageData> LoadStageFromJson(
-    StringView            _json,
-    StageLoadDiagnostics* _pDiag = nullptr);
+    StringView _json,
+    String* _pMessage = nullptr);
 
 [[nodiscard]] Result<StageData> LoadStageFromFile(
-    const FilePath&       _path,
-    StageLoadDiagnostics* _pDiag = nullptr);
+    const FilePath& _path,
+    String* _pMessage = nullptr);
 
 [[nodiscard]] bool ShouldRunAction(
     const eWhen _when,
