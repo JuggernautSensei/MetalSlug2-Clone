@@ -59,7 +59,6 @@ private:
     bool     m_bNoAsyncLoad     = false;
     bool     m_bEditor          = false;
     bool     m_bEditorKeys      = false;
-    bool     m_bEditorFloatTest = false;
     String   m_editorAnim       = {};
     String   m_editorTab        = {};
     String   m_editorStage      = {};

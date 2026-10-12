@@ -54,8 +54,7 @@ int RunHeadless(
 #endif
     FilePath replayPath;
     String   stateName;
-    uint64_t maxTicks        = 0;
-    bool     bExpectFinished = false;
+    uint64_t maxTicks = 0;
 
     for (int i = 1; i < _argc; ++i)
     {
@@ -98,15 +97,11 @@ int RunHeadless(
             std::printf("wrote %s frames=%llu\n", _argv[i + 1], static_cast<unsigned long long>(ticks));
             return 0;
         }
-        else if (arg == "--expect-finished")
-        {
-            bExpectFinished = true;
-        }
     }
 
     if (replayPath.empty())
     {
-        std::fprintf(stderr, "usage: MyMetalSlug2 --headless --replay <file> [--state <name>] [--ticks <n>] [--expect-finished]\n");
+        std::fprintf(stderr, "usage: MyMetalSlug2 --headless --replay <file> [--state <name>] [--ticks <n>]\n");
         return 1;
     }
 
@@ -161,9 +156,5 @@ int RunHeadless(
     hash          = FnvMix_(hash, runner.IsFinished() ? 1ull : 0ull);
     hash          = FnvMix_(hash, runner.GetState() != nullptr ? runner.GetState()->DebugHash() : 0ull);
     std::printf("ticks=%llu finished=%d hash=%016llx\n", static_cast<unsigned long long>(runner.GetTickCount()), runner.IsFinished() ? 1 : 0, static_cast<unsigned long long>(hash));
-    if (bExpectFinished && !runner.IsFinished())
-    {
-        return 2;
-    }
     return 0;
 }

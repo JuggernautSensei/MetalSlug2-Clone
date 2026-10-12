@@ -1,8 +1,7 @@
 // 스테이지 통합 테스트: StageState 와 월드 호스트가 실제 에셋으로 스테이지를 진행하는지 검증
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
-#include <cstdlib>
-#include <fstream>
 #include <map>
 #include <optional>
 #include <set>
@@ -865,48 +864,6 @@ TEST(StageIntegration, BusIsPreplacedInsideTheLockedViewAndLocksTheCameraAtTheBu
     EXPECT_EQ(sim.State().GetRunner().GetLockDepth(), 0);
 }
 
-TEST(StageIntegration, BusStairSoldierTraceWritesCsvWhenRequested)
-{
-    // BUS_TRACE_STAGE=<path> 이면 실제 스테이지의 버스 계단 병사 틱별 위치/상태를 CSV 로 남긴다 (진단용)
-    char*  pPath  = nullptr;
-    size_t length = 0;
-    if (_dupenv_s(&pPath, &length, "BUS_TRACE_STAGE") != 0 || pPath == nullptr)
-    {
-        GTEST_SKIP() << "BUS_TRACE_STAGE not set";
-    }
-    const String path = pPath;
-    std::free(pPath);
-    std::ofstream out(path);
-    out << "tick,id,def,x,y,state,grounded,camLeft\n";
-    IntegrationSim sim(true);
-    const int      busSection = sim.State().GetData().FindSection("bus");
-    for (int i = 0; i < busSection; ++i)
-    {
-        sim.Warp(1);
-        sim.BotStep(true, false, 30);
-    }
-    for (int t = 0; t < 1500; ++t)
-    {
-        sim.BotStep(true, false);
-        float busX = 0.f;
-        for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
-        {
-            if (enemy.behavior == eEnemyBehavior::Bus && enemy.life != eEnemyLife::Gone)
-            {
-                busX = enemy.body.position.x;
-            }
-        }
-        for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
-        {
-            if (enemy.userTag == 0x42555300u && enemy.life != eEnemyLife::Gone)
-            {
-                out << t << ',' << enemy.id << ',' << enemy.defIndex << ',' << enemy.body.position.x - busX << ',' << enemy.body.position.y << ',' << enemy.state << ',' << enemy.bGrounded << ','
-                    << sim.State().GetCamera().GetPosition().x << '\n';
-            }
-        }
-    }
-}
-
 // 실제 Stage0 (StageState) 에서 플레이어가 버스 왼쪽에 서서 쏠 때: 계단 병사가 지붕까지 오르고, 지붕에서 걸어 버스 몸통 안으로 떨어지지 않는다
 TEST(StageIntegration, BusStairSoldiersReachTheRoofAndNeverEnterTheBusBodyWithThePlayerOnTheLeft)
 {
@@ -1232,26 +1189,6 @@ public:
         return maxAccel;
     }
 
-    void WriteCsv(
-        const String& _path) const
-    {
-        std::ofstream out { _path };
-        out << "T,tick,camX,centerX,vel,acc,lockMinX,lockMaxX,lockDepth,moving,bossX,playerX\n";
-        float prevVel = 0.f;
-        for (size_t i = 0; i < m_samples.size(); ++i)
-        {
-            const BossEntrySample& s   = m_samples[i];
-            const float            vel = i > 0 ? s.camX - m_samples[i - 1].camX : 0.f;
-            out << "T," << s.tick << ',' << s.camX << ',' << s.centerX << ',' << vel << ',' << (vel - prevVel) << ',' << s.lockMinX << ',' << s.lockMaxX << ',' << s.lockDepth << ',' << s.moving << ',' << s.bossX << ',' << s.playerX << '\n';
-            prevVel = vel;
-        }
-        out << "E,tick,kind,reason,def,id,x,y,left,right,visible\n";
-        for (const BossEntryRemoval& r: m_removals)
-        {
-            out << "E," << r.tick << ',' << r.kind << ',' << r.reason << ',' << r.def << ',' << r.id << ',' << r.x << ',' << r.y << ',' << r.left << ',' << r.right << ',' << (r.bVisible ? 1 : 0) << '\n';
-        }
-    }
-
 private:
     int                          m_tick     = 0;
     float                        m_prevCamX = 0.f;
@@ -1305,23 +1242,6 @@ void RecordBossEntry_(
     }
 }
 }   // namespace
-
-TEST(StageIntegration, BossEntryDumpWritesCsvWhenRequested)
-{
-    // C15_DUMP=<path> 이면 보스 진입 구간의 카메라/제거 이벤트를 CSV 로 남긴다 (진단용, 평소엔 건너뛴다)
-    char*  pPath  = nullptr;
-    size_t length = 0;
-    if (_dupenv_s(&pPath, &length, "C15_DUMP") != 0 || pPath == nullptr)
-    {
-        GTEST_SKIP() << "C15_DUMP not set";
-    }
-    const String path = pPath;
-    std::free(pPath);
-    IntegrationSim    sim(true);
-    BossEntryRecorder rec;
-    RecordBossEntry_(sim, rec, 1200);
-    rec.WriteCsv(path);
-}
 
 TEST(StageIntegration, BossSpawnsAtTheArenaTriggerAfterSarubiaAndLocksTheCamera)
 {

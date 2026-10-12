@@ -151,10 +151,6 @@ void App::ParseArgs_()
                 m_pendingWeapon = 1;
             }
         }
-        else if (args[i] == "--editor-float-test")
-        {
-            m_bEditorFloatTest = true;
-        }
         else if (args[i] == "--editor-anim" && bHasValue)
         {
             m_editorAnim = args[++i];
@@ -333,10 +329,6 @@ void App::Init_()
     else if (m_bEditor && !m_editorAnim.empty())
     {
         m_editor.SelectAnimation(m_editorAnim.c_str());
-    }
-    if (m_bEditor && m_bEditorFloatTest)
-    {
-        m_editor.EnableFloatTest();
     }
     if (m_bEditor && !m_editorStage.empty())
     {

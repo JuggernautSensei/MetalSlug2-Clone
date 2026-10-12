@@ -1,8 +1,6 @@
 // 버스 중간보스 테스트: 사전 배치 (슬라이드 인 없음), 카메라 뷰 오른쪽 끝 기준 개방 트리거, 개방 전 무적, 계단 병사 스폰/오르기
 #include <algorithm>
 #include <cmath>
-#include <cstdlib>
-#include <fstream>
 #include <vector>
 
 #include "Base/Math.h"
@@ -383,38 +381,6 @@ TEST(Bus, StairSoldiersNeverSinkIntoTheBusBodyAndStandOnItsTop)
             }
         }
         EXPECT_GT(topTicks, 60) << "시드 " << seed << ": 전방 점프한 병사가 버스 위에 서 있어야 한다";
-    }
-}
-
-TEST(Bus, StairSoldierTraceWritesCsvWhenRequested)
-{
-    // BUS_TRACE=<path> 이면 계단 병사의 틱별 위치/상태를 CSV 로 남긴다 (진단용)
-    char*  pPath  = nullptr;
-    size_t length = 0;
-    if (_dupenv_s(&pPath, &length, "BUS_TRACE") != 0 || pPath == nullptr)
-    {
-        GTEST_SKIP() << "BUS_TRACE not set";
-    }
-    const String path = pPath;
-    std::free(pPath);
-    std::ofstream out(path);
-    out << "tick,id,def,x,y,state,grounded,shots\n";
-    VehicleRig rig({ 2100.f, kGround }, 2000.f);
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
-    (void)rig.Spawn("bus", { kStairAnchorX, kGround }, BusParams_());
-    for (int i = 0; i < 900; ++i)
-    {
-        rig.Step(1);
-        for (const Enemy* pSoldier: StairSoldiers_(rig))
-        {
-            int shots = 0;
-            for (const Shot& shot: rig.Projectiles().GetShots())
-            {
-                shots += shot.params.owner == pSoldier->id ? 1 : 0;
-            }
-            out << i << ',' << pSoldier->id << ',' << pSoldier->defIndex << ',' << pSoldier->body.position.x - kStairAnchorX << ',' << pSoldier->body.position.y - kGround << ',' << pSoldier->state
-                << ',' << pSoldier->bGrounded << ',' << shots << '\n';
-        }
     }
 }
 

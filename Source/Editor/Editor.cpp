@@ -89,11 +89,6 @@ void Editor::SelectStage(
     m_stageEditor.SelectStage(_name);
 }
 
-void Editor::EnableFloatTest()
-{
-    m_bFloatTest = true;
-}
-
 void Editor::SetGodMode(
     const eGodMode _mode)
 {
@@ -166,12 +161,6 @@ void Editor::Frame(
     ImGui::UpdatePlatformWindows();
     ImGui::RenderPlatformWindowsDefault();
 
-    ++m_frameCount;
-    if (m_bFloatTest && m_frameCount == 30)
-    {
-        SLUG_LOG_INFO("viewports={}", ImGui::GetPlatformIO().Viewports.Size);
-    }
-
     SDL_SetRenderLogicalPresentation(m_pRenderer, logicalW, logicalH, mode);
 
     if (m_bQuit)
@@ -211,11 +200,6 @@ void Editor::DrawEditorWindow_(
 {
     const ImGuiViewport* pHost = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(ImVec2 { pHost->Pos.x + 16.f, pHost->Pos.y + 40.f }, ImGuiCond_FirstUseEver);
-    if (m_bFloatTest && m_frameCount == 5)
-    {
-        const ImGuiViewport* pMain = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(ImVec2 { pMain->Pos.x + pMain->Size.x + 40.f, pMain->Pos.y + 40.f }, ImGuiCond_Always);
-    }
     ImGui::SetNextWindowSize(ImVec2 { 380.f, 520.f }, ImGuiCond_FirstUseEver);
     if (ImGui::Begin("Editor"))
     {

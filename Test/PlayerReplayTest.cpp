@@ -8,107 +8,19 @@
 #include "Game/StateFactory.h"
 #include "PlayerTestUtil.h"
 
-class Script
-{
-public:
-    explicit Script(
-        const int _ticks)
-        : m_frames(static_cast<size_t>(_ticks))
-    {
-    }
-
-    Script& Hold(
-        const eAction _action,
-        const int     _from,
-        const int     _to)
-    {
-        for (int t = _from; t < _to && t < static_cast<int>(m_frames.size()); ++t)
-        {
-            m_frames[static_cast<size_t>(t)].Set(_action, true);
-        }
-        return *this;
-    }
-
-    Script& Tap(
-        const eAction _action,
-        const int     _tick)
-    {
-        return Hold(_action, _tick, _tick + 1);
-    }
-
-    [[nodiscard]] ReplayData Build() const
-    {
-        ReplayData replay;
-        replay.seed      = 1;
-        replay.stateName = "sandbox";
-        replay.frames    = m_frames;
-        return replay;
-    }
-
-private:
-    Vector<InputFrame> m_frames = {};
-};
-
 namespace
 {
 [[nodiscard]] FilePath RepoRoot_()
 {
     return FindAssetRoot().parent_path();
 }
-
-void Write_(
-    const FilePath& _path,
-    const Script&   _script)
-{
-    std::filesystem::create_directories(_path.parent_path());
-    ASSERT_TRUE(static_cast<bool>(SaveReplay(_path, _script.Build()))) << _path.string();
-}
-
-[[nodiscard]] Script MakeRegressionScript_()
-{
-    Script s { 900 };
-    s.Hold(eAction::Right, 0, 50);    // 보병(330) 앞까지
-    s.Hold(eAction::Shot, 50, 64);    // 칼 자동 발동
-    s.Hold(eAction::Right, 64, 88);   // 두 번째 보병(400)
-    s.Tap(eAction::Shot, 90);
-    s.Tap(eAction::Shot, 97);
-    s.Hold(eAction::Right, 100, 165);   // 지프(640) 쪽으로
-    s.Hold(eAction::Shot, 150, 210);    // 지프를 총으로
-    s.Tap(eAction::Jump, 220);
-    s.Hold(eAction::Jump, 250, 265);
-    s.Tap(eAction::Bomb, 280);
-    s.Hold(eAction::Down, 300, 325);
-    s.Hold(eAction::Right, 350, 380);
-    s.Tap(eAction::Bomb, 385);
-    return s;
-}
 }   // namespace
-
-TEST(PlayerReplay, WriteRegressionAndVisualScripts)
-{
-    Write_(RepoRoot_() / "Test" / "Replays" / "sandbox_regression.rep", MakeRegressionScript_());
-
-    const FilePath visual = RepoRoot_() / "Captures" / "Visual";
-
-    Write_(visual / "run.rep", Script { 200 }.Hold(eAction::Right, 10, 200));
-    Write_(visual / "runleft.rep", Script { 200 }.Hold(eAction::Right, 10, 60).Hold(eAction::Left, 60, 200));
-    Write_(visual / "jump.rep", Script { 120 }.Hold(eAction::Right, 10, 200).Hold(eAction::Jump, 20, 60));
-    Write_(visual / "jumpup.rep", Script { 120 }.Hold(eAction::Jump, 20, 70));
-    Write_(visual / "crouch.rep", Script { 120 }.Hold(eAction::Down, 10, 90).Hold(eAction::Right, 50, 90));
-    Write_(visual / "shoot.rep", Script { 200 }.Tap(eAction::Shot, 20).Hold(eAction::Up, 60, 100).Tap(eAction::Shot, 70).Hold(eAction::Up, 120, 160).Hold(eAction::Right, 120, 160).Tap(eAction::Shot, 130));
-    Write_(visual / "shootcrouch.rep", Script { 120 }.Hold(eAction::Down, 10, 80).Tap(eAction::Shot, 30));
-    Write_(visual / "shootair.rep", Script { 140 }.Hold(eAction::Jump, 10, 50).Hold(eAction::Down, 30, 60).Tap(eAction::Shot, 35).Tap(eAction::Shot, 18));
-    Write_(visual / "knife.rep", Script { 200 }.Hold(eAction::Right, 5, 100).Hold(eAction::Shot, 100, 140));
-    Write_(visual / "bomb.rep", Script { 160 }.Tap(eAction::Bomb, 20));
-    Write_(visual / "death.rep", Script { 700 }.Hold(eAction::Right, 5, 700));
-    Write_(visual / "hold.rep", Script { 160 }.Hold(eAction::Shot, 20, 140));
-}
 
 TEST(PlayerReplay, RegressionReplayPlaysTheSameWayTwiceAndHitsTheMilestones)
 {
     const FilePath     path   = RepoRoot_() / "Test" / "Replays" / "sandbox_regression.rep";
     Result<ReplayData> loaded = LoadReplay(path);
-    ASSERT_TRUE(loaded.HasValue()) << "먼저 PlayerReplay.WriteRegressionAndVisualScripts 가 실행되어야 합니다: " << path.string();
+    ASSERT_TRUE(loaded.HasValue()) << "회귀 리플레이를 읽지 못했습니다: " << path.string();
 
     if (!std::filesystem::exists(FindAssetRoot() / "Ground" / "Stage0_0.png"))
     {

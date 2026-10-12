@@ -187,11 +187,6 @@ int VehicleRig::CountShots(
     return count;
 }
 
-int VehicleRig::CountAllShots() const
-{
-    return static_cast<int>(m_projectiles.GetShots().size());
-}
-
 const Enemy* VehicleRig::E(
     const EnemyHandle _handle) const
 {

@@ -38,7 +38,6 @@ public:
     [[nodiscard]] SandboxState&     State();
     [[nodiscard]] PlayerController& Player();
     [[nodiscard]] Tuning&           Tune();
-    [[nodiscard]] SimRunner&        Runner();
 
     void Hold(const eAction _action);
     void Release(const eAction _action);
@@ -54,24 +53,6 @@ public:
     void StepWith(
         const InputFrame _frame);
 
-    // 조건이 참이 될 때까지 최대 _maxTicks 만큼 진행한다. 참이 된 틱 수를, 끝내 안 되면 -1 을 돌려준다.
-    template<typename Pred>
-    int StepUntil(
-        const int _maxTicks,
-        Pred&&    _pred)
-    {
-        for (int i = 0; i < _maxTicks; ++i)
-        {
-            if (_pred())
-            {
-                return i;
-            }
-            Step();
-        }
-        return _pred() ? _maxTicks : -1;
-    }
-
-    // 자주 쓰는 종료 조건 (StepUntil 의 술어 대신 쓴다)
     [[nodiscard]] int StepUntilGrounded(
         const int _maxTicks);
 

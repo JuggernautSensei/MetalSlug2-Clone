@@ -59,11 +59,6 @@ Tuning& Sim::Tune()
     return m_pState->GetTuning();
 }
 
-SimRunner& Sim::Runner()
-{
-    return *m_pRunner;
-}
-
 void Sim::Hold(const eAction _action)
 {
     m_frame.Set(_action, true);

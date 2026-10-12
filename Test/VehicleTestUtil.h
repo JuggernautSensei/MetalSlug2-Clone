@@ -73,8 +73,6 @@ public:
     [[nodiscard]] int CountShots(
         const EnemyHandle _owner) const;
 
-    [[nodiscard]] int CountAllShots() const;
-
     [[nodiscard]] const Enemy* E(
         const EnemyHandle _handle) const;
 

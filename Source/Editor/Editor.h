@@ -28,7 +28,6 @@ public:
     void                    SelectTab(const char* _name);
     void                    SetAnimLibrary(AnimationLibrary* _pAnims);   // Animation 탭 편집을 실행 중 라이브러리에 반영
     void                    SelectStage(const char* _name);
-    void                    EnableFloatTest();            // --editor-float-test
     void                    SetGodMode(eGodMode _mode);   // --editor-god
     [[nodiscard]] eGodMode  GetGodMode() const;
     [[nodiscard]] EnemyLab& GetLab();
@@ -57,6 +56,4 @@ private:
     bool          m_bShowDemo     = false;
     bool          m_bQuit         = false;
     bool          m_bOwnsKeyboard = false;
-    bool          m_bFloatTest    = false;
-    int           m_frameCount    = 0;
 };
