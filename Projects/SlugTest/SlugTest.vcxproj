@@ -73,7 +73,7 @@
       <PrecompiledHeaderFile>TestPch.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>TestPch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(SolutionDir)Test;$(SolutionDir)Source;$(SolutionDir)VendorJugX;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Test;$(SolutionDir)Source;$(SolutionDir)Vendor\JugX;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
@@ -98,7 +98,7 @@
       <PrecompiledHeaderFile>TestPch.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>TestPch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(SolutionDir)Test;$(SolutionDir)Source;$(SolutionDir)VendorJugX;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Test;$(SolutionDir)Source;$(SolutionDir)Vendor\JugX;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>

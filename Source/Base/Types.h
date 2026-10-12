@@ -1,36 +1,15 @@
 #pragma once
-#include <array>
-#include <chrono>
-#include <cstddef>
-#include <cstdint>
-#include <filesystem>
-#include <functional>
-#include <set>
-#include <span>
-#include <string>
-#include <string_view>
-#include <unordered_map>
-#include <utility>
-#include <vector>
+#include <JugX/Typedef.h>
 
-using FilePath = std::filesystem::path;
-
-using SteadyClock = std::chrono::steady_clock;
-
-template<typename T, typename Alloc = std::allocator<T>>
-using Vector = std::vector<T, Alloc>;
-
-template<typename T, size_t kSize>
-using ARRAY = std::array<T, kSize>;
-
-template<typename T, typename Cmp = std::less<T>>
-using RbSet = std::set<T, Cmp>;
-
-template<typename K, typename V, typename H = std::hash<K>, typename E = std::equal_to<K>>
-using HashMap = std::unordered_map<K, V, H, E>;
-
-template<typename T, size_t kExtent = std::dynamic_extent>
-using Span = std::span<T, kExtent>;
+using jug::ARRAY;
+using jug::FilePath;
+using jug::HashMap;
+using jug::RbSet;
+using jug::Span;
+using jug::SteadyClock;
+using jug::String;
+using jug::StringView;
+using jug::Vector;
 
 // 인스턴스 z 미지정 표시 (스폰 시 해당 종류의 기본 depth 를 쓴다)
 inline constexpr int kDefaultZ = -2147483647 - 1;
@@ -60,6 +39,3 @@ struct EnemyPartDepth
     int depth = 15;
     int sort  = 0;
 };
-
-using String     = std::string;
-using StringView = std::string_view;

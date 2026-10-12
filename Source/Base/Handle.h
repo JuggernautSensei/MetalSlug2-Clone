@@ -1,59 +1,14 @@
-﻿#pragma once
-#include <compare>
-#include <cstdint>
+#pragma once
+#include <format>
 #include <functional>
 
-struct NullHandleType
-{
-};
+#include <JugX/Config.h>
+#include <JugX/Macro.h>
+#include <JugX/Platform.h>
+#include <JugX/Typedef.h>
+#include <JugX/Assert.h>
+#include <JugX/Handle.h>
 
-inline constexpr NullHandleType kNullHandle {};
-
-template<typename T>
-class Handle
-{
-public:
-    constexpr Handle() = default;
-
-    /* implicit */ constexpr Handle(
-        const NullHandleType)
-    {
-    }
-
-    constexpr Handle(
-        const uint32_t _index,
-        const uint8_t  _token)
-        : m_value((static_cast<uint32_t>(_token) << 24) | (_index & 0xFFFFFFu))
-    {
-    }
-
-    constexpr explicit Handle(
-        const uint32_t _value)
-        : m_value(_value)
-    {
-    }
-
-    [[nodiscard]] constexpr bool                 operator==(const Handle _other) const { return m_value == _other.m_value; }
-    [[nodiscard]] constexpr std::strong_ordering operator<=>(const Handle _other) const { return m_value <=> _other.m_value; }
-
-    [[nodiscard]] constexpr bool     IsNull() const { return m_value == kNullValue; }
-    [[nodiscard]] constexpr uint32_t GetIndex() const { return m_value & 0xFFFFFFu; }
-    [[nodiscard]] constexpr uint32_t GetValue() const { return m_value; }
-
-    constexpr explicit operator bool() const { return !IsNull(); }
-
-private:
-    static constexpr uint32_t kNullValue = 0xFFFFFFFFu;
-
-    uint32_t m_value = kNullValue;
-};
-
-template<typename T>
-struct std::hash<Handle<T>>
-{
-    size_t operator()(
-        const Handle<T> _handle) const
-    {
-        return std::hash<uint32_t>()(_handle.GetValue());
-    }
-};
+using jug::Handle;
+using jug::kNullHandle;
+using jug::NullHandleType;

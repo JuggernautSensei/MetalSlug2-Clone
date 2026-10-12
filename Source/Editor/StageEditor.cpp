@@ -1263,7 +1263,8 @@ void StageEditor::LoadDefs_()
                 const Result<String> first = list[0].Read<String>();
                 if (first && m_defSprite.contains("item/" + first.GetValue()))
                 {
-                    m_defSprite["item/" + String { g.first }] = m_defSprite["item/" + first.GetValue()];
+                    const String value = m_defSprite["item/" + first.GetValue()];
+                    m_defSprite["item/" + String { g.first }] = value;
                 }
             }
         }
