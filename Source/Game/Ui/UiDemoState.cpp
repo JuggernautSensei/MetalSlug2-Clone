@@ -17,7 +17,7 @@ HudModel UiDemoState::MakeModel_() const
     HudModel model;
     model.lives         = 2;
     model.score         = 1'234'560 + m_tick * 10;
-    model.bInfiniteAmmo = m_tick < 300;   // 300틱 이후 HMG 탄 표시로 전환
+    model.bInfiniteAmmo = m_tick < 300;
     model.ammo          = std::max(0, 200 - (m_tick - 300) / 2);
     model.bombs         = 7;
     model.bShowTimer    = true;
@@ -48,7 +48,7 @@ void UiDemoState::Tick(
     }
     else if (m_tick == 420)
     {
-        m_flow.Start(MakeMissionCompleteFlowConfig(16), m_ui, _ctx.GetAudio());   // 구출 16명 결과
+        m_flow.Start(MakeMissionCompleteFlowConfig(16), m_ui, _ctx.GetAudio());
     }
     else if (m_tick == 1200)
     {

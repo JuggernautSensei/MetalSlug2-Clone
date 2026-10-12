@@ -6,7 +6,7 @@
 
 #include "EnemyTestUtil.h"
 
-constexpr float kGroundY = 378.f;   // MakeFlatGround 의 지면 윗면
+constexpr float kGroundY = 378.f;
 
 namespace
 {
@@ -36,7 +36,6 @@ namespace
     return -2;
 }
 
-// 보병 전 종류를 세워 두고 1800틱 동안 상태 해시를 기록한다 (로드 실패 시 false)
 [[nodiscard]] bool RunHashes_(
     Vector<uint64_t>& _hashes)
 {
@@ -95,7 +94,7 @@ TEST(EnemyWorld, SpawnSnapsOntoGroundWithinReach)
 {
     EnemyRig rig;
     ASSERT_TRUE(rig.IsLoaded());
-    const EnemyHandle h = rig.Spawn("soldier_bomb", { 300.f, kGroundY - 6.f });   // 16 px 이내 → 지면에 붙는다
+    const EnemyHandle h = rig.Spawn("soldier_bomb", { 300.f, kGroundY - 6.f });
     ASSERT_NE(rig.E(h), nullptr);
     EXPECT_NEAR(rig.E(h)->body.position.y, kGroundY, 0.01f);
 }
@@ -112,7 +111,7 @@ TEST(EnemyWorld, ActivationWaitsForTheScreenThenLatches)
     rig.Step(1);
     EXPECT_TRUE(rig.E(h)->bActive);
 
-    rig.SetView(0.f);   // 다시 멀어져도 활성은 유지된다 (래치)
+    rig.SetView(0.f);
     rig.Step(10);
     EXPECT_TRUE(rig.E(h)->bActive);
 }
@@ -147,7 +146,7 @@ TEST(EnemyWorld, DelayedSpawnHasNoHurtboxUntilItAppears)
     params.delaySec     = 0.5f;
     const EnemyHandle h = rig.Spawn("soldier_bomb", { 300.f, kGroundY }, params);
     EXPECT_FALSE(rig.World().IsDefeated(h));
-    EXPECT_EQ(rig.Strike(h.id, eHitKind::Bullet, 3), 0u);   // 대기 중에는 맞지 않는다
+    EXPECT_EQ(rig.Strike(h.id, eHitKind::Bullet, 3), 0u);
     rig.Step(40);
     ASSERT_NE(rig.E(h), nullptr);
     EXPECT_EQ(rig.E(h)->life, eEnemyLife::Alive);
@@ -277,13 +276,13 @@ TEST(EnemyWorld, PowIsFreedByAnyPlayerHitWithoutDying)
         ASSERT_TRUE(rig.IsLoaded());
         const EnemyHandle pow = rig.Spawn("pow", { 300.f, kGroundY });
         rig.Step(10);
-        ASSERT_EQ(rig.E(pow)->state, 0);   // kStuck
+        ASSERT_EQ(rig.E(pow)->state, 0);
         (void)rig.Strike(pow.id, eHitKind::Melee, 8);
         rig.Step(1);
         EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Freed), 1);
         EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Died), 0);
         EXPECT_FALSE(rig.World().IsDefeated(pow));
-        EXPECT_NE(rig.E(pow)->state, 0);   // Escape 로 전환
+        EXPECT_NE(rig.E(pow)->state, 0);
     }
     {
         EnemyRig rig;
@@ -302,10 +301,10 @@ TEST(EnemyWorld, PowIgnoresEnemyBulletsAndHasNoHurtboxOnceFreed)
     ASSERT_TRUE(rig.IsLoaded());
     const EnemyHandle pow = rig.Spawn("pow", { 300.f, kGroundY });
     rig.Step(10);
-    EXPECT_EQ(rig.Strike(pow.id, eHitKind::Bullet, 1, eTeam::Enemy), 0u);   // 적 탄은 중립 포로에게 닿지 않는다
+    EXPECT_EQ(rig.Strike(pow.id, eHitKind::Bullet, 1, eTeam::Enemy), 0u);
 
-    (void)rig.Strike(pow.id, eHitKind::Melee, 8);            // 풀려난다
-    EXPECT_EQ(rig.Strike(pow.id, eHitKind::Melee, 8), 0u);   // 풀린 뒤에는 Hurtbox 가 없다
+    (void)rig.Strike(pow.id, eHitKind::Melee, 8);
+    EXPECT_EQ(rig.Strike(pow.id, eHitKind::Melee, 8), 0u);
     rig.Step(1);
     EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Freed), 1);
 }
@@ -326,7 +325,7 @@ TEST(EnemyWorld, FlyingBzkLandsAndTransformsIntoSoldierBzk)
     EXPECT_FALSE(rig.World().IsDefeated(para));
     EXPECT_FALSE(rig.World().IsDefeated(heir));
     EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Transformed), 1);
-    EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Removed), 0);   // 변신은 Removed 를 내지 않는다
+    EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Removed), 0);
     EXPECT_EQ(rig.CountEvents(eEnemyEventKind::Died), 0);
 }
 
@@ -334,7 +333,7 @@ TEST(EnemyWorld, FlyingBzkFiresOnlyWhileInsideTheScreen)
 {
     EnemyRig rig({ 100.f, kGroundY }, 0.f);
     ASSERT_TRUE(rig.IsLoaded());
-    const EnemyHandle h = rig.Spawn("flying_bzk", { 300.f, -200.f });   // 화면 위쪽 밖
+    const EnemyHandle h = rig.Spawn("flying_bzk", { 300.f, -200.f });
     rig.Step(100);
     EXPECT_EQ(rig.Projectiles().CountShots(h.id), 0);
 }
@@ -343,7 +342,7 @@ TEST(EnemyWorld, SwordSoldierHitsThePlayerTeamWhenAdjacent)
 {
     EnemyRig rig({ 100.f, kGroundY }, 0.f);
     ASSERT_TRUE(rig.IsLoaded());
-    (void)rig.Spawn("soldier_sword", { 145.f, kGroundY });   // 플레이어 바로 옆 (칼 판정이 닿는 거리)
+    (void)rig.Spawn("soldier_sword", { 145.f, kGroundY });
     for (int i = 0; i < 900 && rig.PlayerHits() == 0; ++i)
     {
         rig.Step(1);
@@ -362,7 +361,7 @@ TEST(EnemyWorld, OneThousandEightHundredTicksAreDeterministic)
     Vector<uint64_t> distinct = first;
     std::sort(distinct.begin(), distinct.end());
     distinct.erase(std::unique(distinct.begin(), distinct.end()), distinct.end());
-    EXPECT_GT(distinct.size(), 100u);   // 실제로 상태가 변한다
+    EXPECT_GT(distinct.size(), 100u);
 }
 
 TEST(EnemyWorld, PowSpawnedHighFallsStraightDownUntilLanding)
@@ -401,8 +400,8 @@ TEST(EnemyWorld, PowHitWhileFallingIsNotFreedAndStaysVertical)
 
 TEST(EnemyWorld, PowFallingIntoPlayerIsRescuedMidAirAndGivesItem)
 {
-    constexpr int kClose = 5;                 // ePowState::kClose (구출 후 아이템 연출)
-    EnemyRig      rig({ 300.f, kGroundY });   // 플레이어가 POW 의 낙하 경로 아래에 서 있다
+    constexpr int kClose = 5;
+    EnemyRig      rig({ 300.f, kGroundY });
     ASSERT_TRUE(rig.IsLoaded());
     SpawnParams params;
     params.drop           = "HM";
@@ -450,7 +449,7 @@ TEST(EnemyHitFlash, SingleHitIsOneOnPulseThenOffUntilNextHit)
 
 TEST(EnemyHitFlash, ContinuousFireKeepsBlinkingInsteadOfStayingOn)
 {
-    // 원작 HMG 연사 (영상 약 4~8 틱 간격). 이전 구현은 재피격마다 타이머를 채워 항상 ON 이었다.
+    // 원작 HMG 연사 (영상 약 4~8 틱 간격).
     for (int interval: { 2, 3, 4, 6, 8 })
     {
         int  timer    = 0;
@@ -518,7 +517,7 @@ TEST(EnemyHitFlash, PartFlashIsPerPartAndIgnoresOutOfRangeIndices)
     TriggerPartHitFlash(e, 2);
     EXPECT_EQ(e.partFlashTicks[2], kHitFlashTicks);
     EXPECT_EQ(e.partFlashTicks[1], 0);
-    TickHitFlash(e.partFlashTicks[2]);   // 피격은 Tick 앞에서 처리되므로 보이는 첫 값은 한 틱 뒤
+    TickHitFlash(e.partFlashTicks[2]);
     EXPECT_FLOAT_EQ(PartFlashAmount(e, 2), 1.f);
     EXPECT_FLOAT_EQ(PartFlashAmount(e, 1), 0.f);
     EXPECT_FLOAT_EQ(HitFlashAmount(e), 0.f);
@@ -537,7 +536,7 @@ TEST(EnemyWorld, PowVariantPicksItsOwnClipSetAndDefaultsToOlder)
     ASSERT_NE(pLib, nullptr);
 
     SpawnParams variant;
-    variant.aiVariant       = 2;   // 외형 변형 2 (Rumi 계열 클립)
+    variant.aiVariant       = 2;
     const EnemyHandle hBase = rig.Spawn("pow", { 300.f, kGroundY });
     const EnemyHandle hVar  = rig.Spawn("pow", { 500.f, kGroundY }, variant);
     rig.Step(1);
@@ -546,7 +545,7 @@ TEST(EnemyWorld, PowVariantPicksItsOwnClipSetAndDefaultsToOlder)
     const Enemy* pVar  = rig.E(hVar);
     ASSERT_NE(pBase, nullptr);
     ASSERT_NE(pVar, nullptr);
-    ASSERT_EQ(pBase->state, 0);   // kStuck
+    ASSERT_EQ(pBase->state, 0);
     ASSERT_EQ(pVar->state, 0);
     const EnemyDef& def = pLib->Get(pBase->defIndex);
     EXPECT_STREQ(def.clips[static_cast<size_t>(pBase->clip)].name.c_str(), "stuck");
@@ -554,7 +553,6 @@ TEST(EnemyWorld, PowVariantPicksItsOwnClipSetAndDefaultsToOlder)
     EXPECT_EQ(pVar->aiVariant, 2);
 }
 
-// 낙하산 오버레이는 병사 몸(레이어 15) 뒤에 그려진다 (오버레이 레이어 14)
 TEST(EnemyWorld, ParachuteOverlayIsDrawnBehindTheParachutist)
 {
     SLUG_REQUIRE_BAKED(anims);
@@ -566,8 +564,8 @@ TEST(EnemyWorld, ParachuteOverlayIsDrawnBehindTheParachutist)
     SpriteBatch sprites;
     rig.World().Submit(sprites, anims, rig.Projectiles(), 0.f);
 
-    bool bBody    = false;   // 병사 몸 (kEnemyDepth = 15)
-    bool bOverlay = false;   // 낙하산 (kOverlayDepth = 14)
+    bool bBody    = false;
+    bool bOverlay = false;
     for (const SpriteCommand& command: sprites.GetPendingCommands())
     {
         bBody    = bBody || command.depth == 15;

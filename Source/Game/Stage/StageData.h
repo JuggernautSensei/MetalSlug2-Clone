@@ -6,7 +6,7 @@
 #include "Base/Types.h"
 #include "World/Geometry.h"
 
-inline constexpr int kDefaultTerrainDepth = -90;   // world.terrainDepth 기본: 이 depth 보다 뒤인 스프라이트는 지형 텍스처 앞에 먼저 그린다
+inline constexpr int kDefaultTerrainDepth = -90;
 
 class ParamValue
 {
@@ -179,7 +179,7 @@ enum class eFadeTarget : uint8_t
 struct CameraAnchor
 {
     eAnchorX ax    = eAnchorX::Left;
-    int      dxMin = 0;   // dx 가 고정값이면 dxMin == dxMax
+    int      dxMin = 0;
     int      dxMax = 0;
     eAnchorY ay    = eAnchorY::Top;
     float    dy    = 0.f;
@@ -227,7 +227,7 @@ struct SpawnSpec
 
     int         facing     = 0;   // -1 왼쪽, +1 오른쪽, 0 = def 기본
     bool        bHasZ      = false;
-    int         z          = 0;   // bHasZ 일 때 인스턴스 depth
+    int         z          = 0;
     bool        bHasHp     = false;
     int         hp         = 0;
     String      drop       = {};
@@ -250,7 +250,7 @@ struct SpawnSpec
 
 struct WaveEntry
 {
-    float     delay = 0.f;   // 초 (액션 실행 시각 기준)
+    float     delay = 0.f;
     SpawnSpec spawn = {};
     float     every = 0.f;   // 시간 반복 주기(초). times > 1 이면 필수 (이전 발동 시각 + every)
     int       times = 1;     // 시간 반복 횟수 (1 = 한 번). 취소는 clear waves 가 전체 반복을 지운다
@@ -266,19 +266,19 @@ struct RectRef
 struct StageAction
 {
     eActionType type  = eActionType::Spawn;
-    float       delay = 0.f;   // 초
+    float       delay = 0.f;
     eWhen       when  = eWhen::Normal;
 
     SpawnSpec         spawn       = {};
     Vector<WaveEntry> waveEntries = {};
 
     RectRef rect       = {};
-    float   glide      = 0.f;   // LockCamera: 초
+    float   glide      = 0.f;
     bool    bPermanent = false;
 
-    Vec2  to      = { 0.f, 0.f };   // CameraMove: 목표 뷰 중심
+    Vec2  to      = { 0.f, 0.f };
     float seconds = 0.f;
-    Vec2  offset  = { 0.f, 0.f };   // SetCameraOffset
+    Vec2  offset  = { 0.f, 0.f };
 
     String text       = {};
     String mode       = {};
@@ -290,7 +290,7 @@ struct StageAction
     float  fadeOutSec = 0.f;   // PlayBgm: > 0 이면 현재 BGM 을 줄인 뒤 교체
 
     bool     bClearWaves = false;
-    uint32_t clearLayers = 0;   // LayerBit 마스크
+    uint32_t clearLayers = 0;
 
     eFadeTarget fadeTo = eFadeTarget::Black;
 
@@ -380,7 +380,7 @@ struct StageData
     Vec2        viewSize     = { 640.f, 448.f };
     String      background   = {};
     EndlessTail endless      = {};
-    int         terrainDepth = kDefaultTerrainDepth;   // 지형의 depth: 이보다 작은 depth 의 스프라이트 (보스 선체) 는 지형 텍스처보다 먼저 그려 모래가 덮는다
+    int         terrainDepth = kDefaultTerrainDepth;
 
     String bgmName  = {};
     bool   bBgmLoop = true;

@@ -195,7 +195,6 @@ void SandboxState::RestartGame()
     }
     if (m_config.bHeliLab)
     {
-        // 헬기 랩: 화면 위 오른쪽에서 진입 (Docs/Spec_Helicopter.md 의 스테이지 배치 규약과 같은 위치)
         const Vec2  cam = m_camera.GetPosition();
         SpawnParams params;
         params.facing     = -1;
@@ -204,7 +203,7 @@ void SandboxState::RestartGame()
         (void)SpawnEnemy("heli", { cam.x + static_cast<float>(Renderer::kLogicalWidth) - 133.f, cam.y - 30.f }, params);
         if (m_config.bGodMode)
         {
-            m_player.ExtendInvincibility(60 * 60 * 60);   // 비교 캡처용: 폭탄/미사일에 죽지 않는다
+            m_player.ExtendInvincibility(60 * 60 * 60);
         }
     }
     if (m_config.bSlugLab)
@@ -235,7 +234,6 @@ void SandboxState::RestartGame()
         // 원작 락: 카메라 오른쪽 끝 3136 에서 멈춘다. 버스 앵커는 화면 왼쪽 끝 + 489 = 2985 (Stage0_1 잔해 지형의 중심과 같다)
         SpawnParams params;
         params.facing = -1;
-        // 스폰 = 정지 앵커 (처음부터 그 자리). 앵커는 화면 왼쪽 끝 + 489
         m_busHandle = SpawnEnemy("bus", { m_config.cameraBounds.max.x - 640.f + 489.f, 378.f }, params);
         if (m_config.bBusBot)
         {
@@ -404,11 +402,11 @@ void SandboxState::SpawnDebugEnemy_(
     Vec2             at   = { feet.x + _aheadPx, feet.y };
     if (name == "flying_bzk")
     {
-        at.y = feet.y - 150.f;   // 낙하산: 공중에서 내려온다
+        at.y = feet.y - 150.f;
     }
     else if (name == "soldier_hang")
     {
-        at.y = feet.y - 120.f;   // 감시탑 아래에 매달림
+        at.y = feet.y - 120.f;
     }
     SpawnParams params;
     params.facing = -1;
@@ -437,7 +435,7 @@ void SandboxState::UpdateWalls_()
     }
     for (const Aabb& box: m_enemies.GetSolidBoxes())
     {
-        m_walls.push_back({ box });   // 살아 있는 적의 def.solid (버스 차체)
+        m_walls.push_back({ box });
     }
     UpdatePropCollision_();
 }
@@ -476,7 +474,6 @@ void SandboxState::Tick(
     const InputHistory* pInput = &_input;
     if (m_config.bBusBot)
     {
-        // 봇: 버스 앞 (x 2780) 까지 걸어가 멈추고 계속 사격한다 (버스 랩 캡처용)
         InputFrame frame = {};
         frame.Set(eAction::Right, m_player.GetFeet().x < 2780.f);
         frame.Set(eAction::Shot, m_tickCount >= 420 && m_player.GetFeet().x >= 2700.f && (m_tickCount % 20) < 3);
@@ -485,7 +482,6 @@ void SandboxState::Tick(
     }
     if (m_config.bHeliBot)
     {
-        // 봇: 120 틱마다 좌우로 걷고 위로 계속 사격한다 (헬기 랩 캡처용, 오른쪽 이동으로 시작)
         InputFrame frame  = {};
         const bool bRight = (m_tickCount / 120) % 2 == 0;
         frame.Set(eAction::Right, bRight);
@@ -553,7 +549,7 @@ void SandboxState::Tick(
     {
         if (pickup.kind == eItemKind::Supply && pickup.supply == eSupplyKind::Bomb && m_slugs.OnBombSupply(pickup.amount))
         {
-            continue;   // 탑승 중 폭탄 보급 상자 = 캐논탄
+            continue;
         }
         ApplyItemPickup(m_player, pickup, m_tuning);
     }
@@ -579,7 +575,6 @@ void SandboxState::Tick(
     enemyCtx.player.bInvulnerable = m_player.GetInvincibleTicks() > 0;
     if (const SlugVehicle* pRidden = m_slugs.GetRiddenOrNull())
     {
-        // SV-001 에 타고 있으면 적은 차량을 표적으로 삼는다
         enemyCtx.player.feet          = pRidden->GetFeet();
         enemyCtx.player.bodyBox       = pRidden->MakeHurtbox().box;
         enemyCtx.player.center        = enemyCtx.player.bodyBox.GetCenter();
@@ -766,15 +761,15 @@ uint64_t SandboxState::HashState() const
     hash ^= m_targets.HashState() * 1099511628211ull;
     if (m_enemies.GetCount() > 0)
     {
-        hash ^= m_enemies.HashState() * 1099511628211ull;   // 적이 없으면 기존 해시와 같다
+        hash ^= m_enemies.HashState() * 1099511628211ull;   // 적이 없으면 해시가 바뀌지 않는다
     }
     if (m_props.GetCount() > 0)
     {
-        hash ^= m_props.HashState() * 1099511628211ull;   // 소품이 없으면 기존 해시와 같다
+        hash ^= m_props.HashState() * 1099511628211ull;   // 소품이 없으면 해시가 바뀌지 않는다
     }
     if (m_slugs.GetCount() > 0)
     {
-        hash ^= m_slugs.HashState() * 1099511628211ull;   // 차량이 없으면 기존 해시와 같다
+        hash ^= m_slugs.HashState() * 1099511628211ull;   // 차량이 없으면 해시가 바뀌지 않는다
     }
     hash ^= static_cast<uint64_t>(m_projectiles.GetBullets().size()) << 8;
     hash ^= static_cast<uint64_t>(m_projectiles.GetBombs().size()) << 16;

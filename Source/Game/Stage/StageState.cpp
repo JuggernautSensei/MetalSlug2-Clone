@@ -21,8 +21,8 @@
 #include "Game/Ui/Hud.h"
 #include "World/Constants.h"
 
-constexpr int   kAutoTowerDamage    = 24;      // bAutoDamage: 망루 한 방 (슬러그 캐논 피해)
-constexpr float kAutoTowerMarginPx  = 120.f;   // 화면 오른쪽에서 이만큼 안쪽에 들어오면 친다
+constexpr int   kAutoTowerDamage    = 24;
+constexpr float kAutoTowerMarginPx  = 120.f;
 constexpr int   kAutoTurretInterval = 12;      // bAutoDamage: 포탑 단계 피해 간격 (틱). 주포는 6 틱
 
 namespace
@@ -87,7 +87,6 @@ void StageState::OnExit(
 
 const InputHistory& StageState::MakeBotInput_()
 {
-    // 봇: 아레나까지 오른쪽으로 걷고, 보스 파트 (포탑/주포) 중 가장 가까운 것 아래로 가서 위로 쏜다 (캡처 비교용)
     InputFrame frame = {};
     const Vec2 feet  = m_player.GetFeet();
 
@@ -151,7 +150,6 @@ void StageState::Load_(
     m_props.SetSpriteLibrary(&m_spriteLib);
     if (!_ctx.IsHeadless() && _ctx.pSprites)
     {
-        // 핸들은 원경 -> 배경 레이어 순서로 등록된다
         const ScopedPhaseTimer textureTimer { "stage-textures", "all" };
         const FilePath         bgPath = _ctx.assetRoot / "Textures" / (m_data.background + ".png");
         Vector<FilePath>       paths  = { bgPath };
@@ -406,11 +404,10 @@ void StageState::Tick(
     enemyCtx.cameraView           = Aabb::FromMinSize(m_camera.GetPosition(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
     enemyCtx.pAnims               = _ctx.pAnims;
     m_enemies.Tick(enemyCtx);
-    m_runner->AddCameraScroll(m_enemies.TakeCameraScroll());   // 보스 자동 전진 (카메라 하한)
+    m_runner->AddCameraScroll(m_enemies.TakeCameraScroll());
 
     if (m_config.bAutoDamage && m_tickCount % 6 == 0)
     {
-        // 연습장 전용: 포탑 (체력이 남은 것부터) -> 주포 순으로 판정 피해를 준다
         Vector<HitEvent> auto_;
         for (const Enemy& enemy: m_enemies.GetEnemies())
         {
@@ -447,7 +444,6 @@ void StageState::Tick(
 
     if (m_config.bAutoDamage)
     {
-        // 연습장 전용: 화면 안에 들어온 망루를 캐논 한 발 (피해 24) 로 친다
         const int        towerDef = m_props.GetLibrary()->FindIndex("tower");
         const float      right    = m_camera.GetPosition().x + static_cast<float>(Renderer::kLogicalWidth) - kAutoTowerMarginPx;
         Vector<HitEvent> towerHits;
@@ -642,7 +638,6 @@ void StageState::UpdateWalls_()
         }
     }
 
-    // 적 def.solid (버스 차체 등): 살아 있는 동안 플레이어/적 벽
     for (const Aabb& box: m_enemies.GetSolidBoxes())
     {
         m_walls.push_back({ box });
@@ -987,7 +982,6 @@ void StageState::DrawWorld_(
         m_enemies.Submit(sprites, *pAnims, m_projectiles, _alpha);
     }
 
-    // 지형 텍스처보다 뒤인 스프라이트 (보스 선체) 를 먼저 그린 뒤 지형을 덮는다
     sprites.FlushBelowDepth(_cameraPos, m_data.terrainDepth);
     if (m_bgHandle >= 0)
     {

@@ -125,7 +125,7 @@ TEST(EnemyDefs, EveryBodyStandsOnTheFeetOrigin)
     for (const char* name: kInfantryNames)
     {
         const EnemyDef& def = lib.Get(lib.FindIndex(name));
-        EXPECT_NEAR(def.body.cy + def.body.h * 0.5f, 0.f, 0.01f) << name;   // 박스 하단 = 발
+        EXPECT_NEAR(def.body.cy + def.body.h * 0.5f, 0.f, 0.01f) << name;
     }
 }
 
@@ -148,7 +148,7 @@ TEST(EnemyDefs, HangHasNoGravityAndFlyingBzkLandsIntoSoldierBzk)
     EXPECT_FALSE(lib.Get(lib.FindIndex("flying_bzk")).physics.bGravity);
     EXPECT_TRUE(lib.Get(lib.FindIndex("soldier_bzk")).physics.bGravity);
     EXPECT_EQ(lib.Get(lib.FindIndex("flying_bzk")).flyingBzk.landedDef, "soldier_bzk");
-    EXPECT_GE(lib.Get(lib.FindIndex("flying_bzk")).overlayClip, 0);   // 낙하산 오버레이
+    EXPECT_GE(lib.Get(lib.FindIndex("flying_bzk")).overlayClip, 0);
 }
 
 TEST(EnemyDefs, ShielderHasFrontUpDownShieldsAndPowIsNeutral)
@@ -159,7 +159,7 @@ TEST(EnemyDefs, ShielderHasFrontUpDownShieldsAndPowIsNeutral)
     EXPECT_FALSE(shielder.shielder.shieldFront.IsEmpty());
     EXPECT_FALSE(shielder.shielder.shieldUp.IsEmpty());
     EXPECT_FALSE(shielder.shielder.shieldDown.IsEmpty());
-    EXPECT_GT(shielder.shielder.shieldFront.cx, 0.f);   // 앞(바라보는 쪽) 에 있다
+    EXPECT_GT(shielder.shielder.shieldFront.cx, 0.f);
     EXPECT_EQ(shielder.team, eTeam::Enemy);
     EXPECT_EQ(lib.Get(lib.FindIndex("pow")).team, eTeam::Neutral);
 }

@@ -43,7 +43,6 @@ TEST(AnimEditorTest, LoadEditSaveReloadOnlyPivotDiffers)
     EXPECT_EQ(text1, ReadAll_(tmp2));
     EXPECT_EQ(text1, ReadAll_(source));
 
-    // 피벗 하나만 수정
     const int       clipIndex = 0;
     const int       frame     = 0;
     const AnimFrame before    = reloaded.GetClips()[clipIndex].frames[frame];
@@ -79,12 +78,10 @@ TEST(AnimEditorTest, LoadEditSaveReloadOnlyPivotDiffers)
         }
     }
 
-    // 두 번 저장해도 바이트 동일
     const FilePath tmp4 = std::filesystem::temp_directory_path() / "slug_animeditor_4.json";
     ASSERT_TRUE(edited.Save(tmp4));
     EXPECT_EQ(ReadAll_(tmp3), ReadAll_(tmp4));
 
-    // Undo 로 원복
     ASSERT_TRUE(reloaded.CanUndo());
     reloaded.Undo();
     EXPECT_EQ(reloaded.Serialize(), text1);
@@ -180,7 +177,6 @@ TEST(AnimEditorHotReload, ExternalChangeReloadsOnlyWhenThereAreNoUnsavedEdits)
     EXPECT_EQ(lib.FindClip("Hot_A")->frames[0].pivotX, 7);
     EXPECT_EQ(editor.GetDocument().GetClips()[0].frames[0].pivotX, 7);
 
-    // 저장 안 된 편집이 있으면 덮어쓰지 않고 경고만
     editor.GetDocument().SetPivot(0, 1, 20, 20);
     editor.Poll();
     WriteText_(path, kHotJson);
@@ -189,7 +185,7 @@ TEST(AnimEditorHotReload, ExternalChangeReloadsOnlyWhenThereAreNoUnsavedEdits)
     EXPECT_NE(editor.GetStatus().find("unsaved"), String::npos);
     EXPECT_EQ(lib.FindClip("Hot_A")->frames[1].pivotX, 20);
 
-    editor.Reload();   // 버튼: 디스크 내용으로 되돌린다
+    editor.Reload();
     EXPECT_EQ(lib.FindClip("Hot_A")->frames[1].pivotX, 4);
     EXPECT_FALSE(editor.GetDocument().IsDirty());
     std::filesystem::remove(path);

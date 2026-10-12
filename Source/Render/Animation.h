@@ -12,12 +12,12 @@ using AnimId = Handle<AnimIdTag>;
 
 struct AnimFrame
 {
-    int atlas  = 0;   // 아틀라스 페이지 인덱스
-    int x      = 0;   // 페이지 안의 트림된 사각형
+    int atlas  = 0;
+    int x      = 0;
     int y      = 0;
     int w      = 0;
     int h      = 0;
-    int pivotX = 0;   // 엔티티 원점이 트림된 프레임 좌상단 기준 어디인가
+    int pivotX = 0;
     int pivotY = 0;
 
     [[nodiscard]] bool IsEmpty() const;
@@ -27,7 +27,7 @@ struct AnimClip
 {
     String            name          = {};
     bool              bLoop         = false;
-    int               loopStart     = 0;      // 루프 시 되돌아갈 프레임
+    int               loopStart     = 0;
     float             frameDuration = 0.1f;   // 초, 전 프레임 동일
     int               cellW         = 0;
     int               cellH         = 0;

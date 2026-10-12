@@ -184,7 +184,6 @@ void UiSystem::DrawBanner(
         return;
     }
 
-    // 배너는 원본 미션 폰트(UI_Mission_*)로 그린다. 글자마다 날아오고 날아가는 연출이 있다.
     const BannerSpec& spec    = m_banner.GetCurrent();
     const int         elapsed = m_banner.GetElapsedTicks();
     const int         lineY0  = spec.centerY >= 0 ? spec.centerY : m_layout.missionLine1Y;
@@ -219,7 +218,6 @@ void UiSystem::DrawBanner(
         const String& text  = lines[line];
         const int     lineY = lineY0 + static_cast<int>(line) * m_layout.missionLineStride;
 
-        // 줄 폭: 스프라이트 폭 * 배율 + 간격 (공백은 고정 폭)
         int width = 0;
         for (const char c: text)
         {

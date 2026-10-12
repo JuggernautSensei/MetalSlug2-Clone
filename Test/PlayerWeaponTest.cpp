@@ -43,7 +43,6 @@ constexpr ARRAY<int, 4> kWeapons = {
 
 namespace
 {
-// 무기를 집고 90틱 동안 쏜 뒤의 상태 해시
 [[nodiscard]] uint64_t HashAfterShooting_(
     const eWeapon _weapon)
 {
@@ -70,7 +69,7 @@ TEST(PlayerWeapon, EveryWeaponFiresAtItsTunedIntervalWhenTapped)
         const eWeapon weapon = static_cast<eWeapon>(raw);
         if (weapon == eWeapon::Hmg)
         {
-            continue;   // HMG 는 버스트 테스트가 따로 있다
+            continue;
         }
         Sim sim;
         sim.Player().PickUpWeapon(weapon, sim.Tune());
@@ -80,7 +79,7 @@ TEST(PlayerWeapon, EveryWeaponFiresAtItsTunedIntervalWhenTapped)
         int         lastShots = 0;
         for (int tick = 0; tick < 120; ++tick)
         {
-            sim.Set(eAction::Shot, tick % 2 == 0);   // 매 틱 연타해도 간격 아래로는 못 쏜다
+            sim.Set(eAction::Shot, tick % 2 == 0);
             sim.Step();
             const int shots = sim.Player().GetStats().shotsFired;
             if (shots > lastShots)
@@ -207,7 +206,7 @@ TEST(PlayerWeapon, EmptyWeaponRevertsToPistolAfterExactlyItsAmmo)
         int ticks = -1;
         for (int tick = 0; tick < 4000 && ticks < 0; ++tick)
         {
-            sim.Set(eAction::Shot, tick % 40 == 0);   // 연타 (HMG 는 버스트가 끝난 뒤 다시 누른다)
+            sim.Set(eAction::Shot, tick % 40 == 0);
             sim.Step();
             ticks = sim.Player().GetWeapon().weapon == eWeapon::Pistol ? tick : -1;
         }
@@ -238,10 +237,10 @@ TEST(PlayerWeapon, HmgShotDamagesAJeepByItsTunedDamage)
     const uint32_t id = sim.State().AddTarget(eDummyKind::Jeep, { 260.f, 378.f });
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     const int hp                        = DummyOf_(sim, id).health.hp;
-    sim.Tune().weapons.hmg.spreadDeg    = 0.f;   // 흩뿌림으로 빗나가는 탄을 빼고 발수 x 피해만 본다
+    sim.Tune().weapons.hmg.spreadDeg    = 0.f;
     sim.Tune().weapons.hmg.muzzleJitter = { 0.f, 0.f };
     sim.Tap(eAction::Shot);
-    sim.Step(90);                                                                                                      // 버스트 끝까지 + 마지막 탄이 날아가 닿을 때까지
+    sim.Step(90);
     EXPECT_EQ(DummyOf_(sim, id).health.hp, hp - sim.Tune().weapons.hmg.damage * sim.Player().GetStats().shotsFired);   // 한 번 눌러 버스트 전체가 명중 (발수는 난수)
 }
 
@@ -394,9 +393,9 @@ TEST(PlayerWeapon, AimStatesFireEveryWeaponInTheExpectedDirection)
         for (const Aim& aim: aims)
         {
             Sim sim;
-            sim.Tune().weapons.hmg.spreadDeg      = 0.f;   // 방향 검사는 흩뿌림 없이 (흩뿌림은 PlayerCombat 테스트가 본다)
+            sim.Tune().weapons.hmg.spreadDeg      = 0.f;
             sim.Tune().weapons.hmg.muzzleJitter   = { 0.f, 0.f };
-            sim.Tune().weapons.flame.spreadDeg    = 0.f;   // 파이어샷 입자 흩뿌림도 방향 검사에서는 끈다
+            sim.Tune().weapons.flame.spreadDeg    = 0.f;
             sim.Tune().weapons.flame.muzzleJitter = { 0.f, 0.f };
             sim.Step(2);
             if (aim.bAir)
@@ -408,7 +407,7 @@ TEST(PlayerWeapon, AimStatesFireEveryWeaponInTheExpectedDirection)
             sim.Set(eAction::Up, aim.bUp);
             sim.Set(eAction::Right, aim.bRight);
             sim.Set(eAction::Down, aim.bDown);
-            sim.Step(kAimSettleTicks);   // 조준 키를 누른 채 조준각이 목표에 닿을 때까지 기다린다
+            sim.Step(kAimSettleTicks);
             sim.Hold(eAction::Shot);
             sim.Step();
 
@@ -504,12 +503,12 @@ TEST(PlayerWeaponVisual, FlameShotClipsExistInOutputAndEveryStageDraws)
         }
     }
 
-    const SpriteLibrary sprites;   // 파이어샷은 스프라이트 이름을 쓰지 않는다
+    const SpriteLibrary sprites;
     SpriteBatch         batch;
     const Vec2          at = { 0.f, 0.f };
-    EXPECT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Flame, { 300.f, 0.f }, 0, 0.f, 220.f), at, 30));      // 머리
-    EXPECT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Flame, { 300.f, 0.f }, 20, 100.f, 220.f), at, 30));   // 반복
-    EXPECT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Flame, { 300.f, 0.f }, 60, 210.f, 220.f), at, 30));   // 사거리 끝 페이드
+    EXPECT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Flame, { 300.f, 0.f }, 0, 0.f, 220.f), at, 30));
+    EXPECT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Flame, { 300.f, 0.f }, 20, 100.f, 220.f), at, 30));
+    EXPECT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Flame, { 300.f, 0.f }, 60, 210.f, 220.f), at, 30));
     EXPECT_EQ(batch.GetPendingCommands().size(), 3u);
 }
 
@@ -531,7 +530,7 @@ TEST(PlayerWeaponVisual, RocketSpriteRotatesToItsFlightDirection)
              Case {     { 0.f, 640.f },  90.f },
              Case {  { kDiag, -kDiag }, -45.f },
              Case { { -kDiag, -kDiag },  45.f },
-             Case {  { -kDiag, kDiag }, -45.f }, // 왼쪽 아래: 왼쪽 클립을 반시계 45도
+             Case {  { -kDiag, kDiag }, -45.f },
     })
     {
         SpriteBatch batch;
@@ -653,7 +652,7 @@ TEST(PlayerWeaponVisual, FlameShotIsRasterisedAtEveryStage)
     EXPECT_GT(head.Count(), 0);
     EXPECT_GT(loop.Count(), 0);
     EXPECT_GT(fade.Count(), 0);
-    EXPECT_GE(loop.Width(), 60);   // 파이어샷은 큰 불꽃 클립 (최대 94px, 수명 중 배율 0.6~1.6) 으로 그려진다
+    EXPECT_GE(loop.Width(), 60);
 }
 
 // 로켓을 위로 쏘면 세로로 긴 상자가 그려져야 한다 (수평 스프라이트 그대로면 가로로 길다)
@@ -721,7 +720,7 @@ TEST(PlayerWeapon, ShotgunHitboxTurnsWithTheAimDirection)
 
     EXPECT_FLOAT_EQ(side.x, shotgun.hitSize.x);
     EXPECT_FLOAT_EQ(side.y, shotgun.hitSize.y);
-    EXPECT_FLOAT_EQ(up.x, shotgun.hitSize.y);   // 위: w/h 교환 (세로로 긴 판정)
+    EXPECT_FLOAT_EQ(up.x, shotgun.hitSize.y);
     EXPECT_FLOAT_EQ(up.y, shotgun.hitSize.x);
     EXPECT_FLOAT_EQ(down.x, shotgun.hitSize.y);
     EXPECT_FLOAT_EQ(down.y, shotgun.hitSize.x);
@@ -735,7 +734,7 @@ TEST(PlayerWeapon, ShotgunFiredUpSpawnsATallHitboxInTheWorld)
     sim.Step(2);
     sim.Player().PickUpWeapon(eWeapon::Shotgun, sim.Tune());
     sim.Hold(eAction::Up);
-    sim.Step(30);   // 조준각이 위에 닿을 때까지 기다린다
+    sim.Step(30);
     sim.Tap(eAction::Shot);
     const Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
     ASSERT_GE(bullets.size(), 1u);
@@ -816,7 +815,7 @@ TEST(PlayerWeapon, FlameParticlesAreDeterministicForTheSameInputs)
     }
 }
 
-// 새 파이어샷 클립(FlameShot_AttackMotion)은 베이크 산출물에 있고, 이전 불꽃 루프보다 크다
+// 새 파이어샷 클립(FlameShot_AttackMotion)은 베이크 산출물에 있고, 불꽃 루프보다 크다
 TEST(PlayerWeaponVisual, FlameAttackMotionIsBiggerThanTheOriginalLoop)
 {
     SLUG_REQUIRE_BAKED(anims);

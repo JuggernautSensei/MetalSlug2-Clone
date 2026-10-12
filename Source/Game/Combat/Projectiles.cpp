@@ -353,7 +353,7 @@ void ProjectileSystem::Step(
                     }
                     else
                     {
-                        standing.y = topHit.y - probe;   // 발판 윗면에 얹는다
+                        standing.y = topHit.y - probe;
                     }
                     shot.position   = standing;
                     shot.velocity.y = 0.f;

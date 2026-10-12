@@ -10,9 +10,9 @@ enum class eFlowPhase : uint8_t
 {
     Idle,
     Delay,
-    Results,   // 구출 결과 상자 (RECAPTURED PRISONER 집계)
+    Results,
     Banner,
-    Art,   // 전면 아트 (게임 오버 샌드 아트): 페이드 인 후 홀드
+    Art,
     FadeOut,
     Hold,
     Done
@@ -23,10 +23,10 @@ struct ScreenFlowConfig
     String     bannerText     = {};
     eFontColor bannerColor    = eFontColor::Yellow;
     String     sfx            = {};
-    float      bgmFadeSeconds = 1.f;   // Start() 시 BGM 페이드 아웃
+    float      bgmFadeSeconds = 1.f;
     int        delayTicks     = 0;
     int        resultsTicks   = 0;   // 0 이면 결과 상자 단계를 건너뛴다
-    int        rescuedCount   = 0;   // 구출한 POW 수 (결과 상자 집계용)
+    int        rescuedCount   = 0;
     int        bannerTicks    = 120;
     int        fadeTicks      = 40;
     int        holdTicks      = 20;
@@ -36,10 +36,9 @@ struct ScreenFlowConfig
     [[nodiscard]] int GetTotalTicks() const;
 };
 
-// 구출 수에 따른 등급 문구와 보너스 (영상 기준: 16명 -> 380'000, GREAT!)
 [[nodiscard]] StringView         MissionRankText(int _rescued);
 [[nodiscard]] int                MissionRankBonus(int _rescued);
-[[nodiscard]] int                MissionBonusScore(int _rescued);   // 구출 x 10'000 + 등급 보너스
+[[nodiscard]] int                MissionBonusScore(int _rescued);
 [[nodiscard]] int                MissionResultsTicks(int _rescued);
 [[nodiscard]] MissionResultsView MakeMissionResultsView(int _rescued, int _localTicks);
 

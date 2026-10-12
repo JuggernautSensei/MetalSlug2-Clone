@@ -37,7 +37,7 @@ struct EnemyHandle
 
 struct SpawnParams
 {
-    int      facing     = -1;   // -1 왼쪽 / +1 오른쪽
+    int      facing     = -1;
     int      hp         = -1;   // -1: def 기본값
     String   drop       = {};
     int      aiVariant  = 0;
@@ -47,7 +47,7 @@ struct SpawnParams
     Aabb     arena      = {};
     Vec2     climbEnd   = { 0.f, 0.f };   // 계단 병사: arena.max 뒤 마지막 오름 목표 (y 가 0 이면 없음)
     Vec2     roofSpan   = { 0.f, 0.f };   // 계단 병사: 지붕 발판의 월드 x 범위 [최소, 최대] (최대 <= 최소 이면 없음)
-    int      z          = kDefaultZ;      // 인스턴스 depth (kDefaultZ: 종류 기본값)
+    int      z          = kDefaultZ;
 };
 
 enum class eEnemyEventKind : uint8_t
@@ -66,7 +66,7 @@ struct EnemyEvent
     EnemyHandle     handle   = {};
     EnemyHandle     other    = {};
     int             defIndex = -1;
-    Vec2            pos      = { 0.f, 0.f };   // 발 위치
+    Vec2            pos      = { 0.f, 0.f };
     int             score    = 0;
     String          drop     = {};
     uint32_t        userTag  = 0;
@@ -75,7 +75,7 @@ struct EnemyEvent
 struct EnemyPlayerInfo
 {
     Vec2 feet          = { 0.f, 0.f };
-    Vec2 center        = { 0.f, 0.f };   // 피격 상자 중심 (조준 목표)
+    Vec2 center        = { 0.f, 0.f };
     Aabb bodyBox       = {};
     bool bAlive        = true;
     bool bInvulnerable = false;
@@ -107,7 +107,7 @@ struct Enemy
     eEnemyBehavior behavior   = eEnemyBehavior::Soldier;
     eEnemyLife     life       = eEnemyLife::Alive;
     int            delayTicks = 0;
-    int            z          = 0;   // 인스턴스 depth (기본 = GetEnemyDefaultZ)
+    int            z          = 0;
 
     Body   body      = {};
     Vec2   prevFeet  = { 0.f, 0.f };
@@ -119,9 +119,9 @@ struct Enemy
     bool   bGrounded = false;
 
     int            state        = 0;
-    int            stateTicks   = 0;   // 현재 상태에 들어온 뒤 경과 틱 (진입 틱 = 0)
-    int            counter      = 0;   // 남은 발수 등
-    int            aux          = 0;   // 행동별 임의 정수
+    int            stateTicks   = 0;
+    int            counter      = 0;
+    int            aux          = 0;
     int            aux2         = 0;
     int            aux3         = 0;
     int            aux4         = 0;
@@ -129,26 +129,26 @@ struct Enemy
     ARRAY<int, 48> ext          = {};
     Aabb           arena        = {};
 
-    int  clip      = -1;   // EnemyDef::clips 인덱스
-    int  clipTicks = 0;    // 클립 시작 후 경과 틱
+    int  clip      = -1;
+    int  clipTicks = 0;
     bool bVisible  = true;
 
     int                              hitFlashTicks  = 0;    // 전체 피격 플래시 남은 틱 (0 = 없음, 피격 시 kHitFlashTicks 로 채움, ON 중 재피격은 무시: Game/Combat/HitFlash.h)
-    ARRAY<int, kEnemyFlashPartCount> partFlashTicks = {};   // 부위별 피격 플래시 남은 틱 (다부위 보스/버스용, TriggerPartHitFlash 참고)
+    ARRAY<int, kEnemyFlashPartCount> partFlashTicks = {};
 
     uint32_t meleeHitId     = kNoHitId;
     int      meleeTicksLeft = 0;
     int      meleeWeapon    = -1;
     Vec2     meleeOrigin    = { 0.f, 0.f };
-    uint32_t boxHitId       = kNoHitId;   // 정의 hitboxes 공격 상자용
+    uint32_t boxHitId       = kNoHitId;
 
     int      deathPhase  = 0;
-    int      deathTicks  = 0;   // 최종 클립 시작 후 경과 틱 (깜빡임/제거 타이머)
+    int      deathTicks  = 0;
     eHitKind lastHitKind = eHitKind::Bullet;
     int      shotsFired  = 0;
 
     bool bShieldUp    = false;
-    int  shieldDir    = 0;   // 0 앞 / 1 위 / 2 아래
+    int  shieldDir    = 0;
     int  defenceTicks = 0;
 
     int      aiVariant = 0;
@@ -156,7 +156,7 @@ struct Enemy
     String   drop      = {};
     Vec2     climbEnd  = { 0.f, 0.f };
     Vec2     roofSpan  = { 0.f, 0.f };
-    bool     bLeap     = false;   // 계단 끝 전방 점프 중: 공중에서 수평 속도를 유지한다 (착지하면 꺼짐)
+    bool     bLeap     = false;
 
     [[nodiscard]] Vec2 GetFeet() const;
 
@@ -167,12 +167,10 @@ struct Enemy
 [[nodiscard]] float HitFlashAmount(
     const Enemy& _e);
 
-// 부위 플래시 양 (_part 가 범위 밖이면 0).
 [[nodiscard]] float PartFlashAmount(
     const Enemy& _e,
     const int    _part);
 
-// 부위 피격 플래시 시작/갱신 (_part 범위 밖이면 무시). 부위 파괴 시 호출자가 0 으로 되돌린다.
 void TriggerPartHitFlash(
     Enemy&    _e,
     const int _part);

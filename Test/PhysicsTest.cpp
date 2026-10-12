@@ -176,7 +176,7 @@ TEST(Physics, WalkingOnFlatGroundIsFrameRateIndependentAtFixedStep)
         ASSERT_TRUE(result.bGroundedNow);
         ASSERT_FALSE(result.bLeftGround);
     }
-    EXPECT_NEAR(body.position.x, 20.f + kRunSpeed, 0.05f);   // 60틱 = 1초
+    EXPECT_NEAR(body.position.x, 20.f + kRunSpeed, 0.05f);
     EXPECT_FLOAT_EQ(body.position.y, 100.f);
 }
 
@@ -266,8 +266,8 @@ TEST(Physics, RampReportsSlopeAndNormal)
     const MoveResult   result = Tick_(body, world);
 
     EXPECT_TRUE(result.bGroundedNow);
-    EXPECT_NEAR(result.groundSlope, -1.f, 0.01f);   // 오른쪽으로 갈수록 위로 올라감
-    EXPECT_LT(result.groundNormal.x, -0.6f);        // 법선은 왼쪽 위를 향함
+    EXPECT_NEAR(result.groundSlope, -1.f, 0.01f);
+    EXPECT_LT(result.groundNormal.x, -0.6f);
     EXPECT_LT(result.groundNormal.y, -0.6f);
     EXPECT_NEAR(result.groundNormal.x * result.groundNormal.x + result.groundNormal.y * result.groundNormal.y, 1.f, 1e-4f);
 }
@@ -337,7 +337,7 @@ TEST(Physics, WalksOffALedgeAndFallsThenLands)
     Body body      = StandingOn_(world, 60.f, 80.f);
     int  leftCount = 0;
     int  landCount = 0;
-    for (int i = 0; i < 120; ++i)   // x: 60 → 300 (맵 폭 400 안쪽)
+    for (int i = 0; i < 120; ++i)
     {
         const MoveResult result = Tick_(body, world, 120.f);
         leftCount += result.bLeftGround ? 1 : 0;
@@ -353,7 +353,7 @@ TEST(Physics, WalksOffALedgeAndFallsThenLands)
 TEST(Physics, LedgeEdgeUsesCenterFootSensor)
 {
     GroundMap map = GroundMap::MakeEmpty(400, 200);
-    map.FillRect(0, 80, 99, 199, true);   // 열 99 까지가 땅
+    map.FillRect(0, 80, 99, 199, true);
     const PhysicsWorld world = WorldOf_(map);
 
     Body body = StandingOn_(world, 95.f, 80.f);
@@ -389,7 +389,7 @@ TEST(Physics, DeepDropIsNotSnapped)
 {
     GroundMap map = GroundMap::MakeEmpty(400, 200);
     map.FillRect(0, 100, 149, 199, true);
-    map.FillRect(150, 110, 399, 199, true);   // 10px 단차 > maxSnapDown
+    map.FillRect(150, 110, 399, 199, true);
     const PhysicsWorld world = WorldOf_(map);
 
     Body body  = StandingOn_(world, 100.f, 100.f);
@@ -449,7 +449,7 @@ TEST(Physics, LiftoffClearsGroundedFlagImmediately)
 TEST(Physics, CeilingStopsAJumpAndZeroesVelocity)
 {
     GroundMap map = MakeFlat_();
-    map.FillRect(60, 20, 140, 59, true);   // 윗면 20, 아랫면 y=60 (행 59 까지)
+    map.FillRect(60, 20, 140, 59, true);
     const PhysicsWorld world = WorldOf_(map);
     Body               body  = StandingOn_(world, 100.f, 100.f);
 
@@ -479,7 +479,7 @@ TEST(Physics, CeilingStopsAJumpAndZeroesVelocity)
 TEST(Physics, WallStopsWalkingFlushAndZeroesVelocity)
 {
     GroundMap map = MakeFlat_();
-    map.FillRect(200, 0, 399, 99, true);   // 열 200 부터 높은 벽
+    map.FillRect(200, 0, 399, 99, true);
     const PhysicsWorld world = WorldOf_(map);
     Body               body  = StandingOn_(world, 100.f, 100.f);
 
@@ -489,7 +489,7 @@ TEST(Physics, WallStopsWalkingFlushAndZeroesVelocity)
         bHit |= Tick_(body, world, kRunSpeed).bHitWallRight;
     }
     EXPECT_TRUE(bHit);
-    EXPECT_FLOAT_EQ(body.position.x + 12.f, 200.f);   // 오른쪽 모서리가 벽면에 정확히 닿음
+    EXPECT_FLOAT_EQ(body.position.x + 12.f, 200.f);
     EXPECT_FLOAT_EQ(body.velocity.x, 0.f);
     EXPECT_TRUE(body.bGrounded);
 }
@@ -513,17 +513,17 @@ TEST(Physics, LeftWallStopsToo)
 TEST(Physics, AirborneBodyCannotPassThroughWallOrSlideIntoLedgeCorner)
 {
     GroundMap map = MakeFlat_();
-    map.FillRect(200, 40, 399, 99, true);   // 윗면이 y=40 인 큰 블록
+    map.FillRect(200, 40, 399, 99, true);
     const PhysicsWorld world = WorldOf_(map);
     Body               body  = StandingOn_(world, 150.f, 100.f);
 
-    body.velocity.y = -300.f;   // 정점 높이 ≈ 32px → 블록 윗면(40)보다 낮게 뜬다
+    body.velocity.y = -300.f;
     bool bHit       = false;
     for (int i = 0; i < 60; ++i)
     {
         const MoveResult result = Tick_(body, world, kRunSpeed);
         bHit                    = bHit || result.bHitWallRight;
-        ASSERT_LE(body.position.x + 12.f, 200.f + 0.001f) << "tick " << i;   // 벽 안으로 파고들지 않음
+        ASSERT_LE(body.position.x + 12.f, 200.f + 0.001f) << "tick " << i;
     }
     EXPECT_TRUE(bHit);
 }
@@ -531,7 +531,7 @@ TEST(Physics, AirborneBodyCannotPassThroughWallOrSlideIntoLedgeCorner)
 TEST(Physics, AirborneBodyClearingTheLedgeLandsOnTop)
 {
     GroundMap map = MakeFlat_();
-    map.FillRect(200, 80, 399, 99, true);   // 윗면 y=80, 바닥보다 20px 높은 단
+    map.FillRect(200, 80, 399, 99, true);
     const PhysicsWorld world = WorldOf_(map);
     Body               body  = StandingOn_(world, 150.f, 100.f);
 
@@ -548,13 +548,13 @@ TEST(Physics, AirborneBodyClearingTheLedgeLandsOnTop)
 TEST(Physics, AirborneBodyDoesNotStepUpLedges)
 {
     GroundMap map = MakeFlat_();
-    map.FillRect(200, 94, 399, 99, true);   // 윗면 y=94 (바닥보다 6px 높음)
+    map.FillRect(200, 94, 399, 99, true);
     const PhysicsWorld world = WorldOf_(map);
 
     Body             body   = MakeBody_(187.f, 98.f);
     const MoveResult result = Tick_(body, world, kRunSpeed);
     EXPECT_TRUE(result.bHitWallRight);
-    EXPECT_GE(body.position.y, 98.f);   // 끌어올려지지 않는다
+    EXPECT_GE(body.position.y, 98.f);
     EXPECT_FLOAT_EQ(body.position.x + 12.f, 200.f);
 }
 
@@ -587,7 +587,7 @@ TEST(Physics, OneWayPlatformPassesFromBelowAndLandsFromAbove)
 
     EXPECT_FALSE(bCeiling);
     EXPECT_TRUE(bLanded);
-    EXPECT_FLOAT_EQ(body.position.y, 60.f);   // 윗면 위에 섰다
+    EXPECT_FLOAT_EQ(body.position.y, 60.f);
 }
 
 TEST(Physics, OneWayPlatformDoesNotCatchBodiesThatAreBelowTheTop)
@@ -606,14 +606,14 @@ TEST(Physics, OneWayPlatformDoesNotCatchBodiesThatAreBelowTheTop)
         (void)Tick_(body, world);
     }
     EXPECT_TRUE(body.bGrounded);
-    EXPECT_FLOAT_EQ(body.position.y, 100.f);   // 바닥까지 내려갔다 (원웨이에 걸리지 않음)
+    EXPECT_FLOAT_EQ(body.position.y, 100.f);
 }
 
 TEST(Physics, OneWayPlatformDoesNotBlockWalkingSideways)
 {
     const GroundMap map = MakeFlat_();
     Platform        oneWay;
-    oneWay.box     = Aabb::FromMinMax({ 150.f, 70.f }, { 170.f, 76.f });   // 몸통 높이 안쪽에 걸쳐 있음
+    oneWay.box     = Aabb::FromMinMax({ 150.f, 70.f }, { 170.f, 76.f });
     oneWay.bOneWay = true;
 
     PhysicsWorld world = WorldOf_(map);
@@ -651,14 +651,14 @@ TEST(Physics, DropThroughLetsBodyFallOffOneWayPlatform)
         (void)Tick_(body, world);
     }
     EXPECT_TRUE(body.bGrounded);
-    EXPECT_FLOAT_EQ(body.position.y, 100.f);   // 바닥까지 내려갔고 다시 원웨이에 걸리지 않았다
+    EXPECT_FLOAT_EQ(body.position.y, 100.f);
 }
 
 TEST(Physics, SolidPlatformSupportsBlocksSidesAndBumpsHead)
 {
     const GroundMap map = MakeFlat_();
     Platform        solid;
-    solid.box     = Aabb::FromMinMax({ 150.f, 50.f }, { 220.f, 100.f });   // 바닥에 놓인 상자 (높이 50)
+    solid.box     = Aabb::FromMinMax({ 150.f, 50.f }, { 220.f, 100.f });
     solid.bOneWay = false;
 
     PhysicsWorld world = WorldOf_(map);
@@ -785,7 +785,7 @@ namespace
 [[nodiscard]] Vector<Snapshot> RunScenario_()
 {
     GroundMap map = MakeRamp45_(50, 90, 100);
-    map.FillRect(260, 100, 330, 199, false);   // 구덩이
+    map.FillRect(260, 100, 330, 199, false);
     map.FillRect(330, 40, 399, 199, true);
     Platform oneWay;
     oneWay.box     = Aabb::FromMinMax({ 120.f, 50.f }, { 180.f, 56.f });

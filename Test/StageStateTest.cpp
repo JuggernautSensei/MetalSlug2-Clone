@@ -94,8 +94,8 @@ TEST(StageState, LoadsStage0AndStartsAtTheScriptedPlayerStart)
     EXPECT_FALSE(state.IsFinished());
     EXPECT_EQ(state.GetData().name, "Stage0");
     EXPECT_EQ(state.GetData().sections.size(), 22u);
-    EXPECT_NEAR(state.GetPlayer().GetFeet().x, 100.f, 2.f);   // 스크립트 player.x
-    EXPECT_GT(state.GetRunner().GetSpawnedCount(), 0);        // intro 의 소품들
+    EXPECT_NEAR(state.GetPlayer().GetFeet().x, 100.f, 2.f);
+    EXPECT_GT(state.GetRunner().GetSpawnedCount(), 0);
     EXPECT_NE(state.GetHost().GetActiveGround(), nullptr);
 }
 
@@ -141,7 +141,7 @@ TEST(StageState, HoldingRightAdvancesThroughSectionsAndTheCameraNeverScrollsBack
         lastCamX = camX;
     }
     EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 750.f);
-    EXPECT_GE(sim.State().GetRunner().GetNextSectionIndex(), 2);   // intro, street 발동
+    EXPECT_GE(sim.State().GetRunner().GetNextSectionIndex(), 2);
 }
 
 TEST(StageStateDebug, F5WarpsToTheNextSectionOnlyWithDebugDraw)
@@ -150,9 +150,9 @@ TEST(StageStateDebug, F5WarpsToTheNextSectionOnlyWithDebugDraw)
     sim.Step();
     ASSERT_EQ(sim.State().GetRunner().GetNextSectionIndex(), 1);
 
-    sim.Ctx().debugWarp = 1;   // F5
+    sim.Ctx().debugWarp = 1;
     sim.Step();
-    EXPECT_EQ(sim.Ctx().debugWarp, 0);   // 소비됨
+    EXPECT_EQ(sim.Ctx().debugWarp, 0);
     EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 750.f);
     EXPECT_EQ(sim.State().GetRunner().GetNextSectionIndex(), 2);
     EXPECT_EQ(sim.State().GetHost().GetLastSectionId(), "street");
@@ -172,9 +172,9 @@ TEST(StageStateDebug, F6WarpsToTheStageEnd)
 {
     StageSim sim { true };
     sim.Step();
-    sim.Ctx().debugWarp = 2;   // F6
+    sim.Ctx().debugWarp = 2;
     sim.Step();
-    EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 13700.f);   // boss_arena 섹션 트리거 (마지막 구간)
+    EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 13700.f);
     EXPECT_TRUE(sim.State().GetRunner().GetNextSectionIndex() >= 20);
 }
 
@@ -185,7 +185,7 @@ TEST(StageHostPlaceholders, HitsKillAtZeroHpThenTheEntityIsRemovedAfterTheDeathW
     request.bHasHp         = true;
     request.hp             = 2;
     const SpawnId id       = host.SpawnEntity(request);
-    const SpawnId target   = host.GetPlaceholderEntities()[0].id;   // 피격은 플레이스홀더 자신의 id 로 들어온다
+    const SpawnId target   = host.GetPlaceholderEntities()[0].id;
 
     EXPECT_NE(id, kInvalidSpawnId);
     EXPECT_FALSE(host.IsDefeated(id));

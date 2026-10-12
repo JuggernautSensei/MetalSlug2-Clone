@@ -10,7 +10,6 @@
 #include "Game/Ui/UiLayout.h"
 #include "Render/SpriteLibrary.h"
 
-// 게임 오버 전면 아트 (UI_GameOver_* 스프라이트). 화면을 덮도록 확대해 가운데 기준으로 그린다.
 struct GameOverArtView
 {
     bool    bVisible = false;

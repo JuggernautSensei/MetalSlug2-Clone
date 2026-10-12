@@ -1,4 +1,4 @@
-// 코드 하드코딩에서 JSON 으로 옮긴 값 (Docs/Wayfinder/C6_migrate_A.csv) 이 옛 상수와 같은지 확인한다.
+// JSON 으로 옮긴 값이 옛 코드 상수와 같은지 확인한다.
 
 #include "Base/SlugError.h"
 #include "Base/Types.h"

@@ -103,7 +103,7 @@ void DecorWorld::EnterStep_(
     const DecorStep& step = _inst.steps[static_cast<size_t>(_inst.stepIndex)];
     _inst.velocity        = step.velocity;
     _inst.bFlipX          = step.bFlipX;
-    _inst.stepLeft += step.seconds;   // 넘친 시간은 다음 구간으로 넘긴다
+    _inst.stepLeft += step.seconds;
     _inst.bNeedEnter = false;
 
     const AnimId clip = _anims.Find(step.clip);

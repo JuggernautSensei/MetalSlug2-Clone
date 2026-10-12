@@ -294,7 +294,6 @@ Vector<Result<DecodedImage>> DecodeImages(
 
 namespace
 {
-// 텍스처 선택: 플래시가 켜졌고 변환본이 있으면 변환본.
 SDL_Texture* PickTexture_(
     SDL_Texture* const _pNormal,
     SDL_Texture* const _pFlash,
@@ -644,7 +643,6 @@ void SpriteBatch::DrawTextureRepeatX(
     const int camY = FloorToInt(_cameraPos.y);
     const int from = FloorToInt(_fromX);
 
-    // Y 는 전체 높이를 그대로 쓴다 (카메라 세로 범위로 자른다)
     const int y0 = std::max(texY, camY);
     const int y1 = std::min(texY + texture.height, camY + _viewH);
     if (y1 <= y0)

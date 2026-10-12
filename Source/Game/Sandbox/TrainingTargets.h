@@ -27,7 +27,7 @@ struct TrainingDummy
     Vec2       size       = { 20.f, 44.f };
     int        facing     = -1;
     Health     health     = {};
-    int        flashTicks = 0;    // 피격 번쩍임 타이머 (HitFlash.h)
+    int        flashTicks = 0;
     int        deadTicks  = -1;   // -1: 생존, 0..: 사망 후 경과 틱
     int        shootTimer = 0;
     int        hitsTaken  = 0;

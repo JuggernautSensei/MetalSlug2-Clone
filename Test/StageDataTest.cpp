@@ -63,12 +63,12 @@ TEST(StageData, SpawnDefaultsDependOnKind)
     EXPECT_EQ(a[1].spawn.origin, eOrigin::LegacyCenter);
     EXPECT_EQ(a[1].when, eWhen::Always);
     EXPECT_EQ(a[2].spawn.origin, eOrigin::Feet);
-    EXPECT_EQ(a[2].when, eWhen::Always);   // npc
-    EXPECT_EQ(a[3].when, eWhen::Always);   // item
-    EXPECT_EQ(a[4].when, eWhen::Always);   // collider
+    EXPECT_EQ(a[2].when, eWhen::Always);
+    EXPECT_EQ(a[3].when, eWhen::Always);
+    EXPECT_EQ(a[4].when, eWhen::Always);
     EXPECT_EQ(a[4].spawn.collisionLayer, eCollisionLayer::Wall);
     EXPECT_FLOAT_EQ(a[4].spawn.size.x, 5.f);
-    EXPECT_EQ(a[5].when, eWhen::Always);   // decor
+    EXPECT_EQ(a[5].when, eWhen::Always);
     EXPECT_TRUE(a[5].spawn.bHasLayer);
     EXPECT_EQ(a[5].spawn.layer, eStageLayer::Background);
     EXPECT_FLOAT_EQ(a[5].spawn.cullMargin, kDefaultCullMargin);
@@ -197,7 +197,7 @@ TEST(StageData, GateParsesNestedActionsAndCounts)
     EXPECT_TRUE(gate.bAbortOnGameOver);
     ASSERT_EQ(gate.actions.size(), 3u);
     EXPECT_FLOAT_EQ(gate.actions[0].delay, 1.5f);
-    EXPECT_EQ(data.CountSpawns(), 4);   // repeat 3 + 게이트 안 spawn 1
+    EXPECT_EQ(data.CountSpawns(), 4);
     EXPECT_EQ(data.CountGates(), 2);
 }
 
@@ -213,10 +213,10 @@ TEST(StageData, BoundsCurveResolvesSectionIndicesAndEvaluates)
     const BoundsCurve& curve = data.camera.boundsCurves[0];
     EXPECT_EQ(curve.fromIndex, 1);
     EXPECT_EQ(curve.untilIndex, 2);
-    EXPECT_FLOAT_EQ(curve.EvaluateTop(0.f), 100.f);       // 앞쪽 clamp
-    EXPECT_FLOAT_EQ(curve.EvaluateTop(1500.f), 350.f);    // 보간
-    EXPECT_FLOAT_EQ(curve.EvaluateTop(1000.5f), 100.f);   // trunc(100.25)
-    EXPECT_FLOAT_EQ(curve.EvaluateTop(9999.f), 600.f);    // 뒤쪽 clamp
+    EXPECT_FLOAT_EQ(curve.EvaluateTop(0.f), 100.f);
+    EXPECT_FLOAT_EQ(curve.EvaluateTop(1500.f), 350.f);
+    EXPECT_FLOAT_EQ(curve.EvaluateTop(1000.5f), 100.f);
+    EXPECT_FLOAT_EQ(curve.EvaluateTop(9999.f), 600.f);
     const Aabb bounds = curve.EvaluateBounds(1500.f);
     EXPECT_EQ(bounds, Aabb::FromMinMax({ 100.f, 350.f }, { 3000.f, 798.f }));
 }
@@ -399,7 +399,7 @@ TEST(StageDataReal, OpenlandPowsAreAboutEvery700PxAndCoverTheWeaponMix)
     for (size_t i = 1; i < xs.size(); ++i)
     {
         EXPECT_GE(xs[i] - xs[i - 1], 500.f);
-        EXPECT_LE(xs[i] - xs[i - 1], 1000.f);   // R1-10 뿅 경고 해소로 openland_2->3 간격이 1000 까지 늘었다 (허용 범위 최소 조정)
+        EXPECT_LE(xs[i] - xs[i - 1], 1000.f);   // openland_2->3 간격은 1000 까지 허용
     }
     const Vector<String> expected = { "gunitem_mg", "gunitem_rl", "bomb_supple", "gunitem_sg", "gunitem_fs" };
     EXPECT_EQ(drops, Vector<String>(expected.begin(), expected.end()));
@@ -501,7 +501,7 @@ TEST(StageDataReal, Stage0AmbientWalkersUseSequenceParams)
     ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
-    // 인트로: 노인(Parker) 이 길을 오간다 (어린 소년 NPC 는 삭제했다)
+    // 인트로: 노인(Parker) 이 길을 오간다
     const int intro = data.FindSection("intro");
     ASSERT_GE(intro, 0);
     const SpawnSpec* pOld    = nullptr;
@@ -605,10 +605,10 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
     const StageData data = result.Take();
 
     // 기대값은 현행 Stage0.json 을 센 결과 (spawn 은 repeat.count 펼침 포함, 게이트 안 spawn 포함)
-    EXPECT_EQ(data.sections.size(), 22u);     // intro ~ boss_arena (22 섹션)
-    EXPECT_EQ(data.CountSpawns(), 195);       // 현행 스폰 수 (사용자 Map 에디터 편집으로 199 -> 198) (버스는 ground_swap 에서 사전 스폰, heli_river/river_jeep 포함, openland_4 보스 구간 바닥 소품 2 포함)
-    EXPECT_EQ(data.CountWaveEntries(), 33);   // spawnWave 항목 수 (bridge 병사 3 / boardwalk 웨이브 1 삭제 반영)
-    EXPECT_EQ(data.CountGates(), 4);          // sarubia_dead + bus_clear + heli_dead + bigshiee_dead
+    EXPECT_EQ(data.sections.size(), 22u);
+    EXPECT_EQ(data.CountSpawns(), 195);
+    EXPECT_EQ(data.CountWaveEntries(), 33);
+    EXPECT_EQ(data.CountGates(), 4);
 
     EXPECT_EQ(data.name, "Stage0");
     EXPECT_EQ(data.background, "Stage0_Main");
@@ -622,7 +622,7 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
     EXPECT_EQ(data.sections.front().id, "intro");
     EXPECT_EQ(data.sections.back().id, "boss_arena");
     EXPECT_FLOAT_EQ(data.sections.back().triggerX, 13700.f);
-    EXPECT_EQ(data.FindSection("boardwalk"), 4);   // intro, street, ground_swap, bus 다음 (heli 는 river 구간으로 이동)
+    EXPECT_EQ(data.FindSection("boardwalk"), 4);
 
     ASSERT_EQ(data.camera.boundsCurves.size(), 1u);
     EXPECT_EQ(data.camera.boundsCurves[0].fromIndex, data.FindSection("downtown_start"));

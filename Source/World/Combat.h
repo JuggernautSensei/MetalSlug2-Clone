@@ -21,7 +21,6 @@ enum class eHitKind : uint8_t
     Count
 };
 
-// eHitKind 집합. 종류 하나가 비트 하나다.
 struct HitKindMask
 {
     constexpr HitKindMask() = default;

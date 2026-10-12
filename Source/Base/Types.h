@@ -17,13 +17,12 @@ using jug::Vector;
 // 인스턴스 z 미지정 표시 (스폰 시 해당 종류의 기본 depth 를 쓴다)
 inline constexpr int kDefaultZ = -2147483647 - 1;
 
-// z 가 kDefaultZ 이면 기본 depth, 아니면 z 그대로
 [[nodiscard]] constexpr int ResolveZ(const int _z, const int _defaultDepth)
 {
     return _z == kDefaultZ ? _defaultDepth : _z;
 }
 
-// 기본 depth 로부터 벗어난 양 (kDefaultZ 이면 0). 파생 FX/꼬리가 기준 인스턴스의 z 이동을 그대로 따른다.
+// 기본 depth 로부터 벗어난 양 (kDefaultZ 이면 0)
 [[nodiscard]] constexpr int ZDelta(const int _z, const int _defaultDepth)
 {
     return _z == kDefaultZ ? 0 : _z - _defaultDepth;

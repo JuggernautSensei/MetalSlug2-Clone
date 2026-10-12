@@ -19,5 +19,4 @@ void RequestFxAt(
     int        _depth    = 60,
     float      _delaySec = 0.f);
 
-// 현재 클립을 끝까지 재생했는가
 [[nodiscard]] bool IsClipDone(const Enemy& _e, const EnemyDef& _def);

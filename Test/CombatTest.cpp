@@ -56,7 +56,6 @@ namespace
     return _resolver.Resolve(_hits, _hurts);
 }
 
-// 30프레임 동안 결정적인 히트/허트 박스를 만들어 판정 결과를 로그로 남긴다
 [[nodiscard]] Vector<uint32_t> RunResolverLog_()
 {
     HitResolver      resolver;
@@ -219,9 +218,9 @@ TEST(Combat, ConsumedBulletDoesNotHitAgainOnLaterFrames)
 
     EXPECT_EQ(Resolve_(resolver, bullet, target).size(), 1u);
     EXPECT_TRUE(Resolve_(resolver, bullet, target).empty());
-    EXPECT_TRUE(Resolve_(resolver, bullet, { MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 2) }).empty());   // 다른 대상에게도 안 감
+    EXPECT_TRUE(Resolve_(resolver, bullet, { MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 2) }).empty());
 
-    resolver.Release(77);   // 새 공격이 같은 id 를 재사용
+    resolver.Release(77);
     EXPECT_EQ(Resolve_(resolver, bullet, target).size(), 1u);
 }
 
@@ -264,7 +263,7 @@ TEST(Combat, MeleeSwingSharingAnIdHitsEachTargetOncePerSwing)
 TEST(Combat, PierceHitsOnlyOncePerOwnerEvenWithManyHurtboxes)
 {
     HitResolver            resolver;
-    const Vector<Hurtbox>  boss   = { MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 9), MakeHurt_(eTeam::Enemy, Box_(5, 0, 15, 10), 9) };   // 같은 owner 의 두 부위
+    const Vector<Hurtbox>  boss   = { MakeHurt_(eTeam::Enemy, Box_(0, 0, 10, 10), 9), MakeHurt_(eTeam::Enemy, Box_(5, 0, 15, 10), 9) };
     const Vector<HitEvent> events = Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Blast, Box_(0, 0, 20, 10), 4, true, 20) }, boss);
     ASSERT_EQ(events.size(), 1u);
     EXPECT_EQ(events[0].hurtboxIndex, 0u);
@@ -322,10 +321,10 @@ TEST(Health, ApplyDamageClampsAndReportsApplied)
     EXPECT_EQ(health.ApplyDamage(2), 2);
     EXPECT_EQ(health.hp, 3);
     EXPECT_FALSE(health.IsDead());
-    EXPECT_EQ(health.ApplyDamage(10), 3);   // 남은 체력까지만
+    EXPECT_EQ(health.ApplyDamage(10), 3);
     EXPECT_EQ(health.hp, 0);
     EXPECT_TRUE(health.IsDead());
-    EXPECT_EQ(health.ApplyDamage(1), 0);   // 죽은 뒤에는 무시
+    EXPECT_EQ(health.ApplyDamage(1), 0);
 }
 
 TEST(Health, NonPositiveDamageIsIgnored)

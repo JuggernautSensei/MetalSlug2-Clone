@@ -404,7 +404,6 @@ bool MotionDocument::ApplyPartDepth(
 
 namespace
 {
-// obj 객체의 정수 키 하나: 있으면 제자리 교체, 없고 기본값과 다르면 끼워 넣는다
 bool MotionSetInt_(
     String&               _text,
     const Vector<String>& _object,

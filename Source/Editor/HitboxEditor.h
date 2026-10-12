@@ -20,8 +20,8 @@ enum class eHitboxField : int
 // JSON 안의 박스 하나. {w,h,cx,cy} 객체이거나 [w,h] 두 숫자 배열(hurtStand, hitSize 등).
 struct HitboxEntry
 {
-    String           owner = {};   // 플레이어("Player") 또는 정의 이름
-    String           label = {};   // 파일 안의 점 경로
+    String           owner = {};
+    String           label = {};
     ARRAY<double, 4> value = {};
     ARRAY<int, 4>    begin = { -1, -1, -1, -1 };
     ARRAY<int, 4>    end   = { -1, -1, -1, -1 };
@@ -40,7 +40,6 @@ public:
     bool SetValue(int _entry, eHitboxField _field, double _value);
     void Revert();
 
-    // 정의 객체의 "hitboxes" 배열을 _boxes 로 맞춘다 (없으면 삽입, 비면 제거, 같으면 무변경). 정의가 이 파일에 없으면 false.
     bool ApplyExtraBoxes(StringView _def, const Vector<ExtraBoxDef>& _boxes);
 
     [[nodiscard]] const String&           GetText() const;
@@ -57,7 +56,6 @@ private:
     Vector<HitboxEntry> m_entries      = {};
 };
 
-// AI 탭의 "Hitbox" 창: 플레이어/적/보스 박스 크기 편집 + 라이브 미리보기 + 원본 JSON 저장
 class HitboxEditor final
 {
 public:

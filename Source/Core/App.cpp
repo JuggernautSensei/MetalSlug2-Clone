@@ -237,7 +237,6 @@ void App::ParseArgs_()
         }
         else if (args[i] == "--warp-x" && bHasValue)
         {
-            // 디버그: 월드 x 로 직접 워프 (그 앞 구간은 조용히 적용). 맵 검증용
             m_startWarpX = static_cast<float>(std::atof(args[++i].c_str()));
         }
         else if (args[i] == "--life" && bHasValue)
@@ -246,7 +245,7 @@ void App::ParseArgs_()
         }
         else if (args[i] == "--warp-boss")
         {
-            m_pendingWarp = 2;   // F6 와 같다: 스테이지 마지막 구간 (종료 지점)
+            m_pendingWarp = 2;
             m_bDebugDraw  = true;
         }
         else if (args[i] == "--capture-ticks" && bHasValue)
@@ -445,13 +444,13 @@ void App::OnKeyDown_(
             {
                 m_pendingWarp = 1;
             }
-            return;   // 스테이지: 다음 섹션
+            return;
         case SDL_SCANCODE_F6:
             if (m_bDebugDraw)
             {
                 m_pendingWarp = 2;
             }
-            return;   // 스테이지: 보스 아레나
+            return;
         case SDL_SCANCODE_1: m_pendingSpawn = 1; return;
         case SDL_SCANCODE_2: m_pendingSpawn = 2; return;
         case SDL_SCANCODE_3: m_pendingSpawn = 3; return;

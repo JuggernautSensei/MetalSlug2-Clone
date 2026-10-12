@@ -411,7 +411,7 @@ void StageRunner::FireSection_(
         }
         if (curve.untilIndex == _index)
         {
-            m_curveActive[i] = 0;   // until 섹션의 액션이 실행되기 직전에 곡선을 끈다
+            m_curveActive[i] = 0;
         }
     }
 

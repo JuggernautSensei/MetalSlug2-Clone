@@ -40,7 +40,6 @@ public:
     void Tick();
 
     // 자동 전진 (보스 스크롤): 잠금 중이면 현재 잠금 사각형과 카메라 잠금을 _dx 만큼 옮기고 (Camera::ShiftLock), 아니면 카메라 중심 x 하한을 올린다 (Camera::AddScrollFloor).
-    // StageState 가 적 틱 뒤에 호출한다.
     void AddCameraScroll(float _dx);
 
     bool WarpToSection(int _index);
@@ -86,7 +85,7 @@ private:
         const WaveEntry*   pWave            = nullptr;
         int                sectionIndex     = -1;
         bool               bAbortOnGameOver = false;
-        int                repeatsLeft      = 0;   // 웨이브 시간 반복: 남은 재발동 횟수 (seq 는 공유 = clear waves 로 함께 취소)
+        int                repeatsLeft      = 0;
     };
 
     struct GateState
@@ -150,7 +149,7 @@ private:
 
     Vector<PendingItem> m_pending       = {};
     uint64_t            m_nextSeq       = 1;
-    uint64_t            m_waveCutoffSeq = 0;   // seq < cutoff 인 웨이브 엔트리는 취소됨
+    uint64_t            m_waveCutoffSeq = 0;
     Vector<GateState>   m_gates         = {};
 
     Vector<SpawnRecord> m_records      = {};

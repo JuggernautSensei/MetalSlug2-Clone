@@ -8,14 +8,12 @@
 #include "World/Combat.h"
 #include "World/Physics.h"
 
-// 호스트(SandboxState / StageState)가 가진 SV-001 묶음. 탑승/하차를 PlayerController 와 이어 주고,
-// 적 이동을 막는 벽, 피격 이벤트 전달, HUD 값을 제공한다.
+// 호스트(SandboxState / StageState)가 가진 SV-001 묶음. 탑승/하차를 PlayerController 와 이어 준다.
 class SlugSystem
 {
 public:
     void Reset(const SlugTuning& _tuning);
 
-    // 주차된 차량을 하나 놓는다. 돌려주는 값은 인덱스 (실패 시 -1)
     int Spawn(Vec2 _feet, int _facing, int _hp = -1);
 
     // 플레이어 Tick 앞에서 호출한다. 탑승 판정, 차량 Tick, 하차/파괴 처리, 플레이어 위치 동기화.
@@ -34,7 +32,6 @@ public:
     [[nodiscard]] SlugVehicle*            GetRiddenOrNull();
     [[nodiscard]] bool                    IsRiding() const;
 
-    // 적 지형 충돌용: 차량 몸통을 벽으로 (보병이 올라타지 못하게)
     [[nodiscard]] Vector<Wall> MakeEnemyWalls() const;
 
     [[nodiscard]] const SlugTuning& GetTuning() const;

@@ -41,7 +41,6 @@ public:
     void Undo();
     void Redo();
 
-    // 마지막 호출 이후 바뀐 열 범위. 없으면 false.
     [[nodiscard]] bool TakeDirtyColumns(int& _x0, int& _x1);
 
 private:

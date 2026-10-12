@@ -192,12 +192,12 @@ TEST(VehicleDefs, VehicleDeathsDeclareTheirDelayedEffectsAndRemovalTimes)
     EnemyDefLibrary lib;
     ASSERT_TRUE(LoadVehicleLib(lib));
     EXPECT_FLOAT_EQ(Need_(lib, "jeep").death.removeAtSec, 1.7f);
-    EXPECT_GE(CountDelayed_(Need_(lib, "jeep")), 5);   // 2 차 폭발 + 금속 파편
+    EXPECT_GE(CountDelayed_(Need_(lib, "jeep")), 5);
     EXPECT_FLOAT_EQ(Need_(lib, "btank").death.removeAtSec, 4.f);
     EXPECT_FLOAT_EQ(Need_(lib, "missle_tank").death.removeAtSec, 2.f);
     EXPECT_FLOAT_EQ(Need_(lib, "sarubia").death.removeAtSec, 2.f);
-    EXPECT_GE(Need_(lib, "sarubia").death.fx.size(), 9u);               // 즉시 3 + 지연 6+1
-    EXPECT_FLOAT_EQ(Need_(lib, "btank").death.fx[0].offset.y, -40.f);   // 레거시 (0,+35) = 발 기준 -40
+    EXPECT_GE(Need_(lib, "sarubia").death.fx.size(), 9u);
+    EXPECT_FLOAT_EQ(Need_(lib, "btank").death.fx[0].offset.y, -40.f);   // (0,+35) = 발 기준 -40
 }
 
 TEST(VehicleDefs, AnUnknownBehaviorParameterFailsTheLoadWithTheDefinitionName)

@@ -145,7 +145,6 @@ namespace
     return best;
 }
 
-// 좌우 이동 중 막는 블록이 있으면 snapX 를 더 가까운 쪽으로 갱신한다.
 void TestLateralBlock_(
     const Aabb&           _testBox,
     const Aabb&           _block,
@@ -171,7 +170,6 @@ void TestLateralBlock_(
     }
 }
 
-// 상승 중 머리가 닿는 블록이 있으면 stopFeet 를 더 낮은 쪽으로 갱신한다.
 void TestCeilingBlock_(
     const Aabb& _block,
     const float _left,

@@ -21,8 +21,8 @@ struct MotionWeaponValues
 // params 의 값 하나: 숫자('n'), 불('b'), [x, y] 두 숫자('v')
 struct MotionParam
 {
-    String           label = {};   // 점 경로 (예: parts.body.depth)
-    Vector<String>   path  = {};   // params 아래 키 경로
+    String           label = {};
+    Vector<String>   path  = {};
     char             type  = 'n';
     bool             bInt  = false;
     ARRAY<double, 2> v     = {};
@@ -44,7 +44,6 @@ public:
     // params.parts.<part> 을 쓴다: 없는 parts/부품/키는 값이 기본값과 다를 때만 끼워 넣는다 (무편집은 바이트 동일)
     bool SetPartDepth(StringView _def, StringView _part, int _depth, int _sort, int _defaultDepth, int _defaultSort);
 
-    // 정의 자신의 JSON 에 있는 params 값 열거 / 한 값 제자리 교체
     [[nodiscard]] Vector<MotionParam> ListParams(StringView _def) const;
     bool                              SetParam(StringView _def, const MotionParam& _param);
 
@@ -56,7 +55,6 @@ private:
     String m_savedText = {};
 };
 
-// AI 탭 "Motions" 창: 공격 모션(무기/클립/이펙트) 편집 + 월드 십자 표시/드래그 + 부위 깊이(z)
 class MotionEditor final
 {
 public:

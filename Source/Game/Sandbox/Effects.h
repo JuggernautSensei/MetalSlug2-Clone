@@ -6,12 +6,12 @@
 
 // 잔해 공용 수치. 건물 붕괴 잔해(PropWorld)와 차량/병사 잔해(EffectList, EnemyCommon) 가 같이 쓴다.
 inline constexpr float kDebrisGravity         = 1000.f;   // px/s^2
-inline constexpr float kDebrisLifeSec         = 5.f;      // 안전망: 생성 후 이 시간이 지나면 제거
+inline constexpr float kDebrisLifeSec         = 5.f;
 inline constexpr float kDebrisVxMin           = -250.f;   // 초기 수평 속도 범위 (px/s)
 inline constexpr float kDebrisVxMax           = 249.f;
 inline constexpr float kDebrisVyMin           = -800.f;   // 초기 수직 속도 범위 (px/s, 위쪽은 음수)
 inline constexpr float kDebrisVyMax           = -301.f;
-inline constexpr float kDebrisCullBelowMargin = 100.f;   // 카메라 하단에서 이만큼 더 내려가면 제거
+inline constexpr float kDebrisCullBelowMargin = 100.f;
 
 class GroundMap;
 
@@ -22,7 +22,6 @@ struct Effect
     int        depth    = 0;
     bool       bFlipX   = false;
 
-    // 잔해(debris): 초기 속도 + 중력으로 솟구쳤다가 떨어지고, 화면 하단 밑으로 나가면 제거한다.
     bool  bDebris  = false;
     Vec2  velocity = { 0.f, 0.f };   // px/s, +y 아래
     float ageSec   = 0.f;
@@ -40,7 +39,6 @@ public:
         int                     _depth  = 50,
         bool                    _bFlipX = false);
 
-    // 잔해 연출: 생성 시 _velocity 로 날린다. 지면에서 멈추지 않고 중력으로 떨어진다.
     void SpawnDebris(
         const AnimationLibrary& _library,
         StringView              _clipName,

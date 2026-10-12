@@ -9,12 +9,12 @@
 // 헬기 상태 (Enemy::state 에 int 로 저장). 시간/수치는 Docs/Spec_Helicopter.md
 enum class eHeliState
 {
-    Bomb,       // 고공 폭격: 위 오른쪽에서 내려와 플레이어 위에 떠서 폭탄 3발 연속 투하 + 휴지 반복
-    Low,        // 저공 폭격: 낮게 내려와 x 축으로 가로지르며 폭탄 3발 + 휴지 반복
-    PodOut,     // 미사일 포드 전개 (제자리)
-    Move,       // 바라보는 반대쪽 화면 가장자리 아래로 이동
-    Volley,     // 발사 연기 → 미사일 (일제 사격)
-    MoveBack,   // 폭격 위치로 복귀 (포드 접힘)
+    Bomb,
+    Low,
+    PodOut,
+    Move,
+    Volley,
+    MoveBack,
     Turn        // 방향 전환 (원작 미관측: 시트의 Turning 프레임 기반)
 };
 
@@ -23,11 +23,11 @@ constexpr int kExtStartX   = 0;
 constexpr int kExtStartY   = 1;
 constexpr int kExtTargetX  = 2;
 constexpr int kExtTargetY  = 3;
-constexpr int kExtBombTime = 4;   // 선회로 중단된 폭격의 경과 틱
-constexpr int kExtTurnFlip = 5;   // 선회 전반부가 끝나 방향을 뒤집었는가
+constexpr int kExtBombTime = 4;
+constexpr int kExtTurnFlip = 5;
 constexpr int kExtPodTicks = 6;   // 포드 전개 후 경과 틱 (-1 = 접힘)
-constexpr int kExtCycle    = 7;   // 끝난 사이클 수 (첫 고공 폭격만 첫 폭탄이 느리다)
-constexpr int kExtPassDir  = 8;   // 저공 가로지르기 방향 (+1 오른쪽, -1 왼쪽)
+constexpr int kExtCycle    = 7;
+constexpr int kExtPassDir  = 8;
 constexpr int kExtIdleTick = 9;   // 호버 idle 위상 (렌더 전용, 해시에 들어가지 않는다)
 
 constexpr float kFixedScale = 16.f;
@@ -97,7 +97,6 @@ void Go_(
         case eHeliState::Turn: SetClip(_e, c.clipTurnIn, true); break;
         case eHeliState::Low:
         {
-            // 진행 방향이 기수 방향이면 앞으로 숙인 기체, 아니면 평범한 비행
             const bool bForward = (_e.ext[kExtPassDir] < 0) == (_e.facing < 0);
             SetClip(_e, bForward ? c.clipPitch : c.clipFly, true);
             break;
@@ -106,7 +105,6 @@ void Go_(
     }
 }
 
-// 현재 위치 → 목표로 이동 곡선을 시작한다
 void BeginMove_(
     Enemy&           _e,
     const EnemyDef&  _def,
@@ -122,7 +120,6 @@ void BeginMove_(
     (void)_env;
 }
 
-// 곡선 이동 한 틱. 끝났으면 true
 [[nodiscard]] bool StepMove_(
     Enemy&         _e,
     const HeliCfg& _c)
@@ -134,7 +131,6 @@ void BeginMove_(
     return _e.stateTicks >= _c.moveTicks;
 }
 
-// 폭격 중 이동: 호버 높이까지 내려오고, 플레이어 x 를 천천히 따라간다
 void StepFollow_(
     Enemy&          _e,
     const HeliCfg&  _c,
@@ -171,7 +167,6 @@ void DropBomb_(
     (void)_env.world.SpawnDeferred(bombIndex, at, params);
 }
 
-// 연속 투하 한 주기 = 폭탄 burstCount 발 (bombIntervalTicks 간격) + 휴지
 [[nodiscard]] int BurstPeriod_(
     const HeliCfg& _c)
 {
@@ -187,7 +182,6 @@ void DropBomb_(
     return _first + _bursts * BurstPeriod_(_c);
 }
 
-// 이 틱에 폭탄을 떨어뜨리는가
 [[nodiscard]] bool IsBombTick_(
     const HeliCfg& _c,
     const int      _ticks,
@@ -237,7 +231,6 @@ void StepBombing_(
     return _e.ext[kExtPassDir] > 0 ? view.max.x - _c.lowMargin : view.min.x + _c.lowMargin;
 }
 
-// 저공 이동: 저공 높이까지 내려오며 목표 가장자리로 일정 속도로 간다
 void StepLow_(
     Enemy&          _e,
     const HeliCfg&  _c,
@@ -253,7 +246,6 @@ void StepLow_(
     _e.body.position.x += (dx < 0.f ? -step : step);
 }
 
-// 고공 구간 끝: 화면 중앙의 먼 쪽 가장자리로 가로지르는 저공 구간 시작
 void BeginLow_(
     Enemy&          _e,
     const EnemyDef& _def,
@@ -264,7 +256,6 @@ void BeginLow_(
     Go_(_e, _def, eHeliState::Low);
 }
 
-// 플레이어가 반대쪽에 머물면 선회한다
 [[nodiscard]] bool WantsTurn_(
     Enemy&          _e,
     const HeliCfg&  _c,

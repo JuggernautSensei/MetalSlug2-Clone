@@ -19,14 +19,12 @@ inline constexpr int kSlugArrowZOffset = kSlugArrowDepth - kSlugBodyDepth;
 
 [[nodiscard]] eSlugClip GetSlugBodyClip(eSlugPose _pose);
 
-// 차량 몸통 + 발칸 + 효과 + IN/OUT 화살표를 스프라이트 배치에 제출한다 (보간 위치 사용).
 void SubmitSlug(
     SpriteBatch&            _sprites,
     const AnimationLibrary& _anims,
     const SlugVehicle&      _slug,
     float                   _alpha);
 
-// 발칸탄 / 캐논 포탄 스프라이트. 해당 소유자(SV-001)의 투사체일 때만 true.
 [[nodiscard]] bool IsSlugOwner(uint32_t _owner);
 
 bool SubmitSlugBullet(

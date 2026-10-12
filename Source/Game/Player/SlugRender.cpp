@@ -34,7 +34,6 @@ namespace
     return GetFrame_(_anims, GetSlugClipInfo(_clip).pName, _frame);
 }
 
-// 클립 이름과 경과 틱으로 프레임을 고른다 (클립 자신의 프레임 길이를 따른다)
 [[nodiscard]] const AnimFrame* GetTimedFrame_(
     const AnimationLibrary& _anims,
     const StringView        _name,
@@ -168,7 +167,6 @@ void SubmitSlug(
     const int  fxZ     = bodyZ + kSlugFxZOffset;
     const int  arrowZ  = bodyZ + kSlugArrowZOffset;
 
-    // 몸통
     if (_slug.IsBodyVisible())
     {
         const eSlugClip clip = GetSlugBodyClip(_slug.GetPose());
@@ -208,7 +206,6 @@ void SubmitSlug(
         SubmitFx_(_sprites, _anims, fx, fxZ);
     }
 
-    // IN / OUT 화살표
     if (_slug.ShouldShowInArrow())
     {
         const int frameCount = GetSlugClipInfo(eSlugClip::ArrowIn).frames;
@@ -268,7 +265,7 @@ bool SubmitSlugShell(
     {
         return false;
     }
-    const float angle = std::atan2(-_bomb.velocity.y, std::abs(_bomb.velocity.x)) * kRad2Deg;   // 위쪽이 +
+    const float angle = std::atan2(-_bomb.velocity.y, std::abs(_bomb.velocity.x)) * kRad2Deg;
     const int   row   = Clamp(static_cast<int>(std::lround((90.f - std::abs(angle)) / kVulcanAngleStep)), 0, kShellRowCount - 1);
     const int   col   = Clamp(3 + _bomb.ageTicks / 3, 3, kShellColCount - 1);
 

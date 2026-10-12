@@ -25,7 +25,7 @@ struct SlugContext
 struct SlugEjectRequest
 {
     bool bValid          = false;
-    bool bDestroyed      = false;   // 게이지가 0 이 되어 튕겨 나옴 (자발적 하차가 아님)
+    bool bDestroyed      = false;
     Vec2 feet            = { 0.f, 0.f };
     Vec2 velocity        = { 0.f, 0.f };
     int  facing          = 1;
@@ -41,7 +41,6 @@ enum class eSlugFxKind : uint8_t
     Debris
 };
 
-// 차량이 소유하는 짧은 시각 효과 (총구 불꽃, 연기, 폭발). 렌더가 클립으로 바꾼다.
 struct SlugFx
 {
     eSlugFxKind kind     = eSlugFxKind::Smoke;
@@ -70,7 +69,6 @@ public:
 
     void Tick(const SlugContext& _ctx, const InputHistory& _input);
 
-    // 탑승: 주차 상태에서만 가능하다
     [[nodiscard]] bool CanBoard() const;
     void               BeginBoarding();
 
@@ -85,7 +83,7 @@ public:
     [[nodiscard]] bool               IsAlive() const;
     [[nodiscard]] Vec2               GetFeet() const;
     [[nodiscard]] Vec2               GetPrevFeet() const;
-    [[nodiscard]] int                GetZ() const;   // 몸통 depth (kDefaultZ: kSlugBodyDepth). 부품/FX/화살표/탄은 같은 이동량을 따른다
+    [[nodiscard]] int                GetZ() const;
     void                             SetZ(int _z);
     [[nodiscard]] Vec2               GetVelocity() const;
     [[nodiscard]] int                GetFacing() const;
@@ -100,7 +98,7 @@ public:
     [[nodiscard]] int                GetPoseFrame() const;
     [[nodiscard]] int                GetFlashTicks() const;
     [[nodiscard]] bool               IsBlinkWhite() const;
-    [[nodiscard]] int                GetDamageStage() const;   // 0 정상, 1 연기, 2 불꽃 (OUT 화살표 깜빡임)
+    [[nodiscard]] int                GetDamageStage() const;
     [[nodiscard]] bool               ShouldShowInArrow() const;
     [[nodiscard]] bool               ShouldShowOutArrow() const;
     [[nodiscard]] int                GetTick() const;
@@ -163,13 +161,13 @@ private:
     int   m_crouchTimer = 0;
     int   m_moveX       = 0;
     float m_driveFrame  = 0.f;
-    int   m_accelDir    = 0;     // +1 가속 중, -1 감속 중, 0 일정
+    int   m_accelDir    = 0;
     float m_accelPhase  = 0.f;   // 가속/감속 프레임 위치 0..3
 
     float m_vulcanAngle    = 0.f;   // 도, 0 = 오른쪽, +90 = 위 (몸이 보는 방향과 무관)
     float m_vulcanTarget   = 0.f;
     int   m_vulcanCooldown = 0;
-    int   m_vulcanShotAge  = 1000;   // 마지막 발사 뒤 경과 틱 (총구 불꽃 클립 위치)
+    int   m_vulcanShotAge  = 1000;
     int   m_cannonCooldown = 0;
     int   m_cannonAmmo     = 0;
 

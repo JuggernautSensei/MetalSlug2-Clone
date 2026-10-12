@@ -151,7 +151,7 @@ TEST(PlayerMove, StopsInstantlyOnReleaseAndStateReturnsToIdle)
     sim.Step();
     EXPECT_FLOAT_EQ(sim.X(), x);
     EXPECT_EQ(sim.Player().GetState(), ePlayerState::Idle);
-    EXPECT_EQ(sim.Player().GetFacing(), 1);   // 방향은 유지
+    EXPECT_EQ(sim.Player().GetFacing(), 1);
 }
 
 TEST(PlayerMove, FacingIsKeptWhenReleased)
@@ -194,7 +194,7 @@ TEST(PlayerMove, HotReloadedTuningChangesSpeedImmediately)
     sim.Hold(eAction::Right);
     sim.Step(10);
     const float x0           = sim.X();
-    sim.Tune().move.runSpeed = 60.f;   // 핫리로드와 같은 경로: 같은 Tuning 객체를 덮어쓴다
+    sim.Tune().move.runSpeed = 60.f;
     sim.Step(10);
     EXPECT_NEAR(sim.X() - x0, 10.f, 0.01f);
 }
@@ -269,7 +269,7 @@ TEST(PlayerCrouch, CrouchWalkResumesAtCrouchSpeedAfterShotIsReleased)
     sim.Hold(eAction::Shot);
     sim.Step(5);
     sim.Release(eAction::Shot);
-    sim.Step(60);   // 사격 연출(shot overlay) 이 끝날 때까지 기다린다
+    sim.Step(60);
     const float x0 = sim.X();
     sim.Step(60);
     EXPECT_NEAR(sim.X() - x0, sim.Tune().move.crouchSpeed, 1.5f);
@@ -326,7 +326,7 @@ TEST(PlayerAim, UpPlusDirectionAimsStraightUpForHmgWhenNotFiring)
     sim.Hold(eAction::Up);
     sim.Hold(eAction::Right);
     const float x0 = sim.X();
-    sim.Step(kAimSettleTicks);   // 사격하지 않으면 조준각은 1000도/초로 90도에 금방 붙는다 (45도에 머물지 않는다)
+    sim.Step(kAimSettleTicks);
     EXPECT_EQ(sim.Player().GetAim(), eAim::Up);
     EXPECT_GT(sim.X(), x0);
 }
@@ -363,7 +363,7 @@ TEST(PlayerAim, DownInAirAimsDown)
     sim.Hold(eAction::Right);
     sim.Step();
     EXPECT_FALSE(sim.Player().IsGrounded());
-    EXPECT_EQ(sim.Player().GetAim(), eAim::Down);   // 방향키를 같이 눌러도 권총은 똑바로 아래
+    EXPECT_EQ(sim.Player().GetAim(), eAim::Down);
 
     // HMG 도 아래 키를 누르면 똑바로 아래 (조준각 -90도, 대각에 머물지 않는다)
     Sim hmg;
@@ -383,7 +383,7 @@ TEST(PlayerJump, JumpStartsOnTheSameTickAsThePress)
     sim.Step(3);
     sim.Hold(eAction::Jump);
     sim.Step();
-    EXPECT_LT(sim.Y(), 378.f);   // 눌린 틱에 이미 떠올랐다
+    EXPECT_LT(sim.Y(), 378.f);
     EXPECT_EQ(sim.Player().GetState(), ePlayerState::Jump);
     EXPECT_FALSE(sim.Player().IsGrounded());
 }
@@ -473,7 +473,7 @@ TEST(PlayerJump, FullAirControl)
     const float x0 = sim.X();
     sim.Hold(eAction::Right);
     sim.Step();
-    EXPECT_NEAR(sim.X() - x0, sim.Tune().move.airSpeed / 60.f, 0.01f);   // 공중에서도 즉시 최고 속도
+    EXPECT_NEAR(sim.X() - x0, sim.Tune().move.airSpeed / 60.f, 0.01f);
     EXPECT_EQ(sim.Player().GetFacing(), 1);
 
     sim.Release(eAction::Right);
@@ -486,7 +486,6 @@ TEST(PlayerJump, FullAirControl)
 
 namespace
 {
-// 지면 위 38px 에서 시작하는 Sim: 곧 착지하는 점프 버퍼 시험용
 [[nodiscard]] Sim MakeLandingSim_()
 {
     return Sim { MakeConfig(MakeFlatGround(), { 100.f, 340.f }) };
@@ -497,12 +496,12 @@ TEST(PlayerJump, JumpBufferTriggersOnLanding)
 {
     Sim       probe   = MakeLandingSim_();
     const int landing = probe.StepUntilGrounded(100);
-    ASSERT_GT(landing, 6);   // landing = 착지가 일어난 틱까지 진행한 수
+    ASSERT_GT(landing, 6);
 
     Sim a = MakeLandingSim_();
     a.Step(landing - 3);
     a.Tap(eAction::Jump);
-    a.Step(2);   // 눌린 다음 두 틱 → 착지 틱 포함
+    a.Step(2);
     EXPECT_EQ(a.Player().GetStats().jumps, 1);
     EXPECT_LT(a.Player().GetVelocity().y, 0.f);
 
@@ -520,7 +519,7 @@ TEST(PlayerJump, JumpBufferBoundaryIsFourTicks)
     const int landing = probe.StepUntilGrounded(100);
 
     Sim ok = MakeLandingSim_();
-    ok.Step(landing - 4);   // 눌림 틱은 착지 3 틱 전
+    ok.Step(landing - 4);
     ok.Tap(eAction::Jump);
     ok.Step(6);
     EXPECT_EQ(ok.Player().GetStats().jumps, 1);
@@ -548,9 +547,9 @@ TEST(PlayerJump, CoyoteJumpWorksShortlyAfterWalkingOffALedge)
     Sim sim { MakeLedgeConfig_() };
     sim.Hold(eAction::Right);
     const int walked = sim.StepUntilAirborne(200);
-    ASSERT_GE(walked, 0);   // 이 시점이 낭떠러지를 벗어난 첫 틱 T
+    ASSERT_GE(walked, 0);
 
-    sim.Step(2);   // T+1, T+2
+    sim.Step(2);
     sim.Hold(eAction::Jump);
     sim.Step();
     EXPECT_EQ(sim.Player().GetStats().jumps, 1);
@@ -563,11 +562,11 @@ TEST(PlayerJump, CoyoteJumpIsRejectedLongAfterTheLedge)
     sim.Hold(eAction::Right);
     ASSERT_GE(sim.StepUntilAirborne(200), 0);
 
-    sim.Step(7);   // T+1 .. T+7
+    sim.Step(7);
     sim.Hold(eAction::Jump);
     sim.Step();
     EXPECT_EQ(sim.Player().GetStats().jumps, 0);
-    EXPECT_GT(sim.Player().GetVelocity().y, 0.f);   // 계속 떨어진다
+    EXPECT_GT(sim.Player().GetVelocity().y, 0.f);
 }
 
 TEST(PlayerJump, CoyoteWindowEndsAfterConfiguredTicks)
@@ -599,7 +598,7 @@ TEST(PlayerJump, CoyoteDoesNotAllowDoubleJump)
 TEST(PlayerJump, NoJumpWhenCeilingIsRightAboveTheHead)
 {
     GroundMap ground = MakeFlatGround();
-    ground.FillRect(0, 300, 1599, 319, true);   // 서면 머리 y=320 바로 위
+    ground.FillRect(0, 300, 1599, 319, true);
     Sim sim { MakeConfig(std::move(ground)) };
 
     sim.Step(2);
@@ -624,7 +623,7 @@ TEST(PlayerJump, HeadBumpsCeilingAndFallsBack)
         sim.Step();
         minHeadY = std::min(minHeadY, sim.Y() - sim.Tune().body.standSize.y);
     }
-    EXPECT_GE(minHeadY, 300.f);   // 천장을 뚫지 않는다
+    EXPECT_GE(minHeadY, 300.f);
     EXPECT_TRUE(sim.Player().IsGrounded());
 }
 
@@ -643,7 +642,7 @@ TEST(PlayerJump, DownPlusJumpDropsThroughOneWayPlatform)
     sim.Step(2);
     sim.ReleaseAll();
     sim.Step(60);
-    EXPECT_EQ(sim.Player().GetStats().jumps, 0);   // 점프가 아니라 통과
+    EXPECT_EQ(sim.Player().GetStats().jumps, 0);
     EXPECT_FLOAT_EQ(sim.Y(), 378.f);
 }
 

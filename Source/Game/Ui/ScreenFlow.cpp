@@ -2,9 +2,9 @@
 
 #include <algorithm>
 
-constexpr int kResultsFadeTicks = 12;    // 상자 페이드 인
+constexpr int kResultsFadeTicks = 12;
 constexpr int kTicksPerPow      = 6;     // 구출 수 한 명 집계 간격 (0.1초)
-constexpr int kRankDelayTicks   = 18;    // 집계 끝 -> 보너스/등급 표시
+constexpr int kRankDelayTicks   = 18;
 constexpr int kRankHoldTicks    = 150;   // 등급 표시 후 대기 (2.5초)
 constexpr int kPowBonusScore    = 10'000;
 

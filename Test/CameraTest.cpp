@@ -37,7 +37,6 @@ namespace
     return camera;
 }
 
-// 전진 전용 카메라가 움직이는 목표를 600프레임 따라가는 위치 기록
 [[nodiscard]] Vector<Vec2> RunForwardOnly_()
 {
     Camera camera = MakeLevelCamera_();
@@ -90,7 +89,7 @@ TEST(Camera, HorizontalGlidesWithoutSnapAndVerticalIsSmooth)
     Camera camera = MakeLevelCamera_();
     camera.SetTarget({ 1000.f, 224.f });
     camera.Update();
-    EXPECT_GT(camera.GetViewCenter().x, 320.f);   // 큰 간격은 순간 이동 없이 글라이드한다
+    EXPECT_GT(camera.GetViewCenter().x, 320.f);
     EXPECT_LE(camera.GetViewCenter().x - 320.f, 12.f);
 
     camera.SetTarget({ 1000.f, 300.f });
@@ -424,8 +423,8 @@ TEST(CameraRegression, RealStageBotRunHasNoJerkOverFirst5000Ticks)
 {
     CameraBotSim  sim;
     const Camera& cam         = sim.State().GetCamera();
-    Vec2          prevF       = cam.GetViewCenter();        // 실수 중심 (부드러움 판정 기준)
-    Vec2          prevI       = cam.GetPosition();   // 화면에 찍히는 정수 좌상단 (보고용)
+    Vec2          prevF       = cam.GetViewCenter();
+    Vec2          prevI       = cam.GetPosition();
     float         prevDx      = 0.f;
     float         prevDy      = 0.f;
     float         prevDxI     = 0.f;
@@ -486,19 +485,19 @@ TEST(Camera, FollowStepsNeverJumpAndForwardOnlyNeverTwitchesOnReverse)
     {
         if (i < 100)
         {
-            focus += 4.17f;   // 달리기
+            focus += 4.17f;
         }
         else if (i < 130)
         {
-            focus += 0.f;   // 정지
+            focus += 0.f;
         }
         else if (i < 170)
         {
-            focus -= 4.f;   // 되돌아감 (전진 전용 카메라는 뒤로 가지 않는다)
+            focus -= 4.f;
         }
         else
         {
-            focus += 2.5f;   // 다시 달리기
+            focus += 2.5f;
         }
         camera.SetTarget({ focus, 224.f });
         camera.Update();
@@ -646,7 +645,7 @@ TEST(Camera, ForwardOnlyNeverMovesBackwardWhenBoundsShrink)
 TEST(Camera, ScrollFloorDrivesTheViewRightEvenWithoutAPlayerPush)
 {
     Camera camera = MakeLevelCamera_();
-    camera.SetTarget({ 1000.f, 224.f });   // 플레이어는 움직이지 않는다 (목표 고정)
+    camera.SetTarget({ 1000.f, 224.f });
     camera.SnapToTarget();
     const float x0 = camera.GetViewCenter().x;
     for (int i = 0; i < 60; ++i)

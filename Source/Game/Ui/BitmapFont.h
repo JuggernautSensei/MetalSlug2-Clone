@@ -30,9 +30,9 @@ struct TextStyle
 {
     eFontColor color         = eFontColor::White;
     bool       bBold         = true;
-    int        scale         = 1;   // 정수 배율 (>= 1)
+    int        scale         = 1;
     eTextAlign align         = eTextAlign::Left;
-    uint8_t    alpha         = 255;   // 페이드용 불투명도
+    uint8_t    alpha         = 255;
     int        lineGap       = 4;
     int        letterSpacing = 0;   // 글자 사이 추가 간격 (px, 배율 무관)
 };
@@ -60,8 +60,8 @@ struct GlyphQuad
 struct TextLayout
 {
     Vector<GlyphQuad> quads  = {};
-    int               width  = 0;   // 가장 넓은 줄의 폭
-    int               height = 0;   // 전체 높이
+    int               width  = 0;
+    int               height = 0;
     int               lines  = 0;
     IntRect           bounds = {};
 };

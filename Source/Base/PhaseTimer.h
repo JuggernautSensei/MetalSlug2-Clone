@@ -1,7 +1,6 @@
 #pragma once
 #include "Base/Types.h"
 
-// 로딩 단계 시간 측정: 소멸 시 "[load] 이름 상세 ms" 를 INFO 로 남긴다.
 class ScopedPhaseTimer final
 {
 public:

@@ -63,7 +63,7 @@ private:
     String   m_editorTab        = {};
     String   m_editorStage      = {};
     String   m_editorLabSpawn   = {};
-    String   m_editorGod        = {};   // --editor-god off|nodeath|invincible
+    String   m_editorGod        = {};
     Editor   m_editor           = {};
 
     ReplayData m_recording    = {};

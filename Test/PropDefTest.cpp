@@ -70,7 +70,7 @@ TEST(PropDef, ShopDefHasStandBoxReplacedOnlyOnShop5)
     const PropDefLibrary& lib = GetPropLib();
     const PropDef*        s5  = lib.Find("shop_5");
     ASSERT_NE(s5, nullptr);
-    EXPECT_EQ(s5->hp, 12);   // 권총 4발
+    EXPECT_EQ(s5->hp, 12);
     ASSERT_EQ(s5->parts.size(), 3u);
     EXPECT_EQ(s5->parts[2].when, ePropWhen::Destroyed);
     EXPECT_EQ(s5->parts[2].size.x, 220.f);
@@ -107,7 +107,7 @@ TEST(PropDef, HouseRoofIsEnemyOnlyPlatform)
         bHasEnemyPlatform = bHasEnemyPlatform || part.role == ePropRole::EnemyPlatform;
     }
     EXPECT_TRUE(bHasEnemyPlatform);
-    EXPECT_EQ(house->hp, 18);   // 권총 6발
+    EXPECT_EQ(house->hp, 18);
 }
 
 TEST(PropDef, DamagedThresholdsAreHalfOfHp)

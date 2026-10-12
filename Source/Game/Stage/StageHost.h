@@ -27,16 +27,16 @@ struct SpawnRequest
 
     int    facing = 0;   // -1 왼쪽, +1 오른쪽, 0 = def 기본
     bool   bHasZ  = false;
-    int    z      = 0;   // bHasZ 일 때 인스턴스 depth
+    int    z      = 0;
     bool   bHasHp = false;
-    int    hp     = 0;   // bHasHp 일 때 def 기본 HP 를 덮어쓴다
+    int    hp     = 0;
     String drop   = {};
 
     bool bSettle      = false;
     bool bFromCamera  = false;
     bool bWave        = false;
     bool bSilent      = false;
-    int  repeatIndex  = 0;   // repeat 의 몇 번째 (0 부터)
+    int  repeatIndex  = 0;
     int  sectionIndex = -1;
 
     bool        bHasLayer  = false;
@@ -83,7 +83,7 @@ public:
     virtual void WarpPlayer(Vec2 _feet) = 0;
 
     virtual void SetBackdrop(StringView _modeId)                             = 0;
-    virtual void ShowBanner(const String& _text, float _seconds)             = 0;   // _text 의 '\n' 은 줄바꿈
+    virtual void ShowBanner(const String& _text, float _seconds)             = 0;
     virtual void FadeTo(eFadeTarget _target, float _seconds)                 = 0;
     virtual void PlayBgm(StringView _name, bool _bLoop)                      = 0;
     virtual void ChangeBgm(StringView _name, bool _bLoop, float _fadeOutSec) = 0;

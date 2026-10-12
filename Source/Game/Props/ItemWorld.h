@@ -33,7 +33,7 @@ struct ItemPickup
     eItemKind   kind   = eItemKind::Score;
     eWeapon     weapon = eWeapon::Pistol;
     eSupplyKind supply = eSupplyKind::Bomb;
-    int         amount = 0;   // 폭탄 개수 (Bomb)
+    int         amount = 0;
     int         score  = 0;
     Vec2        pos    = { 0.f, 0.f };
 };
@@ -42,15 +42,15 @@ struct ItemFxRequest
 {
     String clip    = {};
     Vec2   pos     = { 0.f, 0.f };
-    int    zOffset = 0;   // 아이템 z 의 기본 depth 대비 이동량
+    int    zOffset = 0;
 };
 
 struct PropItem
 {
     uint32_t   id         = 0;
-    int        defIndex   = -1;   // PropDefLibrary::GetItems() 인덱스
+    int        defIndex   = -1;
     Vec2       feet       = { 0.f, 0.f };
-    int        z          = kDefaultZ;   // 그리기 depth (kDefaultZ: kItemRenderDepth)
+    int        z          = kDefaultZ;
     Body       body       = {};
     float      ageSec     = 0.f;
     bool       bBounce    = false;
@@ -58,7 +58,7 @@ struct PropItem
     float      spinScale  = 1.f;   // 회전 애니 배속 (0 이면 정지). 굴러가는 점수 아이템만 바뀐다
     bool       bBegun     = false;
     bool       bPickedUp  = false;
-    float      pickupSec  = 0.f;   // 습득 후 남은 연출 시간 (bPickedUp 일 때만 의미)
+    float      pickupSec  = 0.f;
     AnimPlayer anim       = {};
     AnimPlayer beginAnim  = {};
     bool       bAnimBound = false;
@@ -69,7 +69,7 @@ struct ScorePopup
     Vec2  pos    = { 0.f, 0.f };
     int   score  = 0;
     float ageSec = 0.f;
-    int   z      = kDefaultZ;   // 그리기 depth (kDefaultZ: kPopupRenderDepth)
+    int   z      = kDefaultZ;
 };
 
 class ItemWorld
@@ -88,7 +88,7 @@ public:
         bool       _bBounce = false,
         int        _z       = kDefaultZ);
 
-    bool SetZ(uint32_t _id, int _z);   // 아이템 depth 를 즉시 바꾼다 (팝업은 따라 옮겨지지 않는다)
+    bool SetZ(uint32_t _id, int _z);
 
     // _pTuning 이 null 이면 ItemTuning 기본값을 쓴다 (테스트 호환)
     void Tick(

@@ -77,7 +77,7 @@ void Go_(
     }
     if (state == eSoldierState::JumpSlashReady && !CanLeaveRoof(_e))
     {
-        state = eSoldierState::Move;   // 지붕 한가운데서 뛰면 버스 몸통 안에 내린다: 왼쪽 끝까지 걸어간 뒤에 뛴다
+        state = eSoldierState::Move;
     }
 
     EnterState(_e, static_cast<int>(state));

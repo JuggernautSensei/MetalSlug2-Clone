@@ -44,7 +44,7 @@ TEST(PlayerReplay, RegressionReplayPlaysTheSameWayTwiceAndHitsTheMilestones)
 
         hashes[run]              = pState->HashState();
         const PlayerStats& stats = pState->GetPlayer().GetStats();
-        EXPECT_GE(stats.knifeSlashes, 1);   // 근접 보병을 칼로
+        EXPECT_GE(stats.knifeSlashes, 1);
         EXPECT_GE(stats.shotsFired, 1);
         EXPECT_GE(stats.jumps, 1);
         EXPECT_GE(stats.bombsThrown, 1);

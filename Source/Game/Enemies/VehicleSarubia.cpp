@@ -68,7 +68,7 @@ void Tick_(
 
     const float dx      = DxToPlayer(_e, _env);
     const float absDx   = std::abs(dx);
-    const bool  bBehind = dx * static_cast<float>(_e.facing) < 0.f;   // 플레이어가 바라보는 방향의 반대편
+    const bool  bBehind = dx * static_cast<float>(_e.facing) < 0.f;
 
     switch (static_cast<eSarubiaState>(_e.state))
     {

@@ -10,7 +10,6 @@ constexpr float kDiagonalRatio = 0.6f;   // 짧은 축/긴 축 비율이 이 이
 
 namespace
 {
-// 조준 방향에 따라 판정 상자를 돌린다: 세로(위/아래) 조준은 w/h 를 바꾸고, 대각은 큰 쪽 기준 정사각
 [[nodiscard]] Vec2 OrientSize_(
     const Vec2 _size,
     const Vec2 _direction)
@@ -169,7 +168,7 @@ BulletSpawn MakeFlameParticleSpawn(
 
     BulletSpawn spawn = MakeBulletSpawn(eWeapon::Flame, _tuning, _owner, muzzle, _sweepFrom, direction);
     spawn.speed       = speed;
-    spawn.range       = speed * static_cast<float>(life) / 60.f;   // 사거리 = 수명 동안 진행 거리 (수명 끝에 소멸)
+    spawn.range       = speed * static_cast<float>(life) / 60.f;
     spawn.sizeEnd     = OrientSize_(_tuning.particleHitSizeEnd, direction);
     spawn.hitId       = _hitId;
     return spawn;

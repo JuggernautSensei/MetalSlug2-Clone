@@ -54,7 +54,6 @@ void NoSpread_(
     _sim.Tune().weapons.hmg.muzzleJitter = { 0.f, 0.f };
 }
 
-// 무작위 입력 3000틱 스크립트 (시드 고정)
 [[nodiscard]] Vector<InputFrame> MakeNoisyScript_()
 {
     RngMt19937         rng { uint64_t { 7 } };
@@ -128,7 +127,7 @@ TEST(PlayerShot, PistolNeverHasMoreThanMaxAliveBullets)
     size_t       peak = 0;
     for (int i = 0; i < 200; ++i)
     {
-        sim.Set(eAction::Shot, i % 2 == 0);   // 연타
+        sim.Set(eAction::Shot, i % 2 == 0);
         sim.Step();
         peak = std::max(peak, BulletCount_(sim));
         ASSERT_LE(BulletCount_(sim), cap) << "tick " << i;
@@ -143,12 +142,12 @@ TEST(PlayerShot, HeldPistolFiresExactlyOneShot)
     EXPECT_EQ(sim.Tune().weapons.pistol.holdRepeatTicks, 0);
     sim.Hold(eAction::Shot);
     sim.Step(120);
-    EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);   // 홀드만으로는 자동 연사가 없다
+    EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);
     sim.Release(eAction::Shot);
     sim.Step(2);
     sim.Hold(eAction::Shot);
     sim.Step(120);
-    EXPECT_EQ(sim.Player().GetStats().shotsFired, 2);   // 다시 눌러야 다음 발
+    EXPECT_EQ(sim.Player().GetStats().shotsFired, 2);
 }
 
 TEST(PlayerShot, TappingCannotBeatTheFireInterval)
@@ -195,21 +194,21 @@ TEST(PlayerShot, ShotPressedDuringCooldownIsBufferedAndFiresWhenReady)
     sim.Tap(eAction::Shot);
     sim.Step();
     sim.Tap(eAction::Shot);
-    sim.Step(2);   // t3, t4
+    sim.Step(2);
     EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);
-    sim.Step(2);   // t5 에 버퍼된 눌림이 발사된다
+    sim.Step(2);
     EXPECT_EQ(sim.Player().GetStats().shotsFired, 2);
 }
 
 TEST(PlayerShot, BufferedShotExpiresAfterBufferWindow)
 {
     Sim sim;
-    sim.Tune().weapons.pistol.fireIntervalTicks = 30;   // 쿨다운이 버퍼보다 훨씬 길다
+    sim.Tune().weapons.pistol.fireIntervalTicks = 30;
     sim.Tap(eAction::Shot);
     sim.Step(2);
     sim.Tap(eAction::Shot);
     sim.Step(40);
-    EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);   // 6 틱 버퍼가 만료되어 두 번째는 사라진다
+    EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);
 }
 
 TEST(PlayerShot, HmgTapFiresABurstSpreadOverTheShotMotion)
@@ -242,7 +241,7 @@ TEST(PlayerShot, HmgTapFiresABurstSpreadOverTheShotMotion)
     {
         EXPECT_EQ(shotTicks[i] - shotTicks[i - 1], hmg.burstIntervalTicks);
     }
-    EXPECT_EQ(sim.Player().GetWeapon().ammo, hmg.ammo - shots);   // 탄 수는 발마다 줄어든다
+    EXPECT_EQ(sim.Player().GetWeapon().ammo, hmg.ammo - shots);
 }
 
 TEST(PlayerShot, HmgHoldDoesNotAutoFireBeyondOneBurst)
@@ -262,7 +261,7 @@ TEST(PlayerShot, HmgBurstLengthIsShotsTimesInterval)
     Sim sim;
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Tap(eAction::Shot);
-    const int overlay = sim.Player().MakeRigState().overlayDurationTicks;   // 버스트가 시작될 때 정해진다
+    const int overlay = sim.Player().MakeRigState().overlayDurationTicks;
     sim.Step(80);
     const int shots = sim.Player().GetStats().shotsFired;
     EXPECT_EQ(overlay, shots * sim.Tune().weapons.hmg.burstIntervalTicks);
@@ -318,7 +317,7 @@ TEST(PlayerShot, MovingDoesNotCancelTheHmgBurst)
     sim.Step(5);
     const WeaponTuning& hmg = sim.Tune().weapons.hmg;
 
-    sim.Tap(eAction::Shot);   // 달리는 중 한 번 입력: 첫 발은 즉시
+    sim.Tap(eAction::Shot);
     int  overlayTicks    = 0;
     int  movingShotTicks = 0;
     bool bShotEnded      = false;
@@ -340,9 +339,9 @@ TEST(PlayerShot, MovingDoesNotCancelTheHmgBurst)
     const int shots = sim.Player().GetStats().shotsFired;
     EXPECT_GE(shots, hmg.burstShotsMin);   // 버스트 전체 발수가 나간다 (난수 3~5)
     EXPECT_LE(shots, hmg.burstShotsMax);
-    EXPECT_EQ(overlayTicks, shots * hmg.burstIntervalTicks);   // 사격 연출은 버스트 끝까지 Shot 으로 유지
+    EXPECT_EQ(overlayTicks, shots * hmg.burstIntervalTicks);
     EXPECT_FALSE(bGap);
-    EXPECT_EQ(movingShotTicks, overlayTicks);   // 연출이 도는 내내 실제로 달리고 있었다
+    EXPECT_EQ(movingShotTicks, overlayTicks);
 }
 
 TEST(PlayerShot, JumpStillCancelsTheHmgBurst)
@@ -359,7 +358,7 @@ TEST(PlayerShot, JumpStillCancelsTheHmgBurst)
     EXPECT_FALSE(sim.Player().IsGrounded());
     EXPECT_EQ(sim.Player().MakeRigState().overlay, eOverlay::None);
     sim.Step(60);
-    EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);   // 점프로 남은 탄이 취소된다
+    EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);
 }
 
 TEST(PlayerShot, FlameDoesNotAutoFireOnHold)
@@ -382,8 +381,8 @@ TEST(PlayerShot, FiniteAmmoDecreasesAndRevertsToPistol)
 
     sim.Hold(eAction::Shot);
     const int reverted = sim.StepUntilWeapon(100, eWeapon::Pistol);
-    ASSERT_GE(reverted, 0);                             // 소진되면 권총으로 복귀
-    EXPECT_EQ(sim.Player().GetStats().shotsFired, 3);   // 정확히 탄 수만큼 쏘고 복귀
+    ASSERT_GE(reverted, 0);
+    EXPECT_EQ(sim.Player().GetStats().shotsFired, 3);
 }
 
 TEST(PlayerShot, PickingUpSameWeaponAddsAmmo)
@@ -467,7 +466,7 @@ TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToNinety)
     NoSpread_(sim);
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Hold(eAction::Up);
-    sim.Tap(eAction::Shot);   // 한 번 눌러 나가는 버스트 동안 조준각이 쓸고 지나간다
+    sim.Tap(eAction::Shot);
 
     Vector<float> angles;
     int           shots = 1;
@@ -490,7 +489,7 @@ TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToNinety)
     }
 
     ASSERT_GE(angles.size(), 4u);
-    EXPECT_LT(angles.front(), 10.f);   // 처음엔 거의 정면
+    EXPECT_LT(angles.front(), 10.f);
     // 발사 간격 4틱 x 3~5발: 조준각은 350도/s 로 쓸고 가며 마지막 발은 대각 중간이거나 똑바로 위 (90도에서 멈춘다)
     EXPECT_GE(angles.back(), 40.f);
     EXPECT_LE(angles.back(), 90.5f);
@@ -504,15 +503,15 @@ TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToNinety)
         if (i > 0)
         {
             EXPECT_GE(angles[i], angles[i - 1]) << "shot " << i;
-            if (angles[i - 1] < 89.f)   // 쓸고 가는 구간에서는 탄마다 각도가 엄격히 증가한다
+            if (angles[i - 1] < 89.f)
             {
                 EXPECT_GT(angles[i], angles[i - 1]) << "shot " << i;
             }
             increases += angles[i] > angles[i - 1] + 0.5f ? 1 : 0;
         }
     }
-    EXPECT_GE(diagonal, 1u);    // 조준각이 대각 구간을 지나며 쓸고 간다
-    EXPECT_GE(increases, 2u);   // 모든 탄이 같은 각도가 아니다
+    EXPECT_GE(diagonal, 1u);
+    EXPECT_GE(increases, 2u);
 }
 
 TEST(PlayerShot, HmgHoldingUpWhileFiringEndsStraightUpThenReturnsToForwardOnRelease)
@@ -523,13 +522,13 @@ TEST(PlayerShot, HmgHoldingUpWhileFiringEndsStraightUpThenReturnsToForwardOnRele
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Hold(eAction::Up);
     sim.Tap(eAction::Shot);
-    sim.Step(kAimSettleTicks + 10);   // 버스트가 끝나고 조준각이 90도까지 쓸고 간 뒤
+    sim.Step(kAimSettleTicks + 10);
     EXPECT_EQ(sim.Player().GetAim(), eAim::Up);
-    sim.Hold(eAction::Shot);   // 다시 눌러 새 버스트: 첫 탄이 똑바로 위로 나간다
+    sim.Hold(eAction::Shot);
     EXPECT_NEAR(StepUntilShotAngleDeg_(sim, 10), 90.f, 0.01f);
     sim.Release(eAction::Shot);
 
-    sim.Release(eAction::Up);   // 놓으면 정면으로 되돌아온다
+    sim.Release(eAction::Up);
     sim.Step(60);
     EXPECT_EQ(sim.Player().GetAim(), eAim::Forward);
     sim.Hold(eAction::Shot);
@@ -572,7 +571,7 @@ TEST(PlayerShot, BulletsExpireAtTheirRange)
 {
     Sim sim;
     sim.Tap(eAction::Shot);
-    sim.Step(25);   // 333 px < 사거리 420 px
+    sim.Step(25);
     EXPECT_EQ(BulletCount_(sim), 1u);
     sim.Step(15);   // 420 px / 800 px/s = 31.5 틱 이후
     EXPECT_EQ(BulletCount_(sim), 0u);
@@ -674,7 +673,7 @@ TEST(PlayerKnife, OneSwingHitsATargetOnlyOnceEvenThoughTheWindowIsLong)
         activeTicks += HasMeleeHitbox_(sim) ? 1 : 0;
     }
     const KnifeTuning& knife = sim.Tune().knife;
-    EXPECT_EQ(activeTicks, knife.activeLastTick - knife.activeFirstTick + 1);   // 판정은 활성 구간 동안만 켜진다
+    EXPECT_EQ(activeTicks, knife.activeLastTick - knife.activeFirstTick + 1);
     EXPECT_EQ(Dummy_(sim, id).hitsTaken, 1);
 }
 
@@ -686,7 +685,7 @@ TEST(PlayerKnife, TappedShotOnAVehicleKeepsFiringThePistol)
     int            killed = -1;
     for (int tick = 0; tick < 200 && killed < 0; ++tick)
     {
-        sim.Set(eAction::Shot, tick % 6 == 0);   // 권총은 연타해야 계속 나간다
+        sim.Set(eAction::Shot, tick % 6 == 0);
         sim.Step();
         killed = Dummy_(sim, id).health.hp <= 0 ? tick : -1;
     }
@@ -697,18 +696,18 @@ TEST(PlayerKnife, TappedShotOnAVehicleKeepsFiringThePistol)
 
 TEST(PlayerKnife, TriggerRangeBoundary)
 {
-    const float reachFromCenter = 10.f + Tuning {}.knife.range;   // 몸 반폭 + range
+    const float reachFromCenter = 10.f + Tuning {}.knife.range;
     {
         Sim sim;
         sim.Step(2);
-        sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + reachFromCenter + 10.f - 1.f, 378.f });   // 표적 왼쪽 가장자리가 영역 안
+        sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + reachFromCenter + 10.f - 1.f, 378.f });
         sim.Step();
         EXPECT_TRUE(sim.Player().IsKnifeTargetInRange());
     }
     {
         Sim sim;
         sim.Step(2);
-        sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + reachFromCenter + 10.f + 2.f, 378.f });   // 영역 밖
+        sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + reachFromCenter + 10.f + 2.f, 378.f });
         sim.Step();
         EXPECT_FALSE(sim.Player().IsKnifeTargetInRange());
     }
@@ -778,14 +777,14 @@ TEST(PlayerKnife, BombAndKnifeSameTickKnifeWinsAndNoBombIsLost)
     sim.ReleaseAll();
     sim.Step(30);
     EXPECT_EQ(sim.Player().GetStats().knifeSlashes, 1);
-    EXPECT_EQ(sim.Player().GetWeapon().bombs, 10);   // 취소된 던지기는 폭탄을 소모하지 않는다
+    EXPECT_EQ(sim.Player().GetWeapon().bombs, 10);
 }
 
 TEST(PlayerKnife, NeverGetsStuckUnderRandomInput)
 {
     Sim sim;
     sim.Step(2);
-    sim.State().AddTarget(eDummyKind::Grunt, { 140.f, 378.f });   // 계속 근접 상태
+    sim.State().AddTarget(eDummyKind::Grunt, { 140.f, 378.f });
     const Vector<InputFrame> script = MakeNoisyScript_();
 
     for (const InputFrame& frame: script)
@@ -837,7 +836,7 @@ TEST(PlayerKnife, KnifeIsMeleeAndHitsEveryTeamItCanHit)
 TEST(PlayerKnife, KnifeRangeInvariantReachCoversTheTrigger)
 {
     const Tuning t;
-    EXPECT_GE(t.knife.reach, t.body.standSize.x * 0.5f + t.knife.range);   // 자동 발동한 표적은 항상 베기 범위 안
+    EXPECT_GE(t.knife.reach, t.body.standSize.x * 0.5f + t.knife.range);
     EXPECT_GT(t.knife.activeLastTick, t.knife.activeFirstTick);
     EXPECT_LT(t.knife.activeLastTick, t.knife.durationTicks);
     EXPECT_LT(t.knife.chainWindowTicks, t.knife.durationTicks);
@@ -881,7 +880,7 @@ TEST(PlayerBomb, BombExplodesOnTheGroundAndBlastHitsEveryDummyKind)
         sim.Tap(eAction::Bomb);
         sim.Step(80);
         const TrainingDummy& dummy = Dummy_(sim, id);
-        EXPECT_EQ(dummy.hitsTaken, 1) << GetDummyName(kind);   // 폭발이 여러 틱 유지돼도 표적당 한 번
+        EXPECT_EQ(dummy.hitsTaken, 1) << GetDummyName(kind);
         EXPECT_EQ(hp - dummy.health.hp, std::min(hp, sim.Tune().bomb.damage)) << GetDummyName(kind);
         EXPECT_EQ(dummy.lastKind, eHitKind::Blast);
     }
@@ -956,7 +955,7 @@ TEST(PlayerBomb, ThrowArcLandsAheadOfThePlayer)
             maxX = std::max(maxX, bomb.position.x);
         }
     }
-    EXPECT_GT(maxX, sim.X() + 100.f);   // 약 160 px 앞까지 포물선
+    EXPECT_GT(maxX, sim.X() + 100.f);
     EXPECT_LT(maxX, sim.X() + 260.f);
 }
 
@@ -1062,7 +1061,7 @@ TEST(PlayerDeath, TouchingAnEnemyBodyIsHarmless)
 {
     Sim sim;
     sim.Step(2);
-    sim.State().AddTarget(eDummyKind::Bus, { sim.X(), 378.f });   // 같은 자리
+    sim.State().AddTarget(eDummyKind::Bus, { sim.X(), 378.f });
     sim.Step(60);
     EXPECT_TRUE(sim.Player().IsAlive());
     EXPECT_EQ(sim.Player().GetLives(), 3);
@@ -1072,7 +1071,7 @@ TEST(PlayerDeath, EnemyShooterBulletKillsThePlayerInTheSandbox)
 {
     Sim sim;
     sim.Step(2);
-    sim.State().AddTarget(eDummyKind::Grunt, { 380.f, 378.f }, true);   // 사수: 280 px 앞
+    sim.State().AddTarget(eDummyKind::Grunt, { 380.f, 378.f }, true);
     const int died = sim.StepUntilDead(600);
     ASSERT_GE(died, 0);
     EXPECT_EQ(sim.Player().GetLives(), 2);
@@ -1151,7 +1150,7 @@ TEST(PlayerRespawn, DropsFromAboveLandsAndKeepsInvincibilityUntilItExpires)
     h.player.Kill();
     h.Run(h.tuning.player.deathTicks + 1);
     ASSERT_EQ(h.player.GetState(), ePlayerState::Respawn);
-    EXPECT_LT(h.player.GetFeet().y, 0.f);   // 화면 위에서 시작
+    EXPECT_LT(h.player.GetFeet().y, 0.f);
 
     h.Run(90);
     EXPECT_TRUE(h.player.IsGrounded());
@@ -1167,7 +1166,7 @@ TEST(PlayerRespawn, InvincibleRespawnIgnoresEnemyHitboxesUntilItEnds)
     Harness h;
     h.Run(2);
     h.player.Kill();
-    h.Run(h.tuning.player.deathTicks + 40);   // 리스폰 후 착지까지
+    h.Run(h.tuning.player.deathTicks + 40);
     ASSERT_TRUE(h.player.IsInvincible());
 
     for (int i = 0; i < 20; ++i)
@@ -1232,7 +1231,7 @@ TEST(PlayerGameOver, LastLifeLostEndsTheGameWithoutRespawn)
         h.player.Kill();
         if (life < 2)
         {
-            h.Run(h.tuning.player.deathTicks + 200);   // 리스폰 + 무적 종료까지
+            h.Run(h.tuning.player.deathTicks + 200);
         }
     }
     EXPECT_TRUE(h.player.IsGameOver());
@@ -1296,7 +1295,7 @@ TEST(CombatSystem, HasTargetInFollowsTheResolverRules)
     EXPECT_TRUE(combat.HasTargetIn(eTeam::Player, eHitKind::Melee, inside));
     EXPECT_FALSE(combat.HasTargetIn(eTeam::Player, eHitKind::Melee, outside));
     EXPECT_FALSE(combat.HasTargetIn(eTeam::Enemy, eHitKind::Melee, inside));
-    EXPECT_FALSE(combat.HasTargetIn(eTeam::Player, eHitKind::Melee, inside, 10));   // 자기 자신 제외
+    EXPECT_FALSE(combat.HasTargetIn(eTeam::Player, eHitKind::Melee, inside, 10));
 
     combat.BeginTick();
     enemy.bInvulnerable = true;
@@ -1321,7 +1320,7 @@ TEST(Projectiles, FastBulletDoesNotTunnelThroughAThinTarget)
     spawn.position  = { 0.f, 50.f };
     spawn.sweepFrom = { 0.f, 50.f };
     spawn.direction = { 1.f, 0.f };
-    spawn.speed     = 3000.f;   // 틱당 50 px
+    spawn.speed     = 3000.f;
     spawn.size      = { 4.f, 4.f };
     spawn.range     = 1000.f;
     spawn.damage    = 1;

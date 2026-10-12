@@ -152,7 +152,7 @@ private:
     {
         String name = {};
         String kind = {};
-        int    z    = 0;   // 기본 depth
+        int    z    = 0;
     };
 
     void                      LoadStage_(const String& _name);

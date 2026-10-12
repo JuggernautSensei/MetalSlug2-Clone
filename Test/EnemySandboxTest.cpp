@@ -38,7 +38,6 @@ namespace
     return !_sim.Player().IsAlive() ? _maxTicks : -1;
 }
 
-// 보병 전 종류를 세워 두고 1200틱 동안 샌드박스 상태 해시를 기록한다
 void RunHashes_(
     Vector<uint64_t>& _hashes)
 {
@@ -113,7 +112,7 @@ TEST(EnemySandbox, HangHoversAtItsSpawnHeight)
     sim.Step(120);
     const Enemy* pHang = sim.State().GetEnemies().Get(h);
     ASSERT_NE(pHang, nullptr);
-    EXPECT_NEAR(pHang->body.position.y, 260.f, 0.01f);   // 중력 없이 매달린다
+    EXPECT_NEAR(pHang->body.position.y, 260.f, 0.01f);
 }
 
 TEST(EnemySandbox, FlyingBzkDescendsAndTurnsIntoASoldierOnLanding)
@@ -212,7 +211,7 @@ TEST(EnemySandbox, DebugSpawnSlotsSpawnTheEightInfantryKinds)
         EnemyDirectState d;
         d.ctx.debugSpawn = slot;
         d.state.Tick(d.ctx, d.input);
-        EXPECT_EQ(d.ctx.debugSpawn, 0) << slot;   // 소비
+        EXPECT_EQ(d.ctx.debugSpawn, 0) << slot;
         EXPECT_EQ(d.state.GetEnemies().CountAlive(kInfantryNames[slot - 1]), 1) << kInfantryNames[slot - 1];
         EXPECT_EQ(d.state.GetEnemies().GetCount(), 1u) << slot;
     }
@@ -238,7 +237,7 @@ TEST(EnemySandbox, SandboxHashIsDeterministicWithEnemiesPresent)
 // 혈흔은 발 원점이 아니라 피격 상자 중심(가슴, body.cy = -37.5)에서 터진다
 TEST(EnemySandbox, BloodSplatsAtTheChestOfAKnifedSoldier)
 {
-    SLUG_REQUIRE_BAKED(anims);   // 이펙트 연출은 애니 라이브러리가 있어야 생성된다
+    SLUG_REQUIRE_BAKED(anims);
     Sim sim { MakeEnemyConfig(), &anims };
     sim.Step(2);
     const EnemyHandle h = sim.State().SpawnEnemy("soldier_bomb", { sim.X() + 25.f, kGroundY });
@@ -281,5 +280,5 @@ TEST(EnemySandbox, KnifedSoldierLeavesNoCorpseOnceTheSlashClipEnds)
     ASSERT_NE(sim.State().GetEnemies().Get(h), nullptr);   // 클립(0.96 s) 중에는 아직 있다
 
     sim.Step(90);
-    EXPECT_EQ(sim.State().GetEnemies().Get(h), nullptr);   // 탭 후 약 2 s 에 제거 (기존: 사망 후 3.0 s 까지 마지막 프레임 고정)
+    EXPECT_EQ(sim.State().GetEnemies().Get(h), nullptr);   // 탭 후 약 2 s 에 제거
 }

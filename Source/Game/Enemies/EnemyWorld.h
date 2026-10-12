@@ -10,12 +10,11 @@
 #include "Render/Animation.h"
 #include "Render/SpriteBatch.h"
 
-inline constexpr int kEnemyDepth   = 15;                // 플레이어(20) 뒤, 지면 위
-inline constexpr int kOverlayDepth = 14;                // 낙하산 등 오버레이: 병사 몸(15) 뒤
-inline constexpr int kShotDepth    = kEnemyShotDepth;   // 기존 탄(30)/폭탄(31) 위
-inline constexpr int kTrailDepth   = 29;                // 투사체 꼬리: 탄 뒤
+inline constexpr int kEnemyDepth   = 15;
+inline constexpr int kOverlayDepth = 14;
+inline constexpr int kShotDepth    = kEnemyShotDepth;
+inline constexpr int kTrailDepth   = 29;
 
-// 적 종류별 기본 z (BigShiee 는 선체 depth, 나머지는 kEnemyDepth)
 [[nodiscard]] int GetEnemyDefaultZ(eEnemyBehavior _behavior);
 
 class EnemyWorld
@@ -61,7 +60,7 @@ public:
     void SetSpriteLibrary(const SpriteLibrary* _pSprites);
 
     [[nodiscard]] const Enemy* Get(EnemyHandle _handle) const;
-    bool                       SetZ(EnemyHandle _handle, int _z);   // 인스턴스 depth 를 즉시 바꾼다
+    bool                       SetZ(EnemyHandle _handle, int _z);
 
     [[nodiscard]] bool        IsDefeated(EnemyHandle _handle) const;
     void                      SendCommand(EnemyHandle _handle, StringView _command);
@@ -90,7 +89,7 @@ public:
     [[nodiscard]] const EffectList& GetEffects() const;   // 월드 이펙트 (폭발/혈흔/잔해), 테스트/디버그용 읽기 전용
 
     [[nodiscard]] Vector<EnemyEvent> TakeEvents();
-    [[nodiscard]] Vector<String>     TakeSounds();   // 이번 틱에 재생할 효과음 이름 (투사체 착탄 폭발 등)
+    [[nodiscard]] Vector<String>     TakeSounds();
 
     void ClearMonsters(
         bool _bIncludeNpc = false);
@@ -170,7 +169,7 @@ private:
     Vector<Vector<ARRAY<AnimId, 2>>> m_clipIds        = {};
     Vector<ARRAY<AnimId, 2>>         m_projFlyIds     = {};
     Vector<ARRAY<AnimId, 2>>         m_projBeginIds   = {};
-    Vector<ARRAY<AnimId, 2>>         m_projLandIds    = {};   // 구르는 탄의 착지 클립
+    Vector<ARRAY<AnimId, 2>>         m_projLandIds    = {};
     bool                             m_bAnimsBound    = false;
     size_t                           m_boundClipCount = 0;
 };

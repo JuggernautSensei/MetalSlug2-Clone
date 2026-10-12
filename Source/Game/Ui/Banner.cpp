@@ -5,11 +5,10 @@
 
 #include "Base/Types.h"
 
-constexpr int kMissionFlyDistance = 170;   // 진입/퇴장 시작 거리 (px)
+constexpr int kMissionFlyDistance = 170;
 constexpr int kMissionStagger     = 2;     // 글자 사이 진입 지연 (틱)
 constexpr int kMissionOutStagger  = 1;     // 글자 사이 퇴장 지연 (틱)
 
-// 글자마다 고정된 날아오는 방향 (상, 하, 좌, 우 순환)
 constexpr ARRAY<int, 4> kDirX = { 0, 0, -1, 1 };
 constexpr ARRAY<int, 4> kDirY = { -1, 1, 0, 0 };
 
@@ -20,7 +19,7 @@ BannerSpec MakeBannerSpec(
     constexpr int kTicksPerSec = 60;
 
     const int total = std::max(1, static_cast<int>(std::lround(_seconds * static_cast<float>(kTicksPerSec))));
-    const int fade  = std::min(18, total / 4);   // 0.3초 또는 총길이의 1/4 중 작은 쪽
+    const int fade  = std::min(18, total / 4);
 
     BannerSpec spec;
     spec.text         = String { _text };
@@ -84,7 +83,7 @@ GlyphPose ComputeMissionGlyphPose(
             return pose;
         }
         const float t = std::min(1.f, static_cast<float>(_elapsed - delay) / static_cast<float>(span));
-        const float k = 1.f - (1.f - t) * (1.f - t) * (1.f - t);   // easeOutCubic
+        const float k = 1.f - (1.f - t) * (1.f - t) * (1.f - t);
         pose.dx       = static_cast<int>(std::lround(static_cast<float>(kDirX[dir] * kMissionFlyDistance) * (1.f - k)));
         pose.dy       = static_cast<int>(std::lround(static_cast<float>(kDirY[dir] * kMissionFlyDistance) * (1.f - k)));
         pose.alpha    = static_cast<uint8_t>(std::clamp(t, 0.f, 1.f) * 255.f + 0.5f);
@@ -93,7 +92,7 @@ GlyphPose ComputeMissionGlyphPose(
 
     if (_elapsed < outAt)
     {
-        pose.alpha = 255;   // 정지 상태 (dx/dy 0)
+        pose.alpha = 255;
         return pose;
     }
 
@@ -106,7 +105,7 @@ GlyphPose ComputeMissionGlyphPose(
         return pose;
     }
     const float t = std::min(1.f, static_cast<float>(local) / static_cast<float>(span));
-    const float k = t * t * t;   // easeInCubic
+    const float k = t * t * t;
     pose.dx       = static_cast<int>(std::lround(static_cast<float>(kDirX[dir] * kMissionFlyDistance) * k));
     pose.dy       = static_cast<int>(std::lround(static_cast<float>(kDirY[dir] * kMissionFlyDistance) * k));
     pose.alpha    = static_cast<uint8_t>(std::clamp(1.f - t, 0.f, 1.f) * 255.f + 0.5f);
@@ -124,7 +123,7 @@ String MakeMissionGlyphName(
     }
     else if (up == '0')
     {
-        name.push_back('O');   // 원본 폰트에 0 이 없으므로 O 로 대신한다 (BitmapFont 와 같은 규칙)
+        name.push_back('O');
     }
     else if (up == '!')
     {

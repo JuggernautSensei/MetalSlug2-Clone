@@ -20,21 +20,20 @@ struct Tuning;
 struct GameContext;
 
 inline constexpr uint32_t kPlaceholderOwnerBase  = 9000;
-inline constexpr int      kPlaceholderDeathTicks = 30;    // 사망 후 제거까지 (사망 연출 구간)
-inline constexpr int      kPlaceholderKillScore  = 100;   // 처치 점수 (플레이스홀더 한 기 기준)
+inline constexpr int      kPlaceholderDeathTicks = 30;
+inline constexpr int      kPlaceholderKillScore  = 100;
 
-// 실제 적/소품이 아직 없는 이름을 상자로 그리는 플레이스홀더 한 개
 struct PlaceholderEntity
 {
     SpawnId     id         = kInvalidSpawnId;
     String      def        = {};
     eEntityKind kind       = eEntityKind::Enemy;
     eStageLayer layer      = eStageLayer::Monster;
-    Vec2        feet       = { 0.f, 0.f };   // 발 중앙 (상자는 발 중앙 기준으로 그린다)
+    Vec2        feet       = { 0.f, 0.f };
     Vec2        size       = { 40.f, 75.f };
     Health      health     = {};
     bool        bHittable  = true;
-    int         flashTicks = 0;   // 피격 번쩍임 타이머 (HitFlash.h)
+    int         flashTicks = 0;
     int         deadTicks  = -1;
 
     [[nodiscard]] Aabb GetBox() const;
@@ -65,7 +64,6 @@ struct StageCollider
     eStageLayer     stageLayer = eStageLayer::Collider;
 };
 
-// 스테이지의 IStageHost 구현. 적/소품/아이템은 실제 월드로 보내고, 나머지 이름은 플레이스홀더로 만든다.
 class StageWorldHost final : public IStageHost
 {
 public:
@@ -128,7 +126,6 @@ private:
     [[nodiscard]] PlaceholderEntity*       FindAlive_(SpawnId _id);
     [[nodiscard]] const PlaceholderEntity* Find_(SpawnId _id) const;
 
-    // 플레이스홀더 상태
     Vector<NamedGround>       m_grounds             = {};
     int                       m_activeGround        = -1;
     Vector<PlaceholderEntity> m_placeholderEntities = {};
@@ -138,7 +135,6 @@ private:
     bool                      m_bEndRequested       = false;
     String                    m_endStateName        = {};
 
-    // 연결된 월드/플레이어/UI (Bind* 로 설정, 없으면 해당 종류는 플레이스홀더가 된다)
     EnemyWorld*       m_pEnemies = nullptr;
     PropWorld*        m_pProps   = nullptr;
     PlayerController* m_pPlayer  = nullptr;

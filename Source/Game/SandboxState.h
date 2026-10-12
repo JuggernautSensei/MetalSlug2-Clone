@@ -37,14 +37,14 @@ struct SandboxConfig
     bool             bEnemyLab       = false;
     bool             bVehicleLab     = false;
     bool             bPropLab        = false;
-    bool             bBusLab         = false;   // 버스 중간보스 연습장: 실제 스테이지 좌표, 카메라 락, 사망 후 Stage0_1 지면
-    bool             bBusBot         = false;   // 버스 랩 전용: 플레이어가 버스 앞까지 걸어가 HMG 로 계속 사격 (캡처 비교용 봇 입력, 무적)
+    bool             bBusLab         = false;
+    bool             bBusBot         = false;
     bool             bHeliLab        = false;
-    bool             bHeliBot        = false;   // 헬기 랩 전용: 플레이어가 좌우로 걸으며 위로 사격 (캡처 비교용 봇 입력)
+    bool             bHeliBot        = false;
     int              heliHp          = -1;      // 헬기 랩 전용: 헬기 체력 (-1: 정의 기본값)
-    bool             bGodMode        = false;   // 랩 전용: 플레이어 무적 (캡처 비교용)
-    bool             bSlugLab        = false;   // sluglab: 평지에 주차된 SV-001 과 표적
-    Vector<Vec2>     slugFeet        = {};      // 시작할 때 놓을 주차 SV-001 발 위치
+    bool             bGodMode        = false;
+    bool             bSlugLab        = false;
+    Vector<Vec2>     slugFeet        = {};
 };
 
 class SandboxState final : public IGameState
@@ -124,7 +124,7 @@ private:
     TrainingTargets  m_targets     = {};
     EnemyDefLibrary  m_enemyLib    = {};
     EnemyWorld       m_enemies { &m_enemyLib };
-    EnemyHandle      m_busHandle     = {};   // buslab: 버스 (파괴 연출이 끝나면 카메라 락을 푼다)
+    EnemyHandle      m_busHandle     = {};
     bool             m_bBusUnlocked  = false;
     int              m_vehicleCursor = 0;   // 숫자키 9: 다음에 뽑을 차량 번호
     EffectList       m_effects       = {};
@@ -132,7 +132,7 @@ private:
     SlugSystem       m_slugs         = {};
     SlugTuning       m_slugTuning    = {};
     Vector<Wall>     m_slugWalls     = {};   // 적이 SV-001 위로 올라타지 못하게 막는 벽
-    Vector<Wall>     m_enemyWalls    = {};   // m_slugWalls + 살아 있는 적의 def.solid (버스 차체/승강대). 적 물리 월드용
+    Vector<Wall>     m_enemyWalls    = {};
     SlugStats        m_prevSlugStats = {};
 
     SpriteLibrary m_spriteLib = {};
@@ -147,5 +147,5 @@ private:
     bool        m_bGameOverAnnounced = false;
 
     uint64_t     m_tickCount = 0;
-    InputHistory m_botInput  = {};   // bHeliBot 의 합성 입력
+    InputHistory m_botInput  = {};
 };

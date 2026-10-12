@@ -1,4 +1,4 @@
-﻿// 스테이지 카메라 테스트: 카메라 액션 파싱과 StageRunner 가 카메라를 움직이는 방식 검증
+﻿
 #include <algorithm>
 #include <cmath>
 
@@ -45,7 +45,7 @@ TEST(CameraStageExt, ForwardOnlyYNeverMovesUp)
     camera.SetTarget({ 320.f, 700.f });
     camera.SnapToTarget();
     const float lowest = camera.GetViewCenter().y;
-    camera.SetTarget({ 320.f, 100.f });   // 위로 올라간 플레이어
+    camera.SetTarget({ 320.f, 100.f });
     for (int i = 0; i < 300; ++i)
     {
         camera.Update();
@@ -64,10 +64,10 @@ TEST(CameraStageExt, ForwardOnlyYIsOffByDefaultAndBoundsStillWin)
     {
         camera.Update();
     }
-    EXPECT_LT(camera.GetViewCenter().y, 400.f);   // 기본은 따라 올라간다
+    EXPECT_LT(camera.GetViewCenter().y, 400.f);
 
     camera.SetForwardOnlyY(true);
-    camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));   // 경계가 y 를 강제하면 전진 전용보다 우선
+    camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
     camera.Update();
     EXPECT_FLOAT_EQ(camera.GetViewCenter().y, 224.f);
 }
@@ -76,7 +76,7 @@ TEST(CameraStageExt, BeginMoveIsSmoothstepAndTickExactThenTrackingResumes)
 {
     Camera camera = MakeCamera_();
     camera.SnapTo({ 320.f, 224.f });
-    camera.SetTarget({ 9999.f, 224.f });   // 이동 중에는 무시되어야 한다
+    camera.SetTarget({ 9999.f, 224.f });
     camera.BeginMove({ 820.f, 424.f }, 0.5f);
     EXPECT_TRUE(camera.IsMoving());
 
@@ -103,7 +103,7 @@ TEST(CameraStageExt, BeginMoveIsSmoothstepAndTickExactThenTrackingResumes)
     {
         camera.Update();
     }
-    EXPECT_GT(camera.GetViewCenter().x, 1500.f);   // 추적 재개
+    EXPECT_GT(camera.GetViewCenter().x, 1500.f);
 }
 
 TEST(CameraStageExt, BeginMoveWithZeroSecondsSnapsAndMoveRespectsBounds)
@@ -204,16 +204,16 @@ TEST(StageRunnerCamera, UnlockRestoresAndNestedLocksPopInOrder)
     EXPECT_EQ(fx.runner.GetLockDepth(), 2);
     EXPECT_EQ(fx.camera.GetLockBounds(), Aabb::FromMinMax({ 200.f, 0.f }, { 840.f, 448.f }));
 
-    fx.StepAt(5.f, 61);   // tick 60
+    fx.StepAt(5.f, 61);
     EXPECT_EQ(fx.runner.GetLockDepth(), 1);
     EXPECT_TRUE(fx.camera.IsLocked());
     EXPECT_EQ(fx.camera.GetLockBounds(), Aabb::FromMinMax({ 0.f, 0.f }, { 1000.f, 448.f }));
 
-    fx.StepAt(5.f, 60);   // tick 120
+    fx.StepAt(5.f, 60);
     EXPECT_EQ(fx.runner.GetLockDepth(), 0);
     EXPECT_FALSE(fx.camera.IsLocked());
 
-    fx.StepAt(5.f, 60);   // 남은 unlock 은 무시
+    fx.StepAt(5.f, 60);
     EXPECT_EQ(fx.runner.GetLockDepth(), 0);
     EXPECT_EQ(fx.runner.GetEffectiveBounds(), fx.runner.GetBaseBounds());
 }
@@ -224,7 +224,7 @@ TEST(StageRunnerCamera, CurrentRectLocksTheViewWhereItIs)
     fx.camera.SnapTo({ 1500.f, 224.f });
     fx.StepAt(1500.f, 59);
     const Aabb viewBefore = Aabb::FromMinSize(fx.camera.GetPosition(), { 640.f, 448.f });
-    fx.StepAt(1500.f);   // tick 59 → 락은 tick 60
+    fx.StepAt(1500.f);
     fx.StepAt(1500.f);
     EXPECT_EQ(fx.runner.GetLockDepth(), 1);
     EXPECT_EQ(fx.runner.GetEffectiveBounds(), viewBefore);
@@ -261,16 +261,16 @@ TEST(StageRunnerCamera, PermanentLockCannotBeUnlockedAndIgnoresBoundsAndCurves)
         {"id":"c","triggerX":500,"actions":[{"type":"setBounds","rect":[0,0,2000,448]},{"type":"unlockCamera"}]}])J",
                                    R"J({"initialBounds":[0,0,4000,448],"boundsCurves":[{"id":"cv","from":"a","until":"c","left":0,"right":4000,"height":448,"top":[[0,0],[4000,400]]}]})J");
     RunnerFixture fx { json };
-    fx.StepAt(50.f, 2);   // 곡선 활성
+    fx.StepAt(50.f, 2);
     EXPECT_NE(fx.runner.GetBaseBounds().min.y, 0.f);
     fx.StepAt(150.f, 2);
     EXPECT_TRUE(fx.runner.HasPermanentLock());
-    EXPECT_EQ(fx.runner.GetLockDepth(), 1);   // unlockCamera 무시
+    EXPECT_EQ(fx.runner.GetLockDepth(), 1);
     const Aabb baseAfter = fx.runner.GetBaseBounds();
-    EXPECT_NE(baseAfter, Aabb::FromMinMax({ 0.f, 0.f }, { 1000.f, 448.f }));   // setBounds 무시
-    fx.StepAt(300.f, 5);                                                       // 곡선 무시: 기본 경계가 더 변하지 않는다
+    EXPECT_NE(baseAfter, Aabb::FromMinMax({ 0.f, 0.f }, { 1000.f, 448.f }));
+    fx.StepAt(300.f, 5);
     EXPECT_EQ(fx.runner.GetBaseBounds(), baseAfter);
-    fx.StepAt(600.f, 2);   // 뒤 섹션의 setBounds/unlock 도 무시
+    fx.StepAt(600.f, 2);
     EXPECT_EQ(fx.runner.GetLockDepth(), 1);
     EXPECT_EQ(fx.runner.GetBaseBounds(), baseAfter);
     EXPECT_EQ(fx.camera.GetLockBounds(), Aabb::FromMinMax({ 100.f, 0.f }, { 740.f, 448.f }));
@@ -286,20 +286,20 @@ TEST(StageRunnerCamera, BoundsCurveIsActiveBetweenFromAndUntil)
     RunnerFixture fx { json };
     fx.camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 1000.f }));
 
-    fx.StepAt(500.f, 3);   // from 전: 비활성
+    fx.StepAt(500.f, 3);
     EXPECT_FALSE(fx.runner.IsCurveActive(0));
     EXPECT_FLOAT_EQ(fx.runner.GetBaseBounds().min.y, 0.f);
 
-    fx.StepAt(1500.f);   // b 발동 → 곡선 활성, 같은 틱에 평가
+    fx.StepAt(1500.f);
     EXPECT_TRUE(fx.runner.IsCurveActive(0));
     EXPECT_EQ(fx.runner.GetBaseBounds(), Aabb::FromMinMax({ 100.f, 300.f }, { 4000.f, 748.f }));
     EXPECT_EQ(fx.camera.GetBounds(), fx.runner.GetBaseBounds());
 
-    fx.StepAt(1750.f);   // 매 틱 재평가
+    fx.StepAt(1750.f);
     EXPECT_FLOAT_EQ(fx.runner.GetBaseBounds().min.y, 400.f);
-    fx.StepAt(1200.f);   // 뒤로 가면 곡선도 되돌아간다
+    fx.StepAt(1200.f);
     EXPECT_FLOAT_EQ(fx.runner.GetBaseBounds().min.y, 180.f);
-    fx.StepAt(2900.f);   // 오른쪽 끝에서 clamp
+    fx.StepAt(2900.f);
     EXPECT_FLOAT_EQ(fx.runner.GetBaseBounds().min.y, 500.f);
 
     fx.StepAt(3100.f);
@@ -328,10 +328,10 @@ TEST(StageRunnerCamera, Stage0SlopeMatchesTheLegacyFormula)
     }
     EXPECT_GT(exact, total * 9 / 10);   // 거의 모든 점이 정확히 일치 (float 경계에서만 1 차이)
 
-    EXPECT_FLOAT_EQ(curve.EvaluateTop(6500.f), 311.f);   // trunc(311.75)
+    EXPECT_FLOAT_EQ(curve.EvaluateTop(6500.f), 311.f);
     EXPECT_FLOAT_EQ(curve.EvaluateTop(8610.7843137f), 850.f);
     EXPECT_FLOAT_EQ(curve.EvaluateTop(9000.f), 850.f);
-    EXPECT_FLOAT_EQ(curve.EvaluateTop(6000.f), 311.f);   // 앞쪽 clamp
+    EXPECT_FLOAT_EQ(curve.EvaluateTop(6000.f), 311.f);
     const Aabb bounds = curve.EvaluateBounds(7000.f);
     EXPECT_FLOAT_EQ(bounds.min.x, 3180.f);
     EXPECT_FLOAT_EQ(bounds.max.x, 14094.f);

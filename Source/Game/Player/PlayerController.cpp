@@ -148,7 +148,6 @@ bool PlayerController::IsChuteVisible(
     {
         return false;
     }
-    // 깜빡임: 켜짐 period 틱, 꺼짐 period 틱을 반복. 총 길이가 지나면 Tick 에서 None 이 된다.
     const int period = std::max(1, _tuning.player.chuteBlinkPeriodTicks);
     return (m_chuteBlinkTicks / period) % 2 == 0;
 }
@@ -161,7 +160,6 @@ Vec2 PlayerController::GetLogicalFeet() const
 void PlayerController::TickChuteDescend_(
     const Tuning& _tuning)
 {
-    // 낙하 중에는 물리/충돌을 타지 않는다. 일정한 낮은 속도로 착지점까지 내려간다.
     m_body.position.y += _tuning.player.chuteFallSpeedPxSec * kStepSec;
     m_body.velocity = { 0.f, 0.f };
     m_lastMove      = {};
@@ -229,7 +227,6 @@ bool PlayerController::OnHitEvents(
 
 void PlayerController::Kill()
 {
-    // 낙하 중에는 적/탄에 맞지 않는다 (착지 전 조작 시작 전까지 무적)
     if (m_state == ePlayerState::Dead || m_state == ePlayerState::Victory || m_invincibleTicks > 0 || m_chutePhase == eChutePhase::Descend)
     {
         return;
@@ -308,7 +305,6 @@ void PlayerController::Tick(
 
     if (m_bRiding)
     {
-        // 차량 탑승 중: 입력/전투는 SlugVehicle 이 맡는다. 플레이어는 숨고 피격 상자도 내지 않는다.
         if (m_invincibleTicks > 0)
         {
             --m_invincibleTicks;
@@ -752,7 +748,6 @@ void PlayerController::StartFlame_(
     const WeaponTuning&  _flame)
 {
     // 입력 1회 = 탄약 1발, 발사 카운트 1. 입자 개수만큼 탄약/카운트/사운드를 쓰지 않는다
-    // (분출 길이(fireIntervalTicks) 가 지난 뒤에만 여기 도달하므로, 남은 이전 분출은 이 시점에 판정을 푼다)
     EndFlame_();
     ++m_stats.shotsFired;
     OnFired(m_weapon);
@@ -767,7 +762,6 @@ void PlayerController::TickFlame_(
     const PlayerContext& _ctx,
     const WeaponTuning&  _flame)
 {
-    // 분출 타임라인: 0 부터 interval 간격으로 입자 spawnEnd 까지, 판정 ID 는 releaseTicks 마다 풀고, 마지막 입자가 죽으면 끝낸다
     const int interval = Max(1, _flame.particleIntervalTicks);
     const int spawnEnd = Max(0, _flame.particleCount) * interval;
     if (m_flameTick < spawnEnd && m_flameTick % interval == 0 && !m_bFlameStop)
@@ -821,7 +815,6 @@ void PlayerController::TickShot_(
         return;
     }
 
-    // 버스트 진행 중: 공중/지상이 바뀌면 캔슬, 아니면 간격마다 한 발씩 (이동 중에도 남은 발수를 계속 쏜다)
     if (m_burstLeft > 0)
     {
         const bool bAir = m_pose == ePose::Air;
@@ -847,7 +840,6 @@ void PlayerController::TickShot_(
         return;
     }
 
-    // 파이어샷: 입력 1회 = 입자 분출 시작 (탄약 1발). 사격 모션 길이 = 분출 길이
     if (m_weapon.weapon == eWeapon::Flame)
     {
         StartFlame_(_ctx, weapon);
@@ -858,7 +850,6 @@ void PlayerController::TickShot_(
         return;
     }
 
-    // 헤비머신건: 한 번 입력 = 3~5발 버스트 (발수는 결정적 난수, 첫 발은 즉시). 사격 모션 길이 = 발수 x 간격
     const bool bBurst = weapon.burstShotsMax > 1 && m_weapon.weapon != eWeapon::Pistol;
     int        shots  = 1;
     if (bBurst)
@@ -897,7 +888,6 @@ Vec2 PlayerController::MakeMuzzle_(
     Vec2 muzzle = GetMuzzlePosition(m_body.position, m_facing, m_pose, m_aim, _tuning.muzzle);
     if (m_aim == eAim::Forward)
     {
-        // 정면 사격 클립의 실제 총구 보정 (무기별 튜닝, 왼쪽을 향하면 x 반전)
         muzzle.x += _weapon.muzzleAdjust.x * static_cast<float>(m_facing);
         muzzle.y += _weapon.muzzleAdjust.y;
     }

@@ -802,7 +802,6 @@ bool ApplyGroundPatch(
         {
             continue;
         }
-        // 이 열의 바닥 = 지면 맵 전체에서 가장 아래 고체 픽셀
         int floorY = -1;
         for (int my = _map.GetHeight() - 1; my >= 0; --my)
         {

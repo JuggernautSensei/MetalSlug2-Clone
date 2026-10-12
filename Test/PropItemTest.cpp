@@ -149,7 +149,7 @@ TEST(PropItem, ItemsBehindCameraAreRemoved)
     const GroundMap ground = MakeFloorMap(400, 200, 140);
     ItemWorld       items { &GetPropLib(), 1 };
     items.Spawn("item_letter", { 100.f, 140.f });
-    TickItems_(items, FloorWorld_(ground), 1, 200.f);   // 100 < 200 - 50
+    TickItems_(items, FloorWorld_(ground), 1, 200.f);
     EXPECT_EQ(items.GetCount(), 0u);
 }
 
@@ -179,7 +179,7 @@ TEST(PropItem, BounceSupplyKeepsXWhileRisingAndFalling)
             minY = pItem->feet.y;
         }
     }
-    EXPECT_LT(minY, 100.f);   // 실제로 위로 솟구쳤다
+    EXPECT_LT(minY, 100.f);
 }
 
 TEST(PropItem, RollingFruitSlowsDownAndStops)
@@ -225,7 +225,7 @@ TEST(PropItem, ScoreItemCollectedGivesPickupAndPopup)
     EXPECT_EQ(items.GetCount(), 0u);
     EXPECT_EQ(items.GetPopups().size(), 1u);
     EXPECT_EQ(items.GetPopups()[0].score, 1100);
-    EXPECT_TRUE(items.Collect(PlayerBoxAt_({ 100.f, 140.f })).empty());   // 두 번 줍지 못한다
+    EXPECT_TRUE(items.Collect(PlayerBoxAt_({ 100.f, 140.f })).empty());
 }
 
 TEST(PropItem, GunItemShowsPickupEffectThenDisappears)
@@ -239,7 +239,7 @@ TEST(PropItem, GunItemShowsPickupEffectThenDisappears)
     ASSERT_EQ(pickups.size(), 1u);
     EXPECT_EQ(pickups[0].kind, eItemKind::Gun);
     EXPECT_EQ(pickups[0].weapon, eWeapon::Hmg);
-    EXPECT_EQ(items.GetCount(), 1u);   // Disappear 연출 중
+    EXPECT_EQ(items.GetCount(), 1u);
     const Vector<ItemFxRequest> fx = items.TakeFx();
     ASSERT_EQ(fx.size(), 1u);
     EXPECT_EQ(fx[0].clip.c_str(), String { "Get_Item_Effect" });
@@ -253,7 +253,7 @@ TEST(PropItem, PopupRisesAndExpiresAfterSpec)
     ItemWorld items { &GetPropLib(), 1 };
     (void)items.Collect(PlayerBoxAt_({ 100.f, 140.f }));   // 빈 상태: 팝업 없음
     items.Spawn("item_apple", { 100.f, 140.f });
-    (void)items.Collect(PlayerBoxAt_({ 100.f, 140.f }));   // 공중 아이템은 상자 안이면 줍힌다
+    (void)items.Collect(PlayerBoxAt_({ 100.f, 140.f }));
     const GroundMap ground = MakeFloorMap(400, 200, 140);
     ASSERT_EQ(items.GetPopups().size(), 1u);
     TickItems_(items, FloorWorld_(ground), 150);   // 2.5 s
@@ -374,7 +374,7 @@ TEST(PropItem, RollFrictionComesFromItemTuning)
         items.Tick(FloorWorld_(ground), kDt, -1.0e9f, nullptr, &tuning);
     }
     ASSERT_TRUE(items.Find(id)->body.bGrounded);
-    items.Tick(FloorWorld_(ground), kDt, -1.0e9f, nullptr, &tuning);   // 착지 다음 틱에 굴림 속도가 붙는다
+    items.Tick(FloorWorld_(ground), kDt, -1.0e9f, nullptr, &tuning);
     const float v0 = items.Find(id)->body.velocity.x;
     ASSERT_GT(std::abs(v0), 1.f);
     for (int i = 0; i < 300; ++i)

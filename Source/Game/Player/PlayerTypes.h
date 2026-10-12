@@ -18,8 +18,8 @@ enum class ePlayerState : uint8_t
 enum class eGodMode : uint8_t
 {
     Off,
-    NoDeath,      // 피격은 받되 죽음/라이프 소모/게임 오버가 없다
-    Invincible,   // 피격 판정 자체를 받지 않는다
+    NoDeath,
+    Invincible,
     Count
 };
 

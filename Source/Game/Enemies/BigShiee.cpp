@@ -9,13 +9,11 @@
 #include "Game/Enemies/VehicleCommon.h"
 
 // 최종보스 전함 '빅 셰이' (원작 MS2 Mission 4). 설계/수치/측정 근거: Docs/Spec_BigShiee.md
-// 선체 = 터렛이 없는 본체 셀 (시트 40204, Boss_Hull_*). 포탑 7 문은 정답 이미지에서 실측한 앵커에 개별 스프라이트로 올리고,
-// 각자 체력/발사/파괴를 가진다 (선체에 구워지지 않았다). 주포는 포탑이 다 부서진 뒤 선수가 열리며 올라온다.
 // 모든 파츠는 음수 레이어로 그려 StageState 가 지면 텍스처보다 먼저 그린다 (하늘 < 선체 < 지붕/지면 < 플레이어).
 
 namespace
 {
-// 보스 파츠(포탑/주포)는 총알과 폭발만 받는다. 칼질(근접)은 선체 보스의 장갑에 먹히지 않는다 (R3-07)
+// 보스 파츠(포탑/주포)는 총알과 폭발만 받는다. 칼질(근접)은 선체 보스의 장갑에 먹히지 않는다
 const HitKindMask kBigShieeAccepts = HitKindMask { eHitKind::Bullet, eHitKind::Blast };
 }   // namespace
 
@@ -29,9 +27,9 @@ const ARRAY<StringView, 4> kChuteDrops = { "gunitem_mg", "gunitem_rl", "gunitem_
 constexpr int kTurnMax      = 8;   // Turn 클립 프레임 수 - 1 (0 = 왼쪽, kTurnMid = 위, 8 = 오른쪽)
 constexpr int kTurnMid      = 4;
 constexpr int kAimRows      = 5;    // 주포 사격 행 (Boss_Cannon_Shot1..5, 왼쪽 .. 오른쪽)
-constexpr int kCasingFrames = 6;    // Boss_CasingStrip 칸 수
-constexpr int kCasingDepth  = 54;   // 포구 연기 (Boss_Smoke_Small) 와 같은 깊이
-constexpr int kShotFrames   = 8;    // 사격 클립 칸 수 (애니메이션이 없는 환경의 기본값)
+constexpr int kCasingFrames = 6;
+constexpr int kCasingDepth  = 54;
+constexpr int kShotFrames   = 8;
 constexpr int kYawMax       = 8;    // 주포 yaw 프레임 (Boss_Cannon_Aim 0..8, 사격 행 r = yaw 2r)
 
 namespace
@@ -41,8 +39,8 @@ const char* const kLetters = "ABCDEFG";
 
 struct TurretNames
 {
-    ARRAY<String, 3> idle = {};   // Idle1 (왼쪽) / Idle2 (위) / Idle3 (오른쪽)
-    ARRAY<String, 3> shot = {};   // Shot1 / Shot2 / Shot3
+    ARRAY<String, 3> idle = {};
+    ARRAY<String, 3> shot = {};
     String           turn = {};
     String           dead = {};
     String           puff = {};
@@ -251,7 +249,7 @@ void SetCannonMode_(
     return _env.ctx.pAnims ? std::max(1, GetNamedPartTicks(*_env.ctx.pAnims, _name)) : _fallback;
 }
 
-// 사격 클립 길이 (틱). 마지막 칸은 Aim 자세를 2 px 옮긴 복사본이라 (칸 6 이 Aim 과 같은 그림) 보여 주지 않고 Aim 으로 돌아간다
+// 사격 클립 길이 (틱). 마지막 칸은 Aim 자세의 복사본이라 보여 주지 않고 Aim 으로 돌아간다
 [[nodiscard]] int ShotTicks_(
     const EnemyEnv&  _env,
     const StringView _name)
@@ -333,7 +331,6 @@ void Init_(
 }
 
 // 포탄: 포구에서 플레이어 쪽으로 올라갔다 떨어지는 곡사 (weapon "shell" 의 arc)
-// 무기 정의의 포구 오프셋 (weapons.<name>.muzzle) 에 상관없이 월드 _muzzle 에서 나가도록 FireWeapon 의 추가 오프셋을 구한다
 [[nodiscard]] Vec2 ExtraFromWorld_(
     const Enemy&    _e,
     const EnemyDef& _def,
@@ -461,7 +458,6 @@ void TickTurret_(
     }
 }
 
-// 한 번에 한 문: 원작은 포탑이 번갈아 1~2발씩 쏜다 (일제사격 없음)
 void TickVolley_(
     Enemy&          _e,
     const EnemyDef& _def,
@@ -544,7 +540,6 @@ void TickChute_(
     return mode != eBigShieeCannonMode::Deploy || GetSlot_(_e, kBigShieeExtCannonTicks) >= 30;
 }
 
-// 포구 기준 플레이어 방향각 (도, 수직 아래 = 0, 오른쪽 +)
 [[nodiscard]] float PlayerAngleDeg_(
     const Enemy&       _e,
     const BigShieeCfg& _c,
@@ -611,7 +606,6 @@ void TickChute_(
     return best * 2;
 }
 
-// 목표 yaw 쪽으로 cannonTurnTicks 마다 한 칸씩 돈다
 void TurnCannon_(
     Enemy&             _e,
     const BigShieeCfg& _c,
@@ -632,7 +626,6 @@ void TurnCannon_(
     }
 }
 
-// 탄피가 지면에 닿기까지 (초)
 [[nodiscard]] float CasingLandSec_(
     const Enemy&       _e,
     const BigShieeCfg& _c)
@@ -643,7 +636,6 @@ void TurnCannon_(
     return (-_c.casingVel.y + std::sqrt(disc)) / _c.casingGravity;
 }
 
-// 탄피 현재 위치/프레임. 없거나 사라졌으면 false (출발 틱 이후 지면까지 낙하 + casingLingerSec)
 bool CasingNow_(
     const Enemy&       _e,
     const BigShieeCfg& _c,
@@ -666,7 +658,7 @@ bool CasingNow_(
     const float tFly = std::min(t, tLand);
     _outAt           = { from.x + _c.casingVel.x * tFly, from.y + _c.casingVel.y * tFly + 0.5f * _c.casingGravity * tFly * tFly };
     _outFrame        = static_cast<int>(t * _c.casingFps) % kCasingFrames;
-    _outAlpha        = t <= tLand || _c.casingLingerSec <= 0.f ? 1.f : std::clamp(1.f - (t - tLand) / _c.casingLingerSec, 0.f, 1.f);   // 지면에 닿은 뒤 서서히 사라진다
+    _outAlpha        = t <= tLand || _c.casingLingerSec <= 0.f ? 1.f : std::clamp(1.f - (t - tLand) / _c.casingLingerSec, 0.f, 1.f);
     return true;
 }
 
@@ -691,7 +683,6 @@ void FireMissile_(
     EventLogFormat("bigshiee.muzzle_fx", "\"x\":{:.1f},\"y\":{:.1f}", muzzle.x, muzzle.y);
     RequestFxAt(_env, "Bazuka_Shot_Effect", muzzle, _e.facing, 55);
     RequestFxAt(_env, "Boss_Smoke_Small", muzzle, _e.facing, 54);
-    // 탄피: 포구 옆에서 튀어 나온다
     const Vec2 casing                 = { muzzle.x + c.casingOffset.x, muzzle.y + c.casingOffset.y };
     Slot_(_e, kBigShieeExtCasingTick) = _e.aux;
     Slot_(_e, kBigShieeExtCasingX)    = static_cast<int>(std::lround(casing.x));
@@ -719,7 +710,7 @@ void TickCannon_(
         if (ticks >= deployTicks)
         {
             SetCannonMode_(_e, eBigShieeCannonMode::Aim);
-            Slot_(_e, kBigShieeExtCannonYaw)  = 0;   // 전개가 끝난 머리는 왼쪽을 본다
+            Slot_(_e, kBigShieeExtCannonYaw)  = 0;
             Slot_(_e, kBigShieeExtCannonTurn) = 0;
         }
     }
@@ -738,7 +729,7 @@ void TickCannon_(
     {
         const bool bFire    = _e.aux >= GetSlot_(_e, kBigShieeExtNextMissile) && _env.ctx.player.bAlive;
         const int  target   = TargetYaw_(_e, c, _env, bFire);
-        const bool bAligned = GetSlot_(_e, kBigShieeExtCannonYaw) == target;   // 이미 한 틱 이상 그 행의 Aim 프레임을 보여 준 뒤에만 쏜다
+        const bool bAligned = GetSlot_(_e, kBigShieeExtCannonYaw) == target;
         TurnCannon_(_e, c, target);
         if (bFire && bAligned)
         {
@@ -781,7 +772,6 @@ void Tick_(
         ++Slot_(_e, kBigShieeExtScrollTicks);
     }
 
-    // 선체 이동
     const Aabb& view  = _env.ctx.cameraView;
     float       speed = 0.f;
     if (Phase_(_e) == eBigShieePhase::Entrance)
@@ -789,7 +779,7 @@ void Tick_(
         const Span<const Vec2> keys { c.entranceKeys.data(), static_cast<size_t>(c.numEntranceKeys) };
         const float            now  = Interp_(keys, t);
         const float            prev = Interp_(keys, t - kStepSec);
-        speed                       = (now - prev) / kStepSec;   // 화면 기준 속도
+        speed                       = (now - prev) / kStepSec;
         if (view.max.x > view.min.x)
         {
             _e.body.position.x = view.min.x + now;
@@ -809,7 +799,6 @@ void Tick_(
         const bool  bBack   = c.reverseSec > 0.f && driving == 0 && td >= c.reverseAtSec && td < c.reverseAtSec + c.reverseSec;
         if (bBack)
         {
-            // 주포 전개 뒤 한 번 후진
             _e.body.position.x -= c.reverseSpeed * kStepSec;
             speed = -c.reverseSpeed;
         }
@@ -856,7 +845,6 @@ void Tick_(
         EventLogFormat("bigshiee.cam", "\"cam\":{:.1f},\"boss\":{:.1f}", view.min.x, _e.body.position.x);
     }
 
-    // 포탑
     if (Phase_(_e) == eBigShieePhase::Entrance || Phase_(_e) == eBigShieePhase::Battery)
     {
         TickVolley_(_e, _def, _env);
@@ -890,7 +878,6 @@ void Tick_(
         }
     }
 
-    // 포탑이 다 부서지면 주포 전개
     if ((Phase_(_e) == eBigShieePhase::Battery || Phase_(_e) == eBigShieePhase::Entrance) && AliveTurrets_(_e) == 0)
     {
         const int lastKill = GetSlot_(_e, kBigShieeExtLastKill);
@@ -915,7 +902,6 @@ void Tick_(
         Slot_(_e, kBigShieeExtDeployStart) = _e.aux;
         SetCannonMode_(_e, eBigShieeCannonMode::Deploy);
     }
-    // 전개/조준은 Deploy 단계에서 끝나면 Cannon 단계로 넘어간다 (TickCannon_)
     TickCannon_(_e, _def, _env);
     const int casingStart = GetSlot_(_e, kBigShieeExtCasingTick);
     if (casingStart > 0 && _e.aux - casingStart == static_cast<int>(std::ceil((CasingLandSec_(_e, c) + c.casingLingerSec) / kStepSec)))
@@ -1058,7 +1044,6 @@ void TickDying_(
         return;
     }
 
-    // 연쇄 폭발: 시간이 갈수록 촘촘해진다. 위치는 선체 윗면에 흩뿌린다
     const float progress = std::clamp(t / c.dyingWreckSec, 0.f, 1.f);
     const int   interval = std::max(1, static_cast<int>(static_cast<float>(SecToTicks(c.dyingBlastIntervalSec)) * (1.4f - progress)));
     if (_e.deathTicks % interval == 0)
@@ -1237,7 +1222,7 @@ void SubmitParts_(
     const EnemyDef&       _def,
     const EnemyRenderEnv& _render)
 {
-    // 첫 틱 (Init_) 전에는 스폰 지점에 그려지므로 숨긴다 (입장 글리치, R3-11)
+    // 첫 틱 (Init_) 전에는 스폰 지점에 그려지므로 숨긴다
     if (!_e.bInit)
     {
         return;
@@ -1261,7 +1246,6 @@ void SubmitParts_(
         {
             SubmitTurret_(_e, c, _render, feet, i);
         }
-        // 주포는 맞는 것처럼 깜박인다 (금색 플래시)
         SubmitCannon_(_e, c, _render, feet, (_e.deathTicks / 3) % 2 == 0 ? 1.f : 0.f);
         return;
     }
@@ -1318,7 +1302,6 @@ void ParseBigShieeCfg(
 {
     BigShieeCfg& c = _def.bigShiee;
 
-    // 포탑 7 개 고정: 문자/방향/쌍발/앵커/상자/포구/체력
     ARRAY<float, kBigShieeTurretCount * 2> anchors  = {};
     ARRAY<float, kBigShieeTurretCount * 4> boxes    = {};
     ARRAY<float, kBigShieeTurretCount * 2> muzzles  = {};

@@ -7,7 +7,7 @@
 
 namespace
 {
-// 지면/벽 접촉 검사 (발판은 보지 않는다: 강가 감시초소 같은 구조물 발판에 막혀 플레이어에게 닿지 못하던 문제). _to 는 접촉 판정 점의 현재 위치
+// 지면/벽 접촉 검사 (발판은 보지 않는다: 감시초소 같은 구조물 발판에 막혀 플레이어에게 닿지 못한다). _to 는 접촉 판정 점의 현재 위치
 [[nodiscard]] bool Touches_(
     const PhysicsWorld& _world,
     const Vec2          _to)
@@ -82,7 +82,6 @@ void Tick_(
     const bool             bArrived = bAimed && probeTo.y >= player.feet.y;
     if (bArrived || (!bPassing && Touches_(_env.ctx.physics, probeTo)))
     {
-        // 착지: 지면에 먼지를 깔고 터진다 (사망 처리 → onDeath)
         RequestFx(_env, FxDef {
                             c.groundFx, { 0.f, c.groundProbeY + c.groundFxDy },
                              0.f, 57
@@ -102,7 +101,7 @@ void OnDeath_(
 {
     BeginVehicleDeath(_e, _def, _env, -1);
     _e.bVisible = false;
-    _e.aux      = 0;   // 폭발 상자 경과 틱
+    _e.aux      = 0;
 }
 
 void TickDying_(

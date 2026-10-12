@@ -7,17 +7,17 @@
 
 constexpr float kRampStart     = 1.f;                   // px/틱: 스크롤 시작 속도
 constexpr float kRampAccel     = 0.19f;                 // px/틱²: 플레이어를 따라 가속
-constexpr float kDecayPerTick  = 0.80f;                 // 플레이어가 멈추거나 되돌아갈 때 틱마다 곱하는 감속 계수
+constexpr float kDecayPerTick  = 0.80f;
 constexpr float kStopSpeed     = 0.05f;                 // px/틱 미만이면 정지
-constexpr float kGlideEnterGap = 96.f;                  // 이 이상 벌어지면 (잠금 해제, 구간 경계 등) 부드럽게 따라잡는다
-constexpr float kGlideExitGap  = 0.05f;                 // 글라이드 도착 판정 (px)
+constexpr float kGlideEnterGap = 96.f;
+constexpr float kGlideExitGap  = 0.05f;
 constexpr float kGlideAccel    = 1.f;                   // px/틱²: 글라이드 가감속 상한
 constexpr float kMaxStep       = 12.f;                  // px/틱 속도 상한 (글라이드, 수직 추적 공통)
-constexpr float kStepGrowth    = 1.5f;                  // 한 틱에 직전 걸음의 이 배수까지만 커진다
+constexpr float kStepGrowth    = 1.5f;
 constexpr float kStepFloor     = 1.f;                   // 걸음이 작을 때 허용되는 최소 증가폭 (px/틱)
 constexpr float kMaxSpeedSec   = kMaxStep / kStepSec;   // px/s
 constexpr float kBoundsEase    = 2.f;                   // px/틱: 클램프 영역이 좁아지는 속도 (edge 당)
-constexpr float kCorrectionSec = 0.5f;                  // 잠금 시 카메라가 영역 밖이면 이 시간에 걸쳐 안으로 들어간다
+constexpr float kCorrectionSec = 0.5f;
 
 namespace
 {
@@ -128,7 +128,7 @@ void Camera::Lock(
 {
     m_lockBounds = _lockBounds;
     m_bLocked    = true;
-    m_effBounds  = _lockBounds;   // 잠금 영역은 즉시 적용한다. 카메라가 밖에 있으면 아래에서 안으로 부드럽게 옮긴다
+    m_effBounds  = _lockBounds;
     m_effVel     = {};
     m_bHasEff    = true;
 
@@ -143,7 +143,7 @@ void Camera::Lock(
     const bool bStill = std::abs(m_velocity.x) <= 1.f && std::abs(m_velocity.y) <= 1.f;
     if (bNear && bStill)
     {
-        m_center = goal;   // 반올림 수준의 차이는 순간 보정 (보이지 않는다)
+        m_center = goal;
     }
     else
     {
@@ -255,7 +255,6 @@ void Camera::ApproachEdge_(
     const float dist = _target - _edge;
     if (dist * _sign <= 0.f)
     {
-        // 넓어지는 쪽: 즉시 바꾼다 (카메라를 밀어내지 않는다)
         _edge = _target;
         _vel  = 0.f;
         return;
@@ -376,7 +375,6 @@ void Camera::ShiftLock(
 void Camera::SnapTo(
     const Vec2 _viewCenter)
 {
-    // 명시적 순간 이동 (디버그 워프, 재시작, 리스폰). 영역도 즉시 맞춘다
     m_bMoving      = false;
     m_bScrollFloor = false;
     m_bPendingLock = false;
@@ -552,7 +550,6 @@ void Camera::Update(
         m_center = ClampCenter_(m_center);
         if (m_bScrollFloor && m_center.x < m_scrollFloorX)
         {
-            // 자동 전진: 하한까지 강제로 민다 (보스 스크롤 속도는 작아서 한 틱의 튐은 없다)
             m_center.x   = m_scrollFloorX;
             m_center     = ClampCenter_(m_center);
             m_velocity.x = 0.f;
@@ -561,7 +558,7 @@ void Camera::Update(
 
         if (m_bForwardOnly && !m_bLocked && m_center.x < before.x)
         {
-            m_center.x = before.x;   // 전진 전용 카메라는 영역이 줄어도 뒤로 가지 않는다
+            m_center.x = before.x;
         }
     }
 }

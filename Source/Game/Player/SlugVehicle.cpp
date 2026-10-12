@@ -20,7 +20,6 @@ constexpr int kHitAgeNone     = -1;
 
 namespace
 {
-// -180..180 으로 접은 각도 차이
 [[nodiscard]] float WrapDegree_(
     const float _degree)
 {
@@ -32,7 +31,6 @@ namespace
     return value - 180.f;
 }
 
-// 연기/불꽃이 올라오는 자리 (차량 몸통 위쪽 여러 점을 번갈아 쓴다)
 [[nodiscard]] Vec2 GetDamageFxOffset_(
     const int _index)
 {
@@ -505,7 +503,7 @@ void SlugVehicle::UpdateCannon_(
     }
     if (m_cannonCooldown > 0)
     {
-        return;   // 버퍼에 남겨 두었다가 쿨다운이 끝나면 나간다
+        return;
     }
     if (m_cannonAmmo <= 0)
     {
@@ -996,7 +994,6 @@ bool SlugVehicle::ShouldShowInArrow() const
 
 bool SlugVehicle::ShouldShowOutArrow() const
 {
-    // 탑승 중 위험 단계에서 깜빡이며 "내려라" 를 알린다
     return m_mode == eSlugMode::Driven && GetDamageStage() >= 2 && ((m_tick / 30) % 2) == 0;
 }
 

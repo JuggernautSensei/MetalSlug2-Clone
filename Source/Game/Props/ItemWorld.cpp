@@ -107,7 +107,7 @@ uint32_t ItemWorld::Spawn(
     }
     if (_bBounce)
     {
-        // 수직으로만 튀어 오른다 (x 튐 없음). 기존 방향 난수는 RNG 흐름 유지를 위해 한 번 소비만 한다.
+        // 수직으로만 튀어 오른다 (x 튐 없음). 방향 난수는 RNG 흐름 유지를 위해 한 번 소비만 한다.
         (void)m_rng.Generate();
         item.body.velocity.y = kSupplyBounceVy;
         item.body.velocity.x = 0.f;
@@ -171,7 +171,6 @@ void ItemWorld::Tick(
             }
             else
             {
-                // 굴러가는 아이템의 회전은 속도에 비례 (spinScale), 멈추면 애니도 멈춘다
                 item.anim.Update(*_pAnims, _dt * item.spinScale);
             }
         }
@@ -197,7 +196,7 @@ void ItemWorld::Tick(
         }
         if (item.bBounce && item.body.bGrounded)
         {
-            item.body.velocity.x = 0.f;   // 착지 후 수평 튐 종료
+            item.body.velocity.x = 0.f;
         }
         (void)Physics::Step(item.body, _world, PhysicsTuning {}, _dt);
         item.feet = item.body.position;
@@ -205,7 +204,6 @@ void ItemWorld::Tick(
         if (def.kind == eItemKind::Score && def.bRoll)
         {
             // 공중에서는 일정하게 돈다. 바닥에서는 수평 속도에 비례해 느려지고 정지하면 멈춘다
-            // 착지 직후(굴림 속도 대기 중)에는 대기 중인 굴림 속도로 계산한다
             const float speedX = item.rollVx != 0.f ? item.rollVx : item.body.velocity.x;
             item.spinScale     = item.body.bGrounded
                                    ? std::clamp(std::abs(speedX) / tuning.rollSpinRefSpeed, 0.f, 1.f)

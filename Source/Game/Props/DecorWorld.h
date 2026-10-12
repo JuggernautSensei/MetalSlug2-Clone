@@ -8,29 +8,27 @@
 #include "Render/SpriteBatch.h"
 
 // 장식 레이어 정렬 번호 (소품 background 12 보다 뒤에 그려진다)
-inline constexpr int kDecorFarDepth  = 4;    // farBackground (원경: 비행기 등)
-inline constexpr int kDecorBackDepth = 11;   // background (지상 보행자 등, 플레이어/적 아래)
+inline constexpr int kDecorFarDepth  = 4;
+inline constexpr int kDecorBackDepth = 11;
 
-// 장식 연출 한 구간. 구간 동안 clip 을 재생하며 velocity 로 움직인다.
 struct DecorStep
 {
     String clip     = {};
     float  seconds  = 1.f;            // 구간 길이 (초)
-    Vec2   velocity = { 0.f, 0.f };   // 픽셀/초
+    Vec2   velocity = { 0.f, 0.f };
     bool   bFlipX   = false;
 };
 
-// 장식 한 개 생성 요청. sequence 가 비면 clip 하나를 velocity 로 계속 움직인다.
 struct DecorSpawn
 {
     String            clip     = {};
     eStageLayer       layer    = eStageLayer::Background;
-    Vec2              pos      = { 0.f, 0.f };   // 엔티티 원점 (애니 pivot 기준)
+    Vec2              pos      = { 0.f, 0.f };
     Vec2              velocity = { 0.f, 0.f };
     bool              bFlipX   = false;
-    bool              bLoop    = false;       // sequence 끝나면 처음부터 반복
+    bool              bLoop    = false;
     float             scale    = 1.f;         // 배율 (1 = 원본, 피벗 고정)
-    int               z        = kDefaultZ;   // 그리기 depth (kDefaultZ: 레이어 기본 kDecorFarDepth/kDecorBackDepth)
+    int               z        = kDefaultZ;
     Vector<DecorStep> sequence = {};
 };
 
@@ -46,7 +44,6 @@ struct DecorSpawn
     Vec2              _pos,
     const ParamValue* _pParams);
 
-// 적/소품과 무관한 시각 전용 장식. 피격/판정이 없다.
 class DecorWorld
 {
     struct Instance
@@ -59,19 +56,18 @@ class DecorWorld
         bool              bFlipX     = false;
         bool              bLoop      = false;
         bool              bFinished  = false;
-        bool              bNeedEnter = true;   // 첫 구간 진입 전 (클립 조회 필요)
+        bool              bNeedEnter = true;
         float             scale      = 1.f;
         int               stepIndex  = 0;
-        float             stepLeft   = 0.f;   // 현재 구간 남은 초
+        float             stepLeft   = 0.f;
         Vector<DecorStep> steps      = {};
         AnimPlayer        anim       = {};
     };
 
 public:
     uint32_t Spawn(const DecorSpawn& _spawn);
-    bool     SetZ(uint32_t _id, int _z);   // 인스턴스 depth 를 즉시 바꾼다
+    bool     SetZ(uint32_t _id, int _z);
 
-    // _anims 는 클립 조회에 쓰고, 재생 시간은 _dt 로 진행한다.
     void Tick(const AnimationLibrary& _anims, float _dt);
     void Submit(SpriteBatch& _sprites, const AnimationLibrary& _anims) const;
 
@@ -80,7 +76,6 @@ public:
 
     [[nodiscard]] size_t GetCount() const;
 
-    // 테스트용 조회
     [[nodiscard]] bool Get(
         uint32_t    _id,
         Vec2&       _outPos,

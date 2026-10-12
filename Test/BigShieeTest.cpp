@@ -1,6 +1,4 @@
-// 최종보스 전함 (Big Shiee, Docs/Spec_BigShiee.md): 정의 로드, 왼쪽 밖에서 서서히 입장, 개별 포탑 체력/파괴, 포탑이 다 부서진 뒤 주포 전개,
-// 주포 체력 0 -> 사망 연출 -> destroyFinished, 자동 스크롤 요청, 결정성, 근접 차단, 첫 틱 전 비활성, 렌더 레이어 순서,
-// 폭발 판정 지속 시간, 낙하산 인질 보급 (pow_chute -> 착지 POW) 을 검증한다.
+// 최종보스 전함 (Docs/Spec_BigShiee.md): 입장, 포탑/주포 체력과 파괴, 주포 전개, 사망 연출, 자동 스크롤, 결정성, 낙하산 인질 보급을 검증한다.
 
 #include <algorithm>
 #include <cmath>
@@ -236,7 +234,7 @@ TEST(BigShiee, NoPartHurtboxesBeforeTheFirstTick)
 
 TEST(BigShiee, RendersBehindEveryStageSprite)
 {
-    constexpr int kEnemyBodyDepth = 15;   // EnemyWorld.cpp kEnemyDepth (적 몸통)
+    constexpr int kEnemyBodyDepth = 15;
     const int     front           = std::min({ kDecorFarDepth, kDecorBackDepth, kPropDepthBack, kPropDepthFront, kEnemyBodyDepth, kSlugBodyDepth });
     EXPECT_LT(kBigShieeDepthHull, front);
     EXPECT_LT(kBigShieeDepthAntenna, front);
@@ -461,7 +459,7 @@ TEST(BigShiee, BlastEndsInTheFirstHalfOfItsExplosionAnim)
 
 TEST(BigShiee, ChuteDropsLandInsideTheScrollingViewNearTheLeftEdge)
 {
-    EnemyRig rig({ kCamLeft + 20.f, 378.f }, kCamLeft);   // 플레이어가 화면 왼쪽 가장자리
+    EnemyRig rig({ kCamLeft + 20.f, 378.f }, kCamLeft);
     LoadBossLib_(rig);
     (void)SpawnBoss_(rig);
     const int chuteDef = rig.Lib().FindIndex("pow_chute");
@@ -566,7 +564,7 @@ TEST(BigShiee, CannonTurnsOneFramePerTurnTicksAndOnlyFiresWhenAligned)
     bool bPrevShot = false;
     for (int tick = 0; tick < 900 && shots < 2; ++tick)
     {
-        PlacePlayerAtAngle_(rig, boss, 0.f);   // 정면: 머리는 0 -> 4 로 네 칸 돈다
+        PlacePlayerAtAngle_(rig, boss, 0.f);
         rig.Step(1);
         const eBigShieeCannonMode mode = CannonMode_(rig, boss);
         const int                 yaw  = CannonYaw_(rig, boss);
@@ -777,7 +775,7 @@ TEST(BigShiee, ReadyHeadFollowsThePlayerAngleWithoutMirroring)
         }
         if (CannonMode_(rig, boss) == eBigShieeCannonMode::Shot)
         {
-            continue;   // 사격 중에는 행 프레임에 묶인다 (위 테스트가 본다)
+            continue;
         }
         const int   yaw   = CannonYaw_(rig, boss);
         const float low   = c.cannonAimDeg[static_cast<size_t>(yaw / 2)];
@@ -805,7 +803,7 @@ TEST(BigShieeSync, LidOpensFirstThenCannonRisesThenMissilesFireOnFootageCadence)
     int           missiles     = 0;
     for (int tick = 0; tick < 1200 && missiles < 3; ++tick)
     {
-        PlacePlayerAtAngle_(rig, boss, -50.f);   // 머리는 왼쪽 (Aim 0) 그대로: 영상처럼 조준 회전 없이 바로 대기
+        PlacePlayerAtAngle_(rig, boss, -50.f);
         rig.Step(1);
         const Enemy* pBoss = rig.E(boss);
         if (lidStart < 0 && pBoss->ext[kBigShieeExtLidStart] >= 0 && static_cast<eBigShieePhase>(pBoss->state) == eBigShieePhase::Deploy)
@@ -1037,7 +1035,7 @@ TEST(BigShieeTurretAim, FacesPlayerSideRight)
 TEST(BigShieeTurretAim, FacesPlayerSideAbove)
 {
     float               vx   = 0.f;
-    const ARRAY<int, 3> seen = RunTurretAim_(80.f, vx);   // 포탑 A 와 D 의 바로 아래 근처, 나머지는 멀리 오른쪽
+    const ARRAY<int, 3> seen = RunTurretAim_(80.f, vx);
     EXPECT_GE(seen[0] + seen[1] + seen[2], 3);
     EXPECT_GE(seen[1], 1) << "바로 아래 근처 포탑은 Shot2 (머리 위치 4)";
 }
@@ -1056,7 +1054,7 @@ TEST(BigShieeTurretAim, IdleTurretsTrackThePlayerOneTurnFrameAtATime)
     {
         rig.SetPlayer({ rig.E(boss)->body.position.x - 900.f, 378.f });
         rig.Step(1);
-        const int pos = rig.E(boss)->ext[static_cast<size_t>(kBigShieeExtPos + 3)];   // 포탑 D: 처음에 오른쪽 (8)
+        const int pos = rig.E(boss)->ext[static_cast<size_t>(kBigShieeExtPos + 3)];
         if (lastPos >= 0)
         {
             maxStep = std::max(maxStep, std::abs(pos - lastPos));

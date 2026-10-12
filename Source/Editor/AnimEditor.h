@@ -9,13 +9,12 @@
 struct SDL_Renderer;
 struct SDL_Texture;
 
-// anim.json 의 클립 하나 (파일에 있는 모든 필드를 보존한다).
 struct AnimEditClip
 {
     String            name          = {};
     bool              bLoop         = false;
     int               loopStart     = 0;
-    bool              bHasCancel    = false;   // "cancelFrame" 필드가 있는 클립
+    bool              bHasCancel    = false;
     int               cancelFrame   = 0;
     double            frameDuration = 0.1;
     int               cellW         = 0;
@@ -24,7 +23,6 @@ struct AnimEditClip
 };
 
 // anim.json 문서 (UI 없음). 편집은 Set*/ApplyPivotToAll 로만 하고, 매번 Undo 스택에 쌓는다.
-// Serialize 는 원본 파일과 같은 서식(키 순서, 프레임 한 줄)으로 쓴다.
 class AnimDocument
 {
 public:
@@ -34,7 +32,7 @@ public:
     [[nodiscard]] String       Serialize() const;
 
     [[nodiscard]] Span<const AnimEditClip> GetClips() const;
-    [[nodiscard]] int                      FindClip(StringView _name) const;   // 없으면 -1
+    [[nodiscard]] int                      FindClip(StringView _name) const;
     [[nodiscard]] bool                     IsDirty() const;
     [[nodiscard]] bool                     CanUndo() const;
 
@@ -46,12 +44,11 @@ public:
     void Undo();
     void ClearDirty();
 
-    // 문서의 클립을 라이브러리에 즉시 반영한다 (같은 이름이면 제자리 교체).
     void ApplyClipTo(int _clip, AnimationLibrary& _library) const;
     void ApplyTo(AnimationLibrary& _library) const;
 
-    [[nodiscard]] int GetRevision() const;          // 편집/Undo/Load 마다 증가
-    [[nodiscard]] int GetLastChangedClip() const;   // Load 직후는 -1 (전체 변경)
+    [[nodiscard]] int GetRevision() const;
+    [[nodiscard]] int GetLastChangedClip() const;
 
 private:
     struct UndoEntry
@@ -78,14 +75,11 @@ public:
     void Shutdown();
     void SelectClip(StringView _name);
 
-    // 실행 중 게임의 애니 라이브러리. 편집/리로드가 여기에 즉시 반영된다.
     void SetLibrary(AnimationLibrary* _pLibrary);
     void Open(const FilePath& _path);
 
-    // 에디터 프레임마다 호출: 문서 편집을 라이브러리에 반영하고 약 1초마다 파일 변경을 확인한다.
     void Poll();
 
-    // 파일 mtime 이 바뀌었으면 (미편집이면 리로드, 편집 중이면 경고). 리로드했으면 true.
     [[nodiscard]] bool CheckExternal();
     void               Reload();
 

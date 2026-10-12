@@ -88,8 +88,8 @@ struct AudioEvent
 struct AudioConfig
 {
     bool     bEnabled     = true;
-    int      maxVoices    = 16;   // 동시에 울리는 효과음 상한
-    int      maxPerSound  = 4;    // 같은 소리의 동시 상한 (권총 연사 등)
+    int      maxVoices    = 16;
+    int      maxPerSound  = 4;
     float    masterVolume = 1.f;
     float    sfxVolume    = 1.f;
     float    bgmVolume    = 0.6f;
@@ -123,7 +123,7 @@ public:
 
     [[nodiscard]] bool          IsInitialized() const;
     [[nodiscard]] bool          IsBgmFadingOut() const;
-    [[nodiscard]] const String& GetCurrentBgm() const;   // 재생 중(페이드 중 포함)인 BGM 이름, 없으면 빈 문자열
+    [[nodiscard]] const String& GetCurrentBgm() const;
 
 private:
     struct Backend;
@@ -160,7 +160,7 @@ private:
     bool      m_bBgmLoop = true;
     BgmFader  m_bgmFade  = {};
 
-    String m_pendingBgm   = {};   // 페이드 아웃이 끝나면 재생할 BGM
+    String m_pendingBgm   = {};
     bool   m_bPendingLoop = true;
 
     Scoped<Backend> m_pBackend;

@@ -27,7 +27,7 @@ struct Body
 {
     Vec2 position = { 0.f, 0.f };
     Vec2 velocity = { 0.f, 0.f };
-    Vec2 size     = { 24.f, 40.f };   // 충돌 상자 크기 (폭, 높이)
+    Vec2 size     = { 24.f, 40.f };
 
     float footHalfWidth = 1.f;
 
@@ -56,8 +56,8 @@ struct MoveResult
     bool bHitWallRight = false;
     bool bHitCeiling   = false;
 
-    int platformIndex = -1;   // 서 있는 Platform 인덱스 (없으면 -1)
-    int wallIndex     = -1;   // 서 있는 Wall 인덱스 (없으면 -1)
+    int platformIndex = -1;
+    int wallIndex     = -1;
 
     float groundSlope  = 0.f;
     Vec2  groundNormal = { 0.f, -1.f };

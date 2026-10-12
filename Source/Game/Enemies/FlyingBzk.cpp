@@ -56,7 +56,7 @@ void Init_(
 {
     PrepareBody(_e, _def);
     _e.body.bUseGravity = false;
-    _e.aux3             = -1;   // 초기 방향 LEFT
+    _e.aux3             = -1;
     Go_(_e, _def, eFlyingState::Descend);
 }
 

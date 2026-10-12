@@ -54,7 +54,6 @@ constexpr ARRAY<SlotDef, kRigClipCount> kSlots = {
 
 namespace
 {
-// 표의 행 수가 kRigClipCount 보다 적으면 남은 행이 0 으로 채워진다. 모든 행이 채워졌는지 확인한다.
 [[nodiscard]] constexpr bool AreSlotsFilled_()
 {
     for (const SlotDef& slot: kSlots)

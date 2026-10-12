@@ -9,7 +9,7 @@ struct WeaponState
     static constexpr int kLongAgo = 1'000'000;
 
     eWeapon weapon         = eWeapon::Pistol;
-    int     ammo           = 0;   // 유한 무기의 남은 탄 (권총은 사용 안 함)
+    int     ammo           = 0;
     int     bombs          = 0;
     int     ticksSinceShot = kLongAgo;
 

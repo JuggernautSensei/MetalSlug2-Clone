@@ -35,7 +35,7 @@ private:
 
     float  m_alpha     = 0.f;
     float  m_target    = 0.f;
-    float  m_step      = 0.f;   // 틱당 변화량 (부호 포함)
+    float  m_step      = 0.f;
     int    m_ticksLeft = 0;
     ePhase m_phase     = ePhase::Clear;
     ePhase m_donePhase = ePhase::Clear;

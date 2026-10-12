@@ -24,11 +24,11 @@ public:
     [[nodiscard]] bool      Init(SDL_Window* _pWindow, SDL_Renderer* _pRenderer);
     void                    Shutdown();
     void                    ProcessEvent(const SDL_Event& _event);
-    void                    SelectAnimation(const char* _name);   // --editor-anim
+    void                    SelectAnimation(const char* _name);
     void                    SelectTab(const char* _name);
-    void                    SetAnimLibrary(AnimationLibrary* _pAnims);   // Animation 탭 편집을 실행 중 라이브러리에 반영
+    void                    SetAnimLibrary(AnimationLibrary* _pAnims);
     void                    SelectStage(const char* _name);
-    void                    SetGodMode(eGodMode _mode);   // --editor-god
+    void                    SetGodMode(eGodMode _mode);
     [[nodiscard]] eGodMode  GetGodMode() const;
     [[nodiscard]] EnemyLab& GetLab();
     void                    DrawLabOverlay(Renderer& _renderer);
@@ -36,7 +36,7 @@ public:
     // 게임 프레임을 다 그린 뒤, 스크린샷/Present 전에 호출한다.
     void Frame(float _fps, uint64_t _tick);
 
-    [[nodiscard]] bool OwnsKeyboard() const;   // ImGui 창이 키보드를 쓰는 중 (게임 입력 차단)
+    [[nodiscard]] bool OwnsKeyboard() const;
 
 private:
     void DrawMenuBar_();

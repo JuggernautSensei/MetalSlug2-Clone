@@ -7,7 +7,6 @@
 
 namespace
 {
-// 잔해 한 틱 진행: 중력 + 이동만 한다 (지면 판정 없음, 화면 밖으로 나가면 Update 가 제거).
 void StepDebris_(
     Effect&     _effect,
     const float _dt)

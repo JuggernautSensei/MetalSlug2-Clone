@@ -18,7 +18,6 @@
 
 [[nodiscard]] FilePath EnemyDefsPath();
 
-// 평지 (MakeFlatGround, 윗면 y 378) 위에 서 있는가
 [[nodiscard]] bool OnGround(const Enemy* _pEnemy);
 
 bool LoadEnemyLib(

@@ -432,7 +432,7 @@ const AnimFrame* AnimPlayer::GetFrameData(
 
 bool AnimFrame::IsEmpty() const
 {
-    return w <= 0 || h <= 0;   // 완전 투명 프레임
+    return w <= 0 || h <= 0;
 }
 
 int AnimClip::GetFrameCount() const

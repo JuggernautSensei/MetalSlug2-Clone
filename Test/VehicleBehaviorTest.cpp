@@ -83,7 +83,7 @@ TEST(VehicleJeep, DrivesAtTwoHundredPixelsPerSecondTowardTheEdgeOnThePlayersSide
     const float x1 = rig.E(h)->body.position.x;
     EXPECT_NEAR(x0 - x1, 100.f, 3.f);   // 200 px/s * 0.5 s
     EXPECT_EQ(rig.E(h)->facing, -1);
-    EXPECT_EQ(rig.E(h)->state, 2) << "Move 상태여야 한다";   // kMove
+    EXPECT_EQ(rig.E(h)->state, 2) << "Move 상태여야 한다";
 }
 
 TEST(VehicleJeep, WaitsOneSecondBeforeItMovesAfterActivation)
@@ -97,7 +97,7 @@ TEST(VehicleJeep, WaitsOneSecondBeforeItMovesAfterActivation)
 TEST(VehicleJeep, StaysInactiveUntilItIsNearTheScreenEdge)
 {
     VehicleRig        rig({ 100.f, kGround }, 0.f);
-    const EnemyHandle h = rig.Spawn("jeep", { 1200.f, kGround }, Facing_(-1));   // 640 + 150 밖
+    const EnemyHandle h = rig.Spawn("jeep", { 1200.f, kGround }, Facing_(-1));
     rig.Step(200);
     EXPECT_FALSE(rig.E(h)->bActive);
     EXPECT_FLOAT_EQ(rig.E(h)->body.position.x, 1200.f);
@@ -266,7 +266,7 @@ TEST(VehicleBTank, ShellFliesLeftwardAsALob)
     ASSERT_FALSE(log.shots.empty());
     const Shot& shell = log.shots.front();
     EXPECT_NEAR(shell.velocity.x, -400.f, 1.f);
-    EXPECT_LT(shell.velocity.y, -180.f);   // 발사 직후 위로
+    EXPECT_LT(shell.velocity.y, -180.f);
     const EnemyDef& tankDef = rig.Lib().Get(rig.Lib().FindIndex("btank"));
     const float     muzzleX = tankDef.weapons[static_cast<size_t>(tankDef.FindWeapon("shell"))].muzzle.x;
     EXPECT_NEAR(shell.position.x, 1000.f - muzzleX - 400.f / 60.f, 1.5f) << "머즐은 전차 왼쪽 muzzle.x (첫 틱에 한 틱 전진)";
@@ -354,9 +354,9 @@ TEST(VehicleDebris, TankDebrisFliesUpFallsBelowScreenAndDisappears)
     Vector<HitEvent> hits;
     hits.push_back(hit);
     world.OnHitEvents(hits);
-    world.Tick(ctx);   // 폭발/잔해 연출 시작 (지연 0 인 것은 이 틱에 생성)
+    world.Tick(ctx);
 
-    EXPECT_EQ(CountDebris_(world), 5);   // BTank 금속 잔해 5개
+    EXPECT_EQ(CountDebris_(world), 5);
     bool bRose = false;
     for (const Effect& fx: world.GetEffects().GetEffects())
     {
@@ -433,7 +433,7 @@ TEST(VehicleMissleTank, AimsUpForFarTargetsAndTheVolleyArcs)
 TEST(VehicleMissleTank, OnlyTicksWhileThePlayerIsWithinSixHundredPixels)
 {
     VehicleRig        rig({ 100.f, kGround });
-    const EnemyHandle h = rig.Spawn("missle_tank", { 900.f, kGround }, Facing_(-1));   // dx = 800
+    const EnemyHandle h = rig.Spawn("missle_tank", { 900.f, kGround }, Facing_(-1));
     SpawnLog          log;
     StepAndLog_(rig, h, log, 800);
     EXPECT_TRUE(log.ticks.empty());
@@ -459,7 +459,7 @@ TEST(VehicleMissleTank, DestructionIsSilentUntilTwoSecondsLater)
 TEST(VehicleSarubia, WalksTowardAFarPlayerAtOneHundredPixelsPerSecond)
 {
     VehicleRig        rig({ 100.f, kGround });
-    const EnemyHandle h = rig.Spawn("sarubia", { 700.f, kGround }, Facing_(-1));   // dx = -600
+    const EnemyHandle h = rig.Spawn("sarubia", { 700.f, kGround }, Facing_(-1));
     rig.Step(200);
     const float x0 = rig.E(h)->body.position.x;
     rig.Step(30);
@@ -681,7 +681,7 @@ TEST(VehicleSarubia, GrenadeRollsWithItsSpriteBottomOnTheGround)
 TEST(VehicleSarubia, GrenadeMuzzleIsMirroredByFacing)
 {
     constexpr float kOriginX = 380.f;
-    constexpr float kReach   = 280.f;   // 사격 구간 (GrenadeFallsStraightDownThenRollsAlongTheGround 와 같다)
+    constexpr float kReach   = 280.f;
 
     VehicleRig        rigLeft({ kOriginX - kReach, kGround });
     const EnemyHandle hLeft = rigLeft.Spawn("sarubia", { kOriginX, kGround }, Facing_(-1));

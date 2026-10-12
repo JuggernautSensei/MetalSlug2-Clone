@@ -21,7 +21,6 @@ struct PhysicsTuning
     int dropThroughSteps = 8;
 };
 
-// 이동 튜닝 (MoveTuning, SlugMoveTuning) 에서 물리 튜닝만 뽑는다
 template<typename MoveT>
 [[nodiscard]] PhysicsTuning MakePhysicsTuning(const MoveT& _move)
 {

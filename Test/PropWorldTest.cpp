@@ -131,7 +131,7 @@ TEST(PropWorld, ShopDestroyedAfterFourPistolHits)
 
     TickN_(world, 31);
     EXPECT_TRUE(world.IsDestroyFinished(shop));
-    EXPECT_EQ(world.GetCount(), 1u);   // 상점 잔해는 남는다 (remove 아님)
+    EXPECT_EQ(world.GetCount(), 1u);
 }
 
 TEST(PropWorld, KnifeDoesNotHitTrucks)
@@ -208,7 +208,7 @@ TEST(PropWorld, ImmortalGuardPostTakesNoDamageAndHasNoHurtbox)
     EXPECT_TRUE(combat.GetHurtboxes().empty());
     HitN_(world, post, 5, 100);
     EXPECT_FALSE(world.IsDestroyed(post));
-    EXPECT_EQ(world.GetPlatforms().size(), 2u);   // 가드 포스트 발판 2개는 항상 있다
+    EXPECT_EQ(world.GetPlatforms().size(), 2u);
 }
 
 TEST(PropWorld, HurtboxesAreNeutralWithPropOwnerAndNoHazard)
@@ -226,7 +226,7 @@ TEST(PropWorld, HurtboxesAreNeutralWithPropOwnerAndNoHazard)
     EXPECT_FALSE(hb.accepts.Has(eHitKind::Melee));
     EXPECT_TRUE(hb.accepts.Has(eHitKind::Blast));
     EXPECT_FALSE(hb.accepts.Has(eHitKind::Hazard));
-    // shop_0 hurt 은 220x160 @(0,-50) (R2-06): 중심 (1274, 178)
+    // shop_0 hurt 은 220x160 @(0,-50): 중심 (1274, 178)
     EXPECT_FLOAT_EQ(hb.box.min.x, 1274.f - 110.f);
     EXPECT_FLOAT_EQ(hb.box.max.y, 228.f - 50.f + 80.f);
 }
@@ -325,7 +325,7 @@ TEST(PropWorld, HouseRoofOnlyBlocksEnemies)
     ASSERT_EQ(world.GetEnemyPlatforms().size(), 1u);
     EXPECT_FLOAT_EQ(world.GetEnemyPlatforms()[0].box.min.y, 717.f + 3.f - 15.f);
 
-    HitN_(world, house, 10, 2);   // HP 20 → 파괴
+    HitN_(world, house, 10, 2);
     TickN_(world, 1);
     EXPECT_TRUE(world.GetEnemyPlatforms().empty());
 }
@@ -345,7 +345,7 @@ TEST(PropWorld, BridgeBlockWallShrinksOnDestroy)
 TEST(PropWorld, PlayerLandsOnOneWayShopPlatform)
 {
     PropWorld world { &GetPropLib(), 1 };
-    world.Spawn("shop_0", { 200.f, 100.f });   // 윗면 y = 100
+    world.Spawn("shop_0", { 200.f, 100.f });
     const GroundMap    ground = MakeFloorMap(400, 160, 140);
     const PhysicsWorld pw { &ground, world.GetPlatforms(), world.GetWalls() };
 
@@ -388,7 +388,7 @@ TEST(PropWorld, MobBoatDropsSixItemsAndBurstsOnDeath)
     const Vector<PropEvent> events = world.TakeEvents();
     EXPECT_EQ(CountEvents_(events, ePropEventKind::DropSpawned), 6);
     EXPECT_EQ(world.GetItems().GetCount(), 6u);
-    EXPECT_EQ(world.GetDebris().size(), 3u);   // onDestroy 목재 3
+    EXPECT_EQ(world.GetDebris().size(), 3u);
 }
 
 TEST(PropWorld, ExplodeOnDeathBoatBurstsAfterTwoSecondsThenRemoved)
@@ -403,7 +403,7 @@ TEST(PropWorld, ExplodeOnDeathBoatBurstsAfterTwoSecondsThenRemoved)
     TickN_(world, 110);
     EXPECT_EQ(world.GetCount(), 1u);   // 아직 2 s 전
     TickN_(world, 15);
-    EXPECT_EQ(world.GetCount(), 0u);   // 2차 폭발 후 제거
+    EXPECT_EQ(world.GetCount(), 0u);
     const Vector<PropEvent> events = world.TakeEvents();
     EXPECT_TRUE(HasEvent_(events, ePropEventKind::SecondaryBurst));
     EXPECT_TRUE(HasEvent_(events, ePropEventKind::Removed));
@@ -426,7 +426,7 @@ TEST(PropWorld, ShopFiveSpawnsSignThatFallsToGroundAndDetonates)
     PropWorld        world { &GetPropLib(), 4 };
     const PropHandle shop = world.Spawn("shop_5", { 2513.f, 181.f });
     HitN_(world, shop, 1, 30);
-    EXPECT_EQ(world.GetCount(), 2u);   // 상점 + 낙하 간판
+    EXPECT_EQ(world.GetCount(), 2u);
 
     const GroundMap ground = MakeFloorMap(3000, 500, 400);
     PropTickContext ctx;
@@ -448,9 +448,9 @@ TEST(PropWorld, GroundHouseDamageStagesAndGroundPatch)
     const Vec2       center { 9830.f, 1269.f };
     const PropHandle house = world.Spawn("ground_house", center);
 
-    HitN_(world, house, 6, 2);   // 12 dmg → HP 12 (damagedAtHp)
+    HitN_(world, house, 6, 2);
     EXPECT_EQ(world.GetHp(house), 12);
-    EXPECT_EQ(world.GetDebris().size(), 5u);   // onDamaged 목재 5
+    EXPECT_EQ(world.GetDebris().size(), 5u);
     TickN_(world, 1);
     EXPECT_EQ(world.Get(house)->visual, ePropVisual::Damaged);
 
@@ -475,14 +475,14 @@ TEST(PropWorld, GroundHouseDamageStagesAndGroundPatch)
 TEST(PropWorld, ApplyGroundPatchClearsOnlyTheFootprintAndKeepsTheFloor)
 {
     GroundMap map = GroundMap::MakeEmpty(10, 10);
-    map.FillRect(0, 7, 9, 9, true);                       // 바닥 3줄
-    map.FillRect(3, 4, 5, 6, true);                       // 집 몸체 (바닥 위 봉우리)
+    map.FillRect(0, 7, 9, 9, true);
+    map.FillRect(3, 4, 5, 6, true);
     GroundMap footprint = GroundMap::MakeEmpty(10, 10);   // 발자국 사각형은 지면 전체 크기, 고체는 3x3 만
     footprint.FillRect(3, 4, 5, 6, true);
     EXPECT_TRUE(ApplyGroundPatch(map, { 0.f, 0.f }, footprint));
     EXPECT_FALSE(map.IsSolid(3, 4));
     EXPECT_FALSE(map.IsSolid(5, 6));
-    EXPECT_TRUE(map.IsSolid(0, 7));   // 발자국 밖 바닥은 그대로
+    EXPECT_TRUE(map.IsSolid(0, 7));
     EXPECT_TRUE(map.IsSolid(9, 9));
     EXPECT_EQ(map.CountSolidPixels(), 30u);
 }
@@ -499,7 +499,7 @@ TEST(PropWorld, ApplyGroundPatchRefusesFootprintsThatCutTheFloorOrClearMostOfThe
     EXPECT_FALSE(ApplyGroundPatch(map, { 0.f, 7.f }, cutsFloor));
     EXPECT_EQ(map.CountSolidPixels(), before);
 
-    // 빈 사각형이 아니라 전부 채운 마스크 (옛 레거시 흰색 마스크의 일반화): 거부
+    // 빈 사각형이 아니라 전부 채운 마스크: 거부
     GroundMap everything = GroundMap::MakeEmpty(10, 10);
     everything.FillRect(0, 0, 9, 9, true);
     EXPECT_FALSE(ApplyGroundPatch(map, { 0.f, 0.f }, everything));
@@ -510,7 +510,7 @@ TEST(PropWorld, TruckVariantPositionShiftMatchesLegacyFinalInit)
 {
     PropWorld       world { &GetPropLib(), 1 };
     PropSpawnParams params;
-    params.variant         = 1;   // loaded: dy -10
+    params.variant         = 1;
     const PropHandle truck = world.Spawn("truck", { 580.f, 342.f }, params);
     EXPECT_FLOAT_EQ(world.Get(truck)->pos.y, 332.f);
     EXPECT_EQ(world.Get(truck)->variant, 1);
@@ -526,15 +526,15 @@ TEST(PropWorld, SameSeedGivesSameVariantsDropsAndHash)
 TEST(PropWorld, CullingRemovesPropsBehindCameraWithEvents)
 {
     PropWorld world { &GetPropLib(), 1 };
-    world.Spawn("shop_0", { 1274.f, 228.f });   // cullMargin 200
+    world.Spawn("shop_0", { 1274.f, 228.f });
     world.Spawn("truck", { 1810.f, 342.f });
 
     PropTickContext ctx;
-    ctx.cameraLeft = 1100.f;   // 1274 > 900 → 남는다
+    ctx.cameraLeft = 1100.f;
     TickN_(world, 1, &ctx);
     EXPECT_EQ(world.GetCount(), 2u);
 
-    ctx.cameraLeft = 1500.f;   // 1274 < 1300 → 제거, 트럭(1810)은 남는다
+    ctx.cameraLeft = 1500.f;
     world.Tick(ctx);
     EXPECT_EQ(world.GetCount(), 1u);
     const Vector<PropEvent> events = world.TakeEvents();
@@ -560,13 +560,13 @@ TEST(PropWorld, CullingKeepsAWidePropWhileAnyPartOfItsSpriteIsOnScreen)
     ASSERT_GT(bounds.max.x - bounds.min.x, 400.f);
 
     const float edge = bounds.max.x;
-    ctx.cameraLeft   = edge - 1.f;   // 스프라이트 오른쪽 끝 1px 이 화면 안
+    ctx.cameraLeft   = edge - 1.f;
     ASSERT_LT(1000.f, ctx.cameraLeft - 150.f) << "앵커 규칙만으로는 지워질 위치여야 이 테스트가 의미가 있다";
     TickN_(world, 5, &ctx);
     EXPECT_EQ(world.GetCount(), 1u);
     EXPECT_EQ(CountEvents_(world.TakeEvents(), ePropEventKind::Culled), 0);
 
-    ctx.cameraLeft = edge + 1.f;   // 완전히 화면 왼쪽 밖
+    ctx.cameraLeft = edge + 1.f;
     world.Tick(ctx);
     EXPECT_EQ(world.GetCount(), 0u);
     const Vector<PropEvent> events = world.TakeEvents();
@@ -632,7 +632,7 @@ TEST(PropWorld, CrateIsOneWayPlatformNotWall)
     ASSERT_EQ(world.GetPlatforms().size(), 1u);
     const Platform& p = world.GetPlatforms()[0];
     EXPECT_TRUE(p.bOneWay);
-    EXPECT_FLOAT_EQ(p.box.min.y, 305.f);   // 중심 350 - 40 - 10/2
+    EXPECT_FLOAT_EQ(p.box.min.y, 305.f);
 }
 
 TEST(PropWorld, CrateLetsBodyWalkThroughAndLandOnTop)
@@ -673,7 +673,7 @@ TEST(PropWorld, OtherWallPropsKeepTheirWalls)
     PropWorld world { &GetPropLib(), 1 };
     world.Spawn("mob_boat", { 1000.f, 300.f });
     world.Spawn("crate", { 1119.f, 350.f });
-    EXPECT_EQ(world.GetWalls().size(), 1u);   // 보트 벽만 남는다
+    EXPECT_EQ(world.GetWalls().size(), 1u);
 }
 
 // 건물 깊이 규칙: 먼저 나오는(작은 x) 가게가 앞에 그려진다 = 그리기 키가 더 크다. shop_2 의 y 보정은 없다.

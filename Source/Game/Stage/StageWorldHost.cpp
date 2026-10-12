@@ -450,7 +450,7 @@ SpawnId StageWorldHost::SpawnEntity(
         params.userTag     = id;
         if (pParams)
         {
-            if (const ParamValue* pVariant = pParams->Find("variant"))   // POW 외형 변형 (EnemyDef: clipVariants)
+            if (const ParamValue* pVariant = pParams->Find("variant"))
             {
                 params.aiVariant = pVariant->AsInt(0);
             }
@@ -488,7 +488,7 @@ SpawnId StageWorldHost::SpawnEntity(
 
     if (m_pProps && _request.kind == eEntityKind::Decor && _request.def == "anim_decor" && !_request.anim.empty())
     {
-        // 시각 전용 장식: 판정 없이 PropWorld 의 DecorWorld 가 재생/이동한다 (플레이스홀더 라우트는 기존 그대로 둔다)
+        // 시각 전용 장식: 판정 없이 PropWorld 의 DecorWorld 가 재생/이동한다
         const eStageLayer layer = _request.bHasLayer ? _request.layer : eStageLayer::Background;
         m_pProps->SpawnDecor(MakeDecorSpawn(_request.anim, layer, _request.position, pParams));
     }

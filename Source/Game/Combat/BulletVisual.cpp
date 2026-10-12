@@ -16,8 +16,8 @@ constexpr float kTickSec = 1.f / 60.f;
 constexpr const char* kFlameClip         = "FlameShot_AttackMotion";
 constexpr int         kFlameHeadFrames   = 4;      // 머리: 앞 4프레임 (입자 생성 직후)
 constexpr int         kFlameFadeFrames   = 6;      // 꼬리: 마지막 6프레임 (사거리 끝)
-constexpr int         kFlameHeadTicks    = 2;      // 머리/반복 프레임 하나당 틱
-constexpr float       kFlameFadeTicks    = 8.f;    // 사거리 끝 8틱 동안 Fade 재생
+constexpr int         kFlameHeadTicks    = 2;
+constexpr float       kFlameFadeTicks    = 8.f;
 constexpr float       kFlameForwardShift = 24.f;   // 불꽃 중심을 총구보다 앞으로 (큰 프레임이 총을 가리지 않게)
 
 namespace
@@ -121,7 +121,6 @@ bool SubmitPlayerBullet(
         case eWeapon::Rocket:
         {
             // 로켓 스프라이트는 가로(오른쪽 향함/왼쪽 향함) 한 방향뿐이다. 진행 방향 각도만큼 피벗 기준으로 돌려 그린다
-            // 왼쪽 클립은 왼쪽을 향하므로 기준각을 180도 빼고, 오른쪽 클립은 0도 기준 (위/아래/대각 모두 포함)
             const AnimFrame* pFrame = PickClipFrame_(_pAnims, bRight ? "Aparch_Missle_Right" : "Aparch_Missle_Left", _bullet.ageTicks, true);
             if (!pFrame)
             {

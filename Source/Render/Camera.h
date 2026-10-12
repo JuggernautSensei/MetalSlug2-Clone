@@ -8,8 +8,8 @@
 
 struct CameraTuning
 {
-    Vec2  viewSize     = { 640.f, 448.f };   // 논리 해상도
-    Vec2  deadzoneHalf = { 24.f, 16.f };     // 시점 중심 기준, 목표가 이 안에 있으면 카메라가 움직이지 않는다
+    Vec2  viewSize     = { 640.f, 448.f };
+    Vec2  deadzoneHalf = { 24.f, 16.f };
     float smoothTime   = 0.18f;
     Vec2  targetOffset = { 0.f, 0.f };
 };
@@ -47,11 +47,9 @@ public:
     void SetTarget(const Vec2 _target);
 
     // 자동 전진 (보스전 스크롤): 카메라 중심 x 의 하한을 _dx 만큼 올린다. 하한보다 왼쪽으로는 가지 않고 (매 틱 강제),
-    // 잠금/경계 안에서만 움직인다. 경계 오른쪽 끝에 닿으면 멈춘다.
     void AddScrollFloor(float _dx);
 
     // 잠금 영역을 가로로 _dx 만큼 옮긴다 (보스전 자동 스크롤: 잠금 사각형이 카메라와 함께 오른쪽으로 간다). 잠금 중이 아니면 무시.
-    // 활강 중이면 목표/대기 중인 잠금도 같이 옮긴다.
     void                ShiftLock(float _dx);
     void                ClearScrollFloor();
     [[nodiscard]] bool  HasScrollFloor() const;
@@ -80,16 +78,16 @@ private:
 
     CameraTuning m_tuning = {};
 
-    Vec2  m_center        = { 320.f, 224.f };   // 시점 중심 (실수 상태)
+    Vec2  m_center        = { 320.f, 224.f };
     Vec2  m_velocity      = { 0.f, 0.f };
     float m_prevFocusX    = 0.f;
     float m_pushSpeed     = 0.f;
     bool  m_bHasPrevFocus = false;
     Vec2  m_target        = { 320.f, 224.f };
-    Aabb  m_effBounds     = {};   // 클램프에 실제로 쓰는 영역 (SetBounds/Unlock 은 점진 변화, Lock/SnapTo 는 즉시)
+    Aabb  m_effBounds     = {};
     Aabb  m_effVel        = {};   // 경계 변별 속도 (px/틱), 제동·가속 상한 적용용
     bool  m_bHasEff       = false;
-    bool  m_bGlide        = false;   // 큰 간격을 속도 상한이 있는 감쇠 추적으로 따라잡는 중
+    bool  m_bGlide        = false;
     float m_lastDirX      = 1.f;
     float m_stepY         = 0.f;   // 직전 틱 세로 걸음 (px/틱)
 
@@ -103,16 +101,15 @@ private:
     bool m_bMoving        = false;
     Vec2 m_moveStart      = { 0.f, 0.f };
     Vec2 m_moveStartVel   = { 0.f, 0.f };   // 이동 시작 시점의 속도 (px/틱): 달리던 카메라가 멈칫하지 않도록 이어받는다
-    Vec2 m_moveTarget     = { 0.f, 0.f };   // 이동 도착점 (매 틱 최종 영역으로 다시 클램프)
-    Vec2 m_moveRaw        = { 0.f, 0.f };   // 요청된 원래 도착점
+    Vec2 m_moveTarget     = { 0.f, 0.f };
+    Vec2 m_moveRaw        = { 0.f, 0.f };
     int  m_moveTotalTicks = 0;
     int  m_moveElapsed    = 0;
     bool m_bPendingLock   = false;
     Aabb m_pendingLock    = {};
 
     bool  m_bScrollFloor = false;
-    float m_scrollFloorX = 0.f;   // 카메라 중심 x 하한 (AddScrollFloor 로 누적)
+    float m_scrollFloorX = 0.f;
 };
 
-// 튜닝 파일의 카메라 설정을 논리 해상도 기준 카메라 튜닝으로 바꾼다
 [[nodiscard]] CameraTuning MakeCameraTuning(const CameraSettings& _settings);

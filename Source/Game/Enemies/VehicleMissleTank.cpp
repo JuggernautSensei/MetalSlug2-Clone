@@ -76,11 +76,11 @@ void Tick_(
         case eMissleTankState::Idle:
             if (_e.clip == c.clipAppear && c.clipAppear >= 0 && _e.stateTicks >= _def.GetClip(c.clipAppear).GetDurationTicks())
             {
-                SetClip(_e, ClipOf_(_e, c), true);   // 스폰 연출 끝: 일반 Idle 로 전환 (상태/타이머는 그대로)
+                SetClip(_e, ClipOf_(_e, c), true);
             }
             if (dx > c.rangeDx)
             {
-                _e.stateTicks = 0;   // 사거리 밖: 타이머 리셋
+                _e.stateTicks = 0;
                 break;
             }
             if (_e.stateTicks >= c.detectTicks)

@@ -10,7 +10,7 @@
 #include "Game/Enemies/EnemyCommon.h"
 #include "World/Constants.h"
 
-constexpr float kSpawnSnapPx = 16.f;   // 스폰 시 발 아래 지면에 붙이는 최대 거리
+constexpr float kSpawnSnapPx = 16.f;
 
 namespace
 {
@@ -689,7 +689,7 @@ void EnemyWorld::Submit(
         {
             continue;
         }
-        const float       lift = def.bCenterAnchor ? 0.f : static_cast<float>(pClip->GetFootBaseline());   // 중심 앵커 def 는 pivot 을 원점에 둔다
+        const float       lift = def.bCenterAnchor ? 0.f : static_cast<float>(pClip->GetFootBaseline());
         SpriteDrawOptions options;
         options.flashAmount = HitFlashAmount(e);
         options.bFlipX      = def.ShouldFlipArt(e.facing);
@@ -895,7 +895,6 @@ Vector<Aabb> EnemyWorld::GetSolidBoxes() const
         }
         if (def.behavior == eEnemyBehavior::Bus && def.bus.roofTop.y != 0.f && def.bus.roofSpan.y > def.bus.roofSpan.x)
         {
-            // 버스 지붕 발판: 계단 병사가 마지막에 올라서는 얇은 판 (윗면 = roofTop.y)
             constexpr float kRoofThickness = 12.f;
             const float     y              = e.body.position.y + def.bus.roofTop.y;
             boxes.push_back(Aabb::FromMinMax({ e.body.position.x + def.bus.roofSpan.x, y }, { e.body.position.x + def.bus.roofSpan.y, y + kRoofThickness }));

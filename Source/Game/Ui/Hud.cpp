@@ -112,7 +112,6 @@ Vector<HudItem> BuildHudItems(
 
     if (_model.bShowGauge)
     {
-        // 점수 아래 슬러그 게이지: PlayerHPUI 프레임 (안쪽 94x8) 밑에 오렌지 채움
         const float ratio = std::clamp(_model.gaugeRatio, 0.f, 1.f);
         const int   fillW = static_cast<int>(static_cast<float>(_layout.gaugeInnerW) * ratio + 0.5f);
         HudItem     back;
@@ -161,7 +160,7 @@ Vector<HudItem> BuildHudItems(
 
     if (_model.bShowBoss)
     {
-        constexpr int kFrameW = 106;   // PlayerHPUI
+        constexpr int kFrameW = 106;
         constexpr int kFrameH = 16;
         const int     scale   = std::max(1, _layout.bossBarScale);
         const int     left    = _layout.bossBarCenterX - (kFrameW * scale) / 2;

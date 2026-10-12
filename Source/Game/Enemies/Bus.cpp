@@ -8,12 +8,9 @@
 #include "Game/Enemies/VehicleCommon.h"
 
 // 더블데커 버스 중간보스 (원작 MS2 Mission 4, Docs/Spec_Bus.md).
-// 스폰 위치(앵커)에 처음부터 정지해 있다. 카메라 뷰 오른쪽 끝이 버스 왼쪽 끝에 닿으면 시간표대로 개방 -> 계단 전개 -> 계단 병사 출격 ->
-// 체력 단계별 파손 -> 대폭발 -> 잔해 순으로 진행한다. 버스 자체는 공격하지 않는다 (병사만 공격). 개방 전에는 무적/비공격.
 // 시각은 시트 33825 에서 자른 Bus_* 클립을 겹쳐 그린다 (뒤 조각 -> 본체 -> 창 파편). 앵커 = 바퀴 바닥 중앙.
 // 좌표/폭발/파편/부품 깊이 표는 Assets/Defs/Bus.json (BusCfg).
 
-// 상태: 개방 대기 (무적) -> 진행 (aux = 개방 트리거 이후 틱) -> 사망 (life == Dying)
 enum class eBusState
 {
     Parked,
@@ -26,11 +23,11 @@ constexpr int kLandTicks = 6;    // 계단 착지 3 프레임 x 2 틱
 constexpr int kPersist   = 1 << 20;
 
 // ext 슬롯 0..7 = 단계 진입 틱. 그 뒤는 병사 타이머.
-constexpr int kExtNextSoldier = 8;   // 다음 병사를 낼 수 있는 틱
+constexpr int kExtNextSoldier = 8;
 
-constexpr uint32_t kStairSoldierTag  = 0x42555300u;   // 계단 병사 (생존 수 세기)
-constexpr int      kVariantClimb     = 2;             // Soldier.cpp: 계단 오른 뒤 일반 AI
-constexpr int      kVariantClimbStay = 3;             // 계단 오른 뒤 승강대에서 제자리 투척
+constexpr uint32_t kStairSoldierTag  = 0x42555300u;
+constexpr int      kVariantClimb     = 2;
+constexpr int      kVariantClimbStay = 3;
 
 namespace
 {
@@ -128,7 +125,6 @@ void Init_(
 }
 
 // 계단 병사 한 명을 버스 오른쪽 화면 밖에 낸다 (결정적 난수로 종류 선택).
-// 대검병은 계단을 올라 지붕을 건너 내려오고, 폭탄병은 승강대에 서서 던지고, 바주카병도 계단을 올라 승강대(버스 위)에서 로켓을 쏜다 (Bzk.cpp Climb).
 void SpawnStairSoldier_(
     Enemy&          _e,
     const EnemyDef& _def,
@@ -190,7 +186,6 @@ void TickSoldiers_(
     _e.ext[kExtNextSoldier] = _e.aux + c.soldierGapTicks;
 }
 
-// 체력이 단계 문턱 이하로 내려가면 단계를 올린다 (한 틱에 여러 단계 가능).
 void UpdateStage_(
     Enemy&          _e,
     const EnemyDef& _def,
@@ -215,7 +210,6 @@ void Tick_(
 
     if (static_cast<eBusState>(_e.state) == eBusState::Parked)
     {
-        // 개방 대기: 체력을 채워 피해를 무효화하고, 카메라 뷰 오른쪽 끝이 버스 왼쪽 끝에 닿으면 개방을 시작한다.
         _e.health = Health::Make(_def.hp);
         if (_env.ctx.cameraView.max.x >= _e.body.position.x + c.openViewDx)
         {
@@ -272,18 +266,16 @@ void SubmitDebris_(
         float       y       = start.y + d.velocity.y * t + 0.5f * kDebrisGravity * t * t;
         if (y > groundY)
         {
-            // 지면에 닿은 시각을 구해 그 뒤로는 멈춘다
             const float disc = d.velocity.y * d.velocity.y + 2.f * kDebrisGravity * (groundY - start.y);
             tFly             = disc > 0.f ? (-d.velocity.y + std::sqrt(disc)) / kDebrisGravity : 0.f;
             y                = groundY;
         }
         const Vec2 at    = { start.x + d.velocity.x * tFly, y };
-        const int  ticks = static_cast<int>(tFly * d.fps * 60.f / 12.f);   // fps 비율로 회전 속도를 바꾼다 (클립은 12 fps)
+        const int  ticks = static_cast<int>(tFly * d.fps * 60.f / 12.f);
         SubmitPart_(_render, c.partDebris, d.clip, at, ticks, true);
     }
 }
 
-// 파손 단계 차체. 개방 단계와 같은 구조: 계단 (BackD 의 x >= coverMaxX) -> 몸통 (BodyD) -> 병사 -> 앞면 덮개 (BackD 의 x < coverMaxX = 개방 단계 Bus_OpenTop 에 해당).
 // Bus_BackD* 는 이름과 달리 뒷벽이 아니라 앞면 덮개 + 계단 그림이다 (Bus_BodyD* 는 승강대 기둥/좌석까지 든 전체 몸통)
 void SubmitDamaged_(
     const EnemyRenderEnv& _render,
@@ -319,7 +311,6 @@ void SubmitLive_(
     const int     L     = _e.aux;
     const int     stage = _e.aux2;
 
-    // 창 안 병사: 차체보다 뒤
     for (const BusInnerSoldierDef& s: c.innerSoldiers)
     {
         if (stage >= s.stage)
@@ -359,7 +350,6 @@ void SubmitLive_(
 
     SubmitDamaged_(_render, c, BodyLevel_(stage), feet, true);
 
-    // 창 파편 (한 번 재생하고 끝나면 그리지 않는다)
     for (const BusWindowDef& w: c.windows)
     {
         if (stage < w.stage)

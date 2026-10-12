@@ -5,7 +5,7 @@ struct GravityCase
 {
     const char* name     = "";
     bool        bGravity = true;
-    bool        bSpawn   = true;   // false 면 플래그만 검사 (비행체/보스는 자체 이동이 있다)
+    bool        bSpawn   = true;
 };
 
 namespace

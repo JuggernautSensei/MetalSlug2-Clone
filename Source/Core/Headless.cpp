@@ -16,7 +16,6 @@
 
 namespace
 {
-// FNV-1a 64: 회귀 기준선 해시 (tick 수, 종료 여부, 상태의 DebugHash 를 섞는다)
 uint64_t FnvMix_(
     uint64_t       _hash,
     const uint64_t _value)

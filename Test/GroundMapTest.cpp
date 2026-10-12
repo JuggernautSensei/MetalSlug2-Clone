@@ -79,10 +79,10 @@ TEST(GroundMap, MakeFromRowsBuildsAsciiMap)
 TEST(GroundMap, OutOfBoundsPolicyDefaultsAndOverrides)
 {
     GroundMap map = GroundMap::MakeEmpty(10, 10);
-    EXPECT_FALSE(map.IsSolid(-1, 5));   // 왼쪽
-    EXPECT_FALSE(map.IsSolid(10, 5));   // 오른쪽
-    EXPECT_FALSE(map.IsSolid(5, -1));   // 위
-    EXPECT_TRUE(map.IsSolid(5, 10));    // 아래: 고체
+    EXPECT_FALSE(map.IsSolid(-1, 5));
+    EXPECT_FALSE(map.IsSolid(10, 5));
+    EXPECT_FALSE(map.IsSolid(5, -1));
+    EXPECT_TRUE(map.IsSolid(5, 10));
     EXPECT_TRUE(map.IsSolid(-3, 12));   // 아래쪽 바깥이면 가로 위치와 무관하게 고체
 
     GroundBoundsPolicy policy;
@@ -99,9 +99,9 @@ TEST(GroundMap, FindGroundYScansDownWithinRange)
     map.FillRect(0, 30, 19, 49, true);
 
     EXPECT_EQ(map.FindGroundY(5, 0, 100), 30);
-    EXPECT_EQ(map.FindGroundY(5, 30, 0), 30);               // 시작 행 자체가 고체
-    EXPECT_EQ(map.FindGroundY(5, 25, 5), 30);               // 경계 포함
-    EXPECT_FALSE(map.FindGroundY(5, 10, 10).has_value());   // 범위 부족
+    EXPECT_EQ(map.FindGroundY(5, 30, 0), 30);
+    EXPECT_EQ(map.FindGroundY(5, 25, 5), 30);
+    EXPECT_FALSE(map.FindGroundY(5, 10, 10).has_value());
     EXPECT_FALSE(map.FindGroundY(5, 10, -1).has_value());
 }
 
@@ -115,7 +115,7 @@ TEST(GroundMap, FindGroundYSeesMapBottomAsSolid)
 TEST(GroundMap, IsRectSolidMatchesBruteForce)
 {
     Lcg       rng;
-    GroundMap map = GroundMap::MakeEmpty(70, 40);   // 폭이 8의 배수가 아니어서 행 끝 패딩을 검증
+    GroundMap map = GroundMap::MakeEmpty(70, 40);
     for (int i = 0; i < 160; ++i)
     {
         map.SetSolid(static_cast<int>(rng.Next() % 70), static_cast<int>(rng.Next() % 40), true);
@@ -145,7 +145,7 @@ TEST(GroundMap, IsRectSolidHandlesReversedBoundsAndSingleByteRanges)
     GroundMap map = GroundMap::MakeEmpty(32, 8);
     map.SetSolid(11, 3, true);
     EXPECT_TRUE(map.IsRectSolid(11, 3, 11, 3));
-    EXPECT_TRUE(map.IsRectSolid(14, 5, 9, 1));    // 뒤집힌 인자
+    EXPECT_TRUE(map.IsRectSolid(14, 5, 9, 1));
     EXPECT_FALSE(map.IsRectSolid(8, 0, 10, 7));   // 같은 바이트 안, 비어 있음
     EXPECT_TRUE(map.IsRectSolid(8, 0, 11, 7));
 }
@@ -153,9 +153,9 @@ TEST(GroundMap, IsRectSolidHandlesReversedBoundsAndSingleByteRanges)
 TEST(GroundMap, IsRectSolidRespectsOutOfBoundsPolicy)
 {
     const GroundMap map = GroundMap::MakeEmpty(20, 20);
-    EXPECT_FALSE(map.IsRectSolid(-10, 2, -1, 5));   // 왼쪽 바깥 (비고체)
-    EXPECT_FALSE(map.IsRectSolid(5, -9, 8, -1));    // 위쪽 바깥
-    EXPECT_TRUE(map.IsRectSolid(5, 15, 8, 25));     // 아래쪽에 걸침 → 고체
+    EXPECT_FALSE(map.IsRectSolid(-10, 2, -1, 5));
+    EXPECT_FALSE(map.IsRectSolid(5, -9, 8, -1));
+    EXPECT_TRUE(map.IsRectSolid(5, 15, 8, 25));
     EXPECT_TRUE(map.IsRectSolid(-5, 18, 3, 22));
 }
 
@@ -166,9 +166,9 @@ TEST(GroundMap, EditingPrimitives)
     EXPECT_EQ(map.CountSolidPixels(), 12u);
     map.FillRect(3, 3, 4, 3, false);
     EXPECT_EQ(map.CountSolidPixels(), 10u);
-    map.SetSolid(100, 100, true);   // 범위 밖은 무시
+    map.SetSolid(100, 100, true);
     EXPECT_EQ(map.CountSolidPixels(), 10u);
-    map.FillRect(-5, -5, 100, 100, true);   // 자동 클립
+    map.FillRect(-5, -5, 100, 100, true);
     EXPECT_EQ(map.CountSolidPixels(), 256u);
 }
 
@@ -237,7 +237,7 @@ TEST(Geometry, CircleOverlaps)
     EXPECT_TRUE(c.Overlaps(nearby));
     EXPECT_FALSE(c.Overlaps(far));
     EXPECT_TRUE(c.Overlaps(Aabb::FromMinMax({ 4.f, -1.f }, { 10.f, 1.f })));
-    EXPECT_FALSE(c.Overlaps(Aabb::FromMinMax({ 4.f, 4.f }, { 10.f, 10.f })));   // 모서리 거리 5.66 > 5
+    EXPECT_FALSE(c.Overlaps(Aabb::FromMinMax({ 4.f, 4.f }, { 10.f, 10.f })));
 }
 
 TEST(GroundMap, PeriodicTailRepeatsTheTileBeyondTheWidth)
@@ -251,11 +251,11 @@ TEST(GroundMap, PeriodicTailRepeatsTheTileBeyondTheWidth)
     }
     map.SetPeriodicTail(16, 12, 4);
     EXPECT_TRUE(map.HasPeriodicTail());
-    EXPECT_TRUE(map.IsSolid(16, 3));                  // 12
-    EXPECT_TRUE(map.IsSolid(17, 3));                  // 13
-    EXPECT_FALSE(map.IsSolid(18, 3));                 // 14
-    EXPECT_FALSE(map.IsSolid(19, 3));                 // 15
-    EXPECT_TRUE(map.IsSolid(20, 3));                  // 12 (두 번째 반복)
+    EXPECT_TRUE(map.IsSolid(16, 3));
+    EXPECT_TRUE(map.IsSolid(17, 3));
+    EXPECT_FALSE(map.IsSolid(18, 3));
+    EXPECT_FALSE(map.IsSolid(19, 3));
+    EXPECT_TRUE(map.IsSolid(20, 3));
     EXPECT_FALSE(map.IsSolid(16 + 4 * 100 + 2, 3));   // 주기 반복은 무한
     EXPECT_TRUE(map.IsSolid(16 + 4 * 100, 3));
 }

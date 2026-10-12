@@ -31,10 +31,10 @@
 // 상태 변형 (연습장): 다른 스테이지 파일, 봇 입력, 무적. 기본값은 정규 스테이지 (stage0)
 struct StageStateConfig
 {
-    String stageFile   = "Stage0.json";   // Assets/Stage/ 아래 파일 이름
-    bool   bBot        = false;           // 봇 입력: 보스 아레나로 걸어가 포탑/주포 아래에서 위로 쏜다 (보스 랩 캡처용)
-    bool   bGod        = false;           // 플레이어 무적 (비교 캡처용)
-    bool   bHmg        = false;           // 헤비머신건으로 시작
+    String stageFile   = "Stage0.json";
+    bool   bBot        = false;
+    bool   bGod        = false;
+    bool   bHmg        = false;
     bool   bAutoDamage = false;           // 보스 파트에 일정 속도 (약 20 dps) 로 판정 피해를 준다 (보스전 전 과정을 결정적으로 캡처하는 용도)
 };
 
@@ -69,7 +69,7 @@ public:
     [[nodiscard]] EnemyWorld&             GetEnemies();
     [[nodiscard]] const PropWorld&        GetProps() const;
     [[nodiscard]] PropWorld&              GetProps();
-    [[nodiscard]] const ProjectileSystem& GetProjectiles() const;   // 테스트/봇 관찰용 (읽기 전용)
+    [[nodiscard]] const ProjectileSystem& GetProjectiles() const;
     [[nodiscard]] uint64_t                GetTickCount() const;
     [[nodiscard]] uint64_t                HashState() const;
     [[nodiscard]] uint64_t                DebugHash() const override;
@@ -146,7 +146,7 @@ private:
     ProjectileSystem m_projectiles = {};
     EffectList       m_effects     = {};
     AnimPlayer       m_bombAnim    = {};
-    AnimPlayer       m_chuteAnim   = {};   // 시작 낙하산 (적 낙하산 병사 클립 재사용)
+    AnimPlayer       m_chuteAnim   = {};
 
     Vector<PatchMask> m_patchMasks = {};
 
@@ -165,8 +165,8 @@ private:
     int         m_prevScore  = 0;
 
     DisplayTimer m_timer          = {};   // 화면 표시용 카운트다운 (사망과 무관)
-    String       m_timerSectionId = {};   // 구간이 바뀔 때 타이머를 60 으로 되돌린다
-    int          m_rescuedPows    = 0;    // 구출한 POW 수 (미션 결과 상자)
+    String       m_timerSectionId = {};
+    int          m_rescuedPows    = 0;
 
     uint64_t m_tickCount = 0;
 };

@@ -6,8 +6,8 @@
 struct TitleConfig
 {
     String nextState       = {};
-    int    fadeInTicks     = 24;   // 처음 화면이 밝아지는 시간
-    int    startFadeTicks  = 24;   // 시작 입력 후 암전 시간
+    int    fadeInTicks     = 24;
+    int    startFadeTicks  = 24;
     int    inputDelayTicks = 12;
     bool   bPlayVoice      = true;
 };

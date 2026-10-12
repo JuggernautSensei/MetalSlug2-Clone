@@ -143,11 +143,11 @@ TEST(UiFont, GlyphIndexMapsLettersDigitsAndZero)
 {
     EXPECT_EQ(GetGlyphIndex('A'), 0);
     EXPECT_EQ(GetGlyphIndex('Z'), 25);
-    EXPECT_EQ(GetGlyphIndex('a'), 0);   // 소문자는 대문자와 같은 글리프
+    EXPECT_EQ(GetGlyphIndex('a'), 0);
     EXPECT_EQ(GetGlyphIndex('O'), 14);
     EXPECT_EQ(GetGlyphIndex('1'), 26);
     EXPECT_EQ(GetGlyphIndex('9'), 34);
-    EXPECT_EQ(GetGlyphIndex('0'), 14);   // 0 은 'O' 로 대신한다 (레거시와 동일)
+    EXPECT_EQ(GetGlyphIndex('0'), 14);   // 0 은 'O' 로 대신한다
 }
 
 TEST(UiFont, UnsupportedCharactersHaveNoGlyph)
@@ -213,7 +213,7 @@ TEST(UiLayoutText, CenterAlignSplitsWidthAroundAnchor)
 {
     TextStyle style;
     style.align             = eTextAlign::Center;
-    const TextLayout layout = LayoutText("ABCD", 320, 0, style);   // 폭 64
+    const TextLayout layout = LayoutText("ABCD", 320, 0, style);
     EXPECT_EQ(layout.quads.front().dst.x, 320 - 32);
     EXPECT_EQ(layout.quads.back().dst.x + 16, 320 + 32);
 }
@@ -240,9 +240,9 @@ TEST(UiLayoutText, FlagsOnlyNonSpaceUnsupportedCharsForFallback)
     const TextLayout layout = LayoutText("A-B C", 0, 0, style);
     ASSERT_EQ(layout.quads.size(), 5u);
     EXPECT_FALSE(layout.quads[0].bFallback);
-    EXPECT_TRUE(layout.quads[1].bFallback);   // '-'
+    EXPECT_TRUE(layout.quads[1].bFallback);
     EXPECT_EQ(layout.quads[1].glyph, -1);
-    EXPECT_FALSE(layout.quads[3].bFallback);   // ' ' 는 칸만 차지
+    EXPECT_FALSE(layout.quads[3].bFallback);
     EXPECT_EQ(layout.quads[4].dst.x, 4 * 16);
 }
 
@@ -286,12 +286,12 @@ TEST(UiBitmapFont, GlyphFrameCutsTheStripIntoSixteenPixelCells)
     EXPECT_EQ(a.w, 16);
     EXPECT_EQ(a.h, 16);
 
-    const AnimFrame nine = font.GetGlyphFrame(eFontColor::White, false, 34);   // '9' 가는 글자
+    const AnimFrame nine = font.GetGlyphFrame(eFontColor::White, false, 34);
     EXPECT_EQ(nine.x, 100 + 34 * 16);
     EXPECT_EQ(nine.y, 200 + 16);
-    EXPECT_EQ(nine.x + nine.w, 100 + 560);   // 스트립 오른쪽 끝을 넘지 않는다
+    EXPECT_EQ(nine.x + nine.w, 100 + 560);
 
-    EXPECT_TRUE(font.GetGlyphFrame(eFontColor::Red, true, 0).IsEmpty());   // 없는 색
+    EXPECT_TRUE(font.GetGlyphFrame(eFontColor::Red, true, 0).IsEmpty());
     EXPECT_TRUE(font.GetGlyphFrame(eFontColor::White, true, 35).IsEmpty());
     EXPECT_TRUE(font.GetGlyphFrame(eFontColor::White, true, -1).IsEmpty());
 }
@@ -377,7 +377,7 @@ TEST(UiBanner, SystemRunsFadeInHoldFadeOutThenDeactivates)
     {
         banner.Tick();
     }
-    EXPECT_FLOAT_EQ(banner.GetAlpha(), 1.f);   // 페이드 인 끝
+    EXPECT_FLOAT_EQ(banner.GetAlpha(), 1.f);
 
     for (int tick = 4; tick <= 7; ++tick)
     {
@@ -401,7 +401,7 @@ TEST(UiBanner, MakeBannerSpecSplitsSecondsIntoFadesAndHold)
     EXPECT_EQ(spec.fadeOutTicks, 18);
     EXPECT_EQ(spec.holdTicks, 144);
 
-    const BannerSpec shortSpec = MakeBannerSpec("X", 0.2f);   // 12틱 → 페이드 3 + 6 + 3
+    const BannerSpec shortSpec = MakeBannerSpec("X", 0.2f);
     EXPECT_EQ(shortSpec.GetTotalTicks(), 12);
     EXPECT_EQ(shortSpec.fadeInTicks, 3);
     EXPECT_EQ(shortSpec.holdTicks, 6);
@@ -446,7 +446,7 @@ TEST(UiFade, ZeroTicksOrAlreadyAtTargetCompletesImmediately)
     FadeController fade;
     fade.FadeToBlack(0);
     EXPECT_TRUE(fade.IsBlack());
-    fade.FadeToBlack(30);   // 이미 검정
+    fade.FadeToBlack(30);
     EXPECT_FALSE(fade.IsBusy());
     fade.FadeToClear(0);
     EXPECT_TRUE(fade.IsClear());
@@ -584,7 +584,7 @@ TEST(UiHud, DisplayTimerCountsDownSlowlyAndNeverGoesNegative)
     {
         timer.Tick();
     }
-    EXPECT_EQ(timer.GetSeconds(), 59);   // 6.5초에 한 칸
+    EXPECT_EQ(timer.GetSeconds(), 59);
 
     for (int i = 0; i < DisplayTimer::kStartSeconds * DisplayTimer::kTicksPerDigit + 100; ++i)
     {
@@ -732,9 +732,9 @@ TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
 
     flow.Start(config, ui, audio);
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Art);
-    EXPECT_FALSE(ui.GetBanner().IsActive());   // 배너 대신 전면 아트
+    EXPECT_FALSE(ui.GetBanner().IsActive());
     EXPECT_TRUE(flow.GetArtView().bVisible);
-    EXPECT_EQ(flow.GetArtView().alpha, 0);   // 페이드 인 시작
+    EXPECT_EQ(flow.GetArtView().alpha, 0);
     EXPECT_EQ(CountPlays(audio, kGameOver), 1);
     EXPECT_EQ(CountKind(audio, eAudioEvent::FadeOutBgm), 1);
 
@@ -758,7 +758,7 @@ TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
     EXPECT_TRUE(ui.GetFade().IsBlack());
     EXPECT_FALSE(ui.GetBanner().IsActive());
     EXPECT_FALSE(flow.IsRunning());
-    EXPECT_FALSE(flow.GetArtView().bVisible);   // 끝난 뒤에는 아트를 그리지 않는다
+    EXPECT_FALSE(flow.GetArtView().bVisible);
 }
 
 TEST(UiFlow, PhasesChangeAtExactTicks)
@@ -810,7 +810,7 @@ TEST(UiFlow, PhasesChangeAtExactTicks)
         }
         EXPECT_EQ(flow.GetPhase(), step.phase) << "tick " << step.tick;
     }
-    EXPECT_EQ(CountPlays(audio, "Jingle"), 1);   // 배너 시작 때 한 번만
+    EXPECT_EQ(CountPlays(audio, "Jingle"), 1);
     EXPECT_TRUE(ui.GetFade().IsBlack());
 }
 
@@ -829,7 +829,7 @@ TEST(UiFlow, MissionCompleteShowsResultsBeforeTheCompleteBanner)
     flow.Start(config, ui, audio);
 
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Delay);
-    EXPECT_EQ(CountKind(audio, eAudioEvent::StopBgm), 1);   // bgmFadeSeconds == 0 → 즉시 정지
+    EXPECT_EQ(CountKind(audio, eAudioEvent::StopBgm), 1);
     EXPECT_FALSE(flow.GetResultsView().bBoxVisible);
 
     int t = 0;
@@ -849,7 +849,7 @@ TEST(UiFlow, MissionCompleteShowsResultsBeforeTheCompleteBanner)
 
     AdvanceFlowTo_(t, ui, flow, audio, 60 + 276 - 1);
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Results);
-    EXPECT_TRUE(flow.GetResultsView().bBoxVisible);   // 결과 단계 끝 직전까지 상자 표시
+    EXPECT_TRUE(flow.GetResultsView().bBoxVisible);
 
     AdvanceFlowTo_(t, ui, flow, audio, 60 + 276);
     EXPECT_EQ(flow.GetPhase(), eFlowPhase::Banner);
@@ -877,7 +877,7 @@ TEST(UiFlow, MissionCompleteWithoutPowsStillShowsAnEmptyBox)
 
 TEST(UiResults, RescueTallyCountsUpAndReachesGreatWithSixteen)
 {
-    EXPECT_EQ(MissionBonusScore(16), 380000);   // 영상: 16명, 최종 380000 (GREAT!)
+    EXPECT_EQ(MissionBonusScore(16), 380000);
     EXPECT_EQ(MissionRankText(16), "GREAT!");
     EXPECT_TRUE(MissionRankText(3).empty());
     EXPECT_EQ(MissionBonusScore(3), 30000);
@@ -909,7 +909,7 @@ TEST(UiResults, ScreenFlowExposesResultsViewOnlyDuringResultsPhase)
     AudioSystem  audio { true };
     ScreenFlow flow;
     flow.Start(MakeMissionCompleteFlowConfig(5), ui, audio);
-    EXPECT_FALSE(flow.GetResultsView().bBoxVisible);   // 지연 단계
+    EXPECT_FALSE(flow.GetResultsView().bBoxVisible);
     for (int i = 0; i < 60; ++i)
     {
         ui.Tick();
@@ -949,7 +949,7 @@ TEST(UiBanner, GlyphPoseFliesInThenSitsThenFliesOut)
 
     const GlyphPose start = ComputeMissionGlyphPose(0, kIn, kHold, kOut, 0);
     EXPECT_EQ(start.alpha, 0);
-    EXPECT_NE(start.dy, 0);   // 글자 0 은 위에서 내려온다
+    EXPECT_NE(start.dy, 0);
 
     const GlyphPose sitting = ComputeMissionGlyphPose(kIn + 10, kIn, kHold, kOut, 0);
     EXPECT_EQ(sitting.dx, 0);
@@ -970,7 +970,7 @@ TEST(UiBanner, EachGlyphHasItsOwnDirectionAndDelay)
     const GlyphPose b = ComputeMissionGlyphPose(0, 18, 60, 18, 2);
     EXPECT_TRUE(a.dx != b.dx || a.dy != b.dy);
     const GlyphPose late = ComputeMissionGlyphPose(4, 18, 60, 18, 6);
-    EXPECT_EQ(late.alpha, 0);   // 6번째 글자는 아직 출발 전
+    EXPECT_EQ(late.alpha, 0);
 }
 
 TEST(UiFlow, TickBeforeStartAndAfterDoneIsHarmless)
@@ -1072,7 +1072,7 @@ TEST(UiTitle, ShotPressStartsFadeThenSwitchesStateExactlyAfterFade)
     sim.Step(eAction::Shot, false);
 
     int switchedAt = -1;
-    for (int tick = 2; tick <= 60 && switchedAt < 0; ++tick)   // T + 1 이 tick 1 이었음
+    for (int tick = 2; tick <= 60 && switchedAt < 0; ++tick)
     {
         sim.Idle(1);
         if (!sim.IsStillTitle())
@@ -1080,7 +1080,7 @@ TEST(UiTitle, ShotPressStartsFadeThenSwitchesStateExactlyAfterFade)
             switchedAt = tick;
         }
     }
-    EXPECT_EQ(switchedAt, 24);   // T + startFadeTicks
+    EXPECT_EQ(switchedAt, 24);
     EXPECT_FALSE(sim.IsStillTitle());
     EXPECT_NE(sim.runner->GetState(), nullptr);
 }
@@ -1106,7 +1106,7 @@ TEST(UiTitle, InputsDuringEntryDelayAreIgnored)
     sim.Idle(5);
     EXPECT_FALSE(sim.pTitle->IsStarting());
 
-    sim.Idle(10);   // 지연 이후
+    sim.Idle(10);
     sim.Step(eAction::Shot, true);
     EXPECT_TRUE(sim.pTitle->IsStarting());
 }
@@ -1134,7 +1134,7 @@ TEST(UiTitle, AutoSelectionFallsBackToSandboxWhenStage0IsNotRegistered)
 TEST(UiTitle, EntersWithBlackAndFadesIn)
 {
     TitleSim sim { SandboxTitleConfig_() };
-    EXPECT_GT(sim.pTitle->GetUi().GetFade().GetAlpha(), 0.9f);   // 검정에서 시작
+    EXPECT_GT(sim.pTitle->GetUi().GetFade().GetAlpha(), 0.9f);
     sim.Idle(sim.pTitle->GetUi().GetFade().IsBusy() ? 40 : 0);
     EXPECT_TRUE(sim.pTitle->GetUi().GetFade().IsClear());
     EXPECT_EQ(CountPlays(sim.audio, kTitleVoice), 1);

@@ -102,7 +102,6 @@ void Go_(
     }
 }
 
-// 버스 계단 바주카병: arena.min (계단 아래) -> arena.max (승강대) 를 병사 속도로 걷는다 (물리/중력 없음). 끝나면 낙하.
 void TickClimb_(
     Enemy&          _e,
     const EnemyDef& _def,

@@ -114,8 +114,8 @@ TEST(StageRunnerTrigger, EachSectionFiresExactlyOnce)
 {
     RunnerFixture fx { WrapStage(R"J([{"id":"a","triggerX":10,"actions":[{"type":"banner","text":"A","seconds":1},{"type":"spawn","kind":"prop","def":"p","x":1,"y":1}]}])J") };
     fx.StepAt(50.f, 30);
-    fx.StepAt(5.f, 10);    // 되돌아갔다가
-    fx.StepAt(60.f, 10);   // 다시 지나가도
+    fx.StepAt(5.f, 10);
+    fx.StepAt(60.f, 10);
     EXPECT_EQ(fx.host.CountEvents("banner"), 1);
     EXPECT_EQ(fx.host.spawns.size(), 1u);
     EXPECT_EQ(fx.host.CountEvents("section:"), 1);
@@ -196,7 +196,7 @@ TEST(StageRunnerTiming, DelayCountsFromTheTickTheSectionFired)
 {
     RunnerFixture fx { WrapStage(R"J([{"id":"a","triggerX":100,"actions":[{"type":"banner","text":"b","seconds":1,"delay":1.0}]}])J") };
     fx.StepAt(0.f, 25);
-    fx.StepAt(101.f);   // tick 25 에 발동
+    fx.StepAt(101.f);
     fx.StepAt(101.f, 100);
     EXPECT_EQ(fx.host.FindEvent("banner:b")->tick, 25 + 60);
 }
@@ -224,9 +224,9 @@ TEST(StageRunnerWave, EntriesSpawnAtTheirDelayWithCameraAnchoredPositions)
     EXPECT_EQ(fx.runner.GetPendingWaveCount(), 2);
     EXPECT_TRUE(fx.host.spawns.empty());
 
-    fx.StepAt(5.f, 209);   // tick 209 까지
+    fx.StepAt(5.f, 209);
     EXPECT_TRUE(fx.host.spawns.empty());
-    fx.StepAt(5.f);   // tick 210
+    fx.StepAt(5.f);
     ASSERT_EQ(fx.host.spawns.size(), 1u);
     EXPECT_EQ(fx.host.spawns[0].tick, 210);
     const SpawnRequest& first = fx.host.spawns[0].request;
@@ -237,7 +237,7 @@ TEST(StageRunnerWave, EntriesSpawnAtTheirDelayWithCameraAnchoredPositions)
     EXPECT_LE(first.position.x, 640.f - 50.f);
     EXPECT_FLOAT_EQ(first.position.y, 47.5f);
 
-    fx.StepAt(5.f, 330);   // 540 까지
+    fx.StepAt(5.f, 330);
     ASSERT_EQ(fx.host.spawns.size(), 2u);
     EXPECT_EQ(fx.host.spawns[1].tick, 540);
     EXPECT_FLOAT_EQ(fx.host.spawns[1].request.position.x, 10.f);
@@ -251,7 +251,7 @@ TEST(StageRunnerWave, AnchorUsesTheCameraAtSpawnTime)
         {"delay":2.0,"kind":"enemy","def":"e","camera":{"ax":"right","dx":-100,"ay":"top","dy":0}}]}])J") };
     fx.camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
     fx.StepAt(5.f, 1);
-    fx.camera.SnapTo({ 2000.f, 224.f });   // 스폰 시점 전에 카메라가 이동
+    fx.camera.SnapTo({ 2000.f, 224.f });
     fx.StepAt(2000.f, 130);
     ASSERT_EQ(fx.host.spawns.size(), 1u);
     const float expectedRight = fx.camera.GetPosition().x + 640.f - 100.f;
@@ -365,7 +365,7 @@ TEST(StageRunnerSpawn, GroundSnapUsesHostAndSkipsWhenNoGround)
     EXPECT_TRUE(fx.runner.WasSpawnSkipped("skipme"));
     const Vector<std::pair<float, float>>& queries = fx.host.groundQueries;
     ASSERT_EQ(queries.size(), 3u);
-    EXPECT_FLOAT_EQ(queries[2].second, 400.f);   // fromY 전달
+    EXPECT_FLOAT_EQ(queries[2].second, 400.f);
 
     EXPECT_NE(fx.host.FindEvent("banner:opened"), nullptr);
     EXPECT_EQ(fx.runner.GetOpenGateCount(), 0);
@@ -412,12 +412,12 @@ TEST(StageRunnerGate, RunsActionsWhenTargetIsDefeatedWithDelaysRelativeToThatTic
     EXPECT_EQ(fx.host.CountEvents("banner"), 0);
 
     fx.host.defeated.insert(fx.runner.FindSpawnIds("boss").front());
-    fx.StepAt(5.f);   // tick 50
+    fx.StepAt(5.f);
     EXPECT_EQ(fx.host.FindEvent("banner:now")->tick, 50);
     EXPECT_EQ(fx.runner.GetOpenGateCount(), 0);
     fx.StepAt(5.f, 40);
     EXPECT_EQ(fx.host.FindEvent("banner:later")->tick, 80);
-    EXPECT_EQ(fx.host.CountEvents("banner"), 2);   // 한 번만
+    EXPECT_EQ(fx.host.CountEvents("banner"), 2);
 }
 
 TEST(StageRunnerGate, UntilDestroyFinishedNeedsTheSecondCondition)
@@ -429,7 +429,7 @@ TEST(StageRunnerGate, UntilDestroyFinishedNeedsTheSecondCondition)
     const SpawnId id = fx.runner.FindSpawnIds("boss").front();
     fx.host.defeated.insert(id);
     fx.StepAt(5.f, 10);
-    EXPECT_EQ(fx.host.CountEvents("banner"), 0);   // 격파됐지만 연출이 안 끝남
+    EXPECT_EQ(fx.host.CountEvents("banner"), 0);
     fx.host.destroyed.insert(id);
     fx.StepAt(5.f);
     EXPECT_EQ(fx.host.CountEvents("banner"), 1);
@@ -457,7 +457,7 @@ TEST(StageRunnerGate, WaitsForSpawnsThatHaveNotHappenedYet)
         {"id":"a","triggerX":0,"actions":[{"type":"gate","id":"g","waitFor":["late"],"actions":[{"type":"banner","text":"opened","seconds":1}]}]},
         {"id":"b","triggerX":1000,"actions":[{"type":"spawn","kind":"enemy","def":"x","id":"late","x":1,"y":1}]}])J") };
     fx.StepAt(5.f, 20);
-    EXPECT_EQ(fx.host.CountEvents("banner"), 0);   // 아직 스폰 전: 열리지 않는다
+    EXPECT_EQ(fx.host.CountEvents("banner"), 0);
     fx.StepAt(1500.f);
     ASSERT_EQ(fx.runner.FindSpawnIds("late").size(), 1u);
     fx.StepAt(1500.f, 10);
@@ -555,7 +555,7 @@ TEST(StageRunnerClear, ClearWavesCancelsWavesAndGatesButKeepsOtherDelayedActions
         {"type":"clear","waves":true,"delay":1.0}])J") };
     fx.StepAt(5.f, 1);
     EXPECT_EQ(fx.runner.GetPendingWaveCount(), 2);
-    EXPECT_EQ(fx.runner.GetPendingActionCount(), 2);   // kept + clear
+    EXPECT_EQ(fx.runner.GetPendingActionCount(), 2);
     fx.StepAt(5.f, 100);
     EXPECT_EQ(fx.runner.GetPendingWaveCount(), 0);
     EXPECT_EQ(fx.runner.GetOpenGateCount(), 0);
@@ -578,7 +578,7 @@ TEST(StageRunnerFlow, EndStageFinishesTheRunner)
     RunnerFixture fx { OneSection_(R"J([{"type":"banner","text":"bye","seconds":1},{"type":"endStage","next":"title","delay":0.5},{"type":"banner","text":"never","seconds":1,"delay":2.0}])J") };
     fx.StepAt(5.f, 30);   // tick 0..29
     EXPECT_FALSE(fx.runner.IsFinished());
-    fx.StepAt(5.f);   // tick 30
+    fx.StepAt(5.f);
     EXPECT_TRUE(fx.runner.IsFinished());
     EXPECT_TRUE(fx.host.bEnded);
     EXPECT_EQ(fx.host.endNext, "title");
@@ -679,8 +679,8 @@ TEST(StageRunnerWarp, SilentRunsOnlyWhenAlwaysOrSilentActions)
     EXPECT_FLOAT_EQ(fx.runner.GetCameraOffset().x, 5.f);
     EXPECT_EQ(fx.runner.GetBaseBounds(), Aabb::FromMinMax({ 0.f, 0.f }, { 3000.f, 448.f }));
     EXPECT_EQ(fx.host.CountEvents("banner:S0"), 0);
-    EXPECT_EQ(fx.host.CountEvents("banner:late"), 1);   // always 는 silent 에서 지연 없이 즉시
-    EXPECT_EQ(fx.runner.GetLockDepth(), 0);             // lockCamera 는 normal
+    EXPECT_EQ(fx.host.CountEvents("banner:late"), 1);
+    EXPECT_EQ(fx.runner.GetLockDepth(), 0);
 
     ASSERT_EQ(fx.host.warps.size(), 1u);
     EXPECT_FLOAT_EQ(fx.host.warps[0].x, 101.f);
@@ -697,7 +697,7 @@ TEST(StageRunnerWarp, SilentRunsOnlyWhenAlwaysOrSilentActions)
 TEST(StageRunnerWarp, CannotWarpBackwardOrOutOfRange)
 {
     RunnerFixture fx { WrapStage(kWarpStage) };
-    fx.StepAt(5.f);   // s0 발동
+    fx.StepAt(5.f);
     EXPECT_FALSE(fx.runner.WarpToSection(0));
     EXPECT_FALSE(fx.runner.WarpToSection(-1));
     EXPECT_FALSE(fx.runner.WarpToSection(3));
@@ -822,7 +822,7 @@ TEST(StageRunnerWalls, LeftWallAlwaysAndRightWallOnlyWhenLockedOrAtTheEnd)
     EXPECT_FLOAT_EQ(walls.left.max.x, view.min.x + 14.f);
     EXPECT_FALSE(walls.bHasRight);
 
-    fx.StepAt(1000.f, 70);   // 락 적용
+    fx.StepAt(1000.f, 70);
     walls = fx.runner.MakeScreenWalls();
     EXPECT_TRUE(fx.camera.IsLocked());
     ASSERT_TRUE(walls.bHasRight);
@@ -834,7 +834,7 @@ TEST(StageRunnerWalls, LeftWallAlwaysAndRightWallOnlyWhenLockedOrAtTheEnd)
 TEST(StageRunnerWalls, RightWallAtTheBoundsEnd)
 {
     RunnerFixture fx { OneSection_("[]") };
-    fx.camera.SnapTo({ 3900.f, 224.f });   // 경계 오른쪽 끝(4000)으로 클램프
+    fx.camera.SnapTo({ 3900.f, 224.f });
     fx.StepAt(3900.f, 2);
     EXPECT_TRUE(fx.runner.MakeScreenWalls().bHasRight);
 }

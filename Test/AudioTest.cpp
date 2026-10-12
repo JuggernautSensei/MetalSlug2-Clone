@@ -154,17 +154,17 @@ TEST(AudioVoices, FillsEmptySlotsWithoutStealing)
 TEST(AudioVoices, WhenFullStealsTheOldestVoice)
 {
     VoiceAllocator voices { 3, 3 };
-    (void)voices.Acquire(0);   // slot 0 (가장 오래됨)
+    (void)voices.Acquire(0);
     (void)voices.Acquire(1);
     (void)voices.Acquire(2);
 
     const VoiceAllocator::Acquired got = voices.Acquire(3);
     EXPECT_TRUE(got.bStolen);
     EXPECT_EQ(got.slot, 0);
-    EXPECT_EQ(voices.GetActiveCount(), 3);   // 상한을 넘지 않는다
+    EXPECT_EQ(voices.GetActiveCount(), 3);
     EXPECT_EQ(voices.GetSoundId(0), 3);
 
-    EXPECT_EQ(voices.Acquire(4).slot, 1);   // 그다음으로 오래된 것
+    EXPECT_EQ(voices.Acquire(4).slot, 1);
 }
 
 TEST(AudioVoices, PerSoundLimitStealsOldestOfThatSoundOnly)
@@ -441,7 +441,7 @@ TEST(AudioDeterminism, SameStateHashWithNullTestAndDryAudio)
 
     EXPECT_EQ(withNull.pState->HashState(), withTest.pState->HashState());
     EXPECT_EQ(withNull.pState->HashState(), withDry.pState->HashState());
-    EXPECT_GT(CountKind(testAudio, eAudioEvent::Play), 0);   // 소리 요청은 실제로 나갔다
+    EXPECT_GT(CountKind(testAudio, eAudioEvent::Play), 0);
 }
 
 TEST(AudioDeterminism, SimulationDoesNotConsumeSimRngForAudio)

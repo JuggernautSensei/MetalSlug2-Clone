@@ -247,7 +247,7 @@ TEST(SpriteBatchSdl, DrawsFrameAtSnappedPositionWithPivot)
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
     EXPECT_EQ(batch.GetAtlasPageCount(), 1u);
 
-    const AnimFrame frame = MakeFrame_(4, 4, 2, 4);   // 원점 = 프레임 하단 중앙
+    const AnimFrame frame = MakeFrame_(4, 4, 2, 4);
     target.Clear();
     batch.DrawFrame(frame, { 10.7f, 20.9f }, Vec2 { 0.f, 0.f });
 
@@ -272,7 +272,7 @@ TEST(SpriteBatchSdl, ScaleShrinksAroundThePivotAndLeavesTheDefaultUnchanged)
     batch.Init(target.pRenderer);
     const Vector<uint8_t> atlas = MakeAtlas4x4_();
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
-    const AnimFrame frame = MakeFrame_(4, 4, 2, 4);   // 원점 = 프레임 하단 중앙
+    const AnimFrame frame = MakeFrame_(4, 4, 2, 4);
 
     // 배율 0.5: 피벗 (10,20) 은 그대로 두고 4x4 가 2x2 로 줄어 (9..10, 18..19) 를 덮는다
     SpriteDrawOptions half;
@@ -336,9 +336,9 @@ TEST(SpriteBatchSdl, FlushDrawsInSortedOrderLaterOnTop)
     const Vector<uint8_t> atlas = MakeAtlas4x4_();
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
 
-    const AnimFrame red   = MakeFrame_(1, 1, 0, 0);   // atlas (0,0) = 빨강
+    const AnimFrame red   = MakeFrame_(1, 1, 0, 0);
     AnimFrame       green = MakeFrame_(1, 1, 0, 0);
-    green.x               = 1;   // atlas (1,0) = 초록
+    green.x               = 1;
 
     target.Clear();
     batch.Submit(1, 0, red, { 5.f, 5.f });
@@ -348,7 +348,7 @@ TEST(SpriteBatchSdl, FlushDrawsInSortedOrderLaterOnTop)
 
     target.Clear();
     batch.Submit(0, 7, red, { 5.f, 5.f });
-    batch.Submit(0, 3, green, { 5.f, 5.f });   // sortKey 가 작은 쪽이 아래
+    batch.Submit(0, 3, green, { 5.f, 5.f });
     batch.Flush(Vec2 { 0.f, 0.f });
     EXPECT_EQ(target.PixelRgb(5, 5), kRed);
 }
@@ -366,7 +366,7 @@ TEST(SpriteBatchSdl, EmptyFramesAndMissingPagesAreSkipped)
     target.Clear();
 
     const AnimFrame empty = MakeFrame_(0, 0, 0, 0);
-    batch.DrawFrame(empty, { 5.f, 5.f }, Vec2 { 0.f, 0.f });   // 크래시 없이 무시
+    batch.DrawFrame(empty, { 5.f, 5.f }, Vec2 { 0.f, 0.f });
 
     AnimFrame noPage = MakeFrame_(4, 4, 0, 0);
     noPage.atlas     = 3;
@@ -508,7 +508,7 @@ TEST(SpriteBatchSdl, FlushBelowDepthLetsTheTerrainTextureCoverLowLayers)
     const Vector<uint8_t> atlas = MakeAtlas4x4_();
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
 
-    Vector<uint8_t> terrain(4 * 4 * 4, 0);   // 왼쪽 2열 불투명 파랑, 오른쪽 2열 투명
+    Vector<uint8_t> terrain(4 * 4 * 4, 0);
     for (int y = 0; y < 4; ++y)
     {
         for (int x = 0; x < 2; ++x)
@@ -526,9 +526,9 @@ TEST(SpriteBatchSdl, FlushBelowDepthLetsTheTerrainTextureCoverLowLayers)
     green.x               = 1;
 
     target.Clear();
-    batch.Submit(-100, 0, red, { 0.f, 0.f });   // 지형 아래: 불투명 구간에서는 가려진다
-    batch.Submit(-100, 0, red, { 3.f, 0.f });   // 지형 아래지만 투명 구간이라 보인다
-    batch.Submit(10, 0, green, { 1.f, 1.f });   // 지형 위
+    batch.Submit(-100, 0, red, { 0.f, 0.f });
+    batch.Submit(-100, 0, red, { 3.f, 0.f });
+    batch.Submit(10, 0, green, { 1.f, 1.f });
     batch.FlushBelowDepth(Vec2 { 0.f, 0.f }, -90);
     batch.DrawTexture(*handle, { 0.f, 0.f }, Vec2 { 0.f, 0.f }, 16, 16);
     batch.Flush(Vec2 { 0.f, 0.f });

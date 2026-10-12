@@ -9,7 +9,7 @@
 
 constexpr float    kGround       = 378.f;
 constexpr float    kAnchorX      = 2985.f;
-constexpr float    kStairAnchorX = 2400.f;   // 평지 길이 (3000) 안에서 계단 끝까지 올라가도록
+constexpr float    kStairAnchorX = 2400.f;
 constexpr uint32_t kStairTag     = 0x42555300u;
 constexpr int      kStateParked  = 0;   // Bus.cpp 의 eBusState 순서
 
@@ -52,13 +52,13 @@ TEST(Bus, StaysAtItsSpawnAnchorWithoutSlidingIn)
 
 TEST(Bus, OpensOnlyWhenTheViewRightEdgeReachesTheBusLeftEdge)
 {
-    VehicleRig rig({ 2500.f, kGround }, 2200.f);   // 뷰 오른쪽 끝 2840 < 버스 왼쪽 끝 2885
+    VehicleRig rig({ 2500.f, kGround }, 2200.f);
     ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
     const EnemyHandle h = rig.Spawn("bus", { kAnchorX, kGround }, BusParams_());
     rig.Step(60);
     EXPECT_EQ(rig.E(h)->state, kStateParked);
 
-    rig.SetView(2250.f);   // 뷰 오른쪽 끝 2890 >= 2885
+    rig.SetView(2250.f);
     rig.Step(2);
     EXPECT_NE(rig.E(h)->state, kStateParked);
 }
@@ -310,7 +310,7 @@ TEST(Bus, StairSoldiersOnTheLandingAreDrawnInFrontOfTheBodyAndBehindTheCoverInEv
             rig.Step(1);
             for (const Enemy* pSoldier: StairSoldiers_(rig))
             {
-                if (pSoldier->body.position.y < kGround - 90.f)   // 승강대 근처 (계단 윗부분 / 도착 직후 전방 점프)
+                if (pSoldier->body.position.y < kGround - 90.f)
                 {
                     ++onRoof;
                     soldierY = pSoldier->body.position.y;
@@ -364,7 +364,7 @@ TEST(Bus, StairSoldiersNeverSinkIntoTheBusBodyAndStandOnItsTop)
         rig.World().ReseedRng(seed);
         (void)rig.Spawn("bus", { kStairAnchorX, kGround }, BusParams_());
         const Aabb  body     = rig.Lib().Get(rig.Lib().FindIndex("bus")).solid.At({ kStairAnchorX, kGround }, -1);
-        const float topY     = body.min.y;   // 버스 몸체 윗면: 전방 점프한 병사가 서는 곳
+        const float topY     = body.min.y;
         int         topTicks = 0;
         for (int tick = 0; tick < 1500; ++tick)
         {

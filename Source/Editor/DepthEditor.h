@@ -8,11 +8,10 @@ struct DepthRow
     String name  = {};
     int    value = 0;
     int    file  = -1;   // -1 = 코드 상수 (읽기 전용), 그 외 = 정의 JSON 번호
-    int    begin = 0;    // JSON 숫자 토큰 위치
+    int    begin = 0;
     int    end   = 0;
 };
 
-// AI 탭의 "Depth" 창: 모든 그리기 depth 를 오름차순 (작을수록 뒤) 으로 보여 준다. JSON 의 depth 값은 편집/저장 가능.
 class DepthEditor final
 {
 public:

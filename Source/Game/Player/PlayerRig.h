@@ -59,10 +59,10 @@ struct RigState
     eOverlay     overlay              = eOverlay::None;
     bool         bSlashSecond         = false;
     uint32_t     overlaySerial        = 0;
-    int          overlayDurationTicks = 0;   // 겹침 동작 클립이 이 틱 수에 맞춰 재생된다
-    int          airTicks             = 0;   // 공중에 뜬 뒤 경과 틱
+    int          overlayDurationTicks = 0;
+    int          airTicks             = 0;
     bool         bAirFromJump         = true;
-    uint32_t     stateSerial          = 0;   // 사망 등 큰 상태 전환마다 증가
+    uint32_t     stateSerial          = 0;
     bool         bIdleAction          = false;
     bool         bVisible             = true;
 };
@@ -108,7 +108,7 @@ private:
     struct Slot
     {
         AnimId id       = kNullHandle;
-        int    baseline = 0;   // 클립 프레임들 중 발 쪽으로 가장 낮은 바닥 (원점 아래 px)
+        int    baseline = 0;
     };
     using SlotTable = ARRAY<Slot, kRigClipCount>;
 

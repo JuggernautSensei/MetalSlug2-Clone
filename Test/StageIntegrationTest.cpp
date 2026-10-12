@@ -251,7 +251,7 @@ TEST(StageIntegration, Stage0UsesRealEnemiesAndPropsInsteadOfPlaceholders)
 
     const StageWorldHost& host = sim.State().GetHost();
     EXPECT_GT(sim.State().GetEnemies().CountAlive("soldier_bomb"), 0);
-    EXPECT_GT(sim.State().GetProps().GetCount(), 0u);   // intro 의 트럭 두 대
+    EXPECT_GT(sim.State().GetProps().GetCount(), 0u);
 
     for (const PlaceholderEntity& entity: host.GetPlaceholderEntities())
     {
@@ -267,19 +267,19 @@ TEST(StageIntegration, GroundHouseFootprintClearsOnlyTheHouseAndKeepsTheStreet)
     EXPECT_EQ(mask->GetWidth(), 1306);
     EXPECT_EQ(mask->GetHeight(), 751);
     EXPECT_FALSE(mask->IsSolid(0, 0));
-    EXPECT_GT(mask->CountSolidPixels(), 5000u);   // 도로 위 봉우리 한 덩어리 (빈 마스크가 아님)
+    EXPECT_GT(mask->CountSolidPixels(), 5000u);
 
     std::optional<GroundMap> loaded = LoadGroundMask(root / "Ground" / "Stage0_0.png");
     ASSERT_TRUE(loaded.has_value());
     GroundMap      ground       = std::move(*loaded);
-    const uint64_t streetBefore = ground.CountSolidPixels();   // 전체 개수는 봉우리 제거 후 정확히 줄어야 한다
-    EXPECT_TRUE(ground.IsSolid(9830, 1230));                   // 집 몸체 (봉우리)
+    const uint64_t streetBefore = ground.CountSolidPixels();
+    EXPECT_TRUE(ground.IsSolid(9830, 1230));
 
     // 집 (9830,1269) 의 지면 패치 좌상단 = center - (size/2 - inset)
     EXPECT_TRUE(ApplyGroundPatch(ground, { 9189.f, 898.f }, *mask));
-    EXPECT_FALSE(ground.IsSolid(9830, 1230));   // 몸체: 공기
-    EXPECT_FALSE(ground.IsSolid(9760, 1270));   // 봉우리 왼쪽 경사: 공기
-    EXPECT_TRUE(ground.IsSolid(9830, 1300));    // 도로 (발자국 밖): 그대로
+    EXPECT_FALSE(ground.IsSolid(9830, 1230));
+    EXPECT_FALSE(ground.IsSolid(9760, 1270));
+    EXPECT_TRUE(ground.IsSolid(9830, 1300));
     EXPECT_TRUE(ground.IsSolid(9189, 1300));
     EXPECT_TRUE(ground.IsSolid(10400, 1300));
     EXPECT_EQ(ground.CountSolidPixels(), streetBefore - mask->CountSolidPixels());
@@ -297,11 +297,11 @@ TEST(StageIntegration, BigHouseFootprintClearsItsCapAndTheStreetStaysSolid)
     std::optional<GroundMap> loaded = LoadGroundMask(root / "Ground" / "Stage0_0.png");
     ASSERT_TRUE(loaded.has_value());
     GroundMap ground = std::move(*loaded);
-    EXPECT_TRUE(ground.IsSolid(10450, 1210));                            // 집 몸체 윗부분
-    EXPECT_TRUE(ApplyGroundPatch(ground, { 10204.f, 1204.f }, *mask));   // 큰 집 @10470
+    EXPECT_TRUE(ground.IsSolid(10450, 1210));
+    EXPECT_TRUE(ApplyGroundPatch(ground, { 10204.f, 1204.f }, *mask));
     EXPECT_FALSE(ground.IsSolid(10450, 1210));
-    EXPECT_TRUE(ground.IsSolid(10450, 1300));   // 도로는 그대로
-    EXPECT_TRUE(ground.IsSolid(9830, 1230));    // 옆 집 봉우리 (패치 밖) 도 그대로
+    EXPECT_TRUE(ground.IsSolid(10450, 1300));
+    EXPECT_TRUE(ground.IsSolid(9830, 1230));
 
     EXPECT_FALSE(LoadGroundMask(root / "Textures" / "no_such_map.png").has_value());
 }
@@ -332,8 +332,8 @@ TEST(StageIntegration, LongWalkThroughTheFirstSectionsWithoutWarpReachesTheStree
         ASSERT_FALSE(sim.State().IsFinished()) << "tick " << i;
     }
     EXPECT_GE(sim.State().GetPlayer().GetFeet().x, 1300.f);
-    EXPECT_GE(sim.State().GetRunner().GetNextSectionIndex(), 2);   // intro, street 발동
-    EXPECT_GT(sim.State().GetEnemies().GetCount(), 0u);            // 실제 적이 스폰되어 있다
+    EXPECT_GE(sim.State().GetRunner().GetNextSectionIndex(), 2);
+    EXPECT_GT(sim.State().GetEnemies().GetCount(), 0u);
 }
 
 TEST(StageIntegration, CameraKeepsUpWithThePlayerAlongTheWholeStage)
@@ -394,7 +394,7 @@ TEST(StageIntegration, BotCanWalkTheWholeStageToTheStageEnd)
             bestX = std::max(bestX, sim.State().GetPlayer().GetFeet().x);
             if (sim.IsBossAlive() && ++bossTicks >= 900)
             {
-                sim.DamageBoss();   // 봇은 보스를 15초 동안 상대한 뒤 쓰러뜨린다
+                sim.DamageBoss();
             }
         }
     }
@@ -520,7 +520,7 @@ const Enemy* FindSarubia_(
 }
 }   // namespace
 
-// R2-17 재현: 실제 Stage0 흐름에서 사루비아가 플레이어 총알에 체력이 줄고 결국 죽는지
+// 실제 Stage0 흐름에서 사루비아가 플레이어 총알에 체력이 줄고 결국 죽는지
 TEST(StageIntegration, SarubiaLosesHpToPlayerBulletsAndDiesInStage0)
 {
     IntegrationSim sim(true);
@@ -544,8 +544,7 @@ TEST(StageIntegration, SarubiaLosesHpToPlayerBulletsAndDiesInStage0)
     EXPECT_NE(pEnd->life, eEnemyLife::Alive) << "startHp=" << startHp << " endHp=" << pEnd->health.hp;
 }
 
-// R2-17 판정 영역: 사루비아 상부(포탑/망루, 발 기준 y -130 근처)를 쏜 총알이 통과하지 않아야 한다.
-// 기존 body 100x100 (y -100..0) 에서는 y -110 이상이 전부 빗나갔다
+// 사루비아 판정 영역: 상부(포탑/망루, 발 기준 y -130 근처)를 쏜 총알이 통과하지 않아야 한다.
 TEST(StageIntegration, SarubiaHurtboxCoversTheTurretAboveItsTreads)
 {
     IntegrationSim sim(true);
@@ -639,7 +638,7 @@ TEST(StageIntegration, TimedWaveEntryRepeatsEveryPeriodForItsTimesOnly)
     EXPECT_EQ(fx.runner.GetSpawnedCount(), 2);
     fx.Step(30);   // 세 번째 (1.5 s)
     EXPECT_EQ(fx.runner.GetSpawnedCount(), 3);
-    fx.Step(300);   // times 소진 후 더 나오지 않는다
+    fx.Step(300);
     EXPECT_EQ(fx.runner.GetSpawnedCount(), 3);
 }
 
@@ -664,7 +663,7 @@ TEST(StageIntegration, PropRoofCarriesThePlayerAboveTheGround)
     const Vec2 feet = sim.State().GetPlayer().GetFeet();
     EXPECT_TRUE(sim.State().GetPlayer().IsGrounded());
     EXPECT_NEAR(feet.x, 2513.f, 80.f);
-    EXPECT_LT(feet.y, 300.f);   // 지면(378)이 아니라 지붕 위
+    EXPECT_LT(feet.y, 300.f);
 }
 
 TEST(StageIntegration, DebugWarpToTheStageEndEndsTheStageThroughTheFlow)
@@ -981,8 +980,8 @@ TEST(StageIntegration, BusLockGlideMovesTheCameraSmoothly)
 struct BossEntrySample
 {
     int   tick      = 0;
-    float camX      = 0.f;   // 반올림된 화면 왼쪽 (렌더 기준)
-    float centerX   = 0.f;   // 카메라 중심 (연속값)
+    float camX      = 0.f;
+    float centerX   = 0.f;
     float lockMinX  = 0.f;
     float lockMaxX  = 0.f;
     int   lockDepth = 0;
@@ -994,13 +993,13 @@ struct BossEntrySample
 struct BossEntryRemoval
 {
     int      tick     = 0;
-    String   kind     = {};   // prop / item
-    String   reason   = {};   // Culled / DestroyedRemove / FallRemove / Gone
+    String   kind     = {};
+    String   reason   = {};
     String   def      = {};
     uint32_t id       = 0;
     float    x        = 0.f;
     float    y        = 0.f;
-    float    left     = 0.f;   // 스프라이트 사각형 (알 수 없으면 pos 점)
+    float    left     = 0.f;
     float    right    = 0.f;
     bool     bVisible = false;
 };
@@ -1309,7 +1308,7 @@ TEST(StageIntegration, BossArenaLockGlideKeepsTheScreenContinuous)
 
 TEST(StageIntegration, BossArenaPlacesHousesAndRoofsOnTheFloorInsideTheLockedView)
 {
-    // 보스 아레나 바닥 (R3-01): 락 중 화면 안에 살아 있는 소품 (집/지붕/망루) 이 있어야 휑하지 않다
+    // 보스 아레나 바닥: 락 중 화면 안에 살아 있는 소품 (집/지붕/망루) 이 있어야 휑하지 않다
     IntegrationSim sim(true);
     ReachBossArena_(sim);
     sim.BotStep(true, false, 150);

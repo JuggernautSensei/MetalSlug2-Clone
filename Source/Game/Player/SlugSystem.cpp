@@ -35,7 +35,6 @@ void SlugSystem::Tick(
     SlugContext ctx = _ctx;
     ctx.pTuning     = &m_tuning;
 
-    // 탑승 판정: 걸어가거나 점프해서 차량 상자에 닿으면 탄다
     if (m_riddenIndex < 0 && _player.IsAlive() && !_player.IsRiding() && _player.GetState() != ePlayerState::Victory)
     {
         const Aabb playerBox = _player.GetBodyBox();

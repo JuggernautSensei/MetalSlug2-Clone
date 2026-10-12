@@ -86,7 +86,6 @@ void Go_(
     }
 }
 
-// 플레이어 몸통 박스와 겹치는가 (공중 낙하 중에도 구출 접촉으로 쓴다)
 bool TouchingPlayer_(
     Enemy&    _e,
     EnemyEnv& _env)
@@ -120,7 +119,6 @@ void Tick_(
         case ePowState::Stuck:
             _e.body.velocity.x = 0.f;
             FacePlayer(_e, _env);
-            // 공중에서 떨어지는 중(착지 전)에도 플레이어와 겹치면 바로 구출
             if (!_e.bGrounded && TouchingPlayer_(_e, _env))
             {
                 Go_(_e, _def, _env, ePowState::Close);
@@ -321,7 +319,6 @@ void ParsePowCfg(
     c.clipItem     = _r.Clip("item");
     c.clipRun      = _r.Clip("run");
 
-    // 외형 변형: 슬롯별 "<key>_v<n>" 클립 (없으면 -1 -> 기본 클립 사용)
     constexpr ARRAY<const char*, PowCfg::kSlotCount> kSlotKeys = { "stuck", "escape", "move", "glide", "moveDown", "item", "run" };
     for (int v = 0; v < PowCfg::kVariantCount; ++v)
     {

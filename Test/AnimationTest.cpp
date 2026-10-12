@@ -89,7 +89,7 @@ TEST(AnimationLibrary, ParsesJsonWithFramesAndPivots)
     EXPECT_EQ(clip.frames[0].pivotX, 21);
     EXPECT_EQ(clip.frames[0].pivotY, 50);
     EXPECT_EQ(clip.frames[1].atlas, 1);
-    EXPECT_TRUE(clip.frames[2].IsEmpty());   // 완전 투명 프레임
+    EXPECT_TRUE(clip.frames[2].IsEmpty());
     EXPECT_FALSE(clip.frames[0].IsEmpty());
 
     const AnimClip* pDead = lib.FindClip("Player_Dead");
@@ -210,7 +210,7 @@ TEST(AnimPlayer, NoDriftAfterAnHourOfFixedSteps)
     AnimPlayer       player;
     player.Play(id);
 
-    const int ticks = 60 * 60 * 60;   // 1시간
+    const int ticks = 60 * 60 * 60;
     for (int i = 0; i < ticks; ++i)
     {
         (void)player.Update(lib, kStepSec);
@@ -227,11 +227,11 @@ TEST(AnimPlayer, UpdateReportsOnlyFrameChanges)
     player.Play(id);
 
     int changes = 0;
-    for (int tick = 0; tick < 18; ++tick)   // 0.3초 = 한 바퀴
+    for (int tick = 0; tick < 18; ++tick)
     {
         changes += player.Update(lib, kStepSec) ? 1 : 0;
     }
-    EXPECT_EQ(changes, 3);   // 1,2,0 으로 바뀜
+    EXPECT_EQ(changes, 3);
 }
 
 TEST(AnimPlayer, LoopJumpsToLoopStartNotZero)
@@ -245,7 +245,7 @@ TEST(AnimPlayer, LoopJumpsToLoopStartNotZero)
     {
         (void)player.Update(lib, kStepSec);
     }
-    EXPECT_EQ(player.GetFrame(), 2);   // 0 이 아니라 loopStart
+    EXPECT_EQ(player.GetFrame(), 2);
     for (int frame = 3; frame <= 4; ++frame)
     {
         for (int i = 0; i < 6; ++i)
@@ -265,7 +265,7 @@ TEST(AnimPlayer, LoopJumpsToLoopStartNotZero)
 TEST(AnimPlayer, NonLoopStopsOnLastFrameAndFinishes)
 {
     AnimationLibrary lib;
-    const AnimId     id = lib.AddClip(MakeClip_("Die", 4, 0.06f, false));   // 총 0.24초 = 14.4틱
+    const AnimId     id = lib.AddClip(MakeClip_("Die", 4, 0.06f, false));
     AnimPlayer       player;
     player.Play(id);
 
@@ -368,7 +368,7 @@ TEST(AnimPlayer, SetNormalizedTimeMapsRatioToFrame)
     EXPECT_EQ(player.GetFrame(), 4);
     EXPECT_NEAR(player.GetNormalizedTime(clip), 0.5f, 1e-5f);
 
-    player.SetNormalizedTime(clip, 1.25f);   // 루프: 소수부만
+    player.SetNormalizedTime(clip, 1.25f);
     EXPECT_EQ(player.GetFrame(), 2);
 
     player.SetNormalizedTime(clip, 0.f);
@@ -427,5 +427,5 @@ TEST(AnimPlayer, GetFrameDataReturnsCurrentFrame)
     }
     const AnimFrame* pFrame = player.GetFrameData(lib);
     ASSERT_NE(pFrame, nullptr);
-    EXPECT_EQ(pFrame->x, 10);   // frame 1
+    EXPECT_EQ(pFrame->x, 10);
 }

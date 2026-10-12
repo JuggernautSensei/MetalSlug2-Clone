@@ -77,7 +77,7 @@ TEST(PlayerRigNames, DgHasNoDiagonalShotClipSoItFallsBackToTheAimPose)
     (void)rig.Bind(anims, RigTuning {});
     EXPECT_TRUE(PlayerRig::ResolveClipName(anims, eRigClip::ShotDiag3, eWeapon::Pistol, 1).empty());
     EXPECT_EQ(rig.GetSlotClip(eWeapon::Pistol, 1, eRigClip::ShotDiag3), rig.GetSlotClip(eWeapon::Pistol, 1, eRigClip::LookUpDiag3));
-    EXPECT_FALSE(PlayerRig::ResolveClipName(anims, eRigClip::ShotDiag3, eWeapon::Hmg, 1).empty());   // MG 에는 있다
+    EXPECT_FALSE(PlayerRig::ResolveClipName(anims, eRigClip::ShotDiag3, eWeapon::Hmg, 1).empty());
 }
 
 TEST(PlayerRigPose, IdleUsesIdleUpperAndLowerClips)
@@ -231,11 +231,11 @@ TEST(PlayerRigPose, HmgUsesMachineGunShotClipAndShotgunItsOwn)
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Tap(eAction::Shot);
     EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Shot_MG_Right"));
-    sim.Step(sim.Tune().weapons.hmg.burstShotsMax * sim.Tune().weapons.hmg.burstIntervalTicks + 2);   // 버스트 연출이 끝나면 대기 자세
+    sim.Step(sim.Tune().weapons.hmg.burstShotsMax * sim.Tune().weapons.hmg.burstIntervalTicks + 2);
     EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Idle_SG_Right"));
 
     sim.Player().PickUpWeapon(eWeapon::Shotgun, sim.Tune());
-    sim.Step(sim.Tune().weapons.shotgun.fireIntervalTicks);   // 직전 HMG 발사의 쿨다운이 지나길 기다린다
+    sim.Step(sim.Tune().weapons.shotgun.fireIntervalTicks);
     sim.Tap(eAction::Shot);
     EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Shot_SG_Right"));
 }
@@ -265,7 +265,7 @@ TEST(PlayerRigPose, EveryNewShotRestartsTheShotAnimation)
     sim.Step(2);
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Tap(eAction::Shot);
-    sim.Step(sim.Tune().weapons.hmg.burstIntervalTicks * 2);   // 버스트 중간: 애니메이션이 진행되어 있다
+    sim.Step(sim.Tune().weapons.hmg.burstIntervalTicks * 2);
     const int beforeFrame = sim.State().GetRig().GetUpperFrame();
     sim.Step(sim.Tune().weapons.hmg.burstShotsMax * sim.Tune().weapons.hmg.burstIntervalTicks);
     sim.Tap(eAction::Shot);

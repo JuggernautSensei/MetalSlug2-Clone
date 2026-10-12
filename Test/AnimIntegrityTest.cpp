@@ -124,7 +124,7 @@ TEST(AnimIntegrity, LeftRightTwinsKeepTheSameFootAnchor)
             continue;
         }
         ++checked;
-        // 레거시 오타(OffsetY -430 등)는 수백 px 튄다. 정상 차이는 두 자릿수 이하다 (전함 이펙트 34px 가 최대).
+        // 오타(OffsetY -430 등)는 수백 px 튄다. 정상 차이는 두 자릿수 이하다 (전함 이펙트 34px 가 최대).
         EXPECT_LE(std::abs(left - right), 64) << clip.name.c_str() << " vs " << twinName.c_str();
         EXPECT_EQ(clip.bLoop, pTwin->bLoop) << clip.name.c_str();
     }
@@ -144,7 +144,7 @@ TEST(AnimIntegrity, EveryDefClipExistsWithMatchingFrameCountAndSingleFamily)
     ASSERT_TRUE(loaded) << message.c_str();
     const EnemyDefLibrary defs = loaded.Take();
 
-    // 정의가 여러 계열의 클립을 쓰는 것이 의도인 경우만 허용한다 (포로: 레거시 Older 몸 + 시트 변형 + 오타 이름 Order_Run, 낙하 포로는 POW stuck 클립 하나로 통일).
+    // 정의가 여러 계열의 클립을 쓰는 것이 의도인 경우만 허용한다
     const std::set<String> mixedOk = { "pow" };
 
     for (const EnemyDef& def: defs.GetDefs())
@@ -162,7 +162,7 @@ TEST(AnimIntegrity, EveryDefClipExistsWithMatchingFrameCountAndSingleFamily)
             }
             families.insert(FamilyOf_(clip.name));
         }
-        // 한 정의의 몸 클립은 한 계열이어야 한다 (미사일 전차 등장 연출이 다른 전차 MTank_Appear 였던 사고).
+        // 한 정의의 몸 클립은 한 계열이어야 한다
         if (def.clips.empty() || mixedOk.count(def.name) > 0)
         {
             continue;
@@ -186,7 +186,6 @@ TEST(AnimIntegrity, StageDecorSequencesStayWithinOneActor)
     Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(FindAssetRoot() / "Stage" / "Stage0.json");
     ASSERT_TRUE(doc);
 
-    // 배우별 허용 클립 (이름 규칙: 클립 이름으로는 같은 'Order_' 여도 몸이 다르다)
     const std::map<String, std::set<String>> actors = {
         { "Parker",                                                                { "Parker", "Parker_Run", "Parker_Run_2", "Parker_Stopping" } },
         {    "Kid", { "Order_Boy_Run_Left", "Order_Boy_Run_Right", "Order_Idle", "Order_Turn", "Order_Run_2", "Order_Stopping", "Order_Recoil" } },

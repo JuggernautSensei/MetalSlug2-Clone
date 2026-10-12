@@ -4,7 +4,7 @@
 // 텍스트 위치(begin/end)를 보존하는 최소 JSON 스캐너. 에디터가 원본 서식을 유지한 채 숫자만 제자리 교체하는 용도.
 struct JsonNode
 {
-    char           type  = 0;   // 'o' 객체, 'a' 배열, 's' 문자열, 'n' 숫자, 'l' 리터럴
+    char           type  = 0;
     int            begin = 0;
     int            end   = 0;
     String         str   = {};

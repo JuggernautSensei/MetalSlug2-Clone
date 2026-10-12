@@ -18,8 +18,8 @@ struct EnemyFxRequest
     Vec2   position   = { 0.f, 0.f };
     int    depth      = 60;
     int    delayTicks = 0;
-    bool   bFlipX     = false;          // 그림 좌우 반전 (FxDef.mirror)
-    bool   bDebris    = false;          // 잔해 연출 (velocity 로 날린다)
+    bool   bFlipX     = false;
+    bool   bDebris    = false;
     Vec2   velocity   = { 0.f, 0.f };   // px/s
 };
 
@@ -29,7 +29,7 @@ struct EnemyEnv
     const EnemyContext&    ctx;
     const EnemyDefLibrary& lib;
     PhysicsTuning          phys    = {};
-    int                    zOffset = 0;   // 인스턴스 z - 기본 z: 이 적이 요청하는 FX/투사체 depth 에 더한다
+    int                    zOffset = 0;
 };
 
 struct EnemyRenderEnv
@@ -41,8 +41,8 @@ struct EnemyRenderEnv
     Vec2                    feet    = { 0.f, 0.f };
     float                   alpha   = 0.f;
     int                     depth   = 0;
-    float                   flash   = 0.f;   // 이 적의 전체 피격 플래시 양 (EnemyWorld::Submit 이 채움)
-    int                     zOffset = 0;     // 인스턴스 z - 기본 z: 모든 부품 depth 에 더한다
+    float                   flash   = 0.f;
+    int                     zOffset = 0;
 };
 
 struct BehaviorOps
@@ -63,7 +63,7 @@ struct BehaviorOps
 
     bool (*deathDone)(const Enemy& _e, const EnemyDef& _def) = nullptr;
 
-    void (*onCommand)(Enemy& _e, const EnemyDef& _def, StringView _command) = nullptr;   // 스테이지 명령 (command 액션)
+    void (*onCommand)(Enemy& _e, const EnemyDef& _def, StringView _command) = nullptr;
 
     // 몸통 프레임 대체 (렌더 전용): 돌려주면 현재 클립 프레임 대신 그린다. nullptr 이면 클립 프레임
     const AnimFrame* (*bodyFrame)(const Enemy& _e, const EnemyDef& _def, const AnimationLibrary& _anims) = nullptr;

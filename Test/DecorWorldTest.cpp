@@ -8,7 +8,6 @@
 #include "Render/Animation.h"
 #include "World/Constants.h"
 
-// 프레임 2장짜리 클립 A/B 와 1장짜리 T
 constexpr const char* kDecorJson = R"({
     "version": 1,
     "animations": {
@@ -45,7 +44,6 @@ namespace
     return step;
 }
 
-// A(0.5s, +60px/s) -> B(0.25s, 정지) -> A(0.5s, -60px/s, 좌우 반전)
 [[nodiscard]] ParamValue MakeWalkParams_(
     const bool _bLoop)
 {
@@ -148,7 +146,7 @@ TEST(DecorWorld, SequenceAdvancesStepsAndFinishesWithoutLoop)
     RunTicks_(world, *lib, 20);   // 0.67 s: 둘째 구간 (B, 정지)
     ASSERT_TRUE(world.Get(id, pos, velocity, clip, bFinished));
     EXPECT_EQ(clip, "B");
-    EXPECT_NEAR(pos.x, 129.f, 1.f);   // 구간 전환 틱은 새 속도(0)로 움직인다
+    EXPECT_NEAR(pos.x, 129.f, 1.f);
     EXPECT_FLOAT_EQ(velocity.x, 0.f);
 
     RunTicks_(world, *lib, 20);   // 1.0 s: 셋째 구간 (A, -60, 반전) 진행 중

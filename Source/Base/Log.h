@@ -21,7 +21,7 @@ void LogFormat(
     LogMessage(_level, std::format(_format, std::forward<Args>(_args)...));
 }
 
-// 이벤트 로그 (--event-log <파일>): 한 줄에 JSON 객체 하나 {"tick":N,"event":"이름",...필드}. 열려 있지 않으면 아무 일도 하지 않는다 (시뮬레이션에 영향 없음)
+// --event-log <파일>: 한 줄에 JSON 객체 하나. 열려 있지 않으면 아무 일도 하지 않는다 (시뮬레이션 무영향)
 bool OpenEventLog(StringView _path);
 bool IsEventLogOpen();
 void SetEventLogTick(unsigned long long _tick);
