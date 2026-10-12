@@ -101,15 +101,13 @@ public:
     void Init(SDL_Renderer* _pRenderer);
     void Shutdown();
 
-    [[nodiscard]] Result<void> LoadAtlasPage(const FilePath& _pngPath);
-    [[nodiscard]] Result<void> LoadAtlasPages(const AnimationLibrary& _library);
     [[nodiscard]] Result<void> AddAtlasPageFromRgba(int _width, int _height, Span<const uint8_t> _rgba);
     // _flashRgba 는 BuildHitFlashRgba 로 만든 변환본 (워커에서 미리 만들어 둘 때)
     [[nodiscard]] Result<void> AddAtlasPageFromRgba(int _width, int _height, Span<const uint8_t> _rgba, Span<const uint8_t> _flashRgba);
     [[nodiscard]] Result<void> AddAtlasPage(const DecodedImage& _image);
     // 페이지를 _numWorkers 장씩 병렬 디코드해 순서대로 추가한다. 실패한 페이지에서 멈춘다 (페이지 번호가 어긋나지 않게).
-    [[nodiscard]] Result<void> LoadAtlasPagesParallel(const AnimationLibrary& _library, int _numWorkers);
-    [[nodiscard]] size_t       GetAtlasPageCount() const;
+    [[nodiscard]] bool   LoadAtlasPagesParallel(const AnimationLibrary& _library, int _numWorkers);
+    [[nodiscard]] size_t GetAtlasPageCount() const;
 
     [[nodiscard]] Result<int> LoadStandaloneTexture(const FilePath& _pngPath);
     [[nodiscard]] Result<int> AddStandaloneTextureFromRgba(int _width, int _height, Span<const uint8_t> _rgba);

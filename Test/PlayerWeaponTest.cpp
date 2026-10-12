@@ -573,7 +573,7 @@ struct RasterFixture_
             return;
         }
         batch.Init(pRenderer);
-        bReady = static_cast<bool>(batch.LoadAtlasPages(_anims));
+        bReady = batch.LoadAtlasPagesParallel(_anims, 1);
     }
 
     ~RasterFixture_()

@@ -105,7 +105,7 @@ public:
     AudioSystem(const AudioSystem&)            = delete;
     AudioSystem& operator=(const AudioSystem&) = delete;
 
-    [[nodiscard]] Result<void> Init(SoundBank _bank, const AudioConfig& _config);
+    void Init(SoundBank _bank, const AudioConfig& _config);
     [[nodiscard]] Result<void> InitFromDirectory(const FilePath& _bakedRoot, const AudioConfig& _config);
     void                       Shutdown();
 

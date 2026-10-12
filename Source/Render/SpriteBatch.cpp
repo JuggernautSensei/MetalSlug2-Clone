@@ -441,7 +441,7 @@ Result<int> SpriteBatch::AddStandaloneTexture(
     return AddStandaloneTextureFromRgba(_image.width, _image.height, _image.rgba);
 }
 
-Result<void> SpriteBatch::LoadAtlasPagesParallel(
+bool SpriteBatch::LoadAtlasPagesParallel(
     const AnimationLibrary& _library,
     const int               _numWorkers)
 {
@@ -460,16 +460,16 @@ Result<void> SpriteBatch::LoadAtlasPagesParallel(
         for (size_t i = 0; i < count; ++i)
         {
             const FilePath& path  = paths[begin + i];
-            Result<void>    added = images[i].HasValue() ? AddAtlasPage(images[i].GetValue()) : Result<void> { images[i].GetError() };
-            if (!added)
+            const bool      bAdded = images[i].HasValue() && AddAtlasPage(images[i].GetValue()).IsOK();
+            if (!bAdded)
             {
                 SLUG_LOG_ERROR("아틀라스 페이지 로드 실패: {}", path.filename().string());
-                return added.GetError();
+                return false;
             }
             TraceAtlasPage_(m_pages.size() - 1, path, images[i]->width, images[i]->height, images[i]->rgba);
         }
     }
-    return Error { kOK };
+    return true;
 }
 
 Vector<int> SpriteBatch::LoadStandaloneTexturesParallel(
@@ -496,23 +496,6 @@ Vector<int> SpriteBatch::LoadStandaloneTexturesParallel(
         }
     }
     return handles;
-}
-
-Result<void> SpriteBatch::LoadAtlasPage(
-    const FilePath& _pngPath)
-{
-    Result<DecodedImage> image = DecodePngFile_(_pngPath);
-    if (!image)
-    {
-        return image.GetError();
-    }
-    const size_t       page   = m_pages.size();
-    const Result<void> result = AddAtlasPage(image.GetValue());
-    if (result)
-    {
-        TraceAtlasPage_(page, _pngPath, image->width, image->height, image->rgba);
-    }
-    return result;
 }
 
 Result<int> SpriteBatch::AddStandaloneTextureFromRgba(
@@ -691,22 +674,6 @@ void SpriteBatch::DrawTextureRepeatX(
         DrawStandaloneRect_(texture, src, dst, { 255, 255, 255, 255 });
     }
     (void)texX;
-}
-
-Result<void> SpriteBatch::LoadAtlasPages(
-    const AnimationLibrary& _library)
-{
-    const ScopedPhaseTimer timer { "atlas-pages", "all" };
-    for (const String& page: _library.GetAtlasPages())
-    {
-        const Result<void> result = LoadAtlasPage(_library.GetRoot() / page);
-        if (!result)
-        {
-            SLUG_LOG_ERROR("아틀라스 페이지 로드 실패: {}", page);
-            return result.GetError();
-        }
-    }
-    return Error { kOK };
 }
 
 void SpriteBatch::DrawFrame(

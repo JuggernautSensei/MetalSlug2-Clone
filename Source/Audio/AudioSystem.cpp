@@ -113,7 +113,7 @@ AudioSystem::~AudioSystem()
     Shutdown();
 }
 
-Result<void> AudioSystem::Init(
+void AudioSystem::Init(
     SoundBank          _bank,
     const AudioConfig& _config)
 {
@@ -132,7 +132,7 @@ Result<void> AudioSystem::Init(
 
     if (!_config.bEnabled)
     {
-        return Error { kOK };
+        return;
     }
 
     Scoped<Backend>        pBackend { new Backend };
@@ -140,7 +140,7 @@ Result<void> AudioSystem::Init(
     if (const ma_result result = ma_engine_init(&engineConfig, &pBackend->engine); result != MA_SUCCESS)
     {
         SLUG_LOG_WARN("오디오 장치를 열 수 없어 소리 없이 계속합니다 ({})", ma_result_description(result));
-        return Error { kOK };
+        return;
     }
     pBackend->bEngine = true;
     pBackend->voices.resize(static_cast<size_t>(m_voices.GetCapacity()));
@@ -168,7 +168,6 @@ Result<void> AudioSystem::Init(
     m_pBackend = std::move(pBackend);
     m_bDevice  = true;
     SLUG_LOG_INFO("오디오: 효과음 {} 개 로드, BGM 스트리밍, 동시 {} 음", preloaded, m_voices.GetCapacity());
-    return Error { kOK };
 }
 
 Result<void> AudioSystem::InitFromDirectory(
@@ -180,7 +179,8 @@ Result<void> AudioSystem::InitFromDirectory(
     {
         return Error { bank.GetError() };
     }
-    return Init(bank.Take(), _config);
+    Init(bank.Take(), _config);
+    return Error { kOK };
 }
 
 void AudioSystem::Shutdown()

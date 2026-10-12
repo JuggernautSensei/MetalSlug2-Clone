@@ -431,7 +431,6 @@ TEST(SpriteBatchSdl, RejectsInvalidAtlasData)
     const Vector<uint8_t> tooSmall(8);
     EXPECT_TRUE(batch.AddAtlasPageFromRgba(4, 4, tooSmall).HasError());
     EXPECT_TRUE(batch.AddAtlasPageFromRgba(0, 4, tooSmall).HasError());
-    EXPECT_TRUE(batch.LoadAtlasPage("this/file/does/not/exist.png").HasError());
     EXPECT_EQ(batch.GetAtlasPageCount(), 0u);
 }
 
@@ -706,7 +705,7 @@ TEST(SpriteBatchSdl, LoadAtlasPagesParallelAddsEveryPageInChunks)
     {
         SpriteBatch batch;
         batch.Init(target.pRenderer);
-        ASSERT_TRUE(batch.LoadAtlasPagesParallel(library.GetValue(), numWorkers).IsOK());
+        ASSERT_TRUE(batch.LoadAtlasPagesParallel(library.GetValue(), numWorkers));
         EXPECT_EQ(batch.GetAtlasPageCount(), library->GetAtlasPages().size());
     }
 }

@@ -320,7 +320,7 @@ TEST(AudioSystemDry, UninitializedSystemIsAnInertNoOp)
 TEST(AudioSystemDry, ChangeBgmUnknownNameKeepsCurrentBgm)
 {
     AudioSystem audio;
-    ASSERT_TRUE(static_cast<bool>(audio.Init(MakeBank_(), MakeDryConfig_())));
+    audio.Init(MakeBank_(), MakeDryConfig_());
     audio.PlayBgm("Stage1_BGM", true);
     audio.ChangeBgm("NoSuchSong", 2.f, true);
     EXPECT_EQ(audio.GetCurrentBgm(), "Stage1_BGM");
@@ -330,7 +330,7 @@ TEST(AudioSystemDry, ChangeBgmUnknownNameKeepsCurrentBgm)
 TEST(AudioSystemDry, ChangeBgmFadesOutThenStartsNewBgm)
 {
     AudioSystem audio;
-    ASSERT_TRUE(static_cast<bool>(audio.Init(MakeBank_(), MakeDryConfig_())));
+    audio.Init(MakeBank_(), MakeDryConfig_());
     audio.PlayBgm("Stage1_BGM", true);
     audio.ChangeBgm("Coin", 2.f, false);
     EXPECT_TRUE(audio.IsBgmFadingOut());
@@ -353,7 +353,7 @@ TEST(AudioSystemDry, ChangeBgmFadesOutThenStartsNewBgm)
 TEST(AudioSystemDry, ChangeBgmDuringFadeReplacesPendingAndZeroFadeIsImmediate)
 {
     AudioSystem audio;
-    ASSERT_TRUE(static_cast<bool>(audio.Init(MakeBank_(), MakeDryConfig_())));
+    audio.Init(MakeBank_(), MakeDryConfig_());
     audio.PlayBgm("Stage1_BGM", true);
     audio.ChangeBgm("Coin", 2.f, true);
     audio.Update(0.5f);
@@ -371,7 +371,7 @@ TEST(AudioSystemDry, ChangeBgmDuringFadeReplacesPendingAndZeroFadeIsImmediate)
 TEST(AudioSystemDry, DisabledConfigNeverOpensADevice)
 {
     AudioSystem audio;
-    ASSERT_TRUE(static_cast<bool>(audio.Init(MakeBank_(), MakeDryConfig_())));
+    audio.Init(MakeBank_(), MakeDryConfig_());
     EXPECT_TRUE(audio.IsInitialized());
 }
 
@@ -438,7 +438,7 @@ TEST(AudioDeterminism, SameStateHashWithNullTestAndDryAudio)
     withTest.RunScript(600);
 
     AudioSystem dry;
-    ASSERT_TRUE(static_cast<bool>(dry.Init(MakeBank_(), MakeDryConfig_())));
+    dry.Init(MakeBank_(), MakeDryConfig_());
     AudioSim withDry { &dry };
     withDry.RunScript(600);
 
