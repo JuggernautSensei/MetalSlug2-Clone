@@ -6,24 +6,18 @@
 #include "Base/Math.h"
 #include "Base/Types.h"
 
-namespace slug
+static void MixHash_(
+    uint64_t& _hash,
+    const int _value)
 {
-
-namespace
-{
-    void MixHash_(
-        uint64_t& _hash,
-        const int _value)
+    ARRAY<uint8_t, sizeof(int)> bytes = {};
+    std::memcpy(bytes.data(), &_value, sizeof(int));
+    for (const uint8_t byte: bytes)
     {
-        ARRAY<uint8_t, sizeof(int)> bytes = {};
-        std::memcpy(bytes.data(), &_value, sizeof(int));
-        for (const uint8_t byte: bytes)
-        {
-            _hash ^= byte;
-            _hash *= 1'099'511'628'211ull;
-        }
+        _hash ^= byte;
+        _hash *= 1'099'511'628'211ull;
     }
-}   // namespace
+}
 
 Vec2 GetDummySize(
     const eDummyKind _kind)
@@ -260,5 +254,3 @@ bool TrainingDummy::IsAlive() const
 {
     return deadTicks < 0 && health.IsAlive();
 }
-
-}   // namespace slug

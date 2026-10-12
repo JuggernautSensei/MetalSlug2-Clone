@@ -2,9 +2,6 @@
 
 #include "Base/Types.h"
 
-namespace slug
-{
-
 void CombatSystem::BeginTick()
 {
     m_hitboxes.clear();
@@ -84,5 +81,3 @@ HitResolver& CombatSystem::GetResolver()
 {
     return m_resolver;
 }
-
-}   // namespace slug

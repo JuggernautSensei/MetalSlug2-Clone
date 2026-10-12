@@ -5,78 +5,73 @@
 
 #include "Base/Math.h"
 #include "Base/Types.h"
+#include "Render/SpriteBatch.h"
 #include "World/Geometry.h"
 
-namespace slug
+[[nodiscard]] static bool SegmentHitsGround_(
+    const GroundMap& _ground,
+    const Vec2       _from,
+    const Vec2       _to,
+    Vec2&            _outLastFree)
 {
+    const float dx   = _to.x - _from.x;
+    const float dy   = _to.y - _from.y;
+    const float dist = std::sqrt(dx * dx + dy * dy);
+    const int   n    = Max(1, CeilToInt(dist / 2.f));
 
-namespace
+    Vec2 lastFree = _from;
+    for (int i = 1; i <= n; ++i)
+    {
+        const float t = static_cast<float>(i) / static_cast<float>(n);
+        const Vec2  p = { _from.x + dx * t, _from.y + dy * t };
+        if (_ground.IsSolidAt(p))
+        {
+            _outLastFree = lastFree;
+            return true;
+        }
+        lastFree = p;
+    }
+    return false;
+}
+
+// 발판 윗면을 가로지르는 선분 (낙하 중에만). 가장 먼저 닿는 윗면과 그 교점을 돌려준다
+[[nodiscard]] static bool SegmentHitsPlatform_(
+    Span<const Platform> _platforms,
+    const Vec2           _from,
+    const Vec2           _to,
+    Vec2&                _outTop)
 {
-    [[nodiscard]] bool SegmentHitsGround_(
-        const GroundMap& _ground,
-        const Vec2       _from,
-        const Vec2       _to,
-        Vec2&            _outLastFree)
+    bool  bHit  = false;
+    float bestT = 2.f;
+    for (const Platform& platform: _platforms)
     {
-        const float dx   = _to.x - _from.x;
-        const float dy   = _to.y - _from.y;
-        const float dist = std::sqrt(dx * dx + dy * dy);
-        const int   n    = Max(1, CeilToInt(dist / 2.f));
-
-        Vec2 lastFree = _from;
-        for (int i = 1; i <= n; ++i)
+        const float top = platform.box.min.y;
+        if (_to.y <= _from.y || _from.y > top || _to.y < top)
         {
-            const float t = static_cast<float>(i) / static_cast<float>(n);
-            const Vec2  p = { _from.x + dx * t, _from.y + dy * t };
-            if (_ground.IsSolidAt(p))
-            {
-                _outLastFree = lastFree;
-                return true;
-            }
-            lastFree = p;
+            continue;
         }
-        return false;
-    }
-
-    // 발판 윗면을 가로지르는 선분 (낙하 중에만). 가장 먼저 닿는 윗면과 그 교점을 돌려준다
-    [[nodiscard]] bool SegmentHitsPlatform_(
-        Span<const Platform> _platforms,
-        const Vec2           _from,
-        const Vec2           _to,
-        Vec2&                _outTop)
-    {
-        bool  bHit  = false;
-        float bestT = 2.f;
-        for (const Platform& platform: _platforms)
+        const float t = (top - _from.y) / (_to.y - _from.y);
+        const float x = _from.x + (_to.x - _from.x) * t;
+        if (t >= bestT || x < platform.box.min.x || x > platform.box.max.x)
         {
-            const float top = platform.box.min.y;
-            if (_to.y <= _from.y || _from.y > top || _to.y < top)
-            {
-                continue;
-            }
-            const float t = (top - _from.y) / (_to.y - _from.y);
-            const float x = _from.x + (_to.x - _from.x) * t;
-            if (t >= bestT || x < platform.box.min.x || x > platform.box.max.x)
-            {
-                continue;
-            }
-            bestT   = t;
-            _outTop = { x, top };
-            bHit    = true;
+            continue;
         }
-        return bHit;
+        bestT   = t;
+        _outTop = { x, top };
+        bHit    = true;
     }
+    return bHit;
+}
 
-    [[nodiscard]] Aabb SweptBox_(
-        const Vec2 _a,
-        const Vec2 _b,
-        const Vec2 _size)
-    {
-        return Aabb::FromMinMax(
-            { Min(_a.x, _b.x) - _size.x * 0.5f, Min(_a.y, _b.y) - _size.y * 0.5f },
-            { Max(_a.x, _b.x) + _size.x * 0.5f, Max(_a.y, _b.y) + _size.y * 0.5f });
-    }
-}   // namespace
+[[nodiscard]] static Aabb SweptBox_(
+    const Vec2 _a,
+    const Vec2 _b,
+    const Vec2 _size)
+{
+    return Aabb::FromMinMax(
+        { Min(_a.x, _b.x) - _size.x * 0.5f, Min(_a.y, _b.y) - _size.y * 0.5f },
+        { Max(_a.x, _b.x) + _size.x * 0.5f, Max(_a.y, _b.y) + _size.y * 0.5f });
+}
 
 void ProjectileSystem::Clear()
 {
@@ -97,19 +92,27 @@ void ProjectileSystem::SpawnBullet(
     bullet.renderPrev  = _spawn.position;
     bullet.hitFrom     = _spawn.sweepFrom;
     bullet.velocity    = { _spawn.direction.x * _spawn.speed, _spawn.direction.y * _spawn.speed };
+    bullet.accel       = _spawn.accel;
+    bullet.maxSpeed    = _spawn.maxSpeed;
     bullet.size        = _spawn.size;
     bullet.range       = _spawn.range;
     bullet.damage      = _spawn.damage;
     bullet.team        = _spawn.team;
     bullet.kind        = _spawn.kind;
     bullet.owner       = _spawn.owner;
-    bullet.hitId       = _combat.NewHitId();
+    bullet.bSharedHitId = _spawn.hitId != kNoHitId;
+    bullet.hitId        = bullet.bSharedHitId ? _spawn.hitId : _combat.NewHitId();
+    bullet.sizeStart    = _spawn.size;
+    bullet.sizeEnd      = _spawn.sizeEnd;
+    bullet.scaleStart   = _spawn.scaleStart;
+    bullet.scaleEnd     = _spawn.scaleEnd;
     bullet.bPierce     = _spawn.bPierce;
     bullet.tag         = _spawn.tag;
     bullet.blastSize   = _spawn.blastSize;
     bullet.blastDamage = _spawn.blastDamage;
     bullet.blastTicks  = _spawn.blastTicks;
     bullet.bTrail      = _spawn.bTrail;
+    bullet.z           = _spawn.z;
     m_bullets.push_back(bullet);
 }
 
@@ -154,7 +157,27 @@ void ProjectileSystem::ExplodeBomb_(
     blast.hitId     = _combat.NewHitId();
     m_blasts.push_back(blast);
 
-    m_fx.push_back({ eFxKind::BombExplosion, _at });
+    m_fx.push_back({ eFxKind::BombExplosion, _at, ZDelta(_bomb.params.z, kPlayerBombDepth) });
+}
+
+void ProjectileSystem::SpawnShotBlast_(
+    const ShotSpawn& _params,
+    const Vec2       _at,
+    CombatSystem&    _combat)
+{
+    if (_params.blastSize.x <= 0.f || _params.blastSize.y <= 0.f || _params.blastTicks <= 0)
+    {
+        return;
+    }
+
+    Blast blast;
+    blast.box       = Aabb::FromCenterSize({ _at.x, _at.y - _params.blastUp }, _params.blastSize);
+    blast.ticksLeft = _params.blastTicks;
+    blast.damage    = _params.blastDamage;
+    blast.team      = _params.team;
+    blast.owner     = _params.owner;
+    blast.hitId     = _combat.NewHitId();
+    m_blasts.push_back(blast);
 }
 
 void ProjectileSystem::SpawnBulletBlast_(
@@ -175,7 +198,7 @@ void ProjectileSystem::SpawnBulletBlast_(
     blast.hitId     = _combat.NewHitId();
     m_blasts.push_back(blast);
 
-    m_fx.push_back({ eFxKind::RocketExplosion, _bullet.position });
+    m_fx.push_back({ eFxKind::RocketExplosion, _bullet.position, ZDelta(_bullet.z, kPlayerBulletDepth) });
 }
 
 void ProjectileSystem::Step(
@@ -187,6 +210,21 @@ void ProjectileSystem::Step(
     for (Bullet& bullet: m_bullets)
     {
         bullet.renderPrev = bullet.position;
+        if (bullet.accel != 0.f)
+        {
+            const float speed = std::sqrt(bullet.velocity.x * bullet.velocity.x + bullet.velocity.y * bullet.velocity.y);
+            if (speed > 0.f)
+            {
+                float next = speed + bullet.accel * _dt;
+                if (bullet.maxSpeed > 0.f)
+                {
+                    next = Min(next, bullet.maxSpeed);
+                }
+                const float k = next / speed;
+                bullet.velocity.x *= k;
+                bullet.velocity.y *= k;
+            }
+        }
         bullet.position.x += bullet.velocity.x * _dt;
         bullet.position.y += bullet.velocity.y * _dt;
         bullet.travelled += std::sqrt(bullet.velocity.x * bullet.velocity.x + bullet.velocity.y * bullet.velocity.y) * _dt;
@@ -209,20 +247,29 @@ void ProjectileSystem::Step(
                 }
                 else
                 {
-                    m_fx.push_back({ eFxKind::BulletImpact, bullet.position });
+                    m_fx.push_back({ eFxKind::BulletImpact, bullet.position, ZDelta(bullet.z, kPlayerBulletDepth) });
                 }
             }
         }
 
         if (!bullet.bAlive)
         {
-            _combat.ReleaseHitId(bullet.hitId);
+            if (!bullet.bSharedHitId)
+            {
+                _combat.ReleaseHitId(bullet.hitId);
+            }
             continue;
         }
 
         if (bullet.bTrail && bullet.ageTicks % 9 == 1)
         {
-            m_fx.push_back({ eFxKind::RocketSmoke, bullet.position });
+            m_fx.push_back({ eFxKind::RocketSmoke, bullet.position, ZDelta(bullet.z, kPlayerBulletDepth) });
+        }
+
+        if (bullet.sizeEnd.x > 0.f && bullet.range > 0.f)
+        {
+            const float t = Clamp(bullet.travelled / bullet.range, 0.f, 1.f);
+            bullet.size   = { Lerp(bullet.sizeStart.x, bullet.sizeEnd.x, t), Lerp(bullet.sizeStart.y, bullet.sizeEnd.y, t) };
         }
 
         Hitbox hitbox;
@@ -275,7 +322,8 @@ void ProjectileSystem::Step(
             shot.bAlive = false;
             if (params.bExpireFx)
             {
-                m_shotFx.push_back({ shot.position, params.visual });
+                m_shotFx.push_back({ shot.position, params.visual, ZDelta(params.z, kEnemyShotDepth) });
+                SpawnShotBlast_(params, shot.position, _combat);
             }
         }
         else if ((_pGround || !_platforms.empty()) && (params.bExplodeOnSolid || bRoll) && (shot.position.x != shot.renderPrev.x || shot.position.y != shot.renderPrev.y))
@@ -319,8 +367,10 @@ void ProjectileSystem::Step(
                     const Vec2 at = bGroundHit ? lastFree : topHit;
                     m_shotFx.push_back({
                         { at.x, at.y - probe },
-                        params.visual
+                        params.visual,
+                        ZDelta(params.z, kEnemyShotDepth)
                     });
+                    SpawnShotBlast_(params, { at.x, at.y - probe }, _combat);
                 }
             }
         }
@@ -456,7 +506,8 @@ void ProjectileSystem::OnHitEvents(
             if (shot.hitId == event.hitId && shot.bAlive)
             {
                 shot.bAlive = false;
-                m_shotFx.push_back({ shot.position, shot.params.visual });
+                m_shotFx.push_back({ shot.position, shot.params.visual, ZDelta(shot.params.z, kEnemyShotDepth) });
+                SpawnShotBlast_(shot.params, shot.position, _combat);
                 _combat.ReleaseHitId(shot.hitId);
                 break;
             }
@@ -472,7 +523,7 @@ void ProjectileSystem::OnHitEvents(
                 }
                 else
                 {
-                    m_fx.push_back({ eFxKind::BulletImpact, bullet.position });
+                    m_fx.push_back({ eFxKind::BulletImpact, bullet.position, ZDelta(bullet.z, kPlayerBulletDepth) });
                 }
                 _combat.ReleaseHitId(bullet.hitId);
                 break;
@@ -559,5 +610,3 @@ Span<const Shot> ProjectileSystem::GetShots() const
 {
     return m_shots;
 }
-
-}   // namespace slug

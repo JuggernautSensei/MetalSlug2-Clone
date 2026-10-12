@@ -45,9 +45,6 @@ cd "$ROOT"
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$PREFIX" >/dev/null
 cmake --build build
 
-if [ -d Resources/ResourceData ] && [ ! -f Assets/Baked/manifest.json ]; then
-  ./build/bin/SlugBaker --legacy Resources >/dev/null
-fi
 
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
   echo "export CMAKE_PREFIX_PATH=$PREFIX" >> "$CLAUDE_ENV_FILE"

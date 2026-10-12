@@ -4,7 +4,6 @@
 #include "Game/StateFactory.h"
 #include "PlayerTestUtil.h"
 
-using namespace slugtest;
 
 TEST(PlayerStart, StartsWithPistolAndTenBombs)
 {
@@ -24,6 +23,77 @@ TEST(PlayerStart, StartsGroundedIdleFacingRightWithThreeLives)
     EXPECT_EQ(sim.Player().GetLives(), 3);
     EXPECT_EQ(sim.Player().GetScore(), 0);
     EXPECT_FLOAT_EQ(sim.Y(), 378.f);
+}
+
+// 시작 낙하산: 낙하 중 입력 잠금, 공격키로 깜빡이며 소멸 후 조작, 착지 시 자동 소멸
+TEST(PlayerChute, DescendsSlowlyFromStartHeightWithoutPhysics)
+{
+    Sim sim;
+    const float landY = sim.Y();
+    sim.Player().BeginChuteDescent(sim.Tune());
+    EXPECT_EQ(sim.Player().GetChutePhase(), eChutePhase::Descend);
+    EXPECT_FLOAT_EQ(sim.Y(), landY - sim.Tune().player.chuteStartHeightPx);
+    EXPECT_FLOAT_EQ(sim.Player().GetLogicalFeet().y, landY);
+
+    sim.Step(60);
+    EXPECT_NEAR(sim.Y(), landY - sim.Tune().player.chuteStartHeightPx + sim.Tune().player.chuteFallSpeedPxSec, 0.5f);
+    EXPECT_FALSE(sim.Player().IsGrounded());
+    EXPECT_EQ(sim.Player().GetChutePhase(), eChutePhase::Descend);
+}
+
+TEST(PlayerChute, InputIsLockedUntilAttackPressed)
+{
+    Sim sim;
+    sim.Player().BeginChuteDescent(sim.Tune());
+    const float startX = sim.X();
+
+    sim.Hold(eAction::Right);
+    sim.Step(30);
+    sim.Release(eAction::Right);
+    EXPECT_FLOAT_EQ(sim.X(), startX);
+    EXPECT_EQ(sim.Player().GetChutePhase(), eChutePhase::Descend);
+
+    sim.Tap(eAction::Shot);
+    EXPECT_EQ(sim.Player().GetChutePhase(), eChutePhase::Release);
+    EXPECT_EQ(sim.Player().GetStats().shotsFired, 0);
+}
+
+TEST(PlayerChute, AttackBlinksChuteThenVanishes)
+{
+    Sim sim;
+    sim.Player().BeginChuteDescent(sim.Tune());
+    sim.Tap(eAction::Shot);
+
+    const int   blinkTicks = sim.Tune().player.chuteBlinkTicks;
+    int         toggles    = 0;
+    bool        bLastVis   = sim.Player().IsChuteVisible(sim.Tune());
+    int         guard      = 0;
+    while (sim.Player().GetChutePhase() != eChutePhase::None && guard < blinkTicks + 4)
+    {
+        sim.Step();
+        ++guard;
+        const bool bVis = sim.Player().IsChuteVisible(sim.Tune());
+        if (bVis != bLastVis)
+        {
+            ++toggles;
+            bLastVis = bVis;
+        }
+    }
+    EXPECT_EQ(sim.Player().GetChutePhase(), eChutePhase::None);
+    EXPECT_GE(toggles, 2);
+    EXPECT_FALSE(sim.Player().IsChuteVisible(sim.Tune()));
+}
+
+TEST(PlayerChute, LandingReleasesChuteAndStartsNormalPlay)
+{
+    Sim sim;
+    const float landY = sim.Y();
+    sim.Player().BeginChuteDescent(sim.Tune());
+    sim.Step(400);
+    EXPECT_EQ(sim.Player().GetChutePhase(), eChutePhase::None);
+    EXPECT_TRUE(sim.Player().IsGrounded());
+    EXPECT_NEAR(sim.Y(), landY, 0.5f);
+    EXPECT_EQ(sim.Player().GetLives(), 3);
 }
 
 TEST(PlayerStart, DefaultStateNameIsSandbox)
@@ -320,15 +390,13 @@ TEST(PlayerJump, JumpStartsOnTheSameTickAsThePress)
     EXPECT_FALSE(sim.Player().IsGrounded());
 }
 
-namespace
-{
 struct JumpMeasure
 {
     float apex  = 0.f;
     int   ticks = 0;
 };
 
-[[nodiscard]] JumpMeasure MeasureJump_(
+[[nodiscard]] static JumpMeasure MeasureJump_(
     Sim&       _sim,
     const bool _bHold)
 {
@@ -348,7 +416,6 @@ struct JumpMeasure
     } while (!_sim.Player().IsGrounded() && ticks < 300);
     return { groundY - minY, ticks };
 }
-}   // namespace
 
 TEST(PlayerJump, HeldJumpApexAndAirTimeFeelRight)
 {
@@ -416,14 +483,11 @@ TEST(PlayerJump, FullAirControl)
     EXPECT_EQ(sim.Player().GetFacing(), -1);
 }
 
-namespace
-{
 // 지면 위 38px 에서 시작하는 Sim: 곧 착지하는 점프 버퍼 시험용
-[[nodiscard]] Sim MakeLandingSim_()
+[[nodiscard]] static Sim MakeLandingSim_()
 {
     return Sim { MakeConfig(MakeFlatGround(), { 100.f, 340.f }) };
 }
-}   // namespace
 
 TEST(PlayerJump, JumpBufferTriggersOnLanding)
 {
@@ -464,16 +528,13 @@ TEST(PlayerJump, JumpBufferBoundaryIsFourTicks)
     EXPECT_EQ(late.Player().GetStats().jumps, 0);
 }
 
-namespace
-{
-[[nodiscard]] SandboxConfig MakeLedgeConfig_()
+[[nodiscard]] static SandboxConfig MakeLedgeConfig_()
 {
     GroundMap ground = GroundMap::MakeEmpty(1600, 448);
     ground.FillRect(0, 378, 399, 447, true);
     ground.FillRect(400, 440, 1599, 447, true);
     return MakeConfig(std::move(ground), { 300.f, 378.f });
 }
-}   // namespace
 
 TEST(PlayerJump, CoyoteJumpWorksShortlyAfterWalkingOffALedge)
 {
@@ -601,20 +662,18 @@ TEST(PlayerJump, WalkingOffALedgeStartsFalling)
     EXPECT_EQ(sim.Player().GetStats().jumps, 0);
 }
 
-namespace
-{
-[[nodiscard]] slug::Vector<InputFrame> MakeNoisyScript_(
+[[nodiscard]] static Vector<InputFrame> MakeNoisyScript_(
     const int      _ticks,
     const uint64_t _seed)
 {
-    slug::RngMt19937         rng { _seed };
-    slug::Vector<InputFrame> frames;
+    RngMt19937         rng { _seed };
+    Vector<InputFrame> frames;
     InputFrame               cur;
     for (int i = 0; i < _ticks; ++i)
     {
         if (i % 8 == 0)
         {
-            const eAction action = static_cast<eAction>(slug::Random<int>(rng, 0, 6));
+            const eAction action = static_cast<eAction>(Random<int>(rng, 0, 6));
             cur.Set(action, !cur.IsHeld(action));
         }
         frames.push_back(cur);
@@ -622,8 +681,8 @@ namespace
     return frames;
 }
 
-[[nodiscard]] uint64_t RunScript_(
-    const slug::Vector<InputFrame>& _frames)
+[[nodiscard]] static uint64_t RunScript_(
+    const Vector<InputFrame>& _frames)
 {
     SandboxConfig config = MakeFlatConfig();
     config.bSpawnTargets = true;
@@ -634,11 +693,10 @@ namespace
     }
     return sim.State().HashState();
 }
-}   // namespace
 
 TEST(PlayerDeterminism, SameScriptTwiceGivesIdenticalStateHash)
 {
-    const slug::Vector<InputFrame> script = MakeNoisyScript_(1500, 42);
+    const Vector<InputFrame> script = MakeNoisyScript_(1500, 42);
     EXPECT_EQ(RunScript_(script), RunScript_(script));
 }
 

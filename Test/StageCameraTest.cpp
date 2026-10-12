@@ -9,21 +9,17 @@
 #include "Core/AssetPath.h"
 #include "StageTestUtil.h"
 
-using namespace slug;
-using namespace slugtest;
 
-namespace
-{
 constexpr const char* kTall = R"J({"initialBounds":[0,0,4000,1000]})J";
 
-[[nodiscard]] std::string OneSection_(
+[[nodiscard]] static std::string OneSection_(
     const std::string& _actions,
     const std::string& _camera = R"J({"initialBounds":[0,0,4000,448]})J")
 {
     return WrapStage(R"J([{"id":"s0","triggerX":0,"actions":)J" + _actions + "}]", _camera);
 }
 
-[[nodiscard]] Camera MakeCamera_(
+[[nodiscard]] static Camera MakeCamera_(
     const Aabb& _bounds = Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 1000.f }))
 {
     Camera camera;
@@ -32,14 +28,13 @@ constexpr const char* kTall = R"J({"initialBounds":[0,0,4000,1000]})J";
 }
 
 // 배너 액션 하나짜리 스테이지를 _ticks 틱 돌린 뒤의 러너 해시
-[[nodiscard]] uint64_t HashAfterTicks_(
+[[nodiscard]] static uint64_t HashAfterTicks_(
     const int _ticks)
 {
     RunnerFixture fx { OneSection_(R"J([{"type":"banner","text":"x","seconds":1,"delay":1.0}])J") };
     fx.StepAt(5.f, _ticks);
     return fx.runner.HashState();
 }
-}   // namespace
 
 TEST(CameraStageExt, ForwardOnlyYNeverMovesUp)
 {
@@ -314,7 +309,7 @@ TEST(StageRunnerCamera, BoundsCurveIsActiveBetweenFromAndUntil)
 
 TEST(StageRunnerCamera, Stage0SlopeMatchesTheLegacyFormula)
 {
-    slug::Result<StageData> result = LoadStageFromFile(slug::FindAssetRoot() / "Stage" / "Stage0.json");
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json");
     ASSERT_TRUE(result);
     const StageData    data  = result.Take();
     const BoundsCurve& curve = data.camera.boundsCurves.at(0);

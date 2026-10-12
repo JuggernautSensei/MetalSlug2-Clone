@@ -4,20 +4,24 @@
 
 #include "Base/Error.h"
 #include "Base/Log.h"
+#include "Base/PhaseTimer.h"
+#include "Core/AsyncLoader.h"
 #include "Base/Result.h"
 #include "Base/Types.h"
 
 // miniaudio 구현부는 이 파일에서만 만든다 (stb_vorbis 는 헤더 전용으로 선언만 가져온다).
 #define STB_VORBIS_HEADER_ONLY
+#pragma warning(push, 0)
 #include <stb_vorbis.c>
+#pragma warning(pop)
 
 #define MINIAUDIO_IMPLEMENTATION
+#pragma warning(push)
+#pragma warning(disable : 4456 4245 4701)
 #include <miniaudio.h>
+#pragma warning(pop)
 
 #undef STB_VORBIS_HEADER_ONLY
-
-namespace slug
-{
 
 struct AudioSystem::Backend
 {
@@ -67,9 +71,7 @@ struct AudioSystem::Backend
     }
 };
 
-namespace
-{
-    [[nodiscard]] ma_result InitSoundFromFile_(
+    [[nodiscard]] static ma_result InitSoundFromFile_(
         ma_engine*      _pEngine,
         const FilePath& _path,
         const ma_uint32 _flags,
@@ -82,7 +84,7 @@ namespace
 #endif
     }
 
-    [[nodiscard]] ma_result RegisterFile_(
+    [[nodiscard]] static ma_result RegisterFile_(
         ma_engine*      _pEngine,
         const FilePath& _path,
         const ma_uint32 _flags)
@@ -94,13 +96,53 @@ namespace
 #endif
     }
 
-    [[nodiscard]] float Clamp01_(
+    [[nodiscard]] static float Clamp01_(
         const float _v)
     {
         return std::clamp(_v, 0.f, 1.f);
     }
 
-}   // namespace
+class SoundRegisterJob final : public IAsyncLoadJob
+{
+public:
+    SoundRegisterJob(ma_engine* _pEngine, const SoundEntry* _pEntry, int* _pPreloaded);
+
+    void Execute() override;
+    void Complete() override;
+
+private:
+    ma_engine*        m_pEngine    = nullptr;
+    const SoundEntry* m_pEntry     = nullptr;
+    int*              m_pPreloaded = nullptr;
+    ma_result         m_result     = MA_ERROR;
+};
+
+SoundRegisterJob::SoundRegisterJob(
+    ma_engine* const        _pEngine,
+    const SoundEntry* const _pEntry,
+    int* const              _pPreloaded)
+    : m_pEngine(_pEngine)
+    , m_pEntry(_pEntry)
+    , m_pPreloaded(_pPreloaded)
+{
+}
+
+void SoundRegisterJob::Execute()
+{
+    m_result = RegisterFile_(m_pEngine, m_pEntry->path, MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_DECODE);
+}
+
+void SoundRegisterJob::Complete()
+{
+    if (m_result == MA_SUCCESS)
+    {
+        ++*m_pPreloaded;
+    }
+    else
+    {
+        SLUG_LOG_WARN("효과음 로드 실패 {} ({}): {}", m_pEntry->name, m_pEntry->file, ma_result_description(m_result));
+    }
+}
 
 AudioSystem::AudioSystem() = default;
 
@@ -142,21 +184,28 @@ Result<void> AudioSystem::Init(
     pBackend->voices.resize(static_cast<size_t>(m_voices.GetCapacity()));
     pBackend->voiceInit.assign(static_cast<size_t>(m_voices.GetCapacity()), 0);
 
-    int preloaded = 0;
+    int                    preloaded = 0;
+    const ScopedPhaseTimer timer { "sound-decode", "all" };
     for (const SoundEntry& entry: m_bank.GetEntries())
     {
         if (entry.bBgm)
         {
             continue;
         }
-        if (const ma_result result = RegisterFile_(&pBackend->engine, entry.path, MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_DECODE); result == MA_SUCCESS)
+        if (_config.pLoader)
         {
-            ++preloaded;
+            _config.pLoader->Submit(std::make_unique<SoundRegisterJob>(&pBackend->engine, &entry, &preloaded));
         }
         else
         {
-            SLUG_LOG_WARN("효과음 로드 실패 {} ({}): {}", entry.name, entry.file, ma_result_description(result));
+            SoundRegisterJob job { &pBackend->engine, &entry, &preloaded };
+            job.Execute();
+            job.Complete();
         }
+    }
+    if (_config.pLoader)
+    {
+        _config.pLoader->WaitAll();
     }
 
     m_pBackend = std::move(pBackend);
@@ -227,7 +276,14 @@ void AudioSystem::Update(
     {
         if (m_bgmFade.Update(_dtSec))
         {
+            const String pendingName = m_pendingBgm;
+            const bool   bPending    = !pendingName.empty() && m_bgmState == eBgmState::FadingOut;
+            const bool   bLoop       = m_bPendingLoop;
             StopBgm_();
+            if (bPending)
+            {
+                PlayBgm(pendingName, bLoop);
+            }
         }
         else if (m_bDevice && m_pBackend && m_pBackend->bBgmInit && !m_bBgmLoop && ma_sound_at_end(&m_pBackend->bgm) == MA_TRUE)
         {
@@ -362,6 +418,34 @@ void AudioSystem::FadeOutBgm(
     m_bgmFade.BeginFadeOut(_seconds);
 }
 
+void AudioSystem::ChangeBgm(
+    const StringView _name,
+    const float      _fadeOutSec,
+    const bool       _bLoop)
+{
+    if (!m_bInitialized || m_bank.FindIndex(_name) < 0)
+    {
+        return;
+    }
+
+    if (m_bgmState == eBgmState::Stopped || _fadeOutSec <= 0.f)
+    {
+        PlayBgm(_name, _bLoop);
+        return;
+    }
+
+    if (m_bgmState == eBgmState::Playing)
+    {
+        if (m_bgmName == _name)
+        {
+            return;
+        }
+        FadeOutBgm(_fadeOutSec);
+    }
+    m_pendingBgm   = String { _name };
+    m_bPendingLoop = _bLoop;
+}
+
 void AudioSystem::AllStop()
 {
     for (int slot = 0; slot < m_voices.GetCapacity(); ++slot)
@@ -382,6 +466,7 @@ void AudioSystem::StopBgm_()
     }
     m_bgmState = eBgmState::Stopped;
     m_bgmName.clear();
+    m_pendingBgm.clear();
     m_bgmFade.Reset();
 }
 
@@ -403,4 +488,17 @@ void AudioSystem::StopVoice_(
     m_voices.Release(_slot);
 }
 
-}   // namespace slug
+bool AudioSystem::IsInitialized() const
+{
+    return m_bInitialized;
+}
+
+bool AudioSystem::IsBgmFadingOut() const
+{
+    return m_bgmState == eBgmState::FadingOut;
+}
+
+const String& AudioSystem::GetCurrentBgm() const
+{
+    return m_bgmName;
+}

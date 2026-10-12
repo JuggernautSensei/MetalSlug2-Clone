@@ -1,8 +1,5 @@
 #pragma once
 
-namespace slug
-{
-
 class FixedStepClock
 {
 public:
@@ -11,37 +8,12 @@ public:
     static constexpr int    kMaxStepsPerFrame = 5;
 
     [[nodiscard]] int Advance(
-        const double _deltaTimeSec)
-    {
-        const double delta = _deltaTimeSec < 0.0 ? 0.0 : (_deltaTimeSec > kMaxFrameSec ? kMaxFrameSec : _deltaTimeSec);
-        m_accumulatorSec += delta;
+        const double _deltaTimeSec);
 
-        int steps = 0;
-        while (m_accumulatorSec >= kStepSec && steps < kMaxStepsPerFrame)
-        {
-            m_accumulatorSec -= kStepSec;
-            ++steps;
-        }
+    [[nodiscard]] float GetAlpha() const;
 
-        if (steps == kMaxStepsPerFrame && m_accumulatorSec >= kStepSec)
-        {
-            m_accumulatorSec = 0.0;
-        }
-        return steps;
-    }
-
-    [[nodiscard]] float GetAlpha() const
-    {
-        return static_cast<float>(m_accumulatorSec / kStepSec);
-    }
-
-    void Reset()
-    {
-        m_accumulatorSec = 0.0;
-    }
+    void Reset();
 
 private:
     double m_accumulatorSec = 0.0;
 };
-
-}   // namespace slug

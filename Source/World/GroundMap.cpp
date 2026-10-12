@@ -1,7 +1,6 @@
 #include "World/GroundMap.h"
 
 #include <cmath>
-#include <fstream>
 
 #include "Base/Assert.h"
 #include "Base/Error.h"
@@ -9,81 +8,10 @@
 #include "Base/Result.h"
 #include "Base/Types.h"
 
-namespace slug
+[[nodiscard]] static size_t StrideOf_(
+    const int _width)
 {
-
-namespace
-{
-    constexpr size_t kHeaderSize = 12;   // magic(4) + width(4) + height(4)
-    constexpr int    kMaxDim     = 1 << 20;
-
-    [[nodiscard]] uint32_t ReadU32Le_(
-        const uint8_t* _p)
-    {
-        return static_cast<uint32_t>(_p[0]) | (static_cast<uint32_t>(_p[1]) << 8) | (static_cast<uint32_t>(_p[2]) << 16) | (static_cast<uint32_t>(_p[3]) << 24);
-    }
-
-    [[nodiscard]] size_t StrideOf_(
-        const int _width)
-    {
-        return (static_cast<size_t>(_width) + 7) / 8;
-    }
-
-}   // namespace
-
-Result<GroundMap> GroundMap::Load(
-    const FilePath& _path)
-{
-    std::ifstream file { _path, std::ios::binary | std::ios::ate };
-    if (!file)
-    {
-        return Error { eError::FileOpen };
-    }
-
-    const std::streamsize size = file.tellg();
-    if (size < 0)
-    {
-        return Error { eError::FileRead };
-    }
-
-    Vector<uint8_t> data(static_cast<size_t>(size));
-    file.seekg(0, std::ios::beg);
-    if (size > 0 && !file.read(reinterpret_cast<char*>(data.data()), size))
-    {
-        return Error { eError::FileRead };
-    }
-
-    return LoadFromMemory(data);
-}
-
-Result<GroundMap> GroundMap::LoadFromMemory(
-    const Span<const uint8_t> _fileData)
-{
-    if (_fileData.size() < kHeaderSize || _fileData[0] != 'G' || _fileData[1] != 'R' || _fileData[2] != 'N' || _fileData[3] != 'D')
-    {
-        return Error { eError::InvalidData };
-    }
-
-    const uint32_t width  = ReadU32Le_(_fileData.data() + 4);
-    const uint32_t height = ReadU32Le_(_fileData.data() + 8);
-    if (width > static_cast<uint32_t>(kMaxDim) || height > static_cast<uint32_t>(kMaxDim))
-    {
-        return Error { eError::InvalidData };
-    }
-
-    const size_t stride   = StrideOf_(static_cast<int>(width));
-    const size_t dataSize = stride * height;
-    if (_fileData.size() - kHeaderSize < dataSize)
-    {
-        return Error { eError::InvalidData };
-    }
-
-    GroundMap map;
-    map.m_width  = static_cast<int>(width);
-    map.m_height = static_cast<int>(height);
-    map.m_stride = stride;
-    map.m_bits.assign(_fileData.begin() + kHeaderSize, _fileData.begin() + kHeaderSize + dataSize);
-    return map;
+    return (static_cast<size_t>(_width) + 7) / 8;
 }
 
 GroundMap GroundMap::MakeFromBits(
@@ -149,6 +77,36 @@ void GroundMap::SetPeriodicTail(
     m_tailFrom = _from;
     m_tailX    = _tailX;
     m_tailW    = _tailW;
+}
+
+void GroundMap::MaterializeTail(
+    const int _periods)
+{
+    if (m_tailW <= 0 || _periods <= 0)
+    {
+        return;
+    }
+    const int    newWidth  = m_tailFrom + m_tailW * _periods;
+    const size_t newStride = StrideOf_(newWidth);
+    if (newWidth <= m_width)
+    {
+        return;
+    }
+    Vector<uint8_t> bits(newStride * static_cast<size_t>(m_height), 0);
+    for (int y = 0; y < m_height; ++y)
+    {
+        for (int x = 0; x < newWidth; ++x)
+        {
+            if (IsSolid(x, y))
+            {
+                bits[static_cast<size_t>(y) * newStride + static_cast<size_t>(x >> 3)] |= static_cast<uint8_t>(1u << (x & 7));
+            }
+        }
+    }
+    m_bits     = std::move(bits);
+    m_width    = newWidth;
+    m_stride   = newStride;
+    m_tailFrom = newWidth;
 }
 
 void GroundMap::SetSolid(
@@ -368,4 +326,43 @@ Vec2 GroundMap::EstimateNormal(
     return { slope * invLen, -invLen };
 }
 
-}   // namespace slug
+int GroundMap::GetWidth() const
+{
+    return m_width;
+}
+
+int GroundMap::GetHeight() const
+{
+    return m_height;
+}
+
+bool GroundMap::IsEmpty() const
+{
+    return m_width == 0 || m_height == 0;
+}
+
+void GroundMap::SetBoundsPolicy(const GroundBoundsPolicy& _policy)
+{
+    m_policy = _policy;
+}
+
+bool GroundMap::HasPeriodicTail() const
+{
+    return m_tailW > 0;
+}
+
+bool GroundMap::IsSolid(
+    const int _x,
+    const int _y) const
+{
+    int x = _x;
+    if (m_tailW > 0 && x >= m_tailFrom)
+    {
+        x = m_tailX + (x - m_tailFrom) % m_tailW;
+    }
+    if (static_cast<unsigned>(x) >= static_cast<unsigned>(m_width) || static_cast<unsigned>(_y) >= static_cast<unsigned>(m_height))
+    {
+        return IsOutOfBoundsSolid_(_x, _y);
+    }
+    return ((m_bits[static_cast<size_t>(_y) * m_stride + static_cast<size_t>(x >> 3)] >> (x & 7)) & kSolidMask) != 0;
+}

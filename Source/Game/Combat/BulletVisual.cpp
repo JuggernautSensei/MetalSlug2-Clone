@@ -10,67 +10,66 @@
 #include "Render/SpriteBatch.h"
 #include "Render/SpriteLibrary.h"
 
-namespace slug
+constexpr float kTickSec = 1.f / 60.f;
+
+// 파이어샷 입자: 베이크된 큰 불꽃 클립(FlameShot_AttackMotion, 26프레임, 최대 94x94) 을 Head -> Loop(반복) -> Fade 로 쓴다
+constexpr const char* kFlameClip          = "FlameShot_AttackMotion";
+constexpr int         kFlameHeadFrames    = 4;    // 머리: 앞 4프레임 (입자 생성 직후)
+constexpr int         kFlameFadeFrames    = 6;    // 꼬리: 마지막 6프레임 (사거리 끝)
+constexpr int         kFlameHeadTicks     = 2;    // 머리/반복 프레임 하나당 틱
+constexpr float       kFlameFadeTicks     = 8.f;  // 사거리 끝 8틱 동안 Fade 재생
+constexpr float       kFlameForwardShift  = 24.f;   // 불꽃 중심을 총구보다 앞으로 (큰 프레임이 총을 가리지 않게)
+
+[[nodiscard]] static const AnimFrame* PickFlameFrame_(
+    const AnimationLibrary* _pAnims,
+    const Bullet&           _bullet)
 {
-
-namespace
-{
-    constexpr float kTickSec = 1.f / 60.f;
-
-    // 파이어샷 불꽃: 원작 시트(20587.png) 의 Head(머리 4) -> Loop(3, 반복) -> Fade(7) 순서
-    constexpr int   kFlameHeadTicksPerFrame = 2;
-    constexpr int   kFlameLoopTicksPerFrame = 2;
-    constexpr float kFlameFadeTicks         = 14.f;    // 사거리 끝 14틱 동안 Fade 재생
-    constexpr float kFlameForwardShift      = 24.f;    // 불꽃 중심을 총구보다 앞으로 (큰 프레임이 총을 가리지 않게)
-
-    [[nodiscard]] const AnimFrame* PickFlameFrame_(
-        const AnimationLibrary* _pAnims,
-        const Bullet&           _bullet)
+    const AnimClip* pClip = _pAnims ? _pAnims->FindClip(kFlameClip) : nullptr;
+    if (!pClip || pClip->frames.empty())
     {
-        const AnimClip* pHead = _pAnims ? _pAnims->FindClip("FlameShot_Orig_Head") : nullptr;
-        const AnimClip* pLoop = _pAnims ? _pAnims->FindClip("FlameShot_Orig_Loop") : nullptr;
-        const AnimClip* pFade = _pAnims ? _pAnims->FindClip("FlameShot_Orig_Fade") : nullptr;
-        if (!pHead || !pLoop || !pFade || pHead->frames.empty() || pLoop->frames.empty() || pFade->frames.empty())
-        {
-            return nullptr;
-        }
-
-        const float speed      = std::max(1.f, std::abs(_bullet.velocity.x) + std::abs(_bullet.velocity.y));
-        const float fadeLength = speed * kFlameFadeTicks / 60.f;
-        const float remaining  = _bullet.range - _bullet.travelled;
-        if (remaining < fadeLength)
-        {
-            const int count = pFade->GetFrameCount();
-            const int index = static_cast<int>((1.f - remaining / fadeLength) * static_cast<float>(count));
-            return &pFade->frames[static_cast<size_t>(std::clamp(index, 0, count - 1))];
-        }
-
-        const int headCount = pHead->GetFrameCount();
-        const int headTicks = headCount * kFlameHeadTicksPerFrame;
-        if (_bullet.ageTicks < headTicks)
-        {
-            return &pHead->frames[static_cast<size_t>(_bullet.ageTicks / kFlameHeadTicksPerFrame)];
-        }
-        const int loopCount = pLoop->GetFrameCount();
-        return &pLoop->frames[static_cast<size_t>(((_bullet.ageTicks - headTicks) / kFlameLoopTicksPerFrame) % loopCount)];
+        return nullptr;
+    }
+    const int count = pClip->GetFrameCount();
+    if (count <= kFlameHeadFrames + kFlameFadeFrames)
+    {
+        return &pClip->frames[static_cast<size_t>(std::clamp(_bullet.ageTicks / kFlameHeadTicks, 0, count - 1))];
     }
 
-    [[nodiscard]] const AnimFrame* PickClipFrame_(
-        const AnimationLibrary* _pAnims,
-        const String&           _name,
-        const int               _ageTicks,
-        const bool              _bLoop)
+    const float speed      = std::max(1.f, std::abs(_bullet.velocity.x) + std::abs(_bullet.velocity.y));
+    const float fadeLength = speed * kFlameFadeTicks / 60.f;
+    const float remaining  = _bullet.range - _bullet.travelled;
+    if (remaining < fadeLength)
     {
-        const AnimClip* pClip = _pAnims ? _pAnims->FindClip(_name) : nullptr;
-        if (!pClip || pClip->frames.empty())
-        {
-            return nullptr;
-        }
-        const int count = pClip->GetFrameCount();
-        const int index = static_cast<int>(static_cast<float>(_ageTicks) * kTickSec / pClip->frameDuration);
-        return &pClip->frames[static_cast<size_t>(_bLoop ? index % count : std::min(index, count - 1))];
+        const float progress = std::clamp(1.f - remaining / fadeLength, 0.f, 1.f);
+        const int   fadeStep = std::min(kFlameFadeFrames - 1, static_cast<int>(progress * static_cast<float>(kFlameFadeFrames)));
+        return &pClip->frames[static_cast<size_t>(count - kFlameFadeFrames + fadeStep)];
     }
-}   // namespace
+
+    const int headTicks = kFlameHeadFrames * kFlameHeadTicks;
+    if (_bullet.ageTicks < headTicks)
+    {
+        return &pClip->frames[static_cast<size_t>(_bullet.ageTicks / kFlameHeadTicks)];
+    }
+    const int loopCount = count - kFlameHeadFrames - kFlameFadeFrames;
+    const int loopStep  = ((_bullet.ageTicks - headTicks) / kFlameHeadTicks) % loopCount;
+    return &pClip->frames[static_cast<size_t>(kFlameHeadFrames + loopStep)];
+}
+
+[[nodiscard]] static const AnimFrame* PickClipFrame_(
+    const AnimationLibrary* _pAnims,
+    const String&           _name,
+    const int               _ageTicks,
+    const bool              _bLoop)
+{
+    const AnimClip* pClip = _pAnims ? _pAnims->FindClip(_name) : nullptr;
+    if (!pClip || pClip->frames.empty())
+    {
+        return nullptr;
+    }
+    const int count = pClip->GetFrameCount();
+    const int index = static_cast<int>(static_cast<float>(_ageTicks) * kTickSec / pClip->frameDuration);
+    return &pClip->frames[static_cast<size_t>(_bLoop ? index % count : std::min(index, count - 1))];
+}
 
 bool SubmitPlayerBullet(
     SpriteBatch&            _sprites,
@@ -78,7 +77,7 @@ bool SubmitPlayerBullet(
     const SpriteLibrary&    _spriteLib,
     const Bullet&           _bullet,
     const Vec2              _pos,
-    const int               _layer)
+    const int               _depth)
 {
     const eWeapon weapon    = static_cast<eWeapon>(_bullet.tag);
     const float   vx        = _bullet.velocity.x;
@@ -103,7 +102,7 @@ bool SubmitPlayerBullet(
             {
                 return false;
             }
-            _sprites.Submit(_layer, 0, pInfo->frame, _pos);
+            _sprites.Submit(_depth, 0, pInfo->frame, _pos);
             return true;
         }
         case eWeapon::Shotgun:
@@ -113,17 +112,29 @@ bool SubmitPlayerBullet(
             {
                 return false;
             }
-            _sprites.Submit(_layer, 0, *pFrame, _pos);
+            _sprites.Submit(_depth, 0, *pFrame, _pos);
             return true;
         }
         case eWeapon::Rocket:
         {
+            // 로켓 스프라이트는 가로(오른쪽 향함/왼쪽 향함) 한 방향뿐이다. 진행 방향 각도만큼 피벗 기준으로 돌려 그린다
+            // 왼쪽 클립은 왼쪽을 향하므로 기준각을 180도 빼고, 오른쪽 클립은 0도 기준 (위/아래/대각 모두 포함)
             const AnimFrame* pFrame = PickClipFrame_(_pAnims, bRight ? "Aparch_Missle_Right" : "Aparch_Missle_Left", _bullet.ageTicks, true);
             if (!pFrame)
             {
                 return false;
             }
-            _sprites.Submit(_layer, 0, *pFrame, _pos);
+            constexpr float kRadToDeg = 180.f / 3.14159265f;
+            float           degrees   = std::atan2(vy, vx) * kRadToDeg - (bRight ? 0.f : 180.f);
+            if (degrees > 180.f)
+            {
+                degrees -= 360.f;
+            }
+            else if (degrees < -180.f)
+            {
+                degrees += 360.f;
+            }
+            _sprites.Submit(_depth, 0, *pFrame, _pos, { .rotationDeg = degrees });
             return true;
         }
         case eWeapon::Flame:
@@ -133,8 +144,11 @@ bool SubmitPlayerBullet(
             {
                 return false;
             }
-            const Vec2 shifted = { _pos.x + (bRight ? kFlameForwardShift : -kFlameForwardShift), _pos.y };
-            _sprites.Submit(_layer, 0, *pFrame, shifted, { .bFlipX = !bRight });
+            // 수명에 따라 표시 배율이 커진다 (판정 성장과 같은 진행도: travelled / range)
+            const float t     = _bullet.range > 0.f ? std::clamp(_bullet.travelled / _bullet.range, 0.f, 1.f) : 1.f;
+            const float scale = Lerp(_bullet.scaleStart, _bullet.scaleEnd, t);
+            const Vec2  shifted = { _pos.x + (bRight ? kFlameForwardShift : -kFlameForwardShift), _pos.y };
+            _sprites.Submit(_depth, 0, *pFrame, shifted, { .bFlipX = !bRight, .scale = scale });
             return true;
         }
         default:
@@ -144,7 +158,7 @@ bool SubmitPlayerBullet(
             {
                 return false;
             }
-            _sprites.Submit(_layer, 0, pInfo->frame, _pos);
+            _sprites.Submit(_depth, 0, pInfo->frame, _pos);
             return true;
         }
     }
@@ -157,16 +171,16 @@ void PlayShotSfx(
 {
     switch (_weapon)
     {
-        case eWeapon::Hmg: _audio.Play(sfx::kPistolShot, 0.55f, 0.12f); break;
-        case eWeapon::Shotgun: _audio.Play(sfx::kPistolShot, 1.f, 0.06f); break;
-        case eWeapon::Rocket: _audio.Play(sfx::kPistolShot, 0.9f, 0.02f); break;
+        case eWeapon::Hmg: _audio.Play(kPistolShot, 0.55f, 0.12f); break;
+        case eWeapon::Shotgun: _audio.Play(kPistolShot, 1.f, 0.06f); break;
+        case eWeapon::Rocket: _audio.Play(kPistolShot, 0.9f, 0.02f); break;
         case eWeapon::Flame:
             if (_shotIndex % 6 == 0)
             {
-                _audio.Play(sfx::kFlameShot, 0.7f, 0.05f);
+                _audio.Play(kFlameShot, 0.7f, 0.05f);
             }
             break;
-        default: _audio.Play(sfx::kPistolShot, 0.8f, 0.04f); break;
+        default: _audio.Play(kPistolShot, 0.8f, 0.04f); break;
     }
 }
 
@@ -178,15 +192,13 @@ void PlayWeaponPickupSfx(
     {
         return;
     }
-    _audio.Play(sfx::kPowerUp);
+    _audio.Play(kPowerUp);
     switch (_weapon)
     {
-        case eWeapon::Hmg: _audio.Play(sfx::kVoiceHmg); break;
-        case eWeapon::Shotgun: _audio.Play(sfx::kVoiceShotgun); break;
-        case eWeapon::Rocket: _audio.Play(sfx::kVoiceRocket); break;
-        case eWeapon::Flame: _audio.Play(sfx::kVoiceFlame); break;
+        case eWeapon::Hmg: _audio.Play(kVoiceHmg); break;
+        case eWeapon::Shotgun: _audio.Play(kVoiceShotgun); break;
+        case eWeapon::Rocket: _audio.Play(kVoiceRocket); break;
+        case eWeapon::Flame: _audio.Play(kVoiceFlame); break;
         default: break;
     }
 }
-
-}   // namespace slug

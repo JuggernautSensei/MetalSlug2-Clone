@@ -2,9 +2,6 @@
 #include "Base/Types.h"
 #include "World/Combat.h"
 
-namespace slug
-{
-
 class CombatSystem
 {
 public:
@@ -36,5 +33,3 @@ private:
     Vector<HitEvent> m_events    = {};
     uint32_t         m_nextHitId = 0;
 };
-
-}   // namespace slug

@@ -1,4 +1,4 @@
-#include "Game/Stage/StageRunner.h"
+﻿#include "Game/Stage/StageRunner.h"
 
 #include <algorithm>
 #include <cmath>
@@ -10,36 +10,30 @@
 #include "Base/Types.h"
 #include "World/Constants.h"
 
-namespace slug
+constexpr double kTicksPerSec = 60.0;
+
+constexpr float kWallDepth   = 64.f;
+constexpr float kWallExtentY = 4000.f;
+
+static void MixU64_(
+    uint64_t&      _hash,
+    const uint64_t _value)
 {
+    for (int i = 0; i < 8; ++i)
+    {
+        _hash ^= (_value >> (i * 8)) & 0xFFu;
+        _hash *= 1099511628211ull;
+    }
+}
 
-namespace
+static void MixFloat_(
+    uint64_t&   _hash,
+    const float _value)
 {
-    constexpr double kTicksPerSec = 60.0;
-
-    constexpr float kWallDepth   = 64.f;
-    constexpr float kWallExtentY = 4000.f;
-
-    void MixU64_(
-        uint64_t&      _hash,
-        const uint64_t _value)
-    {
-        for (int i = 0; i < 8; ++i)
-        {
-            _hash ^= (_value >> (i * 8)) & 0xFFu;
-            _hash *= 1099511628211ull;
-        }
-    }
-
-    void MixFloat_(
-        uint64_t&   _hash,
-        const float _value)
-    {
-        uint32_t bits = 0;
-        std::memcpy(&bits, &_value, sizeof(bits));
-        MixU64_(_hash, bits);
-    }
-}   // namespace
+    uint32_t bits = 0;
+    std::memcpy(&bits, &_value, sizeof(bits));
+    MixU64_(_hash, bits);
+}
 
 StageRunner::StageRunner(
     const StageData& _data,
@@ -248,10 +242,19 @@ void StageRunner::Tick()
 void StageRunner::AddCameraScroll(
     const float _dx)
 {
-    if (_dx != 0.f)
+    if (_dx == 0.f)
     {
-        m_pCamera->AddScrollFloor(_dx);
+        return;
     }
+    if (!m_locks.empty())
+    {
+        // 잠금 중: 잠금 사각형을 카메라와 함께 옮긴다 (바닥만 올리면 잠금 오른쪽 끝에 막힌다). 플레이어 화면 가두기도 이 사각형을 따른다
+        m_locks.back().rect.min.x += _dx;
+        m_locks.back().rect.max.x += _dx;
+        m_pCamera->ShiftLock(_dx);
+        return;
+    }
+    m_pCamera->AddScrollFloor(_dx);
 }
 
 void StageRunner::CancelAbortables_()
@@ -284,7 +287,7 @@ void StageRunner::ProcessPending_()
             ++i;
         }
     }
-    std::stable_sort(ready.begin(), ready.end(), [](const PendingItem& _a, const PendingItem& _b) {
+    std::ranges::stable_sort(ready, [](const PendingItem& _a, const PendingItem& _b) {
         return _a.dueTick != _b.dueTick ? _a.dueTick < _b.dueTick : _a.seq < _b.seq;
     });
 
@@ -545,6 +548,10 @@ void StageRunner::Execute_(
 
         case eActionType::Banner:
             m_pHost->ShowBanner(_action.text, _action.seconds);
+            if (!_action.name.empty())
+            {
+                m_pHost->PlaySfx(_action.name);
+            }
             break;
 
         case eActionType::Fade:
@@ -552,7 +559,14 @@ void StageRunner::Execute_(
             break;
 
         case eActionType::PlayBgm:
-            m_pHost->PlayBgm(_action.name, _action.bLoop);
+            if (_action.fadeOutSec > 0.f)
+            {
+                m_pHost->ChangeBgm(_action.name, _action.bLoop, _action.fadeOutSec);
+            }
+            else
+            {
+                m_pHost->PlayBgm(_action.name, _action.bLoop);
+            }
             break;
 
         case eActionType::PlayerInvincible:
@@ -669,6 +683,8 @@ void StageRunner::ExecSpawn_(
         request.def            = _spec.def;
         request.stageId        = _spec.id;
         request.facing         = _spec.facing;
+        request.bHasZ          = _spec.bHasZ;
+        request.z              = _spec.z;
         request.bHasHp         = _spec.bHasHp;
         request.hp             = _spec.hp;
         request.drop           = _spec.drop;
@@ -972,5 +988,3 @@ uint64_t StageRunner::HashState() const
     MixFloat_(hash, center.y);
     return hash;
 }
-
-}   // namespace slug

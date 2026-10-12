@@ -8,9 +8,6 @@
 #include "Render/Animation.h"
 #include "World/Combat.h"
 
-namespace slug
-{
-
 enum class eDummyKind : uint8_t
 {
     Grunt,
@@ -82,5 +79,3 @@ private:
 [[nodiscard]] Vec2        GetDummySize(eDummyKind _kind);
 [[nodiscard]] int         GetDummyHp(eDummyKind _kind, const SandboxTuning& _tuning);
 [[nodiscard]] const char* GetDummyName(eDummyKind _kind);
-
-}   // namespace slug

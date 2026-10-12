@@ -4,13 +4,10 @@
 #include "Base/Types.h"
 #include "VehicleTestUtil.h"
 
-using namespace slugtest;
 
-namespace
-{
 constexpr float kFloorY = 378.f;
 
-[[nodiscard]] ShotSpawn MakeRoller_(
+[[nodiscard]] static ShotSpawn MakeRoller_(
     const float _dirX,
     const int   _rollTicks,
     const bool  _bExpireFx)
@@ -51,11 +48,10 @@ struct Field
 
     [[nodiscard]] const Shot* First() const
     {
-        const slug::Span<const Shot> shots = ps.GetShots();
+        const Span<const Shot> shots = ps.GetShots();
         return shots.empty() ? nullptr : &shots[0];
     }
 };
-}   // namespace
 
 TEST(VehicleProjectile, RollingShotFallsStraightThenLandsOnTheFloor)
 {
@@ -116,7 +112,7 @@ TEST(VehicleProjectile, RollingShotExpiresRollTicksAfterLandingWithItsFlashWhenR
     f.Step(80);
     EXPECT_TRUE(f.ps.GetShots().empty());
     EXPECT_GE(landedAge, 55);
-    const slug::Vector<ShotFx> fx = f.ps.TakeShotFx();
+    const Vector<ShotFx> fx = f.ps.TakeShotFx();
     EXPECT_EQ(fx.size(), 1u) << "수명 종료 연출 1회";
 }
 

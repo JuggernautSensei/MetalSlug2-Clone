@@ -3,9 +3,6 @@
 #include "Base/Types.h"
 #include "Game/Enemies/EnemyCommon.h"
 
-namespace slug
-{
-
 void BeginVehicleDeath(
     Enemy&          _e,
     const EnemyDef& _def,
@@ -19,9 +16,7 @@ void RequestFxAt(
     StringView _clip,
     Vec2       _at,
     int        _facing,
-    int        _layer    = 60,
+    int        _depth    = 60,
     float      _delaySec = 0.f);
 
 [[nodiscard]] Vec2 ScreenToWorld(const EnemyEnv& _env, Vec2 _screen);
-
-}   // namespace slug

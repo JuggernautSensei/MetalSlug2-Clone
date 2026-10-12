@@ -2,9 +2,6 @@
 #include "Base/Types.h"
 #include "Game/GameState.h"
 
-namespace slug
-{
-
 class SimRunner
 {
 public:
@@ -18,6 +15,7 @@ public:
     void Run(Span<const InputFrame> _inputs);
 
     void Render(float _alpha);
+    void SwitchState(std::unique_ptr<IGameState> _pNext);
 
     [[nodiscard]] IGameState*         GetState() const;
     [[nodiscard]] uint64_t            GetTickCount() const;
@@ -25,12 +23,8 @@ public:
     [[nodiscard]] bool                IsFinished() const;
 
 private:
-    void SwitchState_(std::unique_ptr<IGameState> _pNext);
-
     GameContext&                m_ctx;
     std::unique_ptr<IGameState> m_pState;
     InputHistory                m_history   = {};
     uint64_t                    m_tickCount = 0;
 };
-
-}   // namespace slug

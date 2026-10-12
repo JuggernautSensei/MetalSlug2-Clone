@@ -5,9 +5,6 @@
 
 #include "Base/Types.h"
 
-namespace slug
-{
-
 enum class eAction : uint8_t
 {
     Left,
@@ -28,19 +25,12 @@ struct InputFrame
 {
     uint16_t held = 0;
 
-    [[nodiscard]] constexpr bool IsHeld(
-        const eAction _action) const
-    {
-        return ((held >> static_cast<unsigned>(_action)) & 1u) != 0;
-    }
+    [[nodiscard]] bool IsHeld(
+        const eAction _action) const;
 
-    constexpr void Set(
+    void Set(
         const eAction _action,
-        const bool    _bHeld)
-    {
-        const uint16_t mask = static_cast<uint16_t>(1u << static_cast<unsigned>(_action));
-        held                = _bHeld ? static_cast<uint16_t>(held | mask) : static_cast<uint16_t>(held & ~mask);
-    }
+        const bool    _bHeld);
 
     [[nodiscard]] constexpr bool operator==(const InputFrame&) const = default;
 };
@@ -84,5 +74,3 @@ private:
     size_t                       m_head   = 0;
     size_t                       m_count  = 0;
 };
-
-}   // namespace slug

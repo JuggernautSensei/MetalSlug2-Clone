@@ -6,9 +6,6 @@
 #include "Base/Result.h"
 #include "Base/Types.h"
 
-namespace slug
-{
-
 struct GroundBoundsPolicy
 {
     bool bSolidLeft   = false;
@@ -22,9 +19,6 @@ class GroundMap
 public:
     static constexpr uint8_t kSolidMask = 1;
 
-    [[nodiscard]] static Result<GroundMap> Load(const FilePath& _path);
-    [[nodiscard]] static Result<GroundMap> LoadFromMemory(Span<const uint8_t> _fileData);
-
     [[nodiscard]] static GroundMap MakeFromBits(int _width, int _height, Span<const uint8_t> _packedBits);
 
     [[nodiscard]] static GroundMap MakeEmpty(int _width, int _height);
@@ -36,32 +30,22 @@ public:
     void SetSolid(int _x, int _y, bool _bSolid);
     void FillRect(int _x0, int _y0, int _x1, int _y1, bool _bSolid);
 
-    [[nodiscard]] int      GetWidth() const { return m_width; }
-    [[nodiscard]] int      GetHeight() const { return m_height; }
-    [[nodiscard]] bool     IsEmpty() const { return m_width == 0 || m_height == 0; }
+    [[nodiscard]] int      GetWidth() const;
+    [[nodiscard]] int      GetHeight() const;
+    [[nodiscard]] bool     IsEmpty() const;
     [[nodiscard]] uint64_t CountSolidPixels() const;
 
-    void SetBoundsPolicy(const GroundBoundsPolicy& _policy) { m_policy = _policy; }
+    void SetBoundsPolicy(const GroundBoundsPolicy& _policy);
 
     // 무한 꼬리: x >= m_tailFrom 은 [m_tailX, m_tailX + m_tailW) 구간을 주기적으로 반복한다 (보스전 엔드리스 지형).
     void               SetPeriodicTail(int _from, int _tailX, int _tailW);
-    [[nodiscard]] bool HasPeriodicTail() const { return m_tailW > 0; }
+    [[nodiscard]] bool HasPeriodicTail() const;
+    // 꼬리를 주기 _periods 개만큼 실제 픽셀로 펼친다 (주기 위상 유지). 펼친 구간은 파괴 패치로 지울 수 있다.
+    void MaterializeTail(int _periods);
 
     [[nodiscard]] bool IsSolid(
         const int _x,
-        const int _y) const
-    {
-        int x = _x;
-        if (m_tailW > 0 && x >= m_tailFrom)
-        {
-            x = m_tailX + (x - m_tailFrom) % m_tailW;
-        }
-        if (static_cast<unsigned>(x) >= static_cast<unsigned>(m_width) || static_cast<unsigned>(_y) >= static_cast<unsigned>(m_height))
-        {
-            return IsOutOfBoundsSolid_(_x, _y);
-        }
-        return ((m_bits[static_cast<size_t>(_y) * m_stride + static_cast<size_t>(x >> 3)] >> (x & 7)) & kSolidMask) != 0;
-    }
+        const int _y) const;
 
     [[nodiscard]] bool IsSolidAt(Vec2 _point) const;
 
@@ -89,5 +73,3 @@ private:
     int                m_tailX    = 0;
     int                m_tailW    = 0;
 };
-
-}   // namespace slug

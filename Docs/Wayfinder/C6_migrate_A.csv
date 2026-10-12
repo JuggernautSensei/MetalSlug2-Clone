@@ -1,0 +1,13 @@
+file,symbol,oldValue,newJsonPath,jsonValue,unit,disposition
+Source/Game/Enemies/EnemyCommon.cpp,kBloodOffsetY,-27.5,defs.human_base.death.bloodOffsetY,-27.5,px,MIGRATE
+Source/Game/Enemies/EnemyCommon.cpp,velocity,"{110,-430}",defs.human_base.death.bombVelocity,"[110,-430]",px/s (x*away),MIGRATE
+Source/Game/Enemies/VehicleJeep.cpp,shift,20,defs.jeep.params.rocketShiftX,20,px,MIGRATE
+Source/Game/Enemies/HeliBomb.cpp,RequestFx,-6,defs.heli_bomb.params.groundFxDy,-6,px,MIGRATE
+Source/Game/Enemies/BigShiee.cpp,kChuteEdgeX,30,defs.bigshiee.params.chuteEdgeX,30,px,MIGRATE
+Source/Game/Enemies/BigShiee.cpp,World_@735,"{0,-24}",defs.bigshiee.params.turretBlastOffset,"[0,-24]",px,MIGRATE
+Source/Game/Enemies/BigShiee.cpp,RequestFxAt@741,"{0,-10}",defs.bigshiee.params.turretSmokeOffset,"[0,-10]",px,MIGRATE
+Source/Game/Enemies/BigShiee.cpp,RequestFxAt@804,"{0,40}",defs.bigshiee.params.deathFlameOffset,"[0,40]",px,MIGRATE
+Source/Game/Enemies/BigShiee.cpp,World_@846,120,defs.bigshiee.params.deathBlastDy,120,px,MIGRATE
+Source/Game/Enemies/BigShiee.cpp,World_@850,"{20,-150}",defs.bigshiee.params.deathHugeOffset,"[20,-150]",px,MIGRATE
+Source/Game/Enemies/BigShiee.cpp,World_@1001,"{-40,-170}",defs.bigshiee.params.deathDiscOffset,"[-40,-170]",px,MIGRATE
+*,all other pass-A rows,,,,,ALLOW (Scripts/AuditCoords.allow.txt; per-area reason; Bus/items/flame/bomb-bounce/stage-camera deferred)

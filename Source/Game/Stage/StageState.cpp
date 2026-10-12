@@ -8,11 +8,14 @@
 #include "Audio/AudioSink.h"
 #include "Base/Log.h"
 #include "Base/Math.h"
+#include "Base/PhaseTimer.h"
 #include "Base/RGBA.h"
 #include "Base/Random.h"
 #include "Base/Result.h"
 #include "Base/Types.h"
+#include "Core/AsyncLoader.h"
 #include "Game/Combat/BulletVisual.h"
+#include "Game/Enemies/BigShiee.h"
 #include "Game/Player/PlayerHitboxes.h"
 #include "Game/Player/PlayerWeapons.h"
 #include "Game/Stage/StageMapping.h"
@@ -20,78 +23,82 @@
 #include "Game/Ui/Hud.h"
 #include "World/Constants.h"
 
-namespace slug
+constexpr int   kAutoTowerDamage  = 24;    // bAutoDamage: 망루 한 방 (슬러그 캐논 피해)
+constexpr float kAutoTowerMarginPx = 120.f;  // 화면 오른쪽에서 이만큼 안쪽에 들어오면 친다
+constexpr int kAutoTurretInterval = 12;   // bAutoDamage: 포탑 단계 피해 간격 (틱). 주포는 6 틱
+
+[[nodiscard]] static CameraTuning MakeCameraTuning_(
+    const CameraSettings& _settings)
 {
+    CameraTuning tuning = {};
+    tuning.viewSize     = { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) };
+    tuning.deadzoneHalf = _settings.deadzoneHalf;
+    tuning.smoothTime   = _settings.smoothTime;
+    return tuning;
+}
 
-namespace
+[[nodiscard]] static Vec2 Lerp_(
+    const Vec2  _a,
+    const Vec2  _b,
+    const float _t)
 {
-    [[nodiscard]] CameraTuning MakeCameraTuning_(
-        const CameraSettings& _settings)
-    {
-        CameraTuning tuning = {};
-        tuning.viewSize     = { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) };
-        tuning.deadzoneHalf = _settings.deadzoneHalf;
-        tuning.smoothTime   = _settings.smoothTime;
-        return tuning;
-    }
+    return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
+}
 
-    [[nodiscard]] Vec2 Lerp_(
-        const Vec2  _a,
-        const Vec2  _b,
-        const float _t)
-    {
-        return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
-    }
+[[nodiscard]] static Vec2 ToScreen_(
+    const Vec2 _world,
+    const Vec2 _camera)
+{
+    return { std::floor(_world.x - _camera.x), std::floor(_world.y - _camera.y) };
+}
 
-    [[nodiscard]] Vec2 ToScreen_(
-        const Vec2 _world,
-        const Vec2 _camera)
-    {
-        return { std::floor(_world.x - _camera.x), std::floor(_world.y - _camera.y) };
-    }
+static void DrawBox_(
+    Renderer&   _renderer,
+    const Aabb& _box,
+    const Vec2  _camera,
+    const RGBA  _color)
+{
+    const Vec2 topLeft     = ToScreen_(_box.min, _camera);
+    const Vec2 bottomRight = ToScreen_(_box.max, _camera);
+    _renderer.DrawRect(topLeft, { Max(1.f, bottomRight.x - topLeft.x), Max(1.f, bottomRight.y - topLeft.y) }, _color);
+}
 
-    void DrawBox_(
-        Renderer&   _renderer,
-        const Aabb& _box,
-        const Vec2  _camera,
-        const RGBA  _color)
+[[nodiscard]] static RGBA GetPlaceholderColor_(
+    const PlaceholderEntity& _entity)
+{
+    if (IsHitFlashOn(_entity.flashTicks))
     {
-        const Vec2 topLeft     = ToScreen_(_box.min, _camera);
-        const Vec2 bottomRight = ToScreen_(_box.max, _camera);
-        _renderer.DrawRect(topLeft, { Max(1.f, bottomRight.x - topLeft.x), Max(1.f, bottomRight.y - topLeft.y) }, _color);
+        return { 255, 150, 150, 255 };
     }
-
-    [[nodiscard]] RGBA GetPlaceholderColor_(
-        const PlaceholderEntity& _entity)
+    if (!_entity.bHittable)
     {
-        if (IsHitFlashOn(_entity.flashTicks))
+        return { 150, 150, 170, 255 };
+    }
+    return _entity.kind == eEntityKind::Npc ? RGBA { 120, 170, 230, 255 } : RGBA { 96, 120, 70, 255 };
+}
+
+[[nodiscard]] static String JoinIds_(
+    const Vector<String>& _ids)
+{
+    String joined = {};
+    for (const String& id: _ids)
+    {
+        if (!joined.empty())
         {
-            return { 255, 150, 150, 255 };
+            joined += ",";
         }
-        if (!_entity.bHittable)
-        {
-            return { 150, 150, 170, 255 };
-        }
-        return _entity.kind == eEntityKind::Npc ? RGBA { 120, 170, 230, 255 } : RGBA { 96, 120, 70, 255 };
+        joined += id;
     }
-
-    [[nodiscard]] String JoinIds_(
-        const Vector<String>& _ids)
-    {
-        String joined = {};
-        for (const String& id: _ids)
-        {
-            if (!joined.empty())
-            {
-                joined += ",";
-            }
-            joined += id;
-        }
-        return joined;
-    }
-}   // namespace
+    return joined;
+}
 
 StageState::StageState() = default;
+
+StageState::StageState(
+    const StageStateConfig& _config)
+    : m_config(_config)
+{
+}
 
 void StageState::OnEnter(
     GameContext& _ctx)
@@ -118,6 +125,46 @@ int StageState::GetRescuedPows() const
     return m_rescuedPows;
 }
 
+const InputHistory& StageState::MakeBotInput_()
+{
+    // 봇: 아레나까지 오른쪽으로 걷고, 보스 파트 (포탑/주포) 중 가장 가까운 것 아래로 가서 위로 쏜다 (캡처 비교용)
+    InputFrame frame = {};
+    const Vec2 feet  = m_player.GetFeet();
+
+    bool  bTarget = false;
+    float bestDx  = 0.f;
+    for (const Hurtbox& hurtbox: m_combat.GetHurtboxes())
+    {
+        if (hurtbox.team != eTeam::Enemy || !IsEnemyOwner(hurtbox.owner) || GetPartIndex(hurtbox.owner) < 0)
+        {
+            continue;
+        }
+        const float dx = hurtbox.box.GetCenter().x - feet.x;
+        if (!bTarget || std::abs(dx) < std::abs(bestDx))
+        {
+            bTarget = true;
+            bestDx  = dx;
+        }
+    }
+
+    if (!bTarget)
+    {
+        frame.Set(eAction::Right, true);
+    }
+    else if (std::abs(bestDx) > 14.f)
+    {
+        frame.Set(bestDx > 0.f ? eAction::Right : eAction::Left, true);
+        frame.Set(eAction::Up, true);
+    }
+    else
+    {
+        frame.Set(eAction::Up, true);
+        frame.Set(eAction::Shot, (m_tickCount % 10) < 3);
+    }
+    m_botInput.Push(frame);
+    return m_botInput;
+}
+
 void StageState::Load_(
     GameContext& _ctx)
 {
@@ -125,34 +172,63 @@ void StageState::Load_(
     m_bFailed   = false;
     m_assetRoot = _ctx.assetRoot;
 
-    StageLoadDiagnostics diag = {};
-    Result<StageData>    data = LoadStageFromFile(_ctx.assetRoot / "Stage" / "Stage0.json", &diag);
+    const ScopedPhaseTimer stageTimer { "stage-load", m_config.stageFile };
+    StageLoadDiagnostics   diag = {};
+    Result<StageData>      data = LoadStageFromFile(_ctx.assetRoot / "Stage" / m_config.stageFile, &diag);
     if (!data)
     {
-        SLUG_LOG_ERROR("Stage0.json 을 읽지 못했습니다: {}", diag.message);
+        SLUG_LOG_ERROR("{} 을 읽지 못했습니다: {}", m_config.stageFile, diag.message);
         m_bFailed = true;
         return;
     }
     m_data = data.Take();
+
+    // 원경 텍스처는 디코드가 오래 걸리므로 (Stage0_Main 14094px) 먼저 워커에 맡기고, 아래 지면/정의 로드와 겹친다.
+    // 핸들은 동기 로드와 같은 순서 (원경 -> 배경 레이어) 로 등록된다.
+    // 스프라이트 크기 정보는 헤드리스에서도 필요하다 (소품 컬링이 크기를 본다: 결과가 모드와 무관해야 한다)
+    if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot))
+    {
+        m_spriteLib = library.Take();
+    }
+    m_props.SetSpriteLibrary(&m_spriteLib);
+    if (!_ctx.IsHeadless())
+    {
+        if (_ctx.pSprites && _ctx.pLoader)
+        {
+            m_bgHandle = -1;
+            m_backdropHandles.assign(m_data.backdrops.size(), -1);
+            _ctx.pSprites->LoadStandaloneTextureAsync(_ctx.assetRoot / "Textures" / (m_data.background + ".png"), *_ctx.pLoader, &m_bgHandle);
+            for (size_t i = 0; i < m_data.backdrops.size(); ++i)
+            {
+                const SpriteInfo* pInfo = m_spriteLib.Find(m_data.backdrops[i].sprite);
+                if (pInfo && pInfo->bStandalone)
+                {
+                    _ctx.pSprites->LoadStandaloneTextureAsync(_ctx.assetRoot / FilePath { pInfo->file }, *_ctx.pLoader, &m_backdropHandles[i]);
+                }
+            }
+        }
+    }
 
     m_host               = StageWorldHost {};
     const int flatWidth  = static_cast<int>(m_data.worldSize.x);
     const int flatHeight = static_cast<int>(m_data.worldSize.y);
     for (const String& name: m_data.groundMaps)
     {
-        const FilePath path = _ctx.assetRoot / "Baked" / "Ground" / (name + ".bin");
-        if (Result<GroundMap> map = GroundMap::Load(path))
+        const FilePath         path = _ctx.assetRoot / "Ground" / (name + ".png");
+        const ScopedPhaseTimer groundTimer { "ground-mask", name };
+        if (std::optional<GroundMap> map = LoadGroundMask(path))
         {
-            GroundMap ground = map.Take();
+            GroundMap ground = std::move(*map);
             if (m_data.endless.bEnabled)
             {
                 ground.SetPeriodicTail(static_cast<int>(m_data.endless.fromX), static_cast<int>(m_data.endless.tileX), static_cast<int>(m_data.endless.tileW));
+                ground.MaterializeTail(3);
             }
             m_host.AddGroundMap(name, std::move(ground));
         }
         else
         {
-            SLUG_LOG_WARN("지면 '{}' 을 읽지 못해 평지를 사용합니다 (Scripts/Bake.ps1 필요)", name);
+            SLUG_LOG_WARN("지면 '{}' 을 읽지 못해 평지를 사용합니다", name);
             GroundMap flat = GroundMap::MakeEmpty(flatWidth, flatHeight);
             flat.FillRect(0, 378, flatWidth - 1, flatHeight - 1, true);
             m_host.AddGroundMap(name, std::move(flat));
@@ -174,8 +250,9 @@ void StageState::Load_(
     }
 
     {
-        String         message  = {};
-        const FilePath defsPath = EnemyDefLibrary::GetDefaultDirectory(_ctx.assetRoot);
+        const ScopedPhaseTimer enemyTimer { "enemy-defs", "all" };
+        String                 message  = {};
+        const FilePath         defsPath = EnemyDefLibrary::GetDefaultDirectory(_ctx.assetRoot);
         m_enemyLib              = {};
         if (Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
         {
@@ -188,7 +265,8 @@ void StageState::Load_(
         m_enemies.SetLibrary(&m_enemyLib);
     }
     {
-        String message = {};
+        const ScopedPhaseTimer propTimer { "prop-defs", "all" };
+        String                 message = {};
         if (Result<PropDefLibrary> lib = PropDefLibrary::Load(_ctx.assetRoot / "Defs" / "Props" / "Props.json", &message))
         {
             m_propDefs = lib.Take();
@@ -216,18 +294,33 @@ void StageState::Load_(
         m_bRigBound = true;
         m_bombClip  = _ctx.pAnims->Find("PlayerBomb");
         m_bombAnim.Play(m_bombClip, true);
+        m_chuteClip = _ctx.pAnims->Find("Bazuka_Para_Idle");
+        m_chuteAnim.Play(m_chuteClip, true);
     }
 
     if (!_ctx.IsHeadless())
     {
-        if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot / "Baked"))
-        {
-            m_spriteLib = library.Take();
-        }
+        const ScopedPhaseTimer textureTimer { "stage-textures", "all" };
         m_enemies.SetSpriteLibrary(&m_spriteLib);
-        if (_ctx.pSprites)
+        if (_ctx.pSprites && _ctx.pLoader)
         {
-            const FilePath bgPath = _ctx.assetRoot / "Baked" / "Textures" / (m_data.background + ".png");
+            _ctx.pLoader->WaitAll();
+            if (m_bgHandle < 0)
+            {
+                SLUG_LOG_WARN("원경 '{}' 을 읽지 못했습니다", (_ctx.assetRoot / "Textures" / (m_data.background + ".png")).string());
+            }
+            for (size_t i = 0; i < m_backdropHandles.size(); ++i)
+            {
+                const SpriteInfo* pInfo = m_spriteLib.Find(m_data.backdrops[i].sprite);
+                if (pInfo && pInfo->bStandalone && m_backdropHandles[i] < 0)
+                {
+                    SLUG_LOG_WARN("원경 스프라이트 '{}' 을 읽지 못했습니다", m_data.backdrops[i].sprite);
+                }
+            }
+        }
+        else if (_ctx.pSprites)
+        {
+            const FilePath bgPath = _ctx.assetRoot / "Textures" / (m_data.background + ".png");
             if (const Result<int> handle = _ctx.pSprites->LoadStandaloneTexture(bgPath))
             {
                 m_bgHandle = handle.GetValue();
@@ -243,7 +336,7 @@ void StageState::Load_(
                 int handle = -1;
                 if (const SpriteInfo* pInfo = m_spriteLib.Find(mode.sprite); pInfo && pInfo->bStandalone)
                 {
-                    if (const Result<int> loaded = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / FilePath { pInfo->file }))
+                    if (const Result<int> loaded = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / FilePath { pInfo->file }))
                     {
                         handle = loaded.GetValue();
                     }
@@ -285,8 +378,9 @@ void StageState::Restart_(
     UpdateWalls_();
     m_player.Reset(m_tuning, m_startFeet);
     m_player.SnapToGround(MakePhysicsWorld_(), 16.f);
+    m_player.BeginChuteDescent(m_tuning);
 
-    m_camera.SetTarget(m_runner->ComputeCameraTarget(m_player.GetFeet()));
+    m_camera.SetTarget(m_runner->ComputeCameraTarget(m_player.GetLogicalFeet()));
     m_camera.SnapToTarget();
     m_prevCameraPos = m_camera.GetPositionNoShake();
 
@@ -330,6 +424,8 @@ void StageState::Tick(
         propCtx.pGround         = m_host.GetActiveGround();
         propCtx.pAnims          = _ctx.pAnims;
         propCtx.cameraLeft      = m_camera.GetPositionNoShake().x;
+        propCtx.cameraBottom    = m_camera.GetPositionNoShake().y + Renderer::kLogicalHeight;
+        propCtx.pItemTuning     = &m_tuning.items;
         m_props.Tick(propCtx);
     }
     UpdateWalls_();
@@ -344,7 +440,21 @@ void StageState::Tick(
     playerCtx.pCombat       = &m_combat;
     playerCtx.pProjectiles  = &m_projectiles;
     playerCtx.respawnFeet   = GetRespawnFeet_();
-    m_player.Tick(playerCtx, _input);
+    playerCtx.godMode       = _ctx.godMode;
+    playerCtx.bInfiniteAmmo = _ctx.bInfiniteAmmo;
+    if (!m_bLabSetUp)
+    {
+        m_bLabSetUp = true;
+        if (m_config.bHmg)
+        {
+            m_player.PickUpWeapon(eWeapon::Hmg, m_tuning);
+        }
+        if (m_config.bGod)
+        {
+            m_player.ExtendInvincibility(60 * 60 * 60);
+        }
+    }
+    m_player.Tick(playerCtx, m_config.bBot ? MakeBotInput_() : _input);
 
     if (m_enemies.HasPlayerMinX())
     {
@@ -360,9 +470,9 @@ void StageState::Tick(
         ApplyItemPickup(m_player, pickup, m_tuning);
         switch (pickup.kind)
         {
-            case eItemKind::Gun: _ctx.GetAudio().Play(sfx::kPowerUp); break;
-            case eItemKind::Supply: _ctx.GetAudio().Play(sfx::kOk); break;
-            case eItemKind::Score: _ctx.GetAudio().Play(sfx::kPickupCoin); break;
+            case eItemKind::Gun: _ctx.GetAudio().Play(kPowerUp); break;
+            case eItemKind::Supply: _ctx.GetAudio().Play(kOk); break;
+            case eItemKind::Score: _ctx.GetAudio().Play(kPickupCoin); break;
         }
     }
 
@@ -390,6 +500,69 @@ void StageState::Tick(
         }
     }
 
+    if (m_config.bAutoDamage && m_tickCount % 6 == 0)
+    {
+        // 연습장 전용: 포탑 (체력이 남은 것부터) -> 주포 순으로 판정 피해를 준다
+        Vector<HitEvent> auto_;
+        for (const Enemy& enemy: m_enemies.GetEnemies())
+        {
+            if (enemy.life != eEnemyLife::Alive || enemy.behavior != eEnemyBehavior::BigShiee)
+            {
+                continue;
+            }
+            int part = kBigShieeCannonPart;
+            for (int i = 0; i < kBigShieeTurretCount; ++i)
+            {
+                if (enemy.ext[static_cast<size_t>(kBigShieeExtHp + i)] > 0)
+                {
+                    part = i;
+                    break;
+                }
+            }
+            if (part != kBigShieeCannonPart && m_tickCount % kAutoTurretInterval != 0)
+            {
+                continue;   // 포탑 단계는 원작 속도 (약 25 s) 로 느리게, 주포는 20 dps
+            }
+            HitEvent event;
+            event.damage       = 2;
+            event.kind         = eHitKind::Bullet;
+            event.attackerTeam = eTeam::Player;
+            event.attacker     = 1;
+            event.target       = MakePartOwner(enemy.id, static_cast<uint32_t>(part));
+            auto_.push_back(event);
+        }
+        if (!auto_.empty())
+        {
+            m_enemies.OnHitEvents(Span<const HitEvent> { auto_.data(), auto_.size() });
+        }
+    }
+
+    if (m_config.bAutoDamage)
+    {
+        // 연습장 전용: 화면 안에 들어온 망루를 캐논 한 발 (피해 24) 로 친다
+        const int towerDef = m_props.GetLibrary() ? m_props.GetLibrary()->FindIndex("tower") : -1;
+        const float right  = m_camera.GetPositionNoShake().x + static_cast<float>(Renderer::kLogicalWidth) - kAutoTowerMarginPx;
+        Vector<HitEvent> towerHits;
+        for (const PropInstance& prop: m_props.GetProps())
+        {
+            if (prop.defIndex != towerDef || prop.bDestroyed || prop.pos.x > right || prop.pos.x < m_camera.GetPositionNoShake().x)
+            {
+                continue;
+            }
+            HitEvent event;
+            event.damage       = kAutoTowerDamage;
+            event.kind         = eHitKind::Blast;
+            event.attackerTeam = eTeam::Player;
+            event.attacker     = 1;
+            event.target       = prop.id;
+            towerHits.push_back(event);
+        }
+        if (!towerHits.empty())
+        {
+            m_props.OnHitEvents(Span<const HitEvent> { towerHits.data(), towerHits.size() });
+        }
+    }
+
     m_projectiles.Step(m_host.GetActiveGround(), m_combat, kStepSec, m_enemyPlatforms);
 
     const Vector<HitEvent>& events = m_combat.Resolve();
@@ -398,7 +571,7 @@ void StageState::Tick(
     const int kills = m_host.ApplyPlaceholderEvents(events);
     if (kills > 0)
     {
-        _ctx.GetAudio().Play(sfx::kEnemyDeath, 0.7f, 0.1f);
+        _ctx.GetAudio().Play(kEnemyDeath, 0.7f, 0.1f);
     }
     m_player.AddScore(kills * kPlaceholderKillScore);
     m_player.OnHitEvents(events);
@@ -417,23 +590,24 @@ void StageState::Tick(
         {
             if (request.kind == eFxKind::BombExplosion)
             {
-                m_effects.Spawn(*_ctx.pAnims, "PlayerBombExplosion", request.position, 60);
+                m_effects.Spawn(*_ctx.pAnims, "PlayerBombExplosion", request.position, kBombBlastDepth + request.zOffset);
             }
             else if (request.kind == eFxKind::RocketExplosion)
             {
-                m_effects.Spawn(*_ctx.pAnims, "Explosion_Mid", request.position, 56);
+                m_effects.Spawn(*_ctx.pAnims, "Explosion_Mid", request.position, 56 + request.zOffset);
             }
             else if (request.kind == eFxKind::RocketSmoke)
             {
-                m_effects.Spawn(*_ctx.pAnims, "Rocket_Smoke", request.position, 28);
+                m_effects.Spawn(*_ctx.pAnims, "Rocket_Smoke", request.position, 28 + request.zOffset);
             }
             else
             {
-                m_effects.Spawn(*_ctx.pAnims, "Bullet_Destroy_Effect", request.position, 55);
+                m_effects.Spawn(*_ctx.pAnims, "Bullet_Destroy_Effect", request.position, kBulletHitDepth + request.zOffset);
             }
         }
         m_effects.Update(*_ctx.pAnims, kStepSec);
         m_bombAnim.Update(*_ctx.pAnims, kStepSec);
+        m_chuteAnim.Update(*_ctx.pAnims, kStepSec);
         if (m_bRigBound)
         {
             m_rig.Update(m_player.MakeRigState());
@@ -596,13 +770,17 @@ void StageState::ConsumeEnemyEvents_(
     GameContext& _ctx)
 {
     IAudioSink& audio = _ctx.GetAudio();
+    for (const String& sound: m_enemies.TakeSounds())
+    {
+        audio.Play(sound, 1.f, 0.03f);
+    }
     for (const EnemyEvent& event: m_enemies.TakeEvents())
     {
         switch (event.kind)
         {
             case eEnemyEventKind::Died:
                 m_player.AddScore(event.score);
-                audio.Play(sfx::kEnemyDeath, 0.7f, 0.1f);
+                audio.Play(kEnemyDeath, 0.7f, 0.1f);
                 if (!event.drop.empty())
                 {
                     (void)m_props.SpawnItem(event.drop, event.pos, false);
@@ -610,7 +788,7 @@ void StageState::ConsumeEnemyEvents_(
                 break;
             case eEnemyEventKind::PartDestroyed:
                 m_player.AddScore(event.score);
-                audio.Play(sfx::kEnemyDeath, 0.5f, 0.1f);
+                audio.Play(kEnemyDeath, 0.5f, 0.1f);
                 break;
             case eEnemyEventKind::ItemDropped:
                 (void)m_props.SpawnItem(event.drop, event.pos, true);
@@ -634,10 +812,10 @@ void StageState::ConsumePropEvents_(
         switch (event.kind)
         {
             case ePropEventKind::Destroyed:
-                audio.Play(sfx::kExplosion, 0.9f, 0.05f);
+                audio.Play(kExplosion, 0.9f, 0.05f);
                 break;
             case ePropEventKind::SecondaryBurst:
-                audio.Play(sfx::kBombExplode, 1.f, 0.03f);
+                audio.Play(kBombExplode, 1.f, 0.03f);
                 break;
             case ePropEventKind::GroundPatch:
                 ApplyGroundPatch_(_ctx, event.name, event.pos);
@@ -665,8 +843,8 @@ const GroundMap* StageState::FindPatchMask_(
 
     PatchMask patch     = {};
     patch.name          = _sprite;
-    const FilePath path = _ctx.assetRoot / "Baked" / "Textures" / (_sprite + ".png");
-    if (std::optional<GroundMap> mask = LoadGroundPatchMask(path))
+    const FilePath path = _ctx.assetRoot / "Textures" / (_sprite + ".png");
+    if (std::optional<GroundMap> mask = LoadGroundMask(path))
     {
         if (mask->CountSolidPixels() == 0)
         {
@@ -714,25 +892,25 @@ void StageState::RequestSounds_(
     }
     for (int i = m_prevStats.knifeSlashes; i < stats.knifeSlashes; ++i)
     {
-        audio.Play((i & 1) == 0 ? sfx::kKnife1 : sfx::kKnife2, 0.9f, 0.05f);
+        audio.Play((i & 1) == 0 ? kKnife1 : kKnife2, 0.9f, 0.05f);
     }
     for (int i = m_prevStats.bombsThrown; i < stats.bombsThrown; ++i)
     {
-        audio.Play(sfx::kBombThrow);
+        audio.Play(kBombThrow);
     }
     for (int i = m_prevStats.deaths; i < stats.deaths; ++i)
     {
-        audio.Play(sfx::kPlayerDeath);
+        audio.Play(kPlayerDeath);
     }
     for (const FxRequest& request: _fx)
     {
         if (request.kind == eFxKind::BombExplosion)
         {
-            audio.Play(sfx::kBombExplode, 1.f, 0.03f);
+            audio.Play(kBombExplode, 1.f, 0.03f);
         }
         else if (request.kind == eFxKind::RocketExplosion)
         {
-            audio.Play(sfx::kBombExplode, 0.8f, 0.05f);
+            audio.Play(kBombExplode, 0.8f, 0.05f);
         }
     }
     if (weapon != m_prevWeapon)
@@ -827,15 +1005,6 @@ void StageState::Render(
     const Vec2 cameraPos = { std::floor(m_prevCameraPos.x + (camNow.x - m_prevCameraPos.x) * _alpha), std::floor(m_prevCameraPos.y + (camNow.y - m_prevCameraPos.y) * _alpha) };
 
     DrawBackdrop_(_ctx, cameraPos);
-    if (m_bgHandle >= 0 && _ctx.pSprites)
-    {
-        _ctx.pSprites->DrawTexture(m_bgHandle, { 0.f, 0.f }, cameraPos, Renderer::kLogicalWidth, Renderer::kLogicalHeight);
-        if (m_data.endless.bEnabled)
-        {
-            _ctx.pSprites->DrawTextureRepeatX(m_bgHandle, { 0.f, 0.f }, cameraPos, Renderer::kLogicalWidth, Renderer::kLogicalHeight, m_data.endless.fromX, static_cast<int>(m_data.endless.tileX), static_cast<int>(m_data.endless.tileW));
-        }
-    }
-
     DrawWorld_(_ctx, cameraPos, _alpha);
     if (_ctx.bDebugDraw)
     {
@@ -914,6 +1083,23 @@ void StageState::DrawWorld_(
     }
     SpriteBatch& sprites = *_ctx.pSprites;
 
+    const AnimationLibrary* pAnims = _ctx.pAnims;
+    if (pAnims)
+    {
+        m_enemies.Submit(sprites, *pAnims, m_projectiles, _alpha);
+    }
+
+    // 지형 텍스처보다 뒤인 스프라이트 (보스 선체) 를 먼저 그린 뒤 지형을 덮는다
+    sprites.FlushBelowDepth(_cameraPos, m_data.terrainDepth);
+    if (m_bgHandle >= 0)
+    {
+        sprites.DrawTexture(m_bgHandle, { 0.f, 0.f }, _cameraPos, Renderer::kLogicalWidth, Renderer::kLogicalHeight);
+        if (m_data.endless.bEnabled)
+        {
+            sprites.DrawTextureRepeatX(m_bgHandle, { 0.f, 0.f }, _cameraPos, Renderer::kLogicalWidth, Renderer::kLogicalHeight, m_data.endless.fromX, static_cast<int>(m_data.endless.tileX), static_cast<int>(m_data.endless.tileW));
+        }
+    }
+
     for (const PlaceholderEntity& entity: m_host.GetPlaceholderEntities())
     {
         if (!_ctx.bDebugDraw)
@@ -936,21 +1122,22 @@ void StageState::DrawWorld_(
         }
     }
 
-    const AnimationLibrary* pAnims = _ctx.pAnims;
-
-    if (pAnims)
-    {
-        m_enemies.Submit(sprites, *pAnims, m_projectiles, _alpha);
-    }
-
     {
         const Vec2 feet = Lerp_(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
+        // 시작 낙하산: 레이어 19 로 그려 플레이어(레이어 20)보다 뒤에 놓인다.
+        if (pAnims && m_player.IsChuteVisible(m_tuning))
+        {
+            if (const AnimFrame* pFrame = m_chuteAnim.GetFrameData(*pAnims))
+            {
+                sprites.Submit(ResolveZ(m_player.GetZ(), kPlayerDepth) - 1, static_cast<int>(feet.y), *pFrame, feet + m_tuning.player.chuteOffset);
+            }
+        }
         if (m_bRigBound && pAnims)
         {
             const RigState rigState = m_player.MakeRigState();
             if (rigState.bVisible)
             {
-                m_rig.Submit(sprites, feet, 20, static_cast<int>(feet.y));
+                m_rig.Submit(sprites, feet, ResolveZ(m_player.GetZ(), kPlayerDepth), static_cast<int>(feet.y));
             }
         }
         else if (m_player.IsAlive())
@@ -964,7 +1151,7 @@ void StageState::DrawWorld_(
         for (const Bullet& bullet: m_projectiles.GetBullets())
         {
             const Vec2 pos = Lerp_(bullet.renderPrev, bullet.position, _alpha);
-            if (bullet.team == eTeam::Player && SubmitPlayerBullet(sprites, pAnims, m_spriteLib, bullet, pos, 30))
+            if (bullet.team == eTeam::Player && SubmitPlayerBullet(sprites, pAnims, m_spriteLib, bullet, pos, ResolveZ(bullet.z, kPlayerBulletDepth)))
             {
                 continue;
             }
@@ -979,7 +1166,7 @@ void StageState::DrawWorld_(
             {
                 if (const AnimFrame* pFrame = m_bombAnim.GetFrameData(*pAnims))
                 {
-                    sprites.Submit(31, 0, *pFrame, pos);
+                    sprites.Submit(ResolveZ(bomb.params.z, kPlayerBombDepth), 0, *pFrame, pos);
                     continue;
                 }
             }
@@ -1196,4 +1383,7 @@ PropWorld& StageState::GetProps()
     return m_props;
 }
 
-}   // namespace slug
+uint64_t StageState::DebugHash() const
+{
+    return HashState();
+}

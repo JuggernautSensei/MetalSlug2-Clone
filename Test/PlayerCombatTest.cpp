@@ -1,4 +1,6 @@
 // 플레이어 전투 테스트: 샷, 나이프, 폭탄, 사망/리스폰/게임오버와 투사체 판정 검증
+#include <cmath>
+#include <set>
 #include <vector>
 
 #include "Base/Math.h"
@@ -7,11 +9,8 @@
 #include "Game/Player/PlayerHitboxes.h"
 #include "PlayerTestUtil.h"
 
-using namespace slugtest;
 
-namespace
-{
-[[nodiscard]] const TrainingDummy& Dummy_(
+[[nodiscard]] static const TrainingDummy& Dummy_(
     Sim&           _sim,
     const uint32_t _id)
 {
@@ -21,13 +20,13 @@ namespace
     return pDummy ? *pDummy : kEmpty;
 }
 
-[[nodiscard]] size_t BulletCount_(
+[[nodiscard]] static size_t BulletCount_(
     Sim& _sim)
 {
     return _sim.State().GetProjectiles().GetBullets().size();
 }
 
-[[nodiscard]] bool HasMeleeHitbox_(
+[[nodiscard]] static bool HasMeleeHitbox_(
     Sim& _sim)
 {
     for (const Hitbox& hitbox: _sim.State().GetCombat().GetHitboxes())
@@ -40,24 +39,32 @@ namespace
     return false;
 }
 
-void UnlimitedBullets_(
+static void UnlimitedBullets_(
     Sim& _sim)
 {
     _sim.Tune().weapons.pistol.maxAlive = 0;
     _sim.Tune().weapons.hmg.maxAlive    = 0;
 }
 
-// 무작위 입력 3000틱 스크립트 (시드 고정)
-[[nodiscard]] slug::Vector<InputFrame> MakeNoisyScript_()
+// 조준각/발사 위치를 정확히 검사하는 테스트용: HMG 흩뿌림과 위치 흔들림을 끈다 (난수 흩뿌림 자체는 HmgShotsKeepAimAngleAndJitterAcrossTheAimDirection 가 본다)
+static void NoSpread_(
+    Sim& _sim)
 {
-    slug::RngMt19937         rng { uint64_t { 7 } };
-    slug::Vector<InputFrame> frames;
+    _sim.Tune().weapons.hmg.spreadDeg    = 0.f;
+    _sim.Tune().weapons.hmg.muzzleJitter = { 0.f, 0.f };
+}
+
+// 무작위 입력 3000틱 스크립트 (시드 고정)
+[[nodiscard]] static Vector<InputFrame> MakeNoisyScript_()
+{
+    RngMt19937         rng { uint64_t { 7 } };
+    Vector<InputFrame> frames;
     InputFrame               cur;
     for (int i = 0; i < 3000; ++i)
     {
         if (i % 3 == 0)
         {
-            const eAction a = static_cast<eAction>(slug::Random<int>(rng, 0, 6));
+            const eAction a = static_cast<eAction>(Random<int>(rng, 0, 6));
             cur.Set(a, !cur.IsHeld(a));
         }
         frames.push_back(cur);
@@ -66,7 +73,7 @@ void UnlimitedBullets_(
 }
 
 // 더미가 죽을 때까지 진행한다. 죽은 틱 수를, 끝내 안 죽으면 -1 을 돌려준다.
-[[nodiscard]] int StepUntilDummyDead_(
+[[nodiscard]] static int StepUntilDummyDead_(
     Sim&           _sim,
     const uint32_t _id,
     const int      _maxTicks)
@@ -83,7 +90,7 @@ void UnlimitedBullets_(
 }
 
 // 다음 탄이 발사될 때까지 틱을 진행하고, 그 탄의 발사각(도, 위가 +)을 돌려준다. 발사가 없으면 NaN
-[[nodiscard]] float StepUntilShotAngleDeg_(
+[[nodiscard]] static float StepUntilShotAngleDeg_(
     Sim&      _sim,
     const int _maxTicks)
 {
@@ -93,14 +100,13 @@ void UnlimitedBullets_(
         _sim.Step();
         if (_sim.Player().GetStats().shotsFired > before)
         {
-            const slug::Span<const Bullet> bullets = _sim.State().GetProjectiles().GetBullets();
+            const Span<const Bullet> bullets = _sim.State().GetProjectiles().GetBullets();
             const Vec2                     v       = bullets[bullets.size() - 1].velocity;
             return std::atan2(-v.y, std::abs(v.x)) * 180.f / 3.14159265f;
         }
     }
-    return std::nan("");
+    return std::nanf("");
 }
-}   // namespace
 
 TEST(PlayerShot, FirstShotSpawnsABulletOnTheSameTick)
 {
@@ -210,8 +216,8 @@ TEST(PlayerShot, HmgTapFiresABurstSpreadOverTheShotMotion)
     Sim sim;
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     const WeaponTuning& hmg = sim.Tune().weapons.hmg;
-    ASSERT_GE(hmg.burstShots, 3);
-    ASSERT_LE(hmg.burstShots, 5);
+    ASSERT_GE(hmg.burstShotsMin, 3);
+    ASSERT_LE(hmg.burstShotsMax, 5);
 
     sim.Tap(eAction::Shot);   // 틱 0: 첫 발이 즉시 나간다
     EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);
@@ -227,12 +233,15 @@ TEST(PlayerShot, HmgTapFiresABurstSpreadOverTheShotMotion)
             last = shots;
         }
     }
-    ASSERT_EQ(static_cast<int>(shotTicks.size()), hmg.burstShots);   // 한 번 눌러 버스트 하나
+    // 한 번 눌러 버스트 하나: 발수는 [min, max] 난수 (결정적), 간격은 고정
+    const int shots = static_cast<int>(shotTicks.size());
+    EXPECT_GE(shots, hmg.burstShotsMin);
+    EXPECT_LE(shots, hmg.burstShotsMax);
     for (size_t i = 1; i < shotTicks.size(); ++i)
     {
         EXPECT_EQ(shotTicks[i] - shotTicks[i - 1], hmg.burstIntervalTicks);
     }
-    EXPECT_EQ(sim.Player().GetWeapon().ammo, hmg.ammo - hmg.burstShots);   // 탄 수는 발마다 줄어든다
+    EXPECT_EQ(sim.Player().GetWeapon().ammo, hmg.ammo - shots);   // 탄 수는 발마다 줄어든다
 }
 
 TEST(PlayerShot, HmgHoldDoesNotAutoFireBeyondOneBurst)
@@ -241,20 +250,115 @@ TEST(PlayerShot, HmgHoldDoesNotAutoFireBeyondOneBurst)
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Hold(eAction::Shot);
     sim.Step(180);
-    EXPECT_EQ(sim.Player().GetStats().shotsFired, sim.Tune().weapons.hmg.burstShots);
+    const WeaponTuning& hmg = sim.Tune().weapons.hmg;
+    EXPECT_GE(sim.Player().GetStats().shotsFired, hmg.burstShotsMin);
+    EXPECT_LE(sim.Player().GetStats().shotsFired, hmg.burstShotsMax);
 }
 
-TEST(PlayerShot, MovingCancelsTheHmgBurst)
+TEST(PlayerShot, HmgBurstLengthIsShotsTimesInterval)
 {
+    // 사격 모션 길이 = 실제 발수 x 간격 (원작: 발사 간격 2영상프레임 = 4틱, 한 번 입력당 3~5발)
     Sim sim;
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Tap(eAction::Shot);
+    const int overlay = sim.Player().MakeRigState().overlayDurationTicks;   // 버스트가 시작될 때 정해진다
+    sim.Step(80);
+    const int shots = sim.Player().GetStats().shotsFired;
+    EXPECT_EQ(overlay, shots * sim.Tune().weapons.hmg.burstIntervalTicks);
+}
+
+void ExpectHmgJitterIsPerpendicular_(
+    const bool _bAimUp)
+{
+    Sim sim;
+    sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
+    const float jitter = sim.Tune().weapons.hmg.muzzleJitter.y;
+    ASSERT_GT(jitter, 0.f);
+    if (_bAimUp)
+    {
+        sim.Hold(eAction::Up);
+        sim.Step(40);
+    }
+    sim.Tap(eAction::Shot);
+    sim.Step(20);
+    const Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
+    ASSERT_GE(bullets.size(), 3u);
+
+    const Vec2  velocity  = bullets[0].velocity;
+    const float speed     = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+    const Vec2  direction = { velocity.x / speed, velocity.y / speed };
+    std::set<long> angles;
+    std::set<long> offsets;
+    for (const Bullet& bullet: bullets)
+    {
+        angles.insert(std::lround(std::atan2(bullet.velocity.y, bullet.velocity.x) * 1000.f));
+        const Vec2  delta = { bullet.position.x - bullets[0].position.x, bullet.position.y - bullets[0].position.y };
+        const float cross = direction.x * delta.y - direction.y * delta.x;
+        EXPECT_LE(std::fabs(cross), 2.f * jitter + 0.01f);
+        offsets.insert(std::lround(cross * 100.f));
+    }
+    EXPECT_EQ(angles.size(), 1u);
+    EXPECT_GE(offsets.size(), 2u);
+}
+
+TEST(PlayerShot, HmgShotsKeepAimAngleAndJitterAcrossTheAimDirection)
+{
+    ExpectHmgJitterIsPerpendicular_(false);
+    ExpectHmgJitterIsPerpendicular_(true);
+}
+
+TEST(PlayerShot, MovingDoesNotCancelTheHmgBurst)
+{
+    // 원작: 헤비머신건은 달리면서도 연사가 이어진다. 이동은 버스트를 끊지 않는다
+    Sim sim;
+    sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Step(2);
-    EXPECT_EQ(sim.Player().GetOverlay(), eOverlay::Shot);
     sim.Hold(eAction::Right);
+    sim.Step(5);
+    const WeaponTuning& hmg = sim.Tune().weapons.hmg;
+
+    sim.Tap(eAction::Shot);   // 달리는 중 한 번 입력: 첫 발은 즉시
+    int  overlayTicks    = 0;
+    int  movingShotTicks = 0;
+    bool bShotEnded      = false;
+    bool bGap            = false;
+    for (int tick = 0; tick < 80; ++tick)
+    {
+        if (sim.Player().MakeRigState().overlay == eOverlay::Shot)
+        {
+            bGap = bGap || bShotEnded;
+            ++overlayTicks;
+            movingShotTicks += sim.Player().IsMoving() ? 1 : 0;
+        }
+        else
+        {
+            bShotEnded = true;
+        }
+        sim.Step();
+    }
+    const int shots = sim.Player().GetStats().shotsFired;
+    EXPECT_GE(shots, hmg.burstShotsMin);   // 버스트 전체 발수가 나간다 (난수 3~5)
+    EXPECT_LE(shots, hmg.burstShotsMax);
+    EXPECT_EQ(overlayTicks, shots * hmg.burstIntervalTicks);   // 사격 연출은 버스트 끝까지 Shot 으로 유지
+    EXPECT_FALSE(bGap);
+    EXPECT_EQ(movingShotTicks, overlayTicks);   // 연출이 도는 내내 실제로 달리고 있었다
+}
+
+TEST(PlayerShot, JumpStillCancelsTheHmgBurst)
+{
+    // 지상 -> 공중 전환은 여전히 버스트를 끊는다 (이동과 달리 점프는 취소)
+    Sim sim;
+    sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
+    sim.Step(2);
+    sim.Tap(eAction::Shot);
+    sim.Step();
+    ASSERT_EQ(sim.Player().MakeRigState().overlay, eOverlay::Shot);
+    sim.Tap(eAction::Jump);
+    sim.Step(2);
+    EXPECT_FALSE(sim.Player().IsGrounded());
+    EXPECT_EQ(sim.Player().MakeRigState().overlay, eOverlay::None);
     sim.Step(60);
-    EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);   // 이동하자 남은 탄이 취소된다
-    EXPECT_EQ(sim.Player().GetOverlay(), eOverlay::None);
+    EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);   // 점프로 남은 탄이 취소된다
 }
 
 TEST(PlayerShot, FlameDoesNotAutoFireOnHold)
@@ -332,6 +436,7 @@ TEST(PlayerShot, AimDirectionsShootInThoseDirections)
     for (const Case& c: cases)
     {
         Sim sim;
+        NoSpread_(sim);
         sim.Step(2);
         if (c.bHmg)
         {
@@ -358,6 +463,7 @@ TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToNinety)
 {
     Sim sim;
     UnlimitedBullets_(sim);
+    NoSpread_(sim);
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Hold(eAction::Up);
     sim.Tap(eAction::Shot);   // 한 번 눌러 나가는 버스트 동안 조준각이 쓸고 지나간다
@@ -365,7 +471,7 @@ TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToNinety)
     std::vector<float> angles;
     int                shots = 1;
     {
-        const slug::Span<const Bullet> first = sim.State().GetProjectiles().GetBullets();
+        const Span<const Bullet> first = sim.State().GetProjectiles().GetBullets();
         const Vec2                     v     = first[first.size() - 1].velocity;
         angles.push_back(std::atan2(-v.y, std::abs(v.x)) * 180.f / 3.14159265f);
     }
@@ -376,7 +482,7 @@ TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToNinety)
         if (fired > shots)
         {
             shots                                  = fired;
-            const slug::Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
+            const Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
             const Vec2                     v       = bullets[bullets.size() - 1].velocity;
             angles.push_back(std::atan2(-v.y, std::abs(v.x)) * 180.f / 3.14159265f);
         }
@@ -384,7 +490,9 @@ TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToNinety)
 
     ASSERT_GE(angles.size(), 4u);
     EXPECT_LT(angles.front(), 10.f);          // 처음엔 거의 정면
-    EXPECT_NEAR(angles.back(), 90.f, 0.5f);   // 끝에는 똑바로 위 (대각에서 멈추지 않는다)
+    // 발사 간격 4틱 x 3~5발: 조준각은 350도/s 로 쓸고 가며 마지막 발은 대각 중간이거나 똑바로 위 (90도에서 멈춘다)
+    EXPECT_GE(angles.back(), 40.f);
+    EXPECT_LE(angles.back(), 90.5f);
     size_t increases = 0;
     size_t diagonal  = 0;
     for (size_t i = 0; i < angles.size(); ++i)
@@ -410,6 +518,7 @@ TEST(PlayerShot, HmgHoldingUpWhileFiringEndsStraightUpThenReturnsToForwardOnRele
 {
     Sim sim;
     UnlimitedBullets_(sim);
+    NoSpread_(sim);
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Hold(eAction::Up);
     sim.Tap(eAction::Shot);
@@ -676,7 +785,7 @@ TEST(PlayerKnife, NeverGetsStuckUnderRandomInput)
     Sim sim;
     sim.Step(2);
     sim.State().AddTarget(eDummyKind::Grunt, { 140.f, 378.f });   // 계속 근접 상태
-    const slug::Vector<InputFrame> script = MakeNoisyScript_();
+    const Vector<InputFrame> script = MakeNoisyScript_();
 
     for (const InputFrame& frame: script)
     {
@@ -716,9 +825,9 @@ TEST(PlayerKnife, KnifeIsMeleeAndHitsEveryTeamItCanHit)
     bulletOnly.accepts = HitKindMask { eHitKind::Bullet };
 
     HitResolver                  resolver;
-    const slug::Vector<Hitbox>   hits   = { swing };
-    const slug::Vector<Hurtbox>  hurts  = { enemy, neutral, bulletOnly };
-    const slug::Vector<HitEvent> events = resolver.Resolve(hits, hurts);
+    const Vector<Hitbox>   hits   = { swing };
+    const Vector<Hurtbox>  hurts  = { enemy, neutral, bulletOnly };
+    const Vector<HitEvent> events = resolver.Resolve(hits, hurts);
     ASSERT_EQ(events.size(), 2u);
     EXPECT_EQ(events[0].target, 2000u);
     EXPECT_EQ(events[1].target, 2001u);
@@ -850,8 +959,6 @@ TEST(PlayerBomb, ThrowArcLandsAheadOfThePlayer)
     EXPECT_LT(maxX, sim.X() + 260.f);
 }
 
-namespace
-{
 struct Harness
 {
     Tuning           tuning      = {};
@@ -878,7 +985,7 @@ struct Harness
 
     bool Tick(
         const InputFrame            _input  = {},
-        const slug::Vector<Hitbox>& _inject = {})
+        const Vector<Hitbox>& _inject = {})
     {
         history.Push(_input);
         combat.BeginTick();
@@ -896,7 +1003,7 @@ struct Harness
             combat.AddHitbox(hitbox);
         }
         projectiles.Step(&ground, combat, kStepSec);
-        const slug::Vector<HitEvent>& events = combat.Resolve();
+        const Vector<HitEvent>& events = combat.Resolve();
         const bool                    bDied  = player.OnHitEvents(events);
         projectiles.OnHitEvents(events, combat);
         ++ticks;
@@ -922,11 +1029,10 @@ struct Harness
         hit.kind   = _kind;
         hit.damage = 1;
         hit.owner  = 5000;
-        hit.id     = combat.GetHitboxes().size() + 100 + static_cast<uint32_t>(ticks);
+        hit.id     = static_cast<uint32_t>(combat.GetHitboxes().size()) + 100 + static_cast<uint32_t>(ticks);
         return hit;
     }
 };
-}   // namespace
 
 TEST(PlayerDeath, AnyEnemyHitboxKindKillsThePlayer)
 {
@@ -1231,7 +1337,7 @@ TEST(Projectiles, FastBulletDoesNotTunnelThroughAThinTarget)
         combat.BeginTick();
         combat.AddHurtbox(thin);
         projectiles.Step(nullptr, combat, kStepSec);
-        const slug::Vector<HitEvent>& events = combat.Resolve();
+        const Vector<HitEvent>& events = combat.Resolve();
         hits += static_cast<int>(events.size());
         projectiles.OnHitEvents(events, combat);
     }
@@ -1292,7 +1398,7 @@ TEST(Projectiles, PierceHitsEachTargetOnceAndKeepsFlying)
             combat.AddHurtbox(hurt);
         }
         projectiles.Step(nullptr, combat, kStepSec);
-        const slug::Vector<HitEvent>& events = combat.Resolve();
+        const Vector<HitEvent>& events = combat.Resolve();
         for (const HitEvent& event: events)
         {
             (event.target == 10 ? hitsA : hitsB) += 1;

@@ -9,11 +9,10 @@
 #include "Core/Tuning.h"
 #include "Render/SpriteBatch.h"
 
-using namespace slug;
 
 TEST(Tuning, EmptyObjectGivesAllDefaults)
 {
-    slug::Result<Tuning> parsed = ParseTuning("{}");
+    Result<Tuning> parsed = ParseTuning("{}");
     ASSERT_TRUE(parsed.HasValue());
     EXPECT_EQ(DumpTuning(parsed.GetValue()), DumpTuning(Tuning {}));
 }
@@ -26,7 +25,7 @@ TEST(Tuning, PartialOverridesOnlyChangeTheNamedKeys)
         "muzzle": { "stand": { "forward": [31, -33] } },
         "knife": { "range": 40 }
     })";
-    slug::Result<Tuning> parsed = ParseTuning(json);
+    Result<Tuning> parsed = ParseTuning(json);
     ASSERT_TRUE(parsed.HasValue());
 
     const Tuning& t = parsed.GetValue();
@@ -61,29 +60,29 @@ TEST(Tuning, RejectsBrokenJsonAndNonObjects)
 
 TEST(Tuning, IgnoresUnknownKeys)
 {
-    slug::Result<Tuning> parsed = ParseTuning(R"({ "futureSection": { "x": 1 }, "move": { "mystery": 3 } })");
+    Result<Tuning> parsed = ParseTuning(R"({ "futureSection": { "x": 1 }, "move": { "mystery": 3 } })");
     ASSERT_TRUE(parsed.HasValue());
     EXPECT_EQ(DumpTuning(parsed.GetValue()), DumpTuning(Tuning {}));
 }
 
 TEST(Tuning, AllowsCommentsInTheJsonFile)
 {
-    slug::Result<Tuning> parsed = ParseTuning("{ // 주석\n \"move\": { \"runSpeed\": 110 } }");
+    Result<Tuning> parsed = ParseTuning("{ // 주석\n \"move\": { \"runSpeed\": 110 } }");
     ASSERT_TRUE(parsed.HasValue());
     EXPECT_FLOAT_EQ(parsed.GetValue().move.runSpeed, 110.f);
 }
 
 TEST(Tuning, CommittedJsonFileMatchesCodeDefaults)
 {
-    const slug::FilePath path   = GetDefaultTuningPath(slug::FindAssetRoot());
-    slug::Result<Tuning> loaded = LoadTuning(path);
+    const FilePath path   = GetDefaultTuningPath(FindAssetRoot());
+    Result<Tuning> loaded = LoadTuning(path);
     ASSERT_TRUE(loaded.HasValue()) << path.string();
     EXPECT_EQ(DumpTuning(loaded.GetValue()), DumpTuning(Tuning {})) << "Assets/Tuning/Tuning.json 과 Tuning.h 기본값이 다릅니다";
 }
 
 TEST(Tuning, MissingFileIsAnError)
 {
-    EXPECT_FALSE(LoadTuning(slug::FilePath { "no/such/Tuning.json" }).HasValue());
+    EXPECT_FALSE(LoadTuning(FilePath { "no/such/Tuning.json" }).HasValue());
 }
 
 TEST(Tuning, JumpFeelNumbersMatchTheDesignTargets)
@@ -124,8 +123,12 @@ TEST(Tuning, WeaponTablesAreInternallyConsistent)
     }
     EXPECT_EQ(t.weapons.pistol.ammo, 0);
     EXPECT_GE(t.weapons.pistol.damage, 3);
-    EXPECT_GE(t.weapons.hmg.burstShots, 3);   // HMG 는 한 번 입력에 3~5발 버스트
-    EXPECT_LE(t.weapons.hmg.burstShots, 5);
+    EXPECT_GE(t.weapons.hmg.burstShotsMin, 3);   // HMG 는 한 번 입력에 3~5발 버스트 (발수는 난수)
+    EXPECT_LE(t.weapons.hmg.burstShotsMax, 5);
+    EXPECT_LE(t.weapons.hmg.burstShotsMin, t.weapons.hmg.burstShotsMax);
+    EXPECT_GE(t.weapons.hmg.spreadDeg, 0.f);   // 흩뿌림/위치 흔들림은 0 이상 (0 = 끔)
+    EXPECT_GE(t.weapons.hmg.muzzleJitter.x, 0.f);
+    EXPECT_GE(t.weapons.hmg.muzzleJitter.y, 0.f);
     EXPECT_EQ(t.weapons.pistol.holdRepeatTicks, 0);   // 권총/화염/HMG 는 홀드 자동 연사 없음
     EXPECT_EQ(t.weapons.flame.holdRepeatTicks, 0);
     EXPECT_EQ(t.weapons.hmg.holdRepeatTicks, 0);
@@ -139,30 +142,27 @@ TEST(Tuning, KnifeKillsAGruntInOneSlash)
     EXPECT_GE(t.knife.damage, t.sandbox.gruntHp);
 }
 
-namespace
-{
-void WriteFile_(
-    const slug::FilePath& _path,
-    const slug::String&   _text)
+static void WriteFile_(
+    const FilePath& _path,
+    const String&   _text)
 {
     std::ofstream out { _path, std::ios::binary | std::ios::trunc };
     out << _text;
 }
 
-void Touch_(
-    const slug::FilePath& _path,
+static void Touch_(
+    const FilePath& _path,
     const int             _seconds)
 {
     std::error_code ec;
     std::filesystem::last_write_time(_path, std::filesystem::last_write_time(_path, ec) + std::chrono::seconds(_seconds), ec);
 }
-}   // namespace
 
 TEST(TuningWatcher, ReloadsWhenTheFileChangesAndKeepsOldValuesOnBadJson)
 {
-    const slug::FilePath dir = std::filesystem::temp_directory_path() / "slug_tuning_watcher_test";
+    const FilePath dir = std::filesystem::temp_directory_path() / "slug_tuning_watcher_test";
     std::filesystem::create_directories(dir);
-    const slug::FilePath path = dir / "Tuning.json";
+    const FilePath path = dir / "Tuning.json";
     WriteFile_(path, R"({ "move": { "runSpeed": 111 } })");
 
     Tuning        tuning;

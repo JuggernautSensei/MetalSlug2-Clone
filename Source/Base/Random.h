@@ -6,20 +6,14 @@
 
 #include "Base/Assert.h"
 
-namespace slug
-{
-
 class RngMt19937
 {
 public:
     RngMt19937() = default;
-    explicit RngMt19937(const uint64_t _seed)
-        : m_mt(_seed)
-    {
-    }
+    explicit RngMt19937(const uint64_t _seed);
 
-    void                   Reseed(const uint64_t _seed) { m_mt.seed(_seed); }
-    [[nodiscard]] uint64_t Generate() { return m_mt(); }
+    void                   Reseed(const uint64_t _seed);
+    [[nodiscard]] uint64_t Generate();
 
 private:
     std::mt19937_64 m_mt;
@@ -42,5 +36,3 @@ template<typename T>
         return static_cast<T>(_rng.Generate() % range) + _min;
     }
 }
-
-}   // namespace slug

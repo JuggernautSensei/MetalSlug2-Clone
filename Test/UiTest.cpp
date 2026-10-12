@@ -25,14 +25,11 @@
 #include "PlayerTestUtil.h"
 #include "TestAudio.h"
 
-using namespace slug;
 
-namespace
-{
-[[nodiscard]] const HudItem* FindItem_(
-    const slug::Vector<HudItem>& _items,
+[[nodiscard]] static const HudItem* FindItem_(
+    const Vector<HudItem>& _items,
     const eHudItemKind           _kind,
-    const slug::StringView       _text)
+    const StringView       _text)
 {
     for (const HudItem& item: _items)
     {
@@ -44,8 +41,8 @@ namespace
     return nullptr;
 }
 
-[[nodiscard]] int CountKind_(
-    const slug::Vector<HudItem>& _items,
+[[nodiscard]] static int CountKind_(
+    const Vector<HudItem>& _items,
     const eHudItemKind           _kind)
 {
     int count = 0;
@@ -56,28 +53,28 @@ namespace
     return count;
 }
 
-[[nodiscard]] Vec2 SpriteSize_(
-    const slug::StringView _name)
+[[nodiscard]] static Vec2 SpriteSize_(
+    const StringView _name)
 {
-    static const std::map<slug::String, Vec2> kSizes = {
+    static const std::map<String, Vec2> kSizes = {
         { "PlayerStateUI_Bomb", { 124.f, 34.f } },
         {     "InfiniteUI_Red",  { 40.f, 16.f } },
         {       "PressStartUI", { 174.f, 30.f } },
         {         "PlayerHPUI", { 106.f, 16.f } },
         {            "LEVEL_1",  { 96.f, 16.f } },
     };
-    const std::map<slug::String, Vec2>::const_iterator it = kSizes.find(slug::String { _name });
+    const std::map<String, Vec2>::const_iterator it = kSizes.find(String { _name });
     return it == kSizes.end() ? Vec2 { 0.f, 0.f } : it->second;
 }
 
-[[nodiscard]] bool InsideScreen_(
+[[nodiscard]] static bool InsideScreen_(
     const IntRect&  _r,
     const UiLayout& _layout)
 {
     return _r.x >= 0 && _r.y >= 0 && _r.x + _r.w <= _layout.screenW && _r.y + _r.h <= _layout.screenH;
 }
 
-[[nodiscard]] bool ItemFits_(
+[[nodiscard]] static bool ItemFits_(
     const HudItem&  _item,
     const UiLayout& _layout)
 {
@@ -101,7 +98,7 @@ namespace
     return false;
 }
 
-[[nodiscard]] HudModel MakeModel_()
+[[nodiscard]] static HudModel MakeModel_()
 {
     HudModel model;
     model.lives = 3;
@@ -111,7 +108,7 @@ namespace
 }
 
 // Banner/Results 등 단계 흐름을 _tick 에 닿을 때까지 한 틱씩 진행한다. _t 는 지금까지 진행한 틱 수
-void AdvanceFlowTo_(
+static void AdvanceFlowTo_(
     int&        _t,
     UiSystem&   _ui,
     ScreenFlow& _flow,
@@ -127,10 +124,10 @@ void AdvanceFlowTo_(
 }
 
 // HUD 항목 중 Rect 종류만 골라낸다
-[[nodiscard]] slug::Vector<HudItem> HudRects_(
-    const slug::Vector<HudItem>& _items)
+[[nodiscard]] static Vector<HudItem> HudRects_(
+    const Vector<HudItem>& _items)
 {
-    slug::Vector<HudItem> rects;
+    Vector<HudItem> rects;
     for (const HudItem& item: _items)
     {
         if (item.kind == eHudItemKind::Rect)
@@ -140,25 +137,24 @@ void AdvanceFlowTo_(
     }
     return rects;
 }
-}   // namespace
 
 TEST(UiFont, GlyphIndexMapsLettersDigitsAndZero)
 {
-    EXPECT_EQ(fontmap::GetGlyphIndex('A'), 0);
-    EXPECT_EQ(fontmap::GetGlyphIndex('Z'), 25);
-    EXPECT_EQ(fontmap::GetGlyphIndex('a'), 0);   // 소문자는 대문자와 같은 글리프
-    EXPECT_EQ(fontmap::GetGlyphIndex('O'), 14);
-    EXPECT_EQ(fontmap::GetGlyphIndex('1'), 26);
-    EXPECT_EQ(fontmap::GetGlyphIndex('9'), 34);
-    EXPECT_EQ(fontmap::GetGlyphIndex('0'), 14);   // 0 은 'O' 로 대신한다 (레거시와 동일)
+    EXPECT_EQ(GetGlyphIndex('A'), 0);
+    EXPECT_EQ(GetGlyphIndex('Z'), 25);
+    EXPECT_EQ(GetGlyphIndex('a'), 0);   // 소문자는 대문자와 같은 글리프
+    EXPECT_EQ(GetGlyphIndex('O'), 14);
+    EXPECT_EQ(GetGlyphIndex('1'), 26);
+    EXPECT_EQ(GetGlyphIndex('9'), 34);
+    EXPECT_EQ(GetGlyphIndex('0'), 14);   // 0 은 'O' 로 대신한다 (레거시와 동일)
 }
 
 TEST(UiFont, UnsupportedCharactersHaveNoGlyph)
 {
     for (const char c: { '-', '.', ':', '!', '/', '+', '%', '(', ' ', '\t' })
     {
-        EXPECT_EQ(fontmap::GetGlyphIndex(c), -1) << static_cast<int>(c);
-        EXPECT_FALSE(fontmap::HasGlyph(c));
+        EXPECT_EQ(GetGlyphIndex(c), -1) << static_cast<int>(c);
+        EXPECT_FALSE(HasGlyph(c));
     }
 }
 
@@ -167,28 +163,28 @@ TEST(UiFont, EveryColumnIsReachableAndStaysInsideTheStrip)
     std::map<int, int> hits;
     for (char c = 'A'; c <= 'Z'; ++c)
     {
-        ++hits[fontmap::GetGlyphIndex(c)];
+        ++hits[GetGlyphIndex(c)];
     }
     for (char c = '1'; c <= '9'; ++c)
     {
-        ++hits[fontmap::GetGlyphIndex(c)];
+        ++hits[GetGlyphIndex(c)];
     }
-    EXPECT_EQ(hits.size(), static_cast<size_t>(fontmap::kGlyphColumns));
+    EXPECT_EQ(hits.size(), static_cast<size_t>(kGlyphColumns));
     for (const std::pair<const int, int>& hit: hits)
     {
         EXPECT_GE(hit.first, 0);
-        EXPECT_LT(hit.first, fontmap::kGlyphColumns);
+        EXPECT_LT(hit.first, kGlyphColumns);
         EXPECT_EQ(hit.second, 1);
     }
 }
 
 TEST(UiFont, MeasureCharsIsAdvanceTimesCountMinusSpacingTail)
 {
-    EXPECT_EQ(fontmap::MeasureChars(0, 1), 0);
-    EXPECT_EQ(fontmap::MeasureChars(1, 1), 16);
-    EXPECT_EQ(fontmap::MeasureChars(5, 1), 80);
-    EXPECT_EQ(fontmap::MeasureChars(5, 2), 160);
-    EXPECT_EQ(fontmap::MeasureChars(5, 2, 3), 160 + 4 * 3);
+    EXPECT_EQ(MeasureChars(0, 1), 0);
+    EXPECT_EQ(MeasureChars(1, 1), 16);
+    EXPECT_EQ(MeasureChars(5, 1), 80);
+    EXPECT_EQ(MeasureChars(5, 2), 160);
+    EXPECT_EQ(MeasureChars(5, 2, 3), 160 + 4 * 3);
 }
 
 TEST(UiFont, FitTextScalePicksLargestScaleThatFits)
@@ -328,20 +324,20 @@ TEST(UiBitmapFont, WithoutSpritesInitFailsGracefully)
     EXPECT_TRUE(font.GetTimeDigitFrame(3).IsEmpty());
 }
 
-TEST(UiBitmapFont, BakedFontStripsAndUiSpritesExistWithExpectedSizes)
+TEST(UiBitmapFont, FontStripsAndUiSpritesExistWithExpectedSizes)
 {
-    slug::Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(slug::FindAssetRoot() / "Baked");
+    Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(FindAssetRoot());
     if (!library)
     {
-        GTEST_SKIP() << "Assets/Baked 없음";
+        GTEST_SKIP() << "Assets 없음";
     }
 
     for (const char* name: { "Font_Normal", "Font_White", "Font_Red_Yellow", "Font_Yellow_White", "Font_Red", "Font_Yellow" })
     {
         const SpriteInfo* pInfo = library->Find(name);
         ASSERT_NE(pInfo, nullptr) << name;
-        EXPECT_EQ(pInfo->frame.w, fontmap::kGlyphColumns * fontmap::kGlyphSize) << name;
-        EXPECT_EQ(pInfo->frame.h, fontmap::kGlyphRows * fontmap::kGlyphSize) << name;
+        EXPECT_EQ(pInfo->frame.w, kGlyphColumns * kGlyphSize) << name;
+        EXPECT_EQ(pInfo->frame.h, kGlyphRows * kGlyphSize) << name;
     }
     const SpriteInfo* pTime = library->Find("TimeNumberUI");
     ASSERT_NE(pTime, nullptr);
@@ -558,7 +554,7 @@ TEST(UiHud, PistolShowsInfiniteSymbolAndNoAmmoDigits)
 {
     const UiLayout              layout;
     const HudModel              model = MakeModel_();
-    const slug::Vector<HudItem> items = BuildHudItems(model, layout);
+    const Vector<HudItem> items = BuildHudItems(model, layout);
 
     EXPECT_NE(FindItem_(items, eHudItemKind::Sprite, "InfiniteUI_Red"), nullptr);
     EXPECT_EQ(FindItem_(items, eHudItemKind::Text, "0"), nullptr);
@@ -572,7 +568,7 @@ TEST(UiHud, FiniteWeaponShowsAmmoDigitsRightAlignedInsteadOfInfinity)
     model.bInfiniteAmmo  = false;
     model.ammo           = 200;
 
-    const slug::Vector<HudItem> items = BuildHudItems(model, layout);
+    const Vector<HudItem> items = BuildHudItems(model, layout);
     EXPECT_EQ(FindItem_(items, eHudItemKind::Sprite, "InfiniteUI_Red"), nullptr);
 
     const HudItem* pAmmo = FindItem_(items, eHudItemKind::Text, "200");
@@ -586,7 +582,7 @@ TEST(UiHud, FiniteWeaponShowsAmmoDigitsRightAlignedInsteadOfInfinity)
 TEST(UiHud, BombScoreAndLivesTexts)
 {
     const UiLayout              layout;
-    const slug::Vector<HudItem> items = BuildHudItems(MakeModel_(), layout);
+    const Vector<HudItem> items = BuildHudItems(MakeModel_(), layout);
 
     const HudItem* pBombs = FindItem_(items, eHudItemKind::Text, "10");
     ASSERT_NE(pBombs, nullptr);
@@ -619,7 +615,7 @@ TEST(UiHud, TimerOnlyWhenRequested)
 
     model.bShowTimer                   = true;
     model.timerSeconds                 = 7;
-    const slug::Vector<HudItem> items  = BuildHudItems(model, layout);
+    const Vector<HudItem> items  = BuildHudItems(model, layout);
     const HudItem*              pTimer = FindItem_(items, eHudItemKind::TimeDigits, "07");
     ASSERT_NE(pTimer, nullptr);
     EXPECT_EQ(pTimer->x, layout.timerCenterX);
@@ -633,7 +629,7 @@ TEST(UiHud, InsertCoinIsStaticTopRightTextThatNeverBlinks)
     for (const int tick: { 0, layout.pressStartBlinkTicks, layout.pressStartBlinkTicks * 3 })
     {
         model.uiTick                      = tick;
-        const slug::Vector<HudItem> items = BuildHudItems(model, layout);
+        const Vector<HudItem> items = BuildHudItems(model, layout);
         const HudItem*              pCoin = FindItem_(items, eHudItemKind::Text, "INSERT COIN");
         ASSERT_NE(pCoin, nullptr) << tick;
         EXPECT_EQ(pCoin->x, layout.insertCoinRightX);
@@ -677,7 +673,7 @@ TEST(UiHud, PlayerBlockCanBeHiddenAndLevelSpriteOptional)
     EXPECT_TRUE(BuildHudItems(model, layout).empty());
 
     model.levelSprite                 = "LEVEL_1";
-    const slug::Vector<HudItem> items = BuildHudItems(model, layout);
+    const Vector<HudItem> items = BuildHudItems(model, layout);
     ASSERT_EQ(items.size(), 1u);
     EXPECT_EQ(items[0].text, "LEVEL_1");
     EXPECT_EQ(items[0].x, layout.levelCenterX);
@@ -690,15 +686,15 @@ TEST(UiHud, BossBarFillScalesWithRatioAndFrameDrawsLast)
     model.bShowBoss      = true;
 
     model.bossHpRatio                 = 1.f;
-    const slug::Vector<HudItem> full  = BuildHudItems(model, layout);
+    const Vector<HudItem> full  = BuildHudItems(model, layout);
     model.bossHpRatio                 = 0.5f;
-    const slug::Vector<HudItem> half  = BuildHudItems(model, layout);
+    const Vector<HudItem> half  = BuildHudItems(model, layout);
     model.bossHpRatio                 = 0.f;
-    const slug::Vector<HudItem> empty = BuildHudItems(model, layout);
+    const Vector<HudItem> empty = BuildHudItems(model, layout);
 
-    const slug::Vector<HudItem> fullRects  = HudRects_(full);
-    const slug::Vector<HudItem> halfRects  = HudRects_(half);
-    const slug::Vector<HudItem> emptyRects = HudRects_(empty);
+    const Vector<HudItem> fullRects  = HudRects_(full);
+    const Vector<HudItem> halfRects  = HudRects_(half);
+    const Vector<HudItem> emptyRects = HudRects_(empty);
 
     ASSERT_EQ(fullRects.size(), 2u);
     ASSERT_EQ(halfRects.size(), 2u);
@@ -749,7 +745,7 @@ TEST(UiHud, TypicalModelFitsAndPanelDoesNotOverlapScoreBlock)
 
 TEST(UiHud, MakeHudModelReadsPlayerController)
 {
-    slugtest::Sim  sim;
+    Sim  sim;
     const HudModel model = MakeHudModel(sim.Player());
     EXPECT_TRUE(model.bInfiniteAmmo);
     EXPECT_EQ(model.lives, 3);
@@ -806,7 +802,7 @@ TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
     EXPECT_FALSE(ui.GetBanner().IsActive());   // 배너 대신 전면 아트
     EXPECT_TRUE(flow.GetArtView().bVisible);
     EXPECT_EQ(flow.GetArtView().alpha, 0);   // 페이드 인 시작
-    EXPECT_EQ(audio.CountPlays(sfx::kGameOver), 1);
+    EXPECT_EQ(audio.CountPlays(kGameOver), 1);
     EXPECT_EQ(audio.CountKind(eAudioEvent::FadeOutBgm), 1);
 
     int doneAt = -1;
@@ -927,7 +923,7 @@ TEST(UiFlow, MissionCompleteShowsResultsBeforeTheCompleteBanner)
     EXPECT_FALSE(flow.GetResultsView().bBoxVisible);
     EXPECT_TRUE(ui.GetBanner().IsActive());
     EXPECT_EQ(ui.GetBanner().GetCurrent().text, "MISSION 4\nCOMPLETE!");
-    EXPECT_EQ(audio.CountPlays(sfx::kMissionComplete), 1);
+    EXPECT_EQ(audio.CountPlays(kMissionComplete), 1);
 
     AdvanceFlowTo_(t, ui, flow, audio, config.GetTotalTicks());
     EXPECT_TRUE(flow.IsDone());
@@ -1070,8 +1066,6 @@ TEST(UiFlow, TickBeforeStartAndAfterDoneIsHarmless)
     EXPECT_EQ(flow.GetElapsedTicks(), elapsed);
 }
 
-namespace
-{
 struct TitleSim
 {
     explicit TitleSim(
@@ -1106,20 +1100,19 @@ struct TitleSim
 
     [[nodiscard]] bool IsStillTitle() const { return runner->GetState() == pTitle; }
 
-    slug::RngMt19937           rng;
+    RngMt19937           rng;
     GameContext                ctx;
     TestAudio                  audio;
     TitleState*                pTitle = nullptr;
     std::unique_ptr<SimRunner> runner = nullptr;
 };
 
-[[nodiscard]] TitleConfig SandboxTitleConfig_()
+[[nodiscard]] static TitleConfig SandboxTitleConfig_()
 {
     TitleConfig config;
     config.nextState = "sandbox";
     return config;
 }
-}   // namespace
 
 TEST(UiTitle, StaysOnTitleWithoutInput)
 {
@@ -1139,7 +1132,7 @@ TEST(UiTitle, ShotPressStartsFadeThenSwitchesStateExactlyAfterFade)
     sim.Step(eAction::Shot, true);
     EXPECT_TRUE(sim.pTitle->IsStarting());
     EXPECT_EQ(sim.pTitle->GetSelectedStateName(), "sandbox");
-    EXPECT_EQ(sim.audio.CountPlays(sfx::kOk), 1);
+    EXPECT_EQ(sim.audio.CountPlays(kOk), 1);
     sim.Step(eAction::Shot, false);
 
     int switchedAt = -1;
@@ -1164,7 +1157,7 @@ TEST(UiTitle, StartActionAlsoWorksAndHeldKeyDoesNotRetrigger)
     EXPECT_TRUE(sim.pTitle->IsStarting());
     sim.Step(eAction::Start, true);
     sim.Step(eAction::Start, true);
-    EXPECT_EQ(sim.audio.CountPlays(sfx::kOk), 1);
+    EXPECT_EQ(sim.audio.CountPlays(kOk), 1);
 }
 
 TEST(UiTitle, InputsDuringEntryDelayAreIgnored)
@@ -1198,7 +1191,7 @@ TEST(UiTitle, AutoSelectionFallsBackToSandboxWhenStage0IsNotRegistered)
     TitleSim sim;
     sim.Idle(20);
     sim.Step(eAction::Start, true);
-    const slug::String& selected = sim.pTitle->GetSelectedStateName();
+    const String& selected = sim.pTitle->GetSelectedStateName();
     EXPECT_TRUE(selected == "stage0" || selected == "sandbox") << selected;
 }
 
@@ -1208,7 +1201,7 @@ TEST(UiTitle, EntersWithBlackAndFadesIn)
     EXPECT_GT(sim.pTitle->GetUi().GetFade().GetAlpha(), 0.9f);   // 검정에서 시작
     sim.Idle(sim.pTitle->GetUi().GetFade().IsBusy() ? 40 : 0);
     EXPECT_TRUE(sim.pTitle->GetUi().GetFade().IsClear());
-    EXPECT_EQ(sim.audio.CountPlays(sfx::kTitleVoice), 1);
+    EXPECT_EQ(sim.audio.CountPlays(kTitleVoice), 1);
 }
 
 TEST(UiTitle, IsRegisteredInStateFactory)

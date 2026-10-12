@@ -9,40 +9,34 @@
 #include "Base/Result.h"
 #include "Base/Types.h"
 
-namespace slug
-{
+using CacheKey = std::pair<const SpriteBatch*, String>;
+using CacheMap = std::map<CacheKey, int>;
 
-namespace
+[[nodiscard]] static int LoadStandaloneCached_(
+    GameContext&     _ctx,
+    const StringView _name,
+    const StringView _file)
 {
-    using CacheKey = std::pair<const SpriteBatch*, String>;
-    using CacheMap = std::map<CacheKey, int>;
+    static CacheMap s_cache;
 
-    [[nodiscard]] int LoadStandaloneCached_(
-        GameContext&     _ctx,
-        const StringView _name,
-        const StringView _file)
+    const CacheKey key { _ctx.pSprites, String { _name } };
+    if (const CacheMap::const_iterator it = s_cache.find(key); it != s_cache.end())
     {
-        static CacheMap s_cache;
-
-        const CacheKey key { _ctx.pSprites, String { _name } };
-        if (const CacheMap::const_iterator it = s_cache.find(key); it != s_cache.end())
-        {
-            return it->second;
-        }
-
-        int handle = -1;
-        if (const Result<int> loaded = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / FilePath { _file }))
-        {
-            handle = loaded.GetValue();
-        }
-        else
-        {
-            SLUG_LOG_WARN("UI 텍스처를 읽지 못했습니다: {}", _file);
-        }
-        s_cache.emplace(key, handle);
-        return handle;
+        return it->second;
     }
-}   // namespace
+
+    int handle = -1;
+    if (const Result<int> loaded = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / FilePath { _file }))
+    {
+        handle = loaded.GetValue();
+    }
+    else
+    {
+        SLUG_LOG_WARN("UI 텍스처를 읽지 못했습니다: {}", _file);
+    }
+    s_cache.emplace(key, handle);
+    return handle;
+}
 
 void UiSystem::Init(
     const GameContext& _ctx)
@@ -57,7 +51,7 @@ void UiSystem::Init(
         return;
     }
 
-    if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot / "Baked"))
+    if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot))
     {
         m_sprites  = library.Take();
         m_bSprites = true;
@@ -65,7 +59,7 @@ void UiSystem::Init(
     }
     else
     {
-        SLUG_LOG_WARN("UI: sprites.json 을 읽지 못해 디버그 폰트로 대체합니다 (Scripts/Bake.ps1 필요)");
+        SLUG_LOG_WARN("UI: sprites.json 을 읽지 못해 디버그 폰트로 대체합니다");
     }
 }
 
@@ -280,11 +274,11 @@ void UiSystem::DrawMissionResults(
     white.color = eFontColor::White;
     white.align = eTextAlign::Center;
     white.alpha = a;
-    m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, m_layout.resultsTitleX, m_layout.resultsTitleY - fontmap::kGlyphSize / 2, "RECAPTURED PRISONER", white);
+    m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, m_layout.resultsTitleX, m_layout.resultsTitleY - kGlyphSize / 2, "RECAPTURED PRISONER", white);
 
     TextStyle yellow = white;
     yellow.color     = eFontColor::Yellow;
-    m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, cx, m_layout.resultsPlayerY - fontmap::kGlyphSize / 2, "1P", yellow);
+    m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, cx, m_layout.resultsPlayerY - kGlyphSize / 2, "1P", yellow);
 
     ARRAY<char, 8> countBuf = {};
     std::snprintf(countBuf.data(), countBuf.size(), "%02d", std::clamp(m_results.rescued, 0, 99));
@@ -302,7 +296,7 @@ void UiSystem::DrawMissionResults(
 
     if (m_results.bRankVisible)
     {
-        m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, cx, m_layout.resultsRankY - fontmap::kGlyphSize / 2, m_results.rankText, yellow);
+        m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, cx, m_layout.resultsRankY - kGlyphSize / 2, m_results.rankText, yellow);
     }
 }
 
@@ -408,5 +402,3 @@ void UiSystem::SetGameOverArt(
 {
     m_art = _view;
 }
-
-}   // namespace slug

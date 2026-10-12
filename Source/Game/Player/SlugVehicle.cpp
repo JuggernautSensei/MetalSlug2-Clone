@@ -8,72 +8,68 @@
 #include "Base/Types.h"
 #include "Game/Combat/HitFlash.h"
 #include "Game/Player/SlugClips.h"
+#include "Game/Player/SlugRender.h"
+#include "Render/SpriteBatch.h"
 
-namespace slug
+constexpr int   kCrouchLevels    = 8;
+constexpr int   kExplosionTicks  = 66;   // Slug_Explosion 30프레임 @ 30fps = 60틱 + 여유
+constexpr int   kFxSmokeTicks    = 54;
+constexpr int   kFxFireTicks     = 40;
+constexpr int   kSmokeInterval   = 16;
+constexpr int   kFireInterval    = 11;
+constexpr int   kHitAgeNone      = -1;
+
+[[nodiscard]] static PhysicsTuning MakePhysicsTuning_(
+    const SlugMoveTuning& _move)
 {
+    PhysicsTuning tuning;
+    tuning.gravity          = _move.gravity;
+    tuning.terminalVelocity = _move.terminalVelocity;
+    tuning.runSpeed         = _move.runSpeed;
+    tuning.jumpSpeed        = _move.jumpSpeed;
+    tuning.maxStepUp        = _move.maxStepUp;
+    tuning.maxSnapDown      = _move.maxSnapDown;
+    return tuning;
+}
 
-namespace
+// -180..180 으로 접은 각도 차이
+[[nodiscard]] static float WrapDegree_(
+    const float _degree)
 {
-    constexpr int   kCrouchLevels    = 8;
-    constexpr int   kExplosionTicks  = 66;   // Slug_Explosion 30프레임 @ 30fps = 60틱 + 여유
-    constexpr int   kFxSmokeTicks    = 54;
-    constexpr int   kFxFireTicks     = 40;
-    constexpr int   kSmokeInterval   = 16;
-    constexpr int   kFireInterval    = 11;
-    constexpr int   kHitAgeNone      = -1;
-
-    [[nodiscard]] PhysicsTuning MakePhysicsTuning_(
-        const SlugMoveTuning& _move)
+    float value = std::fmod(_degree + 180.f, 360.f);
+    if (value < 0.f)
     {
-        PhysicsTuning tuning;
-        tuning.gravity          = _move.gravity;
-        tuning.terminalVelocity = _move.terminalVelocity;
-        tuning.runSpeed         = _move.runSpeed;
-        tuning.jumpSpeed        = _move.jumpSpeed;
-        tuning.maxStepUp        = _move.maxStepUp;
-        tuning.maxSnapDown      = _move.maxSnapDown;
-        return tuning;
+        value += 360.f;
     }
+    return value - 180.f;
+}
 
-    // -180..180 으로 접은 각도 차이
-    [[nodiscard]] float WrapDegree_(
-        const float _degree)
+template<typename T>
+static void HashBytes_(
+    uint64_t& _hash,
+    const T&  _value)
+{
+    ARRAY<uint8_t, sizeof(T)> bytes = {};
+    std::memcpy(bytes.data(), &_value, sizeof(T));
+    for (const uint8_t byte: bytes)
     {
-        float value = std::fmod(_degree + 180.f, 360.f);
-        if (value < 0.f)
-        {
-            value += 360.f;
-        }
-        return value - 180.f;
+        _hash ^= byte;
+        _hash *= 1'099'511'628'211ull;
     }
+}
 
-    template<typename T>
-    void HashBytes_(
-        uint64_t& _hash,
-        const T&  _value)
-    {
-        ARRAY<uint8_t, sizeof(T)> bytes = {};
-        std::memcpy(bytes.data(), &_value, sizeof(T));
-        for (const uint8_t byte: bytes)
-        {
-            _hash ^= byte;
-            _hash *= 1'099'511'628'211ull;
-        }
-    }
-
-    // 연기/불꽃이 올라오는 자리 (차량 몸통 위쪽 여러 점을 번갈아 쓴다)
-    [[nodiscard]] Vec2 GetDamageFxOffset_(
-        const int _index)
-    {
-        static constexpr ARRAY<Vec2, 4> kOffsets = { {
-            { -30.f, -78.f },
-            { 18.f, -84.f },
-            { -8.f, -66.f },
-            { 34.f, -70.f },
-        } };
-        return kOffsets[static_cast<size_t>(_index) % kOffsets.size()];
-    }
-}   // namespace
+// 연기/불꽃이 올라오는 자리 (차량 몸통 위쪽 여러 점을 번갈아 쓴다)
+[[nodiscard]] static Vec2 GetDamageFxOffset_(
+    const int _index)
+{
+    static constexpr ARRAY<Vec2, 4> kOffsets = { {
+        { -30.f, -78.f },
+        { 18.f, -84.f },
+        { -8.f, -66.f },
+        { 34.f, -70.f },
+    } };
+    return kOffsets[static_cast<size_t>(_index) % kOffsets.size()];
+}
 
 void SlugVehicle::Init(
     const SlugTuning& _tuning,
@@ -167,6 +163,7 @@ void SlugVehicle::Tick(
     const InputHistory& _input)
 {
     ++m_tick;
+    m_godMode  = _ctx.godMode;
     m_prevFeet = m_body.position;
 
     if (m_bReleaseCrush)
@@ -514,6 +511,7 @@ void SlugVehicle::FireVulcan_(
     spawn.bPierce   = false;
     spawn.tag       = 1;
     spawn.kind      = eHitKind::Bullet;
+    spawn.z         = ZShift(m_z, kSlugBodyDepth, kPlayerBulletDepth);
     _ctx.pProjectiles->SpawnBullet(spawn, *_ctx.pCombat);
 
     m_vulcanCooldown = m_tuning.vulcan.fireIntervalTicks;
@@ -587,6 +585,7 @@ void SlugVehicle::FireCannon_(
     spawn.blastTicks = cannon.blastTicks;
     spawn.bBounce    = false;
     spawn.fuseTicks  = 0;
+    spawn.z          = ZShift(m_z, kSlugBodyDepth, kPlayerBombDepth);
     _ctx.pProjectiles->SpawnBomb(spawn);
 
     SpawnFx_(eSlugFxKind::CannonMuzzle, spawn.position, variant, cannon.muzzleFlashTicks);
@@ -730,11 +729,11 @@ void SlugVehicle::ApplyHit_(
     const int  _damage,
     const bool _bFromFront)
 {
-    if (m_invincibleTicks > 0 || m_hp <= 0)
+    if (m_invincibleTicks > 0 || m_hp <= 0 || m_godMode == eGodMode::Invincible)
     {
         return;
     }
-    m_hp = Max(0, m_hp - _damage);
+    m_hp = Max(m_godMode == eGodMode::NoDeath ? 1 : 0, m_hp - _damage);
     StartHitFlash(m_flashTicks);
     m_invincibleTicks = m_tuning.damage.hitInvincibleTicks;
     m_bHitFront       = _bFromFront;
@@ -944,6 +943,17 @@ uint32_t SlugVehicle::GetOwnerId() const
 Vec2 SlugVehicle::GetFeet() const
 {
     return m_body.position;
+}
+
+int SlugVehicle::GetZ() const
+{
+    return m_z;
+}
+
+void SlugVehicle::SetZ(
+    const int _z)
+{
+    m_z = _z;
 }
 
 Vec2 SlugVehicle::GetPrevFeet() const
@@ -1168,5 +1178,3 @@ uint64_t SlugVehicle::HashState() const
     HashBytes_(hash, m_stats.cannonShots);
     return hash;
 }
-
-}   // namespace slug

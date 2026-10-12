@@ -26,7 +26,8 @@
         "bomb": "dieBomb", "slash": "dieSlash", "stand1": "dieStand1", "stand2": "dieStand2",
         "fall": "dieFall", "land": "dieLand", "jump": "dieJump",
         "fallAt1": 10, "fallAt2": 8,
-        "blinkAtSec": 2.0, "blinkForSec": 1.0, "blinkPeriodSec": 0.1, "removeAtSec": 3.0
+        "blinkAtSec": 2.0, "blinkForSec": 1.0, "blinkPeriodSec": 0.1, "removeAtSec": 3.0,
+        "bloodOffsetY": -27.5, "bombVelocity": [110, -430]
       }
     },
 
@@ -35,7 +36,7 @@
       "extends": "human_base",
       "note": "보병(Soldier) 공통 몸/클립. AI 는 하위 정의(bomb/sword/missile)가 정한다.",
       "behavior": "soldier",
-      "physics": { "gravity": 1000, "maxFall": 3000, "speed": 100, "jumpVy": -450, "dropSpeed": 100, "footHalfWidth": 4 },
+      "physics": { "gravity": 1000, "maxFall": 3000, "speed": 100, "jumpVy": -450, "dropSpeed": 100, "footHalfWidth": 4, "useGravity": true },
       "clips": {
         "idle":     { "name": "SD_Idle_{side}",      "frames": 6,  "sec": 0.1, "loop": true },
         "move":     { "name": "SD_Move_{side}",      "frames": 12, "sec": 0.08, "loop": true },
@@ -89,7 +90,7 @@
       "note": "바주카 병사 (EnemySpecs 1.2). 낙하산 바주카 착지 시 변신 대상.",
       "behavior": "bzk",
       "score": 100,
-      "physics": { "gravity": 800, "maxFall": 3000, "speed": 100, "jumpVy": -350, "dropSpeed": 100, "footHalfWidth": 4 },
+      "physics": { "gravity": 800, "maxFall": 3000, "speed": 100, "jumpVy": -350, "dropSpeed": 100, "footHalfWidth": 4, "useGravity": true },
       "clips": {
         "idle":         { "name": "Bazuka_Idle_{side}",         "frames": 6,  "sec": 0.1,  "loop": true },
         "move":         { "name": "Bazuka_Move_{side}",         "frames": 11, "sec": 0.08, "loop": true },
@@ -200,7 +201,7 @@
       "note": "방패병 (EnemySpecs 1.5). 방패는 총알만 막는다 (칼/폭발 통과).",
       "behavior": "shielder",
       "score": 100,
-      "physics": { "gravity": 1000, "maxFall": 3000, "speed": 100, "jumpVy": -450, "dropSpeed": 100, "footHalfWidth": 4 },
+      "physics": { "gravity": 1000, "maxFall": 3000, "speed": 100, "jumpVy": -450, "dropSpeed": 100, "footHalfWidth": 4, "useGravity": true },
       "clips": {
         "idle":           { "name": "Shield_Idle_{side}",           "frames": 6,  "sec": 0.1,  "loop": true },
         "move":           { "name": "Shield_Move_{side}",           "frames": 12, "sec": 0.1,  "loop": true },
@@ -264,7 +265,7 @@
       "score": 0,
       "body": { "w": 50, "h": 80, "cx": 0, "cy": -40 },
       "activation": { "marginPx": 150, "latch": true },
-      "physics": { "gravity": 1000, "maxFall": 3000, "speed": 75, "jumpVy": -450, "dropSpeed": 100, "footHalfWidth": 4 },
+      "physics": { "gravity": 1000, "maxFall": 3000, "speed": 75, "jumpVy": -450, "dropSpeed": 100, "footHalfWidth": 4, "useGravity": true },
       "clips": {
         "stuck":    { "name": "Older_Idle_{side}",   "frames": 8,  "sec": 0.12, "loop": true },
         "escape":   { "name": "Older_Escape_{side}", "frames": 4,  "sec": 0.1 },
@@ -300,7 +301,7 @@
         "dropMinPatrolSec": 1.0,
         "itemFrame": 8,
         "closeNudge": 16,
-        "itemOffsetX": 18,
+        "itemOffsetX": 0,
         "runSpeed": 200,
         "blinkAtSec": 2.8,
         "blinkForSec": 2.0,

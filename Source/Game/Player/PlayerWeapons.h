@@ -1,11 +1,9 @@
 #pragma once
 #include "Base/Math.h"
+#include "Base/Random.h"
 #include "Core/Tuning.h"
 #include "Game/Combat/Projectiles.h"
 #include "Game/Player/PlayerTypes.h"
-
-namespace slug
-{
 
 struct WeaponState
 {
@@ -44,4 +42,12 @@ void OnFired(WeaponState& _state);
     Vec2                _sweepFrom,
     Vec2                _direction);
 
-}   // namespace slug
+// 파이어샷 분출 입자 하나 (방향/속도/수명은 _rng 에서 결정적으로 뽑는다, _hitId 는 분출 전체가 공유)
+[[nodiscard]] BulletSpawn MakeFlameParticleSpawn(
+    const WeaponTuning& _tuning,
+    uint32_t            _owner,
+    Vec2                _muzzle,
+    Vec2                _sweepFrom,
+    Vec2                _direction,
+    uint32_t            _hitId,
+    RngMt19937&         _rng);

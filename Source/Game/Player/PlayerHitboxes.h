@@ -5,9 +5,6 @@
 #include "World/Combat.h"
 #include "World/Geometry.h"
 
-namespace slug
-{
-
 [[nodiscard]] Aabb MakeKnifeTriggerBox(
     Vec2               _feet,
     int                _facing,
@@ -33,11 +30,6 @@ namespace slug
 
 [[nodiscard]] Aabb MakePlayerHurtboxBox(Vec2 _feet, ePose _pose, const BodyTuning& _body);
 
-[[nodiscard]] constexpr bool IsKnifeSwingActive(
+[[nodiscard]] bool IsKnifeSwingActive(
     const int          _ticksSinceStart,
-    const KnifeTuning& _knife)
-{
-    return _ticksSinceStart >= _knife.activeFirstTick && _ticksSinceStart <= _knife.activeLastTick;
-}
-
-}   // namespace slug
+    const KnifeTuning& _knife);

@@ -3,9 +3,6 @@
 #include "Core/Tuning.h"
 #include "Game/Combat/Projectiles.h"
 
-namespace slug
-{
-
 class AnimationLibrary;
 class IAudioSink;
 class SpriteBatch;
@@ -17,10 +14,8 @@ bool SubmitPlayerBullet(
     const SpriteLibrary&    _spriteLib,
     const Bullet&           _bullet,
     Vec2                    _pos,
-    int                     _layer);
+    int                     _depth);
 
 void PlayShotSfx(IAudioSink& _audio, eWeapon _weapon, int _shotIndex);
 
 void PlayWeaponPickupSfx(IAudioSink& _audio, eWeapon _weapon);
-
-}   // namespace slug

@@ -1,14 +1,14 @@
 # 소품 / 아이템 정의 (`Assets/Defs/Props/Props.json`)
 
 구현: `Source/Game/Props/` (`PropDef.*` 정의 로더, `PropWorld.*` 소품, `ItemWorld.*` 아이템/점수 팝업).
-수치 근거는 `Docs/EnemySpecs.md` §4~7 (파괴 구조물, 아이템, 디브리). 스테이지 사용처는 `Docs/StageFormat.md` §7/§9.
+수치 근거는 원작 비교 (파괴 구조물, 아이템, 디브리). 스테이지 사용처는 `Docs/StageFormat.md` §7/§9.
 **파일 위치는 `Assets/Defs/Props/` 하위 폴더다.** `EnemyDefLibrary::LoadDirectory` 는 `Assets/Defs/*.json` 을 전부 적 스키마로 읽으므로, 최상위에 두면 `VehicleDefs`/`EnemySandbox` 테스트가 깨진다 (실제로 깨졌던 이력이 있어 옮겼다). 하위 폴더는 그 로더가 건너뛴다.
 
 ## 0. 공통 규약
 - 좌표: **스프라이트 중심(legacyCenter)** 기준. 모든 `offset` 은 중심에서의 오프셋(+y 아래). `size` = 상자 폭/높이.
 - HP: 권총 damage(3) 기준 원작 체감치. 상점 12(4발), 트럭 9(3발), 보트 12(4발), 집류 18(6발), 지상집/큰집/탑 24(8발). 폭탄(20) 은 1~2발. 임계값(`damagedAtHp`) 은 HP 의 절반 (지상집/큰집 12).
 - JSON 은 엄격: 알 수 없는 키/값, 잘못된 형식, 없는 def/item/group 참조는 로드 실패 (`eError::PropDefInvalid`, 메시지 `"<def>: <필드>: 사유"`). `note` 키는 어디서나 허용된다.
-- 정의 이름/클립/스프라이트 이름은 `Assets/Baked/{anim,sprites}.json` 키와 일치해야 한다 (`PropDefLibrary::FindMissingAsset` 으로 검사).
+- 정의 이름/클립/스프라이트 이름은 `Assets/{anim,sprites}.json` 키와 일치해야 한다 (`PropDefLibrary::FindMissingAsset` 으로 검사).
 
 ## 1. 최상위
 | 키 | 설명 |
@@ -23,6 +23,8 @@
 |---|---|---|---|
 | `hp` | int ≥ 0 | (필수) | 0 = 피격 불가(불사). 피격 상자가 없으면 무관 |
 | `cullMargin` | float | 200 | 중심 x 가 `camLeft - margin` 보다 왼쪽이면 제거 |
+| `sortOffsetY` | float | 0 | 일반 소품의 같은 레이어 그리기 순서 키 = `pos.y + sortOffsetY` (작을수록 먼저 = 뒤에 그려짐). 겹치는 소품의 앞뒤 보정용 (shop_2 = -30). `sortByX` 가 켜진 건물 계열에는 적용되지 않는다 (아래 참고) |
+| `sortByX` | bool | false | 건물 계열 정렬 규칙. 그리기 키 = `-x * 4096 + y` (`kBuildingDepthXScale`). 먼저 나오는 건물 (x 가 작은 쪽) 일수록 키가 커서 앞에 그려지고, x 차이가 항상 순서를 정하며 동률만 y 로 정한다. `sortOffsetY` 는 무시 |
 | `layer` | `"background"`/`"front"` | background | 렌더 레이어 |
 | `idle` / `damaged` / `destroyed` / `hit` | Visual | 없음 | 상태별 표시. `hit` 은 피격 때마다 한 번 재생 |
 | `damagedAtHp` | int | -1 | `0 < hp ≤ 값` 이면 `damaged` 표시 + `onDamaged` 1회 |
@@ -47,11 +49,8 @@
 - `when`: `intact`(기본, 파괴 전만) / `destroyed`(파괴 후만) / `always`.
 
 ### 2.3 groundPatch 의미 (발자국 지우기)
-- 마스크 `Baked/Textures/<sprite>.png` 의 **파란 픽셀(R<80, G<80, B>=200, A>=128) = 파괴 시 공기가 되는 발자국**, 나머지는 무시된다. `ApplyGroundPatch(map, topLeft, footprint)` 는 발자국의 고체 픽셀만 공기로 만들고 **발자국 밖은 절대 건드리지 않는다**.
-- 가드 (걸리면 아무것도 바꾸지 않고 `false`, `StageState` 가 `SLUG_LOG_ERROR`): (1) 발자국이 어떤 열의 바닥 (지면 맵에서 그 열의 가장 아래 고체 픽셀) 을 지우면 거부, (2) 발자국 사각형 안 고체 픽셀의 50 % 를 넘게 지우면 거부. 고체가 0 인 마스크는 로드하지 않는다 (무시).
-- 베이커 (`Source/Tools/Baker` `BakeGroundPatchMasks_`) 가 만든다. 원본은 레거시 `Stage/map/Stage0_Pixel_0.bmp` 기준 지면:
-  - `Stage0_House_5_PixelMap` (큰 집): 레거시 마스크는 '집 몸체를 뺀 지면' 스냅샷이므로 발자국 = 기준 지면 - 스냅샷 (집 몸체 윗부분).
-  - `Stage0_House_4_PixelMap` (지상 집): 레거시 마스크는 전부 흰색이라 쓸 수 없다. 발자국 = 도로 윗면(y 1286) 위로 솟은 중심 열의 봉우리 한 덩어리.
+- 마스크 `Assets/Textures/<sprite>.png` 의 **파란 픽셀(R<80, G<80, B>=200, A>=128) = 파괴 시 공기가 되는 발자국**, 나머지는 무시된다. `ApplyGroundPatch(map, topLeft, footprint)` 는 발자국의 고체 픽셀만 공기로 만들고 **발자국 밖은 절대 건드리지 않는다**.
+- 가드 (걸리면 아무것도 바꾸지 않고 `false`, `StageState` 가 오류 로그): (1) 발자국이 어떤 열의 바닥 (지면 맵에서 그 열의 가장 아래 고체 픽셀) 을 지우면 거부, (2) 발자국 사각형 안 고체 픽셀의 50 % 를 넘게 지우면 거부. 고체가 0 인 마스크는 로드하지 않는다 (무시).
 - 레거시 `BitBlt(SRCCOPY)` 는 사각형 전체를 덮어써 도로를 뚫었다 (이 버그가 softlock 원인). 새 규칙은 그 대신 발자국만 지운다.
 
 ### 2.2 Visual / Burst / Drop
@@ -97,8 +96,8 @@
 ```
 
 ## 6. 알려진 차이 / 해석
-- **다리(bridge_*) 는 `wall`** (EnemySpecs §5: WALL+HITBOX). 파괴 후에도 충돌 유지. 원웨이 발판 아님.
-- **탑(tower) 발판은 3개** (EnemySpecs: `45-70i`, 꼭대기 y = pos-100). StageFormat §9 의 2개 표기는 옛 요약.
+- **다리(bridge_*) 는 `wall`** (WALL+HITBOX). 파괴 후에도 충돌 유지. 원웨이 발판 아님.
+- **탑(tower) 발판은 3개** (`45-70i`, 꼭대기 y = pos-100). StageFormat §9 의 2개 표기는 옛 요약.
 - 원/상자 충돌은 **외접 AABB 로 근사** (`Hurtbox` 는 AABB 전용). 지면집/큰집 원 상자는 판정이 살짝 넓다.
 - 지면집/큰집의 발자국 패치는 PropWorld 가 적용하지 않는다. `GroundPatch` 이벤트를 `StageState` 가 받아 `ApplyGroundPatch` 로 활성 지면에 적용한다 (§2.3). 개활지 큰 집 (13542) 은 스테이지에 스폰하지 않지만 그 몸체 봉우리 (x 13397..13701, 윗면 y 1204) 는 지면 bin 에 남아 있다. 보스 아레나 엄폐물로 쓰이며 `BossBot` 밸런스 테스트가 이를 전제하므로 제거하지 않는다 (제거하면 보스 봇 승률이 0 이 된다).
 - 무기 보급(`bullet`)은 `PlayerController::PickUpWeapon` 의 무기별 탄 (HMG 200 / SG 30) 을 쓴다. 레거시 '추가 탄' (MG 100 / SG 10) 과 다르다. 정확히 맞추려면 `PlayerController` 에 탄약 추가 메서드가 필요하다.
@@ -107,6 +106,7 @@
 - **적은 소품 발판(집 지붕 포함)을 아직 밟지 못한다.** 샌드박스는 적 물리에 설정 발판만 넘긴다. 소품 발판을 적 물리에도 넘겨 보았더니 `AudioDeterminism`/`PlayerReplay` 가 접근 위반으로 죽었다 (적 쪽 문맥 사본이 틱마다 다시 채워지는 소품 벡터의 스팬을 들고 있는 것으로 보이나 정확한 경로는 미확인). 스테이지 호스트는 적 물리용 발판을 틱 사이에 안정적인 저장소에 두고, 적 쪽이 스팬을 틱 밖에서 보관하지 않는지 확인해야 한다.
 - 스팬(`GetPlatforms`/`GetWalls`)은 마지막 `Tick`/`OnHitEvents` 이후 다음 호출 전까지만 유효하다. 호출자가 스팬을 보관하면 안 된다.
 - 소품 이벤트(`TakeEvents`)는 샌드박스에서 버린다 (소비처는 스테이지 호스트).
+- **mob_boat hp 기준은 Props.json (12).** StageWorldHost 의 `GetDefaultSpec_` 값 30 은 PropWorld 를 거치지 않는 플레이스홀더 폴백 전용이라 다르다. 수치는 바꾸지 않았다.
 
 ## 7. 샌드박스 검증 (상태 이름 `proplab`)
 `StateFactory` 의 `proplab`: 플레이어 (1500,378), Stage0 상점 거리에 `shop_0..2`, `truck` ×2, 아이템 `gunitem_mg`(뜬 상태) / `random_score` / `bomb_supple`. 소품 발판은 플레이어 물리에만 들어간다 (`SandboxState::UpdatePropCollision_`). 소품 벽은 `UpdateWalls_` 가 더한다. 아이템은 `ApplyItemPickup` 으로 플레이어에 반영된다. 샌드박스 해시는 소품이 있을 때만 소품 상태를 섞는다 (기존 리플레이 해시 유지).

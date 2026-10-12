@@ -5,7 +5,6 @@
 #include "Core/FixedStep.h"
 #include "Core/Input.h"
 
-using namespace slug;
 
 TEST(FixedStepClock, OneStepPerSixtiethOfSecond)
 {
@@ -51,16 +50,13 @@ TEST(FixedStepClock, AlphaIsFractionOfStep)
     EXPECT_NEAR(clock.GetAlpha(), 0.25f, 1e-3f);
 }
 
-namespace
-{
-[[nodiscard]] InputFrame Held_(
+[[nodiscard]] static InputFrame Held_(
     const eAction _action)
 {
     InputFrame frame;
     frame.Set(_action, true);
     return frame;
 }
-}   // namespace
 
 TEST(InputHistory, PressEdgeIsDetectedOnFirstFrame)
 {

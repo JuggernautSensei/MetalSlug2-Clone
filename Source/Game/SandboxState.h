@@ -22,12 +22,9 @@
 #include "World/GroundMap.h"
 #include "World/Physics.h"
 
-namespace slug
-{
-
 struct SandboxConfig
 {
-    bool             bLoadBakedGround = true;
+    bool             bLoadGround = true;
     GroundMap        ground           = {};
     Vector<Platform> platforms        = {};
     Aabb             cameraBounds     = Aabb::FromMinMax({ 0.f, 0.f }, { 3520.f, 448.f });
@@ -41,7 +38,10 @@ struct SandboxConfig
     bool             bVehicleLab      = false;
     bool             bPropLab         = false;
     bool             bBusLab          = false;   // 버스 중간보스 연습장: 실제 스테이지 좌표, 카메라 락, 사망 후 Stage0_1 지면
+    bool             bBusBot          = false;   // 버스 랩 전용: 플레이어가 버스 앞까지 걸어가 HMG 로 계속 사격 (캡처 비교용 봇 입력, 무적)
     bool             bHeliLab         = false;
+    bool             bHeliBot         = false;   // 헬기 랩 전용: 플레이어가 좌우로 걸으며 위로 사격 (캡처 비교용 봇 입력)
+    int              heliHp           = -1;      // 헬기 랩 전용: 헬기 체력 (-1: 정의 기본값)
     bool             bGodMode         = false;   // 랩 전용: 플레이어 무적 (캡처 비교용)
     bool             bSlugLab         = false;   // sluglab: 평지에 주차된 SV-001 과 표적
     Vector<Vec2>     slugFeet         = {};      // 시작할 때 놓을 주차 SV-001 발 위치
@@ -60,22 +60,23 @@ public:
     void Tick(GameContext& _ctx, const InputHistory& _input) override;
     void Render(GameContext& _ctx, float _alpha) override;
 
-    [[nodiscard]] PlayerController&       GetPlayer() { return m_player; }
-    [[nodiscard]] const PlayerController& GetPlayer() const { return m_player; }
-    [[nodiscard]] TrainingTargets&        GetTargets() { return m_targets; }
-    [[nodiscard]] ProjectileSystem&       GetProjectiles() { return m_projectiles; }
-    [[nodiscard]] CombatSystem&           GetCombat() { return m_combat; }
-    [[nodiscard]] Tuning&                 GetTuning() { return m_tuning; }
-    [[nodiscard]] const Camera&           GetCamera() const { return m_camera; }
-    [[nodiscard]] PlayerRig&              GetRig() { return m_rig; }
-    [[nodiscard]] const PlayerRig&        GetRig() const { return m_rig; }
-    [[nodiscard]] uint64_t                GetTickCount() const { return m_tickCount; }
-    [[nodiscard]] UiSystem&               GetUi() { return m_ui; }
-    [[nodiscard]] EnemyWorld&             GetEnemies() { return m_enemies; }
-    [[nodiscard]] const EnemyWorld&       GetEnemies() const { return m_enemies; }
-    [[nodiscard]] const EnemyDefLibrary&  GetEnemyLib() const { return m_enemyLib; }
-    [[nodiscard]] SlugSystem&             GetSlugs() { return m_slugs; }
-    [[nodiscard]] const SlugSystem&       GetSlugs() const { return m_slugs; }
+    [[nodiscard]] PlayerController&       GetPlayer();
+    [[nodiscard]] const PlayerController& GetPlayer() const;
+    [[nodiscard]] TrainingTargets&        GetTargets();
+    [[nodiscard]] ProjectileSystem&       GetProjectiles();
+    [[nodiscard]] CombatSystem&           GetCombat();
+    [[nodiscard]] Tuning&                 GetTuning();
+    [[nodiscard]] const Camera&           GetCamera() const;
+    [[nodiscard]] PlayerRig&              GetRig();
+    [[nodiscard]] const PlayerRig&        GetRig() const;
+    [[nodiscard]] uint64_t                GetTickCount() const;
+    [[nodiscard]] UiSystem&               GetUi();
+    [[nodiscard]] EnemyWorld&             GetEnemies();
+    [[nodiscard]] const EnemyWorld&       GetEnemies() const;
+    [[nodiscard]] const EnemyDefLibrary&  GetEnemyLib() const;
+    [[nodiscard]] EnemyDefLibrary&        GetEnemyLibMutable();
+    [[nodiscard]] SlugSystem&             GetSlugs();
+    [[nodiscard]] const SlugSystem&       GetSlugs() const;
 
     uint32_t AddTarget(eDummyKind _kind, Vec2 _feet, bool _bShooter = false);
 
@@ -83,7 +84,13 @@ public:
 
     void RestartGame();
 
+    [[nodiscard]] bool             ReloadEnemyDefs(const FilePath& _assetRoot);
+    // 정의/투사체 이름 목록이 같을 때만 적을 유지한 채 정의를 교체한다. 다르면 false (아무것도 바꾸지 않음)
+    [[nodiscard]] bool             ReloadEnemyDefsKeep(const FilePath& _assetRoot);
+    [[nodiscard]] const GroundMap& GetGround() const;
+
     [[nodiscard]] uint64_t HashState() const;
+    [[nodiscard]] uint64_t DebugHash() const override;
 
 private:
     void                       BuildWorld_(GameContext& _ctx);
@@ -95,6 +102,7 @@ private:
     [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;
     void                       SpawnDebugEnemy_(int _slot, float _aheadPx = 180.f);
     void                       TickBusLab_(GameContext& _ctx);
+    [[nodiscard]] bool         LoadEnemyDefs_(const FilePath& _assetRoot, EnemyDefLibrary& _out) const;
 
     void DrawWorld_(GameContext& _ctx, Vec2 _cameraPos, float _alpha);
     void DrawDebugBoxes_(Renderer& _renderer, Vec2 _cameraPos) const;
@@ -129,6 +137,7 @@ private:
     SlugSystem       m_slugs         = {};
     SlugTuning       m_slugTuning    = {};
     Vector<Wall>     m_slugWalls     = {};   // 적이 SV-001 위로 올라타지 못하게 막는 벽
+    Vector<Wall>     m_enemyWalls    = {};   // m_slugWalls + 살아 있는 적의 def.solid (버스 차체/승강대). 적 물리 월드용
     SlugStats        m_prevSlugStats = {};
 
     SpriteLibrary m_spriteLib = {};
@@ -142,7 +151,6 @@ private:
     int         m_prevScore          = 0;
     bool        m_bGameOverAnnounced = false;
 
-    uint64_t m_tickCount = 0;
+    uint64_t     m_tickCount = 0;
+    InputHistory m_botInput  = {};   // bHeliBot 의 합성 입력
 };
-
-}   // namespace slug

@@ -4,26 +4,23 @@
 
 #include "VehicleTestUtil.h"
 
-using namespace slugtest;
 
-namespace
-{
 constexpr float kGroundY = 378.f;
 
-struct DirectState
+struct VehicleDirectState
 {
     GameContext  ctx = {};
     SandboxState state { MakeEnemyConfig() };
     InputHistory input = {};
 
-    DirectState()
+    VehicleDirectState()
     {
         state.OnEnter(ctx);
     }
 };
 
 // 모든 탈것을 세워 두고 1200틱 동안 매 틱의 상태 해시를 _hashes 에 모은다
-void RunHashes_(
+static void RunHashes_(
     std::vector<uint64_t>& _hashes)
 {
     Sim   sim { MakeEnemyConfig({ 100.f, kGroundY }) };
@@ -39,11 +36,10 @@ void RunHashes_(
         _hashes.push_back(sim.State().HashState());
     }
 }
-}   // namespace
 
 TEST(VehicleSandbox, KeyNineSpawnsTheFourVehiclesInTurnAndWraps)
 {
-    DirectState d;
+    VehicleDirectState d;
     for (int press = 0; press < 5; ++press)
     {
         d.ctx.debugSpawn = 9;
@@ -59,7 +55,7 @@ TEST(VehicleSandbox, KeyNineSpawnsTheFourVehiclesInTurnAndWraps)
 
 TEST(VehicleSandbox, KeyTenStillDoesNothing)
 {
-    DirectState d;
+    VehicleDirectState d;
     d.ctx.debugSpawn = 10;
     d.state.Tick(d.ctx, d.input);
     EXPECT_EQ(d.state.GetEnemies().GetCount(), 0u);

@@ -16,124 +16,118 @@
 #include "Game/Stage/StageMapping.h"
 #include "Game/Ui/UiSystem.h"
 
-namespace slug
+constexpr float kTickRate = 60.f;
+
+[[nodiscard]] static int SecondsToTicks_(
+    const float _seconds)
 {
+    return _seconds <= 0.f ? 0 : static_cast<int>(std::lround(static_cast<double>(_seconds) * static_cast<double>(kTickRate)));
+}
 
-namespace
+[[nodiscard]] static Vec2 EnemyFeet_(
+    const SpawnRequest& _request)
 {
-    constexpr float kTickRate = 60.f;
-
-    [[nodiscard]] int SecondsToTicks_(
-        const float _seconds)
+    if (_request.positionMode == ePositionMode::LegacyCenter)
     {
-        return _seconds <= 0.f ? 0 : static_cast<int>(std::lround(static_cast<double>(_seconds) * static_cast<double>(kTickRate)));
+        return { _request.position.x, _request.position.y + _request.halfHeight };
+    }
+    return _request.position;
+}
+
+struct DefaultSpec
+{
+    int  hp   = 1;
+    Vec2 size = { 40.f, 40.f };
+};
+
+[[nodiscard]] static DefaultSpec MakeSpec_(
+    const int   _hp,
+    const float _width,
+    const float _height)
+{
+    DefaultSpec spec = {};
+    spec.hp          = _hp;
+    spec.size        = { _width, _height };
+    return spec;
+}
+
+[[nodiscard]] static DefaultSpec GetDefaultSpec_(
+    const StringView  _def,
+    const eEntityKind _kind)
+{
+    if (_def == "jeep")
+    {
+        return MakeSpec_(20, 75.f, 60.f);
+    }
+    if (_def == "truck")
+    {
+        return MakeSpec_(15, 80.f, 60.f);
+    }
+    if (_def == "missile_tank")
+    {
+        return MakeSpec_(30, 100.f, 100.f);
+    }
+    if (_def == "btank" || _def == "sarubia")
+    {
+        return MakeSpec_(40, 100.f, 100.f);
+    }
+    if (_def == "mob_boat")
+    {
+        return MakeSpec_(30, 150.f, 150.f);
+    }
+    if (_def == "big_house")
+    {
+        return MakeSpec_(40, 310.f, 120.f);
+    }
+    if (_def == "ground_house")
+    {
+        return MakeSpec_(20, 200.f, 150.f);
+    }
+    if (_def == "tower")
+    {
+        return MakeSpec_(10, 90.f, 210.f);
+    }
+    if (_def.starts_with("shop_"))
+    {
+        return MakeSpec_(15, 100.f, 100.f);
+    }
+    if (_def.starts_with("bridge_") || _def.starts_with("house_") || _def == "ground_mini_house")
+    {
+        return MakeSpec_(10, 150.f, 100.f);
     }
 
-    [[nodiscard]] Vec2 EnemyFeet_(
-        const SpawnRequest& _request)
+    switch (_kind)
     {
-        if (_request.positionMode == ePositionMode::LegacyCenter)
-        {
-            return { _request.position.x, _request.position.y + _request.halfHeight };
-        }
-        return _request.position;
+        case eEntityKind::Enemy: return MakeSpec_(3, 40.f, 75.f);
+        case eEntityKind::Npc: return MakeSpec_(1, 40.f, 80.f);
+        case eEntityKind::Prop: return MakeSpec_(10, 60.f, 60.f);
+        case eEntityKind::Decor: return MakeSpec_(1, 40.f, 40.f);
+        case eEntityKind::Item: return MakeSpec_(1, 24.f, 24.f);
+        case eEntityKind::Collider: return MakeSpec_(1, 16.f, 16.f);
     }
+    return {};
+}
 
-    struct DefaultSpec
+[[nodiscard]] static eStageLayer GetDefaultLayer_(
+    const eEntityKind _kind)
+{
+    switch (_kind)
     {
-        int  hp   = 1;
-        Vec2 size = { 40.f, 40.f };
-    };
-
-    [[nodiscard]] DefaultSpec MakeSpec_(
-        const int   _hp,
-        const float _width,
-        const float _height)
-    {
-        DefaultSpec spec = {};
-        spec.hp          = _hp;
-        spec.size        = { _width, _height };
-        return spec;
+        case eEntityKind::Enemy: return eStageLayer::Monster;
+        case eEntityKind::Npc: return eStageLayer::Npc;
+        case eEntityKind::Prop: return eStageLayer::Monster;
+        case eEntityKind::Decor: return eStageLayer::Background;
+        case eEntityKind::Item: return eStageLayer::Item;
+        case eEntityKind::Collider: return eStageLayer::Collider;
     }
+    return eStageLayer::Monster;
+}
 
-    [[nodiscard]] DefaultSpec GetDefaultSpec_(
-        const StringView  _def,
-        const eEntityKind _kind)
-    {
-        if (_def == "jeep")
-        {
-            return MakeSpec_(20, 75.f, 60.f);
-        }
-        if (_def == "truck")
-        {
-            return MakeSpec_(15, 80.f, 60.f);
-        }
-        if (_def == "missile_tank")
-        {
-            return MakeSpec_(30, 100.f, 100.f);
-        }
-        if (_def == "btank" || _def == "sarubia")
-        {
-            return MakeSpec_(40, 100.f, 100.f);
-        }
-        if (_def == "mob_boat")
-        {
-            return MakeSpec_(30, 150.f, 150.f);
-        }
-        if (_def == "big_house")
-        {
-            return MakeSpec_(40, 310.f, 120.f);
-        }
-        if (_def == "ground_house")
-        {
-            return MakeSpec_(20, 200.f, 150.f);
-        }
-        if (_def == "tower")
-        {
-            return MakeSpec_(10, 90.f, 210.f);
-        }
-        if (_def.starts_with("shop_"))
-        {
-            return MakeSpec_(15, 100.f, 100.f);
-        }
-        if (_def.starts_with("bridge_") || _def.starts_with("house_") || _def == "ground_mini_house")
-        {
-            return MakeSpec_(10, 150.f, 100.f);
-        }
-
-        switch (_kind)
-        {
-            case eEntityKind::Enemy: return MakeSpec_(3, 40.f, 75.f);
-            case eEntityKind::Npc: return MakeSpec_(1, 40.f, 80.f);
-            case eEntityKind::Prop: return MakeSpec_(10, 60.f, 60.f);
-            case eEntityKind::Decor: return MakeSpec_(1, 40.f, 40.f);
-            case eEntityKind::Item: return MakeSpec_(1, 24.f, 24.f);
-            case eEntityKind::Collider: return MakeSpec_(1, 16.f, 16.f);
-        }
-        return {};
-    }
-
-    [[nodiscard]] eStageLayer GetDefaultLayer_(
-        const eEntityKind _kind)
-    {
-        switch (_kind)
-        {
-            case eEntityKind::Enemy: return eStageLayer::Monster;
-            case eEntityKind::Npc: return eStageLayer::Npc;
-            case eEntityKind::Prop: return eStageLayer::Monster;
-            case eEntityKind::Decor: return eStageLayer::Background;
-            case eEntityKind::Item: return eStageLayer::Item;
-            case eEntityKind::Collider: return eStageLayer::Collider;
-        }
-        return eStageLayer::Monster;
-    }
-
-    [[nodiscard]] bool IsHittableKind_(
-        const eEntityKind _kind)
-    {
-        return _kind == eEntityKind::Enemy || _kind == eEntityKind::Npc || _kind == eEntityKind::Prop;
-    }
-}   // namespace
+[[nodiscard]] static bool IsHittableKind_(
+    const eEntityKind _kind)
+{
+    return _kind == eEntityKind::Enemy || _kind == eEntityKind::Npc || _kind == eEntityKind::Prop;
+}
 
 Aabb PlaceholderEntity::GetBox() const
 {
@@ -458,6 +452,7 @@ SpawnId StageWorldHost::SpawnEntity(
         SpawnParams params = {};
         params.facing      = _request.facing != 0 ? _request.facing : -1;
         params.hp          = _request.bHasHp ? _request.hp : -1;
+        params.z           = _request.bHasZ ? _request.z : kDefaultZ;
         params.drop        = _request.drop;
         params.userTag     = id;
         if (pParams)
@@ -479,7 +474,7 @@ SpawnId StageWorldHost::SpawnEntity(
 
     if (m_pProps && _request.kind == eEntityKind::Prop)
     {
-        const PropHandle handle = m_pProps->Spawn(_request.def, _request.position, MakePropSpawnParams(pParams));
+        const PropHandle handle = m_pProps->Spawn(_request.def, _request.position, MakePropSpawnParams(pParams, _request.bHasZ ? _request.z : kDefaultZ));
         if (handle != kNoProp)
         {
             AddRoute_(id, eRouteKind::Prop, handle);
@@ -625,7 +620,7 @@ std::optional<float> StageWorldHost::GetGroundFindY(
 
 Vec2 StageWorldHost::PlayerFeet() const
 {
-    return m_pPlayer ? m_pPlayer->GetFeet() : Vec2 { 0.f, 0.f };
+    return m_pPlayer ? m_pPlayer->GetLogicalFeet() : Vec2 { 0.f, 0.f };
 }
 
 bool StageWorldHost::PlayerAlive() const
@@ -703,6 +698,26 @@ void StageWorldHost::PlayBgm(
     }
 }
 
+void StageWorldHost::ChangeBgm(
+    const StringView _name,
+    const bool       _bLoop,
+    const float      _fadeOutSec)
+{
+    if (m_pCtx)
+    {
+        m_pCtx->GetAudio().ChangeBgm(_name, _fadeOutSec, _bLoop);
+    }
+}
+
+void StageWorldHost::PlaySfx(
+    const StringView _name)
+{
+    if (m_pCtx)
+    {
+        m_pCtx->GetAudio().Play(_name);
+    }
+}
+
 void StageWorldHost::EndStage(
     const StringView _nextState)
 {
@@ -717,5 +732,3 @@ void StageWorldHost::OnSectionEntered(
     m_lastSectionIndex = _index;
     m_lastSectionId    = String { _id };
 }
-
-}   // namespace slug

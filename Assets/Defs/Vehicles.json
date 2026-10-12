@@ -25,8 +25,9 @@
       "hp": 80,
       "score": 500,
       "body": { "w": 75, "h": 60, "cx": 0, "cy": -30 },
+      "hurtbox": { "w": 120, "h": 114, "cx": 0, "cy": -57 },
       "activation": { "marginPx": 150, "latch": true },
-      "physics": { "gravity": 1000, "maxFall": 3000, "speed": 200, "jumpVy": 0, "dropSpeed": 0, "footHalfWidth": 4 },
+      "physics": { "gravity": 1000, "maxFall": 3000, "speed": 200, "jumpVy": 0, "dropSpeed": 0, "footHalfWidth": 4, "useGravity": true },
       "clips": {
         "idle":      { "name": "Jeep_Idle_{side}",       "frames": 2,  "sec": 0.08, "loop": true },
         "move":      { "name": "Jeep_Move_{side}",       "frames": 8,  "sec": 0.08, "loop": true },
@@ -44,23 +45,25 @@
       "death": {
         "removeAtSec": 1.7,
         "fx": [
-          { "clip": "Explosion_Huge", "offset": [0, -50], "layer": 10 },
+          { "clip": "Explosion_Huge", "offset": [0, -50], "depth": 60 },
           { "clip": "Explosion_Huge", "offset": [0, -50], "delay": 1.7 },
-          { "clip": "Metal1", "offset": [-30, -40], "delay": 1.7 },
-          { "clip": "Metal4", "offset": [10, -35], "delay": 1.7 },
-          { "clip": "Metal7", "offset": [-10, -55], "delay": 1.7 },
-          { "clip": "Metal9", "offset": [25, -30], "delay": 1.7 },
-          { "clip": "Metal11", "offset": [-40, -20], "delay": 1.7 }
+          { "clip": "Metal1", "offset": [-30, -40], "delay": 1.7, "debris": true },
+          { "clip": "Metal4", "offset": [10, -35], "delay": 1.7, "debris": true },
+          { "clip": "Metal7", "offset": [-10, -55], "delay": 1.7, "debris": true },
+          { "clip": "Metal9", "offset": [25, -30], "delay": 1.7, "debris": true },
+          { "clip": "Metal11", "offset": [-40, -20], "delay": 1.7, "debris": true }
         ]
       },
       "params": {
         "speed": 200,
         "targetTol": 10,
-        "edgeInset": 75,
+        "edgeInset": 55,
         "idleSec": 1.0,
         "waitSec": 2.0,
+        "firstWaitSec": 1.5,
         "bullets": 4,
-        "fireFrame": 1
+        "fireFrame": 1,
+        "rocketShiftX": 20
       }
     },
 
@@ -79,13 +82,14 @@
     "btank": {
       "kind": "vehicle",
       "behavior": "btank",
-      "note": "고정 포탑 전차 (EnemySpecs 2.3). 플레이어가 x-500 을 넘으면 문을 열고 3 s 마다 2연발. 활성은 행동이 직접 켠다 (margin 을 음수로 두어 화면 활성을 끈다).",
+      "note": "전차 (EnemySpecs 2.3). 플레이어가 x-500 을 넘으면 문을 열고 3 s 마다 2연발. 좌향 고정 (원작 MS2). 활성은 행동이 직접 켠다 (margin 을 음수로 두어 화면 활성을 끈다).",
       "ttk": 12,
       "hp": 120,
       "score": 1000,
       "body": { "w": 100, "h": 100, "cx": 0, "cy": -50 },
+      "hurtbox": { "w": 190, "h": 90, "cx": 0, "cy": -45 },
       "activation": { "marginPx": -100000, "latch": true },
-      "physics": { "useGravity": false },
+      "physics": { "gravity": 1000, "maxFall": 3000, "useGravity": true },
       "clips": {
         "idle":    { "name": "BTank_Idle",        "frames": 1,  "sec": 0.08 },
         "open":    { "name": "BTank_Animing_Up",  "frames": 8,  "sec": 0.12 },
@@ -93,17 +97,17 @@
         "destroy": { "name": "BTank_Destory",     "frames": 8,  "sec": 0.12 }
       },
       "weapons": {
-        "shell": { "projectile": "vehicle_btank_shell", "muzzle": [80, -95], "aim": "facing", "muzzleFx": { "clip": "BTank_Shot_Effect", "offset": [0, 0] } }
+        "shell": { "projectile": "vehicle_btank_shell", "muzzle": [74.5, -95], "aim": "facing", "muzzleFx": { "clip": "BTank_Shot_Effect", "offset": [-70.5, 17.5] } }
       },
       "death": {
         "removeAtSec": 4.0,
         "fx": [
-          { "clip": "Explosion_Huge", "offset": [0, -40], "layer": 10 },
-          { "clip": "Metal2", "offset": [-40, -30] },
-          { "clip": "Metal5", "offset": [-10, -60] },
-          { "clip": "Metal8", "offset": [20, -45] },
-          { "clip": "Metal10", "offset": [45, -25] },
-          { "clip": "Metal12", "offset": [-25, -70] }
+          { "clip": "Explosion_Huge", "offset": [0, -40], "depth": 60 },
+          { "clip": "Metal2", "offset": [-40, -30], "debris": true },
+          { "clip": "Metal5", "offset": [-10, -60], "debris": true },
+          { "clip": "Metal8", "offset": [20, -45], "debris": true },
+          { "clip": "Metal10", "offset": [45, -25], "debris": true },
+          { "clip": "Metal12", "offset": [-25, -70], "debris": true }
         ]
       },
       "params": {
@@ -144,8 +148,9 @@
       "hp": 100,
       "score": 1000,
       "body": { "w": 100, "h": 100, "cx": 0, "cy": -50 },
+      "hurtbox": { "w": 160, "h": 156, "cx": 0, "cy": -78 },
       "activation": { "mode": "always" },
-      "physics": { "useGravity": false },
+      "physics": { "gravity": 1000, "maxFall": 3000, "useGravity": true },
       "clips": {
         "idleUp":      { "name": "MissleTank_Up_Idle_{side}",        "frames": 2,  "sec": 0.08, "loop": true },
         "idleDown":    { "name": "MissleTank_Down_Idle_{side}",      "frames": 2,  "sec": 0.08, "loop": true },
@@ -159,20 +164,20 @@
         "destroyDown": { "name": "MissleTank_Down_Destroy_{side}",   "frames": 21, "sec": 0.08 }
       },
       "weapons": {
-        "up":   { "projectile": "missle_proj_up",   "muzzle": [50, -180], "aim": "facing", "muzzleFx": { "clip": "MissleTank_Up_Proj_Effect_{side}",   "offset": [0, 0] } },
-        "down": { "projectile": "missle_proj_down", "muzzle": [75, -90],  "aim": "facing", "muzzleFx": { "clip": "MissleTank_Down_Proj_Effect_{side}", "offset": [0, 0] } }
+        "up":   { "projectile": "missle_proj_up",   "muzzle": [50, -180], "aim": "facing", "muzzleFx": { "clip": "MissleTank_Up_Proj_Effect_{side}",   "offset": [-46, 120] } },
+        "down": { "projectile": "missle_proj_down", "muzzle": [87, -90],  "aim": "facing", "muzzleFx": { "clip": "MissleTank_Down_Proj_Effect_{side}", "offset": [-232.5, 0] } }
       },
       "death": {
         "removeAtSec": 2.0,
         "fx": [
-          { "clip": "Explosion_Huge", "offset": [0, -30], "delay": 2.0, "layer": 10 },
-          { "clip": "Fx_FireBomb_Air", "offset": [0, -40], "delay": 2.0, "layer": 10 },
-          { "clip": "Metal1", "offset": [-35, -40], "delay": 2.0 },
-          { "clip": "Metal3", "offset": [-10, -60], "delay": 2.0 },
-          { "clip": "Metal5", "offset": [20, -35], "delay": 2.0 },
-          { "clip": "Metal6", "offset": [40, -55], "delay": 2.0 },
-          { "clip": "Metal8", "offset": [-45, -20], "delay": 2.0 },
-          { "clip": "Metal10", "offset": [5, -75], "delay": 2.0 }
+          { "clip": "Explosion_Huge", "offset": [0, -30], "delay": 2.0, "depth": 60 },
+          { "clip": "Fx_FireBomb_Air", "offset": [0, -40], "delay": 2.0, "depth": 60 },
+          { "clip": "Metal1", "offset": [-35, -40], "delay": 2.0, "debris": true },
+          { "clip": "Metal3", "offset": [-10, -60], "delay": 2.0, "debris": true },
+          { "clip": "Metal5", "offset": [20, -35], "delay": 2.0, "debris": true },
+          { "clip": "Metal6", "offset": [40, -55], "delay": 2.0, "debris": true },
+          { "clip": "Metal8", "offset": [-45, -20], "delay": 2.0, "debris": true },
+          { "clip": "Metal10", "offset": [5, -75], "delay": 2.0, "debris": true }
         ]
       },
       "params": {
@@ -202,7 +207,7 @@
         "fly":   { "name": "Sarubia_Proj_{side}",    "frames": 21, "sec": 0.08, "loop": true }
       },
       "onSolid": "explode",
-      "explosion": { "fx": "PlayerBombExplosion", "offset": [0, 10] }
+      "explosion": { "fx": "PlayerBombExplosion", "offset": [0, 0] }
     },
 
     "sarubia": {
@@ -213,8 +218,9 @@
       "hp": 150,
       "score": 2000,
       "body": { "w": 100, "h": 100, "cx": 0, "cy": -50 },
+      "hurtbox": { "w": 144, "h": 192, "cx": 0, "cy": -96 },
       "activation": { "marginPx": 150, "latch": true },
-      "physics": { "gravity": 1000, "maxFall": 3000, "speed": 100, "jumpVy": -450, "dropSpeed": 100, "footHalfWidth": 4 },
+      "physics": { "gravity": 1000, "maxFall": 3000, "speed": 100, "jumpVy": -450, "dropSpeed": 100, "footHalfWidth": 4, "useGravity": true },
       "clips": {
         "idle":      { "name": "Sarubia_Idle_{side}",       "frames": 2,  "sec": 0.08, "loop": true },
         "turn":      { "name": "Sarubia_Turn_{side}",       "frames": 11, "sec": 0.08 },
@@ -226,21 +232,21 @@
         "destroy":   { "name": "Sarubia_Destroy_{side}",    "frames": 4,  "sec": 0.12 }
       },
       "weapons": {
-        "grenade": { "projectile": "sarubia_grenade", "muzzle": [60, -150], "aim": "facing", "muzzleFx": { "clip": "Sarubia_Proj_Effect_{side}", "offset": [0, 0] } }
+        "grenade": { "projectile": "sarubia_grenade", "muzzle": [64, -150], "aim": "facing", "muzzleFx": { "clip": "Sarubia_Proj_Effect_{side}", "offset": [-46, 104.5] } }
       },
       "death": {
         "removeAtSec": 2.0,
         "fx": [
-          { "clip": "Explosion_Small", "offset": [-25, -90], "layer": 10 },
-          { "clip": "Explosion_Mid",   "offset": [20, -105], "layer": 10 },
-          { "clip": "Explosion_Large", "offset": [0, -100], "layer": 10 },
-          { "clip": "Explosion_Huge",  "offset": [0, -30], "delay": 2.0, "layer": 10 },
-          { "clip": "Metal1", "offset": [-40, -50], "delay": 2.0 },
-          { "clip": "Metal3", "offset": [-15, -80], "delay": 2.0 },
-          { "clip": "Metal5", "offset": [15, -60], "delay": 2.0 },
-          { "clip": "Metal6", "offset": [35, -90], "delay": 2.0 },
-          { "clip": "Metal9", "offset": [-30, -20], "delay": 2.0 },
-          { "clip": "Metal12", "offset": [10, -40], "delay": 2.0 }
+          { "clip": "Explosion_Small", "offset": [-25, -90], "depth": 60 },
+          { "clip": "Explosion_Mid",   "offset": [20, -105], "depth": 60 },
+          { "clip": "Explosion_Large", "offset": [0, -100], "depth": 60 },
+          { "clip": "Explosion_Huge",  "offset": [0, -30], "delay": 2.0, "depth": 60 },
+          { "clip": "Metal1", "offset": [-40, -50], "delay": 2.0, "debris": true },
+          { "clip": "Metal3", "offset": [-15, -80], "delay": 2.0, "debris": true },
+          { "clip": "Metal5", "offset": [15, -60], "delay": 2.0, "debris": true },
+          { "clip": "Metal6", "offset": [35, -90], "delay": 2.0, "debris": true },
+          { "clip": "Metal9", "offset": [-30, -20], "delay": 2.0, "debris": true },
+          { "clip": "Metal12", "offset": [10, -40], "delay": 2.0, "debris": true }
         ]
       },
       "params": {

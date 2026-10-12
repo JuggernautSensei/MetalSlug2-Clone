@@ -3,8 +3,8 @@ Intermediate/
 .vs/
 vcpkg_installed/
 Captures/
-Assets/Baked/
 *.user
 *.suo
 build/
 .claude/worktrees/
+Backup/

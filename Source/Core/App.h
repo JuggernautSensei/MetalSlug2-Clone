@@ -4,22 +4,25 @@
 #include "Audio/AudioSystem.h"
 #include "Base/Random.h"
 #include "Base/Types.h"
+#include "Core/AsyncLoader.h"
 #include "Core/FixedStep.h"
 #include "Core/Input.h"
+#include "Core/MainThreadQueue.h"
 #include "Core/Replay.h"
+#include "Editor/Editor.h"
 #include "Game/GameState.h"
 #include "Game/SimRunner.h"
 #include "Render/Animation.h"
 #include "Render/Renderer.h"
 #include "Render/SpriteBatch.h"
 
-namespace slug
-{
-
 class App final
 {
 public:
     int Run(int _argc, char** _argv);
+
+    // 아무 스레드에서나 부를 수 있다. 작업은 메인 스레드에서 프레임마다 (로딩 대기 중에도) 실행된다.
+    void SubmitToMainThread(std::unique_ptr<IMainThreadTask> _pTask);
 
 private:
     [[nodiscard]] bool InitSystems_();
@@ -36,10 +39,14 @@ private:
     void Render_(float _alpha);
     void SaveRecording_() const;
 
+    SteadyClock::time_point m_processStart = {};
+
     bool           m_bRunning   = false;
     int            m_returnCode = 0;
     Vector<String> m_cmdArgs    = {};
 
+    MainThreadQueue  m_mainQueue = {};
+    AsyncLoader      m_loader { m_mainQueue };
     Renderer         m_renderer = {};
     SpriteBatch      m_sprites  = {};
     AnimationLibrary m_anims    = {};
@@ -57,6 +64,16 @@ private:
     FilePath m_replayPath  = {};
     bool     m_bReplayHold = false;
     bool     m_bNoAudio    = false;
+    bool     m_bNoAsyncLoad = false;
+    bool     m_bEditor     = false;
+    bool     m_bEditorKeys = false;
+    bool     m_bEditorFloatTest = false;
+    String   m_editorAnim  = {};
+    String   m_editorTab   = {};
+    String   m_editorStage = {};
+    String   m_editorLabSpawn = {};
+    String   m_editorGod      = {};   // --editor-god off|nodeath|invincible
+    Editor   m_editor      = {};
 
     ReplayData m_recording    = {};
     ReplayData m_playback     = {};
@@ -81,5 +98,3 @@ private:
     int   m_pendingWeapon  = 0;
     float m_fps            = 0.f;
 };
-
-}   // namespace slug

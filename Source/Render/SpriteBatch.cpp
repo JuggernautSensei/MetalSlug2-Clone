@@ -11,26 +11,23 @@
 #include "Base/Result.h"
 #include "Base/Types.h"
 
+#pragma warning(disable : 4505)
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 #include "Base/Log.h"
+#include "Base/PhaseTimer.h"
 
 #include "Base/Error.h"
+#include "Core/AsyncLoader.h"
 
-namespace slug
+[[nodiscard]] static SDL_FlipMode FlipFlags_(
+    const SpriteDrawOptions& _options)
 {
-
-namespace
-{
-    [[nodiscard]] SDL_FlipMode FlipFlags_(
-        const SpriteDrawOptions& _options)
-    {
-        const int flags = (_options.bFlipX ? static_cast<int>(SDL_FLIP_HORIZONTAL) : 0) | (_options.bFlipY ? static_cast<int>(SDL_FLIP_VERTICAL) : 0);
-        return static_cast<SDL_FlipMode>(flags);
-    }
-}   // namespace
+    const int flags = (_options.bFlipX ? static_cast<int>(SDL_FLIP_HORIZONTAL) : 0) | (_options.bFlipY ? static_cast<int>(SDL_FLIP_VERTICAL) : 0);
+    return static_cast<SDL_FlipMode>(flags);
+}
 
 IntRect ComputeDestRect(
     const AnimFrame& _frame,
@@ -54,9 +51,9 @@ void SortSpriteCommands(
     Vector<SpriteCommand>& _commands)
 {
     std::sort(_commands.begin(), _commands.end(), [](const SpriteCommand& _a, const SpriteCommand& _b) {
-        if (_a.layer != _b.layer)
+        if (_a.depth != _b.depth)
         {
-            return _a.layer < _b.layer;
+            return _a.depth < _b.depth;
         }
         if (_a.sortKey != _b.sortKey)
         {
@@ -100,121 +97,118 @@ TextureViewRects ComputeTextureView(
     return result;
 }
 
-namespace
+struct DecodedImage
 {
-    struct DecodedImage
+    int             width  = 0;
+    int             height = 0;
+    Vector<uint8_t> rgba   = {};
+};
+
+[[nodiscard]] static Result<DecodedImage> DecodePngFile_(
+    const FilePath& _pngPath)
+{
+    const ScopedPhaseTimer timer { "png-decode", _pngPath.filename().string() };
+
+    std::ifstream file { _pngPath, std::ios::binary | std::ios::ate };
+    if (!file)
     {
-        int             width  = 0;
-        int             height = 0;
-        Vector<uint8_t> rgba   = {};
-    };
-
-    [[nodiscard]] Result<DecodedImage> DecodePngFile_(
-        const FilePath& _pngPath)
-    {
-        std::ifstream file { _pngPath, std::ios::binary | std::ios::ate };
-        if (!file)
-        {
-            return Error { eError::FileOpen };
-        }
-
-        const std::streamsize size = file.tellg();
-        if (size <= 0)
-        {
-            return Error { eError::FileRead };
-        }
-
-        Vector<uint8_t> encoded(static_cast<size_t>(size));
-        file.seekg(0, std::ios::beg);
-        if (!file.read(reinterpret_cast<char*>(encoded.data()), size))
-        {
-            return Error { eError::FileRead };
-        }
-
-        int      width    = 0;
-        int      height   = 0;
-        int      channels = 0;
-        stbi_uc* pPixels  = stbi_load_from_memory(encoded.data(), static_cast<int>(encoded.size()), &width, &height, &channels, 4);
-        if (!pPixels)
-        {
-            SLUG_LOG_ERROR("PNG 디코드 실패: {}", stbi_failure_reason());
-            return Error { eError::InvalidData };
-        }
-
-        DecodedImage image;
-        image.width  = width;
-        image.height = height;
-        image.rgba.assign(pPixels, pPixels + static_cast<size_t>(width) * static_cast<size_t>(height) * 4);
-        stbi_image_free(pPixels);
-        return image;
+        return Error { eError::FileOpen };
     }
 
-    // 피격 플래시 램프 노드 (원작 버스 피격 프레임 실측: 입력 평균 밝기 L -> 출력 RGB)
-    struct FlashRampNode
+    const std::streamsize size = file.tellg();
+    if (size <= 0)
     {
-        int l = 0;
-        int r = 0;
-        int g = 0;
-        int b = 0;
-    };
-
-    const ARRAY<FlashRampNode, 17> kFlashRamp = { {
-        { 0, 145, 52, 0 },
-        { 8, 151, 56, 0 },
-        { 24, 159, 61, 0 },
-        { 40, 186, 80, 3 },
-        { 56, 190, 90, 9 },
-        { 72, 200, 106, 21 },
-        { 88, 216, 126, 36 },
-        { 104, 228, 140, 47 },
-        { 120, 243, 154, 54 },
-        { 136, 249, 163, 65 },
-        { 152, 249, 182, 98 },
-        { 168, 253, 198, 115 },
-        { 184, 254, 210, 130 },
-        { 200, 255, 221, 145 },
-        { 216, 255, 234, 167 },
-        { 232, 255, 248, 207 },
-        { 255, 255, 255, 235 },
-    } };
-
-    uint8_t LerpChannel_(
-        const int _from,
-        const int _to,
-        const int _t,
-        const int _span)
-    {
-        return static_cast<uint8_t>(_from + (_to - _from) * _t / _span);
+        return Error { eError::FileRead };
     }
 
-    // 플래시 변환본 RGBA 를 만든다 (알파 0 픽셀은 그대로 둔다).
-    Vector<uint8_t> BuildFlashRgba_(
-        const Span<const uint8_t> _rgba,
-        const size_t              _pixelCount)
+    Vector<uint8_t> encoded(static_cast<size_t>(size));
+    file.seekg(0, std::ios::beg);
+    if (!file.read(reinterpret_cast<char*>(encoded.data()), size))
     {
-        Vector<uint8_t> out(_pixelCount * 4);
-        for (size_t i = 0; i < _pixelCount; ++i)
-        {
-            const size_t o = i * 4;
-            const RGBA   c = ApplyHitFlashRamp({ _rgba[o], _rgba[o + 1], _rgba[o + 2], _rgba[o + 3] });
-            out[o]         = c.r;
-            out[o + 1]     = c.g;
-            out[o + 2]     = c.b;
-            out[o + 3]     = c.a;
-        }
-        return out;
+        return Error { eError::FileRead };
     }
 
-    // 텍스처 선택: 플래시가 켜졌고 변환본이 있으면 변환본.
-    SDL_Texture* PickTexture_(
-        SDL_Texture* const _pNormal,
-        SDL_Texture* const _pFlash,
-        const float        _flashAmount)
+    int      width    = 0;
+    int      height   = 0;
+    int      channels = 0;
+    stbi_uc* pPixels  = stbi_load_from_memory(encoded.data(), static_cast<int>(encoded.size()), &width, &height, &channels, 4);
+    if (!pPixels)
     {
-        return (_flashAmount >= 0.5f && _pFlash) ? _pFlash : _pNormal;
+        SLUG_LOG_ERROR("PNG 디코드 실패: {}", stbi_failure_reason());
+        return Error { eError::InvalidData };
     }
 
-}   // namespace
+    DecodedImage image;
+    image.width  = width;
+    image.height = height;
+    image.rgba.assign(pPixels, pPixels + static_cast<size_t>(width) * static_cast<size_t>(height) * 4);
+    stbi_image_free(pPixels);
+    return image;
+}
+
+// 피격 플래시 램프 노드 (원작 버스 피격 프레임 실측: 입력 평균 밝기 L -> 출력 RGB)
+struct FlashRampNode
+{
+    int l = 0;
+    int r = 0;
+    int g = 0;
+    int b = 0;
+};
+
+static const ARRAY<FlashRampNode, 17> kFlashRamp = { {
+    { 0, 145, 52, 0 },
+    { 8, 151, 56, 0 },
+    { 24, 159, 61, 0 },
+    { 40, 186, 80, 3 },
+    { 56, 190, 90, 9 },
+    { 72, 200, 106, 21 },
+    { 88, 216, 126, 36 },
+    { 104, 228, 140, 47 },
+    { 120, 243, 154, 54 },
+    { 136, 249, 163, 65 },
+    { 152, 249, 182, 98 },
+    { 168, 253, 198, 115 },
+    { 184, 254, 210, 130 },
+    { 200, 255, 221, 145 },
+    { 216, 255, 234, 167 },
+    { 232, 255, 248, 207 },
+    { 255, 255, 255, 235 },
+} };
+
+static uint8_t LerpChannel_(
+    const int _from,
+    const int _to,
+    const int _t,
+    const int _span)
+{
+    return static_cast<uint8_t>(_from + (_to - _from) * _t / _span);
+}
+
+Vector<uint8_t> BuildHitFlashRgba(
+    const Span<const uint8_t> _rgba,
+    const size_t              _pixelCount)
+{
+    Vector<uint8_t> out(_pixelCount * 4);
+    for (size_t i = 0; i < _pixelCount; ++i)
+    {
+        const size_t o = i * 4;
+        const RGBA   c = ApplyHitFlashRamp({ _rgba[o], _rgba[o + 1], _rgba[o + 2], _rgba[o + 3] });
+        out[o]         = c.r;
+        out[o + 1]     = c.g;
+        out[o + 2]     = c.b;
+        out[o + 3]     = c.a;
+    }
+    return out;
+}
+
+// 텍스처 선택: 플래시가 켜졌고 변환본이 있으면 변환본.
+static SDL_Texture* PickTexture_(
+    SDL_Texture* const _pNormal,
+    SDL_Texture* const _pFlash,
+    const float        _flashAmount)
+{
+    return (_flashAmount >= 0.5f && _pFlash) ? _pFlash : _pNormal;
+}
 
 RGBA ApplyHitFlashRamp(
     const RGBA _color)
@@ -268,6 +262,7 @@ void SpriteBatch::Shutdown()
         }
     }
     m_textures.clear();
+    m_namedStandalones.clear();
     m_commands.clear();
     m_nextSeq   = 0;
     m_pRenderer = nullptr;
@@ -278,12 +273,27 @@ Result<void> SpriteBatch::AddAtlasPageFromRgba(
     const int                 _height,
     const Span<const uint8_t> _rgba)
 {
+    if (_width <= 0 || _height <= 0 || _rgba.size() < static_cast<size_t>(_width) * static_cast<size_t>(_height) * 4)
+    {
+        return Error { eError::InvalidData };
+    }
+    const Vector<uint8_t> flashRgba = BuildHitFlashRgba(_rgba, static_cast<size_t>(_width) * static_cast<size_t>(_height));
+    return AddAtlasPageFromRgba(_width, _height, _rgba, flashRgba);
+}
+
+Result<void> SpriteBatch::AddAtlasPageFromRgba(
+    const int                 _width,
+    const int                 _height,
+    const Span<const uint8_t> _rgba,
+    const Span<const uint8_t> _flashRgba)
+{
     if (!m_pRenderer || _width <= 0 || _height <= 0 || _rgba.size() < static_cast<size_t>(_width) * static_cast<size_t>(_height) * 4)
     {
         return Error { eError::InvalidData };
     }
 
-    SDL_Texture* pTexture = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, _width, _height);
+    const ScopedPhaseTimer timer { "gpu-upload", "atlas page" };
+    SDL_Texture*           pTexture = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, _width, _height);
     if (!pTexture)
     {
         SLUG_LOG_ERROR("SDL_CreateTexture 실패: {}", SDL_GetError());
@@ -302,8 +312,7 @@ Result<void> SpriteBatch::AddAtlasPageFromRgba(
 
     // 피격 플래시 변환본 (실패해도 일반 페이지는 쓸 수 있다: 그 경우 플래시만 생략된다)
     SDL_Texture*          pFlash = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, _width, _height);
-    const Vector<uint8_t> flashRgba = BuildFlashRgba_(_rgba, static_cast<size_t>(_width) * static_cast<size_t>(_height));
-    if (pFlash && SDL_UpdateTexture(pFlash, nullptr, flashRgba.data(), _width * 4))
+    if (pFlash && _flashRgba.size() >= static_cast<size_t>(_width) * static_cast<size_t>(_height) * 4 && SDL_UpdateTexture(pFlash, nullptr, _flashRgba.data(), _width * 4))
     {
         SDL_SetTextureBlendMode(pFlash, SDL_BLENDMODE_BLEND);
         SDL_SetTextureScaleMode(pFlash, SDL_SCALEMODE_NEAREST);
@@ -342,6 +351,8 @@ Result<int> SpriteBatch::AddStandaloneTextureFromRgba(
     {
         return Error { eError::InvalidData };
     }
+
+    const ScopedPhaseTimer timer { "gpu-upload", "standalone" };
 
     // 가로가 kMaxStripW 를 넘으면 띠로 쪼갠다 (구형 GPU/드라이버의 8192 제한에서 최후반부가 깨지는 문제 방지)
     constexpr int kMaxStripW = 2048;
@@ -507,6 +518,7 @@ void SpriteBatch::DrawTextureRepeatX(
 Result<void> SpriteBatch::LoadAtlasPages(
     const AnimationLibrary& _library)
 {
+    const ScopedPhaseTimer timer { "atlas-pages", "all" };
     for (const String& page: _library.GetAtlasPages())
     {
         const Result<void> result = LoadAtlasPage(_library.GetRoot() / page);
@@ -517,6 +529,137 @@ Result<void> SpriteBatch::LoadAtlasPages(
         }
     }
     return Error { kOK };
+}
+
+class AtlasPageLoadJob final : public IAsyncLoadJob
+{
+public:
+    AtlasPageLoadJob(SpriteBatch* _pBatch, FilePath _path, size_t _expectedPage);
+
+    void Execute() override;
+    void Complete() override;
+
+private:
+    SpriteBatch*    m_pBatch       = nullptr;
+    FilePath        m_path         = {};
+    size_t          m_expectedPage = 0;
+    DecodedImage    m_image        = {};
+    Vector<uint8_t> m_flash        = {};
+    bool            m_bDecoded     = false;
+};
+
+AtlasPageLoadJob::AtlasPageLoadJob(
+    SpriteBatch* const _pBatch,
+    FilePath           _path,
+    const size_t       _expectedPage)
+    : m_pBatch(_pBatch)
+    , m_path(std::move(_path))
+    , m_expectedPage(_expectedPage)
+{
+}
+
+void AtlasPageLoadJob::Execute()
+{
+    Result<DecodedImage> image = DecodePngFile_(m_path);
+    if (!image)
+    {
+        return;
+    }
+    m_image = image.Take();
+    {
+        const ScopedPhaseTimer timer { "flash-build", m_path.filename().string() };
+        m_flash = BuildHitFlashRgba(m_image.rgba, static_cast<size_t>(m_image.width) * static_cast<size_t>(m_image.height));
+    }
+    m_bDecoded = true;
+}
+
+void AtlasPageLoadJob::Complete()
+{
+    // 앞 페이지가 실패했으면 동기 로드처럼 거기서 멈춘다 (페이지 번호가 어긋나지 않게)
+    if (m_pBatch->GetAtlasPageCount() != m_expectedPage)
+    {
+        return;
+    }
+    if (!m_bDecoded || !m_pBatch->AddAtlasPageFromRgba(m_image.width, m_image.height, m_image.rgba, m_flash))
+    {
+        SLUG_LOG_ERROR("아틀라스 페이지 로드 실패: {}", m_path.filename().string());
+    }
+}
+
+class StandaloneTextureLoadJob final : public IAsyncLoadJob
+{
+public:
+    StandaloneTextureLoadJob(SpriteBatch* _pBatch, FilePath _path, int* _pOutHandle);
+
+    void Execute() override;
+    void Complete() override;
+
+private:
+    SpriteBatch* m_pBatch     = nullptr;
+    FilePath     m_path       = {};
+    int*         m_pOutHandle = nullptr;
+    DecodedImage m_image      = {};
+    bool         m_bDecoded   = false;
+};
+
+StandaloneTextureLoadJob::StandaloneTextureLoadJob(
+    SpriteBatch* const _pBatch,
+    FilePath           _path,
+    int* const         _pOutHandle)
+    : m_pBatch(_pBatch)
+    , m_path(std::move(_path))
+    , m_pOutHandle(_pOutHandle)
+{
+}
+
+void StandaloneTextureLoadJob::Execute()
+{
+    Result<DecodedImage> image = DecodePngFile_(m_path);
+    if (image)
+    {
+        m_image    = image.Take();
+        m_bDecoded = true;
+    }
+}
+
+void StandaloneTextureLoadJob::Complete()
+{
+    int handle = -1;
+    if (m_bDecoded)
+    {
+        const Result<int> added = m_pBatch->AddStandaloneTextureFromRgba(m_image.width, m_image.height, m_image.rgba);
+        if (added)
+        {
+            handle = added.GetValue();
+        }
+    }
+    if (m_pOutHandle)
+    {
+        *m_pOutHandle = handle;
+    }
+}
+
+void SpriteBatch::LoadAtlasPagesAsync(
+    const AnimationLibrary& _library,
+    AsyncLoader&            _loader)
+{
+    size_t expected = m_pages.size();
+    for (const String& page: _library.GetAtlasPages())
+    {
+        _loader.Submit(std::make_unique<AtlasPageLoadJob>(this, _library.GetRoot() / page, expected++));
+    }
+}
+
+void SpriteBatch::LoadStandaloneTextureAsync(
+    const FilePath& _pngPath,
+    AsyncLoader&    _loader,
+    int* const      _pOutHandle)
+{
+    if (_pOutHandle)
+    {
+        *_pOutHandle = -1;
+    }
+    _loader.Submit(std::make_unique<StandaloneTextureLoadJob>(this, _pngPath, _pOutHandle));
 }
 
 void SpriteBatch::DrawFrame(
@@ -539,11 +682,31 @@ void SpriteBatch::DrawFrame(
     const IntRect dest = ComputeDestRect(_frame, _worldOrigin, _cameraPos, _options.bFlipX, _options.bFlipY);
 
     const SDL_FRect src = { static_cast<float>(_frame.x), static_cast<float>(_frame.y), static_cast<float>(_frame.w), static_cast<float>(_frame.h) };
-    const SDL_FRect dst = { static_cast<float>(dest.x), static_cast<float>(dest.y), static_cast<float>(dest.w), static_cast<float>(dest.h) };
+    SDL_FRect       dst = { static_cast<float>(dest.x), static_cast<float>(dest.y), static_cast<float>(dest.w), static_cast<float>(dest.h) };
+
+    // 피벗 점(프레임 기준점, 플립 반영)의 화면 위치는 배율과 무관하게 고정한다
+    const float cx      = _options.bFlipX ? static_cast<float>(_frame.w - _frame.pivotX) : static_cast<float>(_frame.pivotX);
+    const float cy      = _options.bFlipY ? static_cast<float>(_frame.h - _frame.pivotY) : static_cast<float>(_frame.pivotY);
+    const bool  bScaled = _options.scale > 0.f && _options.scale != 1.f;
+    if (bScaled)
+    {
+        dst.x += cx * (1.f - _options.scale);
+        dst.y += cy * (1.f - _options.scale);
+        dst.w *= _options.scale;
+        dst.h *= _options.scale;
+    }
 
     SDL_Texture* const pDraw = PickTexture_(page.pTexture, page.pFlashTexture, _options.flashAmount);
     SDL_SetTextureColorMod(pDraw, _options.tint.r, _options.tint.g, _options.tint.b);
     SDL_SetTextureAlphaMod(pDraw, _options.tint.a);
+    if (_options.rotationDeg != 0.f)
+    {
+        // 피벗 점(프레임 기준점)이 월드 원점에 놓인 채 돈다. dst 좌표계에서 피벗 위치를 중심으로 준다 (배율 적용된 dst 기준)
+        const float             s      = bScaled ? _options.scale : 1.f;
+        const SDL_FPoint        center = { cx * s, cy * s };
+        SDL_RenderTextureRotated(m_pRenderer, pDraw, &src, &dst, static_cast<double>(_options.rotationDeg), &center, FlipFlags_(_options));
+        return;
+    }
     SDL_RenderTextureRotated(m_pRenderer, pDraw, &src, &dst, 0.0, nullptr, FlipFlags_(_options));
 }
 
@@ -582,14 +745,14 @@ void SpriteBatch::DrawFrameRect(
 }
 
 void SpriteBatch::Submit(
-    const int                _layer,
+    const int                _depth,
     const int                _sortKey,
     const AnimFrame&         _frame,
     const Vec2               _worldOrigin,
     const SpriteDrawOptions& _options)
 {
     SpriteCommand command;
-    command.layer   = _layer;
+    command.depth   = _depth;
     command.sortKey = _sortKey;
     command.seq     = m_nextSeq++;
     command.frame   = _frame;
@@ -598,16 +761,95 @@ void SpriteBatch::Submit(
     m_commands.push_back(command);
 }
 
+void SpriteBatch::SetAssetRoot(
+    const FilePath& _root)
+{
+    m_assetRoot = _root;
+}
+
+int SpriteBatch::FindStandalone(
+    const String& _relativeFile)
+{
+    if (const HashMap<String, int>::const_iterator it = m_namedStandalones.find(_relativeFile); it != m_namedStandalones.end())
+    {
+        return it->second;
+    }
+    int handle = -1;
+    if (m_pRenderer && !m_assetRoot.empty())
+    {
+        if (const Result<int> loaded = LoadStandaloneTexture(m_assetRoot / FilePath { _relativeFile }))
+        {
+            handle = loaded.GetValue();
+        }
+    }
+    m_namedStandalones.emplace(_relativeFile, handle);
+    return handle;
+}
+
+void SpriteBatch::SubmitStandalone(
+    const int                _depth,
+    const int                _sortKey,
+    const int                _handle,
+    const IntRect&           _src,
+    const Vec2               _worldCenter,
+    const SpriteDrawOptions& _options)
+{
+    SpriteCommand command;
+    command.depth         = _depth;
+    command.sortKey       = _sortKey;
+    command.seq           = m_nextSeq++;
+    command.origin        = _worldCenter;
+    command.options       = _options;
+    command.standalone    = _handle;
+    command.standaloneSrc = _src;
+    m_commands.push_back(command);
+}
+
+void SpriteBatch::DrawCommand_(
+    const SpriteCommand& _command,
+    const Vec2           _cameraPos) const
+{
+    if (_command.standalone < 0)
+    {
+        DrawFrame(_command.frame, _command.origin, _cameraPos, _command.options);
+        return;
+    }
+    if (!m_pRenderer || static_cast<size_t>(_command.standalone) >= m_textures.size())
+    {
+        return;
+    }
+    const IntRect&  r   = _command.standaloneSrc;
+    const SDL_FRect src = { static_cast<float>(r.x), static_cast<float>(r.y), static_cast<float>(r.w), static_cast<float>(r.h) };
+    const float     w   = static_cast<float>(r.w) * _command.options.scale;
+    const float     h   = static_cast<float>(r.h) * _command.options.scale;
+    const SDL_FRect dst = { static_cast<float>(FloorToInt(_command.origin.x - _cameraPos.x)) - w * 0.5f, static_cast<float>(FloorToInt(_command.origin.y - _cameraPos.y)) - h * 0.5f, w, h };
+    DrawStandaloneRect_(m_textures[static_cast<size_t>(_command.standalone)], src, dst, _command.options.tint);
+}
+
 void SpriteBatch::Flush(
     const Vec2 _cameraPos)
 {
     SortSpriteCommands(m_commands);
     for (const SpriteCommand& command: m_commands)
     {
-        DrawFrame(command.frame, command.origin, _cameraPos, command.options);
+        DrawCommand_(command, _cameraPos);
     }
     m_commands.clear();
     m_nextSeq = 0;
+}
+
+void SpriteBatch::FlushBelowDepth(
+    const Vec2 _cameraPos,
+    const int  _depth)
+{
+    SortSpriteCommands(m_commands);
+    size_t count = 0;
+    while (count < m_commands.size() && m_commands[count].depth < _depth)
+    {
+        DrawCommand_(m_commands[count], _cameraPos);
+        ++count;
+    }
+    m_commands.erase(m_commands.begin(), m_commands.begin() + static_cast<std::ptrdiff_t>(count));
 }
 
 void SpriteBatch::Flush(
@@ -616,4 +858,17 @@ void SpriteBatch::Flush(
     Flush(_camera.GetPosition());
 }
 
-}   // namespace slug
+size_t SpriteBatch::GetAtlasPageCount() const
+{
+    return m_pages.size();
+}
+
+void SpriteBatch::Clear()
+{
+    m_commands.clear();
+}
+
+const Vector<SpriteCommand>& SpriteBatch::GetPendingCommands() const
+{
+    return m_commands;
+}

@@ -1,16 +1,16 @@
-﻿#pragma once
+#pragma once
 #include <memory>
 
 #include "Audio/AudioSink.h"
 #include "Base/Random.h"
 #include "Base/Types.h"
 #include "Core/Input.h"
+#include "Game/Player/PlayerTypes.h"
 #include "Render/Animation.h"
 #include "Render/Renderer.h"
 #include "Render/SpriteBatch.h"
 
-namespace slug
-{
+class AsyncLoader;
 
 struct GameContext
 {
@@ -20,6 +20,7 @@ struct GameContext
     RngMt19937*       pRng      = nullptr;
     FilePath          assetRoot = {};
     IAudioSink*       pAudio    = nullptr;
+    AsyncLoader*      pLoader   = nullptr;   // nullptr 이면 동기 로드
 
     float fps           = 0.f;
     bool  bDebugDraw    = false;
@@ -30,16 +31,12 @@ struct GameContext
     int   debugLives    = 0;   // --life N (0 이면 튜닝 값)
     int   debugSpawn    = 0;
     int   debugWeapon   = 0;
+    eGodMode godMode    = eGodMode::Off;   // --editor 에서만 설정된다
+    bool     bInfiniteAmmo = false;   // --editor 에서만 설정된다
 
-    [[nodiscard]] bool IsHeadless() const
-    {
-        return pRenderer == nullptr;
-    }
+    [[nodiscard]] bool IsHeadless() const;
 
-    [[nodiscard]] IAudioSink& GetAudio() const
-    {
-        return pAudio ? *pAudio : NullAudio::Get();
-    }
+    [[nodiscard]] IAudioSink& GetAudio() const;
 };
 
 class IGameState
@@ -47,21 +44,16 @@ class IGameState
 public:
     virtual ~IGameState() = default;
 
-    virtual void OnEnter(GameContext&) {}
-    virtual void OnExit(GameContext&) {}
+    virtual void OnEnter(GameContext&);
+    virtual void OnExit(GameContext&);
 
     virtual void Tick(GameContext& _ctx, const InputHistory& _input) = 0;
     virtual void Render(GameContext& _ctx, float _alpha)             = 0;
 
-    [[nodiscard]] virtual std::unique_ptr<IGameState> TakeNextState()
-    {
-        return nullptr;
-    }
+    [[nodiscard]] virtual std::unique_ptr<IGameState> TakeNextState();
 
-    [[nodiscard]] virtual bool IsFinished() const
-    {
-        return false;
-    }
+    [[nodiscard]] virtual bool IsFinished() const;
+
+    // 회귀 기준선용 상태 해시 (Headless 가 끝에 출력). 구현하지 않은 상태는 0.
+    [[nodiscard]] virtual uint64_t DebugHash() const;
 };
-
-}   // namespace slug

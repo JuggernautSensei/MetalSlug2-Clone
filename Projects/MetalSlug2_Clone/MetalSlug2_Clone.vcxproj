@@ -1,0 +1,320 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- 프로젝트 파일: 새 소스는 직접 추가한다. -->
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{0441C2CE-2EAA-4887-9B2A-BC03B24C69BD}</ProjectGuid>
+    <RootNamespace>MetalSlug2_Clone</RootNamespace>
+    <ProjectName>MetalSlug2_Clone</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- 솔루션 밖에서 프로젝트만 열어 빌드해도 경로가 맞도록 기본값을 둔다 (sln 빌드 시에는 MSBuild 가 넘겨준 값을 쓴다). -->
+    <SolutionDir Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)..\..\</SolutionDir>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Label="Vcpkg">
+    <!-- vcpkg 매니페스트 모드(저장소 루트 vcpkg.json). VCPKG_ROOT 환경변수가 있으면 우선, 없으면 C:\vcpkg\ . -->
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == '' And '$(VCPKG_ROOT)' != ''">$([MSBuild]::EnsureTrailingSlash('$(VCPKG_ROOT)'))</VcpkgRoot>
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == ''">C:\vcpkg\</VcpkgRoot>
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgTriplet>x64-windows-static-md</VcpkgTriplet>
+  </PropertyGroup>
+  <!-- 전역 vcpkg integrate(vcpkg.user.targets)가 이미 있으면 그쪽이 가져오므로 중복 import 하지 않는다. -->
+  <Import Project="$(VcpkgRoot)scripts\buildsystems\msbuild\vcpkg.props" Condition="Exists('$(VcpkgRoot)scripts\buildsystems\msbuild\vcpkg.props') And !Exists('$(LOCALAPPDATA)\vcpkg\vcpkg.user.targets')" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)Output\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;NOMINMAX;UNICODE;_UNICODE;SLUG_ASSET_DIR="$(SolutionDir.Replace('\', '/'))Assets";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Base/Pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>Base/Pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SDL3-static.lib;yyjson.lib;kernel32.lib;user32.lib;gdi32.lib;winmm.lib;imm32.lib;ole32.lib;oleaut32.lib;version.lib;uuid.lib;advapi32.lib;setupapi.lib;shell32.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;NOMINMAX;UNICODE;_UNICODE;SLUG_ASSET_DIR="$(SolutionDir.Replace('\', '/'))Assets";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Base/Pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>Base/Pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>SDL3-static.lib;yyjson.lib;kernel32.lib;user32.lib;gdi32.lib;winmm.lib;imm32.lib;ole32.lib;oleaut32.lib;version.lib;uuid.lib;advapi32.lib;setupapi.lib;shell32.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Source\Base\Pch.cpp"><PrecompiledHeader>Create</PrecompiledHeader></ClCompile>
+    <ClCompile Include="..\..\Source\Game\Stage\StageHost.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\PlayerTypes.cpp" />
+    <ClCompile Include="..\..\Source\Game\GameState.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\EnemyTypes.cpp" />
+    <ClCompile Include="..\..\Source\Game\Combat\HitFlash.cpp" />
+    <ClCompile Include="..\..\Source\Base\Result.cpp" />
+    <ClCompile Include="..\..\Source\World\Geometry.cpp" />
+    <ClCompile Include="..\..\Source\Audio\VoiceAllocator.cpp" />
+    <ClCompile Include="..\..\Source\Audio\AudioSink.cpp" />
+    <ClCompile Include="..\..\Source\Audio\AudioMath.cpp" />
+    <ClCompile Include="..\..\Source\Core\FixedStep.cpp" />
+    <ClCompile Include="..\..\Source\Base\Random.cpp" />
+    <ClCompile Include="..\..\Source\Main.cpp" />
+    <ClCompile Include="..\..\Source\Audio\AudioSystem.cpp"><PrecompiledHeader Condition="'$(Configuration)'=='Debug'">NotUsing</PrecompiledHeader><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
+    <ClCompile Include="..\..\Source\Audio\SoundBank.cpp" />
+    <ClCompile Include="..\..\Source\Audio\StbVorbisImpl.cpp"><PrecompiledHeader>NotUsing</PrecompiledHeader><ForcedIncludeFiles></ForcedIncludeFiles><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
+    <ClCompile Include="..\..\Source\Base\Assert.cpp" />
+    <ClCompile Include="..\..\Source\Base\Error.cpp" />
+    <ClCompile Include="..\..\Source\Base\Json.cpp" />
+    <ClCompile Include="..\..\Source\Base\Log.cpp" />
+    <ClCompile Include="..\..\Source\Base\PhaseTimer.cpp" />
+    <ClCompile Include="..\..\Source\Core\App.cpp" />
+    <ClCompile Include="..\..\Source\Core\AsyncLoader.cpp" />
+    <ClCompile Include="..\..\Source\Core\MainThreadQueue.cpp" />
+    <ClCompile Include="..\..\Source\Editor\AnimEditor.cpp" />
+    <ClCompile Include="..\..\Source\Editor\GroundEditor.cpp" />
+    <ClCompile Include="..\..\Source\Editor\EnemyLab.cpp" />
+    <ClCompile Include="..\..\Source\Editor\StageEditor.cpp" />
+    <ClCompile Include="..\..\Source\Editor\DepthEditor.cpp" />
+    <ClCompile Include="..\..\Source\Editor\HitboxEditor.cpp" />
+    <ClCompile Include="..\..\Source\Editor\MotionEditor.cpp" />
+    <ClCompile Include="..\..\Source\Editor\JsonScan.cpp" />
+    <ClCompile Include="..\..\Source\Editor\Editor.cpp" />
+    <ClCompile Include="..\..\Source\Editor\ImGuiSdlRendererViewports.cpp" />
+    <ClCompile Include="..\..\Source\Core\Headless.cpp" />
+    <ClCompile Include="..\..\Source\Core\AssetPath.cpp" />
+    <ClCompile Include="..\..\Source\Core\Input.cpp" />
+    <ClCompile Include="..\..\Source\Core\Replay.cpp" />
+    <ClCompile Include="..\..\Source\Core\Tuning.cpp" />
+    <ClCompile Include="..\..\Source\Game\Combat\BulletVisual.cpp" />
+    <ClCompile Include="..\..\Source\Game\Combat\CombatSystem.cpp" />
+    <ClCompile Include="..\..\Source\Game\Combat\Projectiles.cpp" />
+    <ClCompile Include="..\..\Source\Game\DemoState.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\BigShiee.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\Bus.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\Bzk.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\EnemyBehaviors.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\EnemyCommon.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\EnemyDef.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\EnemyDefLoader.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\EnemyWorld.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\FlyingBzk.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\Hang.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\Heli.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\HeliBomb.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\Pow.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\Shielder.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\Soldier.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\VehicleBTank.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\VehicleCommon.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\VehicleJeep.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\VehicleMissleTank.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\VehicleSarubia.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\PlayerController.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\PlayerHitboxes.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\PlayerInput.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\PlayerRig.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\PlayerWeapons.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\SlugClips.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\SlugDef.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\SlugRender.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\SlugSystem.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\SlugVehicle.cpp" />
+    <ClCompile Include="..\..\Source\Game\Props\DecorWorld.cpp" />
+    <ClCompile Include="..\..\Source\Game\Props\ItemWorld.cpp" />
+    <ClCompile Include="..\..\Source\Game\Props\PropDef.cpp" />
+    <ClCompile Include="..\..\Source\Game\Props\PropWorld.cpp" />
+    <ClCompile Include="..\..\Source\Game\Sandbox\Effects.cpp" />
+    <ClCompile Include="..\..\Source\Game\Sandbox\TrainingTargets.cpp" />
+    <ClCompile Include="..\..\Source\Game\SandboxState.cpp" />
+    <ClCompile Include="..\..\Source\Game\SimRunner.cpp" />
+    <ClCompile Include="..\..\Source\Game\Stage\StageData.cpp" />
+    <ClCompile Include="..\..\Source\Game\Stage\StageMapping.cpp"><PrecompiledHeader Condition="'$(Configuration)'=='Debug'">NotUsing</PrecompiledHeader><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
+    <ClCompile Include="..\..\Source\Game\Stage\StageRunner.cpp" />
+    <ClCompile Include="..\..\Source\Game\Stage\StageState.cpp" />
+    <ClCompile Include="..\..\Source\Game\Stage\StageWorldHost.cpp" />
+    <ClCompile Include="..\..\Source\Game\StateFactory.cpp" />
+    <ClCompile Include="..\..\Source\Game\TitleState.cpp" />
+    <ClCompile Include="..\..\Source\Game\Ui\Banner.cpp" />
+    <ClCompile Include="..\..\Source\Game\Ui\BitmapFont.cpp" />
+    <ClCompile Include="..\..\Source\Game\Ui\FadeController.cpp" />
+    <ClCompile Include="..\..\Source\Game\Ui\Hud.cpp" />
+    <ClCompile Include="..\..\Source\Game\Ui\ScreenFlow.cpp" />
+    <ClCompile Include="..\..\Source\Game\Ui\UiDemoState.cpp" />
+    <ClCompile Include="..\..\Source\Game\Ui\UiSystem.cpp" />
+    <ClCompile Include="..\..\Source\Render\Animation.cpp" />
+    <ClCompile Include="..\..\Source\Render\Camera.cpp" />
+    <ClCompile Include="..\..\Source\Render\Renderer.cpp" />
+    <ClCompile Include="..\..\Source\Render\SpriteBatch.cpp"><PrecompiledHeader Condition="'$(Configuration)'=='Debug'">NotUsing</PrecompiledHeader><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
+    <ClCompile Include="..\..\Source\Render\SpriteLibrary.cpp" />
+    <ClCompile Include="..\..\Source\World\Combat.cpp" />
+    <ClCompile Include="..\..\Source\World\GroundMap.cpp" />
+    <ClCompile Include="..\..\Source\World\Physics.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source\Audio\AudioMath.h" />
+    <ClInclude Include="..\..\Source\Audio\AudioSink.h" />
+    <ClInclude Include="..\..\Source\Audio\AudioSystem.h" />
+    <ClInclude Include="..\..\Source\Audio\SoundBank.h" />
+    <ClInclude Include="..\..\Source\Audio\VoiceAllocator.h" />
+    <ClInclude Include="..\..\Source\Base\Assert.h" />
+    <ClInclude Include="..\..\Source\Base\Error.h" />
+    <ClInclude Include="..\..\Source\Base\Handle.h" />
+    <ClInclude Include="..\..\Source\Base\Json.h" />
+    <ClInclude Include="..\..\Source\Base\Log.h" />
+    <ClInclude Include="..\..\Source\Base\PhaseTimer.h" />
+    <ClInclude Include="..\..\Source\Core\AsyncLoader.h" />
+    <ClInclude Include="..\..\Source\Core\MainThreadQueue.h" />
+    <ClInclude Include="..\..\Source\Base\Math.h" />
+    <ClInclude Include="..\..\Source\Base\Random.h" />
+    <ClInclude Include="..\..\Source\Base\Result.h" />
+    <ClInclude Include="..\..\Source\Base\RGBA.h" />
+    <ClInclude Include="..\..\Source\Base\Types.h" />
+    <ClInclude Include="..\..\Source\Core\App.h" />
+    <ClInclude Include="..\..\Source\Editor\AnimEditor.h" />
+    <ClInclude Include="..\..\Source\Editor\GroundEditor.h" />
+    <ClInclude Include="..\..\Source\Editor\EnemyLab.h" />
+    <ClInclude Include="..\..\Source\Editor\StageEditor.h" />
+    <ClInclude Include="..\..\Source\Editor\DepthEditor.h" />
+    <ClInclude Include="..\..\Source\Editor\HitboxEditor.h" />
+    <ClInclude Include="..\..\Source\Editor\MotionEditor.h" />
+    <ClInclude Include="..\..\Source\Editor\JsonScan.h" />
+    <ClInclude Include="..\..\Source\Editor\Editor.h" />
+    <ClInclude Include="..\..\Source\Editor\ImGuiSdlRendererViewports.h" />
+    <ClInclude Include="..\..\Source\Core\Headless.h" />
+    <ClInclude Include="..\..\Source\Core\AssetPath.h" />
+    <ClInclude Include="..\..\Source\Core\FixedStep.h" />
+    <ClInclude Include="..\..\Source\Core\Input.h" />
+    <ClInclude Include="..\..\Source\Core\Replay.h" />
+    <ClInclude Include="..\..\Source\Core\Tuning.h" />
+    <ClInclude Include="..\..\Source\Game\Combat\BulletVisual.h" />
+    <ClInclude Include="..\..\Source\Game\Combat\CombatSystem.h" />
+    <ClInclude Include="..\..\Source\Game\Combat\HitFlash.h" />
+    <ClInclude Include="..\..\Source\Game\Combat\Projectiles.h" />
+    <ClInclude Include="..\..\Source\Game\DemoState.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\BigShiee.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\BigShieeCfg.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\EnemyBehaviors.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\EnemyCommon.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\EnemyDef.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\EnemyDefParse.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\EnemyTypes.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\EnemyWorld.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\VehicleCommon.h" />
+    <ClInclude Include="..\..\Source\Game\GameState.h" />
+    <ClInclude Include="..\..\Source\Game\Player\PlayerController.h" />
+    <ClInclude Include="..\..\Source\Game\Player\PlayerHitboxes.h" />
+    <ClInclude Include="..\..\Source\Game\Player\PlayerInput.h" />
+    <ClInclude Include="..\..\Source\Game\Player\PlayerRig.h" />
+    <ClInclude Include="..\..\Source\Game\Player\PlayerTypes.h" />
+    <ClInclude Include="..\..\Source\Game\Player\PlayerWeapons.h" />
+    <ClInclude Include="..\..\Source\Game\Player\SlugClips.h" />
+    <ClInclude Include="..\..\Source\Game\Player\SlugDef.h" />
+    <ClInclude Include="..\..\Source\Game\Player\SlugRender.h" />
+    <ClInclude Include="..\..\Source\Game\Player\SlugSystem.h" />
+    <ClInclude Include="..\..\Source\Game\Player\SlugTypes.h" />
+    <ClInclude Include="..\..\Source\Game\Player\SlugVehicle.h" />
+    <ClInclude Include="..\..\Source\Game\Props\DecorWorld.h" />
+    <ClInclude Include="..\..\Source\Game\Props\ItemWorld.h" />
+    <ClInclude Include="..\..\Source\Game\Props\PropDef.h" />
+    <ClInclude Include="..\..\Source\Game\Props\PropWorld.h" />
+    <ClInclude Include="..\..\Source\Game\Sandbox\Effects.h" />
+    <ClInclude Include="..\..\Source\Game\Sandbox\TrainingTargets.h" />
+    <ClInclude Include="..\..\Source\Game\SandboxState.h" />
+    <ClInclude Include="..\..\Source\Game\SimRunner.h" />
+    <ClInclude Include="..\..\Source\Game\Stage\StageData.h" />
+    <ClInclude Include="..\..\Source\Game\Stage\StageHost.h" />
+    <ClInclude Include="..\..\Source\Game\Stage\StageMapping.h" />
+    <ClInclude Include="..\..\Source\Game\Stage\StageRunner.h" />
+    <ClInclude Include="..\..\Source\Game\Stage\StageState.h" />
+    <ClInclude Include="..\..\Source\Game\Stage\StageWorldHost.h" />
+    <ClInclude Include="..\..\Source\Game\StateFactory.h" />
+    <ClInclude Include="..\..\Source\Game\TitleState.h" />
+    <ClInclude Include="..\..\Source\Game\Ui\Banner.h" />
+    <ClInclude Include="..\..\Source\Game\Ui\BitmapFont.h" />
+    <ClInclude Include="..\..\Source\Game\Ui\FadeController.h" />
+    <ClInclude Include="..\..\Source\Game\Ui\Hud.h" />
+    <ClInclude Include="..\..\Source\Game\Ui\ScreenFlow.h" />
+    <ClInclude Include="..\..\Source\Game\Ui\UiDemoState.h" />
+    <ClInclude Include="..\..\Source\Game\Ui\UiLayout.h" />
+    <ClInclude Include="..\..\Source\Game\Ui\UiSystem.h" />
+    <ClInclude Include="..\..\Source\Render\Animation.h" />
+    <ClInclude Include="..\..\Source\Render\Camera.h" />
+    <ClInclude Include="..\..\Source\Render\Renderer.h" />
+    <ClInclude Include="..\..\Source\Render\SpriteBatch.h" />
+    <ClInclude Include="..\..\Source\Render\SpriteLibrary.h" />
+    <ClInclude Include="..\..\Source\World\Combat.h" />
+    <ClInclude Include="..\..\Source\World\Constants.h" />
+    <ClInclude Include="..\..\Source\World\Geometry.h" />
+    <ClInclude Include="..\..\Source\World\GroundMap.h" />
+    <ClInclude Include="..\..\Source\World\Physics.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(VcpkgRoot)scripts\buildsystems\msbuild\vcpkg.targets" Condition="Exists('$(VcpkgRoot)scripts\buildsystems\msbuild\vcpkg.targets') And !Exists('$(LOCALAPPDATA)\vcpkg\vcpkg.user.targets')" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

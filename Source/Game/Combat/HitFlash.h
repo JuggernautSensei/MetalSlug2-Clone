@@ -1,8 +1,5 @@
 #pragma once
 
-namespace slug
-{
-
 // 피격 플래시 (원작 실측: Docs/Spec_HitFlash.md).
 // 피격 한 번이 "ON 펄스" 하나를 만든다. 펄스는 kHitFlashOnTicks 동안 켜지고 kHitFlashGapTicks 동안 꺼진다.
 // ON 중의 재피격은 무시한다 (연사 중에도 켜진 채로 늘어나지 않고 반드시 깜빡인다).
@@ -13,32 +10,13 @@ inline constexpr int kHitFlashGapTicks = 3;                                     
 inline constexpr int kHitFlashTicks    = kHitFlashOnTicks + kHitFlashGapTicks + 1;   // 피격 시 타이머 초기값
 
 // 타이머 값이 ON 구간이면 true. 0 이하(꺼짐)와 범위 밖 값은 false.
-[[nodiscard]] constexpr bool IsHitFlashOn(
-    const int _ticksLeft)
-{
-    return _ticksLeft > kHitFlashGapTicks && _ticksLeft < kHitFlashTicks;
-}
+[[nodiscard]] bool IsHitFlashOn(
+    const int _ticksLeft);
 
 // 피격 시 호출. 지금 ON 이 아니면 새 펄스를 시작한다 (ON 중이면 무시). 시작했으면 true.
-constexpr bool StartHitFlash(
-    int& _ticksLeft)
-{
-    if (IsHitFlashOn(_ticksLeft) || _ticksLeft == kHitFlashTicks)
-    {
-        return false;
-    }
-    _ticksLeft = kHitFlashTicks;
-    return true;
-}
+bool StartHitFlash(
+    int& _ticksLeft);
 
 // 매 틱 호출. 타이머를 1 줄인다 (0 아래로 내려가지 않는다).
-constexpr void TickHitFlash(
-    int& _ticksLeft)
-{
-    if (_ticksLeft > 0)
-    {
-        --_ticksLeft;
-    }
-}
-
-}   // namespace slug
+void TickHitFlash(
+    int& _ticksLeft);

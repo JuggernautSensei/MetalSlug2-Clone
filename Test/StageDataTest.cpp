@@ -8,26 +8,22 @@
 #include "Base/Result.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
+#include "Game/Stage/StageMapping.h"
 #include "StageTestUtil.h"
 #include "World/GroundMap.h"
 
-using namespace slug;
-using namespace slugtest;
 
-namespace
-{
-[[nodiscard]] std::string OneSection_(
+[[nodiscard]] static std::string OneSection_(
     const std::string& _actions)
 {
     return WrapStage(R"J([{"id":"s0","triggerX":0,"actions":)J" + _actions + "}]");
 }
 
-[[nodiscard]] const StageAction& FirstAction_(
+[[nodiscard]] static const StageAction& FirstAction_(
     const StageData& _data)
 {
     return _data.sections.at(0).actions.at(0);
 }
-}   // namespace
 
 TEST(StageData, LoadsMinimalStageWithDefaults)
 {
@@ -60,7 +56,7 @@ TEST(StageData, SpawnDefaultsDependOnKind)
         {"type":"spawn","kind":"item","def":"random_fruit","x":10,"y":20},
         {"type":"spawn","kind":"collider","def":"box_collider","x":10,"y":20,"size":[5,6],"collisionLayer":"wall"},
         {"type":"spawn","kind":"decor","def":"anim_decor","x":10,"y":20,"anim":"Parker","layer":"background"}])J"));
-    const slug::Vector<StageAction>& a    = data.sections[0].actions;
+    const Vector<StageAction>& a    = data.sections[0].actions;
     EXPECT_EQ(a[0].spawn.origin, eOrigin::Feet);
     EXPECT_EQ(a[0].when, eWhen::Normal);
     EXPECT_EQ(a[1].spawn.origin, eOrigin::LegacyCenter);
@@ -88,7 +84,7 @@ TEST(StageData, NonSpawnActionDefaultsToWhenRule)
         {"type":"lockCamera","rect":"arena"},
         {"type":"banner","text":"x","seconds":1},
         {"type":"setGround","name":"G1","when":"silent"}])J"));
-    const slug::Vector<StageAction>& a    = data.sections[0].actions;
+    const Vector<StageAction>& a    = data.sections[0].actions;
     EXPECT_EQ(a[0].when, eWhen::Always);
     EXPECT_EQ(a[1].when, eWhen::Always);
     EXPECT_EQ(a[2].when, eWhen::Always);
@@ -97,6 +93,28 @@ TEST(StageData, NonSpawnActionDefaultsToWhenRule)
     EXPECT_EQ(a[5].when, eWhen::Normal);
     EXPECT_EQ(a[6].when, eWhen::Normal);
     EXPECT_EQ(a[7].when, eWhen::Silent);
+}
+
+TEST(StageData, BannerParsesOptionalSfx)
+{
+    const StageData data = MustLoad(OneSection_(R"J([
+        {"type":"banner","text":"A","seconds":1},
+        {"type":"banner","text":"B","seconds":1,"sfx":"Sfx_Mission4Start"}])J"));
+    EXPECT_TRUE(data.sections[0].actions[0].name.empty());
+    EXPECT_EQ(data.sections[0].actions[1].name, "Sfx_Mission4Start");
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","text":"A","seconds":1,"sfx":3}])J")).find("sfx"), std::string::npos);
+}
+
+TEST(StageData, PlayBgmParsesFadeOutSecAndRejectsBadValues)
+{
+    const StageData data = MustLoad(OneSection_(R"J([
+        {"type":"playBgm","name":"A"},
+        {"type":"playBgm","name":"B","fadeOutSec":2.0}])J"));
+    EXPECT_FLOAT_EQ(data.sections[0].actions[0].fadeOutSec, 0.f);
+    EXPECT_FLOAT_EQ(data.sections[0].actions[1].fadeOutSec, 2.f);
+
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"playBgm","name":"A","fadeOutSec":-1}])J")).find("'fadeOutSec' must be >= 0"), std::string::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"playBgm","name":"A","fadeOutSec":"2"}])J")).find("'fadeOutSec' must be a number"), std::string::npos);
 }
 
 TEST(StageData, ShouldRunActionTruthTable)
@@ -116,7 +134,7 @@ TEST(StageData, CameraAnchorParsesFixedAndRangeDx)
             {"delay":1,"kind":"enemy","def":"a","camera":{"ax":"right","dx":[-149,-50],"ay":"top","dy":47.5}},
             {"delay":2,"kind":"enemy","def":"b","camera":{"ax":"left","dx":250,"ay":"bottom","dy":-3}},
             {"delay":3,"kind":"enemy","def":"c","camera":{"ax":"center","ay":"center"}}]}])J"));
-    const slug::Vector<WaveEntry>& e    = FirstAction_(data).waveEntries;
+    const Vector<WaveEntry>& e    = FirstAction_(data).waveEntries;
     ASSERT_EQ(e.size(), 3u);
     EXPECT_TRUE(e[0].spawn.camera.IsRandomX());
     EXPECT_EQ(e[0].spawn.camera.dxMin, -149);
@@ -155,7 +173,7 @@ TEST(StageData, RectsResolveNamesAndCurrent)
         {"type":"lockCamera","rect":"arena","permanent":true},
         {"type":"lockCamera","rect":"current","glide":0.5},
         {"type":"setBounds","rect":[10,20,30,40]}])J"));
-    const slug::Vector<StageAction>& a    = data.sections[0].actions;
+    const Vector<StageAction>& a    = data.sections[0].actions;
     EXPECT_FALSE(a[0].rect.bCurrent);
     EXPECT_EQ(a[0].rect.rect, Aabb::FromMinMax({ 100.f, 0.f }, { 740.f, 448.f }));
     EXPECT_EQ(a[0].rect.name, "arena");
@@ -205,7 +223,7 @@ TEST(StageData, BoundsCurveResolvesSectionIndicesAndEvaluates)
 TEST(StageDataErrors, InvalidJsonSyntax)
 {
     StageLoadDiagnostics          diag;
-    const slug::Result<StageData> result = LoadStageFromJson("{ not json", &diag);
+    const Result<StageData> result = LoadStageFromJson("{ not json", &diag);
     ASSERT_FALSE(result);
     EXPECT_EQ(result.GetError().GetCode(), eError::Parse);
     EXPECT_NE(diag.message.find("syntax"), std::string::npos);
@@ -252,7 +270,7 @@ TEST(StageDataErrors, SpawnPositionRules)
     EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1}])J")).find("needs 'y' unless groundSnap"), std::string::npos);
     EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"groundSnap":true}])J")).find("'y' must be omitted"), std::string::npos);
     EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"camera":{"ax":"left","ay":"top"}}])J")).find("cannot be combined"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"fromY":3}])J")).find("'fromY' requires groundSnap"), std::string::npos);
+    EXPECT_TRUE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"fromY":3}])J")).empty()) << "에디터 Y 잠금 해제가 남기는 groundSnap:false + fromY + y 조합은 허용 (fromY 는 무시)";
     EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"prop","def":"a","x":1,"groundSnap":true}])J")).find("groundSnap requires origin 'feet'"), std::string::npos);
 }
 
@@ -291,7 +309,7 @@ TEST(StageData, WaveEntryParsesEveryAndTimesWithOneTimeDefault)
         {"type":"spawnWave","entries":[
             {"delay":12,"every":36,"times":20,"kind":"npc","def":"pow","x":1,"y":2},
             {"delay":1,"kind":"enemy","def":"b","x":1,"y":2}]}])J"));
-    const slug::Vector<WaveEntry>& e    = FirstAction_(data).waveEntries;
+    const Vector<WaveEntry>& e    = FirstAction_(data).waveEntries;
     ASSERT_EQ(e.size(), 2u);
     EXPECT_FLOAT_EQ(e[0].every, 36.f);
     EXPECT_EQ(e[0].times, 20);
@@ -345,7 +363,7 @@ TEST(StageDataErrors, GroundAndBackdropInitialMustExist)
 TEST(StageDataErrors, MissingFileIsReported)
 {
     StageLoadDiagnostics          diag;
-    const slug::Result<StageData> result = LoadStageFromFile("does/not/exist/Stage.json", &diag);
+    const Result<StageData> result = LoadStageFromFile("does/not/exist/Stage.json", &diag);
     ASSERT_FALSE(result);
     EXPECT_EQ(result.GetError().GetCode(), eError::FileOpen);
 }
@@ -353,7 +371,7 @@ TEST(StageDataErrors, MissingFileIsReported)
 TEST(StageDataReal, OpenlandPowsAreAboutEvery700PxAndCoverTheWeaponMix)
 {
     StageLoadDiagnostics    diag;
-    slug::Result<StageData> result = LoadStageFromFile(slug::FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
@@ -380,16 +398,59 @@ TEST(StageDataReal, OpenlandPowsAreAboutEvery700PxAndCoverTheWeaponMix)
     for (size_t i = 1; i < xs.size(); ++i)
     {
         EXPECT_GE(xs[i] - xs[i - 1], 500.f);
-        EXPECT_LE(xs[i] - xs[i - 1], 800.f);
+        EXPECT_LE(xs[i] - xs[i - 1], 1000.f);   // R1-10 뿅 경고 해소로 openland_2->3 간격이 1000 까지 늘었다 (허용 범위 최소 조정)
     }
     const std::vector<std::string> expected = { "gunitem_mg", "gunitem_rl", "bomb_supple", "gunitem_sg", "gunitem_fs" };
     EXPECT_EQ(drops, std::vector<std::string>(expected.begin(), expected.end()));
 }
 
+TEST(StageDataReal, OpenlandHousesAndBlocksStayAlignedWithTheGroundMaskBumps)
+{
+    StageLoadDiagnostics    diag;
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    ASSERT_TRUE(result) << diag.message;
+    const StageData data = result.Take();
+
+    std::optional<GroundMap> mask = LoadGroundMask(FindAssetRoot() / "Ground" / "Stage0_0.png");
+    ASSERT_TRUE(mask.has_value());
+    mask->SetPeriodicTail(14094, 13070, 1024);
+    mask->MaterializeTail(3);
+
+    // 집/다리 블록은 충돌 마스크의 둔덕에 묶여 있다 (섹션을 통째로 끌면 어긋난다). 집 x 기준: 평평한 윗면 -140..+150 이 단단하고 +-230 밖은 비어 있어야 한다
+    int houses = 0;
+    for (const StageSection& section: data.sections)
+    {
+        for (const StageAction& action: section.actions)
+        {
+            if (action.type != eActionType::Spawn || action.spawn.kind != eEntityKind::Prop || action.spawn.x < 9000.f)
+            {
+                continue;
+            }
+            const int x = static_cast<int>(action.spawn.x);
+            if (action.spawn.def == "big_house")
+            {
+                ++houses;
+                EXPECT_TRUE(mask->IsSolid(x - 140, 1215) && mask->IsSolid(x + 150, 1215)) << "big_house x=" << x << " 가 마스크 둔덕과 어긋났다";
+                EXPECT_FALSE(mask->IsSolid(x - 230, 1215)) << "big_house x=" << x;
+                EXPECT_FALSE(mask->IsSolid(x + 230, 1215)) << "big_house x=" << x;
+            }
+            else if (action.spawn.def == "bridge_block" && x < 16400)
+            {
+                const bool bumpHere = mask->IsSolid(x + 21, 1235);
+                if (x != 14194)
+                {
+                    EXPECT_TRUE(bumpHere) << "bridge_block x=" << x << " 가 마스크 둔덕과 어긋났다";
+                }
+            }
+        }
+    }
+    EXPECT_GE(houses, 7);
+}
+
 TEST(StageDataReal, BossArenaStreetHasItsHousesAndBlocksAheadOfTheCamera)
 {
     StageLoadDiagnostics    diag;
-    slug::Result<StageData> result = LoadStageFromFile(slug::FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
@@ -407,7 +468,7 @@ TEST(StageDataReal, BossArenaStreetHasItsHousesAndBlocksAheadOfTheCamera)
         if (action.spawn.kind == eEntityKind::Item && action.spawn.def == "gunitem_mg")
         {
             ++hmgCount;
-            EXPECT_FLOAT_EQ(action.spawn.x, 12990.f);
+            EXPECT_FLOAT_EQ(action.spawn.x, 12950.f);
         }
         if (action.spawn.kind == eEntityKind::Prop && action.spawn.def == "big_house")
         {
@@ -435,11 +496,11 @@ TEST(StageDataReal, BossArenaStreetHasItsHousesAndBlocksAheadOfTheCamera)
 TEST(StageDataReal, Stage0AmbientWalkersUseSequenceParams)
 {
     StageLoadDiagnostics    diag;
-    slug::Result<StageData> result = LoadStageFromFile(slug::FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
-    // 인트로: 노인(Parker) 과 소년(Order) 이 길을 오간다
+    // 인트로: 노인(Parker) 이 길을 오간다 (어린 소년 NPC 는 삭제했다)
     const int intro = data.FindSection("intro");
     ASSERT_GE(intro, 0);
     const SpawnSpec* pOld    = nullptr;
@@ -455,7 +516,7 @@ TEST(StageDataReal, Stage0AmbientWalkersUseSequenceParams)
             }
         }
     }
-    EXPECT_EQ(walkers, 2);
+    EXPECT_EQ(walkers, 1);
     ASSERT_NE(pOld, nullptr);
     const ParamValue* pSequence = pOld->params.Find("sequence");
     ASSERT_NE(pSequence, nullptr);
@@ -479,17 +540,74 @@ TEST(StageDataReal, Stage0AmbientWalkersUseSequenceParams)
     EXPECT_EQ(streetWalkers, 1);
 }
 
-TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
+TEST(StageDataReal, BossArenaIsBehindTheSarubiaLockAndClearsOnlyAfterTheBossIsDestroyed)
 {
     StageLoadDiagnostics    diag;
-    slug::Result<StageData> result = LoadStageFromFile(slug::FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
-    EXPECT_EQ(data.sections.size(), 20u);
-    EXPECT_EQ(data.CountSpawns(), 200);       // 버스/헬기/보스 스폰 + 보스 섹션 POW 5 제거 (대형 적 재설계 전)
-    EXPECT_EQ(data.CountWaveEntries(), 34);   // 헬기 웨이브 항목 1 제거
-    EXPECT_EQ(data.CountGates(), 1);
+    // 사루비아 락 (openland_4, 오른쪽 끝 13080, 플레이어 최대 13066) 안에서는 아레나 트리거에 닿을 수 없다
+    const StageSection& arena = data.sections.back();
+    EXPECT_EQ(arena.id, "boss_arena");
+    EXPECT_GT(arena.triggerX, 13066.f);
+    EXPECT_EQ(data.FindSection("boss_arena"), data.FindSection("openland_4") + 1);
+
+    // 순서: 보스 BGM (필드 BGM 2 초 페이드아웃) -> 락 -> 보스 스폰 -> 게이트 (destroyFinished) -> 게이트 안에서 해제 후 클리어
+    ASSERT_EQ(arena.actions.size(), 4u);
+    EXPECT_EQ(arena.actions[0].type, eActionType::PlayBgm);
+    EXPECT_EQ(arena.actions[0].name, "Boss_BGM");
+    EXPECT_FLOAT_EQ(arena.actions[0].fadeOutSec, 2.f);
+    EXPECT_EQ(arena.actions[1].type, eActionType::LockCamera);
+    EXPECT_EQ(arena.actions[2].type, eActionType::Spawn);
+    EXPECT_EQ(arena.actions[2].spawn.def, "bigshiee");
+    EXPECT_EQ(arena.actions[2].spawn.kind, eEntityKind::Enemy);
+    EXPECT_EQ(arena.actions[2].spawn.id, "bigshiee");
+    const StageAction& gate = arena.actions[3];
+    EXPECT_EQ(gate.type, eActionType::Gate);
+    EXPECT_EQ(gate.until, eGateUntil::DestroyFinished);
+    ASSERT_EQ(gate.waitFor.size(), 1u);
+    EXPECT_EQ(gate.waitFor[0], "bigshiee");
+    ASSERT_EQ(gate.actions.size(), 4u);
+    EXPECT_EQ(gate.actions[0].type, eActionType::UnlockCamera);
+    EXPECT_EQ(gate.actions[3].type, eActionType::EndStage);
+}
+
+// 강 지프는 heli_river 락 왼쪽 끝 (5357) 보다 60 px 왼쪽 밖에서 나타난다
+TEST(StageDataReal, RiverJeepSpawnsSixtyPixelsLeftOfTheHeliLock)
+{
+    StageLoadDiagnostics    diag;
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    ASSERT_TRUE(result) << diag.message;
+    const StageData data  = result.Take();
+    bool            bFound = false;
+    for (const StageSection& section: data.sections)
+    {
+        for (const StageAction& action: section.actions)
+        {
+            if (action.type == eActionType::Spawn && action.spawn.id == "river_jeep")
+            {
+                bFound = true;
+                EXPECT_TRUE(action.spawn.bHasX);
+                EXPECT_FLOAT_EQ(action.spawn.x, 5100.f);
+            }
+        }
+    }
+    EXPECT_TRUE(bFound);
+}
+
+TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
+{
+    StageLoadDiagnostics    diag;
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    ASSERT_TRUE(result) << diag.message;
+    const StageData data = result.Take();
+
+    // 기대값은 현행 Stage0.json 을 센 결과 (spawn 은 repeat.count 펼침 포함, 게이트 안 spawn 포함)
+    EXPECT_EQ(data.sections.size(), 22u);     // intro ~ boss_arena (22 섹션)
+    EXPECT_EQ(data.CountSpawns(), 195);       // 현행 스폰 수 (사용자 Map 에디터 편집으로 199 -> 198) (버스는 ground_swap 에서 사전 스폰, heli_river/river_jeep 포함, openland_4 보스 구간 바닥 소품 2 포함)
+    EXPECT_EQ(data.CountWaveEntries(), 33);   // spawnWave 항목 수 (bridge 병사 3 / boardwalk 웨이브 1 삭제 반영)
+    EXPECT_EQ(data.CountGates(), 4);          // sarubia_dead + bus_clear + heli_dead + bigshiee_dead
 
     EXPECT_EQ(data.name, "Stage0");
     EXPECT_EQ(data.background, "Stage0_Main");
@@ -501,9 +619,9 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
     EXPECT_FLOAT_EQ(data.camera.playerMargin, 14.f);
 
     EXPECT_EQ(data.sections.front().id, "intro");
-    EXPECT_EQ(data.sections.back().id, "stage_end");
-    EXPECT_FLOAT_EQ(data.sections.back().triggerX, 12900.f);
-    EXPECT_EQ(data.FindSection("boardwalk"), 3);
+    EXPECT_EQ(data.sections.back().id, "boss_arena");
+    EXPECT_FLOAT_EQ(data.sections.back().triggerX, 13700.f);
+    EXPECT_EQ(data.FindSection("boardwalk"), 4);   // intro, street, ground_swap, bus 다음 (heli 는 river 구간으로 이동)
 
     ASSERT_EQ(data.camera.boundsCurves.size(), 1u);
     EXPECT_EQ(data.camera.boundsCurves[0].fromIndex, data.FindSection("downtown_start"));
@@ -516,19 +634,26 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
 
 TEST(StageDataReal, Stage0KeySemantics)
 {
-    slug::Result<StageData> result = LoadStageFromFile(slug::FindAssetRoot() / "Stage" / "Stage0.json");
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json");
     ASSERT_TRUE(result);
     const StageData data = result.Take();
 
     const StageSection& groundSwap = data.sections[static_cast<size_t>(data.FindSection("ground_swap"))];
-    ASSERT_EQ(groundSwap.actions.size(), 1u);
+    // ground_swap: setGround(silent) + 버스 사전 스폰 (id bus). bus 섹션은 락/게이트만 남았다
+    ASSERT_EQ(groundSwap.actions.size(), 2u);
     EXPECT_EQ(groundSwap.actions[0].type, eActionType::SetGround);
     EXPECT_EQ(groundSwap.actions[0].when, eWhen::Silent);
+    EXPECT_EQ(groundSwap.actions[1].type, eActionType::Spawn);
+    EXPECT_EQ(groundSwap.actions[1].spawn.def, "bus");
+    EXPECT_EQ(groundSwap.actions[1].spawn.id, "bus");
 
-    const StageSection& stageEnd = data.sections.back();
-    ASSERT_FALSE(stageEnd.actions.empty());
-    EXPECT_EQ(stageEnd.actions.back().type, eActionType::EndStage);
-    EXPECT_FLOAT_EQ(stageEnd.actions.back().delay, 0.f);
+    // 클리어 (endStage) 는 보스 아레나의 게이트 (destroyFinished) 안에서만 실행된다
+    const StageSection& arena = data.sections.back();
+    ASSERT_FALSE(arena.actions.empty());
+    ASSERT_EQ(arena.actions.back().type, eActionType::Gate);
+    ASSERT_FALSE(arena.actions.back().actions.empty());
+    EXPECT_EQ(arena.actions.back().actions.back().type, eActionType::EndStage);
+    EXPECT_FLOAT_EQ(arena.actions.back().actions.back().delay, 0.f);
 
     const StageSection& boardwalk = data.sections[static_cast<size_t>(data.FindSection("boardwalk"))];
     bool                bFence    = false;
@@ -547,10 +672,10 @@ TEST(StageDataReal, Stage0KeySemantics)
 // 지형은 평탄화하지 않는다 (원작처럼 부서진 지붕/잔해 언덕). 보스 아레나 (12760..14090) 에 고체 언덕이 남아 있다.
 TEST(StageDataReal, BossArenaKeepsTheUnevenTerrainWithoutFlattening)
 {
-    const std::filesystem::path root   = slug::FindAssetRoot();
-    slug::Result<GroundMap>     loaded = GroundMap::Load(root / "Baked" / "Ground" / "Stage0_1.bin");
-    ASSERT_TRUE(loaded);
-    const GroundMap ground = loaded.Take();
+    const std::filesystem::path root   = FindAssetRoot();
+    std::optional<GroundMap>    loaded = LoadGroundMask(root / "Ground" / "Stage0_1.png");
+    ASSERT_TRUE(loaded.has_value());
+    const GroundMap ground = std::move(*loaded);
     int             bumpy  = 0;
     for (int x = 12760; x < 14090; x += 7)
     {

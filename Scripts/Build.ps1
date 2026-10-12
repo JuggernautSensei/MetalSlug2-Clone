@@ -1,4 +1,4 @@
-# MyMetalSlug2.sln 을 MSBuild 로 빌드하는 얇은 래퍼. CMake 는 쓰지 않는다.
+# MetalSlug2_Clone.sln 을 MSBuild 로 빌드하는 얇은 래퍼. CMake 는 쓰지 않는다.
 # 사용: powershell -NoProfile -File Scripts/Build.ps1 [-Config Debug|Release] [-Target SlugTest] [-Reconfigure (무시됨)]
 # 동시에 여러 에이전트/프로세스가 같은 Output/Intermediate 를 쓰지 않도록 전역 뮤텍스로 직렬화한다.
 # 출력은 에러 요약과 exit=<code> 만 보여주며, 전체 로그는 Intermediate\last_build.log 에 남는다.
@@ -11,7 +11,7 @@ param(
 $ErrorActionPreference = 'Continue'
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
-$sln = Join-Path $root 'MyMetalSlug2.sln'
+$sln = Join-Path $root 'MetalSlug2_Clone.sln'
 $logDir = Join-Path $root 'Intermediate'
 $logPath = Join-Path $logDir 'last_build.log'
 
@@ -26,7 +26,7 @@ function Find-MSBuild
     return 'C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\amd64\MSBuild.exe'
 }
 
-$mutex = New-Object System.Threading.Mutex($false, 'Global\MyMetalSlug2Build')
+$mutex = New-Object System.Threading.Mutex($false, 'Global\MetalSlug2_CloneBuild')
 $bLocked = $false
 try
 {

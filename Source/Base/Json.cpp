@@ -4,24 +4,18 @@
 #include <iterator>
 #include <yyjson.h>
 
-namespace slug
-{
+#include "Base/PhaseTimer.h"
 
-namespace
+[[nodiscard]] static yyjson_read_flag MakeReadFlags_(
+    const eJsonLoadOption _option)
 {
-
-    [[nodiscard]] yyjson_read_flag MakeReadFlags_(
-        const eJsonLoadOption _option)
+    yyjson_read_flag flags = YYJSON_READ_ALLOW_BOM;
+    if ((static_cast<uint32_t>(_option) & static_cast<uint32_t>(eJsonLoadOption::AllowComments)) != 0u)
     {
-        yyjson_read_flag flags = YYJSON_READ_ALLOW_BOM;
-        if ((static_cast<uint32_t>(_option) & static_cast<uint32_t>(eJsonLoadOption::AllowComments)) != 0u)
-        {
-            flags |= YYJSON_READ_ALLOW_COMMENTS;
-        }
-        return flags;
+        flags |= YYJSON_READ_ALLOW_COMMENTS;
     }
-
-}   // namespace
+    return flags;
+}
 
 JsonReader::JsonReader(
     yyjson_val* _pValue)
@@ -195,6 +189,8 @@ Result<JsonDeserializer> JsonDeserializer::LoadFromFile(
     const FilePath&       _path,
     const eJsonLoadOption _option)
 {
+    const ScopedPhaseTimer timer { "json", _path.filename().string() };
+
     std::ifstream file(_path, std::ios::binary);
     if (!file)
     {
@@ -244,5 +240,3 @@ JsonReader JsonDeserializer::GetReader() const
 {
     return JsonReader { m_pDoc ? yyjson_doc_get_root(m_pDoc) : nullptr };
 }
-
-}   // namespace slug

@@ -8,12 +8,12 @@
 #include "Base/Result.h"
 #include "Base/Types.h"
 
-namespace slug
-{
+class AsyncLoader;
 
 struct AudioConfig
 {
-    bool     bEnabled     = true;
+    bool         bEnabled = true;
+    AsyncLoader* pLoader  = nullptr;   // 있으면 효과음 등록(디코드)을 워커 스레드에서 한다
     int      maxVoices    = 16;   // 동시에 울리는 효과음 상한
     int      maxPerSound  = 4;    // 같은 소리의 동시 상한 (권총 연사 등)
     float    masterVolume = 1.f;
@@ -42,8 +42,11 @@ public:
     void StopBgm() override;
     void FadeOutBgm(float _seconds) override;
     void AllStop() override;
+    void ChangeBgm(StringView _name, float _fadeOutSec, bool _bLoop = true) override;
 
-    [[nodiscard]] bool IsInitialized() const { return m_bInitialized; }
+    [[nodiscard]] bool IsInitialized() const;
+    [[nodiscard]] bool IsBgmFadingOut() const;
+    [[nodiscard]] const String& GetCurrentBgm() const;   // 재생 중(페이드 중 포함)인 BGM 이름, 없으면 빈 문자열
 
 private:
     struct Backend;
@@ -78,7 +81,8 @@ private:
     bool      m_bBgmLoop = true;
     BgmFader  m_bgmFade  = {};
 
+    String m_pendingBgm   = {};   // 페이드 아웃이 끝나면 재생할 BGM
+    bool   m_bPendingLoop = true;
+
     std::unique_ptr<Backend> m_pBackend;
 };
-
-}   // namespace slug

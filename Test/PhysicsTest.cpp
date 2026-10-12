@@ -7,11 +7,8 @@
 #include "Base/Types.h"
 #include "World/Physics.h"
 
-using namespace slug;
 
-namespace
-{
-[[nodiscard]] GroundMap MakeFlat_(
+[[nodiscard]] static GroundMap MakeFlat_(
     const int _w      = 400,
     const int _h      = 160,
     const int _floorY = 100)
@@ -21,7 +18,7 @@ namespace
     return map;
 }
 
-[[nodiscard]] Body MakeBody_(
+[[nodiscard]] static Body MakeBody_(
     const float _x,
     const float _feetY)
 {
@@ -30,7 +27,7 @@ namespace
     return body;
 }
 
-[[nodiscard]] MoveResult Tick_(
+[[nodiscard]] static MoveResult Tick_(
     Body&               _body,
     const PhysicsWorld& _world,
     const float         _vx = 0.f)
@@ -39,7 +36,7 @@ namespace
     return Physics::Step(_body, _world);
 }
 
-[[nodiscard]] PhysicsWorld WorldOf_(
+[[nodiscard]] static PhysicsWorld WorldOf_(
     const GroundMap& _map)
 {
     PhysicsWorld world;
@@ -47,7 +44,7 @@ namespace
     return world;
 }
 
-[[nodiscard]] Body StandingOn_(
+[[nodiscard]] static Body StandingOn_(
     const PhysicsWorld& _world,
     const float         _x,
     const float         _y)
@@ -56,7 +53,6 @@ namespace
     EXPECT_TRUE(Physics::SnapToGround(body, _world, 64.f));
     return body;
 }
-}   // namespace
 
 TEST(Physics, FreeFallAppliesGravityPerStep)
 {
@@ -198,9 +194,7 @@ TEST(Physics, StandingStillStaysGroundedWithoutDrift)
     EXPECT_FLOAT_EQ(body.position.y, 100.f);
 }
 
-namespace
-{
-[[nodiscard]] GroundMap MakeRamp45_(
+[[nodiscard]] static GroundMap MakeRamp45_(
     const int _rampStart = 50,
     const int _rampEnd   = 90,
     const int _baseY     = 100)
@@ -222,7 +216,7 @@ namespace
     return map;
 }
 
-[[nodiscard]] int RampSurfaceAt_(
+[[nodiscard]] static int RampSurfaceAt_(
     const int _c,
     const int _rampStart = 50,
     const int _rampEnd   = 90,
@@ -238,7 +232,6 @@ namespace
     }
     return _baseY;
 }
-}   // namespace
 
 TEST(Physics, WalksUpA45DegreeRampWithoutLeavingTheGround)
 {
@@ -568,7 +561,7 @@ TEST(Physics, OneWayPlatformPassesFromBelowAndLandsFromAbove)
     oneWay.bOneWay = true;
 
     PhysicsWorld world = WorldOf_(map);
-    world.platforms    = slug::Span<const Platform> { &oneWay, 1 };
+    world.platforms    = Span<const Platform> { &oneWay, 1 };
 
     Body body       = StandingOn_(world, 150.f, 100.f);
     body.velocity.y = -kJumpSpeed;
@@ -600,7 +593,7 @@ TEST(Physics, OneWayPlatformDoesNotCatchBodiesThatAreBelowTheTop)
     oneWay.bOneWay = true;
 
     PhysicsWorld world = WorldOf_(map);
-    world.platforms    = slug::Span<const Platform> { &oneWay, 1 };
+    world.platforms    = Span<const Platform> { &oneWay, 1 };
 
     Body body = MakeBody_(150.f, 80.f);
     for (int i = 0; i < 60; ++i)
@@ -619,7 +612,7 @@ TEST(Physics, OneWayPlatformDoesNotBlockWalkingSideways)
     oneWay.bOneWay = true;
 
     PhysicsWorld world = WorldOf_(map);
-    world.platforms    = slug::Span<const Platform> { &oneWay, 1 };
+    world.platforms    = Span<const Platform> { &oneWay, 1 };
 
     Body body = StandingOn_(world, 100.f, 100.f);
     for (int i = 0; i < 90; ++i)
@@ -637,7 +630,7 @@ TEST(Physics, DropThroughLetsBodyFallOffOneWayPlatform)
     oneWay.bOneWay = true;
 
     PhysicsWorld world = WorldOf_(map);
-    world.platforms    = slug::Span<const Platform> { &oneWay, 1 };
+    world.platforms    = Span<const Platform> { &oneWay, 1 };
 
     Body body = StandingOn_(world, 150.f, 60.f);
     for (int i = 0; i < 5; ++i)
@@ -664,7 +657,7 @@ TEST(Physics, SolidPlatformSupportsBlocksSidesAndBumpsHead)
     solid.bOneWay = false;
 
     PhysicsWorld world = WorldOf_(map);
-    world.platforms    = slug::Span<const Platform> { &solid, 1 };
+    world.platforms    = Span<const Platform> { &solid, 1 };
 
     Body body = StandingOn_(world, 100.f, 100.f);
     bool bHit = false;
@@ -686,7 +679,7 @@ TEST(Physics, SolidPlatformSupportsBlocksSidesAndBumpsHead)
     Platform hanging;
     hanging.box         = Aabb::FromMinMax({ 300.f, 20.f }, { 360.f, 40.f });
     PhysicsWorld world2 = WorldOf_(map);
-    world2.platforms    = slug::Span<const Platform> { &hanging, 1 };
+    world2.platforms    = Span<const Platform> { &hanging, 1 };
     Body jumper         = StandingOn_(world2, 330.f, 100.f);
     jumper.velocity.y   = -kJumpSpeed;
     bool bCeiling       = false;
@@ -705,7 +698,7 @@ TEST(Physics, WalkingOffPlatformEdgeFallsToGround)
     solid.box = Aabb::FromMinMax({ 100.f, 60.f }, { 160.f, 100.f });
 
     PhysicsWorld world = WorldOf_(map);
-    world.platforms    = slug::Span<const Platform> { &solid, 1 };
+    world.platforms    = Span<const Platform> { &solid, 1 };
 
     Body body = StandingOn_(world, 130.f, 60.f);
     ASSERT_FLOAT_EQ(body.position.y, 60.f);
@@ -727,7 +720,7 @@ TEST(Physics, WallBoxBlocksAndCanBeStoodOn)
     wall.box = Aabb::FromMinMax({ 200.f, 0.f }, { 210.f, 100.f });
 
     PhysicsWorld world = WorldOf_(map);
-    world.walls        = slug::Span<const Wall> { &wall, 1 };
+    world.walls        = Span<const Wall> { &wall, 1 };
 
     Body body = StandingOn_(world, 100.f, 100.f);
     bool bHit = false;
@@ -765,8 +758,6 @@ TEST(Physics, BodiesCanOptOutOfCollisionLayers)
     EXPECT_FLOAT_EQ(ghost.position.y, 100.f);
 }
 
-namespace
-{
 struct Snapshot
 {
     uint32_t x;
@@ -778,13 +769,13 @@ struct Snapshot
     [[nodiscard]] bool operator==(const Snapshot&) const = default;
 };
 
-[[nodiscard]] Snapshot Capture_(
+[[nodiscard]] static Snapshot Capture_(
     const Body& _body)
 {
     return { std::bit_cast<uint32_t>(_body.position.x), std::bit_cast<uint32_t>(_body.position.y), std::bit_cast<uint32_t>(_body.velocity.x), std::bit_cast<uint32_t>(_body.velocity.y), _body.bGrounded };
 }
 
-[[nodiscard]] slug::Vector<Snapshot> RunScenario_()
+[[nodiscard]] static Vector<Snapshot> RunScenario_()
 {
     GroundMap map = MakeRamp45_(50, 90, 100);
     map.FillRect(260, 100, 330, 199, false);   // 구덩이
@@ -794,10 +785,10 @@ struct Snapshot
     oneWay.bOneWay = true;
 
     PhysicsWorld world = WorldOf_(map);
-    world.platforms    = slug::Span<const Platform> { &oneWay, 1 };
+    world.platforms    = Span<const Platform> { &oneWay, 1 };
 
     Body                   body = MakeBody_(20.f, 100.f);
-    slug::Vector<Snapshot> history;
+    Vector<Snapshot> history;
     for (int i = 0; i < 600; ++i)
     {
         float vx = 0.f;
@@ -818,12 +809,11 @@ struct Snapshot
     }
     return history;
 }
-}   // namespace
 
 TEST(Physics, SameInputsProduceBitIdenticalResultsAfter600Steps)
 {
-    const slug::Vector<Snapshot> a = RunScenario_();
-    const slug::Vector<Snapshot> b = RunScenario_();
+    const Vector<Snapshot> a = RunScenario_();
+    const Vector<Snapshot> b = RunScenario_();
     ASSERT_EQ(a.size(), 600u);
     ASSERT_EQ(a.size(), b.size());
     for (size_t i = 0; i < a.size(); ++i)
@@ -834,7 +824,7 @@ TEST(Physics, SameInputsProduceBitIdenticalResultsAfter600Steps)
 
 TEST(Physics, ScenarioActuallyMovesTheBody)
 {
-    const slug::Vector<Snapshot> history = RunScenario_();
+    const Vector<Snapshot> history = RunScenario_();
     const float                  endX    = std::bit_cast<float>(history.back().x);
     EXPECT_GT(endX, 100.f);
 }

@@ -1,9 +1,31 @@
 #include "Game/Player/PlayerWeapons.h"
 
+#include <algorithm>
+#include <cmath>
+
 #include "Base/Math.h"
 
-namespace slug
+constexpr float kDegToRad        = 3.14159265f / 180.f;
+constexpr float kDiagonalRatio   = 0.6f;   // 짧은 축/긴 축 비율이 이 이상이면 대각 조준으로 보고 정사각 판정을 쓴다 (약 31~59도)
+
+// 조준 방향에 따라 판정 상자를 돌린다: 세로(위/아래) 조준은 w/h 를 바꾸고, 대각은 큰 쪽 기준 정사각
+[[nodiscard]] static Vec2 OrientSize_(
+    const Vec2 _size,
+    const Vec2 _direction)
 {
+    const float ax = std::abs(_direction.x);
+    const float ay = std::abs(_direction.y);
+    if (ax > 0.f && ay > 0.f && std::min(ax, ay) / std::max(ax, ay) >= kDiagonalRatio)
+    {
+        const float side = std::max(_size.x, _size.y);
+        return { side, side };
+    }
+    if (ay > ax)
+    {
+        return { _size.y, _size.x };
+    }
+    return _size;
+}
 
 void ResetWeapons(
     WeaponState&  _state,
@@ -102,7 +124,9 @@ BulletSpawn MakeBulletSpawn(
     spawn.direction   = _direction;
     spawn.speed       = _tuning.projectileSpeed;
     spawn.damage      = _tuning.damage;
-    spawn.size        = _tuning.hitSize;
+    spawn.size        = OrientSize_(_tuning.hitSize, _direction);
+    spawn.scaleStart  = _tuning.particleScaleStart;
+    spawn.scaleEnd    = _tuning.particleScaleEnd;
     spawn.range       = _tuning.range;
     spawn.bPierce     = _tuning.bPierce;
     spawn.tag         = static_cast<uint8_t>(_weapon);
@@ -111,6 +135,39 @@ BulletSpawn MakeBulletSpawn(
     spawn.blastDamage = _tuning.blastDamage;
     spawn.blastTicks  = _tuning.blastTicks;
     spawn.bTrail      = _weapon == eWeapon::Rocket;
+    spawn.accel       = _tuning.speedAccel;
+    spawn.maxSpeed    = _tuning.speedMax;
+    return spawn;
+}
+
+BulletSpawn MakeFlameParticleSpawn(
+    const WeaponTuning& _tuning,
+    const uint32_t      _owner,
+    const Vec2          _muzzle,
+    const Vec2          _sweepFrom,
+    const Vec2          _direction,
+    const uint32_t      _hitId,
+    RngMt19937&         _rng)
+{
+    // 방향: 기준 방향을 +-spreadDeg 안에서 무작위로 돌린다 (순서 고정: 각도, 세로 지터, 속도, 수명)
+    const float spreadRad = Random<float>(_rng, -_tuning.spreadDeg, _tuning.spreadDeg) * kDegToRad;
+    const float c         = std::cos(spreadRad);
+    const float s         = std::sin(spreadRad);
+    const Vec2  direction = { _direction.x * c - _direction.y * s, _direction.x * s + _direction.y * c };
+
+    Vec2 muzzle = _muzzle;
+    if (_tuning.muzzleJitter.y > 0.f)
+    {
+        muzzle.y += Random<float>(_rng, -_tuning.muzzleJitter.y, _tuning.muzzleJitter.y);
+    }
+    const float speed = Random<float>(_rng, _tuning.particleSpeedMin, _tuning.particleSpeedMax);
+    const int   life  = Random<int>(_rng, _tuning.particleLifeMinTicks, _tuning.particleLifeMaxTicks);
+
+    BulletSpawn spawn = MakeBulletSpawn(eWeapon::Flame, _tuning, _owner, muzzle, _sweepFrom, direction);
+    spawn.speed       = speed;
+    spawn.range       = speed * static_cast<float>(life) / 60.f;   // 사거리 = 수명 동안 진행 거리 (수명 끝에 소멸)
+    spawn.sizeEnd     = OrientSize_(_tuning.particleHitSizeEnd, direction);
+    spawn.hitId       = _hitId;
     return spawn;
 }
 
@@ -118,5 +175,3 @@ bool WeaponState::HasFiniteAmmo() const
 {
     return weapon != eWeapon::Pistol;
 }
-
-}   // namespace slug

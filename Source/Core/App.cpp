@@ -13,34 +13,28 @@
 #include "Core/AssetPath.h"
 #include "Game/StateFactory.h"
 
-namespace slug
+[[nodiscard]] static int ChooseWindowScale_()
 {
-
-namespace
-{
-    [[nodiscard]] int ChooseWindowScale_()
+    const SDL_DisplayID display = SDL_GetPrimaryDisplay();
+    SDL_Rect            usable  = {};
+    if (display == 0 || !SDL_GetDisplayUsableBounds(display, &usable))
     {
-        const SDL_DisplayID display = SDL_GetPrimaryDisplay();
-        SDL_Rect            usable  = {};
-        if (display == 0 || !SDL_GetDisplayUsableBounds(display, &usable))
-        {
-            return 2;
-        }
-
-        int scale = 3;
-        while (scale > 1 && (Renderer::kLogicalWidth * scale > usable.w - 40 || Renderer::kLogicalHeight * scale > usable.h - 80))
-        {
-            --scale;
-        }
-        return scale;
+        return 2;
     }
 
-}   // namespace
+    int scale = 3;
+    while (scale > 1 && (Renderer::kLogicalWidth * scale > usable.w - 40 || Renderer::kLogicalHeight * scale > usable.h - 80))
+    {
+        --scale;
+    }
+    return scale;
+}
 
 int App::Run(
     const int _argc,
     char**    _argv)
 {
+    m_processStart = SteadyClock::now();
     m_cmdArgs.reserve(static_cast<size_t>(_argc));
     for (int i = 0; i < _argc; ++i)
     {
@@ -74,9 +68,15 @@ int App::Run(
     return m_returnCode;
 }
 
+void App::SubmitToMainThread(
+    std::unique_ptr<IMainThreadTask> _pTask)
+{
+    m_mainQueue.Submit(std::move(_pTask));
+}
+
 bool App::InitSystems_()
 {
-    if (!SDL_SetAppMetadata("MyMetalSlug2", "0.1.0", "com.mymetalslug2.game"))
+    if (!SDL_SetAppMetadata("MetalSlug2 (Clone)", "0.1.0", "com.mymetalslug2.game"))
     {
         SLUG_LOG_WARN("SDL_SetAppMetadata failed: {}", SDL_GetError());
     }
@@ -90,13 +90,29 @@ bool App::InitSystems_()
 
 void App::PollEvents_()
 {
+    const bool bEditorKeys = m_bEditor && m_editor.OwnsKeyboard();
+    if (bEditorKeys && !m_bEditorKeys)
+    {
+        m_input.ClearAll();
+    }
+    m_bEditorKeys = bEditorKeys;
+
     SDL_Event msg {};
     while (SDL_PollEvent(&msg))
     {
+        if (m_bEditor)
+        {
+            m_editor.ProcessEvent(msg);
+        }
         switch (msg.type)
         {
             case SDL_EVENT_QUIT: m_bRunning = false; break;
-            case SDL_EVENT_KEY_DOWN: OnKeyDown_(msg.key.scancode, msg.key.repeat); break;
+            case SDL_EVENT_KEY_DOWN:
+                if (!bEditorKeys)
+                {
+                    OnKeyDown_(msg.key.scancode, msg.key.repeat);
+                }
+                break;
             case SDL_EVENT_KEY_UP: OnKeyUp_(msg.key.scancode); break;
             case SDL_EVENT_WINDOW_FOCUS_LOST: OnFocusLost_(); break;
             default: break;
@@ -130,13 +146,56 @@ void App::ParseArgs_()
         {
             m_bReplayHold = true;
         }
+        else if (args[i] == "--editor")
+        {
+            m_bEditor = true;
+            if (m_pendingWeapon == 0)
+            {
+                m_pendingWeapon = 1;
+            }
+        }
+        else if (args[i] == "--editor-float-test")
+        {
+            m_bEditorFloatTest = true;
+        }
+        else if (args[i] == "--editor-anim" && bHasValue)
+        {
+            m_editorAnim = args[++i];
+        }
+        else if (args[i] == "--editor-tab" && bHasValue)
+        {
+            m_editorTab = args[++i];
+        }
+        else if (args[i] == "--editor-stage" && bHasValue)
+        {
+            m_editorStage = args[++i];
+        }
+        else if (args[i] == "--editor-god" && bHasValue)
+        {
+            m_editorGod = args[++i];
+        }
+        else if (args[i] == "--editor-lab-spawn" && bHasValue)
+        {
+            m_editorLabSpawn = args[++i];
+        }
         else if (args[i] == "--no-audio")
         {
             m_bNoAudio = true;
         }
+        else if (args[i] == "--no-async-load")
+        {
+            m_bNoAsyncLoad = true;
+        }
         else if (args[i] == "--capture" && bHasValue)
         {
             m_capturePath = args[++i];
+        }
+        else if (args[i] == "--event-log" && bHasValue)
+        {
+            if (!OpenEventLog(args[++i]))
+            {
+                SLUG_LOG_WARN("이벤트 로그를 열 수 없습니다: {}", args[i]);
+            }
         }
         else if (args[i] == "--capture-frame" && bHasValue)
         {
@@ -239,11 +298,33 @@ void App::Init_()
     }
     if (m_stateName.empty())
     {
-        const bool bHasBaked = std::filesystem::exists(FindAssetRoot() / "Baked");
-        m_stateName          = bHasBaked ? String { GetDefaultStateName() } : String { "sandbox" };
+        const bool bHasAssets = std::filesystem::exists(FindAssetRoot() / "manifest.json");
+        m_stateName         = bHasAssets ? String { GetDefaultStateName() } : String { "sandbox" };
     }
 
-    if (const Result<void> result = m_renderer.Init("MyMetalSlug2", ChooseWindowScale_()); !result)
+    // 아틀라스 디코드는 렌더러가 필요 없으므로 창/디바이스 생성보다 먼저 워커에 맡긴다 (텍스처 생성은 메인 스레드에서 나중에).
+    // 워커가 없는 동기 폴백은 제출 즉시 텍스처까지 만들므로 렌더러 초기화 뒤로 미룬다.
+    const FilePath assetRoot = FindAssetRoot();
+    m_loader.Start(m_bNoAsyncLoad ? 0 : AsyncLoader::ChooseWorkerCount());
+    SLUG_LOG_INFO("[load] workers {}", m_loader.GetWorkerCount());
+    bool bAnimsLoaded    = false;
+    bool bAtlasSubmitted = false;
+    if (Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(assetRoot))
+    {
+        m_anims      = library.Take();
+        bAnimsLoaded = true;
+        if (m_loader.GetWorkerCount() > 0)
+        {
+            m_sprites.LoadAtlasPagesAsync(m_anims, m_loader);
+            bAtlasSubmitted = true;
+        }
+    }
+    else
+    {
+        SLUG_LOG_WARN("에셋 없음 ({}): manifest.json 확인", assetRoot.string());
+    }
+
+    if (const Result<void> result = m_renderer.Init("MetalSlug2 (Clone)", ChooseWindowScale_()); !result)
     {
         SLUG_LOG_FATAL("렌더러 초기화 실패: {}", result.GetError().MakeMessage());
         m_returnCode = 1;
@@ -251,19 +332,43 @@ void App::Init_()
         return;
     }
 
-    const FilePath bakedRoot = FindAssetRoot() / "Baked";
-    m_sprites.Init(m_renderer.GetNative());
-    if (Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(bakedRoot))
+    if (m_bEditor && !m_editor.Init(m_renderer.GetWindow(), m_renderer.GetNative()))
     {
-        m_anims = library.Take();
-        if (const Result<void> atlas = m_sprites.LoadAtlasPages(m_anims); !atlas)
-        {
-            SLUG_LOG_WARN("아틀라스 로드 실패: {}", atlas.GetError().MakeMessage());
-        }
+        SLUG_LOG_WARN("ImGui 초기화 실패: 에디터 없이 계속합니다");
+        m_bEditor = false;
     }
-    else
+    else if (m_bEditor && !m_editorAnim.empty())
     {
-        SLUG_LOG_WARN("Baked 에셋 없음 ({}): Scripts/Bake.ps1 을 실행하세요", bakedRoot.string());
+        m_editor.SelectAnimation(m_editorAnim.c_str());
+    }
+    if (m_bEditor && m_bEditorFloatTest)
+    {
+        m_editor.EnableFloatTest();
+    }
+    if (m_bEditor && !m_editorStage.empty())
+    {
+        m_editor.SelectStage(m_editorStage.c_str());
+    }
+    if (m_bEditor && m_editorGod == "nodeath")
+    {
+        m_editor.SetGodMode(eGodMode::NoDeath);
+    }
+    else if (m_bEditor && m_editorGod == "invincible")
+    {
+        m_editor.SetGodMode(eGodMode::Invincible);
+    }
+    if (m_bEditor && !m_editorTab.empty())
+    {
+        m_editor.SelectTab(m_editorTab.c_str());
+    }
+
+    const double rendererMs = std::chrono::duration<double, std::milli>(SteadyClock::now() - m_processStart).count();
+    SLUG_LOG_INFO("[load] renderer-init since-run-start {:.1f} ms", rendererMs);
+    m_sprites.Init(m_renderer.GetNative());
+    m_sprites.SetAssetRoot(assetRoot);
+    if (bAnimsLoaded && !bAtlasSubmitted)
+    {
+        m_sprites.LoadAtlasPagesAsync(m_anims, m_loader);
     }
 
     m_rng                 = RngMt19937 { m_seed };
@@ -273,6 +378,8 @@ void App::Init_()
     m_ctx.pRenderer  = &m_renderer;
     m_ctx.pSprites   = &m_sprites;
     m_ctx.pAnims     = &m_anims;
+    m_ctx.pLoader    = &m_loader;
+    m_editor.SetAnimLibrary(m_bEditor ? &m_anims : nullptr);
     m_ctx.pRng       = &m_rng;
     m_ctx.assetRoot  = FindAssetRoot();
     m_ctx.debugLives = m_debugLives;
@@ -280,7 +387,8 @@ void App::Init_()
     {
         AudioConfig audioConfig;
         audioConfig.bEnabled = !m_bNoAudio && m_capturePath.empty();
-        if (const Result<void> audio = m_audio.InitFromDirectory(bakedRoot, audioConfig); audio)
+        audioConfig.pLoader  = &m_loader;
+        if (const Result<void> audio = m_audio.InitFromDirectory(assetRoot, audioConfig); audio)
         {
             m_ctx.pAudio = &m_audio;
         }
@@ -289,6 +397,8 @@ void App::Init_()
             SLUG_LOG_WARN("sounds.json 을 읽지 못해 소리 없이 계속합니다: {}", audio.GetError().MakeMessage());
         }
     }
+
+    m_loader.WaitAll();
 
     std::unique_ptr<IGameState> pState = CreateState(m_stateName);
     if (!pState)
@@ -301,15 +411,22 @@ void App::Init_()
     m_pRunner = std::unique_ptr<SimRunner> {
         new SimRunner { m_ctx, std::move(pState) }
     };
+    if (m_bEditor)
+    {
+        m_editor.GetLab().Init(m_pRunner.get(), m_stateName, m_ctx.assetRoot);
+        m_editor.GetLab().SetAutoSpawn(m_editorLabSpawn);
+    }
 }
 
 void App::Shutdown_()
 {
     SaveRecording_();
+    m_loader.Shutdown();
     m_pRunner.reset();
     m_ctx.pAudio = nullptr;
     m_audio.Shutdown();
     m_sprites.Shutdown();
+    m_editor.Shutdown();
     m_renderer.Shutdown();
 }
 
@@ -387,6 +504,7 @@ void App::OnFocusLost_()
 void App::Update_(
     const float _deltaTimeSec)
 {
+    m_mainQueue.DrainAll();
     m_audio.Update(_deltaTimeSec);
 
     if (!m_pRunner)
@@ -417,6 +535,8 @@ void App::Update_(
     m_ctx.debugWarp   = m_pendingWarp;
     m_ctx.debugLives  = m_debugLives;
     m_pendingWarp     = 0;
+    m_ctx.godMode     = m_bEditor ? m_editor.GetGodMode() : eGodMode::Off;
+    m_ctx.bInfiniteAmmo = m_bEditor;
     m_ctx.debugWeapon = m_pendingWeapon;
     m_pendingWeapon   = 0;
     if (m_pendingSpawn > 0)
@@ -437,7 +557,16 @@ void App::Update_(
     }
     else
     {
-        steps = m_clock.Advance(static_cast<double>(_deltaTimeSec) / static_cast<double>(m_ctx.slowMoDivisor));
+        double deltaSec = static_cast<double>(_deltaTimeSec) / static_cast<double>(m_ctx.slowMoDivisor);
+        if (m_bEditor)
+        {
+            deltaSec *= static_cast<double>(m_editor.GetLab().GetTimeScale());
+        }
+        steps = m_clock.Advance(deltaSec);
+        if (m_bEditor)
+        {
+            steps = m_editor.GetLab().TakeSteps(steps);
+        }
     }
     for (int i = 0; i < steps; ++i)
     {
@@ -472,6 +601,7 @@ void App::Tick_()
         m_recording.frames.push_back(frame);
     }
 
+    SetEventLogTick(m_pRunner->GetTickCount() + 1);
     m_pRunner->Step(frame);
 
     if (!m_bPlayback && m_pRunner->GetHistory().WasPressed(eAction::Pause))
@@ -484,8 +614,18 @@ void App::Render_(
     const float _alpha)
 {
     m_pRunner->Render(_alpha);
+    if (m_bEditor)
+    {
+        m_editor.DrawLabOverlay(m_renderer);
+        m_editor.Frame(m_fps, m_pRunner->GetTickCount());
+    }
 
     ++m_renderFrameCount;
+    if (m_renderFrameCount == 1)
+    {
+        const double ms = std::chrono::duration<double, std::milli>(SteadyClock::now() - m_processStart).count();
+        SLUG_LOG_INFO("[load] first-frame since-run-start {:.1f} ms", ms);
+    }
     if (!m_capturePath.empty() && !m_captureTicks.empty())
     {
         while (m_captureTickHead < m_captureTicks.size() && m_pRunner->GetTickCount() >= m_captureTicks[m_captureTickHead])
@@ -515,5 +655,3 @@ void App::Render_(
 
     m_renderer.EndFrame();
 }
-
-}   // namespace slug

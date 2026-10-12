@@ -2,9 +2,6 @@
 #include "Base/Result.h"
 #include "Base/Types.h"
 
-namespace slug
-{
-
 struct SoundEntry
 {
     String   name = {};
@@ -23,10 +20,10 @@ public:
 
     [[nodiscard]] const SoundEntry*      Find(StringView _name) const;
     [[nodiscard]] int                    FindIndex(StringView _name) const;
-    [[nodiscard]] const SoundEntry&      Get(int _index) const { return m_entries[static_cast<size_t>(_index)]; }
-    [[nodiscard]] size_t                 GetCount() const { return m_entries.size(); }
-    [[nodiscard]] bool                   IsEmpty() const { return m_entries.empty(); }
-    [[nodiscard]] Span<const SoundEntry> GetEntries() const { return m_entries; }
+    [[nodiscard]] const SoundEntry&      Get(int _index) const;
+    [[nodiscard]] size_t                 GetCount() const;
+    [[nodiscard]] bool                   IsEmpty() const;
+    [[nodiscard]] Span<const SoundEntry> GetEntries() const;
 
 private:
     using NameMap = HashMap<String, uint32_t>;
@@ -34,5 +31,3 @@ private:
     Vector<SoundEntry> m_entries     = {};
     NameMap            m_nameToIndex = {};
 };
-
-}   // namespace slug

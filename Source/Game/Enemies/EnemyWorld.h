@@ -11,8 +11,13 @@
 #include "Render/Animation.h"
 #include "Render/SpriteBatch.h"
 
-namespace slug
-{
+inline constexpr int kEnemyDepth   = 15;   // 플레이어(20) 뒤, 지면 위
+inline constexpr int kOverlayDepth = 14;   // 낙하산 등 오버레이: 병사 몸(15) 뒤
+inline constexpr int kShotDepth    = kEnemyShotDepth;   // 기존 탄(30)/폭탄(31) 위
+inline constexpr int kTrailDepth   = 29;   // 투사체 꼬리: 탄 뒤
+
+// 적 종류별 기본 z (BigShiee 는 선체 depth, 나머지는 kEnemyDepth)
+[[nodiscard]] int GetEnemyDefaultZ(eEnemyBehavior _behavior);
 
 class EnemyWorld
 {
@@ -57,6 +62,7 @@ public:
     void SetSpriteLibrary(const SpriteLibrary* _pSprites);
 
     [[nodiscard]] const Enemy* Get(EnemyHandle _handle) const;
+    bool                      SetZ(EnemyHandle _handle, int _z);   // 인스턴스 depth 를 즉시 바꾼다
 
     [[nodiscard]] bool        IsDefeated(EnemyHandle _handle) const;
     void                      SendCommand(EnemyHandle _handle, StringView _command);
@@ -100,13 +106,23 @@ public:
     // 살아 있는(Alive) 적의 def.solid 상자 (월드 AABB). StageState 가 벽으로 합친다.
     [[nodiscard]] Vector<Aabb> GetSolidBoxes() const;
 
+    // 에디터(랩) 전용: 선택한 적이 무기를 즉시 쏘거나, 무기의 motionClip 을 재생하며 _fireFrame 에서 쏜다
+    bool FireWeaponNow(EnemyHandle _handle, int _weapon);
+    bool PlayMotion(EnemyHandle _handle, int _weapon, int _fireFrame);
+
     [[nodiscard]] Span<const Enemy> GetEnemies() const;
     [[nodiscard]] size_t            GetCount() const;
+    [[nodiscard]] const EffectList& GetEffects() const;   // 월드 이펙트 (폭발/혈흔/잔해), 테스트/디버그용 읽기 전용
 
     [[nodiscard]] Vector<EnemyEvent> TakeEvents();
+    [[nodiscard]] Vector<String>     TakeSounds();   // 이번 틱에 재생할 효과음 이름 (투사체 착탄 폭발 등)
 
     void ClearMonsters(
         bool _bIncludeNpc = false);
+
+    void RefreshBodies(
+        int  _defIndex,
+        Vec2 _size);
 
     void KillAll(
         bool _bAwardScore = false);
@@ -123,6 +139,18 @@ public:
     [[nodiscard]] EnemyEvent MakeEvent(const Enemy& _e, eEnemyEventKind _kind) const;
 
 private:
+    struct MotionPlay
+    {
+        uint32_t id        = 0;
+        int      weapon    = -1;
+        int      clip      = -1;
+        int      ticks     = 0;
+        int      fireTick  = 0;
+        int      endTick   = 0;
+    };
+
+    MotionPlay m_play = {};
+
     struct Successor
     {
         uint32_t oldId = 0;
@@ -164,6 +192,7 @@ private:
 
     Vector<Enemy>          m_enemies    = {};
     Vector<EnemyEvent>     m_events     = {};
+    Vector<String>         m_sounds     = {};
     Vector<EnemyFxRequest> m_pendingFx  = {};
     Vector<DeferredSpawn>  m_deferred   = {};
     Vector<Successor>      m_successors = {};
@@ -178,5 +207,3 @@ private:
     bool                             m_bAnimsBound    = false;
     size_t                           m_boundClipCount = 0;
 };
-
-}   // namespace slug

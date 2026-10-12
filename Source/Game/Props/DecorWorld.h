@@ -7,12 +7,9 @@
 #include "Render/Animation.h"
 #include "Render/SpriteBatch.h"
 
-namespace slug
-{
-
 // 장식 레이어 정렬 번호 (소품 background 12 보다 뒤에 그려진다)
-inline constexpr int kDecorFarLayer  = 4;    // farBackground (원경: 비행기 등)
-inline constexpr int kDecorBackLayer = 11;   // background (지상 보행자 등, 플레이어/적 아래)
+inline constexpr int kDecorFarDepth  = 4;    // farBackground (원경: 비행기 등)
+inline constexpr int kDecorBackDepth = 11;   // background (지상 보행자 등, 플레이어/적 아래)
 
 // 장식 연출 한 구간. 구간 동안 clip 을 재생하며 velocity 로 움직인다.
 struct DecorStep
@@ -32,11 +29,14 @@ struct DecorSpawn
     Vec2              velocity = { 0.f, 0.f };
     bool              bFlipX   = false;
     bool              bLoop    = false;   // sequence 끝나면 처음부터 반복
+    float             scale    = 1.f;     // 배율 (1 = 원본, 피벗 고정)
+    int               z        = kDefaultZ;   // 그리기 depth (kDefaultZ: 레이어 기본 kDecorFarDepth/kDecorBackDepth)
     Vector<DecorStep> sequence = {};
 };
 
 // anim_decor 의 params 를 DecorSpawn 으로 읽는다.
 //  velocity: [vx, vy]
+//  scale: 배율 (기본 1, 0 이하는 1 로 본다)
 //  sequence: [{ "clip", "seconds", "velocity": [vx, vy], "flip" }, ...]
 //  loop: bool (sequence 반복)
 //  flip: bool (단일 clip 좌우 반전)
@@ -54,11 +54,13 @@ class DecorWorld
         uint32_t          id         = 0;
         eStageLayer       layer      = eStageLayer::Background;
         Vec2              pos        = { 0.f, 0.f };
+        int               z          = kDefaultZ;
         Vec2              velocity   = { 0.f, 0.f };
         bool              bFlipX     = false;
         bool              bLoop      = false;
         bool              bFinished  = false;
         bool              bNeedEnter = true;   // 첫 구간 진입 전 (클립 조회 필요)
+        float             scale      = 1.f;
         int               stepIndex  = 0;
         float             stepLeft   = 0.f;   // 현재 구간 남은 초
         Vector<DecorStep> steps      = {};
@@ -67,6 +69,7 @@ class DecorWorld
 
 public:
     uint32_t Spawn(const DecorSpawn& _spawn);
+    bool     SetZ(uint32_t _id, int _z);   // 인스턴스 depth 를 즉시 바꾼다
 
     // _anims 는 클립 조회에 쓰고, 재생 시간은 _dt 로 진행한다.
     void Tick(const AnimationLibrary& _anims, float _dt);
@@ -92,5 +95,3 @@ private:
     Vector<Instance> m_items  = {};
     uint32_t         m_nextId = 1;
 };
-
-}   // namespace slug

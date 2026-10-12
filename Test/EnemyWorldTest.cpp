@@ -6,20 +6,17 @@
 
 #include "EnemyTestUtil.h"
 
-using namespace slugtest;
 
-namespace
-{
 constexpr float kGroundY = 378.f;   // MakeFlatGround 의 지면 윗면
 
-[[nodiscard]] bool OnGround_(
+[[nodiscard]] static bool OnGround_(
     const Enemy* _pEnemy)
 {
     return _pEnemy && _pEnemy->bGrounded && std::abs(_pEnemy->body.position.y - kGroundY) < 0.5f;
 }
 
 // 높은 체력(20)의 병사를 쓰러뜨리는 데 필요한 타격 횟수를 돌려준다 (로드 실패 -1, 미처치 -2)
-[[nodiscard]] int HitsToKill_(
+[[nodiscard]] static int HitsToKill_(
     const eHitKind _kind,
     const int      _damage)
 {
@@ -45,8 +42,8 @@ constexpr float kGroundY = 378.f;   // MakeFlatGround 의 지면 윗면
 }
 
 // 보병 전 종류를 세워 두고 1800틱 동안 상태 해시를 기록한다 (로드 실패 시 false)
-[[nodiscard]] bool RunHashes_(
-    slug::Vector<uint64_t>& _hashes)
+[[nodiscard]] static bool RunHashes_(
+    Vector<uint64_t>& _hashes)
 {
     EnemyRig rig({ 100.f, kGroundY }, 0.f);
     if (!rig.IsLoaded())
@@ -66,7 +63,6 @@ constexpr float kGroundY = 378.f;   // MakeFlatGround 의 지면 윗면
     }
     return true;
 }
-}   // namespace
 
 TEST(EnemyWorld, SpawningAnUnknownDefinitionReturnsANullHandle)
 {
@@ -374,13 +370,13 @@ TEST(EnemyWorld, SwordSoldierHitsThePlayerTeamWhenAdjacent)
 
 TEST(EnemyWorld, OneThousandEightHundredTicksAreDeterministic)
 {
-    slug::Vector<uint64_t> first;
-    slug::Vector<uint64_t> second;
+    Vector<uint64_t> first;
+    Vector<uint64_t> second;
     ASSERT_TRUE(RunHashes_(first));
     ASSERT_TRUE(RunHashes_(second));
     EXPECT_EQ(first, second);
 
-    slug::Vector<uint64_t> distinct = first;
+    Vector<uint64_t> distinct = first;
     std::sort(distinct.begin(), distinct.end());
     distinct.erase(std::unique(distinct.begin(), distinct.end()), distinct.end());
     EXPECT_GT(distinct.size(), 100u);   // 실제로 상태가 변한다
@@ -573,4 +569,51 @@ TEST(EnemyWorld, PowVariantPicksItsOwnClipSetAndDefaultsToOlder)
     EXPECT_STREQ(def.clips[static_cast<size_t>(pBase->clip)].name.c_str(), "stuck");
     EXPECT_STREQ(def.clips[static_cast<size_t>(pVar->clip)].name.c_str(), "stuck_v2");
     EXPECT_EQ(pVar->aiVariant, 2);
+}
+
+// 낙하산 오버레이는 병사 몸(레이어 15) 뒤에 그려진다 (오버레이 레이어 14)
+TEST(EnemyWorld, ParachuteOverlayIsDrawnBehindTheParachutist)
+{
+    SLUG_REQUIRE_BAKED(anims);
+    EnemyRig rig;
+    ASSERT_TRUE(rig.IsLoaded());
+    (void)rig.Spawn("flying_bzk", { 300.f, 200.f });
+    rig.Step(3);
+
+    SpriteBatch sprites;
+    rig.World().Submit(sprites, anims, rig.Projectiles(), 0.f);
+
+    bool bBody    = false;   // 병사 몸 (kEnemyDepth = 15)
+    bool bOverlay = false;   // 낙하산 (kOverlayDepth = 14)
+    for (const SpriteCommand& command: sprites.GetPendingCommands())
+    {
+        bBody    = bBody || command.depth == 15;
+        bOverlay = bOverlay || command.depth == 14;
+        EXPECT_NE(command.depth, 16) << "낙하산이 병사 앞에 그려진다 (명령 " << sprites.GetPendingCommands().size() << "개)";
+    }
+    EXPECT_TRUE(bBody);
+    EXPECT_TRUE(bOverlay);
+}
+
+// 낙하 중 병사가 죽으면 낙하산 오버레이는 그 순간부터 더 이상 제출되지 않는다 (착지 변신 FX 는 별도)
+TEST(EnemyWorld, ParachuteOverlayDisappearsWhenTheParachutistDies)
+{
+    SLUG_REQUIRE_BAKED(anims);
+    EnemyRig rig;
+    ASSERT_TRUE(rig.IsLoaded());
+    const EnemyHandle h = rig.Spawn("flying_bzk", { 300.f, 200.f });
+    ASSERT_FALSE(h.IsNull());
+    rig.Step(3);
+    ASSERT_TRUE(rig.E(h)->IsAlive());
+
+    EXPECT_GT(rig.Strike(h.id, eHitKind::Bullet, 999), 0u);
+    rig.Step(1);
+    ASSERT_FALSE(rig.E(h)->IsAlive());
+
+    SpriteBatch sprites;
+    rig.World().Submit(sprites, anims, rig.Projectiles(), 0.f);
+    for (const SpriteCommand& command: sprites.GetPendingCommands())
+    {
+        EXPECT_NE(command.depth, 14) << "죽은 병사의 낙하산 오버레이가 아직 그려진다";
+    }
 }

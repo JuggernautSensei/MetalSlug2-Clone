@@ -1,19 +1,22 @@
 // 플레이어 무기 테스트: 무기별 발사 속도, 탄약, 투사체 폭발/연기, 조준 방향, 건 아이템 정의, 결정성 검증
 #include <algorithm>
+#include <cmath>
 #include <vector>
 
+#include <SDL3/SDL.h>
+
 #include "Base/Math.h"
+#include "Game/Combat/BulletVisual.h"
 #include "Game/Combat/Projectiles.h"
 #include "Game/Player/PlayerWeapons.h"
 #include "Game/Props/PropDef.h"
 #include "PlayerTestUtil.h"
 #include "PropTestUtil.h"
+#include "Render/SpriteBatch.h"
+#include "Render/SpriteLibrary.h"
 
-using namespace slugtest;
 
-namespace
-{
-[[nodiscard]] const TrainingDummy& DummyOf_(
+[[nodiscard]] static const TrainingDummy& DummyOf_(
     Sim&           _sim,
     const uint32_t _id)
 {
@@ -23,7 +26,7 @@ namespace
     return pDummy ? *pDummy : kEmpty;
 }
 
-[[nodiscard]] size_t BulletsOf_(
+[[nodiscard]] static size_t BulletsOf_(
     Sim& _sim)
 {
     return _sim.State().GetProjectiles().GetBullets().size();
@@ -37,7 +40,7 @@ constexpr ARRAY<int, 4> kWeapons = {
 };
 
 // 무기를 집고 90틱 동안 쏜 뒤의 상태 해시
-[[nodiscard]] uint64_t HashAfterShooting_(
+[[nodiscard]] static uint64_t HashAfterShooting_(
     const eWeapon _weapon)
 {
     Sim sim;
@@ -47,14 +50,13 @@ constexpr ARRAY<int, 4> kWeapons = {
     return sim.State().HashState();
 }
 
-[[nodiscard]] int FireIntervalOf_(
+[[nodiscard]] static int FireIntervalOf_(
     const Tuning& _tuning,
     const eWeapon _weapon)
 {
     const WeaponTuning& weapon = _tuning.weapons.Get(_weapon);
-    return slug::Max(weapon.fireIntervalTicks, weapon.holdRepeatTicks);
+    return Max(weapon.fireIntervalTicks, weapon.holdRepeatTicks);
 }
-}   // namespace
 
 TEST(PlayerWeapon, EveryWeaponFiresAtItsTunedIntervalWhenTapped)
 {
@@ -115,6 +117,47 @@ TEST(PlayerWeapon, HmgBurstBulletsFollowTheAimAngleOfEachShot)
     const Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
     ASSERT_GE(bullets.size(), 2u);
     EXPECT_LT(bullets[bullets.size() - 1].velocity.y, bullets[0].velocity.y);
+}
+
+TEST(PlayerWeapon, EveryWeaponKeepsTheShotOverlayWhileRunning)
+{
+    // 달리며 쏴도 사격 오버레이(Shot)는 무기의 연출 길이만큼 끊기지 않고 유지된다 (HMG 는 버스트 길이)
+    for (const eWeapon weapon: { eWeapon::Pistol, eWeapon::Hmg, eWeapon::Shotgun, eWeapon::Rocket, eWeapon::Flame })
+    {
+        Sim sim;
+        if (weapon != eWeapon::Pistol)
+        {
+            sim.Player().PickUpWeapon(weapon, sim.Tune());
+        }
+        sim.Hold(eAction::Right);
+        sim.Step(5);
+        sim.Tap(eAction::Shot);
+
+        int  overlayTicks    = 0;
+        int  movingShotTicks = 0;
+        bool bShotEnded      = false;
+        bool bGap            = false;
+        for (int tick = 0; tick < 120; ++tick)
+        {
+            if (sim.Player().MakeRigState().overlay == eOverlay::Shot)
+            {
+                bGap = bGap || bShotEnded;
+                ++overlayTicks;
+                movingShotTicks += sim.Player().IsMoving() ? 1 : 0;
+            }
+            else
+            {
+                bShotEnded = true;
+            }
+            sim.Step();
+        }
+
+        const WeaponTuning& tuning   = sim.Tune().weapons.Get(weapon);
+        const int           expected = weapon == eWeapon::Hmg ? sim.Player().GetStats().shotsFired * tuning.burstIntervalTicks : tuning.shotOverlayTicks;
+        EXPECT_EQ(overlayTicks, expected) << "weapon " << static_cast<int>(weapon);
+        EXPECT_FALSE(bGap) << "weapon " << static_cast<int>(weapon);
+        EXPECT_EQ(movingShotTicks, overlayTicks) << "weapon " << static_cast<int>(weapon);
+    }
 }
 
 TEST(PlayerWeapon, PickupAmmoComesFromTuningAndSameWeaponStacks)
@@ -190,9 +233,11 @@ TEST(PlayerWeapon, HmgShotDamagesAJeepByItsTunedDamage)
     const uint32_t id = sim.State().AddTarget(eDummyKind::Jeep, { 260.f, 378.f });
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     const int hp = DummyOf_(sim, id).health.hp;
+    sim.Tune().weapons.hmg.spreadDeg    = 0.f;   // 흩뿌림으로 빗나가는 탄을 빼고 발수 x 피해만 본다
+    sim.Tune().weapons.hmg.muzzleJitter = { 0.f, 0.f };
     sim.Tap(eAction::Shot);
-    sim.Step(30);
-    EXPECT_EQ(DummyOf_(sim, id).health.hp, hp - sim.Tune().weapons.hmg.damage * sim.Tune().weapons.hmg.burstShots);   // 한 번 눌러 버스트 전체가 명중
+    sim.Step(90);   // 버스트 끝까지 + 마지막 탄이 날아가 닿을 때까지
+    EXPECT_EQ(DummyOf_(sim, id).health.hp, hp - sim.Tune().weapons.hmg.damage * sim.Player().GetStats().shotsFired);   // 한 번 눌러 버스트 전체가 명중 (발수는 난수)
 }
 
 TEST(PlayerWeapon, ShotgunAndFlamePierceBothJeeps)
@@ -344,6 +389,10 @@ TEST(PlayerWeapon, AimStatesFireEveryWeaponInTheExpectedDirection)
         for (const Aim& aim: aims)
         {
             Sim sim;
+            sim.Tune().weapons.hmg.spreadDeg    = 0.f;   // 방향 검사는 흩뿌림 없이 (흩뿌림은 PlayerCombat 테스트가 본다)
+            sim.Tune().weapons.hmg.muzzleJitter = { 0.f, 0.f };
+            sim.Tune().weapons.flame.spreadDeg    = 0.f;   // 파이어샷 입자 흩뿌림도 방향 검사에서는 끈다
+            sim.Tune().weapons.flame.muzzleJitter = { 0.f, 0.f };
             sim.Step(2);
             if (aim.bAir)
             {
@@ -410,4 +459,368 @@ TEST(PlayerWeapon, DeterminismHashIsStableAndSeesTheWeapon)
     EXPECT_EQ(flame, HashAfterShooting_(eWeapon::Flame));
     EXPECT_NE(flame, HashAfterShooting_(eWeapon::Rocket));
     EXPECT_NE(HashAfterShooting_(eWeapon::Hmg), HashAfterShooting_(eWeapon::Shotgun));
+}
+
+[[nodiscard]] static Bullet MakeVisualBullet_(
+    const eWeapon _weapon,
+    const Vec2    _velocity,
+    const int     _ageTicks,
+    const float   _travelled,
+    const float   _range)
+{
+    Bullet bullet;
+    bullet.tag        = static_cast<uint8_t>(_weapon);
+    bullet.velocity   = _velocity;
+    bullet.position   = { 100.f, 100.f };
+    bullet.renderPrev = bullet.position;
+    bullet.ageTicks   = _ageTicks;
+    bullet.travelled  = _travelled;
+    bullet.range      = _range;
+    return bullet;
+}
+
+// 파이어샷 회귀: 원작 시트 클립(FlameShot_Orig_*)이 베이크 산출물에 있고, 머리/반복/페이드 모든 단계가 그려져야 한다.
+// (시트를 바꾼 뒤 Assets 의 anim.json 에 없으면 클립이 없어 불꽃이 보이지 않았다)
+TEST(PlayerWeaponVisual, FlameShotClipsExistInOutputAndEveryStageDraws)
+{
+    SLUG_REQUIRE_BAKED(anims);
+    for (const char* name: { "FlameShot_Orig_Head", "FlameShot_Orig_Loop", "FlameShot_Orig_Fade" })
+    {
+        const AnimClip* pClip = anims.FindClip(name);
+        ASSERT_NE(pClip, nullptr) << name;
+        ASSERT_FALSE(pClip->frames.empty()) << name;
+        for (const AnimFrame& frame: pClip->frames)
+        {
+            EXPECT_GT(frame.w, 0) << name;
+            EXPECT_GT(frame.h, 0) << name;
+        }
+    }
+
+    const SpriteLibrary sprites;   // 파이어샷은 스프라이트 이름을 쓰지 않는다
+    SpriteBatch         batch;
+    const Vec2          at = { 0.f, 0.f };
+    EXPECT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Flame, { 300.f, 0.f }, 0, 0.f, 220.f), at, 30));   // 머리
+    EXPECT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Flame, { 300.f, 0.f }, 20, 100.f, 220.f), at, 30));   // 반복
+    EXPECT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Flame, { 300.f, 0.f }, 60, 210.f, 220.f), at, 30));   // 사거리 끝 페이드
+    EXPECT_EQ(batch.GetPendingCommands().size(), 3u);
+}
+
+// 로켓: 가로 스프라이트를 진행 방향 각도로 돌려 그린다 (위/아래/대각/왼쪽 포함)
+TEST(PlayerWeaponVisual, RocketSpriteRotatesToItsFlightDirection)
+{
+    SLUG_REQUIRE_BAKED(anims);
+    const SpriteLibrary sprites;
+    struct Case
+    {
+        Vec2  velocity;
+        float expectDeg;
+    };
+    const float kDiag = 640.f * 0.70710678f;
+    for (const Case& c: {
+             Case { { 640.f, 0.f }, 0.f },
+             Case { { -640.f, 0.f }, 0.f },
+             Case { { 0.f, -640.f }, -90.f },
+             Case { { 0.f, 640.f }, 90.f },
+             Case { { kDiag, -kDiag }, -45.f },
+             Case { { -kDiag, -kDiag }, 45.f },
+             Case { { -kDiag, kDiag }, -45.f },   // 왼쪽 아래: 왼쪽 클립을 반시계 45도
+         })
+    {
+        SpriteBatch batch;
+        ASSERT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Rocket, c.velocity, 0, 0.f, 420.f), { 0.f, 0.f }, 30));
+        ASSERT_EQ(batch.GetPendingCommands().size(), 1u);
+        EXPECT_NEAR(batch.GetPendingCommands().front().options.rotationDeg, c.expectDeg, 0.5f) << "vx=" << c.velocity.x << " vy=" << c.velocity.y;
+    }
+}
+
+// 소프트웨어 렌더러로 실제 래스터화한 결과: 검은 배경 위에 그려진 픽셀의 경계 상자 (없으면 빈 상자)
+struct PixelBox_
+{
+    int minX = 1 << 20;
+    int minY = 1 << 20;
+    int maxX = -1;
+    int maxY = -1;
+
+    [[nodiscard]] int Count() const { return maxX < 0 ? 0 : (maxX - minX + 1) * (maxY - minY + 1); }
+    [[nodiscard]] int Width() const { return maxX < 0 ? 0 : maxX - minX + 1; }
+    [[nodiscard]] int Height() const { return maxY < 0 ? 0 : maxY - minY + 1; }
+};
+
+constexpr int kRasterSize_ = 256;
+
+// 소프트웨어 렌더러 + 아틀라스 한 벌 (테스트마다 한 번만 만든다: 아틀라스 PNG 디코드가 무겁다)
+struct RasterFixture_
+{
+    SDL_Surface*  pSurface  = nullptr;
+    SDL_Renderer* pRenderer = nullptr;
+    SpriteBatch   batch     = {};
+    bool          bReady    = false;
+
+    RasterFixture_(const AnimationLibrary& _anims)
+    {
+        pSurface  = SDL_CreateSurface(kRasterSize_, kRasterSize_, SDL_PIXELFORMAT_RGBA32);
+        pRenderer = pSurface ? SDL_CreateSoftwareRenderer(pSurface) : nullptr;
+        if (!pRenderer)
+        {
+            return;
+        }
+        batch.Init(pRenderer);
+        bReady = static_cast<bool>(batch.LoadAtlasPages(_anims));
+    }
+
+    ~RasterFixture_()
+    {
+        batch.Shutdown();
+        if (pRenderer)
+        {
+            SDL_DestroyRenderer(pRenderer);
+        }
+        if (pSurface)
+        {
+            SDL_DestroySurface(pSurface);
+        }
+    }
+};
+
+[[nodiscard]] static PixelBox_ DrawAndMeasure_(
+    RasterFixture_&         _fx,
+    const AnimationLibrary& _anims,
+    const eWeapon           _weapon,
+    const Vec2              _velocity,
+    const int               _ageTicks,
+    const float             _travelled,
+    const float             _range)
+{
+    PixelBox_ box;
+    if (!_fx.bReady)
+    {
+        return box;
+    }
+    SDL_Renderer* pRenderer = _fx.pRenderer;
+    SDL_Surface*  pSurface  = _fx.pSurface;
+    SpriteBatch&  batch     = _fx.batch;
+    const SpriteLibrary sprites;
+    SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(pRenderer);
+    (void)SubmitPlayerBullet(batch, &_anims, sprites, MakeVisualBullet_(_weapon, _velocity, _ageTicks, _travelled, _range), { 128.f, 128.f }, 30);
+    batch.Flush(Vec2 { 0.f, 0.f });
+    SDL_FlushRenderer(pRenderer);
+
+    for (int y = 0; y < kRasterSize_; ++y)
+    {
+        for (int x = 0; x < kRasterSize_; ++x)
+        {
+            Uint8 r = 0;
+            Uint8 g = 0;
+            Uint8 b = 0;
+            Uint8 a = 0;
+            SDL_ReadSurfacePixel(pSurface, x, y, &r, &g, &b, &a);
+            if (r + g + b > 24)
+            {
+                box.minX = std::min(box.minX, x);
+                box.minY = std::min(box.minY, y);
+                box.maxX = std::max(box.maxX, x);
+                box.maxY = std::max(box.maxY, y);
+            }
+        }
+    }
+    return box;
+}
+
+// 파이어샷이 실제로 화면에 칠해지는가 (머리/반복/페이드 세 단계 모두 픽셀이 남는다)
+TEST(PlayerWeaponVisual, FlameShotIsRasterisedAtEveryStage)
+{
+    SLUG_REQUIRE_BAKED(anims);
+    RasterFixture_ fx(anims);
+    if (!fx.bReady)
+    {
+        GTEST_SKIP() << "소프트웨어 렌더러를 쓸 수 없는 환경";
+    }
+    const PixelBox_ head = DrawAndMeasure_(fx, anims, eWeapon::Flame, { 300.f, 0.f }, 0, 0.f, 220.f);
+    const PixelBox_ loop = DrawAndMeasure_(fx, anims, eWeapon::Flame, { 300.f, 0.f }, 20, 100.f, 220.f);
+    const PixelBox_ fade = DrawAndMeasure_(fx, anims, eWeapon::Flame, { 300.f, 0.f }, 60, 210.f, 220.f);
+    EXPECT_GT(head.Count(), 0);
+    EXPECT_GT(loop.Count(), 0);
+    EXPECT_GT(fade.Count(), 0);
+    EXPECT_GE(loop.Width(), 60);   // 파이어샷은 큰 불꽃 클립 (최대 94px, 수명 중 배율 0.6~1.6) 으로 그려진다
+}
+
+// 로켓을 위로 쏘면 세로로 긴 상자가 그려져야 한다 (수평 스프라이트 그대로면 가로로 길다)
+TEST(PlayerWeaponVisual, RocketFiredUpIsDrawnTallNotWide)
+{
+    SLUG_REQUIRE_BAKED(anims);
+    RasterFixture_ fx(anims);
+    if (!fx.bReady)
+    {
+        GTEST_SKIP() << "소프트웨어 렌더러를 쓸 수 없는 환경";
+    }
+    const PixelBox_ up  = DrawAndMeasure_(fx, anims, eWeapon::Rocket, { 0.f, -300.f }, 0, 0.f, 420.f);
+    const PixelBox_ fwd = DrawAndMeasure_(fx, anims, eWeapon::Rocket, { 300.f, 0.f }, 0, 0.f, 420.f);
+    ASSERT_GT(up.Count(), 0);
+    ASSERT_GT(fwd.Count(), 0);
+    EXPECT_GT(up.Height(), up.Width());
+    EXPECT_GT(fwd.Width(), fwd.Height());
+}
+
+// 파이어샷 입자가 나온 틱 목록 (입자는 스폰된 틱에 ageTicks == 1 로 보인다)
+[[nodiscard]] static std::vector<int> FlameSpawnTicks_(
+    Sim&     _sim,
+    const int _ticks)
+{
+    std::vector<int> spawnTicks;
+    for (int tick = 0; tick < _ticks; ++tick)
+    {
+        _sim.Step();
+        for (const Bullet& bullet: _sim.State().GetProjectiles().GetBullets())
+        {
+            if (bullet.tag == static_cast<uint8_t>(eWeapon::Flame) && bullet.ageTicks == 1)
+            {
+                spawnTicks.push_back(tick);
+            }
+        }
+    }
+    return spawnTicks;
+}
+
+// 같은 입력으로 파이어샷을 쏜 뒤 _ticks 틱 시점의 탄 목록 (결정성 비교용)
+[[nodiscard]] static std::vector<Bullet> FlameBulletsAfter_(
+    const int _ticks)
+{
+    Sim sim;
+    sim.Player().PickUpWeapon(eWeapon::Flame, sim.Tune());
+    sim.Hold(eAction::Shot);
+    sim.Step(_ticks);
+    const Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
+    return std::vector<Bullet>(bullets.begin(), bullets.end());
+}
+
+// 샷건 판정은 조준 방향에 따라 돈다: 가로는 가로로 길고, 위/아래는 세로로 길고, 대각은 큰 쪽 기준 정사각
+TEST(PlayerWeapon, ShotgunHitboxTurnsWithTheAimDirection)
+{
+    const Tuning        tuning   = {};
+    const WeaponTuning& shotgun  = tuning.weapons.shotgun;
+    const Vec2          side     = MakeBulletSpawn(eWeapon::Shotgun, shotgun, 0, { 0.f, 0.f }, { 0.f, 0.f }, { 1.f, 0.f }).size;
+    const Vec2          up       = MakeBulletSpawn(eWeapon::Shotgun, shotgun, 0, { 0.f, 0.f }, { 0.f, 0.f }, { 0.f, -1.f }).size;
+    const Vec2          down     = MakeBulletSpawn(eWeapon::Shotgun, shotgun, 0, { 0.f, 0.f }, { 0.f, 0.f }, { 0.f, 1.f }).size;
+    const Vec2          diagonal = MakeBulletSpawn(eWeapon::Shotgun, shotgun, 0, { 0.f, 0.f }, { 0.f, 0.f }, { 0.7071f, -0.7071f }).size;
+    const float         longSide = std::max(shotgun.hitSize.x, shotgun.hitSize.y);
+
+    EXPECT_FLOAT_EQ(side.x, shotgun.hitSize.x);
+    EXPECT_FLOAT_EQ(side.y, shotgun.hitSize.y);
+    EXPECT_FLOAT_EQ(up.x, shotgun.hitSize.y);   // 위: w/h 교환 (세로로 긴 판정)
+    EXPECT_FLOAT_EQ(up.y, shotgun.hitSize.x);
+    EXPECT_FLOAT_EQ(down.x, shotgun.hitSize.y);
+    EXPECT_FLOAT_EQ(down.y, shotgun.hitSize.x);
+    EXPECT_FLOAT_EQ(diagonal.x, longSide);
+    EXPECT_FLOAT_EQ(diagonal.y, longSide);
+}
+
+TEST(PlayerWeapon, ShotgunFiredUpSpawnsATallHitboxInTheWorld)
+{
+    Sim sim;
+    sim.Step(2);
+    sim.Player().PickUpWeapon(eWeapon::Shotgun, sim.Tune());
+    sim.Hold(eAction::Up);
+    sim.Step(30);   // 조준각이 위에 닿을 때까지 기다린다
+    sim.Tap(eAction::Shot);
+    const Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
+    ASSERT_GE(bullets.size(), 1u);
+    EXPECT_GT(bullets[0].size.y, bullets[0].size.x);   // 세로 사격 판정은 세로로 길다 (회전하지 않는 버그 회귀)
+}
+
+// 파이어샷: 입력 1회 = 탄약 1발 (입자 여러 개가 나와도 탄약은 한 번만 줄어든다)
+TEST(PlayerWeapon, FlameInputCostsOneAmmoNotOnePerParticle)
+{
+    Sim sim;
+    sim.Player().PickUpWeapon(eWeapon::Flame, sim.Tune());
+    const int ammoBefore = sim.Player().GetWeapon().ammo;
+    sim.Tap(eAction::Shot);
+    sim.Step(60);
+    EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);
+    EXPECT_EQ(sim.Player().GetWeapon().ammo, ammoBefore - 1);
+}
+
+// 파이어샷은 한 번에 3발이 나가는 게 아니라 정해진 간격으로 끊어 분출한다 (입자 12개, 2틱 간격)
+TEST(PlayerWeapon, FlameSpraysParticlesInTimedPuffs)
+{
+    Sim sim;
+    sim.Player().PickUpWeapon(eWeapon::Flame, sim.Tune());
+    sim.Hold(eAction::Shot);
+    const std::vector<int> spawnTicks = FlameSpawnTicks_(sim, 60);
+    const WeaponTuning&    flame      = sim.Tune().weapons.flame;
+    ASSERT_EQ(spawnTicks.size(), static_cast<size_t>(flame.particleCount));
+    for (size_t i = 1; i < spawnTicks.size(); ++i)
+    {
+        EXPECT_EQ(spawnTicks[i] - spawnTicks[i - 1], flame.particleIntervalTicks) << "particle " << i;
+    }
+}
+
+// 달리며 쏴도 분출은 끊기지 않고 끝까지 나온다
+TEST(PlayerWeapon, FlameKeepsSprayingWhileRunning)
+{
+    Sim sim;
+    sim.Player().PickUpWeapon(eWeapon::Flame, sim.Tune());
+    sim.Hold(eAction::Right);
+    sim.Step(5);
+    sim.Hold(eAction::Shot);
+    const std::vector<int> spawnTicks = FlameSpawnTicks_(sim, 60);
+    EXPECT_EQ(spawnTicks.size(), static_cast<size_t>(sim.Tune().weapons.flame.particleCount));
+    EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);
+}
+
+// 한 번의 분출이 한 대상에게 주는 피해는 판정 ID 풀기 간격 기준 상한을 넘지 않는다 (분출 길이 / 풀기 간격 회)
+TEST(PlayerWeapon, FlameTotalDamageToOneTargetIsCapped)
+{
+    Sim            sim;
+    const uint32_t id = sim.State().AddTarget(eDummyKind::Jeep, { 200.f, 378.f });
+    sim.Player().PickUpWeapon(eWeapon::Flame, sim.Tune());
+    const int hpBefore = DummyOf_(sim, id).health.hp;
+    sim.Tap(eAction::Shot);
+    sim.Step(90);
+
+    const WeaponTuning& flame      = sim.Tune().weapons.flame;
+    const int           dealt      = hpBefore - DummyOf_(sim, id).health.hp;
+    const int           maxWindows = flame.particleCount * flame.particleIntervalTicks / flame.hitReleaseTicks;
+    EXPECT_GT(dealt, 0);
+    EXPECT_LE(dealt, maxWindows * flame.damage);
+}
+
+// 같은 입력이면 입자의 위치/방향/속도가 모두 같다 (리플레이 결정성)
+TEST(PlayerWeapon, FlameParticlesAreDeterministicForTheSameInputs)
+{
+    const std::vector<Bullet> first  = FlameBulletsAfter_(30);
+    const std::vector<Bullet> second = FlameBulletsAfter_(30);
+    ASSERT_FALSE(first.empty());
+    ASSERT_EQ(first.size(), second.size());
+    for (size_t i = 0; i < first.size(); ++i)
+    {
+        EXPECT_EQ(first[i].position.x, second[i].position.x) << i;
+        EXPECT_EQ(first[i].position.y, second[i].position.y) << i;
+        EXPECT_EQ(first[i].velocity.x, second[i].velocity.x) << i;
+        EXPECT_EQ(first[i].velocity.y, second[i].velocity.y) << i;
+        EXPECT_EQ(first[i].range, second[i].range) << i;
+    }
+}
+
+// 새 파이어샷 클립(FlameShot_AttackMotion)은 베이크 산출물에 있고, 이전 불꽃 루프보다 크다
+TEST(PlayerWeaponVisual, FlameAttackMotionIsBiggerThanTheOriginalLoop)
+{
+    SLUG_REQUIRE_BAKED(anims);
+    const AnimClip* pNew = anims.FindClip("FlameShot_AttackMotion");
+    const AnimClip* pOld = anims.FindClip("FlameShot_Orig_Loop");
+    ASSERT_NE(pNew, nullptr);
+    ASSERT_NE(pOld, nullptr);
+    ASSERT_GE(pNew->GetFrameCount(), 12);
+
+    int newArea = 0;
+    int oldArea = 0;
+    for (const AnimFrame& frame: pNew->frames)
+    {
+        newArea = std::max(newArea, frame.w * frame.h);
+    }
+    for (const AnimFrame& frame: pOld->frames)
+    {
+        oldArea = std::max(oldArea, frame.w * frame.h);
+    }
+    EXPECT_GT(newArea * 10, oldArea * 13);   // 최소 30% 이상 큰 면적
 }

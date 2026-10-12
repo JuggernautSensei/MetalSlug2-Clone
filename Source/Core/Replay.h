@@ -3,9 +3,6 @@
 #include "Base/Types.h"
 #include "Core/Input.h"
 
-namespace slug
-{
-
 struct ReplayData
 {
     uint64_t           seed      = 1;
@@ -18,5 +15,3 @@ struct ReplayData
 
 [[nodiscard]] Vector<uint8_t>    SerializeReplay(const ReplayData& _replay);
 [[nodiscard]] Result<ReplayData> DeserializeReplay(Span<const uint8_t> _bytes);
-
-}   // namespace slug

@@ -12,10 +12,6 @@
 #include "Game/Stage/StageState.h"
 #include "Game/Stage/StageWorldHost.h"
 
-namespace
-{
-using namespace slug;
-
 class StageSim
 {
 public:
@@ -24,7 +20,7 @@ public:
         : m_rng(uint64_t { 1 })
     {
         m_ctx.pRng       = &m_rng;
-        m_ctx.assetRoot  = slug::FindAssetRoot();
+        m_ctx.assetRoot  = FindAssetRoot();
         m_ctx.bDebugDraw = _bDebugDraw;
         m_pState         = new StageState;
         m_runner         = std::unique_ptr<SimRunner> {
@@ -57,14 +53,14 @@ public:
     }
 
 private:
-    slug::RngMt19937           m_rng;
+    RngMt19937           m_rng;
     GameContext                m_ctx    = {};
     InputFrame                 m_frame  = {};
     StageState*                m_pState = nullptr;
     std::unique_ptr<SimRunner> m_runner = nullptr;
 };
 
-[[nodiscard]] SpawnRequest MakeRequest_(
+[[nodiscard]] static SpawnRequest MakeRequest_(
     const char*       _def,
     const eEntityKind _kind,
     const Vec2        _position)
@@ -76,7 +72,7 @@ private:
     return request;
 }
 
-[[nodiscard]] HitEvent MakeHit_(
+[[nodiscard]] static HitEvent MakeHit_(
     const SpawnId _target,
     const int     _damage)
 {
@@ -85,7 +81,6 @@ private:
     event.damage = _damage;
     return event;
 }
-}   // namespace
 
 TEST(StageState, LoadsStage0AndStartsAtTheScriptedPlayerStart)
 {
@@ -96,7 +91,7 @@ TEST(StageState, LoadsStage0AndStartsAtTheScriptedPlayerStart)
     ASSERT_TRUE(state.IsLoaded());
     EXPECT_FALSE(state.IsFinished());
     EXPECT_EQ(state.GetData().name, "Stage0");
-    EXPECT_EQ(state.GetData().sections.size(), 20u);
+    EXPECT_EQ(state.GetData().sections.size(), 22u);
     EXPECT_NEAR(state.GetPlayer().GetFeet().x, 100.f, 2.f);   // 스크립트 player.x
     EXPECT_GT(state.GetRunner().GetSpawnedCount(), 0);        // intro 의 소품들
     EXPECT_NE(state.GetHost().GetActiveGround(), nullptr);
@@ -104,11 +99,14 @@ TEST(StageState, LoadsStage0AndStartsAtTheScriptedPlayerStart)
 
 TEST(StageState, PlayerLandsOnTheGroundAfterTheStart)
 {
+    // 시작 낙하산: 입력 없이 두면 낙하 (260px / 110px/s, 약 140틱) 후 착지하고 낙하산이 사라진다
     StageSim sim;
-    for (int i = 0; i < 60; ++i)
+    EXPECT_EQ(sim.State().GetPlayer().GetChutePhase(), eChutePhase::Descend);
+    for (int i = 0; i < 400; ++i)
     {
         sim.Step();
     }
+    EXPECT_EQ(sim.State().GetPlayer().GetChutePhase(), eChutePhase::None);
     EXPECT_TRUE(sim.State().GetPlayer().IsGrounded());
     EXPECT_GT(sim.State().GetPlayer().GetFeet().y, 300.f);
 }
@@ -130,8 +128,14 @@ TEST(StageState, HoldingRightAdvancesThroughSectionsAndTheCameraNeverScrollsBack
             sim.Release(eAction::Shot);
         }
         sim.Step();
-        const float camX = sim.State().GetCamera().GetPositionNoShake().x;
-        ASSERT_GE(camX, lastCamX - 1e-3f) << "tick " << i;
+        const float camX    = sim.State().GetCamera().GetPositionNoShake().x;
+        const bool  bLocked = sim.State().GetRunner().GetLockDepth() > 0;
+        // 카메라 락 (bus 등) 은 글라이드로 락 rect 쪽으로 옮겨 가므로 (rect 왼쪽이 현재 카메라보다 뒤일 수 있다) 잠긴 동안은 역행을 허용한다.
+        // 락이 없는 구간에서는 카메라가 절대 뒤로 가지 않는다.
+        if (!bLocked)
+        {
+            ASSERT_GE(camX, lastCamX - 1e-3f) << "tick " << i << " feet.x " << sim.State().GetPlayer().GetFeet().x;
+        }
         lastCamX = camX;
     }
     EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 750.f);
@@ -168,7 +172,7 @@ TEST(StageStateDebug, F6WarpsToTheStageEnd)
     sim.Step();
     sim.Ctx().debugWarp = 2;   // F6
     sim.Step();
-    EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 12900.f);   // stage_end 섹션 트리거
+    EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 13700.f);   // boss_arena 섹션 트리거 (마지막 구간)
     EXPECT_TRUE(sim.State().GetRunner().GetNextSectionIndex() >= 20);
 }
 
@@ -184,11 +188,11 @@ TEST(StageHostPlaceholders, HitsKillAtZeroHpThenTheEntityIsRemovedAfterTheDeathW
     EXPECT_NE(id, kInvalidSpawnId);
     EXPECT_FALSE(host.IsDefeated(id));
 
-    const slug::Vector<HitEvent> events = { MakeHit_(target, 1) };
+    const Vector<HitEvent> events = { MakeHit_(target, 1) };
     EXPECT_EQ(host.ApplyPlaceholderEvents(events), 0);
     EXPECT_FALSE(host.IsDefeated(id));
 
-    const slug::Vector<HitEvent> killing = { MakeHit_(target, 5) };
+    const Vector<HitEvent> killing = { MakeHit_(target, 5) };
     EXPECT_EQ(host.ApplyPlaceholderEvents(killing), 1);
     EXPECT_TRUE(host.IsDefeated(id));
     EXPECT_FALSE(host.IsDestroyFinished(id));
@@ -211,7 +215,7 @@ TEST(StageHostPlaceholders, NonHittableKindsAreNeverDefeatedUntilCleared)
     const SpawnId  decorTarget = host.GetPlaceholderEntities()[0].id;
     const SpawnId  itemTarget  = host.GetPlaceholderEntities()[1].id;
 
-    const slug::Vector<HitEvent> events = { MakeHit_(decorTarget, 99), MakeHit_(itemTarget, 99) };
+    const Vector<HitEvent> events = { MakeHit_(decorTarget, 99), MakeHit_(itemTarget, 99) };
     EXPECT_EQ(host.ApplyPlaceholderEvents(events), 0);
     EXPECT_FALSE(host.IsDefeated(decor));
     EXPECT_FALSE(host.IsDefeated(item));

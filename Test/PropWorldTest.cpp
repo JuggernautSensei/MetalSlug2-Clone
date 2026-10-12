@@ -1,25 +1,26 @@
 // Prop 월드 테스트: 파괴, 피격, 이벤트와 아이템 드롭 검증
+#include <algorithm>
 #include <cmath>
 #include <string>
+#include <vector>
 
 #include "Base/Math.h"
 #include "Base/Result.h"
 #include "Base/Types.h"
+#include "Core/AssetPath.h"
+#include "Game/Stage/StageData.h"
 #include "PropTestUtil.h"
 
-using namespace slugtest;
 
-namespace
-{
 constexpr float kDt = kStepSec;
 
-[[nodiscard]] float Width_(
+[[nodiscard]] static float Width_(
     const Aabb& _box)
 {
     return _box.max.x - _box.min.x;
 }
 
-void HitN_(
+static void HitN_(
     PropWorld&       _world,
     const PropHandle _id,
     const int        _times,
@@ -29,11 +30,11 @@ void HitN_(
     for (int i = 0; i < _times; ++i)
     {
         const HitEvent ev = MakeHit(_id, _damage, _kind);
-        _world.OnHitEvents(slug::Span<const HitEvent> { &ev, 1 });
+        _world.OnHitEvents(Span<const HitEvent> { &ev, 1 });
     }
 }
 
-void TickN_(
+static void TickN_(
     PropWorld&             _world,
     const int              _ticks,
     const PropTickContext* _pCtx = nullptr)
@@ -49,8 +50,8 @@ void TickN_(
     }
 }
 
-[[nodiscard]] bool HasEvent_(
-    const slug::Vector<PropEvent>& _events,
+[[nodiscard]] static bool HasEvent_(
+    const Vector<PropEvent>& _events,
     const ePropEventKind           _kind)
 {
     for (const PropEvent& ev: _events)
@@ -63,8 +64,8 @@ void TickN_(
     return false;
 }
 
-[[nodiscard]] int CountEvents_(
-    const slug::Vector<PropEvent>& _events,
+[[nodiscard]] static int CountEvents_(
+    const Vector<PropEvent>& _events,
     const ePropEventKind           _kind)
 {
     int n = 0;
@@ -75,7 +76,7 @@ void TickN_(
     return n;
 }
 
-[[nodiscard]] const slug::Vector<HitEvent>* ResolveHitbox_(
+[[nodiscard]] static const Vector<HitEvent>* ResolveHitbox_(
     CombatSystem& _combat,
     PropWorld&    _world,
     const Hitbox& _hitbox)
@@ -83,13 +84,13 @@ void TickN_(
     _combat.BeginTick();
     _world.RegisterHurtboxes(_combat);
     _combat.AddHitbox(_hitbox);
-    const slug::Vector<HitEvent>& events = _combat.Resolve();
+    const Vector<HitEvent>& events = _combat.Resolve();
     _world.OnHitEvents(events);
     return &events;
 }
 
 // 트럭 6대와 보트 1대를 세우고 보트를 부순 뒤 120틱 진행한 상태 해시
-[[nodiscard]] uint64_t HashAfterTrucks_(
+[[nodiscard]] static uint64_t HashAfterTrucks_(
     const uint64_t _seed)
 {
     PropWorld world { &GetPropLib(), _seed };
@@ -102,7 +103,6 @@ void TickN_(
     TickN_(world, 120);
     return world.HashState();
 }
-}   // namespace
 
 TEST(PropWorld, UnknownDefSpawnsNothing)
 {
@@ -152,7 +152,7 @@ TEST(PropWorld, KnifeDoesNotHitTrucks)
         knife.owner  = 1;
         knife.id     = 1;
         CombatSystem                  combat;
-        const slug::Vector<HitEvent>* pEvents = ResolveHitbox_(combat, world, knife);
+        const Vector<HitEvent>* pEvents = ResolveHitbox_(combat, world, knife);
         EXPECT_TRUE(pEvents->empty());
     }
     EXPECT_FALSE(world.IsDestroyed(truck));
@@ -224,8 +224,9 @@ TEST(PropWorld, HurtboxesAreNeutralWithPropOwnerAndNoHazard)
     EXPECT_FALSE(hb.accepts.Has(eHitKind::Melee));
     EXPECT_TRUE(hb.accepts.Has(eHitKind::Blast));
     EXPECT_FALSE(hb.accepts.Has(eHitKind::Hazard));
-    EXPECT_FLOAT_EQ(hb.box.min.x, 1274.f - 75.f);
-    EXPECT_FLOAT_EQ(hb.box.max.y, 228.f - 100.f + 37.5f);
+    // shop_0 hurt 은 220x160 @(0,-50) (R2-06): 중심 (1274, 178)
+    EXPECT_FLOAT_EQ(hb.box.min.x, 1274.f - 110.f);
+    EXPECT_FLOAT_EQ(hb.box.max.y, 228.f - 50.f + 80.f);
 }
 
 TEST(PropWorld, PlayerHitboxResolvesToPropEvent)
@@ -241,12 +242,12 @@ TEST(PropWorld, PlayerHitboxResolvesToPropEvent)
     hb.damage                             = 2;
     hb.owner                              = 1;
     hb.id                                 = combat.NewHitId();
-    const slug::Vector<HitEvent>* pEvents = ResolveHitbox_(combat, world, hb);
+    const Vector<HitEvent>* pEvents = ResolveHitbox_(combat, world, hb);
 
     ASSERT_EQ(pEvents->size(), 1u);
     EXPECT_EQ((*pEvents)[0].target, shop);
     EXPECT_EQ(world.GetHp(shop), 10);
-    const slug::Vector<PropEvent> events = world.TakeEvents();
+    const Vector<PropEvent> events = world.TakeEvents();
     EXPECT_TRUE(HasEvent_(events, ePropEventKind::Damaged));
 }
 
@@ -263,7 +264,7 @@ TEST(PropWorld, EnemyHitboxDoesNotHitProps)
     hb.damage                             = 99;
     hb.owner                              = 9;
     hb.id                                 = combat.NewHitId();
-    const slug::Vector<HitEvent>* pEvents = ResolveHitbox_(combat, world, hb);
+    const Vector<HitEvent>* pEvents = ResolveHitbox_(combat, world, hb);
     EXPECT_TRUE(pEvents->empty());
     EXPECT_EQ(world.GetHp(shop), 12);
 }
@@ -382,7 +383,7 @@ TEST(PropWorld, MobBoatDropsSixItemsAndBurstsOnDeath)
     HitN_(world, boat, 1, 60);
     EXPECT_TRUE(world.IsDestroyed(boat));
 
-    const slug::Vector<PropEvent> events = world.TakeEvents();
+    const Vector<PropEvent> events = world.TakeEvents();
     EXPECT_EQ(CountEvents_(events, ePropEventKind::DropSpawned), 6);
     EXPECT_EQ(world.GetItems().GetCount(), 6u);
     EXPECT_EQ(world.GetDebris().size(), 3u);   // onDestroy 목재 3
@@ -401,7 +402,7 @@ TEST(PropWorld, ExplodeOnDeathBoatBurstsAfterTwoSecondsThenRemoved)
     EXPECT_EQ(world.GetCount(), 1u);   // 아직 2 s 전
     TickN_(world, 15);
     EXPECT_EQ(world.GetCount(), 0u);   // 2차 폭발 후 제거
-    const slug::Vector<PropEvent> events = world.TakeEvents();
+    const Vector<PropEvent> events = world.TakeEvents();
     EXPECT_TRUE(HasEvent_(events, ePropEventKind::SecondaryBurst));
     EXPECT_TRUE(HasEvent_(events, ePropEventKind::Removed));
     EXPECT_EQ(world.GetDebris().size(), 8u);   // 3 + 5 (5 s 수명 이내)
@@ -453,7 +454,7 @@ TEST(PropWorld, GroundHouseDamageStagesAndGroundPatch)
 
     HitN_(world, house, 6, 2);
     EXPECT_TRUE(world.IsDestroyed(house));
-    const slug::Vector<PropEvent> events = world.TakeEvents();
+    const Vector<PropEvent> events = world.TakeEvents();
     bool                          bPatch = false;
     for (const PropEvent& ev: events)
     {
@@ -492,7 +493,7 @@ TEST(PropWorld, ApplyGroundPatchRefusesFootprintsThatCutTheFloorOrClearMostOfThe
     const uint64_t before = map.CountSolidPixels();
 
     // 바닥 줄 (y 7..9) 을 지우는 발자국: 거부, 지면 불변
-    const GroundMap cutsFloor = GroundMap::MakeFromRows(std::array<slug::StringView, 3> { "###", "###", "###" });
+    const GroundMap cutsFloor = GroundMap::MakeFromRows(std::array<StringView, 3> { "###", "###", "###" });
     EXPECT_FALSE(ApplyGroundPatch(map, { 0.f, 7.f }, cutsFloor));
     EXPECT_EQ(map.CountSolidPixels(), before);
 
@@ -534,7 +535,39 @@ TEST(PropWorld, CullingRemovesPropsBehindCameraWithEvents)
     ctx.cameraLeft = 1500.f;   // 1274 < 1300 → 제거, 트럭(1810)은 남는다
     world.Tick(ctx);
     EXPECT_EQ(world.GetCount(), 1u);
-    const slug::Vector<PropEvent> events = world.TakeEvents();
+    const Vector<PropEvent> events = world.TakeEvents();
+    EXPECT_EQ(CountEvents_(events, ePropEventKind::Culled), 1);
+    EXPECT_EQ(CountEvents_(events, ePropEventKind::Removed), 1);
+}
+
+TEST(PropWorld, CullingKeepsAWidePropWhileAnyPartOfItsSpriteIsOnScreen)
+{
+    AnimationLibrary anims;
+    SpriteLibrary    sprites;
+    ASSERT_TRUE(LoadLibs(anims, sprites));
+    PropWorld world { &GetPropLib(), 1 };
+    world.SetSpriteLibrary(&sprites);
+    world.Spawn("big_house", { 1000.f, 1257.f });   // 폭 498: 앵커가 cullMargin 밖이어도 오른쪽 끝은 화면에 남는다
+
+    PropTickContext ctx;
+    ctx.pAnims = &anims;
+    TickN_(world, 1, &ctx);
+    ASSERT_EQ(world.GetCount(), 1u);
+    Aabb bounds = {};
+    ASSERT_TRUE(world.GetVisualBounds(world.GetProps()[0], &anims, bounds));
+    ASSERT_GT(bounds.max.x - bounds.min.x, 400.f);
+
+    const float edge = bounds.max.x;
+    ctx.cameraLeft   = edge - 1.f;   // 스프라이트 오른쪽 끝 1px 이 화면 안
+    ASSERT_LT(1000.f, ctx.cameraLeft - 150.f) << "앵커 규칙만으로는 지워질 위치여야 이 테스트가 의미가 있다";
+    TickN_(world, 5, &ctx);
+    EXPECT_EQ(world.GetCount(), 1u);
+    EXPECT_EQ(CountEvents_(world.TakeEvents(), ePropEventKind::Culled), 0);
+
+    ctx.cameraLeft = edge + 1.f;   // 완전히 화면 왼쪽 밖
+    world.Tick(ctx);
+    EXPECT_EQ(world.GetCount(), 0u);
+    const Vector<PropEvent> events = world.TakeEvents();
     EXPECT_EQ(CountEvents_(events, ePropEventKind::Culled), 1);
     EXPECT_EQ(CountEvents_(events, ePropEventKind::Removed), 1);
 }
@@ -567,11 +600,11 @@ TEST(PropWorld, HashChangesWithDamageAndIsStableWithoutIt)
 
 TEST(PropWorld, SubmitQueuesSpritesOnLayersFromDefinitions)
 {
-    slug::Result<SpriteLibrary> spriteLib = SpriteLibrary::LoadFromJson(R"({"version":1,"sprites":{"TestBox":{"atlas":0,"x":0,"y":0,"w":10,"h":10,"pivotX":5,"pivotY":5}}})");
+    Result<SpriteLibrary> spriteLib = SpriteLibrary::LoadFromJson(R"({"version":1,"sprites":{"TestBox":{"atlas":0,"x":0,"y":0,"w":10,"h":10,"pivotX":5,"pivotY":5}}})");
     ASSERT_TRUE(static_cast<bool>(spriteLib));
-    slug::Result<PropDefLibrary> defs = PropDefLibrary::Parse(R"({ "version": 1, "defs": {
+    Result<PropDefLibrary> defs = PropDefLibrary::Parse(R"({ "version": 1, "defs": {
         "box":   { "hp": 4, "idle": { "sprite": "TestBox" }, "parts": [ { "role": "hurt", "size": [10, 10] } ] },
-        "front": { "hp": 0, "layer": "front", "idle": { "sprite": "TestBox" } } } })");
+        "front": { "hp": 0, "depth": 38, "idle": { "sprite": "TestBox" } } } })");
     ASSERT_TRUE(static_cast<bool>(defs));
 
     const PropDefLibrary boxLib = defs.Take();
@@ -582,9 +615,130 @@ TEST(PropWorld, SubmitQueuesSpritesOnLayersFromDefinitions)
     const SpriteLibrary sprites = spriteLib.Take();
     SpriteBatch         batch;
     world.Submit(batch, anims, sprites);
-    const slug::Vector<SpriteCommand>& cmds = batch.GetPendingCommands();
+    const Vector<SpriteCommand>& cmds = batch.GetPendingCommands();
     ASSERT_EQ(cmds.size(), 2u);
-    EXPECT_EQ(cmds[0].layer, kPropLayerBack);
-    EXPECT_EQ(cmds[1].layer, kPropLayerFront);
+    EXPECT_EQ(cmds[0].depth, kPropDepthBack);
+    EXPECT_EQ(cmds[1].depth, kPropDepthFront);
     EXPECT_FLOAT_EQ(cmds[1].origin.x, 30.f);
+}
+
+// 상자 (crate): 측면은 막히지 않고 위에서만 착지한다 (Stage0 box_collider 대체)
+TEST(PropWorld, CrateIsOneWayPlatformNotWall)
+{
+    PropWorld world { &GetPropLib(), 1 };
+    const PropHandle crate = world.Spawn("crate", { 1119.f, 350.f });
+    ASSERT_NE(crate, kNoProp);
+    EXPECT_EQ(world.GetWalls().size(), 0u);
+    ASSERT_EQ(world.GetPlatforms().size(), 1u);
+    const Platform& p = world.GetPlatforms()[0];
+    EXPECT_TRUE(p.bOneWay);
+    EXPECT_FLOAT_EQ(p.box.min.y, 305.f);   // 중심 350 - 40 - 10/2
+}
+
+TEST(PropWorld, CrateLetsBodyWalkThroughAndLandOnTop)
+{
+    PropWorld world { &GetPropLib(), 1 };
+    world.Spawn("crate", { 1119.f, 350.f });
+    const GroundMap ground = MakeFloorMap(2000, 500, 378);
+    Vector<Platform> platforms;
+    for (const Platform& p: world.GetPlatforms())
+    {
+        platforms.push_back(p);
+    }
+    PhysicsWorld pw;
+    pw.pGround   = &ground;
+    pw.platforms = platforms;
+
+    // 바닥 위를 걸어서 상자 몸통 아래를 통과한다
+    Body walker = MakeBody({ 1000.f, 378.f });
+    for (int i = 0; i < 120; ++i)
+    {
+        walker.velocity.x = 150.f;
+        (void)Physics::Step(walker, pw, PhysicsTuning {}, kDt);
+    }
+    EXPECT_GT(walker.position.x, 1200.f);
+
+    // 위에서 떨어뜨리면 윗면(305)에 선다
+    Body faller = MakeBody({ 1119.f, 250.f });
+    for (int i = 0; i < 90 && !faller.bGrounded; ++i)
+    {
+        (void)Physics::Step(faller, pw, PhysicsTuning {}, kDt);
+    }
+    EXPECT_TRUE(faller.bGrounded);
+    EXPECT_NEAR(faller.position.y, 305.f, 0.5f);
+}
+
+TEST(PropWorld, OtherWallPropsKeepTheirWalls)
+{
+    PropWorld world { &GetPropLib(), 1 };
+    world.Spawn("mob_boat", { 1000.f, 300.f });
+    world.Spawn("crate", { 1119.f, 350.f });
+    EXPECT_EQ(world.GetWalls().size(), 1u);   // 보트 벽만 남는다
+}
+
+// 건물 깊이 규칙: 먼저 나오는(작은 x) 가게가 앞에 그려진다 = 그리기 키가 더 크다. shop_2 의 y 보정은 없다.
+TEST(PropWorld, BuildingSortKeyPutsSmallerXInFront)
+{
+    PropWorld world { &GetPropLib(), 1 };
+    const PropHandle s1 = world.Spawn("shop_1", { 1489.f, 230.f });
+    const PropHandle s2 = world.Spawn("shop_2", { 1661.f, 252.f });
+    ASSERT_NE(world.Get(s1), nullptr);
+    ASSERT_NE(world.Get(s2), nullptr);
+    EXPECT_GT(PropWorld::SortKey(*world.Get(s1)), PropWorld::SortKey(*world.Get(s2)));
+    EXPECT_EQ(world.Get(s2)->sortOffsetY, 0.f);
+}
+
+// 건물 깊이 규칙: 같은 x 에서는 y 가 작은(뒤쪽) 쪽이 먼저 그려진다
+TEST(PropWorld, BuildingSortKeyTiesBreakByY)
+{
+    PropWorld world { &GetPropLib(), 1 };
+    const PropHandle back  = world.Spawn("shop_0", { 1274.f, 200.f });
+    const PropHandle front = world.Spawn("shop_0", { 1274.f, 260.f });
+    ASSERT_NE(world.Get(back), nullptr);
+    ASSERT_NE(world.Get(front), nullptr);
+    EXPECT_LT(PropWorld::SortKey(*world.Get(back)), PropWorld::SortKey(*world.Get(front)));
+}
+
+// 실제 Stage0 의 가게 6채: x 가 커질수록 그리기 키가 엄격히 작아진다 (앞 → 뒤 = x 오름차순)
+TEST(PropWorldStage0, ShopsDrawFrontToBackByX)
+{
+    StageLoadDiagnostics    diag;
+    Result<StageData> result = LoadStageFromFile(FindAssetRoot() / "Stage" / "Stage0.json", &diag);
+    ASSERT_TRUE(result) << diag.message;
+    const StageData data = result.Take();
+
+    std::vector<SpawnSpec> shops;
+    for (const StageSection& section: data.sections)
+    {
+        for (const StageAction& action: section.actions)
+        {
+            if (action.type == eActionType::Spawn && action.spawn.kind == eEntityKind::Prop && action.spawn.def.starts_with("shop_"))
+            {
+                shops.push_back(action.spawn);
+            }
+        }
+    }
+    ASSERT_EQ(shops.size(), 6u);
+    std::sort(shops.begin(), shops.end(), [](const SpawnSpec& _a, const SpawnSpec& _b) { return _a.x < _b.x; });
+
+    PropWorld world { &GetPropLib(), 1 };
+    std::vector<int> keys;
+    for (const SpawnSpec& shop: shops)
+    {
+        const PropHandle h = world.Spawn(shop.def.c_str(), { shop.x, shop.y });
+        ASSERT_NE(world.Get(h), nullptr);
+        keys.push_back(PropWorld::SortKey(*world.Get(h)));
+    }
+    for (size_t i = 1; i < keys.size(); ++i)
+    {
+        EXPECT_GT(keys[i - 1], keys[i]) << "shop index " << i;
+    }
+}
+
+TEST(PropWorld, SortKeyWithoutOffsetIsCenterY)
+{
+    PropWorld world { &GetPropLib(), 1 };
+    const PropHandle boat = world.Spawn("mob_boat", { 1000.f, 300.f });
+    ASSERT_NE(world.Get(boat), nullptr);
+    EXPECT_EQ(PropWorld::SortKey(*world.Get(boat)), 300);
 }

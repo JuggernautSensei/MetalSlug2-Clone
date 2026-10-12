@@ -9,10 +9,7 @@
 #include "Game/StateFactory.h"
 #include "PlayerTestUtil.h"
 
-using namespace slugtest;
 
-namespace
-{
 class Script
 {
 public:
@@ -51,23 +48,23 @@ public:
     }
 
 private:
-    slug::Vector<InputFrame> m_frames = {};
+    Vector<InputFrame> m_frames = {};
 };
 
-[[nodiscard]] slug::FilePath RepoRoot_()
+[[nodiscard]] static FilePath RepoRoot_()
 {
-    return slug::FindAssetRoot().parent_path();
+    return FindAssetRoot().parent_path();
 }
 
-void Write_(
-    const slug::FilePath& _path,
+static void Write_(
+    const FilePath& _path,
     const Script&         _script)
 {
     std::filesystem::create_directories(_path.parent_path());
     ASSERT_TRUE(static_cast<bool>(SaveReplay(_path, _script.Build()))) << _path.string();
 }
 
-[[nodiscard]] Script MakeRegressionScript_()
+[[nodiscard]] static Script MakeRegressionScript_()
 {
     Script s { 900 };
     s.Hold(eAction::Right, 0, 50);    // 보병(330) 앞까지
@@ -85,13 +82,12 @@ void Write_(
     s.Tap(eAction::Bomb, 385);
     return s;
 }
-}   // namespace
 
 TEST(PlayerReplay, WriteRegressionAndVisualScripts)
 {
     Write_(RepoRoot_() / "Test" / "Replays" / "sandbox_regression.rep", MakeRegressionScript_());
 
-    const slug::FilePath visual = RepoRoot_() / "Captures" / "Visual";
+    const FilePath visual = RepoRoot_() / "Captures" / "Visual";
 
     Write_(visual / "run.rep", Script { 200 }.Hold(eAction::Right, 10, 200));
     Write_(visual / "runleft.rep", Script { 200 }.Hold(eAction::Right, 10, 60).Hold(eAction::Left, 60, 200));
@@ -109,13 +105,13 @@ TEST(PlayerReplay, WriteRegressionAndVisualScripts)
 
 TEST(PlayerReplay, RegressionReplayPlaysTheSameWayTwiceAndHitsTheMilestones)
 {
-    const slug::FilePath     path   = RepoRoot_() / "Test" / "Replays" / "sandbox_regression.rep";
-    slug::Result<ReplayData> loaded = LoadReplay(path);
+    const FilePath     path   = RepoRoot_() / "Test" / "Replays" / "sandbox_regression.rep";
+    Result<ReplayData> loaded = LoadReplay(path);
     ASSERT_TRUE(loaded.HasValue()) << "먼저 PlayerReplay.WriteRegressionAndVisualScripts 가 실행되어야 합니다: " << path.string();
 
-    if (!std::filesystem::exists(slug::FindAssetRoot() / "Baked" / "Ground" / "Stage0_0.bin"))
+    if (!std::filesystem::exists(FindAssetRoot() / "Ground" / "Stage0_0.png"))
     {
-        GTEST_SKIP() << "Assets/Baked 없음: Scripts/Bake.ps1 로 생성하세요";
+        GTEST_SKIP() << "Assets 없음";
     }
 
     const ReplayData replay = loaded.Take();
@@ -124,10 +120,10 @@ TEST(PlayerReplay, RegressionReplayPlaysTheSameWayTwiceAndHitsTheMilestones)
     ARRAY<uint64_t, 2> hashes = {};
     for (int run = 0; run < 2; ++run)
     {
-        slug::RngMt19937 rng { replay.seed };
+        RngMt19937 rng { replay.seed };
         GameContext      ctx;
         ctx.pRng      = &rng;
-        ctx.assetRoot = slug::FindAssetRoot();
+        ctx.assetRoot = FindAssetRoot();
 
         SandboxState* pState = new SandboxState;
         SimRunner     runner { ctx, std::unique_ptr<IGameState> { pState } };
@@ -148,7 +144,7 @@ TEST(PlayerReplay, RegressionReplayPlaysTheSameWayTwiceAndHitsTheMilestones)
 
 TEST(PlayerReplay, HeadlessReplayThroughTheStateFactoryUsesTheSamePath)
 {
-    slug::RngMt19937 rng { uint64_t { 1 } };
+    RngMt19937 rng { uint64_t { 1 } };
     GameContext      ctx;
     ctx.pRng = &rng;
     SimRunner  runner { ctx, CreateState("sandbox") };

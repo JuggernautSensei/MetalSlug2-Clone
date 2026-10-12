@@ -1,8 +1,5 @@
 #include "Base/Error.h"
 
-namespace slug
-{
-
 String Error::MakeMessage() const
 {
     switch (m_code)
@@ -24,4 +21,27 @@ String Error::MakeMessage() const
     return "알 수 없는 에러";
 }
 
-}   // namespace slug
+Error::Error(const eError _code)
+: m_code(_code)
+{
+}
+
+bool Error::IsOK() const
+{
+    return m_code == eError::Ok;
+}
+
+bool Error::IsError() const
+{
+    return m_code != eError::Ok;
+}
+
+eError Error::GetCode() const
+{
+    return m_code;
+}
+
+Error::operator bool() const
+{
+    return IsError();
+}

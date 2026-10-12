@@ -17,10 +17,6 @@
 #include "Game/Stage/StageRunner.h"
 #include "Render/Camera.h"
 
-namespace slugtest
-{
-
-using namespace slug;
 
 struct SpawnLogEntry
 {
@@ -35,22 +31,10 @@ struct HostEvent
     std::string text;
 };
 
-namespace stage_test_detail
-{
-
-    // 기본 바닥 질의: y=378 에 평평한 바닥이 있고, 그보다 아래에서 시작하면 바닥이 없다.
-    [[nodiscard]] inline std::optional<float> DefaultGround_(
-        const float,
-        const float _fromY)
-    {
-        if (_fromY <= 378.f)
-        {
-            return 378.f;
-        }
-        return std::nullopt;
-    }
-
-}   // namespace stage_test_detail
+// 기본 바닥 질의: y=378 에 평평한 바닥이 있고, 그보다 아래에서 시작하면 바닥이 없다.
+[[nodiscard]] std::optional<float> DefaultGround_(
+    const float,
+    const float _fromY);
 
 // 바닥 질의 함수: (x, fromY) -> 바닥 y. 바닥이 없으면 nullopt
 using GroundQueryFn = std::optional<float> (*)(float, float);
@@ -62,7 +46,7 @@ public:
     Vec2          playerFeet    = { 0.f, 378.f };
     bool          bPlayerAlive  = true;
     bool          bGameOver     = false;
-    GroundQueryFn groundFn      = stage_test_detail::DefaultGround_;
+    GroundQueryFn groundFn      = DefaultGround_;
     bool          bAutoDefeat   = false;
     SpawnId       nextId        = 1;
     bool          bRefuseSpawns = false;
@@ -84,248 +68,111 @@ public:
     mutable std::vector<std::pair<float, float>> groundQueries;
 
     SpawnId SpawnEntity(
-        const SpawnRequest& _request) override
-    {
-        if (bRefuseSpawns)
-        {
-            return kInvalidSpawnId;
-        }
-        const SpawnId id = nextId++;
-        spawns.push_back({ now, id, _request });
-        if (bAutoDefeat)
-        {
-            defeated.insert(id);
-            destroyed.insert(id);
-        }
-        return id;
-    }
+        const SpawnRequest& _request) override;
 
     bool IsDefeated(
-        const SpawnId _id) const override
-    {
-        return defeated.contains(_id);
-    }
+        const SpawnId _id) const override;
 
     bool IsDestroyFinished(
-        const SpawnId _id) const override
-    {
-        return destroyed.contains(_id);
-    }
+        const SpawnId _id) const override;
 
     void ClearEntities(
-        const EntityFilter& _filter) override
-    {
-        clears.push_back(_filter.layerMask);
-        Log_("clear:" + std::to_string(_filter.layerMask));
-    }
+        const EntityFilter& _filter) override;
 
     void SendCommand(
         const SpawnId          _id,
-        const slug::StringView _command) override
-    {
-        commands.emplace_back(_id, std::string { _command });
-        Log_("cmd:" + std::to_string(_id) + ":" + std::string { _command });
-    }
+        const StringView _command) override;
 
     void SetGround(
-        const slug::StringView _name) override
-    {
-        currentGround = std::string { _name };
-        Log_("ground:" + currentGround);
-    }
+        const StringView _name) override;
 
     std::optional<float> GetGroundFindY(
         const float _x,
-        const float _fromY) const override
-    {
-        groundQueries.emplace_back(_x, _fromY);
-        return groundFn(_x, _fromY);
-    }
+        const float _fromY) const override;
 
-    Vec2 PlayerFeet() const override { return playerFeet; }
-    bool PlayerAlive() const override { return bPlayerAlive; }
-    bool IsGameOver() const override { return bGameOver; }
+    Vec2 PlayerFeet() const override;
+    bool PlayerAlive() const override;
+    bool IsGameOver() const override;
 
     void SetPlayerInvincible(
-        const float _seconds) override
-    {
-        invincibleSeconds = _seconds;
-        Log_("invincible:" + std::to_string(_seconds));
-    }
+        const float _seconds) override;
 
     void WarpPlayer(
-        const Vec2 _feet) override
-    {
-        playerFeet = _feet;
-        warps.push_back(_feet);
-        Log_("warp");
-    }
+        const Vec2 _feet) override;
 
     void SetBackdrop(
-        const slug::StringView _modeId) override
-    {
-        currentBackdrop = std::string { _modeId };
-        Log_("backdrop:" + currentBackdrop);
-    }
+        const StringView _modeId) override;
 
     void ShowBanner(
-        const slug::String& _text,
-        const float         _seconds) override
-    {
-        Log_("banner:" + _text + ":" + std::to_string(_seconds));
-    }
+        const String& _text,
+        const float         _seconds) override;
 
     void FadeTo(
         const eFadeTarget _target,
-        const float       _seconds) override
-    {
-        Log_(std::string { "fade:" } + (_target == eFadeTarget::Black ? "black" : "clear") + ":" + std::to_string(_seconds));
-    }
+        const float       _seconds) override;
 
     void PlayBgm(
-        const slug::StringView _name,
-        const bool             _bLoop) override
-    {
-        Log_("bgm:" + std::string { _name } + (_bLoop ? ":loop" : ":once"));
-    }
+        const StringView _name,
+        const bool             _bLoop) override;
+
+    void ChangeBgm(
+        const StringView _name,
+        const bool       _bLoop,
+        const float      _fadeOutSec) override;
+
+    void PlaySfx(
+        const StringView _name) override;
 
     void EndStage(
-        const slug::StringView _nextState) override
-    {
-        bEnded  = true;
-        endNext = std::string { _nextState };
-        Log_("end:" + endNext);
-    }
+        const StringView _nextState) override;
 
     void OnSectionEntered(
         const int              _index,
-        const slug::StringView _id) override
-    {
-        Log_("section:" + std::to_string(_index) + ":" + std::string { _id });
-    }
+        const StringView _id) override;
 
     [[nodiscard]] int CountEvents(
-        const std::string& _prefix) const
-    {
-        int count = 0;
-        for (const HostEvent& event: events)
-        {
-            count += event.text.rfind(_prefix, 0) == 0 ? 1 : 0;
-        }
-        return count;
-    }
+        const std::string& _prefix) const;
 
     [[nodiscard]] const HostEvent* FindEvent(
         const std::string& _prefix,
-        int                _nth = 0) const
-    {
-        for (const HostEvent& event: events)
-        {
-            if (event.text.rfind(_prefix, 0) == 0 && _nth-- == 0)
-            {
-                return &event;
-            }
-        }
-        return nullptr;
-    }
+        int                _nth = 0) const;
 
     [[nodiscard]] int CountSpawnsOf(
-        const std::string& _def) const
-    {
-        int count = 0;
-        for (const SpawnLogEntry& entry: spawns)
-        {
-            count += entry.request.def == _def ? 1 : 0;
-        }
-        return count;
-    }
+        const std::string& _def) const;
 
-    void DefeatAll()
-    {
-        for (const SpawnLogEntry& entry: spawns)
-        {
-            defeated.insert(entry.id);
-            destroyed.insert(entry.id);
-        }
-    }
+    void DefeatAll();
 
 private:
     void Log_(
-        std::string _text)
-    {
-        events.push_back({ now, std::move(_text) });
-    }
+        std::string _text);
 };
 
-[[nodiscard]] inline std::string WrapStage(
+[[nodiscard]] std::string WrapStage(
     const std::string& _sections,
-    const std::string& _camera = R"J({"initialBounds":[0,0,4000,448]})J")
-{
-    return std::string { R"J({"version":1,"name":"T","world":{"size":[4000,1000],"background":"bg"},
-"ground":{"initial":"G0","maps":["G0","G1"]},
-"backdrop":{"initial":"a","modes":{"a":{"sprite":"s","offset":[0,0],"parallaxX":0.1},"b":{"sprite":"s2","offset":[1,1],"parallaxX":0.2}}},
-"rects":{"arena":[100,0,740,448]},
-"camera":)J" }
-         + _camera + R"J(,"sections":)J" + _sections + "}";
-}
+    const std::string& _camera = R"J({"initialBounds":[0,0,4000,448]})J");
 
-[[nodiscard]] inline StageData MustLoad(
-    const std::string& _json)
-{
-    StageLoadDiagnostics    diag;
-    slug::Result<StageData> result = LoadStageFromJson(_json, &diag);
-    if (!result)
-    {
-        ADD_FAILURE() << "stage load failed: " << diag.message;
-        return {};
-    }
-    return result.Take();
-}
+[[nodiscard]] StageData MustLoad(
+    const std::string& _json);
 
-[[nodiscard]] inline std::string LoadError(
-    const std::string& _json)
-{
-    StageLoadDiagnostics          diag;
-    const slug::Result<StageData> result = LoadStageFromJson(_json, &diag);
-    return result ? std::string {} : (diag.message.empty() ? std::string { "<no message>" } : diag.message);
-}
+[[nodiscard]] std::string LoadError(
+    const std::string& _json);
 
 class RunnerFixture
 {
 public:
     explicit RunnerFixture(
-        const std::string& _json)
-        : data(MustLoad(_json))
-        , rng(uint64_t { 1 })
-        , runner(data, host, camera, rng)
-    {
-        camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
-        runner.Begin();
-    }
+        const std::string& _json);
 
     void Step(
-        const int _count = 1)
-    {
-        for (int i = 0; i < _count; ++i)
-        {
-            host.now = runner.GetTick();
-            runner.Tick();
-        }
-    }
+        const int _count = 1);
 
     void StepAt(
         const float _x,
-        const int   _count = 1)
-    {
-        host.playerFeet.x = _x;
-        Step(_count);
-    }
+        const int   _count = 1);
 
     StageData        data;
     FakeStageHost    host;
     Camera           camera;
-    slug::RngMt19937 rng;
+    RngMt19937 rng;
     StageRunner      runner;
 };
-
-}   // namespace slugtest

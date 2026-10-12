@@ -5,9 +5,6 @@
 #include "World/Constants.h"
 #include "World/Geometry.h"
 
-namespace slug
-{
-
 struct CameraTuning
 {
     Vec2  viewSize     = { 640.f, 448.f };   // 논리 해상도
@@ -23,37 +20,41 @@ public:
     explicit Camera(const CameraTuning& _tuning);
 
     void                              SetTuning(const CameraTuning& _tuning);
-    [[nodiscard]] const CameraTuning& GetTuning() const { return m_tuning; }
+    [[nodiscard]] const CameraTuning& GetTuning() const;
 
     void               SetBounds(const Aabb& _worldBounds);
     void               Lock(const Aabb& _lockBounds);
     void               Unlock();
-    [[nodiscard]] bool IsLocked() const { return m_bLocked; }
+    [[nodiscard]] bool IsLocked() const;
 
-    void               SetForwardOnly(const bool _bForwardOnly) { m_bForwardOnly = _bForwardOnly; }
-    [[nodiscard]] bool IsForwardOnly() const { return m_bForwardOnly; }
+    void               SetForwardOnly(const bool _bForwardOnly);
+    [[nodiscard]] bool IsForwardOnly() const;
 
-    void               SetForwardOnlyY(const bool _bForwardOnlyY) { m_bForwardOnlyY = _bForwardOnlyY; }
-    [[nodiscard]] bool IsForwardOnlyY() const { return m_bForwardOnlyY; }
+    void               SetForwardOnlyY(const bool _bForwardOnlyY);
+    [[nodiscard]] bool IsForwardOnlyY() const;
 
     void               BeginMove(Vec2 _targetCenter, float _seconds);
     void               CancelMove();
-    [[nodiscard]] bool IsMoving() const { return m_bMoving; }
+    [[nodiscard]] bool IsMoving() const;
 
     void               LockWithGlide(const Aabb& _lockBounds, float _glideSeconds);
-    [[nodiscard]] bool HasPendingLock() const { return m_bPendingLock; }
+    [[nodiscard]] bool HasPendingLock() const;
 
-    [[nodiscard]] const Aabb& GetBounds() const { return m_bounds; }
-    [[nodiscard]] const Aabb& GetLockBounds() const { return m_lockBounds; }
+    [[nodiscard]] const Aabb& GetBounds() const;
+    [[nodiscard]] const Aabb& GetLockBounds() const;
 
-    void SetTarget(const Vec2 _target) { m_target = _target; }
+    void SetTarget(const Vec2 _target);
 
     // 자동 전진 (보스전 스크롤): 카메라 중심 x 의 하한을 _dx 만큼 올린다. 하한보다 왼쪽으로는 가지 않고 (매 틱 강제),
     // 잠금/경계 안에서만 움직인다. 경계 오른쪽 끝에 닿으면 멈춘다.
     void                AddScrollFloor(float _dx);
-    void                ClearScrollFloor() { m_bScrollFloor = false; }
-    [[nodiscard]] bool  HasScrollFloor() const { return m_bScrollFloor; }
-    [[nodiscard]] float GetScrollFloorX() const { return m_scrollFloorX; }
+
+    // 잠금 영역을 가로로 _dx 만큼 옮긴다 (보스전 자동 스크롤: 잠금 사각형이 카메라와 함께 오른쪽으로 간다). 잠금 중이 아니면 무시.
+    // 활강 중이면 목표/대기 중인 잠금도 같이 옮긴다.
+    void ShiftLock(float _dx);
+    void                ClearScrollFloor();
+    [[nodiscard]] bool  HasScrollFloor() const;
+    [[nodiscard]] float GetScrollFloorX() const;
 
     void SnapToTarget();
     void SnapTo(Vec2 _viewCenter);
@@ -67,7 +68,7 @@ public:
 
     [[nodiscard]] Vec2 GetPositionNoShake() const;
 
-    [[nodiscard]] Vec2 GetViewCenter() const { return m_center; }
+    [[nodiscard]] Vec2 GetViewCenter() const;
     [[nodiscard]] Aabb GetViewRect() const;
 
     [[nodiscard]] Vec2 WorldToScreen(Vec2 _world) const;
@@ -127,5 +128,3 @@ private:
     bool  m_bScrollFloor = false;
     float m_scrollFloorX = 0.f;   // 카메라 중심 x 하한 (AddScrollFloor 로 누적)
 };
-
-}   // namespace slug

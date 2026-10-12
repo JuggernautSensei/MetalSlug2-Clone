@@ -1,8 +1,5 @@
 #include "Game/Enemies/EnemyBehaviors.h"
 
-namespace slug
-{
-
 const BehaviorOps& GetBehaviorOps(
     const eEnemyBehavior _behavior)
 {
@@ -21,11 +18,10 @@ const BehaviorOps& GetBehaviorOps(
         case eEnemyBehavior::Bus: return kBusOps;
         case eEnemyBehavior::Heli: return kHeliOps;
         case eEnemyBehavior::HeliBomb: return kHeliBombOps;
+        case eEnemyBehavior::BigShiee: return kBigShieeOps;
         case eEnemyBehavior::Count: break;
     }
 
     static const BehaviorOps kEmpty {};
     return kEmpty;
 }
-
-}   // namespace slug

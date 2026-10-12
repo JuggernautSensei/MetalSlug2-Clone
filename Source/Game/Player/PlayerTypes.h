@@ -1,9 +1,6 @@
 #pragma once
 #include <cstdint>
 
-namespace slug
-{
-
 enum class ePlayerState : uint8_t
 {
     Idle,
@@ -14,6 +11,15 @@ enum class ePlayerState : uint8_t
     Dead,
     Respawn,
     Victory,
+    Count
+};
+
+// 에디터 전용 디버그 무적 모드. Off 이외에는 --editor 에서만 켜진다.
+enum class eGodMode : uint8_t
+{
+    Off,
+    NoDeath,      // 피격은 받되 죽음/라이프 소모/게임 오버가 없다
+    Invincible,   // 피격 판정 자체를 받지 않는다
     Count
 };
 
@@ -41,49 +47,16 @@ enum class ePose : uint8_t
     Air
 };
 
-[[nodiscard]] constexpr const char* GetStateName(
-    const ePlayerState _state)
-{
-    switch (_state)
-    {
-        case ePlayerState::Idle: return "Idle";
-        case ePlayerState::Run: return "Run";
-        case ePlayerState::Jump: return "Jump";
-        case ePlayerState::Crouch: return "Crouch";
-        case ePlayerState::CrouchMove: return "CrouchMove";
-        case ePlayerState::Dead: return "Dead";
-        case ePlayerState::Respawn: return "Respawn";
-        case ePlayerState::Victory: return "Victory";
-        default: return "?";
-    }
-}
+[[nodiscard]] const char* GetStateName(
+    const ePlayerState _state);
 
-[[nodiscard]] constexpr const char* GetOverlayName(
-    const eOverlay _overlay)
-{
-    switch (_overlay)
-    {
-        case eOverlay::Shot: return "Shot";
-        case eOverlay::Slash: return "Slash";
-        case eOverlay::Throw: return "Throw";
-        default: return "-";
-    }
-}
+[[nodiscard]] const char* GetOverlayName(
+    const eOverlay _overlay);
 
-[[nodiscard]] constexpr const char* GetAimName(
-    const eAim _aim)
-{
-    switch (_aim)
-    {
-        case eAim::Forward: return "fwd";
-        case eAim::Up: return "up";
-        case eAim::DiagUp: return "diagUp";
-        case eAim::Down: return "down";
-        case eAim::DiagDown: return "diagDown";
-    }
-    return "?";
-}
+[[nodiscard]] const char* GetAimName(
+    const eAim _aim);
+
+[[nodiscard]] const char* GetGodModeName(
+    const eGodMode _mode);
 
 inline constexpr uint32_t kPlayerOwnerId = 1;
-
-}   // namespace slug

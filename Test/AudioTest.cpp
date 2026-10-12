@@ -19,10 +19,7 @@
 #include "PlayerTestUtil.h"
 #include "TestAudio.h"
 
-using namespace slug;
 
-namespace
-{
 constexpr const char* kBankJson = R"({
       "version": 1,
       "sounds": {
@@ -33,14 +30,14 @@ constexpr const char* kBankJson = R"({
       }
     })";
 
-[[nodiscard]] SoundBank MakeBank_()
+[[nodiscard]] static SoundBank MakeBank_()
 {
-    slug::Result<SoundBank> bank = SoundBank::LoadFromJson(kBankJson, "root");
+    Result<SoundBank> bank = SoundBank::LoadFromJson(kBankJson, "root");
     EXPECT_TRUE(static_cast<bool>(bank));
     return bank.Take();
 }
 
-[[nodiscard]] AudioConfig MakeDryConfig_()
+[[nodiscard]] static AudioConfig MakeDryConfig_()
 {
     AudioConfig config;
     config.bEnabled    = false;
@@ -49,11 +46,10 @@ constexpr const char* kBankJson = R"({
     return config;
 }
 
-[[nodiscard]] slug::FilePath BakedRoot_()
+[[nodiscard]] static FilePath Root_()
 {
-    return slug::FindAssetRoot() / "Baked";
+    return FindAssetRoot();
 }
-}   // namespace
 
 TEST(AudioBank, ParsesEntriesNamesFilesAndBgmFlag)
 {
@@ -76,7 +72,7 @@ TEST(AudioBank, MissingBgmKeyDefaultsToSfxAndPathJoinsRoot)
     const SoundEntry* pBomb = bank.Find("PlayerBomb");
     ASSERT_NE(pBomb, nullptr);
     EXPECT_FALSE(pBomb->bBgm);
-    EXPECT_EQ(pBomb->path, slug::FilePath { "root" } / "Audio/PlayerBomb.wav");
+    EXPECT_EQ(pBomb->path, FilePath { "root" } / "Audio/PlayerBomb.wav");
 }
 
 TEST(AudioBank, UnknownNameIsNullAndIndexMinusOne)
@@ -110,33 +106,33 @@ TEST(AudioBank, MissingDirectoryIsError)
     EXPECT_FALSE(static_cast<bool>(SoundBank::LoadFromDirectory("Z:/definitely/not/here")));
 }
 
-TEST(AudioBank, BakedSoundsJsonListsExistingFilesAndExtras)
+TEST(AudioBank, SoundsJsonListsExistingFilesAndExtras)
 {
-    slug::Result<SoundBank> bank = SoundBank::LoadFromDirectory(BakedRoot_());
+    Result<SoundBank> bank = SoundBank::LoadFromDirectory(Root_());
     if (!bank)
     {
-        GTEST_SKIP() << "Assets/Baked 없음";
+        GTEST_SKIP() << "Assets 없음";
     }
     for (const SoundEntry& entry: bank->GetEntries())
     {
         EXPECT_TRUE(std::filesystem::exists(entry.path)) << entry.name << " -> " << entry.file;
     }
-    EXPECT_TRUE(bank->Find(sfx::kBgmStage) != nullptr && bank->Find(sfx::kBgmStage)->bBgm);
-    EXPECT_NE(bank->Find(sfx::kPistolShot), nullptr);
-    EXPECT_NE(bank->Find(sfx::kBombExplode), nullptr);
-    EXPECT_NE(bank->Find(sfx::kPlayerDeath), nullptr);
-    EXPECT_NE(bank->Find(sfx::kKnife1), nullptr);
-    EXPECT_NE(bank->Find(sfx::kPickupCoin), nullptr);
+    EXPECT_TRUE(bank->Find(kBgmStage) != nullptr && bank->Find(kBgmStage)->bBgm);
+    EXPECT_NE(bank->Find(kPistolShot), nullptr);
+    EXPECT_NE(bank->Find(kBombExplode), nullptr);
+    EXPECT_NE(bank->Find(kPlayerDeath), nullptr);
+    EXPECT_NE(bank->Find(kKnife1), nullptr);
+    EXPECT_NE(bank->Find(kPickupCoin), nullptr);
 }
 
-TEST(AudioBank, EveryKnownSfxNameResolvesToBakedSound)
+TEST(AudioBank, EveryKnownSfxNameResolvesToSound)
 {
-    slug::Result<SoundBank> bank = SoundBank::LoadFromDirectory(BakedRoot_());
+    Result<SoundBank> bank = SoundBank::LoadFromDirectory(Root_());
     if (!bank)
     {
-        GTEST_SKIP() << "Assets/Baked 없음";
+        GTEST_SKIP() << "Assets 없음";
     }
-    for (const char* name: sfx::kAll)
+    for (const char* name: kAll)
     {
         EXPECT_NE(bank->Find(name), nullptr) << "sfx 이름이 베이크 사운드에 없음: " << name;
     }
@@ -278,6 +274,7 @@ TEST(AudioSinks, NullAudioAcceptsEverythingSilently)
     null.Play("anything", 1.f, 0.5f);
     null.PlayBgm("bgm", true);
     null.FadeOutBgm(2.f);
+    null.ChangeBgm("bgm2", 2.f, true);
     null.StopBgm();
     null.AllStop();
     SUCCEED();
@@ -330,6 +327,57 @@ TEST(AudioSystemDry, UninitializedSystemIsAnInertNoOp)
     EXPECT_FALSE(audio.IsInitialized());
 }
 
+TEST(AudioSystemDry, ChangeBgmUnknownNameKeepsCurrentBgm)
+{
+    AudioSystem audio;
+    ASSERT_TRUE(static_cast<bool>(audio.Init(MakeBank_(), MakeDryConfig_())));
+    audio.PlayBgm("Stage1_BGM", true);
+    audio.ChangeBgm("NoSuchSong", 2.f, true);
+    EXPECT_EQ(audio.GetCurrentBgm(), "Stage1_BGM");
+    EXPECT_FALSE(audio.IsBgmFadingOut());
+}
+
+TEST(AudioSystemDry, ChangeBgmFadesOutThenStartsNewBgm)
+{
+    AudioSystem audio;
+    ASSERT_TRUE(static_cast<bool>(audio.Init(MakeBank_(), MakeDryConfig_())));
+    audio.PlayBgm("Stage1_BGM", true);
+    audio.ChangeBgm("Coin", 2.f, false);
+    EXPECT_TRUE(audio.IsBgmFadingOut());
+    EXPECT_EQ(audio.GetCurrentBgm(), "Stage1_BGM");
+
+    for (int i = 0; i < 100; ++i)
+    {
+        audio.Update(0.016f);
+    }
+    EXPECT_TRUE(audio.IsBgmFadingOut());
+
+    for (int i = 0; i < 40; ++i)
+    {
+        audio.Update(0.016f);
+    }
+    EXPECT_FALSE(audio.IsBgmFadingOut());
+    EXPECT_EQ(audio.GetCurrentBgm(), "Coin");
+}
+
+TEST(AudioSystemDry, ChangeBgmDuringFadeReplacesPendingAndZeroFadeIsImmediate)
+{
+    AudioSystem audio;
+    ASSERT_TRUE(static_cast<bool>(audio.Init(MakeBank_(), MakeDryConfig_())));
+    audio.PlayBgm("Stage1_BGM", true);
+    audio.ChangeBgm("Coin", 2.f, true);
+    audio.Update(0.5f);
+    audio.ChangeBgm("PlayerBomb", 2.f, true);
+    EXPECT_TRUE(audio.IsBgmFadingOut());
+    audio.Update(2.5f);
+    EXPECT_EQ(audio.GetCurrentBgm(), "PlayerBomb");
+    EXPECT_FALSE(audio.IsBgmFadingOut());
+
+    audio.ChangeBgm("Coin", 0.f, true);
+    EXPECT_EQ(audio.GetCurrentBgm(), "Coin");
+    EXPECT_FALSE(audio.IsBgmFadingOut());
+}
+
 TEST(AudioSystemDry, DisabledConfigNeverOpensADevice)
 {
     AudioSystem audio;
@@ -337,16 +385,16 @@ TEST(AudioSystemDry, DisabledConfigNeverOpensADevice)
     EXPECT_TRUE(audio.IsInitialized());
 }
 
-TEST(AudioSystemDry, InitFromBakedDirectoryOrError)
+TEST(AudioSystemDry, InitFromDirectoryOrError)
 {
     AudioSystem              audio;
-    const slug::Result<void> result = audio.InitFromDirectory(BakedRoot_(), MakeDryConfig_());
+    const Result<void> result = audio.InitFromDirectory(Root_(), MakeDryConfig_());
     if (!result)
     {
-        GTEST_SKIP() << "Assets/Baked 없음";
+        GTEST_SKIP() << "Assets 없음";
     }
     EXPECT_TRUE(audio.IsInitialized());
-    audio.Play(sfx::kPistolShot);
+    audio.Play(kPistolShot);
 }
 
 TEST(AudioSystemDry, MissingDirectoryReturnsErrorButSystemStaysInert)
@@ -357,8 +405,6 @@ TEST(AudioSystemDry, MissingDirectoryReturnsErrorButSystemStaysInert)
     audio.Play("Coin");
 }
 
-namespace
-{
 struct AudioSim
 {
     explicit AudioSim(
@@ -367,7 +413,7 @@ struct AudioSim
     {
         ctx.pRng                             = &rng;
         ctx.pAudio                           = _pAudio;
-        std::unique_ptr<SandboxState> pOwned = std::make_unique<SandboxState>(slugtest::MakeFlatConfig());
+        std::unique_ptr<SandboxState> pOwned = std::make_unique<SandboxState>(MakeFlatConfig());
         pState                               = pOwned.get();
         runner                               = std::make_unique<SimRunner>(ctx, std::move(pOwned));
     }
@@ -386,12 +432,11 @@ struct AudioSim
         }
     }
 
-    slug::RngMt19937           rng    = {};
+    RngMt19937           rng    = {};
     GameContext                ctx    = {};
     SandboxState*              pState = nullptr;
     std::unique_ptr<SimRunner> runner = nullptr;
 };
-}   // namespace
 
 TEST(AudioDeterminism, SameStateHashWithNullTestAndDryAudio)
 {
@@ -435,7 +480,7 @@ TEST(AudioSandbox, PistolShotRequestsShotSound)
     {
         sim.runner->Step({});
     }
-    EXPECT_GE(audio.CountPlays(sfx::kPistolShot), 1);
+    EXPECT_GE(audio.CountPlays(kPistolShot), 1);
 }
 
 TEST(AudioSandbox, BombThrowRequestsBombThrowName)
@@ -450,7 +495,7 @@ TEST(AudioSandbox, BombThrowRequestsBombThrowName)
     {
         sim.runner->Step({});
     }
-    EXPECT_EQ(audio.CountPlays(sfx::kBombThrow), 1);
+    EXPECT_EQ(audio.CountPlays(kBombThrow), 1);
 }
 
 TEST(AudioSandbox, EntersWithStageBgmAndStopsOnExit)
@@ -458,25 +503,25 @@ TEST(AudioSandbox, EntersWithStageBgmAndStopsOnExit)
     TestAudio audio;
     {
         AudioSim sim { &audio };
-        EXPECT_EQ(audio.GetCurrentBgm(), sfx::kBgmStage);
+        EXPECT_EQ(audio.GetCurrentBgm(), kBgmStage);
     }
     EXPECT_GE(audio.CountKind(eAudioEvent::AllStop), 1);
     EXPECT_TRUE(audio.GetCurrentBgm().empty());
 }
 
-TEST(AudioDevice, RealEnginePlaysEveryBakedSoundWithoutFailing)
+TEST(AudioDevice, RealEnginePlaysEverySoundWithoutFailing)
 {
     AudioConfig config;
     config.bEnabled     = true;
     config.masterVolume = 0.001f;   // 테스트 중 소리가 거의 나지 않게
 
     AudioSystem audio;
-    if (!audio.InitFromDirectory(BakedRoot_(), config))
+    if (!audio.InitFromDirectory(Root_(), config))
     {
-        GTEST_SKIP() << "Assets/Baked 없음";
+        GTEST_SKIP() << "Assets 없음";
     }
 
-    slug::Result<SoundBank> bank = SoundBank::LoadFromDirectory(BakedRoot_());
+    Result<SoundBank> bank = SoundBank::LoadFromDirectory(Root_());
     ASSERT_TRUE(static_cast<bool>(bank));
     for (const SoundEntry& entry: bank->GetEntries())
     {
@@ -486,7 +531,7 @@ TEST(AudioDevice, RealEnginePlaysEveryBakedSoundWithoutFailing)
         }
     }
 
-    audio.PlayBgm(sfx::kBgmStage, true);
+    audio.PlayBgm(kBgmStage, true);
     for (int i = 0; i < 10; ++i)
     {
         audio.Update(0.016f);

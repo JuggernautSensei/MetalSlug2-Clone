@@ -6,79 +6,76 @@
 #include "Base/Log.h"
 #include "Base/Math.h"
 #include "Base/Types.h"
+#include "Game/Enemies/BigShieeCfg.h"
 #include "Game/Enemies/EnemyCommon.h"
 #include "World/Constants.h"
 
-namespace slug
+constexpr float kSpawnSnapPx  = 16.f;   // 스폰 시 발 아래 지면에 붙이는 최대 거리
+
+[[nodiscard]] static Vec2 Lerp_(
+    const Vec2  _a,
+    const Vec2  _b,
+    const float _t)
 {
+    return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
+}
 
-namespace
+[[nodiscard]] static int FrameAt_(
+    const AnimClip& _clip,
+    const int64_t   _timeUnits)
 {
-    constexpr float kSpawnSnapPx  = 16.f;   // 스폰 시 발 아래 지면에 붙이는 최대 거리
-    constexpr int   kEnemyLayer   = 15;     // 플레이어(20) 뒤, 지면 위
-    constexpr int   kOverlayLayer = 16;
-    constexpr int   kShotLayer    = 32;   // 기존 탄(30)/폭탄(31) 위
-    constexpr int   kTrailLayer   = 29;   // 투사체 꼬리: 탄 뒤
-
-    [[nodiscard]] Vec2 Lerp_(
-        const Vec2  _a,
-        const Vec2  _b,
-        const float _t)
+    const int n = _clip.GetFrameCount();
+    if (n <= 1)
     {
-        return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
+        return 0;
     }
-
-    [[nodiscard]] int BakedFrameAt_(
-        const AnimClip& _clip,
-        const int64_t   _timeUnits)
+    const int64_t units = _clip.GetFrameDurationUnits();
+    if (units <= 0)
     {
-        const int n = _clip.GetFrameCount();
-        if (n <= 1)
-        {
-            return 0;
-        }
-        const int64_t units = _clip.GetFrameDurationUnits();
-        if (units <= 0)
-        {
-            return 0;
-        }
-        const int64_t index = (_timeUnits < 0 ? 0 : _timeUnits) / units;
-        if (_clip.bLoop)
-        {
-            return static_cast<int>(index % n);
-        }
-        return static_cast<int>(index >= n ? n - 1 : index);
+        return 0;
     }
-
-    [[nodiscard]] PhysicsTuning MakePhys_(
-        const EnemyDef& _def)
+    const int64_t index = (_timeUnits < 0 ? 0 : _timeUnits) / units;
+    if (_clip.bLoop)
     {
-        PhysicsTuning tuning;
-        tuning.gravity          = _def.physics.gravity;
-        tuning.terminalVelocity = _def.physics.maxFall;
-        return tuning;
+        return static_cast<int>(index % n);
     }
+    return static_cast<int>(index >= n ? n - 1 : index);
+}
 
-    void MixHash_(
-        uint64_t&     _hash,
-        const int64_t _value)
+// +y (아래) 를 향한 그림을 속도 방향에 맞추는 시계 방향 회전 (도, 아래 = 0)
+[[nodiscard]] static float RotationDeg_(
+    const Vec2 _velocity)
+{
+    return std::atan2(-_velocity.x, _velocity.y) * (180.f / 3.14159265f);
+}
+
+[[nodiscard]] static PhysicsTuning MakePhys_(
+    const EnemyDef& _def)
+{
+    PhysicsTuning tuning;
+    tuning.gravity          = _def.physics.gravity;
+    tuning.terminalVelocity = _def.physics.maxFall;
+    return tuning;
+}
+
+static void MixHash_(
+    uint64_t&     _hash,
+    const int64_t _value)
+{
+    ARRAY<unsigned char, sizeof(int64_t)> bytes = {};
+    std::memcpy(bytes.data(), &_value, sizeof(int64_t));
+    for (const unsigned char byte: bytes)
     {
-        ARRAY<unsigned char, sizeof(int64_t)> bytes = {};
-        std::memcpy(bytes.data(), &_value, sizeof(int64_t));
-        for (const unsigned char byte: bytes)
-        {
-            _hash ^= byte;
-            _hash *= 1'099'511'628'211ull;
-        }
+        _hash ^= byte;
+        _hash *= 1'099'511'628'211ull;
     }
+}
 
-    [[nodiscard]] int SideIndex_(
-        const int _facing)
-    {
-        return _facing < 0 ? 0 : 1;
-    }
-
-}   // namespace
+[[nodiscard]] static int SideIndex_(
+    const int _facing)
+{
+    return _facing < 0 ? 0 : 1;
+}
 
 EnemyWorld::EnemyWorld(
     const EnemyDefLibrary* _pLibrary,
@@ -102,6 +99,7 @@ void EnemyWorld::Reset(
     const uint64_t _seed)
 {
     m_enemies.clear();
+    m_play = {};
     m_events.clear();
     m_pendingFx.clear();
     m_deferred.clear();
@@ -114,6 +112,12 @@ void EnemyWorld::Reset(
     m_cameraScroll   = 0.f;
     m_shakeAmplitude = 0.f;
     m_shakeSeconds   = 0.f;
+}
+
+int GetEnemyDefaultZ(
+    const eEnemyBehavior _behavior)
+{
+    return _behavior == eEnemyBehavior::BigShiee ? kBigShieeDepthHull : kEnemyDepth;
 }
 
 EnemyHandle EnemyWorld::Spawn(
@@ -174,6 +178,7 @@ void EnemyWorld::Create_(
     e.defIndex   = _defIndex;
     e.behavior   = def.behavior;
     e.delayTicks = SecToTicks(_params.delaySec);
+    e.z          = _params.z != kDefaultZ ? _params.z : GetEnemyDefaultZ(def.behavior);
     e.life       = e.delayTicks > 0 ? eEnemyLife::Pending : eEnemyLife::Alive;
 
     e.body.position      = _feet;
@@ -192,6 +197,8 @@ void EnemyWorld::Create_(
     e.userTag   = _params.userTag;
     e.drop      = _params.drop;
     e.arena     = _params.arena;
+    e.climbEnd  = _params.climbEnd;
+    e.roofSpan  = _params.roofSpan;
     e.clip      = -1;
     e.bVisible  = true;
 
@@ -216,14 +223,29 @@ void EnemyWorld::RegisterHurtboxes(
         if (ops.registerHurtboxes)
         {
             ops.registerHurtboxes(e, def, _combat);
-            continue;
         }
-        Hurtbox hurtbox;
-        hurtbox.box     = def.hurtbox.At(e.body.position, e.facing);
-        hurtbox.team    = def.team;
-        hurtbox.owner   = e.id;
-        hurtbox.accepts = AcceptsFor(def.bHuman);
-        _combat.AddHurtbox(hurtbox);
+        else
+        {
+            Hurtbox hurtbox;
+            hurtbox.box     = def.hurtbox.At(e.body.position, e.facing);
+            hurtbox.team    = def.team;
+            hurtbox.owner   = e.id;
+            hurtbox.accepts = AcceptsFor(def.bHuman);
+            _combat.AddHurtbox(hurtbox);
+        }
+        for (const ExtraBoxDef& box: def.hitboxes)
+        {
+            if (box.kind != eExtraBoxKind::Hurt)
+            {
+                continue;
+            }
+            Hurtbox extra;
+            extra.box     = box.box.At(e.body.position, e.facing);
+            extra.team    = def.team;
+            extra.owner   = e.id;
+            extra.accepts = AcceptsFor(def.bHuman);
+            _combat.AddHurtbox(extra);
+        }
     }
 }
 
@@ -254,7 +276,7 @@ void EnemyWorld::OnHitEvents(
 
         const EnemyDef&    def = m_pLibrary->Get(e.defIndex);
         const BehaviorOps& ops = GetBehaviorOps(e.behavior);
-        EnemyEnv           env { *this, m_lastCtx, *m_pLibrary, MakePhys_(def) };
+        EnemyEnv           env { *this, m_lastCtx, *m_pLibrary, MakePhys_(def), e.z - GetEnemyDefaultZ(e.behavior) };
 
         if (ops.onHit && ops.onHit(e, def, env, event))
         {
@@ -297,6 +319,67 @@ void EnemyWorld::BeginDying_(
     }
 }
 
+static void ReleaseExtraBoxHit_(
+    Enemy&    _e,
+    EnemyEnv& _env)
+{
+    if (_e.boxHitId != kNoHitId && _env.ctx.pCombat)
+    {
+        _env.ctx.pCombat->ReleaseHitId(_e.boxHitId);
+    }
+    _e.boxHitId = kNoHitId;
+}
+
+static void TickExtraBoxes_(
+    Enemy&          _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env)
+{
+    if (_def.hitboxes.empty() || !_env.ctx.pCombat)
+    {
+        return;
+    }
+    int frame = 0;
+    if (_e.clip >= 0 && _e.clip < static_cast<int>(_def.clips.size()))
+    {
+        const ClipDef& clip = _def.GetClip(_e.clip);
+        if (clip.frameUnits > 0)
+        {
+            frame = static_cast<int>((static_cast<int64_t>(_e.clipTicks) * kAnimUnitsPerTick) / clip.frameUnits);
+            if (clip.bLoop && clip.frames > 0)
+            {
+                frame %= clip.frames;
+            }
+        }
+    }
+    bool bActive = false;
+    for (const ExtraBoxDef& box: _def.hitboxes)
+    {
+        if (box.kind != eExtraBoxKind::Attack || (box.frameTo >= 0 && (frame < box.frameFrom || frame > box.frameTo)))
+        {
+            continue;
+        }
+        if (_e.boxHitId == kNoHitId)
+        {
+            _e.boxHitId = _env.ctx.pCombat->NewHitId();
+        }
+        Hitbox hitbox;
+        hitbox.box     = box.box.At(_e.body.position, _e.facing);
+        hitbox.team    = eTeam::Enemy;
+        hitbox.kind    = eHitKind::Melee;
+        hitbox.damage  = box.damage;
+        hitbox.bPierce = false;
+        hitbox.owner   = _e.id;
+        hitbox.id      = _e.boxHitId;
+        _env.ctx.pCombat->AddHitbox(hitbox);
+        bActive = true;
+    }
+    if (!bActive)
+    {
+        ReleaseExtraBoxHit_(_e, _env);
+    }
+}
+
 void EnemyWorld::Tick(
     const EnemyContext& _ctx)
 {
@@ -327,10 +410,15 @@ void EnemyWorld::Tick(
             {
                 continue;
             }
-            const FxDef& explosion = m_pLibrary->GetProjectile(projIndex).explosion;
+            const ProjectileDef& projectileDef = m_pLibrary->GetProjectile(projIndex);
+            const FxDef&         explosion     = projectileDef.explosion;
+            if (!projectileDef.explosionSfx.empty() && m_sounds.size() < 64)
+            {
+                m_sounds.push_back(projectileDef.explosionSfx);
+            }
             if (!explosion.clip.empty())
             {
-                m_effects.Spawn(*_ctx.pAnims, explosion.clip, { fx.position.x + explosion.offset.x, fx.position.y + explosion.offset.y }, 58);
+                m_effects.Spawn(*_ctx.pAnims, explosion.clip, { fx.position.x + explosion.offset.x, fx.position.y + explosion.offset.y }, 58 + fx.zOffset);
             }
         }
     }
@@ -343,7 +431,7 @@ void EnemyWorld::Tick(
     FlushFx_(_ctx.pAnims);
     if (_ctx.pAnims)
     {
-        m_effects.Update(*_ctx.pAnims, kStepSec);
+        m_effects.Update(*_ctx.pAnims, kStepSec, _ctx.cameraView.max.y);
     }
 
     const Aabb& view = _ctx.cameraView;
@@ -355,7 +443,7 @@ void EnemyWorld::Tick(
         }
         const EnemyDef&    def = m_pLibrary->Get(e.defIndex);
         const BehaviorOps& ops = GetBehaviorOps(e.behavior);
-        EnemyEnv           env { *this, m_lastCtx, *m_pLibrary, MakePhys_(def) };
+        EnemyEnv           env { *this, m_lastCtx, *m_pLibrary, MakePhys_(def), e.z - GetEnemyDefaultZ(e.behavior) };
 
         if (e.life == eEnemyLife::Pending)
         {
@@ -396,6 +484,22 @@ void EnemyWorld::Tick(
             {
                 ops.tick(e, def, env);
             }
+            if (m_play.id == e.id)
+            {
+                ++m_play.ticks;
+                e.clip      = m_play.clip;
+                e.clipTicks = m_play.ticks;
+                if (m_play.ticks == m_play.fireTick)
+                {
+                    (void)FireWeapon(e, def, env, m_play.weapon, { static_cast<float>(e.facing < 0 ? -1 : 1), 0.f });
+                }
+                if (m_play.ticks >= m_play.endTick)
+                {
+                    m_play = {};
+                }
+            }
+            TickWeaponEffects(e, def, env);
+            TickExtraBoxes_(e, def, env);
             // 체력이 0 이 된 살아 있는 적 (행동이 직접 체력을 깎은 경우, 예: 캐논 헤드) 은 여기서 사망 처리한다
             if (e.life == eEnemyLife::Alive && e.health.IsDead())
             {
@@ -406,6 +510,7 @@ void EnemyWorld::Tick(
         {
             ++e.stateTicks;
             ++e.clipTicks;
+            ReleaseExtraBoxHit_(e, env);
             if (ops.tickDying)
             {
                 ops.tickDying(e, def, env);
@@ -448,7 +553,15 @@ void EnemyWorld::SpawnShotTrails_(
         }
         const int   facing = shot.velocity.x < 0.f ? -1 : 1;
         const float sign   = static_cast<float>(facing);
-        m_effects.Spawn(_anims, ResolveSide(proj.trail.clip, facing), { shot.position.x + proj.trail.offset.x * sign, shot.position.y + proj.trail.offset.y }, kTrailLayer);
+        Vec2        offset = { proj.trail.offset.x * sign * proj.scale, proj.trail.offset.y * proj.scale };
+        if (proj.bRotate)
+        {
+            const float rad = RotationDeg_(shot.velocity) * (3.14159265f / 180.f);
+            const float ox  = proj.trail.offset.x * proj.scale;
+            const float oy  = proj.trail.offset.y * proj.scale;
+            offset          = { ox * std::cos(rad) - oy * std::sin(rad), ox * std::sin(rad) + oy * std::cos(rad) };
+        }
+        m_effects.Spawn(_anims, ResolveSide(proj.trail.clip, facing), { shot.position.x + offset.x, shot.position.y + offset.y }, kTrailDepth + ZDelta(shot.params.z, kShotDepth));
     }
 }
 
@@ -497,7 +610,14 @@ void EnemyWorld::FlushFx_(
             ++keep;
             continue;
         }
-        m_effects.Spawn(*_pAnims, request.clip, request.position, request.layer);
+        if (request.bDebris)
+        {
+            m_effects.SpawnDebris(*_pAnims, request.clip, request.position, request.depth, request.velocity, request.bFlipX);
+        }
+        else
+        {
+            m_effects.Spawn(*_pAnims, request.clip, request.position, request.depth, request.bFlipX);
+        }
     }
     m_pendingFx.resize(keep);
 }
@@ -572,7 +692,8 @@ void EnemyWorld::Submit(
 
         if (ops.submitParts)
         {
-            const EnemyRenderEnv render { _sprites, _anims, m_pSprites, _projectiles, feet, _alpha, kEnemyLayer, HitFlashAmount(e) };
+            const int            zOffset = e.z - GetEnemyDefaultZ(e.behavior);
+            const EnemyRenderEnv render { _sprites, _anims, m_pSprites, _projectiles, feet, _alpha, kEnemyDepth, HitFlashAmount(e), zOffset };
             ops.submitParts(e, def, render);
         }
         if (e.clip < 0)
@@ -585,7 +706,14 @@ void EnemyWorld::Submit(
         {
             continue;
         }
-        const AnimFrame* pFrame = &pClip->frames[static_cast<size_t>(BakedFrameAt_(*pClip, static_cast<int64_t>(e.clipTicks) * kAnimUnitsPerTick))];
+        const AnimFrame* pFrame = &pClip->frames[static_cast<size_t>(FrameAt_(*pClip, static_cast<int64_t>(e.clipTicks) * kAnimUnitsPerTick))];
+        if (ops.bodyFrame)
+        {
+            if (const AnimFrame* pPose = ops.bodyFrame(e, def, _anims))
+            {
+                pFrame = pPose;
+            }
+        }
         if (pFrame->IsEmpty())
         {
             continue;
@@ -593,17 +721,19 @@ void EnemyWorld::Submit(
         const float       lift = def.bCenterAnchor ? 0.f : static_cast<float>(pClip->GetFootBaseline());   // 중심 앵커 def 는 pivot 을 원점에 둔다
         SpriteDrawOptions options;
         options.flashAmount = HitFlashAmount(e);
-        _sprites.Submit(kEnemyLayer, static_cast<int>(feet.y), *pFrame, { feet.x, feet.y - lift }, options);
+        options.bFlipX      = def.ShouldFlipArt(e.facing);
+        _sprites.Submit(def.partBody.depth + e.z - GetEnemyDefaultZ(e.behavior), static_cast<int>(feet.y) + def.partBody.sort, *pFrame, { feet.x, feet.y - lift }, options);
 
-        if (def.overlayClip >= 0)
+        // 낙하산은 살아 있는 동안만 그린다. 사망 순간 즉시 사라지고 착지 변신 FX 는 FlyingBzk 가 맡는다.
+        if (def.overlayClip >= 0 && e.life == eEnemyLife::Alive)
         {
             const AnimClip* pOver = _anims.GetOrNull(m_clipIds[static_cast<size_t>(e.defIndex)][static_cast<size_t>(def.overlayClip)][side]);
             if (pOver)
             {
-                const AnimFrame* pOverFrame = &pOver->frames[static_cast<size_t>(BakedFrameAt_(*pOver, static_cast<int64_t>(e.clipTicks) * kAnimUnitsPerTick))];
+                const AnimFrame* pOverFrame = &pOver->frames[static_cast<size_t>(FrameAt_(*pOver, static_cast<int64_t>(e.clipTicks) * kAnimUnitsPerTick))];
                 if (!pOverFrame->IsEmpty())
                 {
-                    _sprites.Submit(kOverlayLayer, static_cast<int>(feet.y), *pOverFrame, { feet.x + def.overlayOffset.x, feet.y + def.overlayOffset.y - lift }, options);
+                    _sprites.Submit(def.partOverlay.depth + e.z - GetEnemyDefaultZ(e.behavior), static_cast<int>(feet.y) + def.partOverlay.sort, *pOverFrame, { feet.x + def.overlayOffset.x, feet.y + def.overlayOffset.y - lift }, options);
                 }
             }
         }
@@ -647,13 +777,19 @@ void EnemyWorld::Submit(
         {
             ticks = std::max(0, landAge - landTicks);
         }
-        const AnimFrame* pFrame = &pClip->frames[static_cast<size_t>(BakedFrameAt_(*pClip, static_cast<int64_t>(ticks) * kAnimUnitsPerTick))];
+        const AnimFrame* pFrame = &pClip->frames[static_cast<size_t>(FrameAt_(*pClip, static_cast<int64_t>(ticks) * kAnimUnitsPerTick))];
         if (pFrame->IsEmpty())
         {
             continue;
         }
-        const Vec2 pos = Lerp_(shot.renderPrev, shot.position, _alpha);
-        _sprites.Submit(kShotLayer, static_cast<int>(pos.y), *pFrame, pos);
+        const Vec2        pos = Lerp_(shot.renderPrev, shot.position, _alpha);
+        SpriteDrawOptions options;
+        options.scale = m_pLibrary->GetProjectile(projIndex).scale;
+        if (m_pLibrary->GetProjectile(projIndex).bRotate)
+        {
+            options.rotationDeg = RotationDeg_(shot.velocity);
+        }
+        _sprites.Submit(ResolveZ(shot.params.z, kShotDepth), static_cast<int>(pos.y), *pFrame, pos, options);
     }
 
     m_effects.Submit(_anims, _sprites);
@@ -672,11 +808,74 @@ size_t EnemyWorld::FindIndex_(
     return m_enemies.size();
 }
 
+bool EnemyWorld::FireWeaponNow(
+    const EnemyHandle _handle,
+    const int         _weapon)
+{
+    const size_t idx = FindIndex_(_handle.id);
+    if (!m_pLibrary || idx >= m_enemies.size())
+    {
+        return false;
+    }
+    Enemy&          e   = m_enemies[idx];
+    const EnemyDef& def = m_pLibrary->Get(e.defIndex);
+    if (_weapon < 0 || _weapon >= static_cast<int>(def.weapons.size()))
+    {
+        return false;
+    }
+    EnemyEnv env { *this, m_lastCtx, *m_pLibrary, MakePhys_(def), e.z - GetEnemyDefaultZ(e.behavior) };
+    return FireWeapon(e, def, env, _weapon, { static_cast<float>(e.facing < 0 ? -1 : 1), 0.f });
+}
+
+bool EnemyWorld::PlayMotion(
+    const EnemyHandle _handle,
+    const int         _weapon,
+    const int         _fireFrame)
+{
+    const size_t idx = FindIndex_(_handle.id);
+    if (!m_pLibrary || idx >= m_enemies.size())
+    {
+        return false;
+    }
+    const Enemy&    e   = m_enemies[idx];
+    const EnemyDef& def = m_pLibrary->Get(e.defIndex);
+    if (_weapon < 0 || _weapon >= static_cast<int>(def.weapons.size()))
+    {
+        return false;
+    }
+    const int clip = def.FindClip(def.weapons[static_cast<size_t>(_weapon)].motionClip);
+    if (clip < 0)
+    {
+        return false;
+    }
+    const ClipDef& clipDef = def.GetClip(clip);
+    m_play.id              = e.id;
+    m_play.weapon          = _weapon;
+    m_play.clip            = clip;
+    m_play.ticks           = 0;
+    m_play.fireTick        = clipDef.TickOfFrame(_fireFrame);
+    m_play.endTick         = clipDef.GetDurationTicks() + 1;
+    return true;
+}
+
 const Enemy* EnemyWorld::Get(
     const EnemyHandle _handle) const
 {
     const size_t idx = FindIndex_(_handle.id);
     return idx < m_enemies.size() ? &m_enemies[idx] : nullptr;
+}
+
+bool EnemyWorld::SetZ(
+    const EnemyHandle _handle,
+    const int         _z)
+{
+    const size_t idx = FindIndex_(_handle.id);
+    if (idx >= m_enemies.size())
+    {
+        return false;
+    }
+    m_enemies[idx].z = _z;
+    return true;
 }
 
 EnemyHandle EnemyWorld::ResolveHandle(
@@ -720,6 +919,19 @@ Vector<Aabb> EnemyWorld::GetSolidBoxes() const
         if (!def.solid.IsEmpty())
         {
             boxes.push_back(def.solid.At(e.body.position, e.facing));
+        }
+        if (def.behavior == eEnemyBehavior::Bus && def.bus.landingW > 0.f)
+        {
+            // 버스 계단 위 승강대: 계단 병사가 올라서는 낮은 벽 (윗면 = stairsTop.y, 지면까지)
+            const Vec2 top = { e.body.position.x + def.bus.stairsTop.x, e.body.position.y + def.bus.stairsTop.y };
+            boxes.push_back(Aabb::FromMinMax({ top.x - def.bus.landingW * 0.5f, top.y }, { top.x + def.bus.landingW * 0.5f, e.body.position.y }));
+        }
+        if (def.behavior == eEnemyBehavior::Bus && def.bus.roofTop.y != 0.f && def.bus.roofSpan.y > def.bus.roofSpan.x)
+        {
+            // 버스 지붕 발판: 계단 병사가 마지막에 올라서는 얇은 판 (윗면 = roofTop.y)
+            constexpr float kRoofThickness = 12.f;
+            const float     y              = e.body.position.y + def.bus.roofTop.y;
+            boxes.push_back(Aabb::FromMinMax({ e.body.position.x + def.bus.roofSpan.x, y }, { e.body.position.x + def.bus.roofSpan.y, y + kRoofThickness }));
         }
     }
     return boxes;
@@ -884,11 +1096,31 @@ int EnemyWorld::CountAlive(
     return CountAlive(filter);
 }
 
+Vector<String> EnemyWorld::TakeSounds()
+{
+    Vector<String> out = std::move(m_sounds);
+    m_sounds.clear();
+    return out;
+}
+
 Vector<EnemyEvent> EnemyWorld::TakeEvents()
 {
     Vector<EnemyEvent> out = std::move(m_events);
     m_events.clear();
     return out;
+}
+
+void EnemyWorld::RefreshBodies(
+    const int  _defIndex,
+    const Vec2 _size)
+{
+    for (Enemy& e: m_enemies)
+    {
+        if (e.defIndex == _defIndex)
+        {
+            e.body.size = _size;
+        }
+    }
 }
 
 void EnemyWorld::ClearMonsters(
@@ -1094,9 +1326,12 @@ Span<const Enemy> EnemyWorld::GetEnemies() const
     return m_enemies;
 }
 
+const EffectList& EnemyWorld::GetEffects() const
+{
+    return m_effects;
+}
+
 size_t EnemyWorld::GetCount() const
 {
     return m_enemies.size();
 }
-
-}   // namespace slug

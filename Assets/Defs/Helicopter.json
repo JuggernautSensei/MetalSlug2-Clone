@@ -31,7 +31,7 @@
       "death": {
         "removeAtSec": 0.2,
         "fx": [
-          { "clip": "Explosion_Mid", "offset": [0, 10], "layer": 58 }
+          { "clip": "Explosion_Mid", "offset": [0, 10], "depth": 58 }
         ]
       },
       "params": {
@@ -42,23 +42,27 @@
         "blastSize": [90, 80],
         "blastSec": 0.13,
         "blastDamage": 1,
-        "groundProbeY": 25
+        "groundProbeY": 25,
+        "groundFx": "Heli_Ground",
+        "groundFxDy": -6
       }
     },
 
     "heli": {
       "kind": "flyer",
       "behavior": "heli",
-      "note": "공격 헬기 (Aparch). 폭격(위 오른쪽 진입 -> 플레이어 위 호버, 0.4 s 마다 폭탄) 6.76 s (진입 포함) -> 포드 전개 -> 오른쪽 아래로 1.17 s 이동 -> 미사일 2발 (2.1 s 간격) -> 복귀.",
+      "note": "공격 헬기 (Docs/Spec_Heli.md). 위 오른쪽 진입 -> 고공 호버 (플레이어 x 추적) 폭탄 3발 연속 + 휴지 x 2 -> 저공으로 내려와 x 축 가로지르며 3발 + 휴지 x 2 -> 포드 전개 -> 오른쪽 아래 이동 -> 미사일 2발 -> 고공 복귀 -> 반복. 스폰 위치: 카메라 우상단 밖 (cam.x+507, cam.y-30).",
       "ttk": 15,
       "hp": 150,
       "score": 1000,
       "centerAnchor": true,
       "body": { "w": 150, "h": 80, "cx": 0, "cy": 5 },
+      "hurtbox": { "w": 176, "h": 96, "cx": 0, "cy": 4 },
       "activation": { "mode": "always" },
       "physics": { "useGravity": false },
       "clips": {
         "fly":     { "name": "Heli_Fly_{side}",     "frames": 1,  "sec": 1.0 },
+        "pitch":   { "name": "Heli_Pitch_{side}",   "frames": 7,  "sec": 0.0833333 },
         "turnIn":  { "name": "Heli_TurnIn_{side}",  "frames": 7,  "sec": 0.0833333 },
         "turnOut": { "name": "Heli_TurnOut_{side}", "frames": 6,  "sec": 0.0833333 },
         "pod":     { "name": "Heli_Pod_{side}",     "frames": 15, "sec": 0.0333333 },
@@ -66,23 +70,36 @@
         "puff":    { "name": "Heli_Puff_{side}",    "frames": 10, "sec": 0.0333333 }
       },
       "weapons": {
-        "missile": { "projectile": "heli_missile", "muzzle": [14, 43], "aim": "facing" }
+        "missile": { "projectile": "heli_missile", "muzzle": [10.5, 38.5], "aim": "facing" }
       },
       "death": {
         "removeAtSec": 0.05,
         "fx": [
-          { "clip": "Explosion_Large", "offset": [0, 0], "layer": 58 }
+          { "clip": "Explosion_Large", "offset": [0, 0], "depth": 58 },
+          { "clip": "Explosion_Mid", "offset": [-52, -12], "depth": 58, "delay": 0.12 },
+          { "clip": "Explosion_Mid", "offset": [48, 14], "depth": 58, "delay": 0.22 },
+          { "clip": "Explosion_Mid", "offset": [-14, 30], "depth": 58, "delay": 0.34 },
+          { "clip": "Boss_Smoke_Big", "offset": [0, -24], "depth": 57, "delay": 0.3 }
         ]
       },
       "params": {
-        "enterSpeedY": 27,
+        "enterSpeedY": 200,
         "hoverDy": 78,
         "followDx": 15,
         "followSpeed": 46,
         "followDeadzone": 6,
         "firstBombSec": 1.6,
+        "reBombSec": 0.4,
         "bombIntervalSec": 0.4,
-        "bombRunSec": 6.76,
+        "burstCount": 3,
+        "burstRestSec": 1.4,
+        "highBursts": 2,
+        "lowBursts": 0,
+        "lowDy": 100,
+        "lowSpeed": 500,
+        "lowMargin": 90,
+        "descendSpeedY": 70,
+        "startLow": 0,
         "bombMuzzle": [-8, 45],
         "bombMinY": 8,
         "podOutSec": 0.2,
@@ -91,7 +108,7 @@
         "targetDyPlayer": -22,
         "targetMinY": 150,
         "targetMaxY": 300,
-        "missiles": 2,
+        "missiles": 3,
         "puffToMissileSec": 0.167,
         "missileIntervalSec": 2.1,
         "volleyEndSec": 1.5,
@@ -100,6 +117,10 @@
         "turnDx": 60,
         "podOffset": [9, 32],
         "rotorOffset": [18, -50],
+        "idlePitchFrom": 1,
+        "idlePitchTo": 5,
+        "idleStepSec": 0.2,
+        "rotorRowPrefix": "Heli_Rotor_",
         "bombDef": "heli_bomb"
       }
     }

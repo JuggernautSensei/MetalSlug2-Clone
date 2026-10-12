@@ -30,7 +30,7 @@
 | 무기 | 입력 | 탄수 | 피해 | 비고 |
 |---|---|---|---|---|
 | 권총(DG) | 탭 연사(홀드 시 6틱 간격 반복) | 화면 내 3발 제한, 무한 | 2 | **시작 무기** |
-| 헤비머신건(MG) | 홀드 자동 연사 | 200 | 2 | 픽업 +100 |
+| 헤비머신건(MG) | 탭 한 번 = 버스트 3~5발 (홀드 자동 연사 없음) | 200 | 2 | 픽업 +100 |
 | 샷건(SG) | 탭 | 30 | 6, 관통 | 근거리 |
 | 폭탄 | L, 포물선 | 10 | 20 블래스트(반경) | 시작 10개 |
 | 칼 | 적(또는 파괴물/POW)이 근접 `28px` 이내일 때 Shot 이 칼로 대체 | - | 4, Melee | **모든 적 피격 가능**. 근접 시 총 대신 칼, 자동 판정 |
@@ -42,11 +42,11 @@
 - 목숨 3, 사망 후 2초 뒤 카메라 좌측 +100 위치 상공에서 리스폰, 무적 2초(깜빡임), 권총/폭탄 10 으로 초기화.
 - 타임 0 → 사망. 목숨 0 → GAME OVER 3초 후 타이틀.
 
-## 애니메이션 이름 매핑 (레거시 Baker 산출 이름, 접미 `_Left/_Right`)
+## 애니메이션 이름 매핑 (접미 `_Left/_Right`)
 - 하체: `Player_Stand_Idle_Lower`, `Player_Stand_Move_Lower`, `Player_Jump_Idle_Lower`, `Player_Jump_Move_Lower`
 - 상체 DG/SG(+MG 는 SG 목록 재사용): `Player_Stand_Idle_*`, `Player_Stand_Move_*`, `Player_Stand_MoveStop_*`, `Player_Stand_Shot_*`(+`_Up_`), `Player_Stand_Lookup_*`, `Player_Stand_Lookingup_3/4_*`, `Player_Stand_StartCrouch_*`, `Player_Crouch_Idle/Move/Shot/Throw/Slash1/Slash2_*`, `Player_Stand_Slash1/Slash2_*`, `Player_Stand_Throw_*`, `Player_Jump_Idle/Move/Lookdown/Lookingdown_1/2_*`, `Player_Jump_Shot_Down_*`, `Player_Jump_Shot_Lookdown_*`, `Player_Death_byBullet_DG`, `Player_Death_byBomb_Begin/End_DG`, `Player_Victory_*`, `Player_Ride_*`, `Player_Stand_Reload_DG`(미사용), `Player_Stand_Idle_Action_*`(장시간 대기 연출)
-- MG 전용: `Player_Stand_Shot_MG`, `Player_Crouch_Shot_MG`, `Player_Jump_Shot_Lookdown_MG`, `Player_Stand_Shot_Lookingup_3/4_BT/TB_MG`, `Player_Jump_Shot_Lookingdown_1/2_BT/TB_MG` (단일 프레임 비루프 `Start>0` 포함 — Baker 가 올바른 컬럼으로 굽는다)
-- 알려진 데이터 이슈: `Player_Stand_Idle_Lookup_SG` Y 오프셋 −430(우) vs −43(좌) 오타 → Baker 리포트에서 확인 후 보정.
+- MG 전용: `Player_Stand_Shot_MG`, `Player_Crouch_Shot_MG`, `Player_Jump_Shot_Lookdown_MG`, `Player_Stand_Shot_Lookingup_3/4_BT/TB_MG`, `Player_Jump_Shot_Lookingdown_1/2_BT/TB_MG` (단일 프레임 비루프 `Start>0` 포함 굽는다)
+- 알려진 데이터 이슈: `Player_Stand_Idle_Lookup_SG` Y 오프셋 −430(우) vs −43(좌) 오타.
 
 ## 종료조건 (M2)
 - 테스트 맵(평지+경사+낭떠러지+원웨이 지붕)에서 이동/점프/사격/칼/폭탄이 입력 즉시 반응.
@@ -63,24 +63,30 @@
 | 코요테 / 점프 버퍼 / 사격 버퍼 | 4 / 4 / 6 틱 | 낭떠러지 이후 4틱, 착지 직전 4틱 (착지 틱에 바로 점프) |
 | 몸통 / 피격 상자 (서기) | 20x58 / 16x54 | 스프라이트(머리~발 약 70px) 에 맞춤. 앉기 20x36 / 16x32 |
 | 권총 | 피해 3, 연타 간격 5틱, 홀드 반복 8틱, 화면 내 4발, 탄속 600, 사거리 420 | 레거시 dmg 2/3발 제한이 "약하다" 는 불만 → 차량 지프(20hp) 7발 |
-| HMG | 피해 2, 간격 3 / 홀드 4틱, 탄 200 | 초당 15발 |
-| 샷건 | 피해 6, 관통, 간격 16 / 홀드 20틱, 탄 30, 사거리 200 | 근거리 |
+| HMG | 피해 2, 간격 4틱 (홀드 반복 없음), 한 번 입력 = 버스트 3~5발(난수), 탄 200, 탄속 640, 사거리 460, 흩뿌림 ±6도, 발사 위치 ±3px | 버스트 내 간격 4틱 = 초당 15발 |
+| 샷건 | 피해 6, 관통, 간격 16 / 홀드 20틱, 탄 30, 사거리 240, 판정 90x70 (조준 방향에 따라 회전) | 근거리 |
 | 칼 | 피해 8 (보병 1타, 지프 3타, 버스 8타), 자동 발동 거리 = 몸 앞 가장자리 +34 px, 판정 activeTick 2..11 (총 18틱), 끝나기 6틱 전부터 연속 베기 | 판정 폭 넓게 + 길게 유지하되 표적당 1회 (HitId) |
 | 폭탄 | 10개, 피해 20, 공중 최대 3개, 폭발 110x130 px 10틱 | 표적 접촉 시 폭발. 지면에서 튕김(반발 ×0.4), 던진 뒤 퓨즈 72틱(1.2 s) 이 끝나면 폭발. 던지기 12틱, 3틱째 투척 |
-| 화염방사기(FS) | 피해 3, 간격 3 / 홀드 3틱, 탄 30, 탄속 180, 사거리 200, 관통 | 한 발 = 3 연기 탄: 속도 ×0.7 / ×1.0 / ×1.3, 세로 −7 / 0 / +7 px |
+| 화염방사기(FS) | 피해 3, 입력 1회 = 탄 1발 + 입자 12개 분출 (2틱 간격, 24틱 동안 재발사 없음), 입자 속도 260~340 px/s, 방향 ±8도, 수명 22~30틱 (사거리 약 95~170 px), 관통 | 판정 60x50 -> 110x90 (수명 따라 성장), 표시 배율 0.6 -> 1.6, 판정 ID 를 6틱마다 풀어 한 분출에서 대상당 최대 4회 (12 피해) |
 | 목숨 / 사망 연출 / 무적 | 3 / 110틱 / 120틱 (깜빡임 4틱) | 리스폰: 카메라 왼쪽 +100, 화면 위에서 낙하 |
 
 - 시작 무기 = 권총(DG), 폭탄 10. 총 소진 시 권총 복귀.
 - 틱 순서: 표적 Hurtbox 등록 → 플레이어(입력→물리→행동) → 사수 → 투사체 → `HitResolver` → 이벤트 적용. 모든 피해는 `HitEvent` 한 경로.
 - 칼 자동 발동: Shot(버퍼 포함/홀드) 시 `CombatSystem::HasTargetIn(Player, Melee, 몸 앞 영역)`. 칼 동작은 틱 타이머로 끝나므로 영구 잠김이 없다.
-- 알려진 에셋 한계: DG 에는 대각 위 사격 클립이 없어 `Player_Stand_Lookingup_4_DG` 정지 포즈(약 35°)를 쓴다 (HMG 탄은 조준각을 따라 나가며 정지 대각 각도는 없다; MG 는 전용 클립 사용). `Player_Jump_Shot_Down_DG` 는 프레임 크기 편차가 커서(Baker anchorDriftMax=50) 아래 사격 동작에서 몸통 높이가 프레임마다 다르게 보일 수 있다.
+- 알려진 에셋 한계: DG 에는 대각 위 사격 클립이 없어 `Player_Stand_Lookingup_4_DG` 정지 포즈(약 35°)를 쓴다 (HMG 탄은 조준각을 따라 나가며 정지 대각 각도는 없다; MG 는 전용 클립 사용). `Player_Jump_Shot_Down_DG` 는 프레임 크기 편차가 커서아래 사격 동작에서 몸통 높이가 프레임마다 다르게 보일 수 있다.
 
 ## 사격 규칙 (원작 영상 대조, 1-3)
-- 권총 / 화염방사기: 홀드 자동 연사 없음 (`holdRepeatTicks = 0`). 버튼을 누를 때마다 한 발 (`fireIntervalTicks` 5 / 8 틱 미만으로는 연타 불가). 권총 화면 내 4발 상한 유지.
+- 권총 / 화염방사기: 홀드 자동 연사 없음 (`holdRepeatTicks = 0`). 버튼을 누를 때마다 한 발 (`fireIntervalTicks` 5 틱 미만으로는 연타 불가. 화염방사기는 분출 길이 24틱). 권총 화면 내 4발 상한 유지.
   원작 V1 0:25 (위 사격), 0:02.5 구간: 연타 간격이 영상 4~6프레임 (8~12틱) 으로 규칙적이고 한 번 누르면 한 발.
-- 헤비머신건: 한 번 누르면 사격 모션 동안 4발 (`burstShots` 4, `burstIntervalTicks` 7), 첫 발은 즉시. 홀드해도 버스트 하나로 끝. 이동(`m_bMoving`)/점프/착지/칼/폭탄이 끼어들면 남은 탄을 취소하고 사격 연출을 즉시 끝낸다.
-  측정: V1 0:41.5~0:44 HUD 탄수가 306 -> 287 로 19발 감소, 감소 간격 평균 3.7 영상프레임 (약 7.4틱, 3~6프레임). 탄수는 발마다 1씩 줄어든다 (HUD 는 무기 글자 없이 숫자만).
-  `shotOverlayTicks` 28 = 4발 x 7틱: MG 사격 클립 4프레임이 버스트 길이에 맞춰 늘어난다. 버스트 중에도 탄마다 현재 조준각(HMG 스윕)으로 발사.
-- 화염방사기: 한 번 누르면 불덩이 1개 (관통, 속도 300px/s, 사거리 220px, 판정 72x44). 연출은 원작 시트 `20587.png` "Original Flame Shot Pieces" 행을 `sheets.json` 으로 잘라 쓴다 (x2): `FlameShot_Orig_Head`(4프레임, 2틱씩) -> `FlameShot_Orig_Loop`(3프레임 반복) -> 사거리 끝 14틱 동안 `FlameShot_Orig_Fade`(7프레임).
-  시트에서 불덩이 32px 높이(x2 = 64) 는 플레이어 몸(약 35px x2) 의 약 0.9배. 두 원작 영상에는 사용 장면이 없어 속도/사거리는 메탈슬러그 2 의 체감(화면 폭의 약 1/3)으로 정한 값이다. 위/아래 조준에서도 수평 스프라이트를 그대로 쓴다(회전 미지원).
+- 헤비머신건: 한 번 누르면 버스트 1개. 발수는 `burstShotsMin`~`burstShotsMax`(3~5) 의 결정적 난수, 첫 발은 즉시, 이후 `burstIntervalTicks`(4틱) 간격. 홀드해도 버스트 하나로 끝.
+  달리기/이동은 버스트를 취소하지 않는다: 남은 발수를 계속 쏘고, 상체는 Shot, 하체는 Move 로 합성된다 (원작: 달리며 연사).
+  점프(지상 <-> 공중 전환), 칼, 폭탄이 끼어들면 남은 탄을 취소하고 사격 연출을 즉시 끝낸다.
+  사격 연출 길이 = 실제 발수 x `burstIntervalTicks` (`m_shotOverlayTicks`). `shotOverlayTicks` 는 버스트가 아닌 무기용 값이다. MG 사격 클립은 이 길이에 맞춰 재생되고, 버스트 중에도 탄마다 현재 조준각(HMG 스윕)으로 발사한다.
+  측정 기록(구 값, 참고용): V1 0:41.5~0:44 HUD 탄수가 306 -> 287 로 19발 감소, 감소 간격 평균 3.7 영상프레임 (약 7.4틱). 현재 간격 4틱과 불일치하므로 최종 간격은 원작 프레임 대조로 재확인한다 (FeedbackChecklist 의 항목 참고). 탄수는 발마다 1씩 줄어든다 (HUD 는 무기 글자 없이 숫자만).
+- 화염방사기: 입력 1회 = 탄약 1발, 입자 12개를 2틱 간격으로 흩뿌린다 (화르륵 분출). 분출 길이 24틱 동안은 재발사되지 않고, 사격 모션 길이도 24틱이다. 달리기/이동은 끊지 않는다 (지상<->공중 전환, 칼, 폭탄이 끼면 새 입자만 멈춘다).
+  입자 스프라이트는 베이크된 `FlameShot_AttackMotion` (26프레임, 최대 94x94): 머리 4프레임 -> 반복 -> 끝 6프레임 페이드. 큰 불꽃이며 회전하지 않는다 (위/아래 조준에서도 같은 불꽃).
+  입자 방향/속도/수명은 발사 시드(`MakeShotSeed_`)에서 `Random` 으로 결정적으로 뽑는다 (리플레이 동일). 모든 수치는 `weapons.flame` 에서 조정: particleCount, particleIntervalTicks, particleSpeedMin/Max, spreadDeg, particleLifeMinTicks/MaxTicks, hitReleaseTicks, particleHitSizeEnd, particleScaleStart/End.
+  판정: 입자 한 발의 판정은 60x50 에서 110x90 까지 수명 따라 커진다. 한 입력의 입자들은 판정 ID 하나를 공유하고 6틱마다 풀어, 대상은 분출 한 번에 최대 4회 (피해 3 x 4 = 12) 맞는다.
+  원작 시트 `20587.png` 의 Orig Head/Loop/Fade 클립은 남겨 두었지만 파이어샷에는 쓰지 않는다.
 - 샷건/로켓도 연타만 발사한다 (`holdRepeatTicks = 0`).
+- 샷건 판정은 조준 방향에 따라 돈다: 가로는 90x70, 위/아래는 70x90, 대각은 큰 쪽 기준 정사각 (`OrientSize_`, 세로 사격 판정이 회전하지 않던 버그 수정).

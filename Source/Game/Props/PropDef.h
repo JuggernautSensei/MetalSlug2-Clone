@@ -8,8 +8,8 @@
 #include "Base/Types.h"
 #include "Core/Tuning.h"
 
-namespace slug
-{
+inline constexpr int kPropDepthBack  = 12;   // 소품 기본 (플레이어 20 뒤)
+inline constexpr int kPropDepthFront = 38;   // 소품 앞 (플레이어 앞)
 
 class AnimationLibrary;
 class SpriteLibrary;
@@ -129,7 +129,9 @@ struct PropDef
     String name       = {};
     int    hp         = 0;       // 새 HP (레거시 ×2). 0 이면 피격 불가 (불사)
     float  cullMargin = 200.f;   // 객체 x 가 camLeft - margin 보다 왼쪽이면 제거
-    bool   bFront     = false;
+    float  sortOffsetY = 0.f;    // 같은 레이어 안 그리기 순서 키 = pos.y + sortOffsetY (개별 보정용)
+    bool   bSortByX   = false;   // 건물 계열: 그리기 키 = -x (작은 x 가 앞), 동률은 y
+    int    depth      = kPropDepthBack;   // 그리기 깊이 (작을수록 뒤)
 
     PropVisual idle        = {};
     PropVisual damaged     = {};
@@ -169,6 +171,7 @@ struct PropSpawnParams
     std::optional<PropBoxOverride> standBox        = std::nullopt;
     bool                           bExplodeOnDeath = false;
     int                            variant         = -1;   // Truck 변종 강제 (-1 랜덤)
+    int                            z               = kDefaultZ;   // 인스턴스 depth (kDefaultZ: def.depth)
 };
 
 enum class eItemKind : uint8_t
@@ -243,5 +246,3 @@ private:
     HashMap<String, uint32_t> m_itemIndex  = {};
     HashMap<String, uint32_t> m_groupIndex = {};
 };
-
-}   // namespace slug

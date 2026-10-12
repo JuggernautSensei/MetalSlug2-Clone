@@ -6,11 +6,8 @@
 #include "Base/Types.h"
 #include "Render/SpriteBatch.h"
 
-using namespace slug;
 
-namespace
-{
-[[nodiscard]] AnimFrame MakeFrame_(
+[[nodiscard]] static AnimFrame MakeFrame_(
     const int _w,
     const int _h,
     const int _pivotX,
@@ -25,20 +22,19 @@ namespace
 }
 
 // 정렬 시험용 명령 하나를 큐에 넣는다. seq 는 제출 순서, frame.x 는 식별용 태그
-void AddCommand_(
-    slug::Vector<SpriteCommand>& _commands,
-    const int                    _layer,
+static void AddCommand_(
+    Vector<SpriteCommand>& _commands,
+    const int                    _depth,
     const int                    _key,
     const int                    _tag)
 {
     SpriteCommand command;
-    command.layer   = _layer;
+    command.depth   = _depth;
     command.sortKey = _key;
     command.seq     = static_cast<uint32_t>(_commands.size());
     command.frame.x = _tag;
     _commands.push_back(command);
 }
-}   // namespace
 
 TEST(SpriteDest, PivotIsSubtractedFromSnappedOrigin)
 {
@@ -106,9 +102,9 @@ TEST(SpriteDest, OddWidthFramesDoNotLoseAPixel)
     EXPECT_EQ(b.x, 100 + 20 - 41);
 }
 
-TEST(SpriteSort, OrdersByLayerThenSortKeyThenSubmission)
+TEST(SpriteSort, OrdersByDepthThenSortKeyThenSubmission)
 {
-    slug::Vector<SpriteCommand> commands;
+    Vector<SpriteCommand> commands;
 
     AddCommand_(commands, 2, 0, 0);
     AddCommand_(commands, 1, 5, 1);
@@ -141,8 +137,23 @@ TEST(SpriteSort, BatchSubmitAssignsSequenceAndFlushClearsQueue)
     EXPECT_TRUE(batch.GetPendingCommands().empty());
 }
 
-namespace
+TEST(SpriteSort, FlushBelowDepthDrawsOnlyLowLayersAndKeepsTheRestQueued)
 {
+    SpriteBatch     batch;
+    const AnimFrame frame = MakeFrame_(4, 4, 0, 0);
+    batch.Submit(5, 0, frame, { 0.f, 0.f });
+    batch.Submit(-100, 0, frame, { 1.f, 0.f });
+    batch.Submit(-96, 0, frame, { 2.f, 0.f });
+    batch.Submit(-90, 0, frame, { 3.f, 0.f });
+    batch.Submit(20, 0, frame, { 4.f, 0.f });
+
+    batch.FlushBelowDepth(Vec2 { 0.f, 0.f }, -90);
+    ASSERT_EQ(batch.GetPendingCommands().size(), 3u);
+    EXPECT_EQ(batch.GetPendingCommands()[0].depth, -90);
+    EXPECT_EQ(batch.GetPendingCommands()[1].depth, 5);
+    EXPECT_EQ(batch.GetPendingCommands()[2].depth, 20);
+}
+
 struct SoftwareTarget
 {
     SDL_Surface*  pSurface  = nullptr;
@@ -193,9 +204,9 @@ struct SoftwareTarget
     }
 };
 
-[[nodiscard]] slug::Vector<uint8_t> MakeAtlas4x4_()
+[[nodiscard]] static Vector<uint8_t> MakeAtlas4x4_()
 {
-    slug::Vector<uint8_t> pixels(4 * 4 * 4);
+    Vector<uint8_t> pixels(4 * 4 * 4);
     for (int y = 0; y < 4; ++y)
     {
         for (int x = 0; x < 4; ++x)
@@ -213,7 +224,6 @@ struct SoftwareTarget
 constexpr uint32_t kRed   = 0xFF0000;
 constexpr uint32_t kGreen = 0x00FF00;
 constexpr uint32_t kBlack = 0x000000;
-}   // namespace
 
 TEST(SpriteBatchSdl, DrawsFrameAtSnappedPositionWithPivot)
 {
@@ -225,7 +235,7 @@ TEST(SpriteBatchSdl, DrawsFrameAtSnappedPositionWithPivot)
 
     SpriteBatch batch;
     batch.Init(target.pRenderer);
-    const slug::Vector<uint8_t> atlas = MakeAtlas4x4_();
+    const Vector<uint8_t> atlas = MakeAtlas4x4_();
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
     EXPECT_EQ(batch.GetAtlasPageCount(), 1u);
 
@@ -242,6 +252,46 @@ TEST(SpriteBatchSdl, DrawsFrameAtSnappedPositionWithPivot)
     EXPECT_EQ(target.PixelRgb(8, 20), kBlack);
 }
 
+TEST(SpriteBatchSdl, ScaleShrinksAroundThePivotAndLeavesTheDefaultUnchanged)
+{
+    SoftwareTarget target { 32, 32 };
+    if (!target.IsValid())
+    {
+        GTEST_SKIP() << "소프트웨어 렌더러를 만들 수 없는 환경";
+    }
+
+    SpriteBatch batch;
+    batch.Init(target.pRenderer);
+    const Vector<uint8_t> atlas = MakeAtlas4x4_();
+    ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
+    const AnimFrame frame = MakeFrame_(4, 4, 2, 4);   // 원점 = 프레임 하단 중앙
+
+    // 배율 0.5: 피벗 (10,20) 은 그대로 두고 4x4 가 2x2 로 줄어 (9..10, 18..19) 를 덮는다
+    SpriteDrawOptions half;
+    half.scale = 0.5f;
+    target.Clear();
+    batch.DrawFrame(frame, { 10.7f, 20.9f }, Vec2 { 0.f, 0.f }, half);
+    EXPECT_EQ(target.PixelRgb(8, 18), kBlack);
+    EXPECT_EQ(target.PixelRgb(9, 17), kBlack);
+    EXPECT_NE(target.PixelRgb(9, 18), kBlack);
+    EXPECT_NE(target.PixelRgb(10, 19), kBlack);
+    EXPECT_EQ(target.PixelRgb(11, 18), kBlack);
+    EXPECT_EQ(target.PixelRgb(10, 20), kBlack);
+    EXPECT_EQ(target.PixelRgb(8, 16), kBlack);
+
+    // 기본값 (1) 은 원래 4x4 (8..11, 16..19) 그대로
+    target.Clear();
+    batch.DrawFrame(frame, { 10.7f, 20.9f }, Vec2 { 0.f, 0.f }, SpriteDrawOptions {});
+    EXPECT_EQ(target.PixelRgb(8, 16), kRed);
+    EXPECT_EQ(target.PixelRgb(11, 19), kGreen);
+    EXPECT_EQ(target.PixelRgb(12, 16), kBlack);
+}
+
+TEST(SpriteDrawOptionsDefaults, ScaleIsOneByDefault)
+{
+    EXPECT_FLOAT_EQ(SpriteDrawOptions {}.scale, 1.f);
+}
+
 TEST(SpriteBatchSdl, FlipXMirrorsPixelsAroundOrigin)
 {
     SoftwareTarget target { 32, 32 };
@@ -252,7 +302,7 @@ TEST(SpriteBatchSdl, FlipXMirrorsPixelsAroundOrigin)
 
     SpriteBatch batch;
     batch.Init(target.pRenderer);
-    const slug::Vector<uint8_t> atlas = MakeAtlas4x4_();
+    const Vector<uint8_t> atlas = MakeAtlas4x4_();
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
 
     const AnimFrame frame = MakeFrame_(4, 4, 2, 4);
@@ -275,7 +325,7 @@ TEST(SpriteBatchSdl, FlushDrawsInSortedOrderLaterOnTop)
 
     SpriteBatch batch;
     batch.Init(target.pRenderer);
-    const slug::Vector<uint8_t> atlas = MakeAtlas4x4_();
+    const Vector<uint8_t> atlas = MakeAtlas4x4_();
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
 
     const AnimFrame red   = MakeFrame_(1, 1, 0, 0);   // atlas (0,0) = 빨강
@@ -327,7 +377,7 @@ TEST(SpriteBatchSdl, WideStandaloneTextureIsSeamlessAcrossStrips)
 
     constexpr int               kW = 5000;
     constexpr int               kH = 4;
-    slug::Vector<uint8_t> pixels(static_cast<size_t>(kW) * kH * 4);
+    Vector<uint8_t> pixels(static_cast<size_t>(kW) * kH * 4);
     for (int y = 0; y < kH; ++y)
     {
         for (int x = 0; x < kW; ++x)
@@ -342,10 +392,10 @@ TEST(SpriteBatchSdl, WideStandaloneTextureIsSeamlessAcrossStrips)
 
     SpriteBatch batch;
     batch.Init(target.pRenderer);
-    const slug::Result<int> handle = batch.AddStandaloneTextureFromRgba(kW, kH, pixels);
+    const Result<int> handle = batch.AddStandaloneTextureFromRgba(kW, kH, pixels);
     ASSERT_FALSE(handle.HasError());
 
-    const slug::ARRAY<int, 3> cams = { 2030, 4070, 4950 };
+    const ARRAY<int, 3> cams = { 2030, 4070, 4950 };
     for (const int cam: cams)
     {
         target.Clear();
@@ -370,7 +420,7 @@ TEST(SpriteBatchSdl, RejectsInvalidAtlasData)
 
     SpriteBatch batch;
     batch.Init(target.pRenderer);
-    const slug::Vector<uint8_t> tooSmall(8);
+    const Vector<uint8_t> tooSmall(8);
     EXPECT_TRUE(batch.AddAtlasPageFromRgba(4, 4, tooSmall).HasError());
     EXPECT_TRUE(batch.AddAtlasPageFromRgba(0, 4, tooSmall).HasError());
     EXPECT_TRUE(batch.LoadAtlasPage("this/file/does/not/exist.png").HasError());
@@ -394,7 +444,7 @@ TEST(SpriteBatchSdl, HitFlashDrawsOrangeRampVariantOnlyWhenRequested)
 
     SpriteBatch batch;
     batch.Init(target.pRenderer);
-    const slug::Vector<uint8_t> gray = { 100, 100, 100, 255 };
+    const Vector<uint8_t> gray = { 100, 100, 100, 255 };
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(1, 1, gray).IsOK());
     const AnimFrame frame = MakeFrame_(1, 1, 0, 1);
 
@@ -435,4 +485,48 @@ TEST(SpriteBatchSdl, HitFlashRampIsMonotoneKeepsAlphaAndMapsBlackToDarkOrange)
     const RGBA black = ApplyHitFlashRamp({ 0, 0, 0, 255 });
     EXPECT_GT(black.r, 120) << "원작: 어두운 픽셀도 붉은 주황으로 크게 떠오른다";
     EXPECT_LT(black.b, 10);
+}
+
+// 지형 텍스처보다 뒤 레이어는 텍스처 아래에 깔리고, 나머지는 텍스처 위에 그려진다
+TEST(SpriteBatchSdl, FlushBelowDepthLetsTheTerrainTextureCoverLowLayers)
+{
+    SoftwareTarget target { 16, 16 };
+    if (!target.IsValid())
+    {
+        GTEST_SKIP() << "소프트웨어 렌더러를 만들 수 없는 환경";
+    }
+
+    SpriteBatch batch;
+    batch.Init(target.pRenderer);
+    const Vector<uint8_t> atlas = MakeAtlas4x4_();
+    ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
+
+    Vector<uint8_t> terrain(4 * 4 * 4, 0);   // 왼쪽 2열 불투명 파랑, 오른쪽 2열 투명
+    for (int y = 0; y < 4; ++y)
+    {
+        for (int x = 0; x < 2; ++x)
+        {
+            uint8_t* pPixel = &terrain[static_cast<size_t>((y * 4 + x) * 4)];
+            pPixel[2]       = 255;
+            pPixel[3]       = 255;
+        }
+    }
+    const Result<int> handle = batch.AddStandaloneTextureFromRgba(4, 4, terrain);
+    ASSERT_FALSE(handle.HasError());
+
+    const AnimFrame red   = MakeFrame_(1, 1, 0, 0);
+    AnimFrame       green = MakeFrame_(1, 1, 0, 0);
+    green.x               = 1;
+
+    target.Clear();
+    batch.Submit(-100, 0, red, { 0.f, 0.f });   // 지형 아래: 불투명 구간에서는 가려진다
+    batch.Submit(-100, 0, red, { 3.f, 0.f });   // 지형 아래지만 투명 구간이라 보인다
+    batch.Submit(10, 0, green, { 1.f, 1.f });   // 지형 위
+    batch.FlushBelowDepth(Vec2 { 0.f, 0.f }, -90);
+    batch.DrawTexture(*handle, { 0.f, 0.f }, Vec2 { 0.f, 0.f }, 16, 16);
+    batch.Flush(Vec2 { 0.f, 0.f });
+
+    EXPECT_EQ(target.PixelRgb(0, 0), 0x0000FFu);
+    EXPECT_EQ(target.PixelRgb(3, 0), kRed);
+    EXPECT_EQ(target.PixelRgb(1, 1), kGreen);
 }

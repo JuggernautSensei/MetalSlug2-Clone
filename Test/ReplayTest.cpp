@@ -10,13 +10,10 @@
 #include "Game/SimRunner.h"
 #include "Game/StateFactory.h"
 
-using namespace slug;
 
-namespace
+[[nodiscard]] static Vector<InputFrame> MakeScript_()
 {
-[[nodiscard]] slug::Vector<InputFrame> MakeScript_()
-{
-    slug::Vector<InputFrame> frames;
+    Vector<InputFrame> frames;
     for (int i = 0; i < 240; ++i)
     {
         InputFrame frame;
@@ -28,10 +25,10 @@ namespace
     return frames;
 }
 
-[[nodiscard]] Vec2 RunDemo_(
-    const slug::Vector<InputFrame>& _frames)
+[[nodiscard]] static Vec2 RunDemo_(
+    const Vector<InputFrame>& _frames)
 {
-    slug::RngMt19937 rng { uint64_t { 7 } };
+    RngMt19937 rng { uint64_t { 7 } };
     GameContext      ctx;
     ctx.pRng = &rng;
 
@@ -40,7 +37,6 @@ namespace
     runner.Run(_frames);
     return pDemo->GetPosition();
 }
-}   // namespace
 
 TEST(Replay, SerializeRoundTrip)
 {
@@ -49,8 +45,8 @@ TEST(Replay, SerializeRoundTrip)
     replay.stateName = "stage0";
     replay.frames    = MakeScript_();
 
-    const slug::Vector<uint8_t> bytes  = SerializeReplay(replay);
-    slug::Result<ReplayData>    loaded = DeserializeReplay(bytes);
+    const Vector<uint8_t> bytes  = SerializeReplay(replay);
+    Result<ReplayData>    loaded = DeserializeReplay(bytes);
     ASSERT_TRUE(loaded.HasValue());
 
     const ReplayData& back = loaded.GetValue();
@@ -67,13 +63,13 @@ TEST(Replay, RejectsBadMagicAndTruncation)
 {
     ReplayData replay;
     replay.frames               = MakeScript_();
-    slug::Vector<uint8_t> bytes = SerializeReplay(replay);
+    Vector<uint8_t> bytes = SerializeReplay(replay);
 
-    slug::Vector<uint8_t> badMagic = bytes;
+    Vector<uint8_t> badMagic = bytes;
     badMagic[0]                    = 'X';
     EXPECT_FALSE(DeserializeReplay(badMagic).HasValue());
 
-    slug::Vector<uint8_t> truncated(bytes.begin(), bytes.begin() + static_cast<std::ptrdiff_t>(bytes.size() / 2));
+    Vector<uint8_t> truncated(bytes.begin(), bytes.begin() + static_cast<std::ptrdiff_t>(bytes.size() / 2));
     EXPECT_FALSE(DeserializeReplay(truncated).HasValue());
 
     EXPECT_FALSE(DeserializeReplay({}).HasValue());
@@ -81,7 +77,7 @@ TEST(Replay, RejectsBadMagicAndTruncation)
 
 TEST(SimRunner, SameInputsGiveIdenticalResult)
 {
-    const slug::Vector<InputFrame> script = MakeScript_();
+    const Vector<InputFrame> script = MakeScript_();
     const Vec2                     a      = RunDemo_(script);
     const Vec2                     b      = RunDemo_(script);
     EXPECT_FLOAT_EQ(a.x, b.x);

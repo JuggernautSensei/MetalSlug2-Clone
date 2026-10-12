@@ -4,22 +4,13 @@
 #include "Game/Enemies/EnemyBehaviors.h"
 #include "Game/Enemies/EnemyWorld.h"
 
-namespace slug
-{
-
-[[nodiscard]] inline float DxToPlayer(
+[[nodiscard]] float DxToPlayer(
     const Enemy&    _e,
-    const EnemyEnv& _env)
-{
-    return _env.ctx.player.feet.x - _e.body.position.x;
-}
+    const EnemyEnv& _env);
 
-[[nodiscard]] inline float DyToPlayer(
+[[nodiscard]] float DyToPlayer(
     const Enemy&    _e,
-    const EnemyEnv& _env)
-{
-    return _env.ctx.player.feet.y - _e.body.position.y;
-}
+    const EnemyEnv& _env);
 
 [[nodiscard]] float DistToPlayer(const Enemy& _e, const EnemyEnv& _env);
 
@@ -35,6 +26,18 @@ void SetClip(
 
 [[nodiscard]] bool ClipReachedFrame(const Enemy& _e, const EnemyDef& _def, int _frame);
 [[nodiscard]] bool ClipFinished(const Enemy& _e, const EnemyDef& _def);
+
+// 계단 병사 오르기 한 틱: 스폰 -> arena.min -> arena.max -> (climbEnd) 를 직선으로 걷는다 (aux = 구간). 끝에 닿으면 true
+[[nodiscard]] bool ClimbStep(Enemy& _e, const EnemyDef& _def);
+// 계단을 다 오른 병사의 전방 점프: 버스 쪽으로 점프해 승강대 벽 (버스 몸체) 을 넘는다. 착지하면 일반 AI
+void ClimbLeap(Enemy& _e, const EnemyDef& _def);
+
+// 지붕 위 계단 병사: 지붕 발판 (roofSpan, 윗면 = climbEnd.y) 에 서 있는지 / 끝까지 걸어 더 못 가는지 / 점프 베기로 버스 밖에 내릴 수 있는 자리인지
+[[nodiscard]] bool OnRoof(const Enemy& _e);
+[[nodiscard]] bool AtRoofEdge(const Enemy& _e);
+[[nodiscard]] bool CanLeaveRoof(const Enemy& _e);
+// 지붕 위에서 걸어 발판 밖 (= 버스 몸통 안) 으로 떨어지지 않도록 x 를 발판 안에 가둔다 (물리 한 틱 뒤에 부른다)
+void HoldOnRoof(Enemy& _e);
 
 MoveResult StepPhysics(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
 void       PrepareBody(Enemy& _e, const EnemyDef& _def);
@@ -53,12 +56,9 @@ void       PrepareBody(Enemy& _e, const EnemyDef& _def);
     float           _dist,
     float           _drop);
 
-[[nodiscard]] inline int Roll(
+[[nodiscard]] int Roll(
     EnemyEnv& _env,
-    const int _n)
-{
-    return _env.world.Roll(_n);
-}
+    const int _n);
 
 void RequestFx(
     EnemyEnv&    _env,
@@ -77,6 +77,9 @@ bool FireWeapon(
     Vec2            _muzzleExtra = { 0.f, 0.f });
 
 [[nodiscard]] Vec2 GetMuzzleWorld(const Enemy& _e, const EnemyDef& _def, int _weapon);
+
+// 무기의 effects: motionClip 의 frame 이 시작되는 틱에 이펙트를 낸다 (effects 가 없으면 아무것도 안 한다)
+void TickWeaponEffects(const Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
 
 void StartMelee(
     Enemy&          _e,
@@ -98,10 +101,8 @@ bool SubmitNamedPart(
     int                   _ticks,
     bool                  _bLoop,
     int                   _sortKey,
-    int                   _layer,
+    int                   _depth,
     bool                  _bFlipX    = false,
     float                 _partFlash = 0.f);
 
 [[nodiscard]] int GetNamedPartTicks(const AnimationLibrary& _anims, StringView _name);
-
-}   // namespace slug

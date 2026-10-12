@@ -1,0 +1,123 @@
+SlugBaker summary
+=================
+legacy root     : C:\Users\Ahnjiwoo\Desktop\Projects\windowAPIProject(24.02.05)\Client\Output\Binaries\Resources
+output root     : Assets/Baked
+only            : (all)
+elapsed         : 170.7 s
+
+textures defined: 631  (loaded 631, failed 0, standalone PNG 13)
+animations      : 928 baked, 0 skipped, 6980 frames (4 empty)
+    effect       : 73 animations, 857 frames
+    enemy        : 408 animations, 2662 frames
+    npc          : 15 animations, 158 frames
+    player       : 63 animations, 424 frames
+    player_lower : 8 animations, 50 frames
+    player_upper : 81 animations, 370 frames
+    sheet        : 280 animations, 2459 frames
+sprites         : 230 baked (216 atlas, 14 standalone file, 16 implicit from unreferenced textures), 0 skipped
+atlas           : 16 page(s) of 2048x2048, 5900 unique images, 63170693 px used (94.1% fill), dedupe saved 1296 frame refs
+sounds          : 24 copied of 24
+ground Stage0_0 : 14094x1328 solid=1175575 (6.28%), unclassified=0, bounds x=0 y=378 w=14094 h=950  (B>=192 R<=96 G<=96 A>=128)
+ground Stage0_1 : 14094x1328 solid=1188561 (6.35%), unclassified=8352, bounds x=0 y=322 w=14094 h=1006  (B>=192 R<=96 G<=96 A>=128)
+
+alpha textures (UseTransparent=2) pixel statistics
+    partial-alpha pixels            : 21343
+    partial alpha with max(rgb) > a : 16367 in 4 textures (> 0 means straight, not premultiplied, alpha)
+    alpha==0 but rgb!=0 (cleared)   : 76723053
+    opaque magenta (255,0,255,255)  : 5645780 px in 122 textures
+
+anomalies by type
+    AlphaChannelUnreliable      : 5
+    AlphaModeWithoutAlpha       : 8
+    DuplicateName               : 3
+    DuplicateTexture            : 4
+    EmptyFrame                  : 4
+    FrameOutOfBounds            : 4
+    LeftRightFootMismatch       : 10
+    LeftRightMissingTwin        : 1
+    LeftRightOffsetMismatch     : 7
+    LeftRightPropertyMismatch   : 9
+    LegacyAnimFixup             : 6
+    LoopStartOutOfRange         : 6
+    MagentaKeyedInAlphaTexture  : 117
+    NonLoopStartNonZero         : 17
+    OddCellWidth                : 106
+    SheetRegisterFallback       : 7
+    SheetRegistration           : 280
+    SolidSilhouetteFrame        : 15
+    SpriteOutOfBounds           : 1
+
+top LeftRightOffsetMismatch (see pivot_report.json)
+    Player_Stand_Lookingup_3_SG : low Left=(-18,-28) Right=(18,-24) mirrorErrX=0 diffY=-4
+    Player_Stand_Lookingup_4_SG : low Left=(-15,-28) Right=(15,-24) mirrorErrX=0 diffY=-4
+    Player_Jump_Shot_Lookdown_SG : low Left=(0,6) Right=(0,4) mirrorErrX=0 diffY=2
+    Player_Jump_Shot_Lookingdown_1_BT_MG : low Left=(-32,20) Right=(32,22) mirrorErrX=0 diffY=-2
+    Player_Jump_Shot_Lookingdown_1_TB_MG : low Left=(-32,20) Right=(32,22) mirrorErrX=0 diffY=-2
+    Player_Jump_Shot_Lookingdown_2_BT_MG : low Left=(-32,20) Right=(32,22) mirrorErrX=0 diffY=-2
+    Player_Jump_Shot_Lookingdown_2_TB_MG : low Left=(-32,20) Right=(32,22) mirrorErrX=0 diffY=-2
+
+top LeftRightFootMismatch (see pivot_report.json)
+    BattleShip_DCannon_Shot_Effect : bottom anchor Y differs by up to 34.0 px between Left and Right
+    BattleShip_SCannon_Shot_Effect : bottom anchor Y differs by up to 21.0 px between Left and Right
+    Player_Stand_Lookingup_4_SG : bottom anchor Y differs by up to 9.0 px between Left and Right
+    FlameShot_BeginMotion : bottom anchor Y differs by up to 8.0 px between Left and Right
+    Player_Stand_Lookingup_3_SG : bottom anchor Y differs by up to 3.0 px between Left and Right
+    Player_Jump_Shot_Lookdown_SG : bottom anchor Y differs by up to 2.0 px between Left and Right
+    Player_Jump_Shot_Lookingdown_1_BT_MG : bottom anchor Y differs by up to 2.0 px between Left and Right
+    Player_Jump_Shot_Lookingdown_1_TB_MG : bottom anchor Y differs by up to 2.0 px between Left and Right
+    Player_Jump_Shot_Lookingdown_2_BT_MG : bottom anchor Y differs by up to 2.0 px between Left and Right
+    Player_Jump_Shot_Lookingdown_2_TB_MG : bottom anchor Y differs by up to 2.0 px between Left and Right
+
+top NonLoopStartNonZero (see pivot_report.json)
+    Player_Jump_Shot_Lookingdown_2_BT_MG_Left : non-loop with Start=3 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+    Player_Jump_Shot_Lookingdown_2_BT_MG_Right : non-loop with Start=3 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+    Player_Stand_Shot_Lookingup_3_TB_MG_Left : non-loop with Start=3 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+    Player_Stand_Shot_Lookingup_3_TB_MG_Right : non-loop with Start=3 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+    BattleShip_DCannon_TurnLeft_0 : non-loop with Start=3 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+    BattleShip_DCannon_TurnRight_1 : non-loop with Start=3 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+    BattleShip_SCannon_TurnLeft_0 : non-loop with Start=3 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+    BattleShip_SCannon_TurnRight_1 : non-loop with Start=3 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+    Player_Jump_Shot_Lookingdown_1_BT_MG_Left : non-loop with Start=2 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+    Player_Jump_Shot_Lookingdown_1_BT_MG_Right : non-loop with Start=2 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+    Player_Stand_Shot_Lookingup_4_TB_MG_Left : non-loop with Start=2 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+    Player_Stand_Shot_Lookingup_4_TB_MG_Right : non-loop with Start=2 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+    Player_Jump_Shot_Lookingdown_1_TB_MG_Left : non-loop with Start=1 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+    Player_Jump_Shot_Lookingdown_1_TB_MG_Right : non-loop with Start=1 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+    Player_Stand_Shot_Lookingup_4_BT_MG_Left : non-loop with Start=1 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+    Player_Stand_Shot_Lookingup_4_BT_MG_Right : non-loop with Start=1 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+    ItemBoxDestroy : non-loop with Start=1 (legacy Animator drew column End instead of the right column at the end); baked with correct columns
+
+top MissingTexture (see pivot_report.json)
+
+top MissingFile (see pivot_report.json)
+
+top FrameOutOfBounds (see pivot_report.json)
+    FlameShot_BeginMotion_Right : 28 of 28 frame cells exceed the texture (3510x110, cell 80x120)
+    FlameShot_BeginMotion_Left : 28 of 28 frame cells exceed the texture (3510x110, cell 80x120)
+    Player_Ride_DG_Left : 1 of 6 frame cells exceed the texture (330x88, cell 66x88)
+    Player_Ride_DG_Right : 1 of 6 frame cells exceed the texture (330x88, cell 66x88)
+
+top EmptyFrame (see pivot_report.json)
+    Player_Ride_DG_Left : 1 of 6 frames are fully transparent
+    Player_Ride_DG_Right : 1 of 6 frames are fully transparent
+    Slug_In : 1 of 17 frames are fully transparent
+    Slug_Out : 1 of 17 frames are fully transparent
+
+top OpaqueMagentaInFrame (see pivot_report.json)
+
+top anchor drift (px, frame-to-frame bottom-center)
+    Bus_OpenTop                                      max=114.0 x=47.0 y=114.0
+    Bus_StairsFly                                    max=88.0 x=17.0 y=88.0
+    Explosion_Huge                                   max=84.0 x=9.0 y=84.0
+    Slug_CannonFx_2                                  max=52.0 x=1.0 y=52.0
+    Slug_CannonFx_4                                  max=52.0 x=1.0 y=52.0
+    Player_Jump_Shot_Down_DG_Left                    max=50.0 x=3.0 y=50.0
+    Player_Jump_Shot_Down_DG_Right                   max=50.0 x=3.0 y=50.0
+    ShotGun_Bullet_Up                                max=50.0 x=9.0 y=50.0
+    FlameShot_BeginMotion_Right                      max=48.0 x=48.0 y=12.0
+    FlameShot_BeginMotion_Left                       max=48.0 x=48.0 y=10.0
+    Slug_CannonFx_1                                  max=44.0 x=1.0 y=44.0
+    Slug_CannonFx_0                                  max=38.0 x=1.0 y=38.0
+    Bus_DebFrameB                                    max=37.0 x=0.0 y=37.0
+    BattleShip_Cannon_Start                          max=34.0 x=21.0 y=34.0
+    BattleShip_Cannon_End                            max=34.0 x=21.0 y=34.0

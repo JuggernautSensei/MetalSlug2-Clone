@@ -4,101 +4,94 @@
 
 #include "Base/Math.h"
 
-namespace slug
+constexpr float kRampStart     = 1.f;                   // px/틱: 스크롤 시작 속도
+constexpr float kRampAccel     = 0.19f;                 // px/틱²: 플레이어를 따라 가속
+constexpr float kDecayPerTick  = 0.80f;                 // 플레이어가 멈추거나 되돌아갈 때 틱마다 곱하는 감속 계수
+constexpr float kStopSpeed     = 0.05f;                 // px/틱 미만이면 정지
+constexpr float kGlideEnterGap = 96.f;                  // 이 이상 벌어지면 (잠금 해제, 구간 경계 등) 부드럽게 따라잡는다
+constexpr float kGlideExitGap  = 0.05f;                 // 글라이드 도착 판정 (px)
+constexpr float kGlideAccel    = 1.f;                   // px/틱²: 글라이드 가감속 상한
+constexpr float kMaxStep       = 12.f;                  // px/틱 속도 상한 (글라이드, 수직 추적 공통)
+constexpr float kStepGrowth    = 1.5f;                  // 한 틱에 직전 걸음의 이 배수까지만 커진다
+constexpr float kStepFloor     = 1.f;                   // 걸음이 작을 때 허용되는 최소 증가폭 (px/틱)
+constexpr float kMaxSpeedSec   = kMaxStep / kStepSec;   // px/s
+constexpr float kBoundsEase    = 2.f;                   // px/틱: 클램프 영역이 좁아지는 속도 (edge 당)
+constexpr float kCorrectionSec = 0.5f;                  // 잠금 시 카메라가 영역 밖이면 이 시간에 걸쳐 안으로 들어간다
+
+[[nodiscard]] static float RoundToInt_(
+    const float _value)
 {
+    return std::floor(_value + 0.5f);
+}
 
-namespace
+// 남은 간격 _gap 에서 감속 kGlideAccel 로 틱 단위 이산 적분하며 정확히 멈출 수 있는 최대 속도 (v + (v-a) + ... = gap)
+[[nodiscard]] static float BrakeSpeed_(
+    const float _gap)
 {
-    constexpr float kRampStart     = 1.f;                   // px/틱: 스크롤 시작 속도
-    constexpr float kRampAccel     = 0.19f;                 // px/틱²: 플레이어를 따라 가속
-    constexpr float kDecayPerTick  = 0.80f;                 // 플레이어가 멈추거나 되돌아갈 때 틱마다 곱하는 감속 계수
-    constexpr float kStopSpeed     = 0.05f;                 // px/틱 미만이면 정지
-    constexpr float kGlideEnterGap = 96.f;                  // 이 이상 벌어지면 (잠금 해제, 구간 경계 등) 부드럽게 따라잡는다
-    constexpr float kGlideExitGap  = 0.05f;                 // 글라이드 도착 판정 (px)
-    constexpr float kGlideAccel    = 1.f;                   // px/틱²: 글라이드 가감속 상한
-    constexpr float kMaxStep       = 12.f;                  // px/틱 속도 상한 (글라이드, 수직 추적 공통)
-    constexpr float kStepGrowth    = 1.5f;                  // 한 틱에 직전 걸음의 이 배수까지만 커진다
-    constexpr float kStepFloor     = 1.f;                   // 걸음이 작을 때 허용되는 최소 증가폭 (px/틱)
-    constexpr float kMaxSpeedSec   = kMaxStep / kStepSec;   // px/s
-    constexpr float kBoundsEase    = 2.f;                   // px/틱: 클램프 영역이 좁아지는 속도 (edge 당)
-    constexpr float kCorrectionSec = 0.5f;                  // 잠금 시 카메라가 영역 밖이면 이 시간에 걸쳐 안으로 들어간다
+    return (-kGlideAccel + std::sqrt(kGlideAccel * kGlideAccel + 8.f * kGlideAccel * _gap)) * 0.5f;
+}
 
-    [[nodiscard]] float RoundToInt_(
-        const float _value)
+// 한 축의 이동(거리 _dist, 시작 속도 _v0 px/틱)을 가속도 kGlideAccel·속도 kMaxStep 상한 안에서 끝내는 최소 틱 수
+// Hermite 곡선: 시작 가속도 = (6·D − 4·T·v0)/T², 속도 ≈ 1.5·D/T + v0
+[[nodiscard]] static int MinMoveTicks_(
+    const float _dist,
+    const float _v0)
+{
+    const float d      = std::abs(_dist);
+    const float v      = std::abs(_v0);
+    const float tAccel = (4.f * v + std::sqrt(16.f * v * v + 24.f * kGlideAccel * d)) / (2.f * kGlideAccel);
+    const float tVel   = 1.5f * d / Max(1.f, kMaxStep - v);
+    return static_cast<int>(std::ceil(Max(tAccel, tVel)));
+}
+
+// 임계감쇠 스프링 (Unity SmoothDamp 와 같은 형태). 속도 상한은 px/s
+static void SmoothDamp_(
+    float&      _current,
+    float&      _velocity,
+    const float _target,
+    const float _smoothTime,
+    const float _dt,
+    const float _maxSpeed)
+{
+    const float omega     = 2.f / _smoothTime;
+    const float x         = omega * _dt;
+    const float e         = 1.f / (1.f + x + 0.48f * x * x + 0.235f * x * x * x);
+    const float maxChange = _maxSpeed * _smoothTime;
+    const float change    = Clamp(_current - _target, -maxChange, maxChange);
+    const float goal      = _current - change;
+    const float temp      = (_velocity + omega * change) * _dt;
+    _velocity             = (_velocity - omega * temp) * e;
+    float out             = goal + (change + temp) * e;
+
+    if ((_target - _current > 0.f) == (out > _target))
     {
-        return std::floor(_value + 0.5f);
+        out       = _target;
+        _velocity = 0.f;
     }
 
-    // 남은 간격 _gap 에서 감속 kGlideAccel 로 틱 단위 이산 적분하며 정확히 멈출 수 있는 최대 속도 (v + (v-a) + ... = gap)
-    [[nodiscard]] float BrakeSpeed_(
-        const float _gap)
+    if (std::abs(out - _target) < 0.001f && std::abs(_velocity) < 0.01f)
     {
-        return (-kGlideAccel + std::sqrt(kGlideAccel * kGlideAccel + 8.f * kGlideAccel * _gap)) * 0.5f;
+        out       = _target;
+        _velocity = 0.f;
     }
+    _current = out;
+}
 
-    // 한 축의 이동(거리 _dist, 시작 속도 _v0 px/틱)을 가속도 kGlideAccel·속도 kMaxStep 상한 안에서 끝내는 최소 틱 수
-    // Hermite 곡선: 시작 가속도 = (6·D − 4·T·v0)/T², 속도 ≈ 1.5·D/T + v0
-    [[nodiscard]] int MinMoveTicks_(
-        const float _dist,
-        const float _v0)
+[[nodiscard]] static float ApplyDeadzone_(
+    const float _center,
+    const float _focus,
+    const float _half)
+{
+    if (_focus > _center + _half)
     {
-        const float d      = std::abs(_dist);
-        const float v      = std::abs(_v0);
-        const float tAccel = (4.f * v + std::sqrt(16.f * v * v + 24.f * kGlideAccel * d)) / (2.f * kGlideAccel);
-        const float tVel   = 1.5f * d / Max(1.f, kMaxStep - v);
-        return static_cast<int>(std::ceil(Max(tAccel, tVel)));
+        return _focus - _half;
     }
-
-    // 임계감쇠 스프링 (Unity SmoothDamp 와 같은 형태). 속도 상한은 px/s
-    void SmoothDamp_(
-        float&      _current,
-        float&      _velocity,
-        const float _target,
-        const float _smoothTime,
-        const float _dt,
-        const float _maxSpeed)
+    if (_focus < _center - _half)
     {
-        const float omega     = 2.f / _smoothTime;
-        const float x         = omega * _dt;
-        const float e         = 1.f / (1.f + x + 0.48f * x * x + 0.235f * x * x * x);
-        const float maxChange = _maxSpeed * _smoothTime;
-        const float change    = Clamp(_current - _target, -maxChange, maxChange);
-        const float goal      = _current - change;
-        const float temp      = (_velocity + omega * change) * _dt;
-        _velocity             = (_velocity - omega * temp) * e;
-        float out             = goal + (change + temp) * e;
-
-        if ((_target - _current > 0.f) == (out > _target))
-        {
-            out       = _target;
-            _velocity = 0.f;
-        }
-
-        if (std::abs(out - _target) < 0.001f && std::abs(_velocity) < 0.01f)
-        {
-            out       = _target;
-            _velocity = 0.f;
-        }
-        _current = out;
+        return _focus + _half;
     }
-
-    [[nodiscard]] float ApplyDeadzone_(
-        const float _center,
-        const float _focus,
-        const float _half)
-    {
-        if (_focus > _center + _half)
-        {
-            return _focus - _half;
-        }
-        if (_focus < _center - _half)
-        {
-            return _focus + _half;
-        }
-        return _center;
-    }
-
-}   // namespace
+    return _center;
+}
 
 Camera::Camera(
     const CameraTuning& _tuning)
@@ -226,12 +219,21 @@ bool Camera::GetTargetRect_(
         _rect = m_lockBounds;
         return true;
     }
-    if (m_bHasBounds)
+    if (!m_bHasBounds)
     {
-        _rect = m_bounds;
-        return true;
+        return false;
     }
-    return false;
+    _rect = m_bounds;
+    if (m_bPendingLock)
+    {
+        // 잠금 글라이드 중에는 곧 적용될 잠금 영역까지 넓힌다: 잠금 사각형이 월드 경계 밖으로 나가도 (보스 아레나)
+        // 도착점이 경계에 막혀 멈췄다가 잠금 시점에 화면이 한 번에 튀지 않는다
+        _rect.min.x = Min(_rect.min.x, m_pendingLock.min.x);
+        _rect.min.y = Min(_rect.min.y, m_pendingLock.min.y);
+        _rect.max.x = Max(_rect.max.x, m_pendingLock.max.x);
+        _rect.max.y = Max(_rect.max.y, m_pendingLock.max.y);
+    }
+    return true;
 }
 
 void Camera::SyncEffectiveBounds_()
@@ -342,6 +344,29 @@ void Camera::AddScrollFloor(
         m_bScrollFloor = true;
     }
     m_scrollFloorX += _dx;
+}
+
+void Camera::ShiftLock(
+    const float _dx)
+{
+    if (m_bPendingLock)
+    {
+        m_pendingLock.min.x += _dx;
+        m_pendingLock.max.x += _dx;
+    }
+    if (m_bMoving)
+    {
+        m_moveTarget.x += _dx;
+        m_moveRaw.x += _dx;
+    }
+    if (!m_bLocked)
+    {
+        return;
+    }
+    m_lockBounds.min.x += _dx;
+    m_lockBounds.max.x += _dx;
+    m_effBounds.min.x += _dx;
+    m_effBounds.max.x += _dx;
 }
 
 void Camera::SnapTo(
@@ -642,4 +667,77 @@ bool Camera::IsVisible(
     return GetViewRect().Expanded(_margin).Overlaps(_worldBox);
 }
 
-}   // namespace slug
+const CameraTuning& Camera::GetTuning() const
+{
+    return m_tuning;
+}
+
+bool Camera::IsLocked() const
+{
+    return m_bLocked;
+}
+
+void Camera::SetForwardOnly(const bool _bForwardOnly)
+{
+    m_bForwardOnly = _bForwardOnly;
+}
+
+bool Camera::IsForwardOnly() const
+{
+    return m_bForwardOnly;
+}
+
+void Camera::SetForwardOnlyY(const bool _bForwardOnlyY)
+{
+    m_bForwardOnlyY = _bForwardOnlyY;
+}
+
+bool Camera::IsForwardOnlyY() const
+{
+    return m_bForwardOnlyY;
+}
+
+bool Camera::IsMoving() const
+{
+    return m_bMoving;
+}
+
+bool Camera::HasPendingLock() const
+{
+    return m_bPendingLock;
+}
+
+const Aabb& Camera::GetBounds() const
+{
+    return m_bounds;
+}
+
+const Aabb& Camera::GetLockBounds() const
+{
+    return m_lockBounds;
+}
+
+void Camera::SetTarget(const Vec2 _target)
+{
+    m_target = _target;
+}
+
+void Camera::ClearScrollFloor()
+{
+    m_bScrollFloor = false;
+}
+
+bool Camera::HasScrollFloor() const
+{
+    return m_bScrollFloor;
+}
+
+float Camera::GetScrollFloorX() const
+{
+    return m_scrollFloorX;
+}
+
+Vec2 Camera::GetViewCenter() const
+{
+    return m_center;
+}

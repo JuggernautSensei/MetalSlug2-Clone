@@ -6,12 +6,10 @@
 #include "Game/Combat/CombatSystem.h"
 #include "Game/Combat/Projectiles.h"
 #include "Game/Player/PlayerInput.h"
+#include "Game/Player/PlayerTypes.h"
 #include "Game/Player/SlugTypes.h"
 #include "World/Combat.h"
 #include "World/Physics.h"
-
-namespace slug
-{
 
 struct SlugContext
 {
@@ -20,6 +18,7 @@ struct SlugContext
     PhysicsWorld      physics      = {};
     CombatSystem*     pCombat      = nullptr;
     ProjectileSystem* pProjectiles = nullptr;
+    eGodMode          godMode      = eGodMode::Off;
 };
 
 // 파괴되거나 플레이어가 내릴 때 차량이 호스트에게 남기는 "플레이어를 밖으로 내보내라" 요청
@@ -93,6 +92,8 @@ public:
     [[nodiscard]] uint32_t   GetOwnerId() const;
     [[nodiscard]] Vec2       GetFeet() const;
     [[nodiscard]] Vec2       GetPrevFeet() const;
+    [[nodiscard]] int        GetZ() const;   // 몸통 depth (kDefaultZ: kSlugBodyDepth). 부품/FX/화살표/탄은 같은 이동량을 따른다
+    void                     SetZ(int _z);
     [[nodiscard]] Vec2       GetVelocity() const;
     [[nodiscard]] int        GetFacing() const;
     [[nodiscard]] bool       IsGrounded() const;
@@ -160,6 +161,7 @@ private:
 
     Body       m_body     = {};
     Vec2       m_prevFeet = { 0.f, 0.f };
+    int        m_z        = kDefaultZ;
     MoveResult m_lastMove = {};
     int        m_facing   = 1;
 
@@ -186,6 +188,7 @@ private:
     int      m_hp             = 100;
     int      m_flashTicks     = 0;
     int      m_invincibleTicks = 0;
+    eGodMode m_godMode         = eGodMode::Off;   // 에디터 디버그 (해시 제외)
     int      m_hitAge         = -1;   // 피격 경직 클립 경과 틱 (-1 = 없음)
     bool     m_bHitFront      = true;
     int      m_exitCooldown   = 0;
@@ -206,5 +209,3 @@ private:
     SlugStats        m_stats = {};
     Vector<SlugFx>   m_fx    = {};
 };
-
-}   // namespace slug

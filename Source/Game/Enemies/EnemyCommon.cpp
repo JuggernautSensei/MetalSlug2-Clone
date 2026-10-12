@@ -4,44 +4,42 @@
 #include <cmath>
 #include <format>
 
+#include "Base/Log.h"
 #include "Base/Math.h"
 #include "Base/Types.h"
+#include "Game/Sandbox/Effects.h"
+#include "Render/SpriteBatch.h"
 
-namespace slug
+constexpr float kFaceDeadzone = 4.f;   // 플레이어와 가로 거리가 이 이내면 방향을 바꾸지 않는다
+
+// 사망 혈흔 y 보정은 DeathDef::bloodOffsetY (body.cy -37.5 에 더해 가슴 높이 약 -65 가 된다)
+
+// Enemy::deathPhase 에 int 로 저장된다
+enum class eDeathPhase
 {
+    None  = 0,
+    Stand = 1,   // 서서 쓰러지는 중 (fallAt 프레임까지)
+    Fall  = 2,   // 공중에서 낙하 (Die_Fall)
+    Land  = 3,   // 최종 (시체)
+    Slash = 4,   // 최종: 칼에 베임
+    Bomb  = 5,   // 최종: 폭발로 날아감
+    Jump  = 6    // 공중 사망 → 착지하면 Land
+};
 
-namespace
+[[nodiscard]] static bool IsFinalPhase_(
+    const eDeathPhase _phase)
 {
-    constexpr float kFaceDeadzone = 4.f;   // 플레이어와 가로 거리가 이 이내면 방향을 바꾸지 않는다
+    return _phase == eDeathPhase::Land || _phase == eDeathPhase::Slash || _phase == eDeathPhase::Bomb;
+}
 
-    // Enemy::deathPhase 에 int 로 저장된다
-    enum class eDeathPhase
-    {
-        None  = 0,
-        Stand = 1,   // 서서 쓰러지는 중 (fallAt 프레임까지)
-        Fall  = 2,   // 공중에서 낙하 (Die_Fall)
-        Land  = 3,   // 최종 (시체)
-        Slash = 4,   // 최종: 칼에 베임
-        Bomb  = 5,   // 최종: 폭발로 날아감
-        Jump  = 6    // 공중 사망 → 착지하면 Land
-    };
-
-    [[nodiscard]] bool IsFinalPhase_(
-        const eDeathPhase _phase)
-    {
-        return _phase == eDeathPhase::Land || _phase == eDeathPhase::Slash || _phase == eDeathPhase::Bomb;
-    }
-
-    void EnterDeathLand_(
-        Enemy&          _e,
-        const DeathDef& _death)
-    {
-        _e.deathPhase = static_cast<int>(eDeathPhase::Land);
-        _e.deathTicks = 0;
-        SetClip(_e, _death.clipLand, true);
-    }
-
-}   // namespace
+static void EnterDeathLand_(
+    Enemy&          _e,
+    const DeathDef& _death)
+{
+    _e.deathPhase = static_cast<int>(eDeathPhase::Land);
+    _e.deathTicks = 0;
+    SetClip(_e, _death.clipLand, true);
+}
 
 float DistToPlayer(
     const Enemy&    _e,
@@ -108,6 +106,97 @@ bool ClipFinished(
     const EnemyDef& _def)
 {
     return _e.clip >= 0 && _def.GetClip(_e.clip).IsFinished(_e.clipTicks);
+}
+
+bool ClimbStep(
+    Enemy&          _e,
+    const EnemyDef& _def)
+{
+    Vec2 target = _e.arena.max;
+    if (_e.aux == 0)
+    {
+        target = _e.arena.min;
+    }
+    else if (_e.aux == 2)
+    {
+        target = _e.climbEnd;
+    }
+    const Vec2  delta = { target.x - _e.body.position.x, target.y - _e.body.position.y };
+    const float dist  = std::sqrt(delta.x * delta.x + delta.y * delta.y);
+    const float step  = _def.physics.speed * kStepSec;
+
+    _e.body.velocity = { 0.f, 0.f };
+    if (std::abs(delta.x) > 0.01f)
+    {
+        _e.facing = delta.x < 0.f ? -1 : 1;
+    }
+    if (dist > step)
+    {
+        _e.body.position.x += delta.x / dist * step;
+        _e.body.position.y += delta.y / dist * step;
+        return false;
+    }
+
+    _e.body.position = target;
+    const bool bHasEnd = _e.climbEnd.y != 0.f;
+    if (_e.aux == 0 || (_e.aux == 1 && bHasEnd))
+    {
+        ++_e.aux;
+        return false;
+    }
+    return true;
+}
+
+void ClimbLeap(
+    Enemy&          _e,
+    const EnemyDef& _def)
+{
+    _e.body.velocity = { static_cast<float>(_e.facing) * _def.physics.speed, _def.physics.jumpVy };
+    _e.bLeap         = true;
+}
+
+constexpr float kRoofEdgeMargin = 4.f;    // 발 반폭: 이 안쪽까지만 걷는다
+constexpr float kRoofLeaveZone  = 30.f;   // 지붕 왼쪽 끝에서 이 안이면 점프 베기로 버스 밖에 내린다
+
+bool OnRoof(
+    const Enemy& _e)
+{
+    return _e.roofSpan.y > _e.roofSpan.x && _e.bGrounded && std::abs(_e.body.position.y - _e.climbEnd.y) < 2.f;
+}
+
+bool AtRoofEdge(
+    const Enemy& _e)
+{
+    if (!OnRoof(_e))
+    {
+        return false;
+    }
+    return _e.facing < 0 ? _e.body.position.x <= _e.roofSpan.x + kRoofEdgeMargin + 0.5f : _e.body.position.x >= _e.roofSpan.y - kRoofEdgeMargin - 0.5f;
+}
+
+bool CanLeaveRoof(
+    const Enemy& _e)
+{
+    if (!OnRoof(_e))
+    {
+        return true;
+    }
+    return _e.facing < 0 ? _e.body.position.x <= _e.roofSpan.x + kRoofLeaveZone : _e.body.position.x >= _e.roofSpan.y - kRoofLeaveZone;
+}
+
+void HoldOnRoof(
+    Enemy& _e)
+{
+    if (!OnRoof(_e))
+    {
+        return;
+    }
+    const float x = Clamp(_e.body.position.x, _e.roofSpan.x + kRoofEdgeMargin, _e.roofSpan.y - kRoofEdgeMargin);
+    if (x != _e.body.position.x)
+    {
+        _e.body.position.x = x;
+        _e.body.velocity.x = 0.f;
+    }
 }
 
 void PrepareBody(
@@ -210,8 +299,18 @@ void RequestFx(
     EnemyFxRequest request;
     request.clip       = ResolveSide(_fx.clip, _facing);
     request.position   = { _origin.x + _fx.offset.x * static_cast<float>(_facing < 0 ? -1 : 1), _origin.y + _fx.offset.y };
-    request.layer      = _fx.layer;
+    request.depth      = _fx.depth + _env.zOffset;
     request.delayTicks = SecToTicks(_fx.delaySec);
+    request.bDebris    = _fx.bDebris;
+    request.bFlipX     = _fx.bMirror && _facing > 0;
+    if (_fx.bDebris)
+    {
+        // 잔해는 위로 솟구쳤다가 떨어진다 (EffectList 가 중력 처리). 난수는 월드 RNG 로 뽑아 리플레이가 결정적이다.
+        // 범위는 건물 잔해(PropWorld)와 같은 kDebrisVx*/kDebrisVy* 공용 상수를 쓴다.
+        const float vx = kDebrisVxMin + static_cast<float>(_env.world.Roll(static_cast<int>(kDebrisVxMax - kDebrisVxMin) + 1));
+        const float vy = kDebrisVyMax - static_cast<float>(_env.world.Roll(static_cast<int>(kDebrisVyMax - kDebrisVyMin) + 1));
+        request.velocity = { vx, vy };
+    }
     _env.world.RequestFx(std::move(request));
 }
 
@@ -222,6 +321,33 @@ Vec2 GetMuzzleWorld(
 {
     const WeaponDef& weapon = _def.weapons[static_cast<size_t>(_weapon)];
     return { _e.body.position.x + weapon.muzzle.x * static_cast<float>(_e.facing < 0 ? -1 : 1), _e.body.position.y + weapon.muzzle.y };
+}
+
+void TickWeaponEffects(
+    const Enemy&    _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env)
+{
+    for (const WeaponDef& weapon: _def.weapons)
+    {
+        if (weapon.effects.empty() || _e.clip < 0 || _def.FindClip(weapon.motionClip) != _e.clip)
+        {
+            continue;
+        }
+        const ClipDef& clip = _def.GetClip(_e.clip);
+        for (const WeaponEffect& effect: weapon.effects)
+        {
+            if (clip.TickOfFrame(effect.frame) != _e.clipTicks)
+            {
+                continue;
+            }
+            FxDef fx;
+            fx.clip   = effect.clip;
+            fx.offset = effect.offset;
+            fx.depth  = effect.depth;
+            RequestFx(_env, fx, _e.body.position, _e.facing);
+        }
+    }
 }
 
 bool FireWeapon(
@@ -285,6 +411,10 @@ bool FireWeapon(
     spawn.rollTicks       = proj.rollSpeed > 0.f ? SecToTicks(proj.rollSec) : 0;
     spawn.bExpireFx       = proj.bExpireFx;
     spawn.groundProbeY    = proj.groundProbeY;
+    spawn.blastSize       = proj.blastSize;
+    spawn.blastUp         = proj.blastUp;
+    spawn.blastTicks      = SecToTicks(proj.blastSec);
+    spawn.blastDamage     = proj.blastDamage;
 
     if (proj.speed > 0.f)
     {
@@ -320,8 +450,10 @@ bool FireWeapon(
         spawn.velocity   = { vx * sign, vy0 };
     }
 
+    spawn.z = _env.zOffset != 0 ? kEnemyShotDepth + _env.zOffset : kDefaultZ;
     _env.ctx.pProjectiles->SpawnShot(spawn, *_env.ctx.pCombat);
     ++_e.shotsFired;
+    EventLogFormat("enemy.shot", "\"def\":\"{}\",\"weapon\":{},\"x\":{:.1f},\"y\":{:.1f},\"vx\":{:.1f},\"vy\":{:.1f}", _def.name, _weapon, muzzle.x, muzzle.y, spawn.velocity.x, spawn.velocity.y);
 
     if (!weapon.muzzleFx.clip.empty())
     {
@@ -410,7 +542,7 @@ void BeginSoldierDeath(
         _e.deathPhase = static_cast<int>(eDeathPhase::Bomb);
         _e.aux        = static_cast<int>(_e.body.position.y);
         _e.body.position.y -= 30.f;
-        _e.body.velocity       = { away * 110.f, -430.f };
+        _e.body.velocity       = { away * death.bombVelocity.x, death.bombVelocity.y };
         _e.body.bCollideGround = false;
         _e.body.bCollideSolids = false;
         _e.body.bCollideOneWay = false;
@@ -442,13 +574,15 @@ void BeginSoldierDeath(
     }
 
     // 사람 적이 총/칼에 죽으면 작은 피 튐 (폭발 피격은 제외). 좌우는 id 홀짝으로 정해 RNG 를 소모하지 않는다 (리플레이 해시 유지)
+    // 위치는 피격 상자(body) 중심 기준 + 상수 보정. 엔티티 원점은 발이므로 발 기준 body.cy 를 더한 뒤 kBloodOffsetY 로 가슴 높이까지 올린다.
     if (_def.bHuman && _e.lastHitKind != eHitKind::Blast)
     {
+        const float side = _e.facing < 0 ? -1.f : 1.f;
         EnemyFxRequest request;
         request.clip = _e.lastHitKind == eHitKind::Melee ? "Fx_Blood_Splat_" : "Fx_Blood_Hit_";
         request.clip += (_e.id & 1u) != 0u ? "Right" : "Left";
-        request.position = { _e.body.position.x, _e.body.position.y - 30.f };
-        request.layer    = 60;
+        request.position = { _e.body.position.x + _def.body.cx * side, _e.body.position.y + _def.body.cy + death.bloodOffsetY };
+        request.depth    = 60 + _env.zOffset;
         _env.world.RequestFx(std::move(request));
     }
 }
@@ -470,9 +604,33 @@ void TickSoldierDeath(
     if (bFlying)
     {
         ++_e.deathTicks;
-        if (_e.body.velocity.y > 0.f && _e.body.position.y > static_cast<float>(_e.aux) + 60.f)
+        // 폭발에 날아간 시체는 땅을 통과해 계속 떨어진다: 카메라 아래로 완전히 (스프라이트 윗끝까지) 나가야 지운다.
+        // 카메라 정보가 없거나 (뷰 비어 있음) 너무 오래 (10 초) 남으면 기존처럼 원래 높이 + 60 에서 지운다.
+        constexpr float kSpriteHeight = 90.f;
+        const Aabb&     view          = _env.ctx.cameraView;
+        const bool      bFell         = _e.body.velocity.y > 0.f && _e.body.position.y > static_cast<float>(_e.aux) + 60.f;
+        if (view.max.y > view.min.y)
+        {
+            const bool bOut = _e.body.velocity.y > 0.f && _e.body.position.y - kSpriteHeight > view.max.y;
+            if (bOut || (bFell && _e.deathTicks > 600))
+            {
+                _e.life = eEnemyLife::Gone;
+            }
+        }
+        else if (bFell)
         {
             _e.life = eEnemyLife::Gone;
+        }
+        return;
+    }
+
+    // 칼 사망은 시체를 남기지 않는다. 베는 클립이 끝나면 바로 숨기고 제거한다 (마지막 프레임이 고정되어 남던 문제).
+    if (_e.deathPhase == static_cast<int>(eDeathPhase::Slash))
+    {
+        if (ClipFinished(_e, _def))
+        {
+            _e.bVisible = false;
+            _e.life     = eEnemyLife::Gone;
         }
         return;
     }
@@ -534,7 +692,7 @@ bool SubmitNamedPart(
     const int             _ticks,
     const bool            _bLoop,
     const int             _sortKey,
-    const int             _layer,
+    const int             _depth,
     const bool            _bFlipX,
     const float           _partFlash)
 {
@@ -561,7 +719,7 @@ bool SubmitNamedPart(
         SpriteDrawOptions options;
         options.bFlipX      = _bFlipX;
         options.flashAmount = flash;
-        _render.sprites.Submit(_layer, _sortKey, frame, _origin, options);
+        _render.sprites.Submit(_depth + _render.zOffset, _sortKey, frame, _origin, options);
         return true;
     }
     if (_render.pSprites)
@@ -573,7 +731,7 @@ bool SubmitNamedPart(
                 SpriteDrawOptions options;
                 options.bFlipX      = _bFlipX;
                 options.flashAmount = flash;
-                _render.sprites.Submit(_layer, _sortKey, pSprite->frame, _origin, options);
+                _render.sprites.Submit(_depth + _render.zOffset, _sortKey, pSprite->frame, _origin, options);
                 return true;
             }
         }
@@ -593,4 +751,23 @@ int GetNamedPartTicks(
     return static_cast<int>(pClip->GetTotalDurationUnits() / kAnimUnitsPerTick);
 }
 
-}   // namespace slug
+float DxToPlayer(
+    const Enemy&    _e,
+    const EnemyEnv& _env)
+{
+    return _env.ctx.player.feet.x - _e.body.position.x;
+}
+
+float DyToPlayer(
+    const Enemy&    _e,
+    const EnemyEnv& _env)
+{
+    return _env.ctx.player.feet.y - _e.body.position.y;
+}
+
+int Roll(
+    EnemyEnv& _env,
+    const int _n)
+{
+    return _env.world.Roll(_n);
+}

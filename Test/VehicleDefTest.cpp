@@ -5,11 +5,8 @@
 #include "Base/Types.h"
 #include "VehicleTestUtil.h"
 
-using namespace slugtest;
 
-namespace
-{
-[[nodiscard]] const EnemyDef& Need_(
+[[nodiscard]] static const EnemyDef& Need_(
     const EnemyDefLibrary& _lib,
     const char*            _name)
 {
@@ -20,7 +17,7 @@ namespace
 }
 
 // 지연(delaySec > 0) 이펙트가 몇 개인지 센다
-[[nodiscard]] int CountDelayed_(
+[[nodiscard]] static int CountDelayed_(
     const EnemyDef& _def)
 {
     int count = 0;
@@ -31,28 +28,27 @@ namespace
     return count;
 }
 
-void ExpectClipExists_(
+static void ExpectClipExists_(
     const AnimationLibrary& _anims,
-    const slug::String&     _name,
+    const String&     _name,
     const char*             _owner)
 {
     if (_name.empty())
     {
         return;
     }
-    const bool bSided = _name.find("{side}") != slug::String::npos;
+    const bool bSided = _name.find("{side}") != String::npos;
     for (int side = 0; side < (bSided ? 2 : 1); ++side)
     {
-        const slug::String name = bSided ? ResolveSide(_name, side == 0 ? -1 : 1) : _name;
+        const String name = bSided ? ResolveSide(_name, side == 0 ? -1 : 1) : _name;
         EXPECT_TRUE(_anims.IsValid(_anims.Find(name))) << _owner << ": " << name.c_str();
     }
 }
-}   // namespace
 
 TEST(VehicleDefs, LoadsTheDefsDirectoryWithAllFourVehiclesAndTheirProjectiles)
 {
     EnemyDefLibrary lib;
-    slug::String    message;
+    String    message;
     ASSERT_TRUE(LoadVehicleLib(lib, &message)) << message.c_str();
     for (const char* name: kVehicleNames)
     {
@@ -219,13 +215,13 @@ TEST(VehicleDefs, AnUnknownBehaviorParameterFailsTheLoadWithTheDefinitionName)
         }
       }
     })";
-    slug::String                        message;
-    const slug::Result<EnemyDefLibrary> lib = EnemyDefLibrary::Parse(kJson, &message);
+    String                        message;
+    const Result<EnemyDefLibrary> lib = EnemyDefLibrary::Parse(kJson, &message);
     EXPECT_FALSE(lib);
-    EXPECT_NE(message.find("probe_tank"), slug::String::npos) << message.c_str();
+    EXPECT_NE(message.find("probe_tank"), String::npos) << message.c_str();
 }
 
-TEST(VehicleDefs, EveryVehicleClipNameExistsInTheBakedAnimations)
+TEST(VehicleDefs, EveryVehicleClipNameExistsInTheAnimations)
 {
     SLUG_REQUIRE_BAKED(anims);
     EnemyDefLibrary lib;
@@ -261,7 +257,7 @@ TEST(VehicleDefs, EveryVehicleClipNameExistsInTheBakedAnimations)
     }
 }
 
-TEST(VehicleDefs, NonLoopClipTimingsMatchTheBakedAnimations)
+TEST(VehicleDefs, NonLoopClipTimingsMatchTheAnimations)
 {
     SLUG_REQUIRE_BAKED(anims);
     EnemyDefLibrary lib;
@@ -278,7 +274,7 @@ TEST(VehicleDefs, NonLoopClipTimingsMatchTheBakedAnimations)
             }
             for (int side = 0; side < (clip.bSided ? 2 : 1); ++side)
             {
-                const slug::String resolved = clip.bSided ? ResolveSide(clip.name, side == 0 ? -1 : 1) : clip.name;
+                const String resolved = clip.bSided ? ResolveSide(clip.name, side == 0 ? -1 : 1) : clip.name;
                 const AnimClip*    pAnim    = anims.GetOrNull(anims.Find(resolved));
                 ASSERT_NE(pAnim, nullptr) << resolved.c_str();
                 EXPECT_EQ(pAnim->GetFrameCount(), clip.frames) << resolved.c_str();

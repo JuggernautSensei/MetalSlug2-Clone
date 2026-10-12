@@ -3,9 +3,6 @@
 #include "Base/Math.h"
 #include "Base/Types.h"
 
-namespace slug
-{
-
 void BeginVehicleDeath(
     Enemy&          _e,
     const EnemyDef& _def,
@@ -43,14 +40,14 @@ void RequestFxAt(
     const StringView _clip,
     const Vec2       _at,
     const int        _facing,
-    const int        _layer,
+    const int        _depth,
     const float      _delaySec)
 {
     FxDef fx;
     fx.clip     = String(_clip);
     fx.offset   = { 0.f, 0.f };
     fx.delaySec = _delaySec;
-    fx.layer    = _layer;
+    fx.depth    = _depth;
     RequestFx(_env, fx, _at, _facing);
 }
 
@@ -61,5 +58,3 @@ Vec2 ScreenToWorld(
     const Aabb& view = _env.ctx.cameraView;
     return { view.min.x + _screen.x, view.min.y + _screen.y };
 }
-
-}   // namespace slug

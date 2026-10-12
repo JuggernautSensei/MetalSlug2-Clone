@@ -3,11 +3,8 @@
 #include "Game/Player/PlayerRig.h"
 #include "PlayerTestUtil.h"
 
-using namespace slugtest;
 
-namespace
-{
-[[nodiscard]] AnimId Id_(
+[[nodiscard]] static AnimId Id_(
     const AnimationLibrary& _anims,
     const char*             _name)
 {
@@ -16,14 +13,13 @@ namespace
     return id;
 }
 
-[[nodiscard]] const AnimFrame& LowerFrame_(
+[[nodiscard]] static const AnimFrame& LowerFrame_(
     Sim&                    _sim,
     const AnimationLibrary& _anims)
 {
     const PlayerRig& rig = _sim.State().GetRig();
     return _anims.Get(rig.GetLowerClip()).frames[static_cast<size_t>(rig.GetLowerFrame())];
 }
-}   // namespace
 
 TEST(PlayerRigNames, EveryRequiredSlotResolvesForEveryWeaponAndSide)
 {
@@ -233,13 +229,31 @@ TEST(PlayerRigPose, HmgUsesMachineGunShotClipAndShotgunItsOwn)
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Tap(eAction::Shot);
     EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Shot_MG_Right"));
-    sim.Step(sim.Tune().weapons.hmg.shotOverlayTicks + 2);   // 버스트 연출이 끝나면 대기 자세
+    sim.Step(sim.Tune().weapons.hmg.burstShotsMax * sim.Tune().weapons.hmg.burstIntervalTicks + 2);   // 버스트 연출이 끝나면 대기 자세
     EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Idle_SG_Right"));
 
     sim.Player().PickUpWeapon(eWeapon::Shotgun, sim.Tune());
     sim.Step(sim.Tune().weapons.shotgun.fireIntervalTicks);   // 직전 HMG 발사의 쿨다운이 지나길 기다린다
     sim.Tap(eAction::Shot);
     EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Shot_SG_Right"));
+}
+
+TEST(PlayerRigPose, HmgRunAndShootCombinesShotUpperWithRunLower)
+{
+    SLUG_REQUIRE_BAKED(anims);
+    Sim sim { MakeFlatConfig(), &anims };
+    sim.Step(2);
+    sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
+    sim.Hold(eAction::Right);
+    sim.Step(5);
+    sim.Tap(eAction::Shot);
+    // 버스트 최소 길이(3발 x 4틱 = 12틱) 안에서 달리는 동안: 상체는 사격, 하체는 달리기
+    for (int i = 0; i < 3; ++i)
+    {
+        EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Shot_MG_Right")) << "tick " << i;
+        EXPECT_EQ(sim.State().GetRig().GetLowerClip(), Id_(anims, "Player_Stand_Move_Lower_Right")) << "tick " << i;
+        sim.Step(4);
+    }
 }
 
 TEST(PlayerRigPose, EveryNewShotRestartsTheShotAnimation)
@@ -251,7 +265,7 @@ TEST(PlayerRigPose, EveryNewShotRestartsTheShotAnimation)
     sim.Tap(eAction::Shot);
     sim.Step(sim.Tune().weapons.hmg.burstIntervalTicks * 2);   // 버스트 중간: 애니메이션이 진행되어 있다
     const int beforeFrame = sim.State().GetRig().GetUpperFrame();
-    sim.Step(sim.Tune().weapons.hmg.shotOverlayTicks);
+    sim.Step(sim.Tune().weapons.hmg.burstShotsMax * sim.Tune().weapons.hmg.burstIntervalTicks);
     sim.Tap(eAction::Shot);
     const int afterFrame = sim.State().GetRig().GetUpperFrame();
     EXPECT_EQ(afterFrame, 0);
@@ -374,7 +388,7 @@ TEST(PlayerRigFeet, EveryPlayerClipHasSanePivots)
             {
                 continue;
             }
-            if (clip.name.find("Idle_Lookup_SG") != slug::String::npos)
+            if (clip.name.find("Idle_Lookup_SG") != String::npos)
             {
                 continue;
             }

@@ -2,18 +2,12 @@
 
 #include <algorithm>
 
-namespace slug
-{
-
-namespace
-{
-    // 끝나지 않는 구간 (단일 clip 장식)
-    constexpr float kDecorForeverSec = 1e9f;
-    // 구간 최소 길이 (0 이하 구간이 무한 전진하는 것을 막는다)
-    constexpr float kDecorMinSec = 0.01f;
-    // 한 틱에서 넘길 수 있는 구간 수 상한 (잘못된 데이터 방어)
-    constexpr int kDecorMaxAdvance = 64;
-}   // namespace
+// 끝나지 않는 구간 (단일 clip 장식)
+constexpr float kDecorForeverSec = 1e9f;
+// 구간 최소 길이 (0 이하 구간이 무한 전진하는 것을 막는다)
+constexpr float kDecorMinSec = 0.01f;
+// 한 틱에서 넘길 수 있는 구간 수 상한 (잘못된 데이터 방어)
+constexpr int kDecorMaxAdvance = 64;
 
 DecorSpawn MakeDecorSpawn(
     const StringView  _clip,
@@ -37,6 +31,11 @@ DecorSpawn MakeDecorSpawn(
     }
     spawn.bFlipX = _pParams->GetBool("flip", false);
     spawn.bLoop  = _pParams->GetBool("loop", false);
+    if (const ParamValue* pScale = _pParams->Find("scale"))
+    {
+        const float scale = pScale->AsFloat(1.f);
+        spawn.scale       = scale > 0.f ? scale : 1.f;
+    }
 
     if (const ParamValue* pSequence = _pParams->Find("sequence"); pSequence && pSequence->IsArray())
     {
@@ -75,7 +74,9 @@ uint32_t DecorWorld::Spawn(
     inst.id    = m_nextId++;
     inst.layer = _spawn.layer;
     inst.pos   = _spawn.pos;
+    inst.z     = _spawn.z;
     inst.bLoop = _spawn.bLoop;
+    inst.scale = _spawn.scale;
 
     if (_spawn.sequence.empty())
     {
@@ -175,11 +176,27 @@ void DecorWorld::Submit(
         {
             continue;
         }
-        const int         layer = inst.layer == eStageLayer::FarBackground ? kDecorFarLayer : kDecorBackLayer;
+        const int         depth = ResolveZ(inst.z, inst.layer == eStageLayer::FarBackground ? kDecorFarDepth : kDecorBackDepth);
         SpriteDrawOptions options;
         options.bFlipX = inst.bFlipX;
-        _sprites.Submit(layer, static_cast<int>(inst.pos.y), *pFrame, inst.pos, options);
+        options.scale  = inst.scale;
+        _sprites.Submit(depth, static_cast<int>(inst.pos.y), *pFrame, inst.pos, options);
     }
+}
+
+bool DecorWorld::SetZ(
+    const uint32_t _id,
+    const int      _z)
+{
+    for (Instance& inst: m_items)
+    {
+        if (inst.id == _id)
+        {
+            inst.z = _z;
+            return true;
+        }
+    }
+    return false;
 }
 
 void DecorWorld::ClearByLayerMask(
@@ -220,5 +237,3 @@ size_t DecorWorld::GetCount() const
 {
     return m_items.size();
 }
-
-}   // namespace slug

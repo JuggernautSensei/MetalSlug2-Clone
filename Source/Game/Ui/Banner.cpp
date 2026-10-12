@@ -5,19 +5,13 @@
 
 #include "Base/Types.h"
 
-namespace slug
-{
+constexpr int kMissionFlyDistance = 170;   // 진입/퇴장 시작 거리 (px)
+constexpr int kMissionStagger     = 2;     // 글자 사이 진입 지연 (틱)
+constexpr int kMissionOutStagger  = 1;     // 글자 사이 퇴장 지연 (틱)
 
-namespace
-{
-    constexpr int kMissionFlyDistance = 170;   // 진입/퇴장 시작 거리 (px)
-    constexpr int kMissionStagger     = 2;     // 글자 사이 진입 지연 (틱)
-    constexpr int kMissionOutStagger  = 1;     // 글자 사이 퇴장 지연 (틱)
-
-    // 글자마다 고정된 날아오는 방향 (상, 하, 좌, 우 순환)
-    constexpr ARRAY<int, 4> kDirX = { 0, 0, -1, 1 };
-    constexpr ARRAY<int, 4> kDirY = { -1, 1, 0, 0 };
-}   // namespace
+// 글자마다 고정된 날아오는 방향 (상, 하, 좌, 우 순환)
+constexpr ARRAY<int, 4> kDirX = { 0, 0, -1, 1 };
+constexpr ARRAY<int, 4> kDirY = { -1, 1, 0, 0 };
 
 BannerSpec MakeBannerSpec(
     const StringView _text,
@@ -239,5 +233,3 @@ int BannerSpec::GetTotalTicks() const
 {
     return fadeInTicks + holdTicks + fadeOutTicks;
 }
-
-}   // namespace slug

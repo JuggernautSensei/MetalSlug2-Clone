@@ -2,9 +2,6 @@
 
 #include "Base/Types.h"
 
-namespace slug
-{
-
 SimRunner::SimRunner(
     GameContext&                _ctx,
     std::unique_ptr<IGameState> _pState)
@@ -40,7 +37,7 @@ void SimRunner::Step(
 
     if (std::unique_ptr<IGameState> pNext = m_pState->TakeNextState(); pNext)
     {
-        SwitchState_(std::move(pNext));
+        SwitchState(std::move(pNext));
     }
 }
 
@@ -82,7 +79,7 @@ bool SimRunner::IsFinished() const
     return m_pState && m_pState->IsFinished();
 }
 
-void SimRunner::SwitchState_(
+void SimRunner::SwitchState(
     std::unique_ptr<IGameState> _pNext)
 {
     if (m_pState)
@@ -96,5 +93,3 @@ void SimRunner::SwitchState_(
         m_pState->OnEnter(m_ctx);
     }
 }
-
-}   // namespace slug

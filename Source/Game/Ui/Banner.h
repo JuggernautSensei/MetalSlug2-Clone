@@ -4,9 +4,6 @@
 #include "Base/Types.h"
 #include "Game/Ui/BitmapFont.h"
 
-namespace slug
-{
-
 struct BannerSpec
 {
     String     text         = {};
@@ -71,5 +68,3 @@ private:
     int                m_elapsed = 0;
     bool               m_bActive = false;
 };
-
-}   // namespace slug

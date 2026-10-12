@@ -6,60 +6,54 @@
 #include "Base/RGBA.h"
 #include "Base/Types.h"
 
-namespace slug
+[[nodiscard]] static Vector<int> SplitLineLengths_(
+    const StringView _text)
 {
+    Vector<int> lengths;
+    int         current = 0;
+    for (const char c: _text)
+    {
+        if (c == '\n')
+        {
+            lengths.push_back(current);
+            current = 0;
+        }
+        else
+        {
+            ++current;
+        }
+    }
+    lengths.push_back(current);
+    return lengths;
+}
 
-namespace
+[[nodiscard]] static RGBA GetFontFallbackColor_(
+    const eFontColor _color)
 {
-    [[nodiscard]] Vector<int> SplitLineLengths_(
-        const StringView _text)
+    switch (_color)
     {
-        Vector<int> lengths;
-        int         current = 0;
-        for (const char c: _text)
-        {
-            if (c == '\n')
-            {
-                lengths.push_back(current);
-                current = 0;
-            }
-            else
-            {
-                ++current;
-            }
-        }
-        lengths.push_back(current);
-        return lengths;
+        case eFontColor::White: return { 255, 255, 255, 255 };
+        case eFontColor::RedYellow: return { 255, 120, 40, 255 };
+        case eFontColor::YellowWhite: return { 255, 240, 160, 255 };
+        case eFontColor::Red: return { 255, 40, 30, 255 };
+        case eFontColor::Yellow: return { 255, 230, 20, 255 };
+        default: return { 190, 200, 225, 255 };
     }
+}
 
-    [[nodiscard]] RGBA GetFontFallbackColor_(
-        const eFontColor _color)
+[[nodiscard]] static const char* GetFontSpriteName_(
+    const eFontColor _color)
+{
+    switch (_color)
     {
-        switch (_color)
-        {
-            case eFontColor::White: return { 255, 255, 255, 255 };
-            case eFontColor::RedYellow: return { 255, 120, 40, 255 };
-            case eFontColor::YellowWhite: return { 255, 240, 160, 255 };
-            case eFontColor::Red: return { 255, 40, 30, 255 };
-            case eFontColor::Yellow: return { 255, 230, 20, 255 };
-            default: return { 190, 200, 225, 255 };
-        }
+        case eFontColor::White: return "Font_White";
+        case eFontColor::RedYellow: return "Font_Red_Yellow";
+        case eFontColor::YellowWhite: return "Font_Yellow_White";
+        case eFontColor::Red: return "Font_Red";
+        case eFontColor::Yellow: return "Font_Yellow";
+        default: return "Font_Normal";
     }
-
-    [[nodiscard]] const char* GetFontSpriteName_(
-        const eFontColor _color)
-    {
-        switch (_color)
-        {
-            case eFontColor::White: return "Font_White";
-            case eFontColor::RedYellow: return "Font_Red_Yellow";
-            case eFontColor::YellowWhite: return "Font_Yellow_White";
-            case eFontColor::Red: return "Font_Red";
-            case eFontColor::Yellow: return "Font_Yellow";
-            default: return "Font_Normal";
-        }
-    }
-}   // namespace
+}
 
 int MeasureTextWidth(
     const StringView _text,
@@ -69,7 +63,7 @@ int MeasureTextWidth(
     int       width = 0;
     for (const int length: SplitLineLengths_(_text))
     {
-        width = std::max(width, fontmap::MeasureChars(length, scale, _style.letterSpacing));
+        width = std::max(width, MeasureChars(length, scale, _style.letterSpacing));
     }
     return width;
 }
@@ -80,7 +74,7 @@ int MeasureTextHeight(
 {
     const int scale = std::max(1, _style.scale);
     const int lines = static_cast<int>(SplitLineLengths_(_text).size());
-    return lines * fontmap::kGlyphSize * scale + (lines - 1) * _style.lineGap * scale;
+    return lines * kGlyphSize * scale + (lines - 1) * _style.lineGap * scale;
 }
 
 TextLayout LayoutText(
@@ -90,7 +84,7 @@ TextLayout LayoutText(
     const TextStyle& _style)
 {
     const int scale   = std::max(1, _style.scale);
-    const int cell    = fontmap::kGlyphSize * scale;
+    const int cell    = kGlyphSize * scale;
     const int advance = cell + _style.letterSpacing;
     const int gap     = _style.lineGap * scale;
 
@@ -108,7 +102,7 @@ TextLayout LayoutText(
         }
 
         const int length = lineEnd - lineStart;
-        const int width  = fontmap::MeasureChars(length, scale, _style.letterSpacing);
+        const int width  = MeasureChars(length, scale, _style.letterSpacing);
         int       x0     = _x;
         if (_style.align == eTextAlign::Center)
         {
@@ -124,7 +118,7 @@ TextLayout LayoutText(
         {
             GlyphQuad quad;
             quad.ch        = _text[static_cast<size_t>(lineStart + i)];
-            quad.glyph     = fontmap::GetGlyphIndex(quad.ch);
+            quad.glyph     = GetGlyphIndex(quad.ch);
             quad.dst       = { x0 + i * advance, y0, cell, cell };
             quad.bFallback = quad.glyph < 0 && quad.ch != ' ';
             layout.quads.push_back(quad);
@@ -166,7 +160,7 @@ int FitTextScale(
     int best = 1;
     for (int scale = 1; scale <= std::max(1, _maxScale); ++scale)
     {
-        if (fontmap::MeasureChars(widest, scale, _letterSpacing) <= _maxWidth)
+        if (MeasureChars(widest, scale, _letterSpacing) <= _maxWidth)
         {
             best = scale;
         }
@@ -201,16 +195,16 @@ AnimFrame BitmapFont::GetGlyphFrame(
     const int        _glyph) const
 {
     const AnimFrame& strip = m_strips[static_cast<size_t>(_color)];
-    if (strip.IsEmpty() || _glyph < 0 || _glyph >= fontmap::kGlyphColumns)
+    if (strip.IsEmpty() || _glyph < 0 || _glyph >= kGlyphColumns)
     {
         return {};
     }
 
     AnimFrame frame = strip;
-    frame.x         = strip.x + _glyph * fontmap::kGlyphSize;
-    frame.y         = strip.y + (_bBold ? 0 : 1) * fontmap::kGlyphSize;
-    frame.w         = fontmap::kGlyphSize;
-    frame.h         = fontmap::kGlyphSize;
+    frame.x         = strip.x + _glyph * kGlyphSize;
+    frame.y         = strip.y + (_bBold ? 0 : 1) * kGlyphSize;
+    frame.w         = kGlyphSize;
+    frame.h         = kGlyphSize;
     frame.pivotX    = 0;
     frame.pivotY    = 0;
     return frame;
@@ -308,4 +302,34 @@ bool BitmapFont::HasSprites() const
     return m_bReady;
 }
 
-}   // namespace slug
+int GetGlyphIndex(
+    const char _ch)
+{
+    const char c = (_ch >= 'a' && _ch <= 'z') ? static_cast<char>(_ch - 'a' + 'A') : _ch;
+    if (c >= 'A' && c <= 'Z')
+    {
+        return c - 'A';
+    }
+    if (c >= '1' && c <= '9')
+    {
+        return 26 + (c - '1');
+    }
+    if (c == '0')
+    {
+        return 'O' - 'A';
+    }
+    return -1;
+}
+
+bool HasGlyph(const char _ch)
+{
+    return GetGlyphIndex(_ch) >= 0;
+}
+
+int MeasureChars(
+    const int _charCount,
+    const int _scale,
+    const int _letterSpacing)
+{
+    return _charCount <= 0 ? 0 : _charCount * kGlyphSize * _scale + (_charCount - 1) * _letterSpacing;
+}

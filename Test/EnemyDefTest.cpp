@@ -9,11 +9,8 @@
 #include "Base/Types.h"
 #include "EnemyTestUtil.h"
 
-using namespace slugtest;
 
-namespace
-{
-[[nodiscard]] slug::String ReadDefsText_()
+[[nodiscard]] static String ReadDefsText_()
 {
     std::ifstream     file(EnemyDefsPath().string());
     std::stringstream buffer;
@@ -21,36 +18,35 @@ namespace
     return buffer.str();
 }
 
-[[nodiscard]] slug::String ReplaceOnce_(
-    slug::String       _text,
-    const slug::String _from,
-    const slug::String _to)
+[[nodiscard]] static String ReplaceOnce_(
+    String       _text,
+    const String _from,
+    const String _to)
 {
     const size_t pos = _text.find(_from);
-    if (pos == slug::String::npos)
+    if (pos == String::npos)
     {
         return {};
     }
     return _text.replace(pos, _from.size(), _to);
 }
 
-[[nodiscard]] slug::String ResolveSideText_(
-    slug::String _name,
+[[nodiscard]] static String ResolveSideText_(
+    String _name,
     const bool   _bLeft)
 {
     const size_t pos = _name.find("{side}");
-    if (pos != slug::String::npos)
+    if (pos != String::npos)
     {
         _name.replace(pos, 6, _bLeft ? "Left" : "Right");
     }
     return _name;
 }
-}   // namespace
 
 TEST(EnemyDefs, LoadsTheInfantryDefinitionsAndGlobals)
 {
     EnemyDefLibrary lib;
-    slug::String    message;
+    String    message;
     ASSERT_TRUE(LoadEnemyLib(lib, &message)) << message.c_str();
     for (const char* name: kInfantryNames)
     {
@@ -243,70 +239,70 @@ TEST(EnemyDefs, ClipTimingMatchesTheSpecTicks)
 
 TEST(EnemyDefsErrors, RealFileParsesWithoutMessage)
 {
-    slug::String                        message;
-    const slug::Result<EnemyDefLibrary> lib = EnemyDefLibrary::Parse(ReadDefsText_(), &message);
+    String                        message;
+    const Result<EnemyDefLibrary> lib = EnemyDefLibrary::Parse(ReadDefsText_(), &message);
     EXPECT_TRUE(static_cast<bool>(lib)) << message.c_str();
 }
 
 TEST(EnemyDefsErrors, UnknownKeyInADefinitionIsRejected)
 {
-    const slug::String text = ReplaceOnce_(ReadDefsText_(), "\"behavior\": \"pow\",", "\"behavior\": \"pow\", \"bogus\": 1,");
+    const String text = ReplaceOnce_(ReadDefsText_(), "\"behavior\": \"pow\",", "\"behavior\": \"pow\", \"bogus\": 1,");
     ASSERT_FALSE(text.empty());
-    slug::String message;
+    String message;
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text, &message)));
-    EXPECT_NE(message.find("pow"), slug::String::npos) << message.c_str();
+    EXPECT_NE(message.find("pow"), String::npos) << message.c_str();
 }
 
 TEST(EnemyDefsErrors, MissingRequiredClipIsRejected)
 {
-    const slug::String text = ReplaceOnce_(ReadDefsText_(), "\"throw\": { \"name\": \"SD_Throw_Bomb_{side}\"", "\"throwX\": { \"name\": \"SD_Throw_Bomb_{side}\"");
+    const String text = ReplaceOnce_(ReadDefsText_(), "\"throw\": { \"name\": \"SD_Throw_Bomb_{side}\"", "\"throwX\": { \"name\": \"SD_Throw_Bomb_{side}\"");
     ASSERT_FALSE(text.empty());
-    slug::String message;
+    String message;
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text, &message)));
-    EXPECT_NE(message.find("soldier_bomb"), slug::String::npos) << message.c_str();
+    EXPECT_NE(message.find("soldier_bomb"), String::npos) << message.c_str();
 }
 
 TEST(EnemyDefsErrors, UnknownBehaviorIsRejected)
 {
-    const slug::String text = ReplaceOnce_(ReadDefsText_(), "\"behavior\": \"pow\"", "\"behavior\": \"nope\"");
+    const String text = ReplaceOnce_(ReadDefsText_(), "\"behavior\": \"pow\"", "\"behavior\": \"nope\"");
     ASSERT_FALSE(text.empty());
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text)));
 }
 
 TEST(EnemyDefsErrors, UnusedBehaviorParamIsRejected)
 {
-    const slug::String text = ReplaceOnce_(ReadDefsText_(), "\"detect\": 350, \"closeStop\"", "\"detect\": 350, \"zzz\": 1, \"closeStop\"");
+    const String text = ReplaceOnce_(ReadDefsText_(), "\"detect\": 350, \"closeStop\"", "\"detect\": 350, \"zzz\": 1, \"closeStop\"");
     ASSERT_FALSE(text.empty());
-    slug::String message;
+    String message;
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text, &message)));
-    EXPECT_NE(message.find("zzz"), slug::String::npos) << message.c_str();
+    EXPECT_NE(message.find("zzz"), String::npos) << message.c_str();
 }
 
 TEST(EnemyDefsErrors, UnknownWeaponProjectileIsRejected)
 {
-    const slug::String text = ReplaceOnce_(ReadDefsText_(), "\"projectile\": \"soldier_bomb_proj\"", "\"projectile\": \"nope\"");
+    const String text = ReplaceOnce_(ReadDefsText_(), "\"projectile\": \"soldier_bomb_proj\"", "\"projectile\": \"nope\"");
     ASSERT_FALSE(text.empty());
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text)));
 }
 
 TEST(EnemyDefsErrors, FlyingBzkWithoutItsLandedDefIsRejected)
 {
-    const slug::String text = ReplaceOnce_(ReadDefsText_(), "\"landedDef\": \"soldier_bzk\"", "\"landedDef\": \"nope\"");
+    const String text = ReplaceOnce_(ReadDefsText_(), "\"landedDef\": \"soldier_bzk\"", "\"landedDef\": \"nope\"");
     ASSERT_FALSE(text.empty());
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text)));
 }
 
 TEST(EnemyDefsErrors, DuplicateDefinitionNameIsRejected)
 {
-    slug::String       text   = ReadDefsText_();
-    const slug::String anchor = "\"pow\": {";
-    const slug::String extra  = "\"pow\": { \"kind\": \"npc\", \"behavior\": \"pow\", \"hp\": 1, \"body\": { \"w\": 50, \"h\": 80, \"cx\": 0, \"cy\": -40 } }, ";
+    String       text   = ReadDefsText_();
+    const String anchor = "\"pow\": {";
+    const String extra  = "\"pow\": { \"kind\": \"npc\", \"behavior\": \"pow\", \"hp\": 1, \"body\": { \"w\": 50, \"h\": 80, \"cx\": 0, \"cy\": -40 } }, ";
     text                      = ReplaceOnce_(text, anchor, extra + anchor);
     ASSERT_FALSE(text.empty());
     EXPECT_FALSE(static_cast<bool>(EnemyDefLibrary::Parse(text)));
 }
 
-TEST(EnemyDefsBaked, EveryDefinedClipExistsInTheAnimationLibrary)
+TEST(EnemyDefs, EveryDefinedClipExistsInTheAnimationLibrary)
 {
     SLUG_REQUIRE_BAKED(anims);
     EnemyDefLibrary lib;
@@ -318,7 +314,7 @@ TEST(EnemyDefsBaked, EveryDefinedClipExistsInTheAnimationLibrary)
             const bool bSided = named.clip.bSided;
             for (const bool bLeft: { true, false })
             {
-                const slug::String name = bSided ? ResolveSideText_(named.clip.name.c_str(), bLeft) : named.clip.name.c_str();
+                const String name = bSided ? ResolveSideText_(named.clip.name.c_str(), bLeft) : named.clip.name.c_str();
                 EXPECT_TRUE(anims.IsValid(anims.Find(name))) << def.name.c_str() << ": " << name;
                 if (!bSided)
                 {
@@ -331,7 +327,7 @@ TEST(EnemyDefsBaked, EveryDefinedClipExistsInTheAnimationLibrary)
     {
         for (const bool bLeft: { true, false })
         {
-            const slug::String fly = ResolveSideText_(proj.fly.name.c_str(), bLeft);
+            const String fly = ResolveSideText_(proj.fly.name.c_str(), bLeft);
             EXPECT_TRUE(anims.IsValid(anims.Find(fly))) << proj.name.c_str() << ": " << fly;
         }
     }
@@ -344,7 +340,7 @@ TEST(EnemyDefsBaked, EveryDefinedClipExistsInTheAnimationLibrary)
     }
 }
 
-TEST(EnemyDefsBaked, ClipFrameCountAndTimingMatchTheBakedAnimation)
+TEST(EnemyDefs, ClipFrameCountAndTimingMatchTheAnimation)
 {
     SLUG_REQUIRE_BAKED(anims);
     EnemyDefLibrary lib;
@@ -353,7 +349,7 @@ TEST(EnemyDefsBaked, ClipFrameCountAndTimingMatchTheBakedAnimation)
     {
         for (const NamedClip& named: def.clips)
         {
-            if (named.clip.name.find("{side}") == slug::String::npos)
+            if (named.clip.name.find("{side}") == String::npos)
             {
                 continue;
             }

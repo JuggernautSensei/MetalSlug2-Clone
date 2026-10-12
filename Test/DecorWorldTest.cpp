@@ -8,10 +8,7 @@
 #include "Render/Animation.h"
 #include "World/Constants.h"
 
-using namespace slug;
 
-namespace
-{
 // 프레임 2장짜리 클립 A/B 와 1장짜리 T
 constexpr const char* kDecorJson = R"({
     "version": 1,
@@ -27,7 +24,7 @@ constexpr const char* kDecorJson = R"({
     }
 })";
 
-[[nodiscard]] ParamValue Step_(
+[[nodiscard]] static ParamValue Step_(
     const char*  _clip,
     const double _seconds,
     const double _vx,
@@ -48,7 +45,7 @@ constexpr const char* kDecorJson = R"({
 }
 
 // A(0.5s, +60px/s) -> B(0.25s, 정지) -> A(0.5s, -60px/s, 좌우 반전)
-[[nodiscard]] ParamValue MakeWalkParams_(
+[[nodiscard]] static ParamValue MakeWalkParams_(
     const bool _bLoop)
 {
     ParamValue sequence = ParamValue::MakeArray();
@@ -62,7 +59,7 @@ constexpr const char* kDecorJson = R"({
     return params;
 }
 
-void RunTicks_(
+static void RunTicks_(
     DecorWorld&             _world,
     const AnimationLibrary& _lib,
     const int               _ticks)
@@ -72,7 +69,6 @@ void RunTicks_(
         _world.Tick(_lib, kStepSec);
     }
 }
-}   // namespace
 
 TEST(DecorSpawnParams, ParsesVelocitySequenceAndFlags)
 {
@@ -90,6 +86,22 @@ TEST(DecorSpawnParams, ParsesVelocitySequenceAndFlags)
     EXPECT_FLOAT_EQ(spawn.sequence[0].velocity.x, 60.f);
     EXPECT_FALSE(spawn.sequence[0].bFlipX);
     EXPECT_TRUE(spawn.sequence[2].bFlipX);
+}
+
+TEST(DecorSpawnParams, ScaleDefaultsToOneAndReadsTheParamWithoutChangingOthers)
+{
+    EXPECT_FLOAT_EQ(MakeDecorSpawn("A", eStageLayer::FarBackground, { 0.f, 0.f }, nullptr).scale, 1.f);
+
+    ParamValue params = ParamValue::MakeObject();
+    params.Set("scale", ParamValue::MakeNumber(0.5));
+    const DecorSpawn half = MakeDecorSpawn("A", eStageLayer::FarBackground, { 1.f, 2.f }, &params);
+    EXPECT_FLOAT_EQ(half.scale, 0.5f);
+    EXPECT_FLOAT_EQ(half.pos.x, 1.f);
+    EXPECT_FALSE(half.bLoop);
+
+    ParamValue bad = ParamValue::MakeObject();
+    bad.Set("scale", ParamValue::MakeNumber(0.0));
+    EXPECT_FLOAT_EQ(MakeDecorSpawn("A", eStageLayer::FarBackground, { 0.f, 0.f }, &bad).scale, 1.f);
 }
 
 TEST(DecorSpawnParams, SkipsStepsWithoutClipAndReadsVelocityWithoutSequence)
@@ -113,7 +125,7 @@ TEST(DecorSpawnParams, SkipsStepsWithoutClipAndReadsVelocityWithoutSequence)
 
 TEST(DecorWorld, SequenceAdvancesStepsAndFinishesWithoutLoop)
 {
-    const slug::Result<AnimationLibrary> lib = AnimationLibrary::LoadFromJson(kDecorJson);
+    const Result<AnimationLibrary> lib = AnimationLibrary::LoadFromJson(kDecorJson);
     ASSERT_TRUE(lib.HasValue());
 
     ParamValue     params = MakeWalkParams_(false);
@@ -152,7 +164,7 @@ TEST(DecorWorld, SequenceAdvancesStepsAndFinishesWithoutLoop)
 
 TEST(DecorWorld, SequenceLoopsBackToFirstStep)
 {
-    const slug::Result<AnimationLibrary> lib = AnimationLibrary::LoadFromJson(kDecorJson);
+    const Result<AnimationLibrary> lib = AnimationLibrary::LoadFromJson(kDecorJson);
     ASSERT_TRUE(lib.HasValue());
 
     ParamValue     params = MakeWalkParams_(true);
@@ -172,7 +184,7 @@ TEST(DecorWorld, SequenceLoopsBackToFirstStep)
 
 TEST(DecorWorld, SingleClipMovesAtConstantVelocityAndNeverFinishes)
 {
-    const slug::Result<AnimationLibrary> lib = AnimationLibrary::LoadFromJson(kDecorJson);
+    const Result<AnimationLibrary> lib = AnimationLibrary::LoadFromJson(kDecorJson);
     ASSERT_TRUE(lib.HasValue());
 
     ParamValue params   = ParamValue::MakeObject();

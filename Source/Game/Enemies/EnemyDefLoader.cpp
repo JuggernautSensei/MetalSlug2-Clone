@@ -11,9 +11,6 @@
 #include "Game/Enemies/EnemyDefParse.h"
 #include "Render/Animation.h"
 
-namespace slug
-{
-
 class EnemyDefParser
 {
 public:
@@ -131,110 +128,117 @@ private:
     HashMap<String, int> m_rawIndex = {};
 };
 
-namespace
+constexpr ARRAY<const char*, 4>  kRootKeys   = { "note", "version", "globals", "defs" };
+constexpr ARRAY<const char*, 5>  kGlobalKeys = { "note", "dpsRef", "activationMarginPx", "despawnBehindCameraPx", "despawnBelowCameraPx" };
+constexpr ARRAY<const char*, 27> kEnemyKeys  = {
+    "note",
+    "extends",
+    "abstract",
+    "kind",
+    "behavior",
+    "team",
+    "hp",
+    "ttk",
+    "score",
+    "body",
+    "hurtbox",
+    "hitboxes",
+    "solid",
+    "activation",
+    "physics",
+    "clips",
+    "weapons",
+    "params",
+    "death",
+    "drops",
+    "overlay",
+    "noOverlay",
+    "noDespawn",
+    "human",
+    "hitFlash",
+    "centerAnchor",
+    "artFacing"
+};
+constexpr ARRAY<const char*, 27> kProjectileKeys = {
+    "note",
+    "extends",
+    "abstract",
+    "kind",
+    "team",
+    "lethal",
+    "box",
+    "damage",
+    "speed",
+    "speedRamp",
+    "startDelay",
+    "v0",
+    "gravity",
+    "maxFall",
+    "lifetime",
+    "onSolid",
+    "anim",
+    "explosion",
+    "rollSpeed",
+    "rollSec",
+    "expireFx",
+    "groundProbe",
+    "trail",
+    "trailSec",
+    "blast",
+    "rotate",
+    "scale"
+};
+constexpr ARRAY<const char*, 11> kKnownKinds     = { "walker", "vehicle", "turret", "flyer", "boss", "prop", "npc", "item", "projectile", "effect", "debris" };
+constexpr ARRAY<const char*, 4>  kActivationKeys = { "note", "mode", "marginPx", "latch" };
+constexpr ARRAY<const char*, 8>  kPhysicsKeys    = { "note", "gravity", "maxFall", "speed", "jumpVy", "dropSpeed", "footHalfWidth", "useGravity" };
+constexpr ARRAY<const char*, 10> kWeaponKeys     = { "note", "projectile", "muzzle", "aim", "tilt", "arc", "muzzleFx", "hitbox", "motionClip", "effects" };
+constexpr ARRAY<const char*, 5>  kWeaponEffectKeys = { "note", "clip", "offset", "frame", "depth" };
+constexpr ARRAY<const char*, 17> kDeathKeys      = {
+    "note",
+    "bomb",
+    "slash",
+    "stand1",
+    "stand2",
+    "fall",
+    "land",
+    "jump",
+    "fallAt1",
+    "fallAt2",
+    "blinkAtSec",
+    "blinkForSec",
+    "blinkPeriodSec",
+    "removeAtSec",
+    "bloodOffsetY",
+    "bombVelocity",
+    "fx"
+};
+constexpr ARRAY<const char*, 5> kClipKeys      = { "note", "name", "frames", "sec", "loop" };
+constexpr ARRAY<const char*, 5> kBoxKeys       = { "note", "w", "h", "cx", "cy" };
+constexpr ARRAY<const char*, 7> kFxKeys        = { "note", "clip", "offset", "delay", "depth", "debris", "mirror" };
+constexpr ARRAY<const char*, 4> kSpeedRampKeys = { "note", "from", "accel", "max" };
+constexpr ARRAY<const char*, 4> kAnimKeys      = { "note", "begin", "fly", "land" };
+constexpr ARRAY<const char*, 4> kExplosionKeys = { "note", "fx", "offset", "sfx" };
+constexpr ARRAY<const char*, 6> kBlastKeys     = { "note", "w", "h", "up", "sec", "damage" };
+constexpr ARRAY<const char*, 3> kDropKeys      = { "note", "item", "count" };
+constexpr ARRAY<const char*, 3> kOverlayKeys   = { "note", "clip", "offset" };
+constexpr ARRAY<const char*, 3> kTiltKeys      = { "note", "threshold", "dy" };
+constexpr ARRAY<const char*, 3> kArcKeys       = { "note", "minVx", "maxVx" };
+constexpr ARRAY<const char*, 8> kExtraBoxKeys = { "note", "id", "kind", "w", "h", "offset", "frames", "damage" };
+constexpr ARRAY<const char*, 8> kHitboxKeys    = { "note", "w", "h", "cx", "cy", "lifeSec", "damage", "follow" };
+
+[[nodiscard]] static bool Contains_(
+    const Span<const char* const> _list,
+    const StringView              _key)
 {
-    constexpr ARRAY<const char*, 4>  kRootKeys   = { "note", "version", "globals", "defs" };
-    constexpr ARRAY<const char*, 5>  kGlobalKeys = { "note", "dpsRef", "activationMarginPx", "despawnBehindCameraPx", "despawnBelowCameraPx" };
-    constexpr ARRAY<const char*, 24> kEnemyKeys  = {
-        "note",
-        "extends",
-        "abstract",
-        "kind",
-        "behavior",
-        "team",
-        "hp",
-        "ttk",
-        "score",
-        "body",
-        "hurtbox",
-        "solid",
-        "activation",
-        "physics",
-        "clips",
-        "weapons",
-        "params",
-        "death",
-        "drops",
-        "overlay",
-        "noDespawn",
-        "human",
-        "hitFlash",
-        "centerAnchor"
-    };
-    constexpr ARRAY<const char*, 24> kProjectileKeys = {
-        "note",
-        "extends",
-        "abstract",
-        "kind",
-        "team",
-        "lethal",
-        "box",
-        "damage",
-        "speed",
-        "speedRamp",
-        "startDelay",
-        "v0",
-        "gravity",
-        "maxFall",
-        "lifetime",
-        "onSolid",
-        "anim",
-        "explosion",
-        "rollSpeed",
-        "rollSec",
-        "expireFx",
-        "groundProbe",
-        "trail",
-        "trailSec"
-    };
-    constexpr ARRAY<const char*, 11> kKnownKinds     = { "walker", "vehicle", "turret", "flyer", "boss", "prop", "npc", "item", "projectile", "effect", "debris" };
-    constexpr ARRAY<const char*, 4>  kActivationKeys = { "note", "mode", "marginPx", "latch" };
-    constexpr ARRAY<const char*, 8>  kPhysicsKeys    = { "note", "gravity", "maxFall", "speed", "jumpVy", "dropSpeed", "footHalfWidth", "useGravity" };
-    constexpr ARRAY<const char*, 8>  kWeaponKeys     = { "note", "projectile", "muzzle", "aim", "tilt", "arc", "muzzleFx", "hitbox" };
-    constexpr ARRAY<const char*, 15> kDeathKeys      = {
-        "note",
-        "bomb",
-        "slash",
-        "stand1",
-        "stand2",
-        "fall",
-        "land",
-        "jump",
-        "fallAt1",
-        "fallAt2",
-        "blinkAtSec",
-        "blinkForSec",
-        "blinkPeriodSec",
-        "removeAtSec",
-        "fx"
-    };
-    constexpr ARRAY<const char*, 5> kClipKeys      = { "note", "name", "frames", "sec", "loop" };
-    constexpr ARRAY<const char*, 5> kBoxKeys       = { "note", "w", "h", "cx", "cy" };
-    constexpr ARRAY<const char*, 5> kFxKeys        = { "note", "clip", "offset", "delay", "layer" };
-    constexpr ARRAY<const char*, 4> kSpeedRampKeys = { "note", "from", "accel", "max" };
-    constexpr ARRAY<const char*, 4> kAnimKeys      = { "note", "begin", "fly", "land" };
-    constexpr ARRAY<const char*, 3> kExplosionKeys = { "note", "fx", "offset" };
-    constexpr ARRAY<const char*, 3> kDropKeys      = { "note", "item", "count" };
-    constexpr ARRAY<const char*, 3> kOverlayKeys   = { "note", "clip", "offset" };
-    constexpr ARRAY<const char*, 3> kTiltKeys      = { "note", "threshold", "dy" };
-    constexpr ARRAY<const char*, 3> kArcKeys       = { "note", "minVx", "maxVx" };
-    constexpr ARRAY<const char*, 8> kHitboxKeys    = { "note", "w", "h", "cx", "cy", "lifeSec", "damage", "follow" };
-
-    [[nodiscard]] bool Contains_(
-        const Span<const char* const> _list,
-        const StringView              _key)
+    for (const char* pItem: _list)
     {
-        for (const char* pItem: _list)
+        if (_key == pItem)
         {
-            if (_key == pItem)
-            {
-                return true;
-            }
+            return true;
         }
-        return false;
     }
-
-}   // namespace
+    return false;
+}
 
 EnemyDefParser::EnemyDefParser(
     EnemyDefLibrary& _library)
@@ -463,7 +467,9 @@ bool EnemyDefParser::ReadFx_(
     return ReadStr_(_def, _field, _reader, "clip", _out.clip, true)
         && ReadVec2_(_def, _field, _reader, "offset", _out.offset)
         && ReadNum_(_def, _field, _reader, "delay", _out.delaySec, false)
-        && ReadInt_(_def, _field, _reader, "layer", _out.layer, false);
+        && ReadInt_(_def, _field, _reader, "depth", _out.depth, false)
+        && ReadBool_(_def, _field, _reader, "debris", _out.bDebris)
+        && ReadBool_(_def, _field, _reader, "mirror", _out.bMirror);
 }
 
 bool EnemyDefParser::BuildChain_(
@@ -677,6 +683,10 @@ bool EnemyDefParser::ParseProjectile_(
         {
             return false;
         }
+        if (explosion->HasField("sfx") && !ReadStr_(name, "explosion", *explosion, "sfx", projectile.explosionSfx, true))
+        {
+            return false;
+        }
     }
 
     if (const std::optional<JsonReader> trail = Find_(_chain, "trail"))
@@ -698,11 +708,28 @@ bool EnemyDefParser::ParseProjectile_(
         projectile.trailTicks = Max(1, SecToTicks(trailSec));
     }
 
+    if (const std::optional<JsonReader> blast = Find_(_chain, "blast"))
+    {
+        BoxDef blastBox;
+        if (!CheckObjectKeys_(name, "blast", *blast, kBlastKeys)
+            || !ReadNum_(name, "blast", *blast, "w", blastBox.w, true)
+            || !ReadNum_(name, "blast", *blast, "h", blastBox.h, true)
+            || !ReadNum_(name, "blast", *blast, "up", projectile.blastUp, false)
+            || !ReadNum_(name, "blast", *blast, "sec", projectile.blastSec, true)
+            || !ReadInt_(name, "blast", *blast, "damage", projectile.blastDamage, false))
+        {
+            return false;
+        }
+        projectile.blastSize = { blastBox.w, blastBox.h };
+    }
+
     for (const JsonReader& reader: _chain)
     {
         if (!ReadNum_(name, "", reader, "rollSpeed", projectile.rollSpeed, false)
             || !ReadNum_(name, "", reader, "rollSec", projectile.rollSec, false)
             || !ReadBool_(name, "", reader, "expireFx", projectile.bExpireFx)
+            || !ReadBool_(name, "", reader, "rotate", projectile.bRotate)
+            || !ReadNum_(name, "", reader, "scale", projectile.scale, false)
             || !ReadNum_(name, "", reader, "groundProbe", projectile.groundProbeY, false))
         {
             return false;
@@ -806,6 +833,39 @@ bool EnemyDefParser::ParseWeapon_(
             return false;
         }
     }
+    if (!ReadStr_(_def, field, _reader, "motionClip", _out.motionClip, false))
+    {
+        return false;
+    }
+    if (_reader.HasField("effects"))
+    {
+        const Result<JsonReader> effects = _reader.FindField("effects");
+        if (!effects || !effects->IsArray())
+        {
+            Fail_(_def, field + ".effects", "배열이 아닙니다");
+            return false;
+        }
+        int index = 0;
+        for (const JsonReader item: effects->GetArray())
+        {
+            WeaponEffect effect;
+            const String path = std::format("{}.effects[{}]", field, index++);
+            if (!CheckObjectKeys_(_def, path, item, kWeaponEffectKeys)
+                || !ReadStr_(_def, path, item, "clip", effect.clip, true)
+                || !ReadVec2_(_def, path, item, "offset", effect.offset)
+                || !ReadInt_(_def, path, item, "frame", effect.frame, false)
+                || !ReadInt_(_def, path, item, "depth", effect.depth, false))
+            {
+                return false;
+            }
+            _out.effects.push_back(std::move(effect));
+        }
+        if (!_out.effects.empty() && _out.motionClip.empty())
+        {
+            Fail_(_def, field + ".effects", "motionClip 이 필요합니다");
+            return false;
+        }
+    }
     if (_reader.HasField("hitbox"))
     {
         const Result<JsonReader> hitbox = _reader.FindField("hitbox");
@@ -886,7 +946,9 @@ bool EnemyDefParser::ParseDeath_(
         || !ReadNum_(name, "death", _death, "blinkAtSec", death.blinkAtSec, false)
         || !ReadNum_(name, "death", _death, "blinkForSec", death.blinkForSec, false)
         || !ReadNum_(name, "death", _death, "blinkPeriodSec", death.blinkPeriodSec, false)
-        || !ReadNum_(name, "death", _death, "removeAtSec", death.removeAtSec, false))
+        || !ReadNum_(name, "death", _death, "removeAtSec", death.removeAtSec, false)
+        || !ReadNum_(name, "death", _death, "bloodOffsetY", death.bloodOffsetY, false)
+        || !ReadVec2_(name, "death", _death, "bombVelocity", death.bombVelocity))
     {
         return false;
     }
@@ -1030,6 +1092,50 @@ bool EnemyDefParser::ParseEnemy_(
             return false;
         }
     }
+    if (const std::optional<JsonReader> boxes = Find_(_chain, "hitboxes"))
+    {
+        if (!boxes->IsArray())
+        {
+            Fail_(name, "hitboxes", "배열이 아닙니다");
+            return false;
+        }
+        int boxIndex = 0;
+        for (const JsonReader item: boxes->GetArray())
+        {
+            ExtraBoxDef  box;
+            String       boxKind;
+            Vec2         offset = { 0.f, 0.f };
+            Vec2         frames = { 0.f, -1.f };
+            const String field  = std::format("hitboxes[{}]", boxIndex++);
+            if (!CheckObjectKeys_(name, field, item, kExtraBoxKeys)
+                || !ReadStr_(name, field, item, "id", box.id, false)
+                || !ReadStr_(name, field, item, "kind", boxKind, true)
+                || !ReadNum_(name, field, item, "w", box.box.w, true)
+                || !ReadNum_(name, field, item, "h", box.box.h, true)
+                || !ReadVec2_(name, field, item, "offset", offset)
+                || !ReadVec2_(name, field, item, "frames", frames)
+                || !ReadInt_(name, field, item, "damage", box.damage, false))
+            {
+                return false;
+            }
+            if (boxKind != "hurt" && boxKind != "attack")
+            {
+                Fail_(name, field + ".kind", "\"hurt\" 또는 \"attack\" 이어야 합니다");
+                return false;
+            }
+            if (!(box.box.w > 0.f) || !(box.box.h > 0.f))
+            {
+                Fail_(name, field, "w, h 는 0 보다 커야 합니다");
+                return false;
+            }
+            box.kind      = boxKind == "attack" ? eExtraBoxKind::Attack : eExtraBoxKind::Hurt;
+            box.box.cx    = offset.x;
+            box.box.cy    = offset.y;
+            box.frameFrom = static_cast<int>(frames.x);
+            box.frameTo   = static_cast<int>(frames.y);
+            def.hitboxes.push_back(std::move(box));
+        }
+    }
     if (const std::optional<JsonReader> solid = Find_(_chain, "solid"))
     {
         if (!ReadBox_(name, "solid", *solid, def.solid))
@@ -1144,15 +1250,37 @@ bool EnemyDefParser::ParseEnemy_(
     }
 
     def.bHitFlash = def.hp >= kHitFlashMinHp;
+    bool   bNoOverlay = false;
+    String artFacing;
     for (const JsonReader& reader: _chain)
     {
-        if (!ReadBool_(name, "", reader, "noDespawn", def.bNoDespawn)
+        if (!ReadBool_(name, "", reader, "noOverlay", bNoOverlay)
+            || !ReadBool_(name, "", reader, "noDespawn", def.bNoDespawn)
             || !ReadBool_(name, "", reader, "human", def.bHuman)
             || !ReadBool_(name, "", reader, "hitFlash", def.bHitFlash)
-            || !ReadBool_(name, "", reader, "centerAnchor", def.bCenterAnchor))
+            || !ReadBool_(name, "", reader, "centerAnchor", def.bCenterAnchor)
+            || !ReadStr_(name, "", reader, "artFacing", artFacing, false))
         {
             return false;
         }
+    }
+    if (artFacing == "left")
+    {
+        def.artFacing = eArtFacing::Left;
+    }
+    else if (artFacing == "right")
+    {
+        def.artFacing = eArtFacing::Right;
+    }
+    else if (!artFacing.empty())
+    {
+        Fail_(name, "artFacing", "\"left\" 또는 \"right\" 이어야 합니다");
+        return false;
+    }
+
+    if (bNoOverlay)
+    {
+        def.overlayClip = -1;
     }
 
     Vector<ParamEntry> params;
@@ -1178,8 +1306,10 @@ bool EnemyDefParser::ParseEnemy_(
             case eEnemyBehavior::Bus: ParseBusCfg(reader, def); break;
             case eEnemyBehavior::Heli: ParseHeliCfg(reader, def); break;
             case eEnemyBehavior::HeliBomb: ParseHeliBombCfg(reader, def); break;
+            case eEnemyBehavior::BigShiee: ParseBigShieeCfg(reader, def); break;
             case eEnemyBehavior::Count: break;
         }
+        ParseEnemyParts(reader, def);
         if (!reader.Finish())
         {
             if (error.empty())
@@ -1317,6 +1447,17 @@ bool EnemyDefParser::Finish_()
             Fail_(def.name, "params.landedDef", std::format("'{}' 정의가 없습니다", def.flyingBzk.landedDef));
             return false;
         }
+        if (def.behavior == eEnemyBehavior::Bus)
+        {
+            for (const String* pName: { &def.bus.soldierBombDef, &def.bus.soldierSwordDef })
+            {
+                if (m_lib.FindIndex(*pName) < 0)
+                {
+                    Fail_(def.name, "params.soldierBombDef/soldierSwordDef", std::format("'{}' 정의가 없습니다", *pName));
+                    return false;
+                }
+            }
+        }
     }
     return true;
 }
@@ -1385,7 +1526,7 @@ Result<EnemyDefLibrary> EnemyDefLibrary::LoadDirectory(
 {
     Vector<FilePath> files;
     std::error_code  ec;
-    for (const fs::directory_entry& entry: fs::directory_iterator(_dir, ec))
+    for (const std::filesystem::directory_entry& entry: std::filesystem::directory_iterator(_dir, ec))
     {
         if (entry.is_regular_file() && entry.path().extension() == ".json")
         {
@@ -1456,6 +1597,13 @@ const EnemyDef* EnemyDefLibrary::Find(
     return index < 0 ? nullptr : &m_defs[static_cast<size_t>(index)];
 }
 
+EnemyDef* EnemyDefLibrary::FindMutable(
+    const StringView _name)
+{
+    const int index = FindIndex(_name);
+    return index < 0 ? nullptr : &m_defs[static_cast<size_t>(index)];
+}
+
 int EnemyDefLibrary::FindIndex(
     const StringView _name) const
 {
@@ -1476,5 +1624,3 @@ int EnemyDefLibrary::FindProjectileIndex(
     const HashMap<String, int>::const_iterator it = m_projIndex.find(String { _name });
     return it == m_projIndex.end() ? -1 : it->second;
 }
-
-}   // namespace slug

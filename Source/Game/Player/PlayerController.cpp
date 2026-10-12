@@ -8,68 +8,64 @@
 #include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Player/PlayerHitboxes.h"
+#include "Render/SpriteBatch.h"
+#include "World/Constants.h"
 
-namespace slug
+[[nodiscard]] static PhysicsTuning MakePhysicsTuning_(
+    const MoveTuning& _move)
 {
+    PhysicsTuning tuning;
+    tuning.gravity          = _move.gravity;
+    tuning.terminalVelocity = _move.terminalVelocity;
+    tuning.runSpeed         = _move.runSpeed;
+    tuning.jumpSpeed        = _move.jumpSpeed;
+    tuning.maxStepUp        = _move.maxStepUp;
+    tuning.maxSnapDown      = _move.maxSnapDown;
+    return tuning;
+}
 
-namespace
+[[nodiscard]] static bool IsRegionBlocked_(
+    const PhysicsWorld& _world,
+    const Aabb&         _region)
 {
-    [[nodiscard]] PhysicsTuning MakePhysicsTuning_(
-        const MoveTuning& _move)
+    if (_region.IsEmpty())
     {
-        PhysicsTuning tuning;
-        tuning.gravity          = _move.gravity;
-        tuning.terminalVelocity = _move.terminalVelocity;
-        tuning.runSpeed         = _move.runSpeed;
-        tuning.jumpSpeed        = _move.jumpSpeed;
-        tuning.maxStepUp        = _move.maxStepUp;
-        tuning.maxSnapDown      = _move.maxSnapDown;
-        return tuning;
+        return false;
     }
-
-    [[nodiscard]] bool IsRegionBlocked_(
-        const PhysicsWorld& _world,
-        const Aabb&         _region)
+    if (_world.pGround && _world.pGround->IsRectSolid(FloorToInt(_region.min.x), FloorToInt(_region.min.y), CeilToInt(_region.max.x) - 1, CeilToInt(_region.max.y) - 1))
     {
-        if (_region.IsEmpty())
-        {
-            return false;
-        }
-        if (_world.pGround && _world.pGround->IsRectSolid(FloorToInt(_region.min.x), FloorToInt(_region.min.y), CeilToInt(_region.max.x) - 1, CeilToInt(_region.max.y) - 1))
+        return true;
+    }
+    for (const Platform& platform: _world.platforms)
+    {
+        if (!platform.bOneWay && _region.Overlaps(platform.box))
         {
             return true;
         }
-        for (const Platform& platform: _world.platforms)
-        {
-            if (!platform.bOneWay && _region.Overlaps(platform.box))
-            {
-                return true;
-            }
-        }
-        for (const Wall& wall: _world.walls)
-        {
-            if (_region.Overlaps(wall.box))
-            {
-                return true;
-            }
-        }
-        return false;
     }
-
-    template<typename T>
-    void HashBytes_(
-        uint64_t& _hash,
-        const T&  _value)
+    for (const Wall& wall: _world.walls)
     {
-        ARRAY<uint8_t, sizeof(T)> bytes = {};
-        std::memcpy(bytes.data(), &_value, sizeof(T));
-        for (const uint8_t byte: bytes)
+        if (_region.Overlaps(wall.box))
         {
-            _hash ^= byte;
-            _hash *= 1'099'511'628'211ull;
+            return true;
         }
     }
-}   // namespace
+    return false;
+}
+
+template<typename T>
+static void HashBytes_(
+    uint64_t& _hash,
+    const T&  _value)
+{
+    ARRAY<uint8_t, sizeof(T)> bytes = {};
+    std::memcpy(bytes.data(), &_value, sizeof(T));
+    for (const uint8_t byte: bytes)
+    {
+        _hash ^= byte;
+        _hash *= 1'099'511'628'211ull;
+    }
+}
 
 void PlayerController::Reset(
     const Tuning& _tuning,
@@ -104,6 +100,7 @@ void PlayerController::Reset(
     m_shotTicksLeft       = 0;
     m_burstLeft           = 0;
     m_burstTimer          = 0;
+    EndFlame_();
     m_knifeTick           = -1;
     m_knifeHitId          = kNoHitId;
     m_bSlashSecond        = false;
@@ -125,6 +122,10 @@ void PlayerController::Reset(
     m_bThrowShown     = false;
     m_bRiding         = false;
     m_pendingRelease.clear();
+
+    m_chutePhase      = eChutePhase::None;
+    m_chuteLandFeet   = _spawnFeet;
+    m_chuteBlinkTicks = 0;
 }
 
 bool PlayerController::SnapToGround(
@@ -132,6 +133,79 @@ bool PlayerController::SnapToGround(
     const float         _maxDist)
 {
     return Physics::SnapToGround(m_body, _world, _maxDist);
+}
+
+void PlayerController::BeginChuteDescent(
+    const Tuning& _tuning)
+{
+    m_chuteLandFeet = m_body.position;
+
+    m_body.position.y -= _tuning.player.chuteStartHeightPx;
+    m_body.velocity   = { 0.f, 0.f };
+    m_body.bGrounded  = false;
+    m_prevFeet        = m_body.position;
+
+    m_chutePhase       = eChutePhase::Descend;
+    m_chuteBlinkTicks  = 0;
+    m_state            = ePlayerState::Jump;
+    m_pose             = ePose::Air;
+    m_airTicks         = 1;
+    m_bCoyoteAvailable = false;
+    m_bJumping         = false;
+    m_bAirFromJump     = false;
+    m_bMoving          = false;
+    m_moveX            = 0;
+}
+
+eChutePhase PlayerController::GetChutePhase() const
+{
+    return m_chutePhase;
+}
+
+bool PlayerController::IsChuteVisible(
+    const Tuning& _tuning) const
+{
+    if (m_chutePhase == eChutePhase::Descend)
+    {
+        return true;
+    }
+    if (m_chutePhase != eChutePhase::Release)
+    {
+        return false;
+    }
+    // 깜빡임: 켜짐 period 틱, 꺼짐 period 틱을 반복. 총 길이가 지나면 Tick 에서 None 이 된다.
+    const int period = std::max(1, _tuning.player.chuteBlinkPeriodTicks);
+    return (m_chuteBlinkTicks / period) % 2 == 0;
+}
+
+Vec2 PlayerController::GetLogicalFeet() const
+{
+    return m_chutePhase == eChutePhase::Descend ? m_chuteLandFeet : m_body.position;
+}
+
+void PlayerController::TickChuteDescend_(
+    const Tuning& _tuning)
+{
+    // 낙하 중에는 물리/충돌을 타지 않는다. 일정한 낮은 속도로 착지점까지 내려간다.
+    m_body.position.y += _tuning.player.chuteFallSpeedPxSec * kStepSec;
+    m_body.velocity    = { 0.f, 0.f };
+    m_lastMove         = {};
+    m_state            = ePlayerState::Jump;
+    m_pose             = ePose::Air;
+    m_airTicks         = 1;
+
+    if (m_body.position.y >= m_chuteLandFeet.y)
+    {
+        m_body.position  = m_chuteLandFeet;
+        m_body.bGrounded = true;
+        StartChuteRelease_();
+    }
+}
+
+void PlayerController::StartChuteRelease_()
+{
+    m_chutePhase      = eChutePhase::Release;
+    m_chuteBlinkTicks = 0;
 }
 
 void PlayerController::PickUpWeapon(
@@ -149,10 +223,12 @@ void PlayerController::SetVictory()
     }
     m_state = ePlayerState::Victory;
     ++m_stateSerial;
+    m_chutePhase    = eChutePhase::None;
     m_overlay       = eOverlay::None;
     m_shotTicksLeft = 0;
     m_burstLeft     = 0;
     m_burstTimer    = 0;
+    EndFlame_();
     m_throwTick     = -1;
     if (m_knifeTick >= 0)
     {
@@ -178,7 +254,12 @@ bool PlayerController::OnHitEvents(
 
 void PlayerController::Kill()
 {
-    if (m_state == ePlayerState::Dead || m_state == ePlayerState::Victory || m_invincibleTicks > 0)
+    // 낙하 중에는 적/탄에 맞지 않는다 (착지 전 조작 시작 전까지 무적)
+    if (m_state == ePlayerState::Dead || m_state == ePlayerState::Victory || m_invincibleTicks > 0 || m_chutePhase == eChutePhase::Descend)
+    {
+        return;
+    }
+    if (m_godMode != eGodMode::Off)
     {
         return;
     }
@@ -191,6 +272,7 @@ void PlayerController::Kill()
     m_shotTicksLeft   = 0;
     m_burstLeft       = 0;
     m_burstTimer      = 0;
+    EndFlame_();
     m_throwTick       = -1;
     m_body.velocity.x = 0.f;
     if (m_knifeTick >= 0)
@@ -215,7 +297,7 @@ Hurtbox PlayerController::MakeHurtbox(
     hurtbox.box           = MakePlayerHurtboxBox(m_body.position, m_pose == ePose::Crouch ? ePose::Crouch : ePose::Stand, _tuning.body);
     hurtbox.team          = eTeam::Player;
     hurtbox.owner         = kPlayerOwnerId;
-    hurtbox.bInvulnerable = IsInvincible();
+    hurtbox.bInvulnerable = IsInvincible() || m_godMode == eGodMode::Invincible;
     return hurtbox;
 }
 
@@ -224,6 +306,15 @@ void PlayerController::Tick(
     const InputHistory&  _input)
 {
     m_pTuning = _ctx.pTuning;
+    m_godMode = _ctx.godMode;
+    if (_ctx.bInfiniteAmmo)
+    {
+        m_weapon.bombs = Max(m_weapon.bombs, 10);
+        if (m_weapon.HasFiniteAmmo())
+        {
+            m_weapon.ammo = Max(m_weapon.ammo, 99);
+        }
+    }
 
     if (_ctx.pCombat)
     {
@@ -327,10 +418,32 @@ void PlayerController::TickAlive_(
         command = {};
     }
 
+    if (m_chutePhase == eChutePhase::Descend)
+    {
+        if (!command.bShotBuffered)
+        {
+            TickChuteDescend_(*_ctx.pTuning);
+            return;
+        }
+        // 낙하 중 공격키: 낙하산을 깜빡이며 떼고 이 틱부터 조작을 연다. 누른 공격키로 발사하지는 않는다.
+        m_input.Consume(eAction::Shot);
+        StartChuteRelease_();
+        command = {};
+    }
+
     TickMovement_(_ctx, command);
     UpdateAim_(command);
     DeriveState_();
     TickActions_(_ctx, command);
+
+    if (m_chutePhase == eChutePhase::Release)
+    {
+        ++m_chuteBlinkTicks;
+        if (m_chuteBlinkTicks >= _ctx.pTuning->player.chuteBlinkTicks)
+        {
+            m_chutePhase = eChutePhase::None;
+        }
+    }
 
     if (m_state == ePlayerState::Idle && m_overlay == eOverlay::None)
     {
@@ -507,6 +620,7 @@ void PlayerController::TickActions_(
 {
     if (m_state == ePlayerState::Victory || !_ctx.pCombat || !_ctx.pProjectiles)
     {
+        EndFlame_();
         m_overlay = eOverlay::None;
         return;
     }
@@ -612,6 +726,7 @@ void PlayerController::TickBomb_(
             spawn.blastTicks = bomb.blastTicks;
             spawn.bBounce    = true;
             spawn.fuseTicks  = bomb.fuseTicks;
+            spawn.z          = ZShift(m_z, kPlayerDepth, kPlayerBombDepth);
             _ctx.pProjectiles->SpawnBomb(spawn);
             --m_weapon.bombs;
             ++m_stats.bombsThrown;
@@ -626,7 +741,7 @@ void PlayerController::TickBomb_(
 
 void PlayerController::CancelBurst_()
 {
-    // 이동/점프/칼/폭탄으로 버스트가 끊기면 남은 탄을 버리고 사격 연출도 즉시 끝낸다
+    // 점프/칼/폭탄으로 버스트가 끊기면 남은 탄을 버리고 사격 연출도 즉시 끝낸다 (이동은 끊지 않는다: 원작은 달리며 연사)
     if (m_burstLeft > 0)
     {
         m_shotTicksLeft = 0;
@@ -635,24 +750,107 @@ void PlayerController::CancelBurst_()
     m_burstTimer = 0;
 }
 
+void PlayerController::StopFlameSpawn_()
+{
+    // 분출 중 점프/칼/폭탄이 끼면 새 입자는 더 나오지 않는다. 이미 나간 입자와 판정 해제 타이밍은 끝까지 진행한다
+    if (m_flameTick < 0)
+    {
+        return;
+    }
+    m_bFlameStop    = true;
+    m_shotTicksLeft = 0;
+}
+
+void PlayerController::EndFlame_()
+{
+    if (m_flameHitId != kNoHitId)
+    {
+        m_pendingRelease.push_back(m_flameHitId);
+    }
+    m_flameHitId = kNoHitId;
+    m_flameTick  = -1;
+    m_bFlameStop = false;
+}
+
+void PlayerController::StartFlame_(
+    const PlayerContext& _ctx,
+    const WeaponTuning&  _flame)
+{
+    // 입력 1회 = 탄약 1발, 발사 카운트 1. 입자 개수만큼 탄약/카운트/사운드를 쓰지 않는다
+    // (분출 길이(fireIntervalTicks) 가 지난 뒤에만 여기 도달하므로, 남은 이전 분출은 이 시점에 판정을 푼다)
+    EndFlame_();
+    ++m_stats.shotsFired;
+    OnFired(m_weapon);
+    m_flameRng.Reseed(MakeShotSeed_());
+    m_flameHitId = _ctx.pCombat->NewHitId();
+    m_flameTick  = 0;
+    m_bFlameAir  = m_pose == ePose::Air;
+    TickFlame_(_ctx, _flame);
+}
+
+void PlayerController::TickFlame_(
+    const PlayerContext& _ctx,
+    const WeaponTuning&  _flame)
+{
+    // 분출 타임라인: 0 부터 interval 간격으로 입자 spawnEnd 까지, 판정 ID 는 releaseTicks 마다 풀고, 마지막 입자가 죽으면 끝낸다
+    const int interval = Max(1, _flame.particleIntervalTicks);
+    const int spawnEnd = Max(0, _flame.particleCount) * interval;
+    if (m_flameTick < spawnEnd && m_flameTick % interval == 0 && !m_bFlameStop)
+    {
+        SpawnFlameParticle_(_ctx, _flame);
+    }
+    if (_flame.hitReleaseTicks > 0 && m_flameTick > 0 && m_flameTick < spawnEnd && m_flameTick % _flame.hitReleaseTicks == 0)
+    {
+        _ctx.pCombat->ReleaseHitId(m_flameHitId);
+    }
+    ++m_flameTick;
+    if (m_flameTick > spawnEnd + _flame.particleLifeMaxTicks)
+    {
+        EndFlame_();
+    }
+}
+
+void PlayerController::SpawnFlameParticle_(
+    const PlayerContext& _ctx,
+    const WeaponTuning&  _flame)
+{
+    const Vec2 muzzle    = MakeMuzzle_(*_ctx.pTuning, _flame);
+    const Vec2 direction = GetAimDirection(m_aim, m_facing);
+    const Vec2 chest     = { m_body.position.x, m_body.position.y - m_body.size.y * 0.6f };
+
+    BulletSpawn spawn = MakeFlameParticleSpawn(_flame, kPlayerOwnerId, muzzle, chest, direction, m_flameHitId, m_flameRng);
+    spawn.z           = ZShift(m_z, kPlayerDepth, kPlayerBulletDepth);
+    _ctx.pProjectiles->SpawnBullet(spawn, *_ctx.pCombat);
+}
+
 void PlayerController::TickShot_(
     const PlayerContext& _ctx,
     const PlayerCommand& _command)
 {
+    const Tuning&       tuning = *_ctx.pTuning;
+    const WeaponTuning& weapon = tuning.weapons.Get(m_weapon.weapon);
+
+    // 파이어샷 분출은 사격 입력과 별개로 끝까지 돈다 (달리며 쏴도 계속 분출). 점프/칼/폭탄이면 새 입자만 멈춘다
+    if (m_flameTick >= 0)
+    {
+        if (m_knifeTick >= 0 || m_throwTick >= 0 || m_bSlashShown || m_bThrowShown || (m_pose == ePose::Air) != m_bFlameAir)
+        {
+            StopFlameSpawn_();
+        }
+        TickFlame_(_ctx, tuning.weapons.flame);
+    }
+
     if (m_knifeTick >= 0 || m_throwTick >= 0 || m_bSlashShown || m_bThrowShown)
     {
         CancelBurst_();
         return;
     }
 
-    const Tuning&       tuning = *_ctx.pTuning;
-    const WeaponTuning& weapon = tuning.weapons.Get(m_weapon.weapon);
-
-    // 버스트 진행 중: 이동하거나 공중/지상이 바뀌면 캔슬, 아니면 간격마다 한 발씩
+    // 버스트 진행 중: 공중/지상이 바뀌면 캔슬, 아니면 간격마다 한 발씩 (이동 중에도 남은 발수를 계속 쏜다)
     if (m_burstLeft > 0)
     {
         const bool bAir = m_pose == ePose::Air;
-        if (m_bMoving || bAir != m_bBurstAir || m_weapon.weapon == eWeapon::Pistol)
+        if (bAir != m_bBurstAir || m_weapon.weapon == eWeapon::Pistol)
         {
             CancelBurst_();
             return;
@@ -674,18 +872,61 @@ void PlayerController::TickShot_(
         return;
     }
 
+    // 파이어샷: 입력 1회 = 입자 분출 시작 (탄약 1발). 사격 모션 길이 = 분출 길이
+    if (m_weapon.weapon == eWeapon::Flame)
+    {
+        StartFlame_(_ctx, weapon);
+        m_shotOverlayTicks = weapon.shotOverlayTicks;
+        m_shotTicksLeft    = m_shotOverlayTicks;
+        ++m_overlaySerial;
+        m_input.Consume(eAction::Shot);
+        return;
+    }
+
+    // 헤비머신건: 한 번 입력 = 3~5발 버스트 (발수는 결정적 난수, 첫 발은 즉시). 사격 모션 길이 = 발수 x 간격
+    const bool bBurst = weapon.burstShotsMax > 1 && m_weapon.weapon != eWeapon::Pistol;
+    int        shots  = 1;
+    if (bBurst)
+    {
+        m_shotRng.Reseed(MakeShotSeed_());
+        shots = Random<int>(m_shotRng, weapon.burstShotsMin, weapon.burstShotsMax);
+    }
+
     FireBullet_(_ctx, weapon);
-    m_shotTicksLeft = weapon.shotOverlayTicks;
+    m_shotOverlayTicks = bBurst ? shots * weapon.burstIntervalTicks : weapon.shotOverlayTicks;
+    m_shotTicksLeft    = m_shotOverlayTicks;
     ++m_overlaySerial;
     m_input.Consume(eAction::Shot);
 
-    // 헤비머신건: 한 번 입력 = 사격 모션 동안 이어지는 3~5발 (첫 발은 즉시)
-    if (weapon.burstShots > 1 && m_weapon.weapon != eWeapon::Pistol)
+    if (bBurst && shots > 1)
     {
-        m_burstLeft  = weapon.burstShots - 1;
+        m_burstLeft  = shots - 1;
         m_burstTimer = weapon.burstIntervalTicks;
         m_bBurstAir  = m_pose == ePose::Air;
     }
+}
+
+uint64_t PlayerController::MakeShotSeed_() const
+{
+    // 상태만으로 정해지는 시드: 누적 발사 수 + 발 위치 비트 (같은 입력 시퀀스는 항상 같은 탄도)
+    uint64_t seed = 0x9E37'79B9'7F4A'7C15ull ^ static_cast<uint64_t>(m_stats.shotsFired);
+    seed          = seed * 6'364'136'223'846'793'005ull + std::bit_cast<uint32_t>(m_body.position.x);
+    seed          = seed * 6'364'136'223'846'793'005ull + std::bit_cast<uint32_t>(m_body.position.y);
+    return seed;
+}
+
+Vec2 PlayerController::MakeMuzzle_(
+    const Tuning&       _tuning,
+    const WeaponTuning& _weapon) const
+{
+    Vec2 muzzle = GetMuzzlePosition(m_body.position, m_facing, m_pose, m_aim, _tuning.muzzle);
+    if (m_aim == eAim::Forward)
+    {
+        // 정면 사격 클립의 실제 총구 보정 (무기별 튜닝, 왼쪽을 향하면 x 반전)
+        muzzle.x += _weapon.muzzleAdjust.x * static_cast<float>(m_facing);
+        muzzle.y += _weapon.muzzleAdjust.y;
+    }
+    return muzzle;
 }
 
 void PlayerController::FireBullet_(
@@ -694,16 +935,23 @@ void PlayerController::FireBullet_(
 {
     const Tuning& tuning = *_ctx.pTuning;
 
-    const Vec2 muzzle    = GetMuzzlePosition(m_body.position, m_facing, m_pose, m_aim, tuning.muzzle);
+    Vec2       muzzle    = MakeMuzzle_(tuning, _weapon);
     Vec2       direction = GetAimDirection(m_aim, m_facing);
     if (m_weapon.weapon == eWeapon::Hmg)
     {
         const float rad = m_aimDegree * (3.14159265f / 180.f);
         direction       = { static_cast<float>(m_facing) * std::cos(rad), -std::sin(rad) };
+        if (_weapon.muzzleJitter.y > 0.f)
+        {
+            const float offset = Random<float>(m_shotRng, -_weapon.muzzleJitter.y, _weapon.muzzleJitter.y);
+            muzzle.x += -direction.y * offset;
+            muzzle.y += direction.x * offset;
+        }
     }
     const Vec2 chest = { m_body.position.x, m_body.position.y - m_body.size.y * 0.6f };
 
     BulletSpawn spawn = MakeBulletSpawn(m_weapon.weapon, _weapon, kPlayerOwnerId, muzzle, chest, direction);
+    spawn.z           = ZShift(m_z, kPlayerDepth, kPlayerBulletDepth);
     _ctx.pProjectiles->SpawnBullet(spawn, *_ctx.pCombat);
     ++m_stats.shotsFired;
     OnFired(m_weapon);
@@ -737,7 +985,7 @@ RigState PlayerController::MakeRigState() const
     {
         switch (m_overlay)
         {
-            case eOverlay::Shot: rig.overlayDurationTicks = m_pTuning->weapons.Get(m_weapon.weapon).shotOverlayTicks; break;
+            case eOverlay::Shot: rig.overlayDurationTicks = m_shotOverlayTicks; break;
             case eOverlay::Slash: rig.overlayDurationTicks = m_pTuning->knife.durationTicks; break;
             case eOverlay::Throw: rig.overlayDurationTicks = m_pTuning->bomb.throwTicks; break;
             case eOverlay::None: break;
@@ -774,6 +1022,8 @@ uint64_t PlayerController::HashState() const
     HashBytes_(hash, m_stats.bombsThrown);
     HashBytes_(hash, m_stats.jumps);
     HashBytes_(hash, m_stats.deaths);
+    HashBytes_(hash, static_cast<uint8_t>(m_chutePhase));
+    HashBytes_(hash, m_chuteBlinkTicks);
     return hash;
 }
 
@@ -789,6 +1039,7 @@ void PlayerController::BeginRide()
     m_shotTicksLeft = 0;
     m_burstLeft     = 0;
     m_burstTimer    = 0;
+    EndFlame_();
     m_throwTick     = -1;
     m_idleTicks     = 0;
     m_body.velocity = { 0.f, 0.f };
@@ -1000,4 +1251,13 @@ bool PlayerController::IsKnifeTargetInRange() const
     return m_bKnifeTargetInRange;
 }
 
-}   // namespace slug
+int PlayerController::GetZ() const
+{
+    return m_z;
+}
+
+void PlayerController::SetZ(
+    const int _z)
+{
+    m_z = _z;
+}

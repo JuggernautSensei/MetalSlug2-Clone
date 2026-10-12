@@ -3,9 +3,6 @@
 #include "Base/Math.h"
 #include "Base/Types.h"
 
-namespace slug
-{
-
 void SlugSystem::Reset(
     const SlugTuning& _tuning)
 {
@@ -172,5 +169,3 @@ uint64_t SlugSystem::HashState() const
     }
     return hash;
 }
-
-}   // namespace slug

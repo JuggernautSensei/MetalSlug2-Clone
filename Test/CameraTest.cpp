@@ -21,17 +21,14 @@
 #include "Render/Camera.h"
 #include "StageTestUtil.h"
 
-using namespace slug;
 
-namespace
-{
-[[nodiscard]] bool IsIntegral_(
+[[nodiscard]] static bool IsIntegral_(
     const float _value)
 {
     return _value == std::floor(_value);
 }
 
-[[nodiscard]] Camera MakeLevelCamera_()
+[[nodiscard]] static Camera MakeLevelCamera_()
 {
     Camera camera;
     camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 448.f }));
@@ -41,14 +38,14 @@ namespace
 }
 
 // 흔들림을 걸고 60프레임 동안의 카메라 위치를 기록한다
-[[nodiscard]] slug::Vector<Vec2> RunShake_()
+[[nodiscard]] static Vector<Vec2> RunShake_()
 {
     Camera camera = MakeLevelCamera_();
     camera.SetTarget({ 2000.f, 224.f });
     camera.SnapToTarget();
     camera.Shake(6.f, 0.5f);
 
-    slug::Vector<Vec2> positions;
+    Vector<Vec2> positions;
     for (int i = 0; i < 60; ++i)
     {
         camera.Update();
@@ -58,11 +55,11 @@ namespace
 }
 
 // 전진 전용 카메라가 움직이는 목표를 600프레임 따라가는 위치 기록
-[[nodiscard]] slug::Vector<Vec2> RunForwardOnly_()
+[[nodiscard]] static Vector<Vec2> RunForwardOnly_()
 {
     Camera camera = MakeLevelCamera_();
     camera.SetForwardOnly(true);
-    slug::Vector<Vec2> out;
+    Vector<Vec2> out;
     for (int i = 0; i < 600; ++i)
     {
         camera.SetTarget({ 320.f + static_cast<float>(i) * 2.7f, 224.f });
@@ -71,7 +68,6 @@ namespace
     }
     return out;
 }
-}   // namespace
 
 TEST(Camera, OutputIsAlwaysIntegralWhileFollowingFractionalTarget)
 {
@@ -321,8 +317,8 @@ TEST(Camera, ZeroSmoothTimeFollowsInstantly)
 
 TEST(Camera, ShakeIsDeterministicDecaysAndStaysInBounds)
 {
-    const slug::Vector<Vec2> a = RunShake_();
-    const slug::Vector<Vec2> b = RunShake_();
+    const Vector<Vec2> a = RunShake_();
+    const Vector<Vec2> b = RunShake_();
     ASSERT_EQ(a.size(), b.size());
     bool bMoved = false;
     for (size_t i = 0; i < a.size(); ++i)
@@ -392,8 +388,6 @@ TEST(Camera, ScrollRampsUpWhilePlayerRunsAndStopsInstantlyWhenPlayerStops)
     EXPECT_LE(camera.GetViewCenter().x, x - half + 0.01f);
 }
 
-namespace
-{
 // StageIntegrationTest.cpp 의 IntegrationSim::BotStep 과 같은 봇 (헤드리스 실제 스테이지 구동용)
 class CameraBotSim
 {
@@ -402,7 +396,7 @@ public:
         : m_rng(uint64_t { 1 })
     {
         m_ctx.pRng                         = &m_rng;
-        m_ctx.assetRoot                    = slug::FindAssetRoot();
+        m_ctx.assetRoot                    = FindAssetRoot();
         std::unique_ptr<StageState> pOwned = std::make_unique<StageState>();
         m_pState                           = pOwned.get();
         m_runner                           = std::make_unique<SimRunner>(m_ctx, std::move(pOwned));
@@ -478,7 +472,7 @@ private:
         return false;
     }
 
-    slug::RngMt19937           m_rng        = {};
+    RngMt19937           m_rng        = {};
     GameContext                m_ctx        = {};
     InputFrame                 m_frame      = {};
     StageState*                m_pState     = nullptr;
@@ -489,7 +483,6 @@ private:
     int                        m_backTicks  = 0;
     std::unique_ptr<SimRunner> m_runner     = nullptr;
 };
-}   // namespace
 
 TEST(CameraRegression, RealStageBotRunHasNoJerkOverFirst5000Ticks)
 {
@@ -521,11 +514,11 @@ TEST(CameraRegression, RealStageBotRunHasNoJerkOverFirst5000Ticks)
         const float dyI = pix.y - prevI.y;
         if (i >= 120)
         {
-            maxStep     = slug::Max(maxStep, slug::Max(std::abs(dx), std::abs(dy)));
-            maxAccel    = slug::Max(maxAccel, std::abs(dx - prevDx));
-            maxAccelY   = slug::Max(maxAccelY, std::abs(dy - prevDy));
-            maxIntStep  = slug::Max(maxIntStep, slug::Max(std::abs(dxI), std::abs(dyI)));
-            maxIntAccel = slug::Max(maxIntAccel, std::abs(dxI - prevDxI));
+            maxStep     = Max(maxStep, Max(std::abs(dx), std::abs(dy)));
+            maxAccel    = Max(maxAccel, std::abs(dx - prevDx));
+            maxAccelY   = Max(maxAccelY, std::abs(dy - prevDy));
+            maxIntStep  = Max(maxIntStep, Max(std::abs(dxI), std::abs(dyI)));
+            maxIntAccel = Max(maxIntAccel, std::abs(dxI - prevDxI));
             EXPECT_LE(std::abs(dx), 12.f) << "tick " << i;
             EXPECT_LE(std::abs(dy), 12.f) << "tick " << i;
             EXPECT_LE(std::abs(dx - prevDx), 1.5f) << "tick " << i;
@@ -577,7 +570,7 @@ TEST(Camera, FollowStepsNeverJumpAndForwardOnlyNeverTwitchesOnReverse)
         const float center = camera.GetViewCenter().x;
         const float step   = center - prevCenter;
         ASSERT_GE(step, -1e-4f) << "tick " << i;
-        ASSERT_LE(step, slug::Max(prevStep * 1.5f, 1.f) + 1e-4f) << "tick " << i;
+        ASSERT_LE(step, Max(prevStep * 1.5f, 1.f) + 1e-4f) << "tick " << i;
         prevCenter = center;
         prevStep   = step;
     }
@@ -644,7 +637,7 @@ TEST(Camera, UnlockAfterLockGlidesWithCappedStepAndSettlesInTime)
     {
         camera.Update();
         const float center = camera.GetViewCenter().x;
-        maxStep            = slug::Max(maxStep, std::abs(center - prev));
+        maxStep            = Max(maxStep, std::abs(center - prev));
         prev               = center;
         if (ticks < 0 && std::abs(goal - center) < 1.f)
         {
@@ -670,7 +663,7 @@ TEST(Camera, SetBoundsChangeMovesCameraAtMost2_5PerTick)
     {
         camera.Update();
         const Vec2 center = camera.GetViewCenter();
-        maxStep           = slug::Max(maxStep, slug::Max(std::abs(center.x - prev.x), std::abs(center.y - prev.y)));
+        maxStep           = Max(maxStep, Max(std::abs(center.x - prev.x), std::abs(center.y - prev.y)));
         prev              = center;
     }
     EXPECT_LE(maxStep, 2.5f);
@@ -689,7 +682,7 @@ TEST(Camera, LockWhileCameraOutsideGlidesInInsteadOfJumping)
     for (int i = 0; i < 300; ++i)
     {
         camera.Update();
-        maxStep = slug::Max(maxStep, std::abs(camera.GetViewCenter().x - prev));
+        maxStep = Max(maxStep, std::abs(camera.GetViewCenter().x - prev));
         prev    = camera.GetViewCenter().x;
     }
     EXPECT_LE(maxStep, 12.f);

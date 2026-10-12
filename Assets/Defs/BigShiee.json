@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "note": "최종보스 전함 빅 셰이 (시트 40204, Boss_* 클립). 설계/수치/측정 근거: Docs/Spec_BigShiee.md. 원점 = 선체 셀 바닥 가운데, 선수(X 문양)는 오른쪽. 모든 좌표는 선체 원점 기준 게임 px.",
+  "defs": {
+
+    "bigshiee_shell": {
+      "kind": "projectile",
+      "note": "포탑 곡사탄: 원작 영상 실측 (비행 약 3.3 s, 올라갔다가 플레이어 쪽으로 떨어진다, 청록/빨강/노랑으로 2프레임씩 깜박인다). 착탄하면 불기둥 (PlayerBombExplosion) + 폭발 판정.",
+      "box": { "w": 20, "h": 20 },
+      "v0": [0, -61],
+      "gravity": 86,
+      "maxFall": 3000,
+      "lifetime": 7,
+      "anim": { "fly": { "name": "Boss_Dot_Blink", "frames": 3, "sec": 0.0666667, "loop": true } },
+      "onSolid": "explode",
+      "explosion": { "fx": "PlayerBombExplosion", "offset": [0, 0] },
+      "blast": { "w": 70, "h": 190, "up": 95, "sec": 0.15, "damage": 1 }
+    },
+
+    "bigshiee_missile": {
+      "kind": "projectile",
+      "note": "주포 고폭탄. 그림은 아래를 향한 Boss_Missile3 한 벌이고 rotate 로 속도 방향 (= 주포 사격 행 각도) 에 맞춰 돈다. 연기 꼬리, 착탄 폭발 + 판정.",
+      "box": { "w": 26, "h": 40 },
+      "speedRamp": { "from": 60, "accel": 420, "max": 330 },
+      "lifetime": 4,
+      "rotate": true,
+      "scale": 1.0,
+      "anim": { "fly": { "name": "Boss_Missile3", "frames": 12, "sec": 0.0555556, "loop": true } },
+      "onSolid": "explode",
+      "explosion": { "fx": "Explosion_Huge", "offset": [0, -30], "sfx": "PlayerBomb" },
+      "trail": { "fx": "Boss_Smoke_Small", "offset": [0, -50] },
+      "trailSec": 0.05,
+      "blast": { "w": 120, "h": 140, "up": 60, "sec": 0.12, "damage": 1 }
+    },
+
+    "bigshiee": {
+      "kind": "boss",
+      "behavior": "bigshiee",
+      "note": "최종보스 전함. 입장 -> 포탑 7 문 (각자 체력/발사/파괴) -> 주포 전개 -> 주포 체력 0 -> 연쇄 폭발 -> 잔해. 판정은 registerHurtboxes 의 파트 상자 (owner = MakePartOwner, 0..6 포탑, 7 주포). hp = 주포 (보스) 체력.",
+      "hp": 800,
+      "score": 20000,
+      "hitFlash": true,
+      "noDespawn": true,
+      "body": { "w": 542, "h": 416, "cx": 0, "cy": -208 },
+      "hurtbox": { "w": 542, "h": 416, "cx": 0, "cy": -208 },
+      "activation": { "marginPx": 100000, "latch": true },
+      "physics": { "useGravity": false },
+      "weapons": {
+        "shell":     { "projectile": "bigshiee_shell", "muzzle": [16, -1], "aim": "given", "arc": { "minVx": 0, "maxVx": 140 } },
+        "missile":   { "projectile": "bigshiee_missile", "muzzle": [119, -322], "aim": "given" }
+      },
+      "params": {
+        "turretAnchor": [84, -254, -87, -234, -113, -184, 134, -220, -18, -144, -82, -112, -136, -124],
+        "turretSide": [1, 0, 0, 1, 0, 0, 0],
+        "turretTwin": [1, 1, 1, 1, 0, 0, 0],
+        "turretHp": [75, 75, 75, 75, 60, 60, 60],
+        "turretBox": [76, 56, 0, -30, 76, 56, 0, -30, 76, 56, 0, -30, 76, 56, 0, -30, 70, 40, 0, -22, 70, 40, 0, -22, 70, 40, 0, -22],
+        "turretMuzzle": [-26, -42, -26, -42, -26, -42, -26, -42, -22, -34, -22, -34, -22, -34],
+        "muzzleGap": 16,
+        "turretScore": 1000,
+        "antennaP": [-43, -336],
+        "antennaQ": [65, -318],
+
+        "startScreenX": -300,
+        "entranceKeys": [0, -300, 0.73, -212, 1.88, -61, 2.38, -18, 2.88, 24, 3.38, 67, 3.88, 100, 4.38, 134, 4.88, 157, 5.38, 187, 5.88, 216, 6.38, 240, 6.88, 259, 7.38, 276, 7.88, 293, 8.38, 307, 8.88, 325, 10.73, 370, 13.23, 392],
+
+        "scrollSpeed": 20,
+        "scrollStartSec": 1.4,
+        "scrollPauses": [4.88, 1.0, 16.4, 0.9, 19.9, 1.5],
+        "deployPauseDelaySec": 0.5,
+        "deployPauseSec": 9.5,
+        "latePauseFirstSec": 11.6,
+        "latePausePeriodSec": 18.6,
+        "latePauseSec": 1.2,
+
+        "driveTriggerX": 200,
+        "driveTargetX": 385,
+        "driveSpeed": 65,
+        "driveAccel": 160,
+        "scrollBudgetPx": 1160,
+        "shuttleDriftSec": 6,
+        "reverseAtSec": 12.8,
+        "reverseSec": 1.0,
+        "reverseSpeed": 36,
+
+        "volleyIntervalSec": [1.0, 2.8],
+        "firstVolleySec": 4.0,
+        "prepTicks": 18,
+        "turnFrameTicks": 3,
+        "shotTicks": 60,
+        "fireTick": 16,
+        "pairGapTicks": 10,
+        "turretAimBandPx": 72,
+        "turretTrackTicks": 30,
+
+        "cannonAnchor": [30, -170],
+        "cannonBoxSize": [126.5, 190],
+        "cannonBoxOffset": [142.5, -265],
+        "cannonAimOrigin": [110.5, -301],
+        "deployDelaySec": 0.5,
+        "firstMissileSec": 2.23,
+        "missileIntervalSec": 3.04,
+        "missileFireTick": 4,
+        "casingOffset": [-10, 40],
+        "casingScale": 2.0,
+        "casingVel": [36, -240],
+        "casingGravity": 900,
+        "casingGroundDy": 500,
+        "casingLingerSec": 0,
+        "casingFps": 12,
+        "hullStepTicks": 8,
+        "cannonDeployDelaySec": 1.2,
+        "cannonDeployTicks": 90,
+        "cannonTurnTicks": 4,
+        "cannonAimDeg": [-47, -22, 0, 22, 47],
+        "cannonMuzzleX": [-42, -24, 0, 24, 42],
+
+        "dyingBlastIntervalSec": 0.12,
+        "dyingWreckSec": 5.0,
+        "dyingDoneSec": 7.0,
+        "wreckSmokeIntervalSec": 0.35,
+        "wreckOffset": [0, 0],
+        "cannonWreckOffset": [150, -60],
+
+        "chuteFirstSec": 6.0,
+        "chuteIntervalSec": 15.0,
+        "chuteSpreadX": 60,
+        "chuteRightMarginX": 120,
+        "chuteStartAboveY": 40,
+        "chuteEdgeX": 30,
+
+        "turretBlastOffset": [0, -24],
+        "turretSmokeOffset": [0, -10],
+        "deathFlameOffset": [0, 40],
+        "deathBlastDy": 120,
+        "deathHugeOffset": [20, -150],
+        "deathDiscOffset": [-40, -170], "parts": { "turretD": { "depth": -97, "sort": 3 }, "turretC": { "depth": -97, "sort": 2 }, "turretE": { "depth": -97, "sort": 6 }, "turretF": { "depth": -97, "sort": 5 }, "turretG": { "depth": -97, "sort": 4 }, "cannon": { "depth": -95, "sort": 0 }, "turretA": { "depth": -96, "sort": 0 } }
+      }
+    },
+
+    "pow_chute": {
+      "extends": "flying_bzk",
+      "note": "보스전 낙하 인질 (BigShiee 가 주기적으로 스폰). 낙하산 바주카 정의를 상속하지만 낙하산/사격 없이 (noOverlay, maxShots 0) 묶인 자세 (POW stuck 클립) 로 자유낙하 (fallGravity) 하고, 낙하 중에는 판정이 없어 플레이어 총알/폭발에 죽지 않는다 (noHurtbox). 땅에 닿으면 묶인 POW 로 변신한다 (POW 규칙 그대로). 구출하면 drop 무기가 나온다.",
+      "score": 0,
+      "human": false,
+      "noOverlay": true,
+      "clips": {
+        "ready0": { "name": "Older_Idle_{side}", "frames": 8, "sec": 0.12, "loop": true },
+        "ready1": { "name": "Older_Idle_{side}", "frames": 8, "sec": 0.12, "loop": true },
+        "ready2": { "name": "Older_Idle_{side}", "frames": 8, "sec": 0.12, "loop": true },
+        "ready3": { "name": "Older_Idle_{side}", "frames": 8, "sec": 0.12, "loop": true },
+        "ready4": { "name": "Older_Idle_{side}", "frames": 8, "sec": 0.12, "loop": true },
+        "shot0": { "name": "Older_Idle_{side}", "frames": 8, "sec": 0.12, "loop": true },
+        "shot1": { "name": "Older_Idle_{side}", "frames": 8, "sec": 0.12, "loop": true },
+        "shot2": { "name": "Older_Idle_{side}", "frames": 8, "sec": 0.12, "loop": true },
+        "shot3": { "name": "Older_Idle_{side}", "frames": 8, "sec": 0.12, "loop": true },
+        "shot4": { "name": "Older_Idle_{side}", "frames": 8, "sec": 0.12, "loop": true },
+        "para": { "name": "Older_Idle_{side}", "frames": 8, "sec": 0.12, "loop": true }
+      },
+      "params": {
+        "maxShots": 0,
+        "descendSpeed": 60,
+        "fallGravity": 400,
+        "fallMaxSpeed": 300,
+        "landedDef": "pow",
+        "noHurtbox": true,
+        "paraDestroyFx": ""
+      }
+    }
+  }
+}

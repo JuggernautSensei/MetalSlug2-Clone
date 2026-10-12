@@ -6,8 +6,7 @@
 #include "Base/Types.h"
 #include "World/Geometry.h"
 
-namespace slug
-{
+inline constexpr int kDefaultTerrainDepth = -90;   // world.terrainDepth 기본: 이 depth 보다 뒤인 스프라이트는 지형 텍스처 앞에 먼저 그린다
 
 class ParamValue
 {
@@ -116,11 +115,8 @@ enum class eStageLayer : uint8_t
     Count
 };
 
-[[nodiscard]] constexpr uint32_t LayerBit(
-    const eStageLayer _layer)
-{
-    return 1u << static_cast<unsigned>(_layer);
-}
+[[nodiscard]] uint32_t LayerBit(
+    const eStageLayer _layer);
 
 enum class eCollisionLayer : uint8_t
 {
@@ -232,6 +228,8 @@ struct SpawnSpec
     RepeatSpec repeat     = {};
 
     int         facing     = 0;   // -1 왼쪽, +1 오른쪽, 0 = def 기본
+    bool        bHasZ      = false;
+    int         z          = 0;   // bHasZ 일 때 인스턴스 depth
     bool        bHasHp     = false;
     int         hp         = 0;
     String      drop       = {};
@@ -291,6 +289,7 @@ struct StageAction
     String command = {};
     String next    = {};
     bool   bLoop   = true;
+    float  fadeOutSec = 0.f;   // PlayBgm: > 0 이면 현재 BGM 을 줄인 뒤 교체
 
     bool     bClearWaves = false;
     uint32_t clearLayers = 0;   // LayerBit 마스크
@@ -383,6 +382,7 @@ struct StageData
     Vec2        viewSize   = { 640.f, 448.f };
     String      background = {};
     EndlessTail endless    = {};
+    int         terrainDepth = kDefaultTerrainDepth;   // 지형의 depth: 이보다 작은 depth 의 스프라이트 (보스 선체) 는 지형 텍스처보다 먼저 그려 모래가 덮는다
 
     String bgmName  = {};
     bool   bBgmLoop = true;
@@ -422,14 +422,9 @@ struct StageLoadDiagnostics
     const FilePath&       _path,
     StageLoadDiagnostics* _pDiag = nullptr);
 
-[[nodiscard]] constexpr bool ShouldRunAction(
+[[nodiscard]] bool ShouldRunAction(
     const eWhen _when,
-    const bool  _bSilent)
-{
-    return _when == eWhen::Always || (_bSilent ? _when == eWhen::Silent : _when == eWhen::Normal);
-}
+    const bool  _bSilent);
 
 [[nodiscard]] const char* GetEntityKindName(eEntityKind _kind);
 [[nodiscard]] const char* GetActionTypeName(eActionType _type);
-
-}   // namespace slug

@@ -3,11 +3,12 @@
   "note": "소품/아이템 정의. 스키마는 Docs/PropSpecs.md. 좌표는 스프라이트 중심 기준. HP 는 권총(damage 3) 발 수 기준: 상점 4발, 트럭 3발, 집 6발, 큰집/지상집/탑 8발, 보트 4발. 폭탄(20)은 1~2발.",
   "defs": {
     "shop_0": {
+      "sortByX": true,
       "hp": 12,
       "idle": { "sprite": "Stage0_Shop_0_0" },
       "destroyed": { "sprite": "Stage0_Shop_0_1" },
       "parts": [
-        { "role": "hurt", "size": [150, 75], "offset": [0, -100] },
+        { "role": "hurt", "size": [220, 160], "offset": [0, -50] },
         { "role": "platform", "size": [220, 20], "offset": [30, 10] }
       ],
       "onDestroy": {
@@ -20,11 +21,12 @@
       }
     },
     "shop_1": {
+      "sortByX": true,
       "hp": 12,
       "idle": { "sprite": "Stage0_Shop_1_0" },
       "destroyed": { "sprite": "Stage0_Shop_1_1" },
       "parts": [
-        { "role": "hurt", "size": [150, 75], "offset": [0, -100] },
+        { "role": "hurt", "size": [210, 170], "offset": [0, -50] },
         { "role": "platform", "size": [220, 20], "offset": [20, 10] }
       ],
       "onDestroy": {
@@ -37,11 +39,13 @@
       }
     },
     "shop_2": {
+      "sortByX": true,
       "hp": 12,
+      "note": "3번째 가게. 건물 깊이 규칙(sortByX): 작은 x 가 앞에 그려진다.",
       "idle": { "sprite": "Stage0_Shop_2_0" },
       "destroyed": { "sprite": "Stage0_Shop_2_1" },
       "parts": [
-        { "role": "hurt", "size": [100, 50], "offset": [25, -75] },
+        { "role": "hurt", "size": [170, 130], "offset": [20, -40] },
         { "role": "platform", "size": [160, 20], "offset": [20, 15] }
       ],
       "onDestroy": {
@@ -54,11 +58,12 @@
       }
     },
     "shop_3": {
+      "sortByX": true,
       "hp": 12,
       "idle": { "sprite": "Stage0_Shop_3_0" },
       "destroyed": { "sprite": "Stage0_Shop_3_1" },
       "parts": [
-        { "role": "hurt", "size": [150, 75], "offset": [50, -100] },
+        { "role": "hurt", "size": [300, 170], "offset": [30, -50] },
         { "role": "platform", "size": [300, 20], "offset": [30, 10] }
       ],
       "onDestroy": {
@@ -71,11 +76,12 @@
       }
     },
     "shop_4": {
+      "sortByX": true,
       "hp": 12,
       "idle": { "sprite": "Stage0_Shop_4_0" },
       "destroyed": { "sprite": "Stage0_Shop_4_1" },
       "parts": [
-        { "role": "hurt", "size": [200, 75], "offset": [50, -100] },
+        { "role": "hurt", "size": [330, 230], "offset": [40, -60] },
         { "role": "platform", "size": [250, 20], "offset": [80, 20] }
       ],
       "onDestroy": {
@@ -88,11 +94,12 @@
       }
     },
     "shop_5": {
+      "sortByX": true,
       "hp": 12,
       "idle": { "sprite": "Stage0_Shop_5_0" },
       "destroyed": { "sprite": "Stage0_Shop_5_1" },
       "parts": [
-        { "role": "hurt", "size": [150, 75], "offset": [0, -200] },
+        { "role": "hurt", "size": [260, 240], "offset": [10, -60] },
         { "role": "platform", "size": [230, 20], "offset": [35, 55] },
         { "role": "platform", "size": [220, 20], "offset": [47, 130], "when": "destroyed" }
       ],
@@ -118,7 +125,7 @@
           "idle": { "anim": "Truck_Idle" }, "hit": { "anim": "Truck_Hit" },
           "parts": [
             { "role": ["hurt", "wall"], "size": [44, 75], "offset": [22, 5] },
-            { "role": ["hurt", "wall"], "size": [70, 25], "offset": [-35, 15] }
+            { "role": "hurt", "size": [70, 55], "offset": [-35, 5] }, { "role": "wall", "size": [70, 25], "offset": [-35, 15] }
           ]
         },
         {
@@ -153,7 +160,7 @@
         { "name": "pence1", "idle": { "sprite": "Pence1" } },
         { "name": "pence2", "idle": { "sprite": "Pence2" } }
       ],
-      "parts": [ { "role": "hurt", "size": [60, 30], "offset": [0, -20] } ],
+      "parts": [ { "role": "hurt", "size": [56, 90], "offset": [0, -8] } ],
       "onDestroy": { "debris": { "set": "wood", "count": 5 } }
     },
 
@@ -161,7 +168,7 @@
       "hp": 12,
       "idle": { "sprite": "Mob_Boat_Idle" },
       "destroyed": { "sprite": "Mob_Boat_Destroy" },
-      "parts": [ { "role": ["hurt", "wall"], "size": [150, 150], "offset": [0, 25] } ],
+      "parts": [ { "role": "hurt", "size": [230, 200], "offset": [0, 15] }, { "role": "wall", "size": [150, 150], "offset": [0, 25] } ],
       "onDestroy": {
         "explosions": [
           { "clip": "Explosion_Small", "count": 2, "spread": 100, "offset": [0, -50] },
@@ -225,11 +232,12 @@
     },
 
     "house_upper": {
+      "sortByX": true,
       "hp": 18,
       "idle": { "sprite": "Stage0_House_0_Idle" },
       "destroyed": { "sprite": "Stage0_House_0_Destroy" },
       "parts": [
-        { "role": "hurt", "size": [150, 30], "offset": [0, 3] },
+        { "role": "hurt", "size": [200, 90], "offset": [0, 0] },
         { "role": "enemyPlatform", "size": [150, 30], "offset": [0, 3] }
       ],
       "onDestroy": {
@@ -242,11 +250,12 @@
       }
     },
     "house_open_window": {
+      "sortByX": true,
       "hp": 18,
       "idle": { "sprite": "Stage0_House_1_Idle" },
       "destroyed": { "sprite": "Stage0_House_1_Destroy" },
       "parts": [
-        { "role": "hurt", "size": [150, 30], "offset": [0, -14] },
+        { "role": "hurt", "size": [170, 110], "offset": [0, -5] },
         { "role": "enemyPlatform", "size": [150, 30], "offset": [0, -14] }
       ],
       "onDestroy": {
@@ -259,11 +268,12 @@
       }
     },
     "house_cloth": {
+      "sortByX": true,
       "hp": 18,
       "idle": { "sprite": "Stage0_House_2_Idle_0" },
       "destroyed": { "sprite": "Stage0_House_2_Destroy" },
       "parts": [
-        { "role": "hurt", "size": [150, 30], "offset": [0, -27] },
+        { "role": "hurt", "size": [190, 130], "offset": [0, -15] },
         { "role": "enemyPlatform", "size": [150, 30], "offset": [0, -27] }
       ],
       "onDestroy": {
@@ -276,11 +286,12 @@
       }
     },
     "house_no_cloth": {
+      "sortByX": true,
       "hp": 18,
       "idle": { "sprite": "Stage0_House_2_Idle_1" },
       "destroyed": { "sprite": "Stage0_House_2_Destroy" },
       "parts": [
-        { "role": "hurt", "size": [150, 30], "offset": [0, -27] },
+        { "role": "hurt", "size": [190, 130], "offset": [0, -15] },
         { "role": "enemyPlatform", "size": [150, 30], "offset": [0, -27] }
       ],
       "onDestroy": {
@@ -293,11 +304,12 @@
       }
     },
     "house_yellow": {
+      "sortByX": true,
       "hp": 18,
       "idle": { "sprite": "Stage0_House_3_Idle" },
       "destroyed": { "sprite": "Stage0_House_3_Destroy" },
       "parts": [
-        { "role": "hurt", "size": [150, 30], "offset": [0, -27] },
+        { "role": "hurt", "size": [190, 130], "offset": [0, -15] },
         { "role": "enemyPlatform", "size": [150, 30], "offset": [0, -27] }
       ],
       "onDestroy": {
@@ -311,6 +323,7 @@
     },
 
     "ground_mini_house": {
+      "sortByX": true,
       "hp": 18,
       "destroyed": { "sprite": "Stage0_Bridge_3" },
       "parts": [
@@ -328,6 +341,7 @@
     },
 
     "ground_house": {
+      "sortByX": true,
       "hp": 24,
       "idle": { "sprite": "Stage0_House_4_Idle" },
       "damaged": { "sprite": "Stage0_House_4_Destroy_0" },
@@ -347,6 +361,7 @@
     },
 
     "big_house": {
+      "sortByX": true,
       "hp": 24,
       "cullMargin": 150,
       "idle": { "sprite": "Stage0_House_5_Idle" },
@@ -357,7 +372,7 @@
         { "role": "hurt", "size": [310, 120], "offset": [10, 0] },
         { "role": "hurt", "size": [240, 240], "offset": [-110, 60] },
         { "role": "hurt", "size": [240, 240], "offset": [120, 60] },
-        { "role": "platform", "size": [300, 10], "offset": [10, -57] }
+        { "role": "platform", "size": [300, 10], "offset": [10, -52] }
       ],
       "onDamaged": { "debris": { "set": "wood", "count": 6 } },
       "onDestroy": {
@@ -381,7 +396,21 @@
         { "role": "platform", "size": [80, 10], "offset": [5, -25] },
         { "role": "platform", "size": [80, 10], "offset": [5, -95] }
       ],
-      "onDestroy": { "debris": { "set": "wood", "count": 5 } }
+      "onDestroy": {
+        "explosions": [
+          { "clip": "PlayerBombExplosion", "count": 1, "spread": 0, "offset": [0, 100] },
+          { "clip": "Explosion_Large", "count": 2, "spread": 60, "offset": [0, 60] },
+          { "clip": "Explosion_Mid", "count": 2, "spread": 60, "offset": [0, 20] },
+          { "clip": "Boss_Smoke_Big", "count": 1, "spread": 0, "offset": [0, -60] }
+        ],
+        "debris": { "set": "wood", "count": 6 }
+      }
+    },
+
+    "crate": {
+      "hp": 0,
+      "note": "걸어서 통과, 위에서만 착지하는 상자 (Stage0 box_collider 1119,350 137x90 대체). 윗면 = 중심 - 45 (y 305), 피격/파괴 없음",
+      "parts": [ { "role": "platform", "size": [137, 10], "offset": [0, -40], "when": "always" } ]
     },
 
     "guard_post": {

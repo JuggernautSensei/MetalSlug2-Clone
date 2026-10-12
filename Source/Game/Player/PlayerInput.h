@@ -3,9 +3,6 @@
 #include "Core/Input.h"
 #include "Core/Tuning.h"
 
-namespace slug
-{
-
 struct PlayerCommand
 {
     int  moveX         = 0;   // -1, 0, +1 (좌우를 동시에 누르면 0)
@@ -35,5 +32,3 @@ private:
 
     ARRAY<int, kActionCount> m_ticksSincePress = {};
 };
-
-}   // namespace slug

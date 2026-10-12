@@ -3,9 +3,6 @@
 #include "Base/Types.h"
 #include "Game/Player/SlugTypes.h"
 
-namespace slug
-{
-
 // SV-001 수치를 JSON (Assets/Defs/Slug/Slug.json) 에서 읽는다. 없는 키는 SlugTuning 의 기본값을 유지한다.
 [[nodiscard]] Result<SlugTuning> ParseSlugTuning(StringView _json);
 [[nodiscard]] Result<SlugTuning> LoadSlugTuning(const FilePath& _path);
@@ -14,5 +11,3 @@ namespace slug
 [[nodiscard]] String DumpSlugTuningJson(const SlugTuning& _tuning);
 
 [[nodiscard]] FilePath GetDefaultSlugTuningPath(const FilePath& _assetRoot);
-
-}   // namespace slug

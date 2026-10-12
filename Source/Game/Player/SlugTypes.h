@@ -4,9 +4,6 @@
 #include "Base/Math.h"
 #include "Base/Types.h"
 
-namespace slug
-{
-
 // 메탈슬러그 SV-001 의 소유자 번호. 플레이어(1) 다음 번호부터 차량 개별 번호로 쓴다 (kSlugOwnerBase + 인덱스).
 inline constexpr uint32_t kSlugOwnerBase = 100;
 inline constexpr size_t   kMaxSlugs      = 8;
@@ -150,5 +147,3 @@ struct SlugTuning
     SlugBoardTuning  board  = {};
     SlugCrushTuning  crush  = {};
 };
-
-}   // namespace slug

@@ -6,346 +6,486 @@
 #include "Game/Enemies/EnemyDefParse.h"
 #include "Game/Enemies/VehicleCommon.h"
 
-namespace slug
+// 헬기 상태 (Enemy::state 에 int 로 저장). 시간/수치는 Docs/Spec_Helicopter.md
+enum class eHeliState
 {
+    Bomb,       // 고공 폭격: 위 오른쪽에서 내려와 플레이어 위에 떠서 폭탄 3발 연속 투하 + 휴지 반복
+    Low,        // 저공 폭격: 낮게 내려와 x 축으로 가로지르며 폭탄 3발 + 휴지 반복
+    PodOut,     // 미사일 포드 전개 (제자리)
+    Move,       // 바라보는 반대쪽 화면 가장자리 아래로 이동
+    Volley,     // 발사 연기 → 미사일 (일제 사격)
+    MoveBack,   // 폭격 위치로 복귀 (포드 접힘)
+    Turn        // 방향 전환 (원작 미관측: 시트의 Turning 프레임 기반)
+};
 
-namespace
+// Enemy::ext 슬롯 (좌표는 1/16 px 고정소수점으로 저장)
+constexpr int kExtStartX   = 0;
+constexpr int kExtStartY   = 1;
+constexpr int kExtTargetX  = 2;
+constexpr int kExtTargetY  = 3;
+constexpr int kExtBombTime = 4;   // 선회로 중단된 폭격의 경과 틱
+constexpr int kExtTurnFlip = 5;   // 선회 전반부가 끝나 방향을 뒤집었는가
+constexpr int kExtPodTicks = 6;   // 포드 전개 후 경과 틱 (-1 = 접힘)
+constexpr int kExtCycle    = 7;   // 끝난 사이클 수 (첫 고공 폭격만 첫 폭탄이 느리다)
+constexpr int kExtPassDir  = 8;   // 저공 가로지르기 방향 (+1 오른쪽, -1 왼쪽)
+constexpr int kExtIdleTick = 9;   // 호버 idle 위상 (렌더 전용, 해시에 들어가지 않는다)
+
+constexpr float kFixedScale = 16.f;
+constexpr int   kCurveSteps = 12;
+
+[[nodiscard]] static int Pack_(
+    const float _value)
 {
-    // 헬기 상태 (Enemy::state 에 int 로 저장). 시간/수치는 Docs/Spec_Helicopter.md
-    enum class eHeliState
+    return static_cast<int>(std::lround(static_cast<double>(_value * kFixedScale)));
+}
+
+[[nodiscard]] static float Unpack_(
+    const int _value)
+{
+    return static_cast<float>(_value) / kFixedScale;
+}
+
+// 곡선 표 (균등 간격 13점) 선형 보간
+[[nodiscard]] static float SampleCurve_(
+    const ARRAY<float, 13>& _curve,
+    const float             _u)
+{
+    const float u     = Clamp(_u, 0.f, 1.f) * static_cast<float>(kCurveSteps);
+    const int   index = Min(static_cast<int>(u), kCurveSteps - 1);
+    const float t     = u - static_cast<float>(index);
+    return _curve[static_cast<size_t>(index)] + (_curve[static_cast<size_t>(index) + 1] - _curve[static_cast<size_t>(index)]) * t;
+}
+
+[[nodiscard]] static float Sign_(
+    const int _facing)
+{
+    return _facing < 0 ? -1.f : 1.f;
+}
+
+[[nodiscard]] static float HoverY_(
+    const HeliCfg&  _c,
+    const EnemyEnv& _env)
+{
+    return _env.ctx.cameraView.min.y + _c.hoverDy;
+}
+
+[[nodiscard]] static float FollowTargetX_(
+    const HeliCfg&  _c,
+    const EnemyEnv& _env)
+{
+    return _env.ctx.player.feet.x + _c.followDx;
+}
+
+static void SetPodTicks_(
+    Enemy&    _e,
+    const int _ticks)
+{
+    _e.ext[kExtPodTicks] = _ticks;
+}
+
+static void Go_(
+    Enemy&           _e,
+    const EnemyDef&  _def,
+    const eHeliState _state)
+{
+    const HeliCfg& c = _def.heli;
+    EnterState(_e, static_cast<int>(_state));
+    switch (_state)
     {
-        Bomb,       // 진입 + 폭격: 위 오른쪽에서 내려와 플레이어 위에서 폭탄 투하
-        PodOut,     // 미사일 포드 전개 (제자리)
-        Move,       // 바라보는 반대쪽 화면 가장자리 아래로 이동
-        Volley,     // 발사 연기 → 미사일 (일제 사격)
-        MoveBack,   // 폭격 위치로 복귀 (포드 접힘)
-        Turn        // 방향 전환 (원작 미관측: 시트의 Turning 프레임 기반)
-    };
-
-    // Enemy::ext 슬롯 (좌표는 1/16 px 고정소수점으로 저장)
-    constexpr int kExtStartX   = 0;
-    constexpr int kExtStartY   = 1;
-    constexpr int kExtTargetX  = 2;
-    constexpr int kExtTargetY  = 3;
-    constexpr int kExtBombTime = 4;   // 선회로 중단된 폭격의 경과 틱
-    constexpr int kExtTurnFlip = 5;   // 선회 전반부가 끝나 방향을 뒤집었는가
-    constexpr int kExtPodTicks = 6;   // 포드 전개 후 경과 틱 (-1 = 접힘)
-
-    constexpr float kFixedScale = 16.f;
-    constexpr int   kCurveSteps = 12;
-
-    [[nodiscard]] int Pack_(
-        const float _value)
-    {
-        return static_cast<int>(std::lround(static_cast<double>(_value * kFixedScale)));
-    }
-
-    [[nodiscard]] float Unpack_(
-        const int _value)
-    {
-        return static_cast<float>(_value) / kFixedScale;
-    }
-
-    // 곡선 표 (균등 간격 13점) 선형 보간
-    [[nodiscard]] float SampleCurve_(
-        const ARRAY<float, 13>& _curve,
-        const float             _u)
-    {
-        const float u     = Clamp(_u, 0.f, 1.f) * static_cast<float>(kCurveSteps);
-        const int   index = Min(static_cast<int>(u), kCurveSteps - 1);
-        const float t     = u - static_cast<float>(index);
-        return _curve[static_cast<size_t>(index)] + (_curve[static_cast<size_t>(index) + 1] - _curve[static_cast<size_t>(index)]) * t;
-    }
-
-    [[nodiscard]] float Sign_(
-        const int _facing)
-    {
-        return _facing < 0 ? -1.f : 1.f;
-    }
-
-    [[nodiscard]] float HoverY_(
-        const HeliCfg&  _c,
-        const EnemyEnv& _env)
-    {
-        return _env.ctx.cameraView.min.y + _c.hoverDy;
-    }
-
-    [[nodiscard]] float FollowTargetX_(
-        const HeliCfg&  _c,
-        const EnemyEnv& _env)
-    {
-        return _env.ctx.player.feet.x + _c.followDx;
-    }
-
-    void SetPodTicks_(
-        Enemy&    _e,
-        const int _ticks)
-    {
-        _e.ext[kExtPodTicks] = _ticks;
-    }
-
-    void Go_(
-        Enemy&           _e,
-        const EnemyDef&  _def,
-        const eHeliState _state)
-    {
-        const HeliCfg& c = _def.heli;
-        EnterState(_e, static_cast<int>(_state));
-        switch (_state)
+        case eHeliState::Turn: SetClip(_e, c.clipTurnIn, true); break;
+        case eHeliState::Low:
         {
-            case eHeliState::Turn: SetClip(_e, c.clipTurnIn, true); break;
-            default: SetClip(_e, c.clipFly, true); break;
+            // 진행 방향이 기수 방향이면 앞으로 숙인 기체, 아니면 평범한 비행
+            const bool bForward = (_e.ext[kExtPassDir] < 0) == (_e.facing < 0);
+            SetClip(_e, bForward ? c.clipPitch : c.clipFly, true);
+            break;
         }
+        default: SetClip(_e, c.clipFly, true); break;
     }
+}
 
-    // 현재 위치 → 목표로 이동 곡선을 시작한다
-    void BeginMove_(
-        Enemy&           _e,
-        const EnemyDef&  _def,
-        const EnemyEnv&  _env,
-        const eHeliState _state,
-        const Vec2       _target)
+// 현재 위치 → 목표로 이동 곡선을 시작한다
+static void BeginMove_(
+    Enemy&           _e,
+    const EnemyDef&  _def,
+    const EnemyEnv&  _env,
+    const eHeliState _state,
+    const Vec2       _target)
+{
+    Go_(_e, _def, _state);
+    _e.ext[kExtStartX]  = Pack_(_e.body.position.x);
+    _e.ext[kExtStartY]  = Pack_(_e.body.position.y);
+    _e.ext[kExtTargetX] = Pack_(_target.x);
+    _e.ext[kExtTargetY] = Pack_(_target.y);
+    (void)_env;
+}
+
+// 곡선 이동 한 틱. 끝났으면 true
+[[nodiscard]] static bool StepMove_(
+    Enemy&          _e,
+    const HeliCfg&  _c)
+{
+    const float u      = static_cast<float>(_e.stateTicks) / static_cast<float>(Max(1, _c.moveTicks));
+    const Vec2  start  = { Unpack_(_e.ext[kExtStartX]), Unpack_(_e.ext[kExtStartY]) };
+    const Vec2  target = { Unpack_(_e.ext[kExtTargetX]), Unpack_(_e.ext[kExtTargetY]) };
+    _e.body.position   = { start.x + (target.x - start.x) * SampleCurve_(_c.xCurve, u), start.y + (target.y - start.y) * SampleCurve_(_c.yCurve, u) };
+    return _e.stateTicks >= _c.moveTicks;
+}
+
+// 폭격 중 이동: 호버 높이까지 내려오고, 플레이어 x 를 천천히 따라간다
+static void StepFollow_(
+    Enemy&          _e,
+    const HeliCfg&  _c,
+    const EnemyEnv& _env)
+{
+    const float hoverY = HoverY_(_c, _env);
+    if (_e.body.position.y < hoverY)
     {
-        Go_(_e, _def, _state);
-        _e.ext[kExtStartX]  = Pack_(_e.body.position.x);
-        _e.ext[kExtStartY]  = Pack_(_e.body.position.y);
-        _e.ext[kExtTargetX] = Pack_(_target.x);
-        _e.ext[kExtTargetY] = Pack_(_target.y);
-        (void)_env;
+        _e.body.position.y = Min(_e.body.position.y + _c.enterSpeedY * kStepSec, hoverY);
     }
-
-    // 곡선 이동 한 틱. 끝났으면 true
-    [[nodiscard]] bool StepMove_(
-        Enemy&          _e,
-        const HeliCfg&  _c)
+    const float dx = FollowTargetX_(_c, _env) - _e.body.position.x;
+    if (std::abs(dx) > _c.followDeadzone)
     {
-        const float u      = static_cast<float>(_e.stateTicks) / static_cast<float>(Max(1, _c.moveTicks));
-        const Vec2  start  = { Unpack_(_e.ext[kExtStartX]), Unpack_(_e.ext[kExtStartY]) };
-        const Vec2  target = { Unpack_(_e.ext[kExtTargetX]), Unpack_(_e.ext[kExtTargetY]) };
-        _e.body.position   = { start.x + (target.x - start.x) * SampleCurve_(_c.xCurve, u), start.y + (target.y - start.y) * SampleCurve_(_c.yCurve, u) };
-        return _e.stateTicks >= _c.moveTicks;
+        const float step = Min(_c.followSpeed * kStepSec, std::abs(dx));
+        _e.body.position.x += (dx < 0.f ? -step : step);
     }
+}
 
-    // 폭격 중 이동: 호버 높이까지 내려오고, 플레이어 x 를 천천히 따라간다
-    void StepFollow_(
-        Enemy&          _e,
-        const HeliCfg&  _c,
-        const EnemyEnv& _env)
+static void DropBomb_(
+    Enemy&          _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env)
+{
+    const HeliCfg& c         = _def.heli;
+    const int      bombIndex = _env.lib.FindIndex(c.bombDef);
+    if (bombIndex < 0)
     {
-        const float hoverY = HoverY_(_c, _env);
-        if (_e.body.position.y < hoverY)
-        {
-            _e.body.position.y = Min(_e.body.position.y + _c.enterSpeedY * kStepSec, hoverY);
-        }
-        const float dx = FollowTargetX_(_c, _env) - _e.body.position.x;
-        if (std::abs(dx) > _c.followDeadzone)
-        {
-            const float step = Min(_c.followSpeed * kStepSec, std::abs(dx));
-            _e.body.position.x += (dx < 0.f ? -step : step);
-        }
+        return;
     }
+    SpawnParams params;
+    params.facing     = _e.facing;
+    params.bActivated = true;
+    const Vec2 at     = { _e.body.position.x + c.bombMuzzle.x * Sign_(_e.facing), _e.body.position.y + c.bombMuzzle.y };
+    (void)_env.world.SpawnDeferred(bombIndex, at, params);
+}
 
-    void DropBomb_(
-        Enemy&          _e,
-        const EnemyDef& _def,
-        EnemyEnv&       _env)
+// 연속 투하 한 주기 = 폭탄 burstCount 발 (bombIntervalTicks 간격) + 휴지
+[[nodiscard]] static int BurstPeriod_(
+    const HeliCfg& _c)
+{
+    return Max(1, _c.burstCount * _c.bombIntervalTicks + _c.burstRestTicks);
+}
+
+// _first 틱부터 연속 투하를 시작해 _bursts 번 하고 마지막 휴지까지 끝나는 틱
+[[nodiscard]] static int BurstPhaseEnd_(
+    const HeliCfg& _c,
+    const int      _first,
+    const int      _bursts)
+{
+    return _first + _bursts * BurstPeriod_(_c);
+}
+
+// 이 틱에 폭탄을 떨어뜨리는가
+[[nodiscard]] static bool IsBombTick_(
+    const HeliCfg& _c,
+    const int      _ticks,
+    const int      _first)
+{
+    const int t = _ticks - _first;
+    if (t < 0)
     {
-        const HeliCfg& c         = _def.heli;
-        const int      bombIndex = _env.lib.FindIndex(c.bombDef);
-        if (bombIndex < 0)
-        {
-            return;
-        }
-        SpawnParams params;
-        params.facing     = _e.facing;
-        params.bActivated = true;
-        const Vec2 at     = { _e.body.position.x + c.bombMuzzle.x * Sign_(_e.facing), _e.body.position.y + c.bombMuzzle.y };
-        (void)_env.world.SpawnDeferred(bombIndex, at, params);
+        return false;
     }
+    const int k = t % BurstPeriod_(_c);
+    return k < _c.burstCount * _c.bombIntervalTicks && k % _c.bombIntervalTicks == 0;
+}
 
-    // 폭격: 첫 폭탄 이후 일정 간격
-    void StepBombing_(
-        Enemy&          _e,
-        const EnemyDef& _def,
-        EnemyEnv&       _env)
+[[nodiscard]] static int FirstBombTicks_(
+    const Enemy&   _e,
+    const HeliCfg& _c)
+{
+    return _e.ext[kExtCycle] == 0 ? _c.firstBombTicks : _c.reBombTicks;
+}
+
+static void StepBombing_(
+    Enemy&          _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env,
+    const int       _first,
+    const int       _bursts)
+{
+    const HeliCfg& c = _def.heli;
+    if (!_env.ctx.player.bAlive || _e.stateTicks >= BurstPhaseEnd_(c, _first, _bursts) || !IsBombTick_(c, _e.stateTicks, _first))
     {
-        const HeliCfg& c = _def.heli;
-        if (!_env.ctx.player.bAlive || _e.stateTicks < c.firstBombTicks || (_e.stateTicks - c.firstBombTicks) % c.bombIntervalTicks != 0)
-        {
-            return;
-        }
-        if (_e.body.position.y < _env.ctx.cameraView.min.y + c.bombMinY)
-        {
-            return;
-        }
-        DropBomb_(_e, _def, _env);
+        return;
     }
-
-    // 플레이어가 반대쪽에 머물면 선회한다
-    [[nodiscard]] bool WantsTurn_(
-        Enemy&          _e,
-        const HeliCfg&  _c,
-        const EnemyEnv& _env)
+    if (_e.body.position.y < _env.ctx.cameraView.min.y + c.bombMinY)
     {
-        const float behind = -DxToPlayer(_e, _env) * Sign_(_e.facing);
-        if (behind > _c.turnDx)
-        {
-            ++_e.aux3;
-        }
-        else
-        {
-            _e.aux3 = 0;
-        }
-        return _e.aux3 >= _c.turnWaitTicks;
+        return;
     }
+    DropBomb_(_e, _def, _env);
+}
 
-    void Init_(
-        Enemy&          _e,
-        const EnemyDef& _def,
-        EnemyEnv&       _env)
+[[nodiscard]] static float LowTargetX_(
+    const Enemy&    _e,
+    const HeliCfg&  _c,
+    const EnemyEnv& _env)
+{
+    const Aabb& view = _env.ctx.cameraView;
+    return _e.ext[kExtPassDir] > 0 ? view.max.x - _c.lowMargin : view.min.x + _c.lowMargin;
+}
+
+// 저공 이동: 저공 높이까지 내려오며 목표 가장자리로 일정 속도로 간다
+static void StepLow_(
+    Enemy&          _e,
+    const HeliCfg&  _c,
+    const EnemyEnv& _env)
+{
+    const float lowY = _env.ctx.cameraView.min.y + _c.lowDy;
+    if (_e.body.position.y < lowY)
     {
-        (void)_env;
-        PrepareBody(_e, _def);
-        _e.body.bUseGravity = false;
-        SetPodTicks_(_e, -1);
-        Go_(_e, _def, eHeliState::Bomb);
+        _e.body.position.y = Min(_e.body.position.y + _c.descendSpeedY * kStepSec, lowY);
     }
+    const float dx = LowTargetX_(_e, _c, _env) - _e.body.position.x;
+    const float step = Min(_c.lowSpeed * kStepSec, std::abs(dx));
+    _e.body.position.x += (dx < 0.f ? -step : step);
+}
 
-    void Tick_(
-        Enemy&          _e,
-        const EnemyDef& _def,
-        EnemyEnv&       _env)
+// 고공 구간 끝: 화면 중앙의 먼 쪽 가장자리로 가로지르는 저공 구간 시작
+static void BeginLow_(
+    Enemy&          _e,
+    const EnemyDef& _def,
+    const EnemyEnv& _env)
+{
+    const Aabb& view = _env.ctx.cameraView;
+    _e.ext[kExtPassDir] = _e.body.position.x < (view.min.x + view.max.x) * 0.5f ? 1 : -1;
+    Go_(_e, _def, eHeliState::Low);
+}
+
+// 플레이어가 반대쪽에 머물면 선회한다
+[[nodiscard]] static bool WantsTurn_(
+    Enemy&          _e,
+    const HeliCfg&  _c,
+    const EnemyEnv& _env)
+{
+    const float behind = -DxToPlayer(_e, _env) * Sign_(_e.facing);
+    if (behind > _c.turnDx)
     {
-        const HeliCfg& c = _def.heli;
-        _e.body.velocity = { 0.f, 0.f };
-        if (!_e.bActive)
-        {
-            return;
-        }
-        if (_e.ext[kExtPodTicks] >= 0)
-        {
-            ++_e.ext[kExtPodTicks];
-        }
+        ++_e.aux3;
+    }
+    else
+    {
+        _e.aux3 = 0;
+    }
+    return _e.aux3 >= _c.turnWaitTicks;
+}
 
-        switch (static_cast<eHeliState>(_e.state))
-        {
-            case eHeliState::Bomb:
-                StepFollow_(_e, c, _env);
-                StepBombing_(_e, _def, _env);
-                if (_e.stateTicks >= c.bombRunTicks)
-                {
-                    SetPodTicks_(_e, 0);
-                    Go_(_e, _def, eHeliState::PodOut);
-                }
-                else if (WantsTurn_(_e, c, _env))
-                {
-                    _e.aux3                = 0;
-                    _e.ext[kExtBombTime]   = _e.stateTicks;
-                    _e.ext[kExtTurnFlip]   = 0;
-                    Go_(_e, _def, eHeliState::Turn);
-                }
-                break;
+static void Init_(
+    Enemy&          _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env)
+{
+    PrepareBody(_e, _def);
+    _e.body.bUseGravity = false;
+    SetPodTicks_(_e, -1);
+    if (_def.heli.startLow != 0)
+    {
+        BeginLow_(_e, _def, _env);
+        return;
+    }
+    Go_(_e, _def, eHeliState::Bomb);
+}
 
-            case eHeliState::Turn:
+static void Tick_(
+    Enemy&          _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env)
+{
+    const HeliCfg& c = _def.heli;
+    _e.body.velocity = { 0.f, 0.f };
+    if (!_e.bActive)
+    {
+        return;
+    }
+    if (_e.ext[kExtPodTicks] >= 0)
+    {
+        ++_e.ext[kExtPodTicks];
+    }
+    ++_e.ext[kExtIdleTick];
+
+    switch (static_cast<eHeliState>(_e.state))
+    {
+        case eHeliState::Bomb:
+            StepFollow_(_e, c, _env);
+            StepBombing_(_e, _def, _env, FirstBombTicks_(_e, c), c.highBursts);
+            if (_e.stateTicks >= BurstPhaseEnd_(c, FirstBombTicks_(_e, c), c.highBursts))
             {
-                StepFollow_(_e, c, _env);
-                const bool bFlipped = _e.ext[kExtTurnFlip] != 0;
-                if (!bFlipped && ClipFinished(_e, _def))
-                {
-                    _e.facing          = -_e.facing;
-                    _e.ext[kExtTurnFlip] = 1;
-                    SetClip(_e, c.clipTurnOut, true);
-                }
-                else if (bFlipped && ClipFinished(_e, _def))
-                {
-                    Go_(_e, _def, eHeliState::Bomb);
-                    _e.stateTicks = _e.ext[kExtBombTime];
-                }
-                break;
+                BeginLow_(_e, _def, _env);
             }
-
-            case eHeliState::PodOut:
-                if (_e.stateTicks >= c.podOutTicks)
-                {
-                    const Aabb& view   = _env.ctx.cameraView;
-                    const float targetX = _e.facing < 0 ? view.max.x - c.sideMargin : view.min.x + c.sideMargin;
-                    const float targetY = Clamp(_env.ctx.player.center.y + c.targetDyPlayer, view.min.y + c.targetMinY, view.min.y + c.targetMaxY);
-                    BeginMove_(_e, _def, _env, eHeliState::Move, { targetX, targetY });
-                }
-                break;
-
-            case eHeliState::Move:
-                if (StepMove_(_e, c))
-                {
-                    _e.counter = 0;
-                    Go_(_e, _def, eHeliState::Volley);
-                    RequestFx(_env, FxDef { _def.GetClip(c.clipPuff).name, c.puffOffset, 0.f, 58 }, _e.body.position, _e.facing);
-                }
-                break;
-
-            case eHeliState::Volley:
+            else if (WantsTurn_(_e, c, _env))
             {
-                const int t = _e.stateTicks;
-                if (t > 0 && t % c.missileInterval == 0 && t / c.missileInterval < c.missiles)
-                {
-                    RequestFx(_env, FxDef { _def.GetClip(c.clipPuff).name, c.puffOffset, 0.f, 58 }, _e.body.position, _e.facing);
-                }
-                const int sinceLaunch = t - c.puffToMissile;
-                if (sinceLaunch >= 0 && sinceLaunch % c.missileInterval == 0 && sinceLaunch / c.missileInterval < c.missiles)
-                {
-                    (void)FireWeapon(_e, _def, _env, c.weaponMissile);
-                }
-                if (t >= (c.missiles - 1) * c.missileInterval + c.volleyEndTicks)
-                {
-                    SetPodTicks_(_e, -1);
-                    BeginMove_(_e, _def, _env, eHeliState::MoveBack, { Clamp(FollowTargetX_(c, _env), _env.ctx.cameraView.min.x + 60.f, _env.ctx.cameraView.max.x - 60.f), HoverY_(c, _env) });
-                }
-                break;
+                _e.aux3                = 0;
+                _e.ext[kExtBombTime]   = _e.stateTicks;
+                _e.ext[kExtTurnFlip]   = 0;
+                Go_(_e, _def, eHeliState::Turn);
             }
+            break;
 
-            case eHeliState::MoveBack:
-                if (StepMove_(_e, c))
-                {
-                    Go_(_e, _def, eHeliState::Bomb);
-                }
-                break;
-        }
-    }
+        case eHeliState::Low:
+            StepLow_(_e, c, _env);
+            StepBombing_(_e, _def, _env, c.reBombTicks, c.lowBursts);
+            if (_e.stateTicks >= BurstPhaseEnd_(c, c.reBombTicks, c.lowBursts))
+            {
+                SetPodTicks_(_e, 0);
+                Go_(_e, _def, eHeliState::PodOut);
+            }
+            break;
 
-    void OnDeath_(
-        Enemy&          _e,
-        const EnemyDef& _def,
-        EnemyEnv&       _env)
-    {
-        BeginVehicleDeath(_e, _def, _env, -1);
-        _e.bVisible = false;   // 원작: 추락 없이 즉시 대폭발로 사라진다
-        SetPodTicks_(_e, -1);
-    }
-
-    void SubmitParts_(
-        const Enemy&          _e,
-        const EnemyDef&       _def,
-        const EnemyRenderEnv& _render)
-    {
-        const HeliCfg& c     = _def.heli;
-        const float    sign  = Sign_(_e.facing);
-        const bool     bTurn = static_cast<eHeliState>(_e.state) == eHeliState::Turn;
-        if (bTurn)
+        case eHeliState::Turn:
         {
-            return;
+            StepFollow_(_e, c, _env);
+            const bool bFlipped = _e.ext[kExtTurnFlip] != 0;
+            if (!bFlipped && ClipFinished(_e, _def))
+            {
+                _e.facing          = -_e.facing;
+                _e.ext[kExtTurnFlip] = 1;
+                SetClip(_e, c.clipTurnOut, true);
+            }
+            else if (bFlipped && ClipFinished(_e, _def))
+            {
+                Go_(_e, _def, eHeliState::Bomb);
+                _e.stateTicks = _e.ext[kExtBombTime];
+            }
+            break;
         }
 
-        const int sortKey = static_cast<int>(_render.feet.y);
-        if (_e.ext[kExtPodTicks] >= 0)
+        case eHeliState::PodOut:
+            if (_e.stateTicks >= c.podOutTicks)
+            {
+                const Aabb& view   = _env.ctx.cameraView;
+                const float targetX = _e.facing < 0 ? view.max.x - c.sideMargin : view.min.x + c.sideMargin;
+                const float targetY = Clamp(_env.ctx.player.center.y + c.targetDyPlayer, view.min.y + c.targetMinY, view.min.y + c.targetMaxY);
+                BeginMove_(_e, _def, _env, eHeliState::Move, { targetX, targetY });
+            }
+            break;
+
+        case eHeliState::Move:
+            if (StepMove_(_e, c))
+            {
+                _e.counter = 0;
+                Go_(_e, _def, eHeliState::Volley);
+                RequestFx(_env, FxDef { _def.GetClip(c.clipPuff).name, c.puffOffset, 0.f, c.partPuff.depth }, _e.body.position, _e.facing);
+            }
+            break;
+
+        case eHeliState::Volley:
         {
-            const Vec2 at = { _render.feet.x + c.podOffset.x * sign, _render.feet.y + c.podOffset.y };
-            (void)SubmitNamedPart(_render, ResolveSide(_def.GetClip(c.clipPod).name, _e.facing), at, _e.ext[kExtPodTicks], false, sortKey, 16);
+            const int t = _e.stateTicks;
+            if (t > 0 && t % c.missileInterval == 0 && t / c.missileInterval < c.missiles)
+            {
+                RequestFx(_env, FxDef { _def.GetClip(c.clipPuff).name, c.puffOffset, 0.f, c.partPuff.depth }, _e.body.position, _e.facing);
+            }
+            const int sinceLaunch = t - c.puffToMissile;
+            if (sinceLaunch >= 0 && sinceLaunch % c.missileInterval == 0 && sinceLaunch / c.missileInterval < c.missiles)
+            {
+                (void)FireWeapon(_e, _def, _env, c.weaponMissile);
+            }
+            if (t >= (c.missiles - 1) * c.missileInterval + c.volleyEndTicks)
+            {
+                SetPodTicks_(_e, -1);
+                BeginMove_(_e, _def, _env, eHeliState::MoveBack, { Clamp(FollowTargetX_(c, _env), _env.ctx.cameraView.min.x + 60.f, _env.ctx.cameraView.max.x - 60.f), HoverY_(c, _env) });
+            }
+            break;
         }
-        const Vec2 rotor = { _render.feet.x + c.rotorOffset.x * sign, _render.feet.y + c.rotorOffset.y };
-        (void)SubmitNamedPart(_render, ResolveSide(_def.GetClip(c.clipRotor).name, _e.facing), rotor, _e.clipTicks, true, sortKey, 16);
+
+        case eHeliState::MoveBack:
+            if (StepMove_(_e, c))
+            {
+                ++_e.ext[kExtCycle];
+                Go_(_e, _def, eHeliState::Bomb);
+            }
+            break;
+    }
+}
+
+static void OnDeath_(
+    Enemy&          _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env)
+{
+    BeginVehicleDeath(_e, _def, _env, -1);
+    _e.bVisible = false;   // 원작: 추락 없이 즉시 대폭발로 사라진다
+    SetPodTicks_(_e, -1);
+}
+
+// 지금 몸통이 보여 주는 Pitch 프레임 (비행 클립이면 idle 왕복, Pitch 클립이면 재생 중인 프레임, 그 밖이면 -1)
+[[nodiscard]] static int ShownPitchFrame_(
+    const Enemy&            _e,
+    const EnemyDef&         _def,
+    const AnimationLibrary& _anims)
+{
+    const HeliCfg& c = _def.heli;
+    if (_e.clip == c.clipFly && c.idlePitchTo > c.idlePitchFrom)
+    {
+        const int span = c.idlePitchTo - c.idlePitchFrom;
+        const int m    = (_e.ext[kExtIdleTick] / Max(1, c.idleStepTicks)) % (span * 2);
+        return c.idlePitchFrom + (m <= span ? m : span * 2 - m);
+    }
+    if (_e.clip == c.clipPitch)
+    {
+        const AnimClip* pClip = _anims.FindClip(ResolveSide(_def.GetClip(c.clipPitch).name, _e.facing));
+        if (pClip && !pClip->frames.empty() && pClip->GetFrameDurationUnits() > 0)
+        {
+            const int index = static_cast<int>(static_cast<int64_t>(_e.clipTicks) * kAnimUnitsPerTick / pClip->GetFrameDurationUnits());
+            return pClip->bLoop ? index % pClip->GetFrameCount() : Min(index, pClip->GetFrameCount() - 1);
+        }
+    }
+    return -1;
+}
+
+static const AnimFrame* BodyFrame_(
+    const Enemy&            _e,
+    const EnemyDef&         _def,
+    const AnimationLibrary& _anims)
+{
+    const HeliCfg& c = _def.heli;
+    const int shown = ShownPitchFrame_(_e, _def, _anims);
+    if (_e.clip != c.clipFly || shown < 0)
+    {
+        return nullptr;
+    }
+    const AnimClip* pClip = _anims.FindClip(ResolveSide(_def.GetClip(c.clipPitch).name, _e.facing));
+    if (!pClip || pClip->frames.empty())
+    {
+        return nullptr;
+    }
+    return &pClip->frames[static_cast<size_t>(Min(shown, pClip->GetFrameCount() - 1))];
+}
+
+static void SubmitParts_(
+    const Enemy&          _e,
+    const EnemyDef&       _def,
+    const EnemyRenderEnv& _render)
+{
+    const HeliCfg& c     = _def.heli;
+    const float    sign  = Sign_(_e.facing);
+    const bool     bTurn = static_cast<eHeliState>(_e.state) == eHeliState::Turn;
+    if (bTurn)
+    {
+        return;
     }
 
-}   // namespace
+    const int feetKey = static_cast<int>(_render.feet.y);
+    if (_e.ext[kExtPodTicks] >= 0)
+    {
+        const Vec2 at = { _render.feet.x + c.podOffset.x * sign, _render.feet.y + c.podOffset.y };
+        (void)SubmitNamedPart(_render, ResolveSide(_def.GetClip(c.clipPod).name, _e.facing), at, _e.ext[kExtPodTicks], false, feetKey + c.partPod.sort, c.partPod.depth);
+    }
+    const Vec2 rotor = { _render.feet.x + c.rotorOffset.x * sign, _render.feet.y + c.rotorOffset.y };
+    const int    shown     = ShownPitchFrame_(_e, _def, _render.anims);
+    const String rotorName = c.rotorRowPrefix.empty() || shown < 0 ? ResolveSide(_def.GetClip(c.clipRotor).name, _e.facing) : c.rotorRowPrefix + std::to_string(shown);
+    (void)SubmitNamedPart(_render, rotorName, rotor, _e.clipTicks, true, feetKey + c.partRotor.sort, c.partRotor.depth);
+}
 
 const BehaviorOps kHeliOps = {
     .init              = &Init_,
@@ -354,6 +494,7 @@ const BehaviorOps kHeliOps = {
     .tickDying         = &TickVehicleDeath,
     .registerHurtboxes = nullptr,
     .submitParts       = &SubmitParts_,
+    .bodyFrame         = &BodyFrame_,
 };
 
 void ParseHeliCfg(
@@ -369,7 +510,16 @@ void ParseHeliCfg(
     c.followDeadzone    = _r.Num("followDeadzone", c.followDeadzone);
     c.firstBombTicks    = _r.Ticks("firstBombSec", 0.9f);
     c.bombIntervalTicks = Max(1, _r.Ticks("bombIntervalSec", 0.4f));
-    c.bombRunTicks      = _r.Ticks("bombRunSec", 6.1f);
+    c.reBombTicks       = _r.Ticks("reBombSec", 0.4f);
+    c.burstCount        = Max(1, _r.Int("burstCount", c.burstCount));
+    c.burstRestTicks    = Max(0, _r.Ticks("burstRestSec", 1.4f));
+    c.highBursts        = Max(1, _r.Int("highBursts", c.highBursts));
+    c.lowBursts         = Max(1, _r.Int("lowBursts", c.lowBursts));
+    c.lowDy             = _r.Num("lowDy", c.lowDy);
+    c.lowSpeed          = _r.Num("lowSpeed", c.lowSpeed);
+    c.lowMargin         = _r.Num("lowMargin", c.lowMargin);
+    c.descendSpeedY     = _r.Num("descendSpeedY", c.descendSpeedY);
+    c.startLow          = _r.Int("startLow", c.startLow);
     c.bombMuzzle        = _r.ReadVec2("bombMuzzle", c.bombMuzzle);
     c.bombMinY          = _r.Num("bombMinY", c.bombMinY);
 
@@ -390,8 +540,13 @@ void ParseHeliCfg(
     c.turnDx          = _r.Num("turnDx", c.turnDx);
     c.podOffset       = _r.ReadVec2("podOffset", c.podOffset);
     c.rotorOffset     = _r.ReadVec2("rotorOffset", c.rotorOffset);
+    c.idlePitchFrom   = Max(0, _r.Int("idlePitchFrom", c.idlePitchFrom));
+    c.idlePitchTo     = Max(0, _r.Int("idlePitchTo", c.idlePitchTo));
+    c.idleStepTicks   = Max(1, _r.Ticks("idleStepSec", 0.2f));
+    c.rotorRowPrefix  = _r.Str("rotorRowPrefix");
 
     c.clipFly       = _r.Clip("fly");
+    c.clipPitch     = _r.Clip("pitch");
     c.clipTurnIn    = _r.Clip("turnIn");
     c.clipTurnOut   = _r.Clip("turnOut");
     c.clipPod       = _r.Clip("pod");
@@ -400,5 +555,3 @@ void ParseHeliCfg(
     c.weaponMissile = _r.Weapon("missile");
     c.bombDef       = _r.Str("bombDef");
 }
-
-}   // namespace slug

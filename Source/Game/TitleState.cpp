@@ -5,36 +5,28 @@
 #include "Game/StateFactory.h"
 #include "Game/Ui/Hud.h"
 
-namespace slug
+constexpr int kGradientBandH = 8;
+
+[[nodiscard]] static uint8_t MixChannel_(
+    const uint8_t _a,
+    const uint8_t _b,
+    const float   _t)
 {
+    return static_cast<uint8_t>(_a + static_cast<int>((_b - _a) * _t));
+}
 
-namespace
+static void DrawBackground_(
+    Renderer& _renderer)
 {
-
-    constexpr int kGradientBandH = 8;
-
-    [[nodiscard]] uint8_t MixChannel_(
-        const uint8_t _a,
-        const uint8_t _b,
-        const float   _t)
+    const RGBA top    = { 14, 18, 44, 255 };
+    const RGBA bottom = { 58, 22, 14, 255 };
+    for (int y = 0; y < Renderer::kLogicalHeight; y += kGradientBandH)
     {
-        return static_cast<uint8_t>(_a + static_cast<int>((_b - _a) * _t));
+        const float t     = static_cast<float>(y) / static_cast<float>(Renderer::kLogicalHeight);
+        const RGBA  color = { MixChannel_(top.r, bottom.r, t), MixChannel_(top.g, bottom.g, t), MixChannel_(top.b, bottom.b, t), 255 };
+        _renderer.FillRect({ 0.f, static_cast<float>(y) }, { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(kGradientBandH) }, color);
     }
-
-    void DrawBackground_(
-        Renderer& _renderer)
-    {
-        const RGBA top    = { 14, 18, 44, 255 };
-        const RGBA bottom = { 58, 22, 14, 255 };
-        for (int y = 0; y < Renderer::kLogicalHeight; y += kGradientBandH)
-        {
-            const float t     = static_cast<float>(y) / static_cast<float>(Renderer::kLogicalHeight);
-            const RGBA  color = { MixChannel_(top.r, bottom.r, t), MixChannel_(top.g, bottom.g, t), MixChannel_(top.b, bottom.b, t), 255 };
-            _renderer.FillRect({ 0.f, static_cast<float>(y) }, { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(kGradientBandH) }, color);
-        }
-    }
-
-}   // namespace
+}
 
 TitleState::TitleState() = default;
 
@@ -59,7 +51,7 @@ void TitleState::OnEnter(
     _ctx.GetAudio().StopBgm();
     if (m_config.bPlayVoice)
     {
-        _ctx.GetAudio().Play(sfx::kTitleVoice);
+        _ctx.GetAudio().Play(kTitleVoice);
     }
 }
 
@@ -103,7 +95,7 @@ void TitleState::Tick(
     {
         m_bStarting = true;
         m_selected  = m_config.nextState.empty() ? String { CreateState("stage0") ? "stage0" : "sandbox" } : m_config.nextState;
-        _ctx.GetAudio().Play(sfx::kOk);
+        _ctx.GetAudio().Play(kOk);
         m_ui.GetFade().FadeToBlack(m_config.startFadeTicks);
     }
 }
@@ -121,14 +113,10 @@ void TitleState::Render(
     const UiLayout& layout   = m_ui.GetLayout();
 
     renderer.BeginFrame({ 0, 0, 0, 255 });
-    DrawBackground_(renderer);
-
-    constexpr const char* kTitleName = "MY METAL SLUG 2";
-    TextStyle             title;
-    title.color = eFontColor::YellowWhite;
-    title.align = eTextAlign::Center;
-    title.scale = FitTextScale(kTitleName, 600, 3);
-    m_ui.DrawText(_ctx, layout.screenW / 2, layout.titleNameY, kTitleName, title);
+    if (!m_ui.DrawStandalone(_ctx, "TitleBackground", 0, 0))
+    {
+        DrawBackground_(renderer);
+    }
 
     const int period = m_bStarting ? 4 : layout.titleBlinkTicks;
     if (IsBlinkOn(m_ui.GetTick(), period))
@@ -148,4 +136,22 @@ void TitleState::Render(
     m_ui.DrawOverlays(_ctx);
 }
 
-}   // namespace slug
+bool TitleState::IsStarting() const
+{
+    return m_bStarting;
+}
+
+int TitleState::GetTickCount() const
+{
+    return m_tickCount;
+}
+
+const String& TitleState::GetSelectedStateName() const
+{
+    return m_selected;
+}
+
+const UiSystem& TitleState::GetUi() const
+{
+    return m_ui;
+}

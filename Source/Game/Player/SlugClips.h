@@ -3,9 +3,6 @@
 
 #include "Base/Types.h"
 
-namespace slug
-{
-
 // 32522.png (SV-001 시트) 에서 잘라낸 클립. 이름/프레임 수는 Assets/Source/sheets.json 과 같아야 한다 (SlugTest 가 검증).
 // 모든 몸통 클립은 오른쪽을 본다. 왼쪽은 그릴 때 좌우 반전한다.
 enum class eSlugClip : uint8_t
@@ -64,5 +61,3 @@ inline constexpr int kShellColCount = 10;
 // 발칸탄: 17 프레임, 프레임 k 의 방향 = 오른쪽에서 아래로 5.625 * k 도 (k = 16 이면 수직 아래)
 inline constexpr int   kBulletFrameCount = 17;
 inline constexpr float kBulletFrameStep  = 5.625f;
-
-}   // namespace slug

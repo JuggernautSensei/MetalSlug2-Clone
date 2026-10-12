@@ -3,9 +3,6 @@
 #include <algorithm>
 #include <cmath>
 
-namespace slug
-{
-
 void FadeController::SetClear()
 {
     m_alpha     = 0.f;
@@ -107,5 +104,3 @@ bool FadeController::IsClear() const
 {
     return m_phase == ePhase::Clear;
 }
-
-}   // namespace slug

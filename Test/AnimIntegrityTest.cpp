@@ -1,5 +1,5 @@
 // 애니메이션 데이터 무결성 테스트 (Docs/AnimAudit.md): 클립 오매핑/좌우 피벗 튐/아틀라스 겹침/스테이지 NPC 클립 혼입을 잡는다.
-// Assets/Baked 가 없으면 건너뛴다.
+// Assets 가 없으면 건너뛴다.
 #include <algorithm>
 #include <cmath>
 #include <map>
@@ -16,14 +16,11 @@
 #include "Game/Enemies/EnemyDef.h"
 #include "Render/Animation.h"
 
-using namespace slug;
 
-namespace
-{
-[[nodiscard]] bool LoadBaked_(
+[[nodiscard]] static bool Load_(
     AnimationLibrary& _out)
 {
-    Result<AnimationLibrary> lib = AnimationLibrary::LoadFromDirectory(FindAssetRoot() / "Baked");
+    Result<AnimationLibrary> lib = AnimationLibrary::LoadFromDirectory(FindAssetRoot());
     if (!lib)
     {
         return false;
@@ -33,14 +30,14 @@ namespace
 }
 
 // 클립 이름의 첫 토큰 (엔티티 계열): "MissleTank_Up_Idle_Left" -> "MissleTank"
-[[nodiscard]] String FamilyOf_(
+[[nodiscard]] static String FamilyOf_(
     const String& _name)
 {
     const size_t pos = _name.find('_');
     return pos == String::npos ? _name : _name.substr(0, pos);
 }
 
-[[nodiscard]] bool BottomAnchor_(
+[[nodiscard]] static bool BottomAnchor_(
     const AnimClip& _clip,
     int&            _out)
 {
@@ -59,14 +56,13 @@ namespace
     _out = low;
     return bAny;
 }
-}   // namespace
 
 TEST(AnimIntegrity, AtlasRectanglesNeverOverlapAndStayInsidePages)
 {
     AnimationLibrary lib;
-    if (!LoadBaked_(lib))
+    if (!Load_(lib))
     {
-        GTEST_SKIP() << "Assets/Baked 없음";
+        GTEST_SKIP() << "Assets 없음";
     }
 
     std::map<int, std::set<ARRAY<int, 4>>> byPage;
@@ -101,9 +97,9 @@ TEST(AnimIntegrity, AtlasRectanglesNeverOverlapAndStayInsidePages)
 TEST(AnimIntegrity, LeftRightTwinsKeepTheSameFootAnchor)
 {
     AnimationLibrary lib;
-    if (!LoadBaked_(lib))
+    if (!Load_(lib))
     {
-        GTEST_SKIP() << "Assets/Baked 없음";
+        GTEST_SKIP() << "Assets 없음";
     }
     int checked = 0;
     for (const AnimClip& clip: lib.GetClips())
@@ -136,9 +132,9 @@ TEST(AnimIntegrity, LeftRightTwinsKeepTheSameFootAnchor)
 TEST(AnimIntegrity, EveryDefClipExistsWithMatchingFrameCountAndSingleFamily)
 {
     AnimationLibrary lib;
-    if (!LoadBaked_(lib))
+    if (!Load_(lib))
     {
-        GTEST_SKIP() << "Assets/Baked 없음";
+        GTEST_SKIP() << "Assets 없음";
     }
 
     String                  message;
@@ -146,7 +142,7 @@ TEST(AnimIntegrity, EveryDefClipExistsWithMatchingFrameCountAndSingleFamily)
     ASSERT_TRUE(loaded) << message.c_str();
     const EnemyDefLibrary defs = loaded.Take();
 
-    // 정의가 여러 계열의 클립을 쓰는 것이 의도인 경우만 허용한다 (포로: 레거시 Older 몸 + 시트 변형 + 오타 이름 Order_Run).
+    // 정의가 여러 계열의 클립을 쓰는 것이 의도인 경우만 허용한다 (포로: 레거시 Older 몸 + 시트 변형 + 오타 이름 Order_Run, 낙하 포로는 POW stuck 클립 하나로 통일).
     const std::set<String> mixedOk = { "pow" };
 
     for (const EnemyDef& def: defs.GetDefs())
@@ -158,9 +154,9 @@ TEST(AnimIntegrity, EveryDefClipExistsWithMatchingFrameCountAndSingleFamily)
             for (int side = 0; side < (clip.bSided ? 2 : 1); ++side)
             {
                 const String    name  = clip.bSided ? ResolveSide(clip.name, side == 0 ? -1 : 1) : clip.name;
-                const AnimClip* pBaked = lib.FindClip(name);
-                ASSERT_NE(pBaked, nullptr) << def.name.c_str() << ": " << name.c_str();
-                EXPECT_EQ(pBaked->GetFrameCount(), clip.frames) << def.name.c_str() << ": " << name.c_str();
+                const AnimClip* p = lib.FindClip(name);
+                ASSERT_NE(p, nullptr) << def.name.c_str() << ": " << name.c_str();
+                EXPECT_EQ(p->GetFrameCount(), clip.frames) << def.name.c_str() << ": " << name.c_str();
             }
             families.insert(FamilyOf_(clip.name));
         }
@@ -181,9 +177,9 @@ TEST(AnimIntegrity, EveryDefClipExistsWithMatchingFrameCountAndSingleFamily)
 TEST(AnimIntegrity, StageDecorSequencesStayWithinOneActor)
 {
     AnimationLibrary lib;
-    if (!LoadBaked_(lib))
+    if (!Load_(lib))
     {
-        GTEST_SKIP() << "Assets/Baked 없음";
+        GTEST_SKIP() << "Assets 없음";
     }
     Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(FindAssetRoot() / "Stage" / "Stage0.json");
     ASSERT_TRUE(doc);

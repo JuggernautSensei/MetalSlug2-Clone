@@ -10,9 +10,6 @@
 #include "Base/Types.h"
 #include "Game/Enemies/EnemyDefParse.h"
 
-namespace slug
-{
-
 const char* GetBehaviorName(
     const eEnemyBehavior _behavior)
 {
@@ -31,6 +28,7 @@ const char* GetBehaviorName(
         case eEnemyBehavior::Bus: return "bus";
         case eEnemyBehavior::Heli: return "heli";
         case eEnemyBehavior::HeliBomb: return "heli_bomb";
+        case eEnemyBehavior::BigShiee: return "bigshiee";
         case eEnemyBehavior::Count: break;
     }
     return "?";
@@ -78,6 +76,12 @@ int EnemyDef::FindClip(
         }
     }
     return -1;
+}
+
+bool EnemyDef::ShouldFlipArt(
+    const int _facing) const
+{
+    return (artFacing == eArtFacing::Left && _facing > 0) || (artFacing == eArtFacing::Right && _facing < 0);
 }
 
 int EnemyDef::FindWeapon(
@@ -148,6 +152,13 @@ bool DefReader::Has(
         }
     }
     return false;
+}
+
+const JsonReader* DefReader::FindRaw(
+    const StringView _key)
+{
+    ParamEntry* pEntry = Find_(_key);
+    return pEntry ? &pEntry->value : nullptr;
 }
 
 float DefReader::Num(
@@ -337,6 +348,35 @@ bool DefReader::NumArray(
     return true;
 }
 
+int DefReader::NumList(
+    const StringView  _key,
+    const Span<float> _out)
+{
+    ParamEntry* pEntry = Find_(_key);
+    if (!pEntry)
+    {
+        return -1;
+    }
+    if (!pEntry->value.IsArray() || pEntry->value.GetSize() > _out.size())
+    {
+        Fail(std::format("params.{}", _key), std::format("길이 {} 이하의 숫자 배열이 필요합니다", _out.size()));
+        return -1;
+    }
+
+    size_t i = 0;
+    for (const JsonReader item: pEntry->value.GetArray())
+    {
+        const Result<double> value = item.Read<double>();
+        if (!value)
+        {
+            Fail(std::format("params.{}", _key), "숫자가 아닌 원소가 있습니다");
+            return -1;
+        }
+        _out[i++] = static_cast<float>(value.GetValue());
+    }
+    return static_cast<int>(i);
+}
+
 int DefReader::Clip(
     const StringView _logical)
 {
@@ -425,4 +465,98 @@ const EnemyGlobals& EnemyDefLibrary::GetGlobals() const
     return m_globals;
 }
 
-}   // namespace slug
+static constexpr ARRAY<const char*, kBigShieeTurretCount> kTurretPartNames = { "turretA", "turretB", "turretC", "turretD", "turretE", "turretF", "turretG" };
+
+void GetEnemyPartSlots(
+    EnemyDef&              _def,
+    Vector<EnemyPartSlot>& _out)
+{
+    _out.clear();
+    if (_def.behavior == eEnemyBehavior::Bus)
+    {
+        BusCfg& c = _def.bus;
+        _out.push_back({ "innerSoldier", &c.partInnerSoldier });
+        _out.push_back({ "wreck", &c.partWreck });
+        _out.push_back({ "back", &c.partBack });
+        _out.push_back({ "stairs", &c.partStairs });
+        _out.push_back({ "body", &c.partBody });
+        _out.push_back({ "cover", &c.partCover });
+        _out.push_back({ "window", &c.partWindow });
+        _out.push_back({ "debris", &c.partDebris });
+    }
+    else if (_def.behavior == eEnemyBehavior::Heli)
+    {
+        _out.push_back({ "body", &_def.partBody });
+        _out.push_back({ "rotor", &_def.heli.partRotor });
+        _out.push_back({ "pod", &_def.heli.partPod });
+        _out.push_back({ "puff", &_def.heli.partPuff });
+    }
+    else if (_def.behavior == eEnemyBehavior::BigShiee)
+    {
+        BigShieeCfg& c = _def.bigShiee;
+        _out.push_back({ "hull", &c.partHull });
+        _out.push_back({ "antenna", &c.partAntenna });
+        _out.push_back({ "cannon", &c.partCannon });
+        for (size_t i = 0; i < kTurretPartNames.size(); ++i)
+        {
+            _out.push_back({ kTurretPartNames[i], &c.partTurrets[i] });
+        }
+        _out.push_back({ "disc", &c.partDisc });
+        _out.push_back({ "wreck", &c.partWreck });
+    }
+    if (_def.overlayClip >= 0)
+    {
+        _out.push_back({ "overlay", &_def.partOverlay });
+    }
+}
+
+void ParseEnemyParts(
+    DefReader& _r,
+    EnemyDef&  _def)
+{
+    const JsonReader* pParts = _r.FindRaw("parts");
+    if (!pParts)
+    {
+        return;
+    }
+    if (!pParts->IsObject())
+    {
+        _r.Fail("params.parts", "객체가 아닙니다");
+        return;
+    }
+    Vector<EnemyPartSlot> slots;
+    GetEnemyPartSlots(_def, slots);
+    for (const std::pair<StringView, JsonReader>& member: pParts->GetObject())
+    {
+        const String    name  = String { member.first };
+        EnemyPartDepth* pPart = nullptr;
+        for (const EnemyPartSlot& slot: slots)
+        {
+            if (name == slot.pName)
+            {
+                pPart = slot.pDepth;
+            }
+        }
+        if (!pPart)
+        {
+            _r.Fail(std::format("params.parts.{}", name), "이 행동에 없는 부품입니다");
+            return;
+        }
+        if (!member.second.IsObject())
+        {
+            _r.Fail(std::format("params.parts.{}", name), "{depth, sort} 객체가 아닙니다");
+            return;
+        }
+        for (const std::pair<StringView, JsonReader>& field: member.second.GetObject())
+        {
+            int*              pValue = field.first == "depth" ? &pPart->depth : (field.first == "sort" ? &pPart->sort : nullptr);
+            const Result<int> value  = field.second.Read<int>();
+            if (!pValue || !value)
+            {
+                _r.Fail(std::format("params.parts.{}.{}", name, field.first), "depth/sort 정수만 허용합니다");
+                return;
+            }
+            *pValue = value.GetValue();
+        }
+    }
+}

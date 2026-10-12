@@ -4,75 +4,69 @@
 
 #include "Base/Error.h"
 #include "Base/Json.h"
+#include "Base/PhaseTimer.h"
 #include "Base/Types.h"
 
-namespace slug
+[[nodiscard]] static bool ReadInt_(
+    const JsonReader& _object,
+    const StringView  _key,
+    int&              _out)
 {
-
-namespace
-{
-    [[nodiscard]] bool ReadInt_(
-        const JsonReader& _object,
-        const StringView  _key,
-        int&              _out)
+    const Result<double> value = _object.ReadField<double>(_key);
+    if (!value)
     {
-        const Result<double> value = _object.ReadField<double>(_key);
-        if (!value)
-        {
-            return false;
-        }
-        _out = static_cast<int>(std::llround(value.GetValue()));
-        return true;
+        return false;
+    }
+    _out = static_cast<int>(std::llround(value.GetValue()));
+    return true;
+}
+
+[[nodiscard]] static Result<SpriteLibrary> Parse_(
+    const JsonReader& _root)
+{
+    const Result<JsonReader> sprites = _root.FindField("sprites");
+    if (!sprites || !sprites->IsObject())
+    {
+        return Error { eError::Parse };
     }
 
-    [[nodiscard]] Result<SpriteLibrary> Parse_(
-        const JsonReader& _root)
+    SpriteLibrary library;
+    for (const std::pair<StringView, JsonReader>& item: sprites->GetObject())
     {
-        const Result<JsonReader> sprites = _root.FindField("sprites");
-        if (!sprites || !sprites->IsObject())
+        const StringView  name = item.first;
+        const JsonReader& json = item.second;
+        if (!json.IsObject())
         {
             return Error { eError::Parse };
         }
 
-        SpriteLibrary library;
-        for (const std::pair<StringView, JsonReader>& item: sprites->GetObject())
+        SpriteInfo info;
+        info.name = String { name };
+        if (json.HasField("file"))
         {
-            const StringView  name = item.first;
-            const JsonReader& json = item.second;
-            if (!json.IsObject())
+            const Result<String> file = json.ReadField<String>("file");
+            if (!file || !ReadInt_(json, "w", info.width) || !ReadInt_(json, "h", info.height))
             {
                 return Error { eError::Parse };
             }
-
-            SpriteInfo info;
-            info.name = String { name };
-            if (json.HasField("file"))
-            {
-                const Result<String> file = json.ReadField<String>("file");
-                if (!file || !ReadInt_(json, "w", info.width) || !ReadInt_(json, "h", info.height))
-                {
-                    return Error { eError::Parse };
-                }
-                info.bStandalone = true;
-                info.file        = file.GetValue();
-            }
-            else
-            {
-                AnimFrame& f = info.frame;
-                if (!ReadInt_(json, "atlas", f.atlas) || !ReadInt_(json, "x", f.x) || !ReadInt_(json, "y", f.y) || !ReadInt_(json, "w", f.w) || !ReadInt_(json, "h", f.h) || !ReadInt_(json, "pivotX", f.pivotX) || !ReadInt_(json, "pivotY", f.pivotY))
-                {
-                    return Error { eError::Parse };
-                }
-                info.width  = f.w;
-                info.height = f.h;
-            }
-            library.AddSprite(std::move(info));
+            info.bStandalone = true;
+            info.file        = file.GetValue();
         }
-
-        return library;
+        else
+        {
+            AnimFrame& f = info.frame;
+            if (!ReadInt_(json, "atlas", f.atlas) || !ReadInt_(json, "x", f.x) || !ReadInt_(json, "y", f.y) || !ReadInt_(json, "w", f.w) || !ReadInt_(json, "h", f.h) || !ReadInt_(json, "pivotX", f.pivotX) || !ReadInt_(json, "pivotY", f.pivotY))
+            {
+                return Error { eError::Parse };
+            }
+            info.width  = f.w;
+            info.height = f.h;
+        }
+        library.AddSprite(std::move(info));
     }
 
-}   // namespace
+    return library;
+}
 
 Result<SpriteLibrary> SpriteLibrary::LoadFromJson(
     const StringView _json)
@@ -93,6 +87,7 @@ Result<SpriteLibrary> SpriteLibrary::LoadFromDirectory(
     {
         return Error { eError::FileOpen };
     }
+    const ScopedPhaseTimer timer { "sprites-parse", "sprites.json" };
     return Parse_(doc->GetReader());
 }
 
@@ -115,4 +110,7 @@ const SpriteInfo* SpriteLibrary::Find(
     return it == m_nameToIndex.end() ? nullptr : &m_sprites[it->second];
 }
 
-}   // namespace slug
+size_t SpriteLibrary::GetCount() const
+{
+    return m_sprites.size();
+}

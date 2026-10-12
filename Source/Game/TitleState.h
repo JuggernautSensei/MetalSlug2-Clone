@@ -3,9 +3,6 @@
 #include "Game/GameState.h"
 #include "Game/Ui/UiSystem.h"
 
-namespace slug
-{
-
 struct TitleConfig
 {
     String nextState       = {};
@@ -28,10 +25,10 @@ public:
 
     [[nodiscard]] std::unique_ptr<IGameState> TakeNextState() override;
 
-    [[nodiscard]] bool            IsStarting() const { return m_bStarting; }
-    [[nodiscard]] int             GetTickCount() const { return m_tickCount; }
-    [[nodiscard]] const String&   GetSelectedStateName() const { return m_selected; }
-    [[nodiscard]] const UiSystem& GetUi() const { return m_ui; }
+    [[nodiscard]] bool            IsStarting() const;
+    [[nodiscard]] int             GetTickCount() const;
+    [[nodiscard]] const String&   GetSelectedStateName() const;
+    [[nodiscard]] const UiSystem& GetUi() const;
 
 private:
     [[nodiscard]] std::unique_ptr<IGameState> CreateNext_() const;
@@ -44,5 +41,3 @@ private:
     String                      m_selected  = {};
     std::unique_ptr<IGameState> m_pNext     = nullptr;
 };
-
-}   // namespace slug

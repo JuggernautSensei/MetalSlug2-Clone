@@ -6,9 +6,6 @@
 #include "Game/Ui/BitmapFont.h"
 #include "Game/Ui/UiLayout.h"
 
-namespace slug
-{
-
 class PlayerController;
 
 struct HudModel
@@ -93,16 +90,11 @@ struct HudItem
 
 [[nodiscard]] Vector<HudItem> BuildHudItems(const HudModel& _model, const UiLayout& _layout);
 
-[[nodiscard]] constexpr bool IsBlinkOn(
+[[nodiscard]] bool IsBlinkOn(
     const int _tick,
-    const int _periodTicks)
-{
-    return _periodTicks <= 0 || ((_tick / _periodTicks) % 2) == 0;
-}
+    const int _periodTicks);
 
 [[nodiscard]] String FormatScore(int _score);
 [[nodiscard]] String FormatAmmo(int _ammo);
 [[nodiscard]] String FormatBombs(int _bombs);
 [[nodiscard]] String FormatTimer(int _seconds);
-
-}   // namespace slug

@@ -2,9 +2,6 @@
 
 #include <algorithm>
 
-namespace slug
-{
-
 void UiDemoState::OnEnter(
     GameContext& _ctx)
 {
@@ -82,4 +79,7 @@ const UiSystem& UiDemoState::GetUi() const
     return m_ui;
 }
 
-}   // namespace slug
+bool UiDemoState::IsFinished() const
+{
+    return m_flow.IsDone();
+}

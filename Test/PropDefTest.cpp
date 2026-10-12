@@ -5,29 +5,25 @@
 #include "Base/Types.h"
 #include "PropTestUtil.h"
 
-using namespace slugtest;
 
-namespace
-{
-[[nodiscard]] std::string Wrap_(
+[[nodiscard]] static std::string Wrap_(
     const std::string& _defs)
 {
     return std::string { "{ \"version\": 1, \"defs\": { " } + _defs + " } }";
 }
 
-[[nodiscard]] slug::Result<PropDefLibrary> ParseText_(
+[[nodiscard]] static Result<PropDefLibrary> ParseText_(
     const std::string& _text,
-    slug::String*      _pMessage = nullptr)
+    String*      _pMessage = nullptr)
 {
-    return PropDefLibrary::Parse(slug::StringView { _text.c_str(), _text.size() }, _pMessage);
+    return PropDefLibrary::Parse(StringView { _text.c_str(), _text.size() }, _pMessage);
 }
-}   // namespace
 
 TEST(PropDef, StageDefNamesAllPresent)
 {
     const PropDefLibrary&        lib   = GetPropLib();
-    const ARRAY<const char*, 24> names = {
-        "shop_0", "shop_1", "shop_2", "shop_3", "shop_4", "shop_5", "truck", "fence", "mob_boat", "bridge_deck", "bridge_house", "bridge_house2house", "bridge_block", "house_upper", "house_open_window", "house_cloth", "house_no_cloth", "house_yellow", "ground_mini_house", "ground_house", "big_house", "tower", "guard_post", "sign_fall"
+    const ARRAY<const char*, 25> names = {
+        "shop_0", "shop_1", "shop_2", "shop_3", "shop_4", "shop_5", "truck", "fence", "mob_boat", "bridge_deck", "bridge_house", "bridge_house2house", "bridge_block", "house_upper", "house_open_window", "house_cloth", "house_no_cloth", "house_yellow", "ground_mini_house", "ground_house", "big_house", "tower", "guard_post", "sign_fall", "crate"
     };
     for (const char* name: names)
     {
@@ -142,22 +138,22 @@ TEST(PropDef, DebrisClipNamesFollowSets)
     EXPECT_EQ(GetDebrisClipName(eDebrisSet::Wood, 5).c_str(), std::string { "Wood6" });
 }
 
-TEST(PropDef, ClipAndSpriteNamesExistInBakedAssets)
+TEST(PropDef, ClipAndSpriteNamesExistInAssets)
 {
     AnimationLibrary anims;
     SpriteLibrary    sprites;
-    if (!LoadBakedLibs(anims, sprites))
+    if (!LoadLibs(anims, sprites))
     {
-        GTEST_SKIP() << "Assets/Baked 없음: Scripts/Bake.ps1 로 생성한 뒤 다시 실행하세요.";
+        GTEST_SKIP() << "Assets 없음";
     }
-    const slug::String missing = GetPropLib().FindMissingAsset(anims, sprites);
+    const String missing = GetPropLib().FindMissingAsset(anims, sprites);
     EXPECT_TRUE(missing.empty()) << std::string { missing.c_str() };
 }
 
 TEST(PropDef, RejectsUnknownKeyWithPath)
 {
-    slug::String                 msg;
-    slug::Result<PropDefLibrary> r = ParseText_(Wrap_(R"("bad": { "hp": 1, "bogus": 3 })"), &msg);
+    String                 msg;
+    Result<PropDefLibrary> r = ParseText_(Wrap_(R"("bad": { "hp": 1, "bogus": 3 })"), &msg);
     EXPECT_FALSE(static_cast<bool>(r));
     EXPECT_NE(std::string { msg.c_str() }.find("bogus"), std::string::npos);
     EXPECT_NE(std::string { msg.c_str() }.find("bad"), std::string::npos);
@@ -178,7 +174,7 @@ TEST(PropDef, RejectsMissingHpNegativeHpAndBadVersion)
 
 TEST(PropDef, RejectsVisualWithBothAnimAndSprite)
 {
-    slug::String msg;
+    String msg;
     EXPECT_FALSE(static_cast<bool>(ParseText_(Wrap_(R"("a": { "hp": 1, "idle": { "anim": "A", "sprite": "B" } })"), &msg)));
     EXPECT_NE(std::string { msg.c_str() }.find("하나"), std::string::npos);
 }
@@ -191,7 +187,7 @@ TEST(PropDef, RejectsUnknownDropAndSpawnReferences)
 
 TEST(PropDef, RoleArrayExpandsIntoOnePartPerRole)
 {
-    slug::Result<PropDefLibrary> r = ParseText_(Wrap_(R"("a": { "hp": 5, "parts": [ { "role": ["hurt", "wall"], "size": [10, 20], "offset": [1, 2] } ] })"));
+    Result<PropDefLibrary> r = ParseText_(Wrap_(R"("a": { "hp": 5, "parts": [ { "role": ["hurt", "wall"], "size": [10, 20], "offset": [1, 2] } ] })"));
     ASSERT_TRUE(static_cast<bool>(r));
     const PropDef* def = r->Find("a");
     ASSERT_NE(def, nullptr);
@@ -210,10 +206,10 @@ TEST(PropDef, RejectsGunItemWithoutWeaponAndUnknownKind)
 TEST(PropDef, SpawnParamsParseStageOverrides)
 {
     const PropDefLibrary&                lib = GetPropLib();
-    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::Load(R"({ "hp": 30, "sprites": ["A", "B"], "hitbox": { "size": [150, 75], "offset": [0, -200] }, "standBox": { "size": [230, 20], "offset": [35, 55] } })");
+    Result<JsonDeserializer> doc = JsonDeserializer::Load(R"({ "hp": 30, "sprites": ["A", "B"], "hitbox": { "size": [150, 75], "offset": [0, -200] }, "standBox": { "size": [230, 20], "offset": [35, 55] } })");
     ASSERT_TRUE(static_cast<bool>(doc));
     PropSpawnParams params;
-    slug::String    err;
+    String    err;
     ASSERT_TRUE(lib.ParseSpawnParams("shop_5", doc->GetReader(), params, err)) << std::string { err.c_str() };
     EXPECT_EQ(params.hp, 30);
     EXPECT_EQ(params.idleSprite.c_str(), std::string { "A" });
@@ -227,14 +223,14 @@ TEST(PropDef, SpawnParamsParseStageOverrides)
 TEST(PropDef, SpawnParamsRejectUnknownKeysAndBadVariant)
 {
     const PropDefLibrary&                lib = GetPropLib();
-    slug::Result<slug::JsonDeserializer> doc = slug::JsonDeserializer::Load(R"({ "playerWaterTrigger": { "size": [1050, 40] } })");
+    Result<JsonDeserializer> doc = JsonDeserializer::Load(R"({ "playerWaterTrigger": { "size": [1050, 40] } })");
     ASSERT_TRUE(static_cast<bool>(doc));
     PropSpawnParams params;
-    slug::String    err;
+    String    err;
     EXPECT_FALSE(lib.ParseSpawnParams("shop_0", doc->GetReader(), params, err));
     EXPECT_NE(std::string { err.c_str() }.find("playerWaterTrigger"), std::string::npos);
 
-    slug::Result<slug::JsonDeserializer> doc2 = slug::JsonDeserializer::Load(R"({ "variant": 1 })");
+    Result<JsonDeserializer> doc2 = JsonDeserializer::Load(R"({ "variant": 1 })");
     ASSERT_TRUE(static_cast<bool>(doc2));
     EXPECT_FALSE(lib.ParseSpawnParams("shop_0", doc2->GetReader(), params, err));
     EXPECT_FALSE(lib.ParseSpawnParams("nope", doc2->GetReader(), params, err));

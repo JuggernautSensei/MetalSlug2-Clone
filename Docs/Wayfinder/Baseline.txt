@@ -1,0 +1,2 @@
+enemylab_fight hash=7b12d9c08892fd47
+stage0_walk hash=115f564416d06cab

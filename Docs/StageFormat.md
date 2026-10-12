@@ -1,8 +1,8 @@
 # 스테이지 스크립트 포맷 (`Assets/Stage/*.json`)
 
-레거시 `DevScene.cpp` 의 하드코딩 이벤트 표를 데이터로 옮긴 포맷. **커밋 대상**(Assets/Baked 와 달리 git 무시 아님).
-첫 스테이지: `Assets/Stage/Stage0.json` (MS2 Mission 4). 스프라이트/애니/지면 이름은 `Assets/Baked/{sprites,anim,manifest}.json` 의 키와 일치해야 한다.
-엔티티 `def` 이름(적/소품/NPC/아이템)은 `Docs/EnemySpecs.md` 와 맞춘다. 이 문서 §9 는 Stage0 이 쓰는 def 목록과 레거시 대응표다.
+레거시 `DevScene.cpp` 의 하드코딩 이벤트 표를 데이터로 옮긴 포맷. **커밋 대상**.
+첫 스테이지: `Assets/Stage/Stage0.json` (MS2 Mission 4). 스프라이트/애니/지면 이름은 `Assets/{sprites,anim,manifest}.json` 의 키와 일치해야 한다.
+엔티티 `def` 이름(적/소품/NPC/아이템)은 `Assets/Defs/*.json` 과 맞춘다. 이 문서 §9 는 Stage0 이 쓰는 def 목록과 레거시 대응표다.
 엄격 규칙: **알 수 없는 키/타입/enum 값은 로드 오류**(`Result` 실패), `note` 키만 어디서나 허용(무시됨).
 
 ## 1. 좌표/단위 규칙
@@ -12,7 +12,7 @@
 | 시간 | 초(고정 60Hz 시뮬 시간). `delay` 는 "그 액션 목록이 실행된 시점으로부터" |
 | 트리거 | 플레이어 x **>** `triggerX` (엄격 초과). 섹션은 배열 순서대로, 한 틱에 여러 개 발동 가능, 각 1회 |
 | `origin:"feet"` | `(x,y)` = 엔티티 **발 중앙(바닥 접지점)**. `kind` 가 `enemy`/`npc` 일 때 기본값 |
-| `origin:"legacyCenter"` | `(x,y)` = 레거시 `SetPos` 값 = Baker 가 굽은 스프라이트/애니 원점(정적 스프라이트는 이미지 **중앙**, 애니는 `pivotX/Y`) = 충돌체 중심. `prop`/`decor`/`item`/`collider` 의 기본값. 변환 불필요(그대로 그린다) |
+| `origin:"legacyCenter"` | `(x,y)` = 레거시 `SetPos` 값 = 스프라이트/애니 원점(정적 스프라이트는 이미지 **중앙**, 애니는 `pivotX/Y`) = 충돌체 중심. `prop`/`decor`/`item`/`collider` 의 기본값. 변환 불필요(그대로 그린다) |
 | `halfHeight` | `legacyCenter` 를 쓰는 **크리처**(enemy/npc)에 필수: 충돌체 반높이. `feet.y = y + halfHeight` |
 | 지면 스냅 | `groundSnap:true` → `y` 무시, `feet.y = FindGroundY(x, fromY)`: **현재 활성 지면 맵**에서 `fromY`(기본 0)부터 아래로 처음 만나는 고체 픽셀 행. 없으면 스폰 생략(레거시 동작) |
 | `settle:true` | 주어진 위치에서 시작해 중력으로 착지(POW/플레이어). 착지면 = 픽셀 지면 + 소품 플랫폼 |
@@ -71,9 +71,9 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
 | `gate` | `id`, `waitFor:[spawnId]`, `until?`, `actions[]`, `abortOnGameOver?` | `waitFor` 의 모든 스폰이 소멸/격파되면 `actions` 실행(각 `delay` 는 이 시점 기준). `until:"defeated"`(기본, HP≤0 또는 제거) / `"destroyFinished"`(사망 연출 종료). `abortOnGameOver`: 게임오버 시 `actions` 취소(레거시 피날레) |
 | `command` | `target:spawnId`, `command` | 엔티티에 명령. 현재 사용하는 적 없음 (재설계 예정) |
 | `clear` | `waves?:bool`, `layers?:["monster"]` | 대기 웨이브 취소 / 해당 레이어 오브젝트 전부 제거(레거시: ObjectType::Monster = 적+트럭+보트 포함) |
-| `banner` | `text`(`\n` 줄바꿈), `seconds` | HUD 배너 |
+| `banner` | `text`(`\n` 줄바꿈), `seconds`, `sfx?`(효과음 이름) | HUD 배너. `sfx` 가 있으면 배너와 함께 그 효과음을 한 번 재생 |
 | `fade` | `to:"black"\|"clear"`, `seconds` | 화면 페이드 |
-| `playBgm` | `name`, `loop` | BGM 교체 (Stage0 미사용) |
+| `playBgm` | `name`, `loop`, `fadeOutSec` | BGM 교체 (Stage0 미사용). `fadeOutSec`(>= 0, 기본 0) 가 0 보다 크면 현재 BGM 을 그 시간 동안 줄인 뒤 새 BGM 을 재생한다. 예: `{"type":"playBgm","name":"Boss_BGM","fadeOutSec":2.0}` |
 | `playerInvincible` | `seconds` | 플레이어 무적 |
 | `endStage` | `next:"title"` | 스테이지 종료 후 다음 상태 |
 
@@ -144,12 +144,13 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
 | `tower` | `Stage0Tower` | `Stage0_Tower_Idle → Destroy` | HP 10, 피격 90x210, 플랫폼 80x10 offset (5,45),(5,-25) |
 | `guard_post` | `GuardPost` (애니 `GuardPost`) | - | 플랫폼 130x10 offset (0,-65), 165x10 offset (0,10) |
 
-**decor / collider**: `anim_decor`(`Parker`, `Stage0_Water`(플레이어 진입 시 물 이펙트 트리거 1050x40, `cullMargin` 100), `Plane`(속도 (70,-50) px/s)), `sprite_decor`(`Sewer`, `frontBackground`), `box_collider`.
+**decor / collider**: `anim_decor`(`Parker`, `Stage0_Water`(플레이어 진입 시 물 이펙트 트리거 1050x40, `cullMargin` 100), `Plane`(속도 (-90,-20) px/s, `params.scale` 0.5 = 원작 비율 축소)), `sprite_decor`(`Sewer`, `frontBackground`), `box_collider`.
+`anim_decor` 의 `params.scale`: 배율 (기본 1, 0 이하는 1). 피벗 점을 고정한 채 축소/확대한다 (`SpriteDrawOptions::scale`).
 
 ## 10. 섹션 표 (레거시 `gStage0Events`)
-`intro`(0) `street`(750) `ground_swap`(2244) `boardwalk`(3050) `bridge`(3300) `bridge_down`(3700) `bridge_mid`(4037) `bridge_end`(4600) `river_start`(5000) `river_mid`(5600) `river_end`(6220) `downtown_start`(6500) `downtown_mid`(7400) `downtown_end`(8700) `openland_start`(8980) `openland_1`(9450) `openland_2`(10350) `openland_3`(11350) `openland_4`(12350) `stage_end`(12900).
+`intro`(0) `street`(750) `ground_swap`(2244) `boardwalk`(3050) `bridge`(3300) `bridge_down`(3700) `bridge_mid`(4037) `bridge_end`(4600) `river_start`(5000) `river_mid`(5600) `river_end`(6220) `downtown_start`(6500) `downtown_mid`(7400) `downtown_end`(8700) `openland_start`(8980) `openland_1`(9450) `openland_2`(10350) `openland_3`(11350) `openland_4`(12350) `boss_arena`(13700).
 
-버스(`bus_*`)/헬기/최종보스 섹션은 삭제했다 (재설계 예정, RemakePlan 3단계). `stage_end` 는 옛 보스 아레나 입구에서 `endStage` 로 스테이지를 끝낸다.
+`bus`(2750) / `heli`(2000) 는 중간보스 섹션이다. `boss_arena`(13700) 는 최종보스 전함 (`bigshiee`) 아레나다: 트리거는 사루비아 락 (플레이어 x <= 13066) 밖이라 사루비아를 잡고 락이 풀린 뒤에만 발동한다. 락 `[13700,864,14340,1312]`, 보스 발 `(14100, 지면 1286)` (groundSnap). 게이트 `bigshiee_dead` (`until: destroyFinished`) 가 `unlockCamera` -> `clear` -> `playerInvincible` -> `endStage` 를 실행한다. 보스가 사망 연출 (10 s) 을 끝내기 전에는 스테이지가 끝나지 않는다.
 
 ## 11. 알려진 차이 / 주의
 - 레거시 `rand()` 사용처(드롭 x 지터, 과일/애니 랜덤, 울타리 스프라이트, 트럭 변종, `random_score`)는 스테이지 시드 RNG 로 대체. 재현 가능.
@@ -158,7 +159,7 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
 - 검증: `Scripts/ValidateStage.ps1 [-Stage Assets/Stage/Stage0.json]` — 파싱, ID 유일/참조, 이름(스프라이트/애니/지면/BGM) 존재, 섹션별 개수 출력.
 
 ## 12. 런타임 (`StageState`, 상태 이름 `stage0`)
-- 구성: `Source/Game/Stage/StageState.*` 가 `Assets/Stage/Stage0.json` 을 `StageRunner` 로 돌린다. 플레이어/전투/투사체/카메라/HUD 는 SandboxState 와 같은 경로. 기본 시작 상태는 `title` (Assets/Baked 가 없으면 `sandbox`), 타이틀 Start → `stage0`.
+- 구성: `Source/Game/Stage/StageState.*` 가 `Assets/Stage/Stage0.json` 을 `StageRunner` 로 돌린다. 플레이어/전투/투사체/카메라/HUD 는 SandboxState 와 같은 경로. 기본 시작 상태는 `title`, 타이틀 Start → `stage0`.
 - 호스트: `StageWorldHost` (`IStageHost` 구현). 스폰 한 개를 아래 순서로 보낸다. 정의가 없으면 다음 단계로 떨어진다.
   - `enemy` / `npc` → `EnemyWorld::Spawn` (def 는 Enemies/Vehicles.json). `params.arena` 는 rect 이름을 풀어 `SpawnParams::arena` 로 준다.
   - `prop` → `PropWorld::Spawn` (Props.json). `params` 의 `sprites` / `hitbox` / `standBox` / `explodeOnDeath` 를 `PropSpawnParams` 로 옮긴다. `hp` 는 def 값을 쓴다 (스테이지 데이터에 hp 덮어쓰기 없음).
@@ -166,10 +167,10 @@ Stage0: `first`(Stage0_Background_0, 249,-64, 0.15) → `second`(같은 스프�
   - `collider` → 스테이지 충돌체 목록. `collisionLayer: wall` 은 플레이어/적 벽, `groundExceptPlayer` 는 적만 서는 원웨이 바닥. 매 틱 물리 입력에 합친다.
   - 그 밖 (`decor` 의 `anim_decor` / `sprite_decor`, 정의가 아직 없는 이름) → `StageWorldHost` 의 플레이스홀더 (상자). 판정 가능 kind 만 평소에도 그린다. 장식 플레이스홀더는 F1 에서만 보인다.
 - 틱 순서: 판정 시작 → 소품 Tick → 벽/발판 안정 저장소 갱신 (`StageState` 멤버 벡터에 복사, 이 틱 동안만 쓴다) → Hurtbox 등록 (플레이스홀더/적/소품, 플레이어 Tick 전) → 플레이어 → 아이템 습득 → 적 → 투사체 Step → Resolve → 피해 적용 (소품/적/플레이스홀더/플레이어/투사체) → 이벤트 소비 → 연출 → `StageRunner::Tick`.
-- 이벤트: 적 `Died` → 점수 + 드롭 아이템 (`drop`), `ItemDropped` (포로) → 튀는 아이템, 소품 `GroundPatch` → Baked/Textures/<sprite>.png 의 파란 픽셀 발자국을 `ApplyGroundPatch` 로 활성 지면에서 공기로 만든다 (발자국 밖은 불변, 바닥을 지우는 마스크는 가드로 거부; PropSpecs §2.3).
+- 이벤트: 적 `Died` → 점수 + 드롭 아이템 (`drop`), `ItemDropped` (포로) → 튀는 아이템, 소품 `GroundPatch` → Assets/Textures/<sprite>.png 의 파란 픽셀 발자국을 `ApplyGroundPatch` 로 활성 지면에서 공기로 만든다 (발자국 밖은 불변, 바닥을 지우는 마스크는 가드로 거부; PropSpecs §2.3).
 - 게이트: `IsDefeated` / `IsDestroyFinished` 는 라우팅 표로 해당 월드에 묻는다 (적은 EnemyWorld, 소품은 PropWorld, 아이템은 사라짐, 충돌체는 제거됨).
-- 끝 장면: `endStage` → `MISSION COMPLETE` (ScreenFlow, 세계 정지) → `title`. 플레이어 게임 오버 → `GAME OVER` (ScreenFlow) → `title`. Stage0 의 `stage_end` 섹션은 `playerInvincible` 뒤 `endStage` 만 한다 (배너/암전은 ScreenFlow 가 맡는다).
-- 디버그: F1 켜진 상태에서 F5 = 다음 섹션으로 워프, F6 = 마지막 구간(`stage_end`)으로 워프 (`--warp-boss` 도 같다) (GameContext::debugWarp). `--warp N` 명령행 옵션은 시작 시 F5 를 N 번 누른 것과 같다 (F1 도 켠다). F1 오버레이에 섹션 id, 열린 게이트, 적/소품/아이템/충돌체/플레이스홀더 개수, 지면 이름이 나온다.
+- 끝 장면: `endStage` → `MISSION COMPLETE` (ScreenFlow, 세계 정지) → `title`. 플레이어 게임 오버 → `GAME OVER` (ScreenFlow) → `title`. Stage0 의 클리어는 `boss_arena` 의 `bigshiee_dead` 게이트 안에서 `playerInvincible` 뒤 `endStage` 로 실행된다 (배너/암전은 ScreenFlow 가 맡는다).
+- 디버그: F1 켜진 상태에서 F5 = 다음 섹션으로 워프, F6 = 마지막 구간(`boss_arena`)으로 워프 (`--warp-boss` 도 같다) (GameContext::debugWarp). `--warp N` 명령행 옵션은 시작 시 F5 를 N 번 누른 것과 같다 (F1 도 켠다). F1 오버레이에 섹션 id, 열린 게이트, 적/소품/아이템/충돌체/플레이스홀더 개수, 지면 이름이 나온다.
 - 한계 / 아직 없는 것:
   - `box_collider` (x 1119, y 350, 137x90, wall) 는 윗면 y 305 이 점프 정점 (약 y 303~312) 과 거의 같아 일반 점프로 넘기 어렵다. 데이터(y 가 중심인지 윗면인지) 또는 물리를 확인할 것.
   - `sendCommand` 는 적에게만 전달한다 (대상 행동의 `onCommand`). 그 밖의 명령은 경고 한 번.

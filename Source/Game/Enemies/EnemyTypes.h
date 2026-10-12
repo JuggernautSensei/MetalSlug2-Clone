@@ -11,43 +11,26 @@
 #include "World/Combat.h"
 #include "World/Physics.h"
 
-namespace slug
-{
-
 inline constexpr uint32_t kEnemyOwnerBase = 2000;
 inline constexpr uint32_t kShieldOwnerBit = 0x40000000u;
 
 inline constexpr uint32_t kEnemyIdMask = 0x00FFFFFFu;
 
-[[nodiscard]] constexpr uint32_t MakePartOwner(
+[[nodiscard]] uint32_t MakePartOwner(
     const uint32_t _enemyId,
-    const uint32_t _partIndex)
-{
-    return (_enemyId & kEnemyIdMask) | ((_partIndex + 1u) << 24);
-}
+    const uint32_t _partIndex);
 
-[[nodiscard]] constexpr int GetPartIndex(
-    const uint32_t _owner)
-{
-    const uint32_t part = (_owner >> 24) & 0x3Fu;
-    return part == 0u ? -1 : static_cast<int>(part) - 1;
-}
+[[nodiscard]] int GetPartIndex(
+    const uint32_t _owner);
 
-[[nodiscard]] constexpr bool IsEnemyOwner(
-    const uint32_t _owner)
-{
-    const uint32_t id = _owner & ~kShieldOwnerBit;
-    return id >= kEnemyOwnerBase && id < kShieldOwnerBit;
-}
+[[nodiscard]] bool IsEnemyOwner(
+    const uint32_t _owner);
 
 struct EnemyHandle
 {
     uint32_t id = 0;
 
-    [[nodiscard]] constexpr bool IsNull() const
-    {
-        return id == 0;
-    }
+    [[nodiscard]] bool IsNull() const;
 
     [[nodiscard]] constexpr bool operator==(const EnemyHandle&) const = default;
 };
@@ -62,6 +45,9 @@ struct SpawnParams
     uint32_t userTag    = 0;
     bool     bActivated = false;
     Aabb     arena      = {};
+    Vec2     climbEnd   = { 0.f, 0.f };   // 계단 병사: arena.max 뒤 마지막 오름 목표 (y 가 0 이면 없음)
+    Vec2     roofSpan   = { 0.f, 0.f };   // 계단 병사: 지붕 발판의 월드 x 범위 [최소, 최대] (최대 <= 최소 이면 없음)
+    int      z          = kDefaultZ;   // 인스턴스 depth (kDefaultZ: 종류 기본값)
 };
 
 enum class eEnemyEventKind : uint8_t
@@ -122,6 +108,7 @@ struct Enemy
     eEnemyBehavior behavior   = eEnemyBehavior::Soldier;
     eEnemyLife     life       = eEnemyLife::Alive;
     int            delayTicks = 0;
+    int            z          = 0;   // 인스턴스 depth (기본 = GetEnemyDefaultZ)
 
     Body   body      = {};
     Vec2   prevFeet  = { 0.f, 0.f };
@@ -140,7 +127,7 @@ struct Enemy
     int            aux3         = 0;
     int            aux4         = 0;
     bool           bTransformed = false;
-    ARRAY<int, 24> ext          = {};
+    ARRAY<int, 48> ext          = {};
     Aabb           arena        = {};
 
     int  clip      = -1;   // EnemyDef::clips 인덱스
@@ -154,6 +141,7 @@ struct Enemy
     int      meleeTicksLeft = 0;
     int      meleeWeapon    = -1;
     Vec2     meleeOrigin    = { 0.f, 0.f };
+    uint32_t boxHitId       = kNoHitId;   // 정의 hitboxes 공격 상자용
 
     int      deathPhase  = 0;
     int      deathTicks  = 0;   // 최종 클립 시작 후 경과 틱 (깜빡임/제거 타이머)
@@ -167,47 +155,28 @@ struct Enemy
     int      aiVariant = 0;
     uint32_t userTag   = 0;
     String   drop      = {};
+    Vec2     climbEnd  = { 0.f, 0.f };
+    Vec2     roofSpan  = { 0.f, 0.f };
+    bool     bLeap     = false;   // 계단 끝 전방 점프 중: 공중에서 수평 속도를 유지한다 (착지하면 꺼짐)
 
-    [[nodiscard]] Vec2 GetFeet() const
-    {
-        return body.position;
-    }
+    [[nodiscard]] Vec2 GetFeet() const;
 
-    [[nodiscard]] bool IsAlive() const
-    {
-        return life == eEnemyLife::Alive;
-    }
+    [[nodiscard]] bool IsAlive() const;
 };
 
 // 전체 스프라이트 플래시 양 (0 또는 1). 렌더 경로에서 SpriteDrawOptions::flashAmount 로 전달한다.
-[[nodiscard]] inline float HitFlashAmount(
-    const Enemy& _e)
-{
-    return IsHitFlashOn(_e.hitFlashTicks) ? 1.f : 0.f;
-}
+[[nodiscard]] float HitFlashAmount(
+    const Enemy& _e);
 
 // 부위 플래시 양 (_part 가 범위 밖이면 0).
-[[nodiscard]] inline float PartFlashAmount(
+[[nodiscard]] float PartFlashAmount(
     const Enemy& _e,
-    const int    _part)
-{
-    if (_part < 0 || _part >= kEnemyFlashPartCount)
-    {
-        return 0.f;
-    }
-    return IsHitFlashOn(_e.partFlashTicks[static_cast<size_t>(_part)]) ? 1.f : 0.f;
-}
+    const int    _part);
 
 // 부위 피격 플래시 시작/갱신 (_part 범위 밖이면 무시). 부위 파괴 시 호출자가 0 으로 되돌린다.
-inline void TriggerPartHitFlash(
+void TriggerPartHitFlash(
     Enemy&    _e,
-    const int _part)
-{
-    if (_part >= 0 && _part < kEnemyFlashPartCount)
-    {
-        (void)StartHitFlash(_e.partFlashTicks[static_cast<size_t>(_part)]);
-    }
-}
+    const int _part);
 
 struct EnemyFilter
 {
@@ -215,5 +184,3 @@ struct EnemyFilter
     uint32_t userTag      = 0;    // 0: 전부
     bool     bHostileOnly = true;
 };
-
-}   // namespace slug

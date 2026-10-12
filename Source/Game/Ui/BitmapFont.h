@@ -8,9 +8,6 @@
 #include "Render/SpriteBatch.h"
 #include "Render/SpriteLibrary.h"
 
-namespace slug
-{
-
 enum class eTextAlign : uint8_t
 {
     Left,
@@ -40,41 +37,19 @@ struct TextStyle
     int        letterSpacing = 0;   // 글자 사이 추가 간격 (px, 배율 무관)
 };
 
-namespace fontmap
-{
-    inline constexpr int kGlyphSize    = 16;
-    inline constexpr int kGlyphColumns = 35;
-    inline constexpr int kGlyphRows    = 2;   // 0 = 굵게, 1 = 가늘게
+inline constexpr int kGlyphSize    = 16;
+inline constexpr int kGlyphColumns = 35;
+inline constexpr int kGlyphRows    = 2;   // 0 = 굵게, 1 = 가늘게
 
-    [[nodiscard]] constexpr int GetGlyphIndex(
-        const char _ch)
-    {
-        const char c = (_ch >= 'a' && _ch <= 'z') ? static_cast<char>(_ch - 'a' + 'A') : _ch;
-        if (c >= 'A' && c <= 'Z')
-        {
-            return c - 'A';
-        }
-        if (c >= '1' && c <= '9')
-        {
-            return 26 + (c - '1');
-        }
-        if (c == '0')
-        {
-            return 'O' - 'A';
-        }
-        return -1;
-    }
+[[nodiscard]] int GetGlyphIndex(
+    const char _ch);
 
-    [[nodiscard]] constexpr bool HasGlyph(const char _ch) { return GetGlyphIndex(_ch) >= 0; }
+[[nodiscard]] bool HasGlyph(const char _ch);
 
-    [[nodiscard]] constexpr int MeasureChars(
-        const int _charCount,
-        const int _scale,
-        const int _letterSpacing = 0)
-    {
-        return _charCount <= 0 ? 0 : _charCount * kGlyphSize * _scale + (_charCount - 1) * _letterSpacing;
-    }
-}   // namespace fontmap
+[[nodiscard]] int MeasureChars(
+    const int _charCount,
+    const int _scale,
+    const int _letterSpacing = 0);
 
 struct GlyphQuad
 {
@@ -138,5 +113,3 @@ private:
     AnimFrame                                                m_timeStrip = {};
     bool                                                     m_bReady    = false;
 };
-
-}   // namespace slug

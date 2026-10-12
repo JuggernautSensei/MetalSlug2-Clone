@@ -9,9 +9,6 @@
 struct yyjson_doc;
 struct yyjson_val;
 
-namespace slug
-{
-
 enum class eJsonLoadOption : uint32_t
 {
     None          = 0,
@@ -123,5 +120,3 @@ private:
 
     yyjson_doc* m_pDoc = nullptr;
 };
-
-}   // namespace slug

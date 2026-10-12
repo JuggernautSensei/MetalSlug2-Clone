@@ -5,8 +5,16 @@
 #include "Base/Math.h"
 #include "Base/Types.h"
 
-namespace slug
+// 잔해 한 틱 진행: 중력 + 이동만 한다 (지면 판정 없음, 화면 밖으로 나가면 Update 가 제거).
+static void StepDebris_(
+    Effect&     _effect,
+    const float _dt)
 {
+    _effect.ageSec += _dt;
+    _effect.velocity.y += kDebrisGravity * _dt;
+    _effect.position.x += _effect.velocity.x * _dt;
+    _effect.position.y += _effect.velocity.y * _dt;
+}
 
 void EffectList::Clear()
 {
@@ -17,7 +25,8 @@ void EffectList::Spawn(
     const AnimationLibrary& _library,
     const StringView        _clipName,
     const Vec2              _position,
-    const int               _layer)
+    const int               _depth,
+    const bool              _bFlipX)
 {
     const AnimId id = _library.Find(_clipName);
     if (id.IsNull())
@@ -28,19 +37,50 @@ void EffectList::Spawn(
     Effect effect;
     effect.anim.Play(id, true);
     effect.position = _position;
-    effect.layer    = _layer;
+    effect.depth    = _depth;
+    effect.bFlipX   = _bFlipX;
     m_effects.push_back(effect);
+}
+
+void EffectList::SpawnDebris(
+    const AnimationLibrary& _library,
+    const StringView        _clipName,
+    const Vec2              _position,
+    const int               _depth,
+    const Vec2              _velocity,
+    const bool              _bFlipX)
+{
+    const size_t before = m_effects.size();
+    Spawn(_library, _clipName, _position, _depth, _bFlipX);
+    if (m_effects.size() > before)
+    {
+        Effect& effect  = m_effects.back();
+        effect.bDebris  = true;
+        effect.velocity = _velocity;
+    }
 }
 
 void EffectList::Update(
     const AnimationLibrary& _library,
-    const float             _dt)
+    const float             _dt,
+    const float             _cullBelowY)
 {
     for (Effect& effect: m_effects)
     {
+        if (effect.bDebris)
+        {
+            StepDebris_(effect, _dt);
+        }
         effect.anim.Update(_library, _dt);
     }
-    std::erase_if(m_effects, [](const Effect& _e) { return _e.anim.IsFinished(); });
+    const float cullY = _cullBelowY + kDebrisCullBelowMargin;
+    std::erase_if(m_effects, [cullY](const Effect& _e) {
+        if (_e.bDebris)
+        {
+            return _e.ageSec >= kDebrisLifeSec || _e.position.y > cullY;
+        }
+        return _e.anim.IsFinished();
+    });
 }
 
 void EffectList::Submit(
@@ -51,7 +91,9 @@ void EffectList::Submit(
     {
         if (const AnimFrame* pFrame = effect.anim.GetFrameData(_library))
         {
-            _sprites.Submit(effect.layer, 0, *pFrame, effect.position);
+            SpriteDrawOptions options;
+            options.bFlipX = effect.bFlipX;
+            _sprites.Submit(effect.depth, 0, *pFrame, effect.position, options);
         }
     }
 }
@@ -61,4 +103,7 @@ size_t EffectList::GetCount() const
     return m_effects.size();
 }
 
-}   // namespace slug
+Span<const Effect> EffectList::GetEffects() const
+{
+    return m_effects;
+}

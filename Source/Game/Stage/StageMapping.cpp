@@ -6,50 +6,47 @@
 #include "Base/Math.h"
 #include "Base/Types.h"
 
+#pragma warning(disable : 4505)
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-namespace slug
+[[nodiscard]] static Vec2 ReadVec2_(
+    const ParamValue& _value,
+    const Vec2        _default)
 {
-
-namespace
-{
-    [[nodiscard]] Vec2 ReadVec2_(
-        const ParamValue& _value,
-        const Vec2        _default)
+    if (!_value.IsArray() || _value.GetSize() < 2)
     {
-        if (!_value.IsArray() || _value.GetSize() < 2)
-        {
-            return _default;
-        }
-        return { _value.At(0).AsFloat(), _value.At(1).AsFloat() };
+        return _default;
     }
+    return { _value.At(0).AsFloat(), _value.At(1).AsFloat() };
+}
 
-    [[nodiscard]] PropBoxOverride ReadBox_(
-        const ParamValue& _value)
+[[nodiscard]] static PropBoxOverride ReadBox_(
+    const ParamValue& _value)
+{
+    PropBoxOverride box = {};
+    if (!_value.IsObject())
     {
-        PropBoxOverride box = {};
-        if (!_value.IsObject())
-        {
-            return box;
-        }
-        if (const ParamValue* pSize = _value.Find("size"))
-        {
-            box.size = ReadVec2_(*pSize, box.size);
-        }
-        if (const ParamValue* pOffset = _value.Find("offset"))
-        {
-            box.offset = ReadVec2_(*pOffset, box.offset);
-        }
         return box;
     }
-}   // namespace
+    if (const ParamValue* pSize = _value.Find("size"))
+    {
+        box.size = ReadVec2_(*pSize, box.size);
+    }
+    if (const ParamValue* pOffset = _value.Find("offset"))
+    {
+        box.offset = ReadVec2_(*pOffset, box.offset);
+    }
+    return box;
+}
 
 PropSpawnParams MakePropSpawnParams(
-    const ParamValue* const _pParams)
+    const ParamValue* const _pParams,
+    const int               _z)
 {
     PropSpawnParams out = {};
+    out.z               = _z;
     if (!_pParams || !_pParams->IsObject())
     {
         return out;
@@ -101,7 +98,7 @@ Aabb MakeColliderBox(
     return Aabb::FromCenterSize(_request.position, { w, h });
 }
 
-std::optional<GroundMap> LoadGroundPatchMask(
+std::optional<GroundMap> LoadGroundMask(
     const FilePath& _pngPath)
 {
     std::ifstream file { _pngPath, std::ios::binary | std::ios::ate };
@@ -150,4 +147,3 @@ Vec2 ItemFeetFromCenter(
 {
     return { _center.x, _center.y + 16.f };
 }
-}   // namespace slug

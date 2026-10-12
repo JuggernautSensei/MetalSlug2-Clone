@@ -1,6 +1,6 @@
 # EnemyDefs JSON 스키마 (제안)
 
-`Assets/Tuning/EnemyDefs.json` — 모든 적/소품/NPC/투사체/아이템을 같은 형식의 `def` 로 기술한다. 행동 수치는 데이터, 행동 *종류*(이동 방식, 사격 방식)만 코드 프리미티브. 사양 근거는 `EnemySpecs.md`. 핫리로드 대상.
+`Assets/Defs/Enemies.json` — 모든 적/소품/NPC/투사체/아이템을 같은 형식의 `def` 로 기술한다. 행동 수치는 데이터, 행동 *종류*(이동 방식, 사격 방식)만 코드 프리미티브. 사양 근거는 `EnemySpecs.md`. 핫리로드 대상.
 
 ## 1. 최상위
 ```json
@@ -23,6 +23,7 @@
 | `human` | bool | `true` 면 사람 대상: 칼(Melee)을 받는다. 생략/`false` 면 차량·보스·건물처럼 칼이 닿지 않고 총/폭탄만 받는다 (`human_base` 가 `true`를 상속) |
 | `hp` | int | 새 HP. `ttk`(초) 병기 시 `hp = ttk × globals.dpsRef` 로 빌드 시 검증/경고 |
 | `hitFlash` | bool | 피격 시 전체 스프라이트 주황 블링크 (on 6틱 / off 6틱, 피격 후 12틱 유지). 생략 시 `hp >= 20` 이면 `true` (차량·보스), 그 아래(보병 등)는 `false`. 부위별 플래시는 코드에서 `TriggerPartHitFlash` 로 건다 |
+| `artFacing` | enum? | `"left"` / `"right"`: 그림이 한쪽뿐인 def. 적의 facing 이 반대면 본체/overlay 스프라이트를 `bFlipX` 로 반전해 그린다 (발 원점 기준). 생략 시 반전 없음 (`{side}` 클립 이름으로만 방향을 바꾼다) |
 | `ttk` | float? | 권총 지속 dps 기준 목표 처치 시간(문서용·검증용) |
 | `score` | int | 처치 점수 |
 | `body` | Box | 이동/지형 충돌 박스 |
@@ -259,9 +260,15 @@ Projectile def (`kind:"projectile"`):
 - 사격 패턴 `bullets: 4→3(즉시) → 2(2 s 휴지) → 1(즉시) → 0(2 s 휴지) → ReAim` 이 `ShotHold` 의 3 전이로 그대로 재현된다(`bullets` 카운터 `dec` 는 `Shot` 종료 시).
 - FixedJeep 은 `"extends":"jeep"` + `ai` 교체(`Idle absDx<=450`, `Detect 2 s`, 이동 상태 제거). 헬기/전차 등은 `kind:"flyer"`/`"turret"` 로 동일 스키마.
 
-## 9. 검증 규칙(빌드 시 `Baker`/로더가 확인)
+## 9. 검증 규칙(로더가 확인)
 1. 모든 `anim` 값은 `anim.json`/`sprites.json` 에 존재(접미 `{side}` 는 `_Left`/`_Right` 둘 다 확인, `sideRule` 에 따라).
 2. `events.frame` < 클립 프레임 수. 루프 클립에 `animEnd` 전이 금지.
 3. `choose` 가중치 합 > 0, 모든 `to` 가 존재하는 상태/매크로.
 4. `hp`/`ttk`: `|hp − ttk×dpsRef| > 5%` 면 경고.
 5. 발 기준 박스: 스폰 시 `body` 하단이 지면에 닿아야 한다(`originMode:"feet"`).
+
+## 차량 params / FX 추가 키
+
+- FX (`muzzleFx`, `death.fx[]`) `"mirror": true`: 발사자(facing)가 오른쪽일 때 FX 그림을 좌우 반전한다 (`EnemyFxRequest.bFlipX`, `Effect.bFlipX`). 위치 오프셋은 기존대로 facing 으로 미러된다. 생략 시 반전 없음.
+- jeep params `firstWaitSec`: 조준 후 첫 로켓 전 대기 (기본 0 = 없음). 화면 밖에서 활성화된 지프는 대기 없이 들어온 쪽 가장자리로 달려간다.
+- btank: 방향 전환 (Turn 상태, `turnHysteresisPx`/`turnWaitSec`/`turnSec`/`reAimSec`) 은 제거됨. 원작대로 좌향 고정 (facing -1, 반전 그리기 없음). `artFacing`/`mirror` 는 다른 def 용 엔진 기능으로 남아 있다.

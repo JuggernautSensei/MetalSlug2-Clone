@@ -9,16 +9,40 @@
     <ClCompile Include="..\..\Test\AnimationTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Test\AnimEditorTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Test\GroundEditorTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Test\InstanceZTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Test\PartDepthTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Test\StageEditorTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Test\HitboxCreateTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Test\MotionEditorTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Test\AnimIntegrityTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Test\AudioTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Test\BakerSheetTest.cpp">
+    <ClCompile Include="..\..\Test\BigShieeTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Test\BakerTest.cpp">
+    <ClCompile Include="..\..\Test\BusDataTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Test\BusTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Test\CameraTest.cpp">
@@ -27,7 +51,13 @@
     <ClCompile Include="..\..\Test\CombatTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Test\AsyncLoadTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Test\CoreTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Test\DataMigrationATest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Test\DecorWorldTest.cpp">
@@ -43,6 +73,9 @@
       <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Test\GroundMapTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Test\HeliTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Test\Main.cpp">
@@ -100,6 +133,9 @@
       <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Test\UiTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Test\GravityTraitTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Test\VehicleBehaviorTest.cpp">

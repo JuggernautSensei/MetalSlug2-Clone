@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
-  "name": "mymetalslug2",
+  "name": "metalslug2-clone",
   "version-string": "0.1.0",
   "description": "Metal Slug style 2D action game",
   "builtin-baseline": "e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb",
@@ -9,6 +9,7 @@
     "yyjson",
     "stb",
     "miniaudio",
-    "gtest"
+    "gtest",
+    { "name": "imgui", "features": [ "docking-experimental", "sdl3-binding", "sdl3-renderer-binding" ] }
   ]
 }

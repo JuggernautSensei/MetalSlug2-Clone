@@ -5,9 +5,6 @@
 #include "World/Geometry.h"
 #include "World/GroundMap.h"
 
-namespace slug
-{
-
 struct Platform
 {
     Aabb box     = {};
@@ -44,16 +41,10 @@ struct Body
     bool bGrounded        = false;
     int  dropThroughSteps = 0;   // > 0 이면 남은 틱 동안 원웨이를 무시한다
 
-    [[nodiscard]] Aabb GetBox() const
-    {
-        return Aabb::FromBottomCenter(position, size);
-    }
+    [[nodiscard]] Aabb GetBox() const;
 
     void RequestDropThrough(
-        const int _steps = PhysicsTuning {}.dropThroughSteps)
-    {
-        dropThroughSteps = _steps;
-    }
+        const int _steps = PhysicsTuning {}.dropThroughSteps);
 };
 
 struct MoveResult
@@ -79,5 +70,3 @@ public:
 
     static bool SnapToGround(Body& _body, const PhysicsWorld& _world, float _maxDist);
 };
-
-}   // namespace slug

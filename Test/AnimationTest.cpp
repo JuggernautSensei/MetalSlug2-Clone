@@ -7,11 +7,8 @@
 #include "Render/Animation.h"
 #include "World/Constants.h"
 
-using namespace slug;
 
-namespace
-{
-[[nodiscard]] AnimClip MakeClip_(
+[[nodiscard]] static AnimClip MakeClip_(
     const char* _name,
     const int   _frameCount,
     const float _frameDuration,
@@ -56,7 +53,7 @@ constexpr const char* kSampleJson = R"({
         }
     })";
 
-[[nodiscard]] int ExpectedLoopFrame_(
+[[nodiscard]] static int ExpectedLoopFrame_(
     const int64_t _ticks,
     const int64_t _durationUnits,
     const int     _frameCount)
@@ -64,11 +61,10 @@ constexpr const char* kSampleJson = R"({
     const int64_t frame = (_ticks * (kAnimTimeUnitsPerSec / 60)) / _durationUnits;
     return static_cast<int>(frame % _frameCount);
 }
-}   // namespace
 
-TEST(AnimationLibrary, ParsesBakedJsonWithFramesAndPivots)
+TEST(AnimationLibrary, ParsesJsonWithFramesAndPivots)
 {
-    const slug::Result<AnimationLibrary> result = AnimationLibrary::LoadFromJson(kSampleJson);
+    const Result<AnimationLibrary> result = AnimationLibrary::LoadFromJson(kSampleJson);
     ASSERT_TRUE(result.HasValue());
     const AnimationLibrary& lib = result.GetValue();
     EXPECT_EQ(lib.GetClipCount(), 2u);
@@ -99,7 +95,7 @@ TEST(AnimationLibrary, ParsesBakedJsonWithFramesAndPivots)
 
 TEST(AnimationLibrary, FindIsStableAndNullForUnknownNames)
 {
-    const slug::Result<AnimationLibrary> result = AnimationLibrary::LoadFromJson(kSampleJson);
+    const Result<AnimationLibrary> result = AnimationLibrary::LoadFromJson(kSampleJson);
     ASSERT_TRUE(result.HasValue());
     const AnimationLibrary& lib = result.GetValue();
 
@@ -107,14 +103,14 @@ TEST(AnimationLibrary, FindIsStableAndNullForUnknownNames)
     EXPECT_NE(lib.Find("Player_Dead"), lib.Find("Player_Stand_Idle_Lower_Right"));
     EXPECT_TRUE(lib.Find("Nope").IsNull());
     EXPECT_EQ(lib.FindClip("Nope"), nullptr);
-    EXPECT_EQ(lib.GetOrNull(slug::kNullHandle), nullptr);
+    EXPECT_EQ(lib.GetOrNull(kNullHandle), nullptr);
     EXPECT_FALSE(lib.IsValid(AnimId { 99, 0 }));
 }
 
 TEST(AnimationLibrary, IdsFollowFileOrderSoLoadsAreDeterministic)
 {
-    const slug::Result<AnimationLibrary> a = AnimationLibrary::LoadFromJson(kSampleJson);
-    const slug::Result<AnimationLibrary> b = AnimationLibrary::LoadFromJson(kSampleJson);
+    const Result<AnimationLibrary> a = AnimationLibrary::LoadFromJson(kSampleJson);
+    const Result<AnimationLibrary> b = AnimationLibrary::LoadFromJson(kSampleJson);
     ASSERT_TRUE(a.HasValue() && b.HasValue());
     EXPECT_EQ(a->Find("Player_Stand_Idle_Lower_Right").GetIndex(), 0u);
     EXPECT_EQ(a->Find("Player_Dead").GetIndex(), 1u);
@@ -137,7 +133,7 @@ TEST(AnimationLibrary, RejectsMalformedData)
 TEST(AnimationLibrary, ClampsOutOfRangeLoopStart)
 {
     const char*                          pJson = R"({"animations":{"A":{"loop":true,"loopStart":3,"frameDuration":0.1,"frames":[{"atlas":0,"x":0,"y":0,"w":1,"h":1,"pivotX":0,"pivotY":0}]}}})";
-    const slug::Result<AnimationLibrary> lib   = AnimationLibrary::LoadFromJson(pJson);
+    const Result<AnimationLibrary> lib   = AnimationLibrary::LoadFromJson(pJson);
     ASSERT_TRUE(lib.HasValue());
     EXPECT_EQ(lib->FindClip("A")->loopStart, 0);
 }
@@ -145,7 +141,7 @@ TEST(AnimationLibrary, ClampsOutOfRangeLoopStart)
 TEST(AnimationLibrary, AcceptsIntegerValuedFloatsAndFloatValuedIntegers)
 {
     const char*                          pJson = R"({"animations":{"A":{"frameDuration":1,"frames":[{"atlas":0,"x":1.0,"y":2,"w":3,"h":4,"pivotX":5,"pivotY":6}]}}})";
-    const slug::Result<AnimationLibrary> lib   = AnimationLibrary::LoadFromJson(pJson);
+    const Result<AnimationLibrary> lib   = AnimationLibrary::LoadFromJson(pJson);
     ASSERT_TRUE(lib.HasValue());
     EXPECT_FLOAT_EQ(lib->FindClip("A")->frameDuration, 1.f);
     EXPECT_EQ(lib->FindClip("A")->frames[0].x, 1);

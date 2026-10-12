@@ -2,25 +2,19 @@
 
 #include "Base/Math.h"
 
-namespace slug
-{
+constexpr float kInvSqrt2 = 0.70710678f;
 
-namespace
+[[nodiscard]] static const MuzzleSet& GetSet_(
+    const ePose         _pose,
+    const MuzzleTuning& _muzzle)
 {
-    constexpr float kInvSqrt2 = 0.70710678f;
-
-    [[nodiscard]] const MuzzleSet& GetSet_(
-        const ePose         _pose,
-        const MuzzleTuning& _muzzle)
+    switch (_pose)
     {
-        switch (_pose)
-        {
-            case ePose::Crouch: return _muzzle.crouch;
-            case ePose::Air: return _muzzle.air;
-            default: return _muzzle.stand;
-        }
+        case ePose::Crouch: return _muzzle.crouch;
+        case ePose::Air: return _muzzle.air;
+        default: return _muzzle.stand;
     }
-}   // namespace
+}
 
 Aabb MakeKnifeTriggerBox(
     const Vec2         _feet,
@@ -100,4 +94,9 @@ Aabb MakePlayerHurtboxBox(
     return Aabb::FromBottomCenter(_feet, size);
 }
 
-}   // namespace slug
+bool IsKnifeSwingActive(
+    const int          _ticksSinceStart,
+    const KnifeTuning& _knife)
+{
+    return _ticksSinceStart >= _knife.activeFirstTick && _ticksSinceStart <= _knife.activeLastTick;
+}

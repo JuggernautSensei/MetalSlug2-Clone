@@ -9,9 +9,6 @@
 #include "Base/Result.h"
 #include "Base/Types.h"
 
-namespace slug
-{
-
 Renderer::~Renderer()
 {
     Shutdown();
@@ -137,6 +134,11 @@ SDL_Renderer* Renderer::GetNative() const
     return m_pRenderer;
 }
 
+SDL_Window* Renderer::GetWindow() const
+{
+    return m_pWindow;
+}
+
 bool Renderer::IsInitialized() const
 {
     return m_pRenderer != nullptr;
@@ -162,5 +164,3 @@ Result<void> Renderer::SaveScreenshotBmp(
     }
     return Error { kOK };
 }
-
-}   // namespace slug

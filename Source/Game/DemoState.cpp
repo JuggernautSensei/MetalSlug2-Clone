@@ -2,9 +2,6 @@
 
 #include "Base/Math.h"
 
-namespace slug
-{
-
 void DemoState::Tick(
     GameContext&,
     const InputHistory& _input)
@@ -53,4 +50,14 @@ bool DemoState::IsFinished() const
     return m_bFinished;
 }
 
-}   // namespace slug
+Vec2 DemoState::GetPosition() const
+{
+    return m_pos;
+}
+
+uint64_t DemoState::DebugHash() const
+{
+    const uint64_t x = static_cast<uint64_t>(static_cast<int64_t>(m_pos.x * 16.f));
+    const uint64_t y = static_cast<uint64_t>(static_cast<int64_t>(m_pos.y * 16.f));
+    return x * 1099511628211ull ^ y;
+}

@@ -1,10 +1,7 @@
-#pragma once
+﻿#pragma once
 #include <compare>
 #include <cstdint>
 #include <functional>
-
-namespace slug
-{
 
 struct NullHandleType
 {
@@ -12,7 +9,6 @@ struct NullHandleType
 
 inline constexpr NullHandleType kNullHandle {};
 
-// 24bit 인덱스 + 8bit 토큰을 한 값에 담는 강타입 핸들. 기본값은 null.
 template<typename T>
 class Handle
 {
@@ -52,13 +48,11 @@ private:
     uint32_t m_value = kNullValue;
 };
 
-}   // namespace slug
-
 template<typename T>
-struct std::hash<slug::Handle<T>>
+struct std::hash<Handle<T>>
 {
     size_t operator()(
-        const slug::Handle<T> _handle) const
+        const Handle<T> _handle) const
     {
         return std::hash<uint32_t>()(_handle.GetValue());
     }

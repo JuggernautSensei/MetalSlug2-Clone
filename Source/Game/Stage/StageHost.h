@@ -6,9 +6,6 @@
 #include "Base/Types.h"
 #include "Game/Stage/StageData.h"
 
-namespace slug
-{
-
 using SpawnId                            = uint32_t;
 inline constexpr SpawnId kInvalidSpawnId = 0;
 
@@ -29,6 +26,8 @@ struct SpawnRequest
     float         halfHeight   = 0.f;
 
     int    facing = 0;   // -1 왼쪽, +1 오른쪽, 0 = def 기본
+    bool   bHasZ  = false;
+    int    z      = 0;   // bHasZ 일 때 인스턴스 depth
     bool   bHasHp = false;
     int    hp     = 0;   // bHasHp 일 때 def 기본 HP 를 덮어쓴다
     String drop   = {};
@@ -88,10 +87,10 @@ public:
     virtual void ShowBanner(const String& _text, float _seconds) = 0;   // _text 의 '\n' 은 줄바꿈
     virtual void FadeTo(eFadeTarget _target, float _seconds)     = 0;
     virtual void PlayBgm(StringView _name, bool _bLoop)          = 0;
+    virtual void ChangeBgm(StringView _name, bool _bLoop, float _fadeOutSec) = 0;
+    virtual void PlaySfx(StringView _name)                                   = 0;
 
     virtual void EndStage(StringView _nextState) = 0;
 
-    virtual void OnSectionEntered(int _index, StringView _id) {}
+    virtual void OnSectionEntered(int _index, StringView _id);
 };
-
-}   // namespace slug

@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "atlasPages": [ "Atlas/atlas_000.png", "Atlas/atlas_001.png", "Atlas/atlas_002.png", "Atlas/atlas_003.png", "Atlas/atlas_004.png", "Atlas/atlas_005.png", "Atlas/atlas_006.png", "Atlas/atlas_007.png", "Atlas/atlas_008.png", "Atlas/atlas_009.png", "Atlas/atlas_010.png", "Atlas/atlas_011.png", "Atlas/atlas_012.png", "Atlas/atlas_013.png", "Atlas/atlas_014.png", "Atlas/atlas_015.png" ],
+  "animations": "anim.json",
+  "sprites": "sprites.json",
+  "sounds": "sounds.json",
+  "ground": { "Stage0_0": "Ground/Stage0_0.png", "Stage0_1": "Ground/Stage0_1.png" }
+}

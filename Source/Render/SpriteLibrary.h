@@ -3,9 +3,6 @@
 #include "Base/Types.h"
 #include "Render/Animation.h"
 
-namespace slug
-{
-
 struct SpriteInfo
 {
     String    name        = {};
@@ -24,7 +21,7 @@ public:
 
     void                            AddSprite(SpriteInfo _info);
     [[nodiscard]] const SpriteInfo* Find(StringView _name) const;
-    [[nodiscard]] size_t            GetCount() const { return m_sprites.size(); }
+    [[nodiscard]] size_t            GetCount() const;
 
 private:
     using NameMap = HashMap<String, uint32_t>;
@@ -32,5 +29,3 @@ private:
     Vector<SpriteInfo> m_sprites     = {};
     NameMap            m_nameToIndex = {};
 };
-
-}   // namespace slug

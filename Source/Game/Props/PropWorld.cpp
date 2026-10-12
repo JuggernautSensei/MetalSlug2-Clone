@@ -4,52 +4,41 @@
 #include <cmath>
 #include <cstring>
 
+#include "Base/Log.h"
 #include "Base/Math.h"
 #include "Base/Random.h"
 #include "Base/Types.h"
 #include "Game/Ui/BitmapFont.h"
 
-namespace slug
+template<typename RngT>
+[[nodiscard]] static float RandRange_(
+    RngT&       _rng,
+    const float _lo,
+    const float _hi)
 {
+    const double unit = static_cast<double>(_rng.Generate()) / 18'446'744'073'709'551'615.0;
+    return _lo + static_cast<float>(unit) * (_hi - _lo);
+}
 
-namespace
+constexpr float kHitFlashSec = 0.5f;   // 피격 연출 최대 길이 (Hit 클립이 없으면 연출 없음)
+
+constexpr size_t kVisualCount = static_cast<size_t>(ePropVisual::Count);
+
+[[nodiscard]] static uint64_t MixHash_(
+    const uint64_t _h,
+    const uint64_t _v)
 {
-    template<typename RngT>
-    [[nodiscard]] float RandRange_(
-        RngT&       _rng,
-        const float _lo,
-        const float _hi)
-    {
-        const double unit = static_cast<double>(_rng.Generate()) / 18'446'744'073'709'551'615.0;
-        return _lo + static_cast<float>(unit) * (_hi - _lo);
-    }
+    return (_h ^ _v) * 1'099'511'628'211ull;
+}
 
-    constexpr float kDebrisGravity = 1000.f;
-    constexpr float kDebrisLifeSec = 5.f;
-    constexpr float kDebrisVxMin   = -250.f;
-    constexpr float kDebrisVxMax   = 249.f;
-    constexpr float kDebrisVyMin   = -800.f;
-    constexpr float kDebrisVyMax   = -301.f;
-    constexpr float kHitFlashSec   = 0.5f;   // 피격 연출 최대 길이 (Hit 클립이 없으면 연출 없음)
-
-    constexpr size_t kVisualCount = static_cast<size_t>(ePropVisual::Count);
-
-    [[nodiscard]] uint64_t MixHash_(
-        const uint64_t _h,
-        const uint64_t _v)
-    {
-        return (_h ^ _v) * 1'099'511'628'211ull;
-    }
-
-    [[nodiscard]] uint64_t MixFloat_(
-        const uint64_t _h,
-        const float    _f)
-    {
-        uint32_t bits = 0;
-        std::memcpy(&bits, &_f, sizeof(bits));
-        return MixHash_(_h, bits);
-    }
-}   // namespace
+[[nodiscard]] static uint64_t MixFloat_(
+    const uint64_t _h,
+    const float    _f)
+{
+    uint32_t bits = 0;
+    std::memcpy(&bits, &_f, sizeof(bits));
+    return MixHash_(_h, bits);
+}
 
 PropWorld::PropWorld(
     const PropDefLibrary* _pLibrary,
@@ -195,8 +184,11 @@ PropHandle PropWorld::SpawnByIndex(
     inst.id              = m_nextId++;
     inst.defIndex        = _defIndex;
     inst.pos             = _center;
-    inst.bFront          = def.bFront;
+    inst.depth           = _params.z != kDefaultZ ? _params.z : def.depth;
+    inst.bFront          = def.depth >= kPropDepthFront;
     inst.cullMargin      = def.cullMargin;
+    inst.sortOffsetY     = def.sortOffsetY;
+    inst.bSortByX        = def.bSortByX;
     inst.bExplodeOnDeath = _params.bExplodeOnDeath;
 
     const PropVariant* pVar = nullptr;
@@ -263,9 +255,10 @@ PropHandle PropWorld::SpawnByIndex(
 uint32_t PropWorld::SpawnItem(
     const StringView _name,
     const Vec2       _feet,
-    const bool       _bBounce)
+    const bool       _bBounce,
+    const int        _z)
 {
-    return m_items.Spawn(_name, _feet, _bBounce);
+    return m_items.Spawn(_name, _feet, _bBounce, _z);
 }
 
 bool PropWorld::PartActive_(
@@ -384,6 +377,7 @@ void PropWorld::Destroy_(
     destroyed.defIndex = _inst.defIndex;
     destroyed.pos      = _center;
     m_events.push_back(destroyed);
+    EventLogFormat("prop.destroyed", "\"def\":\"{}\",\"x\":{:.1f},\"y\":{:.1f}", _def.name, _center.x, _center.y);
 
     Detonate_(_def.onDestroy, _center);
     QueueDrops_(_def, _center);
@@ -427,7 +421,7 @@ void PropWorld::Detonate_(
                 p.x += RollFloat_(-e.spread, e.spread);
                 p.y += RollFloat_(-e.spread, e.spread);
             }
-            m_pendingFx.push_back(PropFxRequest { e.clip, p, kPropEffectLayer });
+            m_pendingFx.push_back(PropFxRequest { e.clip, p, kPropEffectDepth });
         }
     }
     for (int i = 0; i < _burst.debris.count; ++i)
@@ -541,9 +535,9 @@ void PropWorld::Tick(
     {
         for (const PropFxRequest& fx: m_pendingFx)
         {
-            m_effects.Spawn(*_ctx.pAnims, fx.clip, fx.pos, fx.layer);
+            m_effects.Spawn(*_ctx.pAnims, fx.clip, fx.pos, fx.depth);
         }
-        m_effects.Update(*_ctx.pAnims, dt);
+        m_effects.Update(*_ctx.pAnims, dt, _ctx.cameraBottom);
     }
     m_pendingFx.clear();
 
@@ -564,7 +558,7 @@ void PropWorld::Tick(
         }
     }
     m_debris.erase(
-        std::remove_if(m_debris.begin(), m_debris.end(), [&](const PropDebrisPiece& _p) { return _p.ageSec >= kDebrisLifeSec || _p.pos.x < _ctx.cameraLeft - 50.f; }),
+        std::remove_if(m_debris.begin(), m_debris.end(), [&](const PropDebrisPiece& _p) { return _p.ageSec >= kDebrisLifeSec || _p.pos.y > _ctx.cameraBottom + kDebrisCullBelowMargin; }),
         m_debris.end());
 
     for (PropInstance& inst: m_props)
@@ -633,6 +627,12 @@ void PropWorld::Tick(
     {
         if (!inst.bRemove && inst.pos.x < _ctx.cameraLeft - inst.cullMargin)
         {
+            // 폭이 큰 소품 (집) 은 앵커가 멀어져도 일부가 화면에 남을 수 있다: 스프라이트가 화면 왼쪽 밖으로 완전히 나간 뒤에만 지운다
+            Aabb bounds = {};
+            if (GetVisualBounds(inst, _ctx.pAnims, bounds) && bounds.max.x >= _ctx.cameraLeft)
+            {
+                continue;
+            }
             inst.bRemove = true;
             PropEvent ev;
             ev.kind     = ePropEventKind::Culled;
@@ -662,12 +662,12 @@ void PropWorld::Tick(
         m_props.end());
 
     const PhysicsWorld world { _ctx.pGround, GetPlatforms(), GetWalls() };
-    m_items.Tick(world, dt, _ctx.cameraLeft, _ctx.pAnims);
+    m_items.Tick(world, dt, _ctx.cameraLeft, _ctx.pAnims, _ctx.pItemTuning);
     for (const ItemFxRequest& fx: m_items.TakeFx())
     {
         if (_ctx.pAnims != nullptr)
         {
-            m_effects.Spawn(*_ctx.pAnims, fx.clip, fx.pos, kPropEffectLayer);
+            m_effects.Spawn(*_ctx.pAnims, fx.clip, fx.pos, kPropEffectDepth + fx.zOffset);
         }
     }
 
@@ -703,6 +703,70 @@ void PropWorld::RebuildCollision_()
     }
 }
 
+int PropWorld::SortKey(
+    const PropInstance& _inst)
+{
+    if (_inst.bSortByX)
+    {
+        // 건물: 작은 x (먼저 나오는 건물) 일수록 키가 커서 앞에 그려진다. 동률은 y 로 정한다.
+        return -static_cast<int>(_inst.pos.x) * kBuildingDepthXScale + static_cast<int>(_inst.pos.y);
+    }
+    return static_cast<int>(_inst.pos.y + _inst.sortOffsetY);
+}
+
+[[nodiscard]] static bool ResolveFrame_(
+    const PropInstance&     _inst,
+    const AnimationLibrary* _pAnims,
+    const SpriteLibrary*    _pSprites,
+    AnimFrame&              _out)
+{
+    const PropVisual& pv = _inst.visuals[static_cast<size_t>(_inst.visual)];
+    if (pv.ref == eVisualRef::Sprite)
+    {
+        const SpriteInfo* pSprite = _pSprites != nullptr ? _pSprites->Find(pv.name) : nullptr;
+        if (pSprite == nullptr)
+        {
+            return false;
+        }
+        _out = pSprite->frame;
+    }
+    else if (pv.ref == eVisualRef::Anim)
+    {
+        const AnimFrame* pFrame = _pAnims != nullptr ? _inst.anim.GetFrameData(*_pAnims) : nullptr;
+        if (pFrame == nullptr)
+        {
+            return false;
+        }
+        _out = *pFrame;
+    }
+    else
+    {
+        return false;
+    }
+    return !_out.IsEmpty();
+}
+
+bool PropWorld::GetVisualBounds(
+    const PropInstance&     _inst,
+    const AnimationLibrary* _pAnims,
+    Aabb&                   _out) const
+{
+    AnimFrame frame = {};
+    if (!ResolveFrame_(_inst, _pAnims, m_pSprites, frame))
+    {
+        return false;
+    }
+    const Vec2 topLeft = { _inst.pos.x - static_cast<float>(frame.pivotX), _inst.pos.y - static_cast<float>(frame.pivotY) };
+    _out               = Aabb::FromMinSize(topLeft, { static_cast<float>(frame.w), static_cast<float>(frame.h) });
+    return true;
+}
+
+void PropWorld::SetSpriteLibrary(
+    const SpriteLibrary* _pSprites)
+{
+    m_pSprites = _pSprites;
+}
+
 void PropWorld::Submit(
     SpriteBatch&            _sprites,
     const AnimationLibrary& _anims,
@@ -715,35 +779,12 @@ void PropWorld::Submit(
         {
             continue;
         }
-        const PropVisual& pv    = inst.visuals[static_cast<size_t>(inst.visual)];
-        AnimFrame         frame = {};
-        if (pv.ref == eVisualRef::Sprite)
-        {
-            const SpriteInfo* pSprite = _spriteLib.Find(pv.name);
-            if (pSprite == nullptr)
-            {
-                continue;
-            }
-            frame = pSprite->frame;
-        }
-        else if (pv.ref == eVisualRef::Anim)
-        {
-            const AnimFrame* pFrame = inst.anim.GetFrameData(_anims);
-            if (pFrame == nullptr)
-            {
-                continue;
-            }
-            frame = *pFrame;
-        }
-        else
+        AnimFrame frame = {};
+        if (!ResolveFrame_(inst, &_anims, &_spriteLib, frame))
         {
             continue;
         }
-        if (frame.IsEmpty())
-        {
-            continue;
-        }
-        _sprites.Submit(inst.bFront ? kPropLayerFront : kPropLayerBack, static_cast<int>(inst.pos.y), frame, inst.pos);
+        _sprites.Submit(inst.depth, SortKey(inst), frame, inst.pos);
     }
 
     for (const PropDebrisPiece& piece: m_debris)
@@ -751,7 +792,7 @@ void PropWorld::Submit(
         const AnimFrame* pFrame = piece.anim.GetFrameData(_anims);
         if (pFrame != nullptr && !pFrame->IsEmpty())
         {
-            _sprites.Submit(kPropDebrisLayer, static_cast<int>(piece.pos.y), *pFrame, piece.pos);
+            _sprites.Submit(kPropDebrisDepth, static_cast<int>(piece.pos.y), *pFrame, piece.pos);
         }
     }
     m_effects.Submit(_anims, _sprites);
@@ -918,5 +959,3 @@ const DecorWorld& PropWorld::GetDecor() const
 {
     return m_decor;
 }
-
-}   // namespace slug

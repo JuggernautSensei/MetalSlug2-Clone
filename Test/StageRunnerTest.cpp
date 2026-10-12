@@ -11,12 +11,8 @@
 #include "Base/Random.h"
 #include "StageTestUtil.h"
 
-using namespace slug;
-using namespace slugtest;
 
-namespace
-{
-[[nodiscard]] std::string OneSection_(
+[[nodiscard]] static std::string OneSection_(
     const std::string& _actions,
     const std::string& _camera = R"J({"initialBounds":[0,0,4000,448]})J")
 {
@@ -26,7 +22,7 @@ namespace
 constexpr const char* kTallBounds = R"J({"initialBounds":[0,0,4000,1000]})J";
 
 // (x == 100 에만 바닥 352 가 있는) 플레이어 시작 바닥 질의
-[[nodiscard]] std::optional<float> PlayerStartGround_(
+[[nodiscard]] static std::optional<float> PlayerStartGround_(
     const float _x,
     const float)
 {
@@ -34,7 +30,7 @@ constexpr const char* kTallBounds = R"J({"initialBounds":[0,0,4000,1000]})J";
 }
 
 // x < 1000 이고 fromY <= 300 일 때만 바닥 300 이 있는 질의 (그 밖은 바닥 없음)
-[[nodiscard]] std::optional<float> SnapGround_(
+[[nodiscard]] static std::optional<float> SnapGround_(
     const float _x,
     const float _fromY)
 {
@@ -46,7 +42,7 @@ constexpr const char* kTallBounds = R"J({"initialBounds":[0,0,4000,1000]})J";
 }
 
 // 시드를 바꿔 웨이브를 70틱 돌린 뒤 스폰된 x 좌표 목록
-[[nodiscard]] std::vector<float> CollectWaveXs_(
+[[nodiscard]] static std::vector<float> CollectWaveXs_(
     const std::string& _json,
     const uint64_t     _seed)
 {
@@ -60,7 +56,6 @@ constexpr const char* kTallBounds = R"J({"initialBounds":[0,0,4000,1000]})J";
     }
     return xs;
 }
-}   // namespace
 
 TEST(StageRunnerBegin, AppliesInitialGroundBackdropAndBgm)
 {
@@ -282,7 +277,7 @@ TEST(StageRunnerWave, RandomDxIsSeededInRangeAndFixedDxDoesNotDrawRng)
     RunnerFixture fixed { OneSection_(R"J([{"type":"spawnWave","entries":[
         {"delay":1.0,"kind":"enemy","def":"e","camera":{"ax":"left","dx":123,"ay":"top","dy":0}}]}])J") };
     fixed.StepAt(5.f, 70);
-    slug::RngMt19937 fresh { uint64_t { 1 } };
+    RngMt19937 fresh { uint64_t { 1 } };
     EXPECT_EQ(fixed.rng.Generate(), fresh.Generate());
 }
 
@@ -395,14 +390,11 @@ TEST(StageRunnerSpawn, ParamsPointerAndLayerArePassedThrough)
     EXPECT_FLOAT_EQ(request.pParams->GetVec2("velocity").x, 70.f);
 }
 
-namespace
-{
-const char* kBossGate = R"J([
+static const char* kBossGate = R"J([
     {"type":"spawn","kind":"enemy","def":"boss","id":"boss","x":1,"y":1},
     {"type":"gate","id":"g","waitFor":["boss"],"actions":[
         {"type":"banner","text":"now","seconds":1},
         {"type":"banner","text":"later","seconds":1,"delay":0.5}]}])J";
-}
 
 TEST(StageRunnerGate, RunsActionsWhenTargetIsDefeatedWithDelaysRelativeToThatTick)
 {
@@ -596,6 +588,27 @@ TEST(StageRunnerFlow, EndStageDefaultsToTitle)
     EXPECT_EQ(fx.host.endNext, "title");
 }
 
+TEST(StageRunnerActions, PlayBgmWithFadeOutSecCallsChangeBgm)
+{
+    RunnerFixture fx { OneSection_(R"J([
+        {"type":"playBgm","name":"Boss_BGM","fadeOutSec":2.0},
+        {"type":"playBgm","name":"Plain_BGM"}])J") };
+    fx.StepAt(5.f);
+    EXPECT_NE(fx.host.FindEvent("bgmChange:Boss_BGM:loop:2.0"), nullptr);
+    EXPECT_EQ(fx.host.CountEvents("bgmChange:Plain_BGM"), 0);
+    EXPECT_NE(fx.host.FindEvent("bgm:Plain_BGM:loop"), nullptr);
+}
+
+TEST(StageRunnerActions, BannerWithSfxPlaysTheSoundOnceAndPlainBannerIsSilent)
+{
+    RunnerFixture fx { OneSection_(R"J([
+        {"type":"banner","text":"MISSION 4","seconds":2.5,"sfx":"Sfx_Mission4Start"},
+        {"type":"banner","text":"QUIET","seconds":1}])J") };
+    fx.StepAt(5.f);
+    EXPECT_EQ(fx.host.CountEvents("sfx:Sfx_Mission4Start"), 1);
+    EXPECT_EQ(fx.host.CountEvents("sfx:"), 1);
+}
+
 TEST(StageRunnerActions, SimpleActionsAreForwardedToTheHost)
 {
     RunnerFixture fx { OneSection_(R"J([
@@ -623,8 +636,6 @@ TEST(StageRunnerActions, SimpleActionsAreForwardedToTheHost)
     EXPECT_FLOAT_EQ(target.y, 378.f - kStageCameraTargetLift - 140.f);
 }
 
-namespace
-{
 constexpr const char* kWarpStage = R"J([
     {"id":"s0","triggerX":0,"actions":[
         {"type":"spawn","kind":"enemy","def":"e0","x":1,"y":1},
@@ -642,7 +653,6 @@ constexpr const char* kWarpStage = R"J([
         {"type":"banner","text":"S1","seconds":1}]},
     {"id":"boss","triggerX":200,"actions":[
         {"type":"banner","text":"BOSS","seconds":1}]}])J";
-}
 
 TEST(StageRunnerWarp, SilentRunsOnlyWhenAlwaysOrSilentActions)
 {
@@ -723,10 +733,8 @@ TEST(StageRunnerWarp, WarpClearsPendingWavesGatesAndNonPermanentLocks)
     EXPECT_EQ(fx.host.CountEvents("banner:pending"), 0);
 }
 
-namespace
-{
 // 보스 워프 후 30틱 진행한 뒤의 (러너 해시, 스폰 수)
-[[nodiscard]] std::pair<uint64_t, size_t> WarpToBossAndHash_()
+[[nodiscard]] static std::pair<uint64_t, size_t> WarpToBossAndHash_()
 {
     RunnerFixture fx { WrapStage(kWarpStage) };
     EXPECT_TRUE(fx.runner.WarpToBoss());
@@ -735,7 +743,7 @@ namespace
 }
 
 // 적이 아닌(항상 생성되는) 스폰의 def 이름 목록
-[[nodiscard]] std::vector<std::string> NonEnemyDefs_(
+[[nodiscard]] static std::vector<std::string> NonEnemyDefs_(
     const FakeStageHost& _host)
 {
     std::vector<std::string> defs;
@@ -748,7 +756,6 @@ namespace
     }
     return defs;
 }
-}   // namespace
 
 TEST(StageRunnerWarp, WarpingTwiceFromTheSameStartIsDeterministic)
 {

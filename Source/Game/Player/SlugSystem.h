@@ -8,9 +8,6 @@
 #include "World/Combat.h"
 #include "World/Physics.h"
 
-namespace slug
-{
-
 // 호스트(SandboxState / StageState)가 가진 SV-001 묶음. 탑승/하차를 PlayerController 와 이어 주고,
 // 적 이동을 막는 벽, 피격 이벤트 전달, HUD 값을 제공한다.
 class SlugSystem
@@ -50,5 +47,3 @@ private:
     Vector<SlugVehicle> m_slugs        = {};
     int                m_riddenIndex   = -1;
 };
-
-}   // namespace slug

@@ -5,16 +5,17 @@
 #include "Game/Player/SlugClips.h"
 #include "Game/Player/SlugVehicle.h"
 
-namespace slug
-{
-
 class AnimationLibrary;
 class SpriteBatch;
 
 // 렌더 레이어 (SandboxState/StageState 의 기존 레이어: 적 10, 플레이어 20, 총알 30, 폭탄 31)
-inline constexpr int kSlugBodyLayer  = 19;
-inline constexpr int kSlugFxLayer    = 32;
-inline constexpr int kSlugArrowLayer = 34;
+inline constexpr int kSlugBodyDepth  = 19;
+inline constexpr int kSlugFxDepth    = 32;
+inline constexpr int kSlugArrowDepth = 34;
+
+// 부품 오프셋: SlugVehicle z (몸통/발칸) 기준 FX, 화살표의 상대 depth
+inline constexpr int kSlugFxZOffset    = kSlugFxDepth - kSlugBodyDepth;
+inline constexpr int kSlugArrowZOffset = kSlugArrowDepth - kSlugBodyDepth;
 
 [[nodiscard]] eSlugClip GetSlugBodyClip(eSlugPose _pose);
 
@@ -33,13 +34,11 @@ bool SubmitSlugBullet(
     const AnimationLibrary& _anims,
     const Bullet&           _bullet,
     Vec2                    _position,
-    int                     _layer);
+    int                     _depth);
 
 bool SubmitSlugShell(
     SpriteBatch&            _sprites,
     const AnimationLibrary& _anims,
     const Bomb&             _bomb,
     Vec2                    _position,
-    int                     _layer);
-
-}   // namespace slug
+    int                     _depth);

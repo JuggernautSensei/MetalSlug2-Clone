@@ -8,9 +8,6 @@
 #include "Render/Animation.h"
 #include "Render/SpriteBatch.h"
 
-namespace slug
-{
-
 enum class eRigClip : uint8_t
 {
     Idle,
@@ -86,7 +83,7 @@ public:
     void Submit(
         SpriteBatch& _sprites,
         Vec2         _feet,
-        int          _layer,
+        int          _depth,
         int          _sortKey,
         RGBA         _tint = { 255, 255, 255, 255 }) const;
 
@@ -134,5 +131,3 @@ private:
     uint32_t m_lastStateSerial   = 0;
     float    m_originLift        = 0.f;
 };
-
-}   // namespace slug

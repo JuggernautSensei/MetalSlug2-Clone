@@ -1,8 +1,5 @@
 #include "Game/Player/PlayerInput.h"
 
-namespace slug
-{
-
 void PlayerInputBuffer::Reset()
 {
     m_ticksSincePress.fill(kNever);
@@ -58,5 +55,3 @@ PlayerCommand PlayerInputBuffer::Read(
     command.bBombBuffered = IsBuffered(eAction::Bomb, _move.bombBufferTicks);
     return command;
 }
-
-}   // namespace slug

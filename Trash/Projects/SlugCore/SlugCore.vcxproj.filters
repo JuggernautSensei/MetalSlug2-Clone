@@ -1,0 +1,525 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{E7D7D890-1B2B-A1D4-A805-0C19554B1BA8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Audio">
+      <UniqueIdentifier>{51B15261-D735-23BA-4481-793417FC5CEA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Base">
+      <UniqueIdentifier>{6FADE07E-CC6E-EDD2-A5C6-AE48435F5040}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Core">
+      <UniqueIdentifier>{6EEB70CE-B878-7E2D-E31D-35EBF4809409}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Game">
+      <UniqueIdentifier>{58A03606-2382-E617-41DE-99AE32396B46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Game\Combat">
+      <UniqueIdentifier>{D714062C-8179-36F4-EF14-CBC5A1E97405}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Game\Enemies">
+      <UniqueIdentifier>{C7AFA837-71E9-60FC-112D-8A69C75CA7F4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Game\Player">
+      <UniqueIdentifier>{ADE2B68E-456A-A3C7-EBFE-5396B4E88E90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Game\Props">
+      <UniqueIdentifier>{C9E8DB36-7A5F-E054-709B-B5C1974D2607}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Game\Sandbox">
+      <UniqueIdentifier>{251E24CB-B188-3282-152F-B6FD76EF8959}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Game\Stage">
+      <UniqueIdentifier>{270ACD9C-E4CD-0B4A-DA2F-2B2F211F3C84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Game\Ui">
+      <UniqueIdentifier>{1DE0EDFD-22D3-3EC6-BAAF-2B888F10C960}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Render">
+      <UniqueIdentifier>{07697172-6676-8D41-14FE-8DA3CA5418CF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\World">
+      <UniqueIdentifier>{3E8012B5-9293-E4F6-1C52-11AA0DE0EE88}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Source\Audio\AudioSystem.cpp">
+      <Filter>Source\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Audio\SoundBank.cpp">
+      <Filter>Source\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Audio\StbVorbisImpl.cpp">
+      <Filter>Source\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Base\Assert.cpp">
+      <Filter>Source\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Base\Error.cpp">
+      <Filter>Source\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Base\Json.cpp">
+      <Filter>Source\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Base\Log.cpp">
+      <Filter>Source\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Core\App.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Core\AssetPath.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Core\Input.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Core\Replay.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Core\Tuning.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Combat\BulletVisual.cpp">
+      <Filter>Source\Game\Combat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Combat\CombatSystem.cpp">
+      <Filter>Source\Game\Combat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Combat\Projectiles.cpp">
+      <Filter>Source\Game\Combat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\DemoState.cpp">
+      <Filter>Source\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\BigShiee.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\Bus.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\Bzk.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\EnemyBehaviors.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\EnemyCommon.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\EnemyDef.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\EnemyDefLoader.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\EnemyWorld.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\FlyingBzk.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\Hang.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\Heli.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\HeliBomb.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\Pow.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\Shielder.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\Soldier.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\VehicleBTank.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\VehicleCommon.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\VehicleJeep.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\VehicleMissleTank.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Enemies\VehicleSarubia.cpp">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\PlayerController.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\PlayerHitboxes.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\PlayerInput.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\PlayerRig.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\PlayerWeapons.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\SlugClips.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\SlugDef.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\SlugRender.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\SlugSystem.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\SlugVehicle.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Props\DecorWorld.cpp">
+      <Filter>Source\Game\Props</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Props\ItemWorld.cpp">
+      <Filter>Source\Game\Props</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Props\PropDef.cpp">
+      <Filter>Source\Game\Props</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Props\PropWorld.cpp">
+      <Filter>Source\Game\Props</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Sandbox\Effects.cpp">
+      <Filter>Source\Game\Sandbox</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Sandbox\TrainingTargets.cpp">
+      <Filter>Source\Game\Sandbox</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\SandboxState.cpp">
+      <Filter>Source\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\SimRunner.cpp">
+      <Filter>Source\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Stage\StageData.cpp">
+      <Filter>Source\Game\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Stage\StageMapping.cpp">
+      <Filter>Source\Game\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Stage\StageRunner.cpp">
+      <Filter>Source\Game\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Stage\StageState.cpp">
+      <Filter>Source\Game\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Stage\StageWorldHost.cpp">
+      <Filter>Source\Game\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\StateFactory.cpp">
+      <Filter>Source\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\TitleState.cpp">
+      <Filter>Source\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Ui\Banner.cpp">
+      <Filter>Source\Game\Ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Ui\BitmapFont.cpp">
+      <Filter>Source\Game\Ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Ui\FadeController.cpp">
+      <Filter>Source\Game\Ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Ui\Hud.cpp">
+      <Filter>Source\Game\Ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Ui\ScreenFlow.cpp">
+      <Filter>Source\Game\Ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Ui\UiDemoState.cpp">
+      <Filter>Source\Game\Ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Ui\UiSystem.cpp">
+      <Filter>Source\Game\Ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Render\Animation.cpp">
+      <Filter>Source\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Render\Camera.cpp">
+      <Filter>Source\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Render\Renderer.cpp">
+      <Filter>Source\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Render\SpriteBatch.cpp">
+      <Filter>Source\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Render\SpriteLibrary.cpp">
+      <Filter>Source\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\World\Combat.cpp">
+      <Filter>Source\World</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\World\GroundMap.cpp">
+      <Filter>Source\World</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\World\Physics.cpp">
+      <Filter>Source\World</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source\Audio\AudioMath.h">
+      <Filter>Source\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Audio\AudioSink.h">
+      <Filter>Source\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Audio\AudioSystem.h">
+      <Filter>Source\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Audio\SoundBank.h">
+      <Filter>Source\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Audio\VoiceAllocator.h">
+      <Filter>Source\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Base\Assert.h">
+      <Filter>Source\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Base\Error.h">
+      <Filter>Source\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Base\Handle.h">
+      <Filter>Source\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Base\Json.h">
+      <Filter>Source\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Base\Log.h">
+      <Filter>Source\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Base\Math.h">
+      <Filter>Source\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Base\Random.h">
+      <Filter>Source\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Base\Result.h">
+      <Filter>Source\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Base\RGBA.h">
+      <Filter>Source\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Base\Types.h">
+      <Filter>Source\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Core\App.h">
+      <Filter>Source\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Core\AssetPath.h">
+      <Filter>Source\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Core\FixedStep.h">
+      <Filter>Source\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Core\Input.h">
+      <Filter>Source\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Core\Replay.h">
+      <Filter>Source\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Core\Tuning.h">
+      <Filter>Source\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Combat\BulletVisual.h">
+      <Filter>Source\Game\Combat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Combat\CombatSystem.h">
+      <Filter>Source\Game\Combat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Combat\HitFlash.h">
+      <Filter>Source\Game\Combat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Combat\Projectiles.h">
+      <Filter>Source\Game\Combat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\DemoState.h">
+      <Filter>Source\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\BigShiee.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\BigShieeCfg.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\EnemyBehaviors.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\EnemyCommon.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\EnemyDef.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\EnemyDefParse.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\EnemyTypes.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\EnemyWorld.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\VehicleCommon.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\GameState.h">
+      <Filter>Source\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\PlayerController.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\PlayerHitboxes.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\PlayerInput.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\PlayerRig.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\PlayerTypes.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\PlayerWeapons.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\SlugClips.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\SlugDef.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\SlugRender.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\SlugSystem.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\SlugTypes.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Player\SlugVehicle.h">
+      <Filter>Source\Game\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Props\DecorWorld.h">
+      <Filter>Source\Game\Props</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Props\ItemWorld.h">
+      <Filter>Source\Game\Props</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Props\PropDef.h">
+      <Filter>Source\Game\Props</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Props\PropWorld.h">
+      <Filter>Source\Game\Props</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Sandbox\Effects.h">
+      <Filter>Source\Game\Sandbox</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Sandbox\TrainingTargets.h">
+      <Filter>Source\Game\Sandbox</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\SandboxState.h">
+      <Filter>Source\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\SimRunner.h">
+      <Filter>Source\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Stage\StageData.h">
+      <Filter>Source\Game\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Stage\StageHost.h">
+      <Filter>Source\Game\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Stage\StageMapping.h">
+      <Filter>Source\Game\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Stage\StageRunner.h">
+      <Filter>Source\Game\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Stage\StageState.h">
+      <Filter>Source\Game\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Stage\StageWorldHost.h">
+      <Filter>Source\Game\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\StateFactory.h">
+      <Filter>Source\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\TitleState.h">
+      <Filter>Source\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Ui\Banner.h">
+      <Filter>Source\Game\Ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Ui\BitmapFont.h">
+      <Filter>Source\Game\Ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Ui\FadeController.h">
+      <Filter>Source\Game\Ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Ui\Hud.h">
+      <Filter>Source\Game\Ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Ui\ScreenFlow.h">
+      <Filter>Source\Game\Ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Ui\UiDemoState.h">
+      <Filter>Source\Game\Ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Ui\UiLayout.h">
+      <Filter>Source\Game\Ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Ui\UiSystem.h">
+      <Filter>Source\Game\Ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Render\Animation.h">
+      <Filter>Source\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Render\Camera.h">
+      <Filter>Source\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Render\Renderer.h">
+      <Filter>Source\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Render\SpriteBatch.h">
+      <Filter>Source\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Render\SpriteLibrary.h">
+      <Filter>Source\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\World\Combat.h">
+      <Filter>Source\World</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\World\Constants.h">
+      <Filter>Source\World</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\World\Geometry.h">
+      <Filter>Source\World</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\World\GroundMap.h">
+      <Filter>Source\World</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\World\Physics.h">
+      <Filter>Source\World</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

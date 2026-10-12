@@ -12,54 +12,44 @@
 #include "Game/Player/PlayerWeapons.h"
 #include "Game/Ui/BitmapFont.h"
 
-namespace slug
+template<typename RngT>
+[[nodiscard]] static float RandRange_(
+    RngT&       _rng,
+    const float _lo,
+    const float _hi)
 {
+    const double unit = static_cast<double>(_rng.Generate()) / 18'446'744'073'709'551'615.0;
+    return _lo + static_cast<float>(unit) * (_hi - _lo);
+}
 
-namespace
+static void MixValue_(
+    uint64_t&      _hash,
+    const uint64_t _value)
 {
-    template<typename RngT>
-    [[nodiscard]] float RandRange_(
-        RngT&       _rng,
-        const float _lo,
-        const float _hi)
-    {
-        const double unit = static_cast<double>(_rng.Generate()) / 18'446'744'073'709'551'615.0;
-        return _lo + static_cast<float>(unit) * (_hi - _lo);
-    }
+    _hash ^= _value;
+    _hash *= 1'099'511'628'211ull;
+}
 
-    void MixValue_(
-        uint64_t&      _hash,
-        const uint64_t _value)
-    {
-        _hash ^= _value;
-        _hash *= 1'099'511'628'211ull;
-    }
+static void MixFloat_(
+    uint64_t&   _hash,
+    const float _value)
+{
+    uint32_t bits = 0;
+    static_assert(sizeof(bits) == sizeof(_value));
+    std::memcpy(&bits, &_value, sizeof(bits));
+    MixValue_(_hash, bits);
+}
 
-    void MixFloat_(
-        uint64_t&   _hash,
-        const float _value)
-    {
-        uint32_t bits = 0;
-        static_assert(sizeof(bits) == sizeof(_value));
-        std::memcpy(&bits, &_value, sizeof(bits));
-        MixValue_(_hash, bits);
-    }
+constexpr float kSupplyBounceVy   = -400.f;
+constexpr float kRollMinVx        = -50.f;
+constexpr float kRollMaxVx        = 49.f;
 
-    constexpr int   kItemRenderLayer  = 34;
-    constexpr int   kPopupRenderLayer = 46;
-    constexpr float kSupplyBounceVy   = -400.f;
-    constexpr float kSupplyBounceVx   = 75.f;
-    constexpr float kRollMinVx        = -50.f;
-    constexpr float kRollMaxVx        = 49.f;
-    constexpr float kRollStopSpeed    = 1.f;
-
-    [[nodiscard]] Vec2 BottomAlignedOrigin_(
-        const AnimFrame& _frame,
-        const Vec2       _feet)
-    {
-        return { _feet.x, _feet.y - static_cast<float>(_frame.h - _frame.pivotY) };
-    }
-}   // namespace
+[[nodiscard]] static Vec2 BottomAlignedOrigin_(
+    const AnimFrame& _frame,
+    const Vec2       _feet)
+{
+    return { _feet.x, _feet.y - static_cast<float>(_frame.h - _frame.pivotY) };
+}
 
 ItemWorld::ItemWorld(
     const PropDefLibrary* _pLibrary,
@@ -89,7 +79,8 @@ void ItemWorld::ClearAll()
 uint32_t ItemWorld::Spawn(
     const StringView _name,
     const Vec2       _feet,
-    const bool       _bBounce)
+    const bool       _bBounce,
+    const int        _z)
 {
     if (m_pLibrary == nullptr)
     {
@@ -113,6 +104,7 @@ uint32_t ItemWorld::Spawn(
     item.id                = m_nextId++;
     item.defIndex          = defIndex;
     item.feet              = _feet;
+    item.z                 = _z;
     item.bBounce           = _bBounce;
     item.body.position     = _feet;
     item.body.size         = { 32.f, 32.f };
@@ -124,8 +116,10 @@ uint32_t ItemWorld::Spawn(
     }
     if (_bBounce)
     {
+        // 수직으로만 튀어 오른다 (x 튐 없음). 기존 방향 난수는 RNG 흐름 유지를 위해 한 번 소비만 한다.
+        (void)m_rng.Generate();
         item.body.velocity.y = kSupplyBounceVy;
-        item.body.velocity.x = (m_rng.Generate() & 1u) ? kSupplyBounceVx : -kSupplyBounceVx;
+        item.body.velocity.x = 0.f;
     }
     m_items.push_back(item);
     return item.id;
@@ -152,8 +146,10 @@ void ItemWorld::Tick(
     const PhysicsWorld&     _world,
     const float             _dt,
     const float             _cameraLeft,
-    const AnimationLibrary* _pAnims)
+    const AnimationLibrary* _pAnims,
+    const ItemTuning*       _pTuning)
 {
+    const ItemTuning tuning = _pTuning != nullptr ? *_pTuning : ItemTuning {};
     for (ScorePopup& popup: m_popups)
     {
         popup.ageSec += _dt;
@@ -184,7 +180,8 @@ void ItemWorld::Tick(
             }
             else
             {
-                item.anim.Update(*_pAnims, _dt);
+                // 굴러가는 아이템의 회전은 속도에 비례 (spinScale), 멈추면 애니도 멈춘다
+                item.anim.Update(*_pAnims, _dt * item.spinScale);
             }
         }
         if (item.bPickedUp)
@@ -201,8 +198,8 @@ void ItemWorld::Tick(
                 item.body.velocity.x = item.rollVx;
                 item.rollVx          = 0.f;
             }
-            item.body.velocity.x -= item.body.velocity.x * _dt;
-            if (std::abs(item.body.velocity.x) < kRollStopSpeed)
+            item.body.velocity.x -= item.body.velocity.x * tuning.rollFrictionPerSec * _dt;
+            if (std::abs(item.body.velocity.x) < tuning.rollStopSpeed)
             {
                 item.body.velocity.x = 0.f;
             }
@@ -213,6 +210,16 @@ void ItemWorld::Tick(
         }
         (void)Physics::Step(item.body, _world, PhysicsTuning {}, _dt);
         item.feet = item.body.position;
+
+        if (def.kind == eItemKind::Score && def.bRoll)
+        {
+            // 공중에서는 일정하게 돈다. 바닥에서는 수평 속도에 비례해 느려지고 정지하면 멈춘다
+            // 착지 직후(굴림 속도 대기 중)에는 대기 중인 굴림 속도로 계산한다
+            const float speedX = item.rollVx != 0.f ? item.rollVx : item.body.velocity.x;
+            item.spinScale     = item.body.bGrounded
+                ? std::clamp(std::abs(speedX) / tuning.rollSpinRefSpeed, 0.f, 1.f)
+                : 1.f;
+        }
     }
 
     m_items.erase(
@@ -231,11 +238,13 @@ void ItemWorld::Tick(
 
 void ItemWorld::SpawnPopup_(
     const Vec2 _pos,
-    const int  _score)
+    const int  _score,
+    const int  _z)
 {
     ScorePopup popup;
     popup.pos   = _pos;
     popup.score = _score;
+    popup.z     = _z;
     m_popups.push_back(popup);
 }
 
@@ -273,16 +282,31 @@ Vector<ItemPickup> ItemWorld::Collect(
 
         if (def.kind == eItemKind::Score)
         {
-            SpawnPopup_(item.feet, def.score);
+            SpawnPopup_(item.feet, def.score, ZShift(item.z, kItemRenderDepth, kPopupRenderDepth));
             item.ageSec = kItemLifetimeSec;
             continue;
         }
         item.bPickedUp = true;
         item.pickupSec = kItemPickupHideSec;
-        m_fx.push_back(ItemFxRequest { String { "Get_Item_Effect" }, item.feet });
+        m_fx.push_back(ItemFxRequest { String { "Get_Item_Effect" }, item.feet, ZDelta(item.z, kItemRenderDepth) });
     }
     m_items.erase(std::remove_if(m_items.begin(), m_items.end(), [](const PropItem& _i) { return !_i.bPickedUp && _i.ageSec >= kItemLifetimeSec; }), m_items.end());
     return out;
+}
+
+bool ItemWorld::SetZ(
+    const uint32_t _id,
+    const int      _z)
+{
+    for (PropItem& item: m_items)
+    {
+        if (item.id == _id)
+        {
+            item.z = _z;
+            return true;
+        }
+    }
+    return false;
 }
 
 Vector<ItemFxRequest> ItemWorld::TakeFx()
@@ -368,7 +392,7 @@ void ItemWorld::Submit(
         {
             continue;
         }
-        _sprites.Submit(kItemRenderLayer, static_cast<int>(item.feet.y), frame, BottomAlignedOrigin_(frame, item.feet));
+        _sprites.Submit(ResolveZ(item.z, kItemRenderDepth), static_cast<int>(item.feet.y), frame, BottomAlignedOrigin_(frame, item.feet));
     }
 
     if (_pFont == nullptr)
@@ -392,7 +416,7 @@ void ItemWorld::Submit(
         int               width = 0;
         for (const char ch: text)
         {
-            const int glyph = fontmap::GetGlyphIndex(ch);
+            const int glyph = GetGlyphIndex(ch);
             if (glyph < 0)
             {
                 continue;
@@ -405,7 +429,7 @@ void ItemWorld::Submit(
         for (const AnimFrame& frame: glyphs)
         {
             const Vec2 origin = { static_cast<float>(cursor + frame.pivotX), popup.pos.y - rise - 32.f + static_cast<float>(frame.pivotY) };
-            _sprites.Submit(kPopupRenderLayer, static_cast<int>(popup.pos.y), frame, origin);
+            _sprites.Submit(ResolveZ(popup.z, kPopupRenderDepth), static_cast<int>(popup.pos.y), frame, origin);
             cursor += frame.w;
         }
     }
@@ -486,5 +510,3 @@ void ApplyItemPickup(
             break;
     }
 }
-
-}   // namespace slug

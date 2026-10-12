@@ -7,9 +7,6 @@
 #include <numbers>
 #include <type_traits>
 
-namespace slug
-{
-
 inline constexpr float kPi      = std::numbers::pi_v<float>;
 inline constexpr float kDeg2Rad = kPi / 180.f;
 inline constexpr float kRad2Deg = 180.f / kPi;
@@ -48,56 +45,56 @@ template<typename T>
 struct Vec2
 {
     constexpr Vec2() = default;
-    constexpr Vec2(const float _x, const float _y)
+    __forceinline constexpr Vec2(const float _x, const float _y)
         : x(_x)
         , y(_y)
     {
     }
-    explicit constexpr Vec2(const float _value)
+    explicit __forceinline constexpr Vec2(const float _value)
         : x(_value)
         , y(_value)
     {
     }
 
-    [[nodiscard]] constexpr Vec2 operator-() const { return Vec2 { -x, -y }; }
-    [[nodiscard]] constexpr Vec2 operator+(const Vec2 _other) const { return Vec2 { x + _other.x, y + _other.y }; }
-    [[nodiscard]] constexpr Vec2 operator-(const Vec2 _other) const { return Vec2 { x - _other.x, y - _other.y }; }
-    [[nodiscard]] constexpr Vec2 operator*(const float _scalar) const { return Vec2 { x * _scalar, y * _scalar }; }
-    [[nodiscard]] constexpr Vec2 operator/(const float _scalar) const { return Vec2 { x / _scalar, y / _scalar }; }
-    [[nodiscard]] constexpr Vec2 operator*(const Vec2 _other) const { return Vec2 { x * _other.x, y * _other.y }; }
-    [[nodiscard]] constexpr Vec2 operator/(const Vec2 _other) const { return Vec2 { x / _other.x, y / _other.y }; }
+    [[nodiscard]] __forceinline constexpr Vec2 operator-() const { return Vec2 { -x, -y }; }
+    [[nodiscard]] __forceinline constexpr Vec2 operator+(const Vec2 _other) const { return Vec2 { x + _other.x, y + _other.y }; }
+    [[nodiscard]] __forceinline constexpr Vec2 operator-(const Vec2 _other) const { return Vec2 { x - _other.x, y - _other.y }; }
+    [[nodiscard]] __forceinline constexpr Vec2 operator*(const float _scalar) const { return Vec2 { x * _scalar, y * _scalar }; }
+    [[nodiscard]] __forceinline constexpr Vec2 operator/(const float _scalar) const { return Vec2 { x / _scalar, y / _scalar }; }
+    [[nodiscard]] __forceinline constexpr Vec2 operator*(const Vec2 _other) const { return Vec2 { x * _other.x, y * _other.y }; }
+    [[nodiscard]] __forceinline constexpr Vec2 operator/(const Vec2 _other) const { return Vec2 { x / _other.x, y / _other.y }; }
 
-    constexpr Vec2& operator+=(const Vec2 _other)
+    __forceinline constexpr Vec2& operator+=(const Vec2 _other)
     {
         x += _other.x;
         y += _other.y;
         return *this;
     }
-    constexpr Vec2& operator-=(const Vec2 _other)
+    __forceinline constexpr Vec2& operator-=(const Vec2 _other)
     {
         x -= _other.x;
         y -= _other.y;
         return *this;
     }
-    constexpr Vec2& operator*=(const float _scalar)
+    __forceinline constexpr Vec2& operator*=(const float _scalar)
     {
         x *= _scalar;
         y *= _scalar;
         return *this;
     }
-    constexpr Vec2& operator/=(const float _scalar)
+    __forceinline constexpr Vec2& operator/=(const float _scalar)
     {
         x /= _scalar;
         y /= _scalar;
         return *this;
     }
-    constexpr Vec2& operator*=(const Vec2 _other)
+    __forceinline constexpr Vec2& operator*=(const Vec2 _other)
     {
         x *= _other.x;
         y *= _other.y;
         return *this;
     }
-    constexpr Vec2& operator/=(const Vec2 _other)
+    __forceinline constexpr Vec2& operator/=(const Vec2 _other)
     {
         x /= _other.x;
         y /= _other.y;
@@ -106,11 +103,11 @@ struct Vec2
 
     [[nodiscard]] constexpr bool operator==(const Vec2& _other) const = default;
 
-    [[nodiscard]] constexpr float&       operator[](const size_t _index) { return _index == 0 ? x : y; }
-    [[nodiscard]] constexpr const float& operator[](const size_t _index) const { return _index == 0 ? x : y; }
+    [[nodiscard]] __forceinline constexpr float&       operator[](const size_t _index) { return _index == 0 ? x : y; }
+    [[nodiscard]] __forceinline constexpr const float& operator[](const size_t _index) const { return _index == 0 ? x : y; }
 
-    [[nodiscard]] constexpr float*       GetPtr() { return &x; }
-    [[nodiscard]] constexpr const float* GetPtr() const { return &x; }
+    [[nodiscard]] __forceinline constexpr float*       GetPtr() { return &x; }
+    [[nodiscard]] __forceinline constexpr const float* GetPtr() const { return &x; }
 
     static const Vec2 kZero;
     static const Vec2 kOne;
@@ -129,5 +126,3 @@ inline constexpr Vec2 Vec2::kRight = { 1.f, 0.f };
 inline constexpr Vec2 Vec2::kUp    = { 0.f, 1.f };
 inline constexpr Vec2 Vec2::kUnitX = { 1.f, 0.f };
 inline constexpr Vec2 Vec2::kUnitY = { 0.f, 1.f };
-
-}   // namespace slug

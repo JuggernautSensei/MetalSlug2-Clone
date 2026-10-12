@@ -1,9 +1,6 @@
 #pragma once
 #include <cstdint>
 
-namespace slug
-{
-
 class FadeController
 {
 public:
@@ -44,5 +41,3 @@ private:
     ePhase m_phase     = ePhase::Clear;
     ePhase m_donePhase = ePhase::Clear;
 };
-
-}   // namespace slug

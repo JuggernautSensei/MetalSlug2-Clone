@@ -4,9 +4,6 @@
 #include "Base/Assert.h"
 #include "Base/Error.h"
 
-namespace slug
-{
-
 template<typename T>
 class Result
 {
@@ -65,22 +62,14 @@ class Result<void>
 {
 public:
     Result() = default;
-    Result(const Error _error)
-        : m_error(_error)
-    {
-    }
-    Result(const eError _error)
-        : m_error(_error)
-    {
-    }
+    Result(const Error _error);
+    Result(const eError _error);
 
-    [[nodiscard]] bool  IsOK() const { return m_error.IsOK(); }
-    [[nodiscard]] bool  HasError() const { return m_error.IsError(); }
-    [[nodiscard]] Error GetError() const { return m_error; }
-    explicit            operator bool() const { return IsOK(); }
+    [[nodiscard]] bool  IsOK() const;
+    [[nodiscard]] bool  HasError() const;
+    [[nodiscard]] Error GetError() const;
+    explicit            operator bool() const;
 
 private:
     Error m_error = {};
 };
-
-}   // namespace slug

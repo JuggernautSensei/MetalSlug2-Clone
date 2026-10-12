@@ -16,8 +16,7 @@
 
 참고로 저장소 자체는 이 규칙들과 반대로 `Callable<void()>`(`jugx/JugX/Callable.h`)·`Delegate<>` 같은 자체 함수 래퍼를 쓰지만, 클론에서는 위 규칙 때문에 "함수 포인터 / 멤버 함수 포인터 / 인터페이스 + virtual" 로 대체한다.
 
-이 프로젝트에는 이미 `Docs/AgentRules.md` 의 "코드 스타일" 절이 있고, 그것은 이 문서와 같은 계열이다. 두 문서가 다르면 `AgentRules.md` 가 프로젝트 전용 결정이다 (특히 "장식 배너 주석 금지" — 7절 참고).
-
+이 문서는 이 저장소의 코딩 규칙 근거다 (특히 "장식 배너 주석 금지" — 7절 참고).
 ---
 
 ## 1. 파일 레이아웃
@@ -58,7 +57,7 @@
 ```
 
 - 헤더 안의 include 는 **최소**. 헤더끼리는 자기가 직접 쓰는 "바로 아래 계층" 헤더만 `"..."` 로 넣고, 표준/타입 별칭은 PCH(`pch.h` → `Typedef.h`)에 기댄다 (`jugx/JugX/Timer.h` 는 include 가 하나도 없다).
-  - **[이 프로젝트에서는 다름]** `Docs/AgentRules.md` 가 "PCH 강제 포함에 기대지 않는다" 고 명시했다. 즉 클론의 헤더는 `#include "Base/Types.h"` 를 직접 쓴다. 저장소의 "헤더 비자기완결" 습관(jugx `CMakeLists.txt` 주석이 인정함)은 따라 하지 않는다.
+  - **[이 프로젝트에서는 다름]** 이 프로젝트는 "PCH 강제 포함에 기대지 않는다". 즉 클론의 헤더는 `#include "Base/Types.h"` 를 직접 쓴다. 저장소의 "헤더 비자기완결" 습관(jugx `CMakeLists.txt` 주석이 인정함)은 따라 하지 않는다.
 - 전방 선언 허용, 파일 상단 `namespace` 밖에 3rd-party 타입을 선언하기도 한다 (`juggfx/JugGfx/ImGuiRenderer.h` 의 `struct ImDrawData;`).
 - 헤더 include 에는 정렬 설정 없음 (`SortIncludes: false`). 사람이 직접 알파벳순 정렬.
 
@@ -342,7 +341,7 @@ void ...
 
 **부동소수 리터럴**은 `0.f`, `1.f`, `1e-3f`, `0.` (뒤에 0 생략 소문자 f) — `1.0f` 가 아님.
 
-**정수 리터럴**: 16진수 대문자 `0xFFFFFFFF`, 큰 수 구분자 `1'000'000` (`AgentRules` 가 따르는 클론 쪽 관례).
+**정수 리터럴**: 16진수 대문자 `0xFFFFFFFF`, 큰 수 구분자 `1'000'000`.
 
 **연산자 간 공백**: `a * b`, `x << 3`, 단항에 공백 없음. 캐스트 뒤 공백 없음 (`static_cast<float>(x)`). `Type* p`, `Type& r` (별은 타입에 붙임), `char** _argv`.
 
@@ -445,7 +444,7 @@ virtual ~Event() = default;
 
 - jugx/juggfx: 표준 `int`, `uint32_t`, `uint64_t`, `uint8_t`, `size_t` 를 그대로 사용. 인덱스·크기는 `size_t`, GPU/비트 필드 용도는 `uint32_t`, 일반 카운트는 `int`.
 - jamengine: `Int32`, `UInt32`, `UInt64`, `SizeT` 별칭. 기본은 `Int32`, 비트마스크에만 `UInt32` `[차이]`.
-- **클론은 `slug` 네임스페이스·`Base/Types.h` 의 정의를 따른다** (표준 이름을 그대로 쓰는 jugx 방식).
+- **클론은 네임스페이스를 쓰지 않는다. `Base/Types.h` 의 정의를 따른다** (표준 이름을 그대로 쓰는 jugx 방식).
 
 ### 4.10 Assert / Log / 에러
 
@@ -695,7 +694,7 @@ while (m_bRunning)
 ```
 
   `[차이]` jamengine 은 `///////` 슬래시 줄 / `// scene graph` 소문자 한 줄 소제목.
-  **[이 프로젝트에서는]** `AgentRules.md` 가 "장식용 배너 주석 금지(필요하면 짧게 한 줄)" 라고 못박았다. 그래서 클론에서는 배너를 최소화하고, 쓸 땐 `// ===` 3줄 블록 대신 `// 섹션명` 한 줄만 쓴다. 저장소와 가장 크게 다른 점이므로 주의.
+  **[이 프로젝트에서는]** 이 프로젝트는 "장식용 배너 주석 금지(필요하면 짧게 한 줄)" 라고 못박았다. 그래서 클론에서는 배너를 최소화하고, 쓸 땐 `// ===` 3줄 블록 대신 `// 섹션명` 한 줄만 쓴다. 저장소와 가장 크게 다른 점이므로 주의.
 - **Doxygen**: 거의 안 씀. jamengine 일부 `/// @brief 설명` 만 (`ILayer.h`). 클론에서는 쓰지 않는다.
 - **TODO**: 형식은 `// TODO 한글 설명` (콜론 없음, 작성자 없음) — `jamengine/JamEngine/DebugDraw.cpp:12  // TODO 배치 렌더링 최적화 건덕지 존재`. FIXME/NOTE 는 쓰지 않음.
 - `/* implicit */` 는 생성자 의도 표기용 주석, `// NOLINT` 는 린트 예외, `// ReSharper disable …` 는 파일 첫 줄.
@@ -741,168 +740,7 @@ while (m_bRunning)
 
 ---
 
-## 10. 클론 코드에 적용한 Before → After
-
-대상: `Source/Game/Enemies/Soldier.cpp` (현재 파일 일부). 이미 네임스페이스(`slug`)·`m_`/`_`/`k` 규칙은 맞지만 **함수 서명이 한 줄에 몰려 있고, `enum eSoldierState : int` 가 unscoped + `k` 값**이라 저장소 스타일과 다르다.
-
-### Before (현재)
-
-```cpp
-namespace slug
-{
-namespace
-{
-    enum eSoldierState : int
-    {
-        kWait,
-        kFall,
-        kLand,
-        kIdle,
-        kMove,
-        kMoveDown,
-        kHJump,
-        kThrow,
-        kSlash,
-        kJumpSlashReady,
-        kJumpSlash,
-        kJumpSlashLand
-    };
-
-    void Go_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, int _state);
-
-    [[nodiscard]] float AbsDx_(const Enemy& _e, const EnemyEnv& _env)
-    {
-        return std::abs(DxToPlayer(_e, _env));
-    }
-
-    void Reposition_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, const int _fallback)
-    {
-        const SoldierCfg& cfg  = _def.soldier;
-        const float       dy   = DyToPlayer(_e, _env);
-        if (_e.bGrounded && _e.bOnOneWay && dy > cfg.dropDy)
-        {
-            Go_(_e, _def, _env, kMoveDown);
-        }
-        else if (_e.bGrounded && dy < -cfg.jumpDy)
-        {
-            Go_(_e, _def, _env, kHJump);
-        }
-        else
-        {
-            Go_(_e, _def, _env, _fallback);
-        }
-    }
-```
-
-### After (JuggernautSensei 스타일)
-
-```cpp
-namespace slug
-{
-
-namespace
-{
-    enum class eSoldierState
-    {
-        Wait,
-        Fall,
-        Land,
-        Idle,
-        Move,
-        MoveDown,
-        HJump,
-        Throw,
-        Slash,
-        JumpSlashReady,
-        JumpSlash,
-        JumpSlashLand
-    };
-
-    void Go_(
-        Enemy&          _e,
-        const EnemyDef& _def,
-        EnemyEnv&       _env,
-        eSoldierState   _state);
-
-    [[nodiscard]] float AbsDx_(
-        const Enemy&    _e,
-        const EnemyEnv& _env)
-    {
-        return std::abs(DxToPlayer(_e, _env));
-    }
-
-    void Reposition_(
-        Enemy&              _e,
-        const EnemyDef&     _def,
-        EnemyEnv&           _env,
-        const eSoldierState _fallback)
-    {
-        const SoldierCfg& cfg = _def.soldier;
-        const float       dy  = DyToPlayer(_e, _env);
-
-        if (_e.bGrounded && _e.bOnOneWay && dy > cfg.dropDy)
-        {
-            Go_(_e, _def, _env, eSoldierState::MoveDown);
-        }
-        else if (_e.bGrounded && dy < -cfg.jumpDy)
-        {
-            Go_(_e, _def, _env, eSoldierState::HJump);
-        }
-        else
-        {
-            Go_(_e, _def, _env, _fallback);
-        }
-    }
-
-}   // namespace
-```
-
-변경 포인트 (모두 위 절의 규칙에서 나온 것):
-- 3.1: 매개변수 세로 정렬, `const` 정렬, 지역 선언 열 정렬(`cfg`/`dy` 의 `=` 를 맞춤 — 여분 공백 제거), 네임스페이스 직후·직전 빈 줄, `}   // namespace`.
-- 2: `enum` → `enum class eSoldierState`, 값은 PascalCase 로 `k` 접두 제거 (`kWait` → `Wait`). 상태를 `int` 로 넘기던 매개변수도 `eSoldierState` 로 강타입화. (연동 코드의 `int` 상태 필드는 `static_cast<int>(…)` 로 변환하거나 필드 타입을 바꾼다 — 이 enum 이 파일 내부 전용이므로 영향이 작다.)
-- 4.5: 값 매개변수 `_state` 도 `const` 로 (정의 쪽). 선언은 생략 가능.
-- 0절 규칙: `auto`/람다/C 배열은 처음부터 사용하지 않았다.
-
-### 보조 예 — 헤더 접근자와 클래스 형태 (`Source/Game/Ui/FadeController.h`)
-
-저장소 스타일이라면 한 줄 접근자를 헤더에 인라인으로 두지 않고 .cpp 로 옮긴다 (비템플릿). 또 닫는 괄호는 `}   // namespace slug`. 접근자 반환형 열 정렬은 `uint8_t` 폭에 맞춘다:
-
-```cpp
-// Before
-[[nodiscard]] float  GetAlpha() const { return m_alpha; }
-[[nodiscard]] bool   IsBusy() const { return m_phase == ePhase::FadingToBlack || m_phase == ePhase::FadingToClear; }
-...
-}                                  // namespace slug 주석 없음
-
-// After
-[[nodiscard]] float   GetAlpha() const;
-[[nodiscard]] ePhase  GetPhase() const;
-[[nodiscard]] uint8_t GetAlpha255() const;
-[[nodiscard]] bool    IsBusy() const;
-[[nodiscard]] bool    IsBlack() const;
-[[nodiscard]] bool    IsClear() const;
-...
-}   // namespace slug
-```
-
-```cpp
-// FadeController.cpp (After)
-float FadeController::GetAlpha() const
-{
-    return m_alpha;
-}
-
-bool FadeController::IsBusy() const
-{
-    return m_phase == ePhase::FadingToBlack || m_phase == ePhase::FadingToClear;
-}
-```
-
-(주의: 클론은 hot path 접근자를 헤더 인라인으로 두는 편이므로 성능 민감 지점은 `constexpr`/인라인 유지가 허용된다. 저장소 규칙은 "기본은 .cpp, 템플릿/constexpr 만 헤더".)
-
----
-
-## 11. 한 장 요약 체크리스트 (코드 작성 직후 자기 점검용)
+## 10. 한 장 요약 체크리스트 (코드 작성 직후 자기 점검용)
 
 - [ ] `auto` / 람다(알고리즘 인자 제외) / C 배열이 없다.
 - [ ] `.cpp` 시작: `pch.h`(있다면) → 자기 헤더 → 빈 줄 → `<std>` → 빈 줄 → `"proj"`.
@@ -911,6 +749,5 @@ bool FadeController::IsBusy() const
 - [ ] 정의의 매개변수는 세로 정렬 + `const`; 지역 선언 열 정렬; Allman.
 - [ ] 모든 getter 에 `[[nodiscard]]`; 질의는 `Get/Is/Has`.
 - [ ] 멤버는 `= {}` 로 기본 초기화; 클래스 본문 마지막이 데이터.
-- [ ] 복사/이동 규칙은 `JUG_CLASS(...)` 한 줄 (클론에는 `SLUG_CLASS` 가 아직 없으므로 `= delete` 4줄을 `=` 정렬해 직접 쓴다).
+- [ ] 복사/이동 규칙은 `JUG_CLASS(...)` 한 줄 (클론은 `= delete` 4줄을 `=` 정렬해 직접 쓴다).
 - [ ] 에러는 `Result<T>`, 전제조건은 assert, 예외 없음.
-- [ ] `}   // namespace slug` (공백 3칸).

@@ -7,65 +7,58 @@
 #include "Base/Result.h"
 #include "Base/Types.h"
 
-namespace slug
-{
+constexpr ARRAY<char, 4> kMagic   = { 'S', 'R', 'E', 'P' };
+constexpr uint32_t       kVersion = 1;
 
-namespace
+template<typename T>
+static void Append_(
+    Vector<uint8_t>& _bytes,
+    const T          _value)
 {
-    constexpr ARRAY<char, 4> kMagic   = { 'S', 'R', 'E', 'P' };
-    constexpr uint32_t       kVersion = 1;
+    const size_t offset = _bytes.size();
+    _bytes.resize(offset + sizeof(T));
+    std::memcpy(_bytes.data() + offset, &_value, sizeof(T));
+}
 
-    template<typename T>
-    void Append_(
-        Vector<uint8_t>& _bytes,
-        const T          _value)
+class Reader
+{
+public:
+    explicit Reader(
+        const Span<const uint8_t> _bytes)
+        : m_bytes(_bytes)
     {
-        const size_t offset = _bytes.size();
-        _bytes.resize(offset + sizeof(T));
-        std::memcpy(_bytes.data() + offset, &_value, sizeof(T));
     }
 
-    class Reader
+    template<typename T>
+    [[nodiscard]] bool Read(
+        T& _out)
     {
-    public:
-        explicit Reader(
-            const Span<const uint8_t> _bytes)
-            : m_bytes(_bytes)
+        if (m_offset + sizeof(T) > m_bytes.size())
         {
+            return false;
         }
+        std::memcpy(&_out, m_bytes.data() + m_offset, sizeof(T));
+        m_offset += sizeof(T);
+        return true;
+    }
 
-        template<typename T>
-        [[nodiscard]] bool Read(
-            T& _out)
+    [[nodiscard]] bool ReadBytes(
+        void*        _pDest,
+        const size_t _size)
+    {
+        if (m_offset + _size > m_bytes.size())
         {
-            if (m_offset + sizeof(T) > m_bytes.size())
-            {
-                return false;
-            }
-            std::memcpy(&_out, m_bytes.data() + m_offset, sizeof(T));
-            m_offset += sizeof(T);
-            return true;
+            return false;
         }
+        std::memcpy(_pDest, m_bytes.data() + m_offset, _size);
+        m_offset += _size;
+        return true;
+    }
 
-        [[nodiscard]] bool ReadBytes(
-            void*        _pDest,
-            const size_t _size)
-        {
-            if (m_offset + _size > m_bytes.size())
-            {
-                return false;
-            }
-            std::memcpy(_pDest, m_bytes.data() + m_offset, _size);
-            m_offset += _size;
-            return true;
-        }
-
-    private:
-        Span<const uint8_t> m_bytes  = {};
-        size_t              m_offset = 0;
-    };
-
-}   // namespace
+private:
+    Span<const uint8_t> m_bytes  = {};
+    size_t              m_offset = 0;
+};
 
 Vector<uint8_t> SerializeReplay(
     const ReplayData& _replay)
@@ -176,5 +169,3 @@ Result<ReplayData> LoadReplay(
     }
     return DeserializeReplay(bytes);
 }
-
-}   // namespace slug

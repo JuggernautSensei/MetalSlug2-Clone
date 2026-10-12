@@ -2,24 +2,18 @@
 
 #include <algorithm>
 
-namespace slug
-{
-
-namespace
-{
-    constexpr int kResultsFadeTicks = 12;    // 상자 페이드 인
-    constexpr int kTicksPerPow      = 6;     // 구출 수 한 명 집계 간격 (0.1초)
-    constexpr int kRankDelayTicks   = 18;    // 집계 끝 -> 보너스/등급 표시
-    constexpr int kRankHoldTicks    = 150;   // 등급 표시 후 대기 (2.5초)
-    constexpr int kPowBonusScore    = 10'000;
-}   // namespace
+constexpr int kResultsFadeTicks = 12;    // 상자 페이드 인
+constexpr int kTicksPerPow      = 6;     // 구출 수 한 명 집계 간격 (0.1초)
+constexpr int kRankDelayTicks   = 18;    // 집계 끝 -> 보너스/등급 표시
+constexpr int kRankHoldTicks    = 150;   // 등급 표시 후 대기 (2.5초)
+constexpr int kPowBonusScore    = 10'000;
 
 ScreenFlowConfig MakeGameOverFlowConfig()
 {
     ScreenFlowConfig config;
     config.bannerText     = "GAME OVER";
     config.bannerColor    = eFontColor::Red;
-    config.sfx            = sfx::kGameOver;
+    config.sfx            = kGameOver;
     config.bgmFadeSeconds = 0.5f;
     config.delayTicks     = 0;
     config.artSprite      = "UI_GameOver_Helmet";
@@ -107,7 +101,7 @@ ScreenFlowConfig MakeMissionCompleteFlowConfig(
     ScreenFlowConfig config;
     config.bannerText     = "MISSION 4\nCOMPLETE!";
     config.bannerColor    = eFontColor::Yellow;
-    config.sfx            = sfx::kMissionComplete;
+    config.sfx            = kMissionComplete;
     config.bgmFadeSeconds = 0.f;
     config.delayTicks     = 60;
     config.rescuedCount   = std::max(0, _rescued);
@@ -286,5 +280,3 @@ int ScreenFlowConfig::GetTotalTicks() const
 {
     return delayTicks + resultsTicks + bannerTicks + fadeTicks + holdTicks;
 }
-
-}   // namespace slug

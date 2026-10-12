@@ -4,56 +4,49 @@
 #include "Base/Json.h"
 #include "Base/Types.h"
 
-namespace slug
+[[nodiscard]] static Result<SoundBank> Parse_(
+    const JsonReader& _root,
+    const FilePath&   _rootDir)
 {
-
-namespace
-{
-    [[nodiscard]] Result<SoundBank> Parse_(
-        const JsonReader& _root,
-        const FilePath&   _rootDir)
+    const Result<JsonReader> sounds = _root.FindField("sounds");
+    if (!sounds || !sounds->IsObject())
     {
-        const Result<JsonReader> sounds = _root.FindField("sounds");
-        if (!sounds || !sounds->IsObject())
+        return Error { eError::Parse };
+    }
+
+    SoundBank bank;
+    for (const std::pair<StringView, JsonReader>& item: sounds->GetObject())
+    {
+        const StringView  name = item.first;
+        const JsonReader& json = item.second;
+        if (!json.IsObject())
         {
             return Error { eError::Parse };
         }
 
-        SoundBank bank;
-        for (const std::pair<StringView, JsonReader>& item: sounds->GetObject())
+        const Result<String> file = json.ReadField<String>("file");
+        if (!file || file.GetValue().empty())
         {
-            const StringView  name = item.first;
-            const JsonReader& json = item.second;
-            if (!json.IsObject())
-            {
-                return Error { eError::Parse };
-            }
-
-            const Result<String> file = json.ReadField<String>("file");
-            if (!file || file.GetValue().empty())
-            {
-                return Error { eError::Parse };
-            }
-
-            SoundEntry entry;
-            entry.name = String { name };
-            entry.file = file.GetValue();
-            if (json.HasField("bgm"))
-            {
-                const Result<bool> bBgm = json.ReadField<bool>("bgm");
-                if (!bBgm)
-                {
-                    return Error { eError::Parse };
-                }
-                entry.bBgm = bBgm.GetValue();
-            }
-            entry.path = _rootDir / FilePath { entry.file };
-            bank.Add(std::move(entry));
+            return Error { eError::Parse };
         }
-        return bank;
-    }
 
-}   // namespace
+        SoundEntry entry;
+        entry.name = String { name };
+        entry.file = file.GetValue();
+        if (json.HasField("bgm"))
+        {
+            const Result<bool> bBgm = json.ReadField<bool>("bgm");
+            if (!bBgm)
+            {
+                return Error { eError::Parse };
+            }
+            entry.bBgm = bBgm.GetValue();
+        }
+        entry.path = _rootDir / FilePath { entry.file };
+        bank.Add(std::move(entry));
+    }
+    return bank;
+}
 
 Result<SoundBank> SoundBank::LoadFromJson(
     const StringView _json,
@@ -104,4 +97,22 @@ int SoundBank::FindIndex(
     return it == m_nameToIndex.end() ? -1 : static_cast<int>(it->second);
 }
 
-}   // namespace slug
+const SoundEntry& SoundBank::Get(int _index) const
+{
+    return m_entries[static_cast<size_t>(_index)];
+}
+
+size_t SoundBank::GetCount() const
+{
+    return m_entries.size();
+}
+
+bool SoundBank::IsEmpty() const
+{
+    return m_entries.empty();
+}
+
+Span<const SoundEntry> SoundBank::GetEntries() const
+{
+    return m_entries;
+}

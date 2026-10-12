@@ -8,187 +8,181 @@
 #include "Base/Json.h"
 #include "Base/Log.h"
 #include "Base/Math.h"
+#include "Base/PhaseTimer.h"
 #include "Base/Types.h"
 
-namespace slug
+constexpr double kUnitsPerSec = static_cast<double>(kAnimTimeUnitsPerSec);
+
+[[nodiscard]] static int64_t ToUnits_(
+    const double _sec)
 {
+    return static_cast<int64_t>(std::llround(_sec * kUnitsPerSec));
+}
 
-namespace
+[[nodiscard]] static bool ReadInt_(
+    const JsonReader& _object,
+    const StringView  _key,
+    int&              _out)
 {
-    constexpr double kUnitsPerSec = static_cast<double>(kAnimTimeUnitsPerSec);
-
-    [[nodiscard]] int64_t ToUnits_(
-        const double _sec)
+    const Result<double> value = _object.ReadField<double>(_key);
+    if (!value)
     {
-        return static_cast<int64_t>(std::llround(_sec * kUnitsPerSec));
+        return false;
+    }
+    _out = static_cast<int>(std::llround(value.GetValue()));
+    return true;
+}
+
+[[nodiscard]] static bool ReadOptionalInt_(
+    const JsonReader& _object,
+    const StringView  _key,
+    int&              _out)
+{
+    return !_object.HasField(_key) || ReadInt_(_object, _key, _out);
+}
+
+[[nodiscard]] static Result<AnimFrame> ParseFrame_(
+    const JsonReader& _json)
+{
+    if (!_json.IsObject())
+    {
+        return Error { eError::Parse };
     }
 
-    [[nodiscard]] bool ReadInt_(
-        const JsonReader& _object,
-        const StringView  _key,
-        int&              _out)
+    AnimFrame frame;
+    if (!ReadInt_(_json, "atlas", frame.atlas) || !ReadInt_(_json, "x", frame.x) || !ReadInt_(_json, "y", frame.y) || !ReadInt_(_json, "w", frame.w) || !ReadInt_(_json, "h", frame.h) || !ReadInt_(_json, "pivotX", frame.pivotX) || !ReadInt_(_json, "pivotY", frame.pivotY))
     {
-        const Result<double> value = _object.ReadField<double>(_key);
-        if (!value)
-        {
-            return false;
-        }
-        _out = static_cast<int>(std::llround(value.GetValue()));
-        return true;
+        return Error { eError::Parse };
+    }
+    if (frame.atlas < 0 || frame.w < 0 || frame.h < 0)
+    {
+        return Error { eError::InvalidData };
+    }
+    return frame;
+}
+
+[[nodiscard]] static Result<AnimClip> ParseClip_(
+    const StringView  _name,
+    const JsonReader& _json)
+{
+    if (!_json.IsObject())
+    {
+        return Error { eError::Parse };
     }
 
-    [[nodiscard]] bool ReadOptionalInt_(
-        const JsonReader& _object,
-        const StringView  _key,
-        int&              _out)
+    AnimClip clip;
+    clip.name = String { _name };
+
+    if (_json.HasField("loop"))
     {
-        return !_object.HasField(_key) || ReadInt_(_object, _key, _out);
+        const Result<bool> bLoop = _json.ReadField<bool>("loop");
+        if (!bLoop)
+        {
+            return Error { eError::Parse };
+        }
+        clip.bLoop = bLoop.GetValue();
     }
 
-    [[nodiscard]] Result<AnimFrame> ParseFrame_(
-        const JsonReader& _json)
+    if (!ReadOptionalInt_(_json, "loopStart", clip.loopStart) || !ReadOptionalInt_(_json, "cellW", clip.cellW) || !ReadOptionalInt_(_json, "cellH", clip.cellH))
     {
-        if (!_json.IsObject())
-        {
-            return Error { eError::Parse };
-        }
-
-        AnimFrame frame;
-        if (!ReadInt_(_json, "atlas", frame.atlas) || !ReadInt_(_json, "x", frame.x) || !ReadInt_(_json, "y", frame.y) || !ReadInt_(_json, "w", frame.w) || !ReadInt_(_json, "h", frame.h) || !ReadInt_(_json, "pivotX", frame.pivotX) || !ReadInt_(_json, "pivotY", frame.pivotY))
-        {
-            return Error { eError::Parse };
-        }
-        if (frame.atlas < 0 || frame.w < 0 || frame.h < 0)
-        {
-            return Error { eError::InvalidData };
-        }
-        return frame;
+        return Error { eError::Parse };
     }
 
-    [[nodiscard]] Result<AnimClip> ParseClip_(
-        const StringView  _name,
-        const JsonReader& _json)
+    const Result<double> duration = _json.ReadField<double>("frameDuration");
+    if (!duration)
     {
-        if (!_json.IsObject())
-        {
-            return Error { eError::Parse };
-        }
-
-        AnimClip clip;
-        clip.name = String { _name };
-
-        if (_json.HasField("loop"))
-        {
-            const Result<bool> bLoop = _json.ReadField<bool>("loop");
-            if (!bLoop)
-            {
-                return Error { eError::Parse };
-            }
-            clip.bLoop = bLoop.GetValue();
-        }
-
-        if (!ReadOptionalInt_(_json, "loopStart", clip.loopStart) || !ReadOptionalInt_(_json, "cellW", clip.cellW) || !ReadOptionalInt_(_json, "cellH", clip.cellH))
-        {
-            return Error { eError::Parse };
-        }
-
-        const Result<double> duration = _json.ReadField<double>("frameDuration");
-        if (!duration)
-        {
-            return Error { eError::Parse };
-        }
-        clip.frameDuration = static_cast<float>(duration.GetValue());
-        if (!(clip.frameDuration > 0.f))
-        {
-            return Error { eError::InvalidData };
-        }
-
-        const Result<JsonReader> frames = _json.FindField("frames");
-        if (!frames || !frames->IsArray())
-        {
-            return Error { eError::Parse };
-        }
-
-        clip.frames.reserve(frames->GetSize());
-        for (const JsonReader frameJson: frames->GetArray())
-        {
-            Result<AnimFrame> frame = ParseFrame_(frameJson);
-            if (!frame)
-            {
-                return frame.GetError();
-            }
-            clip.frames.push_back(frame.GetValue());
-        }
-
-        if (clip.frames.empty())
-        {
-            return Error { eError::InvalidData };
-        }
-
-        if (clip.loopStart < 0 || clip.loopStart >= clip.GetFrameCount())
-        {
-            clip.loopStart = Clamp(clip.loopStart, 0, clip.GetFrameCount() - 1);
-        }
-        return clip;
+        return Error { eError::Parse };
+    }
+    clip.frameDuration = static_cast<float>(duration.GetValue());
+    if (!(clip.frameDuration > 0.f))
+    {
+        return Error { eError::InvalidData };
     }
 
-    [[nodiscard]] Result<AnimationLibrary> ParseAnimDocument_(
-        const JsonReader& _root)
+    const Result<JsonReader> frames = _json.FindField("frames");
+    if (!frames || !frames->IsArray())
     {
-        if (!_root.IsObject())
-        {
-            return Error { eError::Parse };
-        }
-
-        const Result<JsonReader> animations = _root.FindField("animations");
-        if (!animations || !animations->IsObject())
-        {
-            return Error { eError::Parse };
-        }
-
-        AnimationLibrary library;
-        for (const std::pair<StringView, JsonReader>& item: animations->GetObject())
-        {
-            const StringView  name     = item.first;
-            const JsonReader& clipJson = item.second;
-            Result<AnimClip>  clip     = ParseClip_(name, clipJson);
-            if (!clip)
-            {
-                SLUG_LOG_ERROR("애니메이션 '{}' 파싱 실패: {}", name, clip.GetError().MakeMessage());
-                return clip.GetError();
-            }
-            (void)library.AddClip(clip.Take());
-        }
-        return library;
+        return Error { eError::Parse };
     }
 
-    [[nodiscard]] Result<Vector<String>> ParseAtlasPages_(
-        const JsonReader& _manifest)
+    clip.frames.reserve(frames->GetSize());
+    for (const JsonReader frameJson: frames->GetArray())
     {
-        Vector<String> pages;
-        if (!_manifest.HasField("atlasPages"))
+        Result<AnimFrame> frame = ParseFrame_(frameJson);
+        if (!frame)
         {
-            return pages;
+            return frame.GetError();
         }
+        clip.frames.push_back(frame.GetValue());
+    }
 
-        const Result<JsonReader> list = _manifest.FindField("atlasPages");
-        if (!list || !list->IsArray())
+    if (clip.frames.empty())
+    {
+        return Error { eError::InvalidData };
+    }
+
+    if (clip.loopStart < 0 || clip.loopStart >= clip.GetFrameCount())
+    {
+        clip.loopStart = Clamp(clip.loopStart, 0, clip.GetFrameCount() - 1);
+    }
+    return clip;
+}
+
+[[nodiscard]] static Result<AnimationLibrary> ParseAnimDocument_(
+    const JsonReader& _root)
+{
+    if (!_root.IsObject())
+    {
+        return Error { eError::Parse };
+    }
+
+    const Result<JsonReader> animations = _root.FindField("animations");
+    if (!animations || !animations->IsObject())
+    {
+        return Error { eError::Parse };
+    }
+
+    AnimationLibrary library;
+    for (const std::pair<StringView, JsonReader>& item: animations->GetObject())
+    {
+        const StringView  name     = item.first;
+        const JsonReader& clipJson = item.second;
+        Result<AnimClip>  clip     = ParseClip_(name, clipJson);
+        if (!clip)
         {
-            return Error { eError::Parse };
+            SLUG_LOG_ERROR("애니메이션 '{}' 파싱 실패: {}", name, clip.GetError().MakeMessage());
+            return clip.GetError();
         }
-        for (const JsonReader item: list->GetArray())
-        {
-            Result<String> page = item.Read<String>();
-            if (!page)
-            {
-                return Error { eError::Parse };
-            }
-            pages.push_back(page.GetValue());
-        }
+        (void)library.AddClip(clip.Take());
+    }
+    return library;
+}
+
+[[nodiscard]] static Result<Vector<String>> ParseAtlasPages_(
+    const JsonReader& _manifest)
+{
+    Vector<String> pages;
+    if (!_manifest.HasField("atlasPages"))
+    {
         return pages;
     }
 
-}   // namespace
+    const Result<JsonReader> list = _manifest.FindField("atlasPages");
+    if (!list || !list->IsArray())
+    {
+        return Error { eError::Parse };
+    }
+    for (const JsonReader item: list->GetArray())
+    {
+        Result<String> page = item.Read<String>();
+        if (!page)
+        {
+            return Error { eError::Parse };
+        }
+        pages.push_back(page.GetValue());
+    }
+    return pages;
+}
 
 int64_t AnimClip::GetFrameDurationUnits() const
 {
@@ -209,6 +203,7 @@ Result<AnimationLibrary> AnimationLibrary::LoadFromJson(
 Result<AnimationLibrary> AnimationLibrary::LoadFromDirectory(
     const FilePath& _bakedRoot)
 {
+    const ScopedPhaseTimer   timer { "anim-library", "manifest+anim" };
     Result<JsonDeserializer> manifestDoc = JsonDeserializer::LoadFromFile(_bakedRoot / "manifest.json");
     if (!manifestDoc)
     {
@@ -243,6 +238,7 @@ Result<AnimationLibrary> AnimationLibrary::LoadFromDirectory(
         return Error { eError::FileOpen };
     }
 
+    const ScopedPhaseTimer   parseTimer { "anim-parse", "anim.json" };
     Result<AnimationLibrary> library = ParseAnimDocument_(animDoc->GetReader());
     if (!library)
     {
@@ -446,4 +442,75 @@ const AnimFrame* AnimPlayer::GetFrameData(
     return &pClip->frames[static_cast<size_t>(m_frame)];
 }
 
-}   // namespace slug
+bool AnimFrame::IsEmpty() const
+{
+    return w <= 0 || h <= 0;   // 완전 투명 프레임
+}
+
+int AnimClip::GetFrameCount() const
+{
+    return static_cast<int>(frames.size());
+}
+
+int64_t AnimClip::GetTotalDurationUnits() const
+{
+    return GetFrameDurationUnits() * static_cast<int64_t>(frames.size());
+}
+
+float AnimClip::GetTotalDurationSec() const
+{
+    return static_cast<float>(static_cast<double>(GetTotalDurationUnits()) / static_cast<double>(kAnimTimeUnitsPerSec));
+}
+
+int AnimClip::GetFootBaseline() const
+{
+    int baseline = 0;
+    for (const AnimFrame& frame: frames)
+    {
+        if (!frame.IsEmpty() && frame.h - frame.pivotY > baseline)
+        {
+            baseline = frame.h - frame.pivotY;
+        }
+    }
+    return baseline;
+}
+
+size_t AnimationLibrary::GetClipCount() const
+{
+    return m_clips.size();
+}
+
+Span<const AnimClip> AnimationLibrary::GetClips() const
+{
+    return m_clips;
+}
+
+Span<const String> AnimationLibrary::GetAtlasPages() const
+{
+    return m_atlasPages;
+}
+
+const FilePath& AnimationLibrary::GetRoot() const
+{
+    return m_root;
+}
+
+AnimId AnimPlayer::GetClip() const
+{
+    return m_clip;
+}
+
+int AnimPlayer::GetFrame() const
+{
+    return m_frame;
+}
+
+int64_t AnimPlayer::GetTimeUnits() const
+{
+    return m_timeUnits;
+}
+
+bool AnimPlayer::IsFinished() const
+{
+    return m_bFinished;
+}

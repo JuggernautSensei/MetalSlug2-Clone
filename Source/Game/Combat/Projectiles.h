@@ -6,9 +6,6 @@
 #include "World/GroundMap.h"
 #include "World/Physics.h"
 
-namespace slug
-{
-
 struct BulletSpawn
 {
     eTeam    team        = eTeam::Player;
@@ -27,6 +24,13 @@ struct BulletSpawn
     int      blastDamage = 0;
     int      blastTicks  = 0;
     bool     bTrail      = false;
+    uint32_t hitId       = kNoHitId;   // kNoHitId 이면 새 ID 를 받는다 (파이어샷 분출은 한 입력의 입자들이 공유)
+    Vec2     sizeEnd     = { 0.f, 0.f };   // 0 이면 판정 크기 고정. 아니면 사거리 진행에 따라 size -> sizeEnd 로 커진다
+    float    scaleStart  = 1.f;            // 표시 배율 (판정과 무관)
+    float    scaleEnd    = 1.f;
+    int      z           = kDefaultZ;   // 그리기 depth (kDefaultZ: 플레이어 탄 depth)
+    float    accel       = 0.f;         // px/s² (진행 방향). 0 = 등속
+    float    maxSpeed    = 0.f;         // accel 로 오르는 속도 상한 (0 = 상한 없음)
 };
 
 struct Bullet
@@ -51,6 +55,14 @@ struct Bullet
     int      blastTicks  = 0;
     bool     bTrail      = false;
     int      ageTicks    = 0;
+    bool     bSharedHitId = false;   // 공유 판정 ID 는 탄이 죽어도 풀지 않는다 (분출 쪽이 풀어준다)
+    Vec2     sizeStart    = { 0.f, 0.f };
+    Vec2     sizeEnd      = { 0.f, 0.f };
+    float    scaleStart   = 1.f;
+    float    scaleEnd     = 1.f;
+    int      z            = kDefaultZ;
+    float    accel        = 0.f;
+    float    maxSpeed     = 0.f;
 };
 
 struct BombSpawn
@@ -67,6 +79,7 @@ struct BombSpawn
     int      blastTicks = 10;
     bool     bBounce    = false;   // 바닥에서 튕기고 퓨즈 시간이 끝나면 터진다
     int      fuseTicks  = 0;
+    int      z          = kDefaultZ;   // 그리기 depth (kDefaultZ: 포탄/폭탄 기본 depth)
 };
 
 struct Bomb
@@ -113,6 +126,12 @@ struct ShotSpawn
     int   rollTicks    = 0;
     bool  bExpireFx    = false;
     float groundProbeY = 0.f;   // 지면/지붕 접촉 판정 점: 중심에서 아래로 이만큼 (스프라이트 바닥이 닿는 높이). 0 = 중심
+
+    Vec2  blastSize   = { 0.f, 0.f };   // 터질 때 남기는 폭발 판정 (0 = 없음, 불기둥/고폭탄)
+    float blastUp     = 0.f;            // 폭발 상자 중심을 터진 점에서 위로 올리는 양
+    int   blastTicks  = 0;
+    int   blastDamage = 1;
+    int   z           = kDefaultZ;   // 그리기 depth (kDefaultZ: kEnemyShotDepth)
 };
 
 struct Shot
@@ -133,6 +152,7 @@ struct ShotFx
 {
     Vec2     position = { 0.f, 0.f };
     uint16_t visual   = 0;
+    int      zOffset  = 0;   // 기준 투사체 z 의 기본 depth 대비 이동량
 };
 
 enum class eFxKind : uint8_t
@@ -147,6 +167,7 @@ struct FxRequest
 {
     eFxKind kind     = eFxKind::BulletImpact;
     Vec2    position = { 0.f, 0.f };
+    int     zOffset  = 0;   // 기준 투사체 z 의 기본 depth 대비 이동량
 };
 
 class ProjectileSystem
@@ -183,6 +204,7 @@ public:
 private:
     void ExplodeBomb_(Bomb& _bomb, Vec2 _at, CombatSystem& _combat);
     void SpawnBulletBlast_(const Bullet& _bullet, CombatSystem& _combat);
+    void SpawnShotBlast_(const ShotSpawn& _params, Vec2 _at, CombatSystem& _combat);
 
     Vector<Bullet>    m_bullets = {};
     Vector<Bomb>      m_bombs   = {};
@@ -191,5 +213,3 @@ private:
     Vector<Shot>      m_shots   = {};
     Vector<ShotFx>    m_shotFx  = {};
 };
-
-}   // namespace slug

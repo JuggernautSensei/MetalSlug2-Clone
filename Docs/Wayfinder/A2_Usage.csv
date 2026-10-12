@@ -1,0 +1,1671 @@
+path,sizeKB,verdict,evidence
+Assets/Defs/BigShiee.json,6.4,USED,Source/Game/Enemies/EnemyDefLoader.cpp:1420 (LoadDirectory *.json on Defs/; SandboxState.cpp:170)
+Assets/Defs/Bus.json,1.7,USED,Source/Game/Enemies/EnemyDefLoader.cpp:1420 (LoadDirectory *.json on Defs/; SandboxState.cpp:170)
+Assets/Defs/Enemies.json,19.4,USED,Source/Game/Enemies/EnemyDefLoader.cpp:1420 (LoadDirectory *.json on Defs/; SandboxState.cpp:170)
+Assets/Defs/Helicopter.json,4.6,USED,Source/Game/Enemies/EnemyDefLoader.cpp:1420 (LoadDirectory *.json on Defs/; SandboxState.cpp:170)
+Assets/Defs/Props/Props.json,18.8,USED,Source/Game/Props/PropDef.cpp:827 (props.json)
+Assets/Defs/Vehicles.json,12.6,USED,Source/Game/Enemies/EnemyDefLoader.cpp:1420 (LoadDirectory *.json on Defs/; SandboxState.cpp:170)
+Assets/Source/11279.png,244.4,USED,Assets/Source/sheets.json:121 (11279.png)
+Assets/Source/11302.png,461.5,USED,Assets/Source/sheets.json:74 (11302.png)
+Assets/Source/140780.png,48.2,UNUSED,-
+Assets/Source/143506.png,349.4,UNUSED,-
+Assets/Source/16340.png,49.3,UNUSED,-
+Assets/Source/20587.png,1009.3,USED,Assets/Source/sheets.json:145 (20587.png)
+Assets/Source/20642.png,58.1,USED,Assets/Source/sheets.json:291 (20642.png)
+Assets/Source/29720.png,132.9,USED,Assets/Source/sheets.json:29 (29720.png)
+Assets/Source/32522.png,2873.4,USED,Assets/Source/sheets.json:317 (32522.png)
+Assets/Source/32529.gif,14.1,USED,Assets/Source/sheets.json:88 (32529)
+Assets/Source/32529.png,28.3,USED,Assets/Source/sheets.json:88 (32529.png)
+Assets/Source/33824.png,1544.7,UNUSED,-
+Assets/Source/33825.png,197.2,USED,Assets/Source/sheets.json:260 (33825.png)
+Assets/Source/35366.png,23.6,UNUSED,-
+Assets/Source/38098.png,15.5,USED,Assets/Source/sheets.json:15 (38098.png)
+Assets/Source/39079.png,543.7,UNUSED,-
+Assets/Source/40204.png,2050.1,USED,Assets/Source/sheets.json:155 (40204.png)
+Assets/Source/46546.png,31.0,USED,Assets/Source/sheets.json:4 (46546.png)
+Assets/Source/51797.png,39.3,USED,Assets/Source/sheets.json:99 (51797.png)
+Assets/Source/53213.png,386.7,USED,Assets/Source/sheets.json:108 (53213.png)
+Assets/Source/GroundEdits.json,0.5,USED,Source/Tools/Baker/Baker.cpp:1198 (groundedits.json)
+Assets/Source/Metal-Slug-Remake/.git/HEAD,0.0,USED,Source/Game/Combat/BulletVisual.cpp:20 (head)
+Assets/Source/Metal-Slug-Remake/.git/config,0.3,USED,Source/Game/SandboxState.cpp:766 (config)
+Assets/Source/Metal-Slug-Remake/.git/description,0.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/hooks/applypatch-msg.sample,0.5,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/hooks/commit-msg.sample,1.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/hooks/fsmonitor-watchman.sample,4.5,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/hooks/post-update.sample,0.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/hooks/pre-applypatch.sample,0.4,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/hooks/pre-commit.sample,1.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/hooks/pre-merge-commit.sample,0.4,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/hooks/pre-push.sample,1.3,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/hooks/pre-rebase.sample,4.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/hooks/pre-receive.sample,0.5,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/hooks/prepare-commit-msg.sample,1.5,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/hooks/push-to-checkout.sample,2.7,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/hooks/sendemail-validate.sample,2.3,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/hooks/update.sample,3.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/index,9.5,USED,Source/Audio/AudioSystem.cpp:252 (index)
+Assets/Source/Metal-Slug-Remake/.git/info/exclude,0.2,USED,Assets/Source/sheets.json:7 (exclude)
+Assets/Source/Metal-Slug-Remake/.git/logs/HEAD,0.2,USED,Source/Game/Combat/BulletVisual.cpp:20 (head)
+Assets/Source/Metal-Slug-Remake/.git/logs/refs/heads/main,0.2,USED,Source/Main.cpp:3 (main)
+Assets/Source/Metal-Slug-Remake/.git/logs/refs/remotes/origin/HEAD,0.2,USED,Source/Game/Combat/BulletVisual.cpp:20 (head)
+Assets/Source/Metal-Slug-Remake/.git/objects/pack/pack-f748029af52dd8a99543221854bc088a39b065fa.idx,4.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/objects/pack/pack-f748029af52dd8a99543221854bc088a39b065fa.pack,6876.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/objects/pack/pack-f748029af52dd8a99543221854bc088a39b065fa.rev,0.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/packed-refs,0.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.git/refs/heads/main,0.0,USED,Source/Main.cpp:3 (main)
+Assets/Source/Metal-Slug-Remake/.git/refs/remotes/origin/HEAD,0.0,USED,Source/Game/Combat/BulletVisual.cpp:20 (head)
+Assets/Source/Metal-Slug-Remake/.vs/Metal Slug.slnx/FileContentIndex/15454dcf-6549-4a3b-8a8e-3f50e8f17833.vsidx,16.3,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.vs/Metal Slug.slnx/FileContentIndex/2d6c7594-ebc1-4042-9355-47fd39aa2556.vsidx,11.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.vs/Metal Slug.slnx/FileContentIndex/3bd6a5cc-69dd-4138-94dd-ee0d0e503827.vsidx,114.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.vs/Metal Slug.slnx/v18/.suo,33.5,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.vs/Metal Slug.slnx/v18/Browse.VC.db,16464.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.vs/Metal Slug.slnx/v18/DocumentLayout.backup.json,2.7,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.vs/Metal Slug.slnx/v18/DocumentLayout.json,2.7,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.vs/Metal Slug.slnx/v18/Solution.VC.db,424.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.vs/Metal Slug.slnx/v18/ipch/AutoPCH/6343c2f43b64c262/RECT.ipch,54528.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.vs/Metal Slug.slnx/v18/ipch/AutoPCH/7135482bb709035/KNIFE.ipch,210240.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.vs/Metal Slug.slnx/v18/ipch/AutoPCH/bb8963aa4fed5dfb/MENU.ipch,210240.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/.vs/Metal Slug/CopilotIndices/18.10.1207.43936/SemanticSymbols.db,2712.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/AerialVehicle.h,0.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Alien.h,0.5,UNUSED,-
+Assets/Source/Metal-Slug-Remake/AquaticVehicle.h,1.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/BallisticProjectile.h,0.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/BazookaSoldier.h,1.7,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Bradley.h,2.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Bullet.h,1.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Camera.h,0.7,USED,Source/Game/SandboxState.h:20 (camera.h)
+Assets/Source/Metal-Slug-Remake/Character.png,251.4,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Collectable.h,1.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/CollectableManager.h,3.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/DamageState.h,0.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Damagesystem.h,4.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Enemy.h,3.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/EnemySub.h,2.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Entity.h,1.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Eri.h,0.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Fio.h,1.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/FireArm.h,0.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/FireBomb.h,0.3,UNUSED,-
+Assets/Source/Metal-Slug-Remake/FireBombProjectile.h,2.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/FlameProjectile.cpp,0.7,UNUSED,-
+Assets/Source/Metal-Slug-Remake/FlameProjectile.h,0.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/FlameShot.h,0.4,UNUSED,-
+Assets/Source/Metal-Slug-Remake/FlyingTara.h,2.4,UNUSED,-
+Assets/Source/Metal-Slug-Remake/FoodCollectable.h,0.4,UNUSED,-
+Assets/Source/Metal-Slug-Remake/GameHUD.h,2.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Grenade.h,1.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/GrenadeSoldier.h,1.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/GrenadeWeapon.h,0.3,UNUSED,-
+Assets/Source/Metal-Slug-Remake/GroundVehicle.h,1.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/HUD.h,6.1,USED,Source/Game/Stage/StageState.cpp:21 (hud.h)
+Assets/Source/Metal-Slug-Remake/HandGrenade.h,0.4,UNUSED,-
+Assets/Source/Metal-Slug-Remake/HandGrenadeProjectile.h,2.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/HeavyMachineGun.h,0.4,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Infantry.h,0.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/InfiniteMap.h,4.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Knife.h,0.7,UNUSED,-
+Assets/Source/Metal-Slug-Remake/LaserGun.h,0.4,UNUSED,-
+Assets/Source/Metal-Slug-Remake/LaserProjectile.h,1.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Leaderboard.h,3.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Marco.h,1.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Martian.h,3.3,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Menu.h,3.4,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug.slnx,0.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug.vcxproj,10.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug.vcxproj.filters,6.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug.vcxproj.user,0.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/Knife.h.ifc.d.json,27.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/Knife.h_BF4D10575A4A215.ifc.dt.d.json,27.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/Knife.h_BF4D10575A4A215.ifc.dt.module.json.command,4.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/Menu.h.ifc.d.json,27.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/Menu.h_1E564CB20FF2033B.ifc.dt.d.json,27.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/Menu.h_1E564CB20FF2033B.ifc.dt.module.json,0.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/Menu.h_1E564CB20FF2033B.ifc.dt.module.json.command,4.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/Metal Slug.log,16.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/Metal Slug.tlog/CL.command.1.tlog,0.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/Metal Slug.tlog/Metal Slug.lastbuildstate,0.3,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/Metal Slug.tlog/Microsoft.Build.CPPTasks.CL.read.1.tlog,125.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/Metal Slug.tlog/Microsoft.Build.CPPTasks.CL.write.1.tlog,0.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/Metal Slug.tlog/unsuccessfulbuild,0.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/Metal Slug_MD.tlog/CL.command.1.tlog,4.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/Metal Slug_MD.tlog/Microsoft.Build.CPPTasks.CL.read.1.tlog,125.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/Metal Slug_MD.tlog/Microsoft.Build.CPPTasks.CL.write.1.tlog,0.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/PlayerSelect.h.ifc.d.json,27.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/PlayerSelect.h_ED4E23E7CB678E85.ifc.dt.module.json.command,4.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/knife.h.module.json,0.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/menu.h.module.json,0.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/microsoft/STL/std.compat.ixx.ifc.dt.d.json,0.3,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/microsoft/STL/std.compat.ixx.ifc.dt.module.json,0.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/microsoft/STL/std.compat.ixx.ifc.dt.module.json.command,4.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/microsoft/STL/std.ixx.ifc.dt.d.json,27.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/microsoft/STL/std.ixx.ifc.dt.module.json,0.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/microsoft/STL/std.ixx.ifc.dt.module.json.command,4.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/playerselect.h.module.json,0.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/vc145.idb,35.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Metal Slug/x64/Debug/vc145.pdb,546.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/MummyWarrior.h,1.5,UNUSED,-
+Assets/Source/Metal-Slug-Remake/POWPrisoner.h,0.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Paratrooper.h,2.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/PerlinNoise.h,1.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Pistol.h,0.3,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Player.cpp,2.4,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Player.h,8.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/PlayerSelect.h,5.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Projectile.h,1.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/README.md,0.3,UNUSED,-
+Assets/Source/Metal-Slug-Remake/RebelSoldier.h,1.7,UNUSED,-
+Assets/Source/Metal-Slug-Remake/RocketLauncher.h,0.4,UNUSED,-
+Assets/Source/Metal-Slug-Remake/RocketProjectile.h,0.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/ScoreSystem.h,4.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Scoreboard.h,5.3,UNUSED,-
+Assets/Source/Metal-Slug-Remake/ShieldedSoldier.h,1.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/StraightProjectile.h,0.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/SupplyCrate.h,0.4,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Survivallevel1.h,8.5,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Survivallevel2.h,9.7,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Survivallevel3.h,10.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Tarma.h,1.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Tile.h,0.7,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Undead.h,0.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Vehicle.h,3.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/VehicleRider.h,0.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Vehiclesync.h,0.4,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Weapon.h,1.5,UNUSED,-
+Assets/Source/Metal-Slug-Remake/World.h,4.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/Zombie.h,1.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/andesite.png,0.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/arial.ttf,992.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/background.ogg,4255.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/banana.png,1.4,USED,Resources/ResourceData/TextureData.data:1347 (banana)
+Assets/Source/Metal-Slug-Remake/bazooka.png,145.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/bradley.png,25.5,UNUSED,-
+Assets/Source/Metal-Slug-Remake/build-up-background.png,221.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/burger.png,1.3,UNUSED,-
+Assets/Source/Metal-Slug-Remake/burger_large.png,3.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/cabbage.png,2.0,USED,Resources/ResourceData/TextureData.data:1362 (cabbage)
+Assets/Source/Metal-Slug-Remake/click.ogg,12.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/deepslate_top.png,1.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/dirt.png,1.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/enemy_sub.png,9.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/eri.png,186.7,UNUSED,-
+Assets/Source/Metal-Slug-Remake/fio.png,169.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/fish.png,1.6,USED,Resources/ResourceData/TextureData.data:1377 (fish)
+Assets/Source/Metal-Slug-Remake/flying_tara.png,24.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/fruit_basket.png,2.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/golden_pot.png,2.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/grass_block_side.png,1.4,UNUSED,-
+Assets/Source/Metal-Slug-Remake/grenade.png,15.7,USED,Assets/Defs/Vehicles.json:233 (grenade)
+Assets/Source/Metal-Slug-Remake/leaderboard.txt,0.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/main.cpp,31.3,USED,Scripts/GenerateProjects.ps1:16 (main.cpp)
+Assets/Source/Metal-Slug-Remake/marco.png,99.1,UNUSED,-
+Assets/Source/Metal-Slug-Remake/martian_foot.png,161.3,UNUSED,-
+Assets/Source/Metal-Slug-Remake/martian_pod.png,161.3,UNUSED,-
+Assets/Source/Metal-Slug-Remake/menubg.png,42.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/missile.png,24.8,USED,Assets/Defs/Enemies.json:36 (missile)
+Assets/Source/Metal-Slug-Remake/mummy.png,98.2,UNUSED,-
+Assets/Source/Metal-Slug-Remake/parachute.png,81.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/potion_red.png,2.4,UNUSED,-
+Assets/Source/Metal-Slug-Remake/pow.png,11.7,USED,Assets/Defs/BigShiee.json:142 (pow)
+Assets/Source/Metal-Slug-Remake/pumpkin.png,3.3,UNUSED,-
+Assets/Source/Metal-Slug-Remake/rebel.png,15.7,UNUSED,-
+Assets/Source/Metal-Slug-Remake/rocket.png,21.7,USED,Assets/Defs/Enemies.json:134 (rocket)
+Assets/Source/Metal-Slug-Remake/sand_block.png,1.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/scores.dat,0.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/shielded.png,142.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/stone.png,1.8,UNUSED,-
+Assets/Source/Metal-Slug-Remake/supply_crate.png,9.6,UNUSED,-
+Assets/Source/Metal-Slug-Remake/tarma.png,181.0,UNUSED,-
+Assets/Source/Metal-Slug-Remake/tomato.png,0.9,UNUSED,-
+Assets/Source/Metal-Slug-Remake/watermelon.png,2.2,USED,Resources/ResourceData/TextureData.data:1407 (watermelon)
+Assets/Source/Metal-Slug-Remake/zombie.png,104.0,UNUSED,-
+Assets/Source/OriginalCamera.csv,186.6,UNUSED,-
+Assets/Source/Release 2026.10.10 - 20.46.29.11.mp4,264202.1,UNUSED,-
+Assets/Source/SlugIn.png,2.9,USED,Assets/Source/sheets.json:402 (slugin.png)
+Assets/Source/SlugOut.png,2.8,USED,Assets/Source/sheets.json:411 (slugout.png)
+Assets/Source/Sound Effects/gen_00.wav,20.6,USED,Assets/Source/SoundMap.json:3 (gen_00.wav)
+Assets/Source/Sound Effects/gen_01.wav,28.3,USED,Assets/Source/SoundMap.json:16 (gen_01.wav)
+Assets/Source/Sound Effects/gen_02.wav,20.7,USED,Assets/Source/SoundMap.json:29 (gen_02.wav)
+Assets/Source/Sound Effects/gen_03.wav,24.2,USED,Assets/Source/SoundMap.json:42 (gen_03.wav)
+Assets/Source/Sound Effects/gen_0A.wav,30.2,USED,Assets/Source/SoundMap.json:55 (gen_0a.wav)
+Assets/Source/Sound Effects/gen_0B.wav,12.4,USED,Assets/Source/SoundMap.json:68 (gen_0b.wav)
+Assets/Source/Sound Effects/gen_0C.wav,45.4,USED,Assets/Source/SoundMap.json:81 (gen_0c.wav)
+Assets/Source/Sound Effects/gen_0D.wav,14.7,USED,Assets/Source/SoundMap.json:94 (gen_0d.wav)
+Assets/Source/Sound Effects/gen_0E.wav,35.1,USED,Assets/Source/SoundMap.json:107 (gen_0e.wav)
+Assets/Source/Sound Effects/gen_0F.wav,12.9,USED,Assets/Source/SoundMap.json:120 (gen_0f.wav)
+Assets/Source/Sound Effects/gen_10.wav,46.1,USED,Assets/Source/SoundMap.json:133 (gen_10.wav)
+Assets/Source/Sound Effects/gen_11.wav,45.4,USED,Assets/Source/SoundMap.json:146 (gen_11.wav)
+Assets/Source/Sound Effects/gen_12.wav,46.1,USED,Assets/Source/SoundMap.json:159 (gen_12.wav)
+Assets/Source/Sound Effects/gen_13.wav,23.1,USED,Assets/Source/SoundMap.json:172 (gen_13.wav)
+Assets/Source/Sound Effects/gen_14.wav,22.4,USED,Assets/Source/SoundMap.json:185 (gen_14.wav)
+Assets/Source/Sound Effects/gen_15.wav,33.8,USED,Assets/Source/SoundMap.json:198 (gen_15.wav)
+Assets/Source/Sound Effects/gen_16.wav,13.5,USED,Assets/Source/SoundMap.json:211 (gen_16.wav)
+Assets/Source/Sound Effects/gen_17.wav,8.8,USED,Assets/Source/SoundMap.json:224 (gen_17.wav)
+Assets/Source/Sound Effects/gen_19.wav,11.7,USED,Assets/Source/SoundMap.json:237 (gen_19.wav)
+Assets/Source/Sound Effects/gen_1A.wav,4.3,USED,Assets/Source/SoundMap.json:250 (gen_1a.wav)
+Assets/Source/Sound Effects/gen_1C.wav,10.1,USED,Assets/Source/SoundMap.json:263 (gen_1c.wav)
+Assets/Source/Sound Effects/gen_1D.wav,3.8,USED,Assets/Source/SoundMap.json:276 (gen_1d.wav)
+Assets/Source/Sound Effects/gen_1E.wav,10.8,USED,Assets/Source/SoundMap.json:289 (gen_1e.wav)
+Assets/Source/Sound Effects/gen_1F.wav,19.6,USED,Assets/Source/SoundMap.json:302 (gen_1f.wav)
+Assets/Source/Sound Effects/gen_20.wav,6.5,USED,Assets/Source/SoundMap.json:315 (gen_20.wav)
+Assets/Source/Sound Effects/gen_21.wav,11.1,USED,Assets/Source/SoundMap.json:328 (gen_21.wav)
+Assets/Source/Sound Effects/gen_22.wav,18.4,USED,Assets/Source/SoundMap.json:341 (gen_22.wav)
+Assets/Source/Sound Effects/gen_23.wav,6.3,USED,Assets/Source/SoundMap.json:354 (gen_23.wav)
+Assets/Source/Sound Effects/gen_24.wav,8.5,USED,Assets/Source/SoundMap.json:367 (gen_24.wav)
+Assets/Source/Sound Effects/gen_25.wav,21.0,USED,Assets/Source/SoundMap.json:380 (gen_25.wav)
+Assets/Source/Sound Effects/gen_26.wav,10.9,USED,Assets/Source/SoundMap.json:393 (gen_26.wav)
+Assets/Source/Sound Effects/gen_27.wav,11.8,USED,Assets/Source/SoundMap.json:406 (gen_27.wav)
+Assets/Source/Sound Effects/gen_28.wav,32.8,USED,Assets/Source/SoundMap.json:419 (gen_28.wav)
+Assets/Source/Sound Effects/gen_29.wav,17.6,USED,Assets/Source/SoundMap.json:432 (gen_29.wav)
+Assets/Source/Sound Effects/gen_2A.wav,23.1,USED,Assets/Source/SoundMap.json:445 (gen_2a.wav)
+Assets/Source/Sound Effects/gen_2B.wav,11.5,USED,Assets/Source/SoundMap.json:458 (gen_2b.wav)
+Assets/Source/Sound Effects/gen_2C.wav,8.9,USED,Assets/Source/SoundMap.json:471 (gen_2c.wav)
+Assets/Source/Sound Effects/gen_2D.wav,12.5,USED,Assets/Source/SoundMap.json:484 (gen_2d.wav)
+Assets/Source/Sound Effects/gen_2E.wav,6.3,USED,Assets/Source/SoundMap.json:497 (gen_2e.wav)
+Assets/Source/Sound Effects/gen_2F.wav,9.9,USED,Assets/Source/SoundMap.json:510 (gen_2f.wav)
+Assets/Source/Sound Effects/gen_30.wav,7.7,USED,Assets/Source/SoundMap.json:523 (gen_30.wav)
+Assets/Source/Sound Effects/gen_31.wav,11.0,USED,Assets/Source/SoundMap.json:536 (gen_31.wav)
+Assets/Source/Sound Effects/gen_32.wav,14.0,USED,Assets/Source/SoundMap.json:549 (gen_32.wav)
+Assets/Source/Sound Effects/gen_33.wav,13.4,USED,Assets/Source/SoundMap.json:562 (gen_33.wav)
+Assets/Source/Sound Effects/gen_34.wav,11.8,USED,Assets/Source/SoundMap.json:575 (gen_34.wav)
+Assets/Source/Sound Effects/gen_35.wav,13.8,USED,Assets/Source/SoundMap.json:588 (gen_35.wav)
+Assets/Source/Sound Effects/gen_36.wav,5.9,USED,Assets/Source/SoundMap.json:601 (gen_36.wav)
+Assets/Source/Sound Effects/gen_3A.wav,4.3,USED,Assets/Source/SoundMap.json:614 (gen_3a.wav)
+Assets/Source/Sound Effects/gen_3B.wav,12.2,USED,Assets/Source/SoundMap.json:627 (gen_3b.wav)
+Assets/Source/Sound Effects/gen_3C.wav,21.0,USED,Assets/Source/SoundMap.json:640 (gen_3c.wav)
+Assets/Source/Sound Effects/gen_3D.wav,5.6,USED,Assets/Source/SoundMap.json:653 (gen_3d.wav)
+Assets/Source/Sound Effects/gen_3E.wav,13.4,USED,Assets/Source/SoundMap.json:666 (gen_3e.wav)
+Assets/Source/Sound Effects/gen_3F.wav,13.1,USED,Assets/Source/SoundMap.json:679 (gen_3f.wav)
+Assets/Source/Sound Effects/gen_40.wav,10.4,USED,Assets/Source/SoundMap.json:692 (gen_40.wav)
+Assets/Source/Sound Effects/gen_41.wav,44.9,USED,Assets/Source/SoundMap.json:705 (gen_41.wav)
+Assets/Source/Sound Effects/gen_42.wav,9.0,USED,Assets/Source/SoundMap.json:718 (gen_42.wav)
+Assets/Source/Sound Effects/gen_43.wav,13.5,USED,Assets/Source/SoundMap.json:731 (gen_43.wav)
+Assets/Source/Sound Effects/gen_44.wav,3.3,USED,Assets/Source/SoundMap.json:744 (gen_44.wav)
+Assets/Source/Sound Effects/gen_45.wav,11.7,USED,Assets/Source/SoundMap.json:757 (gen_45.wav)
+Assets/Source/Sound Effects/gen_46.wav,3.9,USED,Assets/Source/SoundMap.json:770 (gen_46.wav)
+Assets/Source/Sound Effects/gen_47.wav,5.0,USED,Assets/Source/SoundMap.json:783 (gen_47.wav)
+Assets/Source/Sound Effects/gen_48.wav,14.4,USED,Assets/Source/SoundMap.json:796 (gen_48.wav)
+Assets/Source/Sound Effects/st1_00.wav,13.0,USED,Assets/Source/SoundMap.json:809 (st1_00.wav)
+Assets/Source/Sound Effects/st1_01.wav,10.3,USED,Assets/Source/SoundMap.json:822 (st1_01.wav)
+Assets/Source/Sound Effects/st1_02.wav,92.5,USED,Assets/Source/SoundMap.json:835 (st1_02.wav)
+Assets/Source/Sound Effects/st1_03.wav,30.0,USED,Assets/Source/SoundMap.json:848 (st1_03.wav)
+Assets/Source/Sound Effects/st1_04.wav,30.8,USED,Assets/Source/SoundMap.json:861 (st1_04.wav)
+Assets/Source/Sound Effects/st1_05.wav,3.5,USED,Assets/Source/SoundMap.json:874 (st1_05.wav)
+Assets/Source/Sound Effects/st1_06.wav,7.2,USED,Assets/Source/SoundMap.json:887 (st1_06.wav)
+Assets/Source/Sound Effects/st1_07.wav,67.2,USED,Assets/Source/SoundMap.json:900 (st1_07.wav)
+Assets/Source/Sound Effects/st1_08.wav,15.5,USED,Assets/Source/SoundMap.json:913 (st1_08.wav)
+Assets/Source/Sound Effects/st1_09.wav,10.9,USED,Assets/Source/SoundMap.json:926 (st1_09.wav)
+Assets/Source/Sound Effects/st1_0A.wav,15.4,USED,Assets/Source/SoundMap.json:939 (st1_0a.wav)
+Assets/Source/Sound Effects/st1_0B.wav,6.9,USED,Assets/Source/SoundMap.json:952 (st1_0b.wav)
+Assets/Source/Sound Effects/st1_0C.wav,4.8,USED,Assets/Source/SoundMap.json:965 (st1_0c.wav)
+Assets/Source/Sound Effects/st1_0D.wav,11.7,USED,Assets/Source/SoundMap.json:978 (st1_0d.wav)
+Assets/Source/Sound Effects/st1_0E.wav,15.4,USED,Assets/Source/SoundMap.json:991 (st1_0e.wav)
+Assets/Source/Sound Effects/st2_00.wav,40.8,USED,Assets/Source/SoundMap.json:1004 (st2_00.wav)
+Assets/Source/Sound Effects/st2_01.wav,27.1,USED,Assets/Source/SoundMap.json:1017 (st2_01.wav)
+Assets/Source/Sound Effects/st2_02.wav,43.5,USED,Assets/Source/SoundMap.json:1030 (st2_02.wav)
+Assets/Source/Sound Effects/st2_03.wav,1.3,USED,Assets/Source/SoundMap.json:1043 (st2_03.wav)
+Assets/Source/Sound Effects/st2_04.wav,8.2,USED,Assets/Source/SoundMap.json:1056 (st2_04.wav)
+Assets/Source/Sound Effects/st2_05.wav,41.7,USED,Assets/Source/SoundMap.json:1069 (st2_05.wav)
+Assets/Source/Sound Effects/st2_08.wav,1.7,USED,Assets/Source/SoundMap.json:1082 (st2_08.wav)
+Assets/Source/Sound Effects/st2_09.wav,1.7,USED,Assets/Source/SoundMap.json:1095 (st2_09.wav)
+Assets/Source/Sound Effects/st2_0A.wav,13.2,USED,Assets/Source/SoundMap.json:1108 (st2_0a.wav)
+Assets/Source/Sound Effects/st2_0C.wav,9.8,USED,Assets/Source/SoundMap.json:1121 (st2_0c.wav)
+Assets/Source/Sound Effects/st2_0D.wav,6.4,USED,Assets/Source/SoundMap.json:1134 (st2_0d.wav)
+Assets/Source/Sound Effects/st2_0F.wav,7.8,USED,Assets/Source/SoundMap.json:1147 (st2_0f.wav)
+Assets/Source/Sound Effects/st2_10.wav,27.2,USED,Assets/Source/SoundMap.json:1160 (st2_10.wav)
+Assets/Source/Sound Effects/st2_11.wav,14.0,USED,Assets/Source/SoundMap.json:1173 (st2_11.wav)
+Assets/Source/Sound Effects/st2_13.wav,7.3,USED,Assets/Source/SoundMap.json:1186 (st2_13.wav)
+Assets/Source/Sound Effects/st2_14.wav,8.4,USED,Assets/Source/SoundMap.json:1199 (st2_14.wav)
+Assets/Source/Sound Effects/st3_02.wav,14.1,USED,Assets/Source/SoundMap.json:1212 (st3_02.wav)
+Assets/Source/Sound Effects/st3_03.wav,15.3,USED,Assets/Source/SoundMap.json:1225 (st3_03.wav)
+Assets/Source/Sound Effects/st3_04.wav,46.1,USED,Assets/Source/SoundMap.json:1238 (st3_04.wav)
+Assets/Source/Sound Effects/st3_06.wav,7.0,USED,Assets/Source/SoundMap.json:1251 (st3_06.wav)
+Assets/Source/Sound Effects/st3_07.wav,9.7,USED,Assets/Source/SoundMap.json:1264 (st3_07.wav)
+Assets/Source/Sound Effects/st3_08.wav,14.4,USED,Assets/Source/SoundMap.json:1277 (st3_08.wav)
+Assets/Source/Sound Effects/st3_0A.wav,7.8,USED,Assets/Source/SoundMap.json:1290 (st3_0a.wav)
+Assets/Source/Sound Effects/st3_0B.wav,6.0,USED,Assets/Source/SoundMap.json:1303 (st3_0b.wav)
+Assets/Source/Sound Effects/st3_0C.wav,9.0,USED,Assets/Source/SoundMap.json:1316 (st3_0c.wav)
+Assets/Source/Sound Effects/st3_0D.wav,15.2,USED,Assets/Source/SoundMap.json:1329 (st3_0d.wav)
+Assets/Source/Sound Effects/st3_0E.wav,17.1,USED,Assets/Source/SoundMap.json:1342 (st3_0e.wav)
+Assets/Source/Sound Effects/st3_10.wav,6.8,USED,Assets/Source/SoundMap.json:1355 (st3_10.wav)
+Assets/Source/Sound Effects/st3_11.wav,11.5,USED,Assets/Source/SoundMap.json:1368 (st3_11.wav)
+Assets/Source/Sound Effects/st3_14.wav,7.8,USED,Assets/Source/SoundMap.json:1381 (st3_14.wav)
+Assets/Source/Sound Effects/st3_15.wav,4.9,USED,Assets/Source/SoundMap.json:1394 (st3_15.wav)
+Assets/Source/Sound Effects/st3_16.wav,27.1,USED,Assets/Source/SoundMap.json:1407 (st3_16.wav)
+Assets/Source/Sound Effects/st4_00.wav,25.0,USED,Assets/Source/SoundMap.json:1420 (st4_00.wav)
+Assets/Source/Sound Effects/st4_02.wav,23.6,USED,Assets/Source/SoundMap.json:1433 (st4_02.wav)
+Assets/Source/Sound Effects/st4_03.wav,17.6,USED,Assets/Source/SoundMap.json:1446 (st4_03.wav)
+Assets/Source/Sound Effects/st4_04.wav,44.4,USED,Assets/Source/SoundMap.json:1459 (st4_04.wav)
+Assets/Source/Sound Effects/st4_07.wav,70.8,USED,Assets/Source/SoundMap.json:1472 (st4_07.wav)
+Assets/Source/Sound Effects/st4_08.wav,11.9,USED,Assets/Source/SoundMap.json:1485 (st4_08.wav)
+Assets/Source/Sound Effects/st4_0F.wav,7.5,USED,Assets/Source/SoundMap.json:1498 (st4_0f.wav)
+Assets/Source/Sound Effects/st4_10.wav,2.3,USED,Assets/Source/SoundMap.json:1511 (st4_10.wav)
+Assets/Source/Sound Effects/st4_11.wav,14.5,USED,Assets/Source/SoundMap.json:1524 (st4_11.wav)
+Assets/Source/Sound Effects/st4_12.wav,3.9,USED,Assets/Source/SoundMap.json:1537 (st4_12.wav)
+Assets/Source/Sound Effects/st4_13.wav,16.7,USED,Assets/Source/SoundMap.json:1550 (st4_13.wav)
+Assets/Source/Sound Effects/st4_16.wav,1.3,USED,Assets/Source/SoundMap.json:1563 (st4_16.wav)
+Assets/Source/Sound Effects/st4_17.wav,1.6,USED,Assets/Source/SoundMap.json:1576 (st4_17.wav)
+Assets/Source/Sound Effects/st4_18.wav,1.6,USED,Assets/Source/SoundMap.json:1589 (st4_18.wav)
+Assets/Source/Sound Effects/st4_19.wav,3.6,USED,Assets/Source/SoundMap.json:1602 (st4_19.wav)
+Assets/Source/Sound Effects/st5_01.wav,9.6,USED,Assets/Source/SoundMap.json:1615 (st5_01.wav)
+Assets/Source/Sound Effects/st5_02.wav,48.2,USED,Assets/Source/SoundMap.json:1628 (st5_02.wav)
+Assets/Source/Sound Effects/st5_04.wav,14.5,USED,Assets/Source/SoundMap.json:1641 (st5_04.wav)
+Assets/Source/Sound Effects/st5_05.wav,16.9,USED,Assets/Source/SoundMap.json:1654 (st5_05.wav)
+Assets/Source/Sound Effects/st5_06.wav,26.1,USED,Assets/Source/SoundMap.json:1667 (st5_06.wav)
+Assets/Source/Sound Effects/st5_0B.wav,7.1,USED,Assets/Source/SoundMap.json:1680 (st5_0b.wav)
+Assets/Source/Sound Effects/st5_0C.wav,10.4,USED,Assets/Source/SoundMap.json:1693 (st5_0c.wav)
+Assets/Source/Sound Effects/st5_0D.wav,49.2,USED,Assets/Source/SoundMap.json:1706 (st5_0d.wav)
+Assets/Source/Sound Effects/st5_0E.wav,5.1,USED,Assets/Source/SoundMap.json:1719 (st5_0e.wav)
+Assets/Source/Sound Effects/st5_12.wav,22.9,USED,Assets/Source/SoundMap.json:1732 (st5_12.wav)
+Assets/Source/Sound Effects/st5_14.wav,13.7,USED,Assets/Source/SoundMap.json:1745 (st5_14.wav)
+Assets/Source/Sound Effects/st5_15.wav,13.2,USED,Assets/Source/SoundMap.json:1758 (st5_15.wav)
+Assets/Source/Sound Effects/st5_1A.wav,13.9,USED,Assets/Source/SoundMap.json:1771 (st5_1a.wav)
+Assets/Source/Sound Effects/st5_1D.wav,20.0,USED,Assets/Source/SoundMap.json:1784 (st5_1d.wav)
+Assets/Source/Sound Effects/st6_00.wav,8.0,USED,Assets/Source/SoundMap.json:1797 (st6_00.wav)
+Assets/Source/Sound Effects/st6_01.wav,9.5,USED,Assets/Source/SoundMap.json:1810 (st6_01.wav)
+Assets/Source/Sound Effects/st6_03.wav,14.9,USED,Assets/Source/SoundMap.json:1823 (st6_03.wav)
+Assets/Source/Sound Effects/st6_05.wav,24.9,USED,Assets/Source/SoundMap.json:1836 (st6_05.wav)
+Assets/Source/Sound Effects/st6_06.wav,37.3,USED,Assets/Source/SoundMap.json:1849 (st6_06.wav)
+Assets/Source/Sound Effects/st6_07.wav,38.3,USED,Assets/Source/SoundMap.json:1862 (st6_07.wav)
+Assets/Source/Sound Effects/st6_08.wav,18.3,USED,Assets/Source/SoundMap.json:1875 (st6_08.wav)
+Assets/Source/Sound Effects/st6_09.wav,18.7,USED,Assets/Source/SoundMap.json:1888 (st6_09.wav)
+Assets/Source/Sound Effects/st6_0A.wav,5.6,USED,Assets/Source/SoundMap.json:1901 (st6_0a.wav)
+Assets/Source/Sound Effects/st6_0D.wav,17.2,USED,Assets/Source/SoundMap.json:1914 (st6_0d.wav)
+Assets/Source/Sound Effects/st6_0E.wav,13.3,USED,Assets/Source/SoundMap.json:1927 (st6_0e.wav)
+Assets/Source/Sound Effects/st6_13.wav,10.8,USED,Assets/Source/SoundMap.json:1940 (st6_13.wav)
+Assets/Source/Sound Effects/st6_14.wav,10.3,USED,Assets/Source/SoundMap.json:1953 (st6_14.wav)
+Assets/Source/Sound Effects/st7_01.wav,20.7,USED,Assets/Source/SoundMap.json:1966 (st7_01.wav)
+Assets/Source/Sound Effects/st7_02.wav,20.3,USED,Assets/Source/SoundMap.json:1979 (st7_02.wav)
+Assets/Source/Sound Effects/st7_03.wav,38.0,USED,Assets/Source/SoundMap.json:1992 (st7_03.wav)
+Assets/Source/Sound Effects/st7_04.wav,79.1,USED,Assets/Source/SoundMap.json:2005 (st7_04.wav)
+Assets/Source/Sound Effects/st7_0D.wav,18.8,USED,Assets/Source/SoundMap.json:2018 (st7_0d.wav)
+Assets/Source/Sound Effects/st7_0F.wav,10.3,USED,Assets/Source/SoundMap.json:2031 (st7_0f.wav)
+Assets/Source/Sound Effects/st7_10.wav,6.7,USED,Assets/Source/SoundMap.json:2044 (st7_10.wav)
+Assets/Source/Sound Effects/st7_11.wav,11.5,USED,Assets/Source/SoundMap.json:2057 (st7_11.wav)
+Assets/Source/Sound Effects/st7_12.wav,48.5,USED,Assets/Source/SoundMap.json:2070 (st7_12.wav)
+Assets/Source/Sound Effects/st7_13.wav,47.5,USED,Assets/Source/SoundMap.json:2083 (st7_13.wav)
+Assets/Source/Sound Effects/st7_14.wav,46.7,USED,Assets/Source/SoundMap.json:2096 (st7_14.wav)
+Assets/Source/Sound Effects/st7_15.wav,32.6,USED,Assets/Source/SoundMap.json:2109 (st7_15.wav)
+Assets/Source/SoundMap.json,44.9,UNUSED,-
+Assets/Source/sheets.json,84.8,USED,Source/Game/Player/SlugClips.h:9 (sheets.json)
+Assets/Source/videoplayback (1).mp4,25985.5,UNUSED,-
+Assets/Source/videoplayback (2).mp4,26080.2,UNUSED,-
+Assets/Stage/BossArena.json,1.1,USED,Scripts/GenBossLab.py:82 (bossarena.json)
+Assets/Stage/BossLab.json,4.3,USED,Source/Game/StateFactory.cpp:56 (bosslab.json)
+Assets/Stage/Stage0.json,32.0,USED,Assets/Stage/BossLab.json:4 (stage0.json)
+Assets/Tuning/Tuning.json,5.3,USED,Source/Core/AssetPath.cpp:45 (tuning.json)
+Resources/Charactor/LeftMotion/Player_Crouch_Idle_Left.bmp,112.6,USED,Resources/ResourceData/TextureData.data:92 (player_crouch_idle_left.bmp)
+Resources/Charactor/LeftMotion/Player_Crouch_Walk_Left.bmp,131.3,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Drink_Right_Upper_Left.bmp,537.6,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Idle_Right_Lower.bmp,14.1,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Idle_Right_Upper.bmp,191.5,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Jump_Move_Right_Lower.bmp,98.5,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Jump_Move_Right_Upper.bmp,105.1,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Jump_Right_Lower.bmp,70.4,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Jump_Right_Upper.bmp,98.5,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Lookdown_Jump_Upper.bmp,15.7,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Lookup_Right_Upper.bmp,153.2,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Reload_Right_Upper.bmp,601.2,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Shot_Above_Upper.bmp,328.2,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Shot_Below_Upper.bmp,140.7,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Shot_Crouch.bmp,343.8,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Shot_Right_Upper.bmp,300.8,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Sword1_Crouch.bmp,196.0,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Sword1_Upper.bmp,164.1,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Sword2_Crouch.bmp,196.9,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Sword2_Upper.bmp,283.6,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Throw_Crouch.bmp,137.9,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Throw_Upper.bmp,150.1,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Walk_Right_Lower.bmp,229.7,UNUSED,-
+Resources/Charactor/LeftMotion/Player_Walk_Right_Upper.bmp,300.1,UNUSED,-
+Resources/Charactor/MGmotion/Player_Crouch_Idle_MG.bmp,126.6,UNUSED,-
+Resources/Charactor/MGmotion/Player_Crouch_Shot_MG.bmp,164.1,UNUSED,-
+Resources/Charactor/MGmotion/Player_Crouch_Shot_SW.bmp,164.1,UNUSED,-
+Resources/Charactor/MGmotion/Player_Crouch_Sword1_MG.bmp,247.9,UNUSED,-
+Resources/Charactor/MGmotion/Player_Crouch_Sword2_MG.bmp,218.8,UNUSED,-
+Resources/Charactor/MGmotion/Player_Crouch_Throw_MG.bmp,158.3,UNUSED,-
+Resources/Charactor/MGmotion/Player_Crouch_Walk_MG.bmp,172.3,UNUSED,-
+Resources/Charactor/MGmotion/Player_Jump_Idle_MG.bmp,131.3,UNUSED,-
+Resources/Charactor/MGmotion/Player_Jump_LookdownShot_MG.bmp,164.1,UNUSED,-
+Resources/Charactor/MGmotion/Player_Jump_LookdownShot_SW.bmp,158.3,UNUSED,-
+Resources/Charactor/MGmotion/Player_Jump_Move_MG.bmp,112.6,UNUSED,-
+Resources/Charactor/MGmotion/Player_LookDown_MG.bmp,187.6,UNUSED,-
+Resources/Charactor/MGmotion/Player_LookUp_MG.bmp,243.8,UNUSED,-
+Resources/Charactor/MGmotion/Player_Stand_Idle2_MG.bmp,646.9,UNUSED,-
+Resources/Charactor/MGmotion/Player_Stand_Idle_MG.bmp,147.7,UNUSED,-
+Resources/Charactor/MGmotion/Player_Stand_LookDown_MG.bmp,23.3,UNUSED,-
+Resources/Charactor/MGmotion/Player_Stand_LookupIdle_MG.bmp,131.3,UNUSED,-
+Resources/Charactor/MGmotion/Player_Stand_LookupShot_MG.bmp,140.7,UNUSED,-
+Resources/Charactor/MGmotion/Player_Stand_LookupShot_SW.bmp,165.1,UNUSED,-
+Resources/Charactor/MGmotion/Player_Stand_Move_MG.bmp,328.2,UNUSED,-
+Resources/Charactor/MGmotion/Player_Stand_Shot_Forward_MG.bmp,177.8,UNUSED,-
+Resources/Charactor/MGmotion/Player_Stand_Shot_Forward_SW.bmp,131.3,UNUSED,-
+Resources/Charactor/MGmotion/Player_Stand_Sword1_MG.bmp,253.2,UNUSED,-
+Resources/Charactor/MGmotion/Player_Stand_Sword2_MG.bmp,299.1,UNUSED,-
+Resources/Charactor/MGmotion/Player_Stand_TBShot_MG.bmp,121.9,UNUSED,-
+Resources/Charactor/MGmotion/Player_Stand_Thorw_MG.bmp,147.7,UNUSED,-
+Resources/Charactor/MGmotion/Sprite-0002-Recovered.aseprite,42.8,UNUSED,-
+Resources/Charactor/Player_Bullet_Basic.bmp,1.6,USED,Resources/ResourceData/TextureData.data:7 (player_bullet_basic.bmp)
+Resources/Charactor/Player_Bullet_HM.bmp,154.7,USED,Resources/ResourceData/TextureData.data:12 (player_bullet_hm.bmp)
+Resources/Charactor/Player_Crouch_Idle.bmp,112.6,UNUSED,-
+Resources/Charactor/Player_Crouch_Walk.bmp,131.3,UNUSED,-
+Resources/Charactor/Player_Drink_Right_Upper.bmp,546.3,UNUSED,-
+Resources/Charactor/Player_Idle_Right_Lower.bmp,14.1,UNUSED,-
+Resources/Charactor/Player_Idle_Right_Upper.bmp,191.5,UNUSED,-
+Resources/Charactor/Player_Jump_Move_Right_Lower.bmp,98.5,UNUSED,-
+Resources/Charactor/Player_Jump_Move_Right_Upper.bmp,105.1,UNUSED,-
+Resources/Charactor/Player_Jump_Right_Lower.bmp,70.4,UNUSED,-
+Resources/Charactor/Player_Jump_Right_Upper.bmp,98.5,UNUSED,-
+Resources/Charactor/Player_Lookdown_Jump_Upper.bmp,15.7,UNUSED,-
+Resources/Charactor/Player_Lookup_Right_Upper.bmp,153.2,UNUSED,-
+Resources/Charactor/Player_Reload_Right_Upper.bmp,601.2,UNUSED,-
+Resources/Charactor/Player_Shot_Above_Upper.bmp,328.2,UNUSED,-
+Resources/Charactor/Player_Shot_Below_Upper.bmp,140.7,UNUSED,-
+Resources/Charactor/Player_Shot_Crouch.bmp,343.8,UNUSED,-
+Resources/Charactor/Player_Shot_Right_Upper.bmp,300.8,UNUSED,-
+Resources/Charactor/Player_Sword1_Crouch.bmp,196.0,UNUSED,-
+Resources/Charactor/Player_Sword1_Upper.bmp,164.1,UNUSED,-
+Resources/Charactor/Player_Sword2_Crouch.bmp,196.9,UNUSED,-
+Resources/Charactor/Player_Sword2_Upper.bmp,283.6,UNUSED,-
+Resources/Charactor/Player_Throw_Crouch.bmp,137.9,UNUSED,-
+Resources/Charactor/Player_Throw_Upper.bmp,150.1,UNUSED,-
+Resources/Charactor/Player_Walk_Right_Lower.bmp,229.7,UNUSED,-
+Resources/Charactor/Player_Walk_Right_Upper.bmp,300.1,UNUSED,-
+Resources/Charactor/Sprite-0001.aseprite,4923.2,UNUSED,-
+Resources/Charactor_new/Default_Gun/Player_Crouch_Idle_Left.bmp,121.3,USED,Resources/ResourceData/TextureData.data:92 (player_crouch_idle_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Crouch_Idle_Right.bmp,121.3,USED,Resources/ResourceData/TextureData.data:97 (player_crouch_idle_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Crouch_Move_Left.bmp,140.5,USED,Resources/ResourceData/TextureData.data:102 (player_crouch_move_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Crouch_Move_Right.bmp,140.5,USED,Resources/ResourceData/TextureData.data:107 (player_crouch_move_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Crouch_Shot_Left.bmp,295.4,USED,Resources/ResourceData/TextureData.data:112 (player_crouch_shot_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Crouch_Shot_Right.bmp,295.4,USED,Resources/ResourceData/TextureData.data:117 (player_crouch_shot_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Crouch_Slash1_Left.bmp,174.2,USED,Resources/ResourceData/TextureData.data:122 (player_crouch_slash1_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Crouch_Slash1_Right.bmp,174.2,USED,Resources/ResourceData/TextureData.data:127 (player_crouch_slash1_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Crouch_Slash2_Left.bmp,177.5,USED,Resources/ResourceData/TextureData.data:132 (player_crouch_slash2_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Crouch_Slash2_Right.bmp,177.5,USED,Resources/ResourceData/TextureData.data:137 (player_crouch_slash2_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Crouch_Throw_Left.bmp,130.8,USED,Resources/ResourceData/TextureData.data:142 (player_crouch_throw_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Crouch_Throw_Right.bmp,130.8,USED,Resources/ResourceData/TextureData.data:147 (player_crouch_throw_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Death_byBomb_Begin_Left.bmp,233.8,USED,Resources/ResourceData/TextureData.data:152 (player_death_bybomb_begin_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Death_byBomb_Begin_Right.bmp,233.8,USED,Resources/ResourceData/TextureData.data:157 (player_death_bybomb_begin_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Death_byBomb_End_Left.bmp,64.2,USED,Resources/ResourceData/TextureData.data:162 (player_death_bybomb_end_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Death_byBomb_End_Right.bmp,64.2,USED,Resources/ResourceData/TextureData.data:167 (player_death_bybomb_end_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Death_byBullet_Left.bmp,581.9,USED,Resources/ResourceData/TextureData.data:172 (player_death_bybullet_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Death_byBullet_Right.bmp,581.9,USED,Resources/ResourceData/TextureData.data:177 (player_death_bybullet_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Jump_Idle_Left.bmp,82.1,USED,Resources/ResourceData/TextureData.data:182 (player_jump_idle_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Jump_Idle_Right.bmp,82.1,USED,Resources/ResourceData/TextureData.data:187 (player_jump_idle_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Jump_Lookdown_Left.bmp,13.7,USED,Resources/ResourceData/TextureData.data:192 (player_jump_lookdown_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Jump_Lookdown_Right.bmp,13.7,USED,Resources/ResourceData/TextureData.data:197 (player_jump_lookdown_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Jump_Lookingdown_Left.bmp,27.4,USED,Resources/ResourceData/TextureData.data:202 (player_jump_lookingdown_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Jump_Lookingdown_Right.bmp,27.4,USED,Resources/ResourceData/TextureData.data:207 (player_jump_lookingdown_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Jump_Move_Left.bmp,118.2,USED,Resources/ResourceData/TextureData.data:212 (player_jump_move_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Jump_Move_Right.bmp,118.2,USED,Resources/ResourceData/TextureData.data:217 (player_jump_move_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Jump_Shot_Down_Left.bmp,116.5,USED,Resources/ResourceData/TextureData.data:222 (player_jump_shot_down_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Jump_Shot_Down_Right.bmp,116.5,USED,Resources/ResourceData/TextureData.data:227 (player_jump_shot_down_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Ride_Left.bmp,113.5,USED,Resources/ResourceData/TextureData.data:232 (player_ride_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Ride_RIght.bmp,113.5,USED,Resources/ResourceData/TextureData.data:237 (player_ride_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Idle_Action_Left.bmp,531.6,USED,Resources/ResourceData/TextureData.data:242 (player_stand_idle_action_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Idle_Action_Right.bmp,531.6,USED,Resources/ResourceData/TextureData.data:247 (player_stand_idle_action_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Idle_Left.bmp,114.9,USED,Resources/ResourceData/TextureData.data:252 (player_stand_idle_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Idle_Right.bmp,114.9,USED,Resources/ResourceData/TextureData.data:257 (player_stand_idle_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Lookingup_Left.bmp,36.3,USED,Resources/ResourceData/TextureData.data:262 (player_stand_lookingup_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Lookingup_Right.bmp,36.3,USED,Resources/ResourceData/TextureData.data:267 (player_stand_lookingup_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Lookup_Left.bmp,89.0,USED,Resources/ResourceData/TextureData.data:272 (player_stand_lookup_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Lookup_Right.bmp,89.0,USED,Resources/ResourceData/TextureData.data:277 (player_stand_lookup_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_MoveStop_Left.bmp,131.7,USED,Resources/ResourceData/TextureData.data:282 (player_stand_movestop_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_MoveStop_Right.bmp,131.7,USED,Resources/ResourceData/TextureData.data:287 (player_stand_movestop_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Move_Left.bmp,263.7,USED,Resources/ResourceData/TextureData.data:292 (player_stand_move_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Move_Right.bmp,263.7,USED,Resources/ResourceData/TextureData.data:297 (player_stand_move_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Reload_Left.bmp,560.0,USED,Resources/ResourceData/TextureData.data:302 (player_stand_reload_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Reload_Right.bmp,560.0,USED,Resources/ResourceData/TextureData.data:307 (player_stand_reload_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Shot_Left.bmp,257.9,USED,Resources/ResourceData/TextureData.data:312 (player_stand_shot_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Shot_Right.bmp,257.9,USED,Resources/ResourceData/TextureData.data:317 (player_stand_shot_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Shot_Up_Left.bmp,337.6,USED,Resources/ResourceData/TextureData.data:322 (player_stand_shot_up_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Shot_Up_Right.bmp,337.6,USED,Resources/ResourceData/TextureData.data:327 (player_stand_shot_up_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Slash1_Left.bmp,265.6,USED,Resources/ResourceData/TextureData.data:332 (player_stand_slash1_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Slash1_Right.bmp,265.6,USED,Resources/ResourceData/TextureData.data:337 (player_stand_slash1_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Slash2_Left.bmp,226.5,USED,Resources/ResourceData/TextureData.data:342 (player_stand_slash2_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Slash2_Right.bmp,226.5,USED,Resources/ResourceData/TextureData.data:347 (player_stand_slash2_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_StartCrouch_Left.bmp,76.8,USED,Resources/ResourceData/TextureData.data:352 (player_stand_startcrouch_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_StartCrouch_Right.bmp,76.8,USED,Resources/ResourceData/TextureData.data:357 (player_stand_startcrouch_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Throw_Left.bmp,114.3,USED,Resources/ResourceData/TextureData.data:362 (player_stand_throw_left.bmp)
+Resources/Charactor_new/Default_Gun/Player_Stand_Throw_Right.bmp,114.3,USED,Resources/ResourceData/TextureData.data:367 (player_stand_throw_right.bmp)
+Resources/Charactor_new/Default_Gun/Player_Victory.bmp,173.4,USED,Resources/ResourceData/TextureData.data:372 (player_victory.bmp)
+Resources/Charactor_new/Default_Gun/Sprite-0008.aseprite,4604.2,UNUSED,-
+Resources/Charactor_new/Default_Gun/Sprite-0008.png,5762.8,UNUSED,-
+Resources/Charactor_new/LowerBody/Player_Jump_Idle_Lower_Left.bmp,63.4,USED,Resources/ResourceData/TextureData.data:377 (player_jump_idle_lower_left.bmp)
+Resources/Charactor_new/LowerBody/Player_Jump_Idle_Lower_Right.bmp,63.4,USED,Resources/ResourceData/TextureData.data:382 (player_jump_idle_lower_right.bmp)
+Resources/Charactor_new/LowerBody/Player_Jump_Move_Lower_Left.bmp,65.0,USED,Resources/ResourceData/TextureData.data:387 (player_jump_move_lower_left.bmp)
+Resources/Charactor_new/LowerBody/Player_Jump_Move_Lower_Right.bmp,65.0,USED,Resources/ResourceData/TextureData.data:392 (player_jump_move_lower_right.bmp)
+Resources/Charactor_new/LowerBody/Player_Stand_Idle_Lower_Left.bmp,14.1,USED,Resources/ResourceData/TextureData.data:397 (player_stand_idle_lower_left.bmp)
+Resources/Charactor_new/LowerBody/Player_Stand_Idle_Lower_Right.bmp,14.1,USED,Resources/ResourceData/TextureData.data:402 (player_stand_idle_lower_right.bmp)
+Resources/Charactor_new/LowerBody/Player_Stand_Move_Lower_Left.bmp,132.1,USED,Resources/ResourceData/TextureData.data:407 (player_stand_move_lower_left.bmp)
+Resources/Charactor_new/LowerBody/Player_Stand_Move_Lower_Right.bmp,132.1,USED,Resources/ResourceData/TextureData.data:412 (player_stand_move_lower_right.bmp)
+Resources/Charactor_new/LowerBody/raw/Player_Jump_Idle_Lower_Left.bmp,63.4,USED,Resources/ResourceData/TextureData.data:377 (player_jump_idle_lower_left.bmp)
+Resources/Charactor_new/LowerBody/raw/Player_Jump_Idle_Lower_Right.bmp,63.4,USED,Resources/ResourceData/TextureData.data:382 (player_jump_idle_lower_right.bmp)
+Resources/Charactor_new/LowerBody/raw/Player_Jump_Move_Lower_Left.bmp,65.0,USED,Resources/ResourceData/TextureData.data:387 (player_jump_move_lower_left.bmp)
+Resources/Charactor_new/LowerBody/raw/Player_Jump_Move_Lower_Right.bmp,65.0,USED,Resources/ResourceData/TextureData.data:392 (player_jump_move_lower_right.bmp)
+Resources/Charactor_new/LowerBody/raw/Player_Stand_Idle_Lower_Left.bmp,10.6,USED,Resources/ResourceData/TextureData.data:397 (player_stand_idle_lower_left.bmp)
+Resources/Charactor_new/LowerBody/raw/Player_Stand_Idle_Lower_Right.bmp,10.6,USED,Resources/ResourceData/TextureData.data:402 (player_stand_idle_lower_right.bmp)
+Resources/Charactor_new/LowerBody/raw/Player_Stand_Move_Lower_Left.bmp,132.1,USED,Resources/ResourceData/TextureData.data:407 (player_stand_move_lower_left.bmp)
+Resources/Charactor_new/LowerBody/raw/Player_Stand_Move_Lower_Right.bmp,132.1,USED,Resources/ResourceData/TextureData.data:412 (player_stand_move_lower_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Crouch_Idle_Left.bmp,114.3,USED,Resources/ResourceData/TextureData.data:92 (player_crouch_idle_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Crouch_Idle_Right.bmp,114.3,USED,Resources/ResourceData/TextureData.data:97 (player_crouch_idle_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Crouch_Move_Left.bmp,107.7,USED,Resources/ResourceData/TextureData.data:102 (player_crouch_move_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Crouch_Move_Right.bmp,107.7,USED,Resources/ResourceData/TextureData.data:107 (player_crouch_move_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Crouch_Shot_MG_Left.bmp,121.2,USED,Resources/ResourceData/TextureData.data:437 (player_crouch_shot_mg_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Crouch_Shot_MG_Right.bmp,121.2,USED,Resources/ResourceData/TextureData.data:447 (player_crouch_shot_mg_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Crouch_Shot_SG_Left.bmp,148.6,USED,Resources/ResourceData/TextureData.data:442 (player_crouch_shot_sg_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Crouch_Shot_SG_Right.bmp,148.6,USED,Resources/ResourceData/TextureData.data:452 (player_crouch_shot_sg_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Crouch_Slash1_Left.bmp,173.3,USED,Resources/ResourceData/TextureData.data:122 (player_crouch_slash1_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Crouch_Slash1_Right.bmp,173.3,USED,Resources/ResourceData/TextureData.data:127 (player_crouch_slash1_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Crouch_Slash2_Left.bmp,213.5,USED,Resources/ResourceData/TextureData.data:132 (player_crouch_slash2_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Crouch_Slash2_Right.bmp,213.5,USED,Resources/ResourceData/TextureData.data:137 (player_crouch_slash2_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Crouch_Throw_Left.bmp,156.5,USED,Resources/ResourceData/TextureData.data:142 (player_crouch_throw_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Crouch_Throw_Right.bmp,156.5,USED,Resources/ResourceData/TextureData.data:147 (player_crouch_throw_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Jump_Idle_Left.bmp,115.4,USED,Resources/ResourceData/TextureData.data:182 (player_jump_idle_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Jump_Idle_Right.bmp,115.4,USED,Resources/ResourceData/TextureData.data:187 (player_jump_idle_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Jump_Lookdown_Left.bmp,21.8,USED,Resources/ResourceData/TextureData.data:192 (player_jump_lookdown_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Jump_Lookdown_Right.bmp,21.8,USED,Resources/ResourceData/TextureData.data:197 (player_jump_lookdown_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Jump_Lookingdown_Left.bmp,43.1,USED,Resources/ResourceData/TextureData.data:202 (player_jump_lookingdown_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Jump_Lookingdown_Right.bmp,43.1,USED,Resources/ResourceData/TextureData.data:207 (player_jump_lookingdown_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Jump_Move_Left.bmp,99.8,USED,Resources/ResourceData/TextureData.data:212 (player_jump_move_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Jump_Move_Right.bmp,99.8,USED,Resources/ResourceData/TextureData.data:217 (player_jump_move_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Jump_Shot_Lookdown_MG_Left.bmp,152.1,USED,Resources/ResourceData/TextureData.data:527 (player_jump_shot_lookdown_mg_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Jump_Shot_Lookdown_MG_Right.bmp,152.1,USED,Resources/ResourceData/TextureData.data:537 (player_jump_shot_lookdown_mg_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Jump_Shot_Lookdown_SG_Left.bmp,145.7,USED,Resources/ResourceData/TextureData.data:532 (player_jump_shot_lookdown_sg_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Jump_Shot_Lookdown_SG_Right.bmp,145.7,USED,Resources/ResourceData/TextureData.data:542 (player_jump_shot_lookdown_sg_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Jump_Shot_Lookingdown_Left.bmp,220.9,USED,Resources/ResourceData/TextureData.data:547 (player_jump_shot_lookingdown_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Jump_Shot_Lookingdown_Right.bmp,220.9,USED,Resources/ResourceData/TextureData.data:552 (player_jump_shot_lookingdown_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Ride_Left.bmp,134.6,USED,Resources/ResourceData/TextureData.data:232 (player_ride_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Ride_Right.bmp,134.6,USED,Resources/ResourceData/TextureData.data:237 (player_ride_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Idle_Action_Left.bmp,526.0,USED,Resources/ResourceData/TextureData.data:242 (player_stand_idle_action_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Idle_Action_Right.bmp,526.0,USED,Resources/ResourceData/TextureData.data:247 (player_stand_idle_action_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Idle_Left.bmp,115.6,USED,Resources/ResourceData/TextureData.data:252 (player_stand_idle_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Idle_Lookup_Left.bmp,101.3,USED,Resources/ResourceData/TextureData.data:582 (player_stand_idle_lookup_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Idle_Lookup_Right.bmp,101.3,USED,Resources/ResourceData/TextureData.data:587 (player_stand_idle_lookup_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Idle_Right.bmp,115.6,USED,Resources/ResourceData/TextureData.data:257 (player_stand_idle_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Lookingup_Left.bmp,41.5,USED,Resources/ResourceData/TextureData.data:262 (player_stand_lookingup_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Lookingup_Right.bmp,41.5,USED,Resources/ResourceData/TextureData.data:267 (player_stand_lookingup_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Lookup_Left.bmp,136.6,USED,Resources/ResourceData/TextureData.data:272 (player_stand_lookup_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Lookup_Right.bmp,136.6,USED,Resources/ResourceData/TextureData.data:277 (player_stand_lookup_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_MoveStop_Left.bmp,147.5,USED,Resources/ResourceData/TextureData.data:282 (player_stand_movestop_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_MoveStop_Right.bmp,147.5,USED,Resources/ResourceData/TextureData.data:287 (player_stand_movestop_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Move_Left.bmp,311.8,USED,Resources/ResourceData/TextureData.data:292 (player_stand_move_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Move_Right.bmp,311.8,USED,Resources/ResourceData/TextureData.data:297 (player_stand_move_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Shot_Lookingup_MG_Left.bmp,224.3,USED,Resources/ResourceData/TextureData.data:627 (player_stand_shot_lookingup_mg_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Shot_Lookingup_MG_Right.bmp,224.3,USED,Resources/ResourceData/TextureData.data:632 (player_stand_shot_lookingup_mg_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Shot_MG_Left.bmp,108.6,USED,Resources/ResourceData/TextureData.data:617 (player_stand_shot_mg_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Shot_MG_Right.bmp,108.6,USED,Resources/ResourceData/TextureData.data:637 (player_stand_shot_mg_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Shot_SG_Left.bmp,139.5,USED,Resources/ResourceData/TextureData.data:622 (player_stand_shot_sg_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Shot_SG_Right.bmp,139.5,USED,Resources/ResourceData/TextureData.data:642 (player_stand_shot_sg_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Shot_Up_MG_Left.bmp,108.1,USED,Resources/ResourceData/TextureData.data:647 (player_stand_shot_up_mg_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Shot_Up_MG_Right.bmp,108.1,USED,Resources/ResourceData/TextureData.data:657 (player_stand_shot_up_mg_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Shot_Up_SG_Left.bmp,162.1,USED,Resources/ResourceData/TextureData.data:652 (player_stand_shot_up_sg_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Shot_Up_SG_Right.bmp,162.1,USED,Resources/ResourceData/TextureData.data:662 (player_stand_shot_up_sg_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Slash1_Left.bmp,243.1,USED,Resources/ResourceData/TextureData.data:332 (player_stand_slash1_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Slash1_Right.bmp,243.1,USED,Resources/ResourceData/TextureData.data:337 (player_stand_slash1_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Slash2_Left.bmp,227.2,USED,Resources/ResourceData/TextureData.data:342 (player_stand_slash2_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Slash2_Right.bmp,227.2,USED,Resources/ResourceData/TextureData.data:347 (player_stand_slash2_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_StartCrouch_Left.bmp,85.6,USED,Resources/ResourceData/TextureData.data:352 (player_stand_startcrouch_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_StartCrouch_Right.bmp,85.6,USED,Resources/ResourceData/TextureData.data:357 (player_stand_startcrouch_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Throw_Left.bmp,122.4,USED,Resources/ResourceData/TextureData.data:362 (player_stand_throw_left.bmp)
+Resources/Charactor_new/Special_Gun/Player_Stand_Throw_Right.bmp,122.4,USED,Resources/ResourceData/TextureData.data:367 (player_stand_throw_right.bmp)
+Resources/Charactor_new/Special_Gun/Player_Victory.bmp,159.1,USED,Resources/ResourceData/TextureData.data:372 (player_victory.bmp)
+Resources/ColliderData/ColliderBase.txt,0.0,UNUSED,-
+Resources/ColliderData/TestCld.cd,0.1,UNUSED,-
+Resources/ColliderData/readme.txt,0.2,UNUSED,-
+Resources/ColliderData/temp.cd,0.1,UNUSED,-
+Resources/ColliderData/test.cd,0.1,UNUSED,-
+Resources/Debrics/Metal1.bmp,138.2,USED,Resources/ResourceData/TextureData.data:1202 (metal1.bmp)
+Resources/Debrics/Metal10.bmp,30.1,USED,Resources/ResourceData/TextureData.data:1247 (metal10.bmp)
+Resources/Debrics/Metal11.bmp,9.6,USED,Resources/ResourceData/TextureData.data:1252 (metal11.bmp)
+Resources/Debrics/Metal12.bmp,5.3,USED,Resources/ResourceData/TextureData.data:1257 (metal12.bmp)
+Resources/Debrics/Metal2.bmp,134.1,USED,Resources/ResourceData/TextureData.data:1207 (metal2.bmp)
+Resources/Debrics/Metal3.bmp,139.6,USED,Resources/ResourceData/TextureData.data:1212 (metal3.bmp)
+Resources/Debrics/Metal4.bmp,35.7,USED,Resources/ResourceData/TextureData.data:1217 (metal4.bmp)
+Resources/Debrics/Metal5.bmp,106.6,USED,Resources/ResourceData/TextureData.data:1222 (metal5.bmp)
+Resources/Debrics/Metal6.bmp,34.9,USED,Resources/ResourceData/TextureData.data:1227 (metal6.bmp)
+Resources/Debrics/Metal7.bmp,60.1,USED,Resources/ResourceData/TextureData.data:1232 (metal7.bmp)
+Resources/Debrics/Metal8.bmp,18.2,USED,Resources/ResourceData/TextureData.data:1237 (metal8.bmp)
+Resources/Debrics/Metal9.bmp,67.0,USED,Resources/ResourceData/TextureData.data:1242 (metal9.bmp)
+Resources/Debrics/Rock1.bmp,128.1,USED,Resources/ResourceData/TextureData.data:1282 (rock1.bmp)
+Resources/Debrics/Rock2.bmp,136.2,USED,Resources/ResourceData/TextureData.data:1287 (rock2.bmp)
+Resources/Debrics/Rock3.bmp,76.6,USED,Resources/ResourceData/TextureData.data:1292 (rock3.bmp)
+Resources/Debrics/Wood1.bmp,145.4,USED,Resources/ResourceData/TextureData.data:1172 (wood1.bmp)
+Resources/Debrics/Wood2.bmp,155.1,USED,Resources/ResourceData/TextureData.data:1177 (wood2.bmp)
+Resources/Debrics/Wood3.bmp,202.6,USED,Resources/ResourceData/TextureData.data:1182 (wood3.bmp)
+Resources/Debrics/Wood4.bmp,108.8,USED,Resources/ResourceData/TextureData.data:1187 (wood4.bmp)
+Resources/Debrics/Wood5.bmp,90.1,USED,Resources/ResourceData/TextureData.data:1192 (wood5.bmp)
+Resources/Debrics/Wood6.bmp,30.1,USED,Resources/ResourceData/TextureData.data:1197 (wood6.bmp)
+Resources/Debrics/raw/Metal1.bmp,138.2,USED,Resources/ResourceData/TextureData.data:1202 (metal1.bmp)
+Resources/Debrics/raw/Metal10.bmp,30.1,USED,Resources/ResourceData/TextureData.data:1247 (metal10.bmp)
+Resources/Debrics/raw/Metal11.bmp,9.6,USED,Resources/ResourceData/TextureData.data:1252 (metal11.bmp)
+Resources/Debrics/raw/Metal12.bmp,5.3,USED,Resources/ResourceData/TextureData.data:1257 (metal12.bmp)
+Resources/Debrics/raw/Metal2.bmp,134.1,USED,Resources/ResourceData/TextureData.data:1207 (metal2.bmp)
+Resources/Debrics/raw/Metal3.bmp,139.6,USED,Resources/ResourceData/TextureData.data:1212 (metal3.bmp)
+Resources/Debrics/raw/Metal4.bmp,35.7,USED,Resources/ResourceData/TextureData.data:1217 (metal4.bmp)
+Resources/Debrics/raw/Metal5.bmp,106.6,USED,Resources/ResourceData/TextureData.data:1222 (metal5.bmp)
+Resources/Debrics/raw/Metal6.bmp,34.9,USED,Resources/ResourceData/TextureData.data:1227 (metal6.bmp)
+Resources/Debrics/raw/Metal7.bmp,60.1,USED,Resources/ResourceData/TextureData.data:1232 (metal7.bmp)
+Resources/Debrics/raw/Metal8.bmp,18.2,USED,Resources/ResourceData/TextureData.data:1237 (metal8.bmp)
+Resources/Debrics/raw/Metal9.bmp,67.0,USED,Resources/ResourceData/TextureData.data:1242 (metal9.bmp)
+Resources/Debrics/raw/Rock1.bmp,128.1,USED,Resources/ResourceData/TextureData.data:1282 (rock1.bmp)
+Resources/Debrics/raw/Rock2.bmp,136.2,USED,Resources/ResourceData/TextureData.data:1287 (rock2.bmp)
+Resources/Debrics/raw/Rock3.bmp,76.6,USED,Resources/ResourceData/TextureData.data:1292 (rock3.bmp)
+Resources/Debrics/raw/Wood1.bmp,145.4,USED,Resources/ResourceData/TextureData.data:1172 (wood1.bmp)
+Resources/Debrics/raw/Wood2.bmp,155.1,USED,Resources/ResourceData/TextureData.data:1177 (wood2.bmp)
+Resources/Debrics/raw/Wood3.bmp,202.6,USED,Resources/ResourceData/TextureData.data:1182 (wood3.bmp)
+Resources/Debrics/raw/Wood4.bmp,108.8,USED,Resources/ResourceData/TextureData.data:1187 (wood4.bmp)
+Resources/Debrics/raw/Wood5.bmp,90.1,USED,Resources/ResourceData/TextureData.data:1192 (wood5.bmp)
+Resources/Debrics/raw/Wood6.bmp,30.1,USED,Resources/ResourceData/TextureData.data:1197 (wood6.bmp)
+Resources/Dummy/11293.png,282.1,MAYBE,Source/Tools/Baker/Baker.cpp:1127 (dir literal dummy/) - file itself not named; dynamic load?
+Resources/Dummy/37874.png,1920.3,MAYBE,Source/Tools/Baker/Baker.cpp:1127 (dir literal dummy/) - file itself not named; dynamic load?
+Resources/Dummy/Azusa.bmp,44.0,MAYBE,Source/Tools/Baker/Baker.cpp:1127 (dir literal dummy/) - file itself not named; dynamic load?
+Resources/Dummy/Bomb.bmp,78.2,USED,Resources/ResourceData/TextureData.data:27 (bomb.bmp)
+Resources/Dummy/Bullet.bmp,12.6,USED,Assets/Defs/Props/Props.json:463 (bullet)
+Resources/Dummy/Main_Title.bmp,2700.1,USED,Source/Tools/Baker/Baker.cpp:1127 (main_title.bmp)
+Resources/Dummy/Marco_Idle.bmp,21.3,MAYBE,Source/Tools/Baker/Baker.cpp:1127 (dir literal dummy/) - file itself not named; dynamic load?
+Resources/Dummy/Marco_Sprite_Resource.bmp,95687.8,MAYBE,Source/Tools/Baker/Baker.cpp:1127 (dir literal dummy/) - file itself not named; dynamic load?
+Resources/Dummy/Player_Jump_Right_Lower.bmp,52.8,MAYBE,Source/Tools/Baker/Baker.cpp:1127 (dir literal dummy/) - file itself not named; dynamic load?
+Resources/Dummy/Player_Shot_Below_Upper.bmp,105.5,MAYBE,Source/Tools/Baker/Baker.cpp:1127 (dir literal dummy/) - file itself not named; dynamic load?
+Resources/Dummy/devBackground.bmp,12679.7,USED,Resources/ResourceData/TextureData.data:2 (devbackground.bmp)
+Resources/Dummy/devBackgroundPixel.bmp,12679.7,USED,Resources/ResourceData/TextureData.data:87 (devbackgroundpixel.bmp)
+Resources/Effect/Bullet_Destroy_Effect.bmp,35.9,USED,Resources/ResourceData/TextureData.data:17 (bullet_destroy_effect.bmp)
+Resources/Effect/Enemy_Bomb_Exp.bmp,128.1,USED,Resources/ResourceData/TextureData.data:892 (enemy_bomb_exp.bmp)
+Resources/Effect/Explosion_Huge.bmp,5250.1,USED,Resources/ResourceData/TextureData.data:1097 (explosion_huge.bmp)
+Resources/Effect/Explosion_Large.bmp,3718.8,USED,Resources/ResourceData/TextureData.data:1042 (explosion_large.bmp)
+Resources/Effect/Explosion_Mid.bmp,1290.7,USED,Resources/ResourceData/TextureData.data:1047 (explosion_mid.bmp)
+Resources/Effect/Explosion_SFX.bmp,2436.4,USED,Resources/ResourceData/TextureData.data:32 (explosion_sfx.bmp)
+Resources/Effect/Explosion_Small.bmp,588.1,USED,Resources/ResourceData/TextureData.data:1037 (explosion_small.bmp)
+Resources/Effect/Get_Item_Effect.bmp,222.7,USED,Resources/ResourceData/TextureData.data:862 (get_item_effect.bmp)
+Resources/Effect/On_Water_Collision.bmp,193.5,USED,Resources/ResourceData/TextureData.data:1322 (on_water_collision.bmp)
+Resources/Effect/On_Water_Idle.bmp,39.0,USED,Resources/ResourceData/TextureData.data:1327 (on_water_idle.bmp)
+Resources/Effect/On_Water_Jump.bmp,144.1,USED,Resources/ResourceData/TextureData.data:1317 (on_water_jump.bmp)
+Resources/Effect/RL_Bullet_Down.bmp,12.6,UNUSED,-
+Resources/Effect/RL_Bullet_Left.bmp,12.6,UNUSED,-
+Resources/Effect/RL_Bullet_Right.bmp,12.6,UNUSED,-
+Resources/Effect/RL_Bullet_Up.bmp,12.6,UNUSED,-
+Resources/Effect/Rocket_Smoke.bmp,96.1,USED,Resources/ResourceData/TextureData.data:1942 (rocket_smoke.bmp)
+Resources/Effect/raw/Bullet_Destroy_Effect.bmp,35.9,USED,Resources/ResourceData/TextureData.data:17 (bullet_destroy_effect.bmp)
+Resources/Effect/raw/Enemy_Bomb_Exp.bmp,128.1,USED,Resources/ResourceData/TextureData.data:892 (enemy_bomb_exp.bmp)
+Resources/Effect/raw/Explosion_Huge.bmp,5250.1,USED,Resources/ResourceData/TextureData.data:1097 (explosion_huge.bmp)
+Resources/Effect/raw/Explosion_Large.bmp,3718.8,USED,Resources/ResourceData/TextureData.data:1042 (explosion_large.bmp)
+Resources/Effect/raw/Explosion_Mid.bmp,1290.7,USED,Resources/ResourceData/TextureData.data:1047 (explosion_mid.bmp)
+Resources/Effect/raw/Explosion_SFX.bmp,2436.4,USED,Resources/ResourceData/TextureData.data:32 (explosion_sfx.bmp)
+Resources/Effect/raw/Explosion_Small.bmp,588.1,USED,Resources/ResourceData/TextureData.data:1037 (explosion_small.bmp)
+Resources/Effect/raw/Get_Item_Effect.bmp,222.7,USED,Resources/ResourceData/TextureData.data:862 (get_item_effect.bmp)
+Resources/Effect/raw/On_Water_Collision.bmp,193.5,USED,Resources/ResourceData/TextureData.data:1322 (on_water_collision.bmp)
+Resources/Effect/raw/On_Water_Idle.bmp,39.0,USED,Resources/ResourceData/TextureData.data:1327 (on_water_idle.bmp)
+Resources/Effect/raw/On_Water_Jump.bmp,144.1,USED,Resources/ResourceData/TextureData.data:1317 (on_water_jump.bmp)
+Resources/Effect/raw/RL_Bullet_Down.bmp,12.6,UNUSED,-
+Resources/Effect/raw/RL_Bullet_Left.bmp,12.6,UNUSED,-
+Resources/Effect/raw/RL_Bullet_Right.bmp,12.6,UNUSED,-
+Resources/Effect/raw/RL_Bullet_Up.bmp,12.6,UNUSED,-
+Resources/Effect/raw/Rocket_Smoke.bmp,96.1,USED,Resources/ResourceData/TextureData.data:1942 (rocket_smoke.bmp)
+Resources/Enemy/Alian/Alian_Bullet_1.bmp,7.6,USED,Resources/ResourceData/TextureData.data:2817 (alian_bullet_1.bmp)
+Resources/Enemy/Alian/Alian_Bullet_2.bmp,22.6,USED,Resources/ResourceData/TextureData.data:2822 (alian_bullet_2.bmp)
+Resources/Enemy/Alian/Alian_Bullet_3.bmp,27.1,USED,Resources/ResourceData/TextureData.data:2827 (alian_bullet_3.bmp)
+Resources/Enemy/Alian/Alian_Bullet_4.bmp,19.7,USED,Resources/ResourceData/TextureData.data:2832 (alian_bullet_4.bmp)
+Resources/Enemy/Alian/Alian_Bullet_5.bmp,7.6,USED,Resources/ResourceData/TextureData.data:2837 (alian_bullet_5.bmp)
+Resources/Enemy/Alian/Alian_Bullet_6.bmp,19.7,USED,Resources/ResourceData/TextureData.data:2842 (alian_bullet_6.bmp)
+Resources/Enemy/Alian/Alian_Bullet_7.bmp,27.1,USED,Resources/ResourceData/TextureData.data:2847 (alian_bullet_7.bmp)
+Resources/Enemy/Alian/Alian_Bullet_8.bmp,22.6,USED,Resources/ResourceData/TextureData.data:2852 (alian_bullet_8.bmp)
+Resources/Enemy/Alian/Alian_Bullet_9.bmp,7.6,USED,Resources/ResourceData/TextureData.data:2857 (alian_bullet_9.bmp)
+Resources/Enemy/Alian/Alian_Die.bmp,1440.1,USED,Resources/ResourceData/TextureData.data:2862 (alian_die.bmp)
+Resources/Enemy/Alian/Alian_Idle.bmp,429.1,USED,Resources/ResourceData/TextureData.data:2867 (alian_idle.bmp)
+Resources/Enemy/Alian/Alian_Shot_Ready.bmp,208.1,USED,Resources/ResourceData/TextureData.data:2872 (alian_shot_ready.bmp)
+Resources/Enemy/Alian/output/Alian_Bullet_1.txt,0.1,UNUSED,-
+Resources/Enemy/Alian/output/Alian_Bullet_2.txt,0.1,UNUSED,-
+Resources/Enemy/Alian/output/Alian_Bullet_3.txt,0.1,UNUSED,-
+Resources/Enemy/Alian/output/Alian_Bullet_4.txt,0.1,UNUSED,-
+Resources/Enemy/Alian/output/Alian_Bullet_5.txt,0.1,UNUSED,-
+Resources/Enemy/Alian/output/Alian_Bullet_6.txt,0.1,UNUSED,-
+Resources/Enemy/Alian/output/Alian_Bullet_7.txt,0.1,UNUSED,-
+Resources/Enemy/Alian/output/Alian_Bullet_8.txt,0.1,UNUSED,-
+Resources/Enemy/Alian/output/Alian_Bullet_9.txt,0.1,UNUSED,-
+Resources/Enemy/Alian/output/Alian_Die.txt,0.1,UNUSED,-
+Resources/Enemy/Alian/output/Alian_Idle.txt,0.1,UNUSED,-
+Resources/Enemy/Alian/output/Alian_Shot_Ready.txt,0.1,UNUSED,-
+Resources/Enemy/Alian/output/Animation_output.txt,0.0,UNUSED,-
+Resources/Enemy/Alian/output/combined_output.txt,1.3,UNUSED,-
+Resources/Enemy/Alian/output/sprite_info.txt,1.8,UNUSED,-
+Resources/Enemy/Alian/output/texture_output.txt,1.3,UNUSED,-
+Resources/Enemy/Aparch/Aparch.aseprite,104.5,UNUSED,-
+Resources/Enemy/Aparch/Aparch_Destroy.bmp,734.3,USED,Resources/ResourceData/TextureData.data:1937 (aparch_destroy.bmp)
+Resources/Enemy/Aparch/Aparch_DropMissle.bmp,81.4,USED,Resources/ResourceData/TextureData.data:1767 (aparch_dropmissle.bmp)
+Resources/Enemy/Aparch/Aparch_DropMissle_Effect.bmp,161.8,USED,Resources/ResourceData/TextureData.data:1772 (aparch_dropmissle_effect.bmp)
+Resources/Enemy/Aparch/Aparch_Drop_Bomb_Left.bmp,79.3,USED,Resources/ResourceData/TextureData.data:1777 (aparch_drop_bomb_left.bmp)
+Resources/Enemy/Aparch/Aparch_Drop_Bomb_Right.bmp,79.3,USED,Resources/ResourceData/TextureData.data:1782 (aparch_drop_bomb_right.bmp)
+Resources/Enemy/Aparch/Aparch_Flight_Left1.bmp,120.3,USED,Resources/ResourceData/TextureData.data:1857 (aparch_flight_left1.bmp)
+Resources/Enemy/Aparch/Aparch_Flight_Left2.bmp,120.3,USED,Resources/ResourceData/TextureData.data:1862 (aparch_flight_left2.bmp)
+Resources/Enemy/Aparch/Aparch_Flight_Left3.bmp,120.3,USED,Resources/ResourceData/TextureData.data:1867 (aparch_flight_left3.bmp)
+Resources/Enemy/Aparch/Aparch_Flight_Left4.bmp,120.3,USED,Resources/ResourceData/TextureData.data:1872 (aparch_flight_left4.bmp)
+Resources/Enemy/Aparch/Aparch_Flight_Left5.bmp,120.3,USED,Resources/ResourceData/TextureData.data:1877 (aparch_flight_left5.bmp)
+Resources/Enemy/Aparch/Aparch_Flight_Left6.bmp,120.3,USED,Resources/ResourceData/TextureData.data:1882 (aparch_flight_left6.bmp)
+Resources/Enemy/Aparch/Aparch_Flight_Left7.bmp,120.3,USED,Resources/ResourceData/TextureData.data:1887 (aparch_flight_left7.bmp)
+Resources/Enemy/Aparch/Aparch_Flight_Right1.bmp,120.3,USED,Resources/ResourceData/TextureData.data:1892 (aparch_flight_right1.bmp)
+Resources/Enemy/Aparch/Aparch_Flight_Right2.bmp,120.3,USED,Resources/ResourceData/TextureData.data:1897 (aparch_flight_right2.bmp)
+Resources/Enemy/Aparch/Aparch_Flight_Right3.bmp,120.3,USED,Resources/ResourceData/TextureData.data:1902 (aparch_flight_right3.bmp)
+Resources/Enemy/Aparch/Aparch_Flight_Right4.bmp,120.3,USED,Resources/ResourceData/TextureData.data:1907 (aparch_flight_right4.bmp)
+Resources/Enemy/Aparch/Aparch_Flight_Right5.bmp,120.3,USED,Resources/ResourceData/TextureData.data:1912 (aparch_flight_right5.bmp)
+Resources/Enemy/Aparch/Aparch_Flight_Right6.bmp,120.3,USED,Resources/ResourceData/TextureData.data:1917 (aparch_flight_right6.bmp)
+Resources/Enemy/Aparch/Aparch_Flight_Right7.bmp,120.3,USED,Resources/ResourceData/TextureData.data:1922 (aparch_flight_right7.bmp)
+Resources/Enemy/Aparch/Aparch_Gun_End_Left.bmp,106.9,USED,Resources/ResourceData/TextureData.data:1787 (aparch_gun_end_left.bmp)
+Resources/Enemy/Aparch/Aparch_Gun_End_Right.bmp,106.9,USED,Resources/ResourceData/TextureData.data:1792 (aparch_gun_end_right.bmp)
+Resources/Enemy/Aparch/Aparch_Gun_Left.bmp,106.9,USED,Resources/ResourceData/TextureData.data:1797 (aparch_gun_left.bmp)
+Resources/Enemy/Aparch/Aparch_Gun_Right.bmp,106.9,USED,Resources/ResourceData/TextureData.data:1802 (aparch_gun_right.bmp)
+Resources/Enemy/Aparch/Aparch_Idle_Left.bmp,75.1,USED,Resources/ResourceData/TextureData.data:1807 (aparch_idle_left.bmp)
+Resources/Enemy/Aparch/Aparch_Idle_Right.bmp,75.1,USED,Resources/ResourceData/TextureData.data:1812 (aparch_idle_right.bmp)
+Resources/Enemy/Aparch/Aparch_Missle_Effect_Left.bmp,195.1,USED,Resources/ResourceData/TextureData.data:1817 (aparch_missle_effect_left.bmp)
+Resources/Enemy/Aparch/Aparch_Missle_Effect_Right.bmp,195.1,USED,Resources/ResourceData/TextureData.data:1822 (aparch_missle_effect_right.bmp)
+Resources/Enemy/Aparch/Aparch_Missle_Left.bmp,27.6,USED,Resources/ResourceData/TextureData.data:1827 (aparch_missle_left.bmp)
+Resources/Enemy/Aparch/Aparch_Missle_Right.bmp,27.6,USED,Resources/ResourceData/TextureData.data:1832 (aparch_missle_right.bmp)
+Resources/Enemy/Aparch/Aparch_MoveStop_Left.bmp,550.7,USED,Resources/ResourceData/TextureData.data:1837 (aparch_movestop_left.bmp)
+Resources/Enemy/Aparch/Aparch_MoveStop_Right.bmp,550.7,USED,Resources/ResourceData/TextureData.data:1842 (aparch_movestop_right.bmp)
+Resources/Enemy/Aparch/Aparch_Move_Left.bmp,550.7,USED,Resources/ResourceData/TextureData.data:1847 (aparch_move_left.bmp)
+Resources/Enemy/Aparch/Aparch_Move_Right.bmp,550.7,USED,Resources/ResourceData/TextureData.data:1852 (aparch_move_right.bmp)
+Resources/Enemy/Aparch/Aparch_Turn_Left.bmp,1325.7,USED,Resources/ResourceData/TextureData.data:1932 (aparch_turn_left.bmp)
+Resources/Enemy/Aparch/Aparch_Turn_Right.bmp,1325.7,USED,Resources/ResourceData/TextureData.data:1927 (aparch_turn_right.bmp)
+Resources/Enemy/BattleShip/BattleShip_Antena.bmp,54.3,USED,Resources/ResourceData/TextureData.data:2877 (battleship_antena.bmp)
+Resources/Enemy/BattleShip/BattleShip_Antena_Turn.bmp,867.8,USED,Resources/ResourceData/TextureData.data:2882 (battleship_antena_turn.bmp)
+Resources/Enemy/BattleShip/BattleShip_Back_Rail_Backward.bmp,288.8,USED,Resources/ResourceData/TextureData.data:2887 (battleship_back_rail_backward.bmp)
+Resources/Enemy/BattleShip/BattleShip_Back_Rail_Forward.bmp,288.8,USED,Resources/ResourceData/TextureData.data:2892 (battleship_back_rail_forward.bmp)
+Resources/Enemy/BattleShip/BattleShip_Back_Rail_Idle.bmp,72.2,USED,Resources/ResourceData/TextureData.data:2897 (battleship_back_rail_idle.bmp)
+Resources/Enemy/BattleShip/BattleShip_Body.bmp,932.8,USED,Resources/ResourceData/TextureData.data:2902 (battleship_body.bmp)
+Resources/Enemy/BattleShip/BattleShip_Bullet.bmp,56.7,USED,Resources/ResourceData/TextureData.data:2907 (battleship_bullet.bmp)
+Resources/Enemy/BattleShip/BattleShip_Bullet_Garbage.bmp,72.1,USED,Resources/ResourceData/TextureData.data:2912 (battleship_bullet_garbage.bmp)
+Resources/Enemy/BattleShip/BattleShip_Cannon_Destroy_Type1.bmp,25.3,USED,Resources/ResourceData/TextureData.data:2917 (battleship_cannon_destroy_type1.bmp)
+Resources/Enemy/BattleShip/BattleShip_Cannon_Destroy_Type2.bmp,15.2,USED,Resources/ResourceData/TextureData.data:2922 (battleship_cannon_destroy_type2.bmp)
+Resources/Enemy/BattleShip/BattleShip_Cannon_Destroy_Type3.bmp,13.3,USED,Resources/ResourceData/TextureData.data:2927 (battleship_cannon_destroy_type3.bmp)
+Resources/Enemy/BattleShip/BattleShip_Cannon_Destroy_Type4.bmp,19.7,USED,Resources/ResourceData/TextureData.data:2932 (battleship_cannon_destroy_type4.bmp)
+Resources/Enemy/BattleShip/BattleShip_Cannon_Destroy_Type5.bmp,27.7,USED,Resources/ResourceData/TextureData.data:2937 (battleship_cannon_destroy_type5.bmp)
+Resources/Enemy/BattleShip/BattleShip_Cannon_Destroy_Type6.bmp,40.4,USED,Resources/ResourceData/TextureData.data:2942 (battleship_cannon_destroy_type6.bmp)
+Resources/Enemy/BattleShip/BattleShip_Cannon_Destroy_Type7.bmp,23.8,USED,Resources/ResourceData/TextureData.data:2947 (battleship_cannon_destroy_type7.bmp)
+Resources/Enemy/BattleShip/BattleShip_Cannon_End.bmp,3223.1,USED,Resources/ResourceData/TextureData.data:2952 (battleship_cannon_end.bmp)
+Resources/Enemy/BattleShip/BattleShip_Cannon_Idle.bmp,1674.1,USED,Resources/ResourceData/TextureData.data:2957 (battleship_cannon_idle.bmp)
+Resources/Enemy/BattleShip/BattleShip_Cannon_Shot_0.bmp,1661.9,USED,Resources/ResourceData/TextureData.data:2962 (battleship_cannon_shot_0.bmp)
+Resources/Enemy/BattleShip/BattleShip_Cannon_Shot_1.bmp,1522.1,USED,Resources/ResourceData/TextureData.data:2967 (battleship_cannon_shot_1.bmp)
+Resources/Enemy/BattleShip/BattleShip_Cannon_Shot_2.bmp,1460.0,USED,Resources/ResourceData/TextureData.data:2972 (battleship_cannon_shot_2.bmp)
+Resources/Enemy/BattleShip/BattleShip_Cannon_Shot_3.bmp,1537.6,USED,Resources/ResourceData/TextureData.data:2977 (battleship_cannon_shot_3.bmp)
+Resources/Enemy/BattleShip/BattleShip_Cannon_Shot_4.bmp,1661.9,USED,Resources/ResourceData/TextureData.data:2982 (battleship_cannon_shot_4.bmp)
+Resources/Enemy/BattleShip/BattleShip_Cannon_Start.bmp,4604.4,USED,Resources/ResourceData/TextureData.data:2987 (battleship_cannon_start.bmp)
+Resources/Enemy/BattleShip/BattleShip_DCannon_Left.bmp,569.3,USED,Resources/ResourceData/TextureData.data:2992 (battleship_dcannon_left.bmp)
+Resources/Enemy/BattleShip/BattleShip_DCannon_Mid.bmp,295.4,USED,Resources/ResourceData/TextureData.data:2997 (battleship_dcannon_mid.bmp)
+Resources/Enemy/BattleShip/BattleShip_DCannon_Right.bmp,569.3,USED,Resources/ResourceData/TextureData.data:3002 (battleship_dcannon_right.bmp)
+Resources/Enemy/BattleShip/BattleShip_DCannon_Shot_Effect_Left.bmp,1027.5,USED,Resources/ResourceData/TextureData.data:3007 (battleship_dcannon_shot_effect_left.bmp)
+Resources/Enemy/BattleShip/BattleShip_DCannon_Shot_Effect_Mid.bmp,1264.0,USED,Resources/ResourceData/TextureData.data:3012 (battleship_dcannon_shot_effect_mid.bmp)
+Resources/Enemy/BattleShip/BattleShip_DCannon_Shot_Effect_Right.bmp,1119.3,USED,Resources/ResourceData/TextureData.data:3017 (battleship_dcannon_shot_effect_right.bmp)
+Resources/Enemy/BattleShip/BattleShip_DCannon_Shot_Left.bmp,372.1,USED,Resources/ResourceData/TextureData.data:3022 (battleship_dcannon_shot_left.bmp)
+Resources/Enemy/BattleShip/BattleShip_DCannon_Shot_Mid.bmp,224.5,USED,Resources/ResourceData/TextureData.data:3027 (battleship_dcannon_shot_mid.bmp)
+Resources/Enemy/BattleShip/BattleShip_DCannon_Shot_Right.bmp,376.7,USED,Resources/ResourceData/TextureData.data:3032 (battleship_dcannon_shot_right.bmp)
+Resources/Enemy/BattleShip/BattleShip_DCannon_TurnLeft.bmp,140.3,USED,Resources/ResourceData/TextureData.data:3157 (battleship_dcannon_turnleft.bmp)
+Resources/Enemy/BattleShip/BattleShip_DCannon_TurnRight.bmp,140.3,USED,Resources/ResourceData/TextureData.data:3162 (battleship_dcannon_turnright.bmp)
+Resources/Enemy/BattleShip/BattleShip_Destroy.bmp,896.0,USED,Resources/ResourceData/TextureData.data:3037 (battleship_destroy.bmp)
+Resources/Enemy/BattleShip/BattleShip_Front_Rail_Backward.bmp,1800.1,USED,Resources/ResourceData/TextureData.data:3042 (battleship_front_rail_backward.bmp)
+Resources/Enemy/BattleShip/BattleShip_Front_Rail_Forward.bmp,1800.1,USED,Resources/ResourceData/TextureData.data:3047 (battleship_front_rail_forward.bmp)
+Resources/Enemy/BattleShip/BattleShip_Front_Rail_Idle.bmp,450.1,USED,Resources/ResourceData/TextureData.data:3052 (battleship_front_rail_idle.bmp)
+Resources/Enemy/BattleShip/BattleShip_Head.bmp,505.2,USED,Resources/ResourceData/TextureData.data:3057 (battleship_head.bmp)
+Resources/Enemy/BattleShip/BattleShip_Head_Swiching_End.bmp,5739.0,USED,Resources/ResourceData/TextureData.data:3062 (battleship_head_swiching_end.bmp)
+Resources/Enemy/BattleShip/BattleShip_Head_Swiching_Start.bmp,5739.0,USED,Resources/ResourceData/TextureData.data:3067 (battleship_head_swiching_start.bmp)
+Resources/Enemy/BattleShip/BattleShip_Mark_Clicking.bmp,334.2,USED,Resources/ResourceData/TextureData.data:3072 (battleship_mark_clicking.bmp)
+Resources/Enemy/BattleShip/BattleShip_Mark_Effect.bmp,131.9,USED,Resources/ResourceData/TextureData.data:3077 (battleship_mark_effect.bmp)
+Resources/Enemy/BattleShip/BattleShip_SCannon_Left.bmp,160.2,USED,Resources/ResourceData/TextureData.data:3082 (battleship_scannon_left.bmp)
+Resources/Enemy/BattleShip/BattleShip_SCannon_Mid.bmp,151.9,USED,Resources/ResourceData/TextureData.data:3087 (battleship_scannon_mid.bmp)
+Resources/Enemy/BattleShip/BattleShip_SCannon_Right.bmp,196.9,USED,Resources/ResourceData/TextureData.data:3092 (battleship_scannon_right.bmp)
+Resources/Enemy/BattleShip/BattleShip_SCannon_Shot_Effect_Left.bmp,766.5,USED,Resources/ResourceData/TextureData.data:3097 (battleship_scannon_shot_effect_left.bmp)
+Resources/Enemy/BattleShip/BattleShip_SCannon_Shot_Effect_Mid.bmp,847.9,USED,Resources/ResourceData/TextureData.data:3102 (battleship_scannon_shot_effect_mid.bmp)
+Resources/Enemy/BattleShip/BattleShip_SCannon_Shot_Effect_Right.bmp,853.2,USED,Resources/ResourceData/TextureData.data:3107 (battleship_scannon_shot_effect_right.bmp)
+Resources/Enemy/BattleShip/BattleShip_SCannon_Shot_Left.bmp,229.2,USED,Resources/ResourceData/TextureData.data:3112 (battleship_scannon_shot_left.bmp)
+Resources/Enemy/BattleShip/BattleShip_SCannon_Shot_Mid.bmp,134.6,USED,Resources/ResourceData/TextureData.data:3117 (battleship_scannon_shot_mid.bmp)
+Resources/Enemy/BattleShip/BattleShip_SCannon_Shot_Right.bmp,242.1,USED,Resources/ResourceData/TextureData.data:3122 (battleship_scannon_shot_right.bmp)
+Resources/Enemy/BattleShip/BattleShip_SCannon_TurnLeft.bmp,100.0,USED,Resources/ResourceData/TextureData.data:3167 (battleship_scannon_turnleft.bmp)
+Resources/Enemy/BattleShip/BattleShip_SCannon_TurnRight.bmp,100.0,USED,Resources/ResourceData/TextureData.data:3172 (battleship_scannon_turnright.bmp)
+Resources/Enemy/BattleShip/BattleShip_Support_Type1.bmp,6.8,USED,Resources/ResourceData/TextureData.data:3127 (battleship_support_type1.bmp)
+Resources/Enemy/BattleShip/BattleShip_Support_Type2.bmp,5.3,USED,Resources/ResourceData/TextureData.data:3132 (battleship_support_type2.bmp)
+Resources/Enemy/BattleShip/BattleShip_Support_Type3.bmp,7.1,USED,Resources/ResourceData/TextureData.data:3137 (battleship_support_type3.bmp)
+Resources/Enemy/BattleShip/BattleShip_Switching_Effect.bmp,1007.9,USED,Resources/ResourceData/TextureData.data:3142 (battleship_switching_effect.bmp)
+Resources/Enemy/BattleShip/BattleShip_Switching_Mode_Working.....aseprite,55.4,UNUSED,-
+Resources/Enemy/BattleShip/BattleShip_Tail.bmp,610.6,USED,Resources/ResourceData/TextureData.data:3147 (battleship_tail.bmp)
+Resources/Enemy/BattleShip/main.aseprite,392.2,UNUSED,-
+Resources/Enemy/BattleShip/output/output/Animation_output.txt,3.4,UNUSED,-
+Resources/Enemy/BattleShip/output/texture_output.txt,7.7,UNUSED,-
+Resources/Enemy/BattleShip/raw/BattleShip_Antena.bmp,54.3,USED,Resources/ResourceData/TextureData.data:2877 (battleship_antena.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Antena_Turn.bmp,867.8,USED,Resources/ResourceData/TextureData.data:2882 (battleship_antena_turn.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Back_Rail_Backward.bmp,288.8,USED,Resources/ResourceData/TextureData.data:2887 (battleship_back_rail_backward.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Back_Rail_Forward.bmp,288.8,USED,Resources/ResourceData/TextureData.data:2892 (battleship_back_rail_forward.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Back_Rail_Idle.bmp,72.2,USED,Resources/ResourceData/TextureData.data:2897 (battleship_back_rail_idle.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Body.bmp,932.8,USED,Resources/ResourceData/TextureData.data:2902 (battleship_body.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Bullet.bmp,56.7,USED,Resources/ResourceData/TextureData.data:2907 (battleship_bullet.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Bullet_Garbage.bmp,72.1,USED,Resources/ResourceData/TextureData.data:2912 (battleship_bullet_garbage.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Cannon_Destroy_Type1.bmp,25.3,USED,Resources/ResourceData/TextureData.data:2917 (battleship_cannon_destroy_type1.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Cannon_Destroy_Type2.bmp,15.2,USED,Resources/ResourceData/TextureData.data:2922 (battleship_cannon_destroy_type2.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Cannon_Destroy_Type3.bmp,13.3,USED,Resources/ResourceData/TextureData.data:2927 (battleship_cannon_destroy_type3.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Cannon_Destroy_Type4.bmp,19.7,USED,Resources/ResourceData/TextureData.data:2932 (battleship_cannon_destroy_type4.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Cannon_Destroy_Type5.bmp,27.7,USED,Resources/ResourceData/TextureData.data:2937 (battleship_cannon_destroy_type5.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Cannon_Destroy_Type6.bmp,40.4,USED,Resources/ResourceData/TextureData.data:2942 (battleship_cannon_destroy_type6.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Cannon_Destroy_Type7.bmp,23.8,USED,Resources/ResourceData/TextureData.data:2947 (battleship_cannon_destroy_type7.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Cannon_End.bmp,3223.1,USED,Resources/ResourceData/TextureData.data:2952 (battleship_cannon_end.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Cannon_Idle.bmp,1674.1,USED,Resources/ResourceData/TextureData.data:2957 (battleship_cannon_idle.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Cannon_Shot_0.bmp,1661.9,USED,Resources/ResourceData/TextureData.data:2962 (battleship_cannon_shot_0.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Cannon_Shot_1.bmp,1522.1,USED,Resources/ResourceData/TextureData.data:2967 (battleship_cannon_shot_1.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Cannon_Shot_2.bmp,1460.0,USED,Resources/ResourceData/TextureData.data:2972 (battleship_cannon_shot_2.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Cannon_Shot_3.bmp,1537.6,USED,Resources/ResourceData/TextureData.data:2977 (battleship_cannon_shot_3.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Cannon_Shot_4.bmp,1661.9,USED,Resources/ResourceData/TextureData.data:2982 (battleship_cannon_shot_4.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Cannon_Start.bmp,4604.4,USED,Resources/ResourceData/TextureData.data:2987 (battleship_cannon_start.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_DCannon_Left.bmp,569.3,USED,Resources/ResourceData/TextureData.data:2992 (battleship_dcannon_left.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_DCannon_Mid.bmp,295.4,USED,Resources/ResourceData/TextureData.data:2997 (battleship_dcannon_mid.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_DCannon_Right.bmp,569.3,USED,Resources/ResourceData/TextureData.data:3002 (battleship_dcannon_right.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_DCannon_Shot_Effect_Left.bmp,1027.5,USED,Resources/ResourceData/TextureData.data:3007 (battleship_dcannon_shot_effect_left.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_DCannon_Shot_Effect_Mid.bmp,1264.0,USED,Resources/ResourceData/TextureData.data:3012 (battleship_dcannon_shot_effect_mid.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_DCannon_Shot_Effect_Right.bmp,1119.3,USED,Resources/ResourceData/TextureData.data:3017 (battleship_dcannon_shot_effect_right.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_DCannon_Shot_Left.bmp,372.1,USED,Resources/ResourceData/TextureData.data:3022 (battleship_dcannon_shot_left.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_DCannon_Shot_Mid.bmp,224.5,USED,Resources/ResourceData/TextureData.data:3027 (battleship_dcannon_shot_mid.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_DCannon_Shot_Right.bmp,376.7,USED,Resources/ResourceData/TextureData.data:3032 (battleship_dcannon_shot_right.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_DCannon_Turn.bmp,210.4,UNUSED,-
+Resources/Enemy/BattleShip/raw/BattleShip_Destroy.bmp,896.0,USED,Resources/ResourceData/TextureData.data:3037 (battleship_destroy.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Front_Rail_Backward.bmp,1800.1,USED,Resources/ResourceData/TextureData.data:3042 (battleship_front_rail_backward.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Front_Rail_Forward.bmp,1800.1,USED,Resources/ResourceData/TextureData.data:3047 (battleship_front_rail_forward.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Front_Rail_Idle.bmp,450.1,USED,Resources/ResourceData/TextureData.data:3052 (battleship_front_rail_idle.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Head.bmp,505.2,USED,Resources/ResourceData/TextureData.data:3057 (battleship_head.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Head_Swiching_End.bmp,5739.0,USED,Resources/ResourceData/TextureData.data:3062 (battleship_head_swiching_end.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Head_Swiching_Start.bmp,5739.0,USED,Resources/ResourceData/TextureData.data:3067 (battleship_head_swiching_start.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Mark_Clicking.bmp,334.2,USED,Resources/ResourceData/TextureData.data:3072 (battleship_mark_clicking.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Mark_Effect.bmp,131.9,USED,Resources/ResourceData/TextureData.data:3077 (battleship_mark_effect.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_SCannon_Left.bmp,160.2,USED,Resources/ResourceData/TextureData.data:3082 (battleship_scannon_left.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_SCannon_Mid.bmp,151.9,USED,Resources/ResourceData/TextureData.data:3087 (battleship_scannon_mid.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_SCannon_Right.bmp,196.9,USED,Resources/ResourceData/TextureData.data:3092 (battleship_scannon_right.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_SCannon_Shot_Effect_Left.bmp,766.5,USED,Resources/ResourceData/TextureData.data:3097 (battleship_scannon_shot_effect_left.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_SCannon_Shot_Effect_Mid.bmp,847.9,USED,Resources/ResourceData/TextureData.data:3102 (battleship_scannon_shot_effect_mid.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_SCannon_Shot_Effect_Right.bmp,853.2,USED,Resources/ResourceData/TextureData.data:3107 (battleship_scannon_shot_effect_right.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_SCannon_Shot_Left.bmp,229.2,USED,Resources/ResourceData/TextureData.data:3112 (battleship_scannon_shot_left.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_SCannon_Shot_Mid.bmp,134.6,USED,Resources/ResourceData/TextureData.data:3117 (battleship_scannon_shot_mid.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_SCannon_Shot_Right.bmp,242.1,USED,Resources/ResourceData/TextureData.data:3122 (battleship_scannon_shot_right.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_SCannon_Turn.bmp,150.0,UNUSED,-
+Resources/Enemy/BattleShip/raw/BattleShip_Support_Type1.bmp,6.8,USED,Resources/ResourceData/TextureData.data:3127 (battleship_support_type1.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Support_Type2.bmp,5.3,USED,Resources/ResourceData/TextureData.data:3132 (battleship_support_type2.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Support_Type3.bmp,7.1,USED,Resources/ResourceData/TextureData.data:3137 (battleship_support_type3.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Switching_Effect.bmp,1007.9,USED,Resources/ResourceData/TextureData.data:3142 (battleship_switching_effect.bmp)
+Resources/Enemy/BattleShip/raw/BattleShip_Tail.bmp,610.6,USED,Resources/ResourceData/TextureData.data:3147 (battleship_tail.bmp)
+Resources/Enemy/BattleShip/tes/BattleShip_Cannon_Deco.bmp,8.4,USED,Resources/ResourceData/TextureData.data:3152 (battleship_cannon_deco.bmp)
+Resources/Enemy/BattleShip/tes/BattleShip_DCannon_TurnLeft.bmp,140.3,USED,Resources/ResourceData/TextureData.data:3157 (battleship_dcannon_turnleft.bmp)
+Resources/Enemy/BattleShip/tes/BattleShip_DCannon_TurnRight.bmp,140.3,USED,Resources/ResourceData/TextureData.data:3162 (battleship_dcannon_turnright.bmp)
+Resources/Enemy/BattleShip/tes/BattleShip_SCannon_TurnLeft.bmp,100.0,USED,Resources/ResourceData/TextureData.data:3167 (battleship_scannon_turnleft.bmp)
+Resources/Enemy/BattleShip/tes/BattleShip_SCannon_TurnRight.bmp,100.0,USED,Resources/ResourceData/TextureData.data:3172 (battleship_scannon_turnright.bmp)
+Resources/Enemy/BattleShip/tes/Output/Animation_output.txt,0.2,UNUSED,-
+Resources/Enemy/BattleShip/tes/Output/BattleShip_Cannon_Deco.bmp,8.4,USED,Resources/ResourceData/TextureData.data:3152 (battleship_cannon_deco.bmp)
+Resources/Enemy/BattleShip/tes/Output/texture_output.txt,0.1,UNUSED,-
+Resources/Enemy/BattleShip/tes/raw/BattleShip_Cannon_Deco.bmp,8.4,USED,Resources/ResourceData/TextureData.data:3152 (battleship_cannon_deco.bmp)
+Resources/Enemy/BattleShip/tes/raw/BattleShip_DCannon_TurnLeft.bmp,140.3,USED,Resources/ResourceData/TextureData.data:3157 (battleship_dcannon_turnleft.bmp)
+Resources/Enemy/BattleShip/tes/raw/BattleShip_DCannon_TurnRight.bmp,140.3,USED,Resources/ResourceData/TextureData.data:3162 (battleship_dcannon_turnright.bmp)
+Resources/Enemy/BattleShip/tes/raw/BattleShip_SCannon_TurnLeft.bmp,100.0,USED,Resources/ResourceData/TextureData.data:3167 (battleship_scannon_turnleft.bmp)
+Resources/Enemy/BattleShip/tes/raw/BattleShip_SCannon_TurnRight.bmp,100.0,USED,Resources/ResourceData/TextureData.data:3172 (battleship_scannon_turnright.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka.aseprite,145.3,UNUSED,-
+Resources/Enemy/Bazuka_Solider/Bazuka_Aiming_Down_Left.bmp,92.8,USED,Resources/ResourceData/TextureData.data:2292 (bazuka_aiming_down_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Aiming_Down_Right.bmp,92.8,USED,Resources/ResourceData/TextureData.data:2297 (bazuka_aiming_down_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Aiming_Up_Left.bmp,92.9,USED,Resources/ResourceData/TextureData.data:2302 (bazuka_aiming_up_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Aiming_Up_Right.bmp,92.9,USED,Resources/ResourceData/TextureData.data:2307 (bazuka_aiming_up_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Debics.bmp,630.4,USED,Resources/ResourceData/TextureData.data:2312 (bazuka_debics.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Down_Recover_Left.bmp,92.8,USED,Resources/ResourceData/TextureData.data:2542 (bazuka_down_recover_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Down_Recover_Right.bmp,92.8,USED,Resources/ResourceData/TextureData.data:2537 (bazuka_down_recover_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Fly_Shot_0_Left.bmp,63.2,USED,Resources/ResourceData/TextureData.data:2317 (bazuka_fly_shot_0_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Fly_Shot_0_Right.bmp,63.2,USED,Resources/ResourceData/TextureData.data:2322 (bazuka_fly_shot_0_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Fly_Shot_1_Left.bmp,66.1,USED,Resources/ResourceData/TextureData.data:2327 (bazuka_fly_shot_1_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Fly_Shot_1_Right.bmp,66.1,USED,Resources/ResourceData/TextureData.data:2332 (bazuka_fly_shot_1_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Fly_Shot_2_Left.bmp,66.1,USED,Resources/ResourceData/TextureData.data:2337 (bazuka_fly_shot_2_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Fly_Shot_2_Right.bmp,66.1,USED,Resources/ResourceData/TextureData.data:2342 (bazuka_fly_shot_2_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Fly_Shot_3_Left.bmp,66.5,USED,Resources/ResourceData/TextureData.data:2347 (bazuka_fly_shot_3_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Fly_Shot_3_Right.bmp,66.5,USED,Resources/ResourceData/TextureData.data:2352 (bazuka_fly_shot_3_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Fly_Shot_4_Left.bmp,64.4,USED,Resources/ResourceData/TextureData.data:2357 (bazuka_fly_shot_4_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Fly_Shot_4_Right.bmp,64.4,USED,Resources/ResourceData/TextureData.data:2362 (bazuka_fly_shot_4_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Idle_Left.bmp,168.8,USED,Resources/ResourceData/TextureData.data:2367 (bazuka_idle_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Idle_Right.bmp,168.8,USED,Resources/ResourceData/TextureData.data:2372 (bazuka_idle_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Jump_Forward_Left.bmp,315.1,USED,Resources/ResourceData/TextureData.data:2377 (bazuka_jump_forward_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Jump_Forward_Right.bmp,315.1,USED,Resources/ResourceData/TextureData.data:2382 (bazuka_jump_forward_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Jump_Left.bmp,175.4,USED,Resources/ResourceData/TextureData.data:2387 (bazuka_jump_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Jump_Right.bmp,175.4,USED,Resources/ResourceData/TextureData.data:2392 (bazuka_jump_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Lending_Left.bmp,58.5,USED,Resources/ResourceData/TextureData.data:2397 (bazuka_lending_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Lending_Right.bmp,58.5,USED,Resources/ResourceData/TextureData.data:2402 (bazuka_lending_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Move_Left.bmp,340.0,USED,Resources/ResourceData/TextureData.data:2407 (bazuka_move_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Move_Right.bmp,340.0,USED,Resources/ResourceData/TextureData.data:2412 (bazuka_move_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Para_Destroy.bmp,1445.1,USED,Resources/ResourceData/TextureData.data:2417 (bazuka_para_destroy.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Para_Idle.bmp,317.5,USED,Resources/ResourceData/TextureData.data:2422 (bazuka_para_idle.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Projectile.bmp,6.3,USED,Resources/ResourceData/TextureData.data:2427 (bazuka_projectile.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Down0_Left.bmp,61.7,USED,Resources/ResourceData/TextureData.data:2432 (bazuka_shot_down0_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Down0_Right.bmp,61.7,USED,Resources/ResourceData/TextureData.data:2437 (bazuka_shot_down0_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Down1_Left.bmp,63.3,USED,Resources/ResourceData/TextureData.data:2442 (bazuka_shot_down1_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Down1_Right.bmp,63.3,USED,Resources/ResourceData/TextureData.data:2447 (bazuka_shot_down1_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Down2_Left.bmp,61.6,USED,Resources/ResourceData/TextureData.data:2452 (bazuka_shot_down2_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Down2_Right.bmp,61.6,USED,Resources/ResourceData/TextureData.data:2457 (bazuka_shot_down2_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Down3_Left.bmp,60.6,USED,Resources/ResourceData/TextureData.data:2462 (bazuka_shot_down3_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Down3_Right.bmp,60.6,USED,Resources/ResourceData/TextureData.data:2467 (bazuka_shot_down3_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Effect.bmp,310.6,USED,Resources/ResourceData/TextureData.data:2472 (bazuka_shot_effect.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Left.bmp,59.2,USED,Resources/ResourceData/TextureData.data:2477 (bazuka_shot_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Right.bmp,59.2,USED,Resources/ResourceData/TextureData.data:2482 (bazuka_shot_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Up0_Left.bmp,67.2,USED,Resources/ResourceData/TextureData.data:2487 (bazuka_shot_up0_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Up0_Right.bmp,67.2,USED,Resources/ResourceData/TextureData.data:2492 (bazuka_shot_up0_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Up1_Left.bmp,61.7,USED,Resources/ResourceData/TextureData.data:2497 (bazuka_shot_up1_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Up1_Right.bmp,61.7,USED,Resources/ResourceData/TextureData.data:2502 (bazuka_shot_up1_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Up2_Left.bmp,62.4,USED,Resources/ResourceData/TextureData.data:2507 (bazuka_shot_up2_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Up2_Right.bmp,62.4,USED,Resources/ResourceData/TextureData.data:2512 (bazuka_shot_up2_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Up3_Left.bmp,64.2,USED,Resources/ResourceData/TextureData.data:2517 (bazuka_shot_up3_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Shot_Up3_Right.bmp,64.2,USED,Resources/ResourceData/TextureData.data:2522 (bazuka_shot_up3_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Stand_Up_Left.bmp,152.2,USED,Resources/ResourceData/TextureData.data:2527 (bazuka_stand_up_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Stand_Up_Right.bmp,152.2,USED,Resources/ResourceData/TextureData.data:2532 (bazuka_stand_up_right.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Up_Recover_Left.bmp,92.9,USED,Resources/ResourceData/TextureData.data:2547 (bazuka_up_recover_left.bmp)
+Resources/Enemy/Bazuka_Solider/Bazuka_Up_Recover_Right.bmp,92.9,USED,Resources/ResourceData/TextureData.data:2552 (bazuka_up_recover_right.bmp)
+Resources/Enemy/Big_Tank/BTank_Animing_Up.bmp,662.7,USED,Resources/ResourceData/TextureData.data:1422 (btank_animing_up.bmp)
+Resources/Enemy/Big_Tank/BTank_Destory.bmp,638.1,USED,Resources/ResourceData/TextureData.data:1427 (btank_destory.bmp)
+Resources/Enemy/Big_Tank/BTank_Fire.bmp,937.1,USED,Resources/ResourceData/TextureData.data:1432 (btank_fire.bmp)
+Resources/Enemy/Big_Tank/BTank_Idle.bmp,66.1,USED,Resources/ResourceData/TextureData.data:1437 (btank_idle.bmp)
+Resources/Enemy/Big_Tank/BTank_Proj.bmp,4.7,USED,Resources/ResourceData/TextureData.data:1442 (btank_proj.bmp)
+Resources/Enemy/Big_Tank/BTank_Proj_B.bmp,14.1,UNUSED,-
+Resources/Enemy/Big_Tank/BTank_Proj_Effect.bmp,14.1,USED,Resources/ResourceData/TextureData.data:1447 (btank_proj_effect.bmp)
+Resources/Enemy/Big_Tank/BTank_Proj_R.bmp,14.1,UNUSED,-
+Resources/Enemy/Big_Tank/BTank_Proj_Y.bmp,14.1,UNUSED,-
+Resources/Enemy/Big_Tank/BTank_Shot_Effect.bmp,753.4,USED,Resources/ResourceData/TextureData.data:1452 (btank_shot_effect.bmp)
+Resources/Enemy/Big_Tank/Big_Tabk.aseprite,74.9,UNUSED,-
+Resources/Enemy/Enuemy List.png,2620.8,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Angle_0_Left.bmp,530.5,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Angle_0_Right.bmp,530.5,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Angle_1_Left.bmp,574.9,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Angle_1_Right.bmp,574.9,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Angle_2_Left.bmp,472.3,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Angle_2_Right.bmp,472.3,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Angle_3_Left.bmp,417.5,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Angle_3_Right.bmp,417.5,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Angle_4_Left.bmp,417.5,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Angle_4_Right.bmp,417.5,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Angle_5_Left.bmp,438.1,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Angle_5_Right.bmp,438.1,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Effect_0_Left.bmp,21.2,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Effect_0_Right.bmp,21.2,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Effect_1_Left.bmp,23.0,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Effect_1_Right.bmp,23.0,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Effect_2_Left.bmp,23.8,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Effect_2_Right.bmp,23.8,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Effect_3_Left.bmp,23.6,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Effect_3_Right.bmp,23.6,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Effect_4_Left.bmp,22.6,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Effect_4_Right.bmp,22.6,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Effect_5_Left.bmp,20.3,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Effect_5_Right.bmp,20.3,UNUSED,-
+Resources/Enemy/Helicopter/Heli_Proj.bmp,2.1,UNUSED,-
+Resources/Enemy/Helicopter/Helicopter.aseprite,95.0,UNUSED,-
+Resources/Enemy/Jeep/Jeep.aseprite,162.0,UNUSED,-
+Resources/Enemy/Jeep/Jeep_Aimming_Left.bmp,630.6,USED,Resources/ResourceData/TextureData.data:1947 (jeep_aimming_left.bmp)
+Resources/Enemy/Jeep/Jeep_Aimming_Right.bmp,630.6,USED,Resources/ResourceData/TextureData.data:1952 (jeep_aimming_right.bmp)
+Resources/Enemy/Jeep/Jeep_Destroy_Left.bmp,1376.8,USED,Resources/ResourceData/TextureData.data:1957 (jeep_destroy_left.bmp)
+Resources/Enemy/Jeep/Jeep_Destroy_Right.bmp,1376.8,USED,Resources/ResourceData/TextureData.data:1962 (jeep_destroy_right.bmp)
+Resources/Enemy/Jeep/Jeep_Idle_Left.bmp,99.8,USED,Resources/ResourceData/TextureData.data:1967 (jeep_idle_left.bmp)
+Resources/Enemy/Jeep/Jeep_Idle_Right.bmp,99.8,USED,Resources/ResourceData/TextureData.data:1972 (jeep_idle_right.bmp)
+Resources/Enemy/Jeep/Jeep_Move_Left.bmp,441.8,USED,Resources/ResourceData/TextureData.data:1977 (jeep_move_left.bmp)
+Resources/Enemy/Jeep/Jeep_Move_Right.bmp,441.8,USED,Resources/ResourceData/TextureData.data:1982 (jeep_move_right.bmp)
+Resources/Enemy/Jeep/Jeep_Proj_Begin_Left.bmp,17.6,USED,Resources/ResourceData/TextureData.data:1987 (jeep_proj_begin_left.bmp)
+Resources/Enemy/Jeep/Jeep_Proj_Begin_Right.bmp,17.6,USED,Resources/ResourceData/TextureData.data:1992 (jeep_proj_begin_right.bmp)
+Resources/Enemy/Jeep/Jeep_Proj_Left.bmp,40.1,USED,Resources/ResourceData/TextureData.data:1997 (jeep_proj_left.bmp)
+Resources/Enemy/Jeep/Jeep_Proj_Right.bmp,40.1,USED,Resources/ResourceData/TextureData.data:2002 (jeep_proj_right.bmp)
+Resources/Enemy/Jeep/Jeep_ReAimming_Left.bmp,630.6,USED,Resources/ResourceData/TextureData.data:2047 (jeep_reaimming_left.bmp)
+Resources/Enemy/Jeep/Jeep_ReAimming_Right.bmp,630.6,USED,Resources/ResourceData/TextureData.data:2052 (jeep_reaimming_right.bmp)
+Resources/Enemy/Jeep/Jeep_Ready_Left.bmp,105.1,USED,Resources/ResourceData/TextureData.data:2007 (jeep_ready_left.bmp)
+Resources/Enemy/Jeep/Jeep_Ready_Right.bmp,105.1,USED,Resources/ResourceData/TextureData.data:2012 (jeep_ready_right.bmp)
+Resources/Enemy/Jeep/Jeep_Shot_Left.bmp,397.6,USED,Resources/ResourceData/TextureData.data:2017 (jeep_shot_left.bmp)
+Resources/Enemy/Jeep/Jeep_Shot_Ready_Left.bmp,1035.0,USED,Resources/ResourceData/TextureData.data:2022 (jeep_shot_ready_left.bmp)
+Resources/Enemy/Jeep/Jeep_Shot_Ready_Right.bmp,1035.0,USED,Resources/ResourceData/TextureData.data:2027 (jeep_shot_ready_right.bmp)
+Resources/Enemy/Jeep/Jeep_Shot_Right.bmp,397.6,USED,Resources/ResourceData/TextureData.data:2032 (jeep_shot_right.bmp)
+Resources/Enemy/Jeep/Jeep_Turn_Left.bmp,685.2,USED,Resources/ResourceData/TextureData.data:2037 (jeep_turn_left.bmp)
+Resources/Enemy/Jeep/Jeep_Turn_Right.bmp,685.2,USED,Resources/ResourceData/TextureData.data:2042 (jeep_turn_right.bmp)
+Resources/Enemy/MineSoldier/MineSoldier_Idle_Left.bmp,97.6,UNUSED,-
+Resources/Enemy/MineSoldier/MineSoldier_Idle_Right.bmp,97.6,UNUSED,-
+Resources/Enemy/MineSoldier/MineSoldier_Proj_Left.bmp,180.5,UNUSED,-
+Resources/Enemy/MineSoldier/MineSoldier_Proj_Right.bmp,180.5,UNUSED,-
+Resources/Enemy/MineSoldier/MineSoldier_Shot_Left.bmp,703.2,UNUSED,-
+Resources/Enemy/MineSoldier/MineSoldier_Shot_Right.bmp,703.2,UNUSED,-
+Resources/Enemy/MissleTank/MissleTank.aseprite,80.1,UNUSED,-
+Resources/Enemy/MissleTank/MissleTank_AimmingDown_Left.bmp,877.6,USED,Resources/ResourceData/TextureData.data:1457 (missletank_aimmingdown_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_AimmingDown_Right.bmp,877.6,USED,Resources/ResourceData/TextureData.data:1462 (missletank_aimmingdown_right.bmp)
+Resources/Enemy/MissleTank/MissleTank_AimmingUp_Left.bmp,877.6,USED,Resources/ResourceData/TextureData.data:1617 (missletank_aimmingup_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_AimmingUp_Right.bmp,877.6,USED,Resources/ResourceData/TextureData.data:1612 (missletank_aimmingup_right.bmp)
+Resources/Enemy/MissleTank/MissleTank_Down_Destroy_Left.bmp,3087.1,USED,Resources/ResourceData/TextureData.data:1607 (missletank_down_destroy_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_Down_Destroy_Right.bmp,3087.1,USED,Resources/ResourceData/TextureData.data:1602 (missletank_down_destroy_right.bmp)
+Resources/Enemy/MissleTank/MissleTank_Down_Idle_Left.bmp,128.4,USED,Resources/ResourceData/TextureData.data:1597 (missletank_down_idle_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_Down_Idle_Right.bmp,128.4,USED,Resources/ResourceData/TextureData.data:1592 (missletank_down_idle_right.bmp)
+Resources/Enemy/MissleTank/MissleTank_Down_MoveStop_Left.bmp,269.1,USED,Resources/ResourceData/TextureData.data:1587 (missletank_down_movestop_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_Down_MoveStop_Right.bmp,269.1,USED,Resources/ResourceData/TextureData.data:1582 (missletank_down_movestop_right.bmp)
+Resources/Enemy/MissleTank/MissleTank_Down_Move_Left.bmp,385.2,USED,Resources/ResourceData/TextureData.data:1577 (missletank_down_move_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_Down_Move_Right.bmp,385.2,USED,Resources/ResourceData/TextureData.data:1572 (missletank_down_move_right.bmp)
+Resources/Enemy/MissleTank/MissleTank_Down_Proj_Effect_Left.bmp,589.9,USED,Resources/ResourceData/TextureData.data:1557 (missletank_down_proj_effect_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_Down_Proj_Effect_Right.bmp,589.9,USED,Resources/ResourceData/TextureData.data:1637 (missletank_down_proj_effect_right.bmp)
+Resources/Enemy/MissleTank/MissleTank_Down_Ready_Shot_Left.bmp,292.6,USED,Resources/ResourceData/TextureData.data:1632 (missletank_down_ready_shot_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_Down_Ready_Shot_Right.bmp,292.6,USED,Resources/ResourceData/TextureData.data:1467 (missletank_down_ready_shot_right.bmp)
+Resources/Enemy/MissleTank/MissleTank_Down_Shot_Left.bmp,460.7,USED,Resources/ResourceData/TextureData.data:1472 (missletank_down_shot_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_Down_Shot_Right.bmp,460.7,USED,Resources/ResourceData/TextureData.data:1477 (missletank_down_shot_right.bmp)
+Resources/Enemy/MissleTank/MissleTank_Proj.bmp,804.4,USED,Resources/ResourceData/TextureData.data:1482 (missletank_proj.bmp)
+Resources/Enemy/MissleTank/MissleTank_Proj_0.bmp,369.3,USED,Resources/ResourceData/TextureData.data:1642 (missletank_proj_0.bmp)
+Resources/Enemy/MissleTank/MissleTank_Proj_1.bmp,215.5,USED,Resources/ResourceData/TextureData.data:1647 (missletank_proj_1.bmp)
+Resources/Enemy/MissleTank/MissleTank_Turn_Left.bmp,1134.6,USED,Resources/ResourceData/TextureData.data:1487 (missletank_turn_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_Turn_Right.bmp,1134.6,USED,Resources/ResourceData/TextureData.data:1492 (missletank_turn_right.bmp)
+Resources/Enemy/MissleTank/MissleTank_Up_Destroy_Left.bmp,2953.2,USED,Resources/ResourceData/TextureData.data:1497 (missletank_up_destroy_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_Up_Destroy_Right.bmp,2953.2,USED,Resources/ResourceData/TextureData.data:1502 (missletank_up_destroy_right.bmp)
+Resources/Enemy/MissleTank/MissleTank_Up_Idle_Left.bmp,195.1,USED,Resources/ResourceData/TextureData.data:1507 (missletank_up_idle_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_Up_Idle_Right.bmp,195.1,USED,Resources/ResourceData/TextureData.data:1512 (missletank_up_idle_right.bmp)
+Resources/Enemy/MissleTank/MissleTank_Up_MoveStop_Left.bmp,387.6,USED,Resources/ResourceData/TextureData.data:1517 (missletank_up_movestop_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_Up_MoveStop_Right.bmp,387.6,USED,Resources/ResourceData/TextureData.data:1522 (missletank_up_movestop_right.bmp)
+Resources/Enemy/MissleTank/MissleTank_Up_Move_Left.bmp,780.1,USED,Resources/ResourceData/TextureData.data:1527 (missletank_up_move_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_Up_Move_Right.bmp,780.1,USED,Resources/ResourceData/TextureData.data:1532 (missletank_up_move_right.bmp)
+Resources/Enemy/MissleTank/MissleTank_Up_Proj_Effect_Left.bmp,852.6,USED,Resources/ResourceData/TextureData.data:1537 (missletank_up_proj_effect_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_Up_Proj_Effect_Right.bmp,852.6,USED,Resources/ResourceData/TextureData.data:1542 (missletank_up_proj_effect_right.bmp)
+Resources/Enemy/MissleTank/MissleTank_Up_Ready_Shot_Left.bmp,406.3,USED,Resources/ResourceData/TextureData.data:1547 (missletank_up_ready_shot_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_Up_Ready_Shot_Right.bmp,406.3,USED,Resources/ResourceData/TextureData.data:1552 (missletank_up_ready_shot_right.bmp)
+Resources/Enemy/MissleTank/MissleTank_Up_Shot_Left.bmp,699.6,USED,Resources/ResourceData/TextureData.data:1562 (missletank_up_shot_left.bmp)
+Resources/Enemy/MissleTank/MissleTank_Up_Shot_Right.bmp,699.6,USED,Resources/ResourceData/TextureData.data:1567 (missletank_up_shot_right.bmp)
+Resources/Enemy/Projectile/SD_Bomb.bmp,140.3,UNUSED,-
+Resources/Enemy/Projectile/SD_Chaser.bmp,750.6,UNUSED,-
+Resources/Enemy/Projectile/SD_Missle_Left.bmp,29.4,USED,Resources/ResourceData/TextureData.data:2282 (sd_missle_left.bmp)
+Resources/Enemy/Projectile/SD_Missle_Right.bmp,29.4,USED,Resources/ResourceData/TextureData.data:2287 (sd_missle_right.bmp)
+Resources/Enemy/Sarubia/Sarubia.aseprite,65.6,UNUSED,-
+Resources/Enemy/Sarubia/Sarubia_Destroy_Left.bmp,545.7,USED,Resources/ResourceData/TextureData.data:1652 (sarubia_destroy_left.bmp)
+Resources/Enemy/Sarubia/Sarubia_Destroy_Right.bmp,545.7,USED,Resources/ResourceData/TextureData.data:1657 (sarubia_destroy_right.bmp)
+Resources/Enemy/Sarubia/Sarubia_Idle_Left.bmp,216.1,USED,Resources/ResourceData/TextureData.data:1662 (sarubia_idle_left.bmp)
+Resources/Enemy/Sarubia/Sarubia_Idle_Right.bmp,216.1,USED,Resources/ResourceData/TextureData.data:1667 (sarubia_idle_right.bmp)
+Resources/Enemy/Sarubia/Sarubia_Move_Left.bmp,666.1,USED,Resources/ResourceData/TextureData.data:1672 (sarubia_move_left.bmp)
+Resources/Enemy/Sarubia/Sarubia_Move_Right.bmp,666.1,USED,Resources/ResourceData/TextureData.data:1677 (sarubia_move_right.bmp)
+Resources/Enemy/Sarubia/Sarubia_Move_Start_Left.bmp,661.6,USED,Resources/ResourceData/TextureData.data:1682 (sarubia_move_start_left.bmp)
+Resources/Enemy/Sarubia/Sarubia_Move_Start_Right.bmp,661.6,USED,Resources/ResourceData/TextureData.data:1687 (sarubia_move_start_right.bmp)
+Resources/Enemy/Sarubia/Sarubia_Move_Stop_Left.bmp,641.3,USED,Resources/ResourceData/TextureData.data:1692 (sarubia_move_stop_left.bmp)
+Resources/Enemy/Sarubia/Sarubia_Move_Stop_Right.bmp,641.3,USED,Resources/ResourceData/TextureData.data:1697 (sarubia_move_stop_right.bmp)
+Resources/Enemy/Sarubia/Sarubia_Proj_Collision.bmp,27.1,USED,Resources/ResourceData/TextureData.data:1707 (sarubia_proj_collision.bmp)
+Resources/Enemy/Sarubia/Sarubia_Proj_Effect_Left.bmp,598.1,USED,Resources/ResourceData/TextureData.data:1712 (sarubia_proj_effect_left.bmp)
+Resources/Enemy/Sarubia/Sarubia_Proj_Effect_Right.bmp,598.1,USED,Resources/ResourceData/TextureData.data:1717 (sarubia_proj_effect_right.bmp)
+Resources/Enemy/Sarubia/Sarubia_Proj_Left.bmp,64.4,USED,Resources/ResourceData/TextureData.data:1722 (sarubia_proj_left.bmp)
+Resources/Enemy/Sarubia/Sarubia_Proj_Right.bmp,64.4,USED,Resources/ResourceData/TextureData.data:1727 (sarubia_proj_right.bmp)
+Resources/Enemy/Sarubia/Sarubia_Proj_Start.bmp,24.6,USED,Resources/ResourceData/TextureData.data:1732 (sarubia_proj_start.bmp)
+Resources/Enemy/Sarubia/Sarubia_Proj_Trash.bmp,72.3,USED,Resources/ResourceData/TextureData.data:1737 (sarubia_proj_trash.bmp)
+Resources/Enemy/Sarubia/Sarubia_Shot_Left.bmp,1514.5,USED,Resources/ResourceData/TextureData.data:1742 (sarubia_shot_left.bmp)
+Resources/Enemy/Sarubia/Sarubia_Shot_Right.bmp,1514.5,USED,Resources/ResourceData/TextureData.data:1747 (sarubia_shot_right.bmp)
+Resources/Enemy/Sarubia/Sarubia_Shot_Start_Left.bmp,890.4,USED,Resources/ResourceData/TextureData.data:1752 (sarubia_shot_start_left.bmp)
+Resources/Enemy/Sarubia/Sarubia_Shot_Start_Right.bmp,890.4,USED,Resources/ResourceData/TextureData.data:1757 (sarubia_shot_start_right.bmp)
+Resources/Enemy/Sarubia/Sarubia_Turn_Left.bmp,1188.1,USED,Resources/ResourceData/TextureData.data:1762 (sarubia_turn_left.bmp)
+Resources/Enemy/Sarubia/Sarubia_Turn_Right.bmp,1188.1,USED,Resources/ResourceData/TextureData.data:1702 (sarubia_turn_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield.aseprite,38.6,UNUSED,-
+Resources/Enemy/Shield_Soldier/Shield_Defence_Down_Left.bmp,98.3,USED,Resources/ResourceData/TextureData.data:2557 (shield_defence_down_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Defence_Down_Right.bmp,98.3,USED,Resources/ResourceData/TextureData.data:2562 (shield_defence_down_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Defence_Left.bmp,80.8,USED,Resources/ResourceData/TextureData.data:2567 (shield_defence_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Defence_Right.bmp,80.8,USED,Resources/ResourceData/TextureData.data:2572 (shield_defence_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Defence_Up_Left.bmp,114.2,USED,Resources/ResourceData/TextureData.data:2577 (shield_defence_up_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Defence_Up_Right.bmp,114.2,USED,Resources/ResourceData/TextureData.data:2582 (shield_defence_up_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Idle_Left.bmp,128.0,USED,Resources/ResourceData/TextureData.data:2587 (shield_idle_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Idle_Right.bmp,128.0,USED,Resources/ResourceData/TextureData.data:2592 (shield_idle_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Jump_Left.bmp,186.2,USED,Resources/ResourceData/TextureData.data:2597 (shield_jump_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Jump_Right.bmp,186.2,USED,Resources/ResourceData/TextureData.data:2602 (shield_jump_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Lend_Left.bmp,62.2,USED,Resources/ResourceData/TextureData.data:2607 (shield_lend_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Lend_Right.bmp,62.2,USED,Resources/ResourceData/TextureData.data:2612 (shield_lend_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_LookDown_End_Left.bmp,73.1,USED,Resources/ResourceData/TextureData.data:2797 (shield_lookdown_end_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_LookDown_End_Right.bmp,73.1,USED,Resources/ResourceData/TextureData.data:2802 (shield_lookdown_end_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_LookDown_Idle_Left.bmp,177.2,USED,Resources/ResourceData/TextureData.data:2807 (shield_lookdown_idle_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_LookDown_Idle_Right.bmp,177.2,USED,Resources/ResourceData/TextureData.data:2812 (shield_lookdown_idle_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_LookDown_Start_Left.bmp,73.1,USED,Resources/ResourceData/TextureData.data:2792 (shield_lookdown_start_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_LookDown_Start_Right.bmp,73.1,USED,Resources/ResourceData/TextureData.data:2787 (shield_lookdown_start_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_LookUp_End_Left.bmp,92.8,USED,Resources/ResourceData/TextureData.data:2782 (shield_lookup_end_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_LookUp_End_Right.bmp,92.8,USED,Resources/ResourceData/TextureData.data:2777 (shield_lookup_end_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_LookUp_Idle_Left.bmp,181.2,USED,Resources/ResourceData/TextureData.data:2772 (shield_lookup_idle_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_LookUp_Idle_Right.bmp,181.2,USED,Resources/ResourceData/TextureData.data:2767 (shield_lookup_idle_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_LookUp_Right.bmp,278.2,UNUSED,-
+Resources/Enemy/Shield_Soldier/Shield_LookUp_Start_Left.bmp,92.8,USED,Resources/ResourceData/TextureData.data:2762 (shield_lookup_start_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_LookUp_Start_Right.bmp,92.8,USED,Resources/ResourceData/TextureData.data:2757 (shield_lookup_start_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Move_Left.bmp,253.7,USED,Resources/ResourceData/TextureData.data:2617 (shield_move_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Move_Right.bmp,253.7,USED,Resources/ResourceData/TextureData.data:2622 (shield_move_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Move_Stop_Left.bmp,86.7,USED,Resources/ResourceData/TextureData.data:2627 (shield_move_stop_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Move_Stop_Right.bmp,86.7,USED,Resources/ResourceData/TextureData.data:2632 (shield_move_stop_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Proj.bmp,2.1,USED,Resources/ResourceData/TextureData.data:2637 (shield_proj.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Proj_Effect_Down.bmp,101.8,USED,Resources/ResourceData/TextureData.data:2642 (shield_proj_effect_down.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Proj_Effect_Left.bmp,100.3,USED,Resources/ResourceData/TextureData.data:2647 (shield_proj_effect_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Proj_Effect_Right.bmp,100.3,USED,Resources/ResourceData/TextureData.data:2652 (shield_proj_effect_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Proj_Effect_Up.bmp,101.8,USED,Resources/ResourceData/TextureData.data:2657 (shield_proj_effect_up.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_Down_Left.bmp,156.1,USED,Resources/ResourceData/TextureData.data:2662 (shield_shot_down_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_Down_Right.bmp,156.1,USED,Resources/ResourceData/TextureData.data:2667 (shield_shot_down_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_End_Down_Left.bmp,157.6,USED,Resources/ResourceData/TextureData.data:2672 (shield_shot_end_down_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_End_Down_Right.bmp,157.6,USED,Resources/ResourceData/TextureData.data:2677 (shield_shot_end_down_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_End_Left.bmp,144.4,USED,Resources/ResourceData/TextureData.data:2682 (shield_shot_end_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_End_Right.bmp,144.4,USED,Resources/ResourceData/TextureData.data:2687 (shield_shot_end_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_End_Up_Left.bmp,156.2,USED,Resources/ResourceData/TextureData.data:2692 (shield_shot_end_up_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_End_Up_Right.bmp,156.2,USED,Resources/ResourceData/TextureData.data:2697 (shield_shot_end_up_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_Left.bmp,173.3,USED,Resources/ResourceData/TextureData.data:2702 (shield_shot_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_Ready_Down_Left.bmp,157.6,USED,Resources/ResourceData/TextureData.data:2707 (shield_shot_ready_down_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_Ready_Down_Right.bmp,157.6,USED,Resources/ResourceData/TextureData.data:2712 (shield_shot_ready_down_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_Ready_Left.bmp,144.4,USED,Resources/ResourceData/TextureData.data:2717 (shield_shot_ready_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_Ready_Right.bmp,144.4,USED,Resources/ResourceData/TextureData.data:2722 (shield_shot_ready_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_Ready_Up_Left.bmp,156.2,USED,Resources/ResourceData/TextureData.data:2727 (shield_shot_ready_up_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_Ready_Up_Right.bmp,156.2,USED,Resources/ResourceData/TextureData.data:2732 (shield_shot_ready_up_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_Right.bmp,173.3,USED,Resources/ResourceData/TextureData.data:2737 (shield_shot_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_Up_Left.bmp,196.9,USED,Resources/ResourceData/TextureData.data:2742 (shield_shot_up_left.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Shot_Up_Right.bmp,196.9,USED,Resources/ResourceData/TextureData.data:2747 (shield_shot_up_right.bmp)
+Resources/Enemy/Shield_Soldier/Shield_Trash.bmp,127.6,USED,Resources/ResourceData/TextureData.data:2752 (shield_trash.bmp)
+Resources/Enemy/Soldier Todo.txt,0.1,UNUSED,-
+Resources/Enemy/Soldier/SD_Die_Bomb_Left.bmp,219.4,USED,Resources/ResourceData/TextureData.data:2057 (sd_die_bomb_left.bmp)
+Resources/Enemy/Soldier/SD_Die_Bomb_Right.bmp,219.4,USED,Resources/ResourceData/TextureData.data:2062 (sd_die_bomb_right.bmp)
+Resources/Enemy/Soldier/SD_Die_Fall_Left.bmp,105.1,USED,Resources/ResourceData/TextureData.data:2067 (sd_die_fall_left.bmp)
+Resources/Enemy/Soldier/SD_Die_Fall_Right.bmp,105.1,USED,Resources/ResourceData/TextureData.data:2072 (sd_die_fall_right.bmp)
+Resources/Enemy/Soldier/SD_Die_Jump_Left.bmp,278.9,USED,Resources/ResourceData/TextureData.data:2077 (sd_die_jump_left.bmp)
+Resources/Enemy/Soldier/SD_Die_Jump_Right.bmp,278.9,USED,Resources/ResourceData/TextureData.data:2082 (sd_die_jump_right.bmp)
+Resources/Enemy/Soldier/SD_Die_Land_Left.bmp,179.8,USED,Resources/ResourceData/TextureData.data:2087 (sd_die_land_left.bmp)
+Resources/Enemy/Soldier/SD_Die_Land_Right.bmp,179.8,USED,Resources/ResourceData/TextureData.data:2092 (sd_die_land_right.bmp)
+Resources/Enemy/Soldier/SD_Die_Slash_Left.bmp,536.3,USED,Resources/ResourceData/TextureData.data:2097 (sd_die_slash_left.bmp)
+Resources/Enemy/Soldier/SD_Die_Slash_Right.bmp,536.3,USED,Resources/ResourceData/TextureData.data:2102 (sd_die_slash_right.bmp)
+Resources/Enemy/Soldier/SD_Die_Stand_1_Left.bmp,184.5,USED,Resources/ResourceData/TextureData.data:2107 (sd_die_stand_1_left.bmp)
+Resources/Enemy/Soldier/SD_Die_Stand_1_Right.bmp,184.5,USED,Resources/ResourceData/TextureData.data:2112 (sd_die_stand_1_right.bmp)
+Resources/Enemy/Soldier/SD_Die_Stand_2_Left.bmp,275.5,USED,Resources/ResourceData/TextureData.data:2117 (sd_die_stand_2_left.bmp)
+Resources/Enemy/Soldier/SD_Die_Stand_2_Right.bmp,275.5,USED,Resources/ResourceData/TextureData.data:2122 (sd_die_stand_2_right.bmp)
+Resources/Enemy/Soldier/SD_Hang_Idle_Left.bmp,62.6,USED,Resources/ResourceData/TextureData.data:2127 (sd_hang_idle_left.bmp)
+Resources/Enemy/Soldier/SD_Hang_Idle_Right.bmp,62.6,USED,Resources/ResourceData/TextureData.data:2132 (sd_hang_idle_right.bmp)
+Resources/Enemy/Soldier/SD_Hang_Throw_Bomb_Left.bmp,273.5,USED,Resources/ResourceData/TextureData.data:2137 (sd_hang_throw_bomb_left.bmp)
+Resources/Enemy/Soldier/SD_Hang_Throw_Bomb_Right.bmp,273.5,USED,Resources/ResourceData/TextureData.data:2142 (sd_hang_throw_bomb_right.bmp)
+Resources/Enemy/Soldier/SD_Idle_Left.bmp,99.8,USED,Resources/ResourceData/TextureData.data:2147 (sd_idle_left.bmp)
+Resources/Enemy/Soldier/SD_Idle_Right.bmp,99.8,USED,Resources/ResourceData/TextureData.data:2152 (sd_idle_right.bmp)
+Resources/Enemy/Soldier/SD_Jump_Left.bmp,99.7,USED,Resources/ResourceData/TextureData.data:2157 (sd_jump_left.bmp)
+Resources/Enemy/Soldier/SD_Jump_Right.bmp,99.7,USED,Resources/ResourceData/TextureData.data:2162 (sd_jump_right.bmp)
+Resources/Enemy/Soldier/SD_Jump_Slash_Land_Left.bmp,568.8,USED,Resources/ResourceData/TextureData.data:2167 (sd_jump_slash_land_left.bmp)
+Resources/Enemy/Soldier/SD_Jump_Slash_Land_Right.bmp,568.8,USED,Resources/ResourceData/TextureData.data:2172 (sd_jump_slash_land_right.bmp)
+Resources/Enemy/Soldier/SD_Jump_Slash_Left.bmp,203.2,USED,Resources/ResourceData/TextureData.data:2177 (sd_jump_slash_left.bmp)
+Resources/Enemy/Soldier/SD_Jump_Slash_Ready_Left.bmp,81.3,USED,Resources/ResourceData/TextureData.data:2182 (sd_jump_slash_ready_left.bmp)
+Resources/Enemy/Soldier/SD_Jump_Slash_Ready_Right.bmp,81.3,USED,Resources/ResourceData/TextureData.data:2187 (sd_jump_slash_ready_right.bmp)
+Resources/Enemy/Soldier/SD_Jump_Slash_Right.bmp,203.2,USED,Resources/ResourceData/TextureData.data:2192 (sd_jump_slash_right.bmp)
+Resources/Enemy/Soldier/SD_Land_Left.bmp,46.0,USED,Resources/ResourceData/TextureData.data:2197 (sd_land_left.bmp)
+Resources/Enemy/Soldier/SD_Land_Right.bmp,46.0,USED,Resources/ResourceData/TextureData.data:2202 (sd_land_right.bmp)
+Resources/Enemy/Soldier/SD_MoveDown_Left.bmp,320.3,USED,Resources/ResourceData/TextureData.data:2207 (sd_movedown_left.bmp)
+Resources/Enemy/Soldier/SD_MoveDown_Right.bmp,320.3,USED,Resources/ResourceData/TextureData.data:2212 (sd_movedown_right.bmp)
+Resources/Enemy/Soldier/SD_MoveJump_Left.bmp,120.1,USED,Resources/ResourceData/TextureData.data:2217 (sd_movejump_left.bmp)
+Resources/Enemy/Soldier/SD_MoveJump_Right.bmp,120.1,USED,Resources/ResourceData/TextureData.data:2222 (sd_movejump_right.bmp)
+Resources/Enemy/Soldier/SD_MoveStop_Left.bmp,59.4,USED,Resources/ResourceData/TextureData.data:2227 (sd_movestop_left.bmp)
+Resources/Enemy/Soldier/SD_MoveStop_Right.bmp,59.4,USED,Resources/ResourceData/TextureData.data:2232 (sd_movestop_right.bmp)
+Resources/Enemy/Soldier/SD_Move_Left.bmp,210.1,USED,Resources/ResourceData/TextureData.data:2237 (sd_move_left.bmp)
+Resources/Enemy/Soldier/SD_Move_Right.bmp,210.1,USED,Resources/ResourceData/TextureData.data:2242 (sd_move_right.bmp)
+Resources/Enemy/Soldier/SD_Slash_Left.bmp,678.2,USED,Resources/ResourceData/TextureData.data:2247 (sd_slash_left.bmp)
+Resources/Enemy/Soldier/SD_Slash_Right.bmp,678.2,USED,Resources/ResourceData/TextureData.data:2252 (sd_slash_right.bmp)
+Resources/Enemy/Soldier/SD_Throw_Bomb_Left.bmp,441.1,USED,Resources/ResourceData/TextureData.data:2257 (sd_throw_bomb_left.bmp)
+Resources/Enemy/Soldier/SD_Throw_Bomb_Right.bmp,441.1,USED,Resources/ResourceData/TextureData.data:2262 (sd_throw_bomb_right.bmp)
+Resources/Enemy/Soldier/SD_Throw_Missle_Left.bmp,789.2,USED,Resources/ResourceData/TextureData.data:2267 (sd_throw_missle_left.bmp)
+Resources/Enemy/Soldier/SD_Throw_Missle_Right.bmp,789.2,USED,Resources/ResourceData/TextureData.data:2272 (sd_throw_missle_right.bmp)
+Resources/Enemy/Soldier/Soldier_Bomb.bmp,196.1,USED,Resources/ResourceData/TextureData.data:2277 (soldier_bomb.bmp)
+Resources/Enemy/Soldier/sd.aseprite,156.9,UNUSED,-
+Resources/Enemy/Sprite-0004.json,5.9,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank.aseprite,101.7,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Destroy.bmp,671.4,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Destroy_Down.bmp,1123.8,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Destroy_Up.bmp,1089.9,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Head_Shot_0.bmp,119.3,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Head_Shot_0_Down.bmp,211.6,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Head_Shot_0_Up.bmp,211.6,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Head_Shot_1.bmp,107.3,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Head_Shot_1_Down.bmp,133.1,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Head_Shot_1_Up.bmp,133.1,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Head_Shot_2.bmp,93.7,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Head_Shot_2_Down.bmp,120.7,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Head_Shot_2_Up.bmp,120.1,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Head_Shot_3.bmp,91.6,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Head_Shot_3_Down.bmp,110.5,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Head_Shot_3_Up.bmp,111.1,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Idle.bmp,57.3,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Idle_Down.bmp,96.1,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Idle_Up.bmp,96.1,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Move.bmp,290.7,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_MoveBack.bmp,290.7,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_MoveBack_Down.bmp,506.3,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_MoveBack_Up.bmp,506.3,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Move_Down.bmp,506.3,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Move_Up.bmp,506.3,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Proj.bmp,18.1,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Proj_Effect.bmp,32.1,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Proj_Start.bmp,24.8,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Shot.bmp,171.6,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Shot_Down.bmp,312.3,UNUSED,-
+Resources/Enemy/Tank (보류) - 폐기/Tank_Shot_Up.bmp,312.3,UNUSED,-
+Resources/Enemy/enemyTodoList.txt,0.3,UNUSED,-
+Resources/Items/Bomb.bmp,234.4,USED,Resources/ResourceData/TextureData.data:27 (bomb.bmp)
+Resources/Items/Bomb_Supplement.bmp,158.1,USED,Resources/ResourceData/TextureData.data:22 (bomb_supplement.bmp)
+Resources/Items/Bullet_Supplement.bmp,229.0,USED,Resources/ResourceData/TextureData.data:77 (bullet_supplement.bmp)
+Resources/Items/GunItem.bmp,68.8,USED,Resources/ResourceData/TextureData.data:42 (gunitem.bmp)
+Resources/Items/ItemBox.bmp,306.8,USED,Resources/ResourceData/TextureData.data:72 (itembox.bmp)
+Resources/Items/Sprite-0001.aseprite,185.4,UNUSED,-
+Resources/Items/scoreItem/Apple.bmp,88.8,USED,Resources/ResourceData/TextureData.data:1342 (apple.bmp)
+Resources/Items/scoreItem/Banana.bmp,63.3,USED,Resources/ResourceData/TextureData.data:1347 (banana.bmp)
+Resources/Items/scoreItem/Banana_Bundle.Bmp,126.4,USED,Resources/ResourceData/TextureData.data:1352 (banana_bundle.bmp)
+Resources/Items/scoreItem/Bread.bmp,4.8,USED,Resources/ResourceData/TextureData.data:1357 (bread.bmp)
+Resources/Items/scoreItem/Cabbage.bmp,159.3,USED,Resources/ResourceData/TextureData.data:1362 (cabbage.bmp)
+Resources/Items/scoreItem/Carrot.bmp,169.1,USED,Resources/ResourceData/TextureData.data:1367 (carrot.bmp)
+Resources/Items/scoreItem/Chicken.bmp,229.7,USED,Resources/ResourceData/TextureData.data:1372 (chicken.bmp)
+Resources/Items/scoreItem/Fish.bmp,56.3,USED,Resources/ResourceData/TextureData.data:1377 (fish.bmp)
+Resources/Items/scoreItem/Fruits.bmp,10.1,USED,Resources/ResourceData/TextureData.data:1382 (fruits.bmp)
+Resources/Items/scoreItem/Letter.bmp,92.7,USED,Resources/ResourceData/TextureData.data:1387 (letter.bmp)
+Resources/Items/scoreItem/Mando_Begin.bmp,340.3,USED,Resources/ResourceData/TextureData.data:1392 (mando_begin.bmp)
+Resources/Items/scoreItem/Mando_Idle.bmp,109.7,USED,Resources/ResourceData/TextureData.data:1397 (mando_idle.bmp)
+Resources/Items/scoreItem/Pair.bmp,70.1,USED,Resources/ResourceData/TextureData.data:1402 (pair.bmp)
+Resources/Items/scoreItem/Watermelon.bmp,120.5,USED,Resources/ResourceData/TextureData.data:1407 (watermelon.bmp)
+Resources/Items/scoreItem/items.aseprite,45.8,UNUSED,-
+Resources/NPC/Older/Older_Escape_Left.bmp,114.1,USED,Resources/ResourceData/TextureData.data:797 (older_escape_left.bmp)
+Resources/NPC/Older/Older_Escape_Right.bmp,114.1,USED,Resources/ResourceData/TextureData.data:802 (older_escape_right.bmp)
+Resources/NPC/Older/Older_Idle_Left.bmp,143.5,USED,Resources/ResourceData/TextureData.data:807 (older_idle_left.bmp)
+Resources/NPC/Older/Older_Idle_Right.bmp,143.5,USED,Resources/ResourceData/TextureData.data:812 (older_idle_right.bmp)
+Resources/NPC/Older/Older_Item_Left.bmp,1122.9,USED,Resources/ResourceData/TextureData.data:817 (older_item_left.bmp)
+Resources/NPC/Older/Older_Item_Right.bmp,1122.9,USED,Resources/ResourceData/TextureData.data:822 (older_item_right.bmp)
+Resources/NPC/Older/Older_Jump_Left.bmp,196.9,USED,Resources/ResourceData/TextureData.data:827 (older_jump_left.bmp)
+Resources/NPC/Older/Older_Jump_Right.bmp,196.9,USED,Resources/ResourceData/TextureData.data:832 (older_jump_right.bmp)
+Resources/NPC/Older/Older_MoveDown.bmp,260.7,USED,Resources/ResourceData/TextureData.data:847 (older_movedown.bmp)
+Resources/NPC/Older/Older_Move_Left.bmp,298.9,USED,Resources/ResourceData/TextureData.data:837 (older_move_left.bmp)
+Resources/NPC/Older/Older_Move_Right.bmp,298.9,USED,Resources/ResourceData/TextureData.data:842 (older_move_right.bmp)
+Resources/NPC/Older/Order_Run_Left.bmp,253.2,USED,Resources/ResourceData/TextureData.data:852 (order_run_left.bmp)
+Resources/NPC/Older/Order_Run_Right.bmp,253.2,USED,Resources/ResourceData/TextureData.data:857 (order_run_right.bmp)
+Resources/NPC/Older/raw/Older_Escape_Left.bmp,114.1,USED,Resources/ResourceData/TextureData.data:797 (older_escape_left.bmp)
+Resources/NPC/Older/raw/Older_Escape_Right.bmp,114.1,USED,Resources/ResourceData/TextureData.data:802 (older_escape_right.bmp)
+Resources/NPC/Older/raw/Older_Idle_Left.bmp,143.5,USED,Resources/ResourceData/TextureData.data:807 (older_idle_left.bmp)
+Resources/NPC/Older/raw/Older_Idle_Right.bmp,143.5,USED,Resources/ResourceData/TextureData.data:812 (older_idle_right.bmp)
+Resources/NPC/Older/raw/Older_Item_Left.bmp,1122.9,USED,Resources/ResourceData/TextureData.data:817 (older_item_left.bmp)
+Resources/NPC/Older/raw/Older_Item_Right.bmp,1122.9,USED,Resources/ResourceData/TextureData.data:822 (older_item_right.bmp)
+Resources/NPC/Older/raw/Older_Jump_Left.bmp,196.9,USED,Resources/ResourceData/TextureData.data:827 (older_jump_left.bmp)
+Resources/NPC/Older/raw/Older_Jump_Right.bmp,196.9,USED,Resources/ResourceData/TextureData.data:832 (older_jump_right.bmp)
+Resources/NPC/Older/raw/Older_MoveDown.bmp,260.7,USED,Resources/ResourceData/TextureData.data:847 (older_movedown.bmp)
+Resources/NPC/Older/raw/Older_Move_Left.bmp,298.9,USED,Resources/ResourceData/TextureData.data:837 (older_move_left.bmp)
+Resources/NPC/Older/raw/Older_Move_Right.bmp,298.9,USED,Resources/ResourceData/TextureData.data:842 (older_move_right.bmp)
+Resources/NPC/Older/raw/Order_Run_Left.bmp,253.2,USED,Resources/ResourceData/TextureData.data:852 (order_run_left.bmp)
+Resources/NPC/Older/raw/Order_Run_Right.bmp,253.2,USED,Resources/ResourceData/TextureData.data:857 (order_run_right.bmp)
+Resources/NPC/Parker.bmp,98.7,USED,Resources/ResourceData/TextureData.data:1307 (parker.bmp)
+Resources/NPC/raw/Parker.bmp,98.7,USED,Resources/ResourceData/TextureData.data:1307 (parker.bmp)
+Resources/Object/Chute_Destroy.bmp,1332.6,UNUSED,-
+Resources/Object/Chute_Idle.bmp,310.8,UNUSED,-
+Resources/ResourceData/Animation/EctAnimation.anime,11.2,USED,Source/Tools/Baker/Baker.cpp:318 (glob *.anime)
+Resources/ResourceData/Animation/EnemyAnimation.anime,70.3,USED,Source/Tools/Baker/Baker.cpp:318 (glob *.anime)
+Resources/ResourceData/Animation/NPCAnimation.anime,2.3,USED,Source/Tools/Baker/Baker.cpp:318 (glob *.anime)
+Resources/ResourceData/Animation/PlayerAnimation.anime,28.5,USED,Source/Tools/Baker/Baker.cpp:318 (glob *.anime)
+Resources/ResourceData/Animation/backup.txt,8.8,UNUSED,-
+Resources/ResourceData/Font/FontData.txt,0.7,UNUSED,-
+Resources/ResourceData/Sound/SoundData.txt,0.9,USED,Source/Tools/Baker/Baker.cpp:1017 (sounddata.txt)
+Resources/ResourceData/Sprite/ItemSpriteData.sprite,1.0,USED,Source/Tools/Baker/Baker.cpp:368 (glob *.sprite)
+Resources/ResourceData/Sprite/SpriteData.sprite,7.2,USED,Source/Tools/Baker/Baker.cpp:368 (glob *.sprite)
+Resources/ResourceData/Sprite/Stage0SpriteData.sprite,8.1,USED,Source/Tools/Baker/Baker.cpp:368 (glob *.sprite)
+Resources/ResourceData/Sprite/UISpriteData.sprite,0.3,USED,Source/Tools/Baker/Baker.cpp:368 (glob *.sprite)
+Resources/ResourceData/TextureData.data,78.5,USED,Source/Tools/Baker/Baker.cpp:293 (texturedata.data)
+Resources/SFX/Enemy_Chaser_Bullet.bmp,512.1,USED,Resources/ResourceData/TextureData.data:887 (enemy_chaser_bullet.bmp)
+Resources/SFX/FlameShot_AttackMotion.bmp,1229.0,USED,Resources/ResourceData/TextureData.data:47 (flameshot_attackmotion.bmp)
+Resources/SFX/FlameShot_BeginMotion_Down.bmp,787.6,USED,Resources/ResourceData/TextureData.data:52 (flameshot_beginmotion_down.bmp)
+Resources/SFX/FlameShot_BeginMotion_Left.bmp,1508.3,USED,Resources/ResourceData/TextureData.data:62 (flameshot_beginmotion_left.bmp)
+Resources/SFX/FlameShot_BeginMotion_Right.bmp,1508.3,USED,Resources/ResourceData/TextureData.data:57 (flameshot_beginmotion_right.bmp)
+Resources/SFX/FlameShot_BeginMotion_Up.bmp,1050.1,USED,Resources/ResourceData/TextureData.data:67 (flameshot_beginmotion_up.bmp)
+Resources/SFX/HM_Bullet.bmp,744.1,USED,Resources/ResourceData/TextureData.data:712 (hm_bullet.bmp)
+Resources/SFX/Mini_Explosion.bmp,273.5,USED,Resources/ResourceData/TextureData.data:82 (mini_explosion.bmp)
+Resources/SFX/ShotGun_Bullet_Down.bmp,1254.3,USED,Resources/ResourceData/TextureData.data:867 (shotgun_bullet_down.bmp)
+Resources/SFX/ShotGun_Bullet_Left.bmp,1235.1,USED,Resources/ResourceData/TextureData.data:872 (shotgun_bullet_left.bmp)
+Resources/SFX/ShotGun_Bullet_Right.bmp,1235.1,USED,Resources/ResourceData/TextureData.data:877 (shotgun_bullet_right.bmp)
+Resources/SFX/ShotGun_Bullet_Up.bmp,1254.3,USED,Resources/ResourceData/TextureData.data:882 (shotgun_bullet_up.bmp)
+Resources/SFX/Sprite-0031.aseprite,741.3,UNUSED,-
+Resources/SFX/items.aseprite,185.4,UNUSED,-
+Resources/SFX/raw/Enemy_Chaser_Bullet.bmp,512.1,USED,Resources/ResourceData/TextureData.data:887 (enemy_chaser_bullet.bmp)
+Resources/SFX/raw/FlameShot_AttackMotion.bmp,1229.0,USED,Resources/ResourceData/TextureData.data:47 (flameshot_attackmotion.bmp)
+Resources/SFX/raw/FlameShot_BeginMotion_Down.bmp,787.6,USED,Resources/ResourceData/TextureData.data:52 (flameshot_beginmotion_down.bmp)
+Resources/SFX/raw/FlameShot_BeginMotion_Left.bmp,1508.3,USED,Resources/ResourceData/TextureData.data:62 (flameshot_beginmotion_left.bmp)
+Resources/SFX/raw/FlameShot_BeginMotion_Right.bmp,1508.3,USED,Resources/ResourceData/TextureData.data:57 (flameshot_beginmotion_right.bmp)
+Resources/SFX/raw/FlameShot_BeginMotion_Up.bmp,1050.1,USED,Resources/ResourceData/TextureData.data:67 (flameshot_beginmotion_up.bmp)
+Resources/SFX/raw/HM_Bullet.bmp,744.1,USED,Resources/ResourceData/TextureData.data:712 (hm_bullet.bmp)
+Resources/SFX/raw/Mini_Explosion.bmp,273.5,USED,Resources/ResourceData/TextureData.data:82 (mini_explosion.bmp)
+Resources/SFX/raw/ShotGun_Bullet_Down.bmp,1254.3,USED,Resources/ResourceData/TextureData.data:867 (shotgun_bullet_down.bmp)
+Resources/SFX/raw/ShotGun_Bullet_Left.bmp,1235.1,USED,Resources/ResourceData/TextureData.data:872 (shotgun_bullet_left.bmp)
+Resources/SFX/raw/ShotGun_Bullet_Right.bmp,1235.1,USED,Resources/ResourceData/TextureData.data:877 (shotgun_bullet_right.bmp)
+Resources/SFX/raw/ShotGun_Bullet_Up.bmp,1254.3,USED,Resources/ResourceData/TextureData.data:882 (shotgun_bullet_up.bmp)
+Resources/Sounds/Coin.wav,132.8,USED,Resources/ResourceData/Sound/SoundData.txt:44 (coin.wav)
+"Resources/Sounds/MS X,3,4,5/MS3_Title.ogg",115.4,USED,Source/Tools/Baker/Baker.cpp:1087 (ms3_title.ogg)
+"Resources/Sounds/MS X,3,4,5/MSX_Title.ogg",182.6,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/MS_Tile.ogg",45.7,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (1).mp3",127.7,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (10).mp3",99.9,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (11).mp3",71.3,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (12).mp3",76.2,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (13).mp3",73.0,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (15).mp3",88.5,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (16).mp3",86.8,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (17).mp3",85.2,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (18).mp3",90.1,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (19).mp3",69.7,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (2).mp3",126.0,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (20).mp3",77.9,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (21).mp3",81.1,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (22).mp3",107.2,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (23).mp3",93.4,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (24).mp3",74.6,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (25).mp3",91.7,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (26).mp3",77.9,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (27).mp3",82.8,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (28).mp3",85.2,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (29).mp3",85.2,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (3).mp3",118.7,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (30).mp3",115.4,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (31).mp3",76.2,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (32).mp3",65.6,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (33).mp3",64.0,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (34).mp3",68.1,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (35).mp3",71.3,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (36).mp3",73.0,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (37).mp3",84.4,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (38).mp3",74.6,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (39).mp3",95.0,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (4).mp3",122.8,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (40).mp3",93.4,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (41).mp3",90.1,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (42).mp3",103.2,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (43).mp3",81.1,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (44).mp3",88.5,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (45).mp3",74.6,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (46).mp3",52.6,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (47).mp3",57.5,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (48).mp3",55.8,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (49).mp3",55.8,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (5).mp3",110.5,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (6).mp3",109.7,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (7).mp3",121.9,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (8).mp3",104.0,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/MS X,3,4,5/NARRATOR 2 (9).mp3",112.1,MAYBE,"Source/Tools/Baker/Baker.cpp:1087 (dir literal sounds/ms x,3,4,5/) - file itself not named; dynamic load?"
+"Resources/Sounds/NARRATOR MS1,2/MS2_Title.ogg",133.1,USED,Source/Tools/Baker/Baker.cpp:1088 (ms2_title.ogg)
+"Resources/Sounds/NARRATOR MS1,2/MS_Title.ogg",37.5,MAYBE,"Source/Tools/Baker/Baker.cpp:1080 (dir literal sounds/narrator ms1,2/) - file itself not named; dynamic load?"
+"Resources/Sounds/NARRATOR MS1,2/NARRATOR 1 (1).mp3",118.7,MAYBE,"Source/Tools/Baker/Baker.cpp:1080 (dir literal sounds/narrator ms1,2/) - file itself not named; dynamic load?"
+"Resources/Sounds/NARRATOR MS1,2/NARRATOR 1 (10).mp3",101.5,MAYBE,"Source/Tools/Baker/Baker.cpp:1080 (dir literal sounds/narrator ms1,2/) - file itself not named; dynamic load?"
+"Resources/Sounds/NARRATOR MS1,2/NARRATOR 1 (11).mp3",104.0,MAYBE,"Source/Tools/Baker/Baker.cpp:1080 (dir literal sounds/narrator ms1,2/) - file itself not named; dynamic load?"
+"Resources/Sounds/NARRATOR MS1,2/NARRATOR 1 (12).mp3",88.5,MAYBE,"Source/Tools/Baker/Baker.cpp:1080 (dir literal sounds/narrator ms1,2/) - file itself not named; dynamic load?"
+"Resources/Sounds/NARRATOR MS1,2/NARRATOR 1 (2).mp3",107.2,MAYBE,"Source/Tools/Baker/Baker.cpp:1080 (dir literal sounds/narrator ms1,2/) - file itself not named; dynamic load?"
+"Resources/Sounds/NARRATOR MS1,2/NARRATOR 1 (3).mp3",110.5,MAYBE,"Source/Tools/Baker/Baker.cpp:1080 (dir literal sounds/narrator ms1,2/) - file itself not named; dynamic load?"
+"Resources/Sounds/NARRATOR MS1,2/NARRATOR 1 (4).mp3",110.5,MAYBE,"Source/Tools/Baker/Baker.cpp:1080 (dir literal sounds/narrator ms1,2/) - file itself not named; dynamic load?"
+"Resources/Sounds/NARRATOR MS1,2/NARRATOR 1 (5).mp3",107.2,MAYBE,"Source/Tools/Baker/Baker.cpp:1080 (dir literal sounds/narrator ms1,2/) - file itself not named; dynamic load?"
+"Resources/Sounds/NARRATOR MS1,2/NARRATOR 1 (6).mp3",108.9,MAYBE,"Source/Tools/Baker/Baker.cpp:1080 (dir literal sounds/narrator ms1,2/) - file itself not named; dynamic load?"
+"Resources/Sounds/NARRATOR MS1,2/NARRATOR 1 (7).mp3",79.5,MAYBE,"Source/Tools/Baker/Baker.cpp:1080 (dir literal sounds/narrator ms1,2/) - file itself not named; dynamic load?"
+"Resources/Sounds/NARRATOR MS1,2/NARRATOR 1 (8).mp3",85.2,MAYBE,"Source/Tools/Baker/Baker.cpp:1080 (dir literal sounds/narrator ms1,2/) - file itself not named; dynamic load?"
+"Resources/Sounds/NARRATOR MS1,2/NARRATOR 1 (9).mp3",104.0,MAYBE,"Source/Tools/Baker/Baker.cpp:1080 (dir literal sounds/narrator ms1,2/) - file itself not named; dynamic load?"
+"Resources/Sounds/NARRATOR MS1,2/sfx-bingo.mp3",9.8,USED,Source/Tools/Baker/Baker.cpp:1082 (sfx-bingo.mp3)
+"Resources/Sounds/NARRATOR MS1,2/sfx-gameover.mp3",20.2,USED,Source/Tools/Baker/Baker.cpp:1080 (sfx-gameover.mp3)
+"Resources/Sounds/NARRATOR MS1,2/sfx-herewego.mp3",11.4,USED,Source/Tools/Baker/Baker.cpp:1084 (sfx-herewego.mp3)
+"Resources/Sounds/NARRATOR MS1,2/sfx-letsgo.mp3",10.2,USED,Source/Tools/Baker/Baker.cpp:1083 (sfx-letsgo.mp3)
+"Resources/Sounds/NARRATOR MS1,2/sfx-powerup.mp3",11.8,USED,Source/Tools/Baker/Baker.cpp:1081 (sfx-powerup.mp3)
+"Resources/Sounds/NARRATOR MS1,2/sfx-yah.mp3",6.1,USED,Source/Tools/Baker/Baker.cpp:1085 (sfx-yah.mp3)
+"Resources/Sounds/NARRATOR MS1,2/sfx-yeeha.mp3",13.9,USED,Source/Tools/Baker/Baker.cpp:1086 (sfx-yeeha.mp3)
+Resources/Sounds/OK.wav,215.3,USED,Resources/ResourceData/Sound/SoundData.txt:41 (ok.wav)
+Resources/Sounds/PlayerBomb.wav,130.6,USED,Resources/ResourceData/Sound/SoundData.txt:20 (playerbomb.wav)
+Resources/Sounds/PlayerGunDead.wav,23.8,USED,Resources/ResourceData/Sound/SoundData.txt:29 (playergundead.wav)
+Resources/Sounds/PlayerGunShot.wav,64.3,USED,Resources/ResourceData/Sound/SoundData.txt:23 (playergunshot.wav)
+Resources/Sounds/PlayerGunShot_FS.wav,186.6,USED,Resources/ResourceData/Sound/SoundData.txt:26 (playergunshot_fs.wav)
+Resources/Sounds/PlayerGun_EC.wav,338.4,USED,Resources/ResourceData/Sound/SoundData.txt:11 (playergun_ec.wav)
+Resources/Sounds/PlayerGun_FS.wav,358.7,USED,Resources/ResourceData/Sound/SoundData.txt:8 (playergun_fs.wav)
+Resources/Sounds/PlayerGun_HM.wav,393.3,USED,Resources/ResourceData/Sound/SoundData.txt:5 (playergun_hm.wav)
+Resources/Sounds/PlayerGun_RL.wav,327.2,USED,Resources/ResourceData/Sound/SoundData.txt:17 (playergun_rl.wav)
+Resources/Sounds/PlayerGun_SG.wav,302.4,USED,Resources/ResourceData/Sound/SoundData.txt:14 (playergun_sg.wav)
+Resources/Sounds/PlayerReload.wav,97.0,USED,Resources/ResourceData/Sound/SoundData.txt:32 (playerreload.wav)
+Resources/Sounds/PlayerSlash1.wav,64.0,USED,Resources/ResourceData/Sound/SoundData.txt:35 (playerslash1.wav)
+Resources/Sounds/PlayerSlash2.wav,74.5,USED,Resources/ResourceData/Sound/SoundData.txt:38 (playerslash2.wav)
+Resources/Sounds/Sound Effects/gen_00.wav,20.6,USED,Assets/Source/SoundMap.json:3 (gen_00.wav)
+Resources/Sounds/Sound Effects/gen_01.wav,28.3,USED,Assets/Source/SoundMap.json:16 (gen_01.wav)
+Resources/Sounds/Sound Effects/gen_02.wav,20.7,USED,Assets/Source/SoundMap.json:29 (gen_02.wav)
+Resources/Sounds/Sound Effects/gen_03.wav,24.2,USED,Assets/Source/SoundMap.json:42 (gen_03.wav)
+Resources/Sounds/Sound Effects/gen_0A.wav,30.2,USED,Assets/Source/SoundMap.json:55 (gen_0a.wav)
+Resources/Sounds/Sound Effects/gen_0B.wav,12.4,USED,Assets/Source/SoundMap.json:68 (gen_0b.wav)
+Resources/Sounds/Sound Effects/gen_0C.wav,45.4,USED,Assets/Source/SoundMap.json:81 (gen_0c.wav)
+Resources/Sounds/Sound Effects/gen_0D.wav,14.7,USED,Assets/Source/SoundMap.json:94 (gen_0d.wav)
+Resources/Sounds/Sound Effects/gen_0E.wav,35.1,USED,Assets/Source/SoundMap.json:107 (gen_0e.wav)
+Resources/Sounds/Sound Effects/gen_0F.wav,12.9,USED,Assets/Source/SoundMap.json:120 (gen_0f.wav)
+Resources/Sounds/Sound Effects/gen_10.wav,46.1,USED,Assets/Source/SoundMap.json:133 (gen_10.wav)
+Resources/Sounds/Sound Effects/gen_11.wav,45.4,USED,Assets/Source/SoundMap.json:146 (gen_11.wav)
+Resources/Sounds/Sound Effects/gen_12.wav,46.1,USED,Assets/Source/SoundMap.json:159 (gen_12.wav)
+Resources/Sounds/Sound Effects/gen_13.wav,23.1,USED,Assets/Source/SoundMap.json:172 (gen_13.wav)
+Resources/Sounds/Sound Effects/gen_14.wav,22.4,USED,Assets/Source/SoundMap.json:185 (gen_14.wav)
+Resources/Sounds/Sound Effects/gen_15.wav,33.8,USED,Assets/Source/SoundMap.json:198 (gen_15.wav)
+Resources/Sounds/Sound Effects/gen_16.wav,13.5,USED,Assets/Source/SoundMap.json:211 (gen_16.wav)
+Resources/Sounds/Sound Effects/gen_17.wav,8.8,USED,Assets/Source/SoundMap.json:224 (gen_17.wav)
+Resources/Sounds/Sound Effects/gen_19.wav,11.7,USED,Assets/Source/SoundMap.json:237 (gen_19.wav)
+Resources/Sounds/Sound Effects/gen_1A.wav,4.3,USED,Assets/Source/SoundMap.json:250 (gen_1a.wav)
+Resources/Sounds/Sound Effects/gen_1C.wav,10.1,USED,Assets/Source/SoundMap.json:263 (gen_1c.wav)
+Resources/Sounds/Sound Effects/gen_1D.wav,3.8,USED,Assets/Source/SoundMap.json:276 (gen_1d.wav)
+Resources/Sounds/Sound Effects/gen_1E.wav,10.8,USED,Assets/Source/SoundMap.json:289 (gen_1e.wav)
+Resources/Sounds/Sound Effects/gen_1F.wav,19.6,USED,Assets/Source/SoundMap.json:302 (gen_1f.wav)
+Resources/Sounds/Sound Effects/gen_20.wav,6.5,USED,Assets/Source/SoundMap.json:315 (gen_20.wav)
+Resources/Sounds/Sound Effects/gen_21.wav,11.1,USED,Assets/Source/SoundMap.json:328 (gen_21.wav)
+Resources/Sounds/Sound Effects/gen_22.wav,18.4,USED,Assets/Source/SoundMap.json:341 (gen_22.wav)
+Resources/Sounds/Sound Effects/gen_23.wav,6.3,USED,Assets/Source/SoundMap.json:354 (gen_23.wav)
+Resources/Sounds/Sound Effects/gen_24.wav,8.5,USED,Assets/Source/SoundMap.json:367 (gen_24.wav)
+Resources/Sounds/Sound Effects/gen_25.wav,21.0,USED,Assets/Source/SoundMap.json:380 (gen_25.wav)
+Resources/Sounds/Sound Effects/gen_26.wav,10.9,USED,Assets/Source/SoundMap.json:393 (gen_26.wav)
+Resources/Sounds/Sound Effects/gen_27.wav,11.8,USED,Assets/Source/SoundMap.json:406 (gen_27.wav)
+Resources/Sounds/Sound Effects/gen_28.wav,32.8,USED,Assets/Source/SoundMap.json:419 (gen_28.wav)
+Resources/Sounds/Sound Effects/gen_29.wav,17.6,USED,Assets/Source/SoundMap.json:432 (gen_29.wav)
+Resources/Sounds/Sound Effects/gen_2A.wav,23.1,USED,Assets/Source/SoundMap.json:445 (gen_2a.wav)
+Resources/Sounds/Sound Effects/gen_2B.wav,11.5,USED,Assets/Source/SoundMap.json:458 (gen_2b.wav)
+Resources/Sounds/Sound Effects/gen_2C.wav,8.9,USED,Assets/Source/SoundMap.json:471 (gen_2c.wav)
+Resources/Sounds/Sound Effects/gen_2D.wav,12.5,USED,Assets/Source/SoundMap.json:484 (gen_2d.wav)
+Resources/Sounds/Sound Effects/gen_2E.wav,6.3,USED,Assets/Source/SoundMap.json:497 (gen_2e.wav)
+Resources/Sounds/Sound Effects/gen_2F.wav,9.9,USED,Assets/Source/SoundMap.json:510 (gen_2f.wav)
+Resources/Sounds/Sound Effects/gen_30.wav,7.7,USED,Assets/Source/SoundMap.json:523 (gen_30.wav)
+Resources/Sounds/Sound Effects/gen_31.wav,11.0,USED,Assets/Source/SoundMap.json:536 (gen_31.wav)
+Resources/Sounds/Sound Effects/gen_32.wav,14.0,USED,Assets/Source/SoundMap.json:549 (gen_32.wav)
+Resources/Sounds/Sound Effects/gen_33.wav,13.4,USED,Assets/Source/SoundMap.json:562 (gen_33.wav)
+Resources/Sounds/Sound Effects/gen_34.wav,11.8,USED,Assets/Source/SoundMap.json:575 (gen_34.wav)
+Resources/Sounds/Sound Effects/gen_35.wav,13.8,USED,Assets/Source/SoundMap.json:588 (gen_35.wav)
+Resources/Sounds/Sound Effects/gen_36.wav,5.9,USED,Assets/Source/SoundMap.json:601 (gen_36.wav)
+Resources/Sounds/Sound Effects/gen_3A.wav,4.3,USED,Assets/Source/SoundMap.json:614 (gen_3a.wav)
+Resources/Sounds/Sound Effects/gen_3B.wav,12.2,USED,Assets/Source/SoundMap.json:627 (gen_3b.wav)
+Resources/Sounds/Sound Effects/gen_3C.wav,21.0,USED,Assets/Source/SoundMap.json:640 (gen_3c.wav)
+Resources/Sounds/Sound Effects/gen_3D.wav,5.6,USED,Assets/Source/SoundMap.json:653 (gen_3d.wav)
+Resources/Sounds/Sound Effects/gen_3E.wav,13.4,USED,Assets/Source/SoundMap.json:666 (gen_3e.wav)
+Resources/Sounds/Sound Effects/gen_3F.wav,13.1,USED,Assets/Source/SoundMap.json:679 (gen_3f.wav)
+Resources/Sounds/Sound Effects/gen_40.wav,10.4,USED,Assets/Source/SoundMap.json:692 (gen_40.wav)
+Resources/Sounds/Sound Effects/gen_41.wav,44.9,USED,Assets/Source/SoundMap.json:705 (gen_41.wav)
+Resources/Sounds/Sound Effects/gen_42.wav,9.0,USED,Assets/Source/SoundMap.json:718 (gen_42.wav)
+Resources/Sounds/Sound Effects/gen_43.wav,13.5,USED,Assets/Source/SoundMap.json:731 (gen_43.wav)
+Resources/Sounds/Sound Effects/gen_44.wav,3.3,USED,Assets/Source/SoundMap.json:744 (gen_44.wav)
+Resources/Sounds/Sound Effects/gen_45.wav,11.7,USED,Assets/Source/SoundMap.json:757 (gen_45.wav)
+Resources/Sounds/Sound Effects/gen_46.wav,3.9,USED,Assets/Source/SoundMap.json:770 (gen_46.wav)
+Resources/Sounds/Sound Effects/gen_47.wav,5.0,USED,Assets/Source/SoundMap.json:783 (gen_47.wav)
+Resources/Sounds/Sound Effects/gen_48.wav,14.4,USED,Assets/Source/SoundMap.json:796 (gen_48.wav)
+Resources/Sounds/Sound Effects/st1_00.wav,13.0,USED,Assets/Source/SoundMap.json:809 (st1_00.wav)
+Resources/Sounds/Sound Effects/st1_01.wav,10.3,USED,Assets/Source/SoundMap.json:822 (st1_01.wav)
+Resources/Sounds/Sound Effects/st1_02.wav,92.5,USED,Assets/Source/SoundMap.json:835 (st1_02.wav)
+Resources/Sounds/Sound Effects/st1_03.wav,30.0,USED,Assets/Source/SoundMap.json:848 (st1_03.wav)
+Resources/Sounds/Sound Effects/st1_04.wav,30.8,USED,Assets/Source/SoundMap.json:861 (st1_04.wav)
+Resources/Sounds/Sound Effects/st1_05.wav,3.5,USED,Assets/Source/SoundMap.json:874 (st1_05.wav)
+Resources/Sounds/Sound Effects/st1_06.wav,7.2,USED,Assets/Source/SoundMap.json:887 (st1_06.wav)
+Resources/Sounds/Sound Effects/st1_07.wav,67.2,USED,Assets/Source/SoundMap.json:900 (st1_07.wav)
+Resources/Sounds/Sound Effects/st1_08.wav,15.5,USED,Assets/Source/SoundMap.json:913 (st1_08.wav)
+Resources/Sounds/Sound Effects/st1_09.wav,10.9,USED,Assets/Source/SoundMap.json:926 (st1_09.wav)
+Resources/Sounds/Sound Effects/st1_0A.wav,15.4,USED,Assets/Source/SoundMap.json:939 (st1_0a.wav)
+Resources/Sounds/Sound Effects/st1_0B.wav,6.9,USED,Assets/Source/SoundMap.json:952 (st1_0b.wav)
+Resources/Sounds/Sound Effects/st1_0C.wav,4.8,USED,Assets/Source/SoundMap.json:965 (st1_0c.wav)
+Resources/Sounds/Sound Effects/st1_0D.wav,11.7,USED,Assets/Source/SoundMap.json:978 (st1_0d.wav)
+Resources/Sounds/Sound Effects/st1_0E.wav,15.4,USED,Assets/Source/SoundMap.json:991 (st1_0e.wav)
+Resources/Sounds/Sound Effects/st2_00.wav,40.8,USED,Assets/Source/SoundMap.json:1004 (st2_00.wav)
+Resources/Sounds/Sound Effects/st2_01.wav,27.1,USED,Assets/Source/SoundMap.json:1017 (st2_01.wav)
+Resources/Sounds/Sound Effects/st2_02.wav,43.5,USED,Assets/Source/SoundMap.json:1030 (st2_02.wav)
+Resources/Sounds/Sound Effects/st2_03.wav,1.3,USED,Assets/Source/SoundMap.json:1043 (st2_03.wav)
+Resources/Sounds/Sound Effects/st2_04.wav,8.2,USED,Assets/Source/SoundMap.json:1056 (st2_04.wav)
+Resources/Sounds/Sound Effects/st2_05.wav,41.7,USED,Assets/Source/SoundMap.json:1069 (st2_05.wav)
+Resources/Sounds/Sound Effects/st2_08.wav,1.7,USED,Assets/Source/SoundMap.json:1082 (st2_08.wav)
+Resources/Sounds/Sound Effects/st2_09.wav,1.7,USED,Assets/Source/SoundMap.json:1095 (st2_09.wav)
+Resources/Sounds/Sound Effects/st2_0A.wav,13.2,USED,Assets/Source/SoundMap.json:1108 (st2_0a.wav)
+Resources/Sounds/Sound Effects/st2_0C.wav,9.8,USED,Assets/Source/SoundMap.json:1121 (st2_0c.wav)
+Resources/Sounds/Sound Effects/st2_0D.wav,6.4,USED,Assets/Source/SoundMap.json:1134 (st2_0d.wav)
+Resources/Sounds/Sound Effects/st2_0F.wav,7.8,USED,Assets/Source/SoundMap.json:1147 (st2_0f.wav)
+Resources/Sounds/Sound Effects/st2_10.wav,27.2,USED,Assets/Source/SoundMap.json:1160 (st2_10.wav)
+Resources/Sounds/Sound Effects/st2_11.wav,14.0,USED,Assets/Source/SoundMap.json:1173 (st2_11.wav)
+Resources/Sounds/Sound Effects/st2_13.wav,7.3,USED,Assets/Source/SoundMap.json:1186 (st2_13.wav)
+Resources/Sounds/Sound Effects/st2_14.wav,8.4,USED,Assets/Source/SoundMap.json:1199 (st2_14.wav)
+Resources/Sounds/Sound Effects/st3_02.wav,14.1,USED,Assets/Source/SoundMap.json:1212 (st3_02.wav)
+Resources/Sounds/Sound Effects/st3_03.wav,15.3,USED,Assets/Source/SoundMap.json:1225 (st3_03.wav)
+Resources/Sounds/Sound Effects/st3_04.wav,46.1,USED,Assets/Source/SoundMap.json:1238 (st3_04.wav)
+Resources/Sounds/Sound Effects/st3_06.wav,7.0,USED,Assets/Source/SoundMap.json:1251 (st3_06.wav)
+Resources/Sounds/Sound Effects/st3_07.wav,9.7,USED,Assets/Source/SoundMap.json:1264 (st3_07.wav)
+Resources/Sounds/Sound Effects/st3_08.wav,14.4,USED,Assets/Source/SoundMap.json:1277 (st3_08.wav)
+Resources/Sounds/Sound Effects/st3_0A.wav,7.8,USED,Assets/Source/SoundMap.json:1290 (st3_0a.wav)
+Resources/Sounds/Sound Effects/st3_0B.wav,6.0,USED,Assets/Source/SoundMap.json:1303 (st3_0b.wav)
+Resources/Sounds/Sound Effects/st3_0C.wav,9.0,USED,Assets/Source/SoundMap.json:1316 (st3_0c.wav)
+Resources/Sounds/Sound Effects/st3_0D.wav,15.2,USED,Assets/Source/SoundMap.json:1329 (st3_0d.wav)
+Resources/Sounds/Sound Effects/st3_0E.wav,17.1,USED,Assets/Source/SoundMap.json:1342 (st3_0e.wav)
+Resources/Sounds/Sound Effects/st3_10.wav,6.8,USED,Assets/Source/SoundMap.json:1355 (st3_10.wav)
+Resources/Sounds/Sound Effects/st3_11.wav,11.5,USED,Assets/Source/SoundMap.json:1368 (st3_11.wav)
+Resources/Sounds/Sound Effects/st3_14.wav,7.8,USED,Assets/Source/SoundMap.json:1381 (st3_14.wav)
+Resources/Sounds/Sound Effects/st3_15.wav,4.9,USED,Assets/Source/SoundMap.json:1394 (st3_15.wav)
+Resources/Sounds/Sound Effects/st3_16.wav,27.1,USED,Assets/Source/SoundMap.json:1407 (st3_16.wav)
+Resources/Sounds/Sound Effects/st4_00.wav,25.0,USED,Assets/Source/SoundMap.json:1420 (st4_00.wav)
+Resources/Sounds/Sound Effects/st4_02.wav,23.6,USED,Assets/Source/SoundMap.json:1433 (st4_02.wav)
+Resources/Sounds/Sound Effects/st4_03.wav,17.6,USED,Assets/Source/SoundMap.json:1446 (st4_03.wav)
+Resources/Sounds/Sound Effects/st4_04.wav,44.4,USED,Assets/Source/SoundMap.json:1459 (st4_04.wav)
+Resources/Sounds/Sound Effects/st4_07.wav,70.8,USED,Assets/Source/SoundMap.json:1472 (st4_07.wav)
+Resources/Sounds/Sound Effects/st4_08.wav,11.9,USED,Assets/Source/SoundMap.json:1485 (st4_08.wav)
+Resources/Sounds/Sound Effects/st4_0F.wav,7.5,USED,Assets/Source/SoundMap.json:1498 (st4_0f.wav)
+Resources/Sounds/Sound Effects/st4_10.wav,2.3,USED,Assets/Source/SoundMap.json:1511 (st4_10.wav)
+Resources/Sounds/Sound Effects/st4_11.wav,14.5,USED,Assets/Source/SoundMap.json:1524 (st4_11.wav)
+Resources/Sounds/Sound Effects/st4_12.wav,3.9,USED,Assets/Source/SoundMap.json:1537 (st4_12.wav)
+Resources/Sounds/Sound Effects/st4_13.wav,16.7,USED,Assets/Source/SoundMap.json:1550 (st4_13.wav)
+Resources/Sounds/Sound Effects/st4_16.wav,1.3,USED,Assets/Source/SoundMap.json:1563 (st4_16.wav)
+Resources/Sounds/Sound Effects/st4_17.wav,1.6,USED,Assets/Source/SoundMap.json:1576 (st4_17.wav)
+Resources/Sounds/Sound Effects/st4_18.wav,1.6,USED,Assets/Source/SoundMap.json:1589 (st4_18.wav)
+Resources/Sounds/Sound Effects/st4_19.wav,3.6,USED,Assets/Source/SoundMap.json:1602 (st4_19.wav)
+Resources/Sounds/Sound Effects/st5_01.wav,9.6,USED,Assets/Source/SoundMap.json:1615 (st5_01.wav)
+Resources/Sounds/Sound Effects/st5_02.wav,48.2,USED,Assets/Source/SoundMap.json:1628 (st5_02.wav)
+Resources/Sounds/Sound Effects/st5_04.wav,14.5,USED,Assets/Source/SoundMap.json:1641 (st5_04.wav)
+Resources/Sounds/Sound Effects/st5_05.wav,16.9,USED,Assets/Source/SoundMap.json:1654 (st5_05.wav)
+Resources/Sounds/Sound Effects/st5_06.wav,26.1,USED,Assets/Source/SoundMap.json:1667 (st5_06.wav)
+Resources/Sounds/Sound Effects/st5_0B.wav,7.1,USED,Assets/Source/SoundMap.json:1680 (st5_0b.wav)
+Resources/Sounds/Sound Effects/st5_0C.wav,10.4,USED,Assets/Source/SoundMap.json:1693 (st5_0c.wav)
+Resources/Sounds/Sound Effects/st5_0D.wav,49.2,USED,Assets/Source/SoundMap.json:1706 (st5_0d.wav)
+Resources/Sounds/Sound Effects/st5_0E.wav,5.1,USED,Assets/Source/SoundMap.json:1719 (st5_0e.wav)
+Resources/Sounds/Sound Effects/st5_12.wav,22.9,USED,Assets/Source/SoundMap.json:1732 (st5_12.wav)
+Resources/Sounds/Sound Effects/st5_14.wav,13.7,USED,Assets/Source/SoundMap.json:1745 (st5_14.wav)
+Resources/Sounds/Sound Effects/st5_15.wav,13.2,USED,Assets/Source/SoundMap.json:1758 (st5_15.wav)
+Resources/Sounds/Sound Effects/st5_1A.wav,13.9,USED,Assets/Source/SoundMap.json:1771 (st5_1a.wav)
+Resources/Sounds/Sound Effects/st5_1D.wav,20.0,USED,Assets/Source/SoundMap.json:1784 (st5_1d.wav)
+Resources/Sounds/Sound Effects/st6_00.wav,8.0,USED,Assets/Source/SoundMap.json:1797 (st6_00.wav)
+Resources/Sounds/Sound Effects/st6_01.wav,9.5,USED,Assets/Source/SoundMap.json:1810 (st6_01.wav)
+Resources/Sounds/Sound Effects/st6_03.wav,14.9,USED,Assets/Source/SoundMap.json:1823 (st6_03.wav)
+Resources/Sounds/Sound Effects/st6_05.wav,24.9,USED,Assets/Source/SoundMap.json:1836 (st6_05.wav)
+Resources/Sounds/Sound Effects/st6_06.wav,37.3,USED,Assets/Source/SoundMap.json:1849 (st6_06.wav)
+Resources/Sounds/Sound Effects/st6_07.wav,38.3,USED,Assets/Source/SoundMap.json:1862 (st6_07.wav)
+Resources/Sounds/Sound Effects/st6_08.wav,18.3,USED,Assets/Source/SoundMap.json:1875 (st6_08.wav)
+Resources/Sounds/Sound Effects/st6_09.wav,18.7,USED,Assets/Source/SoundMap.json:1888 (st6_09.wav)
+Resources/Sounds/Sound Effects/st6_0A.wav,5.6,USED,Assets/Source/SoundMap.json:1901 (st6_0a.wav)
+Resources/Sounds/Sound Effects/st6_0D.wav,17.2,USED,Assets/Source/SoundMap.json:1914 (st6_0d.wav)
+Resources/Sounds/Sound Effects/st6_0E.wav,13.3,USED,Assets/Source/SoundMap.json:1927 (st6_0e.wav)
+Resources/Sounds/Sound Effects/st6_13.wav,10.8,USED,Assets/Source/SoundMap.json:1940 (st6_13.wav)
+Resources/Sounds/Sound Effects/st6_14.wav,10.3,USED,Assets/Source/SoundMap.json:1953 (st6_14.wav)
+Resources/Sounds/Sound Effects/st7_01.wav,20.7,USED,Assets/Source/SoundMap.json:1966 (st7_01.wav)
+Resources/Sounds/Sound Effects/st7_02.wav,20.3,USED,Assets/Source/SoundMap.json:1979 (st7_02.wav)
+Resources/Sounds/Sound Effects/st7_03.wav,38.0,USED,Assets/Source/SoundMap.json:1992 (st7_03.wav)
+Resources/Sounds/Sound Effects/st7_04.wav,79.1,USED,Assets/Source/SoundMap.json:2005 (st7_04.wav)
+Resources/Sounds/Sound Effects/st7_0D.wav,18.8,USED,Assets/Source/SoundMap.json:2018 (st7_0d.wav)
+Resources/Sounds/Sound Effects/st7_0F.wav,10.3,USED,Assets/Source/SoundMap.json:2031 (st7_0f.wav)
+Resources/Sounds/Sound Effects/st7_10.wav,6.7,USED,Assets/Source/SoundMap.json:2044 (st7_10.wav)
+Resources/Sounds/Sound Effects/st7_11.wav,11.5,USED,Assets/Source/SoundMap.json:2057 (st7_11.wav)
+Resources/Sounds/Sound Effects/st7_12.wav,48.5,USED,Assets/Source/SoundMap.json:2070 (st7_12.wav)
+Resources/Sounds/Sound Effects/st7_13.wav,47.5,USED,Assets/Source/SoundMap.json:2083 (st7_13.wav)
+Resources/Sounds/Sound Effects/st7_14.wav,46.7,USED,Assets/Source/SoundMap.json:2096 (st7_14.wav)
+Resources/Sounds/Sound Effects/st7_15.wav,32.6,USED,Assets/Source/SoundMap.json:2109 (st7_15.wav)
+Resources/Sounds/Stage1_BGM.wav,40228.1,USED,Resources/ResourceData/Sound/SoundData.txt:2 (stage1_bgm.wav)
+Resources/Sounds/every-weapon-sound-effect-from-metal-slug-x-3-4-5.wav,6800.1,MAYBE,Source/Tools/Baker/Baker.cpp:1080 (dir literal sounds/) - file itself not named; dynamic load?
+Resources/Stage/gimic/Boat.bmp,567.7,USED,Resources/ResourceData/TextureData.data:1272 (boat.bmp)
+Resources/Stage/gimic/GuardPost.bmp,1175.7,USED,Resources/ResourceData/TextureData.data:1277 (guardpost.bmp)
+Resources/Stage/gimic/MiniBossTruck/LeftDown_Win_Destroy.bmp,403.2,USED,Resources/ResourceData/TextureData.data:1102 (leftdown_win_destroy.bmp)
+Resources/Stage/gimic/MiniBossTruck/LeftUp_Win_Destroy.bmp,506.3,USED,Resources/ResourceData/TextureData.data:1107 (leftup_win_destroy.bmp)
+Resources/Stage/gimic/MiniBossTruck/MainTruck_Begin.bmp,11250.1,USED,Resources/ResourceData/TextureData.data:1112 (maintruck_begin.bmp)
+Resources/Stage/gimic/MiniBossTruck/MainTruck_Big_Win_Destroy_Begin.bmp,345.8,USED,Resources/ResourceData/TextureData.data:1117 (maintruck_big_win_destroy_begin.bmp)
+Resources/Stage/gimic/MiniBossTruck/MainTruck_Big_Win_Destroy_End.bmp,522.9,USED,Resources/ResourceData/TextureData.data:1122 (maintruck_big_win_destroy_end.bmp)
+Resources/Stage/gimic/MiniBossTruck/MainTruck_Bump.bmp,147.2,USED,Resources/ResourceData/TextureData.data:1127 (maintruck_bump.bmp)
+Resources/Stage/gimic/MiniBossTruck/MainTruck_Deco_Destroy.bmp,267.1,USED,Resources/ResourceData/TextureData.data:1132 (maintruck_deco_destroy.bmp)
+Resources/Stage/gimic/MiniBossTruck/MainTruck_Die.bmp,349.9,USED,Resources/ResourceData/TextureData.data:1137 (maintruck_die.bmp)
+Resources/Stage/gimic/MiniBossTruck/MainTruck_Die_Front.bmp,247.0,USED,Resources/ResourceData/TextureData.data:1142 (maintruck_die_front.bmp)
+Resources/Stage/gimic/MiniBossTruck/MainTruck_Idle.bmp,1071.3,USED,Resources/ResourceData/TextureData.data:1147 (maintruck_idle.bmp)
+Resources/Stage/gimic/MiniBossTruck/MainTruck_Ladder.bmp,1071.1,USED,Resources/ResourceData/TextureData.data:1152 (maintruck_ladder.bmp)
+Resources/Stage/gimic/MiniBossTruck/MainTruck_Sideparts.bmp,399.0,USED,Resources/ResourceData/TextureData.data:1157 (maintruck_sideparts.bmp)
+Resources/Stage/gimic/MiniBossTruck/RightDown_Win_Destroy.bmp,443.5,USED,Resources/ResourceData/TextureData.data:1162 (rightdown_win_destroy.bmp)
+Resources/Stage/gimic/MiniBossTruck/RightUp_Win_Destroy.bmp,447.2,USED,Resources/ResourceData/TextureData.data:1167 (rightup_win_destroy.bmp)
+Resources/Stage/gimic/Plane.bmp,63.0,USED,Resources/ResourceData/TextureData.data:1312 (plane.bmp)
+Resources/Stage/gimic/Truck/LoadedTruck_Down.bmp,248.5,USED,Resources/ResourceData/TextureData.data:1067 (loadedtruck_down.bmp)
+Resources/Stage/gimic/Truck/LoadedTruck_Hit.bmp,496.9,USED,Resources/ResourceData/TextureData.data:1072 (loadedtruck_hit.bmp)
+Resources/Stage/gimic/Truck/LoadedTruck_Idle.bmp,62.2,USED,Resources/ResourceData/TextureData.data:1077 (loadedtruck_idle.bmp)
+Resources/Stage/gimic/Truck/RefTruck_Down.bmp,208.8,USED,Resources/ResourceData/TextureData.data:1082 (reftruck_down.bmp)
+Resources/Stage/gimic/Truck/RefTruck_Hit.bmp,626.3,USED,Resources/ResourceData/TextureData.data:1087 (reftruck_hit.bmp)
+Resources/Stage/gimic/Truck/RefTruck_Idle.bmp,52.5,USED,Resources/ResourceData/TextureData.data:1092 (reftruck_idle.bmp)
+Resources/Stage/gimic/Truck/Truck_Down.bmp,196.9,USED,Resources/ResourceData/TextureData.data:1052 (truck_down.bmp)
+Resources/Stage/gimic/Truck/Truck_Hit.bmp,393.8,USED,Resources/ResourceData/TextureData.data:1057 (truck_hit.bmp)
+Resources/Stage/gimic/Truck/Truck_Idle.bmp,49.3,USED,Resources/ResourceData/TextureData.data:1062 (truck_idle.bmp)
+Resources/Stage/map/Stage0_Additional_Map.bmp,584.3,MAYBE,Source/Tools/Baker/Baker.cpp:1236 (dir literal stage/map/) - file itself not named; dynamic load?
+Resources/Stage/map/Stage0_Additional_Map.psd,168.6,MAYBE,Source/Tools/Baker/Baker.cpp:1236 (dir literal stage/map/) - file itself not named; dynamic load?
+Resources/Stage/map/Stage0_Additional_PixelMap.bmp,584.3,MAYBE,Source/Tools/Baker/Baker.cpp:1236 (dir literal stage/map/) - file itself not named; dynamic load?
+Resources/Stage/map/Stage0_Background_0.bmp,1105.1,USED,Resources/ResourceData/TextureData.data:897 (stage0_background_0.bmp)
+Resources/Stage/map/Stage0_Background_1.bmp,3072.1,USED,Resources/ResourceData/TextureData.data:902 (stage0_background_1.bmp)
+Resources/Stage/map/Stage0_Background_2.bmp,2112.1,USED,Resources/ResourceData/TextureData.data:907 (stage0_background_2.bmp)
+Resources/Stage/map/Stage0_Block.bmp,131.7,USED,Resources/ResourceData/TextureData.data:912 (stage0_block.bmp)
+Resources/Stage/map/Stage0_Bridge_0.bmp,145.4,USED,Resources/ResourceData/TextureData.data:917 (stage0_bridge_0.bmp)
+Resources/Stage/map/Stage0_Bridge_1.bmp,133.6,USED,Resources/ResourceData/TextureData.data:922 (stage0_bridge_1.bmp)
+Resources/Stage/map/Stage0_Bridge_2.bmp,88.0,USED,Resources/ResourceData/TextureData.data:927 (stage0_bridge_2.bmp)
+Resources/Stage/map/Stage0_Bridge_3.bmp,89.6,USED,Resources/ResourceData/TextureData.data:932 (stage0_bridge_3.bmp)
+Resources/Stage/map/Stage0_House_0.bmp,176.6,USED,Resources/ResourceData/TextureData.data:937 (stage0_house_0.bmp)
+Resources/Stage/map/Stage0_House_1.bmp,223.3,USED,Resources/ResourceData/TextureData.data:942 (stage0_house_1.bmp)
+Resources/Stage/map/Stage0_House_2.bmp,449.7,USED,Resources/ResourceData/TextureData.data:947 (stage0_house_2.bmp)
+Resources/Stage/map/Stage0_House_3.bmp,306.0,USED,Resources/ResourceData/TextureData.data:952 (stage0_house_3.bmp)
+Resources/Stage/map/Stage0_House_4.bmp,399.4,USED,Resources/ResourceData/TextureData.data:957 (stage0_house_4.bmp)
+Resources/Stage/map/Stage0_House_4_PixelMap.bmp,2875.0,USED,Resources/ResourceData/TextureData.data:1297 (stage0_house_4_pixelmap.bmp)
+Resources/Stage/map/Stage0_House_5.bmp,822.9,USED,Resources/ResourceData/TextureData.data:962 (stage0_house_5.bmp)
+Resources/Stage/map/Stage0_House_5_PixelMap.bmp,268.9,USED,Resources/ResourceData/TextureData.data:1302 (stage0_house_5_pixelmap.bmp)
+Resources/Stage/map/Stage0_Main.bmp,73112.7,USED,Resources/ResourceData/TextureData.data:967 (stage0_main.bmp)
+Resources/Stage/map/Stage0_Main.psd,13622.3,MAYBE,Source/Tools/Baker/Baker.cpp:1236 (dir literal stage/map/) - file itself not named; dynamic load?
+Resources/Stage/map/Stage0_Pence.bmp,81.1,USED,Resources/ResourceData/TextureData.data:972 (stage0_pence.bmp)
+Resources/Stage/map/Stage0_Pixel_0.bmp,73112.7,USED,Source/Tools/Baker/Baker.cpp:1302 (stage0_pixel_0.bmp)
+Resources/Stage/map/Stage0_Pixel_1.bmp,73112.7,USED,Resources/ResourceData/TextureData.data:982 (stage0_pixel_1.bmp)
+Resources/Stage/map/Stage0_Shop_0.bmp,524.1,USED,Resources/ResourceData/TextureData.data:992 (stage0_shop_0.bmp)
+Resources/Stage/map/Stage0_Shop_1.bmp,523.2,USED,Resources/ResourceData/TextureData.data:997 (stage0_shop_1.bmp)
+Resources/Stage/map/Stage0_Shop_2.bmp,346.2,USED,Resources/ResourceData/TextureData.data:1002 (stage0_shop_2.bmp)
+Resources/Stage/map/Stage0_Shop_3.bmp,799.3,USED,Resources/ResourceData/TextureData.data:1007 (stage0_shop_3.bmp)
+Resources/Stage/map/Stage0_Shop_4.bmp,1177.1,USED,Resources/ResourceData/TextureData.data:1012 (stage0_shop_4.bmp)
+Resources/Stage/map/Stage0_Shop_5.bmp,915.7,USED,Resources/ResourceData/TextureData.data:1017 (stage0_shop_5.bmp)
+Resources/Stage/map/Stage0_Sign.bmp,151.9,USED,Resources/ResourceData/TextureData.data:1022 (stage0_sign.bmp)
+Resources/Stage/map/Stage0_Tower.bmp,173.6,USED,Resources/ResourceData/TextureData.data:1027 (stage0_tower.bmp)
+Resources/Stage/map/Stage0_sewer.bmp,285.8,USED,Resources/ResourceData/TextureData.data:987 (stage0_sewer.bmp)
+Resources/Stage/map/TEmp/RightUp_Win_Destroy1.bmp,201.5,UNUSED,-
+Resources/Stage/map/TEmp/RightUp_Win_Destroy2.bmp,201.5,UNUSED,-
+Resources/Stage/map/TEmp/RightUp_Win_Destroy3.bmp,201.5,UNUSED,-
+Resources/Stage/map/TEmp/RightUp_Win_Destroy4.bmp,201.5,UNUSED,-
+Resources/Stage/map/TEmp/Sprite-0001.aseprite,1238.7,UNUSED,-
+Resources/Stage/map/TEmp/Sprite-0002.aseprite,31.1,UNUSED,-
+Resources/Stage/map/TEmp/Sprite-0003.aseprite,61.2,UNUSED,-
+Resources/Stage/map/TEmp/Sprite-0004.aseprite,260.5,UNUSED,-
+Resources/Stage/map/TEmp/Sprite-0005.aseprite,5.6,UNUSED,-
+Resources/Stage/map/TEmp/Sprite-0006.aseprite,0.5,UNUSED,-
+Resources/Stage/map/TEmp/Sprite-0007.aseprite,6.5,UNUSED,-
+Resources/Stage/map/TEmp/Sprite-0008.aseprite,18.2,UNUSED,-
+Resources/Stage/map/TEmp/Sprite-0009.aseprite,14.3,UNUSED,-
+Resources/Stage/map/TEmp/mymap.aseprite,303.7,UNUSED,-
+Resources/Stage/map/info.txt,1.0,MAYBE,Source/Tools/Baker/Baker.cpp:1236 (dir literal stage/map/) - file itself not named; dynamic load?
+Resources/Stage/map/water.bmp,3983.1,USED,Resources/ResourceData/TextureData.data:1032 (water.bmp)
+Resources/UI/Button1.bmp,101.6,USED,Resources/ResourceData/TextureData.data:37 (button1.bmp)
+Resources/UI/Font_Normal.bmp,70.1,USED,Resources/ResourceData/TextureData.data:742 (font_normal.bmp)
+Resources/UI/Font_Red.bmp,70.1,USED,Resources/ResourceData/TextureData.data:1412 (font_red.bmp)
+Resources/UI/Font_Red_Yellow.bmp,70.1,USED,Resources/ResourceData/TextureData.data:747 (font_red_yellow.bmp)
+Resources/UI/Font_White.bmp,70.1,USED,Resources/ResourceData/TextureData.data:752 (font_white.bmp)
+Resources/UI/Font_Yellow.bmp,70.1,USED,Resources/ResourceData/TextureData.data:1417 (font_yellow.bmp)
+Resources/UI/Font_Yellow_White.bmp,70.1,USED,Resources/ResourceData/TextureData.data:757 (font_yellow_white.bmp)
+Resources/UI/InfiniteUI.bmp,5.1,USED,Resources/ResourceData/TextureData.data:767 (infiniteui.bmp)
+Resources/UI/LevelUI.bmp,12.1,USED,Resources/ResourceData/TextureData.data:772 (levelui.bmp)
+Resources/UI/PlayerHPUI.bmp,6.7,USED,Resources/ResourceData/TextureData.data:777 (playerhpui.bmp)
+Resources/UI/PlayerStateUI.bmp,33.0,USED,Resources/ResourceData/TextureData.data:782 (playerstateui.bmp)
+Resources/UI/Player_1.bmp,122.1,MAYBE,Source/Game/Props/ItemWorld.cpp:13 (dir literal ui/) - file itself not named; dynamic load?
+Resources/UI/PressStartUI.bmp,20.4,USED,Resources/ResourceData/TextureData.data:787 (pressstartui.bmp)
+Resources/UI/Slug_In.bmp,245.5,USED,Assets/Source/sheets.json:407 (slug_in)
+Resources/UI/Slug_out.bmp,246.6,USED,Assets/Source/sheets.json:416 (slug_out)
+Resources/UI/Sprite-0005.aseprite,7.0,MAYBE,Source/Game/Props/ItemWorld.cpp:13 (dir literal ui/) - file itself not named; dynamic load?
+Resources/UI/TimeNumberUI.bmp,40.1,USED,Resources/ResourceData/TextureData.data:792 (timenumberui.bmp)
+Resources/UI/hostageScoreUI.bmp,1.1,USED,Resources/ResourceData/TextureData.data:762 (hostagescoreui.bmp)
+Resources/UI/raw/Button1.bmp,101.6,USED,Resources/ResourceData/TextureData.data:37 (button1.bmp)
+Resources/UI/raw/Font_Normal.bmp,70.1,USED,Resources/ResourceData/TextureData.data:742 (font_normal.bmp)
+Resources/UI/raw/Font_Red.bmp,70.1,USED,Resources/ResourceData/TextureData.data:1412 (font_red.bmp)
+Resources/UI/raw/Font_Red_Yellow.bmp,70.1,USED,Resources/ResourceData/TextureData.data:747 (font_red_yellow.bmp)
+Resources/UI/raw/Font_White.bmp,70.1,USED,Resources/ResourceData/TextureData.data:752 (font_white.bmp)
+Resources/UI/raw/Font_Yellow.bmp,70.1,USED,Resources/ResourceData/TextureData.data:1417 (font_yellow.bmp)
+Resources/UI/raw/Font_Yellow_White.bmp,70.1,USED,Resources/ResourceData/TextureData.data:757 (font_yellow_white.bmp)
+Resources/UI/raw/InfiniteUI.bmp,5.1,USED,Resources/ResourceData/TextureData.data:767 (infiniteui.bmp)
+Resources/UI/raw/LevelUI.bmp,12.1,USED,Resources/ResourceData/TextureData.data:772 (levelui.bmp)
+Resources/UI/raw/PlayerHPUI.bmp,6.7,USED,Resources/ResourceData/TextureData.data:777 (playerhpui.bmp)
+Resources/UI/raw/PlayerStateUI.bmp,33.0,USED,Resources/ResourceData/TextureData.data:782 (playerstateui.bmp)
+Resources/UI/raw/Player_1.bmp,122.1,UNUSED,-
+Resources/UI/raw/PressStartUI.bmp,20.4,USED,Resources/ResourceData/TextureData.data:787 (pressstartui.bmp)
+Resources/UI/raw/Slug_In.bmp,245.5,USED,Assets/Source/sheets.json:407 (slug_in)
+Resources/UI/raw/Slug_out.bmp,246.6,USED,Assets/Source/sheets.json:416 (slug_out)
+Resources/UI/raw/TimeNumberUI.bmp,40.1,USED,Resources/ResourceData/TextureData.data:792 (timenumberui.bmp)
+Resources/UI/raw/hostageScoreUI.bmp,1.1,USED,Resources/ResourceData/TextureData.data:762 (hostagescoreui.bmp)
+Resources/output/sprite_info.txt,0.0,MAYBE,Scripts/Bake.ps1:38 (dir literal output/) - file itself not named; dynamic load?

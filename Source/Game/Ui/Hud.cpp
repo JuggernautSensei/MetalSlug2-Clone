@@ -7,44 +7,38 @@
 #include "Base/Types.h"
 #include "Game/Player/PlayerController.h"
 
-namespace slug
+[[nodiscard]] static HudItem MakeText_(
+    String           _text,
+    const int        _x,
+    const int        _y,
+    const eTextAlign _align,
+    const eFontColor _color)
 {
+    HudItem item;
+    item.kind        = eHudItemKind::Text;
+    item.text        = std::move(_text);
+    item.x           = _x;
+    item.y           = _y;
+    item.style.align = _align;
+    item.style.color = _color;
+    item.style.bBold = true;
+    return item;
+}
 
-namespace
+[[nodiscard]] static HudItem MakeSprite_(
+    String    _name,
+    const int _centerX,
+    const int _centerY,
+    const int _scale = 1)
 {
-    [[nodiscard]] HudItem MakeText_(
-        String           _text,
-        const int        _x,
-        const int        _y,
-        const eTextAlign _align,
-        const eFontColor _color)
-    {
-        HudItem item;
-        item.kind        = eHudItemKind::Text;
-        item.text        = std::move(_text);
-        item.x           = _x;
-        item.y           = _y;
-        item.style.align = _align;
-        item.style.color = _color;
-        item.style.bBold = true;
-        return item;
-    }
-
-    [[nodiscard]] HudItem MakeSprite_(
-        String    _name,
-        const int _centerX,
-        const int _centerY,
-        const int _scale = 1)
-    {
-        HudItem item;
-        item.kind  = eHudItemKind::Sprite;
-        item.text  = std::move(_name);
-        item.x     = _centerX;
-        item.y     = _centerY;
-        item.scale = _scale;
-        return item;
-    }
-}   // namespace
+    HudItem item;
+    item.kind  = eHudItemKind::Sprite;
+    item.text  = std::move(_name);
+    item.x     = _centerX;
+    item.y     = _centerY;
+    item.scale = _scale;
+    return item;
+}
 
 String FormatScore(
     const int _score)
@@ -218,4 +212,9 @@ int DisplayTimer::GetRemainingTicks() const
     return m_ticks;
 }
 
-}   // namespace slug
+bool IsBlinkOn(
+    const int _tick,
+    const int _periodTicks)
+{
+    return _periodTicks <= 0 || ((_tick / _periodTicks) % 2) == 0;
+}

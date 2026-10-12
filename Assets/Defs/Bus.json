@@ -3,45 +3,106 @@
   "note": "더블데커 버스 중간보스 (Docs/Spec_Bus.md, 시트 33825, RemakePlan 3-1). 원점 = 바퀴 바닥 중앙. 시각 연출은 baked Bus_* 클립을 Bus.cpp 가 직접 고른다.",
   "defs": {
 
-    "bus_bomb": {
-      "kind": "projectile",
-      "note": "버스 위층 병사가 던지는 폭탄 (Spec_Bus 5절): 원작은 플레이어를 조준하지 않고 버스 앞 고정 지점(앵커 왼쪽 약 144 px)에 포물선으로 떨어진다. 약 2.6 s 비행.",
-      "box": { "w": 20, "h": 20 },
-      "v0": [87, -205],
-      "gravity": 200,
-      "maxFall": 3000,
-      "lifetime": 8,
-      "anim": { "fly": { "name": "Soldier_Bomb", "frames": 16, "sec": 0.07, "loop": true } },
-      "onSolid": "explode",
-      "explosion": { "fx": "Explosion_Mid", "offset": [0, -20] }
-    },
-
     "bus": {
       "kind": "boss",
       "behavior": "bus",
-      "note": "HP 160 = 원작 V1 의 HMG 82 발 x 피해 2 (탄수 547 -> 465, 점수 +8200 = 명중당 100점). 락 후 개방 -> 계단 -> 7 단계 파손 -> 대폭발 -> 잔해.",
-      "hp": 160,
+      "note": "HP 160 = 원작 V1 의 HMG 82 발 x 피해 2 (탄수 547 -> 465, 점수 +8200 = 명중당 100점). 처음부터 앵커에 정지, 카메라 뷰 오른쪽 끝이 버스 왼쪽 끝에 닿으면 개방 -> 계단 -> 계단 병사 출격 (칼/수류탄/바주카) -> 7 단계 파손 -> 대폭발 -> 잔해. 버스 자체는 공격하지 않는다.",
+      "hp": 240,
       "score": 8200,
       "hitFlash": true,
       "noDespawn": true,
-      "body": { "w": 200, "h": 250, "cx": 0, "cy": -125 },
-      "hurtbox": { "w": 200, "h": 250, "cx": 0, "cy": -125 },
-      "solid": { "w": 170, "h": 150, "cx": 0, "cy": -75 },
+      "body": { "w": 177, "h": 250, "cx": 0, "cy": -125 },
+      "hurtbox": { "w": 175.5, "h": 264, "cx": 0, "cy": -132 },
+      "solid": { "w": 163.5, "h": 132, "cx": 0, "cy": -66 },
       "activation": { "marginPx": 100000, "latch": true },
       "physics": { "useGravity": false },
-      "weapons": {
-        "bomb": { "projectile": "bus_bomb", "muzzle": [-80, -186], "aim": "facing" }
-      },
       "params": {
-        "lockScreenX": 489,
-        "lockSlackPx": 2,
+        "openViewDx": -100,
         "openDelaySec": 0.1667,
         "stairsDelaySec": 0.7667,
         "stageHp": [112, 100, 85, 62, 48, 34, 24],
-        "bombStage": 3,
-        "bombDelaySec": 0.6,
         "wreckAfterSec": 0.1,
-        "destroyDoneSec": 1.0
+        "destroyDoneSec": 1.0,
+        "soldierBombDef": "soldier_bomb",
+        "soldierSwordDef": "soldier_sword",
+        "soldierBzkDef": "soldier_bzk",
+        "soldierSpawn": [230, 0],
+        "stairsBase": [186, 0],
+        "stairsTop": [100, -106],
+        "landingW": 34,
+        "soldierFirstSec": 0.6667,
+        "soldierGapSec": 1,
+        "soldierMax": 3,
+        "swordPercent": 40,
+        "bazookaPercent": 30,
+        "soldierLastStage": 5,
+        "roofTop": [0, 0],
+        "roofSpan": [0, 0],
+
+        "pxPerSheetPx": 2,
+        "anchor": [52, 130],
+        "debrisGroundDy": -8,
+        "fxDepth": 60,
+
+        "parts": {
+          "innerSoldier": { "depth": 15, "sort": 2 },
+          "wreck":        { "depth": 15, "sort": 0 },
+          "back":         { "depth": 15, "sort": 1 },
+          "stairs":       { "depth": 15, "sort": 1 },
+          "body":         { "depth": 15, "sort": 3 },
+          "cover":        { "depth": 16, "sort": 4 },
+          "window":       { "depth": 15, "sort": 5 },
+          "debris":       { "depth": 15, "sort": 20 }
+        },
+
+        "bursts": [
+          { "stage": 2, "clip": "Explosion_Large", "at": [51, -5] },
+          { "stage": 2, "clip": "Explosion_Large", "at": [42, 86] },
+          { "stage": 2, "clip": "Explosion_Large", "at": [87, 70] },
+          { "stage": 3, "clip": "Explosion_Large", "at": [21, 72] },
+          { "stage": 3, "clip": "Explosion_Mid", "at": [91, 113] },
+          { "stage": 4, "clip": "Explosion_Large", "at": [50, 95] },
+          { "stage": 4, "clip": "Explosion_Mid", "at": [80, 100], "delay": 0.1 },
+          { "stage": 5, "clip": "Explosion_Large", "at": [42, 101] },
+          { "stage": 6, "clip": "Explosion_Mid", "at": [45, 100] },
+          { "stage": 7, "clip": "Explosion_Mid", "at": [9, 116] },
+          { "stage": 7, "clip": "Explosion_Mid", "at": [78, 95], "delay": 0.05 },
+          { "stage": 6, "clip": "Explosion_Small", "at": [80, 40], "delay": 0.0666666667 }
+        ],
+
+        "deathBursts": [
+          { "clip": "Explosion_Large", "at": [20, -10] },
+          { "clip": "Explosion_Large", "at": [75, 0] },
+          { "clip": "Explosion_Large", "at": [48, 35], "delay": 0.0333333333 },
+          { "clip": "Explosion_Large", "at": [10, 60], "delay": 0.05 },
+          { "clip": "Explosion_Large", "at": [90, 55], "delay": 0.05 },
+          { "clip": "Explosion_Large", "at": [30, 95], "delay": 0.0833333333 },
+          { "clip": "Explosion_Large", "at": [70, 100], "delay": 0.1 },
+          { "clip": "Explosion_Large", "at": [48, 125], "delay": 0.1333333333 },
+          { "clip": "Explosion_Mid", "at": [40, 20], "delay": 0.2333333333 },
+          { "clip": "Explosion_Mid", "at": [60, 80], "delay": 0.3 }
+        ],
+
+        "debris": [
+          { "clip": "Bus_DebGrille", "at": [52, 112], "velocity": [-60, -520], "fps": 14 },
+          { "clip": "Bus_DebBumper", "at": [52, 124], "velocity": [90, -430], "fps": 10 },
+          { "clip": "Bus_DebFrameA", "at": [30, 30], "velocity": [-170, -640], "fps": 12 },
+          { "clip": "Bus_DebFrameB", "at": [75, 28], "velocity": [160, -600], "fps": 12 },
+          { "clip": "Bus_DebChunk", "at": [20, 70], "velocity": [-220, -480], "fps": 16 },
+          { "clip": "Bus_DebChunk", "at": [80, 60], "velocity": [240, -520], "fps": 16 },
+          { "clip": "Bus_DebChunk", "at": [50, 20], "velocity": [30, -700], "fps": 16 },
+          { "clip": "Bus_DebBar", "at": [15, 105], "velocity": [-140, -380], "fps": 10 },
+          { "clip": "Bus_DebBar", "at": [90, 100], "velocity": [130, -420], "fps": 10 }
+        ],
+
+        "innerSoldiers": [],
+
+        "windows": [
+          { "clip": "Bus_WinUL", "stage": 1 },
+          { "clip": "Bus_WinUR", "stage": 1 },
+          { "clip": "Bus_WinLL", "stage": 4 },
+          { "clip": "Bus_WinLR", "stage": 6 }
+        ]
       }
     }
   }

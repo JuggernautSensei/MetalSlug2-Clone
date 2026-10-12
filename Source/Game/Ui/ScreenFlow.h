@@ -6,9 +6,6 @@
 #include "Game/Ui/BitmapFont.h"
 #include "Game/Ui/UiSystem.h"
 
-namespace slug
-{
-
 enum class eFlowPhase : uint8_t
 {
     Idle,
@@ -72,5 +69,3 @@ private:
     eFlowPhase       m_phase   = eFlowPhase::Idle;
     int              m_elapsed = 0;
 };
-
-}   // namespace slug

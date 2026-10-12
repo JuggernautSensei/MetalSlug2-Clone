@@ -4,16 +4,13 @@
 
 #include "Base/Math.h"
 
-namespace slug
-{
-
-[[nodiscard]] inline int FloorToInt(
+[[nodiscard]] __forceinline int FloorToInt(
     const float _value)
 {
     return static_cast<int>(std::floor(_value));
 }
 
-[[nodiscard]] inline int CeilToInt(
+[[nodiscard]] __forceinline int CeilToInt(
     const float _value)
 {
     return static_cast<int>(std::ceil(_value));
@@ -24,154 +21,70 @@ struct Aabb
     Vec2 min = { 0.f, 0.f };
     Vec2 max = { 0.f, 0.f };
 
-    [[nodiscard]] static constexpr Aabb FromMinMax(
+    [[nodiscard]] static Aabb FromMinMax(
         const Vec2 _min,
-        const Vec2 _max)
-    {
-        return Aabb { _min, _max };
-    }
+        const Vec2 _max);
 
-    [[nodiscard]] static constexpr Aabb FromMinSize(
+    [[nodiscard]] static Aabb FromMinSize(
         const Vec2 _min,
-        const Vec2 _size)
-    {
-        return Aabb {
-            _min, { _min.x + _size.x, _min.y + _size.y }
-        };
-    }
+        const Vec2 _size);
 
-    [[nodiscard]] static constexpr Aabb FromCenterSize(
+    [[nodiscard]] static Aabb FromCenterSize(
         const Vec2 _center,
-        const Vec2 _size)
-    {
-        const Vec2 half = { _size.x * 0.5f, _size.y * 0.5f };
-        return Aabb {
-            { _center.x - half.x, _center.y - half.y },
-            { _center.x + half.x, _center.y + half.y }
-        };
-    }
+        const Vec2 _size);
 
-    [[nodiscard]] static constexpr Aabb FromBottomCenter(
+    [[nodiscard]] static Aabb FromBottomCenter(
         const Vec2 _bottomCenter,
-        const Vec2 _size)
-    {
-        return Aabb {
-            { _bottomCenter.x - _size.x * 0.5f, _bottomCenter.y - _size.y },
-            { _bottomCenter.x + _size.x * 0.5f,           _bottomCenter.y }
-        };
-    }
+        const Vec2 _size);
 
-    [[nodiscard]] constexpr float GetWidth() const
-    {
-        return max.x - min.x;
-    }
+    [[nodiscard]] float GetWidth() const;
 
-    [[nodiscard]] constexpr float GetHeight() const
-    {
-        return max.y - min.y;
-    }
+    [[nodiscard]] float GetHeight() const;
 
-    [[nodiscard]] constexpr Vec2 GetSize() const
-    {
-        return { max.x - min.x, max.y - min.y };
-    }
+    [[nodiscard]] Vec2 GetSize() const;
 
-    [[nodiscard]] constexpr Vec2 GetCenter() const
-    {
-        return { (min.x + max.x) * 0.5f, (min.y + max.y) * 0.5f };
-    }
+    [[nodiscard]] Vec2 GetCenter() const;
 
-    [[nodiscard]] constexpr Vec2 GetBottomCenter() const
-    {
-        return { (min.x + max.x) * 0.5f, max.y };
-    }
+    [[nodiscard]] Vec2 GetBottomCenter() const;
 
-    [[nodiscard]] constexpr bool IsEmpty() const
-    {
-        return max.x <= min.x || max.y <= min.y;
-    }
+    [[nodiscard]] bool IsEmpty() const;
 
-    [[nodiscard]] constexpr bool Overlaps(
+    [[nodiscard]] __forceinline constexpr bool Overlaps(
         const Aabb& _other) const
     {
         return min.x < _other.max.x && max.x > _other.min.x && min.y < _other.max.y && max.y > _other.min.y;
     }
 
-    [[nodiscard]] constexpr bool Contains(
+    [[nodiscard]] __forceinline constexpr bool Contains(
         const Vec2 _point) const
     {
         return _point.x >= min.x && _point.x < max.x && _point.y >= min.y && _point.y < max.y;
     }
 
-    [[nodiscard]] constexpr bool Contains(
+    [[nodiscard]] __forceinline constexpr bool Contains(
         const Aabb& _other) const
     {
         return _other.min.x >= min.x && _other.max.x <= max.x && _other.min.y >= min.y && _other.max.y <= max.y;
     }
 
     [[nodiscard]] std::optional<Aabb> Intersection(
-        const Aabb& _other) const
-    {
-        if (!Overlaps(_other))
-        {
-            return std::nullopt;
-        }
-        return Aabb {
-            { Max(min.x, _other.min.x), Max(min.y, _other.min.y) },
-            { Min(max.x, _other.max.x), Min(max.y, _other.max.y) }
-        };
-    }
+        const Aabb& _other) const;
 
-    [[nodiscard]] constexpr Aabb Expanded(
-        const float _amount) const
-    {
-        return Aabb {
-            { min.x - _amount, min.y - _amount },
-            { max.x + _amount, max.y + _amount }
-        };
-    }
+    [[nodiscard]] Aabb Expanded(
+        const float _amount) const;
 
-    [[nodiscard]] constexpr Aabb Expanded(
-        const Vec2 _amount) const
-    {
-        return Aabb {
-            { min.x - _amount.x, min.y - _amount.y },
-            { max.x + _amount.x, max.y + _amount.y }
-        };
-    }
+    [[nodiscard]] Aabb Expanded(
+        const Vec2 _amount) const;
 
-    [[nodiscard]] constexpr Aabb Translated(
-        const Vec2 _offset) const
-    {
-        return Aabb {
-            { min.x + _offset.x, min.y + _offset.y },
-            { max.x + _offset.x, max.y + _offset.y }
-        };
-    }
+    [[nodiscard]] Aabb Translated(
+        const Vec2 _offset) const;
 
-    [[nodiscard]] constexpr Aabb Union(
-        const Aabb& _other) const
-    {
-        return Aabb {
-            { Min(min.x, _other.min.x), Min(min.y, _other.min.y) },
-            { Max(max.x, _other.max.x), Max(max.y, _other.max.y) }
-        };
-    }
+    [[nodiscard]] Aabb Union(
+        const Aabb& _other) const;
 
-    [[nodiscard]] constexpr Aabb MirroredX(
-        const float _axisX) const
-    {
-        return Aabb {
-            { 2.f * _axisX - max.x, min.y },
-            { 2.f * _axisX - min.x, max.y }
-        };
-    }
+    [[nodiscard]] Aabb MirroredX(
+        const float _axisX) const;
 
-    [[nodiscard]] constexpr bool operator==(
-        const Aabb& _other) const
-    {
-        return min == _other.min && max == _other.max;
-    }
+    [[nodiscard]] bool operator==(
+        const Aabb& _other) const;
 };
-
-}   // namespace slug

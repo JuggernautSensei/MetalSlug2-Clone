@@ -3,9 +3,6 @@
 #include "Game/Ui/ScreenFlow.h"
 #include "Game/Ui/UiSystem.h"
 
-namespace slug
-{
-
 class UiDemoState final : public IGameState
 {
 public:
@@ -13,7 +10,7 @@ public:
     void Tick(GameContext& _ctx, const InputHistory& _input) override;
     void Render(GameContext& _ctx, float _alpha) override;
 
-    [[nodiscard]] bool IsFinished() const override { return m_flow.IsDone(); }
+    [[nodiscard]] bool IsFinished() const override;
 
     [[nodiscard]] int             GetTickCount() const;
     [[nodiscard]] const UiSystem& GetUi() const;
@@ -25,5 +22,3 @@ private:
     ScreenFlow m_flow = {};
     int        m_tick = 0;
 };
-
-}   // namespace slug

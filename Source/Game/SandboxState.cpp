@@ -15,51 +15,45 @@
 #include "Game/Player/PlayerWeapons.h"
 #include "Game/Player/SlugDef.h"
 #include "Game/Player/SlugRender.h"
+#include "Game/Stage/StageMapping.h"
 #include "Game/Ui/ScreenFlow.h"
 #include "World/Constants.h"
 
-namespace slug
+[[nodiscard]] static CameraTuning MakeCameraTuning_(
+    const CameraSettings& _settings)
 {
+    CameraTuning tuning;
+    tuning.viewSize     = { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) };
+    tuning.deadzoneHalf = _settings.deadzoneHalf;
+    tuning.smoothTime   = _settings.smoothTime;
+    return tuning;
+}
 
-namespace
+[[nodiscard]] static Vec2 Lerp_(
+    const Vec2  _a,
+    const Vec2  _b,
+    const float _t)
 {
-    [[nodiscard]] CameraTuning MakeCameraTuning_(
-        const CameraSettings& _settings)
-    {
-        CameraTuning tuning;
-        tuning.viewSize     = { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) };
-        tuning.deadzoneHalf = _settings.deadzoneHalf;
-        tuning.smoothTime   = _settings.smoothTime;
-        return tuning;
-    }
+    return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
+}
 
-    [[nodiscard]] Vec2 Lerp_(
-        const Vec2  _a,
-        const Vec2  _b,
-        const float _t)
-    {
-        return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
-    }
+[[nodiscard]] static Vec2 ToScreen_(
+    const Vec2 _world,
+    const Vec2 _camera)
+{
+    return { std::floor(_world.x - _camera.x), std::floor(_world.y - _camera.y) };
+}
 
-    [[nodiscard]] Vec2 ToScreen_(
-        const Vec2 _world,
-        const Vec2 _camera)
-    {
-        return { std::floor(_world.x - _camera.x), std::floor(_world.y - _camera.y) };
-    }
-
-    void DrawBox_(
-        Renderer&   _renderer,
-        const Aabb& _box,
-        const Vec2  _camera,
-        const RGBA  _color)
-    {
-        const Vec2 topLeft     = ToScreen_(_box.min, _camera);
-        const Vec2 bottomRight = ToScreen_(_box.max, _camera);
-        _renderer.DrawRect(topLeft, { Max(1.f, bottomRight.x - topLeft.x), Max(1.f, bottomRight.y - topLeft.y) }, _color);
-    }
-
-}   // namespace
+static void DrawBox_(
+    Renderer&   _renderer,
+    const Aabb& _box,
+    const Vec2  _camera,
+    const RGBA  _color)
+{
+    const Vec2 topLeft     = ToScreen_(_box.min, _camera);
+    const Vec2 bottomRight = ToScreen_(_box.max, _camera);
+    _renderer.DrawRect(topLeft, { Max(1.f, bottomRight.x - topLeft.x), Max(1.f, bottomRight.y - topLeft.y) }, _color);
+}
 
 SandboxState::SandboxState() = default;
 
@@ -79,7 +73,7 @@ void SandboxState::OnEnter(
     m_prevScore          = m_player.GetScore();
     m_bGameOverAnnounced = false;
 
-    _ctx.GetAudio().PlayBgm(sfx::kBgmStage, true);
+    _ctx.GetAudio().PlayBgm(kBgmStage, true);
 }
 
 void SandboxState::OnExit(
@@ -130,20 +124,20 @@ void SandboxState::BuildWorld_(
         }
     }
 
-    if (m_config.bLoadBakedGround)
+    if (m_config.bLoadGround)
     {
         bool bLoaded = false;
         if (!_ctx.assetRoot.empty())
         {
-            if (Result<GroundMap> ground = GroundMap::Load(_ctx.assetRoot / "Baked" / "Ground" / "Stage0_0.bin"))
+            if (std::optional<GroundMap> ground = LoadGroundMask(_ctx.assetRoot / "Ground" / "Stage0_0.png"))
             {
-                m_ground = ground.Take();
+                m_ground = std::move(*ground);
                 bLoaded  = true;
             }
         }
         if (!bLoaded)
         {
-            SLUG_LOG_WARN("Stage0_0 지면을 읽지 못해 평지를 사용합니다 (Scripts/Bake.ps1 필요)");
+            SLUG_LOG_WARN("Stage0_0 지면을 읽지 못해 평지를 사용합니다");
             m_ground = GroundMap::MakeEmpty(3520, 448);
             m_ground.FillRect(0, 378, 3519, 447, true);
         }
@@ -157,27 +151,9 @@ void SandboxState::BuildWorld_(
     m_camera.SetBounds(m_config.cameraBounds);
     m_camera.SetForwardOnly(true);
 
-    {
-        FilePath defsPath = m_config.enemyDefPath;
-        if (defsPath.empty() && !_ctx.assetRoot.empty())
-        {
-            defsPath = EnemyDefLibrary::GetDefaultDirectory(_ctx.assetRoot);
-        }
-        m_enemyLib = {};
-        if (!defsPath.empty())
-        {
-            String message;
-            if (Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
-            {
-                m_enemyLib = lib.Take();
-            }
-            else
-            {
-                SLUG_LOG_WARN("적 정의를 읽지 못해 적을 배치하지 않습니다: {}", message);
-            }
-        }
-        m_enemies.SetLibrary(&m_enemyLib);
-    }
+    m_enemyLib = {};
+    (void)LoadEnemyDefs_(_ctx.assetRoot, m_enemyLib);
+    m_enemies.SetLibrary(&m_enemyLib);
 
     RestartGame();
 
@@ -219,14 +195,14 @@ void SandboxState::BuildWorld_(
 
     if (!_ctx.IsHeadless())
     {
-        if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot / "Baked"))
+        if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot))
         {
             m_spriteLib = library.Take();
         }
         m_enemies.SetSpriteLibrary(&m_spriteLib);
         if (m_config.bBackground && _ctx.pSprites)
         {
-            if (const Result<int> handle = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Baked" / "Textures" / "Stage0_Main.png"))
+            if (const Result<int> handle = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Textures" / "Stage0_Main.png"))
             {
                 m_bgHandle = handle.GetValue();
             }
@@ -280,6 +256,7 @@ void SandboxState::RestartGame()
         SpawnParams params;
         params.facing     = -1;
         params.bActivated = true;
+        params.hp         = m_config.heliHp;
         (void)SpawnEnemy("heli", { cam.x + static_cast<float>(Renderer::kLogicalWidth) - 133.f, cam.y - 30.f }, params);
         if (m_config.bGodMode)
         {
@@ -314,7 +291,13 @@ void SandboxState::RestartGame()
         // 원작 락: 카메라 오른쪽 끝 3136 에서 멈춘다. 버스 앵커는 화면 왼쪽 끝 + 489 = 2985 (Stage0_1 잔해 지형의 중심과 같다)
         SpawnParams params;
         params.facing = -1;
+        // 스폰 = 정지 앵커 (처음부터 그 자리). 앵커는 화면 왼쪽 끝 + 489
         m_busHandle   = SpawnEnemy("bus", { m_config.cameraBounds.max.x - 640.f + 489.f, 378.f }, params);
+        if (m_config.bBusBot)
+        {
+            m_player.PickUpWeapon(eWeapon::Hmg, m_tuning);
+            m_player.ExtendInvincibility(60 * 60 * 60);
+        }
     }
 }
 
@@ -329,9 +312,9 @@ void SandboxState::TickBusLab_(
     m_bBusUnlocked = true;
     if (!_ctx.assetRoot.empty())
     {
-        if (Result<GroundMap> ground = GroundMap::Load(_ctx.assetRoot / "Baked" / "Ground" / "Stage0_1.bin"))
+        if (std::optional<GroundMap> ground = LoadGroundMask(_ctx.assetRoot / "Ground" / "Stage0_1.png"))
         {
-            m_ground = ground.Take();
+            m_ground = std::move(*ground);
         }
     }
     m_config.cameraBounds.max.x = 4200.f;
@@ -359,6 +342,84 @@ uint32_t SandboxState::AddTarget(
     const bool       _bShooter)
 {
     return m_targets.Add(_kind, _feet, _bShooter, m_tuning.sandbox);
+}
+
+bool SandboxState::LoadEnemyDefs_(
+    const FilePath&  _assetRoot,
+    EnemyDefLibrary& _out) const
+{
+    FilePath defsPath = m_config.enemyDefPath;
+    if (defsPath.empty() && !_assetRoot.empty())
+    {
+        defsPath = EnemyDefLibrary::GetDefaultDirectory(_assetRoot);
+    }
+    if (defsPath.empty())
+    {
+        return false;
+    }
+    String message;
+    if (Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
+    {
+        _out = lib.Take();
+        return true;
+    }
+    SLUG_LOG_WARN("적 정의를 읽지 못해 적을 배치하지 않습니다: {}", message);
+    return false;
+}
+
+bool SandboxState::ReloadEnemyDefs(
+    const FilePath& _assetRoot)
+{
+    EnemyDefLibrary lib;
+    if (!LoadEnemyDefs_(_assetRoot, lib))
+    {
+        return false;
+    }
+    m_enemyLib = std::move(lib);
+    m_projectiles.Clear();
+    m_enemies.Reset(1);
+    m_enemies.SetLibrary(&m_enemyLib);
+    return true;
+}
+
+bool SandboxState::ReloadEnemyDefsKeep(
+    const FilePath& _assetRoot)
+{
+    EnemyDefLibrary lib;
+    if (!LoadEnemyDefs_(_assetRoot, lib))
+    {
+        return false;
+    }
+    const Span<const EnemyDef>        newDefs  = lib.GetDefs();
+    const Span<const EnemyDef>        oldDefs  = m_enemyLib.GetDefs();
+    const Span<const ProjectileDef>   newProjs = lib.GetProjectiles();
+    const Span<const ProjectileDef>   oldProjs = m_enemyLib.GetProjectiles();
+    if (newDefs.size() != oldDefs.size() || newProjs.size() != oldProjs.size())
+    {
+        return false;
+    }
+    for (size_t i = 0; i < newDefs.size(); ++i)
+    {
+        if (newDefs[i].name != oldDefs[i].name || newDefs[i].behavior != oldDefs[i].behavior || newDefs[i].clips.size() != oldDefs[i].clips.size())
+        {
+            return false;
+        }
+    }
+    for (size_t i = 0; i < newProjs.size(); ++i)
+    {
+        if (newProjs[i].name != oldProjs[i].name)
+        {
+            return false;
+        }
+    }
+    m_enemyLib = std::move(lib);
+    m_enemies.SetLibrary(&m_enemyLib);
+    return true;
+}
+
+const GroundMap& SandboxState::GetGround() const
+{
+    return m_ground;
 }
 
 EnemyHandle SandboxState::SpawnEnemy(
@@ -415,7 +476,7 @@ PhysicsWorld SandboxState::MakeEnemyPhysicsWorld_() const
     PhysicsWorld world;
     world.pGround   = &m_ground;
     world.platforms = m_config.platforms;
-    world.walls     = m_slugWalls;
+    world.walls     = m_enemyWalls;
     return world;
 }
 
@@ -468,6 +529,29 @@ void SandboxState::Tick(
 {
     ++m_tickCount;
 
+    const InputHistory* pInput = &_input;
+    if (m_config.bBusBot)
+    {
+        // 봇: 버스 앞 (x 2780) 까지 걸어가 멈추고 계속 사격한다 (버스 랩 캡처용)
+        InputFrame frame = {};
+        frame.Set(eAction::Right, m_player.GetFeet().x < 2780.f);
+        frame.Set(eAction::Shot, m_tickCount >= 420 && m_player.GetFeet().x >= 2700.f && (m_tickCount % 20) < 3);
+        m_botInput.Push(frame);
+        pInput = &m_botInput;
+    }
+    if (m_config.bHeliBot)
+    {
+        // 봇: 120 틱마다 좌우로 걷고 위로 계속 사격한다 (헬기 랩 캡처용, 오른쪽 이동으로 시작)
+        InputFrame frame = {};
+        const bool bRight = (m_tickCount / 120) % 2 == 0;
+        frame.Set(eAction::Right, bRight);
+        frame.Set(eAction::Left, !bRight);
+        frame.Set(eAction::Up, true);
+        frame.Set(eAction::Shot, (m_tickCount % 6) < 3);
+        m_botInput.Push(frame);
+        pInput = &m_botInput;
+    }
+
     if (m_bWatch && m_watcher.Poll(m_tuning))
     {
         m_camera.SetTuning(MakeCameraTuning_(m_tuning.camera));
@@ -483,6 +567,8 @@ void SandboxState::Tick(
         propCtx.pGround    = &m_ground;
         propCtx.pAnims     = _ctx.pAnims;
         propCtx.cameraLeft = m_camera.GetPositionNoShake().x;
+        propCtx.cameraBottom = m_camera.GetPositionNoShake().y + Renderer::kLogicalHeight;
+        propCtx.pItemTuning = &m_tuning.items;
         m_props.Tick(propCtx);
     }
     UpdateWalls_();
@@ -506,6 +592,8 @@ void SandboxState::Tick(
     playerCtx.pCombat      = &m_combat;
     playerCtx.pProjectiles = &m_projectiles;
     playerCtx.respawnFeet  = GetRespawnFeet_();
+    playerCtx.godMode      = _ctx.godMode;
+    playerCtx.bInfiniteAmmo = _ctx.bInfiniteAmmo;
 
     SlugContext slugCtx;
     slugCtx.pTuning      = &m_slugTuning;
@@ -513,8 +601,9 @@ void SandboxState::Tick(
     slugCtx.physics      = playerCtx.physics;
     slugCtx.pCombat      = &m_combat;
     slugCtx.pProjectiles = &m_projectiles;
-    m_slugs.Tick(slugCtx, _input, m_player);
-    m_player.Tick(playerCtx, _input);
+    slugCtx.godMode      = _ctx.godMode;
+    m_slugs.Tick(slugCtx, *pInput, m_player);
+    m_player.Tick(playerCtx, *pInput);
 
     if (m_enemies.HasPlayerMinX())
     {
@@ -544,7 +633,12 @@ void SandboxState::Tick(
 
     m_targets.TickShooters(m_tuning.sandbox, m_player.GetFeet(), m_player.IsAlive(), m_projectiles, m_combat);
 
-    m_slugWalls = m_slugs.MakeEnemyWalls();
+    m_slugWalls  = m_slugs.MakeEnemyWalls();
+    m_enemyWalls = m_slugWalls;
+    for (const Aabb& box: m_enemies.GetSolidBoxes())
+    {
+        m_enemyWalls.push_back({ box });
+    }
 
     EnemyContext enemyCtx;
     enemyCtx.pTuning              = &m_tuning;
@@ -596,19 +690,19 @@ void SandboxState::Tick(
         {
             if (request.kind == eFxKind::BombExplosion)
             {
-                m_effects.Spawn(*_ctx.pAnims, "PlayerBombExplosion", request.position, 60);
+                m_effects.Spawn(*_ctx.pAnims, "PlayerBombExplosion", request.position, kBombBlastDepth + request.zOffset);
             }
             else if (request.kind == eFxKind::RocketExplosion)
             {
-                m_effects.Spawn(*_ctx.pAnims, "Explosion_Mid", request.position, 56);
+                m_effects.Spawn(*_ctx.pAnims, "Explosion_Mid", request.position, 56 + request.zOffset);
             }
             else if (request.kind == eFxKind::RocketSmoke)
             {
-                m_effects.Spawn(*_ctx.pAnims, "Rocket_Smoke", request.position, 28);
+                m_effects.Spawn(*_ctx.pAnims, "Rocket_Smoke", request.position, 28 + request.zOffset);
             }
             else
             {
-                m_effects.Spawn(*_ctx.pAnims, "Bullet_Destroy_Effect", request.position, 55);
+                m_effects.Spawn(*_ctx.pAnims, "Bullet_Destroy_Effect", request.position, kBulletHitDepth + request.zOffset);
             }
         }
         m_effects.Update(*_ctx.pAnims, kStepSec);
@@ -652,7 +746,7 @@ void SandboxState::Tick(
         m_prevWeapon         = m_player.GetWeapon().weapon;
         m_prevScore          = m_player.GetScore();
         m_bGameOverAnnounced = false;
-        _ctx.GetAudio().PlayBgm(sfx::kBgmStage, true);
+        _ctx.GetAudio().PlayBgm(kBgmStage, true);
     }
 }
 
@@ -670,15 +764,15 @@ void SandboxState::RequestSounds_(
     }
     for (int i = m_prevStats.knifeSlashes; i < stats.knifeSlashes; ++i)
     {
-        audio.Play((i & 1) == 0 ? sfx::kKnife1 : sfx::kKnife2, 0.9f, 0.05f);
+        audio.Play((i & 1) == 0 ? kKnife1 : kKnife2, 0.9f, 0.05f);
     }
     for (int i = m_prevStats.bombsThrown; i < stats.bombsThrown; ++i)
     {
-        audio.Play(sfx::kBombThrow);
+        audio.Play(kBombThrow);
     }
     for (int i = m_prevStats.deaths; i < stats.deaths; ++i)
     {
-        audio.Play(sfx::kPlayerDeath);
+        audio.Play(kPlayerDeath);
     }
     SlugStats slugTotal;
     for (const SlugVehicle& slug: m_slugs.GetAll())
@@ -694,11 +788,11 @@ void SandboxState::RequestSounds_(
     }
     for (int i = m_prevSlugStats.cannonShots; i < slugTotal.cannonShots; ++i)
     {
-        audio.Play(sfx::kBombExplode, 0.8f, 0.05f);
+        audio.Play(kBombExplode, 0.8f, 0.05f);
     }
     for (int i = m_prevSlugStats.explosions; i < slugTotal.explosions; ++i)
     {
-        audio.Play(sfx::kExplosion, 1.f, 0.03f);
+        audio.Play(kExplosion, 1.f, 0.03f);
     }
     m_prevSlugStats = slugTotal;
 
@@ -706,11 +800,11 @@ void SandboxState::RequestSounds_(
     {
         if (request.kind == eFxKind::BombExplosion)
         {
-            audio.Play(sfx::kBombExplode, 1.f, 0.03f);
+            audio.Play(kBombExplode, 1.f, 0.03f);
         }
         else if (request.kind == eFxKind::RocketExplosion)
         {
-            audio.Play(sfx::kBombExplode, 0.8f, 0.05f);
+            audio.Play(kBombExplode, 0.8f, 0.05f);
         }
     }
 
@@ -720,7 +814,7 @@ void SandboxState::RequestSounds_(
     }
     if (m_player.GetScore() > m_prevScore)
     {
-        audio.Play(sfx::kEnemyDeath, 0.7f, 0.1f);   // 에셋 없음
+        audio.Play(kEnemyDeath, 0.7f, 0.1f);   // 에셋 없음
     }
 
     if (m_player.IsGameOver() && !m_bGameOverAnnounced)
@@ -842,7 +936,7 @@ void SandboxState::DrawWorld_(
             const RigState rigState = m_player.MakeRigState();
             if (rigState.bVisible)
             {
-                m_rig.Submit(sprites, feet, 20, static_cast<int>(feet.y));
+                m_rig.Submit(sprites, feet, ResolveZ(m_player.GetZ(), kPlayerDepth), static_cast<int>(feet.y));
             }
         }
         else if (m_player.IsAlive())
@@ -856,11 +950,11 @@ void SandboxState::DrawWorld_(
         for (const Bullet& bullet: m_projectiles.GetBullets())
         {
             const Vec2 pos = Lerp_(bullet.renderPrev, bullet.position, _alpha);
-            if (pAnims && IsSlugOwner(bullet.owner) && SubmitSlugBullet(sprites, *pAnims, bullet, pos, 30))
+            if (pAnims && IsSlugOwner(bullet.owner) && SubmitSlugBullet(sprites, *pAnims, bullet, pos, ResolveZ(bullet.z, kPlayerBulletDepth)))
             {
                 continue;
             }
-            if (bullet.team == eTeam::Player && SubmitPlayerBullet(sprites, pAnims, m_spriteLib, bullet, pos, 30))
+            if (bullet.team == eTeam::Player && SubmitPlayerBullet(sprites, pAnims, m_spriteLib, bullet, pos, ResolveZ(bullet.z, kPlayerBulletDepth)))
             {
                 continue;
             }
@@ -871,7 +965,7 @@ void SandboxState::DrawWorld_(
         for (const Bomb& bomb: m_projectiles.GetBombs())
         {
             const Vec2 pos = Lerp_(bomb.renderPrev, bomb.position, _alpha);
-            if (pAnims && IsSlugOwner(bomb.params.owner) && SubmitSlugShell(sprites, *pAnims, bomb, pos, 31))
+            if (pAnims && IsSlugOwner(bomb.params.owner) && SubmitSlugShell(sprites, *pAnims, bomb, pos, ResolveZ(bomb.params.z, kPlayerBombDepth)))
             {
                 continue;
             }
@@ -879,7 +973,7 @@ void SandboxState::DrawWorld_(
             {
                 if (const AnimFrame* pFrame = m_bombAnim.GetFrameData(*pAnims))
                 {
-                    sprites.Submit(31, 0, *pFrame, pos);
+                    sprites.Submit(ResolveZ(bomb.params.z, kPlayerBombDepth), 0, *pFrame, pos);
                     continue;
                 }
             }
@@ -975,4 +1069,92 @@ void SandboxState::DrawHud_(
     m_ui.DrawOverlays(_ctx);
 }
 
-}   // namespace slug
+PlayerController& SandboxState::GetPlayer()
+{
+    return m_player;
+}
+
+const PlayerController& SandboxState::GetPlayer() const
+{
+    return m_player;
+}
+
+TrainingTargets& SandboxState::GetTargets()
+{
+    return m_targets;
+}
+
+ProjectileSystem& SandboxState::GetProjectiles()
+{
+    return m_projectiles;
+}
+
+CombatSystem& SandboxState::GetCombat()
+{
+    return m_combat;
+}
+
+Tuning& SandboxState::GetTuning()
+{
+    return m_tuning;
+}
+
+const Camera& SandboxState::GetCamera() const
+{
+    return m_camera;
+}
+
+PlayerRig& SandboxState::GetRig()
+{
+    return m_rig;
+}
+
+const PlayerRig& SandboxState::GetRig() const
+{
+    return m_rig;
+}
+
+uint64_t SandboxState::GetTickCount() const
+{
+    return m_tickCount;
+}
+
+UiSystem& SandboxState::GetUi()
+{
+    return m_ui;
+}
+
+EnemyWorld& SandboxState::GetEnemies()
+{
+    return m_enemies;
+}
+
+const EnemyWorld& SandboxState::GetEnemies() const
+{
+    return m_enemies;
+}
+
+const EnemyDefLibrary& SandboxState::GetEnemyLib() const
+{
+    return m_enemyLib;
+}
+
+EnemyDefLibrary& SandboxState::GetEnemyLibMutable()
+{
+    return m_enemyLib;
+}
+
+SlugSystem& SandboxState::GetSlugs()
+{
+    return m_slugs;
+}
+
+const SlugSystem& SandboxState::GetSlugs() const
+{
+    return m_slugs;
+}
+
+uint64_t SandboxState::DebugHash() const
+{
+    return HashState();
+}

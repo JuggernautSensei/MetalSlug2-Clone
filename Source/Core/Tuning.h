@@ -5,9 +5,6 @@
 #include "Base/Result.h"
 #include "Base/Types.h"
 
-namespace slug
-{
-
 enum class eWeapon : uint8_t
 {
     Pistol,
@@ -85,33 +82,54 @@ struct WeaponTuning
     bool  bPierce            = false;
     Vec2  hitSize            = { 14.f, 10.f };
     float range              = 420.f;          // 사거리 px
-    int   shotOverlayTicks   = 14;             // 사격 상체 동작 길이
+    int   shotOverlayTicks   = 14;             // 사격 상체 동작 길이 (버스트 무기는 발수 x burstIntervalTicks 를 쓴다)
     Vec2  blastSize          = { 0.f, 0.f };   // 착탄 폭발 상자 (0 = 폭발 없음)
     int   blastDamage        = 0;
     int   blastTicks         = 0;
-    int   burstShots         = 0;   // 한 번 입력에 나가는 연속 발수 (0/1 = 단발)
-    int   burstIntervalTicks = 0;   // 연속 발사 사이 간격
+    // 연속 발사(버스트): 한 번 입력에 나가는 발수는 [burstShotsMin, burstShotsMax] 의 결정적 난수 (0/1 = 단발)
+    int   burstShotsMin      = 0;
+    int   burstShotsMax      = 0;
+    int   burstIntervalTicks = 0;      // 버스트 안의 발사 간격 (버스트 길이 = 발수 x 간격, 사격 모션 길이도 이에 맞춘다)
+    float spreadDeg          = 0.f;    // 탄마다 조준각에 더하는 난수 흩뿌림 (±도)
+    Vec2  muzzleJitter       = { 0.f, 0.f };   // 탄마다 발사 시작점에 더하는 난수 오프셋 (±px)
+    Vec2  muzzleAdjust       = { 0.f, 0.f };   // 정면 조준일 때 총구 보정 (px, 오른쪽 향함 기준. 왼쪽이면 x 부호 반전)
+    // 파이어샷 분출 (flame 전용): 입력 1회 = 입자 particleCount 개를 particleIntervalTicks 간격으로 흩뿌린다 (탄약은 1발)
+    int   particleCount         = 0;
+    int   particleIntervalTicks = 0;
+    float particleSpeedMin      = 0.f;            // 입자 속도 범위 (px/s, 결정적 난수)
+    float particleSpeedMax      = 0.f;
+    int   particleLifeMinTicks  = 0;              // 입자 수명 범위 (틱). 사거리 = 속도 x 수명
+    int   particleLifeMaxTicks  = 0;
+    int   hitReleaseTicks       = 0;              // 한 입력의 공유 판정 ID 를 이 간격마다 풀어 같은 대상이 다시 맞게 한다 (0 = 풀지 않음)
+    Vec2  particleHitSizeEnd    = { 0.f, 0.f };   // 수명 끝의 판정 크기 (시작은 hitSize)
+    float particleScaleStart    = 1.f;            // 수명 시작/끝의 표시 배율 (판정과 무관)
+    float particleScaleEnd      = 1.f;
+    float speedAccel            = 0.f;            // 발사 후 가속 (px/s², 0 = 등속). 탄 방향으로 speedMax 까지
+    float speedMax              = 0.f;            // 가속 상한 (px/s). 0 이면 상한 없음
 };
 
 struct WeaponsTuning
 {
     WeaponTuning pistol = {};
     WeaponTuning hmg    = {
-        2,
-        7,
-        0,
-        200,
-        640.f,
-        0,
-        false,
-        { 14.f, 10.f },
-        460.f,
-        28,
-        { 0.f, 0.f },
-        0,
-        0,
-        4,
-        7
+        .damage             = 2,
+        .fireIntervalTicks  = 4,
+        .holdRepeatTicks    = 0,
+        .ammo               = 200,
+        .projectileSpeed    = 640.f,
+        .maxAlive           = 0,
+        .bPierce            = false,
+        .hitSize            = { 14.f, 10.f },
+        .range              = 460.f,
+        .shotOverlayTicks   = 20,
+        .blastSize          = { 0.f, 0.f },
+        .blastDamage        = 0,
+        .blastTicks         = 0,
+        .burstShotsMin      = 3,
+        .burstShotsMax      = 5,
+        .burstIntervalTicks = 4,
+        .muzzleJitter       = { 0.f, 6.f },
+        .muzzleAdjust       = { 6.f, 10.f },   // MG 정면 사격 클립의 총구 실측 (44,-51) -> (50,-41)
     };
     WeaponTuning shotgun = {
         14,
@@ -121,36 +139,51 @@ struct WeaponsTuning
         560.f,
         0,
         true,
-        { 30.f, 24.f },
-        200.f,
+        { 90.f, 70.f },
+        240.f,
         16
     };
     WeaponTuning rocket = {
-        0,
-        24,
-        0,
-        20,
-        300.f,
-        2,
-        false,
-        { 16.f, 12.f },
-        420.f,
-        20,
-        { 96.f, 96.f },
-        15,
-        6
+        .damage            = 0,
+        .fireIntervalTicks = 24,
+        .holdRepeatTicks   = 0,
+        .ammo              = 20,
+        .projectileSpeed   = 200.f,
+        .maxAlive          = 2,
+        .bPierce           = false,
+        .hitSize           = { 16.f, 12.f },
+        .range             = 420.f,
+        .shotOverlayTicks  = 20,
+        .blastSize         = { 96.f, 96.f },
+        .blastDamage       = 15,
+        .blastTicks        = 6,
+        .speedAccel        = 1600.f,
+        .speedMax          = 900.f,
     };
+    // 파이어샷: fireIntervalTicks = 분출 길이 (particleCount x particleIntervalTicks) 라 분출 중 재발사되지 않는다
     WeaponTuning flame = {
-        3,
-        8,
-        0,
-        30,
-        300.f,
-        0,
-        true,
-        { 72.f, 44.f },
-        220.f,
-        14
+        .damage                = 3,
+        .fireIntervalTicks     = 24,
+        .holdRepeatTicks       = 0,
+        .ammo                  = 30,
+        .projectileSpeed       = 300.f,
+        .maxAlive              = 0,
+        .bPierce               = true,
+        .hitSize               = { 60.f, 50.f },
+        .range                 = 220.f,
+        .shotOverlayTicks      = 24,
+        .spreadDeg             = 8.f,
+        .muzzleJitter          = { 0.f, 4.f },
+        .particleCount         = 12,
+        .particleIntervalTicks = 2,
+        .particleSpeedMin      = 260.f,
+        .particleSpeedMax      = 340.f,
+        .particleLifeMinTicks  = 22,
+        .particleLifeMaxTicks  = 30,
+        .hitReleaseTicks       = 6,
+        .particleHitSizeEnd    = { 110.f, 90.f },
+        .particleScaleStart    = 0.6f,
+        .particleScaleEnd      = 1.6f,
     };
     int hmgPickupAmmo     = 200;
     int shotgunPickupAmmo = 30;
@@ -158,30 +191,10 @@ struct WeaponsTuning
     int flamePickupAmmo   = 30;
 
     [[nodiscard]] int GetPickupAmmo(
-        const eWeapon _weapon) const
-    {
-        switch (_weapon)
-        {
-            case eWeapon::Hmg: return hmgPickupAmmo;
-            case eWeapon::Shotgun: return shotgunPickupAmmo;
-            case eWeapon::Rocket: return rocketPickupAmmo;
-            case eWeapon::Flame: return flamePickupAmmo;
-            default: return 0;
-        }
-    }
+        const eWeapon _weapon) const;
 
     [[nodiscard]] const WeaponTuning& Get(
-        const eWeapon _weapon) const
-    {
-        switch (_weapon)
-        {
-            case eWeapon::Hmg: return hmg;
-            case eWeapon::Shotgun: return shotgun;
-            case eWeapon::Rocket: return rocket;
-            case eWeapon::Flame: return flame;
-            default: return pistol;
-        }
-    }
+        const eWeapon _weapon) const;
 };
 
 struct KnifeTuning
@@ -224,10 +237,16 @@ struct PlayerTuning
     int   respawnInvincible = 120;     // 리스폰 무적 틱
     int   blinkPeriodTicks  = 4;       // 무적 깜빡임 주기
     float respawnOffsetX    = 100.f;   // 카메라 왼쪽 + 이 값
-    float respawnDropY      = 40.f;    // 카메라 위쪽에서 이만큼 위
+    float respawnDropY      = 160.f;    // 카메라 위쪽에서 이만큼 위
     int   gameOverTicks     = 180;
     int   idleActionTicks   = 480;   // 가만히 있을 때 대기 연출 시작
     int   idleActionLength  = 100;   // 대기 연출 길이 (틱). 끝나면 다시 대기 시간을 센다
+    // 시작 낙하산: 착지 발 위치보다 이만큼 위에서 일정 속도로 내려온다. 공격키로 낙하산이 깜빡이며 사라지고 조작이 시작된다.
+    float chuteStartHeightPx    = 260.f;
+    float chuteFallSpeedPxSec   = 110.f;
+    int   chuteBlinkTicks       = 24;    // 낙하산 소멸 깜빡임 총 틱 (끝나면 제거)
+    int   chuteBlinkPeriodTicks = 3;     // 깜빡임 반주기 (켜짐/꺼짐 각각 이 틱 수)
+    Vec2  chuteOffset           = { 0.f, -110.f };   // 낙하산 원점 = 발 + 이 값 (렌더 전용)
 };
 
 struct CameraSettings
@@ -249,6 +268,13 @@ struct SandboxTuning
     float shooterRange         = 380.f;   // 사수가 플레이어를 향해 쏘기 시작하는 가로 거리
 };
 
+struct ItemTuning
+{
+    float rollFrictionPerSec = 0.5f;    // 굴러가는 점수 아이템 감속률 (1/s). v -= v * rate * dt
+    float rollSpinRefSpeed   = 50.f;    // 이 속도 이상이면 회전 애니 1배속. 그보다 느리면 속도에 비례해 느려진다
+    float rollStopSpeed      = 1.f;     // 이 속도 미만이면 수평 정지 (회전도 함께 멈춘다)
+};
+
 struct RigTuning
 {
     float airBaseline   = 40.f;   // 공중에서 원점이 발보다 몇 px 위인가 (스프라이트 정렬용)
@@ -266,6 +292,7 @@ struct Tuning
     PlayerTuning   player  = {};
     CameraSettings camera  = {};
     SandboxTuning  sandbox = {};
+    ItemTuning     items   = {};
     RigTuning      rig     = {};
 };
 
@@ -283,7 +310,7 @@ public:
 
     bool Poll(Tuning& _out);
 
-    [[nodiscard]] int GetReloadCount() const { return m_reloadCount; }
+    [[nodiscard]] int GetReloadCount() const;
 
 private:
     FilePath                        m_path        = {};
@@ -293,5 +320,3 @@ private:
     bool                            m_bHasStamp   = false;
     std::filesystem::file_time_type m_stamp       = {};
 };
-
-}   // namespace slug

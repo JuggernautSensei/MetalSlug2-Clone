@@ -2,7 +2,7 @@
   "version": 1,
   "name": "Stage0",
   "world": {"size": [14094, 1328], "view": [640, 448], "background": "Stage0_Main", "endless": {"from": 14094, "tileX": 13070, "tileW": 1024}},
-  "bgm": {"name": "Stage1_BGM", "loop": true},
+  "bgm": {"name": "Field_BGM", "loop": true},
   "ground": {"initial": "Stage0_0", "maps": ["Stage0_0", "Stage0_1"]},
   "backdrop": {"initial": "first", "modes": {"first": {"sprite": "Stage0_Background_0", "offset": [249, -64], "parallaxX": 0.15, "period": 1024}, "second": {"sprite": "Stage0_Background_0", "offset": [700, -130], "parallaxX": 0.15, "period": 1024}, "third": {"sprite": "Stage0_Background_2", "offset": [750, 0], "parallaxX": 0.1}, "fourth": {"sprite": "Stage0_Background_1", "offset": [1100, -30], "parallaxX": 0.1, "period": 1024}}},
   "player": {"x": 100, "groundSnap": true, "fromY": 0, "note": "Legacy start Vec(100,0); the player falls to the ground (same result as groundSnap at x=100)."},
@@ -12,34 +12,32 @@
       "id": "intro", "triggerX": 0,
       "actions": [
         {"type": "fade", "to": "clear", "seconds": 1.0},
-        {"type": "banner", "text": "MISSION 4", "seconds": 2.5},
+        {"type": "banner", "text": "MISSION 4", "seconds": 2.5, "sfx": "Sfx_Mission4Start"},
         {"type": "spawn", "kind": "prop", "def": "truck", "x": 580, "y": 342},
         {"type": "spawn", "kind": "prop", "def": "truck", "x": 850, "y": 342},
         {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 386, "y": 341, "anim": "Parker", "layer": "background", "params": {"loop": false, "sequence": [{"clip": "Parker", "seconds": 9.6, "velocity": [0, 0]}, {"clip": "Parker_Run_2", "seconds": 12.0, "velocity": [-45, 0]}]}},
-        {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 1150, "y": 341, "anim": "Order_Boy_Run_Left", "layer": "background", "params": {"loop": true, "sequence": [{"clip": "Order_Boy_Run_Left", "seconds": 3.0, "velocity": [-60, 0]}, {"clip": "Order_Turn", "seconds": 0.4, "velocity": [0, 0]}, {"clip": "Order_Boy_Run_Right", "seconds": 3.0, "velocity": [60, 0]}, {"clip": "Order_Turn", "seconds": 0.4, "velocity": [0, 0], "flip": true}]}},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 900, "groundSnap": true},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 1060, "groundSnap": true},
-        {"type": "spawnWave", "entries": [{"delay": 7.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+        {"type": "spawnWave", "entries": [{"delay": 7.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [48, 120], "ay": "top", "dy": 47.5}}]}
       ]
     },
     {
       "id": "street", "triggerX": 750,
       "actions": [
         {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 1600, "y": 341, "anim": "Order_Run_2", "layer": "background", "params": {"loop": true, "sequence": [{"clip": "Order_Run_2", "seconds": 2.5, "velocity": [50, 0], "flip": true}, {"clip": "Order_Idle", "seconds": 2.0, "velocity": [0, 0], "flip": true}, {"clip": "Order_Run_2", "seconds": 2.5, "velocity": [-50, 0]}, {"clip": "Order_Idle", "seconds": 2.0, "velocity": [0, 0]}]}},
-        {"type": "spawn", "kind": "prop", "def": "shop_5", "x": 2513, "y": 181, "params": {"sprites": ["Stage0_Shop_5_0", "Stage0_Shop_5_1"], "hitbox": {"size": [150, 75], "offset": [0, -200]}, "standBox": {"size": [230, 20], "offset": [35, 55]}}},
-        {"type": "spawn", "kind": "prop", "def": "shop_4", "x": 2224, "y": 185, "params": {"sprites": ["Stage0_Shop_4_0", "Stage0_Shop_4_1"], "hitbox": {"size": [200, 75], "offset": [50, -100]}, "standBox": {"size": [250, 20], "offset": [80, 20]}}},
-        {"type": "spawn", "kind": "prop", "def": "shop_3", "x": 1906, "y": 230, "params": {"sprites": ["Stage0_Shop_3_0", "Stage0_Shop_3_1"], "hitbox": {"size": [150, 75], "offset": [50, -100]}, "standBox": {"size": [300, 20], "offset": [30, 10]}}},
-        {"type": "spawn", "kind": "prop", "def": "shop_2", "x": 1661, "y": 252, "params": {"sprites": ["Stage0_Shop_2_0", "Stage0_Shop_2_1"], "hitbox": {"size": [100, 50], "offset": [25, -75]}, "standBox": {"size": [160, 20], "offset": [20, 15]}}},
-        {"type": "spawn", "kind": "prop", "def": "shop_1", "x": 1489, "y": 230, "params": {"sprites": ["Stage0_Shop_1_0", "Stage0_Shop_1_1"], "hitbox": {"size": [150, 75], "offset": [0, -100]}, "standBox": {"size": [220, 20], "offset": [20, 10]}}},
-        {"type": "spawn", "kind": "prop", "def": "shop_0", "x": 1274, "y": 228, "params": {"sprites": ["Stage0_Shop_0_0", "Stage0_Shop_0_1"], "hitbox": {"size": [150, 75], "offset": [0, -100]}, "standBox": {"size": [220, 20], "offset": [30, 10]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_5", "x": 2513, "y": 181, "params": {"sprites": ["Stage0_Shop_5_0", "Stage0_Shop_5_1"], "hitbox": {"size": [260, 240], "offset": [10, -60]}, "standBox": {"size": [230, 20], "offset": [35, 55]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_4", "x": 2224, "y": 185, "params": {"sprites": ["Stage0_Shop_4_0", "Stage0_Shop_4_1"], "hitbox": {"size": [330, 230], "offset": [40, -60]}, "standBox": {"size": [250, 20], "offset": [80, 20]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_3", "x": 1906, "y": 230, "params": {"sprites": ["Stage0_Shop_3_0", "Stage0_Shop_3_1"], "hitbox": {"size": [300, 170], "offset": [30, -50]}, "standBox": {"size": [300, 20], "offset": [30, 10]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_2", "x": 1661, "y": 252, "params": {"sprites": ["Stage0_Shop_2_0", "Stage0_Shop_2_1"], "hitbox": {"size": [170, 130], "offset": [20, -40]}, "standBox": {"size": [160, 20], "offset": [20, 15]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_1", "x": 1489, "y": 230, "params": {"sprites": ["Stage0_Shop_1_0", "Stage0_Shop_1_1"], "hitbox": {"size": [210, 170], "offset": [0, -50]}, "standBox": {"size": [220, 20], "offset": [20, 10]}}},
+        {"type": "spawn", "kind": "prop", "def": "shop_0", "x": 1274, "y": 228, "params": {"sprites": ["Stage0_Shop_0_0", "Stage0_Shop_0_1"], "hitbox": {"size": [220, 160], "offset": [0, -50]}, "standBox": {"size": [220, 20], "offset": [30, 10]}}},
         {"type": "spawn", "kind": "prop", "def": "truck", "x": 1430, "y": 342},
         {"type": "spawn", "kind": "prop", "def": "truck", "x": 1810, "y": 342},
         {"type": "spawn", "kind": "prop", "def": "truck", "x": 2200, "y": 342},
-        {"type": "spawn", "kind": "collider", "def": "box_collider", "x": 1119, "y": 350, "size": [137, 90], "collisionLayer": "wall", "note": "레거시 137x90 복원 (점프 정점 129px). 바닥 y=378"},
+        {"type": "spawn", "kind": "prop", "def": "crate", "x": 1119, "y": 350, "note": "걸어서 통과, 위에서만 착지 (137x90, 윗면 y=305). 바닥 y=378"},
         {"type": "spawn", "kind": "npc", "def": "pow", "x": 1325, "y": 140, "settle": true, "drop": "gunitem_mg"},
         {"type": "spawn", "kind": "npc", "def": "pow", "x": 1542, "y": 140, "settle": true, "drop": "gunitem_mg"},
         {"type": "spawn", "kind": "npc", "def": "pow", "x": 2000, "y": 140, "settle": true, "drop": "gunitem_mg"},
-        {"type": "spawn", "kind": "npc", "def": "pow", "x": 2350, "y": 140, "settle": true, "drop": "bomb_supple"},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 1420, "groundSnap": true},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 1590, "groundSnap": true},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 1760, "groundSnap": true},
@@ -51,33 +49,42 @@
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 1850, "y": 230},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bzk", "x": 1990, "y": 230},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 2215, "y": 195},
-        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 1000, "groundSnap": true},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 1120, "groundSnap": true, "note": "46s soldier: x moved from 1000 (inside view right after street trigger 750)"},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 1290, "groundSnap": true},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 1530, "groundSnap": true},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bzk", "x": 1700, "groundSnap": true},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 1870, "groundSnap": true},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 2040, "groundSnap": true},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 2180, "groundSnap": true},
-        {"type": "spawn", "kind": "item", "def": "gunitem_mg", "x": 2070, "y": 300, "note": "original H crate t56-57"},
-        {"type": "spawnWave", "entries": [{"delay": 3.5, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}, {"delay": 9.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]},
-        {"type": "spawnWave", "entries": [{"delay": 6.0, "kind": "enemy", "def": "soldier_bomb", "every": 8.0, "times": 3, "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}, {"delay": 12.0, "kind": "enemy", "def": "soldier_sword", "every": 10.0, "times": 2, "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}, {"delay": 18.0, "kind": "enemy", "def": "soldier_bzk", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+        {"type": "spawnWave", "entries": [{"delay": 3.5, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [48, 120], "ay": "bottom", "dy": -72}}, {"delay": 9.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [48, 120], "ay": "bottom", "dy": -72}}]},
+        {"type": "spawnWave", "entries": [{"delay": 6.0, "kind": "enemy", "def": "soldier_bomb", "every": 8.0, "times": 3, "camera": {"ax": "right", "dx": [48, 120], "ay": "bottom", "dy": -72}}, {"delay": 12.0, "kind": "enemy", "def": "soldier_sword", "every": 10.0, "times": 2, "camera": {"ax": "right", "dx": [48, 120], "ay": "bottom", "dy": -72}}, {"delay": 18.0, "kind": "enemy", "def": "soldier_bzk", "camera": {"ax": "right", "dx": [48, 120], "ay": "bottom", "dy": -72}}]}
       ]
     },
     {
       "id": "ground_swap", "triggerX": 2244,
       "actions": [
-        {"type": "setGround", "name": "Stage0_1", "when": "silent"}
+        {"type": "setGround", "name": "Stage0_1", "when": "silent"},
+        {"type": "spawn", "kind": "enemy", "def": "bus", "id": "bus", "x": 2985, "y": 378}
+      ]
+    },
+    {"id": "bus", "triggerX": 2605, "note": "R3-06: 영화 간판 건물 shop_5 (x 2513, 폭 약 322 -> 우측 끝 ~2674) 를 발 기준 완전히 지난 지점 (우측 끝 + 플레이어 반폭 ~20) 에서 발동. 카메라 락 글라이드 2.5 s, 버스 개방은 뷰 우측 >= 버스 왼쪽 끝 (openViewDx) 에서 시작.",
+      "actions": [
+        {"type": "clear", "waves": true},
+        {"type": "lockCamera", "rect": [2457, 0, 3097, 448], "glide": 2.5},
+        {"type": "gate", "id": "bus_clear", "waitFor": ["bus"], "until": "destroyFinished", "actions": [
+          {"type": "unlockCamera"},
+          {"type": "setBounds", "rect": [-89, 0, 4111, 448]}
+        ]}
       ]
     },
     {
       "id": "boardwalk", "triggerX": 3050,
+      "note": "기존 unlockCamera 제거: 버스 잠금(bus 섹션)을 풀어 버리던 무효 액션",
       "actions": [
-        {"type": "unlockCamera"},
         {"type": "spawn", "kind": "collider", "def": "box_collider", "x": 3410, "y": 397, "size": [159, 39], "collisionLayer": "wall"},
         {"type": "spawn", "kind": "prop", "def": "fence", "x": 3665, "y": 342, "repeat": {"count": 8, "stepX": 64, "stepY": 0}},
         {"type": "spawn", "kind": "item", "def": "random_fruit", "x": 3375, "y": 200},
-        {"type": "spawn", "kind": "item", "def": "random_anime", "x": 3450, "y": 200},
-        {"type": "spawnWave", "entries": [{"delay": 1.5, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+        {"type": "spawn", "kind": "item", "def": "random_anime", "x": 3450, "y": 200}
       ]
     },
     {
@@ -92,10 +99,7 @@
         {"type": "spawn", "kind": "enemy", "def": "shielder", "x": 3880, "y": 405},
         {"type": "spawn", "kind": "enemy", "def": "shielder", "x": 4120, "y": 405},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 3900, "groundSnap": true, "fromY": 450},
-        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 4020, "groundSnap": true, "fromY": 450},
-        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 3360, "y": 377.5, "note": "boardwalk top of boardwalk box 3410,397"},
-        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 3460, "y": 377.5},
-        {"type": "spawn", "kind": "enemy", "def": "soldier_bzk", "x": 3380, "y": 494.5, "note": "boardwalk top of wall box 3380,580"}
+        {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 4020, "groundSnap": true, "fromY": 450}
       ]
     },
     {
@@ -108,22 +112,22 @@
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 4560, "y": 405},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 4300, "groundSnap": true, "fromY": 450},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 4480, "groundSnap": true, "fromY": 450},
-        {"type": "spawnWave", "entries": [{"delay": 4.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]},
-        {"type": "spawnWave", "entries": [{"delay": 1.0, "kind": "enemy", "def": "soldier_missile", "every": 2.5, "times": 2, "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+        {"type": "spawnWave", "entries": [{"delay": 4.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [48, 120], "ay": "top", "dy": 47.5}}]},
+        {"type": "spawnWave", "entries": [{"delay": 1.0, "kind": "enemy", "def": "soldier_missile", "every": 2.5, "times": 2, "camera": {"ax": "right", "dx": [48, 120], "ay": "top", "dy": 47.5}}]}
       ]
     },
     {
       "id": "bridge_mid", "triggerX": 4037,
       "actions": [
-        {"type": "spawn", "kind": "prop", "def": "mob_boat", "x": 4634, "y": 545, "id": "boat_2", "params": {"explodeOnDeath": false}},
+        {"type": "spawn", "kind": "prop", "def": "mob_boat", "x": 4634, "y": 545, "id": "boat_2", "params": {"explodeOnDeath": true}},
         {"type": "spawn", "kind": "prop", "def": "fence", "x": 4689, "y": 342, "repeat": {"count": 6, "stepX": 64, "stepY": 0}},
-        {"type": "spawn", "kind": "npc", "def": "pow", "x": 4890, "y": 40, "settle": true, "drop": "gunitem_sg"},
-        {"type": "spawn", "kind": "npc", "def": "pow", "x": 4300, "y": 40, "settle": true, "drop": "gunitem_rl"},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 4890, "y": 300, "settle": true, "drop": "gunitem_sg"},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 4400, "y": 300, "settle": true, "drop": "gunitem_rl"},
         {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 4700, "y": 405},
         {"type": "spawn", "kind": "enemy", "def": "shielder", "x": 4860, "y": 405},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 4520, "groundSnap": true, "fromY": 450},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 4830, "groundSnap": true, "fromY": 450},
-        {"type": "spawnWave", "entries": [{"delay": 5.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+        {"type": "spawnWave", "entries": [{"delay": 5.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [48, 120], "ay": "top", "dy": 47.5}}]}
       ]
     },
     {
@@ -132,30 +136,36 @@
         {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 5639, "y": 648, "anim": "Stage0_Water", "layer": "background", "cullMargin": 100, "params": {"playerWaterTrigger": {"size": [1050, 40]}}},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 5060, "groundSnap": true},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bzk", "x": 5220, "groundSnap": true},
-        {"type": "spawnWave", "entries": [{"delay": 3.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+        {"type": "spawnWave", "entries": [{"delay": 3.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [48, 120], "ay": "top", "dy": 47.5}}]}
       ]
     },
     {
       "id": "river_start", "triggerX": 5000,
       "actions": [
         {"type": "spawn", "kind": "prop", "def": "guard_post", "x": 5800, "y": 541, "layer": "background"},
-        {"type": "spawn", "kind": "item", "def": "item_letter", "x": 5800, "y": 200},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 5770, "y": 471},
         {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 5840, "y": 471},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 5760, "y": 546},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 5500, "groundSnap": true},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 5640, "groundSnap": true},
-        {"type": "spawn", "kind": "enemy", "def": "btank", "x": 5300, "groundSnap": true, "note": "original red-X armoured tank t139-150"},
-        {"type": "spawnWave", "entries": [{"delay": 4.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}]}
+        {"type": "spawn", "kind": "enemy", "def": "btank", "x": 5400, "groundSnap": true, "note": "original red-X armoured tank t139-150. x moved from 5300 (inside view at river_start trigger)"},
+        {"type": "spawnWave", "entries": [{"delay": 4.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [60, 160], "ay": "top", "dy": 67.5}}]}
+      ]
+    },
+    {"id": "heli_river", "triggerX": 5458, "note": "2:03 강 구간 헬기 (R2-04/R2-12): 카메라 고정 후 우상단 밖(cam 우측 +187, 위 -30)에서 진입. river_jeep 격파 + heli 격파 시 해제",
+      "actions": [
+        {"type": "lockCamera", "rect": [5388, 288, 6028, 736], "glide": 1.0},
+        {"type": "spawn", "kind": "enemy", "def": "heli", "id": "heli", "camera": {"ax": "right", "dx": 187, "ay": "top", "dy": -30}},
+        {"type": "gate", "id": "heli_dead", "waitFor": ["heli", "river_jeep"], "actions": [{"type": "unlockCamera"}]}
       ]
     },
     {
-      "id": "river_mid", "triggerX": 5600,
+      "id": "river_mid", "triggerX": 5515,
       "actions": [
-        {"type": "setBounds", "rect": [3180, 288, 6520, 736]},
-        {"type": "spawn", "kind": "npc", "def": "pow", "x": 5800, "y": 40, "settle": true, "drop": "gunitem_fs"},
-        {"type": "spawn", "kind": "enemy", "def": "jeep", "x": 6000, "groundSnap": true},
-        {"type": "spawnWave", "entries": [{"delay": 6.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+        {"type": "setBounds", "rect": [3095, 288, 6435, 736]},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 5785, "y": 392, "settle": true, "drop": "gunitem_fs"},
+        {"type": "spawn", "kind": "enemy", "def": "jeep", "id": "river_jeep", "x": 5100, "groundSnap": true, "facing": "right", "note": "락 왼쪽 밖(뷰 min 5480 - 60)에서 오른쪽으로 달려 들어온다"},
+        {"type": "spawnWave", "entries": [{"delay": 6.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [48, 120], "ay": "top", "dy": 47.5}}]}
       ]
     },
     {
@@ -164,10 +174,9 @@
         {"type": "setBounds", "rect": [3180, 288, 14094, 736]},
         {"type": "setCameraOffset", "offset": [50, -140]},
         {"type": "setBackdrop", "mode": "third"},
-        {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 6470, "y": 659, "anim": "Plane", "layer": "farBackground", "params": {"velocity": [70, -50]}},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 6650, "groundSnap": true},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 6900, "groundSnap": true},
-        {"type": "spawnWave", "entries": [{"delay": 3.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 7.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+        {"type": "spawnWave", "entries": [{"delay": 3.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [60, 160], "ay": "top", "dy": 67.5}}, {"delay": 7.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [48, 120], "ay": "top", "dy": 47.5}}]}
       ]
     },
     {
@@ -185,13 +194,12 @@
         {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 7599, "y": 741},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 6980, "groundSnap": true},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bzk", "x": 7300, "groundSnap": true},
-        {"type": "spawnWave", "entries": [{"delay": 4.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 8.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}, {"delay": 13.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}]}
+        {"type": "spawnWave", "entries": [{"delay": 4.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [60, 160], "ay": "top", "dy": 67.5}}, {"delay": 8.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [48, 120], "ay": "top", "dy": 47.5}}, {"delay": 13.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [60, 160], "ay": "top", "dy": 67.5}}]}
       ]
     },
     {
       "id": "downtown_mid", "triggerX": 7400,
       "actions": [
-        {"type": "spawn", "kind": "decor", "def": "anim_decor", "x": 7560, "y": 600, "anim": "Plane", "layer": "farBackground", "params": {"velocity": [70, -40]}},
         {"type": "spawn", "kind": "prop", "def": "bridge_deck", "x": 7716, "y": 1007},
         {"type": "spawn", "kind": "prop", "def": "bridge_deck", "x": 8356, "y": 1167},
         {"type": "spawn", "kind": "prop", "def": "bridge_house2house", "x": 7907, "y": 1079},
@@ -207,40 +215,40 @@
         {"type": "spawn", "kind": "prop", "def": "house_yellow", "x": 9153, "y": 1118},
         {"type": "spawn", "kind": "prop", "def": "ground_mini_house", "x": 9532, "y": 1282},
         {"type": "spawn", "kind": "prop", "def": "ground_house", "x": 9830, "y": 1269},
-        {"type": "spawn", "kind": "npc", "def": "pow", "x": 8190, "y": 340, "settle": true, "drop": "bullet_supple"},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 8190, "y": 880, "settle": true, "drop": "bullet_supple", "note": "1:40 hostage: on the house_cloth roof (top y ~901) instead of falling from the sky at y 340"},
         {"type": "spawn", "kind": "item", "def": "random_anime", "x": 8480, "y": 200},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 7829, "y": 865},
         {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 8035, "y": 886},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 8238, "y": 901},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 8469, "y": 1024},
-        {"type": "spawn", "kind": "enemy", "def": "missle_tank", "x": 7700, "groundSnap": true, "fromY": 600, "note": "original green 50 tank t191-195"},
+        {"type": "spawn", "kind": "enemy", "def": "missle_tank", "x": 7800, "groundSnap": true, "fromY": 600, "note": "original green 50 tank t191-195 (1:39). Pre-placed: x 7700 was inside view at downtown_mid trigger (7400+320)"},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 8676, "y": 1046},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 7950, "groundSnap": true},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 8150, "groundSnap": true},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bzk", "x": 8240, "groundSnap": true},
-        {"type": "spawnWave", "entries": [{"delay": 3.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 6.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}, {"delay": 10.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 14.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+        {"type": "spawnWave", "entries": [{"delay": 3.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [60, 160], "ay": "top", "dy": 67.5}}, {"delay": 6.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [48, 120], "ay": "top", "dy": 47.5}}, {"delay": 10.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [60, 160], "ay": "top", "dy": 67.5}}, {"delay": 14.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [48, 120], "ay": "top", "dy": 47.5}}]}
       ]
     },
     {
       "id": "downtown_end", "triggerX": 8700,
       "actions": [
         {"type": "setBackdrop", "mode": "fourth"},
-        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 8878, "y": 1061},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 9060, "y": 1061},
         {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 9153, "y": 1076},
-        {"type": "spawn", "kind": "enemy", "def": "missle_tank", "x": 8850, "groundSnap": true, "fromY": 600, "note": "original green 50 tank t220-226"},
+        {"type": "spawn", "kind": "enemy", "def": "missle_tank", "x": 9080, "groundSnap": true, "fromY": 600, "note": "original green 50 tank t220-226. x moved from 8850 (inside view at downtown_end trigger)"},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 9200, "groundSnap": true, "fromY": 1100},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 9340, "groundSnap": true, "fromY": 1100},
-        {"type": "spawnWave", "entries": [{"delay": 3.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 7.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+        {"type": "spawnWave", "entries": [{"delay": 3.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [60, 160], "ay": "top", "dy": 67.5}}, {"delay": 7.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [48, 120], "ay": "top", "dy": 47.5}}]}
       ]
     },
     {
       "id": "openland_start", "triggerX": 8980,
       "actions": [
-        {"type": "setBounds", "rect": [3180, 864, 14094, 1312]},
-        {"type": "spawn", "kind": "npc", "def": "pow", "x": 9250, "y": 1050, "settle": true, "drop": "gunitem_mg", "note": "개활지 POW (약 700 px 간격, 무기 보급)"},
+        {"type": "setBounds", "rect": [3180, 864, 14094, 1317]},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 9345, "y": 1050, "settle": true, "drop": "gunitem_mg", "note": "개활지 POW (약 700 px 간격, 무기 보급)"},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 9420, "groundSnap": true, "fromY": 1100},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 9660, "groundSnap": true, "fromY": 1100},
-        {"type": "spawnWave", "entries": [{"delay": 2.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 5.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}, {"delay": 9.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+        {"type": "spawnWave", "entries": [{"delay": 2.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [60, 160], "ay": "top", "dy": 67.5}}, {"delay": 5.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [48, 120], "ay": "top", "dy": 47.5}}, {"delay": 9.0, "kind": "enemy", "def": "soldier_sword", "camera": {"ax": "right", "dx": [48, 120], "ay": "top", "dy": 47.5}}]}
       ]
     },
     {
@@ -256,7 +264,7 @@
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 10560, "y": 1195},
         {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 10813, "y": 1086},
         {"type": "spawn", "kind": "enemy", "def": "missle_tank", "x": 10900, "groundSnap": true, "fromY": 1100},
-        {"type": "spawnWave", "entries": [{"delay": 5.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 9.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]}
+        {"type": "spawnWave", "entries": [{"delay": 5.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [60, 160], "ay": "top", "dy": 67.5}}, {"delay": 9.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [48, 120], "ay": "top", "dy": 47.5}}]}
       ]
     },
     {
@@ -265,7 +273,7 @@
         {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 11122, "y": 1274},
         {"type": "spawn", "kind": "prop", "def": "big_house", "x": 11494, "y": 1257},
         {"type": "spawn", "kind": "prop", "def": "tower", "x": 11832, "y": 1186},
-        {"type": "spawn", "kind": "npc", "def": "pow", "x": 10696, "y": 1050, "settle": true, "drop": "bomb_supple", "note": "개활지 POW (폭탄 보급)"},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 10720, "y": 1050, "settle": true, "drop": "bomb_supple", "note": "개활지 POW (폭탄 보급)"},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 10740, "groundSnap": true, "fromY": 1100},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 10990, "groundSnap": true, "fromY": 1100},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 11200, "groundSnap": true, "fromY": 1100},
@@ -274,7 +282,7 @@
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 11570, "y": 1195},
         {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 11837, "y": 1086},
         {"type": "spawn", "kind": "enemy", "def": "missle_tank", "x": 11265, "groundSnap": true, "fromY": 1100, "note": "rocket launcher 2 (t238-249)"},
-        {"type": "spawnWave", "entries": [{"delay": 2.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}, {"delay": 4.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}, {"delay": 7.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}]}
+        {"type": "spawnWave", "entries": [{"delay": 2.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [60, 160], "ay": "top", "dy": 67.5}}, {"delay": 4.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [48, 120], "ay": "top", "dy": 47.5}}, {"delay": 7.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [60, 160], "ay": "top", "dy": 67.5}}]}
       ]
     },
     {
@@ -284,43 +292,50 @@
         {"type": "spawn", "kind": "prop", "def": "big_house", "x": 12518, "y": 1257},
         {"type": "spawn", "kind": "prop", "def": "tower", "x": 12856, "y": 1186},
         {"type": "spawn", "kind": "enemy", "def": "btank", "x": 11900, "groundSnap": true, "fromY": 1100},
-        {"type": "spawn", "kind": "npc", "def": "pow", "x": 11265, "y": 1050, "settle": true, "drop": "gunitem_sg", "note": "개활지 POW (샷건)"},
-        {"type": "spawn", "kind": "npc", "def": "pow", "x": 11975, "y": 1050, "settle": true, "drop": "gunitem_fs", "note": "개활지 POW (화염방사기)"},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 11720, "y": 1050, "settle": true, "drop": "gunitem_sg", "note": "개활지 POW (샷건)"},
+        {"type": "spawn", "kind": "npc", "def": "pow", "x": 12300, "y": 1050, "settle": true, "drop": "gunitem_fs", "note": "개활지 POW (화염방사기)"},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 11760, "groundSnap": true, "fromY": 1100},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 12020, "groundSnap": true, "fromY": 1100},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 12230, "groundSnap": true, "fromY": 1100},
         {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 12280, "groundSnap": true, "fromY": 1100},
         {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 12480, "y": 1195},
-        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 12580, "y": 1195},
+        {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 12400, "y": 1195},
         {"type": "spawn", "kind": "enemy", "def": "soldier_missile", "x": 12861, "y": 1086},
-        {"type": "spawnWave", "entries": [{"delay": 4.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [-199, -80], "ay": "top", "dy": 67.5}}]}
+        {"type": "spawnWave", "entries": [{"delay": 4.0, "kind": "enemy", "def": "flying_bzk", "camera": {"ax": "right", "dx": [60, 160], "ay": "top", "dy": 67.5}}]}
       ]
     },
-    {"id": "openland_4", "triggerX": 12350, "note": "Legacy only spawns Sarubia + opens the gate if FindGroundY finds ground; the lockCamera/gate pair is skipped together with the spawn. 개활지 4 의 집/블록은 화면 오른쪽 밖(카메라 최대 ~12640) 에 미리 배치: 등장 없이 스크롤로 들어온다.",
+    {"id": "openland_4", "triggerX": 12170, "note": "Legacy only spawns Sarubia + opens the gate if FindGroundY finds ground; the lockCamera/gate pair is skipped together with the spawn. 개활지 4 의 집/블록은 화면 오른쪽 밖(카메라 최대 ~12640) 에 미리 배치: 등장 없이 스크롤로 들어온다.",
 "actions": [
-  {"type": "spawn", "kind": "enemy", "def": "sarubia", "x": 12540, "groundSnap": true, "fromY": 1100, "id": "sarubia"},
-  {"type": "lockCamera", "rect": "current"},
+  {"type": "spawn", "kind": "enemy", "def": "sarubia", "x": 12639, "groundSnap": true, "fromY": 1100, "id": "sarubia", "note": "2:10 Sarubia: spawned outside the view (x 12760 > trigger view right 12670), then the lock glides the camera onto it"},
+  {"type": "lockCamera", "rect": [12200, 864, 12800, 1312], "glide": 1},
   {"type": "gate", "id": "sarubia_dead", "waitFor": ["sarubia"], "actions": [{"type": "unlockCamera"}]},
-  {"type": "spawn", "kind": "enemy", "def": "soldier_bzk", "x": 12950, "groundSnap": true, "fromY": 1100},
-  {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 13030, "groundSnap": true, "fromY": 1100},
-  {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 13260, "groundSnap": true, "fromY": 1100},
-  {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 13310, "groundSnap": true, "fromY": 1100},
-  {"type": "spawnWave", "entries": [{"delay": 8.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [-149, -50], "ay": "top", "dy": 47.5}}]},
-  {"type": "spawn", "kind": "item", "def": "gunitem_mg", "x": 12990, "y": 1200, "note": "보스 진입 전 보급 (화면 밖에서 배치)"},
+  {"type": "spawn", "kind": "enemy", "def": "soldier_bzk", "x": 12910, "groundSnap": true, "fromY": 1100},
+  {"type": "spawn", "kind": "enemy", "def": "soldier_sword", "x": 12990, "groundSnap": true, "fromY": 1100},
+  {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 13220, "groundSnap": true, "fromY": 1100},
+  {"type": "spawn", "kind": "enemy", "def": "soldier_bomb", "x": 13270, "groundSnap": true, "fromY": 1100},
+  {"type": "spawnWave", "entries": [{"delay": 8.0, "kind": "enemy", "def": "soldier_bomb", "camera": {"ax": "right", "dx": [48, 120], "ay": "bottom", "dy": -34}}]},
+  {"type": "spawn", "kind": "item", "def": "gunitem_mg", "x": 12950, "y": 1200, "note": "보스 진입 전 보급 (화면 밖에서 배치)"},
   {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 13170, "y": 1274, "note": "개활지 다리 블록 (주기 1024, 엔드리스 꼬리 포함)"},
   {"type": "spawn", "kind": "prop", "def": "big_house", "x": 13542, "y": 1257, "note": "개활지 큰 집 (블록 + 372)"},
-  {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 14194, "y": 1274, "note": "개활지 다리 블록 (주기 1024, 엔드리스 꼬리 포함)"},
   {"type": "spawn", "kind": "prop", "def": "big_house", "x": 14566, "y": 1257, "note": "개활지 큰 집 (블록 + 372)"},
   {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 15218, "y": 1274, "note": "개활지 다리 블록 (주기 1024, 엔드리스 꼬리 포함)"},
   {"type": "spawn", "kind": "prop", "def": "big_house", "x": 15590, "y": 1257, "note": "개활지 큰 집 (블록 + 372)"},
   {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 16242, "y": 1274, "note": "개활지 다리 블록 (주기 1024, 엔드리스 꼬리 포함)"},
-  {"type": "spawn", "kind": "prop", "def": "big_house", "x": 16614, "y": 1257, "note": "개활지 큰 집 (블록 + 372)"}
+  {"type": "spawn", "kind": "prop", "def": "big_house", "x": 16614, "y": 1257, "note": "개활지 큰 집 (블록 + 372)"},
+  {"type": "spawn", "kind": "prop", "def": "bridge_block", "x": 14194, "y": 1274, "note": "보스 아레나 바닥 지붕 더미 (openland 주기 1024 의 빈칸 채움, 보스 구간 13700~16000)"},
+  {"type": "spawn", "kind": "prop", "def": "tower", "x": 14904, "y": 1186, "note": "보스 구간 바닥 망루 (block + 710)"}
 ]},
-    {"id": "stage_end", "triggerX": 12900, "note": "Former boss arena entrance (Boss Shiee removed, redesign planned: Docs/RemakePlan.md stage 3). Reaching it clears the stage: remaining enemies/waves are cleared, the player is invincible while ScreenFlow shows MISSION COMPLETE, then title.",
+    {"id": "boss_arena", "triggerX": 13700, "note": "최종보스 전함 아레나 (Docs/Spec_BigShiee.md). 트리거 13700 은 사루비아 락 (x <= 13066) 밖이라 사루비아를 잡고 락이 풀린 뒤에만 발동한다. 락 사각형은 보스가 자동 스크롤하며 오른쪽으로 옮긴다 (StageRunner::AddCameraScroll). 보스 파괴 연출 (destroyFinished) 이 끝나면 락 해제 + 클리어 흐름 (MISSION COMPLETE -> title).",
 "actions": [
-  {"type": "clear", "waves": true},
-  {"type": "playerInvincible", "seconds": 10.0},
-  {"type": "endStage", "next": "title"}
+  {"type": "playBgm", "name": "Boss_BGM", "loop": true, "fadeOutSec": 2.0},
+  {"type": "lockCamera", "rect": [13700, 864, 14340, 1312], "glide": 1.0},
+  {"type": "spawn", "kind": "enemy", "def": "bigshiee", "id": "bigshiee", "x": 14100, "groundSnap": true, "fromY": 1100, "facing": "right", "note": "선체는 락 왼쪽 밖에서 스스로 입장한다 (x 는 무시, y 는 지면). 입장/스크롤/주행은 BigShiee.cpp"},
+  {"type": "gate", "id": "bigshiee_dead", "waitFor": ["bigshiee"], "until": "destroyFinished", "actions": [
+    {"type": "unlockCamera"},
+    {"type": "clear", "waves": true},
+    {"type": "playerInvincible", "seconds": 10.0},
+    {"type": "endStage", "next": "title"}
+  ]}
 ]}
   ]
 }

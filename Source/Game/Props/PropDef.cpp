@@ -11,9 +11,6 @@
 #include "Render/Animation.h"
 #include "Render/SpriteLibrary.h"
 
-namespace slug
-{
-
 int GetDebrisClipCount(
     const eDebrisSet _set)
 {
@@ -34,74 +31,71 @@ String GetDebrisClipName(
     return String { std::format("{}{}", pPrefix, _index + 1) };
 }
 
-namespace
-{
-    using KeyList    = std::initializer_list<StringView>;
-    using JsonMember = std::pair<StringView, JsonReader>;
+using KeyList    = std::initializer_list<StringView>;
+using JsonMember = std::pair<StringView, JsonReader>;
 
-    [[nodiscard]] eDebrisSet ParseDebrisSet_(
-        const StringView _s,
-        bool&            _bOk)
+[[nodiscard]] static eDebrisSet ParseDebrisSet_(
+    const StringView _s,
+    bool&            _bOk)
+{
+    _bOk = true;
+    if (_s == "wood")
     {
-        _bOk = true;
-        if (_s == "wood")
-        {
-            return eDebrisSet::Wood;
-        }
-        if (_s == "metal")
-        {
-            return eDebrisSet::Metal;
-        }
-        if (_s == "rock")
-        {
-            return eDebrisSet::Rock;
-        }
-        _bOk = false;
         return eDebrisSet::Wood;
     }
-
-    [[nodiscard]] String MissingAsset_(
-        const AnimationLibrary& _anims,
-        const SpriteLibrary&    _sprites,
-        const PropVisual&       _visual,
-        const String&           _where)
+    if (_s == "metal")
     {
-        if (_visual.ref == eVisualRef::Anim && !_anims.IsValid(_anims.Find(_visual.name)))
-        {
-            return String { std::format("{}: 클립 '{}'", _where, String { _visual.name.c_str() }) };
-        }
-        if (_visual.ref == eVisualRef::Sprite && _sprites.Find(_visual.name) == nullptr)
-        {
-            return String { std::format("{}: 스프라이트 '{}'", _where, String { _visual.name.c_str() }) };
-        }
-        return {};
+        return eDebrisSet::Metal;
     }
-
-    [[nodiscard]] String MissingBurstAsset_(
-        const AnimationLibrary& _anims,
-        const SpriteLibrary&    _sprites,
-        const PropBurst&        _burst,
-        const String&           _where)
+    if (_s == "rock")
     {
-        for (const PropExplosion& explosion: _burst.explosions)
-        {
-            String missing = MissingAsset_(_anims, _sprites, PropVisual { eVisualRef::Anim, explosion.clip }, _where);
-            if (!missing.empty())
-            {
-                return missing;
-            }
-        }
-        for (int i = 0; _burst.debris.count > 0 && i < GetDebrisClipCount(_burst.debris.set); ++i)
-        {
-            String missing = MissingAsset_(_anims, _sprites, PropVisual { eVisualRef::Anim, GetDebrisClipName(_burst.debris.set, i) }, _where);
-            if (!missing.empty())
-            {
-                return missing;
-            }
-        }
-        return {};
+        return eDebrisSet::Rock;
     }
-}   // namespace
+    _bOk = false;
+    return eDebrisSet::Wood;
+}
+
+[[nodiscard]] static String MissingAsset_(
+    const AnimationLibrary& _anims,
+    const SpriteLibrary&    _sprites,
+    const PropVisual&       _visual,
+    const String&           _where)
+{
+    if (_visual.ref == eVisualRef::Anim && !_anims.IsValid(_anims.Find(_visual.name)))
+    {
+        return String { std::format("{}: 클립 '{}'", _where, String { _visual.name.c_str() }) };
+    }
+    if (_visual.ref == eVisualRef::Sprite && _sprites.Find(_visual.name) == nullptr)
+    {
+        return String { std::format("{}: 스프라이트 '{}'", _where, String { _visual.name.c_str() }) };
+    }
+    return {};
+}
+
+[[nodiscard]] static String MissingBurstAsset_(
+    const AnimationLibrary& _anims,
+    const SpriteLibrary&    _sprites,
+    const PropBurst&        _burst,
+    const String&           _where)
+{
+    for (const PropExplosion& explosion: _burst.explosions)
+    {
+        String missing = MissingAsset_(_anims, _sprites, PropVisual { eVisualRef::Anim, explosion.clip }, _where);
+        if (!missing.empty())
+        {
+            return missing;
+        }
+    }
+    for (int i = 0; _burst.debris.count > 0 && i < GetDebrisClipCount(_burst.debris.set); ++i)
+    {
+        String missing = MissingAsset_(_anims, _sprites, PropVisual { eVisualRef::Anim, GetDebrisClipName(_burst.debris.set, i) }, _where);
+        if (!missing.empty())
+        {
+            return missing;
+        }
+    }
+    return {};
+}
 
 class PropDefParser
 {
@@ -566,39 +560,19 @@ bool PropDefParser::Def_(
     const JsonReader& _obj)
 {
     const String where { _name };
-    if (!Keys_(_obj, where, { "note", "hp", "cullMargin", "layer", "idle", "damaged", "damagedAtHp", "destroyed", "hit", "parts", "variants", "remove", "destroyDuration", "onDamaged", "onDestroy", "secondary", "drops", "spawns", "fall", "groundPatch" }))
+    if (!Keys_(_obj, where, { "note", "hp", "cullMargin", "sortOffsetY", "sortByX", "depth", "idle", "damaged", "damagedAtHp", "destroyed", "hit", "parts", "variants", "remove", "destroyDuration", "onDamaged", "onDestroy", "secondary", "drops", "spawns", "fall", "groundPatch" }))
     {
         return false;
     }
     PropDef def;
     def.name = String { _name };
-    if (!Int_(_obj, where, "hp", def.hp, true) || !Num_(_obj, where, "cullMargin", def.cullMargin, false) || !Int_(_obj, where, "damagedAtHp", def.damagedAtHp, false) || !Num_(_obj, where, "destroyDuration", def.destroyDurationSec, false) || !Bool_(_obj, where, "remove", def.bRemoveOnDestroy))
+    if (!Int_(_obj, where, "hp", def.hp, true) || !Num_(_obj, where, "cullMargin", def.cullMargin, false) || !Num_(_obj, where, "sortOffsetY", def.sortOffsetY, false) || !Int_(_obj, where, "damagedAtHp", def.damagedAtHp, false) || !Num_(_obj, where, "destroyDuration", def.destroyDurationSec, false) || !Bool_(_obj, where, "remove", def.bRemoveOnDestroy) || !Bool_(_obj, where, "sortByX", def.bSortByX) || !Int_(_obj, where, "depth", def.depth, false))
     {
         return false;
     }
     if (def.hp < 0)
     {
         return Fail_(where, "hp", "0 이상이어야 합니다");
-    }
-    if (_obj.HasField("layer"))
-    {
-        String layer;
-        if (!Str_(_obj, where, "layer", layer, true))
-        {
-            return false;
-        }
-        if (layer == "background")
-        {
-            def.bFront = false;
-        }
-        else if (layer == "front")
-        {
-            def.bFront = true;
-        }
-        else
-        {
-            return Fail_(where, "layer", "background/front 중 하나여야 합니다");
-        }
     }
     if (!Visual_(_obj, where, "idle", def.idle) || !Visual_(_obj, where, "damaged", def.damaged) || !Visual_(_obj, where, "destroyed", def.destroyed) || !Visual_(_obj, where, "hit", def.hit))
     {
@@ -1159,5 +1133,3 @@ Span<const PropItemDef> PropDefLibrary::GetItems() const
 {
     return m_items;
 }
-
-}   // namespace slug

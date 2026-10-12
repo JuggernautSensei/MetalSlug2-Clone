@@ -4,9 +4,6 @@
 
 #include "Base/Log.h"
 
-namespace slug
-{
-
 void ReportAssertFailure(
     const std::string_view      _expr,
     const std::string_view      _message,
@@ -19,5 +16,3 @@ void ReportAssertFailure(
     std::abort();
 #endif
 }
-
-}   // namespace slug

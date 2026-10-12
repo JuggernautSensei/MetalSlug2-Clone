@@ -3,8 +3,6 @@
 #include <gtest/gtest.h>
 
 #include <cstdint>
-#include <filesystem>
-#include <fstream>
 
 #include "Base/Error.h"
 #include "Base/Math.h"
@@ -13,10 +11,7 @@
 #include "World/Geometry.h"
 #include "World/GroundMap.h"
 
-using namespace slug;
 
-namespace
-{
 struct Lcg
 {
     uint32_t state = 12345u;
@@ -45,15 +40,15 @@ struct Circle
     [[nodiscard]] bool Overlaps(
         const Aabb& _box) const
     {
-        const float cx = slug::Clamp(center.x, _box.min.x, _box.max.x);
-        const float cy = slug::Clamp(center.y, _box.min.y, _box.max.y);
+        const float cx = Clamp(center.x, _box.min.x, _box.max.x);
+        const float cy = Clamp(center.y, _box.min.y, _box.max.y);
         const float dx = center.x - cx;
         const float dy = center.y - cy;
         return dx * dx + dy * dy < radius * radius;
     }
 };
 
-[[nodiscard]] Circle MakeCircle_(
+[[nodiscard]] static Circle MakeCircle_(
     const float _x,
     const float _y,
     const float _radius)
@@ -63,24 +58,6 @@ struct Circle
     circle.radius = _radius;
     return circle;
 }
-
-[[nodiscard]] slug::Vector<uint8_t> MakeFile_(
-    const uint32_t               _w,
-    const uint32_t               _h,
-    const slug::Vector<uint8_t>& _bits)
-{
-    slug::Vector<uint8_t> data = { 'G', 'R', 'N', 'D' };
-    for (const uint32_t v: { _w, _h })
-    {
-        data.push_back(static_cast<uint8_t>(v & 0xFF));
-        data.push_back(static_cast<uint8_t>((v >> 8) & 0xFF));
-        data.push_back(static_cast<uint8_t>((v >> 16) & 0xFF));
-        data.push_back(static_cast<uint8_t>((v >> 24) & 0xFF));
-    }
-    data.insert(data.end(), _bits.begin(), _bits.end());
-    return data;
-}
-}   // namespace
 
 TEST(GroundMap, MakeFromBitsUsesLsbAsLeftmostPixel)
 {
@@ -96,62 +73,6 @@ TEST(GroundMap, MakeFromBitsUsesLsbAsLeftmostPixel)
     EXPECT_TRUE(map.IsSolid(9, 0));
     EXPECT_FALSE(map.IsSolid(0, 1));
     EXPECT_EQ(map.CountSolidPixels(), 3u);
-}
-
-TEST(GroundMap, LoadFromMemoryParsesHeaderAndBits)
-{
-    const slug::Vector<uint8_t>   file   = MakeFile_(9, 2, { 0xFF, 0x01, 0x00, 0x00 });
-    const slug::Result<GroundMap> result = GroundMap::LoadFromMemory(file);
-    ASSERT_TRUE(result.HasValue());
-
-    const GroundMap& map = result.GetValue();
-    EXPECT_EQ(map.GetWidth(), 9);
-    EXPECT_EQ(map.GetHeight(), 2);
-    for (int x = 0; x < 9; ++x)
-    {
-        EXPECT_TRUE(map.IsSolid(x, 0)) << x;
-        EXPECT_FALSE(map.IsSolid(x, 1)) << x;
-    }
-}
-
-TEST(GroundMap, LoadFromMemoryRejectsBadMagicTruncationAndHugeSizes)
-{
-    slug::Vector<uint8_t> badMagic = MakeFile_(8, 1, { 0xFF });
-    badMagic[0]                    = 'X';
-    EXPECT_TRUE(GroundMap::LoadFromMemory(badMagic).HasError());
-
-    const slug::Vector<uint8_t> truncated = MakeFile_(16, 4, { 0xFF, 0xFF });   // 8바이트 필요
-    EXPECT_TRUE(GroundMap::LoadFromMemory(truncated).HasError());
-
-    const slug::Vector<uint8_t> tooShortHeader = { 'G', 'R', 'N', 'D', 1, 0, 0 };
-    EXPECT_TRUE(GroundMap::LoadFromMemory(tooShortHeader).HasError());
-
-    const slug::Vector<uint8_t> huge = MakeFile_(0xFFFFFFFFu, 0xFFFFFFFFu, {});
-    EXPECT_TRUE(GroundMap::LoadFromMemory(huge).HasError());
-}
-
-TEST(GroundMap, LoadFromFileRoundTripAndMissingFile)
-{
-    const slug::FilePath path = std::filesystem::temp_directory_path() / "slug_groundmap_test.bin";
-    {
-        const slug::Vector<uint8_t> file = MakeFile_(16, 2, { 0x0F, 0xF0, 0x00, 0x80 });
-        std::ofstream               out { path, std::ios::binary };
-        out.write(reinterpret_cast<const char*>(file.data()), static_cast<std::streamsize>(file.size()));
-    }
-
-    const slug::Result<GroundMap> loaded = GroundMap::Load(path);
-    ASSERT_TRUE(loaded.HasValue());
-    EXPECT_TRUE(loaded->IsSolid(0, 0));
-    EXPECT_TRUE(loaded->IsSolid(3, 0));
-    EXPECT_FALSE(loaded->IsSolid(4, 0));
-    EXPECT_TRUE(loaded->IsSolid(12, 0));
-    EXPECT_TRUE(loaded->IsSolid(15, 1));
-    EXPECT_FALSE(loaded->IsSolid(14, 1));
-    std::filesystem::remove(path);
-
-    const slug::Result<GroundMap> missing = GroundMap::Load(path);
-    ASSERT_TRUE(missing.HasError());
-    EXPECT_TRUE(missing.GetError() == slug::Error { eError::FileOpen });
 }
 
 TEST(GroundMap, MakeFromRowsBuildsAsciiMap)

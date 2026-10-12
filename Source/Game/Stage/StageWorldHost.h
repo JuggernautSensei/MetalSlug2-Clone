@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <cstdint>
 #include <optional>
 #include <utility>
@@ -11,9 +11,6 @@
 #include "Game/Stage/StageHost.h"
 #include "World/GroundMap.h"
 #include "World/Physics.h"
-
-namespace slug
-{
 
 class EnemyWorld;
 class PropWorld;
@@ -114,6 +111,8 @@ public:
     void                               ShowBanner(const String& _text, float _seconds) override;
     void                               FadeTo(eFadeTarget _target, float _seconds) override;
     void                               PlayBgm(StringView _name, bool _bLoop) override;
+    void                               ChangeBgm(StringView _name, bool _bLoop, float _fadeOutSec) override;
+    void                               PlaySfx(StringView _name) override;
     void                               EndStage(StringView _nextState) override;
     void                               OnSectionEntered(int _index, StringView _id) override;
 
@@ -154,5 +153,3 @@ private:
     Vector<StageCollider> m_colliders = {};
     SpawnId               m_nextId    = 1;
 };
-
-}   // namespace slug

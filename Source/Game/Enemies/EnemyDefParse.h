@@ -4,9 +4,6 @@
 #include "Base/Types.h"
 #include "Game/Enemies/EnemyDef.h"
 
-namespace slug
-{
-
 struct ParamEntry
 {
     String     key = {};
@@ -36,7 +33,9 @@ public:
     [[nodiscard]] Vec2   ReadVec2(StringView _key, Vec2 _default);
     [[nodiscard]] BoxDef Box(StringView _key);
     [[nodiscard]] bool   NumArray(StringView _key, Span<float> _out);
+    [[nodiscard]] int    NumList(StringView _key, Span<float> _out);   // 길이가 가변인 숫자 배열: 읽은 개수 (키가 없으면 -1, _out 보다 길면 실패)
     [[nodiscard]] bool   Has(StringView _key) const;
+    [[nodiscard]] const JsonReader* FindRaw(StringView _key);   // 객체/객체 배열 같은 구조 값을 직접 읽을 때 (사용 표시, 없으면 nullptr)
 
     [[nodiscard]] int Clip(StringView _logical);
     [[nodiscard]] int ClipOpt(StringView _logical) const;
@@ -77,5 +76,7 @@ void ParseSarubiaCfg(DefReader& _reader, EnemyDef& _def);
 void ParseBusCfg(DefReader& _reader, EnemyDef& _def);
 void ParseHeliCfg(DefReader& _reader, EnemyDef& _def);
 void ParseHeliBombCfg(DefReader& _reader, EnemyDef& _def);
+void ParseBigShieeCfg(DefReader& _reader, EnemyDef& _def);
 
-}   // namespace slug
+// params.parts: GetEnemyPartSlots 의 이름만 허용, 각 부품은 {depth, sort} 정수 (둘 다 선택)
+void ParseEnemyParts(DefReader& _reader, EnemyDef& _def);

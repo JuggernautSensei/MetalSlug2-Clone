@@ -10,9 +10,6 @@
 #include "Render/Camera.h"
 #include "World/Geometry.h"
 
-namespace slug
-{
-
 inline constexpr float kStageCameraTargetLift = 60.f;
 
 struct ScreenWalls
@@ -43,7 +40,8 @@ public:
 
     void Tick();
 
-    // 자동 전진 (보스 스크롤): 카메라 중심 x 하한을 _dx 만큼 올린다 (Camera::AddScrollFloor). StageState 가 적 틱 뒤에 호출한다.
+    // 자동 전진 (보스 스크롤): 잠금 중이면 현재 잠금 사각형과 카메라 잠금을 _dx 만큼 옮기고 (Camera::ShiftLock), 아니면 카메라 중심 x 하한을 올린다 (Camera::AddScrollFloor).
+    // StageState 가 적 틱 뒤에 호출한다.
     void AddCameraScroll(float _dx);
 
     bool WarpToSection(int _index);
@@ -168,5 +166,3 @@ private:
     String m_groundName   = {};
     String m_backdropMode = {};
 };
-
-}   // namespace slug

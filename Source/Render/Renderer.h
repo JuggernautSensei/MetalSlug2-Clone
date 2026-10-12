@@ -7,9 +7,6 @@
 struct SDL_Window;
 struct SDL_Renderer;
 
-namespace slug
-{
-
 class Renderer
 {
 public:
@@ -32,6 +29,7 @@ public:
     void                 DrawDebugText(Vec2 _topLeft, StringView _text, RGBA _color);
 
     [[nodiscard]] SDL_Renderer* GetNative() const;
+    [[nodiscard]] SDL_Window*   GetWindow() const;
     [[nodiscard]] bool          IsInitialized() const;
 
     [[nodiscard]] Result<void> SaveScreenshotBmp(const FilePath& _path) const;
@@ -40,5 +38,3 @@ private:
     SDL_Window*   m_pWindow   = nullptr;
     SDL_Renderer* m_pRenderer = nullptr;
 };
-
-}   // namespace slug

@@ -3,91 +3,84 @@
 #include "Game/Enemies/EnemyCommon.h"
 #include "Game/Enemies/EnemyDefParse.h"
 
-namespace slug
+enum class eHangState
 {
+    Idle,
+    Throw
+};
 
-namespace
+static void Go_(
+    Enemy&           _e,
+    const EnemyDef&  _def,
+    EnemyEnv&        _env,
+    const eHangState _state)
 {
-    enum class eHangState
+    const HangCfg& cfg = _def.hang;
+    EnterState(_e, static_cast<int>(_state));
+    if (_state == eHangState::Idle)
     {
-        Idle,
-        Throw
-    };
-
-    void Go_(
-        Enemy&           _e,
-        const EnemyDef&  _def,
-        EnemyEnv&        _env,
-        const eHangState _state)
-    {
-        const HangCfg& cfg = _def.hang;
-        EnterState(_e, static_cast<int>(_state));
-        if (_state == eHangState::Idle)
-        {
-            FacePlayer(_e, _env);
-            SetClip(_e, cfg.clipIdle, true);
-            _e.aux = 0;
-        }
-        else
-        {
-            FacePlayer(_e, _env);
-            SetClip(_e, cfg.clipThrow, true);
-        }
+        FacePlayer(_e, _env);
+        SetClip(_e, cfg.clipIdle, true);
+        _e.aux = 0;
     }
-
-    void Init_(
-        Enemy&          _e,
-        const EnemyDef& _def,
-        EnemyEnv&       _env)
+    else
     {
-        PrepareBody(_e, _def);
-        _e.body.bUseGravity = false;
-        Go_(_e, _def, _env, eHangState::Idle);
+        FacePlayer(_e, _env);
+        SetClip(_e, cfg.clipThrow, true);
     }
+}
 
-    void Tick_(
-        Enemy&          _e,
-        const EnemyDef& _def,
-        EnemyEnv&       _env)
+static void Init_(
+    Enemy&          _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env)
+{
+    PrepareBody(_e, _def);
+    _e.body.bUseGravity = false;
+    Go_(_e, _def, _env, eHangState::Idle);
+}
+
+static void Tick_(
+    Enemy&          _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env)
+{
+    const HangCfg& cfg = _def.hang;
+    _e.body.velocity   = { 0.f, 0.f };
+
+    if (_e.state == static_cast<int>(eHangState::Idle))
     {
-        const HangCfg& cfg = _def.hang;
-        _e.body.velocity   = { 0.f, 0.f };
-
-        if (_e.state == static_cast<int>(eHangState::Idle))
+        FacePlayer(_e, _env);
+        if (std::abs(DxToPlayer(_e, _env)) <= cfg.detectX && _e.bActive)
         {
-            FacePlayer(_e, _env);
-            if (std::abs(DxToPlayer(_e, _env)) <= cfg.detectX && _e.bActive)
+            ++_e.aux;
+            if (_e.aux >= cfg.throwTicks)
             {
-                ++_e.aux;
-                if (_e.aux >= cfg.throwTicks)
-                {
-                    Go_(_e, _def, _env, eHangState::Throw);
-                }
-            }
-        }
-        else
-        {
-            if (ClipReachedFrame(_e, _def, cfg.fireFrame))
-            {
-                FireWeapon(_e, _def, _env, cfg.weaponBomb);
-            }
-            if (ClipFinished(_e, _def))
-            {
-                Go_(_e, _def, _env, eHangState::Idle);
+                Go_(_e, _def, _env, eHangState::Throw);
             }
         }
     }
-
-    void OnDeath_(
-        Enemy&          _e,
-        const EnemyDef& _def,
-        EnemyEnv&       _env)
+    else
     {
-        _e.bGrounded = false;
-        BeginSoldierDeath(_e, _def, _env);
+        if (ClipReachedFrame(_e, _def, cfg.fireFrame))
+        {
+            FireWeapon(_e, _def, _env, cfg.weaponBomb);
+        }
+        if (ClipFinished(_e, _def))
+        {
+            Go_(_e, _def, _env, eHangState::Idle);
+        }
     }
+}
 
-}   // namespace
+static void OnDeath_(
+    Enemy&          _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env)
+{
+    _e.bGrounded = false;
+    BeginSoldierDeath(_e, _def, _env);
+}
 
 const BehaviorOps kHangOps = {
     .init              = &Init_,
@@ -111,5 +104,3 @@ void ParseHangCfg(
     c.clipThrow  = _r.Clip("throw");
     c.weaponBomb = _r.Weapon("bomb");
 }
-
-}   // namespace slug

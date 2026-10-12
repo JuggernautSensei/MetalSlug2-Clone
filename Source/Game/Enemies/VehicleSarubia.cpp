@@ -4,165 +4,158 @@
 #include "Game/Enemies/EnemyDefParse.h"
 #include "Game/Enemies/VehicleCommon.h"
 
-namespace slug
+enum class eSarubiaState
 {
+    Idle,
+    Turn,
+    MoveStart,
+    Move,
+    MoveStop,
+    ShotStart,
+    Shot
+};
 
-namespace
+[[nodiscard]] static int ClipOf_(
+    const Enemy&      _e,
+    const SarubiaCfg& _c)
 {
-    enum class eSarubiaState
+    switch (static_cast<eSarubiaState>(_e.state))
     {
-        Idle,
-        Turn,
-        MoveStart,
-        Move,
-        MoveStop,
-        ShotStart,
-        Shot
-    };
-
-    [[nodiscard]] int ClipOf_(
-        const Enemy&      _e,
-        const SarubiaCfg& _c)
-    {
-        switch (static_cast<eSarubiaState>(_e.state))
-        {
-            case eSarubiaState::Turn: return _c.clipTurn;
-            case eSarubiaState::MoveStart: return _c.clipMoveStart;
-            case eSarubiaState::Move: return _c.clipMove;
-            case eSarubiaState::MoveStop: return _c.clipMoveStop;
-            case eSarubiaState::ShotStart: return _c.clipShotStart;
-            case eSarubiaState::Shot: return _c.clipShot;
-            default: return _c.clipIdle;
-        }
+        case eSarubiaState::Turn: return _c.clipTurn;
+        case eSarubiaState::MoveStart: return _c.clipMoveStart;
+        case eSarubiaState::Move: return _c.clipMove;
+        case eSarubiaState::MoveStop: return _c.clipMoveStop;
+        case eSarubiaState::ShotStart: return _c.clipShotStart;
+        case eSarubiaState::Shot: return _c.clipShot;
+        default: return _c.clipIdle;
     }
+}
 
-    void Go_(
-        Enemy&              _e,
-        const EnemyDef&     _def,
-        const eSarubiaState _state)
+static void Go_(
+    Enemy&              _e,
+    const EnemyDef&     _def,
+    const eSarubiaState _state)
+{
+    EnterState(_e, static_cast<int>(_state));
+    SetClip(_e, ClipOf_(_e, _def.sarubia), true);
+}
+
+[[nodiscard]] static bool Done_(
+    const Enemy&    _e,
+    const EnemyDef& _def)
+{
+    return _e.clip >= 0 && _e.stateTicks >= _def.GetClip(_e.clip).GetDurationTicks();
+}
+
+static void Init_(
+    Enemy&          _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env)
+{
+    (void)_env;
+    PrepareBody(_e, _def);
+    Go_(_e, _def, eSarubiaState::Idle);
+}
+
+static void Tick_(
+    Enemy&          _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env)
+{
+    const SarubiaCfg& c = _def.sarubia;
+    _e.body.velocity.x  = 0.f;
+
+    if (!_e.bActive)
     {
-        EnterState(_e, static_cast<int>(_state));
-        SetClip(_e, ClipOf_(_e, _def.sarubia), true);
-    }
-
-    [[nodiscard]] bool Done_(
-        const Enemy&    _e,
-        const EnemyDef& _def)
-    {
-        return _e.clip >= 0 && _e.stateTicks >= _def.GetClip(_e.clip).GetDurationTicks();
-    }
-
-    void Init_(
-        Enemy&          _e,
-        const EnemyDef& _def,
-        EnemyEnv&       _env)
-    {
-        (void)_env;
-        PrepareBody(_e, _def);
-        Go_(_e, _def, eSarubiaState::Idle);
-    }
-
-    void Tick_(
-        Enemy&          _e,
-        const EnemyDef& _def,
-        EnemyEnv&       _env)
-    {
-        const SarubiaCfg& c = _def.sarubia;
-        _e.body.velocity.x  = 0.f;
-
-        if (!_e.bActive)
-        {
-            (void)StepPhysics(_e, _def, _env);
-            return;
-        }
-
-        const float dx      = DxToPlayer(_e, _env);
-        const float absDx   = std::abs(dx);
-        const bool  bBehind = dx * static_cast<float>(_e.facing) < 0.f;   // 플레이어가 바라보는 방향의 반대편
-
-        switch (static_cast<eSarubiaState>(_e.state))
-        {
-            case eSarubiaState::Idle:
-                if (_e.stateTicks >= c.cooldownTicks)
-                {
-                    if (bBehind)
-                    {
-                        Go_(_e, _def, eSarubiaState::Turn);
-                    }
-                    else if (absDx > c.chaseDx)
-                    {
-                        Go_(_e, _def, eSarubiaState::MoveStart);
-                    }
-                    else
-                    {
-                        Go_(_e, _def, eSarubiaState::ShotStart);
-                    }
-                }
-                break;
-
-            case eSarubiaState::Turn:
-                if (Done_(_e, _def))
-                {
-                    _e.facing = -_e.facing;
-                    Go_(_e, _def, eSarubiaState::Idle);
-                }
-                break;
-
-            case eSarubiaState::MoveStart:
-                if (Done_(_e, _def))
-                {
-                    Go_(_e, _def, eSarubiaState::Move);
-                }
-                break;
-
-            case eSarubiaState::Move:
-                _e.body.velocity.x = static_cast<float>(_e.facing) * _def.physics.speed;
-                if (_e.stateTicks >= c.moveMaxTicks || absDx <= c.stopDx)
-                {
-                    Go_(_e, _def, eSarubiaState::MoveStop);
-                }
-                break;
-
-            case eSarubiaState::MoveStop:
-                if (Done_(_e, _def))
-                {
-                    Go_(_e, _def, eSarubiaState::Idle);
-                }
-                break;
-
-            case eSarubiaState::ShotStart:
-                if (_e.stateTicks >= c.shotReadyTicks)
-                {
-                    Go_(_e, _def, eSarubiaState::Shot);
-                }
-                break;
-
-            case eSarubiaState::Shot:
-                if (ClipReachedFrame(_e, _def, c.fireFrame))
-                {
-                    (void)FireWeapon(_e, _def, _env, c.weaponGrenade);
-                }
-                if (Done_(_e, _def))
-                {
-                    Go_(_e, _def, eSarubiaState::Idle);
-                }
-                break;
-
-            default: break;
-        }
-
         (void)StepPhysics(_e, _def, _env);
+        return;
     }
 
-    void OnDeath_(
-        Enemy&          _e,
-        const EnemyDef& _def,
-        EnemyEnv&       _env)
+    const float dx      = DxToPlayer(_e, _env);
+    const float absDx   = std::abs(dx);
+    const bool  bBehind = dx * static_cast<float>(_e.facing) < 0.f;   // 플레이어가 바라보는 방향의 반대편
+
+    switch (static_cast<eSarubiaState>(_e.state))
     {
-        BeginVehicleDeath(_e, _def, _env, _def.sarubia.clipDestroy);
+        case eSarubiaState::Idle:
+            if (_e.stateTicks >= c.cooldownTicks)
+            {
+                if (bBehind)
+                {
+                    Go_(_e, _def, eSarubiaState::Turn);
+                }
+                else if (absDx > c.chaseDx)
+                {
+                    Go_(_e, _def, eSarubiaState::MoveStart);
+                }
+                else
+                {
+                    Go_(_e, _def, eSarubiaState::ShotStart);
+                }
+            }
+            break;
+
+        case eSarubiaState::Turn:
+            if (Done_(_e, _def))
+            {
+                _e.facing = -_e.facing;
+                Go_(_e, _def, eSarubiaState::Idle);
+            }
+            break;
+
+        case eSarubiaState::MoveStart:
+            if (Done_(_e, _def))
+            {
+                Go_(_e, _def, eSarubiaState::Move);
+            }
+            break;
+
+        case eSarubiaState::Move:
+            _e.body.velocity.x = static_cast<float>(_e.facing) * _def.physics.speed;
+            if (_e.stateTicks >= c.moveMaxTicks || absDx <= c.stopDx)
+            {
+                Go_(_e, _def, eSarubiaState::MoveStop);
+            }
+            break;
+
+        case eSarubiaState::MoveStop:
+            if (Done_(_e, _def))
+            {
+                Go_(_e, _def, eSarubiaState::Idle);
+            }
+            break;
+
+        case eSarubiaState::ShotStart:
+            if (_e.stateTicks >= c.shotReadyTicks)
+            {
+                Go_(_e, _def, eSarubiaState::Shot);
+            }
+            break;
+
+        case eSarubiaState::Shot:
+            if (ClipReachedFrame(_e, _def, c.fireFrame))
+            {
+                (void)FireWeapon(_e, _def, _env, c.weaponGrenade);
+            }
+            if (Done_(_e, _def))
+            {
+                Go_(_e, _def, eSarubiaState::Idle);
+            }
+            break;
+
+        default: break;
     }
 
-}   // namespace
+    (void)StepPhysics(_e, _def, _env);
+}
+
+static void OnDeath_(
+    Enemy&          _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env)
+{
+    BeginVehicleDeath(_e, _def, _env, _def.sarubia.clipDestroy);
+}
 
 const BehaviorOps kSarubiaOps = {
     .init      = &Init_,
@@ -195,5 +188,3 @@ void ParseSarubiaCfg(
 
     c.weaponGrenade = _r.Weapon("grenade");
 }
-
-}   // namespace slug

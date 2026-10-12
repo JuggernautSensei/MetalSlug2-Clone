@@ -6,32 +6,29 @@
 
 #include "EnemyTestUtil.h"
 
-using namespace slugtest;
 
-namespace
-{
 constexpr float kGroundY = 378.f;
 
-[[nodiscard]] bool OnGround_(
+[[nodiscard]] static bool OnGround_(
     const Enemy* _pEnemy)
 {
     return _pEnemy && _pEnemy->bGrounded && std::abs(_pEnemy->body.position.y - kGroundY) < 0.5f;
 }
 
-struct DirectState
+struct EnemyDirectState
 {
     GameContext  ctx = {};
     SandboxState state { MakeEnemyConfig() };
     InputHistory input = {};
 
-    DirectState()
+    EnemyDirectState()
     {
         state.OnEnter(ctx);
     }
 };
 
 // 플레이어가 죽을 때까지 최대 _maxTicks 틱을 진행한다 (Sim::StepUntil 과 같은 규약: 경과 틱, 실패 -1)
-[[nodiscard]] int StepUntilPlayerDead_(
+[[nodiscard]] static int StepUntilPlayerDead_(
     Sim&      _sim,
     const int _maxTicks)
 {
@@ -47,8 +44,8 @@ struct DirectState
 }
 
 // 보병 전 종류를 세워 두고 1200틱 동안 샌드박스 상태 해시를 기록한다
-void RunHashes_(
-    slug::Vector<uint64_t>& _hashes)
+static void RunHashes_(
+    Vector<uint64_t>& _hashes)
 {
     Sim   sim { MakeEnemyConfig({ 100.f, kGroundY }) };
     float x = 300.f;
@@ -63,7 +60,6 @@ void RunHashes_(
         _hashes.push_back(sim.State().HashState());
     }
 }
-}   // namespace
 
 TEST(EnemySandbox, LoadsTheDefinitionFileAndSpawnsEveryInfantryKind)
 {
@@ -91,15 +87,15 @@ TEST(EnemySandbox, GroundedKindsRestOnTheGround)
 {
     Sim                       sim { MakeEnemyConfig() };
     float                     x = 260.f;
-    slug::Vector<EnemyHandle> handles;
-    slug::Vector<const char*> names;
+    Vector<EnemyHandle> handles;
+    Vector<const char*> names;
     for (const char* name: { "soldier_bomb", "soldier_sword", "soldier_missile", "soldier_bzk", "shielder", "pow" })
     {
         handles.push_back(sim.State().SpawnEnemy(name, { x, 300.f }));
         names.push_back(name);
         x += 60.f;
     }
-    slug::Vector<bool> seen(handles.size(), false);
+    Vector<bool> seen(handles.size(), false);
     for (int tick = 0; tick < 120; ++tick)
     {
         sim.Step(1);
@@ -217,7 +213,7 @@ TEST(EnemySandbox, DebugSpawnSlotsSpawnTheEightInfantryKinds)
 {
     for (int slot = 1; slot <= 8; ++slot)
     {
-        DirectState d;
+        EnemyDirectState d;
         d.ctx.debugSpawn = slot;
         d.state.Tick(d.ctx, d.input);
         EXPECT_EQ(d.ctx.debugSpawn, 0) << slot;   // 소비
@@ -228,7 +224,7 @@ TEST(EnemySandbox, DebugSpawnSlotsSpawnTheEightInfantryKinds)
 
 TEST(EnemySandbox, DebugSpawnOutOfRangeDoesNothing)
 {
-    DirectState d;
+    EnemyDirectState d;
     d.ctx.debugSpawn = 10;
     d.state.Tick(d.ctx, d.input);
     EXPECT_EQ(d.state.GetEnemies().GetCount(), 0u);
@@ -236,9 +232,58 @@ TEST(EnemySandbox, DebugSpawnOutOfRangeDoesNothing)
 
 TEST(EnemySandbox, SandboxHashIsDeterministicWithEnemiesPresent)
 {
-    slug::Vector<uint64_t> first;
-    slug::Vector<uint64_t> second;
+    Vector<uint64_t> first;
+    Vector<uint64_t> second;
     RunHashes_(first);
     RunHashes_(second);
     EXPECT_EQ(first, second);
+}
+
+// 혈흔은 발 원점이 아니라 피격 상자 중심(가슴, body.cy = -37.5)에서 터진다
+TEST(EnemySandbox, BloodSplatsAtTheChestOfAKnifedSoldier)
+{
+    SLUG_REQUIRE_BAKED(anims);   // 이펙트 연출은 애니 라이브러리가 있어야 생성된다
+    Sim sim { MakeEnemyConfig(), &anims };
+    sim.Step(2);
+    const EnemyHandle h = sim.State().SpawnEnemy("soldier_bomb", { sim.X() + 25.f, kGroundY });
+    sim.Tap(eAction::Shot);
+    for (int i = 0; i < 30 && !sim.State().GetEnemies().IsDefeated(h); ++i)
+    {
+        sim.Step(1);
+    }
+    ASSERT_TRUE(sim.State().GetEnemies().IsDefeated(h));
+    sim.Step(1);   // 사망 틱 다음에 혈흔 연출이 생성된다 (수명 약 0.44 s 이므로 바로 확인)
+    const Enemy* pEnemy = sim.State().GetEnemies().Get(h);
+    ASSERT_NE(pEnemy, nullptr);
+
+    int bloodCount = 0;
+    for (const Effect& fx: sim.State().GetEnemies().GetEffects().GetEffects())
+    {
+        if (fx.depth != 60)
+        {
+            continue;
+        }
+        ++bloodCount;
+        EXPECT_NEAR(fx.position.x, pEnemy->body.position.x, 0.5f);
+        // 혈흔 y 보정 상수 (kBloodOffsetY) 는 소스 익명 네임스페이스라 값 대신 상체 윗부분 (발 기준 -68 ~ -62, 가슴~어깨) 으로 검증한다
+        const float chestDy = fx.position.y - pEnemy->body.position.y;
+        EXPECT_GE(chestDy, -68.f);
+        EXPECT_LE(chestDy, -62.f);
+    }
+    EXPECT_GE(bloodCount, 1);
+}
+
+// 칼 사망은 베는 클립이 끝나면 시체를 남기지 않는다 (마지막 프레임 고정 방지)
+TEST(EnemySandbox, KnifedSoldierLeavesNoCorpseOnceTheSlashClipEnds)
+{
+    Sim sim { MakeEnemyConfig() };
+    sim.Step(2);
+    const EnemyHandle h = sim.State().SpawnEnemy("soldier_bomb", { sim.X() + 25.f, kGroundY });
+    sim.Tap(eAction::Shot);
+    sim.Step(30);
+    ASSERT_TRUE(sim.State().GetEnemies().IsDefeated(h));
+    ASSERT_NE(sim.State().GetEnemies().Get(h), nullptr);   // 클립(0.96 s) 중에는 아직 있다
+
+    sim.Step(90);
+    EXPECT_EQ(sim.State().GetEnemies().Get(h), nullptr);   // 탭 후 약 2 s 에 제거 (기존: 사망 후 3.0 s 까지 마지막 프레임 고정)
 }
