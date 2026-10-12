@@ -218,19 +218,6 @@ TEST(EnemyWorld, ClearMonstersKeepsNeutralNpcsUnlessAsked)
     EXPECT_EQ(rig.World().GetCount(), 0u);
 }
 
-TEST(EnemyWorld, CancelPendingRemovesOnlyDelayedSpawns)
-{
-    EnemyRig rig;
-    ASSERT_TRUE(rig.IsLoaded());
-    SpawnParams later;
-    later.delaySec = 2.f;
-    (void)rig.Spawn("soldier_bomb", { 300.f, kGroundY }, later);
-    const EnemyHandle now = rig.Spawn("soldier_bomb", { 340.f, kGroundY });
-    rig.World().CancelPending();
-    EXPECT_EQ(rig.World().GetCount(), 1u);
-    EXPECT_NE(rig.E(now), nullptr);
-}
-
 TEST(EnemyWorld, ResetClearsEverythingAndRestartsIds)
 {
     EnemyRig rig;

@@ -85,13 +85,6 @@ void PropWorld::ClearAll()
     RebuildCollision_();
 }
 
-void PropWorld::ClearByLayer(
-    const bool _bFront)
-{
-    m_props.erase(std::remove_if(m_props.begin(), m_props.end(), [&](const PropInstance& _p) { return _p.bFront == _bFront; }), m_props.end());
-    RebuildCollision_();
-}
-
 float PropWorld::RollFloat_(
     const float _lo,
     const float _hi)
@@ -188,7 +181,6 @@ PropHandle PropWorld::SpawnByIndex(
     inst.defIndex        = _defIndex;
     inst.pos             = _center;
     inst.depth           = _params.z != kDefaultZ ? _params.z : def.depth;
-    inst.bFront          = def.depth >= kPropDepthFront;
     inst.cullMargin      = def.cullMargin;
     inst.sortOffsetY     = def.sortOffsetY;
     inst.bSortByX        = def.bSortByX;

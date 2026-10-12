@@ -574,18 +574,16 @@ TEST(PropWorld, CullingKeepsAWidePropWhileAnyPartOfItsSpriteIsOnScreen)
     EXPECT_EQ(CountEvents_(events, ePropEventKind::Removed), 1);
 }
 
-TEST(PropWorld, ClearByLayerAndResetRestoreIds)
+TEST(PropWorld, ResetClearsPropsAndRestoresIds)
 {
     PropWorld world { &GetPropLib(), 1 };
     world.Spawn("shop_0", { 1274.f, 228.f });
     world.Spawn("truck", { 580.f, 342.f });
-    world.ClearByLayer(true);
     EXPECT_EQ(world.GetCount(), 2u);
-    world.ClearByLayer(false);
-    EXPECT_EQ(world.GetCount(), 0u);
-    EXPECT_TRUE(world.GetWalls().empty());
 
     world.Reset(1);
+    EXPECT_EQ(world.GetCount(), 0u);
+    EXPECT_TRUE(world.GetWalls().empty());
     EXPECT_EQ(world.Spawn("shop_0", { 1274.f, 228.f }), kPropOwnerBase);
 }
 

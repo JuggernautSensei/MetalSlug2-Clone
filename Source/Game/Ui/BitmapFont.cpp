@@ -8,27 +8,6 @@
 
 namespace
 {
-[[nodiscard]] Vector<int> SplitLineLengths_(
-    const StringView _text)
-{
-    Vector<int> lengths;
-    int         current = 0;
-    for (const char c: _text)
-    {
-        if (c == '\n')
-        {
-            lengths.push_back(current);
-            current = 0;
-        }
-        else
-        {
-            ++current;
-        }
-    }
-    lengths.push_back(current);
-    return lengths;
-}
-
 [[nodiscard]] RGBA GetFontFallbackColor_(
     const eFontColor _color)
 {
@@ -57,28 +36,6 @@ namespace
     }
 }
 }   // namespace
-
-int MeasureTextWidth(
-    const StringView _text,
-    const TextStyle& _style)
-{
-    const int scale = std::max(1, _style.scale);
-    int       width = 0;
-    for (const int length: SplitLineLengths_(_text))
-    {
-        width = std::max(width, MeasureChars(length, scale, _style.letterSpacing));
-    }
-    return width;
-}
-
-int MeasureTextHeight(
-    const StringView _text,
-    const TextStyle& _style)
-{
-    const int scale = std::max(1, _style.scale);
-    const int lines = static_cast<int>(SplitLineLengths_(_text).size());
-    return lines * kGlyphSize * scale + (lines - 1) * _style.lineGap * scale;
-}
 
 TextLayout LayoutText(
     const StringView _text,
@@ -146,29 +103,6 @@ TextLayout LayoutText(
     }
     layout.bounds = { left, _y, layout.width, layout.height };
     return layout;
-}
-
-int FitTextScale(
-    const StringView _text,
-    const int        _maxWidth,
-    const int        _maxScale,
-    const int        _letterSpacing)
-{
-    int widest = 1;
-    for (const int length: SplitLineLengths_(_text))
-    {
-        widest = std::max(widest, length);
-    }
-
-    int best = 1;
-    for (int scale = 1; scale <= std::max(1, _maxScale); ++scale)
-    {
-        if (MeasureChars(widest, scale, _letterSpacing) <= _maxWidth)
-        {
-            best = scale;
-        }
-    }
-    return best;
 }
 
 bool BitmapFont::Init(
@@ -322,12 +256,6 @@ int GetGlyphIndex(
         return 'O' - 'A';
     }
     return -1;
-}
-
-bool HasGlyph(
-    const char _ch)
-{
-    return GetGlyphIndex(_ch) >= 0;
 }
 
 int MeasureChars(

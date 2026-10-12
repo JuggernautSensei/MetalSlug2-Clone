@@ -65,7 +65,6 @@ struct PropInstance
     int                                                        variant     = -1;
     Vec2                                                       pos         = { 0.f, 0.f };     // 스프라이트 중심 (legacyCenter, 변종 dy 반영)
     int                                                        depth       = kPropDepthBack;   // 인스턴스 z
-    bool                                                       bFront      = false;            // def 기본 depth 가 앞 (ClearByLayer 용)
     float                                                      cullMargin  = 200.f;
     float                                                      sortOffsetY = 0.f;     // def.sortOffsetY 복사
     bool                                                       bSortByX    = false;   // def.bSortByX 복사 (건물 깊이 규칙)
@@ -188,7 +187,6 @@ public:
     uint32_t                        SpawnDecor(const DecorSpawn& _spawn);
     void                            ClearDecorByLayerMask(uint32_t _layerMask);
 
-    void ClearByLayer(bool _bFront);
     void ClearAll();
 
     void Submit(

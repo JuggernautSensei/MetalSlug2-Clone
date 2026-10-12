@@ -47,7 +47,6 @@ PlayerCommand PlayerInputBuffer::Read(
 
     command.bUpHeld   = _history.IsHeld(eAction::Up);
     command.bDownHeld = _history.IsHeld(eAction::Down);
-    command.bJumpHeld = _history.IsHeld(eAction::Jump);
     command.bShotHeld = _history.IsHeld(eAction::Shot);
 
     command.bJumpBuffered = IsBuffered(eAction::Jump, _move.jumpBufferTicks);

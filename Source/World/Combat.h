@@ -112,11 +112,7 @@ struct Health
 
     [[nodiscard]] bool IsAlive() const;
 
-    [[nodiscard]] float GetRatio() const;
-
     int ApplyDamage(
         int _damage);
 
-    int Heal(
-        int _amount);
 };

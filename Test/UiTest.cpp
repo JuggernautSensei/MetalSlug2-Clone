@@ -155,7 +155,6 @@ TEST(UiFont, UnsupportedCharactersHaveNoGlyph)
     for (const char c: { '-', '.', ':', '!', '/', '+', '%', '(', ' ', '\t' })
     {
         EXPECT_EQ(GetGlyphIndex(c), -1) << static_cast<int>(c);
-        EXPECT_FALSE(HasGlyph(c));
     }
 }
 
@@ -186,25 +185,6 @@ TEST(UiFont, MeasureCharsIsAdvanceTimesCountMinusSpacingTail)
     EXPECT_EQ(MeasureChars(5, 1), 80);
     EXPECT_EQ(MeasureChars(5, 2), 160);
     EXPECT_EQ(MeasureChars(5, 2, 3), 160 + 4 * 3);
-}
-
-TEST(UiFont, FitTextScalePicksLargestScaleThatFits)
-{
-    EXPECT_EQ(FitTextScale("MISSION COMPLETE", 576, 3), 2);
-    EXPECT_EQ(FitTextScale("GAME OVER", 576, 3), 3);                                        // 9자 x 48 = 432
-    EXPECT_EQ(FitTextScale("GAME OVER", 576, 2), 2);                                        // 상한
-    EXPECT_EQ(FitTextScale("A VERY VERY VERY LONG LINE OF BANNER TEXT HERE", 576, 3), 1);   // 안 들어가도 1
-    EXPECT_EQ(FitTextScale("SHORT\nA MUCH LONGER SECOND LINE", 640, 3), 1);                 // 가장 긴 줄 기준
-}
-
-TEST(UiFont, MeasureTextSizeUsesWidestLineAndLineGap)
-{
-    TextStyle style;
-    style.scale   = 2;
-    style.lineGap = 4;
-    EXPECT_EQ(MeasureTextWidth("AB\nABCD", style), 4 * 32);
-    EXPECT_EQ(MeasureTextHeight("AB\nABCD", style), 2 * 32 + 1 * 4 * 2);
-    EXPECT_EQ(MeasureTextHeight("AB", style), 32);
 }
 
 TEST(UiLayoutText, LeftAlignStartsAtAnchor)
@@ -413,38 +393,6 @@ TEST(UiBanner, SystemRunsFadeInHoldFadeOutThenDeactivates)
     EXPECT_FLOAT_EQ(banner.GetAlpha(), 0.f);
 }
 
-TEST(UiBanner, QueueRunsSpecsBackToBackAndShowReplaces)
-{
-    BannerSpec a;
-    a.text         = "ONE";
-    a.fadeInTicks  = 1;
-    a.holdTicks    = 1;
-    a.fadeOutTicks = 1;
-    BannerSpec b   = a;
-    b.text         = "TWO";
-
-    BannerSystem banner;
-    banner.Enqueue(a);
-    banner.Enqueue(b);
-    EXPECT_EQ(banner.GetCurrent().text, "ONE");
-    EXPECT_EQ(banner.GetQueuedCount(), 1u);
-
-    for (int i = 0; i < 3; ++i)
-    {
-        banner.Tick();
-    }
-    ASSERT_TRUE(banner.IsActive());
-    EXPECT_EQ(banner.GetCurrent().text, "TWO");
-    EXPECT_EQ(banner.GetElapsedTicks(), 0);
-
-    banner.Show(a);
-    EXPECT_EQ(banner.GetCurrent().text, "ONE");
-    EXPECT_EQ(banner.GetQueuedCount(), 0u);
-
-    banner.Clear();
-    EXPECT_FALSE(banner.IsActive());
-}
-
 TEST(UiBanner, MakeBannerSpecSplitsSecondsIntoFadesAndHold)
 {
     const BannerSpec spec = MakeBannerSpec("MISSION 4 START", 3.f);
@@ -457,22 +405,6 @@ TEST(UiBanner, MakeBannerSpecSplitsSecondsIntoFadesAndHold)
     EXPECT_EQ(shortSpec.GetTotalTicks(), 12);
     EXPECT_EQ(shortSpec.fadeInTicks, 3);
     EXPECT_EQ(shortSpec.holdTicks, 6);
-}
-
-TEST(UiBanner, StandardBannersFitTheScreenWidth)
-{
-    const UiLayout layout;
-    for (const char* text: { "MISSION 4 START", "MISSION COMPLETE", "WARNING", "GAME OVER", "MISSION 4\nSTART" })
-    {
-        TextStyle style;
-        style.align             = eTextAlign::Center;
-        style.lineGap           = layout.bannerLineGap;
-        style.scale             = FitTextScale(text, layout.screenW - 2 * layout.bannerMargin, layout.bannerMaxScale);
-        const int        height = MeasureTextHeight(text, style);
-        const TextLayout laid   = LayoutText(text, layout.screenW / 2, layout.bannerCenterY - height / 2, style);
-        EXPECT_TRUE(InsideScreen_(laid.bounds, layout)) << text;
-        EXPECT_GE(style.scale, 1) << text;
-    }
 }
 
 TEST(UiFade, FadeToBlackReachesOneAtExactTick)

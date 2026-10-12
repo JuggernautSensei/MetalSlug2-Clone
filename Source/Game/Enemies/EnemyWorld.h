@@ -102,8 +102,6 @@ public:
     void KillAll(
         bool _bAwardScore = false);
 
-    void CancelPending();
-
     [[nodiscard]] uint64_t HashState() const;
 
     [[nodiscard]] int        Roll(int _n);

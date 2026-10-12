@@ -6,7 +6,6 @@ struct UiLayout
     int screenW = 640;
     int screenH = 448;
 
-    int glyphSize  = 16;
     int timeGlyphW = 32;   // TimeNumberUI 한 칸 (32x32, 숫자 10칸)
     int timeGlyphH = 32;
 
@@ -55,10 +54,7 @@ struct UiLayout
     int resultsCountTopY = 154;   // 구출 수 숫자 윗변 (TimeNumberUI 32px)
     int resultsScoreTopY = 204;   // 보너스 점수 숫자 윗변
     int resultsRankY     = 251;   // 등급 문구 중심 y
-    int resultsFadeTicks = 12;
 
-    int pressStartCenterX    = 494;
-    int pressStartCenterY    = 24;
     int pressStartBlinkTicks = 30;   // 켜짐/꺼짐 각각의 길이
 
     int levelCenterX = 320;
@@ -72,14 +68,8 @@ struct UiLayout
     int bossBarInnerW  = 94;
     int bossBarInnerH  = 8;
 
-    int bannerCenterY  = 176;   // 배너 텍스트 블록 중심 y
-    int bannerMaxScale = 3;
-    int bannerMargin   = 32;   // 좌우 여백 (자동 배율 계산)
-    int bannerLineGap  = 4;    // 줄 간격 (배율 1 기준 px)
-
     int titleNameY       = 150;   // "MY METAL SLUG 2" 윗줄
     int titlePressStartY = 386;   // "PRESS START" 윗줄
     int titleHintY       = 428;   // 힌트 문구 윗줄
     int titleBlinkTicks  = 30;
-    int titleFadeTicks   = 24;   // 시작 시 암전
 };

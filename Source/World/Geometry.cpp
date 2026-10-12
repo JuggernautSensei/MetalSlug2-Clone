@@ -1,18 +1,5 @@
 #include "World/Geometry.h"
 
-std::optional<Aabb> Aabb::Intersection(
-    const Aabb& _other) const
-{
-    if (!Overlaps(_other))
-    {
-        return std::nullopt;
-    }
-    return Aabb {
-        { Max(min.x, _other.min.x), Max(min.y, _other.min.y) },
-        { Min(max.x, _other.max.x), Min(max.y, _other.max.y) }
-    };
-}
-
 Aabb Aabb::FromMinMax(
     const Vec2 _min,
     const Vec2 _max)
@@ -70,59 +57,9 @@ Vec2 Aabb::GetCenter() const
     return { (min.x + max.x) * 0.5f, (min.y + max.y) * 0.5f };
 }
 
-Vec2 Aabb::GetBottomCenter() const
-{
-    return { (min.x + max.x) * 0.5f, max.y };
-}
-
 bool Aabb::IsEmpty() const
 {
     return max.x <= min.x || max.y <= min.y;
-}
-
-Aabb Aabb::Expanded(
-    const float _amount) const
-{
-    return Aabb {
-        { min.x - _amount, min.y - _amount },
-        { max.x + _amount, max.y + _amount }
-    };
-}
-
-Aabb Aabb::Expanded(
-    const Vec2 _amount) const
-{
-    return Aabb {
-        { min.x - _amount.x, min.y - _amount.y },
-        { max.x + _amount.x, max.y + _amount.y }
-    };
-}
-
-Aabb Aabb::Translated(
-    const Vec2 _offset) const
-{
-    return Aabb {
-        { min.x + _offset.x, min.y + _offset.y },
-        { max.x + _offset.x, max.y + _offset.y }
-    };
-}
-
-Aabb Aabb::Union(
-    const Aabb& _other) const
-{
-    return Aabb {
-        { Min(min.x, _other.min.x), Min(min.y, _other.min.y) },
-        { Max(max.x, _other.max.x), Max(max.y, _other.max.y) }
-    };
-}
-
-Aabb Aabb::MirroredX(
-    const float _axisX) const
-{
-    return Aabb {
-        { 2.f * _axisX - max.x, min.y },
-        { 2.f * _axisX - min.x, max.y }
-    };
 }
 
 bool Aabb::operator==(

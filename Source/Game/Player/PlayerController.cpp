@@ -81,7 +81,6 @@ void PlayerController::Reset(
     m_body.size          = _tuning.body.standSize;
     m_body.footHalfWidth = _tuning.body.footHalfWidth;
     m_prevFeet           = _spawnFeet;
-    m_spawnFeet          = _spawnFeet;
     m_lastMove           = {};
 
     m_input.Reset();

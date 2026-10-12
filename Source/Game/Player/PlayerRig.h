@@ -125,8 +125,6 @@ private:
     AnimPlayer m_lower     = {};
     bool       m_bHasLower = false;
 
-    eRigClip m_upperSlot         = eRigClip::Idle;
-    eRigClip m_lowerSlot         = eRigClip::LowerIdle;
     uint32_t m_lastOverlaySerial = 0;
     uint32_t m_lastStateSerial   = 0;
     float    m_originLift        = 0.f;

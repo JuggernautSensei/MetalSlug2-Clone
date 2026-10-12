@@ -1,6 +1,5 @@
 #pragma once
 #include <cmath>
-#include <optional>
 
 #include "Base/Math.h"
 
@@ -45,8 +44,6 @@ struct Aabb
 
     [[nodiscard]] Vec2 GetCenter() const;
 
-    [[nodiscard]] Vec2 GetBottomCenter() const;
-
     [[nodiscard]] bool IsEmpty() const;
 
     [[nodiscard]] __forceinline constexpr bool Overlaps(
@@ -66,24 +63,6 @@ struct Aabb
     {
         return _other.min.x >= min.x && _other.max.x <= max.x && _other.min.y >= min.y && _other.max.y <= max.y;
     }
-
-    [[nodiscard]] std::optional<Aabb> Intersection(
-        const Aabb& _other) const;
-
-    [[nodiscard]] Aabb Expanded(
-        const float _amount) const;
-
-    [[nodiscard]] Aabb Expanded(
-        const Vec2 _amount) const;
-
-    [[nodiscard]] Aabb Translated(
-        const Vec2 _offset) const;
-
-    [[nodiscard]] Aabb Union(
-        const Aabb& _other) const;
-
-    [[nodiscard]] Aabb MirroredX(
-        const float _axisX) const;
 
     [[nodiscard]] bool operator==(
         const Aabb& _other) const;

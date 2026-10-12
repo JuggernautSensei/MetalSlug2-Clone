@@ -31,7 +31,6 @@ struct TrainingDummy
     int        deadTicks  = -1;   // -1: 생존, 0..: 사망 후 경과 틱
     int        shootTimer = 0;
     int        hitsTaken  = 0;
-    int        lastDamage = 0;
     eHitKind   lastKind   = eHitKind::Bullet;
     AnimPlayer anim       = {};
 

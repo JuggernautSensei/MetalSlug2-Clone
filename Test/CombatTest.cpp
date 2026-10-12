@@ -328,25 +328,11 @@ TEST(Health, ApplyDamageClampsAndReportsApplied)
     EXPECT_EQ(health.ApplyDamage(1), 0);   // 죽은 뒤에는 무시
 }
 
-TEST(Health, NonPositiveDamageAndHealing)
+TEST(Health, NonPositiveDamageIsIgnored)
 {
     Health health = Health::Make(10);
     EXPECT_EQ(health.ApplyDamage(0), 0);
     EXPECT_EQ(health.ApplyDamage(-5), 0);
     EXPECT_EQ(health.hp, 10);
-
-    (void)health.ApplyDamage(6);
-    EXPECT_EQ(health.Heal(3), 3);
-    EXPECT_EQ(health.hp, 7);
-    EXPECT_EQ(health.Heal(100), 3);   // 최대 체력 초과 불가
-    EXPECT_EQ(health.hp, 10);
-    EXPECT_FLOAT_EQ(health.GetRatio(), 1.f);
 }
 
-TEST(Health, DeadEntitiesCannotBeHealed)
-{
-    Health health = Health::Make(3);
-    (void)health.ApplyDamage(3);
-    EXPECT_EQ(health.Heal(2), 0);
-    EXPECT_TRUE(health.IsDead());
-}

@@ -1104,25 +1104,6 @@ void EnemyWorld::KillAll(
     m_enemies.resize(keep);
 }
 
-void EnemyWorld::CancelPending()
-{
-    size_t keep = 0;
-    for (size_t i = 0; i < m_enemies.size(); ++i)
-    {
-        if (m_enemies[i].life == eEnemyLife::Pending)
-        {
-            continue;
-        }
-        if (keep != i)
-        {
-            m_enemies[keep] = m_enemies[i];
-        }
-        ++keep;
-    }
-    m_enemies.resize(keep);
-    m_deferred.clear();
-}
-
 uint64_t EnemyWorld::HashState() const
 {
     uint64_t hash = 14'695'981'039'346'656'037ull;
@@ -1196,7 +1177,6 @@ EnemyEvent EnemyWorld::MakeEvent(
     if (_e.defIndex >= 0)
     {
         const EnemyDef& def = m_pLibrary->Get(_e.defIndex);
-        event.defName       = def.name;
         event.score         = _kind == eEnemyEventKind::Died ? def.score : 0;
     }
     return event;

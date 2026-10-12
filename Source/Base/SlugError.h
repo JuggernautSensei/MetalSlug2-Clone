@@ -3,7 +3,6 @@
 enum class eError
 {
     Ok = 0,
-    SdlInit,
     WindowCreate,
     RendererCreate,
     TextureCreate,

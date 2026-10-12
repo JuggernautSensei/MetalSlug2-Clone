@@ -44,8 +44,6 @@ inline constexpr int kGlyphRows    = 2;   // 0 = 굵게, 1 = 가늘게
 [[nodiscard]] int GetGlyphIndex(
     const char _ch);
 
-[[nodiscard]] bool HasGlyph(const char _ch);
-
 [[nodiscard]] int MeasureChars(
     const int _charCount,
     const int _scale,
@@ -73,15 +71,6 @@ struct TextLayout
     int              _x,
     int              _y,
     const TextStyle& _style);
-
-[[nodiscard]] int MeasureTextWidth(StringView _text, const TextStyle& _style);
-[[nodiscard]] int MeasureTextHeight(StringView _text, const TextStyle& _style);
-
-[[nodiscard]] int FitTextScale(
-    StringView _text,
-    int        _maxWidth,
-    int        _maxScale,
-    int        _letterSpacing = 0);
 
 class BitmapFont
 {

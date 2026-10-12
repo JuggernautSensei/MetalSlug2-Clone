@@ -131,7 +131,6 @@ private:
     Body       m_body      = {};
     Vec2       m_prevFeet  = { 0.f, 0.f };
     int        m_z         = kDefaultZ;
-    Vec2       m_spawnFeet = { 0.f, 0.f };
     MoveResult m_lastMove  = {};
 
     eChutePhase m_chutePhase      = eChutePhase::None;

@@ -8,7 +8,6 @@ struct PlayerCommand
     int  moveX         = 0;   // -1, 0, +1 (좌우를 동시에 누르면 0)
     bool bUpHeld       = false;
     bool bDownHeld     = false;
-    bool bJumpHeld     = false;
     bool bShotHeld     = false;
     bool bJumpBuffered = false;
     bool bShotBuffered = false;

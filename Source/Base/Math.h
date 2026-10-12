@@ -10,7 +10,6 @@
 inline constexpr float kPi      = std::numbers::pi_v<float>;
 inline constexpr float kDeg2Rad = kPi / 180.f;
 inline constexpr float kRad2Deg = 180.f / kPi;
-inline constexpr float kEpsilon = 1e-5f;
 
 template<typename T, typename U>
 [[nodiscard]] constexpr std::common_type_t<T, U> Min(const T _x, const U _y)
@@ -109,20 +108,8 @@ struct Vec2
     [[nodiscard]] __forceinline constexpr float*       GetPtr() { return &x; }
     [[nodiscard]] __forceinline constexpr const float* GetPtr() const { return &x; }
 
-    static const Vec2 kZero;
-    static const Vec2 kOne;
-    static const Vec2 kRight;
-    static const Vec2 kUp;
-    static const Vec2 kUnitX;
-    static const Vec2 kUnitY;
 
     float x = 0.f;
     float y = 0.f;
 };
 
-inline constexpr Vec2 Vec2::kZero  = { 0.f, 0.f };
-inline constexpr Vec2 Vec2::kOne   = { 1.f, 1.f };
-inline constexpr Vec2 Vec2::kRight = { 1.f, 0.f };
-inline constexpr Vec2 Vec2::kUp    = { 0.f, 1.f };
-inline constexpr Vec2 Vec2::kUnitX = { 1.f, 0.f };
-inline constexpr Vec2 Vec2::kUnitY = { 0.f, 1.f };

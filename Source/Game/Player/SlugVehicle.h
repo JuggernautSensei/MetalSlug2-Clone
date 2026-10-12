@@ -59,10 +59,8 @@ struct SlugStats
     int cannonShots = 0;
     int jumps       = 0;
     int hits        = 0;
-    int boards      = 0;
     int exits       = 0;
     int explosions  = 0;
-    int emptyClicks = 0;   // 탄이 없는데 캐논 버튼을 누른 횟수
 };
 
 class SlugVehicle

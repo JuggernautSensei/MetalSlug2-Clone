@@ -575,27 +575,6 @@ Aabb Camera::GetViewRect() const
     return Aabb::FromMinSize(GetPosition(), m_tuning.viewSize);
 }
 
-Vec2 Camera::WorldToScreen(
-    const Vec2 _world) const
-{
-    const Vec2 position = GetPosition();
-    return { _world.x - position.x, _world.y - position.y };
-}
-
-Vec2 Camera::ScreenToWorld(
-    const Vec2 _screen) const
-{
-    const Vec2 position = GetPosition();
-    return { _screen.x + position.x, _screen.y + position.y };
-}
-
-bool Camera::IsVisible(
-    const Aabb& _worldBox,
-    const float _margin) const
-{
-    return GetViewRect().Expanded(_margin).Overlaps(_worldBox);
-}
-
 const CameraTuning& Camera::GetTuning() const
 {
     return m_tuning;

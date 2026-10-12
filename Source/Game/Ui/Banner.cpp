@@ -152,24 +152,11 @@ void BannerSystem::Begin_(
 void BannerSystem::Show(
     BannerSpec _spec)
 {
-    m_queue.clear();
     Begin_(std::move(_spec));
-}
-
-void BannerSystem::Enqueue(
-    BannerSpec _spec)
-{
-    if (!m_bActive)
-    {
-        Begin_(std::move(_spec));
-        return;
-    }
-    m_queue.push_back(std::move(_spec));
 }
 
 void BannerSystem::Clear()
 {
-    m_queue.clear();
     m_bActive = false;
     m_elapsed = 0;
     m_current = {};
@@ -185,14 +172,6 @@ void BannerSystem::Tick()
     ++m_elapsed;
     if (m_elapsed < m_current.GetTotalTicks())
     {
-        return;
-    }
-
-    if (!m_queue.empty())
-    {
-        BannerSpec next = std::move(m_queue.front());
-        m_queue.erase(m_queue.begin());
-        Begin_(std::move(next));
         return;
     }
 
@@ -222,11 +201,6 @@ int BannerSystem::GetElapsedTicks() const
 const BannerSpec& BannerSystem::GetCurrent() const
 {
     return m_current;
-}
-
-size_t BannerSystem::GetQueuedCount() const
-{
-    return m_queue.size();
 }
 
 int BannerSpec::GetTotalTicks() const

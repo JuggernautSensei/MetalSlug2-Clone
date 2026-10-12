@@ -160,7 +160,6 @@ void SlugVehicle::BeginBoarding()
     m_cannonCooldown    = 0;
     m_parkAnimTicks     = 0;
     m_selfDestructTicks = -1;
-    ++m_stats.boards;
 }
 
 void SlugVehicle::Tick(
@@ -539,7 +538,6 @@ void SlugVehicle::UpdateCannon_(
     if (m_cannonAmmo <= 0)
     {
         m_input.Consume(eAction::Bomb);
-        ++m_stats.emptyClicks;
         return;
     }
     FireCannon_(_ctx, _command);

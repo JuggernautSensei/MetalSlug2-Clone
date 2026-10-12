@@ -18,28 +18,8 @@ struct RGBA
 
     [[nodiscard]] constexpr bool operator==(const RGBA& _other) const = default;
 
-    static const RGBA kZero;
-    static const RGBA kBlack;
-    static const RGBA kWhite;
-    static const RGBA kRed;
-    static const RGBA kGreen;
-    static const RGBA kBlue;
-    static const RGBA kYellow;
-    static const RGBA kCyan;
-    static const RGBA kMagenta;
-
     uint8_t r = 0;
     uint8_t g = 0;
     uint8_t b = 0;
     uint8_t a = 255;
 };
-
-inline constexpr RGBA RGBA::kZero    = RGBA { 0, 0, 0, 0 };
-inline constexpr RGBA RGBA::kBlack   = RGBA { 0, 0, 0, 255 };
-inline constexpr RGBA RGBA::kWhite   = RGBA { 255, 255, 255, 255 };
-inline constexpr RGBA RGBA::kRed     = RGBA { 255, 0, 0, 255 };
-inline constexpr RGBA RGBA::kGreen   = RGBA { 0, 255, 0, 255 };
-inline constexpr RGBA RGBA::kBlue    = RGBA { 0, 0, 255, 255 };
-inline constexpr RGBA RGBA::kYellow  = RGBA { 255, 255, 0, 255 };
-inline constexpr RGBA RGBA::kCyan    = RGBA { 0, 255, 255, 255 };
-inline constexpr RGBA RGBA::kMagenta = RGBA { 255, 0, 255, 255 };

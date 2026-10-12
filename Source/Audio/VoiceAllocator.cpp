@@ -46,14 +46,6 @@ void VoiceAllocator::Release(
     }
 }
 
-void VoiceAllocator::ReleaseAll()
-{
-    for (Slot& slot: m_slots)
-    {
-        slot = Slot {};
-    }
-}
-
 int VoiceAllocator::GetCapacity() const
 {
     return static_cast<int>(m_slots.size());

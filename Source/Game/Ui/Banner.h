@@ -12,8 +12,7 @@ struct BannerSpec
     int        fadeOutTicks = 18;
     eFontColor color        = eFontColor::Yellow;
     bool       bBold        = true;
-    int        maxScale     = 3;    // 폭에 맞춰 줄이는 상한 배율
-    int        centerY      = -1;   // <0 이면 UiLayout::bannerCenterY
+    int        centerY      = -1;   // <0 이면 UiLayout::missionLine1Y
 
     [[nodiscard]] int GetTotalTicks() const;
 };
@@ -49,7 +48,6 @@ class BannerSystem
 {
 public:
     void Show(BannerSpec _spec);
-    void Enqueue(BannerSpec _spec);
     void Clear();
 
     void Tick();
@@ -58,13 +56,11 @@ public:
     [[nodiscard]] int               GetElapsedTicks() const;
     [[nodiscard]] float             GetAlpha() const;
     [[nodiscard]] const BannerSpec& GetCurrent() const;
-    [[nodiscard]] size_t            GetQueuedCount() const;
 
 private:
     void Begin_(BannerSpec _spec);
 
     BannerSpec         m_current = {};
-    Vector<BannerSpec> m_queue   = {};
     int                m_elapsed = 0;
     bool               m_bActive = false;
 };

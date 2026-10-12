@@ -11,7 +11,6 @@ String SlugErrorCategory::MakeMessage(
     switch (static_cast<eError>(_err))
     {
         case eError::Ok: return "ok";
-        case eError::SdlInit: return "SDL 초기화 실패";
         case eError::WindowCreate: return "윈도우 생성 실패";
         case eError::RendererCreate: return "렌더러 생성 실패";
         case eError::TextureCreate: return "텍스처 생성 실패";

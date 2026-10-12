@@ -372,7 +372,6 @@ void PlayerRig::Update(
             m_lower.Update(*m_pLibrary, kStepSec);
         }
     }
-    m_lowerSlot = lowerSlot;
 
     if (upper.id.IsNull())
     {
@@ -388,7 +387,6 @@ void PlayerRig::Update(
     {
         m_upper.Play(upper.id, true);
     }
-    m_upperSlot = upperSlot;
 
     const AnimClip& upperClip = m_pLibrary->Get(upper.id);
     if (IsAirTimelineSlot_(upperSlot))

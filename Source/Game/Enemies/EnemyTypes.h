@@ -66,7 +66,6 @@ struct EnemyEvent
     EnemyHandle     handle   = {};
     EnemyHandle     other    = {};
     int             defIndex = -1;
-    String          defName  = {};
     Vec2            pos      = { 0.f, 0.f };   // 발 위치
     int             score    = 0;
     String          drop     = {};

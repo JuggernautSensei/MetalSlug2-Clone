@@ -29,8 +29,6 @@ public:
     void Release(
         const int _slot);
 
-    void ReleaseAll();
-
     [[nodiscard]] int  GetCapacity() const;
     [[nodiscard]] bool IsActive(const int _slot) const;
     [[nodiscard]] int  GetSoundId(const int _slot) const;

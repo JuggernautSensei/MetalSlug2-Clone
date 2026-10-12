@@ -180,7 +180,6 @@ int TrainingTargets::ApplyEvents(
             if (applied > 0)
             {
                 ++dummy.hitsTaken;
-                dummy.lastDamage = applied;
                 dummy.lastKind   = event.kind;
                 (void)StartHitFlash(dummy.flashTicks);
             }

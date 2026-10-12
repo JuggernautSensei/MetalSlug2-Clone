@@ -195,9 +195,6 @@ TEST(AudioVoices, ReleaseFreesSlotForReuse)
     const VoiceAllocator::Acquired got = voices.Acquire(2);
     EXPECT_FALSE(got.bStolen);
     EXPECT_EQ(got.slot, a);
-
-    voices.ReleaseAll();
-    EXPECT_EQ(voices.GetActiveCount(), 0);
 }
 
 TEST(AudioVoices, NeverExceedsCapacityUnderSpam)

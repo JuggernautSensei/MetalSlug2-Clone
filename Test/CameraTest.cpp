@@ -257,25 +257,6 @@ TEST(Camera, SnapToTargetIsImmediateAndClamped)
     EXPECT_FLOAT_EQ(camera.GetPosition().x, 0.f);
 }
 
-TEST(Camera, WorldScreenRoundTripAndVisibility)
-{
-    Camera camera = MakeLevelCamera_();
-    camera.SetTarget({ 1000.f, 224.f });
-    camera.SnapToTarget();
-
-    const Vec2 world  = { 1234.5f, 100.25f };
-    const Vec2 screen = camera.WorldToScreen(world);
-    EXPECT_EQ(camera.ScreenToWorld(screen), world);
-    EXPECT_FLOAT_EQ(screen.x, 1234.5f - camera.GetPosition().x);
-
-    EXPECT_TRUE(camera.IsVisible(Aabb::FromMinMax({ 1000.f, 100.f }, { 1010.f, 110.f })));
-    EXPECT_FALSE(camera.IsVisible(Aabb::FromMinMax({ 3000.f, 100.f }, { 3010.f, 110.f })));
-    const Aabb view        = camera.GetViewRect();
-    const Aabb justOutside = Aabb::FromMinMax({ view.max.x + 5.f, 100.f }, { view.max.x + 15.f, 110.f });
-    EXPECT_FALSE(camera.IsVisible(justOutside));
-    EXPECT_TRUE(camera.IsVisible(justOutside, 8.f));
-}
-
 TEST(Camera, TargetOffsetLooksAhead)
 {
     CameraTuning tuning;

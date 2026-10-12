@@ -15,22 +15,6 @@ namespace
 }
 }   // namespace
 
-GroundMap GroundMap::MakeFromBits(
-    const int                 _width,
-    const int                 _height,
-    const Span<const uint8_t> _packedBits)
-{
-    JUG_ASSERT(_width >= 0 && _height >= 0, "맵 크기는 음수일 수 없다.\n");
-    JUG_ASSERT(_packedBits.size() >= StrideOf_(_width) * static_cast<size_t>(_height), "비트 배열이 맵 크기보다 작다.\n");
-
-    GroundMap map;
-    map.m_width  = _width;
-    map.m_height = _height;
-    map.m_stride = StrideOf_(_width);
-    map.m_bits.assign(_packedBits.begin(), _packedBits.begin() + static_cast<ptrdiff_t>(map.m_stride * static_cast<size_t>(_height)));
-    return map;
-}
-
 GroundMap GroundMap::MakeEmpty(
     const int _width,
     const int _height)
@@ -247,53 +231,6 @@ std::optional<int> GroundMap::FindGroundY(
         }
     }
     return std::nullopt;
-}
-
-std::optional<int> GroundMap::FindCeilingY(
-    const int _x,
-    const int _fromY,
-    const int _maxDist) const
-{
-    if (_maxDist < 0)
-    {
-        return std::nullopt;
-    }
-
-    const int endY = _fromY - _maxDist;
-    for (int y = _fromY; y >= endY; --y)
-    {
-        if (IsSolid(_x, y))
-        {
-            return y;
-        }
-    }
-    return std::nullopt;
-}
-
-std::optional<int> GroundMap::FindSurfaceUp(
-    const int _x,
-    const int _y,
-    const int _maxStep) const
-{
-    if (!IsSolid(_x, _y))
-    {
-        return std::nullopt;
-    }
-
-    int y = _y;
-    for (int step = 0; step < _maxStep; ++step)
-    {
-        if (!IsSolid(_x, y - 1))
-        {
-            return y;
-        }
-        --y;
-    }
-    if (IsSolid(_x, y - 1))
-    {
-        return std::nullopt;
-    }
-    return y;
 }
 
 float GroundMap::EstimateSlope(

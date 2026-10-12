@@ -19,8 +19,6 @@ class GroundMap
 public:
     static constexpr uint8_t kSolidMask = 1;
 
-    [[nodiscard]] static GroundMap MakeFromBits(int _width, int _height, Span<const uint8_t> _packedBits);
-
     [[nodiscard]] static GroundMap MakeEmpty(int _width, int _height);
 
     [[nodiscard]] static GroundMap MakeFromRows(Span<const StringView> _rows, char _solid = '#');
@@ -52,10 +50,6 @@ public:
     [[nodiscard]] bool IsRectSolid(int _x0, int _y0, int _x1, int _y1) const;
 
     [[nodiscard]] std::optional<int> FindGroundY(int _x, int _fromY, int _maxDist) const;
-
-    [[nodiscard]] std::optional<int> FindCeilingY(int _x, int _fromY, int _maxDist) const;
-
-    [[nodiscard]] std::optional<int> FindSurfaceUp(int _x, int _y, int _maxStep) const;
 
     [[nodiscard]] float EstimateSlope(int _x, int _y, int _halfWidth, int _searchRange) const;
 

@@ -66,10 +66,6 @@ public:
     [[nodiscard]] Vec2 GetViewCenter() const;
     [[nodiscard]] Aabb GetViewRect() const;
 
-    [[nodiscard]] Vec2 WorldToScreen(Vec2 _world) const;
-    [[nodiscard]] Vec2 ScreenToWorld(Vec2 _screen) const;
-    [[nodiscard]] bool IsVisible(const Aabb& _worldBox, float _margin = 0.f) const;
-
 private:
     [[nodiscard]] Aabb  GetActiveBounds_(bool& _bHasBounds) const;
     [[nodiscard]] Vec2  ClampCenter_(Vec2 _center) const;

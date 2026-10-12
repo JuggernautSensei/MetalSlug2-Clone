@@ -60,22 +60,6 @@ namespace
 }
 }   // namespace
 
-TEST(GroundMap, MakeFromBitsUsesLsbAsLeftmostPixel)
-{
-    const ARRAY<uint8_t, 4> bits = { 0b00000101, 0b00000010, 0, 0 };
-    const GroundMap         map  = GroundMap::MakeFromBits(10, 2, bits);
-
-    EXPECT_EQ(map.GetWidth(), 10);
-    EXPECT_EQ(map.GetHeight(), 2);
-    EXPECT_TRUE(map.IsSolid(0, 0));
-    EXPECT_FALSE(map.IsSolid(1, 0));
-    EXPECT_TRUE(map.IsSolid(2, 0));
-    EXPECT_FALSE(map.IsSolid(8, 0));
-    EXPECT_TRUE(map.IsSolid(9, 0));
-    EXPECT_FALSE(map.IsSolid(0, 1));
-    EXPECT_EQ(map.CountSolidPixels(), 3u);
-}
-
 TEST(GroundMap, MakeFromRowsBuildsAsciiMap)
 {
     const ARRAY<StringView, 3> rows = {
@@ -126,27 +110,6 @@ TEST(GroundMap, FindGroundYSeesMapBottomAsSolid)
     const GroundMap map = GroundMap::MakeEmpty(20, 50);
     EXPECT_EQ(map.FindGroundY(5, 45, 20), 50);
     EXPECT_FALSE(map.FindGroundY(5, 10, 20).has_value());
-}
-
-TEST(GroundMap, FindCeilingYScansUp)
-{
-    GroundMap map = GroundMap::MakeEmpty(20, 50);
-    map.FillRect(0, 10, 19, 15, true);
-
-    EXPECT_EQ(map.FindCeilingY(5, 30, 100), 15);   // 가장 가까운(아래쪽) 고체 행
-    EXPECT_FALSE(map.FindCeilingY(5, 30, 10).has_value());
-}
-
-TEST(GroundMap, FindSurfaceUpClimbsOutOfShallowEmbedding)
-{
-    GroundMap map = GroundMap::MakeEmpty(20, 50);
-    map.FillRect(0, 30, 19, 49, true);
-
-    EXPECT_EQ(map.FindSurfaceUp(5, 33, 4), 30);              // 3칸 파묻힘
-    EXPECT_EQ(map.FindSurfaceUp(5, 34, 4), 30);              // 정확히 4칸
-    EXPECT_FALSE(map.FindSurfaceUp(5, 35, 4).has_value());   // 5칸은 너무 깊음
-    EXPECT_FALSE(map.FindSurfaceUp(5, 20, 4).has_value());   // 공기면 해당 없음
-    EXPECT_EQ(map.FindSurfaceUp(5, 30, 4), 30);              // 이미 표면
 }
 
 TEST(GroundMap, IsRectSolidMatchesBruteForce)
@@ -238,7 +201,6 @@ TEST(Geometry, AabbFactoriesAndAccessors)
     EXPECT_FLOAT_EQ(a.max.y, 200.f);
     EXPECT_FLOAT_EQ(a.GetWidth(), 24.f);
     EXPECT_FLOAT_EQ(a.GetHeight(), 40.f);
-    EXPECT_EQ(a.GetBottomCenter(), (Vec2 { 100.f, 200.f }));
     EXPECT_EQ(a.GetCenter(), (Vec2 { 100.f, 180.f }));
 
     const Aabb b = Aabb::FromCenterSize({ 10.f, 10.f }, { 4.f, 6.f });
@@ -265,30 +227,6 @@ TEST(Geometry, AabbContainsPointAndBox)
     EXPECT_TRUE(a.Contains(Aabb::FromMinMax({ 2.f, 2.f }, { 8.f, 8.f })));
     EXPECT_TRUE(a.Contains(a));
     EXPECT_FALSE(a.Contains(Aabb::FromMinMax({ 2.f, 2.f }, { 12.f, 8.f })));
-}
-
-TEST(Geometry, AabbIntersectionExpandAndTransform)
-{
-    const Aabb a = Aabb::FromMinMax({ 0.f, 0.f }, { 10.f, 10.f });
-    const Aabb b = Aabb::FromMinMax({ 6.f, 4.f }, { 20.f, 8.f });
-
-    const std::optional<Aabb> hit = a.Intersection(b);
-    ASSERT_TRUE(hit.has_value());
-    EXPECT_EQ(hit->min, (Vec2 { 6.f, 4.f }));
-    EXPECT_EQ(hit->max, (Vec2 { 10.f, 8.f }));
-
-    EXPECT_FALSE(a.Intersection(Aabb::FromMinMax({ 10.f, 0.f }, { 12.f, 5.f })).has_value());
-
-    EXPECT_EQ(a.Expanded(2.f), Aabb::FromMinMax({ -2.f, -2.f }, { 12.f, 12.f }));
-    EXPECT_EQ(a.Translated({ 5.f, -3.f }), Aabb::FromMinMax({ 5.f, -3.f }, { 15.f, 7.f }));
-    EXPECT_EQ(a.Union(b), Aabb::FromMinMax({ 0.f, 0.f }, { 20.f, 10.f }));
-}
-
-TEST(Geometry, AabbMirrorFlipsAroundAxis)
-{
-    const Aabb right = Aabb::FromMinMax({ 110.f, 80.f }, { 140.f, 120.f });
-    const Aabb left  = right.MirroredX(100.f);
-    EXPECT_EQ(left, Aabb::FromMinMax({ 60.f, 80.f }, { 90.f, 120.f }));
 }
 
 TEST(Geometry, CircleOverlaps)

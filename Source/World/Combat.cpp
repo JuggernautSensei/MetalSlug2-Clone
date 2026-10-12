@@ -187,11 +187,6 @@ bool Health::IsAlive() const
     return hp > 0;
 }
 
-float Health::GetRatio() const
-{
-    return maxHp > 0 ? static_cast<float>(hp) / static_cast<float>(maxHp) : 0.f;
-}
-
 int Health::ApplyDamage(
     const int _damage)
 {
@@ -203,16 +198,4 @@ int Health::ApplyDamage(
     hp -= applied;
     return applied;
 }
-
-int Health::Heal(
-    const int _amount)
-{
-    if (_amount <= 0 || hp <= 0)
-    {
-        return 0;
-    }
-    const int room    = maxHp - hp;
-    const int applied = _amount < room ? _amount : room;
-    hp += applied;
-    return applied;
-}
+
