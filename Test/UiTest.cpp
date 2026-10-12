@@ -1076,8 +1076,8 @@ struct TitleSim
         ctx.pRng   = &rng;
         ctx.pAudio = &audio;
         pTitle     = new TitleState { std::move(_config) };
-        runner     = std::unique_ptr<SimRunner> {
-            new SimRunner { ctx, std::unique_ptr<IGameState> { pTitle } }
+        runner     = Scoped<SimRunner> {
+            new SimRunner { ctx, Scoped<IGameState> { pTitle } }
         };
     }
 
@@ -1101,11 +1101,11 @@ struct TitleSim
 
     [[nodiscard]] bool IsStillTitle() const { return runner->GetState() == pTitle; }
 
-    RngMt19937                 rng = RngMt19937 { std::mt19937_64::default_seed };
-    GameContext                ctx;
-    TestAudio                  audio;
-    TitleState*                pTitle = nullptr;
-    std::unique_ptr<SimRunner> runner = nullptr;
+    RngMt19937        rng = RngMt19937 { std::mt19937_64::default_seed };
+    GameContext       ctx;
+    TestAudio         audio;
+    TitleState*       pTitle = nullptr;
+    Scoped<SimRunner> runner = nullptr;
 };
 
 namespace

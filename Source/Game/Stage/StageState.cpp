@@ -976,7 +976,7 @@ bool StageState::IsFinished() const
     return m_runner->IsFinished();
 }
 
-std::unique_ptr<IGameState> StageState::TakeNextState()
+Scoped<IGameState> StageState::TakeNextState()
 {
     if (!IsFinished() || m_bTakenNext)
     {

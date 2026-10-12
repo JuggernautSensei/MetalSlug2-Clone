@@ -5,7 +5,7 @@
 class SimRunner
 {
 public:
-    SimRunner(GameContext& _ctx, std::unique_ptr<IGameState> _pState);
+    SimRunner(GameContext& _ctx, Scoped<IGameState> _pState);
     ~SimRunner();
 
     SimRunner(const SimRunner&)            = delete;
@@ -15,7 +15,7 @@ public:
     void Run(Span<const InputFrame> _inputs);
 
     void Render(float _alpha);
-    void SwitchState(std::unique_ptr<IGameState> _pNext);
+    void SwitchState(Scoped<IGameState> _pNext);
 
     [[nodiscard]] IGameState*         GetState() const;
     [[nodiscard]] uint64_t            GetTickCount() const;
@@ -23,8 +23,8 @@ public:
     [[nodiscard]] bool                IsFinished() const;
 
 private:
-    GameContext&                m_ctx;
-    std::unique_ptr<IGameState> m_pState;
-    InputHistory                m_history   = {};
-    uint64_t                    m_tickCount = 0;
+    GameContext&       m_ctx;
+    Scoped<IGameState> m_pState;
+    InputHistory       m_history   = {};
+    uint64_t           m_tickCount = 0;
 };

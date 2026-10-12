@@ -21,7 +21,7 @@ public:
     int Run(int _argc, char** _argv);
 
     // 아무 스레드에서나 부를 수 있다. 작업은 메인 스레드에서 프레임마다 (로딩 대기 중에도) 실행된다.
-    void SubmitToMainThread(std::unique_ptr<IMainThreadTask> _pTask);
+    void SubmitToMainThread(Scoped<IMainThreadTask> _pTask);
 
 private:
     [[nodiscard]] bool InitSystems_();
@@ -55,7 +55,7 @@ private:
     InputSystem      m_input    = {};
     FixedStepClock   m_clock    = {};
 
-    std::unique_ptr<SimRunner> m_pRunner = nullptr;
+    Scoped<SimRunner> m_pRunner = nullptr;
 
     String   m_stateName        = {};
     uint64_t m_seed             = 1;

@@ -320,7 +320,7 @@ void EnemyLab::EnterLab()
     {
         return;
     }
-    std::unique_ptr<IGameState> pState = CreateState("enemylab");
+    Scoped<IGameState> pState = CreateState("enemylab");
     if (pState)
     {
         m_pRunner->SwitchState(std::move(pState));
@@ -335,7 +335,7 @@ void EnemyLab::LeaveLab()
     {
         return;
     }
-    std::unique_ptr<IGameState> pState = CreateState(m_returnState);
+    Scoped<IGameState> pState = CreateState(m_returnState);
     if (pState)
     {
         m_pRunner->SwitchState(std::move(pState));

@@ -39,8 +39,8 @@ Sim::Sim(
     m_ctx.pAnims = _pAnims;
 
     m_pState  = new SandboxState { std::move(_config) };
-    m_pRunner = std::unique_ptr<SimRunner> {
-        new SimRunner { m_ctx, std::unique_ptr<IGameState> { m_pState } }
+    m_pRunner = Scoped<SimRunner> {
+        new SimRunner { m_ctx, Scoped<IGameState> { m_pState } }
     };
 }
 

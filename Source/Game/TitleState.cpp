@@ -64,13 +64,13 @@ void TitleState::OnExit(
     _ctx.GetAudio().AllStop();
 }
 
-std::unique_ptr<IGameState> TitleState::CreateNext_() const
+Scoped<IGameState> TitleState::CreateNext_() const
 {
     if (!m_config.nextState.empty())
     {
         return CreateState(m_config.nextState);
     }
-    if (std::unique_ptr<IGameState> pStage = CreateState("stage0"))
+    if (Scoped<IGameState> pStage = CreateState("stage0"))
     {
         return pStage;
     }
@@ -103,7 +103,7 @@ void TitleState::Tick(
     }
 }
 
-std::unique_ptr<IGameState> TitleState::TakeNextState()
+Scoped<IGameState> TitleState::TakeNextState()
 {
     return std::move(m_pNext);
 }

@@ -84,5 +84,5 @@ private:
     String m_pendingBgm   = {};   // 페이드 아웃이 끝나면 재생할 BGM
     bool   m_bPendingLoop = true;
 
-    std::unique_ptr<Backend> m_pBackend;
+    Scoped<Backend> m_pBackend;
 };

@@ -22,8 +22,8 @@ public:
         m_ctx.assetRoot  = FindAssetRoot();
         m_ctx.bDebugDraw = _bDebugDraw;
         m_pState         = new StageState;
-        m_runner         = std::unique_ptr<SimRunner> {
-            new SimRunner { m_ctx, std::unique_ptr<IGameState> { m_pState } }
+        m_runner         = Scoped<SimRunner> {
+            new SimRunner { m_ctx, Scoped<IGameState> { m_pState } }
         };
     }
 
@@ -52,11 +52,11 @@ public:
     }
 
 private:
-    RngMt19937                 m_rng    = RngMt19937 { std::mt19937_64::default_seed };
-    GameContext                m_ctx    = {};
-    InputFrame                 m_frame  = {};
-    StageState*                m_pState = nullptr;
-    std::unique_ptr<SimRunner> m_runner = nullptr;
+    RngMt19937        m_rng    = RngMt19937 { std::mt19937_64::default_seed };
+    GameContext       m_ctx    = {};
+    InputFrame        m_frame  = {};
+    StageState*       m_pState = nullptr;
+    Scoped<SimRunner> m_runner = nullptr;
 };
 
 namespace

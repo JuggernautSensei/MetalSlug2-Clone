@@ -127,7 +127,7 @@ TEST(PlayerReplay, RegressionReplayPlaysTheSameWayTwiceAndHitsTheMilestones)
         ctx.assetRoot = FindAssetRoot();
 
         SandboxState* pState = new SandboxState;
-        SimRunner     runner { ctx, std::unique_ptr<IGameState> { pState } };
+        SimRunner     runner { ctx, Scoped<IGameState> { pState } };
         runner.Run(replay.frames);
 
         hashes[run]              = pState->HashState();

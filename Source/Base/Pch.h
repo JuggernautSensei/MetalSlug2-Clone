@@ -32,12 +32,15 @@
 #include <JugX/Random.h>
 #include <JugX/Error.h>
 #include <JugX/Result.h>
+#include <JugX/Scoped.h>
 
 #include "Base/Types.h"
 #include "Base/Handle.h"
 
 using jug::Error;
 using jug::kOK;
+using jug::MakeScoped;
 using jug::Random;
 using jug::Result;
 using jug::RngMt19937;
+using jug::Scoped;

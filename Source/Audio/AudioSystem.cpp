@@ -175,8 +175,8 @@ Result<void> AudioSystem::Init(
         return Error { kOK };
     }
 
-    std::unique_ptr<Backend> pBackend { new Backend };
-    const ma_engine_config   engineConfig = ma_engine_config_init();
+    Scoped<Backend>        pBackend { new Backend };
+    const ma_engine_config engineConfig = ma_engine_config_init();
     if (const ma_result result = ma_engine_init(&engineConfig, &pBackend->engine); result != MA_SUCCESS)
     {
         SLUG_LOG_WARN("오디오 장치를 열 수 없어 소리 없이 계속합니다 ({})", ma_result_description(result));
@@ -196,7 +196,7 @@ Result<void> AudioSystem::Init(
         }
         if (_config.pLoader)
         {
-            _config.pLoader->Submit(std::make_unique<SoundRegisterJob>(&pBackend->engine, &entry, &preloaded));
+            _config.pLoader->Submit(Scoped<IAsyncLoadJob> { new SoundRegisterJob(&pBackend->engine, &entry, &preloaded) });
         }
         else
         {
@@ -235,7 +235,7 @@ void AudioSystem::Shutdown()
         return;
     }
     AllStop();
-    m_pBackend.reset();
+    m_pBackend.Reset();
     m_bDevice      = false;
     m_bInitialized = false;
 }

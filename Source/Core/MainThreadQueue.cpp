@@ -9,7 +9,7 @@ MainThreadQueue::MainThreadQueue() = default;
 MainThreadQueue::~MainThreadQueue() = default;
 
 void MainThreadQueue::Submit(
-    std::unique_ptr<IMainThreadTask> _pTask)
+    Scoped<IMainThreadTask> _pTask)
 {
     if (!_pTask)
     {
@@ -24,12 +24,12 @@ void MainThreadQueue::Submit(
 
 size_t MainThreadQueue::DrainAll()
 {
-    Vector<std::unique_ptr<IMainThreadTask>> batch;
+    Vector<Scoped<IMainThreadTask>> batch;
     {
         const std::lock_guard<std::mutex> lock { m_mutex };
         batch.swap(m_tasks);
     }
-    for (const std::unique_ptr<IMainThreadTask>& pTask: batch)
+    for (const Scoped<IMainThreadTask>& pTask: batch)
     {
         pTask->Run();
     }

@@ -138,7 +138,7 @@ int RunHeadless(
     ctx.pRng      = &rng;
     ctx.assetRoot = FindAssetRoot();
 
-    std::unique_ptr<IGameState> pState = CreateState(stateName);
+    Scoped<IGameState> pState = CreateState(stateName);
     if (!pState)
     {
         SLUG_LOG_ERROR("알 수 없는 게임 상태: {}", stateName);

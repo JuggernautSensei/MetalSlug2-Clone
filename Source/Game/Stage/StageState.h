@@ -54,8 +54,8 @@ public:
     void Tick(GameContext& _ctx, const InputHistory& _input) override;
     void Render(GameContext& _ctx, float _alpha) override;
 
-    [[nodiscard]] std::unique_ptr<IGameState> TakeNextState() override;
-    [[nodiscard]] bool                        IsFinished() const override;
+    [[nodiscard]] Scoped<IGameState> TakeNextState() override;
+    [[nodiscard]] bool               IsFinished() const override;
 
     [[nodiscard]] bool                    IsLoaded() const;
     [[nodiscard]] const StageData&        GetData() const;

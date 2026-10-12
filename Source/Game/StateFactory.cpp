@@ -7,16 +7,16 @@
 #include "Game/TitleState.h"
 #include "Game/Ui/UiDemoState.h"
 
-std::unique_ptr<IGameState> CreateState(
+Scoped<IGameState> CreateState(
     const StringView _name)
 {
     if (_name == "demo")
     {
-        return std::unique_ptr<IGameState> { new DemoState };
+        return Scoped<IGameState> { new DemoState };
     }
     if (_name == "sandbox")
     {
-        return std::unique_ptr<IGameState> { new SandboxState };
+        return Scoped<IGameState> { new SandboxState };
     }
     if (_name == "proplab")
     {
@@ -24,19 +24,19 @@ std::unique_ptr<IGameState> CreateState(
         config.spawnFeet     = { 1500.f, 378.f };
         config.bSpawnTargets = false;
         config.bPropLab      = true;
-        return std::unique_ptr<IGameState> { new SandboxState { config } };
+        return Scoped<IGameState> { new SandboxState { config } };
     }
     if (_name == "enemylab")
     {
         SandboxConfig config;
         config.bEnemyLab = true;
-        return std::unique_ptr<IGameState> { new SandboxState { config } };
+        return Scoped<IGameState> { new SandboxState { config } };
     }
     if (_name == "vehiclelab")
     {
         SandboxConfig config;
         config.bVehicleLab = true;
-        return std::unique_ptr<IGameState> { new SandboxState { config } };
+        return Scoped<IGameState> { new SandboxState { config } };
     }
     if (_name == "buslab" || _name == "buslab_bot")
     {
@@ -46,7 +46,7 @@ std::unique_ptr<IGameState> CreateState(
         config.bSpawnTargets = false;
         config.bBusLab       = true;
         config.bBusBot       = _name == "buslab_bot";
-        return std::unique_ptr<IGameState> { new SandboxState { config } };
+        return Scoped<IGameState> { new SandboxState { config } };
     }
     if (_name == "bosslab" || _name == "bosslab_god" || _name == "bosslab_bot")
     {
@@ -58,7 +58,7 @@ std::unique_ptr<IGameState> CreateState(
         config.bBot        = _name == "bosslab_bot";
         config.bHmg        = _name == "bosslab_bot";
         config.bAutoDamage = _name == "bosslab_bot";
-        return std::unique_ptr<IGameState> { new StageState { config } };
+        return Scoped<IGameState> { new StageState { config } };
     }
     if (_name == "helilab" || _name == "helilab_god" || _name == "helilab_bot" || _name == "helilab_kill")
     {
@@ -70,7 +70,7 @@ std::unique_ptr<IGameState> CreateState(
         config.bGodMode = _name != "helilab";
         config.bHeliBot = _name == "helilab_bot" || _name == "helilab_kill";   // 봇 입력 (좌우 이동 + 위로 사격)
         config.heliHp   = _name == "helilab_kill" ? 40 : -1;                   // 격추 연출 캡처용: 봇 권총으로 곧 격추된다
-        return std::unique_ptr<IGameState> { new SandboxState { config } };
+        return Scoped<IGameState> { new SandboxState { config } };
     }
     if (_name == "sluglab")
     {
@@ -84,19 +84,19 @@ std::unique_ptr<IGameState> CreateState(
         config.bSpawnTargets = false;
         config.slugFeet.push_back({ 430.f, 378.f });
         config.slugFeet.push_back({ 2300.f, 378.f });
-        return std::unique_ptr<IGameState> { new SandboxState { config } };
+        return Scoped<IGameState> { new SandboxState { config } };
     }
     if (_name == "stage0")
     {
-        return std::unique_ptr<IGameState> { new StageState };
+        return Scoped<IGameState> { new StageState };
     }
     if (_name == "title")
     {
-        return std::unique_ptr<IGameState> { new TitleState };
+        return Scoped<IGameState> { new TitleState };
     }
     if (_name == "uidemo")
     {
-        return std::unique_ptr<IGameState> { new UiDemoState };
+        return Scoped<IGameState> { new UiDemoState };
     }
     return nullptr;
 }

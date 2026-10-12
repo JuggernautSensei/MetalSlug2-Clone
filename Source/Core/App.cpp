@@ -71,7 +71,7 @@ int App::Run(
 }
 
 void App::SubmitToMainThread(
-    std::unique_ptr<IMainThreadTask> _pTask)
+    Scoped<IMainThreadTask> _pTask)
 {
     m_mainQueue.Submit(std::move(_pTask));
 }
@@ -402,7 +402,7 @@ void App::Init_()
 
     m_loader.WaitAll();
 
-    std::unique_ptr<IGameState> pState = CreateState(m_stateName);
+    Scoped<IGameState> pState = CreateState(m_stateName);
     if (!pState)
     {
         SLUG_LOG_FATAL("알 수 없는 게임 상태: {}", m_stateName);
@@ -410,12 +410,12 @@ void App::Init_()
         m_bRunning   = false;
         return;
     }
-    m_pRunner = std::unique_ptr<SimRunner> {
+    m_pRunner = Scoped<SimRunner> {
         new SimRunner { m_ctx, std::move(pState) }
     };
     if (m_bEditor)
     {
-        m_editor.GetLab().Init(m_pRunner.get(), m_stateName, m_ctx.assetRoot);
+        m_editor.GetLab().Init(m_pRunner.GetPtr(), m_stateName, m_ctx.assetRoot);
         m_editor.GetLab().SetAutoSpawn(m_editorLabSpawn);
     }
 }
@@ -424,7 +424,7 @@ void App::Shutdown_()
 {
     SaveRecording_();
     m_loader.Shutdown();
-    m_pRunner.reset();
+    m_pRunner.Reset();
     m_ctx.pAudio = nullptr;
     m_audio.Shutdown();
     m_sprites.Shutdown();

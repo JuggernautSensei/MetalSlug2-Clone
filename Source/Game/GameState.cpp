@@ -18,7 +18,7 @@ void IGameState::OnExit(GameContext&)
 {
 }
 
-std::unique_ptr<IGameState> IGameState::TakeNextState()
+Scoped<IGameState> IGameState::TakeNextState()
 {
     return nullptr;
 }

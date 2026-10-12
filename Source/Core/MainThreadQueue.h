@@ -23,7 +23,7 @@ public:
     MainThreadQueue(const MainThreadQueue&)            = delete;
     MainThreadQueue& operator=(const MainThreadQueue&) = delete;
 
-    void Submit(std::unique_ptr<IMainThreadTask> _pTask);
+    void Submit(Scoped<IMainThreadTask> _pTask);
 
     // 지금 쌓여 있는 작업을 한 번 비운다 (비우는 도중 새로 들어온 작업은 다음 호출에서). 실행한 개수를 돌려준다.
     size_t DrainAll();
@@ -34,7 +34,7 @@ public:
     [[nodiscard]] size_t GetPendingCount() const;
 
 private:
-    mutable std::mutex                       m_mutex = {};
-    std::condition_variable                  m_cv    = {};
-    Vector<std::unique_ptr<IMainThreadTask>> m_tasks = {};
+    mutable std::mutex              m_mutex = {};
+    std::condition_variable         m_cv    = {};
+    Vector<Scoped<IMainThreadTask>> m_tasks = {};
 };

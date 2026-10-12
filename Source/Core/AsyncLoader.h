@@ -34,7 +34,7 @@ public:
     [[nodiscard]] static int ChooseWorkerCount();
 
     void Start(int _workerCount);
-    void Submit(std::unique_ptr<IAsyncLoadJob> _pJob);
+    void Submit(Scoped<IAsyncLoadJob> _pJob);
     void WaitAll();
 
     // 워커를 멈추고 합친다. 아직 Complete 되지 않은 작업은 버린다.
@@ -49,8 +49,8 @@ private:
 
     struct Entry
     {
-        std::unique_ptr<IAsyncLoadJob> pJob      = nullptr;
-        bool                           bExecuted = false;
+        Scoped<IAsyncLoadJob> pJob      = nullptr;
+        bool                  bExecuted = false;
     };
 
     struct WorkItem

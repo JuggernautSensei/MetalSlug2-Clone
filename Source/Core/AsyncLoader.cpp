@@ -70,7 +70,7 @@ void AsyncLoader::Start(
 }
 
 void AsyncLoader::Submit(
-    std::unique_ptr<IAsyncLoadJob> _pJob)
+    Scoped<IAsyncLoadJob> _pJob)
 {
     if (!_pJob || m_bStopped)
     {
@@ -93,7 +93,7 @@ void AsyncLoader::Submit(
     m_entries.push_back(std::move(entry));
     {
         const std::lock_guard<std::mutex> lock { m_mutex };
-        m_work.push_back({ m_entries.back().pJob.get(), index });
+        m_work.push_back({ m_entries.back().pJob.GetPtr(), index });
     }
     m_workCv.notify_one();
 }
@@ -175,7 +175,7 @@ void AsyncLoader::WorkerMain_()
         }
 
         item.pJob->Execute();
-        m_mainQueue.Submit(std::make_unique<ExecutedNotice>(this, item.index));
+        m_mainQueue.Submit(Scoped<IMainThreadTask> { new ExecutedNotice(this, item.index) });
     }
 }
 
@@ -201,9 +201,9 @@ void AsyncLoader::Deliver_()
             break;
         }
 
-        std::unique_ptr<IAsyncLoadJob> pJob = std::move(m_entries[next - m_entryBase].pJob);
+        Scoped<IAsyncLoadJob> pJob = std::move(m_entries[next - m_entryBase].pJob);
         pJob->Complete();   // 여기서 Submit 이 불려도 m_entries 를 다시 인덱스로 읽으므로 안전하다
-        pJob.reset();
+        pJob.Reset();
         {
             const std::lock_guard<std::mutex> lock { m_mutex };
             ++m_completed;

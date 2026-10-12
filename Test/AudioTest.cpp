@@ -412,11 +412,11 @@ struct AudioSim
         IAudioSink* _pAudio)
         : rng(uint64_t { 1 })
     {
-        ctx.pRng                             = &rng;
-        ctx.pAudio                           = _pAudio;
-        std::unique_ptr<SandboxState> pOwned = std::make_unique<SandboxState>(MakeFlatConfig());
-        pState                               = pOwned.get();
-        runner                               = std::make_unique<SimRunner>(ctx, std::move(pOwned));
+        ctx.pRng                    = &rng;
+        ctx.pAudio                  = _pAudio;
+        Scoped<SandboxState> pOwned = MakeScoped<SandboxState>(MakeFlatConfig());
+        pState                      = pOwned.GetPtr();
+        runner                      = MakeScoped<SimRunner>(ctx, Scoped<IGameState> { pOwned.Release() });
     }
 
     void RunScript(
@@ -433,10 +433,10 @@ struct AudioSim
         }
     }
 
-    RngMt19937                 rng    = RngMt19937 { std::mt19937_64::default_seed };
-    GameContext                ctx    = {};
-    SandboxState*              pState = nullptr;
-    std::unique_ptr<SimRunner> runner = nullptr;
+    RngMt19937        rng    = RngMt19937 { std::mt19937_64::default_seed };
+    GameContext       ctx    = {};
+    SandboxState*     pState = nullptr;
+    Scoped<SimRunner> runner = nullptr;
 };
 
 TEST(AudioDeterminism, SameStateHashWithNullTestAndDryAudio)

@@ -659,7 +659,7 @@ void SpriteBatch::LoadAtlasPagesAsync(
     size_t expected = m_pages.size();
     for (const String& page: _library.GetAtlasPages())
     {
-        _loader.Submit(std::make_unique<AtlasPageLoadJob>(this, _library.GetRoot() / page, expected++));
+        _loader.Submit(Scoped<IAsyncLoadJob> { new AtlasPageLoadJob(this, _library.GetRoot() / page, expected++) });
     }
 }
 
@@ -672,7 +672,7 @@ void SpriteBatch::LoadStandaloneTextureAsync(
     {
         *_pOutHandle = -1;
     }
-    _loader.Submit(std::make_unique<StandaloneTextureLoadJob>(this, _pngPath, _pOutHandle));
+    _loader.Submit(Scoped<IAsyncLoadJob> { new StandaloneTextureLoadJob(this, _pngPath, _pOutHandle) });
 }
 
 void SpriteBatch::DrawFrame(

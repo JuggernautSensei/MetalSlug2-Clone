@@ -49,7 +49,7 @@ public:
     virtual void Tick(GameContext& _ctx, const InputHistory& _input) = 0;
     virtual void Render(GameContext& _ctx, float _alpha)             = 0;
 
-    [[nodiscard]] virtual std::unique_ptr<IGameState> TakeNextState();
+    [[nodiscard]] virtual Scoped<IGameState> TakeNextState();
 
     [[nodiscard]] virtual bool IsFinished() const;
 

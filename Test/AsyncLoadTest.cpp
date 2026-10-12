@@ -52,7 +52,7 @@ public:
     {
         for (int i = 0; i < m_count; ++i)
         {
-            m_pQueue->Submit(std::make_unique<QueueRecordTask>(m_pOut, m_producer, i));
+            m_pQueue->Submit(Scoped<IMainThreadTask> { new QueueRecordTask(m_pOut, m_producer, i) });
         }
     }
 
@@ -171,7 +171,7 @@ void RunOrderedLoad_(
     for (int i = 0; i < kJobs; ++i)
     {
         // 뒤쪽 작업일수록 먼저 끝나게 해서 완료 순서가 뒤집히도록 만든다
-        loader.Submit(std::make_unique<OrderedLoadJob>(&log, i, (kJobs - i) % 7));
+        loader.Submit(Scoped<IAsyncLoadJob> { new OrderedLoadJob(&log, i, (kJobs - i) % 7) });
     }
     loader.WaitAll();
 
@@ -217,7 +217,7 @@ public:
             loader.Start(2);
             for (int i = 0; i < kJobs; ++i)
             {
-                loader.Submit(std::make_unique<OrderedLoadJob>(&log, i, 5));
+                loader.Submit(Scoped<IAsyncLoadJob> { new OrderedLoadJob(&log, i, 5) });
             }
             loader.Shutdown();
             m_destroyed = log.destroyed.load();

@@ -33,7 +33,7 @@ namespace
     ctx.pRng = &rng;
 
     DemoState* pDemo = new DemoState;
-    SimRunner  runner { ctx, std::unique_ptr<IGameState> { pDemo } };
+    SimRunner  runner { ctx, Scoped<IGameState> { pDemo } };
     runner.Run(_frames);
     return pDemo->GetPosition();
 }

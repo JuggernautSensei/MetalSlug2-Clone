@@ -89,11 +89,11 @@ public:
     [[nodiscard]] float Y();
 
 private:
-    RngMt19937                 m_rng     = RngMt19937 { std::mt19937_64::default_seed };
-    GameContext                m_ctx     = {};
-    SandboxState*              m_pState  = nullptr;
-    std::unique_ptr<SimRunner> m_pRunner = nullptr;
-    InputFrame                 m_frame   = {};
+    RngMt19937        m_rng     = RngMt19937 { std::mt19937_64::default_seed };
+    GameContext       m_ctx     = {};
+    SandboxState*     m_pState  = nullptr;
+    Scoped<SimRunner> m_pRunner = nullptr;
+    InputFrame        m_frame   = {};
 };
 
 [[nodiscard]] bool LoadAnims(

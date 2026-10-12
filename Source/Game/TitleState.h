@@ -23,7 +23,7 @@ public:
     void Tick(GameContext& _ctx, const InputHistory& _input) override;
     void Render(GameContext& _ctx, float _alpha) override;
 
-    [[nodiscard]] std::unique_ptr<IGameState> TakeNextState() override;
+    [[nodiscard]] Scoped<IGameState> TakeNextState() override;
 
     [[nodiscard]] bool            IsStarting() const;
     [[nodiscard]] int             GetTickCount() const;
@@ -31,13 +31,13 @@ public:
     [[nodiscard]] const UiSystem& GetUi() const;
 
 private:
-    [[nodiscard]] std::unique_ptr<IGameState> CreateNext_() const;
+    [[nodiscard]] Scoped<IGameState> CreateNext_() const;
 
     TitleConfig m_config = {};
     UiSystem    m_ui     = {};
 
-    int                         m_tickCount = 0;
-    bool                        m_bStarting = false;
-    String                      m_selected  = {};
-    std::unique_ptr<IGameState> m_pNext     = nullptr;
+    int                m_tickCount = 0;
+    bool               m_bStarting = false;
+    String             m_selected  = {};
+    Scoped<IGameState> m_pNext     = nullptr;
 };

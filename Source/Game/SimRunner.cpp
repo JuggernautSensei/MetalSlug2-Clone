@@ -3,8 +3,8 @@
 #include "Base/Types.h"
 
 SimRunner::SimRunner(
-    GameContext&                _ctx,
-    std::unique_ptr<IGameState> _pState)
+    GameContext&       _ctx,
+    Scoped<IGameState> _pState)
     : m_ctx(_ctx)
     , m_pState(std::move(_pState))
 {
@@ -35,7 +35,7 @@ void SimRunner::Step(
 
     m_pState->Tick(m_ctx, m_history);
 
-    if (std::unique_ptr<IGameState> pNext = m_pState->TakeNextState(); pNext)
+    if (Scoped<IGameState> pNext = m_pState->TakeNextState(); pNext)
     {
         SwitchState(std::move(pNext));
     }
@@ -61,7 +61,7 @@ void SimRunner::Render(
 
 IGameState* SimRunner::GetState() const
 {
-    return m_pState.get();
+    return m_pState.GetPtr();
 }
 
 uint64_t SimRunner::GetTickCount() const
@@ -80,7 +80,7 @@ bool SimRunner::IsFinished() const
 }
 
 void SimRunner::SwitchState(
-    std::unique_ptr<IGameState> _pNext)
+    Scoped<IGameState> _pNext)
 {
     if (m_pState)
     {
