@@ -5,7 +5,6 @@
 #include "Base/SlugError.h"
 #include "Base/Log.h"
 #include "Base/PhaseTimer.h"
-#include "Core/AsyncLoader.h"
 #include "Base/Types.h"
 
 // miniaudio 구현부는 이 파일에서만 만든다 (stb_vorbis 는 헤더 전용으로 선언만 가져온다).
@@ -104,48 +103,6 @@ namespace
 }
 }   // namespace
 
-class SoundRegisterJob final : public IAsyncLoadJob
-{
-public:
-    SoundRegisterJob(ma_engine* _pEngine, const SoundEntry* _pEntry, int* _pPreloaded);
-
-    void Execute() override;
-    void Complete() override;
-
-private:
-    ma_engine*        m_pEngine    = nullptr;
-    const SoundEntry* m_pEntry     = nullptr;
-    int*              m_pPreloaded = nullptr;
-    ma_result         m_result     = MA_ERROR;
-};
-
-SoundRegisterJob::SoundRegisterJob(
-    ma_engine* const        _pEngine,
-    const SoundEntry* const _pEntry,
-    int* const              _pPreloaded)
-    : m_pEngine(_pEngine)
-    , m_pEntry(_pEntry)
-    , m_pPreloaded(_pPreloaded)
-{
-}
-
-void SoundRegisterJob::Execute()
-{
-    m_result = RegisterFile_(m_pEngine, m_pEntry->path, MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_DECODE);
-}
-
-void SoundRegisterJob::Complete()
-{
-    if (m_result == MA_SUCCESS)
-    {
-        ++*m_pPreloaded;
-    }
-    else
-    {
-        SLUG_LOG_WARN("효과음 로드 실패 {} ({}): {}", m_pEntry->name, m_pEntry->file, ma_result_description(m_result));
-    }
-}
-
 AudioSystem::AudioSystem() = default;
 
 AudioSystem::~AudioSystem()
@@ -194,20 +151,15 @@ Result<void> AudioSystem::Init(
         {
             continue;
         }
-        if (_config.pLoader)
+        const ma_result result = RegisterFile_(&pBackend->engine, entry.path, MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_DECODE);
+        if (result == MA_SUCCESS)
         {
-            _config.pLoader->Submit(Scoped<IAsyncLoadJob> { new SoundRegisterJob(&pBackend->engine, &entry, &preloaded) });
+            ++preloaded;
         }
         else
         {
-            SoundRegisterJob job { &pBackend->engine, &entry, &preloaded };
-            job.Execute();
-            job.Complete();
+            SLUG_LOG_WARN("효과음 로드 실패 {} ({}): {}", entry.name, entry.file, ma_result_description(result));
         }
-    }
-    if (_config.pLoader)
-    {
-        _config.pLoader->WaitAll();
     }
 
     m_pBackend = std::move(pBackend);

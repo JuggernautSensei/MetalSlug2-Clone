@@ -387,7 +387,6 @@ void App::Init_()
     {
         AudioConfig audioConfig;
         audioConfig.bEnabled = !m_bNoAudio && m_capturePath.empty();
-        audioConfig.pLoader  = &m_loader;
         if (const Result<void> audio = m_audio.InitFromDirectory(assetRoot, audioConfig); audio)
         {
             m_ctx.pAudio = &m_audio;
