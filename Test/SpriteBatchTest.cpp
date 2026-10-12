@@ -1,9 +1,12 @@
 // 스프라이트 배치 테스트: 정렬 순서, 목적지 사각형, 기본 옵션, SDL 렌더링 검증
+#include <filesystem>
+#include <format>
 #include <SDL3/SDL.h>
 #include <gtest/gtest.h>
 
 #include "Base/Math.h"
 #include "Base/Types.h"
+#include "Core/AssetPath.h"
 #include "Render/SpriteBatch.h"
 
 namespace
@@ -534,4 +537,62 @@ TEST(SpriteBatchSdl, FlushBelowDepthLetsTheTerrainTextureCoverLowLayers)
     EXPECT_EQ(target.PixelRgb(0, 0), 0x0000FFu);
     EXPECT_EQ(target.PixelRgb(3, 0), kRed);
     EXPECT_EQ(target.PixelRgb(1, 1), kGreen);
+}
+
+namespace
+{
+[[nodiscard]] Vector<FilePath> AtlasPagePaths_(
+    const int _count)
+{
+    Vector<FilePath> paths;
+    for (int i = 0; i < _count; ++i)
+    {
+        paths.push_back(FindAssetRoot() / "Atlas" / std::format("atlas_{:03}.png", i % 2));
+    }
+    return paths;
+}
+}   // namespace
+
+TEST(DecodeImages, ParallelAndSequentialResultsAreIdenticalInRequestOrder)
+{
+    Vector<FilePath> paths = AtlasPagePaths_(5);
+    if (!std::filesystem::exists(paths[0]) || !std::filesystem::exists(paths[1]))
+    {
+        GTEST_SKIP() << "Atlas 페이지가 없는 환경";
+    }
+
+    const Vector<Result<DecodedImage>> sequential = DecodeImages(paths, true, 1);
+    const Vector<Result<DecodedImage>> parallel   = DecodeImages(paths, true, 4);
+    ASSERT_EQ(sequential.size(), paths.size());
+    ASSERT_EQ(parallel.size(), paths.size());
+    for (size_t i = 0; i < paths.size(); ++i)
+    {
+        ASSERT_TRUE(sequential[i].HasValue());
+        ASSERT_TRUE(parallel[i].HasValue());
+        EXPECT_EQ(parallel[i]->width, sequential[i]->width);
+        EXPECT_EQ(parallel[i]->rgba, sequential[i]->rgba);
+        EXPECT_EQ(parallel[i]->flashRgba, sequential[i]->flashRgba);
+        EXPECT_EQ(sequential[i]->flashRgba.size(), sequential[i]->rgba.size());
+        EXPECT_EQ(sequential[i]->rgba, sequential[i % 2]->rgba) << "같은 파일이 같은 순서 칸에 들어간다";
+    }
+    EXPECT_NE(sequential[0]->rgba, sequential[1]->rgba);
+
+    const Vector<Result<DecodedImage>> noFlash = DecodeImages(Span<const FilePath> { paths.data(), 1 }, false, 2);
+    ASSERT_TRUE(noFlash[0].HasValue());
+    EXPECT_TRUE(noFlash[0]->flashRgba.empty());
+}
+
+TEST(DecodeImages, MissingFileIsReportedAsFileOpenAtItsOwnPosition)
+{
+    Vector<FilePath> paths = { FindAssetRoot() / "Atlas" / "no_such_page.png", FindAssetRoot() / "Atlas" / "no_such_page2.png" };
+    for (const int numWorkers: { 1, 4 })
+    {
+        const Vector<Result<DecodedImage>> results = DecodeImages(paths, true, numWorkers);
+        ASSERT_EQ(results.size(), 2u);
+        for (const Result<DecodedImage>& result: results)
+        {
+            ASSERT_TRUE(result.HasError());
+            EXPECT_TRUE(HasErrorCode(result.GetError(), eError::FileOpen));
+        }
+    }
 }

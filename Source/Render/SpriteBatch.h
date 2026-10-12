@@ -74,6 +74,17 @@ struct TextureViewRects
 // 아틀라스 페이지의 피격 플래시 변환본 RGBA. 순수 CPU 작업이라 워커 스레드에서 불러도 된다.
 [[nodiscard]] Vector<uint8_t> BuildHitFlashRgba(Span<const uint8_t> _rgba, size_t _pixelCount);
 
+struct DecodedImage
+{
+    int             width     = 0;
+    int             height    = 0;
+    Vector<uint8_t> rgba      = {};
+    Vector<uint8_t> flashRgba = {};
+};
+
+// PNG 파일 읽기 + 디코드 (+ 플래시 변환본) 를 병렬로 한다. 결과는 _paths 순서 그대로. 메모리 상한은 호출부가 한 번에 넘기는 개수로 정한다.
+[[nodiscard]] Vector<Result<DecodedImage>> DecodeImages(Span<const FilePath> _paths, bool _bBuildFlash, int _numWorkers);
+
 // --trace-load: 텍스처 로드마다 "[tex] ..." 한 줄을 stderr 로 남긴다 (꺼져 있으면 아무 일도 하지 않는다)
 void SetLoadTraceEnabled(bool _bEnabled);
 

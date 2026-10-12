@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <execution>
 #include <fstream>
 #include <SDL3/SDL.h>
 
@@ -99,13 +100,6 @@ TextureViewRects ComputeTextureView(
     result.dst      = { x0 - camX, y0 - camY, x1 - x0, y1 - y0 };
     return result;
 }
-
-struct DecodedImage
-{
-    int             width  = 0;
-    int             height = 0;
-    Vector<uint8_t> rgba   = {};
-};
 
 namespace
 {
@@ -256,6 +250,48 @@ Vector<uint8_t> BuildHitFlashRgba(
         out[o + 3]     = c.a;
     }
     return out;
+}
+
+namespace
+{
+[[nodiscard]] Result<DecodedImage> DecodeImage_(
+    const FilePath& _path,
+    const bool      _bBuildFlash)
+{
+    Result<DecodedImage> decoded = DecodePngFile_(_path);
+    if (!decoded || !_bBuildFlash)
+    {
+        return decoded;
+    }
+
+    DecodedImage image = decoded.Take();
+    {
+        const ScopedPhaseTimer timer { "flash-build", _path.filename().string() };
+        image.flashRgba = BuildHitFlashRgba(image.rgba, static_cast<size_t>(image.width) * static_cast<size_t>(image.height));
+    }
+    return image;
+}
+}   // namespace
+
+Vector<Result<DecodedImage>> DecodeImages(
+    const Span<const FilePath> _paths,
+    const bool                 _bBuildFlash,
+    const int                  _numWorkers)
+{
+    Vector<Result<DecodedImage>> results(_paths.size(), Result<DecodedImage> { Error { eError::InvalidData } });
+    if (_numWorkers <= 1)
+    {
+        for (size_t i = 0; i < _paths.size(); ++i)
+        {
+            results[i] = DecodeImage_(_paths[i], _bBuildFlash);
+        }
+        return results;
+    }
+
+    std::for_each(std::execution::par, results.begin(), results.end(), [&](Result<DecodedImage>& _result) {
+        _result = DecodeImage_(_paths[static_cast<size_t>(&_result - results.data())], _bBuildFlash);
+    });
+    return results;
 }
 
 namespace
