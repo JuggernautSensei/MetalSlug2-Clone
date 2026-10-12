@@ -122,11 +122,6 @@ Span<const SlugVehicle> SlugSystem::GetAll() const
     return m_slugs;
 }
 
-int SlugSystem::GetRiddenIndex() const
-{
-    return m_riddenIndex;
-}
-
 const SlugVehicle* SlugSystem::GetRiddenOrNull() const
 {
     return m_riddenIndex >= 0 ? &m_slugs[static_cast<size_t>(m_riddenIndex)] : nullptr;

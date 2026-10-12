@@ -334,19 +334,6 @@ const SpawnRoute* StageWorldHost::FindRoute(
     return nullptr;
 }
 
-SpawnRoute* StageWorldHost::FindRouteMut_(
-    const SpawnId _id)
-{
-    for (SpawnRoute& route: m_routes)
-    {
-        if (route.id == _id)
-        {
-            return &route;
-        }
-    }
-    return nullptr;
-}
-
 SpawnId StageWorldHost::AllocId_()
 {
     return m_nextId++;
@@ -627,11 +614,6 @@ std::optional<float> StageWorldHost::GetGroundFindY(
 Vec2 StageWorldHost::PlayerFeet() const
 {
     return m_pPlayer ? m_pPlayer->GetLogicalFeet() : Vec2 { 0.f, 0.f };
-}
-
-bool StageWorldHost::PlayerAlive() const
-{
-    return m_pPlayer && m_pPlayer->IsAlive();
 }
 
 bool StageWorldHost::IsGameOver() const

@@ -50,7 +50,6 @@ inline constexpr int   kVulcanAngleCount = 32;
 inline constexpr float kVulcanAngleStep  = 11.25f;
 
 [[nodiscard]] int    VulcanIndexFromAngle(float _angleDeg);
-[[nodiscard]] float  VulcanAngleFromIndex(int _index);
 [[nodiscard]] String GetVulcanShotClipName(int _index);
 
 // 곡사포탄 스프라이트: 9 각도 행 (0 = 위쪽 90도 ... 8 = 수평 0도) x 10 열 (회색 -> 백열)

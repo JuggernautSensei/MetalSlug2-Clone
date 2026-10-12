@@ -103,7 +103,6 @@ public:
     void                               SetGround(StringView _name) override;
     [[nodiscard]] std::optional<float> GetGroundFindY(float _x, float _fromY) const override;
     [[nodiscard]] Vec2                 PlayerFeet() const override;
-    [[nodiscard]] bool                 PlayerAlive() const override;
     [[nodiscard]] bool                 IsGameOver() const override;
     void                               SetPlayerInvincible(float _seconds) override;
     void                               WarpPlayer(Vec2 _feet) override;
@@ -123,7 +122,6 @@ private:
         GroundMap map  = {};
     };
 
-    [[nodiscard]] SpawnRoute*              FindRouteMut_(SpawnId _id);
     [[nodiscard]] SpawnId                  AllocId_();
     void                                   AddRoute_(SpawnId _id, eRouteKind _kind, uint32_t _handle);
     [[nodiscard]] SpawnId                  SpawnPlaceholder_(const SpawnRequest& _request);

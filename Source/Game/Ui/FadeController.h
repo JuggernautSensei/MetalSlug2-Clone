@@ -21,7 +21,6 @@ public:
     void Tick();
 
     [[nodiscard]] float   GetAlpha() const;
-    [[nodiscard]] ePhase  GetPhase() const;
     [[nodiscard]] bool    IsBusy() const;
     [[nodiscard]] bool    IsBlack() const;
     [[nodiscard]] bool    IsClear() const;

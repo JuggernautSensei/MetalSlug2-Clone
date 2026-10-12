@@ -81,11 +81,6 @@ void ParamValue::Set(
     m_items.push_back(std::move(_value));
 }
 
-ParamValue::eType ParamValue::GetType() const
-{
-    return m_type;
-}
-
 bool ParamValue::IsNull() const
 {
     return m_type == eType::Null;
@@ -153,11 +148,6 @@ const ParamValue& ParamValue::At(
         return NullValue();
     }
     return m_items[_index];
-}
-
-Span<const String> ParamValue::GetKeys() const
-{
-    return m_keys;
 }
 
 const ParamValue* ParamValue::Find(
@@ -427,21 +417,6 @@ int StageData::CountGates() const
         count += CountGatesIn_(section.actions);
     }
     return count;
-}
-
-const char* GetEntityKindName(
-    const eEntityKind _kind)
-{
-    switch (_kind)
-    {
-        case eEntityKind::Enemy: return "enemy";
-        case eEntityKind::Npc: return "npc";
-        case eEntityKind::Prop: return "prop";
-        case eEntityKind::Decor: return "decor";
-        case eEntityKind::Item: return "item";
-        case eEntityKind::Collider: return "collider";
-    }
-    return "?";
 }
 
 const char* GetActionTypeName(

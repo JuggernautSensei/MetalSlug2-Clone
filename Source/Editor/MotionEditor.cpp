@@ -1141,7 +1141,7 @@ void MotionEditor::DrawOverlay(
     }
     const float facing = static_cast<float>(pEnemy->facing < 0 ? -1 : 1);
     const Vec2  feet   = pEnemy->body.position;
-    const Vec2  camRaw = pState->GetCamera().GetPositionNoShake();
+    const Vec2  camRaw = pState->GetCamera().GetPosition();
     const Vec2  camera = { std::floor(camRaw.x), std::floor(camRaw.y) };
 
     float      mouseX     = 0.f;

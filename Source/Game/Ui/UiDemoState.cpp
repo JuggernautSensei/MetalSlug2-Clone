@@ -74,11 +74,6 @@ int UiDemoState::GetTickCount() const
     return m_tick;
 }
 
-const UiSystem& UiDemoState::GetUi() const
-{
-    return m_ui;
-}
-
 bool UiDemoState::IsFinished() const
 {
     return m_flow.IsDone();

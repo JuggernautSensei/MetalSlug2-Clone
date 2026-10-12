@@ -42,7 +42,6 @@ class FakeStageHost final : public IStageHost
 public:
     int64_t       now           = 0;
     Vec2          playerFeet    = { 0.f, 378.f };
-    bool          bPlayerAlive  = true;
     bool          bGameOver     = false;
     GroundQueryFn groundFn      = DefaultGround_;
     bool          bAutoDefeat   = false;
@@ -89,7 +88,6 @@ public:
         const float _fromY) const override;
 
     Vec2 PlayerFeet() const override;
-    bool PlayerAlive() const override;
     bool IsGameOver() const override;
 
     void SetPlayerInvincible(

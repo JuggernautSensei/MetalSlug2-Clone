@@ -65,14 +65,7 @@ public:
 
     [[nodiscard]] bool        IsDefeated(EnemyHandle _handle) const;
     void                      SendCommand(EnemyHandle _handle, StringView _command);
-    [[nodiscard]] Health      GetHealth(EnemyHandle _handle) const;
     [[nodiscard]] bool        IsDestroyFinished(EnemyHandle _handle) const;
-    void                      RequestPlayerMinX(float _minX);
-    [[nodiscard]] bool        HasPlayerMinX() const;
-    [[nodiscard]] float       GetPlayerMinX() const;
-    void                      RequestPlayerMaxX(float _maxX);
-    [[nodiscard]] bool        HasPlayerMaxX() const;
-    [[nodiscard]] float       GetPlayerMaxX() const;
     [[nodiscard]] bool        IsTagDefeated(uint32_t _userTag) const;
     [[nodiscard]] EnemyHandle ResolveHandle(EnemyHandle _handle) const;
 
@@ -84,23 +77,6 @@ public:
     // 보스 자동 전진 (카메라 중심 하한 상승량, px). 행동이 틱 중 요청하고 StageState 가 TakeCameraScroll 로 가져가 StageRunner 에 넘긴다.
     void  RequestCameraScroll(float _dx);
     float TakeCameraScroll();
-
-    // 카메라 흔들림 요청 (보스 등장 중 낮은 진폭). 가장 큰 진폭/긴 시간을 남기고, TakeCameraShake 가 가져간다.
-    void RequestCameraShake(float _amplitude, float _seconds);
-    void TakeCameraShake(float& _amplitude, float& _seconds);
-
-    template<typename Fn>
-    void ForEachAlive(
-        Fn&& _fn) const
-    {
-        for (const Enemy& enemy: m_enemies)
-        {
-            if (enemy.life == eEnemyLife::Alive)
-            {
-                _fn(enemy);
-            }
-        }
-    }
 
     // 살아 있는(Alive) 적의 def.solid 상자 (월드 AABB). StageState 가 벽으로 합친다.
     [[nodiscard]] Vector<Aabb> GetSolidBoxes() const;
@@ -181,13 +157,7 @@ private:
     const EnemyDefLibrary* m_pLibrary       = nullptr;
     const SpriteLibrary*   m_pSprites       = nullptr;
     EnemyContext           m_lastCtx        = {};
-    float                  m_playerMinX     = 0.f;
-    bool                   m_bPlayerMinX    = false;
-    float                  m_playerMaxX     = 0.f;
     float                  m_cameraScroll   = 0.f;
-    float                  m_shakeAmplitude = 0.f;
-    float                  m_shakeSeconds   = 0.f;
-    bool                   m_bPlayerMaxX    = false;
 
     Vector<Enemy>          m_enemies    = {};
     Vector<EnemyEvent>     m_events     = {};

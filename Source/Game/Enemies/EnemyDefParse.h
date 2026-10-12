@@ -40,7 +40,6 @@ public:
     [[nodiscard]] int Clip(StringView _logical);
     [[nodiscard]] int ClipOpt(StringView _logical) const;
     [[nodiscard]] int Weapon(StringView _name);
-    [[nodiscard]] int WeaponOpt(StringView _name) const;
 
     void               Fail(StringView _field, StringView _message);
     [[nodiscard]] bool HasError() const;

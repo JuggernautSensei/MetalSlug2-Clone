@@ -187,7 +187,6 @@ public:
     // 시각 전용 장식 (anim_decor). 판정/피격 없음.
     uint32_t                        SpawnDecor(const DecorSpawn& _spawn);
     void                            ClearDecorByLayerMask(uint32_t _layerMask);
-    [[nodiscard]] const DecorWorld& GetDecor() const;
 
     void ClearByLayer(bool _bFront);
     void ClearAll();
@@ -211,7 +210,6 @@ private:
     void Destroy_(PropInstance& _inst, const PropDef& _def, Vec2 _center);
     void Detonate_(const PropBurst& _burst, Vec2 _center);
     void QueueDrops_(const PropDef& _def, Vec2 _center);
-    void StartHit_(PropInstance& _inst, const PropDef& _def);
     void UpdateVisual_(PropInstance& _inst, const AnimationLibrary* _pAnims, float _dt);
     void RebuildCollision_();
 

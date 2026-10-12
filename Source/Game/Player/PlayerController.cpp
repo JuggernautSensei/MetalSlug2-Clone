@@ -1095,32 +1095,6 @@ bool PlayerController::IsRiding() const
     return m_bRiding;
 }
 
-void PlayerController::PushFeetXMax(
-    const float _maxX)
-{
-    if (m_body.position.x > _maxX)
-    {
-        m_body.position.x = _maxX;
-        if (m_body.velocity.x > 0.f)
-        {
-            m_body.velocity.x = 0.f;
-        }
-    }
-}
-
-void PlayerController::PushFeetX(
-    const float _minX)
-{
-    if (m_body.position.x < _minX)
-    {
-        m_body.position.x = _minX;
-        if (m_body.velocity.x < 0.f)
-        {
-            m_body.velocity.x = 0.f;
-        }
-    }
-}
-
 void PlayerController::AddScore(
     const int _score)
 {

@@ -19,4 +19,3 @@ void RequestFxAt(
     int        _depth    = 60,
     float      _delaySec = 0.f);
 
-[[nodiscard]] Vec2 ScreenToWorld(const EnemyEnv& _env, Vec2 _screen);

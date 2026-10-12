@@ -352,10 +352,10 @@ TEST(StageIntegration, CameraKeepsUpWithThePlayerAlongTheWholeStage)
             break;
         }
         const float px      = sim.State().GetPlayer().GetFeet().x;
-        const float cam     = sim.State().GetCamera().GetPositionNoShake().x;
+        const float cam     = sim.State().GetCamera().GetPosition().x;
         const bool  bLocked = sim.State().GetCamera().IsLocked();
         const float py      = sim.State().GetPlayer().GetFeet().y;
-        const float camY    = sim.State().GetCamera().GetPositionNoShake().y;
+        const float camY    = sim.State().GetCamera().GetPosition().y;
         if (py < camY + 20.f || py > camY + 448.f || px < cam || px > cam + 640.f)
         {
             if (++outTicks == 30)
@@ -491,7 +491,7 @@ TEST(StageIntegration, SarubiaGateStartsInsideTheLockedScreenSoItCanBeShot)
     }
     sim.BotStep(true, true, 300);
 
-    const float camLeft = sim.State().GetCamera().GetPositionNoShake().x;
+    const float camLeft = sim.State().GetCamera().GetPosition().x;
     bool        bFound  = false;
     for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
     {
@@ -793,7 +793,7 @@ TEST(StageIntegration, HeliSpawnsAtTheHeliTriggerAndLocksTheCamera)
 
     EXPECT_GE(sim.State().GetPlayer().GetFeet().x, 5458.f);
     EXPECT_GE(sim.State().GetRunner().GetLockDepth(), 1);
-    const float camLeft = sim.State().GetCamera().GetPositionNoShake().x;
+    const float camLeft = sim.State().GetCamera().GetPosition().x;
     // 락 rect [5480,288,6120,736] 는 뷰 폭 640 과 같아 카메라가 5480 에 고정된다 (망루 guard_post x 5800 이 화면 가운데)
     EXPECT_NEAR(camLeft, 5388.f, 2.f);
     EXPECT_TRUE(HasAlive_(sim.State(), eEnemyBehavior::Heli));
@@ -803,7 +803,7 @@ TEST(StageIntegration, HeliSpawnsAtTheHeliTriggerAndLocksTheCamera)
     for (int t = 0; t < 900 && !bHeliVisible; ++t)
     {
         sim.BotStep(true, false);
-        const Vec2 cam = sim.State().GetCamera().GetPositionNoShake();
+        const Vec2 cam = sim.State().GetCamera().GetPosition();
         for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
         {
             if (enemy.life == eEnemyLife::Alive && enemy.behavior == eEnemyBehavior::Heli && enemy.body.position.x >= cam.x && enemy.body.position.x <= cam.x + 640.f && enemy.body.position.y >= cam.y && enemy.body.position.y <= cam.y + 448.f)
@@ -843,7 +843,7 @@ TEST(StageIntegration, BusIsPreplacedInsideTheLockedViewAndLocksTheCameraAtTheBu
     }
     sim.BotStep(true, false, 300);
 
-    const float camLeft = sim.State().GetCamera().GetPositionNoShake().x;
+    const float camLeft = sim.State().GetCamera().GetPosition().x;
     EXPECT_GE(sim.State().GetRunner().GetLockDepth(), 1);
     EXPECT_NEAR(camLeft, 2457.f, 2.f);
 
@@ -901,7 +901,7 @@ TEST(StageIntegration, BusStairSoldierTraceWritesCsvWhenRequested)
             if (enemy.userTag == 0x42555300u && enemy.life != eEnemyLife::Gone)
             {
                 out << t << ',' << enemy.id << ',' << enemy.defIndex << ',' << enemy.body.position.x - busX << ',' << enemy.body.position.y << ',' << enemy.state << ',' << enemy.bGrounded << ','
-                    << sim.State().GetCamera().GetPositionNoShake().x << '\n';
+                    << sim.State().GetCamera().GetPosition().x << '\n';
             }
         }
     }
@@ -999,16 +999,16 @@ TEST(StageIntegration, BusLockGlideMovesTheCameraSmoothly)
     ASSERT_GE(sim.State().GetRunner().GetLockDepth(), 1);
 
     // 락 직전까지 따라가던 속도 (약 4 px/tick) 를 기준으로 삼는다. 첫 틱은 기준 속도로 채운다
-    float prevX = sim.State().GetCamera().GetPositionNoShake().x;
+    float prevX = sim.State().GetCamera().GetPosition().x;
     sim.BotStep(true, false);
-    float prevVel  = sim.State().GetCamera().GetPositionNoShake().x - prevX;
-    prevX          = sim.State().GetCamera().GetPositionNoShake().x;
+    float prevVel  = sim.State().GetCamera().GetPosition().x - prevX;
+    prevX          = sim.State().GetCamera().GetPosition().x;
     float maxAccel = 0.f;
     float maxVel   = 0.f;
     for (int t = 0; t < 180; ++t)
     {
         sim.BotStep(true, false);
-        const float x   = sim.State().GetCamera().GetPositionNoShake().x;
+        const float x   = sim.State().GetCamera().GetPosition().x;
         const float vel = x - prevX;
         maxAccel        = std::max(maxAccel, std::abs(vel - prevVel));
         maxVel          = std::max(maxVel, std::abs(vel));
@@ -1074,7 +1074,7 @@ public:
     {
         StageState&   state  = _sim.State();
         const Camera& camera = state.GetCamera();
-        const Vec2    cam    = camera.GetPositionNoShake();
+        const Vec2    cam    = camera.GetPosition();
 
         // 직전 틱 끝의 화면 (플레이어가 마지막으로 본 화면) 기준으로 사라진 것의 가시성을 판정한다
         const float prevLeft  = m_bHasPrev ? m_prevCamX : cam.x;
@@ -1330,7 +1330,7 @@ TEST(StageIntegration, BossSpawnsAtTheArenaTriggerAfterSarubiaAndLocksTheCamera)
     ASSERT_GE(sim.State().GetPlayer().GetFeet().x, 13700.f);
     sim.BotStep(true, false, 150);
 
-    const float camLeft = sim.State().GetCamera().GetPositionNoShake().x;
+    const float camLeft = sim.State().GetCamera().GetPosition().x;
     EXPECT_GE(sim.State().GetRunner().GetLockDepth(), 1);
     EXPECT_GE(camLeft, 13700.f - 2.f) << "락 사각형은 자동 스크롤로 오른쪽으로만 간다";
     EXPECT_LT(camLeft, 13700.f + 120.f);
@@ -1352,7 +1352,7 @@ namespace
 int CountPropsInView_(
     IntegrationSim& _sim)
 {
-    const Vec2 cam   = _sim.State().GetCamera().GetPositionNoShake();
+    const Vec2 cam   = _sim.State().GetCamera().GetPosition();
     int        count = 0;
     for (const PropInstance& prop: _sim.State().GetProps().GetProps())
     {

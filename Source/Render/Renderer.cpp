@@ -138,11 +138,6 @@ SDL_Window* Renderer::GetWindow() const
     return m_pWindow;
 }
 
-bool Renderer::IsInitialized() const
-{
-    return m_pRenderer != nullptr;
-}
-
 Result<void> Renderer::SaveScreenshotBmp(
     const FilePath& _path) const
 {

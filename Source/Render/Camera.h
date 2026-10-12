@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <cstdint>
 
 #include "Base/Math.h"
@@ -61,12 +61,7 @@ public:
 
     void Update(float _dt = kStepSec);
 
-    void Shake(float _amplitude, float _durationSec);
-    void StopShake();
-
     [[nodiscard]] Vec2 GetPosition() const;
-
-    [[nodiscard]] Vec2 GetPositionNoShake() const;
 
     [[nodiscard]] Vec2 GetViewCenter() const;
     [[nodiscard]] Aabb GetViewRect() const;
@@ -85,7 +80,6 @@ private:
     void                UpdateEffectiveBounds_();
     void                ApproachEdge_(float& _edge, float& _vel, float _target, float _sign);
     void                StepX_(float _desiredX, float _focusDeltaX);
-    [[nodiscard]] float NextShakeUnit_();   // xorshift 로 [-1, 1] 난수를 만든다
 
     CameraTuning m_tuning = {};
 
@@ -118,12 +112,6 @@ private:
     int  m_moveElapsed    = 0;
     bool m_bPendingLock   = false;
     Aabb m_pendingLock    = {};
-
-    float    m_shakeAmplitude = 0.f;
-    float    m_shakeDuration  = 0.f;
-    float    m_shakeTime      = 0.f;
-    uint32_t m_shakeSeed      = 0x9E3779B9u;
-    Vec2     m_shakeOffset    = { 0.f, 0.f };
 
     bool  m_bScrollFloor = false;
     float m_scrollFloorX = 0.f;   // 카메라 중심 x 하한 (AddScrollFloor 로 누적)

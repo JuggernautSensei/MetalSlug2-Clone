@@ -231,9 +231,6 @@
     <ClCompile Include="..\..\Source\Game\Player\SlugClips.cpp">
       <Filter>Source\Game\Player</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Game\Player\SlugDef.cpp">
-      <Filter>Source\Game\Player</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\Game\Player\SlugRender.cpp">
       <Filter>Source\Game\Player</Filter>
     </ClCompile>
@@ -480,9 +477,6 @@
       <Filter>Source\Game\Player</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Player\SlugClips.h">
-      <Filter>Source\Game\Player</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Game\Player\SlugDef.h">
       <Filter>Source\Game\Player</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Player\SlugRender.h">

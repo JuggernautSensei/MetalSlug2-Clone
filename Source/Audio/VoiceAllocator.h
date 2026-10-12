@@ -32,7 +32,6 @@ public:
     void ReleaseAll();
 
     [[nodiscard]] int  GetCapacity() const;
-    [[nodiscard]] int  GetMaxPerSound() const;
     [[nodiscard]] bool IsActive(const int _slot) const;
     [[nodiscard]] int  GetSoundId(const int _slot) const;
 

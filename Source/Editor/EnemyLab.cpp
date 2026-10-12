@@ -262,11 +262,6 @@ void EnemyLab::SetPaused(
     m_bPaused = _bPaused;
 }
 
-bool EnemyLab::IsPaused() const
-{
-    return m_bPaused;
-}
-
 void EnemyLab::RequestSteps(
     const int _count)
 {
@@ -560,7 +555,7 @@ void EnemyLab::HandleMouse_(
     {
         return;
     }
-    const Vec2                 camera = _state.GetCamera().GetPositionNoShake();
+    const Vec2                 camera = _state.GetCamera().GetPosition();
     const Vec2                 world  = { logicalX + std::floor(camera.x), logicalY + std::floor(camera.y) };
     const Span<const EnemyDef> defs   = _state.GetEnemyLib().GetDefs();
     if (m_bPlaceMode && m_defIndex >= 0 && m_defIndex < static_cast<int>(defs.size()))
@@ -585,7 +580,7 @@ void EnemyLab::DrawMark(
     {
         return;
     }
-    const Vec2 camRaw = pState->GetCamera().GetPositionNoShake();
+    const Vec2 camRaw = pState->GetCamera().GetPosition();
     const Vec2 camera = { std::floor(camRaw.x), std::floor(camRaw.y) };
     for (int i = 0; i < 3; ++i)
     {
@@ -619,7 +614,7 @@ void EnemyLab::DrawOverlay(
     HandleMouse_(_renderer, *pState);
     PollDefFiles_(*pState);
 
-    const Vec2 camRaw = pState->GetCamera().GetPositionNoShake();
+    const Vec2 camRaw = pState->GetCamera().GetPosition();
     const Vec2 camera = { std::floor(camRaw.x), std::floor(camRaw.y) };
     const Vec2 player = pState->GetPlayer().GetBodyBox().GetCenter();
 

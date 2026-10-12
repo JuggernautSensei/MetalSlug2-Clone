@@ -893,56 +893,14 @@ void SlugVehicle::AddCannonAmmo(
     m_cannonAmmo = Clamp(m_cannonAmmo + _count, 0, m_tuning.cannon.ammoMax);
 }
 
-void SlugVehicle::PushFeetX(
-    const float _minX)
-{
-    if (m_body.position.x < _minX)
-    {
-        m_body.position.x = _minX;
-        if (m_body.velocity.x < 0.f)
-        {
-            m_body.velocity.x = 0.f;
-        }
-    }
-}
-
-void SlugVehicle::PushFeetXMax(
-    const float _maxX)
-{
-    if (m_body.position.x > _maxX)
-    {
-        m_body.position.x = _maxX;
-        if (m_body.velocity.x > 0.f)
-        {
-            m_body.velocity.x = 0.f;
-        }
-    }
-}
-
-void SlugVehicle::ForceHp(
-    const int _hp)
-{
-    m_hp = Clamp(_hp, 0, m_tuning.damage.maxHp);
-}
-
 eSlugMode SlugVehicle::GetMode() const
 {
     return m_mode;
 }
 
-bool SlugVehicle::IsDriven() const
-{
-    return m_mode == eSlugMode::Driven || m_mode == eSlugMode::Boarding;
-}
-
 bool SlugVehicle::IsAlive() const
 {
     return m_mode != eSlugMode::Gone && m_mode != eSlugMode::Exploding;
-}
-
-uint32_t SlugVehicle::GetOwnerId() const
-{
-    return m_ownerId;
 }
 
 Vec2 SlugVehicle::GetFeet() const
@@ -981,16 +939,6 @@ bool SlugVehicle::IsGrounded() const
     return m_body.bGrounded;
 }
 
-int SlugVehicle::GetHp() const
-{
-    return m_hp;
-}
-
-int SlugVehicle::GetMaxHp() const
-{
-    return m_tuning.damage.maxHp;
-}
-
 float SlugVehicle::GetHpRatio() const
 {
     return m_tuning.damage.maxHp > 0 ? static_cast<float>(m_hp) / static_cast<float>(m_tuning.damage.maxHp) : 0.f;
@@ -1001,19 +949,9 @@ int SlugVehicle::GetCannonAmmo() const
     return m_cannonAmmo;
 }
 
-int SlugVehicle::GetCannonCooldown() const
-{
-    return m_cannonCooldown;
-}
-
 float SlugVehicle::GetVulcanAngle() const
 {
     return m_vulcanAngle;
-}
-
-float SlugVehicle::GetVulcanTargetAngle() const
-{
-    return m_vulcanTarget;
 }
 
 int SlugVehicle::GetVulcanShotAge() const
@@ -1037,11 +975,6 @@ bool SlugVehicle::IsVulcanVisible() const
 bool SlugVehicle::IsBodyVisible() const
 {
     return m_mode != eSlugMode::Gone && !m_bExploded;
-}
-
-int SlugVehicle::GetCrouchLevel() const
-{
-    return m_crouchLevel;
 }
 
 eSlugPose SlugVehicle::GetPose() const

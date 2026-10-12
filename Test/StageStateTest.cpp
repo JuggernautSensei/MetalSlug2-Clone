@@ -130,7 +130,7 @@ TEST(StageState, HoldingRightAdvancesThroughSectionsAndTheCameraNeverScrollsBack
             sim.Release(eAction::Shot);
         }
         sim.Step();
-        const float camX    = sim.State().GetCamera().GetPositionNoShake().x;
+        const float camX    = sim.State().GetCamera().GetPosition().x;
         const bool  bLocked = sim.State().GetRunner().GetLockDepth() > 0;
         // 카메라 락 (bus 등) 은 글라이드로 락 rect 쪽으로 옮겨 가므로 (rect 왼쪽이 현재 카메라보다 뒤일 수 있다) 잠긴 동안은 역행을 허용한다.
         // 락이 없는 구간에서는 카메라가 절대 뒤로 가지 않는다.

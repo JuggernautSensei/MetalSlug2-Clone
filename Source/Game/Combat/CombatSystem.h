@@ -23,7 +23,6 @@ public:
 
     [[nodiscard]] Span<const Hurtbox>     GetHurtboxes() const;
     [[nodiscard]] Span<const Hitbox>      GetHitboxes() const;
-    [[nodiscard]] const Vector<HitEvent>& GetEvents() const;
     [[nodiscard]] HitResolver&            GetResolver();
 
 private:

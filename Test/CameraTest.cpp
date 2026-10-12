@@ -37,23 +37,6 @@ namespace
     return camera;
 }
 
-// 흔들림을 걸고 60프레임 동안의 카메라 위치를 기록한다
-[[nodiscard]] Vector<Vec2> RunShake_()
-{
-    Camera camera = MakeLevelCamera_();
-    camera.SetTarget({ 2000.f, 224.f });
-    camera.SnapToTarget();
-    camera.Shake(6.f, 0.5f);
-
-    Vector<Vec2> positions;
-    for (int i = 0; i < 60; ++i)
-    {
-        camera.Update();
-        positions.push_back(camera.GetPosition());
-    }
-    return positions;
-}
-
 // 전진 전용 카메라가 움직이는 목표를 600프레임 따라가는 위치 기록
 [[nodiscard]] Vector<Vec2> RunForwardOnly_()
 {
@@ -186,14 +169,14 @@ TEST(Camera, ForwardOnlyNeverMovesBackward)
     Camera camera = MakeLevelCamera_();
     camera.SetForwardOnly(true);
 
-    float maxX = camera.GetPositionNoShake().x;
+    float maxX = camera.GetPosition().x;
     for (int i = 0; i < 900; ++i)
     {
         const float t = static_cast<float>(i);
         camera.SetTarget({ 320.f + (i < 400 ? t * 3.f : 1200.f - (t - 400.f) * 3.f), 224.f });
         camera.Update();
 
-        const float x = camera.GetPositionNoShake().x;
+        const float x = camera.GetPosition().x;
         ASSERT_GE(x, maxX) << "tick " << i;
         maxX = std::max(maxX, x);
     }
@@ -314,35 +297,6 @@ TEST(Camera, ZeroSmoothTimeFollowsInstantly)
     camera.SetTarget({ 1500.f, 224.f });
     camera.Update();
     EXPECT_FLOAT_EQ(camera.GetViewCenter().x, 1500.f);
-}
-
-TEST(Camera, ShakeIsDeterministicDecaysAndStaysInBounds)
-{
-    const Vector<Vec2> a = RunShake_();
-    const Vector<Vec2> b = RunShake_();
-    ASSERT_EQ(a.size(), b.size());
-    bool bMoved = false;
-    for (size_t i = 0; i < a.size(); ++i)
-    {
-        ASSERT_EQ(a[i], b[i]) << i;
-        ASSERT_TRUE(IsIntegral_(a[i].x) && IsIntegral_(a[i].y));
-        ASSERT_GE(a[i].y, 0.f);   // 위쪽 경계 밖이 보이지 않는다
-        bMoved = bMoved || a[i].x != 1680.f;
-    }
-    EXPECT_TRUE(bMoved);
-    EXPECT_FLOAT_EQ(a.back().x, 1680.f);
-    EXPECT_FLOAT_EQ(a.back().y, 0.f);
-}
-
-TEST(Camera, StopShakeRestoresImmediately)
-{
-    Camera camera = MakeLevelCamera_();
-    camera.SetTarget({ 2000.f, 224.f });
-    camera.SnapToTarget();
-    camera.Shake(10.f, 5.f);
-    camera.Update();
-    camera.StopShake();
-    EXPECT_EQ(camera.GetPosition(), camera.GetPositionNoShake());
 }
 
 TEST(Camera, DeterministicAcrossIdenticalRuns)
@@ -490,7 +444,7 @@ TEST(CameraRegression, RealStageBotRunHasNoJerkOverFirst5000Ticks)
     CameraBotSim  sim;
     const Camera& cam         = sim.State().GetCamera();
     Vec2          prevF       = cam.GetViewCenter();        // 실수 중심 (부드러움 판정 기준)
-    Vec2          prevI       = cam.GetPositionNoShake();   // 화면에 찍히는 정수 좌상단 (보고용)
+    Vec2          prevI       = cam.GetPosition();   // 화면에 찍히는 정수 좌상단 (보고용)
     float         prevDx      = 0.f;
     float         prevDy      = 0.f;
     float         prevDxI     = 0.f;
@@ -508,7 +462,7 @@ TEST(CameraRegression, RealStageBotRunHasNoJerkOverFirst5000Ticks)
             break;
         }
         const Vec2  f   = cam.GetViewCenter();
-        const Vec2  pix = cam.GetPositionNoShake();
+        const Vec2  pix = cam.GetPosition();
         const float dx  = f.x - prevF.x;
         const float dy  = f.y - prevF.y;
         const float dxI = pix.x - prevI.x;

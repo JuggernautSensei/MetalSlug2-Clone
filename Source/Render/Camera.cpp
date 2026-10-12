@@ -563,85 +563,11 @@ void Camera::Update(
             m_center.x = before.x;   // 전진 전용 카메라는 영역이 줄어도 뒤로 가지 않는다
         }
     }
-
-    if (m_shakeTime < m_shakeDuration)
-    {
-        m_shakeTime += _dt;
-        const float k = Max(0.f, 1.f - m_shakeTime / m_shakeDuration);
-        const float a = m_shakeAmplitude * k;
-
-        const float shakeX = NextShakeUnit_() * a;
-        const float shakeY = NextShakeUnit_() * a;
-        m_shakeOffset      = { RoundToInt_(shakeX), RoundToInt_(shakeY) };
-    }
-    else
-    {
-        m_shakeOffset = { 0.f, 0.f };
-    }
-}
-
-float Camera::NextShakeUnit_()
-{
-    m_shakeSeed ^= m_shakeSeed << 13;
-    m_shakeSeed ^= m_shakeSeed >> 17;
-    m_shakeSeed ^= m_shakeSeed << 5;
-    return static_cast<float>(m_shakeSeed & 0xFFFFu) / 32767.5f - 1.f;
-}
-
-void Camera::Shake(
-    const float _amplitude,
-    const float _durationSec)
-{
-    if (_amplitude <= 0.f || _durationSec <= 0.f)
-    {
-        StopShake();
-        return;
-    }
-    m_shakeAmplitude = _amplitude;
-    m_shakeDuration  = _durationSec;
-    m_shakeTime      = 0.f;
-}
-
-void Camera::StopShake()
-{
-    m_shakeAmplitude = 0.f;
-    m_shakeDuration  = 0.f;
-    m_shakeTime      = 0.f;
-    m_shakeOffset    = { 0.f, 0.f };
-}
-
-Vec2 Camera::GetPositionNoShake() const
-{
-    return SnapTopLeft_(m_center);
 }
 
 Vec2 Camera::GetPosition() const
 {
-    Vec2 position = SnapTopLeft_(m_center);
-    if (m_shakeOffset.x == 0.f && m_shakeOffset.y == 0.f)
-    {
-        return position;
-    }
-
-    position += m_shakeOffset;
-    bool       bHasBounds = false;
-    const Aabb bounds     = GetActiveBounds_(bHasBounds);
-    if (bHasBounds)
-    {
-        const float minX = std::ceil(bounds.min.x);
-        const float maxX = std::floor(bounds.max.x - m_tuning.viewSize.x);
-        const float minY = std::ceil(bounds.min.y);
-        const float maxY = std::floor(bounds.max.y - m_tuning.viewSize.y);
-        if (minX <= maxX)
-        {
-            position.x = Clamp(position.x, minX, maxX);
-        }
-        if (minY <= maxY)
-        {
-            position.y = Clamp(position.y, minY, maxY);
-        }
-    }
-    return position;
+    return SnapTopLeft_(m_center);
 }
 
 Aabb Camera::GetViewRect() const

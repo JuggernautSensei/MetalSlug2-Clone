@@ -70,8 +70,6 @@ public:
     void               EndRide(Vec2 _feet, Vec2 _velocity, int _facing, int _invincibleTicks);
     [[nodiscard]] bool IsRiding() const;
 
-    void PushFeetX(float _minX);
-    void PushFeetXMax(float _maxX);
     void ExtendInvincibility(int _ticks);
 
     [[nodiscard]] ePlayerState       GetState() const;

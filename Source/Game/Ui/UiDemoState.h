@@ -13,7 +13,6 @@ public:
     [[nodiscard]] bool IsFinished() const override;
 
     [[nodiscard]] int             GetTickCount() const;
-    [[nodiscard]] const UiSystem& GetUi() const;
 
 private:
     [[nodiscard]] HudModel MakeModel_() const;

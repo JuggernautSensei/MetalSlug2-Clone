@@ -59,11 +59,6 @@ int VoiceAllocator::GetCapacity() const
     return static_cast<int>(m_slots.size());
 }
 
-int VoiceAllocator::GetMaxPerSound() const
-{
-    return m_maxPerSound;
-}
-
 bool VoiceAllocator::IsActive(
     const int _slot) const
 {

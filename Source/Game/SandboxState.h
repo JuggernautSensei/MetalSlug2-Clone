@@ -45,8 +45,6 @@ struct SandboxConfig
     bool             bGodMode        = false;   // 랩 전용: 플레이어 무적 (캡처 비교용)
     bool             bSlugLab        = false;   // sluglab: 평지에 주차된 SV-001 과 표적
     Vector<Vec2>     slugFeet        = {};      // 시작할 때 놓을 주차 SV-001 발 위치
-    SlugTuning       slugTuning      = {};      // bLoadSlugFile 이 꺼져 있거나 파일이 없을 때 쓰는 값
-    bool             bLoadSlugFile   = true;
 };
 
 class SandboxState final : public IGameState
@@ -70,13 +68,10 @@ public:
     [[nodiscard]] PlayerRig&              GetRig();
     [[nodiscard]] const PlayerRig&        GetRig() const;
     [[nodiscard]] uint64_t                GetTickCount() const;
-    [[nodiscard]] UiSystem&               GetUi();
     [[nodiscard]] EnemyWorld&             GetEnemies();
     [[nodiscard]] const EnemyWorld&       GetEnemies() const;
     [[nodiscard]] const EnemyDefLibrary&  GetEnemyLib() const;
     [[nodiscard]] EnemyDefLibrary&        GetEnemyLibMutable();
-    [[nodiscard]] SlugSystem&             GetSlugs();
-    [[nodiscard]] const SlugSystem&       GetSlugs() const;
 
     uint32_t AddTarget(eDummyKind _kind, Vec2 _feet, bool _bShooter = false);
 

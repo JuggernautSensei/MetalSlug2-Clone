@@ -13,7 +13,6 @@
 #include "Game/Combat/BulletVisual.h"
 #include "Game/Player/PlayerHitboxes.h"
 #include "Game/Player/PlayerWeapons.h"
-#include "Game/Player/SlugDef.h"
 #include "Game/Player/SlugRender.h"
 #include "Game/Stage/StageMapping.h"
 #include "Game/Ui/ScreenFlow.h"
@@ -107,23 +106,6 @@ void SandboxState::BuildWorld_(
         else
         {
             SLUG_LOG_WARN("Tuning.json 을 읽지 못해 기본값을 사용합니다: {}", path.string());
-        }
-    }
-
-    m_slugTuning = m_config.slugTuning;
-    if (m_config.bLoadSlugFile && !_ctx.assetRoot.empty())
-    {
-        const FilePath slugPath = GetDefaultSlugTuningPath(_ctx.assetRoot);
-        if (std::filesystem::exists(slugPath))
-        {
-            if (Result<SlugTuning> slugLoaded = LoadSlugTuning(slugPath))
-            {
-                m_slugTuning = slugLoaded.Take();
-            }
-            else
-            {
-                SLUG_LOG_WARN("Slug.json 을 읽지 못해 기본값을 사용합니다: {}", slugPath.string());
-            }
         }
     }
 
@@ -238,7 +220,7 @@ void SandboxState::RestartGame()
 
     m_camera.SetTarget({ m_config.spawnFeet.x, m_config.spawnFeet.y - 60.f });
     m_camera.SnapToTarget();
-    m_prevCameraPos = m_camera.GetPositionNoShake();
+    m_prevCameraPos = m_camera.GetPosition();
 
     if (m_config.bSpawnTargets)
     {
@@ -254,7 +236,7 @@ void SandboxState::RestartGame()
     if (m_config.bHeliLab)
     {
         // 헬기 랩: 화면 위 오른쪽에서 진입 (Docs/Spec_Helicopter.md 의 스테이지 배치 규약과 같은 위치)
-        const Vec2  cam = m_camera.GetPositionNoShake();
+        const Vec2  cam = m_camera.GetPosition();
         SpawnParams params;
         params.facing     = -1;
         params.bActivated = true;
@@ -484,7 +466,7 @@ PhysicsWorld SandboxState::MakeEnemyPhysicsWorld_() const
 
 void SandboxState::UpdateWalls_()
 {
-    const float camLeft = m_camera.GetPositionNoShake().x;
+    const float camLeft = m_camera.GetPosition().x;
     m_walls.clear();
     m_walls.push_back({ Aabb::FromMinMax({ camLeft - 64.f, -4000.f }, { camLeft, 4000.f }) });
     m_walls.push_back({ Aabb::FromMinMax({ m_config.cameraBounds.max.x, -4000.f }, { m_config.cameraBounds.max.x + 64.f, 4000.f }) });
@@ -521,7 +503,7 @@ PhysicsWorld SandboxState::MakePhysicsWorld_() const
 
 Vec2 SandboxState::GetRespawnFeet_() const
 {
-    const Vec2 cam = m_camera.GetPositionNoShake();
+    const Vec2 cam = m_camera.GetPosition();
     return { cam.x + m_tuning.player.respawnOffsetX, cam.y - m_tuning.player.respawnDropY };
 }
 
@@ -568,8 +550,8 @@ void SandboxState::Tick(
         PropTickContext propCtx;
         propCtx.pGround      = &m_ground;
         propCtx.pAnims       = _ctx.pAnims;
-        propCtx.cameraLeft   = m_camera.GetPositionNoShake().x;
-        propCtx.cameraBottom = m_camera.GetPositionNoShake().y + Renderer::kLogicalHeight;
+        propCtx.cameraLeft   = m_camera.GetPosition().x;
+        propCtx.cameraBottom = m_camera.GetPosition().y + Renderer::kLogicalHeight;
         propCtx.pItemTuning  = &m_tuning.items;
         m_props.Tick(propCtx);
     }
@@ -607,23 +589,6 @@ void SandboxState::Tick(
     m_slugs.Tick(slugCtx, *pInput, m_player);
     m_player.Tick(playerCtx, *pInput);
 
-    if (m_enemies.HasPlayerMinX())
-    {
-        m_player.PushFeetX(m_enemies.GetPlayerMinX());
-        if (SlugVehicle* pRidden = m_slugs.GetRiddenOrNull())
-        {
-            pRidden->PushFeetX(m_enemies.GetPlayerMinX());
-        }
-    }
-    if (m_enemies.HasPlayerMaxX())
-    {
-        m_player.PushFeetXMax(m_enemies.GetPlayerMaxX());
-        if (SlugVehicle* pRidden = m_slugs.GetRiddenOrNull())
-        {
-            pRidden->PushFeetXMax(m_enemies.GetPlayerMaxX());
-        }
-    }
-
     for (const ItemPickup& pickup: m_props.GetItems().Collect(m_player.GetBodyBox()))
     {
         if (pickup.kind == eItemKind::Supply && pickup.supply == eSupplyKind::Bomb && m_slugs.OnBombSupply(pickup.amount))
@@ -660,7 +625,7 @@ void SandboxState::Tick(
         enemyCtx.player.center        = enemyCtx.player.bodyBox.GetCenter();
         enemyCtx.player.bInvulnerable = pRidden->GetMode() != eSlugMode::Driven;
     }
-    enemyCtx.cameraView = Aabb::FromMinSize(m_camera.GetPositionNoShake(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
+    enemyCtx.cameraView = Aabb::FromMinSize(m_camera.GetPosition(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
     enemyCtx.pAnims     = _ctx.pAnims;
     m_enemies.Tick(enemyCtx);
 
@@ -735,7 +700,7 @@ void SandboxState::Tick(
         }
     }
 
-    m_prevCameraPos = m_camera.GetPositionNoShake();
+    m_prevCameraPos = m_camera.GetPosition();
     m_camera.SetTarget({ m_player.GetFeet().x + m_tuning.camera.lookAheadX, m_player.GetFeet().y - 60.f });
     m_camera.Update(kStepSec);
 
@@ -864,7 +829,7 @@ void SandboxState::Render(
     Renderer& renderer = *_ctx.pRenderer;
     renderer.BeginFrame({ 156, 190, 224, 255 });
 
-    const Vec2 camNow    = m_camera.GetPositionNoShake();
+    const Vec2 camNow    = m_camera.GetPosition();
     const Vec2 cameraPos = { std::floor(m_prevCameraPos.x + (camNow.x - m_prevCameraPos.x) * _alpha), std::floor(m_prevCameraPos.y + (camNow.y - m_prevCameraPos.y) * _alpha) };
 
     if (m_bgHandle >= 0 && _ctx.pSprites)
@@ -1121,11 +1086,6 @@ uint64_t SandboxState::GetTickCount() const
     return m_tickCount;
 }
 
-UiSystem& SandboxState::GetUi()
-{
-    return m_ui;
-}
-
 EnemyWorld& SandboxState::GetEnemies()
 {
     return m_enemies;
@@ -1144,16 +1104,6 @@ const EnemyDefLibrary& SandboxState::GetEnemyLib() const
 EnemyDefLibrary& SandboxState::GetEnemyLibMutable()
 {
     return m_enemyLib;
-}
-
-SlugSystem& SandboxState::GetSlugs()
-{
-    return m_slugs;
-}
-
-const SlugSystem& SandboxState::GetSlugs() const
-{
-    return m_slugs;
 }
 
 uint64_t SandboxState::DebugHash() const

@@ -174,7 +174,6 @@
     <ClCompile Include="..\..\Source\Game\Player\PlayerRig.cpp" />
     <ClCompile Include="..\..\Source\Game\Player\PlayerWeapons.cpp" />
     <ClCompile Include="..\..\Source\Game\Player\SlugClips.cpp" />
-    <ClCompile Include="..\..\Source\Game\Player\SlugDef.cpp" />
     <ClCompile Include="..\..\Source\Game\Player\SlugRender.cpp" />
     <ClCompile Include="..\..\Source\Game\Player\SlugSystem.cpp" />
     <ClCompile Include="..\..\Source\Game\Player\SlugVehicle.cpp" />
@@ -261,7 +260,6 @@
     <ClInclude Include="..\..\Source\Game\Player\PlayerTypes.h" />
     <ClInclude Include="..\..\Source\Game\Player\PlayerWeapons.h" />
     <ClInclude Include="..\..\Source\Game\Player\SlugClips.h" />
-    <ClInclude Include="..\..\Source\Game\Player\SlugDef.h" />
     <ClInclude Include="..\..\Source\Game\Player\SlugRender.h" />
     <ClInclude Include="..\..\Source\Game\Player\SlugSystem.h" />
     <ClInclude Include="..\..\Source\Game\Player\SlugTypes.h" />

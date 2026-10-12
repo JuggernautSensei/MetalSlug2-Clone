@@ -254,7 +254,7 @@ TEST(StageRunnerWave, AnchorUsesTheCameraAtSpawnTime)
     fx.camera.SnapTo({ 2000.f, 224.f });   // 스폰 시점 전에 카메라가 이동
     fx.StepAt(2000.f, 130);
     ASSERT_EQ(fx.host.spawns.size(), 1u);
-    const float expectedRight = fx.camera.GetPositionNoShake().x + 640.f - 100.f;
+    const float expectedRight = fx.camera.GetPosition().x + 640.f - 100.f;
     EXPECT_NEAR(fx.host.spawns[0].request.position.x, expectedRight, 1e-3f);
     EXPECT_GT(fx.host.spawns[0].request.position.x, 2000.f);
 }
@@ -817,7 +817,7 @@ TEST(StageRunnerWalls, LeftWallAlwaysAndRightWallOnlyWhenLockedOrAtTheEnd)
     fx.StepAt(1000.f, 1);
 
     ScreenWalls walls = fx.runner.MakeScreenWalls();
-    const Aabb  view  = Aabb::FromMinSize(fx.camera.GetPositionNoShake(), { 640.f, 448.f });
+    const Aabb  view  = Aabb::FromMinSize(fx.camera.GetPosition(), { 640.f, 448.f });
     ASSERT_TRUE(walls.bHasLeft);
     EXPECT_FLOAT_EQ(walls.left.max.x, view.min.x + 14.f);
     EXPECT_FALSE(walls.bHasRight);
@@ -826,7 +826,7 @@ TEST(StageRunnerWalls, LeftWallAlwaysAndRightWallOnlyWhenLockedOrAtTheEnd)
     walls = fx.runner.MakeScreenWalls();
     EXPECT_TRUE(fx.camera.IsLocked());
     ASSERT_TRUE(walls.bHasRight);
-    const Aabb lockedView = Aabb::FromMinSize(fx.camera.GetPositionNoShake(), { 640.f, 448.f });
+    const Aabb lockedView = Aabb::FromMinSize(fx.camera.GetPosition(), { 640.f, 448.f });
     EXPECT_FLOAT_EQ(walls.right.min.x, lockedView.max.x - 14.f);
     EXPECT_FLOAT_EQ(walls.left.max.x, lockedView.min.x + 14.f);
 }

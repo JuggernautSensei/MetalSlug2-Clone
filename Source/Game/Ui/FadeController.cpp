@@ -85,11 +85,6 @@ float FadeController::GetAlpha() const
     return m_alpha;
 }
 
-FadeController::ePhase FadeController::GetPhase() const
-{
-    return m_phase;
-}
-
 bool FadeController::IsBusy() const
 {
     return m_phase == ePhase::FadingToBlack || m_phase == ePhase::FadingToClear;

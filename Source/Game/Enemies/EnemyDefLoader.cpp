@@ -1581,12 +1581,6 @@ Result<EnemyDefLibrary> EnemyDefLibrary::LoadDirectory(
     return library;
 }
 
-FilePath EnemyDefLibrary::GetDefaultPath(
-    const FilePath& _assetRoot)
-{
-    return _assetRoot / "Defs" / "Enemies.json";
-}
-
 FilePath EnemyDefLibrary::GetDefaultDirectory(
     const FilePath& _assetRoot)
 {

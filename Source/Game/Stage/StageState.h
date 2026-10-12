@@ -70,13 +70,10 @@ public:
     [[nodiscard]] const PropWorld&        GetProps() const;
     [[nodiscard]] PropWorld&              GetProps();
     [[nodiscard]] const ProjectileSystem& GetProjectiles() const;   // 테스트/봇 관찰용 (읽기 전용)
-    [[nodiscard]] const UiSystem&         GetUi() const;
-    [[nodiscard]] UiSystem&               GetUi();
     [[nodiscard]] uint64_t                GetTickCount() const;
     [[nodiscard]] uint64_t                HashState() const;
     [[nodiscard]] uint64_t                DebugHash() const override;
     [[nodiscard]] HudModel                BuildHudModel() const;
-    [[nodiscard]] int                     GetRescuedPows() const;
 
 private:
     enum class eEndKind : uint8_t

@@ -50,11 +50,3 @@ void RequestFxAt(
     fx.depth    = _depth;
     RequestFx(_env, fx, _at, _facing);
 }
-
-Vec2 ScreenToWorld(
-    const EnemyEnv& _env,
-    const Vec2      _screen)
-{
-    const Aabb& view = _env.ctx.cameraView;
-    return { view.min.x + _screen.x, view.min.y + _screen.y };
-}

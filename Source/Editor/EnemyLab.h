@@ -42,7 +42,6 @@ public:
     [[nodiscard]] const FilePath& GetAssetRoot() const;
 
     void                SetPaused(bool _bPaused);
-    [[nodiscard]] bool  IsPaused() const;
     void                RequestSteps(int _count);
     void                SetTimeScale(float _scale);
     [[nodiscard]] float GetTimeScale() const;

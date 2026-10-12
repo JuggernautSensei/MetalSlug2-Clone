@@ -121,11 +121,6 @@ void StageState::OnExit(
     _ctx.GetAudio().AllStop();
 }
 
-int StageState::GetRescuedPows() const
-{
-    return m_rescuedPows;
-}
-
 const InputHistory& StageState::MakeBotInput_()
 {
     // 봇: 아레나까지 오른쪽으로 걷고, 보스 파트 (포탑/주포) 중 가장 가까운 것 아래로 가서 위로 쏜다 (캡처 비교용)
@@ -349,7 +344,7 @@ void StageState::Restart_(
 
     m_camera.SetTarget(m_runner->ComputeCameraTarget(m_player.GetLogicalFeet()));
     m_camera.SnapToTarget();
-    m_prevCameraPos = m_camera.GetPositionNoShake();
+    m_prevCameraPos = m_camera.GetPosition();
 
     m_ui.GetBanner().Clear();
     m_ui.GetFade().SetClear();
@@ -390,8 +385,8 @@ void StageState::Tick(
         PropTickContext propCtx = {};
         propCtx.pGround         = m_host.GetActiveGround();
         propCtx.pAnims          = _ctx.pAnims;
-        propCtx.cameraLeft      = m_camera.GetPositionNoShake().x;
-        propCtx.cameraBottom    = m_camera.GetPositionNoShake().y + Renderer::kLogicalHeight;
+        propCtx.cameraLeft      = m_camera.GetPosition().x;
+        propCtx.cameraBottom    = m_camera.GetPosition().y + Renderer::kLogicalHeight;
         propCtx.pItemTuning     = &m_tuning.items;
         m_props.Tick(propCtx);
     }
@@ -423,15 +418,6 @@ void StageState::Tick(
     }
     m_player.Tick(playerCtx, m_config.bBot ? MakeBotInput_() : _input);
 
-    if (m_enemies.HasPlayerMinX())
-    {
-        m_player.PushFeetX(m_enemies.GetPlayerMinX());
-    }
-    if (m_enemies.HasPlayerMaxX())
-    {
-        m_player.PushFeetXMax(m_enemies.GetPlayerMaxX());
-    }
-
     for (const ItemPickup& pickup: m_props.GetItems().Collect(m_player.GetBodyBox()))
     {
         ApplyItemPickup(m_player, pickup, m_tuning);
@@ -453,19 +439,10 @@ void StageState::Tick(
     enemyCtx.player.center        = m_player.GetBodyBox().GetCenter();
     enemyCtx.player.bAlive        = m_player.IsAlive();
     enemyCtx.player.bInvulnerable = m_player.GetInvincibleTicks() > 0;
-    enemyCtx.cameraView           = Aabb::FromMinSize(m_camera.GetPositionNoShake(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
+    enemyCtx.cameraView           = Aabb::FromMinSize(m_camera.GetPosition(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
     enemyCtx.pAnims               = _ctx.pAnims;
     m_enemies.Tick(enemyCtx);
     m_runner->AddCameraScroll(m_enemies.TakeCameraScroll());   // 보스 자동 전진 (카메라 하한)
-    {
-        float shakeAmplitude = 0.f;
-        float shakeSeconds   = 0.f;
-        m_enemies.TakeCameraShake(shakeAmplitude, shakeSeconds);
-        if (shakeAmplitude > 0.f && shakeSeconds > 0.f)
-        {
-            m_camera.Shake(shakeAmplitude, shakeSeconds);   // 보스 등장 흔들림
-        }
-    }
 
     if (m_config.bAutoDamage && m_tickCount % 6 == 0)
     {
@@ -508,11 +485,11 @@ void StageState::Tick(
     {
         // 연습장 전용: 화면 안에 들어온 망루를 캐논 한 발 (피해 24) 로 친다
         const int        towerDef = m_props.GetLibrary()->FindIndex("tower");
-        const float      right    = m_camera.GetPositionNoShake().x + static_cast<float>(Renderer::kLogicalWidth) - kAutoTowerMarginPx;
+        const float      right    = m_camera.GetPosition().x + static_cast<float>(Renderer::kLogicalWidth) - kAutoTowerMarginPx;
         Vector<HitEvent> towerHits;
         for (const PropInstance& prop: m_props.GetProps())
         {
-            if (prop.defIndex != towerDef || prop.bDestroyed || prop.pos.x > right || prop.pos.x < m_camera.GetPositionNoShake().x)
+            if (prop.defIndex != towerDef || prop.bDestroyed || prop.pos.x > right || prop.pos.x < m_camera.GetPosition().x)
             {
                 continue;
             }
@@ -581,7 +558,7 @@ void StageState::Tick(
         }
     }
 
-    m_prevCameraPos = m_camera.GetPositionNoShake();
+    m_prevCameraPos = m_camera.GetPosition();
     m_runner->Tick();
     if (m_host.GetLastSectionId() != m_timerSectionId)
     {
@@ -729,7 +706,7 @@ PhysicsWorld StageState::MakeEnemyPhysicsWorld_() const
 
 Vec2 StageState::GetRespawnFeet_() const
 {
-    const Vec2 cam = m_camera.GetPositionNoShake();
+    const Vec2 cam = m_camera.GetPosition();
     return { cam.x + m_tuning.player.respawnOffsetX, cam.y - m_tuning.player.respawnDropY };
 }
 
@@ -890,16 +867,6 @@ void StageState::RequestSounds_(
     m_prevScore  = m_player.GetScore();
 }
 
-const UiSystem& StageState::GetUi() const
-{
-    return m_ui;
-}
-
-UiSystem& StageState::GetUi()
-{
-    return m_ui;
-}
-
 uint64_t StageState::GetTickCount() const
 {
     return m_tickCount;
@@ -968,7 +935,7 @@ void StageState::Render(
     }
     renderer.BeginFrame({ 156, 190, 224, 255 });
 
-    const Vec2 camNow    = m_camera.GetPositionNoShake();
+    const Vec2 camNow    = m_camera.GetPosition();
     const Vec2 cameraPos = { std::floor(m_prevCameraPos.x + (camNow.x - m_prevCameraPos.x) * _alpha), std::floor(m_prevCameraPos.y + (camNow.y - m_prevCameraPos.y) * _alpha) };
 
     DrawBackdrop_(_ctx, cameraPos);

@@ -831,7 +831,6 @@ public:
         const FilePath& _dir,
         String*         _pMessage = nullptr);
 
-    [[nodiscard]] static FilePath GetDefaultPath(const FilePath& _assetRoot);
 
     [[nodiscard]] static FilePath GetDefaultDirectory(const FilePath& _assetRoot);
 

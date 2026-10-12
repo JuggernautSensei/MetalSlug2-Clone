@@ -94,12 +94,6 @@ const InputFrame& InputHistory::GetCurrent() const
     return m_frames[m_head];
 }
 
-const InputFrame& InputHistory::GetAgo_(
-    const size_t _ago) const
-{
-    return m_frames[(m_head + kCapacity - (_ago % kCapacity)) % kCapacity];
-}
-
 bool InputHistory::IsHeld(
     const eAction _action) const
 {

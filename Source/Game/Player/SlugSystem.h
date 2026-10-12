@@ -30,7 +30,6 @@ public:
     [[nodiscard]] SlugVehicle&            Get(int _index);
     [[nodiscard]] const SlugVehicle&      Get(int _index) const;
     [[nodiscard]] Span<const SlugVehicle> GetAll() const;
-    [[nodiscard]] int                     GetRiddenIndex() const;
     [[nodiscard]] const SlugVehicle*      GetRiddenOrNull() const;
     [[nodiscard]] SlugVehicle*            GetRiddenOrNull();
     [[nodiscard]] bool                    IsRiding() const;

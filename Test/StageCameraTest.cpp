@@ -147,7 +147,7 @@ TEST(CameraStageExt, LockWithGlideMovesFirstThenLocksOnArrival)
     for (int i = 0; i < 120; ++i)
     {
         camera.Update();
-        ASSERT_FLOAT_EQ(camera.GetPositionNoShake().x, 2470.f);
+        ASSERT_FLOAT_EQ(camera.GetPosition().x, 2470.f);
     }
 }
 
@@ -223,7 +223,7 @@ TEST(StageRunnerCamera, CurrentRectLocksTheViewWhereItIs)
     RunnerFixture fx { OneSection_(R"J([{"type":"lockCamera","rect":"current","delay":1.0}])J") };
     fx.camera.SnapTo({ 1500.f, 224.f });
     fx.StepAt(1500.f, 59);
-    const Aabb viewBefore = Aabb::FromMinSize(fx.camera.GetPositionNoShake(), { 640.f, 448.f });
+    const Aabb viewBefore = Aabb::FromMinSize(fx.camera.GetPosition(), { 640.f, 448.f });
     fx.StepAt(1500.f);   // tick 59 → 락은 tick 60
     fx.StepAt(1500.f);
     EXPECT_EQ(fx.runner.GetLockDepth(), 1);
@@ -231,7 +231,7 @@ TEST(StageRunnerCamera, CurrentRectLocksTheViewWhereItIs)
     for (int i = 0; i < 100; ++i)
     {
         fx.StepAt(2400.f);
-        ASSERT_EQ(Aabb::FromMinSize(fx.camera.GetPositionNoShake(), { 640.f, 448.f }), viewBefore);
+        ASSERT_EQ(Aabb::FromMinSize(fx.camera.GetPosition(), { 640.f, 448.f }), viewBefore);
     }
 }
 
@@ -247,7 +247,7 @@ TEST(StageRunnerCamera, GlideLockMovesThenLocks)
     EXPECT_FALSE(fx.camera.IsMoving());
     EXPECT_TRUE(fx.camera.IsLocked());
     EXPECT_FLOAT_EQ(fx.camera.GetViewCenter().x, 2790.f);
-    EXPECT_EQ(fx.camera.GetPositionNoShake().x, 2470.f);
+    EXPECT_EQ(fx.camera.GetPosition().x, 2470.f);
 }
 
 TEST(StageRunnerCamera, PermanentLockCannotBeUnlockedAndIgnoresBoundsAndCurves)
@@ -359,12 +359,12 @@ TEST(StageRunnerCamera, CameraMoveActionReachesTargetThenResumesTracking)
 TEST(StageRunnerCamera, FollowsPlayerForwardOnlyAndNeverScrollsBack)
 {
     RunnerFixture fx { OneSection_("[]", kTall) };
-    float         maxX = fx.camera.GetPositionNoShake().x;
+    float         maxX = fx.camera.GetPosition().x;
     for (int i = 0; i < 600; ++i)
     {
         const float x = i < 300 ? 100.f + static_cast<float>(i) * 3.f : 1000.f - static_cast<float>(i - 300) * 3.f;
         fx.StepAt(x);
-        const float camX = fx.camera.GetPositionNoShake().x;
+        const float camX = fx.camera.GetPosition().x;
         ASSERT_GE(camX, maxX) << i;
         maxX = std::max(maxX, camX);
     }

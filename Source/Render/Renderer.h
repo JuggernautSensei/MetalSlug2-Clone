@@ -30,7 +30,6 @@ public:
 
     [[nodiscard]] SDL_Renderer* GetNative() const;
     [[nodiscard]] SDL_Window*   GetWindow() const;
-    [[nodiscard]] bool          IsInitialized() const;
 
     [[nodiscard]] Result<void> SaveScreenshotBmp(const FilePath& _path) const;
 

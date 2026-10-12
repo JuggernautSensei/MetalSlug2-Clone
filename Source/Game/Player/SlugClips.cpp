@@ -55,12 +55,6 @@ int VulcanIndexFromAngle(
     return index;
 }
 
-float VulcanAngleFromIndex(
-    const int _index)
-{
-    return 135.f - kVulcanAngleStep * static_cast<float>(_index);
-}
-
 String GetVulcanShotClipName(
     const int _index)
 {

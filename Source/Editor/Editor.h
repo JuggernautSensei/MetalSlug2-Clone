@@ -37,7 +37,6 @@ public:
     // 게임 프레임을 다 그린 뒤, 스크린샷/Present 전에 호출한다.
     void Frame(float _fps, uint64_t _tick);
 
-    [[nodiscard]] bool IsInitialized() const;
     [[nodiscard]] bool OwnsKeyboard() const;   // ImGui 창이 키보드를 쓰는 중 (게임 입력 차단)
 
 private:

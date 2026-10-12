@@ -77,7 +77,6 @@ public:
     [[nodiscard]] virtual std::optional<float> GetGroundFindY(float _x, float _fromY) const = 0;
 
     [[nodiscard]] virtual Vec2 PlayerFeet() const                  = 0;
-    [[nodiscard]] virtual bool PlayerAlive() const                 = 0;
     [[nodiscard]] virtual bool IsGameOver() const                  = 0;
     virtual void               SetPlayerInvincible(float _seconds) = 0;
 

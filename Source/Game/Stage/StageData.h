@@ -30,7 +30,6 @@ public:
     void PushBack(ParamValue _value);
     void Set(String _key, ParamValue _value);
 
-    [[nodiscard]] eType GetType() const;
     [[nodiscard]] bool  IsNull() const;
     [[nodiscard]] bool  IsBool() const;
     [[nodiscard]] bool  IsNumber() const;
@@ -51,7 +50,6 @@ public:
 
     [[nodiscard]] size_t             GetSize() const;
     [[nodiscard]] const ParamValue&  At(size_t _index) const;
-    [[nodiscard]] Span<const String> GetKeys() const;
 
     [[nodiscard]] const ParamValue* Find(StringView _key) const;
     [[nodiscard]] bool              Has(StringView _key) const;
@@ -421,5 +419,4 @@ struct StageData
     const eWhen _when,
     const bool  _bSilent);
 
-[[nodiscard]] const char* GetEntityKindName(eEntityKind _kind);
 [[nodiscard]] const char* GetActionTypeName(eActionType _type);

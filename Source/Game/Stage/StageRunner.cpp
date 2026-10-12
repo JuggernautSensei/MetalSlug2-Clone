@@ -116,7 +116,7 @@ std::optional<Vec2> StageRunner::ResolvePlayerStart() const
 
 Aabb StageRunner::CurrentViewRect_() const
 {
-    return Aabb::FromMinSize(m_pCamera->GetPositionNoShake(), m_pCamera->GetTuning().viewSize);
+    return Aabb::FromMinSize(m_pCamera->GetPosition(), m_pCamera->GetTuning().viewSize);
 }
 
 const String& StageRunner::GetGroundName() const

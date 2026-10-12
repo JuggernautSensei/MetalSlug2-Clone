@@ -405,12 +405,6 @@ int DefReader::Weapon(
     return index;
 }
 
-int DefReader::WeaponOpt(
-    const StringView _name) const
-{
-    return m_def.FindWeapon(_name);
-}
-
 bool DefReader::Finish()
 {
     for (const ParamEntry& entry: m_params)

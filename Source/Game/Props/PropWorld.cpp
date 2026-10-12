@@ -952,8 +952,3 @@ void PropWorld::ClearDecorByLayerMask(
 {
     m_decor.ClearByLayerMask(_layerMask);
 }
-
-const DecorWorld& PropWorld::GetDecor() const
-{
-    return m_decor;
-}

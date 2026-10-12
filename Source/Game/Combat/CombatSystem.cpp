@@ -72,11 +72,6 @@ Span<const Hitbox> CombatSystem::GetHitboxes() const
     return m_hitboxes;
 }
 
-const Vector<HitEvent>& CombatSystem::GetEvents() const
-{
-    return m_events;
-}
-
 HitResolver& CombatSystem::GetResolver()
 {
     return m_resolver;

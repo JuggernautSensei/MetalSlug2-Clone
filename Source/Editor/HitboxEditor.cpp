@@ -786,7 +786,7 @@ void HitboxEditor::DrawExtraOverlay_(
         m_bBoxDrag = false;
         return;
     }
-    const Vec2 camRaw = pState->GetCamera().GetPositionNoShake();
+    const Vec2 camRaw = pState->GetCamera().GetPosition();
     const Vec2 camera = { std::floor(camRaw.x), std::floor(camRaw.y) };
 
     float      mouseX = 0.f;

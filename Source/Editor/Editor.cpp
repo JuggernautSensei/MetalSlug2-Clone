@@ -121,11 +121,6 @@ void Editor::DrawLabOverlay(
     }
 }
 
-bool Editor::IsInitialized() const
-{
-    return m_bInit;
-}
-
 bool Editor::OwnsKeyboard() const
 {
     return m_bInit && m_bOwnsKeyboard;

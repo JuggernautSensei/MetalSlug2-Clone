@@ -111,12 +111,8 @@ void EnemyWorld::Reset(
     m_successors.clear();
     m_effects.Clear();
     m_rng.Reseed(_seed);
-    m_nextId         = kEnemyOwnerBase;
-    m_bPlayerMinX    = false;
-    m_bPlayerMaxX    = false;
-    m_cameraScroll   = 0.f;
-    m_shakeAmplitude = 0.f;
-    m_shakeSeconds   = 0.f;
+    m_nextId       = kEnemyOwnerBase;
+    m_cameraScroll = 0.f;
 }
 
 int GetEnemyDefaultZ(
@@ -379,9 +375,7 @@ void TickExtraBoxes_(
 void EnemyWorld::Tick(
     const EnemyContext& _ctx)
 {
-    m_lastCtx     = _ctx;
-    m_bPlayerMinX = false;
-    m_bPlayerMaxX = false;
+    m_lastCtx = _ctx;
 
     for (Enemy& e: m_enemies)
     {
@@ -961,31 +955,6 @@ float EnemyWorld::TakeCameraScroll()
     return dx;
 }
 
-void EnemyWorld::RequestCameraShake(
-    const float _amplitude,
-    const float _seconds)
-{
-    m_shakeAmplitude = std::max(m_shakeAmplitude, _amplitude);
-    m_shakeSeconds   = std::max(m_shakeSeconds, _seconds);
-}
-
-void EnemyWorld::TakeCameraShake(
-    float& _amplitude,
-    float& _seconds)
-{
-    _amplitude       = m_shakeAmplitude;
-    _seconds         = m_shakeSeconds;
-    m_shakeAmplitude = 0.f;
-    m_shakeSeconds   = 0.f;
-}
-
-Health EnemyWorld::GetHealth(
-    const EnemyHandle _handle) const
-{
-    const Enemy* pEnemy = Get(ResolveHandle(_handle));
-    return pEnemy ? pEnemy->health : Health { 0, 0 };
-}
-
 bool EnemyWorld::IsDestroyFinished(
     const EnemyHandle _handle) const
 {
@@ -1004,20 +973,6 @@ bool EnemyWorld::IsDestroyFinished(
     }
     const BehaviorOps& ops = GetBehaviorOps(pEnemy->behavior);
     return ops.deathDone ? ops.deathDone(*pEnemy, m_pLibrary->Get(pEnemy->defIndex)) : false;
-}
-
-void EnemyWorld::RequestPlayerMinX(
-    const float _minX)
-{
-    m_playerMinX  = m_bPlayerMinX ? std::max(m_playerMinX, _minX) : _minX;
-    m_bPlayerMinX = true;
-}
-
-void EnemyWorld::RequestPlayerMaxX(
-    const float _maxX)
-{
-    m_playerMaxX  = m_bPlayerMaxX ? std::min(m_playerMaxX, _maxX) : _maxX;
-    m_bPlayerMaxX = true;
 }
 
 bool EnemyWorld::IsTagDefeated(
@@ -1262,26 +1217,6 @@ void EnemyWorld::SetSpriteLibrary(
     const SpriteLibrary* _pSprites)
 {
     m_pSprites = _pSprites;
-}
-
-bool EnemyWorld::HasPlayerMinX() const
-{
-    return m_bPlayerMinX;
-}
-
-float EnemyWorld::GetPlayerMinX() const
-{
-    return m_playerMinX;
-}
-
-bool EnemyWorld::HasPlayerMaxX() const
-{
-    return m_bPlayerMaxX;
-}
-
-float EnemyWorld::GetPlayerMaxX() const
-{
-    return m_playerMaxX;
 }
 
 void EnemyWorld::RequestCameraScroll(

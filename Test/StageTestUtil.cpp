@@ -75,11 +75,6 @@ Vec2 FakeStageHost::PlayerFeet() const
     return playerFeet;
 }
 
-bool FakeStageHost::PlayerAlive() const
-{
-    return bPlayerAlive;
-}
-
 bool FakeStageHost::IsGameOver() const
 {
     return bGameOver;

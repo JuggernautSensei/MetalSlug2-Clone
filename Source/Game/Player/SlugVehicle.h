@@ -82,14 +82,9 @@ public:
     [[nodiscard]] SlugEjectRequest TakeEjectRequest();
 
     void AddCannonAmmo(int _count);
-    void PushFeetX(float _minX);
-    void PushFeetXMax(float _maxX);
-    void ForceHp(int _hp);
 
     [[nodiscard]] eSlugMode          GetMode() const;
-    [[nodiscard]] bool               IsDriven() const;
     [[nodiscard]] bool               IsAlive() const;
-    [[nodiscard]] uint32_t           GetOwnerId() const;
     [[nodiscard]] Vec2               GetFeet() const;
     [[nodiscard]] Vec2               GetPrevFeet() const;
     [[nodiscard]] int                GetZ() const;   // 몸통 depth (kDefaultZ: kSlugBodyDepth). 부품/FX/화살표/탄은 같은 이동량을 따른다
@@ -97,17 +92,12 @@ public:
     [[nodiscard]] Vec2               GetVelocity() const;
     [[nodiscard]] int                GetFacing() const;
     [[nodiscard]] bool               IsGrounded() const;
-    [[nodiscard]] int                GetHp() const;
-    [[nodiscard]] int                GetMaxHp() const;
     [[nodiscard]] float              GetHpRatio() const;
     [[nodiscard]] int                GetCannonAmmo() const;
-    [[nodiscard]] int                GetCannonCooldown() const;
     [[nodiscard]] float              GetVulcanAngle() const;
-    [[nodiscard]] float              GetVulcanTargetAngle() const;
     [[nodiscard]] int                GetVulcanShotAge() const;
     [[nodiscard]] bool               IsVulcanVisible() const;
     [[nodiscard]] bool               IsBodyVisible() const;
-    [[nodiscard]] int                GetCrouchLevel() const;
     [[nodiscard]] eSlugPose          GetPose() const;
     [[nodiscard]] int                GetPoseFrame() const;
     [[nodiscard]] int                GetFlashTicks() const;
