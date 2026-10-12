@@ -1,5 +1,6 @@
 #include "Base/Json.h"
 
+#include <cmath>
 #include <fstream>
 #include <iterator>
 #include <yyjson.h>
@@ -242,4 +243,18 @@ JsonDeserializer::~JsonDeserializer()
 JsonReader JsonDeserializer::GetReader() const
 {
     return JsonReader { m_pDoc ? yyjson_doc_get_root(m_pDoc) : nullptr };
+}
+
+bool ReadInt(
+    const JsonReader& _object,
+    const StringView  _key,
+    int&              _out)
+{
+    const Result<double> value = _object.ReadField<double>(_key);
+    if (!value)
+    {
+        return false;
+    }
+    _out = static_cast<int>(std::llround(value.GetValue()));
+    return true;
 }

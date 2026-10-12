@@ -1,7 +1,5 @@
 #include "Render/SpriteLibrary.h"
 
-#include <cmath>
-
 #include "Base/SlugError.h"
 #include "Base/Json.h"
 #include "Base/PhaseTimer.h"
@@ -9,20 +7,6 @@
 
 namespace
 {
-[[nodiscard]] bool ReadInt_(
-    const JsonReader& _object,
-    const StringView  _key,
-    int&              _out)
-{
-    const Result<double> value = _object.ReadField<double>(_key);
-    if (!value)
-    {
-        return false;
-    }
-    _out = static_cast<int>(std::llround(value.GetValue()));
-    return true;
-}
-
 [[nodiscard]] Result<SpriteLibrary> Parse_(
     const JsonReader& _root)
 {
@@ -47,7 +31,7 @@ namespace
         if (json.HasField("file"))
         {
             const Result<String> file = json.ReadField<String>("file");
-            if (!file || !ReadInt_(json, "w", info.width) || !ReadInt_(json, "h", info.height))
+            if (!file || !ReadInt(json, "w", info.width) || !ReadInt(json, "h", info.height))
             {
                 return Error { eError::Parse };
             }
@@ -57,7 +41,7 @@ namespace
         else
         {
             AnimFrame& f = info.frame;
-            if (!ReadInt_(json, "atlas", f.atlas) || !ReadInt_(json, "x", f.x) || !ReadInt_(json, "y", f.y) || !ReadInt_(json, "w", f.w) || !ReadInt_(json, "h", f.h) || !ReadInt_(json, "pivotX", f.pivotX) || !ReadInt_(json, "pivotY", f.pivotY))
+            if (!ReadInt(json, "atlas", f.atlas) || !ReadInt(json, "x", f.x) || !ReadInt(json, "y", f.y) || !ReadInt(json, "w", f.w) || !ReadInt(json, "h", f.h) || !ReadInt(json, "pivotX", f.pivotX) || !ReadInt(json, "pivotY", f.pivotY))
             {
                 return Error { eError::Parse };
             }

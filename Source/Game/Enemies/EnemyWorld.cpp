@@ -14,14 +14,6 @@ constexpr float kSpawnSnapPx = 16.f;   // 스폰 시 발 아래 지면에 붙이
 
 namespace
 {
-[[nodiscard]] Vec2 Lerp_(
-    const Vec2  _a,
-    const Vec2  _b,
-    const float _t)
-{
-    return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
-}
-
 [[nodiscard]] int FrameAt_(
     const AnimClip& _clip,
     const int64_t   _timeUnits)
@@ -667,7 +659,7 @@ void EnemyWorld::Submit(
         const EnemyDef&    def  = m_pLibrary->Get(e.defIndex);
         const BehaviorOps& ops  = GetBehaviorOps(e.behavior);
         const int          side = SideIndex_(e.facing);
-        const Vec2         feet = Lerp_(e.prevFeet, e.body.position, _alpha);
+        const Vec2         feet = Lerp(e.prevFeet, e.body.position, _alpha);
 
         if (ops.submitParts)
         {
@@ -761,7 +753,7 @@ void EnemyWorld::Submit(
         {
             continue;
         }
-        const Vec2        pos = Lerp_(shot.renderPrev, shot.position, _alpha);
+        const Vec2        pos = Lerp(shot.renderPrev, shot.position, _alpha);
         SpriteDrawOptions options;
         options.scale = m_pLibrary->GetProjectile(projIndex).scale;
         if (m_pLibrary->GetProjectile(projIndex).bRotate)

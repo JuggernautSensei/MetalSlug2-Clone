@@ -12,14 +12,6 @@
 
 namespace
 {
-[[nodiscard]] Vec2 Lerp_(
-    const Vec2  _a,
-    const Vec2  _b,
-    const float _t)
-{
-    return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
-}
-
 [[nodiscard]] const AnimFrame* GetFrame_(
     const AnimationLibrary& _anims,
     const StringView        _name,
@@ -169,7 +161,7 @@ void SubmitSlug(
         return;
     }
 
-    const Vec2 feet    = Lerp_(_slug.GetPrevFeet(), _slug.GetFeet(), _alpha);
+    const Vec2 feet    = Lerp(_slug.GetPrevFeet(), _slug.GetFeet(), _alpha);
     const Vec2 delta   = feet - _slug.GetFeet();
     const int  sortKey = static_cast<int>(feet.y);
     const int  bodyZ   = ResolveZ(_slug.GetZ(), kSlugBodyDepth);

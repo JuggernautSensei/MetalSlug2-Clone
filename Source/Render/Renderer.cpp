@@ -1,5 +1,6 @@
 #include "Render/Renderer.h"
 
+#include <cmath>
 #include <SDL3/SDL.h>
 
 #include "Base/SlugError.h"
@@ -157,4 +158,22 @@ Result<void> Renderer::SaveScreenshotBmp(
         return Error { eError::FileOpen };
     }
     return Error { kOK };
+}
+
+Vec2 ToScreen(
+    const Vec2 _world,
+    const Vec2 _camera)
+{
+    return { std::floor(_world.x - _camera.x), std::floor(_world.y - _camera.y) };
+}
+
+void DrawBox(
+    Renderer&   _renderer,
+    const Aabb& _box,
+    const Vec2  _camera,
+    const RGBA  _color)
+{
+    const Vec2 topLeft     = ToScreen(_box.min, _camera);
+    const Vec2 bottomRight = ToScreen(_box.max, _camera);
+    _renderer.DrawRect(topLeft, { Max(1.f, bottomRight.x - topLeft.x), Max(1.f, bottomRight.y - topLeft.y) }, _color);
 }

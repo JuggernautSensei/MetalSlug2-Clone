@@ -27,42 +27,6 @@ constexpr int   kAutoTurretInterval = 12;      // bAutoDamage: 포탑 단계 피
 
 namespace
 {
-[[nodiscard]] CameraTuning MakeCameraTuning_(
-    const CameraSettings& _settings)
-{
-    CameraTuning tuning = {};
-    tuning.viewSize     = { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) };
-    tuning.deadzoneHalf = _settings.deadzoneHalf;
-    tuning.smoothTime   = _settings.smoothTime;
-    return tuning;
-}
-
-[[nodiscard]] Vec2 Lerp_(
-    const Vec2  _a,
-    const Vec2  _b,
-    const float _t)
-{
-    return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
-}
-
-[[nodiscard]] Vec2 ToScreen_(
-    const Vec2 _world,
-    const Vec2 _camera)
-{
-    return { std::floor(_world.x - _camera.x), std::floor(_world.y - _camera.y) };
-}
-
-void DrawBox_(
-    Renderer&   _renderer,
-    const Aabb& _box,
-    const Vec2  _camera,
-    const RGBA  _color)
-{
-    const Vec2 topLeft     = ToScreen_(_box.min, _camera);
-    const Vec2 bottomRight = ToScreen_(_box.max, _camera);
-    _renderer.DrawRect(topLeft, { Max(1.f, bottomRight.x - topLeft.x), Max(1.f, bottomRight.y - topLeft.y) }, _color);
-}
-
 [[nodiscard]] RGBA GetPlaceholderColor_(
     const PlaceholderEntity& _entity)
 {
@@ -292,7 +256,7 @@ void StageState::Load_(
     m_host.BindWorld(&m_enemies, &m_props);
     m_host.BindRects(m_data.rects);
 
-    m_camera = Camera { MakeCameraTuning_(m_tuning.camera) };
+    m_camera = Camera { MakeCameraTuning(m_tuning.camera) };
     m_camera.SetForwardOnly(true);
     m_runner.emplace(m_data, m_host, m_camera, m_rng);
 
@@ -1041,7 +1005,7 @@ void StageState::DrawWorld_(
             continue;
         }
         const Aabb box   = entity.GetBox();
-        const Vec2 tl    = ToScreen_(box.min, _cameraPos);
+        const Vec2 tl    = ToScreen(box.min, _cameraPos);
         const RGBA color = entity.IsAlive() ? GetPlaceholderColor_(entity) : RGBA { 90, 90, 90, 255 };
         if (entity.bHittable || !entity.IsAlive())
         {
@@ -1057,7 +1021,7 @@ void StageState::DrawWorld_(
     }
 
     {
-        const Vec2 feet = Lerp_(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
+        const Vec2 feet = Lerp(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
         // 시작 낙하산: 레이어 19 로 그려 플레이어(레이어 20)보다 뒤에 놓인다.
         if (pAnims && m_player.IsChuteVisible(m_tuning))
         {
@@ -1077,25 +1041,25 @@ void StageState::DrawWorld_(
         else if (m_player.IsAlive())
         {
             const Aabb box = Aabb::FromBottomCenter(feet, m_player.GetBody().size);
-            renderer.FillRect(ToScreen_(box.min, _cameraPos), box.GetSize(), { 60, 120, 255, 255 });
+            renderer.FillRect(ToScreen(box.min, _cameraPos), box.GetSize(), { 60, 120, 255, 255 });
         }
     }
 
     {
         for (const Bullet& bullet: m_projectiles.GetBullets())
         {
-            const Vec2 pos = Lerp_(bullet.renderPrev, bullet.position, _alpha);
+            const Vec2 pos = Lerp(bullet.renderPrev, bullet.position, _alpha);
             if (bullet.team == eTeam::Player && SubmitPlayerBullet(sprites, pAnims, m_spriteLib, bullet, pos, ResolveZ(bullet.z, kPlayerBulletDepth)))
             {
                 continue;
             }
             const RGBA color = bullet.team == eTeam::Player ? RGBA { 255, 240, 120, 255 } : RGBA { 255, 80, 60, 255 };
-            renderer.FillRect(ToScreen_({ pos.x - bullet.size.x * 0.5f, pos.y - bullet.size.y * 0.5f }, _cameraPos), bullet.size, color);
+            renderer.FillRect(ToScreen({ pos.x - bullet.size.x * 0.5f, pos.y - bullet.size.y * 0.5f }, _cameraPos), bullet.size, color);
         }
 
         for (const Bomb& bomb: m_projectiles.GetBombs())
         {
-            const Vec2 pos = Lerp_(bomb.renderPrev, bomb.position, _alpha);
+            const Vec2 pos = Lerp(bomb.renderPrev, bomb.position, _alpha);
             if (pAnims)
             {
                 if (const AnimFrame* pFrame = m_bombAnim.GetFrameData(*pAnims))
@@ -1104,7 +1068,7 @@ void StageState::DrawWorld_(
                     continue;
                 }
             }
-            renderer.FillRect(ToScreen_({ pos.x - 5.f, pos.y - 5.f }, _cameraPos), { 10.f, 10.f }, { 40, 40, 40, 255 });
+            renderer.FillRect(ToScreen({ pos.x - 5.f, pos.y - 5.f }, _cameraPos), { 10.f, 10.f }, { 40, 40, 40, 255 });
         }
     }
 
@@ -1123,7 +1087,7 @@ void StageState::DrawDebugBoxes_(
 {
     for (const Hurtbox& hurtbox: m_combat.GetHurtboxes())
     {
-        DrawBox_(
+        DrawBox(
             _renderer,
             hurtbox.box,
             _cameraPos,
@@ -1131,7 +1095,7 @@ void StageState::DrawDebugBoxes_(
     }
     for (const Hitbox& hitbox: m_combat.GetHitboxes())
     {
-        DrawBox_(
+        DrawBox(
             _renderer,
             hitbox.box,
             _cameraPos,
@@ -1139,7 +1103,7 @@ void StageState::DrawDebugBoxes_(
     }
 
     const Aabb body = m_player.GetBodyBox();
-    DrawBox_(
+    DrawBox(
         _renderer,
         body,
         _cameraPos,
@@ -1147,11 +1111,11 @@ void StageState::DrawDebugBoxes_(
 
     const Vec2  feet = m_player.GetFeet();
     const float fh   = m_player.GetBody().footHalfWidth;
-    _renderer.DrawLine(ToScreen_({ feet.x - fh, feet.y }, _cameraPos), ToScreen_({ feet.x + fh, feet.y }, _cameraPos), { 255, 255, 0, 255 });
-    _renderer.DrawLine(ToScreen_({ feet.x, feet.y - 4.f }, _cameraPos), ToScreen_({ feet.x, feet.y + 4.f }, _cameraPos), { 255, 255, 0, 255 });
+    _renderer.DrawLine(ToScreen({ feet.x - fh, feet.y }, _cameraPos), ToScreen({ feet.x + fh, feet.y }, _cameraPos), { 255, 255, 0, 255 });
+    _renderer.DrawLine(ToScreen({ feet.x, feet.y - 4.f }, _cameraPos), ToScreen({ feet.x, feet.y + 4.f }, _cameraPos), { 255, 255, 0, 255 });
 
     const Aabb trigger = MakeKnifeTriggerBox(feet, m_player.GetFacing(), body.GetWidth() * 0.5f, m_tuning.knife);
-    DrawBox_(
+    DrawBox(
         _renderer,
         trigger,
         _cameraPos,
@@ -1159,7 +1123,7 @@ void StageState::DrawDebugBoxes_(
 
     for (const Wall& wall: m_walls)
     {
-        DrawBox_(
+        DrawBox(
             _renderer,
             wall.box,
             _cameraPos,
@@ -1167,7 +1131,7 @@ void StageState::DrawDebugBoxes_(
     }
     for (const Platform& platform: m_playerPlatforms)
     {
-        DrawBox_(
+        DrawBox(
             _renderer,
             platform.box,
             _cameraPos,
@@ -1175,7 +1139,7 @@ void StageState::DrawDebugBoxes_(
     }
     for (const Platform& platform: m_enemyPlatforms)
     {
-        DrawBox_(
+        DrawBox(
             _renderer,
             platform.box,
             _cameraPos,

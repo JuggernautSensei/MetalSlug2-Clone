@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "Base/Math.h"
+#include "Render/Renderer.h"
 
 constexpr float kRampStart     = 1.f;                   // px/틱: 스크롤 시작 속도
 constexpr float kRampAccel     = 0.19f;                 // px/틱²: 플레이어를 따라 가속
@@ -651,4 +652,14 @@ float Camera::GetScrollFloorX() const
 Vec2 Camera::GetViewCenter() const
 {
     return m_center;
+}
+
+CameraTuning MakeCameraTuning(
+    const CameraSettings& _settings)
+{
+    CameraTuning tuning = {};
+    tuning.viewSize     = { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) };
+    tuning.deadzoneHalf = _settings.deadzoneHalf;
+    tuning.smoothTime   = _settings.smoothTime;
+    return tuning;
 }

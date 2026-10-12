@@ -20,24 +20,6 @@ constexpr float kLabPlayerGap  = 120.f;
 
 namespace
 {
-[[nodiscard]] Vec2 LabToScreen_(
-    const Vec2 _world,
-    const Vec2 _camera)
-{
-    return { std::floor(_world.x - _camera.x), std::floor(_world.y - _camera.y) };
-}
-
-void LabDrawBox_(
-    Renderer&   _renderer,
-    const Aabb& _box,
-    const Vec2  _camera,
-    const RGBA  _color)
-{
-    const Vec2 topLeft     = LabToScreen_(_box.min, _camera);
-    const Vec2 bottomRight = LabToScreen_(_box.max, _camera);
-    _renderer.DrawRect(topLeft, { Max(1.f, bottomRight.x - topLeft.x), Max(1.f, bottomRight.y - topLeft.y) }, _color);
-}
-
 void LabDrawText_(
     Renderer&        _renderer,
     const Vec2       _topLeft,
@@ -585,12 +567,12 @@ void EnemyLab::DrawMark(
     for (int i = 0; i < 3; ++i)
     {
         const float grow = static_cast<float>(i);
-        LabDrawBox_(_renderer, Aabb::FromMinMax({ _world.min.x - grow, _world.min.y - grow }, { _world.max.x + grow, _world.max.y + grow }), camera, _color);
+        DrawBox(_renderer, Aabb::FromMinMax({ _world.min.x - grow, _world.min.y - grow }, { _world.max.x + grow, _world.max.y + grow }), camera, _color);
     }
-    const Vec2 a = LabToScreen_(_anchor, camera);
+    const Vec2 a = ToScreen(_anchor, camera);
     _renderer.DrawLine({ a.x - 6.f, a.y }, { a.x + 6.f, a.y }, _color);
     _renderer.DrawLine({ a.x, a.y - 6.f }, { a.x, a.y + 6.f }, _color);
-    const Vec2 topLeft = LabToScreen_(_world.min, camera);
+    const Vec2 topLeft = ToScreen(_world.min, camera);
     LabDrawText_(_renderer, { topLeft.x, topLeft.y - 14.f }, _label, _color);
 }
 
@@ -620,7 +602,7 @@ void EnemyLab::DrawOverlay(
 
     if (m_bShowCamera)
     {
-        LabDrawBox_(_renderer, pState->GetCamera().GetBounds(), camera, { 0, 200, 255, 255 });
+        DrawBox(_renderer, pState->GetCamera().GetBounds(), camera, { 0, 200, 255, 255 });
     }
     if (m_bShowBoxes)
     {
@@ -628,14 +610,14 @@ void EnemyLab::DrawOverlay(
         {
             if (IsEnemyOwner(hurtbox.owner))
             {
-                LabDrawBox_(_renderer, hurtbox.box, camera, hurtbox.bInvulnerable ? RGBA { 120, 200, 255, 255 } : RGBA { 60, 255, 90, 255 });
+                DrawBox(_renderer, hurtbox.box, camera, hurtbox.bInvulnerable ? RGBA { 120, 200, 255, 255 } : RGBA { 60, 255, 90, 255 });
             }
         }
         for (const Hitbox& hitbox: pState->GetCombat().GetHitboxes())
         {
             if (hitbox.team == eTeam::Enemy)
             {
-                LabDrawBox_(_renderer, hitbox.box, camera, { 255, 50, 50, 255 });
+                DrawBox(_renderer, hitbox.box, camera, { 255, 50, 50, 255 });
             }
         }
     }
@@ -652,12 +634,12 @@ void EnemyLab::DrawOverlay(
         const Vec2 center = body.GetCenter();
         if (m_bShowBoxes)
         {
-            LabDrawBox_(_renderer, body, camera, { 255, 220, 40, 255 });
+            DrawBox(_renderer, body, camera, { 255, 220, 40, 255 });
         }
         if (e.id == m_selected.id)
         {
             const Aabb mark = Aabb::FromMinMax({ body.min.x - 2.f, body.min.y - 2.f }, { body.max.x + 2.f, body.max.y + 2.f });
-            LabDrawBox_(_renderer, mark, camera, { 255, 255, 255, 255 });
+            DrawBox(_renderer, mark, camera, { 255, 255, 255, 255 });
         }
         if (m_bShowSolids)
         {
@@ -665,23 +647,23 @@ void EnemyLab::DrawOverlay(
             if (!solidDef.solid.IsEmpty() && e.life == eEnemyLife::Alive)
             {
                 const Aabb solid = solidDef.solid.At(e.body.position, e.facing);
-                LabDrawBox_(_renderer, solid, camera, { 255, 0, 255, 255 });
-                const Vec2 solidTop = LabToScreen_(solid.min, camera);
+                DrawBox(_renderer, solid, camera, { 255, 0, 255, 255 });
+                const Vec2 solidTop = ToScreen(solid.min, camera);
                 LabDrawText_(_renderer, { solidTop.x + 2.f, solidTop.y + 2.f }, "solid", { 255, 0, 255, 255 });
             }
             if (solidDef.behavior == eEnemyBehavior::Bus)
             {
                 const Vec2 a  = { e.body.position.x + solidDef.bus.stairsBase.x, e.body.position.y + solidDef.bus.stairsBase.y };
                 const Vec2 b  = { e.body.position.x + solidDef.bus.stairsTop.x, e.body.position.y + solidDef.bus.stairsTop.y };
-                const Vec2 lo = LabToScreen_({ Min(a.x, b.x), Min(a.y, b.y) }, camera);
-                const Vec2 hi = LabToScreen_({ Max(a.x, b.x), Max(a.y, b.y) }, camera);
+                const Vec2 lo = ToScreen({ Min(a.x, b.x), Min(a.y, b.y) }, camera);
+                const Vec2 hi = ToScreen({ Max(a.x, b.x), Max(a.y, b.y) }, camera);
                 _renderer.FillRect(lo, { Max(1.f, hi.x - lo.x), Max(1.f, hi.y - lo.y) }, { 255, 160, 0, 70 });
                 LabDrawText_(_renderer, { lo.x + 2.f, lo.y + 2.f }, "stairs", { 255, 200, 80, 255 });
             }
         }
         if (m_bShowTarget)
         {
-            _renderer.DrawLine(LabToScreen_(center, camera), LabToScreen_(player, camera), { 255, 80, 255, 255 });
+            _renderer.DrawLine(ToScreen(center, camera), ToScreen(player, camera), { 255, 80, 255, 255 });
         }
         if (m_bShowProbe)
         {
@@ -698,12 +680,12 @@ void EnemyLab::DrawOverlay(
                 }
             }
             const RGBA color = depth < kLabProbeDepth ? RGBA { 0, 255, 255, 255 } : RGBA { 255, 120, 0, 255 };
-            _renderer.DrawLine(LabToScreen_(feet, camera), LabToScreen_({ feet.x, feet.y + static_cast<float>(depth) }, camera), color);
+            _renderer.DrawLine(ToScreen(feet, camera), ToScreen({ feet.x, feet.y + static_cast<float>(depth) }, camera), color);
         }
         if (m_bShowState)
         {
             const EnemyDef& def  = lib.Get(e.defIndex);
-            const Vec2      top  = LabToScreen_({ center.x, body.min.y }, camera);
+            const Vec2      top  = ToScreen({ center.x, body.min.y }, camera);
             const float     half = static_cast<float>(def.name.size() * Renderer::kDebugCharSize) * 0.5f;
             LabDrawText_(_renderer, { top.x - half, top.y - 20.f }, def.name, { 255, 255, 255, 255 });
             const String text = LabMakeStateText_(e);

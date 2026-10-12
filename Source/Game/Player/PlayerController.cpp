@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <bit>
 #include <cmath>
-#include <cstring>
 
 #include "Base/Math.h"
 #include "Base/Types.h"
@@ -13,19 +12,6 @@
 
 namespace
 {
-[[nodiscard]] PhysicsTuning MakePhysicsTuning_(
-    const MoveTuning& _move)
-{
-    PhysicsTuning tuning;
-    tuning.gravity          = _move.gravity;
-    tuning.terminalVelocity = _move.terminalVelocity;
-    tuning.runSpeed         = _move.runSpeed;
-    tuning.jumpSpeed        = _move.jumpSpeed;
-    tuning.maxStepUp        = _move.maxStepUp;
-    tuning.maxSnapDown      = _move.maxSnapDown;
-    return tuning;
-}
-
 [[nodiscard]] bool IsRegionBlocked_(
     const PhysicsWorld& _world,
     const Aabb&         _region)
@@ -55,19 +41,6 @@ namespace
     return false;
 }
 
-template<typename T>
-void HashBytes_(
-    uint64_t& _hash,
-    const T&  _value)
-{
-    ARRAY<uint8_t, sizeof(T)> bytes = {};
-    std::memcpy(bytes.data(), &_value, sizeof(T));
-    for (const uint8_t byte: bytes)
-    {
-        _hash ^= byte;
-        _hash *= 1'099'511'628'211ull;
-    }
-}
 }   // namespace
 
 void PlayerController::Reset(
@@ -368,7 +341,7 @@ void PlayerController::TickDead_(
     const Tuning& tuning = *_ctx.pTuning;
 
     m_body.velocity.x = 0.f;
-    m_lastMove        = Physics::Step(m_body, _ctx.physics, MakePhysicsTuning_(tuning.move));
+    m_lastMove        = Physics::Step(m_body, _ctx.physics, MakePhysicsTuning(tuning.move));
     ++m_deadTicks;
 
     if (m_bGameOver)
@@ -494,7 +467,7 @@ void PlayerController::TickMovement_(
     if (_command.bJumpBuffered && !bGroundedBefore && m_body.velocity.y >= 0.f)
     {
         Body probe = m_body;
-        bWillLand  = Physics::Step(probe, _ctx.physics, MakePhysicsTuning_(move)).bLanded;
+        bWillLand  = Physics::Step(probe, _ctx.physics, MakePhysicsTuning(move)).bLanded;
     }
 
     if (_command.bJumpBuffered && (bGroundedBefore || bCoyote || bWillLand))
@@ -525,7 +498,7 @@ void PlayerController::TickMovement_(
 
     m_body.size          = bCrouch ? tuning.body.crouchSize : tuning.body.standSize;
     m_body.footHalfWidth = tuning.body.footHalfWidth;
-    m_lastMove           = Physics::Step(m_body, _ctx.physics, MakePhysicsTuning_(move));
+    m_lastMove           = Physics::Step(m_body, _ctx.physics, MakePhysicsTuning(move));
 
     if (m_body.bGrounded)
     {
@@ -1006,26 +979,26 @@ RigState PlayerController::MakeRigState() const
 uint64_t PlayerController::HashState() const
 {
     uint64_t hash = 14'695'981'039'346'656'037ull;
-    HashBytes_(hash, m_body.position.x);
-    HashBytes_(hash, m_body.position.y);
-    HashBytes_(hash, m_body.velocity.x);
-    HashBytes_(hash, m_body.velocity.y);
-    HashBytes_(hash, static_cast<uint8_t>(m_state));
-    HashBytes_(hash, static_cast<uint8_t>(m_weapon.weapon));
-    HashBytes_(hash, m_weapon.ammo);
-    HashBytes_(hash, m_weapon.bombs);
-    HashBytes_(hash, m_lives);
-    HashBytes_(hash, m_score);
-    HashBytes_(hash, m_invincibleTicks);
-    HashBytes_(hash, m_facing);
-    HashBytes_(hash, m_stats.shotsFired);
-    HashBytes_(hash, m_burstLeft);
-    HashBytes_(hash, m_stats.knifeSlashes);
-    HashBytes_(hash, m_stats.bombsThrown);
-    HashBytes_(hash, m_stats.jumps);
-    HashBytes_(hash, m_stats.deaths);
-    HashBytes_(hash, static_cast<uint8_t>(m_chutePhase));
-    HashBytes_(hash, m_chuteBlinkTicks);
+    HashBytes(hash, m_body.position.x);
+    HashBytes(hash, m_body.position.y);
+    HashBytes(hash, m_body.velocity.x);
+    HashBytes(hash, m_body.velocity.y);
+    HashBytes(hash, static_cast<uint8_t>(m_state));
+    HashBytes(hash, static_cast<uint8_t>(m_weapon.weapon));
+    HashBytes(hash, m_weapon.ammo);
+    HashBytes(hash, m_weapon.bombs);
+    HashBytes(hash, m_lives);
+    HashBytes(hash, m_score);
+    HashBytes(hash, m_invincibleTicks);
+    HashBytes(hash, m_facing);
+    HashBytes(hash, m_stats.shotsFired);
+    HashBytes(hash, m_burstLeft);
+    HashBytes(hash, m_stats.knifeSlashes);
+    HashBytes(hash, m_stats.bombsThrown);
+    HashBytes(hash, m_stats.jumps);
+    HashBytes(hash, m_stats.deaths);
+    HashBytes(hash, static_cast<uint8_t>(m_chutePhase));
+    HashBytes(hash, m_chuteBlinkTicks);
     return hash;
 }
 

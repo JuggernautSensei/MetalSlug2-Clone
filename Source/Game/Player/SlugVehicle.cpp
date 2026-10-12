@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstring>
 
 #include "Base/Math.h"
 #include "Base/Types.h"
@@ -21,19 +20,6 @@ constexpr int kHitAgeNone     = -1;
 
 namespace
 {
-[[nodiscard]] PhysicsTuning MakePhysicsTuning_(
-    const SlugMoveTuning& _move)
-{
-    PhysicsTuning tuning;
-    tuning.gravity          = _move.gravity;
-    tuning.terminalVelocity = _move.terminalVelocity;
-    tuning.runSpeed         = _move.runSpeed;
-    tuning.jumpSpeed        = _move.jumpSpeed;
-    tuning.maxStepUp        = _move.maxStepUp;
-    tuning.maxSnapDown      = _move.maxSnapDown;
-    return tuning;
-}
-
 // -180..180 으로 접은 각도 차이
 [[nodiscard]] float WrapDegree_(
     const float _degree)
@@ -44,20 +30,6 @@ namespace
         value += 360.f;
     }
     return value - 180.f;
-}
-
-template<typename T>
-void HashBytes_(
-    uint64_t& _hash,
-    const T&  _value)
-{
-    ARRAY<uint8_t, sizeof(T)> bytes = {};
-    std::memcpy(bytes.data(), &_value, sizeof(T));
-    for (const uint8_t byte: bytes)
-    {
-        _hash ^= byte;
-        _hash *= 1'099'511'628'211ull;
-    }
 }
 
 // 연기/불꽃이 올라오는 자리 (차량 몸통 위쪽 여러 점을 번갈아 쓴다)
@@ -416,7 +388,7 @@ void SlugVehicle::Move_(
     const float t        = static_cast<float>(m_crouchLevel) / static_cast<float>(kCrouchLevels);
     m_body.size          = { m_tuning.body.standSize.x, Lerp(m_tuning.body.standSize.y, m_tuning.body.crouchSize.y, t) };
     m_body.footHalfWidth = m_tuning.body.footHalfWidth;
-    m_lastMove           = Physics::Step(m_body, _ctx.physics, MakePhysicsTuning_(move));
+    m_lastMove           = Physics::Step(m_body, _ctx.physics, MakePhysicsTuning(move));
 
     if (m_body.bGrounded)
     {
@@ -1100,17 +1072,17 @@ const Body& SlugVehicle::GetBody() const
 uint64_t SlugVehicle::HashState() const
 {
     uint64_t hash = 14'695'981'039'346'656'037ull;
-    HashBytes_(hash, m_body.position.x);
-    HashBytes_(hash, m_body.position.y);
-    HashBytes_(hash, m_body.velocity.x);
-    HashBytes_(hash, m_body.velocity.y);
-    HashBytes_(hash, static_cast<uint8_t>(m_mode));
-    HashBytes_(hash, m_hp);
-    HashBytes_(hash, m_cannonAmmo);
-    HashBytes_(hash, m_vulcanAngle);
-    HashBytes_(hash, m_crouchLevel);
-    HashBytes_(hash, m_facing);
-    HashBytes_(hash, m_stats.vulcanShots);
-    HashBytes_(hash, m_stats.cannonShots);
+    HashBytes(hash, m_body.position.x);
+    HashBytes(hash, m_body.position.y);
+    HashBytes(hash, m_body.velocity.x);
+    HashBytes(hash, m_body.velocity.y);
+    HashBytes(hash, static_cast<uint8_t>(m_mode));
+    HashBytes(hash, m_hp);
+    HashBytes(hash, m_cannonAmmo);
+    HashBytes(hash, m_vulcanAngle);
+    HashBytes(hash, m_crouchLevel);
+    HashBytes(hash, m_facing);
+    HashBytes(hash, m_stats.vulcanShots);
+    HashBytes(hash, m_stats.cannonShots);
     return hash;
 }

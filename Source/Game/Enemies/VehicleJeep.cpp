@@ -49,13 +49,6 @@ void Go_(
     SetClip(_e, ClipOf_(_e, _def.jeep), true);
 }
 
-[[nodiscard]] bool Done_(
-    const Enemy&    _e,
-    const EnemyDef& _def)
-{
-    return _e.clip >= 0 && _e.stateTicks >= _def.GetClip(_e.clip).GetDurationTicks();
-}
-
 [[nodiscard]] float TargetX_(
     const Enemy&   _e,
     const JeepCfg& _c,
@@ -134,7 +127,7 @@ void Tick_(
             break;
 
         case eJeepState::TurnToMove:
-            if (Done_(_e, _def))
+            if (IsClipDone(_e, _def))
             {
                 _e.facing = -_e.facing;
                 Go_(_e, _def, eJeepState::Move);
@@ -154,7 +147,7 @@ void Tick_(
         }
 
         case eJeepState::Turn:
-            if (Done_(_e, _def))
+            if (IsClipDone(_e, _def))
             {
                 _e.facing = -_e.facing;
                 Go_(_e, _def, eJeepState::Idle);
@@ -177,7 +170,7 @@ void Tick_(
             break;
 
         case eJeepState::Aimming:
-            if (Done_(_e, _def))
+            if (IsClipDone(_e, _def))
             {
                 Go_(_e, _def, eJeepState::ShotIdle);
             }
@@ -198,7 +191,7 @@ void Tick_(
             break;
 
         case eJeepState::ShotReady:
-            if (Done_(_e, _def))
+            if (IsClipDone(_e, _def))
             {
                 Go_(_e, _def, eJeepState::Shot);
             }
@@ -212,7 +205,7 @@ void Tick_(
                 const Vec2  shift  = { c.rocketShiftX * static_cast<float>(_e.counter & 1) * -facing, 0.f };
                 (void)FireWeapon(_e, _def, _env, c.weaponRocket, back, shift);
             }
-            if (Done_(_e, _def))
+            if (IsClipDone(_e, _def))
             {
                 --_e.counter;
                 Go_(_e, _def, eJeepState::ShotIdle);
@@ -220,14 +213,14 @@ void Tick_(
             break;
 
         case eJeepState::ReAim:
-            if (Done_(_e, _def))
+            if (IsClipDone(_e, _def))
             {
                 Go_(_e, _def, eJeepState::TurnAfterShot);
             }
             break;
 
         case eJeepState::TurnAfterShot:
-            if (Done_(_e, _def))
+            if (IsClipDone(_e, _def))
             {
                 _e.facing = -_e.facing;
                 Go_(_e, _def, eJeepState::IdleAndMove);

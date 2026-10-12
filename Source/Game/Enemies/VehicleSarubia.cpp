@@ -42,13 +42,6 @@ void Go_(
     SetClip(_e, ClipOf_(_e, _def.sarubia), true);
 }
 
-[[nodiscard]] bool Done_(
-    const Enemy&    _e,
-    const EnemyDef& _def)
-{
-    return _e.clip >= 0 && _e.stateTicks >= _def.GetClip(_e.clip).GetDurationTicks();
-}
-
 void Init_(
     Enemy&          _e,
     const EnemyDef& _def,
@@ -98,7 +91,7 @@ void Tick_(
             break;
 
         case eSarubiaState::Turn:
-            if (Done_(_e, _def))
+            if (IsClipDone(_e, _def))
             {
                 _e.facing = -_e.facing;
                 Go_(_e, _def, eSarubiaState::Idle);
@@ -106,7 +99,7 @@ void Tick_(
             break;
 
         case eSarubiaState::MoveStart:
-            if (Done_(_e, _def))
+            if (IsClipDone(_e, _def))
             {
                 Go_(_e, _def, eSarubiaState::Move);
             }
@@ -121,7 +114,7 @@ void Tick_(
             break;
 
         case eSarubiaState::MoveStop:
-            if (Done_(_e, _def))
+            if (IsClipDone(_e, _def))
             {
                 Go_(_e, _def, eSarubiaState::Idle);
             }
@@ -139,7 +132,7 @@ void Tick_(
             {
                 (void)FireWeapon(_e, _def, _env, c.weaponGrenade);
             }
-            if (Done_(_e, _def))
+            if (IsClipDone(_e, _def))
             {
                 Go_(_e, _def, eSarubiaState::Idle);
             }

@@ -8,15 +8,6 @@
 
 constexpr float kGroundY = 378.f;
 
-namespace
-{
-[[nodiscard]] bool OnGround_(
-    const Enemy* _pEnemy)
-{
-    return _pEnemy && _pEnemy->bGrounded && std::abs(_pEnemy->body.position.y - kGroundY) < 0.5f;
-}
-}   // namespace
-
 struct EnemyDirectState
 {
     GameContext  ctx = {};
@@ -106,7 +97,7 @@ TEST(EnemySandbox, GroundedKindsRestOnTheGround)
         sim.Step(1);
         for (size_t i = 0; i < handles.size(); ++i)
         {
-            seen[i] = seen[i] || OnGround_(sim.State().GetEnemies().Get(handles[i]));
+            seen[i] = seen[i] || OnGround(sim.State().GetEnemies().Get(handles[i]));
         }
     }
     for (size_t i = 0; i < handles.size(); ++i)

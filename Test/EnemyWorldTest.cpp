@@ -10,12 +10,6 @@ constexpr float kGroundY = 378.f;   // MakeFlatGround 의 지면 윗면
 
 namespace
 {
-[[nodiscard]] bool OnGround_(
-    const Enemy* _pEnemy)
-{
-    return _pEnemy && _pEnemy->bGrounded && std::abs(_pEnemy->body.position.y - kGroundY) < 0.5f;
-}
-
 // 높은 체력(20)의 병사를 쓰러뜨리는 데 필요한 타격 횟수를 돌려준다 (로드 실패 -1, 미처치 -2)
 [[nodiscard]] int HitsToKill_(
     const eHitKind _kind,
@@ -93,7 +87,7 @@ TEST(EnemyWorld, SoldierFallsOntoTheGroundAndIdles)
     ASSERT_TRUE(rig.IsLoaded());
     const EnemyHandle h = rig.Spawn("soldier_bomb", { 300.f, 300.f });
     rig.Step(60);
-    EXPECT_TRUE(OnGround_(rig.E(h)));
+    EXPECT_TRUE(OnGround(rig.E(h)));
     EXPECT_TRUE(rig.E(h)->bActive);
 }
 

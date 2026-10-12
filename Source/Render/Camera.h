@@ -2,6 +2,7 @@
 #include <cstdint>
 
 #include "Base/Math.h"
+#include "Core/Tuning.h"
 #include "World/Constants.h"
 #include "World/Geometry.h"
 
@@ -112,3 +113,6 @@ private:
     bool  m_bScrollFloor = false;
     float m_scrollFloorX = 0.f;   // 카메라 중심 x 하한 (AddScrollFloor 로 누적)
 };
+
+// 튜닝 파일의 카메라 설정을 논리 해상도 기준 카메라 튜닝으로 바꾼다
+[[nodiscard]] CameraTuning MakeCameraTuning(const CameraSettings& _settings);

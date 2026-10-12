@@ -101,6 +101,9 @@ private:
     yyjson_val* m_pValue = nullptr;
 };
 
+// 숫자 필드를 반올림해 읽는다. 키가 없거나 숫자가 아니면 false.
+[[nodiscard]] bool ReadInt(const JsonReader& _object, StringView _key, int& _out);
+
 class JsonDeserializer
 {
 public:

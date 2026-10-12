@@ -20,26 +20,12 @@ namespace
     return static_cast<int64_t>(std::llround(_sec * kUnitsPerSec));
 }
 
-[[nodiscard]] bool ReadInt_(
-    const JsonReader& _object,
-    const StringView  _key,
-    int&              _out)
-{
-    const Result<double> value = _object.ReadField<double>(_key);
-    if (!value)
-    {
-        return false;
-    }
-    _out = static_cast<int>(std::llround(value.GetValue()));
-    return true;
-}
-
 [[nodiscard]] bool ReadOptionalInt_(
     const JsonReader& _object,
     const StringView  _key,
     int&              _out)
 {
-    return !_object.HasField(_key) || ReadInt_(_object, _key, _out);
+    return !_object.HasField(_key) || ReadInt(_object, _key, _out);
 }
 
 [[nodiscard]] Result<AnimFrame> ParseFrame_(
@@ -51,7 +37,7 @@ namespace
     }
 
     AnimFrame frame;
-    if (!ReadInt_(_json, "atlas", frame.atlas) || !ReadInt_(_json, "x", frame.x) || !ReadInt_(_json, "y", frame.y) || !ReadInt_(_json, "w", frame.w) || !ReadInt_(_json, "h", frame.h) || !ReadInt_(_json, "pivotX", frame.pivotX) || !ReadInt_(_json, "pivotY", frame.pivotY))
+    if (!ReadInt(_json, "atlas", frame.atlas) || !ReadInt(_json, "x", frame.x) || !ReadInt(_json, "y", frame.y) || !ReadInt(_json, "w", frame.w) || !ReadInt(_json, "h", frame.h) || !ReadInt(_json, "pivotX", frame.pivotX) || !ReadInt(_json, "pivotY", frame.pivotY))
     {
         return Error { eError::Parse };
     }

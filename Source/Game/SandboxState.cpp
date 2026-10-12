@@ -1,7 +1,6 @@
 ﻿#include "Game/SandboxState.h"
 
 #include <cmath>
-#include <cstring>
 #include <filesystem>
 #include <format>
 
@@ -17,45 +16,6 @@
 #include "Game/Stage/StageMapping.h"
 #include "Game/Ui/ScreenFlow.h"
 #include "World/Constants.h"
-
-namespace
-{
-[[nodiscard]] CameraTuning MakeCameraTuning_(
-    const CameraSettings& _settings)
-{
-    CameraTuning tuning;
-    tuning.viewSize     = { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) };
-    tuning.deadzoneHalf = _settings.deadzoneHalf;
-    tuning.smoothTime   = _settings.smoothTime;
-    return tuning;
-}
-
-[[nodiscard]] Vec2 Lerp_(
-    const Vec2  _a,
-    const Vec2  _b,
-    const float _t)
-{
-    return { _a.x + (_b.x - _a.x) * _t, _a.y + (_b.y - _a.y) * _t };
-}
-
-[[nodiscard]] Vec2 ToScreen_(
-    const Vec2 _world,
-    const Vec2 _camera)
-{
-    return { std::floor(_world.x - _camera.x), std::floor(_world.y - _camera.y) };
-}
-
-void DrawBox_(
-    Renderer&   _renderer,
-    const Aabb& _box,
-    const Vec2  _camera,
-    const RGBA  _color)
-{
-    const Vec2 topLeft     = ToScreen_(_box.min, _camera);
-    const Vec2 bottomRight = ToScreen_(_box.max, _camera);
-    _renderer.DrawRect(topLeft, { Max(1.f, bottomRight.x - topLeft.x), Max(1.f, bottomRight.y - topLeft.y) }, _color);
-}
-}   // namespace
 
 SandboxState::SandboxState() = default;
 
@@ -132,7 +92,7 @@ void SandboxState::BuildWorld_(
         m_ground = m_config.ground;
     }
 
-    m_camera = Camera { MakeCameraTuning_(m_tuning.camera) };
+    m_camera = Camera { MakeCameraTuning(m_tuning.camera) };
     m_camera.SetBounds(m_config.cameraBounds);
     m_camera.SetForwardOnly(true);
 
@@ -538,7 +498,7 @@ void SandboxState::Tick(
 
     if (m_bWatch && m_watcher.Poll(m_tuning))
     {
-        m_camera.SetTuning(MakeCameraTuning_(m_tuning.camera));
+        m_camera.SetTuning(MakeCameraTuning(m_tuning.camera));
         if (_ctx.pAnims && m_bRigBound)
         {
             (void)m_rig.Bind(*_ctx.pAnims, m_tuning.rig);
@@ -877,7 +837,7 @@ void SandboxState::DrawWorld_(
 
         const Aabb box   = Aabb::FromBottomCenter(dummy.feet, dummy.size);
         const RGBA color = IsHitFlashOn(dummy.flashTicks) ? RGBA { 255, 150, 150, 255 } : (dummy.kind == eDummyKind::Bus ? RGBA { 196, 150, 70, 255 } : RGBA { 96, 120, 70, 255 });
-        const Vec2 tl    = ToScreen_(box.min, _cameraPos);
+        const Vec2 tl    = ToScreen(box.min, _cameraPos);
         renderer.FillRect(tl, dummy.size, color);
         renderer.DrawRect(tl, dummy.size, { 20, 20, 20, 255 });
         renderer.DrawDebugText({ tl.x + 4.f, tl.y + 4.f }, std::format("{}\n{}/{}", GetDummyName(dummy.kind), dummy.health.hp, dummy.health.maxHp), { 255, 255, 255, 255 });
@@ -897,7 +857,7 @@ void SandboxState::DrawWorld_(
     }
 
     {
-        const Vec2 feet = Lerp_(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
+        const Vec2 feet = Lerp(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
         if (m_bRigBound && pAnims)
         {
             const RigState rigState = m_player.MakeRigState();
@@ -909,14 +869,14 @@ void SandboxState::DrawWorld_(
         else if (m_player.IsAlive())
         {
             const Aabb box = Aabb::FromBottomCenter(feet, m_player.GetBody().size);
-            renderer.FillRect(ToScreen_(box.min, _cameraPos), box.GetSize(), { 60, 120, 255, 255 });
+            renderer.FillRect(ToScreen(box.min, _cameraPos), box.GetSize(), { 60, 120, 255, 255 });
         }
     }
 
     {
         for (const Bullet& bullet: m_projectiles.GetBullets())
         {
-            const Vec2 pos = Lerp_(bullet.renderPrev, bullet.position, _alpha);
+            const Vec2 pos = Lerp(bullet.renderPrev, bullet.position, _alpha);
             if (pAnims && IsSlugOwner(bullet.owner) && SubmitSlugBullet(sprites, *pAnims, bullet, pos, ResolveZ(bullet.z, kPlayerBulletDepth)))
             {
                 continue;
@@ -926,12 +886,12 @@ void SandboxState::DrawWorld_(
                 continue;
             }
             const RGBA color = bullet.team == eTeam::Player ? RGBA { 255, 240, 120, 255 } : RGBA { 255, 80, 60, 255 };
-            renderer.FillRect(ToScreen_({ pos.x - bullet.size.x * 0.5f, pos.y - bullet.size.y * 0.5f }, _cameraPos), bullet.size, color);
+            renderer.FillRect(ToScreen({ pos.x - bullet.size.x * 0.5f, pos.y - bullet.size.y * 0.5f }, _cameraPos), bullet.size, color);
         }
 
         for (const Bomb& bomb: m_projectiles.GetBombs())
         {
-            const Vec2 pos = Lerp_(bomb.renderPrev, bomb.position, _alpha);
+            const Vec2 pos = Lerp(bomb.renderPrev, bomb.position, _alpha);
             if (pAnims && IsSlugOwner(bomb.params.owner) && SubmitSlugShell(sprites, *pAnims, bomb, pos, ResolveZ(bomb.params.z, kPlayerBombDepth)))
             {
                 continue;
@@ -944,7 +904,7 @@ void SandboxState::DrawWorld_(
                     continue;
                 }
             }
-            renderer.FillRect(ToScreen_({ pos.x - 5.f, pos.y - 5.f }, _cameraPos), { 10.f, 10.f }, { 40, 40, 40, 255 });
+            renderer.FillRect(ToScreen({ pos.x - 5.f, pos.y - 5.f }, _cameraPos), { 10.f, 10.f }, { 40, 40, 40, 255 });
         }
     }
 
@@ -963,27 +923,27 @@ void SandboxState::DrawDebugBoxes_(
 {
     for (const Hurtbox& hurtbox: m_combat.GetHurtboxes())
     {
-        DrawBox_(_renderer, hurtbox.box, _cameraPos, hurtbox.bInvulnerable ? RGBA { 120, 200, 255, 255 } : RGBA { 60, 255, 90, 255 });
+        DrawBox(_renderer, hurtbox.box, _cameraPos, hurtbox.bInvulnerable ? RGBA { 120, 200, 255, 255 } : RGBA { 60, 255, 90, 255 });
     }
     for (const Hitbox& hitbox: m_combat.GetHitboxes())
     {
-        DrawBox_(_renderer, hitbox.box, _cameraPos, { 255, 50, 50, 255 });
+        DrawBox(_renderer, hitbox.box, _cameraPos, { 255, 50, 50, 255 });
     }
 
     const Aabb body = m_player.GetBodyBox();
-    DrawBox_(_renderer, body, _cameraPos, { 80, 120, 255, 255 });
+    DrawBox(_renderer, body, _cameraPos, { 80, 120, 255, 255 });
 
     const Vec2  feet = m_player.GetFeet();
     const float fh   = m_player.GetBody().footHalfWidth;
-    _renderer.DrawLine(ToScreen_({ feet.x - fh, feet.y }, _cameraPos), ToScreen_({ feet.x + fh, feet.y }, _cameraPos), { 255, 255, 0, 255 });
-    _renderer.DrawLine(ToScreen_({ feet.x, feet.y - 4.f }, _cameraPos), ToScreen_({ feet.x, feet.y + 4.f }, _cameraPos), { 255, 255, 0, 255 });
+    _renderer.DrawLine(ToScreen({ feet.x - fh, feet.y }, _cameraPos), ToScreen({ feet.x + fh, feet.y }, _cameraPos), { 255, 255, 0, 255 });
+    _renderer.DrawLine(ToScreen({ feet.x, feet.y - 4.f }, _cameraPos), ToScreen({ feet.x, feet.y + 4.f }, _cameraPos), { 255, 255, 0, 255 });
 
     const Aabb trigger = MakeKnifeTriggerBox(feet, m_player.GetFacing(), body.GetWidth() * 0.5f, m_tuning.knife);
-    DrawBox_(_renderer, trigger, _cameraPos, m_player.IsKnifeTargetInRange() ? RGBA { 255, 220, 40, 255 } : RGBA { 120, 110, 40, 255 });
+    DrawBox(_renderer, trigger, _cameraPos, m_player.IsKnifeTargetInRange() ? RGBA { 255, 220, 40, 255 } : RGBA { 120, 110, 40, 255 });
 
     for (const Wall& wall: m_walls)
     {
-        DrawBox_(_renderer, wall.box, _cameraPos, { 200, 80, 200, 255 });
+        DrawBox(_renderer, wall.box, _cameraPos, { 200, 80, 200, 255 });
     }
 }
 

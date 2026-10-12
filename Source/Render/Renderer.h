@@ -3,6 +3,7 @@
 #include "Base/RGBA.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
+#include "World/Geometry.h"
 
 struct SDL_Window;
 struct SDL_Renderer;
@@ -37,3 +38,9 @@ private:
     SDL_Window*   m_pWindow   = nullptr;
     SDL_Renderer* m_pRenderer = nullptr;
 };
+
+// 월드 좌표를 카메라 기준 화면 좌표(정수 칸)로 바꾼다
+[[nodiscard]] Vec2 ToScreen(Vec2 _world, Vec2 _camera);
+
+// 월드 AABB 를 화면에 외곽선으로 그린다 (디버그 표시, 최소 1px)
+void DrawBox(Renderer& _renderer, const Aabb& _box, Vec2 _camera, RGBA _color);

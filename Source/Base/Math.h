@@ -41,6 +41,14 @@ template<typename T>
     return static_cast<T>(_x + (_y - _x) * _t);
 }
 
+// _rng.Generate() 의 64비트 값을 [_lo, _hi] 로 편다
+template<typename RngT>
+[[nodiscard]] float RandRange(RngT& _rng, const float _lo, const float _hi)
+{
+    const double unit = static_cast<double>(_rng.Generate()) / 18'446'744'073'709'551'615.0;
+    return _lo + static_cast<float>(unit) * (_hi - _lo);
+}
+
 struct Vec2
 {
     constexpr Vec2() = default;

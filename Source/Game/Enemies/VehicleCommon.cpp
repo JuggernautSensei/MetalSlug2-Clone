@@ -50,3 +50,10 @@ void RequestFxAt(
     fx.depth    = _depth;
     RequestFx(_env, fx, _at, _facing);
 }
+
+bool IsClipDone(
+    const Enemy&    _e,
+    const EnemyDef& _def)
+{
+    return _e.clip >= 0 && _e.stateTicks >= _def.GetClip(_e.clip).GetDurationTicks();
+}

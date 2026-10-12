@@ -13,16 +13,6 @@
 
 namespace
 {
-template<typename RngT>
-[[nodiscard]] float RandRange_(
-    RngT&       _rng,
-    const float _lo,
-    const float _hi)
-{
-    const double unit = static_cast<double>(_rng.Generate()) / 18'446'744'073'709'551'615.0;
-    return _lo + static_cast<float>(unit) * (_hi - _lo);
-}
-
 void MixValue_(
     uint64_t&      _hash,
     const uint64_t _value)
@@ -113,7 +103,7 @@ uint32_t ItemWorld::Spawn(
 
     if (def.kind == eItemKind::Score && def.bRoll)
     {
-        item.rollVx = RandRange_(m_rng, kRollMinVx, kRollMaxVx);
+        item.rollVx = RandRange(m_rng, kRollMinVx, kRollMaxVx);
     }
     if (_bBounce)
     {

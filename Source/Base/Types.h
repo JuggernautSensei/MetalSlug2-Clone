@@ -1,4 +1,7 @@
 #pragma once
+#include <cstdint>
+#include <cstring>
+
 #include <JugX/Typedef.h>
 
 using jug::ARRAY;
@@ -39,3 +42,16 @@ struct EnemyPartDepth
     int depth = 15;
     int sort  = 0;
 };
+
+// FNV-1a 64: 값의 바이트를 해시에 섞는다 (회귀 기준선 해시)
+template<typename T>
+void HashBytes(uint64_t& _hash, const T& _value)
+{
+    ARRAY<uint8_t, sizeof(T)> bytes = {};
+    std::memcpy(bytes.data(), &_value, sizeof(T));
+    for (const uint8_t byte: bytes)
+    {
+        _hash ^= byte;
+        _hash *= 1'099'511'628'211ull;
+    }
+}

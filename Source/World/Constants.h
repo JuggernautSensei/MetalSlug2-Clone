@@ -20,3 +20,17 @@ struct PhysicsTuning
 
     int dropThroughSteps = 8;
 };
+
+// 이동 튜닝 (MoveTuning, SlugMoveTuning) 에서 물리 튜닝만 뽑는다
+template<typename MoveT>
+[[nodiscard]] PhysicsTuning MakePhysicsTuning(const MoveT& _move)
+{
+    PhysicsTuning tuning;
+    tuning.gravity          = _move.gravity;
+    tuning.terminalVelocity = _move.terminalVelocity;
+    tuning.runSpeed         = _move.runSpeed;
+    tuning.jumpSpeed        = _move.jumpSpeed;
+    tuning.maxStepUp        = _move.maxStepUp;
+    tuning.maxSnapDown      = _move.maxSnapDown;
+    return tuning;
+}

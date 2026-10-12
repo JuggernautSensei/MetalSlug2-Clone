@@ -9,19 +9,6 @@
 #include "Base/Types.h"
 #include "Game/Ui/BitmapFont.h"
 
-namespace
-{
-template<typename RngT>
-[[nodiscard]] float RandRange_(
-    RngT&       _rng,
-    const float _lo,
-    const float _hi)
-{
-    const double unit = static_cast<double>(_rng.Generate()) / 18'446'744'073'709'551'615.0;
-    return _lo + static_cast<float>(unit) * (_hi - _lo);
-}
-}   // namespace
-
 constexpr float kHitFlashSec = 0.5f;   // 피격 연출 최대 길이 (Hit 클립이 없으면 연출 없음)
 
 constexpr size_t kVisualCount = static_cast<size_t>(ePropVisual::Count);
@@ -89,7 +76,7 @@ float PropWorld::RollFloat_(
     const float _lo,
     const float _hi)
 {
-    return RandRange_(m_rng, _lo, _hi);
+    return RandRange(m_rng, _lo, _hi);
 }
 
 int PropWorld::RollInt_(
