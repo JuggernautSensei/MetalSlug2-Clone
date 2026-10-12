@@ -82,7 +82,7 @@ TEST(AnimIntegrity, AtlasRectanglesNeverOverlapAndStayInsidePages)
     }
     for (const std::pair<const int, std::set<ARRAY<int, 4>>>& page: byPage)
     {
-        const std::vector<ARRAY<int, 4>> rects(page.second.begin(), page.second.end());
+        const Vector<ARRAY<int, 4>> rects(page.second.begin(), page.second.end());
         for (size_t i = 0; i < rects.size(); ++i)
         {
             const ARRAY<int, 4>& a = rects[i];

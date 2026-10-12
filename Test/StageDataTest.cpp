@@ -13,8 +13,8 @@
 
 namespace
 {
-[[nodiscard]] std::string OneSection_(
-    const std::string& _actions)
+[[nodiscard]] String OneSection_(
+    const String& _actions)
 {
     return WrapStage(R"J([{"id":"s0","triggerX":0,"actions":)J" + _actions + "}]");
 }
@@ -41,10 +41,10 @@ TEST(StageData, LoadsMinimalStageWithDefaults)
 
 TEST(StageData, NoteKeyIsAllowedEverywhere)
 {
-    const std::string json = WrapStage(R"J([{"id":"s0","triggerX":0,"note":"hi","actions":[
+    const String    json = WrapStage(R"J([{"id":"s0","triggerX":0,"note":"hi","actions":[
         {"type":"banner","text":"x","seconds":1,"note":"a"},
         {"type":"spawnWave","note":"b","entries":[{"delay":1,"kind":"enemy","def":"e","x":1,"y":2,"note":"c"}]}]}])J");
-    const StageData   data = MustLoad(json);
+    const StageData data = MustLoad(json);
     EXPECT_EQ(data.sections[0].actions.size(), 2u);
 }
 
@@ -103,7 +103,7 @@ TEST(StageData, BannerParsesOptionalSfx)
         {"type":"banner","text":"B","seconds":1,"sfx":"Sfx_Mission4Start"}])J"));
     EXPECT_TRUE(data.sections[0].actions[0].name.empty());
     EXPECT_EQ(data.sections[0].actions[1].name, "Sfx_Mission4Start");
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","text":"A","seconds":1,"sfx":3}])J")).find("sfx"), std::string::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","text":"A","seconds":1,"sfx":3}])J")).find("sfx"), String::npos);
 }
 
 TEST(StageData, PlayBgmParsesFadeOutSecAndRejectsBadValues)
@@ -114,8 +114,8 @@ TEST(StageData, PlayBgmParsesFadeOutSecAndRejectsBadValues)
     EXPECT_FLOAT_EQ(data.sections[0].actions[0].fadeOutSec, 0.f);
     EXPECT_FLOAT_EQ(data.sections[0].actions[1].fadeOutSec, 2.f);
 
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"playBgm","name":"A","fadeOutSec":-1}])J")).find("'fadeOutSec' must be >= 0"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"playBgm","name":"A","fadeOutSec":"2"}])J")).find("'fadeOutSec' must be a number"), std::string::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"playBgm","name":"A","fadeOutSec":-1}])J")).find("'fadeOutSec' must be >= 0"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"playBgm","name":"A","fadeOutSec":"2"}])J")).find("'fadeOutSec' must be a number"), String::npos);
 }
 
 TEST(StageData, ShouldRunActionTruthTable)
@@ -203,12 +203,12 @@ TEST(StageData, GateParsesNestedActionsAndCounts)
 
 TEST(StageData, BoundsCurveResolvesSectionIndicesAndEvaluates)
 {
-    const std::string json = WrapStage(R"J([
+    const String    json = WrapStage(R"J([
         {"id":"a","triggerX":0,"actions":[]},
         {"id":"b","triggerX":100,"actions":[]},
         {"id":"c","triggerX":200,"actions":[]}])J",
-                                       R"J({"initialBounds":[0,0,4000,448],"boundsCurves":[{"id":"slope","source":"playerX","from":"b","until":"c","left":100,"right":3000,"height":448,"top":[[1000,100],[2000,600]],"round":"trunc"}]})J");
-    const StageData   data = MustLoad(json);
+                                     R"J({"initialBounds":[0,0,4000,448],"boundsCurves":[{"id":"slope","source":"playerX","from":"b","until":"c","left":100,"right":3000,"height":448,"top":[[1000,100],[2000,600]],"round":"trunc"}]})J");
+    const StageData data = MustLoad(json);
     ASSERT_EQ(data.camera.boundsCurves.size(), 1u);
     const BoundsCurve& curve = data.camera.boundsCurves[0];
     EXPECT_EQ(curve.fromIndex, 1);
@@ -227,81 +227,81 @@ TEST(StageDataErrors, InvalidJsonSyntax)
     const Result<StageData> result = LoadStageFromJson("{ not json", &diag);
     ASSERT_FALSE(result);
     EXPECT_TRUE(HasErrorCode(result.GetError(), eError::Parse));
-    EXPECT_NE(diag.message.find("syntax"), std::string::npos);
+    EXPECT_NE(diag.message.find("syntax"), String::npos);
 }
 
 TEST(StageDataErrors, UnknownTopLevelKey)
 {
-    std::string json = OneSection_("[]");
+    String json = OneSection_("[]");
     json.insert(1, R"J("bogus":1,)J");
-    const std::string error = LoadError(json);
-    EXPECT_NE(error.find("unknown key 'bogus'"), std::string::npos) << error;
-    EXPECT_NE(error.find("root"), std::string::npos) << error;
+    const String error = LoadError(json);
+    EXPECT_NE(error.find("unknown key 'bogus'"), String::npos) << error;
+    EXPECT_NE(error.find("root"), String::npos) << error;
 }
 
 TEST(StageDataErrors, UnknownActionKeyReportsSectionAndActionIndex)
 {
-    const std::string error = LoadError(OneSection_(R"J([{"type":"banner","text":"x","seconds":1},{"type":"banner","text":"y","seconds":1,"colour":"red"}])J"));
-    EXPECT_NE(error.find("sections[0] 's0'"), std::string::npos) << error;
-    EXPECT_NE(error.find("action #1"), std::string::npos) << error;
-    EXPECT_NE(error.find("unknown key 'colour'"), std::string::npos) << error;
+    const String error = LoadError(OneSection_(R"J([{"type":"banner","text":"x","seconds":1},{"type":"banner","text":"y","seconds":1,"colour":"red"}])J"));
+    EXPECT_NE(error.find("sections[0] 's0'"), String::npos) << error;
+    EXPECT_NE(error.find("action #1"), String::npos) << error;
+    EXPECT_NE(error.find("unknown key 'colour'"), String::npos) << error;
 }
 
 TEST(StageDataErrors, UnknownActionTypeAndEnumValues)
 {
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"explode"}])J")).find("unknown value 'explode'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"monster","def":"a","x":1,"y":1}])J")).find("unknown value 'monster'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"fade","to":"red","seconds":1}])J")).find("unknown value 'red'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","text":"x","seconds":1,"when":"sometimes"}])J")).find("unknown value 'sometimes'"), std::string::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"explode"}])J")).find("unknown value 'explode'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"monster","def":"a","x":1,"y":1}])J")).find("unknown value 'monster'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"fade","to":"red","seconds":1}])J")).find("unknown value 'red'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","text":"x","seconds":1,"when":"sometimes"}])J")).find("unknown value 'sometimes'"), String::npos);
 }
 
 TEST(StageDataErrors, MissingRequiredAndWrongTypes)
 {
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","seconds":1}])J")).find("missing required field 'text'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","text":5,"seconds":1}])J")).find("'text' must be a string"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","text":"x","seconds":"1"}])J")).find("'seconds' must be a number"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":1,"repeat":{"count":2.5}}])J")).find("'count' must be an integer"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","text":"x","seconds":1,"delay":-1}])J")).find("'delay' must be >= 0"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"cameraMove","to":[1],"seconds":1}])J")).find("array of 2 numbers"), std::string::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","seconds":1}])J")).find("missing required field 'text'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","text":5,"seconds":1}])J")).find("'text' must be a string"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","text":"x","seconds":"1"}])J")).find("'seconds' must be a number"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":1,"repeat":{"count":2.5}}])J")).find("'count' must be an integer"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","text":"x","seconds":1,"delay":-1}])J")).find("'delay' must be >= 0"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"cameraMove","to":[1],"seconds":1}])J")).find("array of 2 numbers"), String::npos);
 }
 
 TEST(StageDataErrors, SpawnPositionRules)
 {
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a"}])J")).find("needs a position"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1}])J")).find("needs 'y' unless groundSnap"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"groundSnap":true}])J")).find("'y' must be omitted"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"camera":{"ax":"left","ay":"top"}}])J")).find("cannot be combined"), std::string::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a"}])J")).find("needs a position"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1}])J")).find("needs 'y' unless groundSnap"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"groundSnap":true}])J")).find("'y' must be omitted"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"camera":{"ax":"left","ay":"top"}}])J")).find("cannot be combined"), String::npos);
     EXPECT_TRUE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"fromY":3}])J")).empty()) << "에디터 Y 잠금 해제가 남기는 groundSnap:false + fromY + y 조합은 허용 (fromY 는 무시)";
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"prop","def":"a","x":1,"groundSnap":true}])J")).find("groundSnap requires origin 'feet'"), std::string::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"prop","def":"a","x":1,"groundSnap":true}])J")).find("groundSnap requires origin 'feet'"), String::npos);
 }
 
 TEST(StageDataErrors, OriginAndHalfHeightRules)
 {
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"origin":"legacyCenter"}])J")).find("needs 'halfHeight'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"halfHeight":5}])J")).find("only valid with origin 'legacyCenter'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"origin":"corner"}])J")).find("unknown value 'corner'"), std::string::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"origin":"legacyCenter"}])J")).find("needs 'halfHeight'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"halfHeight":5}])J")).find("only valid with origin 'legacyCenter'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"origin":"corner"}])J")).find("unknown value 'corner'"), String::npos);
 }
 
 TEST(StageDataErrors, KindSpecificFields)
 {
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"collider","def":"box","x":1,"y":2}])J")).find("missing required field 'size'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"size":[1,1]}])J")).find("only valid for kind 'collider'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"decor","def":"anim_decor","x":1,"y":2}])J")).find("needs 'anim'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"prop","def":"a","x":1,"y":2,"anim":"Parker"}])J")).find("only valid for kind 'decor'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"params":[1,2]}])J")).find("'params' must be an object"), std::string::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"collider","def":"box","x":1,"y":2}])J")).find("missing required field 'size'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"size":[1,1]}])J")).find("only valid for kind 'collider'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"decor","def":"anim_decor","x":1,"y":2}])J")).find("needs 'anim'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"prop","def":"a","x":1,"y":2,"anim":"Parker"}])J")).find("only valid for kind 'decor'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"params":[1,2]}])J")).find("'params' must be an object"), String::npos);
 }
 
 TEST(StageDataErrors, WaveEntryRules)
 {
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawnWave","entries":[{"kind":"enemy","def":"a","x":1,"y":2}]}])J")).find("missing required field 'delay'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawnWave","entries":[]}])J")).find("must not be empty"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawnWave","entries":[{"delay":1,"type":"spawn","kind":"enemy","def":"a","x":1,"y":2}]}])J")).find("unknown key 'type'"), std::string::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawnWave","entries":[{"kind":"enemy","def":"a","x":1,"y":2}]}])J")).find("missing required field 'delay'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawnWave","entries":[]}])J")).find("must not be empty"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawnWave","entries":[{"delay":1,"type":"spawn","kind":"enemy","def":"a","x":1,"y":2}]}])J")).find("unknown key 'type'"), String::npos);
 }
 
 TEST(StageDataErrors, WaveTimeRepeatRules)
 {
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawnWave","entries":[{"delay":1,"every":2,"times":0,"kind":"enemy","def":"a","x":1,"y":2}]}])J")).find("'times' must be >= 1"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawnWave","entries":[{"delay":1,"times":3,"kind":"enemy","def":"a","x":1,"y":2}]}])J")).find("'every' must be > 0"), std::string::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawnWave","entries":[{"delay":1,"every":2,"times":0,"kind":"enemy","def":"a","x":1,"y":2}]}])J")).find("'times' must be >= 1"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawnWave","entries":[{"delay":1,"times":3,"kind":"enemy","def":"a","x":1,"y":2}]}])J")).find("'every' must be > 0"), String::npos);
 }
 
 TEST(StageData, WaveEntryParsesEveryAndTimesWithOneTimeDefault)
@@ -319,46 +319,46 @@ TEST(StageData, WaveEntryParsesEveryAndTimesWithOneTimeDefault)
 
 TEST(StageDataErrors, ReferenceChecks)
 {
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"lockCamera","rect":"nowhere"}])J")).find("unknown rect 'nowhere'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"setBounds","rect":"current"}])J")).find("'current' is not allowed"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"setBackdrop","mode":"zzz"}])J")).find("unknown backdrop mode 'zzz'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"setGround","name":"G9"}])J")).find("unknown ground map 'G9'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"gate","id":"g","waitFor":["ghost"],"actions":[]}])J")).find("waitFor unknown spawn id 'ghost'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"command","target":"ghost","command":"go"}])J")).find("command target unknown spawn id 'ghost'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"params":{"arena":"missing"}}])J")).find("unknown rect 'missing'"), std::string::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"lockCamera","rect":"nowhere"}])J")).find("unknown rect 'nowhere'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"setBounds","rect":"current"}])J")).find("'current' is not allowed"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"setBackdrop","mode":"zzz"}])J")).find("unknown backdrop mode 'zzz'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"setGround","name":"G9"}])J")).find("unknown ground map 'G9'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"gate","id":"g","waitFor":["ghost"],"actions":[]}])J")).find("waitFor unknown spawn id 'ghost'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"command","target":"ghost","command":"go"}])J")).find("command target unknown spawn id 'ghost'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"params":{"arena":"missing"}}])J")).find("unknown rect 'missing'"), String::npos);
 }
 
 TEST(StageDataErrors, DuplicateIds)
 {
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","id":"x","x":1,"y":2},{"type":"spawn","kind":"enemy","def":"a","id":"x","x":1,"y":2}])J")).find("duplicate spawn id 'x'"), std::string::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","id":"x","x":1,"y":2},{"type":"gate","id":"g","waitFor":["x"],"actions":[]},{"type":"gate","id":"g","waitFor":["x"],"actions":[]}])J")).find("duplicate gate id 'g'"), std::string::npos);
-    const std::string twoSections = WrapStage(R"J([{"id":"s0","triggerX":0,"actions":[]},{"id":"s0","triggerX":10,"actions":[]}])J");
-    EXPECT_NE(LoadError(twoSections).find("duplicate section id"), std::string::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","id":"x","x":1,"y":2},{"type":"spawn","kind":"enemy","def":"a","id":"x","x":1,"y":2}])J")).find("duplicate spawn id 'x'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","id":"x","x":1,"y":2},{"type":"gate","id":"g","waitFor":["x"],"actions":[]},{"type":"gate","id":"g","waitFor":["x"],"actions":[]}])J")).find("duplicate gate id 'g'"), String::npos);
+    const String twoSections = WrapStage(R"J([{"id":"s0","triggerX":0,"actions":[]},{"id":"s0","triggerX":10,"actions":[]}])J");
+    EXPECT_NE(LoadError(twoSections).find("duplicate section id"), String::npos);
 }
 
 TEST(StageDataErrors, SectionOrderingAndCurveReferences)
 {
-    const std::string unordered = WrapStage(R"J([{"id":"a","triggerX":100,"actions":[]},{"id":"b","triggerX":50,"actions":[]}])J");
-    const std::string error     = LoadError(unordered);
-    EXPECT_NE(error.find("sections[1] 'b'"), std::string::npos) << error;
-    EXPECT_NE(error.find("triggerX"), std::string::npos) << error;
+    const String unordered = WrapStage(R"J([{"id":"a","triggerX":100,"actions":[]},{"id":"b","triggerX":50,"actions":[]}])J");
+    const String error     = LoadError(unordered);
+    EXPECT_NE(error.find("sections[1] 'b'"), String::npos) << error;
+    EXPECT_NE(error.find("triggerX"), String::npos) << error;
 
-    const std::string badCurve = WrapStage(R"J([{"id":"a","triggerX":0,"actions":[]}])J",
-                                           R"J({"boundsCurves":[{"id":"c","from":"a","until":"zzz","left":0,"right":100,"height":448,"top":[[0,0],[1,1]]}]})J");
-    EXPECT_NE(LoadError(badCurve).find("'until' references unknown section 'zzz'"), std::string::npos);
+    const String badCurve = WrapStage(R"J([{"id":"a","triggerX":0,"actions":[]}])J",
+                                      R"J({"boundsCurves":[{"id":"c","from":"a","until":"zzz","left":0,"right":100,"height":448,"top":[[0,0],[1,1]]}]})J");
+    EXPECT_NE(LoadError(badCurve).find("'until' references unknown section 'zzz'"), String::npos);
 
-    const std::string reversed = WrapStage(R"J([{"id":"a","triggerX":0,"actions":[]},{"id":"b","triggerX":5,"actions":[]}])J",
-                                           R"J({"boundsCurves":[{"id":"c","from":"b","until":"a","left":0,"right":100,"height":448,"top":[[0,0],[1,1]]}]})J");
-    EXPECT_NE(LoadError(reversed).find("must come before"), std::string::npos);
+    const String reversed = WrapStage(R"J([{"id":"a","triggerX":0,"actions":[]},{"id":"b","triggerX":5,"actions":[]}])J",
+                                      R"J({"boundsCurves":[{"id":"c","from":"b","until":"a","left":0,"right":100,"height":448,"top":[[0,0],[1,1]]}]})J");
+    EXPECT_NE(LoadError(reversed).find("must come before"), String::npos);
 }
 
 TEST(StageDataErrors, GroundAndBackdropInitialMustExist)
 {
-    std::string  json = OneSection_("[]");
+    String       json = OneSection_("[]");
     const size_t pos  = json.find(R"J("initial":"G0")J");
-    ASSERT_NE(pos, std::string::npos);
+    ASSERT_NE(pos, String::npos);
     json.replace(pos, 14, R"J("initial":"Gx")J");
-    EXPECT_NE(LoadError(json).find("is not in maps"), std::string::npos);
+    EXPECT_NE(LoadError(json).find("is not in maps"), String::npos);
 }
 
 TEST(StageDataErrors, MissingFileIsReported)
@@ -376,8 +376,8 @@ TEST(StageDataReal, OpenlandPowsAreAboutEvery700PxAndCoverTheWeaponMix)
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
-    std::vector<float>       xs;
-    std::vector<std::string> drops;
+    Vector<float>  xs;
+    Vector<String> drops;
     for (const StageSection& section: data.sections)
     {
         if (section.id.find("openland_") != 0 || section.id == "openland_4")
@@ -401,8 +401,8 @@ TEST(StageDataReal, OpenlandPowsAreAboutEvery700PxAndCoverTheWeaponMix)
         EXPECT_GE(xs[i] - xs[i - 1], 500.f);
         EXPECT_LE(xs[i] - xs[i - 1], 1000.f);   // R1-10 뿅 경고 해소로 openland_2->3 간격이 1000 까지 늘었다 (허용 범위 최소 조정)
     }
-    const std::vector<std::string> expected = { "gunitem_mg", "gunitem_rl", "bomb_supple", "gunitem_sg", "gunitem_fs" };
-    EXPECT_EQ(drops, std::vector<std::string>(expected.begin(), expected.end()));
+    const Vector<String> expected = { "gunitem_mg", "gunitem_rl", "bomb_supple", "gunitem_sg", "gunitem_fs" };
+    EXPECT_EQ(drops, Vector<String>(expected.begin(), expected.end()));
 }
 
 TEST(StageDataReal, OpenlandHousesAndBlocksStayAlignedWithTheGroundMaskBumps)

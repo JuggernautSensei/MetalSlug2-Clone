@@ -463,7 +463,7 @@ TEST(PropWorld, GroundHouseDamageStagesAndGroundPatch)
         if (ev.kind == ePropEventKind::GroundPatch)
         {
             bPatch = true;
-            EXPECT_EQ(ev.name.c_str(), std::string { "Stage0_House_4_PixelMap" });
+            EXPECT_EQ(ev.name.c_str(), String { "Stage0_House_4_PixelMap" });
             EXPECT_FLOAT_EQ(ev.pos.x, center.x - (653.f - 12.f));
             EXPECT_FLOAT_EQ(ev.pos.y, center.y - (375.5f - 5.f));
         }
@@ -495,7 +495,7 @@ TEST(PropWorld, ApplyGroundPatchRefusesFootprintsThatCutTheFloorOrClearMostOfThe
     const uint64_t before = map.CountSolidPixels();
 
     // 바닥 줄 (y 7..9) 을 지우는 발자국: 거부, 지면 불변
-    const GroundMap cutsFloor = GroundMap::MakeFromRows(std::array<StringView, 3> { "###", "###", "###" });
+    const GroundMap cutsFloor = GroundMap::MakeFromRows(ARRAY<StringView, 3> { "###", "###", "###" });
     EXPECT_FALSE(ApplyGroundPatch(map, { 0.f, 7.f }, cutsFloor));
     EXPECT_EQ(map.CountSolidPixels(), before);
 
@@ -709,7 +709,7 @@ TEST(PropWorldStage0, ShopsDrawFrontToBackByX)
     ASSERT_TRUE(result) << diag.message;
     const StageData data = result.Take();
 
-    std::vector<SpawnSpec> shops;
+    Vector<SpawnSpec> shops;
     for (const StageSection& section: data.sections)
     {
         for (const StageAction& action: section.actions)
@@ -723,8 +723,8 @@ TEST(PropWorldStage0, ShopsDrawFrontToBackByX)
     ASSERT_EQ(shops.size(), 6u);
     std::sort(shops.begin(), shops.end(), [](const SpawnSpec& _a, const SpawnSpec& _b) { return _a.x < _b.x; });
 
-    PropWorld        world { &GetPropLib(), 1 };
-    std::vector<int> keys;
+    PropWorld   world { &GetPropLib(), 1 };
+    Vector<int> keys;
     for (const SpawnSpec& shop: shops)
     {
         const PropHandle h = world.Spawn(shop.def.c_str(), { shop.x, shop.y });

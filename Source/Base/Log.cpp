@@ -6,8 +6,8 @@
 #include <JugX/CoreLogger.h>
 
 void LogMessage(
-    const eLogLevel        _level,
-    const std::string_view _message)
+    const eLogLevel  _level,
+    const StringView _message)
 {
     const char* pPrefix = "";
     switch (_level)
@@ -78,9 +78,9 @@ unsigned long long g_EventTick = 0;
 }   // namespace
 
 bool OpenEventLog(
-    const std::string_view _path)
+    const StringView _path)
 {
-    const std::string path(_path);
+    const String path(_path);
     g_pEventLog = nullptr;
     (void)fopen_s(&g_pEventLog, path.c_str(), "w");
     return g_pEventLog != nullptr;
@@ -98,8 +98,8 @@ void SetEventLogTick(
 }
 
 void WriteEventLog(
-    const std::string_view _event,
-    const std::string_view _fields)
+    const StringView _event,
+    const StringView _fields)
 {
     if (!g_pEventLog)
     {

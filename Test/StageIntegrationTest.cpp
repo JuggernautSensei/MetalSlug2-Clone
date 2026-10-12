@@ -198,7 +198,7 @@ class GateFixture
 {
 public:
     explicit GateFixture(
-        const std::string& _json)
+        const String& _json)
         : data(MustLoad(_json))
         , rng(uint64_t { 1 })
         , runner(data, host, camera, rng)
@@ -708,10 +708,10 @@ TEST(StageIntegration, GameOverRunsTheGameOverFlowAndReturnsToTitle)
 namespace
 {
 // 스크립트 봇을 3000틱 돌리며 매 틱의 상태 해시를 모은다
-[[nodiscard]] std::vector<uint64_t> RunBotHashes_()
+[[nodiscard]] Vector<uint64_t> RunBotHashes_()
 {
-    IntegrationSim        sim;
-    std::vector<uint64_t> hashes;
+    IntegrationSim   sim;
+    Vector<uint64_t> hashes;
     hashes.reserve(3000);
     for (int i = 0; i < 3000; ++i)
     {
@@ -724,8 +724,8 @@ namespace
 
 TEST(StageIntegration, ScriptedBotRunIsDeterministicOver3000Ticks)
 {
-    const std::vector<uint64_t> first  = RunBotHashes_();
-    const std::vector<uint64_t> second = RunBotHashes_();
+    const Vector<uint64_t> first  = RunBotHashes_();
+    const Vector<uint64_t> second = RunBotHashes_();
     ASSERT_EQ(first.size(), second.size());
     EXPECT_EQ(first, second);
 }
@@ -875,7 +875,7 @@ TEST(StageIntegration, BusStairSoldierTraceWritesCsvWhenRequested)
     {
         GTEST_SKIP() << "BUS_TRACE_STAGE not set";
     }
-    const std::string path = pPath;
+    const String path = pPath;
     std::free(pPath);
     std::ofstream out(path);
     out << "tick,id,def,x,y,state,grounded,camLeft\n";
@@ -1234,7 +1234,7 @@ public:
     }
 
     void WriteCsv(
-        const std::string& _path) const
+        const String& _path) const
     {
         std::ofstream out { _path };
         out << "T,tick,camX,centerX,vel,acc,lockMinX,lockMaxX,lockDepth,moving,bossX,playerX\n";
@@ -1316,7 +1316,7 @@ TEST(StageIntegration, BossEntryDumpWritesCsvWhenRequested)
     {
         GTEST_SKIP() << "C15_DUMP not set";
     }
-    const std::string path = pPath;
+    const String path = pPath;
     std::free(pPath);
     IntegrationSim    sim(true);
     BossEntryRecorder rec;

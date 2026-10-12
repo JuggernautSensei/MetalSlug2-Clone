@@ -68,12 +68,12 @@ TEST(InstanceZ, BusPartsKeepRelativeOffset)
 
 TEST(InstanceZ, StageParserAcceptsIntegerZ)
 {
-    const std::string spawn = R"J([{"type":"spawn","kind":"enemy","def":"soldier_bomb","x":10,"y":20,"z":25}])J";
-    const StageData   data  = MustLoad(WrapStage(R"J([{"id":"s0","triggerX":0,"actions":)J" + spawn + "}]"));
-    const SpawnSpec&  s     = data.sections[0].actions[0].spawn;
+    const String     spawn = R"J([{"type":"spawn","kind":"enemy","def":"soldier_bomb","x":10,"y":20,"z":25}])J";
+    const StageData  data  = MustLoad(WrapStage(R"J([{"id":"s0","triggerX":0,"actions":)J" + spawn + "}]"));
+    const SpawnSpec& s     = data.sections[0].actions[0].spawn;
     EXPECT_TRUE(s.bHasZ);
     EXPECT_EQ(s.z, 25);
-    const std::string bad = R"J([{"type":"spawn","kind":"enemy","def":"soldier_bomb","x":10,"y":20,"z":1.5}])J";
+    const String bad = R"J([{"type":"spawn","kind":"enemy","def":"soldier_bomb","x":10,"y":20,"z":1.5}])J";
     EXPECT_FALSE(LoadError(WrapStage(R"J([{"id":"s0","triggerX":0,"actions":)J" + bad + "}]")).empty());
 }
 

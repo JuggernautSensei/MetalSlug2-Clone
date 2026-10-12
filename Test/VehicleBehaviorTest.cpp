@@ -21,8 +21,8 @@ namespace
 
 struct SpawnLog
 {
-    std::vector<int>  ticks = {};
-    std::vector<Shot> shots = {};
+    Vector<int>  ticks = {};
+    Vector<Shot> shots = {};
 };
 
 namespace

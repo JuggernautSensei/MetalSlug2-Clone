@@ -12,9 +12,9 @@
 
 namespace
 {
-[[nodiscard]] std::string OneSection_(
-    const std::string& _actions,
-    const std::string& _camera = R"J({"initialBounds":[0,0,4000,448]})J")
+[[nodiscard]] String OneSection_(
+    const String& _actions,
+    const String& _camera = R"J({"initialBounds":[0,0,4000,448]})J")
 {
     return WrapStage(R"J([{"id":"s0","triggerX":0,"actions":)J" + _actions + "}]", _camera);
 }
@@ -45,14 +45,14 @@ namespace
 }
 
 // 시드를 바꿔 웨이브를 70틱 돌린 뒤 스폰된 x 좌표 목록
-[[nodiscard]] std::vector<float> CollectWaveXs_(
-    const std::string& _json,
-    const uint64_t     _seed)
+[[nodiscard]] Vector<float> CollectWaveXs_(
+    const String&  _json,
+    const uint64_t _seed)
 {
     RunnerFixture fx { _json };
     fx.rng.Reseed(_seed);
     fx.StepAt(5.f, 70);
-    std::vector<float> xs;
+    Vector<float> xs;
     for (const SpawnLogEntry& entry: fx.host.spawns)
     {
         xs.push_back(entry.request.position.x);
@@ -63,13 +63,13 @@ namespace
 
 TEST(StageRunnerBegin, AppliesInitialGroundBackdropAndBgm)
 {
-    const std::string json = R"J({"version":1,"name":"T","world":{"size":[4000,1000],"background":"bg"},
+    const String  json = R"J({"version":1,"name":"T","world":{"size":[4000,1000],"background":"bg"},
 "bgm":{"name":"Stage1_BGM","loop":true},
 "ground":{"initial":"G0","maps":["G0"]},
 "backdrop":{"initial":"a","modes":{"a":{"sprite":"s","offset":[0,0],"parallaxX":0.1}}},
 "camera":{"initialBounds":[0,0,4000,448],"initialOffset":[7,8]},
 "sections":[{"id":"s0","triggerX":0,"actions":[]}]})J";
-    RunnerFixture     fx { json };
+    RunnerFixture fx { json };
     EXPECT_EQ(fx.host.currentGround, "G0");
     EXPECT_EQ(fx.host.currentBackdrop, "a");
     ASSERT_NE(fx.host.FindEvent("bgm:Stage1_BGM:loop"), nullptr);
@@ -81,11 +81,11 @@ TEST(StageRunnerBegin, AppliesInitialGroundBackdropAndBgm)
 
 TEST(StageRunnerBegin, ResolvesPlayerStartWithGroundSnap)
 {
-    const std::string json = R"J({"version":1,"name":"T","world":{"size":[4000,1000],"background":"bg"},
+    const String  json = R"J({"version":1,"name":"T","world":{"size":[4000,1000],"background":"bg"},
 "ground":{"initial":"G0","maps":["G0"]},
 "player":{"x":100,"groundSnap":true,"fromY":10},
 "sections":[{"id":"s0","triggerX":0,"actions":[]}]})J";
-    RunnerFixture     fx { json };
+    RunnerFixture fx { json };
     fx.host.groundFn                = PlayerStartGround_;
     const std::optional<Vec2> start = fx.runner.ResolvePlayerStart();
     ASSERT_TRUE(start.has_value());
@@ -129,7 +129,7 @@ TEST(StageRunnerTrigger, SeveralSectionsFireInOrderInOneTick)
         {"id":"c","triggerX":300,"actions":[{"type":"banner","text":"C","seconds":1}]}])J") };
     fx.StepAt(500.f);
     ASSERT_EQ(fx.host.events.size(), 2u + 6u);
-    std::vector<std::string> order;
+    Vector<String> order;
     for (const HostEvent& event: fx.host.events)
     {
         if (event.text.rfind("banner:", 0) == 0 || event.text.rfind("section:", 0) == 0)
@@ -261,11 +261,11 @@ TEST(StageRunnerWave, AnchorUsesTheCameraAtSpawnTime)
 
 TEST(StageRunnerWave, RandomDxIsSeededInRangeAndFixedDxDoesNotDrawRng)
 {
-    const std::string        json = OneSection_(R"J([{"type":"spawnWave","entries":[
+    const String        json = OneSection_(R"J([{"type":"spawnWave","entries":[
         {"delay":1.0,"kind":"enemy","def":"e","camera":{"ax":"left","dx":[100,200],"ay":"top","dy":0},"repeat":{"count":40,"stepX":0}}]}])J");
-    const std::vector<float> a    = CollectWaveXs_(json, 7);
-    const std::vector<float> a2   = CollectWaveXs_(json, 7);
-    const std::vector<float> b    = CollectWaveXs_(json, 8);
+    const Vector<float> a    = CollectWaveXs_(json, 7);
+    const Vector<float> a2   = CollectWaveXs_(json, 7);
+    const Vector<float> b    = CollectWaveXs_(json, 8);
     ASSERT_EQ(a.size(), 40u);
     EXPECT_EQ(a, a2);
     EXPECT_NE(a, b);
@@ -363,7 +363,7 @@ TEST(StageRunnerSpawn, GroundSnapUsesHostAndSkipsWhenNoGround)
     EXPECT_EQ(fx.runner.GetSkippedCount(), 2);
     EXPECT_EQ(fx.runner.GetSpawnedCount(), 1);
     EXPECT_TRUE(fx.runner.WasSpawnSkipped("skipme"));
-    const std::vector<std::pair<float, float>>& queries = fx.host.groundQueries;
+    const Vector<std::pair<float, float>>& queries = fx.host.groundQueries;
     ASSERT_EQ(queries.size(), 3u);
     EXPECT_FLOAT_EQ(queries[2].second, 400.f);   // fromY 전달
 
@@ -752,10 +752,10 @@ namespace
 }
 
 // 적이 아닌(항상 생성되는) 스폰의 def 이름 목록
-[[nodiscard]] std::vector<std::string> NonEnemyDefs_(
+[[nodiscard]] Vector<String> NonEnemyDefs_(
     const FakeStageHost& _host)
 {
-    std::vector<std::string> defs;
+    Vector<String> defs;
     for (const SpawnLogEntry& entry: _host.spawns)
     {
         if (entry.request.kind != eEntityKind::Enemy)
@@ -774,7 +774,7 @@ TEST(StageRunnerWarp, WarpingTwiceFromTheSameStartIsDeterministic)
 
 TEST(StageRunnerWarp, WarpingGivesTheSameAlwaysStateAsPlayingThere)
 {
-    const std::string json = WrapStage(R"J([
+    const String json = WrapStage(R"J([
         {"id":"s0","triggerX":0,"actions":[
             {"type":"spawn","kind":"prop","def":"truck","x":5,"y":5},
             {"type":"spawn","kind":"enemy","def":"boss","id":"boss","x":1,"y":1},

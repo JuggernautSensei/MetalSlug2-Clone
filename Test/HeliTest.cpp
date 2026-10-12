@@ -27,13 +27,13 @@ namespace
 
 struct HeliLog
 {
-    std::vector<int>   bombTicks  = {};   // 새 폭탄이 보인 틱
-    std::vector<float> bombX      = {};
-    std::vector<int>   bombStates = {};   // 그때 헬기 상태
-    std::vector<int>   states     = {};   // 틱별 헬기 상태
-    std::vector<float> ys         = {};   // 틱별 헬기 y
-    std::vector<float> xs         = {};
-    int                missiles   = 0;
+    Vector<int>   bombTicks  = {};   // 새 폭탄이 보인 틱
+    Vector<float> bombX      = {};
+    Vector<int>   bombStates = {};   // 그때 헬기 상태
+    Vector<int>   states     = {};   // 틱별 헬기 상태
+    Vector<float> ys         = {};   // 틱별 헬기 y
+    Vector<float> xs         = {};
+    int           missiles   = 0;
 };
 
 namespace

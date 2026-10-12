@@ -22,7 +22,7 @@ namespace
 {
 // 모든 탈것을 세워 두고 1200틱 동안 매 틱의 상태 해시를 _hashes 에 모은다
 void RunHashes_(
-    std::vector<uint64_t>& _hashes)
+    Vector<uint64_t>& _hashes)
 {
     Sim   sim { MakeEnemyConfig({ 100.f, kGroundY }) };
     float x = 300.f;
@@ -86,8 +86,8 @@ TEST(VehicleSandbox, GroundVehiclesRestOnTheGround)
 
 TEST(VehicleSandbox, SandboxHashIsDeterministicWithAllVehiclesPresent)
 {
-    std::vector<uint64_t> first;
-    std::vector<uint64_t> second;
+    Vector<uint64_t> first;
+    Vector<uint64_t> second;
     RunHashes_(first);
     RunHashes_(second);
     EXPECT_EQ(first, second);

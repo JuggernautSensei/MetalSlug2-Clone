@@ -222,8 +222,8 @@ TEST(PlayerShot, HmgTapFiresABurstSpreadOverTheShotMotion)
 
     sim.Tap(eAction::Shot);   // 틱 0: 첫 발이 즉시 나간다
     EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);
-    std::vector<int> shotTicks = { 0 };
-    int              last      = 1;
+    Vector<int> shotTicks = { 0 };
+    int         last      = 1;
     for (int tick = 1; tick < 80; ++tick)
     {
         sim.Step();
@@ -469,8 +469,8 @@ TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToNinety)
     sim.Hold(eAction::Up);
     sim.Tap(eAction::Shot);   // 한 번 눌러 나가는 버스트 동안 조준각이 쓸고 지나간다
 
-    std::vector<float> angles;
-    int                shots = 1;
+    Vector<float> angles;
+    int           shots = 1;
     {
         const Span<const Bullet> first = sim.State().GetProjectiles().GetBullets();
         const Vec2               v     = first[first.size() - 1].velocity;

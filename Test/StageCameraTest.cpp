@@ -13,9 +13,9 @@ constexpr const char* kTall = R"J({"initialBounds":[0,0,4000,1000]})J";
 
 namespace
 {
-[[nodiscard]] std::string OneSection_(
-    const std::string& _actions,
-    const std::string& _camera = R"J({"initialBounds":[0,0,4000,448]})J")
+[[nodiscard]] String OneSection_(
+    const String& _actions,
+    const String& _camera = R"J({"initialBounds":[0,0,4000,448]})J")
 {
     return WrapStage(R"J([{"id":"s0","triggerX":0,"actions":)J" + _actions + "}]", _camera);
 }
@@ -252,15 +252,15 @@ TEST(StageRunnerCamera, GlideLockMovesThenLocks)
 
 TEST(StageRunnerCamera, PermanentLockCannotBeUnlockedAndIgnoresBoundsAndCurves)
 {
-    const std::string json = WrapStage(R"J([
+    const String  json = WrapStage(R"J([
         {"id":"a","triggerX":0,"actions":[]},
         {"id":"b","triggerX":100,"actions":[
             {"type":"lockCamera","rect":"arena","permanent":true},
             {"type":"unlockCamera"},
             {"type":"setBounds","rect":[0,0,1000,448]}]},
         {"id":"c","triggerX":500,"actions":[{"type":"setBounds","rect":[0,0,2000,448]},{"type":"unlockCamera"}]}])J",
-                                       R"J({"initialBounds":[0,0,4000,448],"boundsCurves":[{"id":"cv","from":"a","until":"c","left":0,"right":4000,"height":448,"top":[[0,0],[4000,400]]}]})J");
-    RunnerFixture     fx { json };
+                                   R"J({"initialBounds":[0,0,4000,448],"boundsCurves":[{"id":"cv","from":"a","until":"c","left":0,"right":4000,"height":448,"top":[[0,0],[4000,400]]}]})J");
+    RunnerFixture fx { json };
     fx.StepAt(50.f, 2);   // 곡선 활성
     EXPECT_NE(fx.runner.GetBaseBounds().min.y, 0.f);
     fx.StepAt(150.f, 2);
@@ -278,12 +278,12 @@ TEST(StageRunnerCamera, PermanentLockCannotBeUnlockedAndIgnoresBoundsAndCurves)
 
 TEST(StageRunnerCamera, BoundsCurveIsActiveBetweenFromAndUntil)
 {
-    const std::string json = WrapStage(R"J([
+    const String  json = WrapStage(R"J([
         {"id":"a","triggerX":0,"actions":[]},
         {"id":"b","triggerX":1000,"actions":[]},
         {"id":"c","triggerX":3000,"actions":[{"type":"setBounds","rect":[0,0,4000,448]}]}])J",
-                                       R"J({"initialBounds":[0,0,4000,448],"boundsCurves":[{"id":"slope","source":"playerX","from":"b","until":"c","left":100,"right":4000,"height":448,"top":[[1000,100],[2000,500]],"round":"trunc"}]})J");
-    RunnerFixture     fx { json };
+                                   R"J({"initialBounds":[0,0,4000,448],"boundsCurves":[{"id":"slope","source":"playerX","from":"b","until":"c","left":100,"right":4000,"height":448,"top":[[1000,100],[2000,500]],"round":"trunc"}]})J");
+    RunnerFixture fx { json };
     fx.camera.SetBounds(Aabb::FromMinMax({ 0.f, 0.f }, { 4000.f, 1000.f }));
 
     fx.StepAt(500.f, 3);   // from 전: 비활성

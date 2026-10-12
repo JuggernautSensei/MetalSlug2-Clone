@@ -11,7 +11,7 @@ PropDefLibrary LoadPropLib_()
     Result<PropDefLibrary> loaded = PropDefLibrary::Load(PropsJsonPath(), &msg);
     if (!loaded)
     {
-        ADD_FAILURE() << "Props.json 로드 실패: " << std::string { msg.c_str() };
+        ADD_FAILURE() << "Props.json 로드 실패: " << String { msg.c_str() };
         return PropDefLibrary {};
     }
     return loaded.Take();

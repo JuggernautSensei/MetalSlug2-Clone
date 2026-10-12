@@ -531,8 +531,8 @@ eBigShieeCannonMode CannonMode_(
 
 TEST(BigShiee, CannonHeadYawFollowsThePlayerSide)
 {
-    const float angles[3] = { -40.f, 0.f, 40.f };
-    int         yaws[3]   = {};
+    const ARRAY<float, 3> angles = { -40.f, 0.f, 40.f };
+    ARRAY<int, 3>         yaws   = {};
     for (int i = 0; i < 3; ++i)
     {
         EnemyRig          rig({ kCamLeft + 100.f, 378.f }, kCamLeft);

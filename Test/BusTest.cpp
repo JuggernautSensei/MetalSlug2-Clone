@@ -24,10 +24,10 @@ namespace
     return params;
 }
 
-[[nodiscard]] std::vector<const Enemy*> StairSoldiers_(
+[[nodiscard]] Vector<const Enemy*> StairSoldiers_(
     VehicleRig& _rig)
 {
-    std::vector<const Enemy*> out;
+    Vector<const Enemy*> out;
     for (const Enemy& enemy: _rig.World().GetEnemies())
     {
         if (enemy.userTag == kStairTag && enemy.life != eEnemyLife::Gone)
@@ -93,8 +93,8 @@ TEST(Bus, SpawnsStairSoldiersOffScreenOnTheRightAndCapsTheCount)
     for (int i = 0; i < 900; ++i)
     {
         rig.Step(1);
-        const std::vector<const Enemy*> soldiers = StairSoldiers_(rig);
-        maxCount                                 = std::max(maxCount, soldiers.size());
+        const Vector<const Enemy*> soldiers = StairSoldiers_(rig);
+        maxCount                            = std::max(maxCount, soldiers.size());
         if (firstX < 0.f && !soldiers.empty())
         {
             firstX = soldiers.front()->body.position.x;
@@ -206,11 +206,11 @@ TEST(Bus, StairSoldiersClimbToTheRoofWithoutGettingStuck)
     (void)rig.Spawn("bus", { kStairAnchorX, kGround }, BusParams_());
     const float roofY = RoofY_(rig);
 
-    std::vector<uint32_t> ids;
-    std::vector<int>      born;
-    std::vector<int>      lastMove;
-    std::vector<Vec2>     last;
-    int                   arrived = 0;
+    Vector<uint32_t> ids;
+    Vector<int>      born;
+    Vector<int>      lastMove;
+    Vector<Vec2>     last;
+    int              arrived = 0;
     for (int tick = 0; tick < 700; ++tick)
     {
         rig.Step(1);
@@ -262,8 +262,8 @@ TEST(Bus, StairSoldiersDoNotAttackBeforeReachingTheRoof)
         ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
         rig.World().ReseedRng(seed);
         (void)rig.Spawn("bus", { kStairAnchorX, kGround }, BusParams_());
-        const float           roofY = RoofY_(rig);
-        std::vector<uint32_t> arrivedIds;
+        const float      roofY = RoofY_(rig);
+        Vector<uint32_t> arrivedIds;
         for (int tick = 0; tick < 700; ++tick)
         {
             rig.Step(1);
@@ -293,7 +293,7 @@ TEST(Bus, StairSoldiersOnTheLandingAreDrawnInFrontOfTheBodyAndBehindTheCoverInEv
     const BusCfg&     c     = rig.Lib().Get(rig.Lib().FindIndex("bus")).bus;
     const float       roofY = kGround + c.stairsTop.y;   // 계단 끝 승강대 (지붕 없음)
 
-    const int wantStages[3] = { 0, 1, 4 };
+    const ARRAY<int, 3> wantStages = { 0, 1, 4 };
     for (const int wantStage: wantStages)
     {
         for (int i = 0; i < 1500 && rig.E(h)->aux2 < wantStage; ++i)
@@ -395,7 +395,7 @@ TEST(Bus, StairSoldierTraceWritesCsvWhenRequested)
     {
         GTEST_SKIP() << "BUS_TRACE not set";
     }
-    const std::string path = pPath;
+    const String path = pPath;
     std::free(pPath);
     std::ofstream out(path);
     out << "tick,id,def,x,y,state,grounded,shots\n";

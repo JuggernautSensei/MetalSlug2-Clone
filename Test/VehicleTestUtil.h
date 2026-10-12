@@ -36,11 +36,11 @@ public:
     [[nodiscard]] bool          IsLoaded() const;
     [[nodiscard]] const String& GetMessage() const;
 
-    [[nodiscard]] EnemyWorld&              World();
-    [[nodiscard]] EnemyDefLibrary&         Lib();
-    [[nodiscard]] CombatSystem&            Combat();
-    [[nodiscard]] ProjectileSystem&        Projectiles();
-    [[nodiscard]] std::vector<EnemyEvent>& Events();
+    [[nodiscard]] EnemyWorld&         World();
+    [[nodiscard]] EnemyDefLibrary&    Lib();
+    [[nodiscard]] CombatSystem&       Combat();
+    [[nodiscard]] ProjectileSystem&   Projectiles();
+    [[nodiscard]] Vector<EnemyEvent>& Events();
 
     void SetPlayer(
         const Vec2 _feet);
@@ -92,17 +92,17 @@ private:
     void CountPlayerHits_(
         const Vector<HitEvent>& _events);
 
-    EnemyDefLibrary         m_lib        = {};
-    int                     m_playerHits = 0;
-    int                     m_ticks      = 0;
-    String                  m_message    = {};
-    bool                    m_bLoaded    = false;
-    EnemyWorld              m_world;
-    GroundMap               m_ground;
-    Vec2                    m_player;
-    Aabb                    m_view;
-    CombatSystem            m_combat      = {};
-    ProjectileSystem        m_projectiles = {};
-    std::vector<EnemyEvent> m_events      = {};
-    std::vector<Wall>       m_walls       = {};
+    EnemyDefLibrary    m_lib        = {};
+    int                m_playerHits = 0;
+    int                m_ticks      = 0;
+    String             m_message    = {};
+    bool               m_bLoaded    = false;
+    EnemyWorld         m_world;
+    GroundMap          m_ground;
+    Vec2               m_player;
+    Aabb               m_view;
+    CombatSystem       m_combat      = {};
+    ProjectileSystem   m_projectiles = {};
+    Vector<EnemyEvent> m_events      = {};
+    Vector<Wall>       m_walls       = {};
 };

@@ -56,11 +56,11 @@ void TickItems_(
     return Aabb::FromBottomCenter(_feet, { 24.f, 40.f });
 }
 // 같은 시드로 random_score 그룹에서 20개를 뽑은 이름 나열
-[[nodiscard]] std::string NamesFromSeed_(
+[[nodiscard]] String NamesFromSeed_(
     const uint64_t _seed)
 {
-    ItemWorld   items { &GetPropLib(), _seed };
-    std::string out;
+    ItemWorld items { &GetPropLib(), _seed };
+    String    out;
     for (int i = 0; i < 20; ++i)
     {
         const PropItem* pItem = items.Find(items.Spawn("random_score", { 100.f, 140.f }));
@@ -100,7 +100,7 @@ TEST(PropItem, SpawnResolvesItemDefinition)
     ASSERT_NE(id, 0u);
     const PropItem* pItem = items.Find(id);
     ASSERT_NE(pItem, nullptr);
-    EXPECT_EQ(GetPropLib().GetItems()[static_cast<size_t>(pItem->defIndex)].name.c_str(), std::string { "item_letter" });
+    EXPECT_EQ(GetPropLib().GetItems()[static_cast<size_t>(pItem->defIndex)].name.c_str(), String { "item_letter" });
 }
 
 TEST(PropItem, RandomGroupPicksOnlyMembers)
@@ -242,7 +242,7 @@ TEST(PropItem, GunItemShowsPickupEffectThenDisappears)
     EXPECT_EQ(items.GetCount(), 1u);   // Disappear 연출 중
     const Vector<ItemFxRequest> fx = items.TakeFx();
     ASSERT_EQ(fx.size(), 1u);
-    EXPECT_EQ(fx[0].clip.c_str(), std::string { "Get_Item_Effect" });
+    EXPECT_EQ(fx[0].clip.c_str(), String { "Get_Item_Effect" });
 
     TickItems_(items, FloorWorld_(ground), 5);   // 0.06 s 이후
     EXPECT_EQ(items.GetCount(), 0u);

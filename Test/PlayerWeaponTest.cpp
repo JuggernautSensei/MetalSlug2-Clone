@@ -76,8 +76,8 @@ TEST(PlayerWeapon, EveryWeaponFiresAtItsTunedIntervalWhenTapped)
         sim.Player().PickUpWeapon(weapon, sim.Tune());
         const int interval = FireIntervalOf_(sim.Tune(), weapon);
 
-        std::vector<int> shotTicks;
-        int              lastShots = 0;
+        Vector<int> shotTicks;
+        int         lastShots = 0;
         for (int tick = 0; tick < 120; ++tick)
         {
             sim.Set(eAction::Shot, tick % 2 == 0);   // 매 틱 연타해도 간격 아래로는 못 쏜다
@@ -676,11 +676,11 @@ TEST(PlayerWeaponVisual, RocketFiredUpIsDrawnTallNotWide)
 namespace
 {
 // 파이어샷 입자가 나온 틱 목록 (입자는 스폰된 틱에 ageTicks == 1 로 보인다)
-[[nodiscard]] std::vector<int> FlameSpawnTicks_(
+[[nodiscard]] Vector<int> FlameSpawnTicks_(
     Sim&      _sim,
     const int _ticks)
 {
-    std::vector<int> spawnTicks;
+    Vector<int> spawnTicks;
     for (int tick = 0; tick < _ticks; ++tick)
     {
         _sim.Step();
@@ -696,7 +696,7 @@ namespace
 }
 
 // 같은 입력으로 파이어샷을 쏜 뒤 _ticks 틱 시점의 탄 목록 (결정성 비교용)
-[[nodiscard]] std::vector<Bullet> FlameBulletsAfter_(
+[[nodiscard]] Vector<Bullet> FlameBulletsAfter_(
     const int _ticks)
 {
     Sim sim;
@@ -704,7 +704,7 @@ namespace
     sim.Hold(eAction::Shot);
     sim.Step(_ticks);
     const Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
-    return std::vector<Bullet>(bullets.begin(), bullets.end());
+    return Vector<Bullet>(bullets.begin(), bullets.end());
 }
 }   // namespace
 
@@ -760,8 +760,8 @@ TEST(PlayerWeapon, FlameSpraysParticlesInTimedPuffs)
     Sim sim;
     sim.Player().PickUpWeapon(eWeapon::Flame, sim.Tune());
     sim.Hold(eAction::Shot);
-    const std::vector<int> spawnTicks = FlameSpawnTicks_(sim, 60);
-    const WeaponTuning&    flame      = sim.Tune().weapons.flame;
+    const Vector<int>   spawnTicks = FlameSpawnTicks_(sim, 60);
+    const WeaponTuning& flame      = sim.Tune().weapons.flame;
     ASSERT_EQ(spawnTicks.size(), static_cast<size_t>(flame.particleCount));
     for (size_t i = 1; i < spawnTicks.size(); ++i)
     {
@@ -777,7 +777,7 @@ TEST(PlayerWeapon, FlameKeepsSprayingWhileRunning)
     sim.Hold(eAction::Right);
     sim.Step(5);
     sim.Hold(eAction::Shot);
-    const std::vector<int> spawnTicks = FlameSpawnTicks_(sim, 60);
+    const Vector<int> spawnTicks = FlameSpawnTicks_(sim, 60);
     EXPECT_EQ(spawnTicks.size(), static_cast<size_t>(sim.Tune().weapons.flame.particleCount));
     EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);
 }
@@ -802,8 +802,8 @@ TEST(PlayerWeapon, FlameTotalDamageToOneTargetIsCapped)
 // 같은 입력이면 입자의 위치/방향/속도가 모두 같다 (리플레이 결정성)
 TEST(PlayerWeapon, FlameParticlesAreDeterministicForTheSameInputs)
 {
-    const std::vector<Bullet> first  = FlameBulletsAfter_(30);
-    const std::vector<Bullet> second = FlameBulletsAfter_(30);
+    const Vector<Bullet> first  = FlameBulletsAfter_(30);
+    const Vector<Bullet> second = FlameBulletsAfter_(30);
     ASSERT_FALSE(first.empty());
     ASSERT_EQ(first.size(), second.size());
     for (size_t i = 0; i < first.size(); ++i)

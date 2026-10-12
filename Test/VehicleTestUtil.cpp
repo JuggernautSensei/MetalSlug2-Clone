@@ -61,7 +61,7 @@ ProjectileSystem& VehicleRig::Projectiles()
     return m_projectiles;
 }
 
-std::vector<EnemyEvent>& VehicleRig::Events()
+Vector<EnemyEvent>& VehicleRig::Events()
 {
     return m_events;
 }

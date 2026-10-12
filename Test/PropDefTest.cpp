@@ -7,15 +7,15 @@
 
 namespace
 {
-[[nodiscard]] std::string Wrap_(
-    const std::string& _defs)
+[[nodiscard]] String Wrap_(
+    const String& _defs)
 {
-    return std::string { "{ \"version\": 1, \"defs\": { " } + _defs + " } }";
+    return String { "{ \"version\": 1, \"defs\": { " } + _defs + " } }";
 }
 
 [[nodiscard]] Result<PropDefLibrary> ParseText_(
-    const std::string& _text,
-    String*            _pMessage = nullptr)
+    const String& _text,
+    String*       _pMessage = nullptr)
 {
     return PropDefLibrary::Parse(StringView { _text.c_str(), _text.size() }, _pMessage);
 }
@@ -76,7 +76,7 @@ TEST(PropDef, ShopDefHasStandBoxReplacedOnlyOnShop5)
     EXPECT_EQ(s5->parts[2].size.x, 220.f);
     EXPECT_EQ(s5->parts[2].offset.y, 130.f);
     ASSERT_EQ(s5->spawns.size(), 1u);
-    EXPECT_EQ(s5->spawns[0].def.c_str(), std::string { "sign_fall" });
+    EXPECT_EQ(s5->spawns[0].def.c_str(), String { "sign_fall" });
     ASSERT_EQ(s5->drops.size(), 1u);
     EXPECT_TRUE(s5->drops[0].bBounce);
 
@@ -118,7 +118,7 @@ TEST(PropDef, DamagedThresholdsAreHalfOfHp)
     EXPECT_EQ(lib.Find("big_house")->hp, 24);
     EXPECT_EQ(lib.Find("big_house")->damagedAtHp, 12);
     EXPECT_TRUE(lib.Find("ground_house")->bHasGroundPatch);
-    EXPECT_EQ(lib.Find("ground_house")->groundPatch.sprite.c_str(), std::string { "Stage0_House_4_PixelMap" });
+    EXPECT_EQ(lib.Find("ground_house")->groundPatch.sprite.c_str(), String { "Stage0_House_4_PixelMap" });
 }
 
 TEST(PropDef, BoatHasSecondaryAndTwoDropGroups)
@@ -135,9 +135,9 @@ TEST(PropDef, BoatHasSecondaryAndTwoDropGroups)
 TEST(PropDef, DebrisClipNamesFollowSets)
 {
     EXPECT_EQ(GetDebrisClipCount(eDebrisSet::Metal), 12);
-    EXPECT_EQ(GetDebrisClipName(eDebrisSet::Metal, 11).c_str(), std::string { "Metal12" });
-    EXPECT_EQ(GetDebrisClipName(eDebrisSet::Rock, 0).c_str(), std::string { "Rock1" });
-    EXPECT_EQ(GetDebrisClipName(eDebrisSet::Wood, 5).c_str(), std::string { "Wood6" });
+    EXPECT_EQ(GetDebrisClipName(eDebrisSet::Metal, 11).c_str(), String { "Metal12" });
+    EXPECT_EQ(GetDebrisClipName(eDebrisSet::Rock, 0).c_str(), String { "Rock1" });
+    EXPECT_EQ(GetDebrisClipName(eDebrisSet::Wood, 5).c_str(), String { "Wood6" });
 }
 
 TEST(PropDef, ClipAndSpriteNamesExistInAssets)
@@ -149,7 +149,7 @@ TEST(PropDef, ClipAndSpriteNamesExistInAssets)
         GTEST_SKIP() << "Assets 없음";
     }
     const String missing = GetPropLib().FindMissingAsset(anims, sprites);
-    EXPECT_TRUE(missing.empty()) << std::string { missing.c_str() };
+    EXPECT_TRUE(missing.empty()) << String { missing.c_str() };
 }
 
 TEST(PropDef, RejectsUnknownKeyWithPath)
@@ -157,8 +157,8 @@ TEST(PropDef, RejectsUnknownKeyWithPath)
     String                 msg;
     Result<PropDefLibrary> r = ParseText_(Wrap_(R"("bad": { "hp": 1, "bogus": 3 })"), &msg);
     EXPECT_FALSE(static_cast<bool>(r));
-    EXPECT_NE(std::string { msg.c_str() }.find("bogus"), std::string::npos);
-    EXPECT_NE(std::string { msg.c_str() }.find("bad"), std::string::npos);
+    EXPECT_NE(String { msg.c_str() }.find("bogus"), String::npos);
+    EXPECT_NE(String { msg.c_str() }.find("bad"), String::npos);
 }
 
 TEST(PropDef, RejectsBadRoleAndWhen)
@@ -178,7 +178,7 @@ TEST(PropDef, RejectsVisualWithBothAnimAndSprite)
 {
     String msg;
     EXPECT_FALSE(static_cast<bool>(ParseText_(Wrap_(R"("a": { "hp": 1, "idle": { "anim": "A", "sprite": "B" } })"), &msg)));
-    EXPECT_NE(std::string { msg.c_str() }.find("하나"), std::string::npos);
+    EXPECT_NE(String { msg.c_str() }.find("하나"), String::npos);
 }
 
 TEST(PropDef, RejectsUnknownDropAndSpawnReferences)
@@ -212,10 +212,10 @@ TEST(PropDef, SpawnParamsParseStageOverrides)
     ASSERT_TRUE(static_cast<bool>(doc));
     PropSpawnParams params;
     String          err;
-    ASSERT_TRUE(lib.ParseSpawnParams("shop_5", doc->GetReader(), params, err)) << std::string { err.c_str() };
+    ASSERT_TRUE(lib.ParseSpawnParams("shop_5", doc->GetReader(), params, err)) << String { err.c_str() };
     EXPECT_EQ(params.hp, 30);
-    EXPECT_EQ(params.idleSprite.c_str(), std::string { "A" });
-    EXPECT_EQ(params.destroySprite.c_str(), std::string { "B" });
+    EXPECT_EQ(params.idleSprite.c_str(), String { "A" });
+    EXPECT_EQ(params.destroySprite.c_str(), String { "B" });
     ASSERT_TRUE(params.hitbox.has_value());
     EXPECT_EQ(params.hitbox->offset.y, -200.f);
     ASSERT_TRUE(params.standBox.has_value());
@@ -230,7 +230,7 @@ TEST(PropDef, SpawnParamsRejectUnknownKeysAndBadVariant)
     PropSpawnParams params;
     String          err;
     EXPECT_FALSE(lib.ParseSpawnParams("shop_0", doc->GetReader(), params, err));
-    EXPECT_NE(std::string { err.c_str() }.find("playerWaterTrigger"), std::string::npos);
+    EXPECT_NE(String { err.c_str() }.find("playerWaterTrigger"), String::npos);
 
     Result<JsonDeserializer> doc2 = JsonDeserializer::Load(R"({ "variant": 1 })");
     ASSERT_TRUE(static_cast<bool>(doc2));

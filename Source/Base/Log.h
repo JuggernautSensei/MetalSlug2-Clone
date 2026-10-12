@@ -7,7 +7,7 @@
 
 using jug::eLogLevel;
 
-void LogMessage(eLogLevel _level, std::string_view _message);
+void LogMessage(eLogLevel _level, StringView _message);
 
 // JugX 코어 로거(JUG_CORE_LOG_*, JUG_ASSERT 실패 출력)를 LogMessage 로 보낸다. 로그 첫 사용 전에 호출한다.
 void InstallCoreLogger();
@@ -22,14 +22,14 @@ void LogFormat(
 }
 
 // 이벤트 로그 (--event-log <파일>): 한 줄에 JSON 객체 하나 {"tick":N,"event":"이름",...필드}. 열려 있지 않으면 아무 일도 하지 않는다 (시뮬레이션에 영향 없음)
-bool OpenEventLog(std::string_view _path);
+bool OpenEventLog(StringView _path);
 bool IsEventLogOpen();
 void SetEventLogTick(unsigned long long _tick);
-void WriteEventLog(std::string_view _event, std::string_view _fields);
+void WriteEventLog(StringView _event, StringView _fields);
 
 template<typename... Args>
 void EventLogFormat(
-    const std::string_view            _event,
+    const StringView                  _event,
     const std::format_string<Args...> _fields,
     Args&&... _args)
 {
