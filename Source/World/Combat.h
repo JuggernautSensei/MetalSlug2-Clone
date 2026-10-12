@@ -29,10 +29,10 @@ struct HitKindMask
 
     [[nodiscard]] static HitKindMask All();
 
-    [[nodiscard]] bool Has(const eHitKind _kind) const;
+    [[nodiscard]] bool Has(eHitKind _kind) const;
 
 private:
-    static uint32_t Bit_(const eHitKind _kind);
+    static uint32_t Bit_(eHitKind _kind);
 
     uint32_t m_bits = 0u;
 };
@@ -41,8 +41,8 @@ inline constexpr uint32_t kNoOwner = 0;
 inline constexpr uint32_t kNoHitId = 0;
 
 [[nodiscard]] bool CanTeamHit(
-    const eTeam _attacker,
-    const eTeam _target);
+    eTeam _attacker,
+    eTeam _target);
 
 struct Hitbox
 {
@@ -64,7 +64,7 @@ struct Hurtbox
     bool        bInvulnerable = false;
 };
 
-[[nodiscard]] HitKindMask AcceptsFor(const bool _bMeleeable);
+[[nodiscard]] HitKindMask AcceptsFor(bool _bMeleeable);
 
 struct HitEvent
 {
@@ -106,7 +106,7 @@ struct Health
     int maxHp = 1;
 
     [[nodiscard]] static Health Make(
-        const int _maxHp);
+        int _maxHp);
 
     [[nodiscard]] bool IsDead() const;
 
@@ -115,8 +115,8 @@ struct Health
     [[nodiscard]] float GetRatio() const;
 
     int ApplyDamage(
-        const int _damage);
+        int _damage);
 
     int Heal(
-        const int _amount);
+        int _amount);
 };

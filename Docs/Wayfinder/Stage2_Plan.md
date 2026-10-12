@@ -1,3 +1,23 @@
+# [개정] 사용자 방향: 구조를 늘리지 않고 줄인다
+
+아래 원안(Opus)은 새 클래스를 많이 만드는 설계였다(ImageLoader, GameApp/Layer/SimLayer/EditorLayer, LaunchDesc, InputSource, CaptureController, DebugKeys, SimSession). 사용자 지시("복잡한 구조/아키텍처 전부 제거, 웹스러운 코드 금지, C++ 스러운 코드")와 맞지 않아 아래처럼 바꾼다.
+
+| 원안 | 개정 |
+|---|---|
+| S1 ImageLoader 클래스(워커/슬롯/Take) | **병렬 디코드 자유 함수 1개** (`std::for_each(std::execution::par)`, chunk 단위로 메모리 상한 유지). 메인이 결과를 순서대로 GPU 텍스처로 업로드 |
+| S3~S6 호출부 전환, AsyncLoader/MainThreadQueue/Job/Notice 삭제 | 유지 (삭제가 핵심) |
+| S7~S10 App 분해 (클래스 10개 신설) | **폐기.** App 은 하나로 두고, 죽은 옵션/중복/주석만 걷어낸다. Layer 스택/SimSession 등 신설 없음 |
+| S11 Core/App → App/ 이동 | 순환(Core↔Game)이 실제로 문제가 되는 파일만 이동 (이름만 바꾸는 이동은 하지 않음) |
+| S12 중복 헬퍼 추출 | 유지 (중복 제거) |
+| S13 단독 텍스처 캐시 통합 | 유지 |
+| S14 거대 파일 분할 | 이번 범위 아님 |
+| (신규) 죽은 코드/리소스/파일 삭제 | `StyleRubric.md` 7절 |
+| (신규) 웹스러운 구조 제거 | 단일 구현 인터페이스(IAudioSink, IStageHost) → 구체 클래스, *Context/*Diagnostics 묶음 구조체 해체 |
+
+기준 문서: `Docs/Wayfinder/StyleRubric.md`.
+
+---
+
 # 2단계 구조 재설계 계획 (Opus 작성, 동작 불변)
 
 기준: 백업 커밋 1a94a68 의 `Source/` (201파일, 약 5.2만 줄). 목표는 JugX 작성자처럼 단순/미니멀한 구조. **현재와 동작이 바뀌면 안 된다.**

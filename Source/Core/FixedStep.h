@@ -8,7 +8,7 @@ public:
     static constexpr int    kMaxStepsPerFrame = 5;
 
     [[nodiscard]] int Advance(
-        const double _deltaTimeSec);
+        double _deltaTimeSec);
 
     [[nodiscard]] float GetAlpha() const;
 

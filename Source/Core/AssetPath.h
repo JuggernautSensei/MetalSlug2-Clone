@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Base/Types.h"
 
 // Assets 루트 폴더를 찾는다.
