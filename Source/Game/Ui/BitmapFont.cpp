@@ -324,7 +324,8 @@ int GetGlyphIndex(
     return -1;
 }
 
-bool HasGlyph(const char _ch)
+bool HasGlyph(
+    const char _ch)
 {
     return GetGlyphIndex(_ch) >= 0;
 }

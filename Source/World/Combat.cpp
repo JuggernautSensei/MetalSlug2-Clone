@@ -120,7 +120,8 @@ size_t HitResolver::GetTrackedHitCount() const
     return m_hitRecords.size();
 }
 
-HitKindMask AcceptsFor(const bool _bMeleeable)
+HitKindMask AcceptsFor(
+    const bool _bMeleeable)
 {
     if (_bMeleeable)
     {
@@ -129,7 +130,8 @@ HitKindMask AcceptsFor(const bool _bMeleeable)
     return HitKindMask { eHitKind::Bullet, eHitKind::Blast };
 }
 
-HitKindMask::HitKindMask(std::initializer_list<eHitKind> _kinds)
+HitKindMask::HitKindMask(
+    std::initializer_list<eHitKind> _kinds)
 {
     for (const eHitKind kind: _kinds)
     {
@@ -144,12 +146,14 @@ HitKindMask HitKindMask::All()
     return mask;
 }
 
-bool HitKindMask::Has(const eHitKind _kind) const
+bool HitKindMask::Has(
+    const eHitKind _kind) const
 {
     return (m_bits & Bit_(_kind)) != 0u;
 }
 
-uint32_t HitKindMask::Bit_(const eHitKind _kind)
+uint32_t HitKindMask::Bit_(
+    const eHitKind _kind)
 {
     return 1u << static_cast<uint32_t>(_kind);
 }

@@ -120,48 +120,48 @@ private:
     bool Keys_(const JsonReader& _obj, StringView _where, KeyList _allowed);
     bool Num_(
         const JsonReader& _obj,
-        StringView        _where,
-        StringView        _key,
+        const StringView  _where,
+        const StringView  _key,
         float&            _out,
         bool              _bRequired);
     bool Int_(
         const JsonReader& _obj,
-        StringView        _where,
-        StringView        _key,
+        const StringView  _where,
+        const StringView  _key,
         int&              _out,
         bool              _bRequired);
     bool Bool_(
         const JsonReader& _obj,
-        StringView        _where,
-        StringView        _key,
+        const StringView  _where,
+        const StringView  _key,
         bool&             _out);
     bool Str_(
         const JsonReader& _obj,
-        StringView        _where,
-        StringView        _key,
+        const StringView  _where,
+        const StringView  _key,
         String&           _out,
         bool              _bRequired);
     bool Vec2_(
         const JsonReader& _obj,
-        StringView        _where,
-        StringView        _key,
+        const StringView  _where,
+        const StringView  _key,
         Vec2&             _out,
         bool              _bRequired);
     bool Visual_(
         const JsonReader& _obj,
-        StringView        _where,
-        StringView        _key,
+        const StringView  _where,
+        const StringView  _key,
         PropVisual&       _out);
     bool ParseRole_(
-        StringView         _role,
-        StringView         _where,
+        const StringView   _role,
+        const StringView   _where,
         Vector<ePropRole>& _outRoles);
     bool Parts_(const JsonReader& _arr, StringView _where, Vector<PropPart>& _out);
     bool Burst_(
         const JsonReader& _obj,
-        StringView        _where,
+        const StringView  _where,
         PropBurst&        _out,
-        bool              _bAllowAfterSec = false);
+        const bool        _bAllowAfterSec = false);
     bool Drops_(const JsonReader& _arr, StringView _where, Vector<PropDrop>& _out);
     bool Spawns_(const JsonReader& _arr, StringView _where, Vector<PropChild>& _out);
     bool Def_(StringView _name, const JsonReader& _obj);

@@ -5,8 +5,8 @@
 #include "Core/Headless.h"
 
 int main(
-    int    _argc,
-    char** _argv)
+    const int _argc,
+    char**    _argv)
 {
     InstallCoreLogger();
     if (_argc > 1 && std::strcmp(_argv[1], "--headless") == 0)

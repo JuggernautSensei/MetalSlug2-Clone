@@ -100,7 +100,8 @@ int SoundBank::FindIndex(
     return it == m_nameToIndex.end() ? -1 : static_cast<int>(it->second);
 }
 
-const SoundEntry& SoundBank::Get(int _index) const
+const SoundEntry& SoundBank::Get(
+    const int _index) const
 {
     return m_entries[static_cast<size_t>(_index)];
 }

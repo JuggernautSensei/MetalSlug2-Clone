@@ -680,7 +680,8 @@ bool Camera::IsLocked() const
     return m_bLocked;
 }
 
-void Camera::SetForwardOnly(const bool _bForwardOnly)
+void Camera::SetForwardOnly(
+    const bool _bForwardOnly)
 {
     m_bForwardOnly = _bForwardOnly;
 }
@@ -690,7 +691,8 @@ bool Camera::IsForwardOnly() const
     return m_bForwardOnly;
 }
 
-void Camera::SetForwardOnlyY(const bool _bForwardOnlyY)
+void Camera::SetForwardOnlyY(
+    const bool _bForwardOnlyY)
 {
     m_bForwardOnlyY = _bForwardOnlyY;
 }
@@ -720,7 +722,8 @@ const Aabb& Camera::GetLockBounds() const
     return m_lockBounds;
 }
 
-void Camera::SetTarget(const Vec2 _target)
+void Camera::SetTarget(
+    const Vec2 _target)
 {
     m_target = _target;
 }

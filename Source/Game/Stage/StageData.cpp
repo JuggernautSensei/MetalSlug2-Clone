@@ -684,70 +684,70 @@ private:
     bool GetField_(
         const JsonReader&          _obj,
         const String&              _where,
-        StringView                 _key,
-        bool                       _bRequired,
+        const StringView           _key,
+        const bool                 _bRequired,
         std::optional<JsonReader>& _out);
 
     bool GetNumber_(
         const JsonReader& _obj,
         const String&     _where,
-        StringView        _key,
-        bool              _bRequired,
+        const StringView  _key,
+        const bool        _bRequired,
         double&           _out,
         bool*             _pFound = nullptr);
 
     bool GetFloat_(
         const JsonReader& _obj,
         const String&     _where,
-        StringView        _key,
-        bool              _bRequired,
+        const StringView  _key,
+        const bool        _bRequired,
         float&            _out,
         bool*             _pFound = nullptr);
 
     bool GetInt_(
         const JsonReader& _obj,
         const String&     _where,
-        StringView        _key,
-        bool              _bRequired,
+        const StringView  _key,
+        const bool        _bRequired,
         int&              _out,
         bool*             _pFound = nullptr);
 
     bool GetBool_(
         const JsonReader& _obj,
         const String&     _where,
-        StringView        _key,
-        bool              _bRequired,
+        const StringView  _key,
+        const bool        _bRequired,
         bool&             _out,
         bool*             _pFound = nullptr);
 
     bool GetString_(
         const JsonReader& _obj,
         const String&     _where,
-        StringView        _key,
-        bool              _bRequired,
+        const StringView  _key,
+        const bool        _bRequired,
         String&           _out,
         bool*             _pFound = nullptr);
 
     bool GetVec2_(
         const JsonReader& _obj,
         const String&     _where,
-        StringView        _key,
-        bool              _bRequired,
+        const StringView  _key,
+        const bool        _bRequired,
         Vec2&             _out,
         bool*             _pFound = nullptr);
 
     bool GetObject_(
         const JsonReader&          _obj,
         const String&              _where,
-        StringView                 _key,
-        bool                       _bRequired,
+        const StringView           _key,
+        const bool                 _bRequired,
         std::optional<JsonReader>& _out);
 
     bool GetArray_(
         const JsonReader&          _obj,
         const String&              _where,
-        StringView                 _key,
-        bool                       _bRequired,
+        const StringView           _key,
+        const bool                 _bRequired,
         std::optional<JsonReader>& _out);
 
     template<typename E, size_t N>
@@ -796,21 +796,21 @@ private:
     bool ParseRect_(
         const JsonReader& _obj,
         const String&     _where,
-        StringView        _key,
-        bool              _bAllowCurrent,
+        const StringView  _key,
+        const bool        _bAllowCurrent,
         RectRef&          _out);
 
     bool ParseRectArray_(
         const JsonReader& _array,
         const String&     _where,
-        StringView        _key,
+        const StringView  _key,
         Aabb&             _out);
 
     bool ParseSpawn_(
-        const JsonReader& _obj,
-        const String&     _where,
-        eSpawnContext     _context,
-        SpawnSpec&        _out);
+        const JsonReader&   _obj,
+        const String&       _where,
+        const eSpawnContext _context,
+        SpawnSpec&          _out);
 
     bool ParseCameraAnchor_(const JsonReader& _obj, const String& _where, CameraAnchor& _out);
     bool ParseAction_(const JsonReader& _obj, const String& _where, StageAction& _out);

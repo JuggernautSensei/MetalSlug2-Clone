@@ -40,8 +40,8 @@ private:
     [[nodiscard]] bool CheckKeys_(const Chain& _chain, StringView _defName, Span<const char* const> _allowed);
 
     [[nodiscard]] bool CheckObjectKeys_(
-        StringView              _def,
-        StringView              _field,
+        const StringView        _def,
+        const StringView        _field,
         const JsonReader&       _object,
         Span<const char* const> _allowed);
 
@@ -51,58 +51,58 @@ private:
     void Fail_(StringView _def, StringView _field, StringView _msg);
 
     [[nodiscard]] bool ReadNum_(
-        StringView        _def,
-        StringView        _field,
+        const StringView  _def,
+        const StringView  _field,
         const JsonReader& _reader,
-        StringView        _key,
+        const StringView  _key,
         float&            _out,
         bool              _bRequired);
 
     [[nodiscard]] bool ReadInt_(
-        StringView        _def,
-        StringView        _field,
+        const StringView  _def,
+        const StringView  _field,
         const JsonReader& _reader,
-        StringView        _key,
+        const StringView  _key,
         int&              _out,
         bool              _bRequired);
 
     [[nodiscard]] bool ReadBool_(
-        StringView        _def,
-        StringView        _field,
+        const StringView  _def,
+        const StringView  _field,
         const JsonReader& _reader,
-        StringView        _key,
+        const StringView  _key,
         bool&             _out);
 
     [[nodiscard]] bool ReadStr_(
-        StringView        _def,
-        StringView        _field,
+        const StringView  _def,
+        const StringView  _field,
         const JsonReader& _reader,
-        StringView        _key,
+        const StringView  _key,
         String&           _out,
         bool              _bRequired);
 
     [[nodiscard]] bool ReadVec2_(
-        StringView        _def,
-        StringView        _field,
+        const StringView  _def,
+        const StringView  _field,
         const JsonReader& _reader,
-        StringView        _key,
+        const StringView  _key,
         Vec2&             _out);
 
     [[nodiscard]] bool ReadBox_(
-        StringView        _def,
-        StringView        _field,
+        const StringView  _def,
+        const StringView  _field,
         const JsonReader& _reader,
         BoxDef&           _out);
 
     [[nodiscard]] bool ReadClip_(
-        StringView        _def,
-        StringView        _field,
+        const StringView  _def,
+        const StringView  _field,
         const JsonReader& _reader,
         ClipDef&          _out);
 
     [[nodiscard]] bool ReadFx_(
-        StringView        _def,
-        StringView        _field,
+        const StringView  _def,
+        const StringView  _field,
         const JsonReader& _reader,
         FxDef&            _out);
 
@@ -120,7 +120,7 @@ private:
     [[nodiscard]] bool ReadDeathClip_(
         const EnemyDef&   _def,
         const JsonReader& _death,
-        StringView        _key,
+        const StringView  _key,
         int&              _out);
 
     EnemyDefLibrary&     m_lib;

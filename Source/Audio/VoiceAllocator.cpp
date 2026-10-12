@@ -64,12 +64,14 @@ int VoiceAllocator::GetMaxPerSound() const
     return m_maxPerSound;
 }
 
-bool VoiceAllocator::IsActive(const int _slot) const
+bool VoiceAllocator::IsActive(
+    const int _slot) const
 {
     return m_slots[static_cast<size_t>(_slot)].bActive;
 }
 
-int VoiceAllocator::GetSoundId(const int _slot) const
+int VoiceAllocator::GetSoundId(
+    const int _slot) const
 {
     return m_slots[static_cast<size_t>(_slot)].soundId;
 }

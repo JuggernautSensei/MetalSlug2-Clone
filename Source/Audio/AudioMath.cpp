@@ -27,7 +27,8 @@ void BgmFader::Reset()
     bFading    = false;
 }
 
-void BgmFader::BeginFadeOut(const float _seconds)
+void BgmFader::BeginFadeOut(
+    const float _seconds)
 {
     if (_seconds <= 0.f)
     {
@@ -41,7 +42,8 @@ void BgmFader::BeginFadeOut(const float _seconds)
     bFading = true;
 }
 
-bool BgmFader::Update(const float _dtSec)
+bool BgmFader::Update(
+    const float _dtSec)
 {
     if (!bFading)
     {

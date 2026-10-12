@@ -342,7 +342,8 @@ bool GroundMap::IsEmpty() const
     return m_width == 0 || m_height == 0;
 }
 
-void GroundMap::SetBoundsPolicy(const GroundBoundsPolicy& _policy)
+void GroundMap::SetBoundsPolicy(
+    const GroundBoundsPolicy& _policy)
 {
     m_policy = _policy;
 }
