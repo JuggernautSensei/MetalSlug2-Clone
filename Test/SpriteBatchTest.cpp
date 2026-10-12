@@ -596,3 +596,117 @@ TEST(DecodeImages, MissingFileIsReportedAsFileOpenAtItsOwnPosition)
         }
     }
 }
+
+TEST(SpriteBatchSdl, AddAtlasPageFromDecodedImageDrawsLikeTheRgbaPath)
+{
+    SoftwareTarget target { 32, 32 };
+    if (!target.IsValid())
+    {
+        GTEST_SKIP() << "소프트웨어 렌더러를 만들 수 없는 환경";
+    }
+
+    DecodedImage image;
+    image.width  = 4;
+    image.height = 4;
+    image.rgba   = MakeAtlas4x4_();
+
+    SpriteBatch batch;
+    batch.Init(target.pRenderer);
+    ASSERT_TRUE(batch.AddAtlasPage(image).IsOK());
+    EXPECT_EQ(batch.GetAtlasPageCount(), 1u);
+
+    const AnimFrame frame = MakeFrame_(4, 4, 2, 4);
+    target.Clear();
+    batch.DrawFrame(frame, { 10.7f, 20.9f }, Vec2 { 0.f, 0.f });
+    EXPECT_EQ(target.PixelRgb(8, 16), kRed);
+    EXPECT_EQ(target.PixelRgb(9, 16), kGreen);
+    EXPECT_EQ(target.PixelRgb(7, 16), kBlack);
+}
+
+TEST(SpriteBatchSdl, AddAtlasPageUsesTheGivenFlashImageOrBuildsOne)
+{
+    SoftwareTarget target { 8, 8 };
+    if (!target.IsValid())
+    {
+        GTEST_SKIP() << "소프트웨어 렌더러를 만들 수 없는 환경";
+    }
+
+    DecodedImage built;
+    built.width  = 1;
+    built.height = 1;
+    built.rgba   = { 128, 128, 128, 255 };
+
+    DecodedImage given = built;
+    given.flashRgba    = { 1, 2, 3, 255 };
+
+    SpriteBatch batch;
+    batch.Init(target.pRenderer);
+    ASSERT_TRUE(batch.AddAtlasPage(built).IsOK());
+    ASSERT_TRUE(batch.AddAtlasPage(given).IsOK());
+
+    AnimFrame frame0 = MakeFrame_(1, 1, 0, 0);
+    AnimFrame frame1 = frame0;
+    frame1.atlas     = 1;
+    SpriteDrawOptions flash;
+    flash.flashAmount = 1.f;
+
+    target.Clear();
+    batch.DrawFrame(frame0, { 0.f, 0.f }, Vec2 { 0.f, 0.f }, flash);
+    batch.DrawFrame(frame1, { 2.f, 0.f }, Vec2 { 0.f, 0.f }, flash);
+    const RGBA expected = ApplyHitFlashRamp({ 128, 128, 128, 255 });
+    EXPECT_EQ(target.PixelRgb(0, 0), (static_cast<uint32_t>(expected.r) << 16) | (static_cast<uint32_t>(expected.g) << 8) | expected.b);
+    EXPECT_EQ(target.PixelRgb(2, 0), 0x010203u);
+}
+
+TEST(SpriteBatchSdl, AddStandaloneTextureReturnsSequentialHandlesAndRejectsBadImages)
+{
+    SoftwareTarget target { 8, 8 };
+    if (!target.IsValid())
+    {
+        GTEST_SKIP() << "소프트웨어 렌더러를 만들 수 없는 환경";
+    }
+
+    DecodedImage image;
+    image.width  = 2;
+    image.height = 2;
+    image.rgba   = Vector<uint8_t>(2 * 2 * 4, 255);
+
+    SpriteBatch batch;
+    batch.Init(target.pRenderer);
+    const Result<int> first  = batch.AddStandaloneTexture(image);
+    const Result<int> second = batch.AddStandaloneTexture(image);
+    ASSERT_TRUE(first.HasValue());
+    ASSERT_TRUE(second.HasValue());
+    EXPECT_EQ(first.GetValue(), 0);
+    EXPECT_EQ(second.GetValue(), 1);
+
+    DecodedImage tooSmall;
+    tooSmall.width  = 4;
+    tooSmall.height = 4;
+    tooSmall.rgba   = Vector<uint8_t>(8, 0);
+    EXPECT_TRUE(batch.AddStandaloneTexture(tooSmall).HasError());
+    EXPECT_TRUE(batch.AddAtlasPage(tooSmall).HasError());
+    EXPECT_EQ(batch.GetAtlasPageCount(), 0u);
+}
+
+TEST(SpriteBatchSdl, LoadAtlasPagesParallelAddsEveryPageInChunks)
+{
+    SoftwareTarget target { 8, 8 };
+    if (!target.IsValid())
+    {
+        GTEST_SKIP() << "소프트웨어 렌더러를 만들 수 없는 환경";
+    }
+    Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(FindAssetRoot());
+    if (!library)
+    {
+        GTEST_SKIP() << "에셋이 없는 환경";
+    }
+
+    for (const int numWorkers: { 1, 3 })
+    {
+        SpriteBatch batch;
+        batch.Init(target.pRenderer);
+        ASSERT_TRUE(batch.LoadAtlasPagesParallel(library.GetValue(), numWorkers).IsOK());
+        EXPECT_EQ(batch.GetAtlasPageCount(), library->GetAtlasPages().size());
+    }
+}

@@ -427,6 +427,53 @@ Result<void> SpriteBatch::AddAtlasPageFromRgba(
     return Error { kOK };
 }
 
+Result<void> SpriteBatch::AddAtlasPage(
+    const DecodedImage& _image)
+{
+    if (_image.flashRgba.empty())
+    {
+        return AddAtlasPageFromRgba(_image.width, _image.height, _image.rgba);
+    }
+    return AddAtlasPageFromRgba(_image.width, _image.height, _image.rgba, _image.flashRgba);
+}
+
+Result<int> SpriteBatch::AddStandaloneTexture(
+    const DecodedImage& _image)
+{
+    return AddStandaloneTextureFromRgba(_image.width, _image.height, _image.rgba);
+}
+
+Result<void> SpriteBatch::LoadAtlasPagesParallel(
+    const AnimationLibrary& _library,
+    const int               _numWorkers)
+{
+    const ScopedPhaseTimer timer { "atlas-pages", "all" };
+    Vector<FilePath>       paths;
+    for (const String& page: _library.GetAtlasPages())
+    {
+        paths.push_back(_library.GetRoot() / page);
+    }
+
+    const size_t chunk = static_cast<size_t>(std::max(1, _numWorkers));
+    for (size_t begin = 0; begin < paths.size(); begin += chunk)
+    {
+        const size_t                       count  = std::min(chunk, paths.size() - begin);
+        const Vector<Result<DecodedImage>> images = DecodeImages(Span<const FilePath> { paths.data() + begin, count }, true, _numWorkers);
+        for (size_t i = 0; i < count; ++i)
+        {
+            const FilePath& path  = paths[begin + i];
+            Result<void>    added = images[i].HasValue() ? AddAtlasPage(images[i].GetValue()) : Result<void> { images[i].GetError() };
+            if (!added)
+            {
+                SLUG_LOG_ERROR("아틀라스 페이지 로드 실패: {}", path.filename().string());
+                return added.GetError();
+            }
+            TraceAtlasPage_(m_pages.size() - 1, path, images[i]->width, images[i]->height, images[i]->rgba);
+        }
+    }
+    return Error { kOK };
+}
+
 Result<void> SpriteBatch::LoadAtlasPage(
     const FilePath& _pngPath)
 {
@@ -436,7 +483,7 @@ Result<void> SpriteBatch::LoadAtlasPage(
         return image.GetError();
     }
     const size_t       page   = m_pages.size();
-    const Result<void> result = AddAtlasPageFromRgba(image->width, image->height, image->rgba);
+    const Result<void> result = AddAtlasPage(image.GetValue());
     if (result)
     {
         TraceAtlasPage_(page, _pngPath, image->width, image->height, image->rgba);
@@ -535,7 +582,7 @@ Result<int> SpriteBatch::LoadStandaloneTexture(
     {
         return image.GetError();
     }
-    const Result<int> result = AddStandaloneTextureFromRgba(image->width, image->height, image->rgba);
+    const Result<int> result = AddStandaloneTexture(image.GetValue());
     if (result)
     {
         TraceStandalone_(result.GetValue(), _pngPath, image->width, image->height, image->rgba);
@@ -647,12 +694,11 @@ public:
     void Complete() override;
 
 private:
-    SpriteBatch*    m_pBatch       = nullptr;
-    FilePath        m_path         = {};
-    size_t          m_expectedPage = 0;
-    DecodedImage    m_image        = {};
-    Vector<uint8_t> m_flash        = {};
-    bool            m_bDecoded     = false;
+    SpriteBatch* m_pBatch       = nullptr;
+    FilePath     m_path         = {};
+    size_t       m_expectedPage = 0;
+    DecodedImage m_image        = {};
+    bool         m_bDecoded     = false;
 };
 
 AtlasPageLoadJob::AtlasPageLoadJob(
@@ -675,7 +721,7 @@ void AtlasPageLoadJob::Execute()
     m_image = image.Take();
     {
         const ScopedPhaseTimer timer { "flash-build", m_path.filename().string() };
-        m_flash = BuildHitFlashRgba(m_image.rgba, static_cast<size_t>(m_image.width) * static_cast<size_t>(m_image.height));
+        m_image.flashRgba = BuildHitFlashRgba(m_image.rgba, static_cast<size_t>(m_image.width) * static_cast<size_t>(m_image.height));
     }
     m_bDecoded = true;
 }
@@ -687,7 +733,7 @@ void AtlasPageLoadJob::Complete()
     {
         return;
     }
-    if (!m_bDecoded || !m_pBatch->AddAtlasPageFromRgba(m_image.width, m_image.height, m_image.rgba, m_flash))
+    if (!m_bDecoded || !m_pBatch->AddAtlasPage(m_image))
     {
         SLUG_LOG_ERROR("아틀라스 페이지 로드 실패: {}", m_path.filename().string());
         return;
@@ -736,7 +782,7 @@ void StandaloneTextureLoadJob::Complete()
     int handle = -1;
     if (m_bDecoded)
     {
-        const Result<int> added = m_pBatch->AddStandaloneTextureFromRgba(m_image.width, m_image.height, m_image.rgba);
+        const Result<int> added = m_pBatch->AddStandaloneTexture(m_image);
         if (added)
         {
             handle = added.GetValue();
