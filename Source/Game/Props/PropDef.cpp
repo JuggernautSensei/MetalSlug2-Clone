@@ -12,7 +12,7 @@
 #include "Render/SpriteLibrary.h"
 
 int GetDebrisClipCount(
-    eDebrisSet _set)
+    const eDebrisSet _set)
 {
     switch (_set)
     {
@@ -24,8 +24,8 @@ int GetDebrisClipCount(
 }
 
 String GetDebrisClipName(
-    eDebrisSet _set,
-    int        _index)
+    const eDebrisSet _set,
+    const int        _index)
 {
     const char* pPrefix = _set == eDebrisSet::Wood ? "Wood" : (_set == eDebrisSet::Metal ? "Metal" : "Rock");
     return String { std::format("{}{}", pPrefix, _index + 1) };
@@ -37,8 +37,8 @@ using JsonMember = std::pair<StringView, JsonReader>;
 namespace
 {
 [[nodiscard]] eDebrisSet ParseDebrisSet_(
-    StringView _s,
-    bool&      _bOk)
+    const StringView _s,
+    bool&            _bOk)
 {
     _bOk = true;
     if (_s == "wood")
@@ -120,48 +120,48 @@ private:
     bool Keys_(const JsonReader& _obj, StringView _where, KeyList _allowed);
     bool Num_(
         const JsonReader& _obj,
-        StringView        _where,
-        StringView        _key,
+        const StringView  _where,
+        const StringView  _key,
         float&            _out,
         bool              _bRequired);
     bool Int_(
         const JsonReader& _obj,
-        StringView        _where,
-        StringView        _key,
+        const StringView  _where,
+        const StringView  _key,
         int&              _out,
         bool              _bRequired);
     bool Bool_(
         const JsonReader& _obj,
-        StringView        _where,
-        StringView        _key,
+        const StringView  _where,
+        const StringView  _key,
         bool&             _out);
     bool Str_(
         const JsonReader& _obj,
-        StringView        _where,
-        StringView        _key,
+        const StringView  _where,
+        const StringView  _key,
         String&           _out,
         bool              _bRequired);
     bool Vec2_(
         const JsonReader& _obj,
-        StringView        _where,
-        StringView        _key,
+        const StringView  _where,
+        const StringView  _key,
         VECTOR2&          _out,
         bool              _bRequired);
     bool Visual_(
         const JsonReader& _obj,
-        StringView        _where,
-        StringView        _key,
+        const StringView  _where,
+        const StringView  _key,
         PropVisual&       _out);
     bool ParseRole_(
-        StringView         _role,
-        StringView         _where,
+        const StringView   _role,
+        const StringView   _where,
         Vector<ePropRole>& _outRoles);
     bool Parts_(const JsonReader& _arr, StringView _where, Vector<PropPart>& _out);
     bool Burst_(
         const JsonReader& _obj,
-        StringView        _where,
+        const StringView  _where,
         PropBurst&        _out,
-        bool              _bAllowAfterSec = false);
+        const bool        _bAllowAfterSec = false);
     bool Drops_(const JsonReader& _arr, StringView _where, Vector<PropDrop>& _out);
     bool Spawns_(const JsonReader& _arr, StringView _where, Vector<PropChild>& _out);
     bool Def_(StringView _name, const JsonReader& _obj);
@@ -172,9 +172,9 @@ private:
 };
 
 bool PropDefParser::Fail_(
-    StringView _where,
-    StringView _field,
-    StringView _msg)
+    const StringView _where,
+    const StringView _field,
+    const StringView _msg)
 {
     if (error.empty())
     {
@@ -185,8 +185,8 @@ bool PropDefParser::Fail_(
 
 bool PropDefParser::Keys_(
     const JsonReader& _obj,
-    StringView        _where,
-    KeyList           _allowed)
+    const StringView  _where,
+    const KeyList     _allowed)
 {
     if (!_obj.IsObject())
     {
@@ -202,10 +202,10 @@ bool PropDefParser::Keys_(
 
 bool PropDefParser::Num_(
     const JsonReader& _obj,
-    StringView        _where,
-    StringView        _key,
+    const StringView  _where,
+    const StringView  _key,
     float&            _out,
-    bool              _bRequired)
+    const bool        _bRequired)
 {
     StringView reason;
     return ReadFloatField(_obj, _key, _bRequired, _out, reason) || Fail_(_where, _key, reason);
@@ -213,10 +213,10 @@ bool PropDefParser::Num_(
 
 bool PropDefParser::Int_(
     const JsonReader& _obj,
-    StringView        _where,
-    StringView        _key,
+    const StringView  _where,
+    const StringView  _key,
     int&              _out,
-    bool              _bRequired)
+    const bool        _bRequired)
 {
     float value = 0.f;
     if (!HasKey(_obj, _key))
@@ -237,8 +237,8 @@ bool PropDefParser::Int_(
 
 bool PropDefParser::Bool_(
     const JsonReader& _obj,
-    StringView        _where,
-    StringView        _key,
+    const StringView  _where,
+    const StringView  _key,
     bool&             _out)
 {
     StringView reason;
@@ -247,10 +247,10 @@ bool PropDefParser::Bool_(
 
 bool PropDefParser::Str_(
     const JsonReader& _obj,
-    StringView        _where,
-    StringView        _key,
+    const StringView  _where,
+    const StringView  _key,
     String&           _out,
-    bool              _bRequired)
+    const bool        _bRequired)
 {
     StringView reason;
     return ReadStringField(_obj, _key, _bRequired, _out, reason) || Fail_(_where, _key, reason);
@@ -258,10 +258,10 @@ bool PropDefParser::Str_(
 
 bool PropDefParser::Vec2_(
     const JsonReader& _obj,
-    StringView        _where,
-    StringView        _key,
+    const StringView  _where,
+    const StringView  _key,
     VECTOR2&          _out,
-    bool              _bRequired)
+    const bool        _bRequired)
 {
     StringView reason;
     return ReadVec2Field(_obj, _key, _bRequired, _out, reason) || Fail_(_where, _key, reason);
@@ -269,8 +269,8 @@ bool PropDefParser::Vec2_(
 
 bool PropDefParser::Visual_(
     const JsonReader& _obj,
-    StringView        _where,
-    StringView        _key,
+    const StringView  _where,
+    const StringView  _key,
     PropVisual&       _out)
 {
     if (!HasKey(_obj, _key))
@@ -297,8 +297,8 @@ bool PropDefParser::Visual_(
 }
 
 bool PropDefParser::ParseRole_(
-    StringView         _role,
-    StringView         _where,
+    const StringView   _role,
+    const StringView   _where,
     Vector<ePropRole>& _outRoles)
 {
     if (_role == "hurt")
@@ -326,7 +326,7 @@ bool PropDefParser::ParseRole_(
 
 bool PropDefParser::Parts_(
     const JsonReader& _arr,
-    StringView        _where,
+    const StringView  _where,
     Vector<PropPart>& _out)
 {
     if (!_arr.IsArray())
@@ -409,9 +409,9 @@ bool PropDefParser::Parts_(
 
 bool PropDefParser::Burst_(
     const JsonReader& _obj,
-    StringView        _where,
+    const StringView  _where,
     PropBurst&        _out,
-    bool              _bAllowAfterSec)
+    const bool        _bAllowAfterSec)
 {
     const bool bKeysOk = _bAllowAfterSec ? Keys_(_obj, _where, { "note", "explosions", "debris", "afterSec" }) : Keys_(_obj, _where, { "note", "explosions", "debris" });
     if (!bKeysOk)
@@ -461,7 +461,7 @@ bool PropDefParser::Burst_(
 
 bool PropDefParser::Drops_(
     const JsonReader& _arr,
-    StringView        _where,
+    const StringView  _where,
     Vector<PropDrop>& _out)
 {
     if (!_arr.IsArray())
@@ -483,7 +483,7 @@ bool PropDefParser::Drops_(
 
 bool PropDefParser::Spawns_(
     const JsonReader&  _arr,
-    StringView         _where,
+    const StringView   _where,
     Vector<PropChild>& _out)
 {
     if (!_arr.IsArray())
@@ -504,7 +504,7 @@ bool PropDefParser::Spawns_(
 }
 
 bool PropDefParser::Def_(
-    StringView        _name,
+    const StringView  _name,
     const JsonReader& _obj)
 {
     const String where { _name };
@@ -614,7 +614,7 @@ bool PropDefParser::Def_(
 }
 
 bool PropDefParser::Item_(
-    StringView        _name,
+    const StringView  _name,
     const JsonReader& _obj)
 {
     const String where = std::format("items.{}", String { _name });
@@ -903,8 +903,8 @@ bool PropDefParser::ParseParams(
 }
 
 Result<PropDefLibrary> PropDefLibrary::Parse(
-    StringView _json,
-    String*    _pMessageOrNull)
+    const StringView _json,
+    String*          _pMessageOrNull)
 {
     Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, kJsonBomComments);
     if (!doc)
@@ -959,42 +959,42 @@ Result<PropDefLibrary> PropDefLibrary::Load(
 }
 
 const PropDef* PropDefLibrary::Find(
-    StringView _name) const
+    const StringView _name) const
 {
     const int index = FindIndex(_name);
     return index < 0 ? nullptr : &m_defs[static_cast<size_t>(index)];
 }
 
 int PropDefLibrary::FindIndex(
-    StringView _name) const
+    const StringView _name) const
 {
     const HashMap<String, uint32_t>::const_iterator it = m_defIndex.find(String { _name });
     return it == m_defIndex.end() ? -1 : static_cast<int>(it->second);
 }
 
 const PropItemDef* PropDefLibrary::FindItem(
-    StringView _name) const
+    const StringView _name) const
 {
     const int index = FindItemIndex(_name);
     return index < 0 ? nullptr : &m_items[static_cast<size_t>(index)];
 }
 
 int PropDefLibrary::FindItemIndex(
-    StringView _name) const
+    const StringView _name) const
 {
     const HashMap<String, uint32_t>::const_iterator it = m_itemIndex.find(String { _name });
     return it == m_itemIndex.end() ? -1 : static_cast<int>(it->second);
 }
 
 const PropItemGroup* PropDefLibrary::FindGroup(
-    StringView _name) const
+    const StringView _name) const
 {
     const HashMap<String, uint32_t>::const_iterator it = m_groupIndex.find(String { _name });
     return it == m_groupIndex.end() ? nullptr : &m_groups[it->second];
 }
 
 bool PropDefLibrary::ParseSpawnParams(
-    StringView        _defName,
+    const StringView  _defName,
     const JsonReader& _params,
     PropSpawnParams&  _out,
     String&           _error) const

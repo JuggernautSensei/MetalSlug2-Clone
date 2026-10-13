@@ -1,7 +1,7 @@
 #include "Game/Player/PlayerTypes.h"
 
 const char* GetStateName(
-    ePlayerState _state)
+    const ePlayerState _state)
 {
     switch (_state)
     {
@@ -18,7 +18,7 @@ const char* GetStateName(
 }
 
 const char* GetOverlayName(
-    eOverlay _overlay)
+    const eOverlay _overlay)
 {
     switch (_overlay)
     {
@@ -30,7 +30,7 @@ const char* GetOverlayName(
 }
 
 const char* GetGodModeName(
-    eGodMode _mode)
+    const eGodMode _mode)
 {
     switch (_mode)
     {
@@ -41,7 +41,7 @@ const char* GetGodModeName(
 }
 
 const char* GetAimName(
-    eAim _aim)
+    const eAim _aim)
 {
     switch (_aim)
     {

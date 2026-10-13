@@ -14,7 +14,7 @@ constexpr float kGlideExitGap  = 0.05f;
 constexpr float kGlideAccel    = 1.f;
 constexpr float kMaxStep       = 12.f;
 constexpr float kStepGrowth    = 1.5f;
-constexpr float kStepFloor     = 1.f;   // 걸음이 작을 때 허용되는 최소 증가폭
+constexpr float kStepFloor     = 1.f;                   // 걸음이 작을 때 허용되는 최소 증가폭
 constexpr float kMaxSpeedSec   = kMaxStep / kStepSec;
 constexpr float kBoundsEase    = 2.f;
 constexpr float kCorrectionSec = 0.5f;
@@ -22,21 +22,21 @@ constexpr float kCorrectionSec = 0.5f;
 namespace
 {
 [[nodiscard]] float RoundToInt_(
-    float _value)
+    const float _value)
 {
     return std::floor(_value + 0.5f);
 }
 
 [[nodiscard]] float BrakeSpeed_(
-    float _gap)
+    const float _gap)
 {
     return (-kGlideAccel + Sqrt(kGlideAccel * kGlideAccel + 8.f * kGlideAccel * _gap)) * 0.5f;
 }
 
 // 한 축의 이동을 가속도 kGlideAccel·속도 kMaxStep 상한 안에서 끝내는 최소 틱 수
 [[nodiscard]] int MinMoveTicks_(
-    float _dist,
-    float _v0)
+    const float _dist,
+    const float _v0)
 {
     const float d      = Abs(_dist);
     const float v      = Abs(_v0);
@@ -47,12 +47,12 @@ namespace
 
 // 임계감쇠 스프링
 void SmoothDamp_(
-    float& _current,
-    float& _velocity,
-    float  _target,
-    float  _smoothTime,
-    float  _dt,
-    float  _maxSpeed)
+    float&      _current,
+    float&      _velocity,
+    const float _target,
+    const float _smoothTime,
+    const float _dt,
+    const float _maxSpeed)
 {
     const float omega     = 2.f / _smoothTime;
     const float x         = omega * _dt;
@@ -79,9 +79,9 @@ void SmoothDamp_(
 }
 
 [[nodiscard]] float ApplyDeadzone_(
-    float _center,
-    float _focus,
-    float _half)
+    const float _center,
+    const float _focus,
+    const float _half)
 {
     if (_focus > _center + _half)
     {
@@ -156,8 +156,8 @@ void Camera::Unlock()
 }
 
 void Camera::BeginMove(
-    VECTOR2 _targetCenter,
-    float   _seconds)
+    const VECTOR2 _targetCenter,
+    const float   _seconds)
 {
     const int baseTicks = static_cast<int>(std::llround(static_cast<double>(_seconds) / static_cast<double>(kStepSec)));
     if (baseTicks <= 0)
@@ -193,7 +193,7 @@ void Camera::CancelMove()
 
 void Camera::LockWithGlide(
     const Aabb& _lockBounds,
-    float       _glideSeconds)
+    const float _glideSeconds)
 {
     if (_glideSeconds <= 0.f)
     {
@@ -244,10 +244,10 @@ void Camera::SyncEffectiveBounds_()
 }
 
 void Camera::ApproachEdge_(
-    float& _edge,
-    float& _vel,
-    float  _target,
-    float  _sign)
+    float&      _edge,
+    float&      _vel,
+    const float _target,
+    const float _sign)
 {
     const float dist = _target - _edge;
     if (dist * _sign <= 0.f)
@@ -288,8 +288,8 @@ void Camera::UpdateEffectiveBounds_()
 }
 
 VECTOR2 Camera::ClampToRect_(
-    VECTOR2     _center,
-    const Aabb& _bounds) const
+    const VECTOR2 _center,
+    const Aabb&   _bounds) const
 {
     const VECTOR2 half   = { m_tuning.viewSize.x * 0.5f, m_tuning.viewSize.y * 0.5f };
     VECTOR2       result = _center;
@@ -305,7 +305,7 @@ VECTOR2 Camera::ClampToRect_(
 }
 
 VECTOR2 Camera::ClampCenter_(
-    VECTOR2 _center) const
+    const VECTOR2 _center) const
 {
     bool       bHasBounds = false;
     const Aabb bounds     = GetActiveBounds_(bHasBounds);
@@ -316,7 +316,7 @@ VECTOR2 Camera::ClampCenter_(
     return ClampToRect_(_center, bounds);
 }
 VECTOR2 Camera::SnapTopLeft_(
-    VECTOR2 _center) const
+    const VECTOR2 _center) const
 {
     VECTOR2 topLeft = { RoundToInt_(_center.x - m_tuning.viewSize.x * 0.5f), RoundToInt_(_center.y - m_tuning.viewSize.y * 0.5f) };
 
@@ -335,7 +335,7 @@ VECTOR2 Camera::SnapTopLeft_(
 }
 
 void Camera::AddScrollFloor(
-    float _dx)
+    const float _dx)
 {
     if (!m_bScrollFloor)
     {
@@ -346,7 +346,7 @@ void Camera::AddScrollFloor(
 }
 
 void Camera::ShiftLock(
-    float _dx)
+    const float _dx)
 {
     if (m_bPendingLock)
     {
@@ -369,7 +369,7 @@ void Camera::ShiftLock(
 }
 
 void Camera::SnapTo(
-    VECTOR2 _viewCenter)
+    const VECTOR2 _viewCenter)
 {
     m_bMoving      = false;
     m_bScrollFloor = false;
@@ -388,8 +388,8 @@ void Camera::SnapToTarget()
 }
 
 void Camera::StepX_(
-    float _desiredX,
-    float _focusDeltaX)
+    const float _desiredX,
+    const float _focusDeltaX)
 {
     const float gap = _desiredX - m_center.x;
     if (!m_bGlide && Abs(gap) > kGlideEnterGap)
@@ -441,14 +441,14 @@ void Camera::StepX_(
     }
 
     // 한 틱에 직전 속도의 1.5배를 넘어 빨라지지 않는다
-    const float limit   = Max(kStepFloor, kStepGrowth * Abs(m_velocity.x));
+    const float limit = Max(kStepFloor, kStepGrowth * Abs(m_velocity.x));
     const float stepAbs = Min(Min(Abs(gap), m_pushSpeed), Min(limit, BrakeSpeed_(Abs(gap))));
     m_velocity.x        = dir * stepAbs;
     m_center.x += m_velocity.x;
 }
 
 void Camera::Update(
-    float _dt)
+    const float _dt)
 {
     UpdateEffectiveBounds_();
 
@@ -577,7 +577,7 @@ bool Camera::IsLocked() const
 }
 
 void Camera::SetForwardOnly(
-    bool _bForwardOnly)
+    const bool _bForwardOnly)
 {
     m_bForwardOnly = _bForwardOnly;
 }
@@ -588,7 +588,7 @@ bool Camera::IsForwardOnly() const
 }
 
 void Camera::SetForwardOnlyY(
-    bool _bForwardOnlyY)
+    const bool _bForwardOnlyY)
 {
     m_bForwardOnlyY = _bForwardOnlyY;
 }
@@ -619,7 +619,7 @@ const Aabb& Camera::GetLockBounds() const
 }
 
 void Camera::SetTarget(
-    VECTOR2 _target)
+    const VECTOR2 _target)
 {
     m_target = _target;
 }

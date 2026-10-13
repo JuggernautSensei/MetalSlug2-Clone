@@ -22,7 +22,7 @@
 namespace
 {
 [[nodiscard]] bool IsIntegral_(
-    float _value)
+    const float _value)
 {
     return _value == std::floor(_value);
 }
@@ -336,8 +336,8 @@ public:
     [[nodiscard]] const IGameState* StagePtr() const { return m_pState; }
 
     void BotStep(
-        bool _bRight,
-        bool _bShoot)
+        const bool _bRight,
+        const bool _bShoot)
     {
         PlayerController& player = m_pState->GetPlayer();
         player.ExtendInvincibility(600);
@@ -381,7 +381,7 @@ public:
 
 private:
     [[nodiscard]] bool IsWallAhead_(
-        VECTOR2 _feet) const
+        const VECTOR2 _feet) const
     {
         constexpr float kRange = 46.f;
         for (const Wall& wall: m_pState->GetProps().GetWalls())

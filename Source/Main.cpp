@@ -8,8 +8,8 @@
 #include "Core/Tuning.h"
 
 int main(
-    int    _argc,
-    char** _argv)
+    const int _argc,
+    char**    _argv)
 {
     InstallCoreLogger();
     if (_argc > 1 && std::strcmp(_argv[1], "--dump-tuning") == 0)

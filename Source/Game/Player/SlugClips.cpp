@@ -38,13 +38,13 @@ constexpr DIRECT_ENUM_ARRAY<eSlugClip, SlugClipInfo> kClipTable = {
 };
 
 const SlugClipInfo& GetSlugClipInfo(
-    eSlugClip _clip)
+    const eSlugClip _clip)
 {
     return kClipTable[_clip];
 }
 
 int VulcanIndexFromAngle(
-    float _angleDeg)
+    const float _angleDeg)
 {
     const float steps = (135.f - _angleDeg) / kVulcanAngleStep;
     int         index = static_cast<int>(std::lround(steps)) % kVulcanAngleCount;
@@ -56,13 +56,13 @@ int VulcanIndexFromAngle(
 }
 
 String GetVulcanShotClipName(
-    int _index)
+    const int _index)
 {
     return String { std::format("Slug_Vulcan_Shot_{:02}", _index) };
 }
 
 String GetShellClipName(
-    int _row)
+    const int _row)
 {
     return String { std::format("Slug_Shell_{}", _row) };
 }

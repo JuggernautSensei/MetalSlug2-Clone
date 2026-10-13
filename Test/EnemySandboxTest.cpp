@@ -23,8 +23,8 @@ struct EnemyDirectState
 namespace
 {
 [[nodiscard]] int StepUntilPlayerDead_(
-    Sim& _sim,
-    int  _maxTicks)
+    Sim&      _sim,
+    const int _maxTicks)
 {
     for (int i = 0; i < _maxTicks; ++i)
     {

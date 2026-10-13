@@ -24,10 +24,10 @@ constexpr const char* kDecorJson = R"({
 namespace
 {
 [[nodiscard]] ParamValue Step_(
-    const char* _clip,
-    double      _seconds,
-    double      _vx,
-    bool        _bFlip = false)
+    const char*  _clip,
+    const double _seconds,
+    const double _vx,
+    const bool   _bFlip = false)
 {
     ParamValue step = ParamValue::MakeObject();
     step.Set("clip", ParamValue::MakeString(_clip));
@@ -44,7 +44,7 @@ namespace
 }
 
 [[nodiscard]] ParamValue MakeWalkParams_(
-    bool _bLoop)
+    const bool _bLoop)
 {
     ParamValue sequence = ParamValue::MakeArray();
     sequence.PushBack(Step_("A", 0.5, 60.0));
@@ -60,7 +60,7 @@ namespace
 void RunTicks_(
     DecorWorld&             _world,
     const AnimationLibrary& _lib,
-    int                     _ticks)
+    const int               _ticks)
 {
     for (int i = 0; i < _ticks; ++i)
     {

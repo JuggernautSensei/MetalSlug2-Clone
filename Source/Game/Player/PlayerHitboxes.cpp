@@ -7,7 +7,7 @@ constexpr float kInvSqrt2 = 0.70710678f;
 namespace
 {
 [[nodiscard]] const MuzzleSet& GetSet_(
-    ePose               _pose,
+    const ePose         _pose,
     const MuzzleTuning& _muzzle)
 {
     switch (_pose)
@@ -20,9 +20,9 @@ namespace
 }   // namespace
 
 Aabb MakeKnifeTriggerBox(
-    VECTOR2            _feet,
-    int                _facing,
-    float              _bodyHalfWidth,
+    const VECTOR2      _feet,
+    const int          _facing,
+    const float        _bodyHalfWidth,
     const KnifeTuning& _knife)
 {
     const float front = _bodyHalfWidth + _knife.range;
@@ -32,8 +32,8 @@ Aabb MakeKnifeTriggerBox(
 }
 
 Aabb MakeKnifeSwingBox(
-    VECTOR2            _feet,
-    int                _facing,
+    const VECTOR2      _feet,
+    const int          _facing,
     const KnifeTuning& _knife)
 {
     const float x0 = _facing > 0 ? _feet.x - _knife.back : _feet.x - _knife.reach;
@@ -42,10 +42,10 @@ Aabb MakeKnifeSwingBox(
 }
 
 VECTOR2 GetMuzzlePosition(
-    VECTOR2             _feet,
-    int                 _facing,
-    ePose               _pose,
-    eAim                _aim,
+    const VECTOR2       _feet,
+    const int           _facing,
+    const ePose         _pose,
+    const eAim          _aim,
     const MuzzleTuning& _muzzle)
 {
     const MuzzleSet& set = GetSet_(_pose, _muzzle);
@@ -63,8 +63,8 @@ VECTOR2 GetMuzzlePosition(
 }
 
 VECTOR2 GetAimDirection(
-    eAim _aim,
-    int  _facing)
+    const eAim _aim,
+    const int  _facing)
 {
     const float f = static_cast<float>(_facing);
     switch (_aim)
@@ -79,9 +79,9 @@ VECTOR2 GetAimDirection(
 }
 
 VECTOR2 GetBombReleasePosition(
-    VECTOR2           _feet,
-    int               _facing,
-    ePose             _pose,
+    const VECTOR2     _feet,
+    const int         _facing,
+    const ePose       _pose,
     const BombTuning& _bomb)
 {
     const float lowering = _pose == ePose::Crouch ? 14.f : 0.f;
@@ -89,8 +89,8 @@ VECTOR2 GetBombReleasePosition(
 }
 
 Aabb MakePlayerHurtboxBox(
-    VECTOR2           _feet,
-    ePose             _pose,
+    const VECTOR2     _feet,
+    const ePose       _pose,
     const BodyTuning& _body)
 {
     const VECTOR2 size = _pose == ePose::Crouch ? _body.hurtCrouch : _body.hurtStand;
@@ -98,7 +98,7 @@ Aabb MakePlayerHurtboxBox(
 }
 
 bool IsKnifeSwingActive(
-    int                _ticksSinceStart,
+    const int          _ticksSinceStart,
     const KnifeTuning& _knife)
 {
     return _ticksSinceStart >= _knife.activeFirstTick && _ticksSinceStart <= _knife.activeLastTick;

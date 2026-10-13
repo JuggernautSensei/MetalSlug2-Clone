@@ -42,7 +42,7 @@ struct AudioSystem::Backend
     }
 
     void UninitVoice(
-        size_t _slot)
+        const size_t _slot)
     {
         if (_slot < voiceInit.size() && voiceInit[_slot])
         {
@@ -75,7 +75,7 @@ namespace
 [[nodiscard]] ma_result InitSoundFromFile_(
     ma_engine*      _pEngine,
     const FilePath& _path,
-    ma_uint32       _flags,
+    const ma_uint32 _flags,
     ma_sound*       _pSound)
 {
 #if defined(_WIN32)
@@ -88,7 +88,7 @@ namespace
 [[nodiscard]] ma_result RegisterFile_(
     ma_engine*      _pEngine,
     const FilePath& _path,
-    ma_uint32       _flags)
+    const ma_uint32 _flags)
 {
 #if defined(_WIN32)
     return ma_resource_manager_register_file_w(ma_engine_get_resource_manager(_pEngine), _path.c_str(), _flags);
@@ -98,13 +98,13 @@ namespace
 }
 
 [[nodiscard]] float Clamp01_(
-    float _v)
+    const float _v)
 {
     return Clamp(_v, 0.f, 1.f);
 }
 }   // namespace
 
-AudioSystem::AudioSystem(bool _bRecord)
+AudioSystem::AudioSystem(const bool _bRecord)
     : bRecord(_bRecord)
 {
 }
@@ -203,7 +203,7 @@ void AudioSystem::Shutdown()
 }
 
 void AudioSystem::Update(
-    float _dtSec)
+    const float _dtSec)
 {
     if (!m_bInitialized)
     {
@@ -261,9 +261,9 @@ void AudioSystem::Update(
 }
 
 void AudioSystem::Play(
-    StringView _name,
-    float      _volume,
-    float      _pitchVariation)
+    const StringView _name,
+    const float      _volume,
+    const float      _pitchVariation)
 {
     if (bRecord)
     {
@@ -322,8 +322,8 @@ void AudioSystem::Play(
 }
 
 void AudioSystem::PlayBgm(
-    StringView _name,
-    bool       _bLoop)
+    const StringView _name,
+    const bool       _bLoop)
 {
     if (bRecord)
     {
@@ -333,8 +333,8 @@ void AudioSystem::PlayBgm(
 }
 
 void AudioSystem::PlayBgm_(
-    StringView _name,
-    bool       _bLoop)
+    const StringView _name,
+    const bool       _bLoop)
 {
     if (!m_bInitialized)
     {
@@ -386,7 +386,7 @@ void AudioSystem::StopBgm()
 }
 
 void AudioSystem::FadeOutBgm(
-    float _seconds)
+    const float _seconds)
 {
     if (bRecord)
     {
@@ -406,9 +406,9 @@ void AudioSystem::FadeOutBgm(
 }
 
 void AudioSystem::ChangeBgm(
-    StringView _name,
-    float      _fadeOutSec,
-    bool       _bLoop)
+    const StringView _name,
+    const float      _fadeOutSec,
+    const bool       _bLoop)
 {
     if (bRecord)
     {
@@ -480,7 +480,7 @@ void AudioSystem::ApplyBgmVolume_()
 }
 
 void AudioSystem::StopVoice_(
-    int _slot)
+    const int _slot)
 {
     if (m_bDevice && m_pBackend)
     {

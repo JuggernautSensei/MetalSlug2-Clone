@@ -7,13 +7,13 @@
 namespace
 {
 [[nodiscard]] Hitbox MakeHit_(
-    eTeam       _team,
-    eHitKind    _kind,
-    const Aabb& _box,
-    uint32_t    _id      = 1,
-    bool        _bPierce = false,
-    int         _damage  = 2,
-    uint32_t    _owner   = 100)
+    const eTeam    _team,
+    const eHitKind _kind,
+    const Aabb&    _box,
+    const uint32_t _id      = 1,
+    const bool     _bPierce = false,
+    const int      _damage  = 2,
+    const uint32_t _owner   = 100)
 {
     Hitbox hit;
     hit.box     = _box;
@@ -27,9 +27,9 @@ namespace
 }
 
 [[nodiscard]] Hurtbox MakeHurt_(
-    eTeam       _team,
-    const Aabb& _box,
-    uint32_t    _owner)
+    const eTeam    _team,
+    const Aabb&    _box,
+    const uint32_t _owner)
 {
     Hurtbox hurt;
     hurt.box   = _box;
@@ -39,10 +39,10 @@ namespace
 }
 
 [[nodiscard]] Aabb Box_(
-    float _x0,
-    float _y0,
-    float _x1,
-    float _y1)
+    const float _x0,
+    const float _y0,
+    const float _x1,
+    const float _y1)
 {
     return Aabb::FromMinMax({ _x0, _y0 }, { _x1, _y1 });
 }

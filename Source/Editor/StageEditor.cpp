@@ -29,7 +29,7 @@ struct Extractor
     Vector<StageEntity>&    entities;
     Vector<StageEditRect>*  pRects = nullptr;
 
-    [[nodiscard]] int Find(int _obj, StringView _key) const
+    [[nodiscard]] int Find(const int _obj, const StringView _key) const
     {
         if (_obj < 0 || n[static_cast<size_t>(_obj)].type != 'o')
         {
@@ -46,7 +46,7 @@ struct Extractor
         return -1;
     }
 
-    [[nodiscard]] String Str(int _node) const
+    [[nodiscard]] String Str(const int _node) const
     {
         if (_node >= 0 && n[static_cast<size_t>(_node)].type == 's')
         {
@@ -55,7 +55,7 @@ struct Extractor
         return String {};
     }
 
-    [[nodiscard]] bool Num(int _node, double& _out) const
+    [[nodiscard]] bool Num(const int _node, double& _out) const
     {
         if (_node < 0 || n[static_cast<size_t>(_node)].type != 'n')
         {
@@ -65,7 +65,7 @@ struct Extractor
         return std::from_chars(s.data(), s.data() + s.size(), _out).ec == std::errc {};
     }
 
-    void AddRect(int _obj, const String& _type)
+    void AddRect(const int _obj, const String& _type)
     {
         const int r = Find(_obj, "rect");
         if (r < 0 || n[static_cast<size_t>(r)].type != 'a' || n[static_cast<size_t>(r)].kids.size() != 4)
@@ -93,7 +93,7 @@ struct Extractor
         pRects->push_back(rect);
     }
 
-    void AddEntity(int _obj, int _section, const String& _where, bool _bPlayer)
+    void AddEntity(const int _obj, const int _section, const String& _where, const bool _bPlayer)
     {
         StageEntity e;
         e.def  = _bPlayer ? String { "player" } : Str(Find(_obj, "def"));
@@ -154,7 +154,7 @@ struct Extractor
         entities.push_back(e);
     }
 
-    void Action(int _obj, int _section, const String& _where)
+    void Action(const int _obj, const int _section, const String& _where)
     {
         const String type = Str(Find(_obj, "type"));
         if (type == "spawn")
@@ -195,7 +195,7 @@ namespace
 {
 [[nodiscard]] String WsBefore_(
     const String& _text,
-    int           _pos)
+    const int     _pos)
 {
     int start = _pos;
     while (start > 0 && (_text[static_cast<size_t>(start - 1)] == ' ' || _text[static_cast<size_t>(start - 1)] == '\t' || _text[static_cast<size_t>(start - 1)] == '\n' || _text[static_cast<size_t>(start - 1)] == '\r'))
@@ -206,7 +206,7 @@ namespace
 }
 
 [[nodiscard]] bool IsWs_(
-    char _c)
+    const char _c)
 {
     return _c == ' ' || _c == '\t' || _c == '\n' || _c == '\r';
 }
@@ -296,8 +296,8 @@ bool ComboStr_(
 }
 
 [[nodiscard]] double Snap_(
-    double _value,
-    double _step)
+    const double _value,
+    const double _step)
 {
     return std::round(_value / _step) * _step;
 }
@@ -305,7 +305,7 @@ bool ComboStr_(
 [[nodiscard]] int ReadInt_(
     const JsonReader& _r,
     const char*       _key,
-    int               _default)
+    const int         _default)
 {
     const Result<int> v = TryRead<int>(_r, _key);
     return v ? v.GetValue() : _default;
@@ -375,7 +375,7 @@ bool ComboStr_(
 [[nodiscard]] String IdleClip_(
     const JsonReader& _defs,
     const JsonReader& _def,
-    int               _depth)
+    const int         _depth)
 {
     const Result<JsonReader> clips = TryField(_def, "clips");
     if (clips && clips->IsObject())
@@ -476,7 +476,7 @@ bool StageDocument::CanUndo() const
 }
 
 String StageDocument::FormatNumber(
-    double _value)
+    const double _value)
 {
     ARRAY<char, 64>      buf = {};
     std::to_chars_result r   = {};
@@ -588,7 +588,7 @@ bool StageDocument::Reparse_()
 }
 
 Result<void> StageDocument::LoadFromText(
-    StringView _json)
+    const StringView _json)
 {
     if (!JsonDeserializer::Load(_json, kJsonBom))
     {
@@ -630,7 +630,7 @@ Result<void> StageDocument::Save(
 }
 
 int StageDocument::FindEntityAt_(
-    int _begin) const
+    const int _begin) const
 {
     for (size_t i = 0; i < m_entities.size(); ++i)
     {
@@ -643,17 +643,17 @@ int StageDocument::FindEntityAt_(
 }
 
 bool StageDocument::IsIdUsed_(
-    StringView _id) const
+    const StringView _id) const
 {
     const String quoted = "\"" + String { _id } + "\"";
     return m_text.find(quoted) != String::npos;
 }
 
 bool StageDocument::SetPosition(
-    int    _entity,
-    double _x,
-    double _y,
-    bool   _bUndo)
+    const int    _entity,
+    const double _x,
+    const double _y,
+    const bool   _bUndo)
 {
     if (_entity < 0 || _entity >= static_cast<int>(m_entities.size()))
     {
@@ -693,11 +693,11 @@ bool StageDocument::SetPosition(
 }
 
 int StageDocument::Add(
-    StringView _def,
-    StringView _kind,
-    int        _section,
-    double     _x,
-    double     _y)
+    const StringView _def,
+    const StringView _kind,
+    const int        _section,
+    const double     _x,
+    const double     _y)
 {
     if (_section < 0 || _section >= static_cast<int>(m_sections.size()) || m_sections[static_cast<size_t>(_section)].arrayBegin < 0)
     {
@@ -738,9 +738,9 @@ int StageDocument::Add(
 }
 
 int StageDocument::Duplicate(
-    int    _entity,
-    double _dx,
-    double _dy)
+    const int    _entity,
+    const double _dx,
+    const double _dy)
 {
     if (_entity < 0 || _entity >= static_cast<int>(m_entities.size()) || !m_entities[static_cast<size_t>(_entity)].bCanCopy)
     {
@@ -796,7 +796,7 @@ int StageDocument::Duplicate(
 }
 
 bool StageDocument::Delete(
-    int _entity)
+    const int _entity)
 {
     if (_entity < 0 || _entity >= static_cast<int>(m_entities.size()) || !m_entities[static_cast<size_t>(_entity)].bCanCopy)
     {
@@ -852,7 +852,7 @@ bool StageDocument::Delete(
 
 bool StageDocument::Patch_(
     Vector<Replacement>& _list,
-    bool                 _bUndo)
+    const bool           _bUndo)
 {
     if (_list.empty())
     {
@@ -878,10 +878,10 @@ bool StageDocument::Patch_(
 }
 
 bool StageDocument::SetZ(
-    int  _entity,
-    int  _z,
-    int  _defaultZ,
-    bool _bUndo)
+    const int  _entity,
+    const int  _z,
+    const int  _defaultZ,
+    const bool _bUndo)
 {
     if (_entity < 0 || _entity >= static_cast<int>(m_entities.size()))
     {
@@ -937,9 +937,9 @@ bool StageDocument::SetZ(
 }
 
 bool StageDocument::UnlockGround(
-    int    _entity,
-    double _y,
-    bool   _bUndo)
+    const int    _entity,
+    const double _y,
+    const bool   _bUndo)
 {
     if (_entity < 0 || _entity >= static_cast<int>(m_entities.size()))
     {
@@ -965,12 +965,12 @@ bool StageDocument::UnlockGround(
 }
 
 bool StageDocument::MoveSection(
-    int    _section,
-    double _dx,
-    bool   _bTrigger,
-    bool   _bRects,
-    bool   _bSpawns,
-    bool   _bUndo)
+    const int    _section,
+    const double _dx,
+    const bool   _bTrigger,
+    const bool   _bRects,
+    const bool   _bSpawns,
+    const bool   _bUndo)
 {
     if (_section < 0 || _section >= static_cast<int>(m_sections.size()))
     {
@@ -1010,9 +1010,9 @@ bool StageDocument::MoveSection(
 }
 
 bool StageDocument::SetTriggerX(
-    int    _section,
-    double _x,
-    bool   _bUndo)
+    const int    _section,
+    const double _x,
+    const bool   _bUndo)
 {
     if (_section < 0 || _section >= static_cast<int>(m_sections.size()))
     {
@@ -1028,10 +1028,10 @@ bool StageDocument::SetTriggerX(
 }
 
 bool StageDocument::SetRect(
-    int                     _section,
-    int                     _rect,
+    const int               _section,
+    const int               _rect,
     const ARRAY<double, 4>& _v,
-    bool                    _bUndo)
+    const bool              _bUndo)
 {
     if (_section < 0 || _section >= static_cast<int>(m_sections.size()) || _rect < 0 || _rect >= static_cast<int>(m_sections[static_cast<size_t>(_section)].rects.size()))
     {
@@ -1050,10 +1050,10 @@ bool StageDocument::SetRect(
 }
 
 bool StageDocument::SetGlide(
-    int    _section,
-    int    _rect,
-    double _glide,
-    bool   _bUndo)
+    const int    _section,
+    const int    _rect,
+    const double _glide,
+    const bool   _bUndo)
 {
     if (_section < 0 || _section >= static_cast<int>(m_sections.size()) || _rect < 0 || _rect >= static_cast<int>(m_sections[static_cast<size_t>(_section)].rects.size()))
     {
@@ -1118,7 +1118,7 @@ void StageEditor::Shutdown()
 }
 
 void StageEditor::SelectStage(
-    StringView _name)
+    const StringView _name)
 {
     if (std::find(m_stages.begin(), m_stages.end(), _name) != m_stages.end() && _name != m_stage)
     {
@@ -1302,8 +1302,8 @@ void StageEditor::LoadFrames_()
 }
 
 String StageEditor::SpriteName_(
-    StringView _kind,
-    StringView _def) const
+    const StringView _kind,
+    const StringView _def) const
 {
     String group;
     if (_kind == "enemy" || _kind == "npc")
@@ -1351,9 +1351,9 @@ const StageEditor::Page* StageEditor::GetPage_(
 bool StageEditor::DrawSprite_(
     ImDrawList*        _pDraw,
     const StageEntity& _e,
-    float              _px,
-    float              _py,
-    bool               _bSelected)
+    const float        _px,
+    const float        _py,
+    const bool         _bSelected)
 {
     String name = SpriteName_(_e.kind, _e.def);
     if (name.empty())
@@ -1413,13 +1413,13 @@ bool StageEditor::DrawSprite_(
 }
 
 bool StageEditor::PickSection_(
-    float _mx,
-    float _my,
-    float _originX,
-    float _originY,
-    int&  _section,
-    int&  _rect,
-    int&  _mask) const
+    const float _mx,
+    const float _my,
+    const float _originX,
+    const float _originY,
+    int&        _section,
+    int&        _rect,
+    int&        _mask) const
 {
     constexpr float              tol      = 5.f;
     Span<const StageEditSection> sections = m_doc.GetSections();
@@ -1470,7 +1470,7 @@ bool StageEditor::PickSection_(
 
 void StageEditor::LoadStrips_(
     const FilePath& _path,
-    bool            _bGroundMask,
+    const bool      _bGroundMask,
     Vector<Strip>&  _out,
     int&            _w,
     int&            _h)
@@ -1595,8 +1595,8 @@ void StageEditor::Save_()
 }
 
 int StageEditor::GroundY_(
-    int _x,
-    int _fromY) const
+    const int _x,
+    const int _fromY) const
 {
     if (_x < 0 || _x >= m_groundW)
     {
@@ -1644,7 +1644,7 @@ double StageEditor::MarkerY_(
 }
 
 const char* StageEditor::DefaultKind_(
-    StringView _def) const
+    const StringView _def) const
 {
     for (const StageEntity& e: m_doc.GetEntities())
     {
@@ -1664,8 +1664,8 @@ const char* StageEditor::DefaultKind_(
 }
 
 void StageEditor::Select_(
-    int  _entity,
-    bool _bCenter)
+    const int  _entity,
+    const bool _bCenter)
 {
     m_selected = _entity;
     if (_entity >= 0)
@@ -2127,7 +2127,7 @@ void StageEditor::DrawView_()
     {
         order.push_back(i);
     }
-    std::stable_sort(order.begin(), order.end(), [&](int _a, int _b) {
+    std::stable_sort(order.begin(), order.end(), [&](const int _a, const int _b) {
         const StageEntity& a  = entities[static_cast<size_t>(_a)];
         const StageEntity& b  = entities[static_cast<size_t>(_b)];
         const int          za = EffectiveZ_(a);

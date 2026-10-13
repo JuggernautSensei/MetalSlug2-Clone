@@ -23,14 +23,14 @@ constexpr ARRAY<const char*, 6> kHitboxFileNames = { "Tuning.json", "Enemies.jso
 
 bool IsNumberNode_(
     const Vector<JsonNode>& _nodes,
-    int                     _index)
+    const int               _index)
 {
     return _index >= 0 && _nodes[static_cast<size_t>(_index)].type == 'n';
 }
 
 int FindKey_(
-    const JsonNode& _object,
-    StringView      _key)
+    const JsonNode&  _object,
+    const StringView _key)
 {
     for (size_t i = 0; i < _object.keys.size(); ++i)
     {
@@ -156,7 +156,7 @@ HitboxTitle MakeHitboxTitle_(
 }
 
 RGBA HitboxKindColor_(
-    eHitboxKind _kind)
+    const eHitboxKind _kind)
 {
     switch (_kind)
     {
@@ -170,14 +170,14 @@ RGBA HitboxKindColor_(
 }   // namespace
 
 bool HitboxEntry::HasField(
-    eHitboxField _field) const
+    const eHitboxField _field) const
 {
     return begin[static_cast<size_t>(_field)] >= 0;
 }
 
 Result<void> HitboxDocument::Load(
-    const FilePath& _path,
-    StringView      _defaultOwner)
+    const FilePath&  _path,
+    const StringView _defaultOwner)
 {
     const Result<String> text = ReadFileText(_path);
     if (!text)
@@ -188,8 +188,8 @@ Result<void> HitboxDocument::Load(
 }
 
 Result<void> HitboxDocument::LoadFromText(
-    StringView _json,
-    StringView _defaultOwner)
+    const StringView _json,
+    const StringView _defaultOwner)
 {
     m_text         = String { _json };
     m_savedText    = m_text;
@@ -217,9 +217,9 @@ Result<void> HitboxDocument::Save(
 }
 
 bool HitboxDocument::SetValue(
-    int          _entry,
-    eHitboxField _field,
-    double       _value)
+    const int          _entry,
+    const eHitboxField _field,
+    const double       _value)
 {
     if (_entry < 0 || _entry >= static_cast<int>(m_entries.size()))
     {
@@ -240,7 +240,7 @@ bool HitboxDocument::SetValue(
 }
 
 bool HitboxDocument::ApplyExtraBoxes(
-    StringView                 _def,
+    const StringView           _def,
     const Vector<ExtraBoxDef>& _boxes)
 {
     JsonScanner scanner { m_text };
@@ -352,7 +352,7 @@ bool HitboxDocument::Reparse_()
 
 void HitboxDocument::Collect_(
     const Vector<JsonNode>& _nodes,
-    int                     _index,
+    const int               _index,
     const String&           _path,
     const String&           _owner)
 {

@@ -39,9 +39,9 @@ namespace
 }
 
 void Go_(
-    Enemy&           _e,
-    const EnemyDef&  _def,
-    eMissleTankState _state)
+    Enemy&                 _e,
+    const EnemyDef&        _def,
+    const eMissleTankState _state)
 {
     EnterState(_e, static_cast<int>(_state));
     SetClip(_e, ClipOf_(_e, _def.missleTank), true);

@@ -10,7 +10,7 @@ constexpr float kGround = 378.f;
 namespace
 {
 [[nodiscard]] SpawnParams Facing_(
-    int _facing)
+    const int _facing)
 {
     SpawnParams params;
     params.facing = _facing;
@@ -27,10 +27,10 @@ struct SpawnLog
 namespace
 {
 void StepAndLog_(
-    VehicleRig& _rig,
-    EnemyHandle _owner,
-    SpawnLog&   _log,
-    int         _count)
+    VehicleRig&       _rig,
+    const EnemyHandle _owner,
+    SpawnLog&         _log,
+    const int         _count)
 {
     for (int i = 0; i < _count; ++i)
     {
@@ -47,17 +47,17 @@ void StepAndLog_(
 }
 
 [[nodiscard]] EnemyHandle SpawnJeepFacingThePlayer_(
-    VehicleRig& _rig,
-    VECTOR2     _player,
-    float       _x)
+    VehicleRig&   _rig,
+    const VECTOR2 _player,
+    const float   _x)
 {
     _rig.SetPlayer(_player);
     return _rig.Spawn("jeep", { _x, kGround }, Facing_(-1));
 }
 
 [[nodiscard]] float GrenadeX_(
-    VehicleRig& _rig,
-    EnemyHandle _owner)
+    VehicleRig&       _rig,
+    const EnemyHandle _owner)
 {
     for (const Shot& shot: _rig.Projectiles().GetShots())
     {
@@ -526,11 +526,11 @@ TEST(VehicleSarubia, DeathExplodesAtOnceAndLeavesAfterTwoSeconds)
 namespace
 {
 void CheckDropSpawnOffsets_(
-    VehicleRig& _rig,
-    EnemyHandle _h,
-    float       _offsetX,
-    int         _steps,
-    int&        _outDrops)
+    VehicleRig&       _rig,
+    const EnemyHandle _h,
+    const float       _offsetX,
+    const int         _steps,
+    int&              _outDrops)
 {
     for (int i = 0; i < _steps; ++i)
     {
@@ -606,9 +606,9 @@ TEST(VehicleHitFlash, LethalHitDoesNotFlash)
 namespace
 {
 ShotSpawn MakeFallingShell_(
-    float _x,
-    float _groundProbe,
-    float _maxFall = 3000.f)
+    const float _x,
+    const float _groundProbe,
+    const float _maxFall = 3000.f)
 {
     ShotSpawn spawn;
     spawn.position        = { _x, 200.f };
@@ -624,11 +624,11 @@ ShotSpawn MakeFallingShell_(
 }
 
 bool RunUntilBurst_(
-    ProjectileSystem&    _ps,
-    CombatSystem&        _combat,
-    const GroundMap*     _pGround,
-    Span<const Platform> _platforms,
-    VECTOR2&             _outFx)
+    ProjectileSystem&          _ps,
+    CombatSystem&              _combat,
+    const GroundMap*           _pGround,
+    const Span<const Platform> _platforms,
+    VECTOR2&                   _outFx)
 {
     for (int i = 0; i < 600; ++i)
     {

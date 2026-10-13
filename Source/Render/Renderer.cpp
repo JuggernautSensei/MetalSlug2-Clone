@@ -22,7 +22,7 @@ Renderer::~Renderer()
 
 Result<void> Renderer::Init(
     const char* _title,
-    int         _windowScale)
+    const int   _windowScale)
 {
     const int scale = _windowScale < 1 ? 1 : _windowScale;
 
@@ -65,7 +65,7 @@ void Renderer::Shutdown()
 }
 
 void Renderer::BeginFrame(
-    RGBA _clearColor)
+    const RGBA _clearColor)
 {
     SDL_SetRenderDrawColor(m_pRenderer, _clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
     SDL_RenderClear(m_pRenderer);
@@ -77,9 +77,9 @@ void Renderer::EndFrame()
 }
 
 void Renderer::FillRect(
-    VECTOR2 _topLeft,
-    VECTOR2 _size,
-    RGBA    _color)
+    const VECTOR2 _topLeft,
+    const VECTOR2 _size,
+    const RGBA    _color)
 {
     const SDL_FRect rect = { std::floor(_topLeft.x), std::floor(_topLeft.y), std::floor(_size.x), std::floor(_size.y) };
     SDL_SetRenderDrawColor(m_pRenderer, _color.r, _color.g, _color.b, _color.a);
@@ -87,9 +87,9 @@ void Renderer::FillRect(
 }
 
 void Renderer::DrawRect(
-    VECTOR2 _topLeft,
-    VECTOR2 _size,
-    RGBA    _color)
+    const VECTOR2 _topLeft,
+    const VECTOR2 _size,
+    const RGBA    _color)
 {
     const SDL_FRect rect = { std::floor(_topLeft.x), std::floor(_topLeft.y), std::floor(_size.x), std::floor(_size.y) };
     SDL_SetRenderDrawColor(m_pRenderer, _color.r, _color.g, _color.b, _color.a);
@@ -97,18 +97,18 @@ void Renderer::DrawRect(
 }
 
 void Renderer::DrawLine(
-    VECTOR2 _from,
-    VECTOR2 _to,
-    RGBA    _color)
+    const VECTOR2 _from,
+    const VECTOR2 _to,
+    const RGBA    _color)
 {
     SDL_SetRenderDrawColor(m_pRenderer, _color.r, _color.g, _color.b, _color.a);
     SDL_RenderLine(m_pRenderer, std::floor(_from.x) + 0.5f, std::floor(_from.y) + 0.5f, std::floor(_to.x) + 0.5f, std::floor(_to.y) + 0.5f);
 }
 
 void Renderer::DrawDebugText(
-    VECTOR2    _topLeft,
-    StringView _text,
-    RGBA       _color)
+    const VECTOR2    _topLeft,
+    const StringView _text,
+    const RGBA       _color)
 {
     SDL_SetRenderDrawColor(m_pRenderer, _color.r, _color.g, _color.b, _color.a);
 
@@ -167,17 +167,17 @@ Result<void> Renderer::SaveScreenshotBmp(
 }
 
 VECTOR2 ToScreen(
-    VECTOR2 _world,
-    VECTOR2 _camera)
+    const VECTOR2 _world,
+    const VECTOR2 _camera)
 {
     return { std::floor(_world.x - _camera.x), std::floor(_world.y - _camera.y) };
 }
 
 void DrawBox(
-    Renderer&   _renderer,
-    const Aabb& _box,
-    VECTOR2     _camera,
-    RGBA        _color)
+    Renderer&     _renderer,
+    const Aabb&   _box,
+    const VECTOR2 _camera,
+    const RGBA    _color)
 {
     const VECTOR2 topLeft     = ToScreen(_box.min, _camera);
     const VECTOR2 bottomRight = ToScreen(_box.max, _camera);

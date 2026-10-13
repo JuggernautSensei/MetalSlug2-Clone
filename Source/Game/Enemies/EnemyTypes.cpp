@@ -1,21 +1,21 @@
 #include "Game/Enemies/EnemyTypes.h"
 
 uint32_t MakePartOwner(
-    uint32_t _enemyId,
-    uint32_t _partIndex)
+    const uint32_t _enemyId,
+    const uint32_t _partIndex)
 {
     return (_enemyId & kEnemyIdMask) | ((_partIndex + 1u) << 24);
 }
 
 int GetPartIndex(
-    uint32_t _owner)
+    const uint32_t _owner)
 {
     const uint32_t part = (_owner >> 24) & 0x3Fu;
     return part == 0u ? -1 : static_cast<int>(part) - 1;
 }
 
 bool IsEnemyOwner(
-    uint32_t _owner)
+    const uint32_t _owner)
 {
     const uint32_t id = _owner & ~kShieldOwnerBit;
     return id >= kEnemyOwnerBase && id < kShieldOwnerBit;
@@ -44,7 +44,7 @@ float HitFlashAmount(
 
 float PartFlashAmount(
     const Enemy& _e,
-    int          _part)
+    const int    _part)
 {
     if (_part < 0 || _part >= kEnemyFlashPartCount)
     {
@@ -54,8 +54,8 @@ float PartFlashAmount(
 }
 
 void TriggerPartHitFlash(
-    Enemy& _e,
-    int    _part)
+    Enemy&    _e,
+    const int _part)
 {
     if (_part >= 0 && _part < kEnemyFlashPartCount)
     {

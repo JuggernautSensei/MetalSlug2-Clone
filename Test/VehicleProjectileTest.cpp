@@ -8,9 +8,9 @@ constexpr float kFloorY = 378.f;
 namespace
 {
 [[nodiscard]] ShotSpawn MakeRoller_(
-    float _dirX,
-    int   _rollTicks,
-    bool  _bExpireFx)
+    const float _dirX,
+    const int   _rollTicks,
+    const bool  _bExpireFx)
 {
     ShotSpawn spawn;
     spawn.team            = eTeam::Enemy;
@@ -38,7 +38,7 @@ struct Field
     ProjectileSystem ps     = {};
 
     void Step(
-        int _count)
+        const int _count)
     {
         for (int i = 0; i < _count; ++i)
         {

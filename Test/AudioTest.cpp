@@ -401,7 +401,7 @@ struct AudioSim
     }
 
     void RunScript(
-        int _ticks)
+        const int _ticks)
     {
         for (int t = 0; t < _ticks; ++t)
         {

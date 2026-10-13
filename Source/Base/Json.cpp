@@ -11,8 +11,8 @@ constexpr StringView kMissing = "필수 값이 없습니다";
 // 키가 없으면 false
 [[nodiscard]] bool Probe_(
     const JsonReader& _object,
-    StringView        _key,
-    bool              _bRequired,
+    const StringView  _key,
+    const bool        _bRequired,
     StringView&       _reason,
     bool* const       _pFound)
 {
@@ -30,8 +30,8 @@ constexpr StringView kMissing = "필수 값이 없습니다";
 }   // namespace
 
 Result<JsonDeserializer> LoadJsonFile(
-    const FilePath&             _path,
-    jug::Flags<eJsonLoadOption> _flags)
+    const FilePath&                   _path,
+    const jug::Flags<eJsonLoadOption> _flags)
 {
     const ScopedPhaseTimer timer { "json", _path.filename().string() };
     return JsonDeserializer::LoadFromFile(_path, _flags);
@@ -39,14 +39,14 @@ Result<JsonDeserializer> LoadJsonFile(
 
 bool HasKey(
     const JsonReader& _object,
-    StringView        _key)
+    const StringView  _key)
 {
     return _object.IsObject() && _object.HasField(_key);
 }
 
 Result<JsonReader> TryField(
     const JsonReader& _object,
-    StringView        _key)
+    const StringView  _key)
 {
     if (!HasKey(_object, _key))
     {
@@ -57,7 +57,7 @@ Result<JsonReader> TryField(
 
 bool ReadInt(
     const JsonReader& _object,
-    StringView        _key,
+    const StringView  _key,
     int&              _out)
 {
     const Result<double> value = _object.ReadField<double>(_key);
@@ -71,8 +71,8 @@ bool ReadInt(
 
 bool ReadNumberField(
     const JsonReader& _object,
-    StringView        _key,
-    bool              _bRequired,
+    const StringView  _key,
+    const bool        _bRequired,
     double&           _out,
     StringView&       _reason,
     bool* const       _pFound)
@@ -93,8 +93,8 @@ bool ReadNumberField(
 
 bool ReadFloatField(
     const JsonReader& _object,
-    StringView        _key,
-    bool              _bRequired,
+    const StringView  _key,
+    const bool        _bRequired,
     float&            _out,
     StringView&       _reason)
 {
@@ -113,8 +113,8 @@ bool ReadFloatField(
 
 bool ReadBoolField(
     const JsonReader& _object,
-    StringView        _key,
-    bool              _bRequired,
+    const StringView  _key,
+    const bool        _bRequired,
     bool&             _out,
     StringView&       _reason,
     bool* const       _pFound)
@@ -135,8 +135,8 @@ bool ReadBoolField(
 
 bool ReadStringField(
     const JsonReader& _object,
-    StringView        _key,
-    bool              _bRequired,
+    const StringView  _key,
+    const bool        _bRequired,
     String&           _out,
     StringView&       _reason,
     bool* const       _pFound)
@@ -157,8 +157,8 @@ bool ReadStringField(
 
 bool ReadVec2Field(
     const JsonReader& _object,
-    StringView        _key,
-    bool              _bRequired,
+    const StringView  _key,
+    const bool        _bRequired,
     VECTOR2&          _out,
     StringView&       _reason,
     bool* const       _pFound)
@@ -189,9 +189,9 @@ bool ReadVec2Field(
 }
 
 bool CheckJsonKeys(
-    const JsonReader&      _object,
-    Span<const StringView> _allowed,
-    StringView&            _badKey)
+    const JsonReader&            _object,
+    const Span<const StringView> _allowed,
+    StringView&                  _badKey)
 {
     for (const std::pair<StringView, JsonReader> member: _object.GetObject())
     {

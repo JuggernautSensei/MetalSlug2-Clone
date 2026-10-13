@@ -13,8 +13,8 @@ constexpr ARRAY<int, 4> kDirX = { 0, 0, -1, 1 };
 constexpr ARRAY<int, 4> kDirY = { -1, 1, 0, 0 };
 
 BannerSpec MakeBannerSpec(
-    StringView _text,
-    float      _seconds)
+    const StringView _text,
+    const float      _seconds)
 {
     constexpr int kTicksPerSec = 60;
 
@@ -30,10 +30,10 @@ BannerSpec MakeBannerSpec(
 }
 
 float ComputeBannerAlpha(
-    int _elapsed,
-    int _fadeIn,
-    int _hold,
-    int _fadeOut)
+    const int _elapsed,
+    const int _fadeIn,
+    const int _hold,
+    const int _fadeOut)
 {
     const int total = _fadeIn + _hold + _fadeOut;
     if (_elapsed < 0 || _elapsed >= total)
@@ -52,11 +52,11 @@ float ComputeBannerAlpha(
 }
 
 GlyphPose ComputeMissionGlyphPose(
-    int _elapsed,
-    int _fadeIn,
-    int _hold,
-    int _fadeOut,
-    int _index)
+    const int _elapsed,
+    const int _fadeIn,
+    const int _hold,
+    const int _fadeOut,
+    const int _index)
 {
     const int dir   = ((_index % 4) + 4) % 4;
     const int outAt = _fadeIn + _hold;
@@ -113,7 +113,7 @@ GlyphPose ComputeMissionGlyphPose(
 }
 
 String MakeMissionGlyphName(
-    char _ch)
+    const char _ch)
 {
     String     name = "UI_Mission_";
     const char up   = (_ch >= 'a' && _ch <= 'z') ? static_cast<char>(_ch - 'a' + 'A') : _ch;

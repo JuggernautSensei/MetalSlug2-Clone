@@ -36,15 +36,15 @@ void LoadBossLib_(
 }
 
 [[nodiscard]] uint32_t PartOwner_(
-    EnemyHandle _handle,
-    int         _part)
+    const EnemyHandle _handle,
+    const int         _part)
 {
     return MakePartOwner(_handle.id, static_cast<uint32_t>(_part));
 }
 
 void KillAllTurrets_(
-    EnemyRig&   _rig,
-    EnemyHandle _boss)
+    EnemyRig&         _rig,
+    const EnemyHandle _boss)
 {
     for (int part = 0; part < kBigShieeTurretCount; ++part)
     {
@@ -479,11 +479,12 @@ TEST(BigShiee, ChuteDropsLandInsideTheScrollingViewNearTheLeftEdge)
     EXPECT_EQ(found, 1);
 }
 
+
 namespace
 {
 [[nodiscard]] EnemyHandle StartCannon_(
-    EnemyRig& _rig,
-    VECTOR2   _playerFeet)
+    EnemyRig&     _rig,
+    const VECTOR2 _playerFeet)
 {
     LoadBossLib_(_rig);
     const EnemyHandle boss = SpawnBoss_(_rig);
@@ -494,9 +495,9 @@ namespace
 }
 
 void PlacePlayerAtAngle_(
-    EnemyRig&   _rig,
-    EnemyHandle _boss,
-    float       _deg)
+    EnemyRig&         _rig,
+    const EnemyHandle _boss,
+    const float       _deg)
 {
     const Enemy*    pBoss  = _rig.E(_boss);
     const EnemyDef& def    = _rig.Lib().Get(_rig.Lib().FindIndex("bigshiee"));
@@ -507,15 +508,15 @@ void PlacePlayerAtAngle_(
 }
 
 int CannonYaw_(
-    const EnemyRig& _rig,
-    EnemyHandle     _boss)
+    const EnemyRig&   _rig,
+    const EnemyHandle _boss)
 {
     return _rig.E(_boss)->ext[kBigShieeExtCannonYaw];
 }
 
 eBigShieeCannonMode CannonMode_(
-    const EnemyRig& _rig,
-    EnemyHandle     _boss)
+    const EnemyRig&   _rig,
+    const EnemyHandle _boss)
 {
     return static_cast<eBigShieeCannonMode>(_rig.E(_boss)->ext[kBigShieeExtCannonMode]);
 }
@@ -773,6 +774,7 @@ TEST(BigShiee, ReadyHeadFollowsThePlayerAngleWithoutMirroring)
     }
 }
 
+
 TEST(BigShieeSync, LidOpensFirstThenCannonRisesThenMissilesFireOnFootageCadence)
 {
     SLUG_REQUIRE_BAKED(anims);
@@ -829,12 +831,13 @@ TEST(BigShieeSync, LidOpensFirstThenCannonRisesThenMissilesFireOnFootageCadence)
     EXPECT_NEAR(missileTicks[2] - missileTicks[1], SecToTicks(def.bigShiee.missileIntervalSec), 3);
 }
 
+
 namespace
 {
 [[nodiscard]] float BossScreenX_(
-    const EnemyRig& _rig,
-    EnemyHandle     _boss,
-    float           _camLeft)
+    const EnemyRig&   _rig,
+    const EnemyHandle _boss,
+    const float       _camLeft)
 {
     return _rig.E(_boss)->body.position.x - _camLeft;
 }
@@ -931,13 +934,14 @@ TEST(BigShieeScroll, ReversesOnceAfterTheCannonDeploys)
     EXPECT_NEAR(maxBack, c.reverseSpeed / 60.f, 0.2f);
 }
 
+
 namespace
 {
 [[nodiscard]] int ExpectedAimPos_(
     const Enemy&             _boss,
     const BigShieeCfg&       _c,
     const BigShieeTurretCfg& _turret,
-    float                    _playerX)
+    const float              _playerX)
 {
     const float dx = _playerX - (_boss.body.position.x + _turret.anchor.x + _turret.muzzle.x);
     if (dx < -_c.turretAimBandPx)
@@ -948,8 +952,8 @@ namespace
 }
 
 [[nodiscard]] ARRAY<int, 3> RunTurretAim_(
-    float  _anchorX,
-    float& _outShellVx)
+    const float _anchorX,
+    float&      _outShellVx)
 {
     EnemyRig rig({ kCamLeft + 100.f, 378.f }, kCamLeft);
     LoadBossLib_(rig);
@@ -1046,6 +1050,7 @@ TEST(BigShieeTurretAim, IdleTurretsTrackThePlayerOneTurnFrameAtATime)
     EXPECT_EQ(lastPos, 0) << "플레이어가 왼쪽이면 결국 왼쪽 (Turn 프레임 0)";
 }
 
+
 TEST(BigShieeMissile, AcceleratesFromMuzzleToGround)
 {
     EnemyRig rig({ kCamLeft + 100.f, 378.f }, kCamLeft);
@@ -1133,10 +1138,10 @@ TEST(BigShieeCasing, HopsSlightlyThenFallsToTheGroundLineAtTwoPointFourScale)
 namespace
 {
 [[nodiscard]] VECTOR2 FirstMissileAt_(
-    float _dx,
-    float _dy,
-    float _deg,
-    int&  _outRow)
+    const float _dx,
+    const float _dy,
+    const float _deg,
+    int&        _outRow)
 {
     EnemyRig          rig({ kCamLeft + 100.f, 378.f }, kCamLeft);
     const EnemyHandle boss   = StartCannon_(rig, { kCamLeft + 100.f, 378.f });

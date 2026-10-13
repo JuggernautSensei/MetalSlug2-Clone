@@ -40,9 +40,9 @@ void UpdatePosture_(
 }
 
 void Go_(
-    Enemy&          _e,
-    const EnemyDef& _def,
-    eFlyingState    _state)
+    Enemy&             _e,
+    const EnemyDef&    _def,
+    const eFlyingState _state)
 {
     const FlyingBzkCfg& cfg = _def.flyingBzk;
     EnterState(_e, static_cast<int>(_state));

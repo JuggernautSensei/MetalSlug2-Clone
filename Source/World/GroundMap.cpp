@@ -9,15 +9,15 @@
 namespace
 {
 [[nodiscard]] size_t StrideOf_(
-    int _width)
+    const int _width)
 {
     return (static_cast<size_t>(_width) + 7) / 8;
 }
 }   // namespace
 
 GroundMap GroundMap::MakeEmpty(
-    int _width,
-    int _height)
+    const int _width,
+    const int _height)
 {
     JUG_ASSERT(_width >= 0 && _height >= 0, "맵 크기는 음수일 수 없다.\n");
 
@@ -30,8 +30,8 @@ GroundMap GroundMap::MakeEmpty(
 }
 
 GroundMap GroundMap::MakeFromRows(
-    Span<const StringView> _rows,
-    char                   _solid)
+    const Span<const StringView> _rows,
+    const char                   _solid)
 {
     size_t width = 0;
     for (const StringView row: _rows)
@@ -54,9 +54,9 @@ GroundMap GroundMap::MakeFromRows(
 }
 
 void GroundMap::SetPeriodicTail(
-    int _from,
-    int _tailX,
-    int _tailW)
+    const int _from,
+    const int _tailX,
+    const int _tailW)
 {
     JUG_ASSERT(_tailW > 0 && _tailX >= 0 && _tailX + _tailW <= m_width, "주기 꼬리는 비트맵 안의 구간이어야 한다.\n");
     m_tailFrom = _from;
@@ -65,7 +65,7 @@ void GroundMap::SetPeriodicTail(
 }
 
 void GroundMap::MaterializeTail(
-    int _periods)
+    const int _periods)
 {
     if (m_tailW <= 0 || _periods <= 0)
     {
@@ -95,9 +95,9 @@ void GroundMap::MaterializeTail(
 }
 
 void GroundMap::SetSolid(
-    int  _x,
-    int  _y,
-    bool _bSolid)
+    const int  _x,
+    const int  _y,
+    const bool _bSolid)
 {
     if (static_cast<unsigned>(_x) >= static_cast<unsigned>(m_width) || static_cast<unsigned>(_y) >= static_cast<unsigned>(m_height))
     {
@@ -110,11 +110,11 @@ void GroundMap::SetSolid(
 }
 
 void GroundMap::FillRect(
-    int  _x0,
-    int  _y0,
-    int  _x1,
-    int  _y1,
-    bool _bSolid)
+    const int  _x0,
+    const int  _y0,
+    const int  _x1,
+    const int  _y1,
+    const bool _bSolid)
 {
     const int x0 = Max(0, Min(_x0, _x1));
     const int x1 = Min(m_width - 1, Max(_x0, _x1));
@@ -143,23 +143,23 @@ uint64_t GroundMap::CountSolidPixels() const
 }
 
 bool GroundMap::IsOutOfBoundsSolid_(
-    int _x,
-    int _y) const
+    const int _x,
+    const int _y) const
 {
     return (_x < 0 && m_policy.bSolidLeft) || (_x >= m_width && m_policy.bSolidRight) || (_y < 0 && m_policy.bSolidTop) || (_y >= m_height && m_policy.bSolidBottom);
 }
 
 bool GroundMap::IsSolidAt(
-    VECTOR2 _point) const
+    const VECTOR2 _point) const
 {
     return IsSolid(static_cast<int>(Floor(_point.x)), static_cast<int>(Floor(_point.y)));
 }
 
 bool GroundMap::IsRectSolid(
-    int _x0,
-    int _y0,
-    int _x1,
-    int _y1) const
+    const int _x0,
+    const int _y0,
+    const int _x1,
+    const int _y1) const
 {
     const int x0 = Min(_x0, _x1);
     const int x1 = Max(_x0, _x1);
@@ -213,9 +213,9 @@ bool GroundMap::IsRectSolid(
 }
 
 std::optional<int> GroundMap::FindGroundY(
-    int _x,
-    int _fromY,
-    int _maxDist) const
+    const int _x,
+    const int _fromY,
+    const int _maxDist) const
 {
     if (_maxDist < 0)
     {
@@ -234,10 +234,10 @@ std::optional<int> GroundMap::FindGroundY(
 }
 
 float GroundMap::EstimateSlope(
-    int _x,
-    int _y,
-    int _halfWidth,
-    int _searchRange) const
+    const int _x,
+    const int _y,
+    const int _halfWidth,
+    const int _searchRange) const
 {
     if (_halfWidth <= 0)
     {
@@ -254,10 +254,10 @@ float GroundMap::EstimateSlope(
 }
 
 VECTOR2 GroundMap::EstimateNormal(
-    int _x,
-    int _y,
-    int _halfWidth,
-    int _searchRange) const
+    const int _x,
+    const int _y,
+    const int _halfWidth,
+    const int _searchRange) const
 {
     const float slope  = EstimateSlope(_x, _y, _halfWidth, _searchRange);
     const float invLen = 1.f / Sqrt(slope * slope + 1.f);
@@ -291,8 +291,8 @@ bool GroundMap::HasPeriodicTail() const
 }
 
 bool GroundMap::IsSolid(
-    int _x,
-    int _y) const
+    const int _x,
+    const int _y) const
 {
     int x = _x;
     if (m_tailW > 0 && x >= m_tailFrom)

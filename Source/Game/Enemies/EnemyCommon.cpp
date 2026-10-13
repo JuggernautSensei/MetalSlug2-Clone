@@ -12,6 +12,7 @@
 
 constexpr float kFaceDeadzone = 4.f;
 
+
 enum class eDeathPhase
 {
     None  = 0,
@@ -26,7 +27,7 @@ enum class eDeathPhase
 namespace
 {
 [[nodiscard]] bool IsFinalPhase_(
-    eDeathPhase _phase)
+    const eDeathPhase _phase)
 {
     return _phase == eDeathPhase::Land || _phase == eDeathPhase::Slash || _phase == eDeathPhase::Bomb;
 }
@@ -70,17 +71,17 @@ void FacePlayer(
 }
 
 void EnterState(
-    Enemy& _e,
-    int    _state)
+    Enemy&    _e,
+    const int _state)
 {
     _e.state      = _state;
     _e.stateTicks = 0;
 }
 
 void SetClip(
-    Enemy& _e,
-    int    _clip,
-    bool   _bRestart)
+    Enemy&     _e,
+    const int  _clip,
+    const bool _bRestart)
 {
     if (_clip != _e.clip || _bRestart)
     {
@@ -92,7 +93,7 @@ void SetClip(
 bool ClipReachedFrame(
     const Enemy&    _e,
     const EnemyDef& _def,
-    int             _frame)
+    const int       _frame)
 {
     if (_e.clip < 0)
     {
@@ -226,10 +227,10 @@ MoveResult StepPhysics(
 bool WallAhead(
     const Enemy&    _e,
     const EnemyEnv& _env,
-    float           _w,
-    float           _h,
-    float           _x,
-    float           _y)
+    const float     _w,
+    const float     _h,
+    const float     _x,
+    const float     _y)
 {
     const float         dir   = static_cast<float>(_e.facing < 0 ? -1 : 1);
     const Aabb          probe = Aabb::FromCenterSize({ _e.body.position.x + _x * dir, _e.body.position.y + _y }, { _w, _h });
@@ -262,8 +263,8 @@ bool WallAhead(
 bool FloorAhead(
     const Enemy&    _e,
     const EnemyEnv& _env,
-    float           _dist,
-    float           _drop)
+    const float     _dist,
+    const float     _drop)
 {
     Body probe = _e.body;
     probe.position.x += static_cast<float>(_e.facing < 0 ? -1 : 1) * _dist;
@@ -274,7 +275,7 @@ bool FloorAhead(
 
 String ResolveSide(
     const String& _name,
-    int           _facing)
+    const int     _facing)
 {
     const size_t pos = _name.find("{side}");
     if (pos == String::npos)
@@ -287,10 +288,10 @@ String ResolveSide(
 }
 
 void RequestFx(
-    EnemyEnv&    _env,
-    const FxDef& _fx,
-    VECTOR2      _origin,
-    int          _facing)
+    EnemyEnv&     _env,
+    const FxDef&  _fx,
+    const VECTOR2 _origin,
+    const int     _facing)
 {
     if (_fx.clip.empty())
     {
@@ -316,7 +317,7 @@ void RequestFx(
 VECTOR2 GetMuzzleWorld(
     const Enemy&    _e,
     const EnemyDef& _def,
-    int             _weapon)
+    const int       _weapon)
 {
     const WeaponDef& weapon = _def.weapons[static_cast<size_t>(_weapon)];
     return { _e.body.position.x + weapon.muzzle.x * static_cast<float>(_e.facing < 0 ? -1 : 1), _e.body.position.y + weapon.muzzle.y };
@@ -353,9 +354,9 @@ bool FireWeapon(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
-    int             _weapon,
-    VECTOR2         _dir,
-    VECTOR2         _muzzleExtra)
+    const int       _weapon,
+    const VECTOR2   _dir,
+    const VECTOR2   _muzzleExtra)
 {
     if (_weapon < 0 || !_env.ctx.pProjectiles || !_env.ctx.pCombat || !_env.ctx.player.bAlive)
     {
@@ -465,7 +466,7 @@ void StartMelee(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
-    int             _weapon)
+    const int       _weapon)
 {
     CancelMelee(_e, _env);
     const WeaponDef& weapon = _def.weapons[static_cast<size_t>(_weapon)];
@@ -682,14 +683,14 @@ void TickSoldierDeath(
 
 bool SubmitNamedPart(
     const EnemyRenderEnv& _render,
-    StringView            _name,
-    VECTOR2               _origin,
-    int                   _ticks,
-    bool                  _bLoop,
-    int                   _sortKey,
-    int                   _depth,
-    bool                  _bFlipX,
-    float                 _partFlash)
+    const StringView      _name,
+    const VECTOR2         _origin,
+    const int             _ticks,
+    const bool            _bLoop,
+    const int             _sortKey,
+    const int             _depth,
+    const bool            _bFlipX,
+    const float           _partFlash)
 {
     const float flash = Max(_partFlash, _render.flash);
     if (const AnimClip* pClip = _render.anims.FindClip(_name))
@@ -736,7 +737,7 @@ bool SubmitNamedPart(
 
 int GetNamedPartTicks(
     const AnimationLibrary& _anims,
-    StringView              _name)
+    const StringView        _name)
 {
     const AnimClip* pClip = _anims.FindClip(_name);
     if (!pClip)
@@ -762,7 +763,7 @@ float DyToPlayer(
 
 int Roll(
     EnemyEnv& _env,
-    int       _n)
+    const int _n)
 {
     return _env.world.Roll(_n);
 }

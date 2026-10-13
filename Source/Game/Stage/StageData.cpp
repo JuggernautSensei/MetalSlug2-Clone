@@ -12,7 +12,7 @@
 #include "Core/AssetPath.h"
 
 ParamValue ParamValue::MakeBool(
-    bool _bValue)
+    const bool _bValue)
 {
     ParamValue value = {};
     value.m_type     = eType::Bool;
@@ -21,7 +21,7 @@ ParamValue ParamValue::MakeBool(
 }
 
 ParamValue ParamValue::MakeNumber(
-    double _value)
+    const double _value)
 {
     ParamValue value = {};
     value.m_type     = eType::Number;
@@ -111,19 +111,19 @@ bool ParamValue::IsObject() const
 }
 
 bool ParamValue::AsBool(
-    bool _bDefault) const
+    const bool _bDefault) const
 {
     return m_type == eType::Bool ? m_bValue : _bDefault;
 }
 
 float ParamValue::AsFloat(
-    float _default) const
+    const float _default) const
 {
     return m_type == eType::Number ? static_cast<float>(m_number) : _default;
 }
 
 int ParamValue::AsInt(
-    int _default) const
+    const int _default) const
 {
     return m_type == eType::Number ? static_cast<int>(std::llround(m_number)) : _default;
 }
@@ -140,7 +140,7 @@ size_t ParamValue::GetSize() const
 }
 
 const ParamValue& ParamValue::At(
-    size_t _index) const
+    const size_t _index) const
 {
     if (m_type != eType::Array || _index >= m_items.size())
     {
@@ -150,7 +150,7 @@ const ParamValue& ParamValue::At(
 }
 
 const ParamValue* ParamValue::Find(
-    StringView _key) const
+    const StringView _key) const
 {
     if (m_type != eType::Object)
     {
@@ -167,38 +167,38 @@ const ParamValue* ParamValue::Find(
 }
 
 bool ParamValue::Has(
-    StringView _key) const
+    const StringView _key) const
 {
     return Find(_key) != nullptr;
 }
 
 bool ParamValue::GetBool(
-    StringView _key,
-    bool       _bDefault) const
+    const StringView _key,
+    const bool       _bDefault) const
 {
     const ParamValue* pValue = Find(_key);
     return pValue ? pValue->AsBool(_bDefault) : _bDefault;
 }
 
 int ParamValue::GetInt(
-    StringView _key,
-    int        _default) const
+    const StringView _key,
+    const int        _default) const
 {
     const ParamValue* pValue = Find(_key);
     return pValue ? pValue->AsInt(_default) : _default;
 }
 
 String ParamValue::GetString(
-    StringView _key,
-    StringView _default) const
+    const StringView _key,
+    const StringView _default) const
 {
     const ParamValue* pValue = Find(_key);
     return (pValue && pValue->IsString()) ? pValue->m_string : String { _default };
 }
 
 VECTOR2 ParamValue::GetVec2(
-    StringView _key,
-    VECTOR2    _default) const
+    const StringView _key,
+    const VECTOR2    _default) const
 {
     const ParamValue* pValue = Find(_key);
     VECTOR2           out    = _default;
@@ -243,7 +243,7 @@ int SpawnSpec::GetCount() const
 }
 
 float BoundsCurve::EvaluateTop(
-    float _playerX) const
+    const float _playerX) const
 {
     if (top.empty())
     {
@@ -273,14 +273,14 @@ float BoundsCurve::EvaluateTop(
 }
 
 Aabb BoundsCurve::EvaluateBounds(
-    float _playerX) const
+    const float _playerX) const
 {
     const float top0 = EvaluateTop(_playerX);
     return Aabb::FromMinMax({ left, top0 }, { right, top0 + height });
 }
 
 int StageData::FindSection(
-    StringView _id) const
+    const StringView _id) const
 {
     for (size_t i = 0; i < sections.size(); ++i)
     {
@@ -293,7 +293,7 @@ int StageData::FindSection(
 }
 
 const NamedRect* StageData::FindRect(
-    StringView _name) const
+    const StringView _name) const
 {
     for (const NamedRect& rect: rects)
     {
@@ -306,7 +306,7 @@ const NamedRect* StageData::FindRect(
 }
 
 const BackdropMode* StageData::FindBackdrop(
-    StringView _id) const
+    const StringView _id) const
 {
     for (const BackdropMode& mode: backdrops)
     {
@@ -319,7 +319,7 @@ const BackdropMode* StageData::FindBackdrop(
 }
 
 bool StageData::HasGroundMap(
-    StringView _name) const
+    const StringView _name) const
 {
     for (const String& map: groundMaps)
     {
@@ -419,7 +419,7 @@ int StageData::CountGates() const
 }
 
 const char* GetActionTypeName(
-    eActionType _type)
+    const eActionType _type)
 {
     switch (_type)
     {
@@ -458,7 +458,7 @@ namespace
 template<typename E, size_t N>
 [[nodiscard]] bool LookupEnum_(
     const ARRAY<EnumEntry<E>, N>& _table,
-    StringView                    _name,
+    const StringView              _name,
     E&                            _out)
 {
     for (const EnumEntry<E>& entry: _table)
@@ -561,13 +561,13 @@ constexpr ARRAY<EnumEntry<eFadeTarget>, 2> kFadeTable = {
 namespace
 {
 [[nodiscard]] bool IsCreature_(
-    eEntityKind _kind)
+    const eEntityKind _kind)
 {
     return _kind == eEntityKind::Enemy || _kind == eEntityKind::Npc;
 }
 
 [[nodiscard]] eOrigin DefaultOrigin_(
-    eEntityKind _kind)
+    const eEntityKind _kind)
 {
     return IsCreature_(_kind) ? eOrigin::Feet : eOrigin::LegacyCenter;
 }
@@ -658,78 +658,78 @@ private:
     bool GetField_(
         const JsonReader&          _obj,
         const String&              _where,
-        StringView                 _key,
-        bool                       _bRequired,
+        const StringView           _key,
+        const bool                 _bRequired,
         std::optional<JsonReader>& _out);
 
     bool GetNumber_(
         const JsonReader& _obj,
         const String&     _where,
-        StringView        _key,
-        bool              _bRequired,
+        const StringView  _key,
+        const bool        _bRequired,
         double&           _out,
         bool*             _pFound = nullptr);
 
     bool GetFloat_(
         const JsonReader& _obj,
         const String&     _where,
-        StringView        _key,
-        bool              _bRequired,
+        const StringView  _key,
+        const bool        _bRequired,
         float&            _out,
         bool*             _pFound = nullptr);
 
     bool GetInt_(
         const JsonReader& _obj,
         const String&     _where,
-        StringView        _key,
-        bool              _bRequired,
+        const StringView  _key,
+        const bool        _bRequired,
         int&              _out,
         bool*             _pFound = nullptr);
 
     bool GetBool_(
         const JsonReader& _obj,
         const String&     _where,
-        StringView        _key,
-        bool              _bRequired,
+        const StringView  _key,
+        const bool        _bRequired,
         bool&             _out,
         bool*             _pFound = nullptr);
 
     bool GetString_(
         const JsonReader& _obj,
         const String&     _where,
-        StringView        _key,
-        bool              _bRequired,
+        const StringView  _key,
+        const bool        _bRequired,
         String&           _out,
         bool*             _pFound = nullptr);
 
     bool GetVec2_(
         const JsonReader& _obj,
         const String&     _where,
-        StringView        _key,
-        bool              _bRequired,
+        const StringView  _key,
+        const bool        _bRequired,
         VECTOR2&          _out,
         bool*             _pFound = nullptr);
 
     bool GetObject_(
         const JsonReader&          _obj,
         const String&              _where,
-        StringView                 _key,
-        bool                       _bRequired,
+        const StringView           _key,
+        const bool                 _bRequired,
         std::optional<JsonReader>& _out);
 
     bool GetArray_(
         const JsonReader&          _obj,
         const String&              _where,
-        StringView                 _key,
-        bool                       _bRequired,
+        const StringView           _key,
+        const bool                 _bRequired,
         std::optional<JsonReader>& _out);
 
     template<typename E, size_t N>
     bool GetEnum_(
         const JsonReader&             _obj,
         const String&                 _where,
-        StringView                    _key,
-        bool                          _bRequired,
+        const StringView              _key,
+        const bool                    _bRequired,
         const ARRAY<EnumEntry<E>, N>& _table,
         E&                            _out,
         bool* const                   _pFound = nullptr)
@@ -770,21 +770,21 @@ private:
     bool ParseRect_(
         const JsonReader& _obj,
         const String&     _where,
-        StringView        _key,
-        bool              _bAllowCurrent,
+        const StringView  _key,
+        const bool        _bAllowCurrent,
         RectRef&          _out);
 
     bool ParseRectArray_(
         const JsonReader& _array,
         const String&     _where,
-        StringView        _key,
+        const StringView  _key,
         Aabb&             _out);
 
     bool ParseSpawn_(
-        const JsonReader& _obj,
-        const String&     _where,
-        eSpawnContext     _context,
-        SpawnSpec&        _out);
+        const JsonReader&   _obj,
+        const String&       _where,
+        const eSpawnContext _context,
+        SpawnSpec&          _out);
 
     bool ParseCameraAnchor_(const JsonReader& _obj, const String& _where, CameraAnchor& _out);
     bool ParseAction_(const JsonReader& _obj, const String& _where, StageAction& _out);
@@ -821,8 +821,8 @@ bool Parser::Fail_(
 bool Parser::GetField_(
     const JsonReader&          _obj,
     const String&              _where,
-    StringView                 _key,
-    bool                       _bRequired,
+    const StringView           _key,
+    const bool                 _bRequired,
     std::optional<JsonReader>& _out)
 {
     _out.reset();
@@ -837,8 +837,8 @@ bool Parser::GetField_(
 bool Parser::GetNumber_(
     const JsonReader& _obj,
     const String&     _where,
-    StringView        _key,
-    bool              _bRequired,
+    const StringView  _key,
+    const bool        _bRequired,
     double&           _out,
     bool* const       _pFound)
 {
@@ -849,8 +849,8 @@ bool Parser::GetNumber_(
 bool Parser::GetFloat_(
     const JsonReader& _obj,
     const String&     _where,
-    StringView        _key,
-    bool              _bRequired,
+    const StringView  _key,
+    const bool        _bRequired,
     float&            _out,
     bool* const       _pFound)
 {
@@ -866,8 +866,8 @@ bool Parser::GetFloat_(
 bool Parser::GetInt_(
     const JsonReader& _obj,
     const String&     _where,
-    StringView        _key,
-    bool              _bRequired,
+    const StringView  _key,
+    const bool        _bRequired,
     int&              _out,
     bool* const       _pFound)
 {
@@ -895,8 +895,8 @@ bool Parser::GetInt_(
 bool Parser::GetBool_(
     const JsonReader& _obj,
     const String&     _where,
-    StringView        _key,
-    bool              _bRequired,
+    const StringView  _key,
+    const bool        _bRequired,
     bool&             _out,
     bool* const       _pFound)
 {
@@ -907,8 +907,8 @@ bool Parser::GetBool_(
 bool Parser::GetString_(
     const JsonReader& _obj,
     const String&     _where,
-    StringView        _key,
-    bool              _bRequired,
+    const StringView  _key,
+    const bool        _bRequired,
     String&           _out,
     bool* const       _pFound)
 {
@@ -919,8 +919,8 @@ bool Parser::GetString_(
 bool Parser::GetVec2_(
     const JsonReader& _obj,
     const String&     _where,
-    StringView        _key,
-    bool              _bRequired,
+    const StringView  _key,
+    const bool        _bRequired,
     VECTOR2&          _out,
     bool* const       _pFound)
 {
@@ -931,8 +931,8 @@ bool Parser::GetVec2_(
 bool Parser::GetObject_(
     const JsonReader&          _obj,
     const String&              _where,
-    StringView                 _key,
-    bool                       _bRequired,
+    const StringView           _key,
+    const bool                 _bRequired,
     std::optional<JsonReader>& _out)
 {
     if (!GetField_(_obj, _where, _key, _bRequired, _out))
@@ -949,8 +949,8 @@ bool Parser::GetObject_(
 bool Parser::GetArray_(
     const JsonReader&          _obj,
     const String&              _where,
-    StringView                 _key,
-    bool                       _bRequired,
+    const StringView           _key,
+    const bool                 _bRequired,
     std::optional<JsonReader>& _out)
 {
     if (!GetField_(_obj, _where, _key, _bRequired, _out))
@@ -976,9 +976,9 @@ bool Parser::ExpectObject_(
 }
 
 bool Parser::CheckKeys_(
-    const JsonReader&                 _obj,
-    const String&                     _where,
-    std::initializer_list<StringView> _allowed)
+    const JsonReader&                       _obj,
+    const String&                           _where,
+    const std::initializer_list<StringView> _allowed)
 {
     if (!ExpectObject_(_obj, _where))
     {
@@ -1146,7 +1146,7 @@ bool Parser::ParseBackdrop_(
 bool Parser::ParseRectArray_(
     const JsonReader& _array,
     const String&     _where,
-    StringView        _key,
+    const StringView  _key,
     Aabb&             _out)
 {
     if (!_array.IsArray() || _array.GetSize() != 4)
@@ -1209,8 +1209,8 @@ bool Parser::ParseRects_(
 bool Parser::ParseRect_(
     const JsonReader& _obj,
     const String&     _where,
-    StringView        _key,
-    bool              _bAllowCurrent,
+    const StringView  _key,
+    const bool        _bAllowCurrent,
     RectRef&          _out)
 {
     std::optional<JsonReader> field = std::nullopt;
@@ -1457,10 +1457,10 @@ bool Parser::ParseCameraAnchor_(
 }
 
 bool Parser::ParseSpawn_(
-    const JsonReader& _obj,
-    const String&     _where,
-    eSpawnContext     _context,
-    SpawnSpec&        _out)
+    const JsonReader&   _obj,
+    const String&       _where,
+    const eSpawnContext _context,
+    SpawnSpec&          _out)
 {
     static constexpr ARRAY<StringView, 24> kSpawnKeys = {
         { "kind", "def", "id", "x", "y", "z", "origin", "halfHeight", "groundSnap", "fromY", "settle", "camera", "repeat", "facing", "hp", "drop", "ambush", "layer", "cullMargin", "size", "collisionLayer", "anim", "sprite", "params" }
@@ -2207,7 +2207,7 @@ namespace
 [[nodiscard]] Result<StageData> MakeFailure_(
     String* const _pMessage,
     const String& _message,
-    eError        _code)
+    const eError  _code)
 {
     if (_pMessage)
     {
@@ -2218,8 +2218,8 @@ namespace
 }   // namespace
 
 Result<StageData> LoadStageFromJson(
-    StringView    _json,
-    String* const _pMessage)
+    const StringView _json,
+    String* const    _pMessage)
 {
     if (_pMessage)
     {
@@ -2254,14 +2254,14 @@ Result<StageData> LoadStageFromFile(
 }
 
 uint32_t LayerBit(
-    eStageLayer _layer)
+    const eStageLayer _layer)
 {
     return 1u << static_cast<unsigned>(_layer);
 }
 
 bool ShouldRunAction(
-    eWhen _when,
-    bool  _bSilent)
+    const eWhen _when,
+    const bool  _bSilent)
 {
     return _when == eWhen::Always || (_bSilent ? _when == eWhen::Silent : _when == eWhen::Normal);
 }

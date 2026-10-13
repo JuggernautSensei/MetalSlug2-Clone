@@ -1,7 +1,7 @@
 #include "Game/Enemies/EnemyBehaviors.h"
 
 const BehaviorOps& GetBehaviorOps(
-    eEnemyBehavior _behavior)
+    const eEnemyBehavior _behavior)
 {
     switch (_behavior)
     {

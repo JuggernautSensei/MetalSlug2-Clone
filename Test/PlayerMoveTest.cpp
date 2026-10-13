@@ -394,8 +394,8 @@ struct JumpMeasure
 namespace
 {
 [[nodiscard]] JumpMeasure MeasureJump_(
-    Sim& _sim,
-    bool _bHold)
+    Sim&       _sim,
+    const bool _bHold)
 {
     const float groundY = _sim.Y();
     _sim.Hold(eAction::Jump);
@@ -668,8 +668,8 @@ TEST(PlayerJump, WalkingOffALedgeStartsFalling)
 namespace
 {
 [[nodiscard]] Vector<InputFrame> MakeNoisyScript_(
-    int      _ticks,
-    uint64_t _seed)
+    const int      _ticks,
+    const uint64_t _seed)
 {
     RngMt19937         rng { _seed };
     Vector<InputFrame> frames;

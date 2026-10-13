@@ -35,13 +35,13 @@ constexpr int   kCurveSteps = 12;
 namespace
 {
 [[nodiscard]] int Pack_(
-    float _value)
+    const float _value)
 {
     return static_cast<int>(std::lround(static_cast<double>(_value * kFixedScale)));
 }
 
 [[nodiscard]] float Unpack_(
-    int _value)
+    const int _value)
 {
     return static_cast<float>(_value) / kFixedScale;
 }
@@ -49,7 +49,7 @@ namespace
 // 곡선 표 선형 보간
 [[nodiscard]] float SampleCurve_(
     const ARRAY<float, 13>& _curve,
-    float                   _u)
+    const float             _u)
 {
     const float u     = Clamp(_u, 0.f, 1.f) * static_cast<float>(kCurveSteps);
     const int   index = Min(static_cast<int>(u), kCurveSteps - 1);
@@ -58,7 +58,7 @@ namespace
 }
 
 [[nodiscard]] float Sign_(
-    int _facing)
+    const int _facing)
 {
     return _facing < 0 ? -1.f : 1.f;
 }
@@ -78,16 +78,16 @@ namespace
 }
 
 void SetPodTicks_(
-    Enemy& _e,
-    int    _ticks)
+    Enemy&    _e,
+    const int _ticks)
 {
     _e.ext[kExtPodTicks] = _ticks;
 }
 
 void Go_(
-    Enemy&          _e,
-    const EnemyDef& _def,
-    eHeliState      _state)
+    Enemy&           _e,
+    const EnemyDef&  _def,
+    const eHeliState _state)
 {
     const HeliCfg& c = _def.heli;
     EnterState(_e, static_cast<int>(_state));
@@ -105,11 +105,11 @@ void Go_(
 }
 
 void BeginMove_(
-    Enemy&          _e,
-    const EnemyDef& _def,
-    const EnemyEnv& _env,
-    eHeliState      _state,
-    VECTOR2         _target)
+    Enemy&           _e,
+    const EnemyDef&  _def,
+    const EnemyEnv&  _env,
+    const eHeliState _state,
+    const VECTOR2    _target)
 {
     Go_(_e, _def, _state);
     _e.ext[kExtStartX]  = Pack_(_e.body.position.x);
@@ -175,16 +175,16 @@ void DropBomb_(
 // _first 틱부터 연속 투하를 시작해 _bursts 번 하고 마지막 휴지까지 끝나는 틱
 [[nodiscard]] int BurstPhaseEnd_(
     const HeliCfg& _c,
-    int            _first,
-    int            _bursts)
+    const int      _first,
+    const int      _bursts)
 {
     return _first + _bursts * BurstPeriod_(_c);
 }
 
 [[nodiscard]] bool IsBombTick_(
     const HeliCfg& _c,
-    int            _ticks,
-    int            _first)
+    const int      _ticks,
+    const int      _first)
 {
     const int t = _ticks - _first;
     if (t < 0)
@@ -206,8 +206,8 @@ void StepBombing_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
-    int             _first,
-    int             _bursts)
+    const int       _first,
+    const int       _bursts)
 {
     const HeliCfg& c = _def.heli;
     if (!_env.ctx.player.bAlive || _e.stateTicks >= BurstPhaseEnd_(c, _first, _bursts) || !IsBombTick_(c, _e.stateTicks, _first))

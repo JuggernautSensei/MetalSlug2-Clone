@@ -23,7 +23,7 @@ bool LoadEnemyLib(
     String*          _pMessage = nullptr);
 
 [[nodiscard]] SandboxConfig MakeEnemyConfig(
-    VECTOR2 _spawn = { 100.f, 378.f });
+    const VECTOR2 _spawn = { 100.f, 378.f });
 
 inline constexpr ARRAY<const char*, 8> kInfantryNames = { "soldier_bomb", "soldier_sword", "soldier_missile", "soldier_bzk", "soldier_hang", "flying_bzk", "shielder", "pow" };
 
@@ -33,8 +33,8 @@ class EnemyRig
 {
 public:
     explicit EnemyRig(
-        VECTOR2 _player  = { 100.f, 378.f },
-        float   _camLeft = 0.f);
+        const VECTOR2 _player  = { 100.f, 378.f },
+        const float   _camLeft = 0.f);
 
     [[nodiscard]] bool          IsLoaded() const;
     [[nodiscard]] const String& GetMessage() const;
@@ -46,38 +46,38 @@ public:
     [[nodiscard]] Vector<EnemyEvent>& Events();
 
     void SetView(
-        float _camLeft);
+        const float _camLeft);
 
     void SetPlayer(
-        VECTOR2 _feet);
+        const VECTOR2 _feet);
 
     void SetAnims(
         const AnimationLibrary* _pAnims);
 
     [[nodiscard]] EnemyHandle Spawn(
         const char*        _name,
-        VECTOR2            _feet,
+        const VECTOR2      _feet,
         const SpawnParams& _params = {});
 
     void Step(
-        int _count = 1);
+        const int _count = 1);
 
     [[nodiscard]] int PlayerHits() const;
 
     size_t Strike(
-        uint32_t _owner,
-        eHitKind _kind,
-        int      _damage,
-        eTeam    _team = eTeam::Player);
+        const uint32_t _owner,
+        const eHitKind _kind,
+        const int      _damage,
+        const eTeam    _team = eTeam::Player);
 
     [[nodiscard]] int CountEvents(
-        eEnemyEventKind _kind) const;
+        const eEnemyEventKind _kind) const;
 
     [[nodiscard]] int SumScore(
-        eEnemyEventKind _kind) const;
+        const eEnemyEventKind _kind) const;
 
     [[nodiscard]] const Enemy* E(
-        EnemyHandle _handle) const;
+        const EnemyHandle _handle) const;
 
 private:
     [[nodiscard]] PhysicsWorld MakeWorld_() const;

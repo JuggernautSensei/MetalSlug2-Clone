@@ -9,15 +9,15 @@
 namespace
 {
 void MixHash_(
-    Fnv1a& _hasher,
-    int    _value)
+    Fnv1a&    _hasher,
+    const int _value)
 {
     _hasher.Mix(_value);
 }
 }   // namespace
 
 VECTOR2 GetDummySize(
-    eDummyKind _kind)
+    const eDummyKind _kind)
 {
     switch (_kind)
     {
@@ -28,7 +28,7 @@ VECTOR2 GetDummySize(
 }
 
 int GetDummyHp(
-    eDummyKind           _kind,
+    const eDummyKind     _kind,
     const SandboxTuning& _tuning)
 {
     switch (_kind)
@@ -40,7 +40,7 @@ int GetDummyHp(
 }
 
 const char* GetDummyName(
-    eDummyKind _kind)
+    const eDummyKind _kind)
 {
     switch (_kind)
     {
@@ -58,9 +58,9 @@ void TrainingTargets::Clear()
 }
 
 uint32_t TrainingTargets::Add(
-    eDummyKind           _kind,
-    VECTOR2              _feet,
-    bool                 _bShooter,
+    const eDummyKind     _kind,
+    const VECTOR2        _feet,
+    const bool           _bShooter,
     const SandboxTuning& _tuning)
 {
     TrainingDummy dummy;
@@ -76,7 +76,7 @@ uint32_t TrainingTargets::Add(
 }
 
 const TrainingDummy* TrainingTargets::Find(
-    uint32_t _id) const
+    const uint32_t _id) const
 {
     for (const TrainingDummy& dummy: m_dummies)
     {
@@ -108,8 +108,8 @@ void TrainingTargets::RegisterHurtboxes(
 
 void TrainingTargets::TickShooters(
     const SandboxTuning& _tuning,
-    VECTOR2              _playerFeet,
-    bool                 _bPlayerAlive,
+    const VECTOR2        _playerFeet,
+    const bool           _bPlayerAlive,
     ProjectileSystem&    _projectiles,
     CombatSystem&        _combat)
 {
@@ -152,8 +152,8 @@ void TrainingTargets::TickShooters(
 }
 
 int TrainingTargets::ApplyEvents(
-    Span<const HitEvent> _events,
-    const SandboxTuning& _tuning)
+    const Span<const HitEvent> _events,
+    const SandboxTuning&       _tuning)
 {
     (void)_tuning;
     int score = 0;

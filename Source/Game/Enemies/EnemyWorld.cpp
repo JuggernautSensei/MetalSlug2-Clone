@@ -16,7 +16,7 @@ namespace
 {
 [[nodiscard]] int FrameAt_(
     const AnimClip& _clip,
-    int64_t         _timeUnits)
+    const int64_t   _timeUnits)
 {
     const int n = _clip.GetFrameCount();
     if (n <= 1)
@@ -37,7 +37,7 @@ namespace
 }
 
 [[nodiscard]] float RotationDeg_(
-    VECTOR2 _velocity)
+    const VECTOR2 _velocity)
 {
     return ATan2(-_velocity.x, _velocity.y) * kRad2Deg;
 }
@@ -52,14 +52,14 @@ namespace
 }
 
 void MixHash_(
-    Fnv1a&  _hasher,
-    int64_t _value)
+    Fnv1a&        _hasher,
+    const int64_t _value)
 {
     _hasher.Mix(_value);
 }
 
 [[nodiscard]] int SideIndex_(
-    int _facing)
+    const int _facing)
 {
     return _facing < 0 ? 0 : 1;
 }
@@ -67,7 +67,7 @@ void MixHash_(
 
 EnemyWorld::EnemyWorld(
     const EnemyDefLibrary* _pLibrary,
-    uint64_t               _seed)
+    const uint64_t         _seed)
     : m_pLibrary(_pLibrary)
     , m_rng(_seed)
 {
@@ -86,7 +86,7 @@ void EnemyWorld::SetLibrary(
 }
 
 void EnemyWorld::Reset(
-    uint64_t _seed)
+    const uint64_t _seed)
 {
     m_enemies.clear();
     m_play = {};
@@ -101,14 +101,14 @@ void EnemyWorld::Reset(
 }
 
 int GetEnemyDefaultZ(
-    eEnemyBehavior _behavior)
+    const eEnemyBehavior _behavior)
 {
     return _behavior == eEnemyBehavior::BigShiee ? kBigShieeDepthHull : kEnemyDepth;
 }
 
 EnemyHandle EnemyWorld::Spawn(
-    StringView          _defName,
-    VECTOR2             _feet,
+    const StringView    _defName,
+    const VECTOR2       _feet,
     const SpawnParams&  _params,
     const PhysicsWorld* _pSnapWorld)
 {
@@ -116,8 +116,8 @@ EnemyHandle EnemyWorld::Spawn(
 }
 
 EnemyHandle EnemyWorld::SpawnByIndex(
-    int                 _defIndex,
-    VECTOR2             _feet,
+    const int           _defIndex,
+    const VECTOR2       _feet,
     const SpawnParams&  _params,
     const PhysicsWorld* _pSnapWorld)
 {
@@ -132,8 +132,8 @@ EnemyHandle EnemyWorld::SpawnByIndex(
 }
 
 EnemyHandle EnemyWorld::SpawnDeferred(
-    int                _defIndex,
-    VECTOR2            _feet,
+    const int          _defIndex,
+    const VECTOR2      _feet,
     const SpawnParams& _params)
 {
     const uint32_t id = m_nextId++;
@@ -147,9 +147,9 @@ EnemyHandle EnemyWorld::SpawnDeferred(
 }
 
 void EnemyWorld::Create_(
-    uint32_t            _id,
-    int                 _defIndex,
-    VECTOR2             _feet,
+    const uint32_t      _id,
+    const int           _defIndex,
+    const VECTOR2       _feet,
     const SpawnParams&  _params,
     const PhysicsWorld* _pSnapWorld)
 {
@@ -228,7 +228,7 @@ void EnemyWorld::RegisterHurtboxes(
 }
 
 void EnemyWorld::OnHitEvents(
-    Span<const HitEvent> _events)
+    const Span<const HitEvent> _events)
 {
     for (const HitEvent& event: _events)
     {
@@ -635,7 +635,7 @@ void EnemyWorld::Submit(
     SpriteBatch&            _sprites,
     const AnimationLibrary& _anims,
     const ProjectileSystem& _projectiles,
-    float                   _alpha)
+    const float             _alpha)
 {
     if (!m_bAnimsBound || m_boundClipCount != _anims.GetClipCount())
     {
@@ -759,7 +759,7 @@ void EnemyWorld::Submit(
 }
 
 size_t EnemyWorld::FindIndex_(
-    uint32_t _id) const
+    const uint32_t _id) const
 {
     for (size_t i = 0; i < m_enemies.size(); ++i)
     {
@@ -772,8 +772,8 @@ size_t EnemyWorld::FindIndex_(
 }
 
 bool EnemyWorld::FireWeaponNow(
-    EnemyHandle _handle,
-    int         _weapon)
+    const EnemyHandle _handle,
+    const int         _weapon)
 {
     const size_t idx = FindIndex_(_handle.id);
     if (idx >= m_enemies.size())
@@ -791,9 +791,9 @@ bool EnemyWorld::FireWeaponNow(
 }
 
 bool EnemyWorld::PlayMotion(
-    EnemyHandle _handle,
-    int         _weapon,
-    int         _fireFrame)
+    const EnemyHandle _handle,
+    const int         _weapon,
+    const int         _fireFrame)
 {
     const size_t idx = FindIndex_(_handle.id);
     if (idx >= m_enemies.size())
@@ -822,15 +822,15 @@ bool EnemyWorld::PlayMotion(
 }
 
 const Enemy* EnemyWorld::Get(
-    EnemyHandle _handle) const
+    const EnemyHandle _handle) const
 {
     const size_t idx = FindIndex_(_handle.id);
     return idx < m_enemies.size() ? &m_enemies[idx] : nullptr;
 }
 
 bool EnemyWorld::SetZ(
-    EnemyHandle _handle,
-    int         _z)
+    const EnemyHandle _handle,
+    const int         _z)
 {
     const size_t idx = FindIndex_(_handle.id);
     if (idx >= m_enemies.size())
@@ -842,7 +842,7 @@ bool EnemyWorld::SetZ(
 }
 
 EnemyHandle EnemyWorld::ResolveHandle(
-    EnemyHandle _handle) const
+    const EnemyHandle _handle) const
 {
     uint32_t id = _handle.id;
     for (int guard = 0; guard < 64; ++guard)
@@ -895,8 +895,8 @@ Vector<Aabb> EnemyWorld::GetSolidBoxes() const
 }
 
 void EnemyWorld::SendCommand(
-    EnemyHandle _handle,
-    StringView  _command)
+    const EnemyHandle _handle,
+    const StringView  _command)
 {
     const size_t idx = FindIndex_(ResolveHandle(_handle).id);
     if (idx >= m_enemies.size() || m_enemies[idx].life != eEnemyLife::Alive)
@@ -912,7 +912,7 @@ void EnemyWorld::SendCommand(
 }
 
 bool EnemyWorld::IsDefeated(
-    EnemyHandle _handle) const
+    const EnemyHandle _handle) const
 {
     if (_handle.IsNull())
     {
@@ -938,7 +938,7 @@ float EnemyWorld::TakeCameraScroll()
 }
 
 bool EnemyWorld::IsDestroyFinished(
-    EnemyHandle _handle) const
+    const EnemyHandle _handle) const
 {
     if (_handle.IsNull())
     {
@@ -958,7 +958,7 @@ bool EnemyWorld::IsDestroyFinished(
 }
 
 bool EnemyWorld::IsTagDefeated(
-    uint32_t _userTag) const
+    const uint32_t _userTag) const
 {
     for (const Enemy& e: m_enemies)
     {
@@ -998,7 +998,7 @@ int EnemyWorld::CountAlive(
 }
 
 int EnemyWorld::CountAlive(
-    StringView _defName) const
+    const StringView _defName) const
 {
     EnemyFilter filter;
     filter.defIndex     = m_pLibrary->FindIndex(_defName);
@@ -1025,8 +1025,8 @@ Vector<EnemyEvent> EnemyWorld::TakeEvents()
 }
 
 void EnemyWorld::RefreshBodies(
-    int     _defIndex,
-    VECTOR2 _size)
+    const int     _defIndex,
+    const VECTOR2 _size)
 {
     for (Enemy& e: m_enemies)
     {
@@ -1038,7 +1038,7 @@ void EnemyWorld::RefreshBodies(
 }
 
 void EnemyWorld::ClearMonsters(
-    bool _bIncludeNpc)
+    const bool _bIncludeNpc)
 {
     size_t keep = 0;
     for (size_t i = 0; i < m_enemies.size(); ++i)
@@ -1060,7 +1060,7 @@ void EnemyWorld::ClearMonsters(
 }
 
 void EnemyWorld::KillAll(
-    bool _bAwardScore)
+    const bool _bAwardScore)
 {
     size_t keep = 0;
     for (size_t i = 0; i < m_enemies.size(); ++i)
@@ -1114,7 +1114,7 @@ uint64_t EnemyWorld::HashState() const
 }
 
 int EnemyWorld::Roll(
-    int _n)
+    const int _n)
 {
     if (_n <= 1)
     {
@@ -1136,8 +1136,8 @@ void EnemyWorld::RequestFx(
 }
 
 void EnemyWorld::NoteSuccessor(
-    EnemyHandle _old,
-    EnemyHandle _new)
+    const EnemyHandle _old,
+    const EnemyHandle _new)
 {
     Successor successor;
     successor.oldId = _old.id;
@@ -1146,8 +1146,8 @@ void EnemyWorld::NoteSuccessor(
 }
 
 EnemyEvent EnemyWorld::MakeEvent(
-    const Enemy&    _e,
-    eEnemyEventKind _kind) const
+    const Enemy&          _e,
+    const eEnemyEventKind _kind) const
 {
     EnemyEvent event;
     event.kind     = _kind;
@@ -1170,7 +1170,7 @@ const EnemyDefLibrary* EnemyWorld::GetLibrary() const
 }
 
 void EnemyWorld::ReseedRng(
-    uint64_t _seed)
+    const uint64_t _seed)
 {
     m_rng.Reseed(_seed);
 }
@@ -1182,7 +1182,7 @@ void EnemyWorld::SetSpriteLibrary(
 }
 
 void EnemyWorld::RequestCameraScroll(
-    float _dx)
+    const float _dx)
 {
     m_cameraScroll += _dx;
 }

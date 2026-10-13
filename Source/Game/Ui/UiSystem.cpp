@@ -43,20 +43,20 @@ void UiSystem::Tick()
 }
 
 void UiSystem::DrawText(
-    int              _x,
-    int              _y,
-    StringView       _text,
+    const int        _x,
+    const int        _y,
+    const StringView _text,
     const TextStyle& _style) const
 {
     m_font.DrawText(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), _x, _y, _text, _style);
 }
 
 bool UiSystem::DrawSprite(
-    StringView _name,
-    int        _centerX,
-    int        _centerY,
-    int        _scale,
-    uint8_t    _alpha) const
+    const StringView _name,
+    const int        _centerX,
+    const int        _centerY,
+    const int        _scale,
+    const uint8_t    _alpha) const
 {
     const SpriteInfo* pInfo = m_sprites.Find(_name);
     if (!pInfo || pInfo->bStandalone)
@@ -75,10 +75,10 @@ bool UiSystem::DrawSprite(
 }
 
 bool UiSystem::DrawStandalone(
-    StringView _name,
-    int        _x,
-    int        _y,
-    uint8_t    _alpha) const
+    const StringView _name,
+    const int        _x,
+    const int        _y,
+    const uint8_t    _alpha) const
 {
     const SpriteInfo* pInfo = m_sprites.Find(_name);
     if (!pInfo || !pInfo->bStandalone)
@@ -325,8 +325,8 @@ bool UiSystem::HasSprites() const
 }
 
 void UiSystem::ShowBanner(
-    StringView _text,
-    float      _seconds)
+    const StringView _text,
+    const float      _seconds)
 {
     m_banner.Show(MakeBannerSpec(_text, _seconds));
 }

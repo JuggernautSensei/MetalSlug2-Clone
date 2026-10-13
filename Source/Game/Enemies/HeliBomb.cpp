@@ -9,7 +9,7 @@ namespace
 {
 [[nodiscard]] bool Touches_(
     const PhysicsWorld& _world,
-    VECTOR2             _to)
+    const VECTOR2       _to)
 {
     if (_world.pGround && _world.pGround->IsSolidAt(_to))
     {
@@ -26,11 +26,11 @@ namespace
 }
 
 void AddBombHitbox_(
-    const Enemy& _e,
-    VECTOR2      _size,
-    int          _damage,
-    eHitKind     _kind,
-    EnemyEnv&    _env)
+    const Enemy&   _e,
+    const VECTOR2  _size,
+    const int      _damage,
+    const eHitKind _kind,
+    EnemyEnv&      _env)
 {
     if (!_env.ctx.pCombat || _e.meleeHitId == kNoHitId)
     {

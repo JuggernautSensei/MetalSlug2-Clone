@@ -6,7 +6,7 @@ StringView SlugErrorCategory::GetName() const noexcept
 }
 
 String SlugErrorCategory::MakeMessage(
-    int _err) const
+    const int _err) const
 {
     switch (static_cast<eError>(_err))
     {
@@ -28,7 +28,7 @@ String SlugErrorCategory::MakeMessage(
 
 bool HasErrorCode(
     const Error& _error,
-    eError       _code)
+    const eError _code)
 {
     if (_code == eError::Ok)
     {

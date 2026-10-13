@@ -27,7 +27,7 @@ bool LoadEnemyLib(
 }
 
 SandboxConfig MakeEnemyConfig(
-    VECTOR2 _spawn)
+    const VECTOR2 _spawn)
 {
     SandboxConfig config = MakeFlatConfig();
     config.spawnFeet     = _spawn;
@@ -36,8 +36,8 @@ SandboxConfig MakeEnemyConfig(
 }
 
 EnemyRig::EnemyRig(
-    VECTOR2 _player,
-    float   _camLeft)
+    const VECTOR2 _player,
+    const float   _camLeft)
     : m_world(&m_lib, 7)
     , m_ground(MakeFlatGround(3000))
     , m_player(_player)
@@ -83,7 +83,7 @@ Vector<EnemyEvent>& EnemyRig::Events()
 }
 
 void EnemyRig::SetView(
-    float _camLeft)
+    const float _camLeft)
 {
     m_view = Aabb::FromMinSize({ _camLeft, 0.f }, { 640.f, 448.f });
 }
@@ -95,14 +95,14 @@ void EnemyRig::SetAnims(
 }
 
 void EnemyRig::SetPlayer(
-    VECTOR2 _feet)
+    const VECTOR2 _feet)
 {
     m_player = _feet;
 }
 
 EnemyHandle EnemyRig::Spawn(
     const char*        _name,
-    VECTOR2            _feet,
+    const VECTOR2      _feet,
     const SpawnParams& _params)
 {
     const PhysicsWorld world = MakeWorld_();
@@ -110,7 +110,7 @@ EnemyHandle EnemyRig::Spawn(
 }
 
 void EnemyRig::Step(
-    int _count)
+    const int _count)
 {
     for (int i = 0; i < _count; ++i)
     {
@@ -133,10 +133,10 @@ int EnemyRig::PlayerHits() const
 }
 
 size_t EnemyRig::Strike(
-    uint32_t _owner,
-    eHitKind _kind,
-    int      _damage,
-    eTeam    _team)
+    const uint32_t _owner,
+    const eHitKind _kind,
+    const int      _damage,
+    const eTeam    _team)
 {
     m_combat.BeginTick();
     RegisterPlayer_();
@@ -172,7 +172,7 @@ size_t EnemyRig::Strike(
 }
 
 int EnemyRig::CountEvents(
-    eEnemyEventKind _kind) const
+    const eEnemyEventKind _kind) const
 {
     int count = 0;
     for (const EnemyEvent& event: m_events)
@@ -183,7 +183,7 @@ int EnemyRig::CountEvents(
 }
 
 int EnemyRig::SumScore(
-    eEnemyEventKind _kind) const
+    const eEnemyEventKind _kind) const
 {
     int sum = 0;
     for (const EnemyEvent& event: m_events)
@@ -197,7 +197,7 @@ int EnemyRig::SumScore(
 }
 
 const Enemy* EnemyRig::E(
-    EnemyHandle _handle) const
+    const EnemyHandle _handle) const
 {
     return m_world.Get(_handle);
 }

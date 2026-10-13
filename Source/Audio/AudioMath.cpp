@@ -2,7 +2,7 @@
 
 #include "Base/Math.h"
 
-AudioRng::AudioRng(uint32_t _seed)
+AudioRng::AudioRng(const uint32_t _seed)
     : m_state(_seed == 0 ? 1u : _seed)
 {
 }
@@ -30,7 +30,7 @@ void BgmFader::Reset()
 }
 
 void BgmFader::BeginFadeOut(
-    float _seconds)
+    const float _seconds)
 {
     if (_seconds <= 0.f)
     {
@@ -45,7 +45,7 @@ void BgmFader::BeginFadeOut(
 }
 
 bool BgmFader::Update(
-    float _dtSec)
+    const float _dtSec)
 {
     if (!bFading)
     {
@@ -61,8 +61,8 @@ bool BgmFader::IsDone() const
 }
 
 float ComputePitch(
-    float _variation,
-    float _unit01)
+    const float _variation,
+    const float _unit01)
 {
     const float v = Clamp(_variation, 0.f, 0.9f);
     return 1.f + v * (_unit01 * 2.f - 1.f);

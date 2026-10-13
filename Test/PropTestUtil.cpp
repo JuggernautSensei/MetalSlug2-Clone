@@ -39,9 +39,9 @@ bool LoadLibs(
 }
 
 HitEvent MakeHit(
-    uint32_t _target,
-    int      _damage,
-    eHitKind _kind)
+    const uint32_t _target,
+    const int      _damage,
+    const eHitKind _kind)
 {
     HitEvent ev;
     ev.damage       = _damage;
@@ -53,9 +53,9 @@ HitEvent MakeHit(
 }
 
 GroundMap MakeFloorMap(
-    int _w,
-    int _h,
-    int _floorY)
+    const int _w,
+    const int _h,
+    const int _floorY)
 {
     GroundMap map = GroundMap::MakeEmpty(_w, _h);
     map.FillRect(0, _floorY, _w - 1, _h - 1, true);
@@ -63,7 +63,7 @@ GroundMap MakeFloorMap(
 }
 
 Body MakeBody(
-    VECTOR2 _feet)
+    const VECTOR2 _feet)
 {
     Body body;
     body.position = _feet;

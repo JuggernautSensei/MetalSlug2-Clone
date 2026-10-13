@@ -10,11 +10,11 @@
 namespace
 {
 [[nodiscard]] HudItem MakeText_(
-    String     _text,
-    int        _x,
-    int        _y,
-    eTextAlign _align,
-    eFontColor _color)
+    String           _text,
+    const int        _x,
+    const int        _y,
+    const eTextAlign _align,
+    const eFontColor _color)
 {
     HudItem item;
     item.kind        = eHudItemKind::Text;
@@ -28,10 +28,10 @@ namespace
 }
 
 [[nodiscard]] HudItem MakeSprite_(
-    String _name,
-    int    _centerX,
-    int    _centerY,
-    int    _scale = 1)
+    String    _name,
+    const int _centerX,
+    const int _centerY,
+    const int _scale = 1)
 {
     HudItem item;
     item.kind  = eHudItemKind::Sprite;
@@ -44,25 +44,25 @@ namespace
 }   // namespace
 
 String FormatScore(
-    int _score)
+    const int _score)
 {
     return std::to_string(Clamp(_score, 0, 9'999'999));
 }
 
 String FormatAmmo(
-    int _ammo)
+    const int _ammo)
 {
     return std::to_string(Clamp(_ammo, 0, 999));
 }
 
 String FormatBombs(
-    int _bombs)
+    const int _bombs)
 {
     return std::to_string(Clamp(_bombs, 0, 99));
 }
 
 String FormatTimer(
-    int _seconds)
+    const int _seconds)
 {
     return std::format("{:02}", Clamp(_seconds, 0, 99));
 }
@@ -215,8 +215,8 @@ int DisplayTimer::GetRemainingTicks() const
 }
 
 bool IsBlinkOn(
-    int _tick,
-    int _periodTicks)
+    const int _tick,
+    const int _periodTicks)
 {
     return _periodTicks <= 0 || ((_tick / _periodTicks) % 2) == 0;
 }

@@ -29,7 +29,7 @@ class IntegrationSim
 {
 public:
     explicit IntegrationSim(
-        bool _bDebugDraw = false)
+        const bool _bDebugDraw = false)
     {
         g_debug.bDebugDraw = _bDebugDraw;
         m_pState           = new StageState;
@@ -44,9 +44,9 @@ public:
     ~IntegrationSim() { g_debug = {}; }
 
     void BotStep(
-        bool _bRight,
-        bool _bShoot,
-        int  _count = 1)
+        const bool _bRight,
+        const bool _bShoot,
+        const int  _count = 1)
     {
         for (int i = 0; i < _count; ++i)
         {
@@ -91,7 +91,7 @@ public:
     }
 
     void Step(
-        int _count = 1)
+        const int _count = 1)
     {
         for (int i = 0; i < _count; ++i)
         {
@@ -100,7 +100,7 @@ public:
         }
     }
 
-    void Hold(eAction _action) { m_frame.Set(_action, true); }
+    void Hold(const eAction _action) { m_frame.Set(_action, true); }
 
     [[nodiscard]] bool IsBossAlive() const
     {
@@ -140,8 +140,8 @@ public:
     }
 
     void Warp(
-        int _code,
-        int _count = 1)
+        const int _code,
+        const int _count = 1)
     {
         for (int i = 0; i < _count; ++i)
         {
@@ -153,7 +153,7 @@ public:
 
 private:
     [[nodiscard]] bool IsWallAhead_(
-        VECTOR2 _feet) const
+        const VECTOR2 _feet) const
     {
         constexpr float kRange = 46.f;
         for (const Wall& wall: m_pState->GetProps().GetWalls())
@@ -206,7 +206,7 @@ public:
     }
 
     void Step(
-        int _count = 1)
+        const int _count = 1)
     {
         for (int i = 0; i < _count; ++i)
         {
@@ -713,8 +713,8 @@ TEST(StageIntegration, ScriptedBotRunIsDeterministicOver3000Ticks)
 namespace
 {
 [[nodiscard]] bool KillFirstAlive_(
-    StageState&    _state,
-    eEnemyBehavior _behavior)
+    StageState&          _state,
+    const eEnemyBehavior _behavior)
 {
     Vector<HitEvent> hits;
     for (const Enemy& enemy: _state.GetEnemies().GetEnemies())
@@ -740,8 +740,8 @@ namespace
 }
 
 [[nodiscard]] bool HasAlive_(
-    const StageState& _state,
-    eEnemyBehavior    _behavior)
+    const StageState&    _state,
+    const eEnemyBehavior _behavior)
 {
     for (const Enemy& enemy: _state.GetEnemies().GetEnemies())
     {
@@ -1195,7 +1195,7 @@ void ReachBossArena_(
 void RecordBossEntry_(
     IntegrationSim&    _sim,
     BossEntryRecorder& _rec,
-    int                _ticks)
+    const int          _ticks)
 {
     ReachBossArena_(_sim, &_rec);
     for (int t = 0; t < _ticks; ++t)

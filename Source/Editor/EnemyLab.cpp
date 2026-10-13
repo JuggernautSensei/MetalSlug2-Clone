@@ -21,17 +21,17 @@ constexpr float kLabPlayerGap  = 120.f;
 namespace
 {
 void LabDrawText_(
-    Renderer&  _renderer,
-    VECTOR2    _topLeft,
-    StringView _text,
-    RGBA       _color)
+    Renderer&        _renderer,
+    const VECTOR2    _topLeft,
+    const StringView _text,
+    const RGBA       _color)
 {
     _renderer.DrawDebugText({ _topLeft.x + 1.f, _topLeft.y + 1.f }, _text, { 0, 0, 0, 255 });
     _renderer.DrawDebugText(_topLeft, _text, _color);
 }
 
 [[nodiscard]] const char* LabLifeName_(
-    eEnemyLife _life)
+    const eEnemyLife _life)
 {
     switch (_life)
     {
@@ -70,11 +70,11 @@ void EnemyLab::SetAutoSpawn(
 }
 
 EnemyHandle EnemyLab::Spawn(
-    SandboxState& _state,
-    StringView    _defName,
-    VECTOR2       _feet,
-    int           _facing,
-    int           _z)
+    SandboxState&    _state,
+    const StringView _defName,
+    const VECTOR2    _feet,
+    const int        _facing,
+    const int        _z)
 {
     SpawnParams params;
     params.facing            = _facing < 0 ? -1 : 1;
@@ -89,11 +89,11 @@ EnemyHandle EnemyLab::Spawn(
 }
 
 EnemyHandle EnemyLab::SpawnNearPlayer(
-    SandboxState& _state,
-    StringView    _defName,
-    float         _offsetX,
-    int           _facing,
-    int           _z)
+    SandboxState&    _state,
+    const StringView _defName,
+    const float      _offsetX,
+    const int        _facing,
+    const int        _z)
 {
     const VECTOR2 feet = _state.GetPlayer().GetFeet();
     return Spawn(_state, _defName, { feet.x + _offsetX, feet.y }, _facing, _z);
@@ -157,13 +157,13 @@ bool EnemyLab::ReloadDefsKeep(
 }
 
 void EnemyLab::SetAutoReloadBlocked(
-    bool _bBlocked)
+    const bool _bBlocked)
 {
     m_bAutoBlocked = _bBlocked;
 }
 
 void EnemyLab::SetMouseCaptured(
-    bool _bCaptured)
+    const bool _bCaptured)
 {
     m_bMouseCaptured = _bCaptured;
 }
@@ -209,7 +209,7 @@ void EnemyLab::ForgetSet()
 
 void EnemyLab::SelectAt(
     const SandboxState& _state,
-    VECTOR2             _world)
+    const VECTOR2       _world)
 {
     m_selected                 = {};
     const EnemyDefLibrary& lib = _state.GetEnemyLib();
@@ -239,13 +239,13 @@ size_t EnemyLab::GetSetCount() const
 }
 
 void EnemyLab::SetPaused(
-    bool _bPaused)
+    const bool _bPaused)
 {
     m_bPaused = _bPaused;
 }
 
 void EnemyLab::RequestSteps(
-    int _count)
+    const int _count)
 {
     if (_count > 0)
     {
@@ -254,7 +254,7 @@ void EnemyLab::RequestSteps(
 }
 
 void EnemyLab::SetTimeScale(
-    float _scale)
+    const float _scale)
 {
     m_timeScale = _scale < 0.05f ? 0.05f : _scale;
 }
@@ -265,7 +265,7 @@ float EnemyLab::GetTimeScale() const
 }
 
 int EnemyLab::TakeSteps(
-    int _naturalSteps)
+    const int _naturalSteps)
 {
     if (!m_bPaused)
     {
@@ -551,11 +551,11 @@ void EnemyLab::HandleMouse_(
 }
 
 void EnemyLab::DrawMark(
-    Renderer&   _renderer,
-    const Aabb& _world,
-    VECTOR2     _anchor,
-    RGBA        _color,
-    StringView  _label) const
+    Renderer&        _renderer,
+    const Aabb&      _world,
+    const VECTOR2    _anchor,
+    const RGBA       _color,
+    const StringView _label) const
 {
     const SandboxState* pState = GetSandbox();
     if (pState == nullptr)

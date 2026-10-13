@@ -16,15 +16,15 @@ constexpr float kWallExtentY = 4000.f;
 namespace
 {
 void MixU64_(
-    Fnv1a&   _hasher,
-    uint64_t _value)
+    Fnv1a&         _hasher,
+    const uint64_t _value)
 {
     _hasher.Mix(_value);
 }
 
 void MixFloat_(
-    Fnv1a& _hasher,
-    float  _value)
+    Fnv1a&      _hasher,
+    const float _value)
 {
     uint32_t bits = 0;
     std::memcpy(&bits, &_value, sizeof(bits));
@@ -45,7 +45,7 @@ StageRunner::StageRunner(
 }
 
 int64_t StageRunner::ToTicks_(
-    float _seconds)
+    const float _seconds)
 {
     return static_cast<int64_t>(std::llround(static_cast<double>(_seconds) * kTicksPerSec));
 }
@@ -158,7 +158,7 @@ bool StageRunner::HasPermanentLock() const
 }
 
 bool StageRunner::IsCurveActive(
-    size_t _curveIndex) const
+    const size_t _curveIndex) const
 {
     return _curveIndex < m_curveActive.size() && m_curveActive[_curveIndex] != 0;
 }
@@ -181,7 +181,7 @@ void StageRunner::ApplyCameraLock_()
 }
 
 VECTOR2 StageRunner::ComputeCameraTarget(
-    VECTOR2 _playerFeet) const
+    const VECTOR2 _playerFeet) const
 {
     return { _playerFeet.x + m_cameraOffset.x, _playerFeet.y - kStageCameraTargetLift + m_cameraOffset.y };
 }
@@ -237,7 +237,7 @@ void StageRunner::Tick()
 }
 
 void StageRunner::AddCameraScroll(
-    float _dx)
+    const float _dx)
 {
     if (_dx == 0.f)
     {
@@ -392,8 +392,8 @@ void StageRunner::ProcessGates_()
 }
 
 void StageRunner::FireSection_(
-    int  _index,
-    bool _bSilent)
+    const int  _index,
+    const bool _bSilent)
 {
     const StageSection& section = m_pData->sections[static_cast<size_t>(_index)];
 
@@ -627,7 +627,7 @@ void StageRunner::ExecClear_(
 }
 
 StageRunner::SpawnRecord* StageRunner::FindRecord_(
-    StringView _stageId)
+    const StringView _stageId)
 {
     for (SpawnRecord& record: m_records)
     {
@@ -640,7 +640,7 @@ StageRunner::SpawnRecord* StageRunner::FindRecord_(
 }
 
 const StageRunner::SpawnRecord* StageRunner::FindRecord_(
-    StringView _stageId) const
+    const StringView _stageId) const
 {
     for (const SpawnRecord& record: m_records)
     {
@@ -653,14 +653,14 @@ const StageRunner::SpawnRecord* StageRunner::FindRecord_(
 }
 
 Span<const SpawnId> StageRunner::FindSpawnIds(
-    StringView _stageId) const
+    const StringView _stageId) const
 {
     const SpawnRecord* pRecord = FindRecord_(_stageId);
     return pRecord ? Span<const SpawnId> { pRecord->ids } : Span<const SpawnId> {};
 }
 
 bool StageRunner::WasSpawnSkipped(
-    StringView _stageId) const
+    const StringView _stageId) const
 {
     const SpawnRecord* pRecord = FindRecord_(_stageId);
     return pRecord && pRecord->ids.empty();
@@ -669,7 +669,7 @@ bool StageRunner::WasSpawnSkipped(
 void StageRunner::ExecSpawn_(
     const SpawnSpec&   _spec,
     const ExecContext& _ctx,
-    bool               _bWave)
+    const bool         _bWave)
 {
     const int count = _spec.GetCount();
     for (int i = 0; i < count; ++i)
@@ -788,7 +788,7 @@ void StageRunner::ExecSpawn_(
 }
 
 bool StageRunner::WarpToSection(
-    StringView _id)
+    const StringView _id)
 {
     const int index = m_pData->FindSection(_id);
     return index >= 0 && WarpToSection(index);
@@ -805,7 +805,7 @@ bool StageRunner::WarpToBoss()
 }
 
 bool StageRunner::WarpToX(
-    float _x)
+    const float _x)
 {
     int index = m_nextSection;
     while (index < static_cast<int>(m_pData->sections.size()) && m_pData->sections[static_cast<size_t>(index)].triggerX < _x)
@@ -820,7 +820,7 @@ bool StageRunner::WarpToX(
 }
 
 bool StageRunner::WarpToSection(
-    int _index)
+    const int _index)
 {
     if (_index < 0 || _index >= static_cast<int>(m_pData->sections.size()))
     {
@@ -830,8 +830,8 @@ bool StageRunner::WarpToSection(
 }
 
 bool StageRunner::WarpToSection_(
-    int   _index,
-    float _targetX)
+    const int   _index,
+    const float _targetX)
 {
     if (_index < m_nextSection || _index >= static_cast<int>(m_pData->sections.size()) || m_bFinished)
     {

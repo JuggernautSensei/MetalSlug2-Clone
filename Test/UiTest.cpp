@@ -27,8 +27,8 @@ namespace
 {
 [[nodiscard]] const HudItem* FindItem_(
     const Vector<HudItem>& _items,
-    eHudItemKind           _kind,
-    StringView             _text)
+    const eHudItemKind     _kind,
+    const StringView       _text)
 {
     for (const HudItem& item: _items)
     {
@@ -42,7 +42,7 @@ namespace
 
 [[nodiscard]] int CountKind_(
     const Vector<HudItem>& _items,
-    eHudItemKind           _kind)
+    const eHudItemKind     _kind)
 {
     int count = 0;
     for (const HudItem& item: _items)
@@ -53,7 +53,7 @@ namespace
 }
 
 [[nodiscard]] VECTOR2 SpriteSize_(
-    StringView _name)
+    const StringView _name)
 {
     static const RbMap<String, VECTOR2> kSizes = {
         { "PlayerStateUI_Bomb", { 124.f, 34.f } },
@@ -111,7 +111,7 @@ void AdvanceFlowTo_(
     UiSystem&    _ui,
     ScreenFlow&  _flow,
     AudioSystem& _audio,
-    int          _tick)
+    const int    _tick)
 {
     while (_t < _tick)
     {
@@ -1001,8 +1001,8 @@ struct TitleSim
     }
 
     void Step(
-        eAction _action,
-        bool    _bHeld)
+        const eAction _action,
+        const bool    _bHeld)
     {
         InputFrame frame;
         frame.Set(_action, _bHeld);
@@ -1010,7 +1010,7 @@ struct TitleSim
     }
 
     void Idle(
-        int _ticks)
+        const int _ticks)
     {
         for (int i = 0; i < _ticks; ++i)
         {

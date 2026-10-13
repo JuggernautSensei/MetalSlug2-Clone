@@ -1,9 +1,9 @@
 #include "PlayerTestUtil.h"
 
 GroundMap MakeFlatGround(
-    int _width,
-    int _height,
-    int _floorY)
+    const int _width,
+    const int _height,
+    const int _floorY)
 {
     GroundMap map = GroundMap::MakeEmpty(_width, _height);
     map.FillRect(0, _floorY, _width - 1, _height - 1, true);
@@ -11,8 +11,8 @@ GroundMap MakeFlatGround(
 }
 
 SandboxConfig MakeConfig(
-    GroundMap _ground,
-    VECTOR2   _spawn)
+    GroundMap     _ground,
+    const VECTOR2 _spawn)
 {
     SandboxConfig config;
     config.bLoadGround     = false;
@@ -54,12 +54,12 @@ Tuning& Sim::Tune()
     return m_pState->GetTuning();
 }
 
-void Sim::Hold(eAction _action)
+void Sim::Hold(const eAction _action)
 {
     m_frame.Set(_action, true);
 }
 
-void Sim::Release(eAction _action)
+void Sim::Release(const eAction _action)
 {
     m_frame.Set(_action, false);
 }
@@ -69,13 +69,13 @@ void Sim::ReleaseAll()
     m_frame = {};
 }
 
-void Sim::Set(eAction _action, bool _bHeld)
+void Sim::Set(const eAction _action, const bool _bHeld)
 {
     m_frame.Set(_action, _bHeld);
 }
 
 void Sim::Step(
-    int _count)
+    const int _count)
 {
     for (int i = 0; i < _count; ++i)
     {
@@ -84,7 +84,7 @@ void Sim::Step(
 }
 
 void Sim::Tap(
-    eAction _action)
+    const eAction _action)
 {
     Hold(_action);
     Step();
@@ -92,14 +92,14 @@ void Sim::Tap(
 }
 
 void Sim::StepWith(
-    InputFrame _frame)
+    const InputFrame _frame)
 {
     m_frame = _frame;
     m_pRunner->Step(_frame);
 }
 
 int Sim::StepUntilGrounded(
-    int _maxTicks)
+    const int _maxTicks)
 {
     for (int i = 0; i < _maxTicks; ++i)
     {
@@ -113,7 +113,7 @@ int Sim::StepUntilGrounded(
 }
 
 int Sim::StepUntilAirborne(
-    int _maxTicks)
+    const int _maxTicks)
 {
     for (int i = 0; i < _maxTicks; ++i)
     {
@@ -127,7 +127,7 @@ int Sim::StepUntilAirborne(
 }
 
 int Sim::StepUntilDead(
-    int _maxTicks)
+    const int _maxTicks)
 {
     for (int i = 0; i < _maxTicks; ++i)
     {
@@ -141,8 +141,8 @@ int Sim::StepUntilDead(
 }
 
 int Sim::StepUntilWeapon(
-    int     _maxTicks,
-    eWeapon _weapon)
+    const int     _maxTicks,
+    const eWeapon _weapon)
 {
     for (int i = 0; i < _maxTicks; ++i)
     {

@@ -1,7 +1,7 @@
 #include "Editor/JsonScan.h"
 
 JsonScanner::JsonScanner(
-    StringView _text)
+    const StringView _text)
     : m_text(_text)
 {
     if (m_text.size() >= 3 && m_text.substr(0, 3) == "\xEF\xBB\xBF")
@@ -48,7 +48,7 @@ bool JsonScanner::ReadString_(
 }
 
 int JsonScanner::Value_(
-    int _depth)
+    const int _depth)
 {
     SkipWs_();
     if (m_bFail || m_pos >= m_text.size() || _depth > 64)

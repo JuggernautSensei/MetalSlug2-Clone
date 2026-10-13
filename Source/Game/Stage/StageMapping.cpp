@@ -15,7 +15,7 @@ namespace
 {
 [[nodiscard]] VECTOR2 ReadVec2_(
     const ParamValue& _value,
-    VECTOR2           _default)
+    const VECTOR2     _default)
 {
     if (!_value.IsArray() || _value.GetSize() < 2)
     {
@@ -46,7 +46,7 @@ namespace
 
 PropSpawnParams MakePropSpawnParams(
     const ParamValue* const _pParams,
-    int                     _z)
+    const int               _z)
 {
     PropSpawnParams out = {};
     out.z               = _z;
@@ -135,7 +135,7 @@ std::optional<GroundMap> LoadGroundMask(
 }
 
 VECTOR2 ItemFeetFromCenter(
-    VECTOR2 _center)
+    const VECTOR2 _center)
 {
     return { _center.x, _center.y + 16.f };
 }

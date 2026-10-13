@@ -10,8 +10,8 @@
 namespace
 {
 [[nodiscard]] const TrainingDummy& Dummy_(
-    Sim&     _sim,
-    uint32_t _id)
+    Sim&           _sim,
+    const uint32_t _id)
 {
     const TrainingDummy* pDummy = _sim.State().GetTargets().Find(_id);
     EXPECT_NE(pDummy, nullptr);
@@ -70,9 +70,9 @@ void NoSpread_(
 }
 
 [[nodiscard]] int StepUntilDummyDead_(
-    Sim&     _sim,
-    uint32_t _id,
-    int      _maxTicks)
+    Sim&           _sim,
+    const uint32_t _id,
+    const int      _maxTicks)
 {
     for (int i = 0; i < _maxTicks; ++i)
     {
@@ -86,8 +86,8 @@ void NoSpread_(
 }
 
 [[nodiscard]] float StepUntilShotAngleDeg_(
-    Sim& _sim,
-    int  _maxTicks)
+    Sim&      _sim,
+    const int _maxTicks)
 {
     const int before = _sim.Player().GetStats().shotsFired;
     for (int i = 0; i < _maxTicks; ++i)
@@ -262,7 +262,7 @@ TEST(PlayerShot, HmgBurstLengthIsShotsTimesInterval)
 }
 
 void ExpectHmgJitterIsPerpendicular_(
-    bool _bAimUp)
+    const bool _bAimUp)
 {
     Sim sim;
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
@@ -971,7 +971,7 @@ struct Harness
     }
 
     bool Tick(
-        InputFrame            _input  = {},
+        const InputFrame      _input  = {},
         const Vector<Hitbox>& _inject = {})
     {
         history.Push(_input);
@@ -998,7 +998,7 @@ struct Harness
     }
 
     void Run(
-        int _count)
+        const int _count)
     {
         for (int i = 0; i < _count; ++i)
         {
@@ -1007,8 +1007,8 @@ struct Harness
     }
 
     [[nodiscard]] Hitbox EnemyHit(
-        eHitKind _kind,
-        eTeam    _team = eTeam::Enemy) const
+        const eHitKind _kind,
+        const eTeam    _team = eTeam::Enemy) const
     {
         Hitbox hit;
         hit.box    = Aabb::FromBottomCenter(player.GetFeet(), { 40.f, 60.f });

@@ -45,7 +45,7 @@ namespace
 
 void PlayerController::Reset(
     const Tuning& _tuning,
-    VECTOR2       _spawnFeet)
+    const VECTOR2 _spawnFeet)
 {
     m_pTuning = &_tuning;
 
@@ -105,7 +105,7 @@ void PlayerController::Reset(
 
 bool PlayerController::SnapToGround(
     const PhysicsWorld& _world,
-    float               _maxDist)
+    const float         _maxDist)
 {
     return Physics::SnapToGround(m_body, _world, _maxDist);
 }
@@ -182,7 +182,7 @@ void PlayerController::StartChuteRelease_()
 }
 
 void PlayerController::PickUpWeapon(
-    eWeapon       _weapon,
+    const eWeapon _weapon,
     const Tuning& _tuning)
 {
     GiveWeapon(m_weapon, _weapon, _tuning.weapons.GetPickupAmmo(_weapon));
@@ -211,7 +211,7 @@ void PlayerController::SetVictory()
 }
 
 bool PlayerController::OnHitEvents(
-    Span<const HitEvent> _events)
+    const Span<const HitEvent> _events)
 {
     for (const HitEvent& event: _events)
     {
@@ -1011,8 +1011,8 @@ void PlayerController::BeginRide()
 }
 
 void PlayerController::SetRideFeet(
-    VECTOR2 _feet,
-    int     _facing)
+    const VECTOR2 _feet,
+    const int     _facing)
 {
     m_body.position = _feet;
     m_prevFeet      = _feet;
@@ -1020,10 +1020,10 @@ void PlayerController::SetRideFeet(
 }
 
 void PlayerController::EndRide(
-    VECTOR2 _feet,
-    VECTOR2 _velocity,
-    int     _facing,
-    int     _invincibleTicks)
+    const VECTOR2 _feet,
+    const VECTOR2 _velocity,
+    const int     _facing,
+    const int     _invincibleTicks)
 {
     if (!m_bRiding)
     {
@@ -1053,13 +1053,13 @@ bool PlayerController::IsRiding() const
 }
 
 void PlayerController::AddScore(
-    int _score)
+    const int _score)
 {
     m_score += _score;
 }
 
 void PlayerController::AddBombs(
-    int _count)
+    const int _count)
 {
     m_weapon.bombs += _count;
 }
@@ -1140,7 +1140,7 @@ int PlayerController::GetInvincibleTicks() const
 }
 
 void PlayerController::ExtendInvincibility(
-    int _ticks)
+    const int _ticks)
 {
     m_invincibleTicks = (_ticks > m_invincibleTicks) ? _ticks : m_invincibleTicks;
 }
@@ -1191,7 +1191,7 @@ int PlayerController::GetZ() const
 }
 
 void PlayerController::SetZ(
-    int _z)
+    const int _z)
 {
     m_z = _z;
 }

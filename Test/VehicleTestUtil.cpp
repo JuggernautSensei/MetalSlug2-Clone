@@ -19,8 +19,8 @@ bool LoadVehicleLib(
 }
 
 VehicleRig::VehicleRig(
-    VECTOR2 _player,
-    float   _camLeft)
+    const VECTOR2 _player,
+    const float   _camLeft)
     : m_world(&m_lib, 7)
     , m_ground(MakeFlatGround(3000))
     , m_player(
@@ -67,20 +67,20 @@ Vector<EnemyEvent>& VehicleRig::Events()
 }
 
 void VehicleRig::SetPlayer(
-    VECTOR2 _feet)
+    const VECTOR2 _feet)
 {
     m_player = _feet;
 }
 
 void VehicleRig::SetView(
-    float _camLeft)
+    const float _camLeft)
 {
     m_view = Aabb::FromMinSize({ _camLeft, 0.f }, { 640.f, 448.f });
 }
 
 EnemyHandle VehicleRig::Spawn(
     const char*        _name,
-    VECTOR2            _feet,
+    const VECTOR2      _feet,
     const SpawnParams& _params)
 {
     const PhysicsWorld world = MakeWorld_();
@@ -88,7 +88,7 @@ EnemyHandle VehicleRig::Spawn(
 }
 
 void VehicleRig::Step(
-    int _count)
+    const int _count)
 {
     for (int i = 0; i < _count; ++i)
     {
@@ -113,10 +113,10 @@ int VehicleRig::Ticks() const
 }
 
 size_t VehicleRig::Strike(
-    uint32_t _owner,
-    eHitKind _kind,
-    int      _damage,
-    eTeam    _team)
+    const uint32_t _owner,
+    const eHitKind _kind,
+    const int      _damage,
+    const eTeam    _team)
 {
     m_combat.BeginTick();
     RegisterPlayer_();
@@ -152,7 +152,7 @@ size_t VehicleRig::Strike(
 }
 
 int VehicleRig::CountEvents(
-    eEnemyEventKind _kind) const
+    const eEnemyEventKind _kind) const
 {
     int count = 0;
     for (const EnemyEvent& event: m_events)
@@ -163,7 +163,7 @@ int VehicleRig::CountEvents(
 }
 
 int VehicleRig::SumScore(
-    eEnemyEventKind _kind) const
+    const eEnemyEventKind _kind) const
 {
     int sum = 0;
     for (const EnemyEvent& event: m_events)
@@ -177,7 +177,7 @@ int VehicleRig::SumScore(
 }
 
 int VehicleRig::CountShots(
-    EnemyHandle _owner) const
+    const EnemyHandle _owner) const
 {
     int count = 0;
     for (const Shot& shot: m_projectiles.GetShots())
@@ -188,7 +188,7 @@ int VehicleRig::CountShots(
 }
 
 const Enemy* VehicleRig::E(
-    EnemyHandle _handle) const
+    const EnemyHandle _handle) const
 {
     return m_world.Get(_handle);
 }

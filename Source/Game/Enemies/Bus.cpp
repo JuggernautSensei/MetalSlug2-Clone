@@ -30,8 +30,8 @@ namespace
 {
 [[nodiscard]] VECTOR2 Local_(
     const BusCfg& _c,
-    VECTOR2       _feet,
-    VECTOR2       _at)
+    const VECTOR2 _feet,
+    const VECTOR2 _at)
 {
     return { _feet.x + (_at.x - _c.anchor.x) * _c.pxPerSheetPx, _feet.y + (_at.y - _c.anchor.y) * _c.pxPerSheetPx };
 }
@@ -39,17 +39,17 @@ namespace
 void SubmitPart_(
     const EnemyRenderEnv& _render,
     const EnemyPartDepth& _depth,
-    StringView            _clip,
-    VECTOR2               _at,
-    int                   _ticks,
-    bool                  _bLoop)
+    const StringView      _clip,
+    const VECTOR2         _at,
+    const int             _ticks,
+    const bool            _bLoop)
 {
     SubmitNamedPart(_render, _clip, _at, _ticks, _bLoop, _depth.sort, _depth.depth);
 }
 
 // 차체 단계
 [[nodiscard]] int BodyLevel_(
-    int _stage)
+    const int _stage)
 {
     if (_stage <= 0)
     {
@@ -64,7 +64,7 @@ void SubmitPart_(
 
 [[nodiscard]] String Named_(
     const char* _base,
-    int         _level)
+    const int   _level)
 {
     return String(_base) + std::to_string(_level);
 }
@@ -73,8 +73,8 @@ void SpawnBursts_(
     EnemyEnv&       _env,
     const Enemy&    _e,
     const EnemyDef& _def,
-    int             _stage,
-    bool            _bDeath)
+    const int       _stage,
+    const bool      _bDeath)
 {
     const BusCfg& c    = _def.bus;
     const VECTOR2 feet = _e.body.position;
@@ -99,7 +99,7 @@ void EnterStage_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
-    int             _stage)
+    const int       _stage)
 {
     _e.ext[static_cast<size_t>(_stage)] = _e.aux;
     SpawnBursts_(_env, _e, _def, _stage, false);
@@ -276,9 +276,9 @@ void SubmitDebris_(
 void SubmitDamaged_(
     const EnemyRenderEnv& _render,
     const BusCfg&         _c,
-    int                   _level,
-    VECTOR2               _feet,
-    bool                  _bCover)
+    const int             _level,
+    const VECTOR2         _feet,
+    const bool            _bCover)
 {
     const String back = Named_("Bus_BackD", _level);
     SubmitPart_(_render, _c.partBack, back, _feet, 0, false);
@@ -397,7 +397,7 @@ namespace
 {
 bool ReadNumField_(
     const JsonReader& _o,
-    StringView        _key,
+    const StringView  _key,
     float&            _out)
 {
     StringView reason;
@@ -406,7 +406,7 @@ bool ReadNumField_(
 
 bool ReadIntField_(
     const JsonReader& _o,
-    StringView        _key,
+    const StringView  _key,
     int&              _out)
 {
     float value = static_cast<float>(_out);
@@ -420,7 +420,7 @@ bool ReadIntField_(
 
 bool ReadStrField_(
     const JsonReader& _o,
-    StringView        _key,
+    const StringView  _key,
     String&           _out)
 {
     StringView reason;
@@ -429,7 +429,7 @@ bool ReadStrField_(
 
 bool ReadVecField_(
     const JsonReader& _o,
-    StringView        _key,
+    const StringView  _key,
     VECTOR2&          _out)
 {
     StringView reason;
@@ -438,7 +438,7 @@ bool ReadVecField_(
 
 void ParseBursts_(
     DefReader&           _r,
-    StringView           _key,
+    const StringView     _key,
     Vector<BusBurstDef>& _out)
 {
     const JsonReader* pList = _r.FindRaw(_key);

@@ -21,11 +21,11 @@ namespace
 }
 
 void HitN_(
-    PropWorld& _world,
-    PropHandle _id,
-    int        _times,
-    int        _damage,
-    eHitKind   _kind = eHitKind::Bullet)
+    PropWorld&       _world,
+    const PropHandle _id,
+    const int        _times,
+    const int        _damage,
+    const eHitKind   _kind = eHitKind::Bullet)
 {
     for (int i = 0; i < _times; ++i)
     {
@@ -36,7 +36,7 @@ void HitN_(
 
 void TickN_(
     PropWorld&             _world,
-    int                    _ticks,
+    const int              _ticks,
     const PropTickContext* _pCtx = nullptr)
 {
     PropTickContext ctx;
@@ -52,7 +52,7 @@ void TickN_(
 
 [[nodiscard]] bool HasEvent_(
     const Vector<PropEvent>& _events,
-    ePropEventKind           _kind)
+    const ePropEventKind     _kind)
 {
     for (const PropEvent& ev: _events)
     {
@@ -66,7 +66,7 @@ void TickN_(
 
 [[nodiscard]] int CountEvents_(
     const Vector<PropEvent>& _events,
-    ePropEventKind           _kind)
+    const ePropEventKind     _kind)
 {
     int n = 0;
     for (const PropEvent& ev: _events)
@@ -90,7 +90,7 @@ void TickN_(
 }
 
 [[nodiscard]] uint64_t HashAfterTrucks_(
-    uint64_t _seed)
+    const uint64_t _seed)
 {
     PropWorld world { &GetPropLib(), _seed };
     for (int i = 0; i < 6; ++i)

@@ -10,8 +10,8 @@ constexpr float kGroundY = 378.f;
 namespace
 {
 [[nodiscard]] int HitsToKill_(
-    eHitKind _kind,
-    int      _damage)
+    const eHitKind _kind,
+    const int      _damage)
 {
     EnemyRig rig;
     if (!rig.IsLoaded())

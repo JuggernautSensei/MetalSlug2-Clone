@@ -29,7 +29,7 @@ namespace
 }
 
 [[nodiscard]] uint64_t HashAfterTicks_(
-    int _ticks)
+    const int _ticks)
 {
     RunnerFixture fx { OneSection_(R"J([{"type":"banner","text":"x","seconds":1,"delay":1.0}])J") };
     fx.StepAt(5.f, _ticks);

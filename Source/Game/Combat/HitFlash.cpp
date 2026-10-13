@@ -1,7 +1,7 @@
 #include "Game/Combat/HitFlash.h"
 
 bool IsHitFlashOn(
-    int _ticksLeft)
+    const int _ticksLeft)
 {
     return _ticksLeft > kHitFlashGapTicks && _ticksLeft < kHitFlashTicks;
 }

@@ -27,14 +27,14 @@
     SpriteLibrary&    _sprites);
 
 [[nodiscard]] HitEvent MakeHit(
-    uint32_t _target,
-    int      _damage,
-    eHitKind _kind = eHitKind::Bullet);
+    const uint32_t _target,
+    const int      _damage,
+    const eHitKind _kind = eHitKind::Bullet);
 
 [[nodiscard]] GroundMap MakeFloorMap(
-    int _w,
-    int _h,
-    int _floorY);
+    const int _w,
+    const int _h,
+    const int _floorY);
 
 [[nodiscard]] Body MakeBody(
-    VECTOR2 _feet);
+    const VECTOR2 _feet);

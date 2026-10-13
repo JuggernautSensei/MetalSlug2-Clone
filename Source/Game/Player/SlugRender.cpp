@@ -14,8 +14,8 @@ namespace
 {
 [[nodiscard]] const AnimFrame* GetFrame_(
     const AnimationLibrary& _anims,
-    StringView              _name,
-    int                     _frame)
+    const StringView        _name,
+    const int               _frame)
 {
     const AnimClip* pClip = _anims.FindClip(_name);
     if (pClip == nullptr || pClip->frames.empty())
@@ -28,16 +28,16 @@ namespace
 
 [[nodiscard]] const AnimFrame* GetClipFrame_(
     const AnimationLibrary& _anims,
-    eSlugClip               _clip,
-    int                     _frame)
+    const eSlugClip         _clip,
+    const int               _frame)
 {
     return GetFrame_(_anims, GetSlugClipInfo(_clip).pName, _frame);
 }
 
 [[nodiscard]] const AnimFrame* GetTimedFrame_(
     const AnimationLibrary& _anims,
-    StringView              _name,
-    int                     _ageTicks)
+    const StringView        _name,
+    const int               _ageTicks)
 {
     const AnimClip* pClip = _anims.FindClip(_name);
     if (pClip == nullptr || pClip->frames.empty())
@@ -53,7 +53,7 @@ void SubmitFx_(
     SpriteBatch&            _sprites,
     const AnimationLibrary& _anims,
     const SlugFx&           _fx,
-    int                     _depth)
+    const int               _depth)
 {
     SpriteDrawOptions options;
     options.bFlipX = _fx.facing < 0;
@@ -120,7 +120,7 @@ void SubmitFx_(
 }   // namespace
 
 eSlugClip GetSlugBodyClip(
-    eSlugPose _pose)
+    const eSlugPose _pose)
 {
     switch (_pose)
     {
@@ -144,7 +144,7 @@ eSlugClip GetSlugBodyClip(
 }
 
 bool IsSlugOwner(
-    uint32_t _owner)
+    const uint32_t _owner)
 {
     return _owner >= kSlugOwnerBase && _owner < kSlugOwnerBase + static_cast<uint32_t>(kMaxSlugs);
 }
@@ -153,7 +153,7 @@ void SubmitSlug(
     SpriteBatch&            _sprites,
     const AnimationLibrary& _anims,
     const SlugVehicle&      _slug,
-    float                   _alpha)
+    const float             _alpha)
 {
     if (_slug.GetMode() == eSlugMode::Gone)
     {
@@ -229,8 +229,8 @@ bool SubmitSlugBullet(
     SpriteBatch&            _sprites,
     const AnimationLibrary& _anims,
     const Bullet&           _bullet,
-    VECTOR2                 _position,
-    int                     _depth)
+    const VECTOR2           _position,
+    const int               _depth)
 {
     if (!IsSlugOwner(_bullet.owner))
     {
@@ -257,8 +257,8 @@ bool SubmitSlugShell(
     SpriteBatch&            _sprites,
     const AnimationLibrary& _anims,
     const Bomb&             _bomb,
-    VECTOR2                 _position,
-    int                     _depth)
+    const VECTOR2           _position,
+    const int               _depth)
 {
     if (!IsSlugOwner(_bomb.params.owner))
     {

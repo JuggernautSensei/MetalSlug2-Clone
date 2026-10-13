@@ -1,7 +1,7 @@
 #include "Core/FixedStep.h"
 
 int FixedStepClock::Advance(
-    double _deltaTimeSec)
+    const double _deltaTimeSec)
 {
     const double delta = _deltaTimeSec < 0.0 ? 0.0 : (_deltaTimeSec > kMaxFrameSec ? kMaxFrameSec : _deltaTimeSec);
     m_accumulatorSec += delta;

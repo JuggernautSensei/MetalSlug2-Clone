@@ -24,15 +24,15 @@ constexpr const char* kTallBounds = R"J({"initialBounds":[0,0,4000,1000]})J";
 namespace
 {
 [[nodiscard]] std::optional<float> PlayerStartGround_(
-    float _x,
+    const float _x,
     const float)
 {
     return _x == 100.f ? std::optional<float> { 352.f } : std::nullopt;
 }
 
 [[nodiscard]] std::optional<float> SnapGround_(
-    float _x,
-    float _fromY)
+    const float _x,
+    const float _fromY)
 {
     if (_x < 1000.f && _fromY <= 300.f)
     {
@@ -42,8 +42,8 @@ namespace
 }
 
 [[nodiscard]] Vector<float> CollectWaveXs_(
-    const String& _json,
-    uint64_t      _seed)
+    const String&  _json,
+    const uint64_t _seed)
 {
     RunnerFixture fx { _json };
     fx.rng.Reseed(_seed);

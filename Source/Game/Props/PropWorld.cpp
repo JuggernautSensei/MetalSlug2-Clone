@@ -14,15 +14,15 @@ constexpr float kHitFlashSec = 0.5f;   // 피격 연출 최대 길이
 namespace
 {
 [[nodiscard]] uint64_t MixHash_(
-    uint64_t _h,
-    uint64_t _v)
+    const uint64_t _h,
+    const uint64_t _v)
 {
     return (_h ^ _v) * 1'099'511'628'211ull;
 }
 
 [[nodiscard]] uint64_t MixFloat_(
-    uint64_t _h,
-    float    _f)
+    const uint64_t _h,
+    const float    _f)
 {
     uint32_t bits = 0;
     std::memcpy(&bits, &_f, sizeof(bits));
@@ -32,7 +32,7 @@ namespace
 
 PropWorld::PropWorld(
     const PropDefLibrary* _pLibrary,
-    uint64_t              _seed)
+    const uint64_t        _seed)
     : m_pLibrary(_pLibrary)
     , m_items(_pLibrary, _seed)
     , m_rng(_seed)
@@ -49,7 +49,7 @@ void PropWorld::SetLibrary(
 }
 
 void PropWorld::Reset(
-    uint64_t _seed)
+    const uint64_t _seed)
 {
     ClearAll();
     m_rng    = RngMt19937 { _seed };
@@ -71,14 +71,14 @@ void PropWorld::ClearAll()
 }
 
 float PropWorld::RollFloat_(
-    float _lo,
-    float _hi)
+    const float _lo,
+    const float _hi)
 {
     return RandRange(m_rng, _lo, _hi);
 }
 
 int PropWorld::RollInt_(
-    int _n)
+    const int _n)
 {
     if (_n <= 1)
     {
@@ -88,7 +88,7 @@ int PropWorld::RollInt_(
 }
 
 size_t PropWorld::FindIndex_(
-    PropHandle _id) const
+    const PropHandle _id) const
 {
     for (size_t i = 0; i < m_props.size(); ++i)
     {
@@ -101,35 +101,35 @@ size_t PropWorld::FindIndex_(
 }
 
 const PropInstance* PropWorld::Get(
-    PropHandle _handle) const
+    const PropHandle _handle) const
 {
     const size_t idx = FindIndex_(_handle);
     return idx < m_props.size() ? &m_props[idx] : nullptr;
 }
 
 bool PropWorld::IsDestroyed(
-    PropHandle _handle) const
+    const PropHandle _handle) const
 {
     const PropInstance* pInst = Get(_handle);
     return pInst == nullptr || pInst->bDestroyed;
 }
 
 bool PropWorld::IsDestroyFinished(
-    PropHandle _handle) const
+    const PropHandle _handle) const
 {
     const PropInstance* pInst = Get(_handle);
     return pInst == nullptr || (pInst->bDestroyed && pInst->destroyTimerSec >= pInst->destroyDurationSec);
 }
 
 bool PropWorld::IsAlive(
-    PropHandle _handle) const
+    const PropHandle _handle) const
 {
     const PropInstance* pInst = Get(_handle);
     return pInst != nullptr && !pInst->bDestroyed;
 }
 
 int PropWorld::GetHp(
-    PropHandle _handle) const
+    const PropHandle _handle) const
 {
     const PropInstance* pInst = Get(_handle);
     return pInst != nullptr ? pInst->health.hp : 0;
@@ -143,16 +143,16 @@ Vector<PropEvent> PropWorld::TakeEvents()
 }
 
 PropHandle PropWorld::Spawn(
-    StringView             _defName,
-    VECTOR2                _center,
+    const StringView       _defName,
+    const VECTOR2          _center,
     const PropSpawnParams& _params)
 {
     return SpawnByIndex(m_pLibrary->FindIndex(_defName), _center, _params);
 }
 
 PropHandle PropWorld::SpawnByIndex(
-    int                    _defIndex,
-    VECTOR2                _center,
+    const int              _defIndex,
+    const VECTOR2          _center,
     const PropSpawnParams& _params)
 {
     if (_defIndex < 0 || static_cast<size_t>(_defIndex) >= m_pLibrary->GetDefs().size())
@@ -233,10 +233,10 @@ PropHandle PropWorld::SpawnByIndex(
 }
 
 uint32_t PropWorld::SpawnItem(
-    StringView _name,
-    VECTOR2    _feet,
-    bool       _bBounce,
-    int        _z)
+    const StringView _name,
+    const VECTOR2    _feet,
+    const bool       _bBounce,
+    const int        _z)
 {
     return m_items.Spawn(_name, _feet, _bBounce, _z);
 }
@@ -281,7 +281,7 @@ void PropWorld::RegisterHurtboxes(
 }
 
 void PropWorld::OnHitEvents(
-    Span<const HitEvent> _events)
+    const Span<const HitEvent> _events)
 {
     for (const HitEvent& ev: _events)
     {
@@ -339,7 +339,7 @@ void PropWorld::OnHitEvents(
 void PropWorld::Destroy_(
     PropInstance&  _inst,
     const PropDef& _def,
-    VECTOR2        _center)
+    const VECTOR2  _center)
 {
     _inst.bDestroyed          = true;
     _inst.destroyTimerSec     = 0.f;
@@ -385,7 +385,7 @@ void PropWorld::Destroy_(
 
 void PropWorld::Detonate_(
     const PropBurst& _burst,
-    VECTOR2          _center)
+    const VECTOR2    _center)
 {
     for (const PropExplosion& e: _burst.explosions)
     {
@@ -413,7 +413,7 @@ void PropWorld::Detonate_(
 
 void PropWorld::QueueDrops_(
     const PropDef& _def,
-    VECTOR2        _center)
+    const VECTOR2  _center)
 {
     for (const PropDrop& drop: _def.drops)
     {
@@ -462,7 +462,7 @@ ePropVisual PropWorld::ComputeVisual_(
 void PropWorld::UpdateVisual_(
     PropInstance&           _inst,
     const AnimationLibrary* _pAnims,
-    float                   _dt)
+    const float             _dt)
 {
     if (_inst.bHitPlaying)
     {
@@ -775,7 +775,7 @@ void PropWorld::Submit(
 
 bool ApplyGroundPatch(
     GroundMap&       _map,
-    VECTOR2          _topLeft,
+    const VECTOR2    _topLeft,
     const GroundMap& _footprint)
 {
     // 발자국만 공기로 지운다
@@ -921,7 +921,7 @@ uint32_t PropWorld::SpawnDecor(
 }
 
 void PropWorld::ClearDecorByLayerMask(
-    uint32_t _layerMask)
+    const uint32_t _layerMask)
 {
     m_decor.ClearByLayerMask(_layerMask);
 }

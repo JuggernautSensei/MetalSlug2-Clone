@@ -29,9 +29,9 @@ namespace
 }
 
 void Go_(
-    Enemy&          _e,
-    const EnemyDef& _def,
-    eBTankState     _state)
+    Enemy&            _e,
+    const EnemyDef&   _def,
+    const eBTankState _state)
 {
     const BTankCfg& c = _def.btank;
     EnterState(_e, static_cast<int>(_state));

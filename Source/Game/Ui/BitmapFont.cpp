@@ -9,7 +9,7 @@
 namespace
 {
 [[nodiscard]] RGBA GetFontFallbackColor_(
-    eFontColor _color)
+    const eFontColor _color)
 {
     switch (_color)
     {
@@ -23,7 +23,7 @@ namespace
 }
 
 [[nodiscard]] const char* GetFontSpriteName_(
-    eFontColor _color)
+    const eFontColor _color)
 {
     switch (_color)
     {
@@ -38,9 +38,9 @@ namespace
 }   // namespace
 
 TextLayout LayoutText(
-    StringView       _text,
-    int              _x,
-    int              _y,
+    const StringView _text,
+    const int        _x,
+    const int        _y,
     const TextStyle& _style)
 {
     const int scale   = Max(1, _style.scale);
@@ -128,9 +128,9 @@ bool BitmapFont::Init(
 }
 
 AnimFrame BitmapFont::GetGlyphFrame(
-    eFontColor _color,
-    bool       _bBold,
-    int        _glyph) const
+    const eFontColor _color,
+    const bool       _bBold,
+    const int        _glyph) const
 {
     const AnimFrame& strip = m_strips[_color];
     if (strip.IsEmpty() || _glyph < 0 || _glyph >= kGlyphColumns)
@@ -149,7 +149,7 @@ AnimFrame BitmapFont::GetGlyphFrame(
 }
 
 AnimFrame BitmapFont::GetTimeDigitFrame(
-    int _digit) const
+    const int _digit) const
 {
     if (m_timeStrip.IsEmpty() || _digit < 0 || _digit > 9)
     {
@@ -169,9 +169,9 @@ AnimFrame BitmapFont::GetTimeDigitFrame(
 void BitmapFont::DrawText(
     Renderer&        _renderer,
     SpriteBatch&     _sprites,
-    int              _x,
-    int              _y,
-    StringView       _text,
+    const int        _x,
+    const int        _y,
+    const StringView _text,
     const TextStyle& _style) const
 {
     const TextLayout layout = LayoutText(_text, _x, _y, _style);
@@ -205,11 +205,11 @@ void BitmapFont::DrawText(
 }
 
 void BitmapFont::DrawTimeDigits(
-    SpriteBatch& _sprites,
-    int          _centerX,
-    int          _topY,
-    StringView   _digits,
-    uint8_t      _alpha) const
+    SpriteBatch&     _sprites,
+    const int        _centerX,
+    const int        _topY,
+    const StringView _digits,
+    const uint8_t    _alpha) const
 {
     constexpr int kCell = 32;
 
@@ -241,7 +241,7 @@ bool BitmapFont::HasSprites() const
 }
 
 int GetGlyphIndex(
-    char _ch)
+    const char _ch)
 {
     const char c = (_ch >= 'a' && _ch <= 'z') ? static_cast<char>(_ch - 'a' + 'A') : _ch;
     if (c >= 'A' && c <= 'Z')
@@ -260,9 +260,9 @@ int GetGlyphIndex(
 }
 
 int MeasureChars(
-    int _charCount,
-    int _scale,
-    int _letterSpacing)
+    const int _charCount,
+    const int _scale,
+    const int _letterSpacing)
 {
     return _charCount <= 0 ? 0 : _charCount * kGlyphSize * _scale + (_charCount - 1) * _letterSpacing;
 }

@@ -21,8 +21,8 @@ namespace
 void TickItems_(
     ItemWorld&          _items,
     const PhysicsWorld& _world,
-    int                 _ticks,
-    float               _camLeft = -1.0e9f)
+    const int           _ticks,
+    const float         _camLeft = -1.0e9f)
 {
     for (int i = 0; i < _ticks; ++i)
     {
@@ -50,12 +50,12 @@ void TickItems_(
 }
 
 [[nodiscard]] Aabb PlayerBoxAt_(
-    VECTOR2 _feet)
+    const VECTOR2 _feet)
 {
     return Aabb::FromBottomCenter(_feet, { 24.f, 40.f });
 }
 [[nodiscard]] String NamesFromSeed_(
-    uint64_t _seed)
+    const uint64_t _seed)
 {
     ItemWorld items { &GetPropLib(), _seed };
     String    out;
@@ -69,8 +69,8 @@ void TickItems_(
 }
 
 [[nodiscard]] uint64_t HashAfterSpawn_(
-    uint64_t    _seed,
-    const char* _item)
+    const uint64_t _seed,
+    const char*    _item)
 {
     const GroundMap ground = MakeFloorMap(400, 200, 140);
     ItemWorld       items { &GetPropLib(), _seed };

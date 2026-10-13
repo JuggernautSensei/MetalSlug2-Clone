@@ -15,14 +15,14 @@ constexpr double kUnitsPerSec = static_cast<double>(kAnimTimeUnitsPerSec);
 namespace
 {
 [[nodiscard]] int64_t ToUnits_(
-    double _sec)
+    const double _sec)
 {
     return static_cast<int64_t>(std::llround(_sec * kUnitsPerSec));
 }
 
 [[nodiscard]] bool ReadOptionalInt_(
     const JsonReader& _object,
-    StringView        _key,
+    const StringView  _key,
     int&              _out)
 {
     return !_object.HasField(_key) || ReadInt(_object, _key, _out);
@@ -49,7 +49,7 @@ namespace
 }
 
 [[nodiscard]] Result<AnimClip> ParseClip_(
-    StringView        _name,
+    const StringView  _name,
     const JsonReader& _json)
 {
     if (!_json.IsObject())
@@ -178,7 +178,7 @@ int64_t AnimClip::GetFrameDurationUnits() const
 }
 
 Result<AnimationLibrary> AnimationLibrary::LoadFromJson(
-    StringView _animJson)
+    const StringView _animJson)
 {
     Result<JsonDeserializer> doc = JsonDeserializer::Load(_animJson, kJsonBom);
     if (!doc)
@@ -261,7 +261,7 @@ AnimId AnimationLibrary::AddClip(
 }
 
 AnimId AnimationLibrary::Find(
-    StringView _name) const
+    const StringView _name) const
 {
     const NameMap::const_iterator it = m_nameToIndex.find(String { _name });
     if (it == m_nameToIndex.end())
@@ -272,33 +272,33 @@ AnimId AnimationLibrary::Find(
 }
 
 bool AnimationLibrary::IsValid(
-    AnimId _id) const
+    const AnimId _id) const
 {
     return !_id.IsNull() && _id.GetIndex() < m_clips.size();
 }
 
 const AnimClip& AnimationLibrary::Get(
-    AnimId _id) const
+    const AnimId _id) const
 {
     JUG_ASSERT(IsValid(_id), "유효하지 않은 AnimId 이다.\n");
     return m_clips[_id.GetIndex()];
 }
 
 const AnimClip* AnimationLibrary::GetOrNull(
-    AnimId _id) const
+    const AnimId _id) const
 {
     return IsValid(_id) ? &m_clips[_id.GetIndex()] : nullptr;
 }
 
 const AnimClip* AnimationLibrary::FindClip(
-    StringView _name) const
+    const StringView _name) const
 {
     return GetOrNull(Find(_name));
 }
 
 void AnimPlayer::Play(
-    AnimId _clip,
-    bool   _bRestart)
+    const AnimId _clip,
+    const bool   _bRestart)
 {
     if (_clip == m_clip && !_bRestart)
     {
@@ -313,8 +313,8 @@ void AnimPlayer::Play(
 
 bool AnimPlayer::Update(
     const AnimationLibrary& _library,
-    float                   _dt,
-    float                   _speed)
+    const float             _dt,
+    const float             _speed)
 {
     const AnimClip* pClip = _library.GetOrNull(m_clip);
     if (!pClip || m_bFinished)
@@ -373,7 +373,7 @@ void AnimPlayer::Settle_(
 
 void AnimPlayer::SetNormalizedTime(
     const AnimClip& _clip,
-    float           _t)
+    const float     _t)
 {
     const int64_t totalUnits = _clip.GetTotalDurationUnits();
     double        t          = static_cast<double>(_t);

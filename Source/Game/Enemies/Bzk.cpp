@@ -28,7 +28,7 @@ void Go_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
-    eBzkState       _state)
+    const eBzkState _state)
 {
     const BzkCfg& cfg = _def.bzk;
     EnterState(_e, static_cast<int>(_state));

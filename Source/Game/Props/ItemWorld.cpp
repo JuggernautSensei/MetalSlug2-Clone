@@ -14,16 +14,16 @@
 namespace
 {
 void MixValue_(
-    uint64_t& _hash,
-    uint64_t  _value)
+    uint64_t&      _hash,
+    const uint64_t _value)
 {
     _hash ^= _value;
     _hash *= 1'099'511'628'211ull;
 }
 
 void MixFloat_(
-    uint64_t& _hash,
-    float     _value)
+    uint64_t&   _hash,
+    const float _value)
 {
     uint32_t bits = 0;
     static_assert(sizeof(bits) == sizeof(_value));
@@ -40,7 +40,7 @@ namespace
 {
 [[nodiscard]] VECTOR2 BottomAlignedOrigin_(
     const AnimFrame& _frame,
-    VECTOR2          _feet)
+    const VECTOR2    _feet)
 {
     return { _feet.x, _feet.y - static_cast<float>(_frame.h - _frame.pivotY) };
 }
@@ -48,7 +48,7 @@ namespace
 
 ItemWorld::ItemWorld(
     const PropDefLibrary* _pLibrary,
-    uint64_t              _seed)
+    const uint64_t        _seed)
     : m_pLibrary(_pLibrary)
     , m_rng(_seed)
 {
@@ -56,7 +56,7 @@ ItemWorld::ItemWorld(
 }
 
 void ItemWorld::Reset(
-    uint64_t _seed)
+    const uint64_t _seed)
 {
     m_items.clear();
     m_popups.clear();
@@ -73,10 +73,10 @@ void ItemWorld::ClearAll()
 }
 
 uint32_t ItemWorld::Spawn(
-    StringView _name,
-    VECTOR2    _feet,
-    bool       _bBounce,
-    int        _z)
+    const StringView _name,
+    const VECTOR2    _feet,
+    const bool       _bBounce,
+    const int        _z)
 {
     String itemName { _name };
     if (const PropItemGroup* pGroup = m_pLibrary->FindGroup(_name))
@@ -135,8 +135,8 @@ void ItemWorld::BindAnim_(
 
 void ItemWorld::Tick(
     const PhysicsWorld&     _world,
-    float                   _dt,
-    float                   _cameraLeft,
+    const float             _dt,
+    const float             _cameraLeft,
     const AnimationLibrary* _pAnims,
     const ItemTuning*       _pTuning)
 {
@@ -226,9 +226,9 @@ void ItemWorld::Tick(
 }
 
 void ItemWorld::SpawnPopup_(
-    VECTOR2 _pos,
-    int     _score,
-    int     _z)
+    const VECTOR2 _pos,
+    const int     _score,
+    const int     _z)
 {
     ScorePopup popup;
     popup.pos   = _pos;
@@ -280,8 +280,8 @@ Vector<ItemPickup> ItemWorld::Collect(
 }
 
 bool ItemWorld::SetZ(
-    uint32_t _id,
-    int      _z)
+    const uint32_t _id,
+    const int      _z)
 {
     for (PropItem& item: m_items)
     {
@@ -302,7 +302,7 @@ Vector<ItemFxRequest> ItemWorld::TakeFx()
 }
 
 const PropItem* ItemWorld::Find(
-    uint32_t _id) const
+    const uint32_t _id) const
 {
     for (const PropItem& item: m_items)
     {

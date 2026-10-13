@@ -17,8 +17,8 @@
 namespace
 {
 [[nodiscard]] const TrainingDummy& DummyOf_(
-    Sim&     _sim,
-    uint32_t _id)
+    Sim&           _sim,
+    const uint32_t _id)
 {
     const TrainingDummy* pDummy = _sim.State().GetTargets().Find(_id);
     EXPECT_NE(pDummy, nullptr);
@@ -43,7 +43,7 @@ constexpr ARRAY<int, 4> kWeapons = {
 namespace
 {
 [[nodiscard]] uint64_t HashAfterShooting_(
-    eWeapon _weapon)
+    const eWeapon _weapon)
 {
     Sim sim;
     sim.Player().PickUpWeapon(_weapon, sim.Tune());
@@ -54,7 +54,7 @@ namespace
 
 [[nodiscard]] int FireIntervalOf_(
     const Tuning& _tuning,
-    eWeapon       _weapon)
+    const eWeapon _weapon)
 {
     const WeaponTuning& weapon = _tuning.weapons.Get(_weapon);
     return Max(weapon.fireIntervalTicks, weapon.holdRepeatTicks);
@@ -463,11 +463,11 @@ TEST(PlayerWeapon, DeterminismHashIsStableAndSeesTheWeapon)
 namespace
 {
 [[nodiscard]] Bullet MakeVisualBullet_(
-    eWeapon _weapon,
-    VECTOR2 _velocity,
-    int     _ageTicks,
-    float   _travelled,
-    float   _range)
+    const eWeapon _weapon,
+    const VECTOR2 _velocity,
+    const int     _ageTicks,
+    const float   _travelled,
+    const float   _range)
 {
     Bullet bullet;
     bullet.tag        = static_cast<uint8_t>(_weapon);
@@ -584,11 +584,11 @@ namespace
 [[nodiscard]] PixelBox_ DrawAndMeasure_(
     RasterFixture_&         _fx,
     const AnimationLibrary& _anims,
-    eWeapon                 _weapon,
-    VECTOR2                 _velocity,
-    int                     _ageTicks,
-    float                   _travelled,
-    float                   _range)
+    const eWeapon           _weapon,
+    const VECTOR2           _velocity,
+    const int               _ageTicks,
+    const float             _travelled,
+    const float             _range)
 {
     PixelBox_ box;
     if (!_fx.bReady)
@@ -663,8 +663,8 @@ TEST(PlayerWeaponVisual, RocketFiredUpIsDrawnTallNotWide)
 namespace
 {
 [[nodiscard]] Vector<int> FlameSpawnTicks_(
-    Sim& _sim,
-    int  _ticks)
+    Sim&      _sim,
+    const int _ticks)
 {
     Vector<int> spawnTicks;
     for (int tick = 0; tick < _ticks; ++tick)
@@ -682,7 +682,7 @@ namespace
 }
 
 [[nodiscard]] Vector<Bullet> FlameBulletsAfter_(
-    int _ticks)
+    const int _ticks)
 {
     Sim sim;
     sim.Player().PickUpWeapon(eWeapon::Flame, sim.Tune());

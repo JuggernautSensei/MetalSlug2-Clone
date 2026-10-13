@@ -12,9 +12,9 @@ constexpr int kGradientBandH = 8;
 namespace
 {
 [[nodiscard]] uint8_t MixChannel_(
-    uint8_t _a,
-    uint8_t _b,
-    float   _t)
+    const uint8_t _a,
+    const uint8_t _b,
+    const float   _t)
 {
     return static_cast<uint8_t>(_a + static_cast<int>((_b - _a) * _t));
 }

@@ -530,7 +530,7 @@ void StageState::Tick(
 }
 
 void StageState::StartFlow_(
-    eEndKind _kind)
+    const eEndKind _kind)
 {
     m_endKind = _kind;
     if (_kind == eEndKind::Mission)
@@ -751,7 +751,7 @@ const GroundMap* StageState::FindPatchMask_(
 
 void StageState::ApplyGroundPatch_(
     const String& _sprite,
-    VECTOR2       _topLeft)
+    const VECTOR2 _topLeft)
 {
     GroundMap*       pGround = m_host.GetActiveGroundMut();
     const GroundMap* pMask   = FindPatchMask_(_sprite);
@@ -862,7 +862,7 @@ Scoped<IGameState> StageState::TakeNextState()
 }
 
 void StageState::Render(
-    float _alpha)
+    const float _alpha)
 {
     Renderer& renderer = Renderer::GetSingleton();
     if (!m_bLoaded)
@@ -885,7 +885,7 @@ void StageState::Render(
 }
 
 void StageState::DrawBackdrop_(
-    VECTOR2 _cameraPos)
+    const VECTOR2 _cameraPos)
 {
     const BackdropMode* pMode = m_data.FindBackdrop(m_runner->GetBackdropMode());
     if (!pMode)
@@ -942,8 +942,8 @@ void StageState::DrawBackdrop_(
 }
 
 void StageState::DrawWorld_(
-    VECTOR2 _cameraPos,
-    float   _alpha)
+    const VECTOR2 _cameraPos,
+    const float   _alpha)
 {
     Renderer&               renderer = Renderer::GetSingleton();
     SpriteBatch&            sprites  = SpriteBatch::GetSingleton();
@@ -1038,8 +1038,8 @@ void StageState::DrawWorld_(
 }
 
 void StageState::DrawDebugBoxes_(
-    Renderer& _renderer,
-    VECTOR2   _cameraPos) const
+    Renderer&     _renderer,
+    const VECTOR2 _cameraPos) const
 {
     for (const Hurtbox& hurtbox: m_combat.GetHurtboxes())
     {

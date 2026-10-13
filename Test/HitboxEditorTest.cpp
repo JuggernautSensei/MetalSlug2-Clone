@@ -15,8 +15,8 @@ namespace
 
 [[nodiscard]] int FindEntry_(
     const HitboxDocument& _doc,
-    StringView            _owner,
-    StringView            _label)
+    const StringView      _owner,
+    const StringView      _label)
 {
     for (size_t i = 0; i < _doc.GetEntries().size(); ++i)
     {

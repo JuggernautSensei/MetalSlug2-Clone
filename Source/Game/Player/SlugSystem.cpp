@@ -12,9 +12,9 @@ void SlugSystem::Reset(
 }
 
 int SlugSystem::Spawn(
-    VECTOR2 _feet,
-    int     _facing,
-    int     _hp)
+    const VECTOR2 _feet,
+    const int     _facing,
+    const int     _hp)
 {
     if (m_slugs.size() >= kMaxSlugs)
     {
@@ -78,8 +78,8 @@ void SlugSystem::Tick(
 }
 
 void SlugSystem::OnHitEvents(
-    Span<const HitEvent> _events,
-    Span<const Hitbox>   _hitboxes)
+    const Span<const HitEvent> _events,
+    const Span<const Hitbox>   _hitboxes)
 {
     for (SlugVehicle& slug: m_slugs)
     {
@@ -88,7 +88,7 @@ void SlugSystem::OnHitEvents(
 }
 
 bool SlugSystem::OnBombSupply(
-    int _amount)
+    const int _amount)
 {
     SlugVehicle* pSlug = GetRiddenOrNull();
     if (pSlug == nullptr || pSlug->GetMode() != eSlugMode::Driven)
@@ -105,13 +105,13 @@ int SlugSystem::GetCount() const
 }
 
 SlugVehicle& SlugSystem::Get(
-    int _index)
+    const int _index)
 {
     return m_slugs[static_cast<size_t>(_index)];
 }
 
 const SlugVehicle& SlugSystem::Get(
-    int _index) const
+    const int _index) const
 {
     return m_slugs[static_cast<size_t>(_index)];
 }

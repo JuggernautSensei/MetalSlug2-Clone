@@ -10,7 +10,7 @@ AudioSystem& RecordAudio()
 
 int CountPlays(
     const AudioSystem& _audio,
-    StringView         _name)
+    const StringView   _name)
 {
     int count = 0;
     for (const AudioEvent& e: _audio.events)
@@ -22,7 +22,7 @@ int CountPlays(
 
 int CountKind(
     const AudioSystem& _audio,
-    eAudioEvent        _kind)
+    const eAudioEvent  _kind)
 {
     int count = 0;
     for (const AudioEvent& e: _audio.events)

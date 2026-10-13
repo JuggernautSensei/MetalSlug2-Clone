@@ -8,15 +8,15 @@ namespace
 {
 [[nodiscard]] uint64_t MakeTargetKey_(
     const Hurtbox& _hurtbox,
-    size_t         _index)
+    const size_t   _index)
 {
     return _hurtbox.owner != kNoOwner ? static_cast<uint64_t>(_hurtbox.owner) : ((1ull << 32) | static_cast<uint64_t>(_index));
 }
 }   // namespace
 
 Vector<HitEvent> HitResolver::Resolve(
-    Span<const Hitbox>  _hitboxes,
-    Span<const Hurtbox> _hurtboxes)
+    const Span<const Hitbox>  _hitboxes,
+    const Span<const Hurtbox> _hurtboxes)
 {
     Vector<HitEvent> events;
 
@@ -105,7 +105,7 @@ Vector<HitEvent> HitResolver::Resolve(
 }
 
 void HitResolver::Release(
-    uint32_t _hitId)
+    const uint32_t _hitId)
 {
     m_hitRecords.erase(_hitId);
 }
@@ -121,7 +121,7 @@ size_t HitResolver::GetTrackedHitCount() const
 }
 
 HitKindMask AcceptsFor(
-    bool _bMeleeable)
+    const bool _bMeleeable)
 {
     if (_bMeleeable)
     {
@@ -147,20 +147,20 @@ HitKindMask HitKindMask::All()
 }
 
 bool HitKindMask::Has(
-    eHitKind _kind) const
+    const eHitKind _kind) const
 {
     return (m_bits & Bit_(_kind)) != 0u;
 }
 
 uint32_t HitKindMask::Bit_(
-    eHitKind _kind)
+    const eHitKind _kind)
 {
     return 1u << static_cast<uint32_t>(_kind);
 }
 
 bool CanTeamHit(
-    eTeam _attacker,
-    eTeam _target)
+    const eTeam _attacker,
+    const eTeam _target)
 {
     switch (_attacker)
     {
@@ -172,7 +172,7 @@ bool CanTeamHit(
 }
 
 Health Health::Make(
-    int _maxHp)
+    const int _maxHp)
 {
     return Health { _maxHp, _maxHp };
 }
@@ -188,7 +188,7 @@ bool Health::IsAlive() const
 }
 
 int Health::ApplyDamage(
-    int _damage)
+    const int _damage)
 {
     if (_damage <= 0 || hp <= 0)
     {

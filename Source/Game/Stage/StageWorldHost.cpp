@@ -21,7 +21,7 @@ constexpr float kTickRate = 60.f;
 namespace
 {
 [[nodiscard]] int SecondsToTicks_(
-    float _seconds)
+    const float _seconds)
 {
     return _seconds <= 0.f ? 0 : static_cast<int>(std::lround(static_cast<double>(_seconds) * static_cast<double>(kTickRate)));
 }
@@ -46,9 +46,9 @@ struct DefaultSpec
 namespace
 {
 [[nodiscard]] DefaultSpec MakeSpec_(
-    int   _hp,
-    float _width,
-    float _height)
+    const int   _hp,
+    const float _width,
+    const float _height)
 {
     DefaultSpec spec = {};
     spec.hp          = _hp;
@@ -57,8 +57,8 @@ namespace
 }
 
 [[nodiscard]] DefaultSpec GetDefaultSpec_(
-    StringView  _def,
-    eEntityKind _kind)
+    const StringView  _def,
+    const eEntityKind _kind)
 {
     if (_def == "jeep")
     {
@@ -114,7 +114,7 @@ namespace
 }
 
 [[nodiscard]] eStageLayer GetDefaultLayer_(
-    eEntityKind _kind)
+    const eEntityKind _kind)
 {
     switch (_kind)
     {
@@ -129,7 +129,7 @@ namespace
 }
 
 [[nodiscard]] bool IsHittableKind_(
-    eEntityKind _kind)
+    const eEntityKind _kind)
 {
     return _kind == eEntityKind::Enemy || _kind == eEntityKind::Npc || _kind == eEntityKind::Prop;
 }
@@ -154,7 +154,7 @@ void StageWorldHost::BindWorld(
 }
 
 void StageWorldHost::BindRects(
-    Span<const NamedRect> _rects)
+    const Span<const NamedRect> _rects)
 {
     m_rects.clear();
     for (const NamedRect& rect: _rects)
@@ -178,8 +178,8 @@ void StageWorldHost::BindUi(
 }
 
 void StageWorldHost::AddGroundMap(
-    StringView _name,
-    GroundMap  _map)
+    const StringView _name,
+    GroundMap        _map)
 {
     m_grounds.push_back({ String { _name }, std::move(_map) });
     if (m_activeGround < 0)
@@ -219,7 +219,7 @@ void StageWorldHost::RegisterPlaceholderHurtboxes(
 }
 
 int StageWorldHost::ApplyPlaceholderEvents(
-    Span<const HitEvent> _events)
+    const Span<const HitEvent> _events)
 {
     int kills = 0;
     for (const HitEvent& event: _events)
@@ -316,7 +316,7 @@ Span<const StageCollider> StageWorldHost::GetColliders() const
 }
 
 const SpawnRoute* StageWorldHost::FindRoute(
-    SpawnId _id) const
+    const SpawnId _id) const
 {
     for (const SpawnRoute& route: m_routes)
     {
@@ -334,9 +334,9 @@ SpawnId StageWorldHost::AllocId_()
 }
 
 void StageWorldHost::AddRoute_(
-    SpawnId    _id,
-    eRouteKind _kind,
-    uint32_t   _handle)
+    const SpawnId    _id,
+    const eRouteKind _kind,
+    const uint32_t   _handle)
 {
     SpawnRoute route = {};
     route.id         = _id;
@@ -346,7 +346,7 @@ void StageWorldHost::AddRoute_(
 }
 
 PlaceholderEntity* StageWorldHost::FindAlive_(
-    SpawnId _id)
+    const SpawnId _id)
 {
     for (PlaceholderEntity& entity: m_placeholderEntities)
     {
@@ -359,7 +359,7 @@ PlaceholderEntity* StageWorldHost::FindAlive_(
 }
 
 const PlaceholderEntity* StageWorldHost::Find_(
-    SpawnId _id) const
+    const SpawnId _id) const
 {
     for (const PlaceholderEntity& entity: m_placeholderEntities)
     {
@@ -492,7 +492,7 @@ SpawnId StageWorldHost::SpawnEntity(
 }
 
 bool StageWorldHost::IsDefeated(
-    SpawnId _id) const
+    const SpawnId _id) const
 {
     const SpawnRoute* pRoute = FindRoute(_id);
     if (!pRoute)
@@ -516,7 +516,7 @@ bool StageWorldHost::IsDefeated(
 }
 
 bool StageWorldHost::IsDestroyFinished(
-    SpawnId _id) const
+    const SpawnId _id) const
 {
     const SpawnRoute* pRoute = FindRoute(_id);
     if (!pRoute)
@@ -556,8 +556,8 @@ void StageWorldHost::ClearEntities(
 }
 
 void StageWorldHost::SendCommand(
-    SpawnId    _id,
-    StringView _command)
+    const SpawnId    _id,
+    const StringView _command)
 {
     if (const SpawnRoute* pRoute = FindRoute(_id); pRoute && pRoute->kind == eRouteKind::Enemy && m_pEnemies)
     {
@@ -573,7 +573,7 @@ void StageWorldHost::SendCommand(
 }
 
 void StageWorldHost::SetGround(
-    StringView _name)
+    const StringView _name)
 {
     for (size_t i = 0; i < m_grounds.size(); ++i)
     {
@@ -587,8 +587,8 @@ void StageWorldHost::SetGround(
 }
 
 std::optional<float> StageWorldHost::GetGroundFindY(
-    float _x,
-    float _fromY) const
+    const float _x,
+    const float _fromY) const
 {
     const GroundMap* pGround = GetActiveGround();
     if (!pGround)
@@ -615,7 +615,7 @@ bool StageWorldHost::IsGameOver() const
 }
 
 void StageWorldHost::SetPlayerInvincible(
-    float _seconds)
+    const float _seconds)
 {
     if (m_pPlayer)
     {
@@ -624,7 +624,7 @@ void StageWorldHost::SetPlayerInvincible(
 }
 
 void StageWorldHost::WarpPlayer(
-    VECTOR2 _feet)
+    const VECTOR2 _feet)
 {
     if (!m_pPlayer || !m_pTuning)
     {
@@ -642,7 +642,7 @@ void StageWorldHost::SetBackdrop(
 
 void StageWorldHost::ShowBanner(
     const String& _text,
-    float         _seconds)
+    const float   _seconds)
 {
     if (m_pUi)
     {
@@ -651,8 +651,8 @@ void StageWorldHost::ShowBanner(
 }
 
 void StageWorldHost::FadeTo(
-    eFadeTarget _target,
-    float       _seconds)
+    const eFadeTarget _target,
+    const float       _seconds)
 {
     if (!m_pUi)
     {
@@ -670,36 +670,36 @@ void StageWorldHost::FadeTo(
 }
 
 void StageWorldHost::PlayBgm(
-    StringView _name,
-    bool       _bLoop)
+    const StringView _name,
+    const bool       _bLoop)
 {
     AudioSystem::GetSingleton().PlayBgm(_name, _bLoop);
 }
 
 void StageWorldHost::ChangeBgm(
-    StringView _name,
-    bool       _bLoop,
-    float      _fadeOutSec)
+    const StringView _name,
+    const bool       _bLoop,
+    const float      _fadeOutSec)
 {
     AudioSystem::GetSingleton().ChangeBgm(_name, _fadeOutSec, _bLoop);
 }
 
 void StageWorldHost::PlaySfx(
-    StringView _name)
+    const StringView _name)
 {
     AudioSystem::GetSingleton().Play(_name);
 }
 
 void StageWorldHost::EndStage(
-    StringView _nextState)
+    const StringView _nextState)
 {
     m_bEndRequested = true;
     m_endStateName  = String { _nextState };
 }
 
 void StageWorldHost::OnSectionEntered(
-    int        _index,
-    StringView _id)
+    const int        _index,
+    const StringView _id)
 {
     m_lastSectionIndex = _index;
     m_lastSectionId    = String { _id };
