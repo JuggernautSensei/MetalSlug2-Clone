@@ -38,7 +38,7 @@ int App::Run(
     const int _argc,
     char**    _argv)
 {
-    m_processStart = SteadyClock::now();
+    m_processTimer.Start();
     m_cmdArgs.reserve(static_cast<size_t>(_argc));
     for (int i = 0; i < _argc; ++i)
     {
@@ -54,7 +54,8 @@ int App::Run(
     m_returnCode = 0;
     Init_();
 
-    SteadyClock::time_point lastTime = SteadyClock::now();
+    Timer frameTimer;
+    frameTimer.Start();
     while (m_bRunning)
     {
         PollEvents_();
@@ -62,9 +63,8 @@ int App::Run(
         {
             break;
         }
-        const SteadyClock::time_point now = SteadyClock::now();
-        Update_(std::chrono::duration<float>(now - lastTime).count());
-        lastTime = now;
+        frameTimer.Lap();
+        Update_(TimeCastF(frameTimer.GetElapsedCount(), eTimeUnit::Sec));
     }
 
     if (m_bHash && m_pRunner)
@@ -375,7 +375,8 @@ void App::Init_()
         m_editor.SelectTab(m_editorTab.c_str());
     }
 
-    const double rendererMs = std::chrono::duration<double, std::milli>(SteadyClock::now() - m_processStart).count();
+    m_processTimer.Lap();
+    const double rendererMs = TimeCast(m_processTimer.GetTotalCount(), eTimeUnit::Milli);
     SLUG_LOG_INFO("[load] renderer-init since-run-start {:.1f} ms", rendererMs);
     SpriteBatch::GetSingleton().Init(Renderer::GetSingleton().GetNative());
     SpriteBatch::GetSingleton().SetAssetRoot(assetRoot);
@@ -621,7 +622,8 @@ void App::Render_(
     ++m_renderFrameCount;
     if (m_renderFrameCount == 1)
     {
-        const double ms = std::chrono::duration<double, std::milli>(SteadyClock::now() - m_processStart).count();
+        m_processTimer.Lap();
+        const double ms = TimeCast(m_processTimer.GetTotalCount(), eTimeUnit::Milli);
         SLUG_LOG_INFO("[load] first-frame since-run-start {:.1f} ms", ms);
     }
     if (!m_capturePath.empty() && !m_captureTicks.empty())

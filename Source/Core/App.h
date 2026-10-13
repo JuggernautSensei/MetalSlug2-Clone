@@ -33,7 +33,7 @@ private:
     void Render_(float _alpha);
     void SaveRecording_() const;
 
-    SteadyClock::time_point m_processStart = {};
+    Timer m_processTimer = {};
 
     bool           m_bRunning   = false;
     int            m_returnCode = 0;

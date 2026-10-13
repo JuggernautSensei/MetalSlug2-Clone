@@ -6,6 +6,7 @@
 #include <JugX/EnumFlags.h>
 #include <JugX/MemoryHasher.h>
 #include <JugX/Typedef.h>
+#include <JugX/Timer.h>
 
 using jug::ARRAY;
 using jug::DIRECT_ENUM_ARRAY;
@@ -16,10 +17,13 @@ using jug::IndexedFlags;
 using jug::MemoryView;
 using jug::RbSet;
 using jug::Span;
-using jug::SteadyClock;
 using jug::String;
 using jug::StringView;
 using jug::Vector;
+using jug::Timer;
+using jug::eTimeUnit;
+using jug::TimeCast;
+using jug::TimeCastF;
 
 // 인스턴스 z 미지정 표시 (스폰 시 해당 종류의 기본 depth 를 쓴다)
 inline constexpr int kDefaultZ = -2147483647 - 1;

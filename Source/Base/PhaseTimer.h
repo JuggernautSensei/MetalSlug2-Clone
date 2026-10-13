@@ -11,7 +11,7 @@ public:
     ScopedPhaseTimer& operator=(const ScopedPhaseTimer&) = delete;
 
 private:
-    const char*             m_pPhase = nullptr;
-    String                  m_detail = {};
-    SteadyClock::time_point m_start  = {};
+    const char* m_pPhase = nullptr;
+    String      m_detail = {};
+    Timer       m_timer  = {};
 };
