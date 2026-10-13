@@ -10,6 +10,11 @@
 #    include <windows.h>
 #endif
 
+#include <JugX/FileReader.h>
+#include <JugX/FileWriter.h>
+
+#include "Base/SlugError.h"
+
 constexpr int kMaxParentDepth = 5;
 
 namespace
@@ -41,6 +46,29 @@ bool IsAssetRoot_(
     std::error_code ec;
     return std::filesystem::exists(_assets / "manifest.json", ec) || std::filesystem::exists(_assets / "Tuning" / "Tuning.json", ec);
 }
+
+template<typename Container>
+[[nodiscard]] Result<Container> ReadAll_(
+    const FilePath& _path)
+{
+    const Result<jug::FileReader> file = jug::FileReader::Open(_path);
+    if (!file)
+    {
+        return Error { eError::FileOpen };
+    }
+    Container bytes = {};
+    bytes.resize(static_cast<size_t>(file->GetSize()));
+    if (bytes.empty())
+    {
+        return bytes;
+    }
+    const Result<size_t> read = file->Read(jug::MutableMemoryView { bytes });
+    if (!read || read.GetValue() != bytes.size())
+    {
+        return Error { eError::FileRead };
+    }
+    return bytes;
+}
 }   // namespace
 
 FilePath FindAssetRoot()
@@ -71,4 +99,32 @@ void SetAssetRootFallback(
     FilePath _root)
 {
     FallbackRoot_() = std::move(_root);
+}
+
+Result<Vector<uint8_t>> ReadFileBytes(
+    const FilePath& _path)
+{
+    return ReadAll_<Vector<uint8_t>>(_path);
+}
+
+Result<String> ReadFileText(
+    const FilePath& _path)
+{
+    return ReadAll_<String>(_path);
+}
+
+Result<void> WriteFileBytes(
+    const FilePath&  _path,
+    const MemoryView _bytes)
+{
+    const Result<jug::FileWriter> file = jug::FileWriter::Open(_path);
+    if (!file)
+    {
+        return Error { eError::FileOpen };
+    }
+    if (!_bytes.IsEmpty() && !file->Write(_bytes))
+    {
+        return Error { eError::FileRead };
+    }
+    return Error { kOK };
 }

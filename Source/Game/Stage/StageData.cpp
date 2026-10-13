@@ -2,15 +2,14 @@
 
 #include <cmath>
 #include <format>
-#include <fstream>
 #include <optional>
-#include <sstream>
 #include <utility>
 
 #include "Base/SlugError.h"
 #include "Base/Json.h"
 #include "Base/Math.h"
 #include "Base/Types.h"
+#include "Core/AssetPath.h"
 
 ParamValue ParamValue::MakeBool(
     const bool _bValue)
@@ -2246,15 +2245,12 @@ Result<StageData> LoadStageFromFile(
     const FilePath& _path,
     String* const   _pMessage)
 {
-    std::ifstream file { _path, std::ios::binary };
-    if (!file)
+    const Result<String> text = ReadFileText(_path);
+    if (!text)
     {
         return MakeFailure_(_pMessage, std::format("cannot open '{}'", _path.string()), eError::FileOpen);
     }
-    std::ostringstream buffer;
-    buffer << file.rdbuf();
-    const String text = buffer.str();
-    return LoadStageFromJson(text, _pMessage);
+    return LoadStageFromJson(text.GetValue(), _pMessage);
 }
 
 uint32_t LayerBit(

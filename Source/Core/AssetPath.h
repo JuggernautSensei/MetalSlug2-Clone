@@ -5,3 +5,8 @@
 [[nodiscard]] FilePath FindAssetRoot();
 
 void SetAssetRootFallback(FilePath _root);
+
+// 파일 통째로 읽기/쓰기: 열기 실패 FileOpen, 읽기/쓰기 실패 FileRead, 빈 파일은 빈 값
+[[nodiscard]] Result<Vector<uint8_t>> ReadFileBytes(const FilePath& _path);
+[[nodiscard]] Result<String>          ReadFileText(const FilePath& _path);
+[[nodiscard]] Result<void>            WriteFileBytes(const FilePath& _path, MemoryView _bytes);

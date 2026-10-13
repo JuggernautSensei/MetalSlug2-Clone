@@ -4,8 +4,6 @@
 #include <charconv>
 #include <cmath>
 #include <format>
-#include <fstream>
-#include <iterator>
 
 #include <SDL3/SDL.h>
 #include <imgui.h>
@@ -233,15 +231,6 @@ void ApplyReplacements_(
     {
         _text.replace(static_cast<size_t>(r.begin), static_cast<size_t>(r.end - r.begin), r.text);
     }
-}
-
-[[nodiscard]] String ReadFile_(
-    const FilePath& _path,
-    bool&           _bOk)
-{
-    std::ifstream file { _path, std::ios::binary };
-    _bOk = static_cast<bool>(file);
-    return String { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
 }
 
 [[nodiscard]] ImU32 KindColor_(
@@ -620,28 +609,21 @@ Result<void> StageDocument::LoadFromText(
 Result<void> StageDocument::Load(
     const FilePath& _path)
 {
-    bool         bOk  = false;
-    const String text = ReadFile_(_path, bOk);
-    if (!bOk)
+    const Result<String> text = ReadFileText(_path);
+    if (!text)
     {
         return Error { eError::FileOpen };
     }
-    return LoadFromText(text);
+    return LoadFromText(text.GetValue());
 }
 
 Result<void> StageDocument::Save(
     const FilePath& _path)
 {
-    std::ofstream file { _path, std::ios::binary | std::ios::trunc };
-    if (!file)
+    const Result<void> result = WriteFileBytes(_path, m_text);
+    if (!result)
     {
-        return Error { eError::FileOpen };
-    }
-    file.write(m_text.data(), static_cast<std::streamsize>(m_text.size()));
-    file.close();
-    if (!file)
-    {
-        return Error { eError::FileOpen };
+        return result;
     }
     m_savedText = m_text;
     return Error { kOK };

@@ -1,10 +1,10 @@
 #include "Core/Replay.h"
 
 #include <cstring>
-#include <fstream>
 
 #include "Base/SlugError.h"
 #include "Base/Types.h"
+#include "Core/AssetPath.h"
 
 constexpr ARRAY<char, 4> kMagic   = { 'S', 'R', 'E', 'P' };
 constexpr uint32_t       kVersion = 1;
@@ -140,36 +140,16 @@ Result<void> SaveReplay(
     const ReplayData& _replay)
 {
     const Vector<uint8_t> bytes = SerializeReplay(_replay);
-
-    std::ofstream file { _path, std::ios::binary | std::ios::trunc };
-    if (!file)
-    {
-        return Error { eError::FileOpen };
-    }
-    file.write(reinterpret_cast<const char*>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
-    if (!file)
-    {
-        return Error { eError::FileRead };
-    }
-    return Error { kOK };
+    return WriteFileBytes(_path, bytes);
 }
 
 Result<ReplayData> LoadReplay(
     const FilePath& _path)
 {
-    std::ifstream file { _path, std::ios::binary | std::ios::ate };
-    if (!file)
+    const Result<Vector<uint8_t>> bytes = ReadFileBytes(_path);
+    if (!bytes)
     {
-        return Error { eError::FileOpen };
+        return bytes.GetError();
     }
-
-    const std::streamsize size = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    Vector<uint8_t> bytes(static_cast<size_t>(size));
-    if (size > 0 && !file.read(reinterpret_cast<char*>(bytes.data()), size))
-    {
-        return Error { eError::FileRead };
-    }
-    return DeserializeReplay(bytes);
+    return DeserializeReplay(bytes.GetValue());
 }

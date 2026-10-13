@@ -2,11 +2,10 @@
 
 #include <algorithm>
 #include <format>
-#include <fstream>
-#include <iterator>
 
 #include <imgui.h>
 
+#include "Core/AssetPath.h"
 #include "Editor/EnemyLab.h"
 #include "Editor/JsonScan.h"
 #include "Editor/MotionEditor.h"
@@ -79,16 +78,11 @@ void DepthEditor::Load_(
     m_bLoaded = true;
     for (size_t i = 0; i < kDepthFileNames.size(); ++i)
     {
-        const FilePath path = _assetRoot / kDepthFileDirs[i] / kDepthFileNames[i];
-        std::ifstream  file { path, std::ios::binary };
-        String         text;
-        if (file)
-        {
-            text.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-        }
+        const FilePath       path = _assetRoot / kDepthFileDirs[i] / kDepthFileNames[i];
+        const Result<String> text = ReadFileText(path);
         m_names.push_back(kDepthFileNames[i]);
         m_paths.push_back(path);
-        m_texts.push_back(text);
+        m_texts.push_back(text ? text.GetValue() : String {});
         m_dirty.push_back(false);
     }
     Rebuild_();
@@ -306,8 +300,7 @@ void DepthEditor::Draw(
             {
                 continue;
             }
-            std::ofstream file { m_paths[i], std::ios::binary | std::ios::trunc };
-            file.write(m_texts[i].data(), static_cast<std::streamsize>(m_texts[i].size()));
+            (void)WriteFileBytes(m_paths[i], m_texts[i]);
             m_dirty[i] = false;
             bAny       = true;
         }

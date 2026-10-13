@@ -16,23 +16,19 @@ constexpr float kWallExtentY = 4000.f;
 namespace
 {
 void MixU64_(
-    uint64_t&      _hash,
+    Fnv1a&         _hasher,
     const uint64_t _value)
 {
-    for (int i = 0; i < 8; ++i)
-    {
-        _hash ^= (_value >> (i * 8)) & 0xFFu;
-        _hash *= 1099511628211ull;
-    }
+    _hasher.Mix(_value);
 }
 
 void MixFloat_(
-    uint64_t&   _hash,
+    Fnv1a&      _hasher,
     const float _value)
 {
     uint32_t bits = 0;
     std::memcpy(&bits, &_value, sizeof(bits));
-    MixU64_(_hash, bits);
+    MixU64_(_hasher, bits);
 }
 }   // namespace
 
@@ -944,48 +940,48 @@ int StageRunner::GetSkippedCount() const
 
 uint64_t StageRunner::HashState() const
 {
-    uint64_t hash = 14695981039346656037ull;
-    MixU64_(hash, static_cast<uint64_t>(m_tick));
-    MixU64_(hash, static_cast<uint64_t>(m_nextSection));
-    MixU64_(hash, m_bFinished ? 1u : 0u);
+    Fnv1a hasher;
+    MixU64_(hasher, static_cast<uint64_t>(m_tick));
+    MixU64_(hasher, static_cast<uint64_t>(m_nextSection));
+    MixU64_(hasher, m_bFinished ? 1u : 0u);
     for (const PendingItem& item: m_pending)
     {
-        MixU64_(hash, static_cast<uint64_t>(item.dueTick));
-        MixU64_(hash, item.seq);
+        MixU64_(hasher, static_cast<uint64_t>(item.dueTick));
+        MixU64_(hasher, item.seq);
     }
-    MixU64_(hash, m_gates.size());
+    MixU64_(hasher, m_gates.size());
     for (const LockEntry& lock: m_locks)
     {
-        MixFloat_(hash, lock.rect.min.x);
-        MixFloat_(hash, lock.rect.min.y);
-        MixFloat_(hash, lock.rect.max.x);
-        MixFloat_(hash, lock.rect.max.y);
+        MixFloat_(hasher, lock.rect.min.x);
+        MixFloat_(hasher, lock.rect.min.y);
+        MixFloat_(hasher, lock.rect.max.x);
+        MixFloat_(hasher, lock.rect.max.y);
     }
-    MixFloat_(hash, m_base.min.x);
-    MixFloat_(hash, m_base.min.y);
-    MixFloat_(hash, m_base.max.x);
-    MixFloat_(hash, m_base.max.y);
-    MixFloat_(hash, m_cameraOffset.x);
-    MixFloat_(hash, m_cameraOffset.y);
+    MixFloat_(hasher, m_base.min.x);
+    MixFloat_(hasher, m_base.min.y);
+    MixFloat_(hasher, m_base.max.x);
+    MixFloat_(hasher, m_base.max.y);
+    MixFloat_(hasher, m_cameraOffset.x);
+    MixFloat_(hasher, m_cameraOffset.y);
     for (const SpawnRecord& record: m_records)
     {
         for (const SpawnId id: record.ids)
         {
-            MixU64_(hash, id);
+            MixU64_(hasher, id);
         }
     }
-    MixU64_(hash, static_cast<uint64_t>(m_spawnedCount));
-    MixU64_(hash, static_cast<uint64_t>(m_skippedCount));
+    MixU64_(hasher, static_cast<uint64_t>(m_spawnedCount));
+    MixU64_(hasher, static_cast<uint64_t>(m_skippedCount));
     for (const char c: m_groundName)
     {
-        MixU64_(hash, static_cast<uint8_t>(c));
+        MixU64_(hasher, static_cast<uint8_t>(c));
     }
     for (const char c: m_backdropMode)
     {
-        MixU64_(hash, static_cast<uint8_t>(c));
+        MixU64_(hasher, static_cast<uint8_t>(c));
     }
     const Vec2 center = m_pCamera->GetViewCenter();
-    MixFloat_(hash, center.x);
-    MixFloat_(hash, center.y);
-    return hash;
+    MixFloat_(hasher, center.x);
+    MixFloat_(hasher, center.y);
+    return hasher.Finalize();
 }

@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cmath>
 #include <format>
-#include <fstream>
 
 #include <SDL3/SDL.h>
 #include <imgui.h>
@@ -96,34 +95,18 @@ void AppendPngChunk_(
     return true;
 }
 
-[[nodiscard]] bool ReadWholeFile_(
-    const FilePath&        _path,
-    Vector<unsigned char>& _out)
-{
-    std::ifstream file { _path, std::ios::binary | std::ios::ate };
-    if (!file)
-    {
-        return false;
-    }
-    const std::streamsize size = file.tellg();
-    if (size <= 0)
-    {
-        return false;
-    }
-    _out.resize(static_cast<size_t>(size));
-    file.seekg(0, std::ios::beg);
-    return static_cast<bool>(file.read(reinterpret_cast<char*>(_out.data()), size));
-}
 }   // namespace
 
 Result<void> GroundMaskDocument::Load(
     const FilePath& _path)
 {
-    Vector<unsigned char> encoded;
-    if (!ReadWholeFile_(_path, encoded))
+    const Result<Vector<uint8_t>> file = ReadFileBytes(_path);
+    if (!file || file.GetValue().empty())
     {
         return Error { eError::FileOpen };
     }
+    const Vector<uint8_t>& encoded = file.GetValue();
+
     int      width    = 0;
     int      height   = 0;
     int      channels = 0;
@@ -150,16 +133,10 @@ Result<void> GroundMaskDocument::Save(
     {
         return Error { eError::InvalidData };
     }
-    std::ofstream file { _path, std::ios::binary | std::ios::trunc };
-    if (!file)
+    const Result<void> result = WriteFileBytes(_path, png);
+    if (!result)
     {
-        return Error { eError::FileOpen };
-    }
-    file.write(reinterpret_cast<const char*>(png.data()), static_cast<std::streamsize>(png.size()));
-    file.close();
-    if (!file)
-    {
-        return Error { eError::FileOpen };
+        return result;
     }
     m_savedApplied = m_applied;
     m_bSavedLost   = false;

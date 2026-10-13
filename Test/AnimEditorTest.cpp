@@ -1,8 +1,6 @@
 // 애니 오프셋 에디터 데이터 계층 (AnimDocument) 테스트. UI 없음. Assets/anim.json 이 없으면 건너뛴다.
 #include <chrono>
 #include <filesystem>
-#include <fstream>
-#include <iterator>
 
 #include <gtest/gtest.h>
 
@@ -14,8 +12,8 @@ namespace
 [[nodiscard]] String ReadAll_(
     const FilePath& _path)
 {
-    std::ifstream file { _path, std::ios::binary };
-    return String { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
+    const Result<String> text = ReadFileText(_path);
+    return text ? text.GetValue() : String {};
 }
 }   // namespace
 
@@ -117,8 +115,7 @@ void WriteText_(
     const FilePath& _path,
     const String&   _text)
 {
-    std::ofstream file { _path, std::ios::binary | std::ios::trunc };
-    file << _text;
+    (void)WriteFileBytes(_path, _text);
 }
 }   // namespace
 

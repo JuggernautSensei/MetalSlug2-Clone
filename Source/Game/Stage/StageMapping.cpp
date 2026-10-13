@@ -1,10 +1,10 @@
 #include "Game/Stage/StageMapping.h"
 
 #include <cstdint>
-#include <fstream>
 
 #include "Base/Math.h"
 #include "Base/Types.h"
+#include "Core/AssetPath.h"
 
 #pragma warning(disable : 4505)
 #define STB_IMAGE_STATIC
@@ -104,23 +104,12 @@ Aabb MakeColliderBox(
 std::optional<GroundMap> LoadGroundMask(
     const FilePath& _pngPath)
 {
-    std::ifstream file { _pngPath, std::ios::binary | std::ios::ate };
-    if (!file)
+    const Result<Vector<uint8_t>> file = ReadFileBytes(_pngPath);
+    if (!file || file.GetValue().empty())
     {
         return std::nullopt;
     }
-    const std::streamsize size = file.tellg();
-    if (size <= 0)
-    {
-        return std::nullopt;
-    }
-
-    Vector<unsigned char> encoded(static_cast<size_t>(size));
-    file.seekg(0, std::ios::beg);
-    if (!file.read(reinterpret_cast<char*>(encoded.data()), size))
-    {
-        return std::nullopt;
-    }
+    const Vector<uint8_t>& encoded = file.GetValue();
 
     int      width    = 0;
     int      height   = 0;

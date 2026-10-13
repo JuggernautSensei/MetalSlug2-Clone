@@ -1,10 +1,8 @@
 // 생성 상자(hitboxes) 로더/문서/등록 + params 제자리 교체 왕복.
 
-#include <fstream>
-#include <sstream>
-
 #include <gtest/gtest.h>
 
+#include "Core/AssetPath.h"
 #include "Editor/HitboxEditor.h"
 #include "Editor/MotionEditor.h"
 #include "EnemyTestUtil.h"
@@ -13,10 +11,8 @@ namespace
 {
 [[nodiscard]] String DefsText_()
 {
-    std::ifstream     file(EnemyDefsPath().string());
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    return buffer.str();
+    const Result<String> text = ReadFileText(EnemyDefsPath());
+    return text ? text.GetValue() : String {};
 }
 
 [[nodiscard]] String WithBoxes_(

@@ -13,6 +13,7 @@ using jug::FilePath;
 using jug::Fnv1a;
 using jug::HashMap;
 using jug::IndexedFlags;
+using jug::MemoryView;
 using jug::RbSet;
 using jug::Span;
 using jug::SteadyClock;

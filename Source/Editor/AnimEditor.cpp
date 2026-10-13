@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <charconv>
 #include <format>
-#include <fstream>
-#include <iterator>
 
 #include <SDL3/SDL.h>
 #include <imgui.h>
@@ -177,13 +175,12 @@ Result<void> AnimDocument::LoadFromText(
 Result<void> AnimDocument::Load(
     const FilePath& _path)
 {
-    std::ifstream file { _path, std::ios::binary };
-    if (!file)
+    const Result<String> text = ReadFileText(_path);
+    if (!text)
     {
         return Error { eError::FileOpen };
     }
-    const String text { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
-    return LoadFromText(text);
+    return LoadFromText(text.GetValue());
 }
 
 String AnimDocument::Serialize() const
@@ -223,18 +220,8 @@ String AnimDocument::Serialize() const
 Result<void> AnimDocument::Save(
     const FilePath& _path) const
 {
-    const String  text = Serialize();
-    std::ofstream file { _path, std::ios::binary | std::ios::trunc };
-    if (!file)
-    {
-        return Error { eError::FileOpen };
-    }
-    file.write(text.data(), static_cast<std::streamsize>(text.size()));
-    if (!file)
-    {
-        return Error { eError::FileOpen };
-    }
-    return Error { kOK };
+    const String text = Serialize();
+    return WriteFileBytes(_path, text);
 }
 
 int AnimDocument::FindClip(

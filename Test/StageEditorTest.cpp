@@ -1,5 +1,3 @@
-#include <fstream>
-#include <iterator>
 
 #include <gtest/gtest.h>
 
@@ -11,8 +9,8 @@ namespace
 [[nodiscard]] String ReadAll_(
     const FilePath& _path)
 {
-    std::ifstream file { _path, std::ios::binary };
-    return String { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
+    const Result<String> text = ReadFileText(_path);
+    return text ? text.GetValue() : String {};
 }
 
 [[nodiscard]] FilePath Stage0Path_()

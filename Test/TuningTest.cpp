@@ -1,5 +1,4 @@
 // Tuning/TextureView 테스트: 튜닝 JSON 로드와 기본값, 파일 감시, 텍스처 뷰 클리핑 검증
-#include <fstream>
 
 #include <gtest/gtest.h>
 
@@ -147,8 +146,7 @@ void WriteFile_(
     const FilePath& _path,
     const String&   _text)
 {
-    std::ofstream out { _path, std::ios::binary | std::ios::trunc };
-    out << _text;
+    (void)WriteFileBytes(_path, _text);
 }
 
 void Touch_(

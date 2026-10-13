@@ -5,13 +5,13 @@
 #include <cstdio>
 #include <cstring>
 #include <execution>
-#include <fstream>
 #include <SDL3/SDL.h>
 
 #include "Base/Math.h"
 #include "Base/RGBA.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
+#include "Core/AssetPath.h"
 
 #pragma warning(disable : 4505)
 #define STB_IMAGE_STATIC
@@ -106,21 +106,13 @@ namespace
 {
     const ScopedPhaseTimer timer { "png-decode", _pngPath.filename().string() };
 
-    std::ifstream file { _pngPath, std::ios::binary | std::ios::ate };
+    const Result<Vector<uint8_t>> file = ReadFileBytes(_pngPath);
     if (!file)
     {
-        return Error { eError::FileOpen };
+        return file.GetError();
     }
-
-    const std::streamsize size = file.tellg();
-    if (size <= 0)
-    {
-        return Error { eError::FileRead };
-    }
-
-    Vector<uint8_t> encoded(static_cast<size_t>(size));
-    file.seekg(0, std::ios::beg);
-    if (!file.read(reinterpret_cast<char*>(encoded.data()), size))
+    const Vector<uint8_t>& encoded = file.GetValue();
+    if (encoded.empty())
     {
         return Error { eError::FileRead };
     }
@@ -148,13 +140,9 @@ bool g_bTraceLoad = false;
 [[nodiscard]] uint64_t HashRgba_(
     const Span<const uint8_t> _rgba)
 {
-    uint64_t hash = 14695981039346656037ull;
-    for (const uint8_t byte: _rgba)
-    {
-        hash ^= byte;
-        hash *= 1099511628211ull;
-    }
-    return hash;
+    Fnv1a hasher;
+    hasher.Mix(_rgba);
+    return hasher.Finalize();
 }
 
 void TraceAtlasPage_(

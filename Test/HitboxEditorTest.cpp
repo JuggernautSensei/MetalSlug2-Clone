@@ -1,8 +1,5 @@
 // Hitbox 패널의 문서 모델: 원본 서식을 유지한 채 박스 숫자만 제자리 교체한다.
 
-#include <fstream>
-#include <iterator>
-
 #include <gtest/gtest.h>
 
 #include "Core/AssetPath.h"
@@ -13,8 +10,8 @@ namespace
 [[nodiscard]] String ReadAllText_(
     const FilePath& _path)
 {
-    std::ifstream file { _path, std::ios::binary };
-    return String { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
+    const Result<String> text = ReadFileText(_path);
+    return text ? text.GetValue() : String {};
 }
 
 [[nodiscard]] int FindEntry_(

@@ -3,13 +3,12 @@
 #include <charconv>
 #include <cmath>
 #include <format>
-#include <fstream>
-#include <iterator>
 
 #include <imgui.h>
 
 #include <SDL3/SDL.h>
 
+#include "Core/AssetPath.h"
 #include "Editor/EnemyLab.h"
 #include "Render/Renderer.h"
 #include "Editor/StageEditor.h"
@@ -180,13 +179,12 @@ Result<void> HitboxDocument::Load(
     const FilePath&  _path,
     const StringView _defaultOwner)
 {
-    std::ifstream file { _path, std::ios::binary };
-    if (!file)
+    const Result<String> text = ReadFileText(_path);
+    if (!text)
     {
         return Error { eError::FileOpen };
     }
-    const String text { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
-    return LoadFromText(text, _defaultOwner);
+    return LoadFromText(text.GetValue(), _defaultOwner);
 }
 
 Result<void> HitboxDocument::LoadFromText(
@@ -209,16 +207,10 @@ Result<void> HitboxDocument::LoadFromText(
 Result<void> HitboxDocument::Save(
     const FilePath& _path)
 {
-    std::ofstream file { _path, std::ios::binary | std::ios::trunc };
-    if (!file)
+    const Result<void> result = WriteFileBytes(_path, m_text);
+    if (!result)
     {
-        return Error { eError::FileOpen };
-    }
-    file.write(m_text.data(), static_cast<std::streamsize>(m_text.size()));
-    file.close();
-    if (!file)
-    {
-        return Error { eError::FileOpen };
+        return result;
     }
     m_savedText = m_text;
     return Error { kOK };

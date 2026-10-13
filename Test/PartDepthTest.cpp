@@ -1,8 +1,6 @@
 // 부품 depth: 플레이어/아이템 z, 헬기 부품 override, params.parts 엄격 파서, Depth 창 패치 왕복.
 #include <algorithm>
 #include <filesystem>
-#include <fstream>
-#include <iterator>
 
 #include <gtest/gtest.h>
 
@@ -17,8 +15,8 @@ namespace
 [[nodiscard]] String ReadText_(
     const FilePath& _path)
 {
-    std::ifstream file { _path, std::ios::binary };
-    return String { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
+    const Result<String> text = ReadFileText(_path);
+    return text ? text.GetValue() : String {};
 }
 
 // Defs/*.json 를 임시 폴더로 복사하고 _name 파일만 _text 로 바꿔 적재한다
@@ -38,10 +36,7 @@ namespace
             std::filesystem::copy_file(entry.path(), dir / entry.path().filename());
         }
     }
-    {
-        std::ofstream file { dir / _name, std::ios::binary | std::ios::trunc };
-        file.write(_text.data(), static_cast<std::streamsize>(_text.size()));
-    }
+    (void)WriteFileBytes(dir / _name, _text);
     Result<EnemyDefLibrary> lib = EnemyDefLibrary::LoadDirectory(dir, &_message);
     std::filesystem::remove_all(dir);
     if (!lib)

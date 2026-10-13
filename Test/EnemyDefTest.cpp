@@ -1,10 +1,9 @@
 ﻿// 적 정의 파일 로드, 보병 종류별 값, 행동 이름 변환, 정의 오류 거부와 베이크된 애니메이션 일치를 검증한다.
 
 #include <cmath>
-#include <fstream>
-#include <sstream>
 #include <string>
 
+#include "Core/AssetPath.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "EnemyTestUtil.h"
@@ -13,10 +12,8 @@ namespace
 {
 [[nodiscard]] String ReadDefsText_()
 {
-    std::ifstream     file(EnemyDefsPath().string());
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    return buffer.str();
+    const Result<String> text = ReadFileText(EnemyDefsPath());
+    return text ? text.GetValue() : String {};
 }
 
 [[nodiscard]] String ReplaceOnce_(
