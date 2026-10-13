@@ -12,7 +12,6 @@
 #include "Game/Enemies/BigShieeConfig.h"
 #include "Game/Enemies/EnemyDef.h"
 #include "Game/Enemies/EnemyWorld.h"
-#include "Game/Player/SlugRender.h"
 #include "Game/Props/DecorWorld.h"
 #include "Game/Props/ItemWorld.h"
 #include "Game/Props/PropWorld.h"
@@ -103,15 +102,11 @@ void DepthEditor::Rebuild_()
     AddConst_(m_rows, "Prop back (default)", kPropDepthBack);
     AddConst_(m_rows, "Enemy overlay (parachute)", kOverlayDepth);
     AddConst_(m_rows, "Enemy body", kEnemyDepth);
-    AddConst_(m_rows, "Slug body", kSlugBodyDepth);
     AddConst_(m_rows, "Player", kPlayerDepth);
     AddConst_(m_rows, "Enemy projectile trail", kTrailDepth);
     AddConst_(m_rows, "Player bullet", kPlayerBulletDepth);
-    AddConst_(m_rows, "Slug shell", kPlayerBombDepth);
     AddConst_(m_rows, "Enemy projectile", kShotDepth);
-    AddConst_(m_rows, "Slug FX", kSlugFxDepth);
     AddConst_(m_rows, "Item", kItemRenderDepth);
-    AddConst_(m_rows, "Slug arrow", kSlugArrowDepth);
     AddConst_(m_rows, "Prop front", kPropDepthFront);
     AddConst_(m_rows, "Prop debris", kPropDebrisDepth);
     AddConst_(m_rows, "Score popup", kPopupRenderDepth);

@@ -19,7 +19,7 @@ int main()
     audio.bEnabled = false;
     if (!AudioSystem::GetSingleton().InitFromDirectory(root, audio)) return 1;
 
-    constexpr const char* states[] = { "stage0", "sandbox", "enemylab", "vehiclelab", "proplab", "bosslab", "bosslab_bot", "buslab", "buslab_bot", "helilab", "helilab_kill", "title", "demo", "sluglab" };
+    constexpr const char* states[] = { "stage0", "sandbox", "enemylab", "vehiclelab", "proplab", "bosslab", "bosslab_bot", "buslab", "buslab_bot", "helilab", "helilab_kill", "title", "demo" };
     for (const char* name : states)
     {
         for (const int flip : { 0, 120 })

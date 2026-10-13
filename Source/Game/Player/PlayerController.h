@@ -57,10 +57,6 @@ public:
     [[nodiscard]] eChutePhase        GetChutePhase() const;
     [[nodiscard]] bool               IsChuteVisible(const Tuning& _tuning) const;
     [[nodiscard]] VECTOR2            GetLogicalFeet() const;
-    void                             BeginRide();
-    void                             SetRideFeet(VECTOR2 _feet, int _facing);
-    void                             EndRide(VECTOR2 _feet, VECTOR2 _velocity, int _facing, int _invincibleTicks);
-    [[nodiscard]] bool               IsRiding() const;
     void                             ExtendInvincibility(int _ticks);
     [[nodiscard]] ePlayerState       GetState() const;
     [[nodiscard]] VECTOR2            GetFeet() const;
@@ -171,7 +167,6 @@ private:
     int              m_moveX           = 0;
     bool             m_bSlashShown     = false;
     bool             m_bThrowShown     = false;
-    bool             m_bRiding         = false;
     Vector<uint32_t> m_pendingRelease  = {};
 
     const Tuning* m_pTuning = nullptr;

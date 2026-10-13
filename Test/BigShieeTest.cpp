@@ -8,7 +8,6 @@
 #include "Core/AssetPath.h"
 #include "EnemyTestUtil.h"
 #include "Game/Enemies/BigShieeEnemy.h"
-#include "Game/Player/SlugRender.h"
 #include "Game/Props/DecorWorld.h"
 #include "Game/Props/PropWorld.h"
 #include "Render/Animation.h"
@@ -241,7 +240,7 @@ TEST(BigShiee, NoPartHurtboxesBeforeTheFirstTick)
 TEST(BigShiee, RendersBehindEveryStageSprite)
 {
     constexpr int kEnemyBodyDepth = 15;
-    const int     front           = std::min({ kDecorFarDepth, kDecorBackDepth, kPropDepthBack, kPropDepthFront, kEnemyBodyDepth, kSlugBodyDepth });
+    const int     front           = std::min({ kDecorFarDepth, kDecorBackDepth, kPropDepthBack, kPropDepthFront, kEnemyBodyDepth });
     EXPECT_LT(kBigShieeDepthHull, front);
     EXPECT_LT(kBigShieeDepthAntenna, front);
     EXPECT_LT(kBigShieeDepthCannon, front);

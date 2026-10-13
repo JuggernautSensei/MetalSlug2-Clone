@@ -15,7 +15,7 @@ try
     $ErrorActionPreference = 'Stop'
     if ($LASTEXITCODE -ne 0) { throw 'SimCheck execution failed' }
     $lines = @($output | Where-Object { $_ -cmatch '^SIM ' })
-    if ($lines.Count -ne 840) { throw "Incomplete output: $($lines.Count)/840" }
+    if ($lines.Count -ne 780) { throw "Incomplete output: $($lines.Count)/780" }
     $baseline = Join-Path $PSScriptRoot 'baseline.txt'
     if ($Record)
     {

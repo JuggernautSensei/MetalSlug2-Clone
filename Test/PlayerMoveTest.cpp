@@ -96,6 +96,7 @@ TEST(PlayerStart, DefaultStateNameIsSandbox)
 {
     EXPECT_EQ(GetDefaultStateName(), "title");
     EXPECT_TRUE(static_cast<bool>(CreateState("sandbox")));
+    EXPECT_EQ(CreateState("sluglab"), nullptr);
 }
 
 TEST(PlayerMove, RightPressMovesOnTheSameTick)

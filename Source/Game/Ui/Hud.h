@@ -17,11 +17,6 @@ struct HudModel
     int  bombs         = 0;
     char weaponLetter  = 0;
 
-    bool  bSlugMode  = false;
-    int   cannonAmmo = 0;
-    bool  bShowGauge = false;
-    float gaugeRatio = 0.f;   // 0..1
-
     bool bShowTimer   = false;
     int  timerSeconds = 0;
 

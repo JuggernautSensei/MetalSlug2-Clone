@@ -15,7 +15,6 @@
 #include "Game/Combat/BulletVisual.h"
 #include "Game/Player/PlayerHitboxes.h"
 #include "Game/Player/PlayerWeapons.h"
-#include "Game/Player/SlugRender.h"
 #include "Game/Stage/StageMapping.h"
 #include "Game/Ui/ScreenFlow.h"
 #include "World/Constants.h"
@@ -165,14 +164,6 @@ void SandboxState::RestartGame()
     m_player.Reset(m_tuning, m_config.spawnFeet);
     m_player.SnapToGround(MakePhysicsWorld_(), 16.f);
 
-    m_slugs.Reset(m_slugTuning);
-    m_slugWalls.clear();
-    m_prevSlugStats = {};
-    for (const VECTOR2& feet: m_config.slugFeet)
-    {
-        (void)m_slugs.Spawn(feet, 1);
-    }
-
     m_camera.SetTarget({ m_config.spawnFeet.x, m_config.spawnFeet.y - 60.f });
     m_camera.SnapToTarget();
     m_prevCameraPos = m_camera.GetPosition();
@@ -200,17 +191,6 @@ void SandboxState::RestartGame()
         {
             m_player.ExtendInvincibility(60 * 60 * 60);
         }
-    }
-    if (m_config.bSlugLab)
-    {
-        SpawnParams left;
-        left.facing = -1;
-        (void)SpawnEnemy("soldier_sword", { 1000.f, 378.f }, left);
-        (void)SpawnEnemy("soldier_sword", { 1060.f, 378.f }, left);
-        (void)SpawnEnemy("soldier_bomb", { 1240.f, 378.f }, left);
-        (void)SpawnEnemy("soldier_bzk", { 1400.f, 378.f }, left);
-        (void)SpawnEnemy("jeep", { 1700.f, 378.f }, left);
-        (void)SpawnEnemy("btank", { 1950.f, 378.f }, left);
     }
     if (m_config.bVehicleLab)
     {
@@ -526,29 +506,16 @@ void SandboxState::Tick(
     playerCtx.godMode       = g_debug.godMode;
     playerCtx.bInfiniteAmmo = g_debug.bInfiniteAmmo;
 
-    SlugContext slugCtx;
-    slugCtx.pTuning      = &m_slugTuning;
-    slugCtx.pInputMove   = &m_tuning.move;
-    slugCtx.physics      = playerCtx.physics;
-    slugCtx.pCombat      = &m_combat;
-    slugCtx.pProjectiles = &m_projectiles;
-    slugCtx.godMode      = g_debug.godMode;
-    m_slugs.Tick(slugCtx, *pInput, m_player);
     m_player.Tick(playerCtx, *pInput);
 
     for (const ItemPickup& pickup: m_props.GetItems().Collect(m_player.GetBodyBox()))
     {
-        if (pickup.kind == eItemKind::Supply && pickup.supply == eSupplyKind::Bomb && m_slugs.OnBombSupply(pickup.amount))
-        {
-            continue;
-        }
         ApplyItemPickup(m_player, pickup, m_tuning);
     }
 
     m_targets.TickShooters(m_tuning.sandbox, m_player.GetFeet(), m_player.IsAlive(), m_projectiles, m_combat);
 
-    m_slugWalls  = m_slugs.MakeEnemyWalls();
-    m_enemyWalls = m_slugWalls;
+    m_enemyWalls.clear();
     for (const Aabb& box: m_enemies.GetSolidBoxes())
     {
         m_enemyWalls.push_back({ box });
@@ -564,13 +531,6 @@ void SandboxState::Tick(
     enemyCtx.player.center        = m_player.GetBodyBox().GetCenter();
     enemyCtx.player.bAlive        = m_player.IsAlive();
     enemyCtx.player.bInvulnerable = m_player.GetInvincibleTicks() > 0;
-    if (const SlugVehicle* pRidden = m_slugs.GetRiddenOrNull())
-    {
-        enemyCtx.player.feet          = pRidden->GetFeet();
-        enemyCtx.player.bodyBox       = pRidden->MakeHurtbox().box;
-        enemyCtx.player.center        = enemyCtx.player.bodyBox.GetCenter();
-        enemyCtx.player.bInvulnerable = pRidden->GetMode() != eSlugMode::Driven;
-    }
     enemyCtx.cameraView = Aabb::FromMinSize(m_camera.GetPosition(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
     enemyCtx.pAnims     = &AnimationLibrary::GetSingleton();
     m_enemies.Tick(enemyCtx);
@@ -590,7 +550,6 @@ void SandboxState::Tick(
     const int score = m_targets.ApplyEvents(events, m_tuning.sandbox) + enemyScore;
     m_player.AddScore(score);
     m_player.OnHitEvents(events);
-    m_slugs.OnHitEvents(events, m_combat.GetHitboxes());
     m_projectiles.OnHitEvents(events, m_combat);
     m_targets.Tick(m_tuning.sandbox);
 
@@ -684,28 +643,6 @@ void SandboxState::RequestSounds_(
     {
         audio.Play(kPlayerDeath);
     }
-    SlugStats slugTotal;
-    for (const SlugVehicle& slug: m_slugs.GetAll())
-    {
-        const SlugStats& st = slug.GetStats();
-        slugTotal.vulcanShots += st.vulcanShots;
-        slugTotal.cannonShots += st.cannonShots;
-        slugTotal.explosions += st.explosions;
-    }
-    for (int i = m_prevSlugStats.vulcanShots; i < slugTotal.vulcanShots; ++i)
-    {
-        PlayShotSfx(audio, eWeapon::Hmg, i);
-    }
-    for (int i = m_prevSlugStats.cannonShots; i < slugTotal.cannonShots; ++i)
-    {
-        audio.Play(kBombExplode, 0.8f, 0.05f);
-    }
-    for (int i = m_prevSlugStats.explosions; i < slugTotal.explosions; ++i)
-    {
-        audio.Play(kExplosion, 1.f, 0.03f);
-    }
-    m_prevSlugStats = slugTotal;
-
     for (const FxRequest& request: _fx)
     {
         if (request.kind == eFxKind::BombExplosion)
@@ -754,10 +691,6 @@ uint64_t SandboxState::HashState() const
     if (m_props.GetCount() > 0)
     {
         hash ^= m_props.HashState() * 1099511628211ull;   // 소품이 없으면 해시가 바뀌지
-    }
-    if (m_slugs.GetCount() > 0)
-    {
-        hash ^= m_slugs.HashState() * 1099511628211ull;   // 차량이 없으면 해시가 바뀌지
     }
     hash ^= static_cast<uint64_t>(m_projectiles.GetBullets().size()) << 8;
     hash ^= static_cast<uint64_t>(m_projectiles.GetBombs().size()) << 16;
@@ -826,11 +759,6 @@ void SandboxState::DrawWorld_(
 
     m_enemies.Submit(sprites, anims, m_projectiles, _alpha);
 
-    for (const SlugVehicle& slug: m_slugs.GetAll())
-    {
-        SubmitSlug(sprites, anims, slug, _alpha);
-    }
-
     {
         const VECTOR2 feet = Lerp(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
         if (m_bRigBound)
@@ -852,10 +780,6 @@ void SandboxState::DrawWorld_(
         for (const Bullet& bullet: m_projectiles.GetBullets())
         {
             const VECTOR2 pos = Lerp(bullet.renderPrev, bullet.position, _alpha);
-            if (IsSlugOwner(bullet.owner) && SubmitSlugBullet(sprites, anims, bullet, pos, ResolveZ(bullet.z, kPlayerBulletDepth)))
-            {
-                continue;
-            }
             if (bullet.team == eTeam::Player && SubmitPlayerBullet(sprites, &anims, m_spriteLib, bullet, pos, ResolveZ(bullet.z, kPlayerBulletDepth)))
             {
                 continue;
@@ -867,10 +791,6 @@ void SandboxState::DrawWorld_(
         for (const Bomb& bomb: m_projectiles.GetBombs())
         {
             const VECTOR2 pos = Lerp(bomb.renderPrev, bomb.position, _alpha);
-            if (IsSlugOwner(bomb.params.owner) && SubmitSlugShell(sprites, anims, bomb, pos, ResolveZ(bomb.params.z, kPlayerBombDepth)))
-            {
-                continue;
-            }
             if (const AnimFrame* pFrame = m_bombAnim.GetFrameData(anims))
             {
                 sprites.Submit(ResolveZ(bomb.params.z, kPlayerBombDepth), 0, *pFrame, pos);
@@ -922,13 +842,6 @@ void SandboxState::DrawHud_()
     const PlayerController& p        = m_player;
 
     HudModel hud = MakeHudModel(p);
-    if (const SlugVehicle* pRidden = m_slugs.GetRiddenOrNull())
-    {
-        hud.bSlugMode  = true;
-        hud.cannonAmmo = pRidden->GetCannonAmmo();
-        hud.bShowGauge = true;
-        hud.gaugeRatio = pRidden->GetHpRatio();
-    }
     m_ui.DrawHud(hud);
 
     if (g_debug.bDebugDraw)

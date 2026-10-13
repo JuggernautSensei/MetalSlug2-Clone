@@ -9,8 +9,6 @@
 #include "Game/GameState.h"
 #include "Game/Player/PlayerController.h"
 #include "Game/Player/PlayerRig.h"
-#include "Game/Player/SlugSystem.h"
-#include "Game/Player/SlugTypes.h"
 #include "Game/Props/PropWorld.h"
 #include "Game/Sandbox/Effects.h"
 #include "Game/Sandbox/TrainingTargets.h"
@@ -41,8 +39,6 @@ struct SandboxConfig
     bool             bHeliBot        = false;
     int              heliHp          = -1;
     bool             bGodMode        = false;
-    bool             bSlugLab        = false;
-    Vector<VECTOR2>  slugFeet        = {};
 };
 
 class SandboxState : public IGameState
@@ -118,11 +114,7 @@ private:
     int              m_vehicleCursor = 0;
     EffectList       m_effects       = {};
     AnimPlayer       m_bombAnim      = {};
-    SlugSystem       m_slugs         = {};
-    SlugTuning       m_slugTuning    = {};
-    Vector<Wall>     m_slugWalls     = {};
     Vector<Wall>     m_enemyWalls    = {};
-    SlugStats        m_prevSlugStats = {};
 
     SpriteLibrary m_spriteLib = {};
     int           m_bgHandle  = -1;

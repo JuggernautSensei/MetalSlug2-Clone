@@ -77,7 +77,6 @@
     "LEVEL_1": { "atlas": 15, "x": 1, "y": 1407, "w": 96, "h": 16, "pivotX": 48, "pivotY": 8 },
     "PlayerHPUI": { "atlas": 15, "x": 1904, "y": 1386, "w": 106, "h": 16, "pivotX": 53, "pivotY": 8 },
     "PlayerStateUI_Bomb": { "atlas": 15, "x": 1540, "y": 877, "w": 124, "h": 34, "pivotX": 62, "pivotY": 17 },
-    "PlayerStateUI_Cannon": { "atlas": 15, "x": 1665, "y": 877, "w": 124, "h": 34, "pivotX": 62, "pivotY": 17 },
     "Stage0_Background_0": { "file": "Textures/Stage0_Background_0.png", "w": 1178, "h": 320, "columns": 1, "rows": 1, "cellW": 1118, "cellH": 320, "col": 0, "line": 0 },
     "Stage0_Background_1": { "file": "Textures/Stage0_Background_1.png", "w": 2048, "h": 512, "columns": 1, "rows": 1, "cellW": 2048, "cellH": 512, "col": 0, "line": 0 },
     "Stage0_Background_2": { "atlas": 0, "x": 1, "y": 1, "w": 768, "h": 704, "pivotX": 384, "pivotY": 352 },

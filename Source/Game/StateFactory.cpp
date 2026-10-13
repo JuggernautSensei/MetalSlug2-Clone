@@ -70,19 +70,6 @@ Scoped<IGameState> CreateState(
         config.heliHp   = _name == "helilab_kill" ? 40 : -1;
         return MakeScoped<SandboxState>(config);
     }
-    if (_name == "sluglab")
-    {
-        SandboxConfig config;
-        config.bLoadGround = false;
-        config.ground      = GroundMap::MakeEmpty(3520, 448);
-        config.ground.FillRect(0, 378, 3519, 447, true);
-        config.spawnFeet     = { 200.f, 378.f };
-        config.bSlugLab      = true;
-        config.bSpawnTargets = false;
-        config.slugFeet.emplace_back(430.f, 378.f);
-        config.slugFeet.emplace_back(2300.f, 378.f);
-        return MakeScoped<SandboxState>(config);
-    }
     if (_name == "stage0")
     {
         return MakeScoped<StageState>();
