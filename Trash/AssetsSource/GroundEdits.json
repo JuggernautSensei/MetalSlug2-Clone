@@ -1,7 +1,0 @@
-{
-  "version": 1,
-  "note": "지형 편집 (SlugBaker). 보스 아레나는 평탄화하지 않는다: 원작처럼 부서진 지붕/잔해 언덕 지형이 끝없이 이어진다 (Docs/BossLayout.md). 강 구간 x 4570-4740 의 투명 돌기 (Stage0_0 상단 y 571~641, 바닥 642 위로 솟은 약 71px) 를 공기로 지운다 (R2-11). 미굽기 상태: Scripts/Bake.ps1 -Only ground 로 Baked/Ground 를 갱신해야 적용된다.",
-  "edits": [
-    { "map": "Stage0_0", "op": "air", "rect": [4570, 560, 170, 82] }
-  ]
-}
