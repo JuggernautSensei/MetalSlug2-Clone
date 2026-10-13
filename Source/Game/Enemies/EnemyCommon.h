@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Base/Types.h"
 #include "Game/Enemies/Enemy.h"
 #include "Game/Enemies/EnemyWorld.h"
@@ -13,20 +13,18 @@
 void              FacePlayer(EnemyState& _e, const EnemyEnv& _env);
 
 void EnterState(EnemyState& _e, int _state);
-
 void SetClip(EnemyState& _e, int _clip, bool _bRestart = false);
 
 [[nodiscard]] bool ClipReachedFrame(const EnemyState& _e, const EnemyDef& _def, int _frame);
 [[nodiscard]] bool ClipFinished(const EnemyState& _e, const EnemyDef& _def);
 
 [[nodiscard]] bool ClimbStep(EnemyState& _e, const EnemyDef& _def);
-// 계단을 다
-void ClimbLeap(EnemyState& _e, const EnemyDef& _def);
+void               ClimbLeap(EnemyState& _e, const EnemyDef& _def);
 
 [[nodiscard]] bool OnRoof(const EnemyState& _e);
 [[nodiscard]] bool AtRoofEdge(const EnemyState& _e);
 [[nodiscard]] bool CanLeaveRoof(const EnemyState& _e);
-// 지붕 위에서 걸어 발판 밖 으로 떨어지지 않도록 x 를 발판 안에 가둔다
+
 void HoldOnRoof(EnemyState& _e);
 
 MoveResult StepPhysics(EnemyState& _e, const EnemyDef& _def, EnemyEnv& _env);

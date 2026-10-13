@@ -1,4 +1,4 @@
-#include "Game/Props/PropDef.h"
+﻿#include "Game/Props/PropDef.h"
 
 #include <format>
 #include <initializer_list>

@@ -1,4 +1,4 @@
-#include "Render/SpriteBatch.h"
+﻿#include "Render/SpriteBatch.h"
 
 #include <algorithm>
 #include <cmath>

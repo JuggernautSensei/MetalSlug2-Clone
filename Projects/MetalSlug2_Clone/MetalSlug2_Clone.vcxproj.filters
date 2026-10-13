@@ -81,9 +81,6 @@
     <ClCompile Include="..\..\Source\Audio\SoundBank.cpp">
       <Filter>Source\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Audio\StbVorbisImpl.cpp">
-      <Filter>Source\Audio</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\Base\SlugError.cpp">
       <Filter>Source\Base</Filter>
     </ClCompile>
@@ -330,6 +327,9 @@
     <ClCompile Include="..\..\Source\World\Physics.cpp">
       <Filter>Source\World</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\Base\Pch.cpp" />
+    <ClCompile Include="..\..\Source\Editor\EnemyLab.cpp" />
+    <ClCompile Include="..\..\Source\Editor\ImGuiSdlRendererViewports.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\Audio\AudioMath.h">
@@ -617,5 +617,7 @@
     <ClInclude Include="..\..\Source\World\Physics.h">
       <Filter>Source\World</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\Editor\EnemyLab.h" />
+    <ClInclude Include="..\..\Source\Editor\ImGuiSdlRendererViewports.h" />
   </ItemGroup>
 </Project>

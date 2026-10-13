@@ -123,7 +123,6 @@
     <ClCompile Include="..\..\Tools\SimCheck\Main.cpp" />
     <ClCompile Include="..\..\Source\Audio\AudioSystem.cpp"><PrecompiledHeader Condition="'$(Configuration)'=='Debug'">NotUsing</PrecompiledHeader><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
     <ClCompile Include="..\..\Source\Audio\SoundBank.cpp" />
-    <ClCompile Include="..\..\Source\Audio\StbVorbisImpl.cpp"><PrecompiledHeader>NotUsing</PrecompiledHeader><ForcedIncludeFiles></ForcedIncludeFiles><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
     <ClCompile Include="..\..\Source\Base\SlugError.cpp" />
     <ClCompile Include="..\..\Source\Base\JsonFields.cpp" />
     <ClCompile Include="..\..\Source\Base\Log.cpp" />

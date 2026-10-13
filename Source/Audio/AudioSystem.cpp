@@ -6,19 +6,13 @@
 #include "Base/Log.h"
 #include "Base/Types.h"
 
-// miniaudio 구현부는 이 파일에서만 만든다
-#define STB_VORBIS_HEADER_ONLY
-#pragma warning(push, 0)
-#include <stb_vorbis.c>
-#pragma warning(pop)
-
-#define MINIAUDIO_IMPLEMENTATION
+// 디코더와 miniaudio 구현은 이 파일에서만 만든다.
 #pragma warning(push)
-#pragma warning(disable : 4456 4245 4701)
+#pragma warning(disable : 4244 4245 4456 4457 4701)
+#include <stb_vorbis.c>
+#define MINIAUDIO_IMPLEMENTATION
 #include <miniaudio.h>
 #pragma warning(pop)
-
-#undef STB_VORBIS_HEADER_ONLY
 
 struct AudioSystem::Backend
 {

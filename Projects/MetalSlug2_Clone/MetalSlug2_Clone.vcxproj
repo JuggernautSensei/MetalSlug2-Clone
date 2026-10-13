@@ -110,7 +110,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\Base\Pch.cpp"><PrecompiledHeader>Create</PrecompiledHeader></ClCompile>
+    <ClCompile Include="..\..\Source\Base\Pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\Source\Game\Stage\StageHost.cpp" />
     <ClCompile Include="..\..\Source\Game\Player\PlayerTypes.cpp" />
     <ClCompile Include="..\..\Source\Game\GameState.cpp" />
@@ -121,9 +123,14 @@
     <ClCompile Include="..\..\Source\Audio\AudioMath.cpp" />
     <ClCompile Include="..\..\Source\Core\FixedStep.cpp" />
     <ClCompile Include="..\..\Source\Main.cpp" />
-    <ClCompile Include="..\..\Source\Audio\AudioSystem.cpp"><PrecompiledHeader Condition="'$(Configuration)'=='Debug'">NotUsing</PrecompiledHeader><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
+    <ClCompile Include="..\..\Source\Audio\AudioSystem.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)'=='Debug'">NotUsing</PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization>
+      <InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion>
+      <BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks>
+      <SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode>
+    </ClCompile>
     <ClCompile Include="..\..\Source\Audio\SoundBank.cpp" />
-    <ClCompile Include="..\..\Source\Audio\StbVorbisImpl.cpp"><PrecompiledHeader>NotUsing</PrecompiledHeader><ForcedIncludeFiles></ForcedIncludeFiles><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
     <ClCompile Include="..\..\Source\Base\SlugError.cpp" />
     <ClCompile Include="..\..\Source\Base\JsonFields.cpp" />
     <ClCompile Include="..\..\Source\Base\Log.cpp" />
@@ -186,7 +193,13 @@
     <ClCompile Include="..\..\Source\Game\SimRunner.cpp" />
     <ClCompile Include="..\..\Source\Game\Stage\StageData.cpp" />
     <ClCompile Include="..\..\Source\Game\Stage\StageParams.cpp" />
-    <ClCompile Include="..\..\Source\Game\Stage\StageMapping.cpp"><PrecompiledHeader Condition="'$(Configuration)'=='Debug'">NotUsing</PrecompiledHeader><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
+    <ClCompile Include="..\..\Source\Game\Stage\StageMapping.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)'=='Debug'">NotUsing</PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization>
+      <InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion>
+      <BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks>
+      <SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode>
+    </ClCompile>
     <ClCompile Include="..\..\Source\Game\Stage\StageRunner.cpp" />
     <ClCompile Include="..\..\Source\Game\Stage\StageState.cpp" />
     <ClCompile Include="..\..\Source\Game\Stage\StageWorldHost.cpp" />
@@ -202,7 +215,13 @@
     <ClCompile Include="..\..\Source\Render\Animation.cpp" />
     <ClCompile Include="..\..\Source\Render\Camera.cpp" />
     <ClCompile Include="..\..\Source\Render\Renderer.cpp" />
-    <ClCompile Include="..\..\Source\Render\SpriteBatch.cpp"><PrecompiledHeader Condition="'$(Configuration)'=='Debug'">NotUsing</PrecompiledHeader><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
+    <ClCompile Include="..\..\Source\Render\SpriteBatch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)'=='Debug'">NotUsing</PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization>
+      <InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion>
+      <BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks>
+      <SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode>
+    </ClCompile>
     <ClCompile Include="..\..\Source\Render\SpriteLibrary.cpp" />
     <ClCompile Include="..\..\Source\World\Combat.cpp" />
     <ClCompile Include="..\..\Source\World\GroundMap.cpp" />

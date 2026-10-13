@@ -1,8 +1,5 @@
-#pragma once
-#include <algorithm>
+﻿#pragma once
 #include <cstdint>
-
-#include "Base/Types.h"
 
 class VoiceAllocator
 {
@@ -25,17 +22,16 @@ public:
     [[nodiscard]] int      CountSound(int _soundId) const;
 
 private:
+    [[nodiscard]] int FindOldest_(int _soundId) const;
+
     struct Slot
     {
         bool     bActive = false;
         int      soundId = -1;
-        uint64_t serial  = 0;   // 시작 순서
+        uint64_t order   = 0;
     };
-
-    [[nodiscard]] int      FindOldest_(int _soundId) const;
-    [[nodiscard]] Acquired Take_(int _slot, int _soundId, bool _bStolen);
 
     Vector<Slot> m_slots       = {};
     int          m_maxPerSound = 4;
-    uint64_t     m_nextSerial  = 1;
+    uint64_t     m_nextOrder   = 1;
 };

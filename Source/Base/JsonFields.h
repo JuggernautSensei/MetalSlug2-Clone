@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Base/SlugError.h"
 #include "Base/Types.h"

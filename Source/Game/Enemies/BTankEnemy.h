@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Game/Enemies/Enemy.h"
 
 enum class eBTankState
@@ -14,12 +14,12 @@ class BTankEnemy : public Enemy
     JUG_CLASS(BTankEnemy, NO_COPY, NO_MOVE)
 
 public:
-    [[nodiscard]] int GetShotCounter() const noexcept override { return m_shotsRemaining; }
     BTankEnemy() = default;
-    void Init(const EnemyDef& _def, EnemyEnv& _env) override;
-    void Tick(const EnemyDef& _def, EnemyEnv& _env) override;
-    void OnDeath(const EnemyDef& _def, EnemyEnv& _env) override;
-    void TickDying(const EnemyDef& _def, EnemyEnv& _env) override;
+    void              Init(const EnemyDef& _def, EnemyEnv& _env) override;
+    void              Tick(const EnemyDef& _def, EnemyEnv& _env) override;
+    void              OnDeath(const EnemyDef& _def, EnemyEnv& _env) override;
+    void              TickDying(const EnemyDef& _def, EnemyEnv& _env) override;
+    [[nodiscard]] int GetShotCounter() const noexcept override;
 
 private:
     void              HashActionState(Fnv1a& _hash) const override;

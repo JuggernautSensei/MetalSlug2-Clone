@@ -13,28 +13,38 @@ void VoiceAllocator::Reset(
 {
     m_maxPerSound = Max(1, _maxPerSound);
     m_slots.assign(static_cast<size_t>(Max(1, _capacity)), Slot {});
-    m_nextSerial = 1;
+    m_nextOrder = 1;
 }
 
 VoiceAllocator::Acquired VoiceAllocator::Acquire(
     const int _soundId)
 {
+    int index = -1;
     if (CountSound(_soundId) >= m_maxPerSound)
     {
-        const int oldest = FindOldest_(_soundId);
-        JUG_ASSERT(oldest >= 0, "stealable voice not found");
-        return Take_(oldest, _soundId, true);
+        index = FindOldest_(_soundId);
+        JUG_ASSERT(index >= 0, "stealable voice not found");
     }
-
-    for (size_t i = 0; i < m_slots.size(); ++i)
+    else
     {
-        if (!m_slots[i].bActive)
+        for (size_t i = 0; i < m_slots.size(); ++i)
         {
-            return Take_(static_cast<int>(i), _soundId, false);
+            if (!m_slots[i].bActive)
+            {
+                index = static_cast<int>(i);
+                break;
+            }
+        }
+        if (index < 0)
+        {
+            index = FindOldest_(-1);
         }
     }
 
-    return Take_(FindOldest_(-1), _soundId, true);
+    Slot&      slot    = m_slots[static_cast<size_t>(index)];
+    const bool bStolen = slot.bActive;
+    slot              = { true, _soundId, m_nextOrder++ };
+    return { index, bStolen };
 }
 
 void VoiceAllocator::Release(
@@ -87,28 +97,16 @@ int VoiceAllocator::CountSound(
 int VoiceAllocator::FindOldest_(
     const int _soundId) const
 {
-    int      best       = -1;
-    uint64_t bestSerial = UINT64_MAX;
+    int      oldest = -1;
+    uint64_t order  = UINT64_MAX;
     for (size_t i = 0; i < m_slots.size(); ++i)
     {
         const Slot& slot = m_slots[i];
-        if (slot.bActive && (_soundId < 0 || slot.soundId == _soundId) && slot.serial < bestSerial)
+        if (slot.bActive && (_soundId < 0 || slot.soundId == _soundId) && slot.order < order)
         {
-            best       = static_cast<int>(i);
-            bestSerial = slot.serial;
+            oldest = static_cast<int>(i);
+            order  = slot.order;
         }
     }
-    return best;
-}
-
-VoiceAllocator::Acquired VoiceAllocator::Take_(
-    const int  _slot,
-    const int  _soundId,
-    const bool _bStolen)
-{
-    Slot& slot   = m_slots[static_cast<size_t>(_slot)];
-    slot.bActive = true;
-    slot.soundId = _soundId;
-    slot.serial  = m_nextSerial++;
-    return { _slot, _bStolen };
+    return oldest;
 }

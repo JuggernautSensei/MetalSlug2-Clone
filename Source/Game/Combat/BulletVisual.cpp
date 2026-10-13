@@ -1,4 +1,4 @@
-#include "Game/Combat/BulletVisual.h"
+﻿#include "Game/Combat/BulletVisual.h"
 
 #include <algorithm>
 #include <cmath>

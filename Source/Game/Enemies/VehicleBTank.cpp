@@ -1,4 +1,4 @@
-#include "Game/Enemies/BTankEnemy.h"
+﻿#include "Game/Enemies/BTankEnemy.h"
 
 #include <algorithm>
 #include <cmath>
@@ -96,6 +96,11 @@ void BTankEnemy::TickDying(
     EnemyEnv&       _env)
 {
     TickVehicleDeath(GetMutableState(), _def, _env);
+}
+
+int BTankEnemy::GetShotCounter() const noexcept
+{
+    return m_shotsRemaining;
 }
 
 void ParseBTankConfig(
