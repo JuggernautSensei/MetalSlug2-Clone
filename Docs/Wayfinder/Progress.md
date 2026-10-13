@@ -4,11 +4,10 @@
 작업 주체: 메인 세션이 Sonnet 에이전트들에게 웨이브 단위로 위임(Opus 는 2단계 계획 1회). 이 문서와 `git log` 만으로 이어갈 수 있게 정리함.
 
 ## 0. 가장 먼저 할 일 (다음 컨텍스트)
-1. `git log --oneline | head -5`, `git status --short | grep -v Trash`, `git stash list` 로 상태 확인. 작업 트리는 **검증된 마지막 커밋 상태로 깨끗**하다(미추적 `Docs/Wayfinder/TypeAudit.md` 만 있을 수 있음).
-2. **W12(타입 JugX 교체)는 사용자 요청으로 중단**되었다. 완료된 W12 커밋은 `0006ef9`(Vec2→VECTOR2)까지이고, 그 뒤 진행분(Math.h/Types.h/Editor/Enemies/StageState 등 28개 파일)은 **검증 전 상태로 스태시**에 있다: `stash@{0}: W12 WIP (unverified...)`.
-   - 이어가기: `git stash pop` → 빌드 → `Scripts/Verify.ps1` + `Scripts/TraceLoad.ps1` → PASS 면 커밋(`git add -A -- Source Test Projects Docs/Architecture.md`), FAIL 이면 `git checkout -- Source Test Projects` 로 되돌리고 원인 파악(또는 `git stash drop`).
-   - `Docs/Wayfinder/TypeAudit.md` 에 점검표(교체/유지 판정)가 있다.
-3. 작업 브랜치는 `main` 보다 앞서 있고 **아직 `main` 병합/푸시 전**이다(사용자가 나중에 하겠다고 함). 병합은 `git checkout main && git merge --ff-only claude/affectionate-brahmagupta-tgqzo1 && git push origin main`.
+1. `git log --oneline | head -5`, `git status --short | grep -v Trash`, `git stash list`(비어 있어야 함)로 상태 확인.
+2. **W12(타입 JugX 교체)는 커밋 완료**(`2a8f843`): 스태시를 복원해 `Verify` PASS(해시 15, 캡처 7, 튜닝, 단위 테스트 902/902)와 `TraceLoad` PASS, Release 빌드 exit=0 확인 후 커밋. 점검표는 `Docs/Wayfinder/TypeAudit.md`.
+3. 작업 브랜치 `claude/affectionate-brahmagupta-tgqzo1` 는 `main` 보다 앞서 있고 **아직 `main` 병합/푸시 전**(사용자가 나중에 하겠다고 함): `git checkout main && git merge --ff-only claude/affectionate-brahmagupta-tgqzo1 && git push origin main`.
+4. 남은 일: 최종 재평가(4항목), 미참조 에셋을 `Trash/` 로 이동, `Docs/Architecture.md` 최종 갱신(JugX 교체 범위 반영).
 
 ## 1. 사용자 요구 (불변 규칙)
 - **결과/동작 불변이 절대 조건**: `Scripts/Verify.ps1` → `VERIFY: PASS`(리플레이 해시 15, 캡처 7, 튜닝 해시, 단위 테스트 902/902 통과) + `Scripts/TraceLoad.ps1` → `TRACELOAD: PASS`. 기준선 파일(`Docs/Wayfinder/Baseline*.txt`, `Test/Replays`)은 `-Update` 로 갱신하지 않는다.
