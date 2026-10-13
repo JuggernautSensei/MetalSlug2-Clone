@@ -14,27 +14,30 @@ struct GameContext
     Renderer*         pRenderer   = nullptr;
     SpriteBatch*      pSprites    = nullptr;
     AnimationLibrary* pAnims      = nullptr;
-    RngMt19937*       pRng        = nullptr;
     FilePath          assetRoot   = {};
     AudioSystem*      pAudio      = nullptr;
     int               loadWorkers = 1;
-
-    float    fps           = 0.f;
-    bool     bDebugDraw    = false;
-    bool     bPaused       = false;
-    int      slowMoDivisor = 1;   // F4: 2 이상이면 느린 재생
-    int      debugWarp     = 0;
-    float    debugWarpX    = 0.f;
-    int      debugLives    = 0;   // --life N (0 이면 튜닝 값)
-    int      debugSpawn    = 0;
-    int      debugWeapon   = 0;
-    eGodMode godMode       = eGodMode::Off;
-    bool     bInfiniteAmmo = false;
 
     [[nodiscard]] bool IsHeadless() const;
 
     [[nodiscard]] AudioSystem& GetAudio() const;
 };
+
+struct DebugSwitches
+{
+    float    fps           = 0.f;
+    bool     bDebugDraw    = false;
+    bool     bPaused       = false;
+    int      warp          = 0;
+    float    warpX         = 0.f;
+    int      lives         = 0;   // --life N (0 이면 튜닝 값)
+    int      spawn         = 0;
+    int      weapon        = 0;
+    eGodMode godMode       = eGodMode::Off;
+    bool     bInfiniteAmmo = false;
+};
+
+extern DebugSwitches g_debug;
 
 class IGameState
 {

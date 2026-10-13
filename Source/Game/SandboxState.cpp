@@ -512,15 +512,15 @@ void SandboxState::Tick(
         m_props.Tick(propCtx);
     }
     UpdateWalls_();
-    if (_ctx.debugSpawn > 0)
+    if (g_debug.spawn > 0)
     {
-        SpawnDebugEnemy_(_ctx.debugSpawn - 1);
-        _ctx.debugSpawn = 0;
+        SpawnDebugEnemy_(g_debug.spawn - 1);
+        g_debug.spawn = 0;
     }
-    if (_ctx.debugWeapon > 0)
+    if (g_debug.weapon > 0)
     {
-        m_player.PickUpWeapon(WeaponFromDebugSlot(_ctx.debugWeapon), m_tuning);
-        _ctx.debugWeapon = 0;
+        m_player.PickUpWeapon(WeaponFromDebugSlot(g_debug.weapon), m_tuning);
+        g_debug.weapon = 0;
     }
     m_targets.RegisterHurtboxes(m_combat);
     m_enemies.RegisterHurtboxes(m_combat);
@@ -532,8 +532,8 @@ void SandboxState::Tick(
     playerCtx.pCombat       = &m_combat;
     playerCtx.pProjectiles  = &m_projectiles;
     playerCtx.respawnFeet   = GetRespawnFeet_();
-    playerCtx.godMode       = _ctx.godMode;
-    playerCtx.bInfiniteAmmo = _ctx.bInfiniteAmmo;
+    playerCtx.godMode       = g_debug.godMode;
+    playerCtx.bInfiniteAmmo = g_debug.bInfiniteAmmo;
 
     SlugContext slugCtx;
     slugCtx.pTuning      = &m_slugTuning;
@@ -541,7 +541,7 @@ void SandboxState::Tick(
     slugCtx.physics      = playerCtx.physics;
     slugCtx.pCombat      = &m_combat;
     slugCtx.pProjectiles = &m_projectiles;
-    slugCtx.godMode      = _ctx.godMode;
+    slugCtx.godMode      = g_debug.godMode;
     m_slugs.Tick(slugCtx, *pInput, m_player);
     m_player.Tick(playerCtx, *pInput);
 
@@ -793,7 +793,7 @@ void SandboxState::Render(
     }
 
     DrawWorld_(_ctx, cameraPos, _alpha);
-    if (_ctx.bDebugDraw)
+    if (g_debug.bDebugDraw)
     {
         DrawDebugBoxes_(renderer, cameraPos);
     }
@@ -958,7 +958,7 @@ void SandboxState::DrawHud_(
     }
     m_ui.DrawHud(_ctx, hud);
 
-    if (_ctx.bDebugDraw)
+    if (g_debug.bDebugDraw)
     {
         const Vec2   vel   = p.GetVelocity();
         const Vec2   pos   = p.GetFeet();
@@ -976,12 +976,12 @@ void SandboxState::DrawHud_(
             p.GetInvincibleTicks(),
             p.IsKnifeTargetInRange() ? 1 : 0,
             m_tickCount,
-            _ctx.fps);
+            g_debug.fps);
         renderer.DrawDebugText({ 9.f, 61.f }, debug, { 0, 0, 0, 255 });
         renderer.DrawDebugText({ 8.f, 60.f }, debug, { 255, 255, 255, 255 });
     }
 
-    if (_ctx.bPaused)
+    if (g_debug.bPaused)
     {
         TextStyle style;
         style.align = eTextAlign::Center;

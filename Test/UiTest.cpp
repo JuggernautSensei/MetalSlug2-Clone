@@ -1003,9 +1003,7 @@ struct TitleSim
 {
     explicit TitleSim(
         TitleConfig _config = {})
-        : rng(uint64_t { 1 })
     {
-        ctx.pRng   = &rng;
         ctx.pAudio = &audio;
         pTitle     = new TitleState { std::move(_config) };
         runner     = Scoped<SimRunner> {
@@ -1033,7 +1031,6 @@ struct TitleSim
 
     [[nodiscard]] bool IsStillTitle() const { return runner->GetState() == pTitle; }
 
-    RngMt19937        rng = RngMt19937 { std::mt19937_64::default_seed };
     GameContext       ctx;
     AudioSystem       audio { true };
     TitleState*       pTitle = nullptr;

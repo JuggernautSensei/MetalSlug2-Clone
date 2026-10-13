@@ -33,9 +33,7 @@ SandboxConfig MakeFlatConfig()
 Sim::Sim(
     SandboxConfig     _config,
     AnimationLibrary* _pAnims)
-    : m_rng(uint64_t { 1 })
 {
-    m_ctx.pRng   = &m_rng;
     m_ctx.pAnims = _pAnims;
 
     m_pState  = new SandboxState { std::move(_config) };

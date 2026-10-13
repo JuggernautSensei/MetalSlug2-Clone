@@ -328,9 +328,7 @@ class CameraBotSim
 {
 public:
     CameraBotSim()
-        : m_rng(uint64_t { 1 })
     {
-        m_ctx.pRng                = &m_rng;
         m_ctx.assetRoot           = FindAssetRoot();
         Scoped<StageState> pOwned = MakeScoped<StageState>();
         m_pState                  = pOwned.GetPtr();
@@ -407,7 +405,6 @@ private:
         return false;
     }
 
-    RngMt19937        m_rng        = RngMt19937 { std::mt19937_64::default_seed };
     GameContext       m_ctx        = {};
     InputFrame        m_frame      = {};
     StageState*       m_pState     = nullptr;

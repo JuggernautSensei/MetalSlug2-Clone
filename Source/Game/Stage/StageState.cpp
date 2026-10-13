@@ -211,9 +211,9 @@ void StageState::Load_(
     if (Result<Tuning> loaded = LoadTuning(GetDefaultTuningPath(_ctx.assetRoot)))
     {
         m_tuning = loaded.Take();
-        if (_ctx.debugLives > 0)
+        if (g_debug.lives > 0)
         {
-            m_tuning.player.lives = _ctx.debugLives;
+            m_tuning.player.lives = g_debug.lives;
         }
     }
     else
@@ -364,8 +364,8 @@ void StageState::Tick(
     playerCtx.pCombat       = &m_combat;
     playerCtx.pProjectiles  = &m_projectiles;
     playerCtx.respawnFeet   = GetRespawnFeet_();
-    playerCtx.godMode       = _ctx.godMode;
-    playerCtx.bInfiniteAmmo = _ctx.bInfiniteAmmo;
+    playerCtx.godMode       = g_debug.godMode;
+    playerCtx.bInfiniteAmmo = g_debug.bInfiniteAmmo;
     if (!m_bLabSetUp)
     {
         m_bLabSetUp = true;
@@ -557,18 +557,18 @@ void StageState::StartFlow_(
 void StageState::HandleDebugWarp_(
     GameContext& _ctx)
 {
-    if (_ctx.debugWeapon > 0)
+    if (g_debug.weapon > 0)
     {
-        if (_ctx.bDebugDraw)
+        if (g_debug.bDebugDraw)
         {
-            m_player.PickUpWeapon(WeaponFromDebugSlot(_ctx.debugWeapon), m_tuning);
+            m_player.PickUpWeapon(WeaponFromDebugSlot(g_debug.weapon), m_tuning);
         }
-        _ctx.debugWeapon = 0;
+        g_debug.weapon = 0;
     }
 
-    const int request = _ctx.debugWarp;
-    _ctx.debugWarp    = 0;
-    if (request == 0 || (!_ctx.bDebugDraw && request != 3))
+    const int request = g_debug.warp;
+    g_debug.warp      = 0;
+    if (request == 0 || (!g_debug.bDebugDraw && request != 3))
     {
         return;
     }
@@ -584,7 +584,7 @@ void StageState::HandleDebugWarp_(
     }
     else if (request == 3)
     {
-        (void)m_runner->WarpToX(_ctx.debugWarpX);
+        (void)m_runner->WarpToX(g_debug.warpX);
     }
     m_host.SetContext(nullptr);
 }
@@ -899,7 +899,7 @@ void StageState::Render(
 
     DrawBackdrop_(_ctx, cameraPos);
     DrawWorld_(_ctx, cameraPos, _alpha);
-    if (_ctx.bDebugDraw)
+    if (g_debug.bDebugDraw)
     {
         DrawDebugBoxes_(renderer, cameraPos);
     }
@@ -994,7 +994,7 @@ void StageState::DrawWorld_(
 
     for (const PlaceholderEntity& entity: m_host.GetPlaceholderEntities())
     {
-        if (!_ctx.bDebugDraw)
+        if (!g_debug.bDebugDraw)
         {
             continue;
         }
@@ -1157,7 +1157,7 @@ void StageState::DrawHud_(
 
     m_ui.DrawHud(_ctx, BuildHudModel());
 
-    if (_ctx.bDebugDraw)
+    if (g_debug.bDebugDraw)
     {
         const String&              lastId = m_host.GetLastSectionId();
         const String               gates  = JoinIds_(m_runner->GetOpenGateIds());
@@ -1194,12 +1194,12 @@ void StageState::DrawHud_(
             m_player.IsGrounded() ? 1 : 0,
             m_host.GetActiveGroundName(),
             m_tickCount,
-            _ctx.fps);
+            g_debug.fps);
         renderer.DrawDebugText({ 9.f, 61.f }, debug, { 0, 0, 0, 255 });
         renderer.DrawDebugText({ 8.f, 60.f }, debug, { 255, 255, 255, 255 });
     }
 
-    if (_ctx.bPaused)
+    if (g_debug.bPaused)
     {
         TextStyle style = {};
         style.align     = eTextAlign::Center;

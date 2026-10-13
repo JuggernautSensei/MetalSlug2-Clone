@@ -396,9 +396,7 @@ struct AudioSim
 {
     explicit AudioSim(
         AudioSystem* _pAudio)
-        : rng(uint64_t { 1 })
     {
-        ctx.pRng                    = &rng;
         ctx.pAudio                  = _pAudio;
         Scoped<SandboxState> pOwned = MakeScoped<SandboxState>(MakeFlatConfig());
         pState                      = pOwned.GetPtr();
@@ -419,7 +417,6 @@ struct AudioSim
         }
     }
 
-    RngMt19937        rng    = RngMt19937 { std::mt19937_64::default_seed };
     GameContext       ctx    = {};
     SandboxState*     pState = nullptr;
     Scoped<SimRunner> runner = nullptr;
@@ -442,16 +439,6 @@ TEST(AudioDeterminism, SameStateHashWithNullTestAndDryAudio)
     EXPECT_EQ(withNull.pState->HashState(), withTest.pState->HashState());
     EXPECT_EQ(withNull.pState->HashState(), withDry.pState->HashState());
     EXPECT_GT(CountKind(testAudio, eAudioEvent::Play), 0);
-}
-
-TEST(AudioDeterminism, SimulationDoesNotConsumeSimRngForAudio)
-{
-    AudioSim    a { nullptr };
-    AudioSystem testAudio { true };
-    AudioSim    b { &testAudio };
-    a.RunScript(300);
-    b.RunScript(300);
-    EXPECT_EQ(a.rng.Generate(), b.rng.Generate());
 }
 
 TEST(AudioSandbox, PistolShotRequestsShotSound)

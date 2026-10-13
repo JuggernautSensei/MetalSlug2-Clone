@@ -16,19 +16,17 @@ class StageSim
 public:
     explicit StageSim(
         const bool _bDebugDraw = false)
-        : m_rng(uint64_t { 1 })
     {
-        m_ctx.pRng       = &m_rng;
-        m_ctx.assetRoot  = FindAssetRoot();
-        m_ctx.bDebugDraw = _bDebugDraw;
-        m_pState         = new StageState;
-        m_runner         = Scoped<SimRunner> {
+        m_ctx.assetRoot    = FindAssetRoot();
+        g_debug.bDebugDraw = _bDebugDraw;
+        m_pState           = new StageState;
+        m_runner           = Scoped<SimRunner> {
             new SimRunner { m_ctx, Scoped<IGameState> { m_pState } }
         };
     }
 
-    [[nodiscard]] StageState&  State() { return *m_pState; }
-    [[nodiscard]] GameContext& Ctx() { return m_ctx; }
+    [[nodiscard]] StageState& State() { return *m_pState; }
+    ~StageSim() { g_debug = {}; }
 
     void Hold(
         const eAction _action)
@@ -52,7 +50,6 @@ public:
     }
 
 private:
-    RngMt19937        m_rng    = RngMt19937 { std::mt19937_64::default_seed };
     GameContext       m_ctx    = {};
     InputFrame        m_frame  = {};
     StageState*       m_pState = nullptr;
@@ -150,9 +147,9 @@ TEST(StageStateDebug, F5WarpsToTheNextSectionOnlyWithDebugDraw)
     sim.Step();
     ASSERT_EQ(sim.State().GetRunner().GetNextSectionIndex(), 1);
 
-    sim.Ctx().debugWarp = 1;
+    g_debug.warp = 1;
     sim.Step();
-    EXPECT_EQ(sim.Ctx().debugWarp, 0);
+    EXPECT_EQ(g_debug.warp, 0);
     EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 750.f);
     EXPECT_EQ(sim.State().GetRunner().GetNextSectionIndex(), 2);
     EXPECT_EQ(sim.State().GetHost().GetLastSectionId(), "street");
@@ -162,7 +159,7 @@ TEST(StageStateDebug, WarpRequestIsIgnoredWithoutDebugDraw)
 {
     StageSim sim { false };
     sim.Step();
-    sim.Ctx().debugWarp = 1;
+    g_debug.warp = 1;
     sim.Step();
     EXPECT_LT(sim.State().GetPlayer().GetFeet().x, 750.f);
     EXPECT_EQ(sim.State().GetRunner().GetNextSectionIndex(), 1);
@@ -172,7 +169,7 @@ TEST(StageStateDebug, F6WarpsToTheStageEnd)
 {
     StageSim sim { true };
     sim.Step();
-    sim.Ctx().debugWarp = 2;
+    g_debug.warp = 2;
     sim.Step();
     EXPECT_GT(sim.State().GetPlayer().GetFeet().x, 13700.f);
     EXPECT_TRUE(sim.State().GetRunner().GetNextSectionIndex() >= 20);

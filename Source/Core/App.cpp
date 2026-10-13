@@ -146,9 +146,9 @@ void App::ParseArgs_()
         else if (args[i] == "--editor")
         {
             m_bEditor = true;
-            if (m_pendingWeapon == 0)
+            if (g_debug.weapon == 0)
             {
-                m_pendingWeapon = 1;
+                g_debug.weapon = 1;
             }
         }
         else if (args[i] == "--editor-anim" && bHasValue)
@@ -200,7 +200,7 @@ void App::ParseArgs_()
         }
         else if (args[i] == "--weapon" && bHasValue)
         {
-            m_pendingWeapon = std::atoi(args[++i].c_str());
+            g_debug.weapon = std::atoi(args[++i].c_str());
         }
         else if (args[i] == "--hold" && bHasValue)
         {
@@ -232,8 +232,8 @@ void App::ParseArgs_()
         }
         else if (args[i] == "--warp" && bHasValue)
         {
-            m_startWarpCount = std::atoi(args[++i].c_str());
-            m_bDebugDraw     = true;
+            m_startWarpCount   = std::atoi(args[++i].c_str());
+            g_debug.bDebugDraw = true;
         }
         else if (args[i] == "--warp-x" && bHasValue)
         {
@@ -241,12 +241,12 @@ void App::ParseArgs_()
         }
         else if (args[i] == "--life" && bHasValue)
         {
-            m_debugLives = std::atoi(args[++i].c_str());
+            g_debug.lives = std::atoi(args[++i].c_str());
         }
         else if (args[i] == "--warp-boss")
         {
-            m_pendingWarp = 2;
-            m_bDebugDraw  = true;
+            g_debug.warp       = 2;
+            g_debug.bDebugDraw = true;
         }
         else if (args[i] == "--capture-ticks" && bHasValue)
         {
@@ -355,7 +355,6 @@ void App::Init_()
         (void)m_sprites.LoadAtlasPagesParallel(m_anims, numWorkers);
     }
 
-    m_rng                 = RngMt19937 { m_seed };
     m_recording.seed      = m_seed;
     m_recording.stateName = m_stateName;
 
@@ -364,9 +363,8 @@ void App::Init_()
     m_ctx.pAnims      = &m_anims;
     m_ctx.loadWorkers = numWorkers;
     m_editor.SetAnimLibrary(m_bEditor ? &m_anims : nullptr);
-    m_ctx.pRng       = &m_rng;
-    m_ctx.assetRoot  = FindAssetRoot();
-    m_ctx.debugLives = m_debugLives;
+    m_ctx.assetRoot       = FindAssetRoot();
+    g_debug.bInfiniteAmmo = m_bEditor;
 
     {
         AudioConfig audioConfig;
@@ -435,35 +433,35 @@ void App::OnKeyDown_(
 
     switch (_key)
     {
-        case SDL_SCANCODE_F1: m_bDebugDraw = !m_bDebugDraw; return;
-        case SDL_SCANCODE_F2: m_bPaused = !m_bPaused; return;
+        case SDL_SCANCODE_F1: g_debug.bDebugDraw = !g_debug.bDebugDraw; return;
+        case SDL_SCANCODE_F2: g_debug.bPaused = !g_debug.bPaused; return;
         case SDL_SCANCODE_F3: m_bStepOnce = true; return;
         case SDL_SCANCODE_F4: m_bSlowMo = !m_bSlowMo; return;
         case SDL_SCANCODE_F5:
-            if (m_bDebugDraw)
+            if (g_debug.bDebugDraw)
             {
-                m_pendingWarp = 1;
+                g_debug.warp = 1;
             }
             return;
         case SDL_SCANCODE_F6:
-            if (m_bDebugDraw)
+            if (g_debug.bDebugDraw)
             {
-                m_pendingWarp = 2;
+                g_debug.warp = 2;
             }
             return;
-        case SDL_SCANCODE_1: m_pendingSpawn = 1; return;
-        case SDL_SCANCODE_2: m_pendingSpawn = 2; return;
-        case SDL_SCANCODE_3: m_pendingSpawn = 3; return;
-        case SDL_SCANCODE_4: m_pendingSpawn = 4; return;
-        case SDL_SCANCODE_5: m_pendingSpawn = 5; return;
-        case SDL_SCANCODE_6: m_pendingSpawn = 6; return;
-        case SDL_SCANCODE_7: m_pendingSpawn = 7; return;
-        case SDL_SCANCODE_8: m_pendingSpawn = 8; return;
-        case SDL_SCANCODE_9: m_pendingSpawn = 9; return;
-        case SDL_SCANCODE_F7: m_pendingWeapon = 1; return;
-        case SDL_SCANCODE_F8: m_pendingWeapon = 2; return;
-        case SDL_SCANCODE_F9: m_pendingWeapon = 3; return;
-        case SDL_SCANCODE_F10: m_pendingWeapon = 4; return;
+        case SDL_SCANCODE_1: g_debug.spawn = 1; return;
+        case SDL_SCANCODE_2: g_debug.spawn = 2; return;
+        case SDL_SCANCODE_3: g_debug.spawn = 3; return;
+        case SDL_SCANCODE_4: g_debug.spawn = 4; return;
+        case SDL_SCANCODE_5: g_debug.spawn = 5; return;
+        case SDL_SCANCODE_6: g_debug.spawn = 6; return;
+        case SDL_SCANCODE_7: g_debug.spawn = 7; return;
+        case SDL_SCANCODE_8: g_debug.spawn = 8; return;
+        case SDL_SCANCODE_9: g_debug.spawn = 9; return;
+        case SDL_SCANCODE_F7: g_debug.weapon = 1; return;
+        case SDL_SCANCODE_F8: g_debug.weapon = 2; return;
+        case SDL_SCANCODE_F9: g_debug.weapon = 3; return;
+        case SDL_SCANCODE_F10: g_debug.weapon = 4; return;
         default: break;
     }
 
@@ -493,50 +491,34 @@ void App::Update_(
 
     if (_deltaTimeSec > 0.f)
     {
-        m_fps = m_fps <= 0.f ? 1.f / _deltaTimeSec : m_fps * 0.95f + (1.f / _deltaTimeSec) * 0.05f;
+        g_debug.fps = g_debug.fps <= 0.f ? 1.f / _deltaTimeSec : g_debug.fps * 0.95f + (1.f / _deltaTimeSec) * 0.05f;
     }
-    m_ctx.fps           = m_fps;
-    m_ctx.bDebugDraw    = m_bDebugDraw;
-    m_ctx.bPaused       = m_bPaused;
-    m_ctx.slowMoDivisor = m_bSlowMo ? 4 : 1;
     if (m_startWarpCount > 0)
     {
-        m_pendingWarp = 1;
+        g_debug.warp = 1;
         --m_startWarpCount;
     }
-    m_ctx.debugWarpX = 0.f;
     if (m_startWarpX > 0.f)
     {
-        m_pendingWarp    = 3;
-        m_ctx.debugWarpX = m_startWarpX;
-        m_startWarpX     = 0.f;
+        g_debug.warp  = 3;
+        g_debug.warpX = m_startWarpX;
+        m_startWarpX  = 0.f;
     }
-    m_ctx.debugWarp     = m_pendingWarp;
-    m_ctx.debugLives    = m_debugLives;
-    m_pendingWarp       = 0;
-    m_ctx.godMode       = m_bEditor ? m_editor.GetGodMode() : eGodMode::Off;
-    m_ctx.bInfiniteAmmo = m_bEditor;
-    m_ctx.debugWeapon   = m_pendingWeapon;
-    m_pendingWeapon     = 0;
-    if (m_pendingSpawn > 0)
-    {
-        m_ctx.debugSpawn = m_pendingSpawn;
-        m_pendingSpawn   = 0;
-    }
+    g_debug.godMode = m_bEditor ? m_editor.GetGodMode() : eGodMode::Off;
 
     int steps = 0;
     if (!m_captureTicks.empty())
     {
         steps = 1;   // 결정적 캡처: 렌더 프레임당 정확히 1틱
     }
-    else if (m_bPaused)
+    else if (g_debug.bPaused)
     {
         steps       = m_bStepOnce ? 1 : 0;
         m_bStepOnce = false;
     }
     else
     {
-        double deltaSec = static_cast<double>(_deltaTimeSec) / static_cast<double>(m_ctx.slowMoDivisor);
+        double deltaSec = static_cast<double>(_deltaTimeSec) / (m_bSlowMo ? 4.0 : 1.0);
         if (m_bEditor)
         {
             deltaSec *= static_cast<double>(m_editor.GetLab().GetTimeScale());
@@ -551,6 +533,8 @@ void App::Update_(
     {
         Tick_();
     }
+    g_debug.warp   = 0;   // 한 프레임 안에 소비되지 않은 요청은 버린다
+    g_debug.weapon = 0;
 
     Render_(m_clock.GetAlpha());
 }
@@ -596,7 +580,7 @@ void App::Render_(
     if (m_bEditor)
     {
         m_editor.DrawLabOverlay(m_renderer);
-        m_editor.Frame(m_fps, m_pRunner->GetTickCount());
+        m_editor.Frame(g_debug.fps, m_pRunner->GetTickCount());
     }
 
     ++m_renderFrameCount;

@@ -16,6 +16,8 @@ struct VehicleDirectState
     {
         state.OnEnter(ctx);
     }
+
+    ~VehicleDirectState() { g_debug = {}; }
 };
 
 namespace
@@ -44,9 +46,9 @@ TEST(VehicleSandbox, KeyNineSpawnsTheFourVehiclesInTurnAndWraps)
     VehicleDirectState d;
     for (int press = 0; press < 5; ++press)
     {
-        d.ctx.debugSpawn = 9;
+        g_debug.spawn = 9;
         d.state.Tick(d.ctx, d.input);
-        EXPECT_EQ(d.ctx.debugSpawn, 0);
+        EXPECT_EQ(g_debug.spawn, 0);
     }
     const EnemyWorld& enemies = d.state.GetEnemies();
     EXPECT_EQ(enemies.CountAlive("jeep"), 2) << "다섯 번째는 다시 지프";
@@ -58,7 +60,7 @@ TEST(VehicleSandbox, KeyNineSpawnsTheFourVehiclesInTurnAndWraps)
 TEST(VehicleSandbox, KeyTenStillDoesNothing)
 {
     VehicleDirectState d;
-    d.ctx.debugSpawn = 10;
+    g_debug.spawn = 10;
     d.state.Tick(d.ctx, d.input);
     EXPECT_EQ(d.state.GetEnemies().GetCount(), 0u);
 }

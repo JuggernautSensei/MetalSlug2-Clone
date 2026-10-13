@@ -36,7 +36,7 @@ struct GodHarness
 
 TEST(PlayerGodMode, DefaultContextsAreOff)
 {
-    EXPECT_EQ(GameContext {}.godMode, eGodMode::Off);
+    EXPECT_EQ(DebugSwitches {}.godMode, eGodMode::Off);
     EXPECT_EQ(PlayerContext {}.godMode, eGodMode::Off);
 }
 
@@ -88,7 +88,7 @@ TEST(PlayerGodMode, ModeFollowsContextEachTick)
 
 TEST(PlayerInfiniteAmmo, ContextDefaultIsOff)
 {
-    EXPECT_FALSE(GameContext {}.bInfiniteAmmo);
+    EXPECT_FALSE(DebugSwitches {}.bInfiniteAmmo);
     EXPECT_FALSE(PlayerContext {}.bInfiniteAmmo);
 }
 

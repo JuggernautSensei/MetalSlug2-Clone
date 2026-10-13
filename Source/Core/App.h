@@ -42,7 +42,6 @@ private:
     Renderer         m_renderer = {};
     SpriteBatch      m_sprites  = {};
     AnimationLibrary m_anims    = {};
-    RngMt19937       m_rng      = RngMt19937 { uint64_t { 1 } };
     GameContext      m_ctx      = {};
     AudioSystem      m_audio;
     InputSystem      m_input = {};
@@ -77,15 +76,8 @@ private:
     Vector<uint64_t> m_captureTicks     = {};
     size_t           m_captureTickHead  = 0;
 
-    bool  m_bPaused        = false;
     bool  m_bStepOnce      = false;
     bool  m_bSlowMo        = false;
-    bool  m_bDebugDraw     = false;
-    int   m_pendingWarp    = 0;
-    int   m_debugLives     = 0;
     int   m_startWarpCount = 0;
     float m_startWarpX     = 0.f;
-    int   m_pendingSpawn   = 0;
-    int   m_pendingWeapon  = 0;
-    float m_fps            = 0.f;
 };

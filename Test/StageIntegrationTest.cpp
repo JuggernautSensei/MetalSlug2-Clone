@@ -30,15 +30,12 @@ class IntegrationSim
 {
 public:
     explicit IntegrationSim(
-        const bool     _bDebugDraw = false,
-        const uint64_t _seed       = 1)
-        : m_rng(_seed)
+        const bool _bDebugDraw = false)
     {
-        m_ctx.pRng       = &m_rng;
-        m_ctx.assetRoot  = FindAssetRoot();
-        m_ctx.bDebugDraw = _bDebugDraw;
-        m_pState         = new StageState;
-        m_runner         = Scoped<SimRunner> {
+        m_ctx.assetRoot    = FindAssetRoot();
+        g_debug.bDebugDraw = _bDebugDraw;
+        m_pState           = new StageState;
+        m_runner           = Scoped<SimRunner> {
             new SimRunner { m_ctx, Scoped<IGameState> { m_pState } }
         };
     }
@@ -46,7 +43,9 @@ public:
     [[nodiscard]] StageState&       State() { return *m_pState; }
     [[nodiscard]] IGameState*       Current() const { return m_runner->GetState(); }
     [[nodiscard]] const IGameState* StagePtr() const { return m_pState; }
-    [[nodiscard]] GameContext&      Ctx() { return m_ctx; }
+    ~IntegrationSim() { g_debug = {}; }
+
+    [[nodiscard]] GameContext& Ctx() { return m_ctx; }
 
     void BotStep(
         const bool _bRight,
@@ -153,8 +152,8 @@ public:
     {
         for (int i = 0; i < _count; ++i)
         {
-            m_ctx.debugWarp = _code;
-            m_frame         = {};
+            g_debug.warp = _code;
+            m_frame      = {};
             m_runner->Step(m_frame);
         }
     }
@@ -181,7 +180,6 @@ private:
         return false;
     }
 
-    RngMt19937        m_rng        = RngMt19937 { std::mt19937_64::default_seed };
     GameContext       m_ctx        = {};
     InputFrame        m_frame      = {};
     StageState*       m_pState     = nullptr;

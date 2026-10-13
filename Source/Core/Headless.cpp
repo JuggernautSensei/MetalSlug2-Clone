@@ -126,10 +126,8 @@ int RunHeadless(
         SLUG_LOG_WARN("에셋 없음: 애니메이션 없이 진행");
     }
 
-    RngMt19937  rng { replay.seed };
     GameContext ctx;
     ctx.pAnims    = &anims;
-    ctx.pRng      = &rng;
     ctx.assetRoot = FindAssetRoot();
 
     Scoped<IGameState> pState = CreateState(stateName);

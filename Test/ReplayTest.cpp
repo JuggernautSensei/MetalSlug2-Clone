@@ -28,9 +28,7 @@ namespace
 [[nodiscard]] Vec2 RunDemo_(
     const Vector<InputFrame>& _frames)
 {
-    RngMt19937  rng { uint64_t { 7 } };
     GameContext ctx;
-    ctx.pRng = &rng;
 
     DemoState* pDemo = new DemoState;
     SimRunner  runner { ctx, Scoped<IGameState> { pDemo } };

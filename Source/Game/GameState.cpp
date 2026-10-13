@@ -1,5 +1,7 @@
 #include "Game/GameState.h"
 
+DebugSwitches g_debug;
+
 bool GameContext::IsHeadless() const
 {
     return pRenderer == nullptr;

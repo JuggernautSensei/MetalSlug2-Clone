@@ -30,7 +30,7 @@ C++20 + SDL3 로 만든 메탈슬러그 2 스타일 2D 액션 게임(Mission 4 �
 4. **JugX 서브모듈의 알려진 버그 2건(우회 중)** — `JugX/Random.h:77`(실수 범위 난수가 컴파일 불가), `JugX/Scoped.h`(변환 생성자의 `requires` 조건이 거꾸로). 수정은 로컬에서 끝났고 푸시 대기 중이다. 푸시 후 우회 코드(`Random<float>(rng)*(max-min)+min` 4곳, `Scoped<Base>{ new Derived }` 약 11곳)를 되돌릴 수 있다.
 5. **`Scripts/Verify.ps1`** — 동작 불변을 지키는 유일한 안전망. 기준선은 `Docs/Wayfinder/Baseline*.txt` 에 있고, 의도한 동작 변경이 아니면 `-Update` 를 쓰지 않는다.
 6. **`Assets/anim.json` 의 `loop` 불일치 4건** — `AnimIntegrity.LeftRightTwinsKeepTheSameFootAnchor` 실패의 원인(`MissleTank_Up_Destroy`, `Jeep_ReAimming`, `Jeep_Shot_Ready`, `Jeep_Turn` 은 `_Left=true`, `_Right=false`). 코드가 아니라 데이터 문제이고, 고치면 재생이 달라지므로 사용자 결정 사항이다.
-7. **`Game/GameState.h` 의 `GameContext`** — 서비스 포인터(`pRenderer`, `pSprites`, `pAnims`, `pRng`, `pAudio`)와 디버그 스위치가 섞인 묶음. 헤드리스 판별(`pRenderer == nullptr`)도 겸한다. JugX 의 `GetSingleton()` 스타일과 가장 거리가 있는 곳이다.
+7. **`Game/GameState.h` 의 `GameContext`** — 서비스 포인터(`pRenderer`, `pSprites`, `pAnims`, `pAudio`)와 `assetRoot`/`loadWorkers` 만 남은 작은 구조체. 디버그 스위치는 평문 구조체 `DebugSwitches` 의 전역 `g_debug` 로 옮겼다. 헤드리스 판별(`pRenderer == nullptr`)은 유지.
 
 ---
 
@@ -51,7 +51,7 @@ main (Source/Main.cpp)
 ### 매 프레임 (`Update_`)
 ```text
 1. 오디오 갱신
-2. 디버그 키 값(F1~F10 등)을 GameContext 로 복사
+2. 일회성 디버그 요청(워프 등)과 시작 워프 처리 (`g_debug`)
 3. 이번 프레임에 몇 틱을 돌릴지 결정 (FixedStepClock: 1/60초 고정, 프레임당 최대 5틱)
 4. 틱마다:  InputFrame(키보드 or 리플레이) → (녹화) → SimRunner.Step → GameState.Tick
 5. 그리기:  GameState.Render → 에디터 오버레이(ImGui) → (스크린샷 캡처) → 화면 출력

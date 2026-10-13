@@ -18,6 +18,8 @@ struct EnemyDirectState
     {
         state.OnEnter(ctx);
     }
+
+    ~EnemyDirectState() { g_debug = {}; }
 };
 
 namespace
@@ -209,9 +211,9 @@ TEST(EnemySandbox, DebugSpawnSlotsSpawnTheEightInfantryKinds)
     for (int slot = 1; slot <= 8; ++slot)
     {
         EnemyDirectState d;
-        d.ctx.debugSpawn = slot;
+        g_debug.spawn = slot;
         d.state.Tick(d.ctx, d.input);
-        EXPECT_EQ(d.ctx.debugSpawn, 0) << slot;
+        EXPECT_EQ(g_debug.spawn, 0) << slot;
         EXPECT_EQ(d.state.GetEnemies().CountAlive(kInfantryNames[slot - 1]), 1) << kInfantryNames[slot - 1];
         EXPECT_EQ(d.state.GetEnemies().GetCount(), 1u) << slot;
     }
@@ -220,7 +222,7 @@ TEST(EnemySandbox, DebugSpawnSlotsSpawnTheEightInfantryKinds)
 TEST(EnemySandbox, DebugSpawnOutOfRangeDoesNothing)
 {
     EnemyDirectState d;
-    d.ctx.debugSpawn = 10;
+    g_debug.spawn = 10;
     d.state.Tick(d.ctx, d.input);
     EXPECT_EQ(d.state.GetEnemies().GetCount(), 0u);
 }
