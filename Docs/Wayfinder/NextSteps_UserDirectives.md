@@ -36,3 +36,24 @@
 - "많은 부분이 개선된 건 부정하지 않는다."
 - "클래스화를 안 하고 싹 다 함수 포인터로 뺀 이유가 있냐, 순수 C 스타일이라 어지럽다." (13번)
 - 정리 우선순위는 위 번호 순서와 무관. 한 번에 하나씩, 매번 빌드 + `Verify.ps1` 확인.
+
+## 코퍼스에서 직접 뽑은 작성자 습관 (JugX/JugGfx/JugNet/Juggernaut, 230파일 2.8만 줄, 측정치)
+| 항목 | 측정 | 결론 |
+|---|---|---|
+| `class` 레이아웃 | 함수와 데이터가 모두 있는 class 85개 중 **데이터가 함수 뒤 85, 앞 0** | 함수 위 / 변수 아래 (규칙 1 확인) |
+| 헤더 클래스 본문 | 선언 다음 줄이 바로 다음 선언 2,404 : 빈 줄 828 (약 74% 밀착) | 붙이고 기능 묶음 경계에만 빈 줄 (규칙 2 확인) |
+| `.cpp` 함수 사이 | 함수 끝 `}` 다음 빈 줄 821/822 | `.cpp` 는 항상 1줄 띄움 |
+| 헤더 값 인자 `const` | const 없음 460 : const 123 | 헤더는 const 안 붙임 (규칙 10 확인) |
+| **`.cpp` 값 인자 `const`** | **const 542 : 없음 8** | **`.cpp` 정의는 const 를 붙인다. (지운 것은 잘못이라 복원함)** |
+| `final` | 6 (0.2/kloc) | 사실상 안 씀 (규칙 4) |
+| `auto` / 람다 / `Callable` / `std::function` | 66 / 18 / 16 / **0** | 함수 객체는 `Callable`, `std::function` 안 씀. auto 는 반복자·구조화 바인딩 정도 |
+| `virtual` / `override` | 26 / 76 | 다형성을 실제로 씀 → `BehaviorOps` 함수 포인터 테이블은 **다형성(virtual)으로** (사용자 지시) |
+| `JUG_CLASS(`, `= delete`, `= default` | 25, 4, 55 | 5룰/3룰은 매크로로 선언 (규칙 6) |
+| `JUG_ASSERT` | 458 (16/kloc) | 사전조건은 assert 로 선언 |
+| `GetSingleton` / `g_` 전역 | 25 / 67 | 싱글턴·전역 허용, 구현 안은 `g_pSingleton` |
+| `namespace jug {` | 152 | 라이브러리는 네임스페이스 안 |
+| `using namespace jug` | **0 (코퍼스에 없음)** | 이 규칙(pch 에 `JugX.h` + `using namespace jug`)은 **사용자 지시**이지 코퍼스에서 확인된 습관이 아님 |
+| EnumRefl 관련 호출 | 2 (정규식 한계, 재확인 필요) | 사용자 지시(규칙 11)를 따르되 JugX `EnumRefl.h` API 로 확인 |
+| `[[nodiscard]]` / `noexcept` / `constexpr` | 45 / 5.2 / 34 per kloc | 적극 사용 |
+| `try/catch` | 25 | 외부 라이브러리 경계에서만 |
+| 헤더 당 `"..."` include | 평균 2.1 | 최소 include |
