@@ -398,7 +398,7 @@ struct AudioSim
     {
         Scoped<SandboxState> pOwned = MakeScoped<SandboxState>(MakeFlatConfig());
         pState                      = pOwned.GetPtr();
-        runner                      = MakeScoped<SimRunner>(ctx, Scoped<IGameState> { pOwned.Release() });
+        runner                      = MakeScoped<SimRunner>(Scoped<IGameState> { pOwned.Release() });
     }
 
     void RunScript(
@@ -415,7 +415,6 @@ struct AudioSim
         }
     }
 
-    GameContext       ctx    = {};
     SandboxState*     pState = nullptr;
     Scoped<SimRunner> runner = nullptr;
 };

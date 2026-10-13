@@ -30,7 +30,7 @@ C++20 + SDL3 로 만든 메탈슬러그 2 스타일 2D 액션 게임(Mission 4 �
 4. **JugX 서브모듈의 알려진 버그 2건(우회 중)** — `JugX/Random.h:77`(실수 범위 난수가 컴파일 불가), `JugX/Scoped.h`(변환 생성자의 `requires` 조건이 거꾸로). 수정은 로컬에서 끝났고 푸시 대기 중이다. 푸시 후 우회 코드(`Random<float>(rng)*(max-min)+min` 4곳, `Scoped<Base>{ new Derived }` 약 11곳)를 되돌릴 수 있다.
 5. **`Scripts/Verify.ps1`** — 동작 불변을 지키는 유일한 안전망. 기준선은 `Docs/Wayfinder/Baseline*.txt` 에 있고, 의도한 동작 변경이 아니면 `-Update` 를 쓰지 않는다.
 6. **`Assets/anim.json` 의 `loop` 불일치 4건** — `AnimIntegrity.LeftRightTwinsKeepTheSameFootAnchor` 실패의 원인(`MissleTank_Up_Destroy`, `Jeep_ReAimming`, `Jeep_Shot_Ready`, `Jeep_Turn` 은 `_Left=true`, `_Right=false`). 코드가 아니라 데이터 문제이고, 고치면 재생이 달라지므로 사용자 결정 사항이다.
-7. **`Game/GameState.h` 의 `GameContext`** — 서비스 포인터(`pRenderer`, `pSprites`, `pAnims`, `pAudio`)와 `assetRoot`/`loadWorkers` 만 남은 작은 구조체. 디버그 스위치는 평문 구조체 `DebugSwitches` 의 전역 `g_debug` 로 옮겼다. 헤드리스 판별(`pRenderer == nullptr`)은 유지.
+7. **서비스는 항상 존재하는 싱글턴** — `Renderer`/`SpriteBatch`/`AnimationLibrary`/`AudioSystem` 은 `GetSingleton()` 으로 접근한다. `GameContext` 와 헤드리스 분기(`pRenderer == nullptr`)는 없다. 디버그 스위치와 로딩 워커 수는 전역 `g_debug`, 에셋 루트는 `FindAssetRoot()`.
 
 ---
 
@@ -38,13 +38,13 @@ C++20 + SDL3 로 만든 메탈슬러그 2 스타일 2D 액션 게임(Mission 4 �
 
 ```text
 main (Source/Main.cpp)
- ├─ --headless  → RunHeadless(): 리플레이 로드 → 시뮬 N틱 → "ticks= finished= hash=" 출력 (창/렌더/오디오 없음)
- └─ 일반 실행   → App::Run()
+ ├─ --dump-tuning / --gen-replay → 출력 후 종료 (렌더러 생성 전)
+ └─ 그 외        → App::Run()
         ① SDL 초기화
         ② Init_  : 명령줄 파싱 → 리플레이/시드 확정 → anim.json 파싱
                    → Renderer / Editor / SpriteBatch 초기화 → 아틀라스 16장 병렬 디코드 후 순서대로 GPU 업로드
                    → Audio 초기화(효과음 동기 등록) → 첫 GameState 생성 (SimRunner)
-        ③ 루프   : PollEvents_ → Update_(dt)
+        ③ 루프   : PollEvents_ → Update_(dt)   (`--replay --hash`: 대기/렌더 없이 틱 연속 실행 → "ticks= finished= hash=" 출력 후 종료)
         ④ Shutdown_ : 녹화 저장 → 상태 종료 → 오디오 → 스프라이트 → 에디터 → 렌더러
 ```
 
@@ -57,9 +57,9 @@ main (Source/Main.cpp)
 5. 그리기:  GameState.Render → 에디터 오버레이(ImGui) → (스크린샷 캡처) → 화면 출력
 ```
 
-### 입력 / 리플레이 / 헤드리스
+### 입력 / 리플레이 / 해시
 - 한 틱 = `InputFrame` 1개. 키보드 입력도 같은 형식으로 샘플링되어 `--record` 로 파일에 남고 `--replay` 로 재생된다.
-- 헤드리스는 같은 `SimRunner` 를 렌더러/오디오 없이 돌린다. 해시 = FNV-1a(틱 수, 종료 여부, 상태의 `DebugHash`).
+- `--replay <파일> --hash` 는 일반 실행과 같은 `App` 루프에서 프레임 대기/렌더/소리만 생략하고 틱을 연속 실행한다 (오프스크린 SDL 권장). 해시 = FNV-1a(틱 수, 종료 여부, 상태의 `DebugHash`).
 - 시드: 리플레이 seed → `RngMt19937`. 스테이지 내부 RNG 는 고정(`0x57A6E0`), 오디오 피치 RNG 는 별도라 해시와 무관.
 
 ---
@@ -69,7 +69,7 @@ main (Source/Main.cpp)
 ```text
 Source/
   Base/    JugX 별칭/래퍼(Types, Handle, SlugError, Log) + 게임 고유 유틸(Json, Math/Vec2, RGBA, PhaseTimer)
-  Core/    App(루프), Headless, Input, Replay, FixedStep, AssetPath, Tuning
+  Core/    App(루프), Input, Replay, FixedStep, AssetPath, Tuning
   Render/  Renderer(SDL), SpriteBatch(그리기 + 병렬 디코드), Animation, SpriteLibrary, Camera
   Audio/   AudioSystem(miniaudio), SoundBank, VoiceAllocator, AudioMath
   World/   GroundMap(지면 마스크), Physics, Combat, Geometry
@@ -133,7 +133,7 @@ Assets/
       (메모리 상한: 한 번에 워커 수만큼씩 chunk 로 처리)
 ```
 - 스레드 경계: 워커는 파일/디코드/플래시 이미지만, SDL 과 게임 객체는 메인만 만진다. 콜백/큐/통지 없음.
-- `--no-async-load` 는 워커 1(순차)로 같은 결과를 낸다. 시뮬레이션은 텍스처 핸들을 읽지 않으므로 헤드리스 해시는 구조적으로 영향받지 않는다.
+- `--no-async-load` 는 워커 1(순차)로 같은 결과를 낸다. 시뮬레이션은 텍스처 핸들을 읽지 않으므로 리플레이 해시는 구조적으로 영향받지 않는다.
 
 ---
 
@@ -157,10 +157,10 @@ Assets/
 | 단계 | 내용 | 기준선 |
 |---|---|---|
 | 빌드 | Debug (게임 + 테스트) | — |
-| 리플레이 해시 | 헤드리스 15개 (상태별 합성 리플레이 13 + 기존 2) | `Docs/Wayfinder/Baseline.txt` |
+| 리플레이 해시 | `--replay --hash` 15개 (상태별 합성 리플레이 13 + 기존 2) | `Docs/Wayfinder/Baseline.txt` |
 | 캡처 해시 | 상태 7개 오프스크린 스크린샷 SHA256 | `Docs/Wayfinder/BaselineCapture.txt` |
 | 튜닝 덤프 | `--dump-tuning` SHA256 | 〃 |
-| 단위 테스트 | 903개, 알려진 실패 1건만 허용 | — |
+| 단위 테스트 | 902개 (전역 Environment 가 오프스크린 SDL + 소프트웨어 렌더러 서비스를 한 번 만든다), 알려진 실패 1건만 허용 | — |
 | 텍스처 로드 표 | `Scripts/TraceLoad.ps1` (async/sync × 4상태) | `Docs/Wayfinder/BaselineTextures.txt` |
 
 ---
@@ -193,7 +193,7 @@ Assets/
 | 인터페이스 `I*` | 2 | 2 | 달성 |
 | `JUG_ASSERT` (/kloc) | 16.2 | 0.29 | **미달** — MS2 는 방어 분기/`Result` 로 처리 |
 | `Result<>` 반환 (/kloc) | 2.8 | 6.9 | **미달** — 파일/JSON 경계라 대부분 유지 |
-| `*Context`/`*Diagnostics` 구조체 | 1 | 9 | **미달** — `GameContext` 등 |
+| `*Context`/`*Diagnostics` 구조체 | 1 | 8 | **미달** — `EnemyContext`/`PlayerContext` 등 (`GameContext` 는 제거) |
 | 1000줄 초과 파일 | 5 | 9 | **미달** — `StageData.cpp` 2.2k 등 |
 
 ### 종합
@@ -201,13 +201,13 @@ Assets/
 |---|---|
 | 동작·결과 불변 | **달성** — 해시 15/15, 캡처 7/7, 튜닝, TraceLoad, 단위 테스트 모두 변경 전과 동일 |
 | JugX 유사성 | **표면은 높음**(서식·이름·주석·헤더), **구조는 중간**(사전조건 assert 습관, Context 묶음, 큰 파일) |
-| 단순성 | **중간 이상** — 가장 복잡하던 로더/인터페이스/중복 제거. `GameContext`, 거대 파일, JSON 필드 리더는 남음 |
+| 단순성 | **중간 이상** — 가장 복잡하던 로더/인터페이스/중복 제거. 거대 파일, JSON 필드 리더는 남음 |
 | 리소스 compact | **달성(추적 파일 기준)** — 추적 파일 2,036 → 429개. `Trash/`(925MB)·`VideoScore`·`Raw`·미참조 이미지·`Sfx_Bingo.mp3` 삭제. 디스크에만 있는 복구 불가 파일은 보존 |
 
 ### 남은 일 (사용자 결정/권한 필요)
 1. (완료) `Trash/`, `Scripts/VideoScore`, `Raw/`, 미참조 문서 이미지, `Sfx_Bingo.mp3` 삭제. `Assets/anim.json` 의 미사용 클립 2개(`Plane`, `Boss_Disc_Black`)는 편집 중이라 남김
 2. JugX 서브모듈 수정 푸시 → 우회 코드 되돌리기
-3. `GameContext` → `GetSingleton()` 전환 (모든 상태 시그니처와 테스트에 영향, 별도 웨이브)
+3. (완료) `GameContext` → `GetSingleton()` 전환, 헤드리스 제거
 4. `anim.json` `loop` 불일치 4건 수정 여부 (재생이 달라짐)
 5. 디스크에만 있는 복구 불가 파일(`Trash/**/*.mp4` 270MB, 중첩 저장소 522MB, `Captures/` 879MB, `Backup/`) 삭제 여부
 6. JSON 필드 리더 3벌(`StageData` / `EnemyDefLoader` / `PropDef`, 합쳐 약 700줄): 뼈대는 같지만 에러 문구·정수 변환 규칙·허용 키 규칙이 서로 달라 지금은 합칠 수 없다(합치면 인자로 문구를 넘기는 구조가 되어 더 복잡). **에러 문구 통일과 테스트 단언 갱신을 허용하시면** `Json.h` 의 `GetNumber/GetString/GetVec2` 로 통합 가능

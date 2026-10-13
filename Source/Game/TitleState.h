@@ -18,10 +18,10 @@ public:
     TitleState();
     explicit TitleState(TitleConfig _config);
 
-    void OnEnter(GameContext& _ctx) override;
-    void OnExit(GameContext& _ctx) override;
-    void Tick(GameContext& _ctx, const InputHistory& _input) override;
-    void Render(GameContext& _ctx, float _alpha) override;
+    void OnEnter() override;
+    void OnExit() override;
+    void Tick(const InputHistory& _input) override;
+    void Render(float _alpha) override;
 
     [[nodiscard]] Scoped<IGameState> TakeNextState() override;
 

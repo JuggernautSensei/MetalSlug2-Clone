@@ -1,9 +1,9 @@
 #include "Game/DemoState.h"
 
 #include "Base/Math.h"
+#include "Render/Renderer.h"
 
 void DemoState::Tick(
-    GameContext&,
     const InputHistory& _input)
 {
     m_prevPos = m_pos;
@@ -34,8 +34,7 @@ void DemoState::Tick(
 }
 
 void DemoState::Render(
-    GameContext& _ctx,
-    const float  _alpha)
+    const float _alpha)
 {
     Renderer& renderer = Renderer::GetSingleton();
     renderer.BeginFrame({ 24, 28, 40, 255 });

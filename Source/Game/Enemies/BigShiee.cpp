@@ -240,7 +240,7 @@ void SetCannonMode_(
     return _c.scrollBudgetPx > 0.f && static_cast<float>(GetSlot_(_e, kBigShieeExtScrollTicks)) * _c.scrollSpeed * kStepSec >= _c.scrollBudgetPx;
 }
 
-// 클립 길이 (틱). 애니메이션 라이브러리가 없는 환경 (헤드리스 테스트) 에서는 기본값
+// 클립 길이 (틱). 애니메이션 라이브러리가 없는 환경 (테스트) 에서는 기본값
 [[nodiscard]] int ClipTicks_(
     const EnemyEnv&  _env,
     const StringView _name,

@@ -697,10 +697,8 @@ TEST(UiHud, MakeHudModelReadsPlayerController)
 
 TEST(UiSystem, TicksAdvanceBannerFadeAndBlinkClock)
 {
-    GameContext ctx;
-    UiSystem    ui;
-    ui.Init(ctx);
-    EXPECT_FALSE(ui.HasSprites());
+    UiSystem ui;
+    ui.Init();
 
     ui.ShowBanner("WARNING", 1.f);
     ui.GetFade().FadeToBlack(10);
@@ -715,7 +713,7 @@ TEST(UiSystem, TicksAdvanceBannerFadeAndBlinkClock)
 
     ui.DrawHud(MakeModel_());
     ui.DrawOverlays();
-    EXPECT_FALSE(ui.DrawSprite("PressStartUI", 0, 0));
+    EXPECT_EQ(ui.DrawSprite("PressStartUI", 0, 0), ui.HasSprites());
 }
 
 TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
@@ -724,9 +722,8 @@ TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
     EXPECT_EQ(config.GetTotalTicks(), 270);   // 페이드 인 0.5 s + 홀드 3 s + 페이드 아웃 0.67 s + 대기 0.33 s 후 타이틀
     EXPECT_EQ(config.artSprite, "UI_GameOver_Helmet");
 
-    GameContext ctx;
     UiSystem    ui;
-    ui.Init(ctx);
+    ui.Init();
     AudioSystem audio { true };
     ScreenFlow  flow;
 
@@ -771,9 +768,8 @@ TEST(UiFlow, PhasesChangeAtExactTicks)
     config.holdTicks   = 3;
     config.sfx         = "Jingle";
 
-    GameContext ctx;
     UiSystem    ui;
-    ui.Init(ctx);
+    ui.Init();
     AudioSystem audio { true };
     ScreenFlow  flow;
     flow.Start(config, ui, audio);
@@ -821,9 +817,8 @@ TEST(UiFlow, MissionCompleteShowsResultsBeforeTheCompleteBanner)
     EXPECT_EQ(config.resultsTicks, MissionResultsTicks(16));
     EXPECT_EQ(config.GetTotalTicks(), 60 + 276 + 210 + 90 + 30);
 
-    GameContext ctx;
     UiSystem    ui;
-    ui.Init(ctx);
+    ui.Init();
     AudioSystem audio { true };
     ScreenFlow  flow;
     flow.Start(config, ui, audio);
@@ -903,9 +898,8 @@ TEST(UiResults, RescueTallyCountsUpAndReachesGreatWithSixteen)
 
 TEST(UiResults, ScreenFlowExposesResultsViewOnlyDuringResultsPhase)
 {
-    GameContext ctx;
     UiSystem    ui;
-    ui.Init(ctx);
+    ui.Init();
     AudioSystem audio { true };
     ScreenFlow  flow;
     flow.Start(MakeMissionCompleteFlowConfig(5), ui, audio);
@@ -975,9 +969,8 @@ TEST(UiBanner, EachGlyphHasItsOwnDirectionAndDelay)
 
 TEST(UiFlow, TickBeforeStartAndAfterDoneIsHarmless)
 {
-    GameContext ctx;
     UiSystem    ui;
-    ui.Init(ctx);
+    ui.Init();
     AudioSystem audio { true };
     ScreenFlow  flow;
     flow.Tick(ui, audio);
@@ -1006,7 +999,7 @@ struct TitleSim
     {
         pTitle     = new TitleState { std::move(_config) };
         runner     = Scoped<SimRunner> {
-            new SimRunner { ctx, Scoped<IGameState> { pTitle } }
+            new SimRunner { Scoped<IGameState> { pTitle } }
         };
     }
 
@@ -1030,7 +1023,6 @@ struct TitleSim
 
     [[nodiscard]] bool IsStillTitle() const { return runner->GetState() == pTitle; }
 
-    GameContext       ctx;
     AudioSystem&      audio = RecordAudio();
     TitleState*       pTitle = nullptr;
     Scoped<SimRunner> runner = nullptr;

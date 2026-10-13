@@ -10,13 +10,12 @@ constexpr float kGroundY = 378.f;
 
 struct EnemyDirectState
 {
-    GameContext  ctx = {};
     SandboxState state { MakeEnemyConfig() };
     InputHistory input = {};
 
     EnemyDirectState()
     {
-        state.OnEnter(ctx);
+        state.OnEnter();
     }
 
     ~EnemyDirectState() { g_debug = {}; }
@@ -143,7 +142,8 @@ TEST(EnemySandbox, InactiveMissileSoldierStaysSilentWhileFarAway)
 TEST(EnemySandbox, WithoutADefinitionFileNothingSpawns)
 {
     SandboxConfig config = MakeFlatConfig();
-    Sim           sim { config };
+    config.enemyDefPath  = "Z:/no/such/defs";
+    Sim sim { config };
     sim.Step(1);
     EXPECT_EQ(sim.State().GetEnemyLib().GetDefCount(), 0u);
     EXPECT_TRUE(sim.State().SpawnEnemy("soldier_bomb", { 300.f, kGroundY }).IsNull());
@@ -212,7 +212,7 @@ TEST(EnemySandbox, DebugSpawnSlotsSpawnTheEightInfantryKinds)
     {
         EnemyDirectState d;
         g_debug.spawn = slot;
-        d.state.Tick(d.ctx, d.input);
+        d.state.Tick(d.input);
         EXPECT_EQ(g_debug.spawn, 0) << slot;
         EXPECT_EQ(d.state.GetEnemies().CountAlive(kInfantryNames[slot - 1]), 1) << kInfantryNames[slot - 1];
         EXPECT_EQ(d.state.GetEnemies().GetCount(), 1u) << slot;
@@ -223,7 +223,7 @@ TEST(EnemySandbox, DebugSpawnOutOfRangeDoesNothing)
 {
     EnemyDirectState d;
     g_debug.spawn = 10;
-    d.state.Tick(d.ctx, d.input);
+    d.state.Tick(d.input);
     EXPECT_EQ(d.state.GetEnemies().GetCount(), 0u);
 }
 

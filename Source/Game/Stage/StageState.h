@@ -49,10 +49,10 @@ public:
     StageState(StageState&&)                 = delete;
     StageState& operator=(StageState&&)      = delete;
 
-    void OnEnter(GameContext& _ctx) override;
-    void OnExit(GameContext& _ctx) override;
-    void Tick(GameContext& _ctx, const InputHistory& _input) override;
-    void Render(GameContext& _ctx, float _alpha) override;
+    void OnEnter() override;
+    void OnExit() override;
+    void Tick(const InputHistory& _input) override;
+    void Render(float _alpha) override;
 
     [[nodiscard]] Scoped<IGameState> TakeNextState() override;
     [[nodiscard]] bool               IsFinished() const override;
@@ -91,10 +91,10 @@ private:
     };
 
     [[nodiscard]] const InputHistory& MakeBotInput_();
-    void                              Load_(GameContext& _ctx);
-    void                              Restart_(GameContext& _ctx);
-    void                              HandleDebugWarp_(GameContext& _ctx);
-    void                              StartFlow_(GameContext& _ctx, eEndKind _kind);
+    void                              Load_();
+    void                              Restart_();
+    void                              HandleDebugWarp_();
+    void                              StartFlow_(eEndKind _kind);
     [[nodiscard]] bool                IsFlowing_() const;
 
     void                       UpdateWalls_();
@@ -102,16 +102,16 @@ private:
     [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;
     [[nodiscard]] Vec2         GetRespawnFeet_() const;
 
-    void                           ConsumeEnemyEvents_(GameContext& _ctx);
-    void                           ConsumePropEvents_(GameContext& _ctx);
-    void                           ApplyGroundPatch_(GameContext& _ctx, const String& _sprite, Vec2 _topLeft);
-    [[nodiscard]] const GroundMap* FindPatchMask_(GameContext& _ctx, const String& _sprite);
-    void                           RequestSounds_(GameContext& _ctx, const Vector<FxRequest>& _fx);
+    void                           ConsumeEnemyEvents_();
+    void                           ConsumePropEvents_();
+    void                           ApplyGroundPatch_(const String& _sprite, Vec2 _topLeft);
+    [[nodiscard]] const GroundMap* FindPatchMask_(const String& _sprite);
+    void                           RequestSounds_(const Vector<FxRequest>& _fx);
 
-    void DrawBackdrop_(GameContext& _ctx, Vec2 _cameraPos);
-    void DrawWorld_(GameContext& _ctx, Vec2 _cameraPos, float _alpha);
+    void DrawBackdrop_(Vec2 _cameraPos);
+    void DrawWorld_(Vec2 _cameraPos, float _alpha);
     void DrawDebugBoxes_(Renderer& _renderer, Vec2 _cameraPos) const;
-    void DrawHud_(GameContext& _ctx, Vec2 _cameraPos);
+    void DrawHud_(Vec2 _cameraPos);
 
     StageStateConfig           m_config     = {};
     InputHistory               m_botInput   = {};

@@ -5,8 +5,8 @@
 class DemoState final : public IGameState
 {
 public:
-    void               Tick(GameContext& _ctx, const InputHistory& _input) override;
-    void               Render(GameContext& _ctx, float _alpha) override;
+    void               Tick(const InputHistory& _input) override;
+    void               Render(float _alpha) override;
     [[nodiscard]] bool IsFinished() const override;
 
     [[nodiscard]] Vec2     GetPosition() const;

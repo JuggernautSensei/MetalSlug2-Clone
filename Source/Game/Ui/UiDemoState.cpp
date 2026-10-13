@@ -1,11 +1,12 @@
 #include "Game/Ui/UiDemoState.h"
 
+#include "Audio/AudioSystem.h"
+#include "Render/Renderer.h"
 #include <algorithm>
 
-void UiDemoState::OnEnter(
-    GameContext& _ctx)
+void UiDemoState::OnEnter()
 {
-    m_ui.Init(_ctx);
+    m_ui.Init();
     m_flow.Reset();
     m_tick = 0;
     m_ui.GetFade().SetBlack();
@@ -29,7 +30,6 @@ HudModel UiDemoState::MakeModel_() const
 }
 
 void UiDemoState::Tick(
-    GameContext& _ctx,
     const InputHistory&)
 {
     ++m_tick;
@@ -57,7 +57,6 @@ void UiDemoState::Tick(
 }
 
 void UiDemoState::Render(
-    GameContext& _ctx,
     const float)
 {
     Renderer& renderer = Renderer::GetSingleton();

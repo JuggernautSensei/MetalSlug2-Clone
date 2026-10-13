@@ -1,9 +1,11 @@
 #include "Game/TitleState.h"
 
+#include "Audio/AudioSystem.h"
 #include "Base/RGBA.h"
 #include "Base/Types.h"
 #include "Game/StateFactory.h"
 #include "Game/Ui/Hud.h"
+#include "Render/Renderer.h"
 
 constexpr int kGradientBandH = 8;
 
@@ -39,10 +41,9 @@ TitleState::TitleState(
 {
 }
 
-void TitleState::OnEnter(
-    GameContext& _ctx)
+void TitleState::OnEnter()
 {
-    m_ui.Init(_ctx);
+    m_ui.Init();
     m_tickCount = 0;
     m_bStarting = false;
     m_selected.clear();
@@ -58,8 +59,7 @@ void TitleState::OnEnter(
     }
 }
 
-void TitleState::OnExit(
-    GameContext& _ctx)
+void TitleState::OnExit()
 {
     AudioSystem::GetSingleton().AllStop();
 }
@@ -78,7 +78,6 @@ Scoped<IGameState> TitleState::CreateNext_() const
 }
 
 void TitleState::Tick(
-    GameContext&        _ctx,
     const InputHistory& _input)
 {
     ++m_tickCount;
@@ -109,7 +108,6 @@ Scoped<IGameState> TitleState::TakeNextState()
 }
 
 void TitleState::Render(
-    GameContext& _ctx,
     const float)
 {
     Renderer&       renderer = Renderer::GetSingleton();

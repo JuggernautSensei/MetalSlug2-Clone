@@ -5,7 +5,7 @@
 class SimRunner
 {
 public:
-    SimRunner(GameContext& _ctx, Scoped<IGameState> _pState);
+    explicit SimRunner(Scoped<IGameState> _pState);
     ~SimRunner();
 
     SimRunner(const SimRunner&)            = delete;
@@ -23,7 +23,6 @@ public:
     [[nodiscard]] bool                IsFinished() const;
 
 private:
-    GameContext&       m_ctx;
     Scoped<IGameState> m_pState;
     InputHistory       m_history   = {};
     uint64_t           m_tickCount = 0;

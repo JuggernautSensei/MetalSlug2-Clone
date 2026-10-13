@@ -329,10 +329,9 @@ class CameraBotSim
 public:
     CameraBotSim()
     {
-        m_ctx.assetRoot           = FindAssetRoot();
         Scoped<StageState> pOwned = MakeScoped<StageState>();
         m_pState                  = pOwned.GetPtr();
-        m_runner                  = MakeScoped<SimRunner>(m_ctx, Scoped<IGameState> { pOwned.Release() });
+        m_runner                  = MakeScoped<SimRunner>(Scoped<IGameState> { pOwned.Release() });
     }
 
     [[nodiscard]] StageState&       State() { return *m_pState; }
@@ -405,7 +404,6 @@ private:
         return false;
     }
 
-    GameContext       m_ctx        = {};
     InputFrame        m_frame      = {};
     StageState*       m_pState     = nullptr;
     uint64_t          m_botTick    = 0;

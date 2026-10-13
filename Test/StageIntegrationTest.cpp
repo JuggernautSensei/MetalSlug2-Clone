@@ -32,11 +32,10 @@ public:
     explicit IntegrationSim(
         const bool _bDebugDraw = false)
     {
-        m_ctx.assetRoot    = FindAssetRoot();
         g_debug.bDebugDraw = _bDebugDraw;
         m_pState           = new StageState;
         m_runner           = Scoped<SimRunner> {
-            new SimRunner { m_ctx, Scoped<IGameState> { m_pState } }
+            new SimRunner { Scoped<IGameState> { m_pState } }
         };
     }
 
@@ -45,7 +44,6 @@ public:
     [[nodiscard]] const IGameState* StagePtr() const { return m_pState; }
     ~IntegrationSim() { g_debug = {}; }
 
-    [[nodiscard]] GameContext& Ctx() { return m_ctx; }
 
     void BotStep(
         const bool _bRight,
@@ -180,7 +178,6 @@ private:
         return false;
     }
 
-    GameContext       m_ctx        = {};
     InputFrame        m_frame      = {};
     StageState*       m_pState     = nullptr;
     uint64_t          m_botTick    = 0;

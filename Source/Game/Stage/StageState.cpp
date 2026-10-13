@@ -1,5 +1,9 @@
 #include "Game/Stage/StageState.h"
 
+#include "Core/AssetPath.h"
+#include "Render/Animation.h"
+#include "Render/Renderer.h"
+#include "Render/SpriteBatch.h"
 #include <algorithm>
 #include <cmath>
 #include <filesystem>
@@ -65,22 +69,20 @@ StageState::StageState(
 {
 }
 
-void StageState::OnEnter(
-    GameContext& _ctx)
+void StageState::OnEnter()
 {
-    Load_(_ctx);
+    Load_();
     if (!m_bLoaded)
     {
         return;
     }
 
-    m_ui.Init(_ctx);
-    Restart_(_ctx);
+    m_ui.Init();
+    Restart_();
     m_bTakenNext = false;
 }
 
-void StageState::OnExit(
-    GameContext& _ctx)
+void StageState::OnExit()
 {
     AudioSystem::GetSingleton().AllStop();
 }
@@ -124,16 +126,15 @@ const InputHistory& StageState::MakeBotInput_()
     return m_botInput;
 }
 
-void StageState::Load_(
-    GameContext& _ctx)
+void StageState::Load_()
 {
     m_bLoaded   = false;
     m_bFailed   = false;
-    m_assetRoot = _ctx.assetRoot;
+    m_assetRoot = FindAssetRoot();
 
     const ScopedPhaseTimer stageTimer { "stage-load", m_config.stageFile };
     String                 loadMessage;
-    Result<StageData>      data = LoadStageFromFile(_ctx.assetRoot / "Stage" / m_config.stageFile, &loadMessage);
+    Result<StageData>      data = LoadStageFromFile(FindAssetRoot() / "Stage" / m_config.stageFile, &loadMessage);
     if (!data)
     {
         SLUG_LOG_ERROR("{} 을 읽지 못했습니다: {}", m_config.stageFile, loadMessage);
@@ -142,15 +143,15 @@ void StageState::Load_(
     }
     m_data = data.Take();
 
-    // 스프라이트 크기 정보는 헤드리스에서도 필요하다 (소품 컬링이 크기를 본다: 결과가 모드와 무관해야 한다)
-    if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot))
+    // 소품 컬링이 스프라이트 크기를 본다
+    if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(FindAssetRoot()))
     {
         m_spriteLib = library.Take();
     }
     m_props.SetSpriteLibrary(&m_spriteLib);
     {
         const ScopedPhaseTimer textureTimer { "stage-textures", "all" };
-        const FilePath         bgPath = _ctx.assetRoot / "Textures" / (m_data.background + ".png");
+        const FilePath         bgPath = FindAssetRoot() / "Textures" / (m_data.background + ".png");
         Vector<FilePath>       paths  = { bgPath };
         Vector<size_t>         owners = {};
         for (size_t i = 0; i < m_data.backdrops.size(); ++i)
@@ -158,12 +159,12 @@ void StageState::Load_(
             const SpriteInfo* pInfo = m_spriteLib.Find(m_data.backdrops[i].sprite);
             if (pInfo && pInfo->bStandalone)
             {
-                paths.push_back(_ctx.assetRoot / FilePath { pInfo->file });
+                paths.push_back(FindAssetRoot() / FilePath { pInfo->file });
                 owners.push_back(i);
             }
         }
 
-        const Vector<int> handles = SpriteBatch::GetSingleton().LoadStandaloneTexturesParallel(paths, _ctx.loadWorkers);
+        const Vector<int> handles = SpriteBatch::GetSingleton().LoadStandaloneTexturesParallel(paths, g_debug.numLoadWorkers);
         m_bgHandle                = handles[0];
         if (m_bgHandle < 0)
         {
@@ -185,7 +186,7 @@ void StageState::Load_(
     const int flatHeight = static_cast<int>(m_data.worldSize.y);
     for (const String& name: m_data.groundMaps)
     {
-        const FilePath         path = _ctx.assetRoot / "Ground" / (name + ".png");
+        const FilePath         path = FindAssetRoot() / "Ground" / (name + ".png");
         const ScopedPhaseTimer groundTimer { "ground-mask", name };
         if (std::optional<GroundMap> map = LoadGroundMask(path))
         {
@@ -207,7 +208,7 @@ void StageState::Load_(
     }
 
     m_tuning = {};
-    if (Result<Tuning> loaded = LoadTuning(GetDefaultTuningPath(_ctx.assetRoot)))
+    if (Result<Tuning> loaded = LoadTuning(GetDefaultTuningPath(FindAssetRoot())))
     {
         m_tuning = loaded.Take();
         if (g_debug.lives > 0)
@@ -223,7 +224,7 @@ void StageState::Load_(
     {
         const ScopedPhaseTimer enemyTimer { "enemy-defs", "all" };
         String                 message  = {};
-        const FilePath         defsPath = EnemyDefLibrary::GetDefaultDirectory(_ctx.assetRoot);
+        const FilePath         defsPath = EnemyDefLibrary::GetDefaultDirectory(FindAssetRoot());
         m_enemyLib                      = {};
         if (Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
         {
@@ -238,7 +239,7 @@ void StageState::Load_(
     {
         const ScopedPhaseTimer propTimer { "prop-defs", "all" };
         String                 message = {};
-        if (Result<PropDefLibrary> lib = PropDefLibrary::Load(_ctx.assetRoot / "Defs" / "Props" / "Props.json", &message))
+        if (Result<PropDefLibrary> lib = PropDefLibrary::Load(FindAssetRoot() / "Defs" / "Props" / "Props.json", &message))
         {
             m_propDefs = lib.Take();
         }
@@ -257,7 +258,7 @@ void StageState::Load_(
     m_camera.SetForwardOnly(true);
     m_runner.emplace(m_data, m_host, m_camera, m_rng);
 
-    m_bRigBound = false;
+    m_bRigBound                   = false;
     const AnimationLibrary& anims = AnimationLibrary::GetSingleton();
     if (anims.GetClipCount() > 0)
     {
@@ -274,8 +275,7 @@ void StageState::Load_(
     m_bLoaded = true;
 }
 
-void StageState::Restart_(
-    GameContext& _ctx)
+void StageState::Restart_()
 {
     m_host.Reset();
     m_enemies.Reset(1);
@@ -312,7 +312,6 @@ void StageState::Restart_(
 }
 
 void StageState::Tick(
-    GameContext&        _ctx,
     const InputHistory& _input)
 {
     ++m_tickCount;
@@ -332,7 +331,7 @@ void StageState::Tick(
         return;
     }
 
-    HandleDebugWarp_(_ctx);
+    HandleDebugWarp_();
 
     m_combat.BeginTick();
     {
@@ -474,11 +473,11 @@ void StageState::Tick(
     m_projectiles.OnHitEvents(events, m_combat);
     m_host.TickPlaceholders();
 
-    ConsumeEnemyEvents_(_ctx);
-    ConsumePropEvents_(_ctx);
+    ConsumeEnemyEvents_();
+    ConsumePropEvents_();
 
     const Vector<FxRequest> fx = m_projectiles.TakeFx();
-    RequestSounds_(_ctx, fx);
+    RequestSounds_(fx);
     m_ui.Tick();
     const AnimationLibrary& anims = AnimationLibrary::GetSingleton();
     for (const FxRequest& request: fx)
@@ -521,17 +520,16 @@ void StageState::Tick(
     {
         if (m_host.IsEndRequested())
         {
-            StartFlow_(_ctx, eEndKind::Mission);
+            StartFlow_(eEndKind::Mission);
         }
         else if (m_player.IsGameOver())
         {
-            StartFlow_(_ctx, eEndKind::GameOver);
+            StartFlow_(eEndKind::GameOver);
         }
     }
 }
 
 void StageState::StartFlow_(
-    GameContext&   _ctx,
     const eEndKind _kind)
 {
     m_endKind = _kind;
@@ -543,8 +541,7 @@ void StageState::StartFlow_(
     m_flow.Start(config, m_ui, AudioSystem::GetSingleton());
 }
 
-void StageState::HandleDebugWarp_(
-    GameContext& _ctx)
+void StageState::HandleDebugWarp_()
 {
     if (g_debug.weapon > 0)
     {
@@ -656,8 +653,7 @@ Vec2 StageState::GetRespawnFeet_() const
     return { cam.x + m_tuning.player.respawnOffsetX, cam.y - m_tuning.player.respawnDropY };
 }
 
-void StageState::ConsumeEnemyEvents_(
-    GameContext& _ctx)
+void StageState::ConsumeEnemyEvents_()
 {
     AudioSystem& audio = AudioSystem::GetSingleton();
     for (const String& sound: m_enemies.TakeSounds())
@@ -693,8 +689,7 @@ void StageState::ConsumeEnemyEvents_(
     }
 }
 
-void StageState::ConsumePropEvents_(
-    GameContext& _ctx)
+void StageState::ConsumePropEvents_()
 {
     AudioSystem& audio = AudioSystem::GetSingleton();
     for (const PropEvent& event: m_props.TakeEvents())
@@ -708,7 +703,7 @@ void StageState::ConsumePropEvents_(
                 audio.Play(kBombExplode, 1.f, 0.03f);
                 break;
             case ePropEventKind::GroundPatch:
-                ApplyGroundPatch_(_ctx, event.name, event.pos);
+                ApplyGroundPatch_(event.name, event.pos);
                 break;
             case ePropEventKind::Damaged:
             case ePropEventKind::DropSpawned:
@@ -720,7 +715,6 @@ void StageState::ConsumePropEvents_(
 }
 
 const GroundMap* StageState::FindPatchMask_(
-    GameContext&  _ctx,
     const String& _sprite)
 {
     for (const PatchMask& patch: m_patchMasks)
@@ -733,7 +727,7 @@ const GroundMap* StageState::FindPatchMask_(
 
     PatchMask patch     = {};
     patch.name          = _sprite;
-    const FilePath path = _ctx.assetRoot / "Textures" / (_sprite + ".png");
+    const FilePath path = FindAssetRoot() / "Textures" / (_sprite + ".png");
     if (std::optional<GroundMap> mask = LoadGroundMask(path))
     {
         if (mask->CountSolidPixels() == 0)
@@ -756,12 +750,11 @@ const GroundMap* StageState::FindPatchMask_(
 }
 
 void StageState::ApplyGroundPatch_(
-    GameContext&  _ctx,
     const String& _sprite,
     const Vec2    _topLeft)
 {
     GroundMap*       pGround = m_host.GetActiveGroundMut();
-    const GroundMap* pMask   = FindPatchMask_(_ctx, _sprite);
+    const GroundMap* pMask   = FindPatchMask_(_sprite);
     if (pGround && pMask && !ApplyGroundPatch(*pGround, _topLeft, *pMask))
     {
         SLUG_LOG_ERROR("지면 패치 '{}' 가드에 걸려 적용하지 않았습니다 (바닥을 지우는 마스크)", _sprite.c_str());
@@ -769,7 +762,6 @@ void StageState::ApplyGroundPatch_(
 }
 
 void StageState::RequestSounds_(
-    GameContext&             _ctx,
     const Vector<FxRequest>& _fx)
 {
     AudioSystem&       audio  = AudioSystem::GetSingleton();
@@ -870,8 +862,7 @@ Scoped<IGameState> StageState::TakeNextState()
 }
 
 void StageState::Render(
-    GameContext& _ctx,
-    const float  _alpha)
+    const float _alpha)
 {
     Renderer& renderer = Renderer::GetSingleton();
     if (!m_bLoaded)
@@ -884,18 +875,17 @@ void StageState::Render(
     const Vec2 camNow    = m_camera.GetPosition();
     const Vec2 cameraPos = { std::floor(m_prevCameraPos.x + (camNow.x - m_prevCameraPos.x) * _alpha), std::floor(m_prevCameraPos.y + (camNow.y - m_prevCameraPos.y) * _alpha) };
 
-    DrawBackdrop_(_ctx, cameraPos);
-    DrawWorld_(_ctx, cameraPos, _alpha);
+    DrawBackdrop_(cameraPos);
+    DrawWorld_(cameraPos, _alpha);
     if (g_debug.bDebugDraw)
     {
         DrawDebugBoxes_(renderer, cameraPos);
     }
-    DrawHud_(_ctx, cameraPos);
+    DrawHud_(cameraPos);
 }
 
 void StageState::DrawBackdrop_(
-    GameContext& _ctx,
-    const Vec2   _cameraPos)
+    const Vec2 _cameraPos)
 {
     const BackdropMode* pMode = m_data.FindBackdrop(m_runner->GetBackdropMode());
     if (!pMode)
@@ -952,9 +942,8 @@ void StageState::DrawBackdrop_(
 }
 
 void StageState::DrawWorld_(
-    GameContext& _ctx,
-    const Vec2   _cameraPos,
-    const float  _alpha)
+    const Vec2  _cameraPos,
+    const float _alpha)
 {
     Renderer&               renderer = Renderer::GetSingleton();
     SpriteBatch&            sprites  = SpriteBatch::GetSingleton();
@@ -1124,7 +1113,6 @@ HudModel StageState::BuildHudModel() const
 }
 
 void StageState::DrawHud_(
-    GameContext& _ctx,
     const Vec2)
 {
     Renderer& renderer = Renderer::GetSingleton();

@@ -130,9 +130,7 @@ TEST(EnemyLabTest, ReloadDefsKeepsTheWorldValidAndRespawnsTheSet)
 
 TEST(EnemyLabTest, EnterAndLeaveSwitchTheRunnerState)
 {
-    GameContext ctx;
-    ctx.assetRoot = FindAssetRoot();
-    SimRunner runner { ctx, Scoped<IGameState> { new SandboxState { MakeEnemyConfig() } } };
+    SimRunner runner { Scoped<IGameState> { new SandboxState { MakeEnemyConfig() } } };
     EnemyLab  lab;
     lab.Init(&runner, "sandbox", FindAssetRoot());
     IGameState* pFirst = runner.GetState();

@@ -1,32 +1,23 @@
 #pragma once
 #include <memory>
 
-#include "Audio/AudioSystem.h"
 #include "Base/Types.h"
 #include "Core/Input.h"
 #include "Game/Player/PlayerTypes.h"
-#include "Render/Animation.h"
-#include "Render/Renderer.h"
-#include "Render/SpriteBatch.h"
-
-struct GameContext
-{
-    FilePath assetRoot   = {};
-    int      loadWorkers = 1;
-};
 
 struct DebugSwitches
 {
-    float    fps           = 0.f;
-    bool     bDebugDraw    = false;
-    bool     bPaused       = false;
-    int      warp          = 0;
-    float    warpX         = 0.f;
-    int      lives         = 0;   // --life N (0 이면 튜닝 값)
-    int      spawn         = 0;
-    int      weapon        = 0;
-    eGodMode godMode       = eGodMode::Off;
-    bool     bInfiniteAmmo = false;
+    float    fps            = 0.f;
+    bool     bDebugDraw     = false;
+    bool     bPaused        = false;
+    int      warp           = 0;
+    float    warpX          = 0.f;
+    int      lives          = 0;   // --life N (0 이면 튜닝 값)
+    int      spawn          = 0;
+    int      weapon         = 0;
+    eGodMode godMode        = eGodMode::Off;
+    bool     bInfiniteAmmo  = false;
+    int      numLoadWorkers = 1;
 };
 
 extern DebugSwitches g_debug;
@@ -36,11 +27,11 @@ class IGameState
 public:
     virtual ~IGameState() = default;
 
-    virtual void OnEnter(GameContext&);
-    virtual void OnExit(GameContext&);
+    virtual void OnEnter();
+    virtual void OnExit();
 
-    virtual void Tick(GameContext& _ctx, const InputHistory& _input) = 0;
-    virtual void Render(GameContext& _ctx, float _alpha)             = 0;
+    virtual void Tick(const InputHistory& _input) = 0;
+    virtual void Render(float _alpha)             = 0;
 
     [[nodiscard]] virtual Scoped<IGameState> TakeNextState();
 

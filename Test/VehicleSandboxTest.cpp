@@ -8,13 +8,12 @@ constexpr float kGroundY = 378.f;
 
 struct VehicleDirectState
 {
-    GameContext  ctx = {};
     SandboxState state { MakeEnemyConfig() };
     InputHistory input = {};
 
     VehicleDirectState()
     {
-        state.OnEnter(ctx);
+        state.OnEnter();
     }
 
     ~VehicleDirectState() { g_debug = {}; }
@@ -47,7 +46,7 @@ TEST(VehicleSandbox, KeyNineSpawnsTheFourVehiclesInTurnAndWraps)
     for (int press = 0; press < 5; ++press)
     {
         g_debug.spawn = 9;
-        d.state.Tick(d.ctx, d.input);
+        d.state.Tick(d.input);
         EXPECT_EQ(g_debug.spawn, 0);
     }
     const EnemyWorld& enemies = d.state.GetEnemies();
@@ -61,7 +60,7 @@ TEST(VehicleSandbox, KeyTenStillDoesNothing)
 {
     VehicleDirectState d;
     g_debug.spawn = 10;
-    d.state.Tick(d.ctx, d.input);
+    d.state.Tick(d.input);
     EXPECT_EQ(d.state.GetEnemies().GetCount(), 0u);
 }
 

@@ -6,9 +6,9 @@
 class UiDemoState final : public IGameState
 {
 public:
-    void OnEnter(GameContext& _ctx) override;
-    void Tick(GameContext& _ctx, const InputHistory& _input) override;
-    void Render(GameContext& _ctx, float _alpha) override;
+    void OnEnter() override;
+    void Tick(const InputHistory& _input) override;
+    void Render(float _alpha) override;
 
     [[nodiscard]] bool IsFinished() const override;
 

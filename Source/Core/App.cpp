@@ -341,8 +341,8 @@ void App::Init_()
     bool bAnimsLoaded = false;
     if (Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(assetRoot))
     {
-        AnimationLibrary::GetSingleton()      = library.Take();
-        bAnimsLoaded = true;
+        AnimationLibrary::GetSingleton() = library.Take();
+        bAnimsLoaded                     = true;
     }
     else
     {
@@ -395,9 +395,8 @@ void App::Init_()
     m_recording.seed      = m_seed;
     m_recording.stateName = m_stateName;
 
-    m_ctx.loadWorkers = numWorkers;
+    g_debug.numLoadWorkers = numWorkers;
     m_editor.SetAnimLibrary(m_bEditor ? &AnimationLibrary::GetSingleton() : nullptr);
-    m_ctx.assetRoot       = FindAssetRoot();
     g_debug.bInfiniteAmmo = m_bEditor;
 
     {
@@ -418,11 +417,11 @@ void App::Init_()
         return;
     }
     m_pRunner = Scoped<SimRunner> {
-        new SimRunner { m_ctx, std::move(pState) }
+        new SimRunner { std::move(pState) }
     };
     if (m_bEditor)
     {
-        m_editor.GetLab().Init(m_pRunner.GetPtr(), m_stateName, m_ctx.assetRoot);
+        m_editor.GetLab().Init(m_pRunner.GetPtr(), m_stateName, assetRoot);
         m_editor.GetLab().SetAutoSpawn(m_editorLabSpawn);
     }
 }

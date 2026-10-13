@@ -1,5 +1,8 @@
 #include "Game/Ui/UiSystem.h"
 
+#include "Core/AssetPath.h"
+#include "Render/Renderer.h"
+#include "Render/SpriteBatch.h"
 #include <algorithm>
 #include <cstdio>
 #include <utility>
@@ -8,20 +11,19 @@
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 
-void UiSystem::Init(
-    const GameContext& _ctx)
+void UiSystem::Init()
 {
     m_tick = 0;
     m_banner.Clear();
     m_fade.SetClear();
     m_bSprites = false;
 
-    if (_ctx.assetRoot.empty())
+    if (FindAssetRoot().empty())
     {
         return;
     }
 
-    if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot))
+    if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(FindAssetRoot()))
     {
         m_sprites  = library.Take();
         m_bSprites = true;

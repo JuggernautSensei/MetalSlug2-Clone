@@ -28,10 +28,9 @@ namespace
 [[nodiscard]] Vec2 RunDemo_(
     const Vector<InputFrame>& _frames)
 {
-    GameContext ctx;
 
     DemoState* pDemo = new DemoState;
-    SimRunner  runner { ctx, Scoped<IGameState> { pDemo } };
+    SimRunner  runner { Scoped<IGameState> { pDemo } };
     runner.Run(_frames);
     return pDemo->GetPosition();
 }
@@ -93,8 +92,7 @@ TEST(SimRunner, StateFactoryKnowsDemoOnly)
 
 TEST(SimRunner, RendersThroughTheServicesWithoutFinishingTheState)
 {
-    GameContext ctx;
-    SimRunner   runner { ctx, CreateState("demo") };
+    SimRunner   runner { CreateState("demo") };
     runner.Step({});
     runner.Render(0.f);
     EXPECT_EQ(runner.GetTickCount(), 1u);

@@ -17,11 +17,10 @@ public:
     explicit StageSim(
         const bool _bDebugDraw = false)
     {
-        m_ctx.assetRoot    = FindAssetRoot();
         g_debug.bDebugDraw = _bDebugDraw;
         m_pState           = new StageState;
         m_runner           = Scoped<SimRunner> {
-            new SimRunner { m_ctx, Scoped<IGameState> { m_pState } }
+            new SimRunner { Scoped<IGameState> { m_pState } }
         };
     }
 
@@ -50,7 +49,6 @@ public:
     }
 
 private:
-    GameContext       m_ctx    = {};
     InputFrame        m_frame  = {};
     StageState*       m_pState = nullptr;
     Scoped<SimRunner> m_runner = nullptr;

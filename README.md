@@ -20,7 +20,8 @@ C++20 + SDL3 로 만든 메탈슬러그 2 스타일 2D 액션 게임 (Mission 4 
 | `--state <이름>` | 시작 상태 (`demo`, `sandbox`, `enemylab`, `buslab`, `bosslab`, `helilab` ...) |
 | `--seed <n>` | 난수 시드 |
 | `--record <파일>` / `--replay <파일>` | 입력 기록 / 재생 (`--replay-hold`: 끝나도 창 유지) |
-| `--headless` | 창 없이 시뮬레이션 (첫 인자일 때만. `--replay --ticks --state --dump-tuning`) |
+| `--replay <파일> --hash` | 렌더/실시간 대기 없이 틱을 끝까지(또는 `--ticks <n>`) 돌리고 `ticks= finished= hash=` 한 줄을 출력한 뒤 종료. 창 없이 쓰려면 `SDL_VIDEO_DRIVER=offscreen SDL_RENDER_DRIVER=software` |
+| `--dump-tuning` / `--gen-replay <out> <state> <ticks> <flip>` | 튜닝 덤프 / 합성 리플레이 생성 후 종료 (첫 인자일 때만) |
 | `--no-audio` | 소리 끔 |
 | `--capture <bmp>` `--capture-frame <n>` `--capture-ticks <a,b,..>` | 스크린샷 |
 | `--weapon <n>` `--hold <J/K/Up/Down/Left/Right>` `--life <n>` | 디버그 시작값 |
@@ -58,7 +59,7 @@ C++20 + SDL3 로 만든 메탈슬러그 2 스타일 2D 액션 게임 (Mission 4 
 - 창 없이 캡처(자동 검증용): 환경변수 `SDL_VIDEO_DRIVER=offscreen`, `SDL_RENDER_DRIVER=software` 를 설정하고 `--capture` 로 실행하면 창이 뜨지 않는다 (렌더 방식이 달라 실제 창 결과와 픽셀이 조금 다를 수 있으니 전/후 비교는 같은 방식끼리만).
 
 ## 회귀 확인
-- `Scripts/Regress.ps1` : 빌드 후 `Test/Replays/*.replay` 를 `--headless` 로 돌려 해시를 `Docs/Wayfinder/Baseline.txt` 와 비교 (PASS/FAIL).
+- `Scripts/Regress.ps1` : 빌드 후 `Test/Replays/*.replay` 를 `--replay --hash` 로 돌려 해시를 `Docs/Wayfinder/Baseline.txt` 와 비교 (PASS/FAIL).
 - 의도적으로 동작을 바꿨다면 `Scripts/Regress.ps1 -Update` 로 기준 해시를 갱신한다.
 - 에셋 이름 확인: `Scripts/ValidateStage.ps1`. 단위 테스트: `SlugTest.exe`.
 

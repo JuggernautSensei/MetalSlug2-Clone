@@ -2,11 +2,11 @@
 
 DebugSwitches g_debug;
 
-void IGameState::OnEnter(GameContext&)
+void IGameState::OnEnter()
 {
 }
 
-void IGameState::OnExit(GameContext&)
+void IGameState::OnExit()
 {
 }
 

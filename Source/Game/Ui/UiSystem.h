@@ -20,7 +20,7 @@ struct GameOverArtView
 class UiSystem
 {
 public:
-    void Init(const GameContext& _ctx);
+    void Init();
 
     void Tick();
 

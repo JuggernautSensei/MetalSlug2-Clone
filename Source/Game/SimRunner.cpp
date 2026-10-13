@@ -3,14 +3,12 @@
 #include "Base/Types.h"
 
 SimRunner::SimRunner(
-    GameContext&       _ctx,
     Scoped<IGameState> _pState)
-    : m_ctx(_ctx)
-    , m_pState(std::move(_pState))
+    : m_pState(std::move(_pState))
 {
     if (m_pState)
     {
-        m_pState->OnEnter(m_ctx);
+        m_pState->OnEnter();
     }
 }
 
@@ -18,7 +16,7 @@ SimRunner::~SimRunner()
 {
     if (m_pState)
     {
-        m_pState->OnExit(m_ctx);
+        m_pState->OnExit();
     }
 }
 
@@ -33,7 +31,7 @@ void SimRunner::Step(
         return;
     }
 
-    m_pState->Tick(m_ctx, m_history);
+    m_pState->Tick(m_history);
 
     if (Scoped<IGameState> pNext = m_pState->TakeNextState(); pNext)
     {
@@ -55,7 +53,7 @@ void SimRunner::Render(
 {
     if (m_pState)
     {
-        m_pState->Render(m_ctx, _alpha);
+        m_pState->Render(_alpha);
     }
 }
 
@@ -84,12 +82,12 @@ void SimRunner::SwitchState(
 {
     if (m_pState)
     {
-        m_pState->OnExit(m_ctx);
+        m_pState->OnExit();
     }
     m_pState = std::move(_pNext);
     m_history.Clear();
     if (m_pState)
     {
-        m_pState->OnEnter(m_ctx);
+        m_pState->OnEnter();
     }
 }

@@ -1,5 +1,10 @@
 ﻿#include "Game/SandboxState.h"
 
+#include "Audio/AudioSystem.h"
+#include "Core/AssetPath.h"
+#include "Render/Animation.h"
+#include "Render/Renderer.h"
+#include "Render/SpriteBatch.h"
 #include <cmath>
 #include <filesystem>
 #include <format>
@@ -25,11 +30,10 @@ SandboxState::SandboxState(
 {
 }
 
-void SandboxState::OnEnter(
-    GameContext& _ctx)
+void SandboxState::OnEnter()
 {
-    BuildWorld_(_ctx);
-    m_ui.Init(_ctx);
+    BuildWorld_();
+    m_ui.Init();
     m_prevStats          = m_player.GetStats();
     m_prevWeapon         = m_player.GetWeapon().weapon;
     m_prevScore          = m_player.GetScore();
@@ -38,22 +42,20 @@ void SandboxState::OnEnter(
     AudioSystem::GetSingleton().PlayBgm(kBgmStage, true);
 }
 
-void SandboxState::OnExit(
-    GameContext& _ctx)
+void SandboxState::OnExit()
 {
     AudioSystem::GetSingleton().AllStop();
 }
 
-void SandboxState::BuildWorld_(
-    GameContext& _ctx)
+void SandboxState::BuildWorld_()
 {
     m_platforms = m_config.platforms;
 
     m_tuning = m_config.tuning;
     m_bWatch = false;
-    if (m_config.bLoadTuningFile && !_ctx.assetRoot.empty())
+    if (m_config.bLoadTuningFile && !FindAssetRoot().empty())
     {
-        const FilePath path = GetDefaultTuningPath(_ctx.assetRoot);
+        const FilePath path = GetDefaultTuningPath(FindAssetRoot());
         if (Result<Tuning> loaded = LoadTuning(path))
         {
             m_tuning = loaded.Take();
@@ -69,9 +71,9 @@ void SandboxState::BuildWorld_(
     if (m_config.bLoadGround)
     {
         bool bLoaded = false;
-        if (!_ctx.assetRoot.empty())
+        if (!FindAssetRoot().empty())
         {
-            if (std::optional<GroundMap> ground = LoadGroundMask(_ctx.assetRoot / "Ground" / "Stage0_0.png"))
+            if (std::optional<GroundMap> ground = LoadGroundMask(FindAssetRoot() / "Ground" / "Stage0_0.png"))
             {
                 m_ground = std::move(*ground);
                 bLoaded  = true;
@@ -94,15 +96,15 @@ void SandboxState::BuildWorld_(
     m_camera.SetForwardOnly(true);
 
     m_enemyLib = {};
-    (void)LoadEnemyDefs_(_ctx.assetRoot, m_enemyLib);
+    (void)LoadEnemyDefs_(FindAssetRoot(), m_enemyLib);
     m_enemies.SetLibrary(&m_enemyLib);
 
     RestartGame();
 
-    if (!_ctx.assetRoot.empty())
+    if (!FindAssetRoot().empty())
     {
         String message;
-        if (Result<PropDefLibrary> lib = PropDefLibrary::Load(_ctx.assetRoot / "Defs" / "Props" / "Props.json", &message))
+        if (Result<PropDefLibrary> lib = PropDefLibrary::Load(FindAssetRoot() / "Defs" / "Props" / "Props.json", &message))
         {
             m_propDefs = lib.Take();
         }
@@ -125,7 +127,7 @@ void SandboxState::BuildWorld_(
     }
     UpdatePropCollision_();
 
-    m_bRigBound = false;
+    m_bRigBound                   = false;
     const AnimationLibrary& anims = AnimationLibrary::GetSingleton();
     if (anims.GetClipCount() > 0)
     {
@@ -135,14 +137,14 @@ void SandboxState::BuildWorld_(
         m_bombAnim.Play(m_bombClip, true);
     }
 
-    if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot))
+    if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(FindAssetRoot()))
     {
         m_spriteLib = library.Take();
     }
     m_enemies.SetSpriteLibrary(&m_spriteLib);
     if (m_config.bBackground)
     {
-        if (const Result<int> handle = SpriteBatch::GetSingleton().LoadStandaloneTexture(_ctx.assetRoot / "Textures" / "Stage0_Main.png"))
+        if (const Result<int> handle = SpriteBatch::GetSingleton().LoadStandaloneTexture(FindAssetRoot() / "Textures" / "Stage0_Main.png"))
         {
             m_bgHandle = handle.GetValue();
         }
@@ -238,8 +240,7 @@ void SandboxState::RestartGame()
     }
 }
 
-void SandboxState::TickBusLab_(
-    GameContext& _ctx)
+void SandboxState::TickBusLab_()
 {
     if (!m_config.bBusLab || m_bBusUnlocked || m_busHandle.IsNull() || !m_enemies.IsDestroyFinished(m_busHandle))
     {
@@ -247,9 +248,9 @@ void SandboxState::TickBusLab_(
     }
     // 스테이지 데이터의 gate(destroyFinished) 와 같다: 지면을 잔해가 있는 Stage0_1 로 바꾸고 카메라 락을 푼다
     m_bBusUnlocked = true;
-    if (!_ctx.assetRoot.empty())
+    if (!FindAssetRoot().empty())
     {
-        if (std::optional<GroundMap> ground = LoadGroundMask(_ctx.assetRoot / "Ground" / "Stage0_1.png"))
+        if (std::optional<GroundMap> ground = LoadGroundMask(FindAssetRoot() / "Ground" / "Stage0_1.png"))
         {
             m_ground = std::move(*ground);
         }
@@ -461,7 +462,6 @@ Vec2 SandboxState::GetRespawnFeet_() const
 }
 
 void SandboxState::Tick(
-    GameContext&        _ctx,
     const InputHistory& _input)
 {
     ++m_tickCount;
@@ -590,7 +590,7 @@ void SandboxState::Tick(
     {
         enemyScore += event.score;
     }
-    TickBusLab_(_ctx);
+    TickBusLab_();
     const int score = m_targets.ApplyEvents(events, m_tuning.sandbox) + enemyScore;
     m_player.AddScore(score);
     m_player.OnHitEvents(events);
@@ -599,7 +599,7 @@ void SandboxState::Tick(
     m_targets.Tick(m_tuning.sandbox);
 
     const Vector<FxRequest> fx = m_projectiles.TakeFx();
-    RequestSounds_(_ctx, fx);
+    RequestSounds_(fx);
     m_ui.Tick();
     const AnimationLibrary& anims = AnimationLibrary::GetSingleton();
     for (const FxRequest& request: fx)
@@ -666,7 +666,6 @@ void SandboxState::Tick(
 }
 
 void SandboxState::RequestSounds_(
-    GameContext&             _ctx,
     const Vector<FxRequest>& _fx)
 {
     AudioSystem&       audio  = AudioSystem::GetSingleton();
@@ -771,8 +770,7 @@ uint64_t SandboxState::HashState() const
 }
 
 void SandboxState::Render(
-    GameContext& _ctx,
-    const float  _alpha)
+    const float _alpha)
 {
     Renderer& renderer = Renderer::GetSingleton();
     renderer.BeginFrame({ 156, 190, 224, 255 });
@@ -785,18 +783,17 @@ void SandboxState::Render(
         SpriteBatch::GetSingleton().DrawTexture(m_bgHandle, { 0.f, 0.f }, cameraPos, Renderer::kLogicalWidth, Renderer::kLogicalHeight);
     }
 
-    DrawWorld_(_ctx, cameraPos, _alpha);
+    DrawWorld_(cameraPos, _alpha);
     if (g_debug.bDebugDraw)
     {
         DrawDebugBoxes_(renderer, cameraPos);
     }
-    DrawHud_(_ctx);
+    DrawHud_();
 }
 
 void SandboxState::DrawWorld_(
-    GameContext& _ctx,
-    const Vec2   _cameraPos,
-    const float  _alpha)
+    const Vec2  _cameraPos,
+    const float _alpha)
 {
     Renderer&               renderer = Renderer::GetSingleton();
     SpriteBatch&            sprites  = SpriteBatch::GetSingleton();
@@ -923,8 +920,7 @@ void SandboxState::DrawDebugBoxes_(
     }
 }
 
-void SandboxState::DrawHud_(
-    GameContext& _ctx)
+void SandboxState::DrawHud_()
 {
     Renderer&               renderer = Renderer::GetSingleton();
     const PlayerController& p        = m_player;

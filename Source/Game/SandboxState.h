@@ -53,10 +53,10 @@ public:
     SandboxState();
     explicit SandboxState(SandboxConfig _config);
 
-    void OnEnter(GameContext& _ctx) override;
-    void OnExit(GameContext& _ctx) override;
-    void Tick(GameContext& _ctx, const InputHistory& _input) override;
-    void Render(GameContext& _ctx, float _alpha) override;
+    void OnEnter() override;
+    void OnExit() override;
+    void Tick(const InputHistory& _input) override;
+    void Render(float _alpha) override;
 
     [[nodiscard]] PlayerController&       GetPlayer();
     [[nodiscard]] const PlayerController& GetPlayer() const;
@@ -88,7 +88,7 @@ public:
     [[nodiscard]] uint64_t DebugHash() const override;
 
 private:
-    void                       BuildWorld_(GameContext& _ctx);
+    void                       BuildWorld_();
     void                       AddDefaultTargets_();
     void                       UpdateWalls_();
     void                       UpdatePropCollision_();
@@ -96,13 +96,13 @@ private:
     [[nodiscard]] Vec2         GetRespawnFeet_() const;
     [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;
     void                       SpawnDebugEnemy_(int _slot, float _aheadPx = 180.f);
-    void                       TickBusLab_(GameContext& _ctx);
+    void                       TickBusLab_();
     [[nodiscard]] bool         LoadEnemyDefs_(const FilePath& _assetRoot, EnemyDefLibrary& _out) const;
 
-    void DrawWorld_(GameContext& _ctx, Vec2 _cameraPos, float _alpha);
+    void DrawWorld_(Vec2 _cameraPos, float _alpha);
     void DrawDebugBoxes_(Renderer& _renderer, Vec2 _cameraPos) const;
-    void DrawHud_(GameContext& _ctx);
-    void RequestSounds_(GameContext& _ctx, const Vector<FxRequest>& _fx);
+    void DrawHud_();
+    void RequestSounds_(const Vector<FxRequest>& _fx);
 
     SandboxConfig m_config  = {};
     Tuning        m_tuning  = {};

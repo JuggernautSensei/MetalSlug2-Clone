@@ -33,11 +33,9 @@ TEST(PlayerReplay, RegressionReplayPlaysTheSameWayTwiceAndHitsTheMilestones)
     ARRAY<uint64_t, 2> hashes = {};
     for (int run = 0; run < 2; ++run)
     {
-        GameContext ctx;
-        ctx.assetRoot = FindAssetRoot();
 
         SandboxState* pState = new SandboxState;
-        SimRunner     runner { ctx, Scoped<IGameState> { pState } };
+        SimRunner     runner { Scoped<IGameState> { pState } };
         runner.Run(replay.frames);
 
         hashes[run]              = pState->HashState();
@@ -55,8 +53,7 @@ TEST(PlayerReplay, RegressionReplayPlaysTheSameWayTwiceAndHitsTheMilestones)
 
 TEST(PlayerReplay, ReplayThroughTheStateFactoryUsesTheSamePath)
 {
-    GameContext ctx;
-    SimRunner   runner { ctx, CreateState("sandbox") };
+    SimRunner   runner { CreateState("sandbox") };
     InputFrame  right;
     right.Set(eAction::Right, true);
     right.Set(eAction::Shot, true);

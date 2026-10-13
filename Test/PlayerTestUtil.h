@@ -69,7 +69,6 @@ public:
     [[nodiscard]] float Y();
 
 private:
-    GameContext       m_ctx     = {};
     SandboxState*     m_pState  = nullptr;
     Scoped<SimRunner> m_pRunner = nullptr;
     InputFrame        m_frame   = {};

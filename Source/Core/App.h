@@ -39,7 +39,6 @@ private:
     int            m_returnCode = 0;
     Vector<String> m_cmdArgs    = {};
 
-    GameContext    m_ctx   = {};
     InputSystem    m_input = {};
     FixedStepClock m_clock = {};
 
