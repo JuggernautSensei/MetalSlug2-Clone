@@ -20,7 +20,6 @@
     "Coin": { "file": "Audio/Coin.wav", "bgm": false },
     "Sfx_GameOver": { "file": "Audio/Sfx_GameOver.mp3", "bgm": false },
     "Sfx_PowerUp": { "file": "Audio/Sfx_PowerUp.mp3", "bgm": false },
-    "Sfx_Bingo": { "file": "Audio/Sfx_Bingo.mp3", "bgm": false },
     "Sfx_MissionComplete": { "file": "Audio/Sfx_MissionComplete.ogg", "bgm": false },
     "Sfx_Mission4Start": { "file": "Audio/Sfx_Mission4Start.ogg", "bgm": false },
     "Sfx_LetsGo": { "file": "Audio/Sfx_LetsGo.mp3", "bgm": false },

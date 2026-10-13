@@ -36,7 +36,6 @@ C++20 + SDL3 로 만든 메탈슬러그 2 스타일 2D 액션 게임 (Mission 4 
 - `Test/` GoogleTest (`SlugTest.exe`), `Test/Replays/` 회귀 리플레이
 - `Projects/` vcxproj (MetalSlug2_Clone, SlugTest) / `Scripts/` Build, Regress, ValidateStage
 - `Docs/` 편집용 문서 (아래 목록) / `Docs/Wayfinder/` 정리 작업 기록
-- `Trash/` 더 이상 쓰지 않는 옛 파이프라인, 원본 리소스, 옛 문서. 빌드와 무관, 되살리지 않는다
 - `Output/` `Intermediate/` `Captures/` 빌드/캡처 산출물 (git 무시)
 
 ## 편집 방법 (`--editor`, 저장은 모두 Ctrl+S)

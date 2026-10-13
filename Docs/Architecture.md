@@ -202,10 +202,10 @@ Assets/
 | 동작·결과 불변 | **달성** — 해시 15/15, 캡처 7/7, 튜닝, TraceLoad, 단위 테스트 모두 변경 전과 동일 |
 | JugX 유사성 | **표면은 높음**(서식·이름·주석·헤더), **구조는 중간**(사전조건 assert 습관, Context 묶음, 큰 파일) |
 | 단순성 | **중간 이상** — 가장 복잡하던 로더/인터페이스/중복 제거. `GameContext`, 거대 파일, JSON 필드 리더는 남음 |
-| 리소스 compact | **미완** — `Assets/` 는 이미 거의 비어 있음(미사용 1개). `Trash/` 925MB(tracked 1,586파일)는 삭제 권한 대기 |
+| 리소스 compact | **달성(추적 파일 기준)** — 추적 파일 2,036 → 429개. `Trash/`(925MB)·`VideoScore`·`Raw`·미참조 이미지·`Sfx_Bingo.mp3` 삭제. 디스크에만 있는 복구 불가 파일은 보존 |
 
 ### 남은 일 (사용자 결정/권한 필요)
-1. `Trash/`, `Scripts/VideoScore`, `Raw/`, 미참조 문서 이미지, `Assets/Audio/Sfx_Bingo.mp3` 삭제 (`git rm`, 권한 필요)
+1. (완료) `Trash/`, `Scripts/VideoScore`, `Raw/`, 미참조 문서 이미지, `Sfx_Bingo.mp3` 삭제. `Assets/anim.json` 의 미사용 클립 2개(`Plane`, `Boss_Disc_Black`)는 편집 중이라 남김
 2. JugX 서브모듈 수정 푸시 → 우회 코드 되돌리기
 3. `GameContext` → `GetSingleton()` 전환 (모든 상태 시그니처와 테스트에 영향, 별도 웨이브)
 4. `anim.json` `loop` 불일치 4건 수정 여부 (재생이 달라짐)
