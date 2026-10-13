@@ -1,3 +1,5 @@
+> **이 문서는 낡았다. `Docs/HANDOFF.md` 를 먼저 읽을 것.**
+
 # 진행 상황 / 인수인계 (다음 컨텍스트용)
 
 마지막 갱신: 2026-10-13. 브랜치 `claude/affectionate-brahmagupta-tgqzo1`. 태그 `stage1-complete` = 1단계 완료 시점.
