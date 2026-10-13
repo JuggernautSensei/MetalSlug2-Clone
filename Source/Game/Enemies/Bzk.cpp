@@ -267,9 +267,9 @@ void Tick_(
             _e.body.velocity.x = 0.f;
             if (ClipReachedFrame(_e, _def, cfg.fireFrame))
             {
-                const float deg = 22.5f * static_cast<float>(_e.aux);
-                const float rad = deg * kDeg2Rad;
-                const Vec2  dir = { std::cos(rad) * static_cast<float>(_e.facing), std::sin(rad) * (_e.aux2 == 1 ? 1.f : -1.f) };
+                const float   deg = 22.5f * static_cast<float>(_e.aux);
+                const float   rad = deg * kDeg2Rad;
+                const VECTOR2 dir = { std::cos(rad) * static_cast<float>(_e.facing), std::sin(rad) * (_e.aux2 == 1 ? 1.f : -1.f) };
                 FireWeapon(_e, _def, _env, cfg.weaponRocket, dir, { dir.x * cfg.muzzleDist, dir.y * cfg.muzzleDist });
                 --_e.counter;
             }

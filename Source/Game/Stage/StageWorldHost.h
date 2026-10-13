@@ -28,8 +28,8 @@ struct PlaceholderEntity
     String      def        = {};
     eEntityKind kind       = eEntityKind::Enemy;
     eStageLayer layer      = eStageLayer::Monster;
-    Vec2        feet       = { 0.f, 0.f };
-    Vec2        size       = { 40.f, 75.f };
+    VECTOR2     feet       = { 0.f, 0.f };
+    VECTOR2     size       = { 40.f, 75.f };
     Health      health     = {};
     bool        bHittable  = true;
     int         flashTicks = 0;
@@ -98,10 +98,10 @@ public:
     void                               SendCommand(SpawnId _id, StringView _command) override;
     void                               SetGround(StringView _name) override;
     [[nodiscard]] std::optional<float> GetGroundFindY(float _x, float _fromY) const override;
-    [[nodiscard]] Vec2                 PlayerFeet() const override;
+    [[nodiscard]] VECTOR2              PlayerFeet() const override;
     [[nodiscard]] bool                 IsGameOver() const override;
     void                               SetPlayerInvincible(float _seconds) override;
-    void                               WarpPlayer(Vec2 _feet) override;
+    void                               WarpPlayer(VECTOR2 _feet) override;
     void                               SetBackdrop(StringView _modeId) override;
     void                               ShowBanner(const String& _text, float _seconds) override;
     void                               FadeTo(eFadeTarget _target, float _seconds) override;

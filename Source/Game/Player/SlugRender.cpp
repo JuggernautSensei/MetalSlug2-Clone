@@ -107,8 +107,8 @@ void SubmitFx_(
         }
         case eSlugFxKind::Debris:
         {
-            const float age = static_cast<float>(_fx.ageTicks);
-            const Vec2  pos = { _fx.position.x + age * 1.5f * static_cast<float>(_fx.facing), _fx.position.y - 5.5f * age + 0.16f * age * age };
+            const float   age = static_cast<float>(_fx.ageTicks);
+            const VECTOR2 pos = { _fx.position.x + age * 1.5f * static_cast<float>(_fx.facing), _fx.position.y - 5.5f * age + 0.16f * age * age };
             if (const AnimFrame* pFrame = GetTimedFrame_(_anims, GetSlugClipInfo(eSlugClip::VulcanDebris).pName, _fx.ageTicks))
             {
                 _sprites.Submit(_depth, 3, *pFrame, pos, options);
@@ -160,12 +160,12 @@ void SubmitSlug(
         return;
     }
 
-    const Vec2 feet    = Lerp(_slug.GetPrevFeet(), _slug.GetFeet(), _alpha);
-    const Vec2 delta   = feet - _slug.GetFeet();
-    const int  sortKey = static_cast<int>(feet.y);
-    const int  bodyZ   = ResolveZ(_slug.GetZ(), kSlugBodyDepth);
-    const int  fxZ     = bodyZ + kSlugFxZOffset;
-    const int  arrowZ  = bodyZ + kSlugArrowZOffset;
+    const VECTOR2 feet    = Lerp(_slug.GetPrevFeet(), _slug.GetFeet(), _alpha);
+    const VECTOR2 delta   = feet - _slug.GetFeet();
+    const int     sortKey = static_cast<int>(feet.y);
+    const int     bodyZ   = ResolveZ(_slug.GetZ(), kSlugBodyDepth);
+    const int     fxZ     = bodyZ + kSlugFxZOffset;
+    const int     arrowZ  = bodyZ + kSlugArrowZOffset;
 
     if (_slug.IsBodyVisible())
     {
@@ -230,7 +230,7 @@ bool SubmitSlugBullet(
     SpriteBatch&            _sprites,
     const AnimationLibrary& _anims,
     const Bullet&           _bullet,
-    const Vec2              _position,
+    const VECTOR2           _position,
     const int               _depth)
 {
     if (!IsSlugOwner(_bullet.owner))
@@ -258,7 +258,7 @@ bool SubmitSlugShell(
     SpriteBatch&            _sprites,
     const AnimationLibrary& _anims,
     const Bomb&             _bomb,
-    const Vec2              _position,
+    const VECTOR2           _position,
     const int               _depth)
 {
     if (!IsSlugOwner(_bomb.params.owner))

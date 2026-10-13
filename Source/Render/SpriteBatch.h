@@ -22,7 +22,7 @@ struct IntRect
     [[nodiscard]] constexpr bool operator==(const IntRect&) const = default;
 };
 
-[[nodiscard]] IntRect ComputeDestRect(const AnimFrame& _frame, Vec2 _worldOrigin, Vec2 _cameraPos, bool _bFlipX, bool _bFlipY = false);
+[[nodiscard]] IntRect ComputeDestRect(const AnimFrame& _frame, VECTOR2 _worldOrigin, VECTOR2 _cameraPos, bool _bFlipX, bool _bFlipY = false);
 
 // 피격 플래시: 원작은 스프라이트 전체를 밝기 기준 주황 램프로 바꿔 그린다 (Docs/Spec_HitFlash.md, 버스 실측).
 [[nodiscard]] RGBA ApplyHitFlashRamp(RGBA _color);
@@ -53,7 +53,7 @@ struct SpriteCommand
     int               sortKey       = 0;
     uint32_t          seq           = 0;   // 제출 순서 (동점 처리 2순위)
     AnimFrame         frame         = {};
-    Vec2              origin        = { 0.f, 0.f };
+    VECTOR2           origin        = { 0.f, 0.f };
     SpriteDrawOptions options       = {};
     int               standalone    = -1;   // >= 0 이면 frame 대신 이 단독 텍스처의 standaloneSrc 를 origin 가운데로 그린다
     IntRect           standaloneSrc = {};
@@ -84,7 +84,7 @@ struct DecodedImage
 
 void SetLoadTraceEnabled(bool _bEnabled);
 
-[[nodiscard]] TextureViewRects ComputeTextureView(int _texW, int _texH, Vec2 _texWorldPos, Vec2 _cameraPos, int _viewW, int _viewH);
+[[nodiscard]] TextureViewRects ComputeTextureView(int _texW, int _texH, VECTOR2 _texWorldPos, VECTOR2 _cameraPos, int _viewW, int _viewH);
 
 class SpriteBatch
 {
@@ -112,25 +112,25 @@ public:
     [[nodiscard]] Result<int> AddStandaloneTexture(const DecodedImage& _image);
     [[nodiscard]] Vector<int> LoadStandaloneTexturesParallel(Span<const FilePath> _paths, int _numWorkers);
 
-    void DrawTexture(int _handle, Vec2 _texWorldPos, Vec2 _cameraPos, int _viewW, int _viewH, RGBA _tint = { 255, 255, 255, 255 }) const;
+    void DrawTexture(int _handle, VECTOR2 _texWorldPos, VECTOR2 _cameraPos, int _viewW, int _viewH, RGBA _tint = { 255, 255, 255, 255 }) const;
     // 텍스처 x >= _fromX 구간을 [_tileX, _tileX + _tileW) 열의 주기 반복으로 그린다 (보스전 엔드리스 배경). _texWorldPos 는 원점 (0,0) 권장.
-    void DrawTextureRepeatX(int _handle, Vec2 _texWorldPos, Vec2 _cameraPos, int _viewW, int _viewH, float _fromX, int _tileX, int _tileW) const;
+    void DrawTextureRepeatX(int _handle, VECTOR2 _texWorldPos, VECTOR2 _cameraPos, int _viewW, int _viewH, float _fromX, int _tileX, int _tileW) const;
 
     void              SetAssetRoot(const FilePath& _root);
     [[nodiscard]] int FindStandalone(const String& _relativeFile);
-    void              SubmitStandalone(int _depth, int _sortKey, int _handle, const IntRect& _src, Vec2 _worldCenter, const SpriteDrawOptions& _options = {});
+    void              SubmitStandalone(int _depth, int _sortKey, int _handle, const IntRect& _src, VECTOR2 _worldCenter, const SpriteDrawOptions& _options = {});
 
-    void DrawFrame(const AnimFrame& _frame, Vec2 _worldOrigin, Vec2 _cameraPos, const SpriteDrawOptions& _options = {}) const;
-    void DrawFrame(const AnimFrame& _frame, Vec2 _worldOrigin, const Camera& _camera, const SpriteDrawOptions& _options = {}) const;
+    void DrawFrame(const AnimFrame& _frame, VECTOR2 _worldOrigin, VECTOR2 _cameraPos, const SpriteDrawOptions& _options = {}) const;
+    void DrawFrame(const AnimFrame& _frame, VECTOR2 _worldOrigin, const Camera& _camera, const SpriteDrawOptions& _options = {}) const;
 
     void DrawFrameRect(const AnimFrame& _frame, const IntRect& _dest, const SpriteDrawOptions& _options = {}) const;
 
-    void Submit(int _depth, int _sortKey, const AnimFrame& _frame, Vec2 _worldOrigin, const SpriteDrawOptions& _options = {});
-    void Flush(Vec2 _cameraPos);
+    void Submit(int _depth, int _sortKey, const AnimFrame& _frame, VECTOR2 _worldOrigin, const SpriteDrawOptions& _options = {});
+    void Flush(VECTOR2 _cameraPos);
     void Flush(const Camera& _camera);
 
     // depth 가 _depth 보다 작은 명령만 정렬해 먼저 그리고 지운다 (나머지는 그대로 남는다). 지면 텍스처보다 뒤에 놓일 원경 물체 (보스 선체) 용
-    void FlushBelowDepth(Vec2 _cameraPos, int _depth);
+    void FlushBelowDepth(VECTOR2 _cameraPos, int _depth);
     void Clear();
 
     [[nodiscard]] const Vector<SpriteCommand>& GetPendingCommands() const;
@@ -154,7 +154,7 @@ private:
     };
 
     void DrawStandaloneRect_(const StandaloneTexture& _texture, const SDL_FRect& _src, const SDL_FRect& _dst, RGBA _tint) const;
-    void DrawCommand_(const SpriteCommand& _command, Vec2 _cameraPos) const;
+    void DrawCommand_(const SpriteCommand& _command, VECTOR2 _cameraPos) const;
 
     SDL_Renderer*             m_pRenderer        = nullptr;
     Vector<Page>              m_pages            = {};

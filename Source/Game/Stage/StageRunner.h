@@ -31,7 +31,7 @@ public:
 
     void Begin();
 
-    [[nodiscard]] std::optional<Vec2> ResolvePlayerStart() const;
+    [[nodiscard]] std::optional<VECTOR2> ResolvePlayerStart() const;
 
     void Tick();
 
@@ -43,7 +43,7 @@ public:
     bool WarpToBoss();
     bool WarpToX(float _x);   // 디버그: 임의 월드 x 로 워프 (앞 구간은 조용히 적용)
 
-    [[nodiscard]] Vec2        ComputeCameraTarget(Vec2 _playerFeet) const;
+    [[nodiscard]] VECTOR2     ComputeCameraTarget(VECTOR2 _playerFeet) const;
     [[nodiscard]] ScreenWalls MakeScreenWalls() const;
 
     [[nodiscard]] bool                 IsFinished() const;
@@ -57,7 +57,7 @@ public:
 
     [[nodiscard]] const String& GetGroundName() const;
     [[nodiscard]] const String& GetBackdropMode() const;
-    [[nodiscard]] Vec2          GetCameraOffset() const;
+    [[nodiscard]] VECTOR2       GetCameraOffset() const;
     [[nodiscard]] const Aabb&   GetBaseBounds() const;
     [[nodiscard]] Aabb          GetEffectiveBounds() const;
     [[nodiscard]] int           GetLockDepth() const;
@@ -154,7 +154,7 @@ private:
 
     Aabb              m_base         = {};
     Vector<LockEntry> m_locks        = {};
-    Vec2              m_cameraOffset = { 0.f, 0.f };
+    VECTOR2           m_cameraOffset = { 0.f, 0.f };
     Vector<uint8_t>   m_curveActive  = {};
 
     String m_groundName   = {};

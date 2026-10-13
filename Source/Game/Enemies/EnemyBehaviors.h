@@ -14,13 +14,13 @@ class EnemyWorld;
 
 struct EnemyFxRequest
 {
-    String clip       = {};
-    Vec2   position   = { 0.f, 0.f };
-    int    depth      = 60;
-    int    delayTicks = 0;
-    bool   bFlipX     = false;
-    bool   bDebris    = false;
-    Vec2   velocity   = { 0.f, 0.f };   // px/s
+    String  clip       = {};
+    VECTOR2 position   = { 0.f, 0.f };
+    int     depth      = 60;
+    int     delayTicks = 0;
+    bool    bFlipX     = false;
+    bool    bDebris    = false;
+    VECTOR2 velocity   = { 0.f, 0.f };   // px/s
 };
 
 struct EnemyEnv
@@ -38,7 +38,7 @@ struct EnemyRenderEnv
     const AnimationLibrary& anims;
     const SpriteLibrary*    pSprites = nullptr;
     const ProjectileSystem& projectiles;
-    Vec2                    feet    = { 0.f, 0.f };
+    VECTOR2                 feet    = { 0.f, 0.f };
     float                   alpha   = 0.f;
     int                     depth   = 0;
     float                   flash   = 0.f;

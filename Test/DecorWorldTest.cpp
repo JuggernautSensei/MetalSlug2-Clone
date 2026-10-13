@@ -132,8 +132,8 @@ TEST(DecorWorld, SequenceAdvancesStepsAndFinishesWithoutLoop)
     DecorWorld     world;
     const uint32_t id = world.Spawn(MakeDecorSpawn("A", eStageLayer::Background, { 100.f, 50.f }, &params));
 
-    Vec2       pos      = {};
-    Vec2       velocity = {};
+    VECTOR2    pos      = {};
+    VECTOR2    velocity = {};
     StringView clip;
     bool       bFinished = false;
 
@@ -172,8 +172,8 @@ TEST(DecorWorld, SequenceLoopsBackToFirstStep)
     const uint32_t id = world.Spawn(MakeDecorSpawn("A", eStageLayer::Background, { 100.f, 50.f }, &params));
 
     RunTicks_(world, *lib, 90);   // 1.5 s: 한 바퀴 돌고 첫 구간 (A, +60) 으로 복귀
-    Vec2       pos      = {};
-    Vec2       velocity = {};
+    VECTOR2    pos      = {};
+    VECTOR2    velocity = {};
     StringView clip;
     bool       bFinished = true;
     ASSERT_TRUE(world.Get(id, pos, velocity, clip, bFinished));
@@ -197,8 +197,8 @@ TEST(DecorWorld, SingleClipMovesAtConstantVelocityAndNeverFinishes)
     const uint32_t id = world.Spawn(MakeDecorSpawn("A", eStageLayer::FarBackground, { 100.f, 50.f }, &params));
     RunTicks_(world, *lib, 60);   // 1 s
 
-    Vec2       pos = {};
-    Vec2       vel = {};
+    VECTOR2    pos = {};
+    VECTOR2    vel = {};
     StringView clip;
     bool       bFinished = true;
     ASSERT_TRUE(world.Get(id, pos, vel, clip, bFinished));

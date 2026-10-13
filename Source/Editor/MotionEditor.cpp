@@ -185,7 +185,7 @@ void MotionCollectParams_(
 bool MotionPatchVec2_(
     String&        _text,
     Vector<String> _path,
-    const Vec2     _value)
+    const VECTOR2  _value)
 {
     _path.push_back("0");
     if (!MotionPatchNumber_(_text, _path, static_cast<double>(_value.x)))
@@ -1130,20 +1130,20 @@ void MotionEditor::DrawOverlay(
     {
         return;
     }
-    const float facing = static_cast<float>(pEnemy->facing < 0 ? -1 : 1);
-    const Vec2  feet   = pEnemy->body.position;
-    const Vec2  camRaw = pState->GetCamera().GetPosition();
-    const Vec2  camera = { std::floor(camRaw.x), std::floor(camRaw.y) };
+    const float   facing = static_cast<float>(pEnemy->facing < 0 ? -1 : 1);
+    const VECTOR2 feet   = pEnemy->body.position;
+    const VECTOR2 camRaw = pState->GetCamera().GetPosition();
+    const VECTOR2 camera = { std::floor(camRaw.x), std::floor(camRaw.y) };
 
-    float      mouseX     = 0.f;
-    float      mouseY     = 0.f;
-    const bool bDown      = (SDL_GetMouseState(&mouseX, &mouseY) & SDL_BUTTON_LMASK) != 0;
-    const bool bClick     = bDown && !m_bPrevDown;
-    m_bPrevDown           = bDown;
-    float      logicalX   = 0.f;
-    float      logicalY   = 0.f;
-    const bool bMouse     = SDL_RenderCoordinatesFromWindow(_renderer.GetNative(), mouseX, mouseY, &logicalX, &logicalY) && !ImGui::GetIO().WantCaptureMouse;
-    const Vec2 mouseWorld = { logicalX + camera.x, logicalY + camera.y };
+    float      mouseX        = 0.f;
+    float      mouseY        = 0.f;
+    const bool bDown         = (SDL_GetMouseState(&mouseX, &mouseY) & SDL_BUTTON_LMASK) != 0;
+    const bool bClick        = bDown && !m_bPrevDown;
+    m_bPrevDown              = bDown;
+    float         logicalX   = 0.f;
+    float         logicalY   = 0.f;
+    const bool    bMouse     = SDL_RenderCoordinatesFromWindow(_renderer.GetNative(), mouseX, mouseY, &logicalX, &logicalY) && !ImGui::GetIO().WantCaptureMouse;
+    const VECTOR2 mouseWorld = { logicalX + camera.x, logicalY + camera.y };
 
     if (!bDown)
     {
@@ -1159,7 +1159,7 @@ void MotionEditor::DrawOverlay(
             {
                 continue;
             }
-            Vec2 local = w.muzzle;
+            VECTOR2 local = w.muzzle;
             if (kind == 1)
             {
                 local = { w.muzzle.x + w.muzzleFx.offset.x, w.muzzle.y + w.muzzleFx.offset.y };
@@ -1168,11 +1168,11 @@ void MotionEditor::DrawOverlay(
             {
                 local = w.effects[static_cast<size_t>(kind - 2)].offset;
             }
-            const Vec2  at    = { feet.x + local.x * facing, feet.y + local.y };
-            const RGBA  color = kind == 0 ? kMotionMuzzleColor : (kind == 1 ? kMotionFxColor : kMotionEffectColor);
-            const bool  bSel  = m_pickWeapon == wi && ((kind == 0 && m_pick == ePick::Muzzle) || (kind == 1 && m_pick == ePick::MuzzleFx) || (kind >= 2 && m_pick == ePick::Effect && m_pickEffect == kind - 2));
-            const Vec2  s     = { std::floor(at.x - camera.x), std::floor(at.y - camera.y) };
-            const float r     = bSel ? 9.f : 6.f;
+            const VECTOR2 at    = { feet.x + local.x * facing, feet.y + local.y };
+            const RGBA    color = kind == 0 ? kMotionMuzzleColor : (kind == 1 ? kMotionFxColor : kMotionEffectColor);
+            const bool    bSel  = m_pickWeapon == wi && ((kind == 0 && m_pick == ePick::Muzzle) || (kind == 1 && m_pick == ePick::MuzzleFx) || (kind >= 2 && m_pick == ePick::Effect && m_pickEffect == kind - 2));
+            const VECTOR2 s     = { std::floor(at.x - camera.x), std::floor(at.y - camera.y) };
+            const float   r     = bSel ? 9.f : 6.f;
             _renderer.DrawLine({ s.x - r, s.y }, { s.x + r, s.y }, color);
             _renderer.DrawLine({ s.x, s.y - r }, { s.x, s.y + r }, color);
             const String label = kind == 0 ? w.name + " muzzle" : (kind == 1 ? w.name + " fx" : std::format("{} fx{}", w.name, kind - 2));
@@ -1197,8 +1197,8 @@ void MotionEditor::DrawOverlay(
 
     if (m_bDragging && m_pick != ePick::None && m_pickWeapon < static_cast<int>(pDef->weapons.size()))
     {
-        WeaponDef& w     = pDef->weapons[static_cast<size_t>(m_pickWeapon)];
-        const Vec2 value = { std::round((mouseWorld.x - feet.x) * facing), std::round(mouseWorld.y - feet.y) };
+        WeaponDef&    w     = pDef->weapons[static_cast<size_t>(m_pickWeapon)];
+        const VECTOR2 value = { std::round((mouseWorld.x - feet.x) * facing), std::round(mouseWorld.y - feet.y) };
         if (m_pick == ePick::Muzzle)
         {
             w.muzzle = value;

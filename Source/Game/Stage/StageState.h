@@ -100,18 +100,18 @@ private:
     void                       UpdateWalls_();
     [[nodiscard]] PhysicsWorld MakePhysicsWorld_() const;
     [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;
-    [[nodiscard]] Vec2         GetRespawnFeet_() const;
+    [[nodiscard]] VECTOR2      GetRespawnFeet_() const;
 
     void                           ConsumeEnemyEvents_();
     void                           ConsumePropEvents_();
-    void                           ApplyGroundPatch_(const String& _sprite, Vec2 _topLeft);
+    void                           ApplyGroundPatch_(const String& _sprite, VECTOR2 _topLeft);
     [[nodiscard]] const GroundMap* FindPatchMask_(const String& _sprite);
     void                           RequestSounds_(const Vector<FxRequest>& _fx);
 
-    void DrawBackdrop_(Vec2 _cameraPos);
-    void DrawWorld_(Vec2 _cameraPos, float _alpha);
-    void DrawDebugBoxes_(Renderer& _renderer, Vec2 _cameraPos) const;
-    void DrawHud_(Vec2 _cameraPos);
+    void DrawBackdrop_(VECTOR2 _cameraPos);
+    void DrawWorld_(VECTOR2 _cameraPos, float _alpha);
+    void DrawDebugBoxes_(Renderer& _renderer, VECTOR2 _cameraPos) const;
+    void DrawHud_(VECTOR2 _cameraPos);
 
     StageStateConfig           m_config     = {};
     InputHistory               m_botInput   = {};
@@ -127,8 +127,8 @@ private:
     StageWorldHost m_host          = {};
     Tuning         m_tuning        = {};
     Camera         m_camera        = {};
-    Vec2           m_prevCameraPos = { 0.f, 0.f };
-    Vec2           m_startFeet     = { 0.f, 0.f };
+    VECTOR2        m_prevCameraPos = { 0.f, 0.f };
+    VECTOR2        m_startFeet     = { 0.f, 0.f };
 
     Vector<Wall>     m_walls           = {};
     Vector<Wall>     m_enemyWalls      = {};

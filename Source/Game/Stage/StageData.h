@@ -57,9 +57,9 @@ public:
 
     [[nodiscard]] String GetString(StringView _key, StringView _default = {}) const;
 
-    [[nodiscard]] Vec2 GetVec2(StringView _key, Vec2 _default = { 0.f, 0.f }) const;
+    [[nodiscard]] VECTOR2 GetVec2(StringView _key, VECTOR2 _default = { 0.f, 0.f }) const;
 
-    [[nodiscard]] bool TryGetVec2(Vec2& _out) const;
+    [[nodiscard]] bool TryGetVec2(VECTOR2& _out) const;
 
     [[nodiscard]] static const ParamValue& EmptyObject();
     [[nodiscard]] static const ParamValue& NullValue();
@@ -225,7 +225,7 @@ struct SpawnSpec
     eStageLayer layer      = eStageLayer::Monster;
     float       cullMargin = kDefaultCullMargin;
 
-    Vec2            size           = { 0.f, 0.f };
+    VECTOR2         size           = { 0.f, 0.f };
     eCollisionLayer collisionLayer = eCollisionLayer::Wall;
 
     String anim   = {};
@@ -264,9 +264,9 @@ struct StageAction
     float   glide      = 0.f;
     bool    bPermanent = false;
 
-    Vec2  to      = { 0.f, 0.f };
-    float seconds = 0.f;
-    Vec2  offset  = { 0.f, 0.f };
+    VECTOR2 to      = { 0.f, 0.f };
+    float   seconds = 0.f;
+    VECTOR2 offset  = { 0.f, 0.f };
 
     String text       = {};
     String mode       = {};
@@ -298,11 +298,11 @@ struct StageSection
 
 struct BackdropMode
 {
-    String id        = {};
-    String sprite    = {};
-    Vec2   offset    = { 0.f, 0.f };
-    float  parallaxX = 0.f;
-    float  period    = 0.f;   // 가로 반복 간격. 0 이면 스프라이트 너비
+    String  id        = {};
+    String  sprite    = {};
+    VECTOR2 offset    = { 0.f, 0.f };
+    float   parallaxX = 0.f;
+    float   period    = 0.f;   // 가로 반복 간격. 0 이면 스프라이트 너비
 };
 
 struct NamedRect
@@ -313,16 +313,16 @@ struct NamedRect
 
 struct BoundsCurve
 {
-    String       id         = {};
-    String       from       = {};
-    String       until      = {};
-    int          fromIndex  = -1;
-    int          untilIndex = -1;
-    float        left       = 0.f;
-    float        right      = 0.f;
-    float        height     = 0.f;
-    Vector<Vec2> top        = {};
-    bool         bTrunc     = false;
+    String          id         = {};
+    String          from       = {};
+    String          until      = {};
+    int             fromIndex  = -1;
+    int             untilIndex = -1;
+    float           left       = 0.f;
+    float           right      = 0.f;
+    float           height     = 0.f;
+    Vector<VECTOR2> top        = {};
+    bool            bTrunc     = false;
 
     [[nodiscard]] float EvaluateTop(float _playerX) const;
 
@@ -333,7 +333,7 @@ struct CameraConfig
 {
     bool                bForward      = true;
     Aabb                initialBounds = {};
-    Vec2                initialOffset = { 0.f, 0.f };
+    VECTOR2             initialOffset = { 0.f, 0.f };
     float               playerMargin  = 14.f;
     Vector<BoundsCurve> boundsCurves  = {};
 };
@@ -364,8 +364,8 @@ struct StageData
     int    version = 1;
     String name    = {};
 
-    Vec2        worldSize    = { 0.f, 0.f };
-    Vec2        viewSize     = { 640.f, 448.f };
+    VECTOR2     worldSize    = { 0.f, 0.f };
+    VECTOR2     viewSize     = { 640.f, 448.f };
     String      background   = {};
     EndlessTail endless      = {};
     int         terrainDepth = kDefaultTerrainDepth;

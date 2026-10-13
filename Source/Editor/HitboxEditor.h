@@ -85,5 +85,5 @@ private:
     bool     m_bBoxDrag  = false;
     bool     m_bPrevDown = false;
     uint32_t m_dragEnemy = 0;
-    Vec2     m_dragGrab  = { 0.f, 0.f };
+    VECTOR2  m_dragGrab  = { 0.f, 0.f };
 };

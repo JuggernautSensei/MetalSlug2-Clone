@@ -26,7 +26,7 @@ namespace
     return _seconds <= 0.f ? 0 : static_cast<int>(std::lround(static_cast<double>(_seconds) * static_cast<double>(kTickRate)));
 }
 
-[[nodiscard]] Vec2 EnemyFeet_(
+[[nodiscard]] VECTOR2 EnemyFeet_(
     const SpawnRequest& _request)
 {
     if (_request.positionMode == ePositionMode::LegacyCenter)
@@ -39,8 +39,8 @@ namespace
 
 struct DefaultSpec
 {
-    int  hp   = 1;
-    Vec2 size = { 40.f, 40.f };
+    int     hp   = 1;
+    VECTOR2 size = { 40.f, 40.f };
 };
 
 namespace
@@ -409,7 +409,7 @@ SpawnId StageWorldHost::SpawnPlaceholder_(
 
     entity.feet = _request.positionMode == ePositionMode::Feet
                     ? _request.position
-                    : Vec2 { _request.position.x, _request.position.y + entity.size.y * 0.5f };
+                    : VECTOR2 { _request.position.x, _request.position.y + entity.size.y * 0.5f };
 
     m_placeholderEntities.push_back(entity);
     return entity.id;
@@ -450,7 +450,7 @@ SpawnId StageWorldHost::SpawnEntity(
             }
         }
 
-        const Vec2        feet   = EnemyFeet_(_request);
+        const VECTOR2     feet   = EnemyFeet_(_request);
         const EnemyHandle handle = m_pEnemies->Spawn(_request.def, feet, params, nullptr);
         if (!handle.IsNull())
         {
@@ -471,7 +471,7 @@ SpawnId StageWorldHost::SpawnEntity(
 
     if (m_pProps && _request.kind == eEntityKind::Item)
     {
-        const Vec2     feet   = _request.positionMode == ePositionMode::Feet ? _request.position : ItemFeetFromCenter(_request.position);
+        const VECTOR2  feet   = _request.positionMode == ePositionMode::Feet ? _request.position : ItemFeetFromCenter(_request.position);
         const uint32_t itemId = m_pProps->SpawnItem(_request.def, feet, false);
         if (itemId != 0)
         {
@@ -605,9 +605,9 @@ std::optional<float> StageWorldHost::GetGroundFindY(
     return std::nullopt;
 }
 
-Vec2 StageWorldHost::PlayerFeet() const
+VECTOR2 StageWorldHost::PlayerFeet() const
 {
-    return m_pPlayer ? m_pPlayer->GetLogicalFeet() : Vec2 { 0.f, 0.f };
+    return m_pPlayer ? m_pPlayer->GetLogicalFeet() : VECTOR2 { 0.f, 0.f };
 }
 
 bool StageWorldHost::IsGameOver() const
@@ -625,7 +625,7 @@ void StageWorldHost::SetPlayerInvincible(
 }
 
 void StageWorldHost::WarpPlayer(
-    const Vec2 _feet)
+    const VECTOR2 _feet)
 {
     if (!m_pPlayer || !m_pTuning)
     {

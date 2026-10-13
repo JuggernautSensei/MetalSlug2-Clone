@@ -41,8 +41,8 @@ struct SpawnParams
     uint32_t userTag    = 0;
     bool     bActivated = false;
     Aabb     arena      = {};
-    Vec2     climbEnd   = { 0.f, 0.f };   // 계단 병사: arena.max 뒤 마지막 오름 목표 (y 가 0 이면 없음)
-    Vec2     roofSpan   = { 0.f, 0.f };   // 계단 병사: 지붕 발판의 월드 x 범위 [최소, 최대] (최대 <= 최소 이면 없음)
+    VECTOR2  climbEnd   = { 0.f, 0.f };   // 계단 병사: arena.max 뒤 마지막 오름 목표 (y 가 0 이면 없음)
+    VECTOR2  roofSpan   = { 0.f, 0.f };   // 계단 병사: 지붕 발판의 월드 x 범위 [최소, 최대] (최대 <= 최소 이면 없음)
     int      z          = kDefaultZ;
 };
 
@@ -62,7 +62,7 @@ struct EnemyEvent
     EnemyHandle     handle   = {};
     EnemyHandle     other    = {};
     int             defIndex = -1;
-    Vec2            pos      = { 0.f, 0.f };
+    VECTOR2         pos      = { 0.f, 0.f };
     int             score    = 0;
     String          drop     = {};
     uint32_t        userTag  = 0;
@@ -70,11 +70,11 @@ struct EnemyEvent
 
 struct EnemyPlayerInfo
 {
-    Vec2 feet          = { 0.f, 0.f };
-    Vec2 center        = { 0.f, 0.f };
-    Aabb bodyBox       = {};
-    bool bAlive        = true;
-    bool bInvulnerable = false;
+    VECTOR2 feet          = { 0.f, 0.f };
+    VECTOR2 center        = { 0.f, 0.f };
+    Aabb    bodyBox       = {};
+    bool    bAlive        = true;
+    bool    bInvulnerable = false;
 };
 
 struct EnemyContext
@@ -105,14 +105,14 @@ struct Enemy
     int            delayTicks = 0;
     int            z          = 0;
 
-    Body   body      = {};
-    Vec2   prevFeet  = { 0.f, 0.f };
-    int    facing    = -1;
-    Health health    = {};
-    bool   bActive   = false;
-    bool   bInit     = false;
-    bool   bOnOneWay = false;
-    bool   bGrounded = false;
+    Body    body      = {};
+    VECTOR2 prevFeet  = { 0.f, 0.f };
+    int     facing    = -1;
+    Health  health    = {};
+    bool    bActive   = false;
+    bool    bInit     = false;
+    bool    bOnOneWay = false;
+    bool    bGrounded = false;
 
     int            state        = 0;
     int            stateTicks   = 0;
@@ -135,7 +135,7 @@ struct Enemy
     uint32_t meleeHitId     = kNoHitId;
     int      meleeTicksLeft = 0;
     int      meleeWeapon    = -1;
-    Vec2     meleeOrigin    = { 0.f, 0.f };
+    VECTOR2  meleeOrigin    = { 0.f, 0.f };
     uint32_t boxHitId       = kNoHitId;
 
     int      deathPhase  = 0;
@@ -150,11 +150,11 @@ struct Enemy
     int      aiVariant = 0;
     uint32_t userTag   = 0;
     String   drop      = {};
-    Vec2     climbEnd  = { 0.f, 0.f };
-    Vec2     roofSpan  = { 0.f, 0.f };
+    VECTOR2  climbEnd  = { 0.f, 0.f };
+    VECTOR2  roofSpan  = { 0.f, 0.f };
     bool     bLeap     = false;
 
-    [[nodiscard]] Vec2 GetFeet() const;
+    [[nodiscard]] VECTOR2 GetFeet() const;
 
     [[nodiscard]] bool IsAlive() const;
 };

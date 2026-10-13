@@ -140,17 +140,17 @@ void SetCannonMode_(
     Slot_(_e, kBigShieeExtCannonTicks) = 0;
 }
 
-[[nodiscard]] Vec2 World_(
-    const Vec2 _origin,
-    const Vec2 _rel)
+[[nodiscard]] VECTOR2 World_(
+    const VECTOR2 _origin,
+    const VECTOR2 _rel)
 {
     return { _origin.x + _rel.x, _origin.y + _rel.y };
 }
 
 // 키 표 (x = 초, y = 값) 를 선형 보간한다. 범위 밖은 양 끝 값.
 [[nodiscard]] float Interp_(
-    const Span<const Vec2> _keys,
-    const float            _t)
+    const Span<const VECTOR2> _keys,
+    const float               _t)
 {
     if (_keys.empty())
     {
@@ -173,7 +173,7 @@ void SetCannonMode_(
 }
 
 [[nodiscard]] float LastKeyTime_(
-    const Span<const Vec2> _keys)
+    const Span<const VECTOR2> _keys)
 {
     return _keys.empty() ? 0.f : _keys.back().x;
 }
@@ -213,7 +213,7 @@ void SetCannonMode_(
     const float t = AgeSec_(_e);
     for (int i = 0; i < _c.numScrollPauses; ++i)
     {
-        const Vec2 pause = _c.scrollPauses[static_cast<size_t>(i)];
+        const VECTOR2 pause = _c.scrollPauses[static_cast<size_t>(i)];
         if (t >= pause.x && t < pause.x + pause.y)
         {
             return true;
@@ -272,7 +272,7 @@ bool SubmitFrame_(
     const EnemyRenderEnv& _render,
     const StringView      _name,
     const int             _frame,
-    const Vec2            _origin,
+    const VECTOR2         _origin,
     const int             _depth,
     const int             _sort,
     const float           _flash)
@@ -331,17 +331,17 @@ void Init_(
 }
 
 // 포탄: 포구에서 플레이어 쪽으로 올라갔다 떨어지는 곡사 (weapon "shell" 의 arc)
-[[nodiscard]] Vec2 ExtraFromWorld_(
+[[nodiscard]] VECTOR2 ExtraFromWorld_(
     const Enemy&    _e,
     const EnemyDef& _def,
     const int       _weapon,
-    const Vec2      _muzzle)
+    const VECTOR2   _muzzle)
 {
     if (_weapon < 0)
     {
         return { 0.f, 0.f };
     }
-    const Vec2 base = GetMuzzleWorld(_e, _def, _weapon);
+    const VECTOR2 base = GetMuzzleWorld(_e, _def, _weapon);
     return { _muzzle.x - base.x, _muzzle.y - base.y };
 }
 
@@ -384,7 +384,7 @@ void FireShell_(
     const BigShieeTurretCfg& turret = c.turrets[static_cast<size_t>(_turret)];
     const int                aim    = GetSlot_(_e, kBigShieeExtPos, _turret) / kTurnMid + 1;
     const float              gap    = turret.bTwin ? (_barrel == 0 ? -0.5f : 0.5f) * turret.muzzleGap : 0.f;
-    const Vec2               muzzle = World_(_e.body.position, { turret.anchor.x + MuzzleX_(turret, GetSlot_(_e, kBigShieeExtPos, _turret)) + gap, turret.anchor.y + turret.muzzle.y });
+    const VECTOR2            muzzle = World_(_e.body.position, { turret.anchor.x + MuzzleX_(turret, GetSlot_(_e, kBigShieeExtPos, _turret)) + gap, turret.anchor.y + turret.muzzle.y });
     const int                weapon = _def.FindWeapon("shell");
     EventLogFormat("bigshiee.turret_fire", "\"turret\":{},\"barrel\":{},\"aim\":{},\"x\":{:.1f},\"y\":{:.1f}", _turret, _barrel, aim, muzzle.x, muzzle.y);
     (void)FireWeapon(_e, _def, _env, weapon, { 0.f, 0.f }, ExtraFromWorld_(_e, _def, weapon, muzzle));
@@ -441,7 +441,7 @@ void TickTurret_(
             if (ticks == c.fireTick)
             {
                 FireShell_(_e, _def, _env, _i, 0);
-                const Vec2 puff = World_(_e.body.position, { turret.anchor.x + MuzzleX_(turret, pos), turret.anchor.y + turret.muzzle.y });
+                const VECTOR2 puff = World_(_e.body.position, { turret.anchor.x + MuzzleX_(turret, pos), turret.anchor.y + turret.muzzle.y });
                 RequestFxAt(_env, GetNames_(turret.letter).puff, puff, _e.facing, 55);
             }
             else if (turret.bTwin && ticks == c.fireTick + c.pairGapTicks)
@@ -521,8 +521,8 @@ void TickChute_(
     {
         x = Clamp(x, lo, hi);
     }
-    const Vec2  feet = { x, view.min.y - c.chuteStartAboveY };
-    SpawnParams params;
+    const VECTOR2 feet = { x, view.min.y - c.chuteStartAboveY };
+    SpawnParams   params;
     params.facing     = 1;
     params.bActivated = true;
     params.drop       = String(kChuteDrops[static_cast<size_t>(Roll(_env, static_cast<int>(kChuteDrops.size())))]);
@@ -545,9 +545,9 @@ void TickChute_(
     const BigShieeCfg& _c,
     const EnemyEnv&    _env)
 {
-    const Vec2  muzzle = World_(_e.body.position, _c.cannonAimOrigin);
-    const float dx     = _env.ctx.player.center.x - muzzle.x;
-    const float dy     = Max(_env.ctx.player.center.y - muzzle.y, 40.f);
+    const VECTOR2 muzzle = World_(_e.body.position, _c.cannonAimOrigin);
+    const float   dx     = _env.ctx.player.center.x - muzzle.x;
+    const float   dy     = Max(_env.ctx.player.center.y - muzzle.y, 40.f);
     return std::atan2(dx, dy) * kRad2Deg;
 }
 
@@ -639,7 +639,7 @@ void TurnCannon_(
 bool CasingNow_(
     const Enemy&       _e,
     const BigShieeCfg& _c,
-    Vec2&              _outAt,
+    VECTOR2&           _outAt,
     int&               _outFrame,
     float&             _outAlpha)
 {
@@ -648,9 +648,9 @@ bool CasingNow_(
     {
         return false;
     }
-    const float t     = static_cast<float>(_e.aux - start) * kStepSec;
-    const Vec2  from  = { static_cast<float>(GetSlot_(_e, kBigShieeExtCasingX)), static_cast<float>(GetSlot_(_e, kBigShieeExtCasingY)) };
-    const float tLand = CasingLandSec_(_e, _c);
+    const float   t     = static_cast<float>(_e.aux - start) * kStepSec;
+    const VECTOR2 from  = { static_cast<float>(GetSlot_(_e, kBigShieeExtCasingX)), static_cast<float>(GetSlot_(_e, kBigShieeExtCasingY)) };
+    const float   tLand = CasingLandSec_(_e, _c);
     if (t < 0.f || t > tLand + _c.casingLingerSec)
     {
         return false;
@@ -672,18 +672,18 @@ void FireMissile_(
     const size_t       row    = static_cast<size_t>(Clamp(GetSlot_(_e, kBigShieeExtCannonRow), 0, kAimRows - 1));
     const int          weapon = _def.FindWeapon("missile");
     const float        sign   = static_cast<float>(_e.facing < 0 ? -1 : 1);
-    const Vec2         delta  = { (c.cannonMuzzleX[row] - c.cannonMuzzleX[kAimRows / 2]) * sign, 0.f };
-    const Vec2         base   = weapon >= 0 ? GetMuzzleWorld(_e, _def, weapon) : _e.body.position;
-    const Vec2         muzzle = { base.x + delta.x, base.y + delta.y };
+    const VECTOR2      delta  = { (c.cannonMuzzleX[row] - c.cannonMuzzleX[kAimRows / 2]) * sign, 0.f };
+    const VECTOR2      base   = weapon >= 0 ? GetMuzzleWorld(_e, _def, weapon) : _e.body.position;
+    const VECTOR2      muzzle = { base.x + delta.x, base.y + delta.y };
     const float        rad    = c.cannonAimDeg[row] * kDeg2Rad;
-    const Vec2         dir    = { std::sin(rad), std::cos(rad) };
+    const VECTOR2      dir    = { std::sin(rad), std::cos(rad) };
     EventLogFormat("bigshiee.missile_fire", "\"row\":{},\"x\":{:.1f},\"y\":{:.1f},\"dx\":{:.3f},\"dy\":{:.3f}", row, muzzle.x, muzzle.y, dir.x, dir.y);
     (void)FireWeapon(_e, _def, _env, weapon, dir, delta);
     // 사격 순간 포구 섬광 (흰 원 -> 어두운 연기) 과 연기
     EventLogFormat("bigshiee.muzzle_fx", "\"x\":{:.1f},\"y\":{:.1f}", muzzle.x, muzzle.y);
     RequestFxAt(_env, "Bazuka_Shot_Effect", muzzle, _e.facing, 55);
     RequestFxAt(_env, "Boss_Smoke_Small", muzzle, _e.facing, 54);
-    const Vec2 casing                 = { muzzle.x + c.casingOffset.x, muzzle.y + c.casingOffset.y };
+    const VECTOR2 casing              = { muzzle.x + c.casingOffset.x, muzzle.y + c.casingOffset.y };
     Slot_(_e, kBigShieeExtCasingTick) = _e.aux;
     Slot_(_e, kBigShieeExtCasingX)    = static_cast<int>(std::lround(casing.x));
     Slot_(_e, kBigShieeExtCasingY)    = static_cast<int>(std::lround(casing.y));
@@ -776,10 +776,10 @@ void Tick_(
     float       speed = 0.f;
     if (Phase_(_e) == eBigShieePhase::Entrance)
     {
-        const Span<const Vec2> keys { c.entranceKeys.data(), static_cast<size_t>(c.numEntranceKeys) };
-        const float            now  = Interp_(keys, t);
-        const float            prev = Interp_(keys, t - kStepSec);
-        speed                       = (now - prev) / kStepSec;
+        const Span<const VECTOR2> keys { c.entranceKeys.data(), static_cast<size_t>(c.numEntranceKeys) };
+        const float               now  = Interp_(keys, t);
+        const float               prev = Interp_(keys, t - kStepSec);
+        speed                          = (now - prev) / kStepSec;
         if (view.max.x > view.min.x)
         {
             _e.body.position.x = view.min.x + now;
@@ -938,7 +938,7 @@ bool OnHit_(
             EventLogFormat("bigshiee.turret_dead", "\"turret\":{}", part);
 
             const BigShieeTurretCfg& turret    = c.turrets[static_cast<size_t>(part)];
-            const Vec2               at        = World_(_e.body.position, { turret.anchor.x + c.turretBlastOffset.x, turret.anchor.y + c.turretBlastOffset.y });
+            const VECTOR2            at        = World_(_e.body.position, { turret.anchor.x + c.turretBlastOffset.x, turret.anchor.y + c.turretBlastOffset.y });
             EnemyEvent               destroyed = _env.world.MakeEvent(_e, eEnemyEventKind::PartDestroyed);
             destroyed.score                    = c.turretScore;
             destroyed.pos                      = at;
@@ -978,7 +978,7 @@ void RegisterHurtboxes_(
             continue;
         }
         const BigShieeTurretCfg& turret = c.turrets[static_cast<size_t>(i)];
-        const Vec2               center = World_(_e.body.position, { turret.anchor.x + turret.boxOffset.x, turret.anchor.y + turret.boxOffset.y });
+        const VECTOR2            center = World_(_e.body.position, { turret.anchor.x + turret.boxOffset.x, turret.anchor.y + turret.boxOffset.y });
         Hurtbox                  hurtbox;
         hurtbox.box     = Aabb::FromCenterSize(center, turret.boxSize);
         hurtbox.team    = _def.team;
@@ -988,8 +988,8 @@ void RegisterHurtboxes_(
     }
     if (CannonVulnerable_(_e))
     {
-        const Vec2 center = World_(_e.body.position, c.cannonBoxOffset);
-        Hurtbox    hurtbox;
+        const VECTOR2 center = World_(_e.body.position, c.cannonBoxOffset);
+        Hurtbox       hurtbox;
         hurtbox.box     = Aabb::FromCenterSize(center, c.cannonBoxSize);
         hurtbox.team    = _def.team;
         hurtbox.owner   = MakePartOwner(_e.id, static_cast<uint32_t>(kBigShieeCannonPart));
@@ -1007,7 +1007,7 @@ void OnDeath_(
     const BigShieeCfg& c = _def.bigShiee;
     _e.deathTicks        = 0;
     EventLogFormat("bigshiee.death", "\"x\":{:.1f}", _e.body.position.x);
-    const Vec2 top = World_(_e.body.position, { c.cannonBoxOffset.x, c.cannonBoxOffset.y - c.cannonBoxSize.y * 0.4f });
+    const VECTOR2 top = World_(_e.body.position, { c.cannonBoxOffset.x, c.cannonBoxOffset.y - c.cannonBoxSize.y * 0.4f });
     RequestFxAt(_env, "PlayerBombExplosion", { top.x + c.deathFlameOffset.x, top.y + c.deathFlameOffset.y }, _e.facing, 56);
     RequestFxAt(_env, "Explosion_Large", top, _e.facing, 57, 0.15f);
 }
@@ -1020,8 +1020,8 @@ void TickDying_(
     const BigShieeCfg& c = _def.bigShiee;
     _e.body.velocity     = { 0.f, 0.f };
     ++_e.deathTicks;
-    const float t      = static_cast<float>(_e.deathTicks) * kStepSec;
-    const Vec2  origin = _e.body.position;
+    const float   t      = static_cast<float>(_e.deathTicks) * kStepSec;
+    const VECTOR2 origin = _e.body.position;
 
     const bool bWreck = t >= c.dyingWreckSec;
     if (bWreck && static_cast<float>(_e.deathTicks - 1) * kStepSec < c.dyingWreckSec)
@@ -1077,7 +1077,7 @@ void SubmitHull_(
     const Enemy&          _e,
     const BigShieeCfg&    _c,
     const EnemyRenderEnv& _render,
-    const Vec2            _feet)
+    const VECTOR2         _feet)
 {
     const bool           bMoving = GetSlot_(_e, kBigShieeExtMoving) != 0;
     const eBigShieePhase phase   = Phase_(_e);
@@ -1108,14 +1108,14 @@ void SubmitTurret_(
     const Enemy&          _e,
     const BigShieeCfg&    _c,
     const EnemyRenderEnv& _render,
-    const Vec2            _feet,
+    const VECTOR2         _feet,
     const int             _i)
 {
     const BigShieeTurretCfg&  turret = _c.turrets[static_cast<size_t>(_i)];
     const EnemyPartDepth&     part   = _c.partTurrets[static_cast<size_t>(_i)];
     const TurretNames&        names  = GetNames_(turret.letter);
     const eBigShieeTurretMode mode   = GetTurretMode_(_e, _i);
-    const Vec2                origin = World_(_feet, turret.anchor);
+    const VECTOR2             origin = World_(_feet, turret.anchor);
     const int                 ticks  = GetSlot_(_e, kBigShieeExtTicks, _i);
     const int                 pos    = GetSlot_(_e, kBigShieeExtPos, _i);
     const float               flash  = PartFlashAmount(_e, _i);
@@ -1162,14 +1162,14 @@ void SubmitCannon_(
     const Enemy&          _e,
     const BigShieeCfg&    _c,
     const EnemyRenderEnv& _render,
-    const Vec2            _feet,
+    const VECTOR2         _feet,
     const float           _flash)
 {
     const eBigShieeCannonMode mode   = GetCannonMode_(_e);
     const int                 ticks  = GetSlot_(_e, kBigShieeExtCannonTicks);
     const int                 row    = Clamp(GetSlot_(_e, kBigShieeExtCannonRow), 0, kAimRows - 1);
     const int                 yaw    = Clamp(GetSlot_(_e, kBigShieeExtCannonYaw), 0, kYawMax);
-    const Vec2                origin = World_(_feet, _c.cannonAnchor);
+    const VECTOR2             origin = World_(_feet, _c.cannonAnchor);
     const String              shot   = "Boss_Cannon_Shot" + std::to_string(row + 1);
     switch (mode)
     {
@@ -1193,9 +1193,9 @@ void SubmitCasing_(
     const BigShieeCfg&    _c,
     const EnemyRenderEnv& _render)
 {
-    Vec2  at    = { 0.f, 0.f };
-    int   frame = 0;
-    float alpha = 1.f;
+    VECTOR2 at    = { 0.f, 0.f };
+    int     frame = 0;
+    float   alpha = 1.f;
     if (!_render.pSprites || !CasingNow_(_e, _c, at, frame, alpha))
     {
         return;
@@ -1228,7 +1228,7 @@ void SubmitParts_(
         return;
     }
     const BigShieeCfg& c    = _def.bigShiee;
-    const Vec2         feet = _render.feet;
+    const VECTOR2      feet = _render.feet;
 
     if (_e.life == eEnemyLife::Dying)
     {
@@ -1278,9 +1278,9 @@ namespace
 // [t0, v0, t1, v1, ...] 키 표를 읽는다 (가변 길이, 최대 kCapacity 쌍). 읽은 쌍 수를 돌려준다 (키가 없으면 -1)
 template<size_t kCapacity>
 int ReadKeys_(
-    DefReader&              _r,
-    const StringView        _key,
-    ARRAY<Vec2, kCapacity>& _out)
+    DefReader&                 _r,
+    const StringView           _key,
+    ARRAY<VECTOR2, kCapacity>& _out)
 {
     ARRAY<float, kCapacity * 2> flat  = {};
     const int                   count = _r.NumList(_key, flat);

@@ -24,12 +24,12 @@ struct SlugContext
 // 파괴되거나 플레이어가 내릴 때 차량이 호스트에게 남기는 "플레이어를 밖으로 내보내라" 요청
 struct SlugEjectRequest
 {
-    bool bValid          = false;
-    bool bDestroyed      = false;
-    Vec2 feet            = { 0.f, 0.f };
-    Vec2 velocity        = { 0.f, 0.f };
-    int  facing          = 1;
-    int  invincibleTicks = 0;
+    bool    bValid          = false;
+    bool    bDestroyed      = false;
+    VECTOR2 feet            = { 0.f, 0.f };
+    VECTOR2 velocity        = { 0.f, 0.f };
+    int     facing          = 1;
+    int     invincibleTicks = 0;
 };
 
 enum class eSlugFxKind : uint8_t
@@ -44,7 +44,7 @@ enum class eSlugFxKind : uint8_t
 struct SlugFx
 {
     eSlugFxKind kind     = eSlugFxKind::Smoke;
-    Vec2        position = { 0.f, 0.f };
+    VECTOR2     position = { 0.f, 0.f };
     int         facing   = 1;
     int         variant  = 0;
     int         ageTicks = 0;
@@ -65,7 +65,7 @@ struct SlugStats
 class SlugVehicle
 {
 public:
-    void Init(const SlugTuning& _tuning, Vec2 _feet, int _facing, uint32_t _ownerId, int _hp = -1);
+    void Init(const SlugTuning& _tuning, VECTOR2 _feet, int _facing, uint32_t _ownerId, int _hp = -1);
 
     void Tick(const SlugContext& _ctx, const InputHistory& _input);
 
@@ -81,11 +81,11 @@ public:
 
     [[nodiscard]] eSlugMode          GetMode() const;
     [[nodiscard]] bool               IsAlive() const;
-    [[nodiscard]] Vec2               GetFeet() const;
-    [[nodiscard]] Vec2               GetPrevFeet() const;
+    [[nodiscard]] VECTOR2            GetFeet() const;
+    [[nodiscard]] VECTOR2            GetPrevFeet() const;
     [[nodiscard]] int                GetZ() const;
     void                             SetZ(int _z);
-    [[nodiscard]] Vec2               GetVelocity() const;
+    [[nodiscard]] VECTOR2            GetVelocity() const;
     [[nodiscard]] int                GetFacing() const;
     [[nodiscard]] bool               IsGrounded() const;
     [[nodiscard]] float              GetHpRatio() const;
@@ -105,9 +105,9 @@ public:
     [[nodiscard]] Aabb               GetBodyBox() const;
     [[nodiscard]] Aabb               GetBoardBox() const;
     [[nodiscard]] Hurtbox            MakeHurtbox() const;
-    [[nodiscard]] Vec2               GetVulcanMount() const;
-    [[nodiscard]] Vec2               GetVulcanMuzzle() const;
-    [[nodiscard]] Vec2               GetCannonMuzzle() const;
+    [[nodiscard]] VECTOR2            GetVulcanMount() const;
+    [[nodiscard]] VECTOR2            GetVulcanMuzzle() const;
+    [[nodiscard]] VECTOR2            GetCannonMuzzle() const;
     [[nodiscard]] const SlugStats&   GetStats() const;
     [[nodiscard]] Span<const SlugFx> GetFx() const;
     [[nodiscard]] const Body&        GetBody() const;
@@ -134,9 +134,9 @@ private:
     void BeginDestroy_(bool _bEjectPlayer);
     void ReleaseCrushId_(const SlugContext& _ctx);
     void ApplyHit_(int _damage, bool _bFromFront);
-    void SpawnFx_(eSlugFxKind _kind, Vec2 _position, int _variant, int _maxTicks);
+    void SpawnFx_(eSlugFxKind _kind, VECTOR2 _position, int _variant, int _maxTicks);
 
-    [[nodiscard]] Vec2 MountOffset_() const;
+    [[nodiscard]] VECTOR2 MountOffset_() const;
 
     SlugTuning m_tuning  = {};
     uint32_t   m_ownerId = kSlugOwnerBase;
@@ -146,7 +146,7 @@ private:
     int       m_tick      = 0;
 
     Body       m_body     = {};
-    Vec2       m_prevFeet = { 0.f, 0.f };
+    VECTOR2    m_prevFeet = { 0.f, 0.f };
     int        m_z        = kDefaultZ;
     MoveResult m_lastMove = {};
     int        m_facing   = 1;

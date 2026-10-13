@@ -445,7 +445,7 @@ TEST(PropWorld, ShopFiveSpawnsSignThatFallsToGroundAndDetonates)
 TEST(PropWorld, GroundHouseDamageStagesAndGroundPatch)
 {
     PropWorld        world { &GetPropLib(), 5 };
-    const Vec2       center { 9830.f, 1269.f };
+    const VECTOR2    center { 9830.f, 1269.f };
     const PropHandle house = world.Spawn("ground_house", center);
 
     HitN_(world, house, 6, 2);

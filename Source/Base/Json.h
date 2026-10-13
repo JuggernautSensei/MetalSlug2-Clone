@@ -39,7 +39,7 @@ template<typename T>
 [[nodiscard]] bool ReadFloatField(const JsonReader& _object, StringView _key, bool _bRequired, float& _out, StringView& _reason);
 [[nodiscard]] bool ReadBoolField(const JsonReader& _object, StringView _key, bool _bRequired, bool& _out, StringView& _reason, bool* _pFound = nullptr);
 [[nodiscard]] bool ReadStringField(const JsonReader& _object, StringView _key, bool _bRequired, String& _out, StringView& _reason, bool* _pFound = nullptr);
-[[nodiscard]] bool ReadVec2Field(const JsonReader& _object, StringView _key, bool _bRequired, Vec2& _out, StringView& _reason, bool* _pFound = nullptr);
+[[nodiscard]] bool ReadVec2Field(const JsonReader& _object, StringView _key, bool _bRequired, VECTOR2& _out, StringView& _reason, bool* _pFound = nullptr);
 
 // "note" 는 항상 허용. 허용 밖의 키가 있으면 false 와 그 키 (_object 는 객체여야 한다)
 [[nodiscard]] bool CheckJsonKeys(const JsonReader& _object, Span<const StringView> _allowed, StringView& _badKey);

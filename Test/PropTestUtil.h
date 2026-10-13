@@ -38,4 +38,4 @@
     const int _floorY);
 
 [[nodiscard]] Body MakeBody(
-    const Vec2 _feet);
+    const VECTOR2 _feet);

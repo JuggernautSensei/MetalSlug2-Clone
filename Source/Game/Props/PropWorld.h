@@ -43,7 +43,7 @@ struct PropEvent
     ePropEventKind kind     = ePropEventKind::Damaged;
     PropHandle     id       = kNoProp;
     int            defIndex = -1;
-    Vec2           pos      = { 0.f, 0.f };
+    VECTOR2        pos      = { 0.f, 0.f };
     int            value    = 0;
     String         name     = {};
 };
@@ -63,7 +63,7 @@ struct PropInstance
     PropHandle                                 id          = kNoProp;
     int                                        defIndex    = -1;
     int                                        variant     = -1;
-    Vec2                                       pos         = { 0.f, 0.f };
+    VECTOR2                                    pos         = { 0.f, 0.f };
     int                                        depth       = kPropDepthBack;
     float                                      cullMargin  = 200.f;
     float                                      sortOffsetY = 0.f;
@@ -98,15 +98,15 @@ struct PropInstance
 
 struct PropFxRequest
 {
-    String clip  = {};
-    Vec2   pos   = { 0.f, 0.f };
-    int    depth = kPropEffectDepth;
+    String  clip  = {};
+    VECTOR2 pos   = { 0.f, 0.f };
+    int     depth = kPropEffectDepth;
 };
 
 struct PropDebrisPiece
 {
-    Vec2       pos    = { 0.f, 0.f };
-    Vec2       vel    = { 0.f, 0.f };
+    VECTOR2    pos    = { 0.f, 0.f };
+    VECTOR2    vel    = { 0.f, 0.f };
     float      ageSec = 0.f;
     String     clip   = {};
     AnimPlayer anim   = {};
@@ -127,8 +127,8 @@ class PropWorld
 {
     struct PendingChild
     {
-        int  defIndex = -1;
-        Vec2 pos      = { 0.f, 0.f };
+        int     defIndex = -1;
+        VECTOR2 pos      = { 0.f, 0.f };
     };
 
 public:
@@ -139,10 +139,10 @@ public:
 
     void Reset(uint64_t _seed = 1);
 
-    PropHandle Spawn(StringView _defName, Vec2 _center, const PropSpawnParams& _params = {});
-    PropHandle SpawnByIndex(int _defIndex, Vec2 _center, const PropSpawnParams& _params = {});
+    PropHandle Spawn(StringView _defName, VECTOR2 _center, const PropSpawnParams& _params = {});
+    PropHandle SpawnByIndex(int _defIndex, VECTOR2 _center, const PropSpawnParams& _params = {});
 
-    uint32_t SpawnItem(StringView _name, Vec2 _feet, bool _bBounce = false, int _z = kDefaultZ);
+    uint32_t SpawnItem(StringView _name, VECTOR2 _feet, bool _bBounce = false, int _z = kDefaultZ);
 
     void Tick(const PropTickContext& _ctx);
 
@@ -187,9 +187,9 @@ private:
     [[nodiscard]] float  RollFloat_(float _lo, float _hi);
     [[nodiscard]] int    RollInt_(int _n);
 
-    void Destroy_(PropInstance& _inst, const PropDef& _def, Vec2 _center);
-    void Detonate_(const PropBurst& _burst, Vec2 _center);
-    void QueueDrops_(const PropDef& _def, Vec2 _center);
+    void Destroy_(PropInstance& _inst, const PropDef& _def, VECTOR2 _center);
+    void Detonate_(const PropBurst& _burst, VECTOR2 _center);
+    void QueueDrops_(const PropDef& _def, VECTOR2 _center);
     void UpdateVisual_(PropInstance& _inst, const AnimationLibrary* _pAnims, float _dt);
     void RebuildCollision_();
 
@@ -214,4 +214,4 @@ private:
 };
 
 // 지면 패치: 발자국 마스크의 고체 픽셀만 공기로 만든다 (Docs/PropSpecs.md §2 groundPatch). 가드에 걸리면 변경 없이 false.
-bool ApplyGroundPatch(GroundMap& _map, Vec2 _topLeft, const GroundMap& _footprint);
+bool ApplyGroundPatch(GroundMap& _map, VECTOR2 _topLeft, const GroundMap& _footprint);

@@ -138,7 +138,7 @@ TEST(SpriteSort, BatchSubmitAssignsSequenceAndFlushClearsQueue)
     EXPECT_EQ(batch.GetPendingCommands()[0].seq, 0u);
     EXPECT_EQ(batch.GetPendingCommands()[2].seq, 2u);
 
-    batch.Flush(Vec2 { 0.f, 0.f });   // 렌더러 없음 → 그리지 않고 큐만 비운다
+    batch.Flush(VECTOR2 { 0.f, 0.f });   // 렌더러 없음 → 그리지 않고 큐만 비운다
     EXPECT_TRUE(batch.GetPendingCommands().empty());
 }
 
@@ -152,7 +152,7 @@ TEST(SpriteSort, FlushBelowDepthDrawsOnlyLowLayersAndKeepsTheRestQueued)
     batch.Submit(-90, 0, frame, { 3.f, 0.f });
     batch.Submit(20, 0, frame, { 4.f, 0.f });
 
-    batch.FlushBelowDepth(Vec2 { 0.f, 0.f }, -90);
+    batch.FlushBelowDepth(VECTOR2 { 0.f, 0.f }, -90);
     ASSERT_EQ(batch.GetPendingCommands().size(), 3u);
     EXPECT_EQ(batch.GetPendingCommands()[0].depth, -90);
     EXPECT_EQ(batch.GetPendingCommands()[1].depth, 5);
@@ -249,7 +249,7 @@ TEST(SpriteBatchSdl, DrawsFrameAtSnappedPositionWithPivot)
 
     const AnimFrame frame = MakeFrame_(4, 4, 2, 4);
     target.Clear();
-    batch.DrawFrame(frame, { 10.7f, 20.9f }, Vec2 { 0.f, 0.f });
+    batch.DrawFrame(frame, { 10.7f, 20.9f }, VECTOR2 { 0.f, 0.f });
 
     EXPECT_EQ(target.PixelRgb(8, 16), kRed);
     EXPECT_EQ(target.PixelRgb(9, 16), kGreen);
@@ -278,7 +278,7 @@ TEST(SpriteBatchSdl, ScaleShrinksAroundThePivotAndLeavesTheDefaultUnchanged)
     SpriteDrawOptions half;
     half.scale = 0.5f;
     target.Clear();
-    batch.DrawFrame(frame, { 10.7f, 20.9f }, Vec2 { 0.f, 0.f }, half);
+    batch.DrawFrame(frame, { 10.7f, 20.9f }, VECTOR2 { 0.f, 0.f }, half);
     EXPECT_EQ(target.PixelRgb(8, 18), kBlack);
     EXPECT_EQ(target.PixelRgb(9, 17), kBlack);
     EXPECT_NE(target.PixelRgb(9, 18), kBlack);
@@ -289,7 +289,7 @@ TEST(SpriteBatchSdl, ScaleShrinksAroundThePivotAndLeavesTheDefaultUnchanged)
 
     // 기본값 (1) 은 원래 4x4 (8..11, 16..19) 그대로
     target.Clear();
-    batch.DrawFrame(frame, { 10.7f, 20.9f }, Vec2 { 0.f, 0.f }, SpriteDrawOptions {});
+    batch.DrawFrame(frame, { 10.7f, 20.9f }, VECTOR2 { 0.f, 0.f }, SpriteDrawOptions {});
     EXPECT_EQ(target.PixelRgb(8, 16), kRed);
     EXPECT_EQ(target.PixelRgb(11, 19), kGreen);
     EXPECT_EQ(target.PixelRgb(12, 16), kBlack);
@@ -317,7 +317,7 @@ TEST(SpriteBatchSdl, FlipXMirrorsPixelsAroundOrigin)
     target.Clear();
     SpriteDrawOptions options;
     options.bFlipX = true;
-    batch.DrawFrame(frame, { 10.f, 20.f }, Vec2 { 0.f, 0.f }, options);
+    batch.DrawFrame(frame, { 10.f, 20.f }, VECTOR2 { 0.f, 0.f }, options);
 
     EXPECT_EQ(target.PixelRgb(11, 16), kRed);
     EXPECT_EQ(target.PixelRgb(8, 16), kGreen);
@@ -343,13 +343,13 @@ TEST(SpriteBatchSdl, FlushDrawsInSortedOrderLaterOnTop)
     target.Clear();
     batch.Submit(1, 0, red, { 5.f, 5.f });
     batch.Submit(0, 0, green, { 5.f, 5.f });
-    batch.Flush(Vec2 { 0.f, 0.f });
+    batch.Flush(VECTOR2 { 0.f, 0.f });
     EXPECT_EQ(target.PixelRgb(5, 5), kRed);
 
     target.Clear();
     batch.Submit(0, 7, red, { 5.f, 5.f });
     batch.Submit(0, 3, green, { 5.f, 5.f });
-    batch.Flush(Vec2 { 0.f, 0.f });
+    batch.Flush(VECTOR2 { 0.f, 0.f });
     EXPECT_EQ(target.PixelRgb(5, 5), kRed);
 }
 
@@ -366,11 +366,11 @@ TEST(SpriteBatchSdl, EmptyFramesAndMissingPagesAreSkipped)
     target.Clear();
 
     const AnimFrame empty = MakeFrame_(0, 0, 0, 0);
-    batch.DrawFrame(empty, { 5.f, 5.f }, Vec2 { 0.f, 0.f });
+    batch.DrawFrame(empty, { 5.f, 5.f }, VECTOR2 { 0.f, 0.f });
 
     AnimFrame noPage = MakeFrame_(4, 4, 0, 0);
     noPage.atlas     = 3;
-    batch.DrawFrame(noPage, { 5.f, 5.f }, Vec2 { 0.f, 0.f });
+    batch.DrawFrame(noPage, { 5.f, 5.f }, VECTOR2 { 0.f, 0.f });
     EXPECT_EQ(target.PixelRgb(5, 5), kBlack);
 }
 
@@ -407,7 +407,7 @@ TEST(SpriteBatchSdl, WideStandaloneTextureIsSeamlessAcrossStrips)
     for (const int cam: cams)
     {
         target.Clear();
-        batch.DrawTexture(*handle, { 0.f, 0.f }, Vec2 { static_cast<float>(cam), 0.f }, 64, kH);
+        batch.DrawTexture(*handle, { 0.f, 0.f }, VECTOR2 { static_cast<float>(cam), 0.f }, 64, kH);
         const int visibleW = Min(64, kW - cam);
         for (int sx = 0; sx < visibleW; ++sx)
         {
@@ -456,13 +456,13 @@ TEST(SpriteBatchSdl, HitFlashDrawsOrangeRampVariantOnlyWhenRequested)
     const AnimFrame frame = MakeFrame_(1, 1, 0, 1);
 
     target.Clear();
-    batch.DrawFrame(frame, { 10.f, 20.f }, Vec2 { 0.f, 0.f });
+    batch.DrawFrame(frame, { 10.f, 20.f }, VECTOR2 { 0.f, 0.f });
     EXPECT_EQ(target.PixelRgb(10, 19), 0x646464u);
 
     target.Clear();
     SpriteDrawOptions options;
     options.flashAmount = 1.f;
-    batch.DrawFrame(frame, { 10.f, 20.f }, Vec2 { 0.f, 0.f }, options);
+    batch.DrawFrame(frame, { 10.f, 20.f }, VECTOR2 { 0.f, 0.f }, options);
     // 평균 밝기 100 -> 램프 (약 225,137,44): 밝기 100 회색이 주황으로 바뀐다
     const RGBA     expected = ApplyHitFlashRamp({ 100, 100, 100, 255 });
     const uint32_t px       = target.PixelRgb(10, 19);
@@ -473,7 +473,7 @@ TEST(SpriteBatchSdl, HitFlashDrawsOrangeRampVariantOnlyWhenRequested)
     EXPECT_LT(expected.b, 80);
 
     target.Clear();
-    batch.DrawFrame(frame, { 10.f, 20.f }, Vec2 { 0.f, 0.f });
+    batch.DrawFrame(frame, { 10.f, 20.f }, VECTOR2 { 0.f, 0.f });
     EXPECT_EQ(target.PixelRgb(10, 19), 0x646464u) << "플래시 뒤에도 일반 프레임은 원래 색이어야 한다";
 }
 
@@ -529,9 +529,9 @@ TEST(SpriteBatchSdl, FlushBelowDepthLetsTheTerrainTextureCoverLowLayers)
     batch.Submit(-100, 0, red, { 0.f, 0.f });
     batch.Submit(-100, 0, red, { 3.f, 0.f });
     batch.Submit(10, 0, green, { 1.f, 1.f });
-    batch.FlushBelowDepth(Vec2 { 0.f, 0.f }, -90);
-    batch.DrawTexture(*handle, { 0.f, 0.f }, Vec2 { 0.f, 0.f }, 16, 16);
-    batch.Flush(Vec2 { 0.f, 0.f });
+    batch.FlushBelowDepth(VECTOR2 { 0.f, 0.f }, -90);
+    batch.DrawTexture(*handle, { 0.f, 0.f }, VECTOR2 { 0.f, 0.f }, 16, 16);
+    batch.Flush(VECTOR2 { 0.f, 0.f });
 
     EXPECT_EQ(target.PixelRgb(0, 0), 0x0000FFu);
     EXPECT_EQ(target.PixelRgb(3, 0), kRed);
@@ -616,7 +616,7 @@ TEST(SpriteBatchSdl, AddAtlasPageFromDecodedImageDrawsLikeTheRgbaPath)
 
     const AnimFrame frame = MakeFrame_(4, 4, 2, 4);
     target.Clear();
-    batch.DrawFrame(frame, { 10.7f, 20.9f }, Vec2 { 0.f, 0.f });
+    batch.DrawFrame(frame, { 10.7f, 20.9f }, VECTOR2 { 0.f, 0.f });
     EXPECT_EQ(target.PixelRgb(8, 16), kRed);
     EXPECT_EQ(target.PixelRgb(9, 16), kGreen);
     EXPECT_EQ(target.PixelRgb(7, 16), kBlack);
@@ -650,8 +650,8 @@ TEST(SpriteBatchSdl, AddAtlasPageUsesTheGivenFlashImageOrBuildsOne)
     flash.flashAmount = 1.f;
 
     target.Clear();
-    batch.DrawFrame(frame0, { 0.f, 0.f }, Vec2 { 0.f, 0.f }, flash);
-    batch.DrawFrame(frame1, { 2.f, 0.f }, Vec2 { 0.f, 0.f }, flash);
+    batch.DrawFrame(frame0, { 0.f, 0.f }, VECTOR2 { 0.f, 0.f }, flash);
+    batch.DrawFrame(frame1, { 2.f, 0.f }, VECTOR2 { 0.f, 0.f }, flash);
     const RGBA expected = ApplyHitFlashRamp({ 128, 128, 128, 255 });
     EXPECT_EQ(target.PixelRgb(0, 0), (static_cast<uint32_t>(expected.r) << 16) | (static_cast<uint32_t>(expected.g) << 8) | expected.b);
     EXPECT_EQ(target.PixelRgb(2, 0), 0x010203u);

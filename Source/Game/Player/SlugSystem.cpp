@@ -12,9 +12,9 @@ void SlugSystem::Reset(
 }
 
 int SlugSystem::Spawn(
-    const Vec2 _feet,
-    const int  _facing,
-    const int  _hp)
+    const VECTOR2 _feet,
+    const int     _facing,
+    const int     _hp)
 {
     if (m_slugs.size() >= kMaxSlugs)
     {

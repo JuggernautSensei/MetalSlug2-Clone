@@ -9,9 +9,9 @@ constexpr float kDiagonalRatio = 0.6f;   // 짧은 축/긴 축 비율이 이 이
 
 namespace
 {
-[[nodiscard]] Vec2 OrientSize_(
-    const Vec2 _size,
-    const Vec2 _direction)
+[[nodiscard]] VECTOR2 OrientSize_(
+    const VECTOR2 _size,
+    const VECTOR2 _direction)
 {
     const float ax = Abs(_direction.x);
     const float ay = Abs(_direction.y);
@@ -113,9 +113,9 @@ BulletSpawn MakeBulletSpawn(
     const eWeapon       _weapon,
     const WeaponTuning& _tuning,
     const uint32_t      _owner,
-    const Vec2          _muzzle,
-    const Vec2          _sweepFrom,
-    const Vec2          _direction)
+    const VECTOR2       _muzzle,
+    const VECTOR2       _sweepFrom,
+    const VECTOR2       _direction)
 {
     BulletSpawn spawn;
     spawn.team        = eTeam::Player;
@@ -144,19 +144,19 @@ BulletSpawn MakeBulletSpawn(
 BulletSpawn MakeFlameParticleSpawn(
     const WeaponTuning& _tuning,
     const uint32_t      _owner,
-    const Vec2          _muzzle,
-    const Vec2          _sweepFrom,
-    const Vec2          _direction,
+    const VECTOR2       _muzzle,
+    const VECTOR2       _sweepFrom,
+    const VECTOR2       _direction,
     const uint32_t      _hitId,
     RngMt19937&         _rng)
 {
     // 방향: 기준 방향을 +-spreadDeg 안에서 무작위로 돌린다 (순서 고정: 각도, 세로 지터, 속도, 수명)
-    const float spreadRad = Random<float>(_rng, -_tuning.spreadDeg, _tuning.spreadDeg) * kDeg2Rad;
-    const float c         = std::cos(spreadRad);
-    const float s         = std::sin(spreadRad);
-    const Vec2  direction = { _direction.x * c - _direction.y * s, _direction.x * s + _direction.y * c };
+    const float   spreadRad = Random<float>(_rng, -_tuning.spreadDeg, _tuning.spreadDeg) * kDeg2Rad;
+    const float   c         = std::cos(spreadRad);
+    const float   s         = std::sin(spreadRad);
+    const VECTOR2 direction = { _direction.x * c - _direction.y * s, _direction.x * s + _direction.y * c };
 
-    Vec2 muzzle = _muzzle;
+    VECTOR2 muzzle = _muzzle;
     if (_tuning.muzzleJitter.y > 0.f)
     {
         muzzle.y += Random<float>(_rng, -_tuning.muzzleJitter.y, _tuning.muzzleJitter.y);

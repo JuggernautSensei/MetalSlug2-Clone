@@ -487,8 +487,8 @@ namespace
 {
 // 포탑을 다 부수고 주포 전개가 시작되기 직전까지 진행한다 (플레이어는 _playerFeet)
 [[nodiscard]] EnemyHandle StartCannon_(
-    EnemyRig&  _rig,
-    const Vec2 _playerFeet)
+    EnemyRig&     _rig,
+    const VECTOR2 _playerFeet)
 {
     LoadBossLib_(_rig);
     const EnemyHandle boss = SpawnBoss_(_rig);
@@ -506,7 +506,7 @@ void PlacePlayerAtAngle_(
 {
     const Enemy*    pBoss  = _rig.E(_boss);
     const EnemyDef& def    = _rig.Lib().Get(_rig.Lib().FindIndex("bigshiee"));
-    const Vec2      muzzle = { pBoss->body.position.x + def.bigShiee.cannonAimOrigin.x, pBoss->body.position.y + def.bigShiee.cannonAimOrigin.y };
+    const VECTOR2   muzzle = { pBoss->body.position.x + def.bigShiee.cannonAimOrigin.x, pBoss->body.position.y + def.bigShiee.cannonAimOrigin.y };
     const float     feetY  = 378.f;
     const float     dy     = (feetY - 30.f) - muzzle.y;
     _rig.SetPlayer({ muzzle.x + std::tan(_deg * 3.14159265f / 180.f) * dy, feetY });
@@ -718,8 +718,8 @@ TEST(BigShiee, MissileTravelDirectionMatchesTheBarrelArtWithinFiveDegrees)
 
         EnemyRig          rig({ kCamLeft + 100.f, 378.f }, kCamLeft);
         const EnemyHandle boss   = StartCannon_(rig, { kCamLeft + 100.f, 378.f });
-        Vec2              first  = {};
-        Vec2              last   = {};
+        VECTOR2           first  = {};
+        VECTOR2           last   = {};
         bool              bFirst = false;
         bool              bLast  = false;
         for (int tick = 0; tick < 1500 && !bLast; ++tick)
@@ -825,8 +825,8 @@ TEST(BigShieeSync, LidOpensFirstThenCannonRisesThenMissilesFireOnFootageCadence)
                 continue;
             }
             missileTicks[static_cast<size_t>(missiles++)] = tick;
-            const int  row                                = pBoss->ext[kBigShieeExtCannonRow];
-            const Vec2 muzzle                             = def.weapons[static_cast<size_t>(def.FindWeapon("missile"))].muzzle;
+            const int     row                             = pBoss->ext[kBigShieeExtCannonRow];
+            const VECTOR2 muzzle                          = def.weapons[static_cast<size_t>(def.FindWeapon("missile"))].muzzle;
             EXPECT_NEAR(shot.position.x, pBoss->body.position.x + muzzle.x + def.bigShiee.cannonMuzzleX[static_cast<size_t>(row)] - def.bigShiee.cannonMuzzleX[2], 6.f) << "고폭탄은 weapons.missile.muzzle + 행 변화량에서 나간다";
             EXPECT_NEAR(shot.position.y, pBoss->body.position.y + muzzle.y, 6.f);
         }
@@ -1112,7 +1112,7 @@ TEST(BigShieeCasing, SpawnsOnEachShotAndFallsOffTheScreenWithin120Ticks)
     const EnemyHandle  boss     = StartCannon_(rig, { kCamLeft + 100.f, 378.f });
     const EnemyDef&    def      = rig.Lib().Get(rig.Lib().FindIndex("bigshiee"));
     const BigShieeCfg& c        = def.bigShiee;
-    const Vec2         muzzle   = def.weapons[static_cast<size_t>(def.FindWeapon("missile"))].muzzle;
+    const VECTOR2      muzzle   = def.weapons[static_cast<size_t>(def.FindWeapon("missile"))].muzzle;
     int                lastTick = 0;
     int                spawns   = 0;
     for (int tick = 0; tick < 1200 && spawns < 2; ++tick)
@@ -1154,7 +1154,7 @@ TEST(BigShieeCasing, HopsSlightlyThenFallsToTheGroundLineAtTwoPointFourScale)
 namespace
 {
 // 사용자가 모션 창에서 고치는 weapons.missile.muzzle 이 실제 발사 위치다: 값을 (dx, dy) 옮기면 모든 사격 행에서 첫 위치가 정확히 (dx*facing, dy) 만큼 옮겨 간다
-[[nodiscard]] Vec2 FirstMissileAt_(
+[[nodiscard]] VECTOR2 FirstMissileAt_(
     const float _dx,
     const float _dy,
     const float _deg,
@@ -1188,10 +1188,10 @@ TEST(BigShieeMissile, WeaponMuzzleIsTheRealLaunchOffsetForEveryRow)
 {
     for (const float deg: { -47.f, -22.f, 0.f, 22.f, 47.f })
     {
-        int        rowA = -1;
-        int        rowB = -1;
-        const Vec2 a    = FirstMissileAt_(0.f, 0.f, deg, rowA);
-        const Vec2 b    = FirstMissileAt_(13.f, -9.f, deg, rowB);
+        int           rowA = -1;
+        int           rowB = -1;
+        const VECTOR2 a    = FirstMissileAt_(0.f, 0.f, deg, rowA);
+        const VECTOR2 b    = FirstMissileAt_(13.f, -9.f, deg, rowB);
         ASSERT_GE(rowA, 0);
         EXPECT_EQ(rowA, rowB);
         EXPECT_NEAR(b.x - a.x, 13.f, 0.01f) << "deg " << deg;
@@ -1204,13 +1204,13 @@ TEST(BigShieeMissile, FrontRowLaunchesAtTheWeaponMuzzleAndOtherRowsShiftByTheirD
     EnemyRig rig;
     LoadBossLib_(rig);
     const EnemyDef& def    = rig.Lib().Get(rig.Lib().FindIndex("bigshiee"));
-    const Vec2      muzzle = def.weapons[static_cast<size_t>(def.FindWeapon("missile"))].muzzle;
+    const VECTOR2   muzzle = def.weapons[static_cast<size_t>(def.FindWeapon("missile"))].muzzle;
     int             row    = -1;
-    const Vec2      front  = FirstMissileAt_(0.f, 0.f, 0.f, row);
+    const VECTOR2   front  = FirstMissileAt_(0.f, 0.f, 0.f, row);
     EXPECT_EQ(row, 2);
     EXPECT_NEAR(front.x, muzzle.x, 1.f);
     EXPECT_NEAR(front.y, muzzle.y, 6.f);
-    const Vec2 left = FirstMissileAt_(0.f, 0.f, -47.f, row);
+    const VECTOR2 left = FirstMissileAt_(0.f, 0.f, -47.f, row);
     EXPECT_EQ(row, 0);
     EXPECT_NEAR(left.x - front.x, def.bigShiee.cannonMuzzleX[0], 1.f);
 }

@@ -24,12 +24,12 @@ public:
     void BeginFrame(RGBA _clearColor);
     void EndFrame();
 
-    void FillRect(Vec2 _topLeft, Vec2 _size, RGBA _color);
-    void DrawRect(Vec2 _topLeft, Vec2 _size, RGBA _color);
-    void DrawLine(Vec2 _from, Vec2 _to, RGBA _color);
+    void FillRect(VECTOR2 _topLeft, VECTOR2 _size, RGBA _color);
+    void DrawRect(VECTOR2 _topLeft, VECTOR2 _size, RGBA _color);
+    void DrawLine(VECTOR2 _from, VECTOR2 _to, RGBA _color);
 
     static constexpr int kDebugCharSize = 8;
-    void                 DrawDebugText(Vec2 _topLeft, StringView _text, RGBA _color);
+    void                 DrawDebugText(VECTOR2 _topLeft, StringView _text, RGBA _color);
 
     [[nodiscard]] SDL_Renderer* GetNative() const;
     [[nodiscard]] SDL_Window*   GetWindow() const;
@@ -41,6 +41,6 @@ private:
     SDL_Renderer* m_pRenderer = nullptr;
 };
 
-[[nodiscard]] Vec2 ToScreen(Vec2 _world, Vec2 _camera);
+[[nodiscard]] VECTOR2 ToScreen(VECTOR2 _world, VECTOR2 _camera);
 
-void DrawBox(Renderer& _renderer, const Aabb& _box, Vec2 _camera, RGBA _color);
+void DrawBox(Renderer& _renderer, const Aabb& _box, VECTOR2 _camera, RGBA _color);

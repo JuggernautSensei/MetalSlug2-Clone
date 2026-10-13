@@ -10,10 +10,10 @@ class SimRunner;
 
 struct EnemyLabSpawn
 {
-    String name   = {};
-    Vec2   feet   = { 0.f, 0.f };
-    int    facing = -1;
-    int    z      = kDefaultZ;
+    String  name   = {};
+    VECTOR2 feet   = { 0.f, 0.f };
+    int     facing = -1;
+    int     z      = kDefaultZ;
 };
 
 class EnemyLab final
@@ -22,7 +22,7 @@ public:
     void Init(SimRunner* _pRunner, const String& _stateName, const FilePath& _assetRoot);
     void SetAutoSpawn(const String& _defName);
 
-    EnemyHandle       Spawn(SandboxState& _state, StringView _defName, Vec2 _feet, int _facing, int _z = kDefaultZ);
+    EnemyHandle       Spawn(SandboxState& _state, StringView _defName, VECTOR2 _feet, int _facing, int _z = kDefaultZ);
     EnemyHandle       SpawnNearPlayer(SandboxState& _state, StringView _defName, float _offsetX, int _facing, int _z = kDefaultZ);
     void              KillAll(SandboxState& _state);
     void              Clear(SandboxState& _state);
@@ -33,7 +33,7 @@ public:
     void              SetMouseCaptured(bool _bCaptured);   // 다른 편집기가 월드 클릭을 쓰는 중이면 선택/스폰을 막는다
     [[nodiscard]] int GetDefIndex() const;
     void              ForgetSet();
-    void              SelectAt(const SandboxState& _state, Vec2 _world);
+    void              SelectAt(const SandboxState& _state, VECTOR2 _world);
 
     [[nodiscard]] EnemyHandle     GetSelected() const;
     [[nodiscard]] size_t          GetSetCount() const;
@@ -51,7 +51,7 @@ public:
 
     void Draw();
     void DrawOverlay(Renderer& _renderer);
-    void DrawMark(Renderer& _renderer, const Aabb& _world, Vec2 _anchor, RGBA _color, StringView _label) const;
+    void DrawMark(Renderer& _renderer, const Aabb& _world, VECTOR2 _anchor, RGBA _color, StringView _label) const;
 
 private:
     void DrawSpawnUi_(SandboxState& _state);

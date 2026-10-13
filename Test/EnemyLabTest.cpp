@@ -39,7 +39,7 @@ TEST(EnemyLabTest, SpawnNearPlayerUsesTheOffset)
 {
     Sim               sim { MakeEnemyConfig() };
     EnemyLab          lab;
-    const Vec2        feet   = sim.State().GetPlayer().GetFeet();
+    const VECTOR2     feet   = sim.State().GetPlayer().GetFeet();
     const EnemyHandle h      = lab.SpawnNearPlayer(sim.State(), "soldier_sword", 150.f, -1);
     const Enemy*      pEnemy = sim.State().GetEnemies().Get(h);
     ASSERT_NE(pEnemy, nullptr);

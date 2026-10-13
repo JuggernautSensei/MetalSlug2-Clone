@@ -45,7 +45,7 @@ namespace
 
 void PlayerController::Reset(
     const Tuning& _tuning,
-    const Vec2    _spawnFeet)
+    const VECTOR2 _spawnFeet)
 {
     m_pTuning = &_tuning;
 
@@ -152,7 +152,7 @@ bool PlayerController::IsChuteVisible(
     return (m_chuteBlinkTicks / period) % 2 == 0;
 }
 
-Vec2 PlayerController::GetLogicalFeet() const
+VECTOR2 PlayerController::GetLogicalFeet() const
 {
     return m_chutePhase == eChutePhase::Descend ? m_chuteLandFeet : m_body.position;
 }
@@ -783,9 +783,9 @@ void PlayerController::SpawnFlameParticle_(
     const PlayerContext& _ctx,
     const WeaponTuning&  _flame)
 {
-    const Vec2 muzzle    = MakeMuzzle_(*_ctx.pTuning, _flame);
-    const Vec2 direction = GetAimDirection(m_aim, m_facing);
-    const Vec2 chest     = { m_body.position.x, m_body.position.y - m_body.size.y * 0.6f };
+    const VECTOR2 muzzle    = MakeMuzzle_(*_ctx.pTuning, _flame);
+    const VECTOR2 direction = GetAimDirection(m_aim, m_facing);
+    const VECTOR2 chest     = { m_body.position.x, m_body.position.y - m_body.size.y * 0.6f };
 
     BulletSpawn spawn = MakeFlameParticleSpawn(_flame, kPlayerOwnerId, muzzle, chest, direction, m_flameHitId, m_flameRng);
     spawn.z           = ZShift(m_z, kPlayerDepth, kPlayerBulletDepth);
@@ -881,11 +881,11 @@ uint64_t PlayerController::MakeShotSeed_() const
     return seed;
 }
 
-Vec2 PlayerController::MakeMuzzle_(
+VECTOR2 PlayerController::MakeMuzzle_(
     const Tuning&       _tuning,
     const WeaponTuning& _weapon) const
 {
-    Vec2 muzzle = GetMuzzlePosition(m_body.position, m_facing, m_pose, m_aim, _tuning.muzzle);
+    VECTOR2 muzzle = GetMuzzlePosition(m_body.position, m_facing, m_pose, m_aim, _tuning.muzzle);
     if (m_aim == eAim::Forward)
     {
         muzzle.x += _weapon.muzzleAdjust.x * static_cast<float>(m_facing);
@@ -900,8 +900,8 @@ void PlayerController::FireBullet_(
 {
     const Tuning& tuning = *_ctx.pTuning;
 
-    Vec2 muzzle    = MakeMuzzle_(tuning, _weapon);
-    Vec2 direction = GetAimDirection(m_aim, m_facing);
+    VECTOR2 muzzle    = MakeMuzzle_(tuning, _weapon);
+    VECTOR2 direction = GetAimDirection(m_aim, m_facing);
     if (m_weapon.weapon == eWeapon::Hmg)
     {
         const float rad = m_aimDegree * kDeg2Rad;
@@ -913,7 +913,7 @@ void PlayerController::FireBullet_(
             muzzle.y += direction.x * offset;
         }
     }
-    const Vec2 chest = { m_body.position.x, m_body.position.y - m_body.size.y * 0.6f };
+    const VECTOR2 chest = { m_body.position.x, m_body.position.y - m_body.size.y * 0.6f };
 
     BulletSpawn spawn = MakeBulletSpawn(m_weapon.weapon, _weapon, kPlayerOwnerId, muzzle, chest, direction);
     spawn.z           = ZShift(m_z, kPlayerDepth, kPlayerBulletDepth);
@@ -1016,8 +1016,8 @@ void PlayerController::BeginRide()
 }
 
 void PlayerController::SetRideFeet(
-    const Vec2 _feet,
-    const int  _facing)
+    const VECTOR2 _feet,
+    const int     _facing)
 {
     m_body.position = _feet;
     m_prevFeet      = _feet;
@@ -1025,10 +1025,10 @@ void PlayerController::SetRideFeet(
 }
 
 void PlayerController::EndRide(
-    const Vec2 _feet,
-    const Vec2 _velocity,
-    const int  _facing,
-    const int  _invincibleTicks)
+    const VECTOR2 _feet,
+    const VECTOR2 _velocity,
+    const int     _facing,
+    const int     _invincibleTicks)
 {
     if (!m_bRiding)
     {
@@ -1074,17 +1074,17 @@ ePlayerState PlayerController::GetState() const
     return m_state;
 }
 
-Vec2 PlayerController::GetFeet() const
+VECTOR2 PlayerController::GetFeet() const
 {
     return m_body.position;
 }
 
-Vec2 PlayerController::GetPrevFeet() const
+VECTOR2 PlayerController::GetPrevFeet() const
 {
     return m_prevFeet;
 }
 
-Vec2 PlayerController::GetVelocity() const
+VECTOR2 PlayerController::GetVelocity() const
 {
     return m_body.velocity;
 }

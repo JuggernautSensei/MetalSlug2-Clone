@@ -23,6 +23,6 @@ void SubmitSlug(SpriteBatch& _sprites, const AnimationLibrary& _anims, const Slu
 
 [[nodiscard]] bool IsSlugOwner(uint32_t _owner);
 
-bool SubmitSlugBullet(SpriteBatch& _sprites, const AnimationLibrary& _anims, const Bullet& _bullet, Vec2 _position, int _depth);
+bool SubmitSlugBullet(SpriteBatch& _sprites, const AnimationLibrary& _anims, const Bullet& _bullet, VECTOR2 _position, int _depth);
 
-bool SubmitSlugShell(SpriteBatch& _sprites, const AnimationLibrary& _anims, const Bomb& _bomb, Vec2 _position, int _depth);
+bool SubmitSlugShell(SpriteBatch& _sprites, const AnimationLibrary& _anims, const Bomb& _bomb, VECTOR2 _position, int _depth);

@@ -279,7 +279,7 @@ public:
 
     void Field(
         const StringView _key,
-        Vec2&            _value)
+        VECTOR2&         _value)
     {
         const std::optional<JsonReader>& top = m_stack.back();
         if (!top || !top->HasField(_key))
@@ -371,7 +371,7 @@ public:
 
     void Field(
         const StringView _key,
-        const Vec2       _value)
+        const VECTOR2    _value)
     {
         Line_(_key, std::format("[{:.4f}, {:.4f}]", _value.x, _value.y));
     }

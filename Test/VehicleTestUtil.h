@@ -30,8 +30,8 @@ class VehicleRig
 {
 public:
     explicit VehicleRig(
-        const Vec2  _player  = { 100.f, 378.f },
-        const float _camLeft = 0.f);
+        const VECTOR2 _player  = { 100.f, 378.f },
+        const float   _camLeft = 0.f);
 
     [[nodiscard]] bool          IsLoaded() const;
     [[nodiscard]] const String& GetMessage() const;
@@ -43,14 +43,14 @@ public:
     [[nodiscard]] Vector<EnemyEvent>& Events();
 
     void SetPlayer(
-        const Vec2 _feet);
+        const VECTOR2 _feet);
 
     void SetView(
         const float _camLeft);
 
     EnemyHandle Spawn(
         const char*        _name,
-        const Vec2         _feet,
+        const VECTOR2      _feet,
         const SpawnParams& _params = {});
 
     void Step(
@@ -97,7 +97,7 @@ private:
     bool               m_bLoaded    = false;
     EnemyWorld         m_world;
     GroundMap          m_ground;
-    Vec2               m_player;
+    VECTOR2            m_player = {};
     Aabb               m_view;
     CombatSystem       m_combat      = {};
     ProjectileSystem   m_projectiles = {};

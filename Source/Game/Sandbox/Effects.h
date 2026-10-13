@@ -18,13 +18,13 @@ class GroundMap;
 struct Effect
 {
     AnimPlayer anim     = {};
-    Vec2       position = { 0.f, 0.f };
+    VECTOR2    position = { 0.f, 0.f };
     int        depth    = 0;
     bool       bFlipX   = false;
 
-    bool  bDebris  = false;
-    Vec2  velocity = { 0.f, 0.f };   // px/s, +y 아래
-    float ageSec   = 0.f;
+    bool    bDebris  = false;
+    VECTOR2 velocity = { 0.f, 0.f };   // px/s, +y 아래
+    float   ageSec   = 0.f;
 };
 
 class EffectList
@@ -32,9 +32,9 @@ class EffectList
 public:
     void Clear();
 
-    void Spawn(const AnimationLibrary& _library, StringView _clipName, Vec2 _position, int _depth = 50, bool _bFlipX = false);
+    void Spawn(const AnimationLibrary& _library, StringView _clipName, VECTOR2 _position, int _depth = 50, bool _bFlipX = false);
 
-    void SpawnDebris(const AnimationLibrary& _library, StringView _clipName, Vec2 _position, int _depth, Vec2 _velocity, bool _bFlipX = false);
+    void SpawnDebris(const AnimationLibrary& _library, StringView _clipName, VECTOR2 _position, int _depth, VECTOR2 _velocity, bool _bFlipX = false);
 
     // _cullBelowY: 잔해는 y 가 이 값 + kDebrisCullBelowMargin 을 넘으면 제거한다 (카메라 하단 y 를 넘긴다).
     // 잔해 클립은 루프이므로 IsFinished 로 제거하지 않고, 수명(kDebrisLifeSec) 은 안전망으로 둔다.

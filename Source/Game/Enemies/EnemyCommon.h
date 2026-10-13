@@ -41,13 +41,13 @@ void       PrepareBody(Enemy& _e, const EnemyDef& _def);
 
 [[nodiscard]] int Roll(EnemyEnv& _env, const int _n);
 
-void RequestFx(EnemyEnv& _env, const FxDef& _fx, Vec2 _origin, int _facing);
+void RequestFx(EnemyEnv& _env, const FxDef& _fx, VECTOR2 _origin, int _facing);
 
 [[nodiscard]] String ResolveSide(const String& _name, int _facing);
 
-bool FireWeapon(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, int _weapon, Vec2 _dir = { 0.f, 0.f }, Vec2 _muzzleExtra = { 0.f, 0.f });
+bool FireWeapon(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env, int _weapon, VECTOR2 _dir = { 0.f, 0.f }, VECTOR2 _muzzleExtra = { 0.f, 0.f });
 
-[[nodiscard]] Vec2 GetMuzzleWorld(const Enemy& _e, const EnemyDef& _def, int _weapon);
+[[nodiscard]] VECTOR2 GetMuzzleWorld(const Enemy& _e, const EnemyDef& _def, int _weapon);
 
 // 무기의 effects: motionClip 의 frame 이 시작되는 틱에 이펙트를 낸다 (effects 가 없으면 아무것도 안 한다)
 void TickWeaponEffects(const Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
@@ -64,7 +64,7 @@ void TickSoldierDeath(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
 bool SubmitNamedPart(
     const EnemyRenderEnv& _render,
     StringView            _name,
-    Vec2                  _origin,
+    VECTOR2               _origin,
     int                   _ticks,
     bool                  _bLoop,
     int                   _sortKey,

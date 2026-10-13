@@ -410,18 +410,18 @@ void PlayerRig::Update(
 }
 
 void PlayerRig::Submit(
-    SpriteBatch& _sprites,
-    const Vec2   _feet,
-    const int    _depth,
-    const int    _sortKey,
-    const RGBA   _tint) const
+    SpriteBatch&  _sprites,
+    const VECTOR2 _feet,
+    const int     _depth,
+    const int     _sortKey,
+    const RGBA    _tint) const
 {
     if (!m_pLibrary)
     {
         return;
     }
 
-    const Vec2        origin = GetOrigin(_feet);
+    const VECTOR2     origin = GetOrigin(_feet);
     SpriteDrawOptions options;
     options.tint = _tint;
 
@@ -463,8 +463,8 @@ float PlayerRig::GetOriginLift() const
     return m_originLift;
 }
 
-Vec2 PlayerRig::GetOrigin(
-    const Vec2 _feet) const
+VECTOR2 PlayerRig::GetOrigin(
+    const VECTOR2 _feet) const
 {
     return { _feet.x, _feet.y - m_originLift };
 }

@@ -15,4 +15,4 @@
 
 [[nodiscard]] std::optional<GroundMap> LoadGroundMask(const FilePath& _pngPath);
 
-[[nodiscard]] Vec2 ItemFeetFromCenter(Vec2 _center);
+[[nodiscard]] VECTOR2 ItemFeetFromCenter(VECTOR2 _center);

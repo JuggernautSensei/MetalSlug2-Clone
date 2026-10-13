@@ -25,7 +25,7 @@ bool LoadEnemyLib(
     String*          _pMessage = nullptr);
 
 [[nodiscard]] SandboxConfig MakeEnemyConfig(
-    const Vec2 _spawn = { 100.f, 378.f });
+    const VECTOR2 _spawn = { 100.f, 378.f });
 
 inline constexpr ARRAY<const char*, 8> kInfantryNames = { "soldier_bomb", "soldier_sword", "soldier_missile", "soldier_bzk", "soldier_hang", "flying_bzk", "shielder", "pow" };
 
@@ -35,8 +35,8 @@ class EnemyRig
 {
 public:
     explicit EnemyRig(
-        const Vec2  _player  = { 100.f, 378.f },
-        const float _camLeft = 0.f);
+        const VECTOR2 _player  = { 100.f, 378.f },
+        const float   _camLeft = 0.f);
 
     [[nodiscard]] bool          IsLoaded() const;
     [[nodiscard]] const String& GetMessage() const;
@@ -51,14 +51,14 @@ public:
         const float _camLeft);
 
     void SetPlayer(
-        const Vec2 _feet);
+        const VECTOR2 _feet);
 
     void SetAnims(
         const AnimationLibrary* _pAnims);
 
     [[nodiscard]] EnemyHandle Spawn(
         const char*        _name,
-        const Vec2         _feet,
+        const VECTOR2      _feet,
         const SpawnParams& _params = {});
 
     void Step(
@@ -99,7 +99,7 @@ private:
     bool                    m_bLoaded    = false;
     EnemyWorld              m_world;
     GroundMap               m_ground;
-    Vec2                    m_player;
+    VECTOR2                 m_player = {};
     Aabb                    m_view;
     const AnimationLibrary* m_pAnims      = nullptr;
     CombatSystem            m_combat      = {};

@@ -22,7 +22,7 @@ namespace
 {
 void LabDrawText_(
     Renderer&        _renderer,
-    const Vec2       _topLeft,
+    const VECTOR2    _topLeft,
     const StringView _text,
     const RGBA       _color)
 {
@@ -72,7 +72,7 @@ void EnemyLab::SetAutoSpawn(
 EnemyHandle EnemyLab::Spawn(
     SandboxState&    _state,
     const StringView _defName,
-    const Vec2       _feet,
+    const VECTOR2    _feet,
     const int        _facing,
     const int        _z)
 {
@@ -95,7 +95,7 @@ EnemyHandle EnemyLab::SpawnNearPlayer(
     const int        _facing,
     const int        _z)
 {
-    const Vec2 feet = _state.GetPlayer().GetFeet();
+    const VECTOR2 feet = _state.GetPlayer().GetFeet();
     return Spawn(_state, _defName, { feet.x + _offsetX, feet.y }, _facing, _z);
 }
 
@@ -209,7 +209,7 @@ void EnemyLab::ForgetSet()
 
 void EnemyLab::SelectAt(
     const SandboxState& _state,
-    const Vec2          _world)
+    const VECTOR2       _world)
 {
     m_selected                 = {};
     const EnemyDefLibrary& lib = _state.GetEnemyLib();
@@ -537,8 +537,8 @@ void EnemyLab::HandleMouse_(
     {
         return;
     }
-    const Vec2                 camera = _state.GetCamera().GetPosition();
-    const Vec2                 world  = { logicalX + std::floor(camera.x), logicalY + std::floor(camera.y) };
+    const VECTOR2              camera = _state.GetCamera().GetPosition();
+    const VECTOR2              world  = { logicalX + std::floor(camera.x), logicalY + std::floor(camera.y) };
     const Span<const EnemyDef> defs   = _state.GetEnemyLib().GetDefs();
     if (m_bPlaceMode && m_defIndex >= 0 && m_defIndex < static_cast<int>(defs.size()))
     {
@@ -553,7 +553,7 @@ void EnemyLab::HandleMouse_(
 void EnemyLab::DrawMark(
     Renderer&        _renderer,
     const Aabb&      _world,
-    const Vec2       _anchor,
+    const VECTOR2    _anchor,
     const RGBA       _color,
     const StringView _label) const
 {
@@ -562,17 +562,17 @@ void EnemyLab::DrawMark(
     {
         return;
     }
-    const Vec2 camRaw = pState->GetCamera().GetPosition();
-    const Vec2 camera = { std::floor(camRaw.x), std::floor(camRaw.y) };
+    const VECTOR2 camRaw = pState->GetCamera().GetPosition();
+    const VECTOR2 camera = { std::floor(camRaw.x), std::floor(camRaw.y) };
     for (int i = 0; i < 3; ++i)
     {
         const float grow = static_cast<float>(i);
         DrawBox(_renderer, Aabb::FromMinMax({ _world.min.x - grow, _world.min.y - grow }, { _world.max.x + grow, _world.max.y + grow }), camera, _color);
     }
-    const Vec2 a = ToScreen(_anchor, camera);
+    const VECTOR2 a = ToScreen(_anchor, camera);
     _renderer.DrawLine({ a.x - 6.f, a.y }, { a.x + 6.f, a.y }, _color);
     _renderer.DrawLine({ a.x, a.y - 6.f }, { a.x, a.y + 6.f }, _color);
-    const Vec2 topLeft = ToScreen(_world.min, camera);
+    const VECTOR2 topLeft = ToScreen(_world.min, camera);
     LabDrawText_(_renderer, { topLeft.x, topLeft.y - 14.f }, _label, _color);
 }
 
@@ -596,9 +596,9 @@ void EnemyLab::DrawOverlay(
     HandleMouse_(_renderer, *pState);
     PollDefFiles_(*pState);
 
-    const Vec2 camRaw = pState->GetCamera().GetPosition();
-    const Vec2 camera = { std::floor(camRaw.x), std::floor(camRaw.y) };
-    const Vec2 player = pState->GetPlayer().GetBodyBox().GetCenter();
+    const VECTOR2 camRaw = pState->GetCamera().GetPosition();
+    const VECTOR2 camera = { std::floor(camRaw.x), std::floor(camRaw.y) };
+    const VECTOR2 player = pState->GetPlayer().GetBodyBox().GetCenter();
 
     if (m_bShowCamera)
     {
@@ -630,8 +630,8 @@ void EnemyLab::DrawOverlay(
         {
             continue;
         }
-        const Aabb body   = e.body.GetBox();
-        const Vec2 center = body.GetCenter();
+        const Aabb    body   = e.body.GetBox();
+        const VECTOR2 center = body.GetCenter();
         if (m_bShowBoxes)
         {
             DrawBox(_renderer, body, camera, { 255, 220, 40, 255 });
@@ -648,15 +648,15 @@ void EnemyLab::DrawOverlay(
             {
                 const Aabb solid = solidDef.solid.At(e.body.position, e.facing);
                 DrawBox(_renderer, solid, camera, { 255, 0, 255, 255 });
-                const Vec2 solidTop = ToScreen(solid.min, camera);
+                const VECTOR2 solidTop = ToScreen(solid.min, camera);
                 LabDrawText_(_renderer, { solidTop.x + 2.f, solidTop.y + 2.f }, "solid", { 255, 0, 255, 255 });
             }
             if (solidDef.behavior == eEnemyBehavior::Bus)
             {
-                const Vec2 a  = { e.body.position.x + solidDef.bus.stairsBase.x, e.body.position.y + solidDef.bus.stairsBase.y };
-                const Vec2 b  = { e.body.position.x + solidDef.bus.stairsTop.x, e.body.position.y + solidDef.bus.stairsTop.y };
-                const Vec2 lo = ToScreen({ Min(a.x, b.x), Min(a.y, b.y) }, camera);
-                const Vec2 hi = ToScreen({ Max(a.x, b.x), Max(a.y, b.y) }, camera);
+                const VECTOR2 a  = { e.body.position.x + solidDef.bus.stairsBase.x, e.body.position.y + solidDef.bus.stairsBase.y };
+                const VECTOR2 b  = { e.body.position.x + solidDef.bus.stairsTop.x, e.body.position.y + solidDef.bus.stairsTop.y };
+                const VECTOR2 lo = ToScreen({ Min(a.x, b.x), Min(a.y, b.y) }, camera);
+                const VECTOR2 hi = ToScreen({ Max(a.x, b.x), Max(a.y, b.y) }, camera);
                 _renderer.FillRect(lo, { Max(1.f, hi.x - lo.x), Max(1.f, hi.y - lo.y) }, { 255, 160, 0, 70 });
                 LabDrawText_(_renderer, { lo.x + 2.f, lo.y + 2.f }, "stairs", { 255, 200, 80, 255 });
             }
@@ -667,10 +667,10 @@ void EnemyLab::DrawOverlay(
         }
         if (m_bShowProbe)
         {
-            const Vec2 feet  = e.GetFeet();
-            const int  x     = static_cast<int>(std::floor(feet.x));
-            const int  y     = static_cast<int>(std::floor(feet.y));
-            int        depth = kLabProbeDepth;
+            const VECTOR2 feet  = e.GetFeet();
+            const int     x     = static_cast<int>(std::floor(feet.x));
+            const int     y     = static_cast<int>(std::floor(feet.y));
+            int           depth = kLabProbeDepth;
             for (int dy = 0; dy < kLabProbeDepth; ++dy)
             {
                 if (ground.IsSolid(x, y + dy))
@@ -685,7 +685,7 @@ void EnemyLab::DrawOverlay(
         if (m_bShowState)
         {
             const EnemyDef& def  = lib.Get(e.defIndex);
-            const Vec2      top  = ToScreen({ center.x, body.min.y }, camera);
+            const VECTOR2   top  = ToScreen({ center.x, body.min.y }, camera);
             const float     half = static_cast<float>(def.name.size() * Renderer::kDebugCharSize) * 0.5f;
             LabDrawText_(_renderer, { top.x - half, top.y - 20.f }, def.name, { 255, 255, 255, 255 });
             const String text = LabMakeStateText_(e);

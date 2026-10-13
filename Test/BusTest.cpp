@@ -207,7 +207,7 @@ TEST(Bus, StairSoldiersClimbToTheRoofWithoutGettingStuck)
     Vector<uint32_t> ids;
     Vector<int>      born;
     Vector<int>      lastMove;
-    Vector<Vec2>     last;
+    Vector<VECTOR2>  last;
     int              arrived = 0;
     for (int tick = 0; tick < 700; ++tick)
     {
@@ -227,7 +227,7 @@ TEST(Bus, StairSoldiersClimbToTheRoofWithoutGettingStuck)
                 last.push_back(pSoldier->body.position);
                 continue;
             }
-            const Vec2 pos = pSoldier->body.position;
+            const VECTOR2 pos = pSoldier->body.position;
             if (Abs(pos.x - last[k].x) + Abs(pos.y - last[k].y) > 0.1f)
             {
                 lastMove[k] = tick;

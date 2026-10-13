@@ -16,7 +16,7 @@ void MixHash_(
 }
 }   // namespace
 
-Vec2 GetDummySize(
+VECTOR2 GetDummySize(
     const eDummyKind _kind)
 {
     switch (_kind)
@@ -59,7 +59,7 @@ void TrainingTargets::Clear()
 
 uint32_t TrainingTargets::Add(
     const eDummyKind     _kind,
-    const Vec2           _feet,
+    const VECTOR2        _feet,
     const bool           _bShooter,
     const SandboxTuning& _tuning)
 {
@@ -108,7 +108,7 @@ void TrainingTargets::RegisterHurtboxes(
 
 void TrainingTargets::TickShooters(
     const SandboxTuning& _tuning,
-    const Vec2           _playerFeet,
+    const VECTOR2        _playerFeet,
     const bool           _bPlayerAlive,
     ProjectileSystem&    _projectiles,
     CombatSystem&        _combat)

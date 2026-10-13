@@ -86,8 +86,8 @@ TEST(StageRunnerBegin, ResolvesPlayerStartWithGroundSnap)
 "player":{"x":100,"groundSnap":true,"fromY":10},
 "sections":[{"id":"s0","triggerX":0,"actions":[]}]})J";
     RunnerFixture fx { json };
-    fx.host.groundFn                = PlayerStartGround_;
-    const std::optional<Vec2> start = fx.runner.ResolvePlayerStart();
+    fx.host.groundFn                   = PlayerStartGround_;
+    const std::optional<VECTOR2> start = fx.runner.ResolvePlayerStart();
     ASSERT_TRUE(start.has_value());
     EXPECT_FLOAT_EQ(start->x, 100.f);
     EXPECT_FLOAT_EQ(start->y, 352.f);
@@ -638,7 +638,7 @@ TEST(StageRunnerActions, SimpleActionsAreForwardedToTheHost)
     EXPECT_NE(fx.host.FindEvent("fade:black"), nullptr);
     EXPECT_NE(fx.host.FindEvent("banner:MISSION\nCOMPLETE"), nullptr);
 
-    const Vec2 target = fx.runner.ComputeCameraTarget({ 1000.f, 378.f });
+    const VECTOR2 target = fx.runner.ComputeCameraTarget({ 1000.f, 378.f });
     EXPECT_FLOAT_EQ(target.x, 1050.f);
     EXPECT_FLOAT_EQ(target.y, 378.f - kStageCameraTargetLift - 140.f);
 }

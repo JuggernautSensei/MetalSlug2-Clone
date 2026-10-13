@@ -44,7 +44,6 @@ public:
     [[nodiscard]] const IGameState* StagePtr() const { return m_pState; }
     ~IntegrationSim() { g_debug = {}; }
 
-
     void BotStep(
         const bool _bRight,
         const bool _bShoot,
@@ -158,7 +157,7 @@ public:
 
 private:
     [[nodiscard]] bool IsWallAhead_(
-        const Vec2 _feet) const
+        const VECTOR2 _feet) const
     {
         constexpr float kRange = 46.f;
         for (const Wall& wall: m_pState->GetProps().GetWalls())
@@ -308,7 +307,7 @@ TEST(StageIntegration, SpawnedEnemiesStandOnTheGroundAtTheirScriptedFeet)
     bool bFound = false;
     for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
     {
-        const Vec2 feet = enemy.body.position;
+        const VECTOR2 feet = enemy.body.position;
         if (enemy.life == eEnemyLife::Alive && feet.x > 880.f && feet.x < 920.f)
         {
             bFound = true;
@@ -445,8 +444,8 @@ TEST(StageIntegration, BotStillWalksToTheStageEndAfterEveryOpenlandPropIsDestroy
         {
             sim.DamageBoss();
         }
-        const Vec2 feet = sim.State().GetPlayer().GetFeet();
-        bestX           = Max(feet.x, bestX);
+        const VECTOR2 feet = sim.State().GetPlayer().GetFeet();
+        bestX              = Max(feet.x, bestX);
         if (feet.x >= 9000.f)
         {
             maxFeetY = Max(feet.y, maxFeetY);
@@ -655,7 +654,7 @@ TEST(StageIntegration, PropRoofCarriesThePlayerAboveTheGround)
 
     sim.State().GetPlayer().Reset(Tuning {}, { 2513.f, 60.f });
     sim.Step(240);
-    const Vec2 feet = sim.State().GetPlayer().GetFeet();
+    const VECTOR2 feet = sim.State().GetPlayer().GetFeet();
     EXPECT_TRUE(sim.State().GetPlayer().IsGrounded());
     EXPECT_NEAR(feet.x, 2513.f, 80.f);
     EXPECT_LT(feet.y, 300.f);
@@ -796,7 +795,7 @@ TEST(StageIntegration, HeliSpawnsAtTheHeliTriggerAndLocksTheCamera)
     for (int t = 0; t < 900 && !bHeliVisible; ++t)
     {
         sim.BotStep(true, false);
-        const Vec2 cam = sim.State().GetCamera().GetPosition();
+        const VECTOR2 cam = sim.State().GetCamera().GetPosition();
         for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
         {
             if (enemy.life == eEnemyLife::Alive && enemy.behavior == eEnemyBehavior::Heli && enemy.body.position.x >= cam.x && enemy.body.position.x <= cam.x + 640.f && enemy.body.position.y >= cam.y && enemy.body.position.y <= cam.y + 448.f)
@@ -1003,7 +1002,7 @@ struct BossEntryTrackedProp
 {
     uint32_t id         = 0;
     String   def        = {};
-    Vec2     pos        = { 0.f, 0.f };
+    VECTOR2  pos        = { 0.f, 0.f };
     float    left       = 0.f;
     float    right      = 0.f;
     bool     bDestroyed = false;
@@ -1014,7 +1013,7 @@ struct BossEntryTrackedItem
 {
     uint32_t id   = 0;
     String   def  = {};
-    Vec2     feet = { 0.f, 0.f };
+    VECTOR2  feet = { 0.f, 0.f };
 };
 
 class BossEntryRecorder
@@ -1025,7 +1024,7 @@ public:
     {
         StageState&   state  = _sim.State();
         const Camera& camera = state.GetCamera();
-        const Vec2    cam    = camera.GetPosition();
+        const VECTOR2 cam    = camera.GetPosition();
 
         // 직전 틱 끝의 화면 (플레이어가 마지막으로 본 화면) 기준으로 사라진 것의 가시성을 판정한다
         const float prevLeft  = m_bHasPrev ? m_prevCamX : cam.x;
@@ -1266,8 +1265,8 @@ namespace
 int CountPropsInView_(
     IntegrationSim& _sim)
 {
-    const Vec2 cam   = _sim.State().GetCamera().GetPosition();
-    int        count = 0;
+    const VECTOR2 cam   = _sim.State().GetCamera().GetPosition();
+    int           count = 0;
     for (const PropInstance& prop: _sim.State().GetProps().GetProps())
     {
         if (!prop.bDestroyed && prop.pos.x >= cam.x && prop.pos.x <= cam.x + 640.f)

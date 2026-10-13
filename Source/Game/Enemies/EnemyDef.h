@@ -44,8 +44,8 @@ struct BoxDef
     float cy = 0.f;
 
     [[nodiscard]] Aabb At(
-        const Vec2 _feet,
-        const int  _facing) const
+        const VECTOR2 _feet,
+        const int     _facing) const
     {
         const float cxWorld = _feet.x + cx * static_cast<float>(_facing < 0 ? -1 : 1);
         return Aabb::FromCenterSize({ cxWorld, _feet.y + cy }, { w, h });
@@ -90,25 +90,25 @@ struct NamedClip
 
 struct FxDef
 {
-    String clip     = {};
-    Vec2   offset   = { 0.f, 0.f };
-    float  delaySec = 0.f;
-    int    depth    = 60;
-    bool   bDebris  = false;
-    bool   bMirror  = false;
+    String  clip     = {};
+    VECTOR2 offset   = { 0.f, 0.f };
+    float   delaySec = 0.f;
+    int     depth    = 60;
+    bool    bDebris  = false;
+    bool    bMirror  = false;
 };
 
 struct ProjectileDef
 {
     String  name            = {};
-    Vec2    size            = { 20.f, 20.f };
+    VECTOR2 size            = { 20.f, 20.f };
     int     damage          = 1;
     float   speed           = 0.f;
     bool    bRamp           = false;
     float   rampFrom        = 0.f;
     float   rampAccel       = 0.f;
     float   rampMax         = 0.f;
-    Vec2    v0              = { 0.f, 0.f };
+    VECTOR2 v0              = { 0.f, 0.f };
     float   gravity         = 0.f;
     float   maxFall         = 3000.f;
     float   lifetimeSec     = 5.f;
@@ -125,7 +125,7 @@ struct ProjectileDef
     bool    bExpireFx       = false;
     float   groundProbeY    = 0.f;
     ClipDef land            = {};
-    Vec2    blastSize       = { 0.f, 0.f };   // 착탄/만료로 터질 때 남기는 폭발 판정 상자 (0 = 없음). 중심은 터진 점에서 blastUp 만큼 위
+    VECTOR2 blastSize       = { 0.f, 0.f };   // 착탄/만료로 터질 때 남기는 폭발 판정 상자 (0 = 없음). 중심은 터진 점에서 blastUp 만큼 위
     float   blastUp         = 0.f;
     float   blastSec        = 0.f;
     int     blastDamage     = 1;
@@ -141,17 +141,17 @@ enum class eWeaponAim : uint8_t
 
 struct WeaponEffect
 {
-    String clip   = {};
-    Vec2   offset = { 0.f, 0.f };
-    int    frame  = 0;
-    int    depth  = 60;
+    String  clip   = {};
+    VECTOR2 offset = { 0.f, 0.f };
+    int     frame  = 0;
+    int     depth  = 60;
 };
 
 struct WeaponDef
 {
     String               name           = {};
     int                  projectile     = -1;
-    Vec2                 muzzle         = { 0.f, 0.f };
+    VECTOR2              muzzle         = { 0.f, 0.f };
     eWeaponAim           aim            = eWeaponAim::Facing;
     float                tiltThreshold  = 0.f;
     float                tiltDy         = 0.f;
@@ -184,7 +184,7 @@ struct DeathDef
     float         blinkPeriodSec = 0.1f;
     float         removeAtSec    = 3.f;
     float         bloodOffsetY   = -27.5f;
-    Vec2          bombVelocity   = { 110.f, -430.f };   // 폭발 피격 날아감 초기 속도 px/s (x 는 플레이어 반대 방향 부호가 곱해진다)
+    VECTOR2       bombVelocity   = { 110.f, -430.f };   // 폭발 피격 날아감 초기 속도 px/s (x 는 플레이어 반대 방향 부호가 곱해진다)
     Vector<FxDef> fx             = {};
 };
 
@@ -266,7 +266,7 @@ struct BzkCfg
     int             jumpFrame     = 3;
     int             fireFrame     = 1;
     ARRAY<float, 4> angleStep     = { 11.25f, 33.75f, 56.25f, 78.75f };   // 각도 구간 경계 (도, 수평 기준)
-    Vec2            muzzleBase    = { 0.f, -63.f };
+    VECTOR2         muzzleBase    = { 0.f, -63.f };
     float           muzzleDist    = 50.f;
     float           wallProbeW    = 50.f;
     float           wallProbeH    = 50.f;
@@ -313,7 +313,7 @@ struct FlyingBzkCfg
     ARRAY<float, 5> postureDeg        = { 0.f, 25.f, 50.f, 75.f, 90.f };
     float           windowDeg         = 10.f;
     ARRAY<float, 5> fireDeg           = { 0.f, 22.5f, 45.f, 67.5f, 90.f };
-    Vec2            muzzleBase        = { 0.f, -63.f };
+    VECTOR2         muzzleBase        = { 0.f, -63.f };
     float           muzzleDist        = 50.f;
     float           landProbe         = 1.f;
     String          landedDef         = {};
@@ -325,8 +325,8 @@ struct FlyingBzkCfg
     ARRAY<int, 5> clipShot     = { -1, -1, -1, -1, -1 };
     int           weaponRocket = -1;
 
-    Vec2  paraOffset  = { -5.f, -87.5f };
-    FxDef paraDestroy = {};
+    VECTOR2 paraOffset  = { -5.f, -87.5f };
+    FxDef   paraDestroy = {};
 };
 
 struct ShielderCfg
@@ -505,27 +505,27 @@ struct SarubiaCfg
 // 버스 폭발 한 개: 단계 진입 (또는 사망) 때 버스 로컬 좌표 (아케이드 px) 에 터진다
 struct BusBurstDef
 {
-    int    stage    = 0;
-    String clip     = {};
-    Vec2   at       = { 0.f, 0.f };
-    float  delaySec = 0.f;
+    int     stage    = 0;
+    String  clip     = {};
+    VECTOR2 at       = { 0.f, 0.f };
+    float   delaySec = 0.f;
 };
 
 // 사망 때 튀는 파편. at = 버스 로컬 좌표, velocity = 게임 px/s
 struct BusDebrisDef
 {
-    String clip     = {};
-    Vec2   at       = { 0.f, 0.f };
-    Vec2   velocity = { 0.f, 0.f };
-    float  fps      = 12.f;
+    String  clip     = {};
+    VECTOR2 at       = { 0.f, 0.f };
+    VECTOR2 velocity = { 0.f, 0.f };
+    float   fps      = 12.f;
 };
 
 // 창 안 병사 (버스 로컬 좌표의 발 위치). stage 이상이면 보인다
 struct BusInnerSoldierDef
 {
-    int  stage = 0;
-    Vec2 at    = { 0.f, 0.f };
-    int  phase = 0;
+    int     stage = 0;
+    VECTOR2 at    = { 0.f, 0.f };
+    int     phase = 0;
 };
 
 // 창 파편 클립: stage 이상이면 한 번 재생한다
@@ -541,10 +541,10 @@ struct BusCfg
 {
     static constexpr int kStageCount = 7;
 
-    float pxPerSheetPx   = 2.f;
-    Vec2  anchor         = { 52.f, 130.f };
-    float debrisGroundDy = -8.f;
-    int   fxDepth        = 60;
+    float   pxPerSheetPx   = 2.f;
+    VECTOR2 anchor         = { 52.f, 130.f };
+    float   debrisGroundDy = -8.f;
+    int     fxDepth        = 60;
 
     Vector<BusBurstDef> bursts = {
         { 2, "Explosion_Large",  { 51.f, -5.f },        0.f },
@@ -621,21 +621,21 @@ struct BusCfg
 
     // 계단 병사: 계단이 펼쳐진 뒤 버스 오른쪽 화면 밖에서 나와 계단을 오르고 승강대에서 폭탄을 던지거나 지붕을 건너 내려와 베기를 한다.
     // 바주카병은 계단을 오르지 않고 화면 밖에서 걸어 들어와 로켓을 쏜다.
-    String soldierBombDef    = "soldier_bomb";
-    String soldierSwordDef   = "soldier_sword";
-    String soldierBzkDef     = "soldier_bzk";
-    Vec2   soldierSpawn      = { 230.f, 0.f };
-    Vec2   stairsBase        = { 186.f, 0.f };
-    Vec2   stairsTop         = { 100.f, -106.f };
-    float  landingW          = 34.f;   // 승강대 벽 폭 (0 이면 없음). 윗면 = stairsTop.y, 중심 x = stairsTop.x
-    int    soldierFirstTicks = 40;
-    int    soldierGapTicks   = 170;   // 병사 스폰 간격 (약 2.8 s)
-    int    soldierMax        = 2;     // 동시에 살아 있는 계단 병사 수 (병사 종류 무관)
-    int    swordPercent      = 40;    // 스폰 병사가 대검병인 확률 (%)
-    int    bazookaPercent    = 30;    // 스폰 병사가 바주카병인 확률 (%), 나머지는 폭탄병
-    int    soldierLastStage  = 5;
-    Vec2   roofTop           = { 0.f, 0.f };   // 계단 병사가 마지막에 오르는 지붕 위 점 (앵커 기준). y 가 0 이면 지붕 없음 (승강대까지만)
-    Vec2   roofSpan          = { 0.f, 0.f };
+    String  soldierBombDef    = "soldier_bomb";
+    String  soldierSwordDef   = "soldier_sword";
+    String  soldierBzkDef     = "soldier_bzk";
+    VECTOR2 soldierSpawn      = { 230.f, 0.f };
+    VECTOR2 stairsBase        = { 186.f, 0.f };
+    VECTOR2 stairsTop         = { 100.f, -106.f };
+    float   landingW          = 34.f;   // 승강대 벽 폭 (0 이면 없음). 윗면 = stairsTop.y, 중심 x = stairsTop.x
+    int     soldierFirstTicks = 40;
+    int     soldierGapTicks   = 170;   // 병사 스폰 간격 (약 2.8 s)
+    int     soldierMax        = 2;     // 동시에 살아 있는 계단 병사 수 (병사 종류 무관)
+    int     swordPercent      = 40;    // 스폰 병사가 대검병인 확률 (%)
+    int     bazookaPercent    = 30;    // 스폰 병사가 바주카병인 확률 (%), 나머지는 폭탄병
+    int     soldierLastStage  = 5;
+    VECTOR2 roofTop           = { 0.f, 0.f };   // 계단 병사가 마지막에 오르는 지붕 위 점 (앵커 기준). y 가 0 이면 지붕 없음 (승강대까지만)
+    VECTOR2 roofSpan          = { 0.f, 0.f };
 };
 
 // 헬기 (Docs/Spec_Heli.md). 위치는 전부 기체 중심, 카메라(화면) 기준 px, 시간은 틱.
@@ -643,20 +643,20 @@ struct BusCfg
 struct HeliCfg
 {
     // 고공 폭격 (진입 포함): 위 오른쪽에서 내려와 플레이어 위에 떠서 폭탄을 떨어뜨린다
-    float enterSpeedY       = 40.f;   // 호버 높이까지 내려오는 속도 px/s
-    float hoverDy           = 78.f;
-    float followDx          = 15.f;
-    float followSpeed       = 46.f;   // 따라가는 가로 속도 px/s
-    float followDeadzone    = 6.f;
-    int   firstBombTicks    = 54;
-    int   reBombTicks       = 24;
-    int   bombIntervalTicks = 24;
-    int   burstCount        = 3;
-    int   burstRestTicks    = 84;
-    int   highBursts        = 2;
-    int   lowBursts         = 2;
-    Vec2  bombMuzzle        = { -8.f, 45.f };
-    float bombMinY          = 8.f;
+    float   enterSpeedY       = 40.f;   // 호버 높이까지 내려오는 속도 px/s
+    float   hoverDy           = 78.f;
+    float   followDx          = 15.f;
+    float   followSpeed       = 46.f;   // 따라가는 가로 속도 px/s
+    float   followDeadzone    = 6.f;
+    int     firstBombTicks    = 54;
+    int     reBombTicks       = 24;
+    int     bombIntervalTicks = 24;
+    int     burstCount        = 3;
+    int     burstRestTicks    = 84;
+    int     highBursts        = 2;
+    int     lowBursts         = 2;
+    VECTOR2 bombMuzzle        = { -8.f, 45.f };
+    float   bombMinY          = 8.f;
 
     float lowDy         = 200.f;
     float lowSpeed      = 90.f;   // 가로지르는 속도 px/s
@@ -676,11 +676,11 @@ struct HeliCfg
     int              puffToMissile   = 10;
     int              missileInterval = 126;
     int              volleyEndTicks  = 90;   // 마지막 발사 연기 후 복귀까지 (원작 미관측: 가정값)
-    Vec2             puffOffset      = { 55.f, 40.f };
+    VECTOR2          puffOffset      = { 55.f, 40.f };
     int              turnWaitTicks   = 24;   // 플레이어가 반대쪽에 이만큼 머물면 선회 (원작 미관측: 가정값)
     float            turnDx          = 60.f;
-    Vec2             podOffset       = { 9.f, 32.f };
-    Vec2             rotorOffset     = { 18.f, -50.f };
+    VECTOR2          podOffset       = { 9.f, 32.f };
+    VECTOR2          rotorOffset     = { 18.f, -50.f };
     int              idlePitchFrom   = 0;   // 비행 (fly) 클립일 때 Pitch 프레임 from..to 를 왕복한다 (from == to 면 끔)
     int              idlePitchTo     = 0;
     int              idleStepTicks   = 12;
@@ -704,17 +704,17 @@ struct HeliCfg
 // 헬기 폭탄: 수직 낙하, 플레이어 총에 맞으면 공중에서 터진다 (원작: 플레이어 총알에 파괴됨)
 struct HeliBombCfg
 {
-    float  startVy      = 100.f;   // 투하 직후 낙하 속도 px/s
-    float  gravity      = 80.f;
-    float  maxFall      = 400.f;
-    Vec2   hitSize      = { 24.f, 50.f };
-    Vec2   blastSize    = { 90.f, 80.f };
-    int    blastTicks   = 8;
-    int    blastDamage  = 1;
-    float  groundProbeY = 25.f;
-    String groundFx     = {};
-    float  groundFxDy   = -6.f;
-    int    clipFall     = -1;
+    float   startVy      = 100.f;   // 투하 직후 낙하 속도 px/s
+    float   gravity      = 80.f;
+    float   maxFall      = 400.f;
+    VECTOR2 hitSize      = { 24.f, 50.f };
+    VECTOR2 blastSize    = { 90.f, 80.f };
+    int     blastTicks   = 8;
+    int     blastDamage  = 1;
+    float   groundProbeY = 25.f;
+    String  groundFx     = {};
+    float   groundFxDy   = -6.f;
+    int     clipFall     = -1;
 };
 
 // 피격 플래시 타이밍은 Game/Combat/HitFlash.h (피격당 ON 펄스 1회, Docs/Spec_HitFlash.md).
@@ -765,8 +765,8 @@ struct EnemyDef
     DeathDef          death   = {};
     Vector<DropDef>   drops   = {};
 
-    int  overlayClip   = -1;
-    Vec2 overlayOffset = { 0.f, 0.f };
+    int     overlayClip   = -1;
+    VECTOR2 overlayOffset = { 0.f, 0.f };
 
     EnemyPartDepth partBody    = { 15, 0 };
     EnemyPartDepth partOverlay = { 14, 0 };

@@ -59,7 +59,7 @@ namespace
 [[nodiscard]] SpawnRequest MakeRequest_(
     const char*       _def,
     const eEntityKind _kind,
-    const Vec2        _position)
+    const VECTOR2     _position)
 {
     SpawnRequest request;
     request.def      = _def;

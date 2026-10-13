@@ -25,7 +25,7 @@ namespace
     return frames;
 }
 
-[[nodiscard]] Vec2 RunDemo_(
+[[nodiscard]] VECTOR2 RunDemo_(
     const Vector<InputFrame>& _frames)
 {
 
@@ -76,8 +76,8 @@ TEST(Replay, RejectsBadMagicAndTruncation)
 TEST(SimRunner, SameInputsGiveIdenticalResult)
 {
     const Vector<InputFrame> script = MakeScript_();
-    const Vec2               a      = RunDemo_(script);
-    const Vec2               b      = RunDemo_(script);
+    const VECTOR2            a      = RunDemo_(script);
+    const VECTOR2            b      = RunDemo_(script);
     EXPECT_FLOAT_EQ(a.x, b.x);
     EXPECT_FLOAT_EQ(a.y, b.y);
     EXPECT_FLOAT_EQ(a.x, 320.f + 120.f);

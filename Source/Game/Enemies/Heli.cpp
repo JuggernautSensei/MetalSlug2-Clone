@@ -110,7 +110,7 @@ void BeginMove_(
     const EnemyDef&  _def,
     const EnemyEnv&  _env,
     const eHeliState _state,
-    const Vec2       _target)
+    const VECTOR2    _target)
 {
     Go_(_e, _def, _state);
     _e.ext[kExtStartX]  = Pack_(_e.body.position.x);
@@ -124,10 +124,10 @@ void BeginMove_(
     Enemy&         _e,
     const HeliCfg& _c)
 {
-    const float u      = static_cast<float>(_e.stateTicks) / static_cast<float>(Max(1, _c.moveTicks));
-    const Vec2  start  = { Unpack_(_e.ext[kExtStartX]), Unpack_(_e.ext[kExtStartY]) };
-    const Vec2  target = { Unpack_(_e.ext[kExtTargetX]), Unpack_(_e.ext[kExtTargetY]) };
-    _e.body.position   = { start.x + (target.x - start.x) * SampleCurve_(_c.xCurve, u), start.y + (target.y - start.y) * SampleCurve_(_c.yCurve, u) };
+    const float   u      = static_cast<float>(_e.stateTicks) / static_cast<float>(Max(1, _c.moveTicks));
+    const VECTOR2 start  = { Unpack_(_e.ext[kExtStartX]), Unpack_(_e.ext[kExtStartY]) };
+    const VECTOR2 target = { Unpack_(_e.ext[kExtTargetX]), Unpack_(_e.ext[kExtTargetY]) };
+    _e.body.position     = { start.x + (target.x - start.x) * SampleCurve_(_c.xCurve, u), start.y + (target.y - start.y) * SampleCurve_(_c.yCurve, u) };
     return _e.stateTicks >= _c.moveTicks;
 }
 
@@ -163,7 +163,7 @@ void DropBomb_(
     SpawnParams params;
     params.facing     = _e.facing;
     params.bActivated = true;
-    const Vec2 at     = { _e.body.position.x + c.bombMuzzle.x * Sign_(_e.facing), _e.body.position.y + c.bombMuzzle.y };
+    const VECTOR2 at  = { _e.body.position.x + c.bombMuzzle.x * Sign_(_e.facing), _e.body.position.y + c.bombMuzzle.y };
     (void)_env.world.SpawnDeferred(bombIndex, at, params);
 }
 
@@ -471,12 +471,12 @@ void SubmitParts_(
     const int feetKey = static_cast<int>(_render.feet.y);
     if (_e.ext[kExtPodTicks] >= 0)
     {
-        const Vec2 at = { _render.feet.x + c.podOffset.x * sign, _render.feet.y + c.podOffset.y };
+        const VECTOR2 at = { _render.feet.x + c.podOffset.x * sign, _render.feet.y + c.podOffset.y };
         (void)SubmitNamedPart(_render, ResolveSide(_def.GetClip(c.clipPod).name, _e.facing), at, _e.ext[kExtPodTicks], false, feetKey + c.partPod.sort, c.partPod.depth);
     }
-    const Vec2   rotor     = { _render.feet.x + c.rotorOffset.x * sign, _render.feet.y + c.rotorOffset.y };
-    const int    shown     = ShownPitchFrame_(_e, _def, _render.anims);
-    const String rotorName = c.rotorRowPrefix.empty() || shown < 0 ? ResolveSide(_def.GetClip(c.clipRotor).name, _e.facing) : c.rotorRowPrefix + std::to_string(shown);
+    const VECTOR2 rotor     = { _render.feet.x + c.rotorOffset.x * sign, _render.feet.y + c.rotorOffset.y };
+    const int     shown     = ShownPitchFrame_(_e, _def, _render.anims);
+    const String  rotorName = c.rotorRowPrefix.empty() || shown < 0 ? ResolveSide(_def.GetClip(c.clipRotor).name, _e.facing) : c.rotorRowPrefix + std::to_string(shown);
     (void)SubmitNamedPart(_render, rotorName, rotor, _e.clipTicks, true, feetKey + c.partRotor.sort, c.partRotor.depth);
 }
 }   // namespace

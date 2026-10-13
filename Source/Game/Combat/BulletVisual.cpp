@@ -79,7 +79,7 @@ bool SubmitPlayerBullet(
     const AnimationLibrary* _pAnims,
     const SpriteLibrary&    _spriteLib,
     const Bullet&           _bullet,
-    const Vec2              _pos,
+    const VECTOR2           _pos,
     const int               _depth)
 {
     const eWeapon weapon    = static_cast<eWeapon>(_bullet.tag);
@@ -126,7 +126,7 @@ bool SubmitPlayerBullet(
             {
                 return false;
             }
-            float           degrees   = std::atan2(vy, vx) * kRad2Deg - (bRight ? 0.f : 180.f);
+            float degrees = std::atan2(vy, vx) * kRad2Deg - (bRight ? 0.f : 180.f);
             if (degrees > 180.f)
             {
                 degrees -= 360.f;
@@ -146,9 +146,9 @@ bool SubmitPlayerBullet(
                 return false;
             }
             // 수명에 따라 표시 배율이 커진다 (판정 성장과 같은 진행도: travelled / range)
-            const float t       = _bullet.range > 0.f ? Clamp(_bullet.travelled / _bullet.range, 0.f, 1.f) : 1.f;
-            const float scale   = Lerp(_bullet.scaleStart, _bullet.scaleEnd, t);
-            const Vec2  shifted = { _pos.x + (bRight ? kFlameForwardShift : -kFlameForwardShift), _pos.y };
+            const float   t       = _bullet.range > 0.f ? Clamp(_bullet.travelled / _bullet.range, 0.f, 1.f) : 1.f;
+            const float   scale   = Lerp(_bullet.scaleStart, _bullet.scaleEnd, t);
+            const VECTOR2 shifted = { _pos.x + (bRight ? kFlameForwardShift : -kFlameForwardShift), _pos.y };
             _sprites.Submit(_depth, 0, *pFrame, shifted, { .bFlipX = !bRight, .scale = scale });
             return true;
         }

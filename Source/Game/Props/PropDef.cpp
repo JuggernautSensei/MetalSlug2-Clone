@@ -145,7 +145,7 @@ private:
         const JsonReader& _obj,
         const StringView  _where,
         const StringView  _key,
-        Vec2&             _out,
+        VECTOR2&          _out,
         bool              _bRequired);
     bool Visual_(
         const JsonReader& _obj,
@@ -260,7 +260,7 @@ bool PropDefParser::Vec2_(
     const JsonReader& _obj,
     const StringView  _where,
     const StringView  _key,
-    Vec2&             _out,
+    VECTOR2&          _out,
     const bool        _bRequired)
 {
     StringView reason;
@@ -393,8 +393,8 @@ bool PropDefParser::Parts_(
             }
         }
 
-        Vec2 size   = { 0.f, 0.f };
-        Vec2 offset = { 0.f, 0.f };
+        VECTOR2 size   = { 0.f, 0.f };
+        VECTOR2 offset = { 0.f, 0.f };
         if (!Vec2_(item, where, "size", size, true) || !Vec2_(item, where, "offset", offset, false))
         {
             return false;

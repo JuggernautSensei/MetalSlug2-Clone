@@ -31,10 +31,10 @@ constexpr int      kVariantClimbStay = 3;
 
 namespace
 {
-[[nodiscard]] Vec2 Local_(
+[[nodiscard]] VECTOR2 Local_(
     const BusCfg& _c,
-    const Vec2    _feet,
-    const Vec2    _at)
+    const VECTOR2 _feet,
+    const VECTOR2 _at)
 {
     return { _feet.x + (_at.x - _c.anchor.x) * _c.pxPerSheetPx, _feet.y + (_at.y - _c.anchor.y) * _c.pxPerSheetPx };
 }
@@ -43,7 +43,7 @@ void SubmitPart_(
     const EnemyRenderEnv& _render,
     const EnemyPartDepth& _depth,
     const StringView      _clip,
-    const Vec2            _at,
+    const VECTOR2         _at,
     const int             _ticks,
     const bool            _bLoop)
 {
@@ -80,7 +80,7 @@ void SpawnBursts_(
     const bool      _bDeath)
 {
     const BusCfg& c    = _def.bus;
-    const Vec2    feet = _e.body.position;
+    const VECTOR2 feet = _e.body.position;
     if (_bDeath)
     {
         for (const BusBurstDef& fx: c.deathBursts)
@@ -149,8 +149,8 @@ void SpawnStairSoldier_(
     {
         return;
     }
-    const Vec2  feet = _e.body.position;
-    SpawnParams params;
+    const VECTOR2 feet = _e.body.position;
+    SpawnParams   params;
     params.facing     = -1;
     params.bActivated = true;
     params.aiVariant  = variant;
@@ -260,18 +260,18 @@ void SubmitDebris_(
     const float   t = static_cast<float>(_e.deathTicks) / 60.f;
     for (const BusDebrisDef& d: c.debris)
     {
-        const Vec2  start   = Local_(c, _render.feet, d.at);
-        const float groundY = _render.feet.y + c.debrisGroundDy;
-        float       tFly    = t;
-        float       y       = start.y + d.velocity.y * t + 0.5f * kDebrisGravity * t * t;
+        const VECTOR2 start   = Local_(c, _render.feet, d.at);
+        const float   groundY = _render.feet.y + c.debrisGroundDy;
+        float         tFly    = t;
+        float         y       = start.y + d.velocity.y * t + 0.5f * kDebrisGravity * t * t;
         if (y > groundY)
         {
             const float disc = d.velocity.y * d.velocity.y + 2.f * kDebrisGravity * (groundY - start.y);
             tFly             = disc > 0.f ? (-d.velocity.y + Sqrt(disc)) / kDebrisGravity : 0.f;
             y                = groundY;
         }
-        const Vec2 at    = { start.x + d.velocity.x * tFly, y };
-        const int  ticks = static_cast<int>(tFly * d.fps * 60.f / 12.f);
+        const VECTOR2 at    = { start.x + d.velocity.x * tFly, y };
+        const int     ticks = static_cast<int>(tFly * d.fps * 60.f / 12.f);
         SubmitPart_(_render, c.partDebris, d.clip, at, ticks, true);
     }
 }
@@ -281,7 +281,7 @@ void SubmitDamaged_(
     const EnemyRenderEnv& _render,
     const BusCfg&         _c,
     const int             _level,
-    const Vec2            _feet,
+    const VECTOR2         _feet,
     const bool            _bCover)
 {
     const String back = Named_("Bus_BackD", _level);
@@ -307,7 +307,7 @@ void SubmitLive_(
     const EnemyRenderEnv& _render)
 {
     const BusCfg& c     = _def.bus;
-    const Vec2    feet  = _render.feet;
+    const VECTOR2 feet  = _render.feet;
     const int     L     = _e.aux;
     const int     stage = _e.aux2;
 
@@ -434,7 +434,7 @@ bool ReadStrField_(
 bool ReadVecField_(
     const JsonReader& _o,
     const StringView  _key,
-    Vec2&             _out)
+    VECTOR2&          _out)
 {
     StringView reason;
     return ReadVec2Field(_o, _key, false, _out, reason);

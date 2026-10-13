@@ -80,14 +80,14 @@ public:
 
     void Update(const RigState& _state);
 
-    void Submit(SpriteBatch& _sprites, Vec2 _feet, int _depth, int _sortKey, RGBA _tint = { 255, 255, 255, 255 }) const;
+    void Submit(SpriteBatch& _sprites, VECTOR2 _feet, int _depth, int _sortKey, RGBA _tint = { 255, 255, 255, 255 }) const;
 
-    [[nodiscard]] AnimId GetUpperClip() const;
-    [[nodiscard]] AnimId GetLowerClip() const;
-    [[nodiscard]] int    GetUpperFrame() const;
-    [[nodiscard]] int    GetLowerFrame() const;
-    [[nodiscard]] float  GetOriginLift() const;
-    [[nodiscard]] Vec2   GetOrigin(Vec2 _feet) const;
+    [[nodiscard]] AnimId  GetUpperClip() const;
+    [[nodiscard]] AnimId  GetLowerClip() const;
+    [[nodiscard]] int     GetUpperFrame() const;
+    [[nodiscard]] int     GetLowerFrame() const;
+    [[nodiscard]] float   GetOriginLift() const;
+    [[nodiscard]] VECTOR2 GetOrigin(VECTOR2 _feet) const;
 
     [[nodiscard]] AnimId GetSlotClip(eWeapon _weapon, int _facing, eRigClip _slot) const;
 

@@ -17,7 +17,7 @@ namespace
     const Enemy&    _e,
     const EnemyEnv& _env)
 {
-    const Vec2 center = { _e.body.position.x, _e.body.position.y - _e.body.size.y * 0.5f };
+    const VECTOR2 center = { _e.body.position.x, _e.body.position.y - _e.body.size.y * 0.5f };
     return _env.ctx.cameraView.Contains(center);
 }
 
@@ -143,8 +143,8 @@ void Tick_(
     {
         if (ClipReachedFrame(_e, _def, cfg.fireFrame))
         {
-            const float rad = cfg.fireDeg[_e.aux2] * kDeg2Rad;
-            const Vec2  dir = { std::cos(rad) * static_cast<float>(_e.facing), std::sin(rad) };
+            const float   rad = cfg.fireDeg[_e.aux2] * kDeg2Rad;
+            const VECTOR2 dir = { std::cos(rad) * static_cast<float>(_e.facing), std::sin(rad) };
             if (FireWeapon(_e, _def, _env, cfg.weaponRocket, dir, { dir.x * cfg.muzzleDist, dir.y * cfg.muzzleDist }))
             {
                 ++_e.counter;

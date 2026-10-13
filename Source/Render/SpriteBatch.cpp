@@ -33,8 +33,8 @@ namespace
 
 IntRect ComputeDestRect(
     const AnimFrame& _frame,
-    const Vec2       _worldOrigin,
-    const Vec2       _cameraPos,
+    const VECTOR2    _worldOrigin,
+    const VECTOR2    _cameraPos,
     const bool       _bFlipX,
     const bool       _bFlipY)
 {
@@ -66,12 +66,12 @@ void SortSpriteCommands(
 }
 
 TextureViewRects ComputeTextureView(
-    const int  _texW,
-    const int  _texH,
-    const Vec2 _texWorldPos,
-    const Vec2 _cameraPos,
-    const int  _viewW,
-    const int  _viewH)
+    const int     _texW,
+    const int     _texH,
+    const VECTOR2 _texWorldPos,
+    const VECTOR2 _cameraPos,
+    const int     _viewW,
+    const int     _viewH)
 {
     TextureViewRects result;
     if (_texW <= 0 || _texH <= 0 || _viewW <= 0 || _viewH <= 0)
@@ -591,12 +591,12 @@ Result<int> SpriteBatch::LoadStandaloneTexture(
 }
 
 void SpriteBatch::DrawTexture(
-    const int  _handle,
-    const Vec2 _texWorldPos,
-    const Vec2 _cameraPos,
-    const int  _viewW,
-    const int  _viewH,
-    const RGBA _tint) const
+    const int     _handle,
+    const VECTOR2 _texWorldPos,
+    const VECTOR2 _cameraPos,
+    const int     _viewW,
+    const int     _viewH,
+    const RGBA    _tint) const
 {
     if (!m_pRenderer || _handle < 0 || static_cast<size_t>(_handle) >= m_textures.size())
     {
@@ -616,14 +616,14 @@ void SpriteBatch::DrawTexture(
 }
 
 void SpriteBatch::DrawTextureRepeatX(
-    const int   _handle,
-    const Vec2  _texWorldPos,
-    const Vec2  _cameraPos,
-    const int   _viewW,
-    const int   _viewH,
-    const float _fromX,
-    const int   _tileX,
-    const int   _tileW) const
+    const int     _handle,
+    const VECTOR2 _texWorldPos,
+    const VECTOR2 _cameraPos,
+    const int     _viewW,
+    const int     _viewH,
+    const float   _fromX,
+    const int     _tileX,
+    const int     _tileW) const
 {
     if (!m_pRenderer || _handle < 0 || static_cast<size_t>(_handle) >= m_textures.size() || _tileW <= 0)
     {
@@ -670,8 +670,8 @@ void SpriteBatch::DrawTextureRepeatX(
 
 void SpriteBatch::DrawFrame(
     const AnimFrame&         _frame,
-    const Vec2               _worldOrigin,
-    const Vec2               _cameraPos,
+    const VECTOR2            _worldOrigin,
+    const VECTOR2            _cameraPos,
     const SpriteDrawOptions& _options) const
 {
     if (!m_pRenderer || _frame.IsEmpty() || _frame.atlas < 0 || static_cast<size_t>(_frame.atlas) >= m_pages.size())
@@ -718,7 +718,7 @@ void SpriteBatch::DrawFrame(
 
 void SpriteBatch::DrawFrame(
     const AnimFrame&         _frame,
-    const Vec2               _worldOrigin,
+    const VECTOR2            _worldOrigin,
     const Camera&            _camera,
     const SpriteDrawOptions& _options) const
 {
@@ -754,7 +754,7 @@ void SpriteBatch::Submit(
     const int                _depth,
     const int                _sortKey,
     const AnimFrame&         _frame,
-    const Vec2               _worldOrigin,
+    const VECTOR2            _worldOrigin,
     const SpriteDrawOptions& _options)
 {
     SpriteCommand command;
@@ -797,7 +797,7 @@ void SpriteBatch::SubmitStandalone(
     const int                _sortKey,
     const int                _handle,
     const IntRect&           _src,
-    const Vec2               _worldCenter,
+    const VECTOR2            _worldCenter,
     const SpriteDrawOptions& _options)
 {
     SpriteCommand command;
@@ -813,7 +813,7 @@ void SpriteBatch::SubmitStandalone(
 
 void SpriteBatch::DrawCommand_(
     const SpriteCommand& _command,
-    const Vec2           _cameraPos) const
+    const VECTOR2        _cameraPos) const
 {
     if (_command.standalone < 0)
     {
@@ -833,7 +833,7 @@ void SpriteBatch::DrawCommand_(
 }
 
 void SpriteBatch::Flush(
-    const Vec2 _cameraPos)
+    const VECTOR2 _cameraPos)
 {
     SortSpriteCommands(m_commands);
     for (const SpriteCommand& command: m_commands)
@@ -845,8 +845,8 @@ void SpriteBatch::Flush(
 }
 
 void SpriteBatch::FlushBelowDepth(
-    const Vec2 _cameraPos,
-    const int  _depth)
+    const VECTOR2 _cameraPos,
+    const int     _depth)
 {
     SortSpriteCommands(m_commands);
     size_t count = 0;

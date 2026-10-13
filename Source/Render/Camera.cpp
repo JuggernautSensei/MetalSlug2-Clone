@@ -137,7 +137,7 @@ void Camera::Lock(
         m_moveTarget = ClampCenter_(m_moveTarget);
         return;
     }
-    const Vec2 goal = ClampCenter_(m_center);
+    const VECTOR2 goal = ClampCenter_(m_center);
     // 움직이던 카메라는 멈추지 않고 감속 이동으로 넘긴다 (순간 정지 = 튐). 정지 상태의 반올림 수준 차이만 순간 보정한다.
     const bool bNear  = Abs(goal.x - m_center.x) <= 1.f && Abs(goal.y - m_center.y) <= 1.f;
     const bool bStill = Abs(m_velocity.x) <= 1.f && Abs(m_velocity.y) <= 1.f;
@@ -158,8 +158,8 @@ void Camera::Unlock()
 }
 
 void Camera::BeginMove(
-    const Vec2  _targetCenter,
-    const float _seconds)
+    const VECTOR2 _targetCenter,
+    const float   _seconds)
 {
     const int baseTicks = static_cast<int>(std::llround(static_cast<double>(_seconds) / static_cast<double>(kStepSec)));
     if (baseTicks <= 0)
@@ -170,10 +170,10 @@ void Camera::BeginMove(
     }
 
     // 도착점은 "지금" 유효한 영역이 아니라 가고 있는 최종 영역(잠금 또는 SetBounds 목표) 기준으로 잡는다
-    Aabb       targetRect = {};
-    const Vec2 goal       = GetTargetRect_(targetRect) ? ClampToRect_(_targetCenter, targetRect) : _targetCenter;
-    const Vec2 v0         = { m_velocity.x, m_velocity.y * kStepSec };   // 현재 속도 (px/틱)
-    const int  minTicks   = Max(MinMoveTicks_(goal.x - m_center.x, v0.x), MinMoveTicks_(goal.y - m_center.y, v0.y));
+    Aabb          targetRect = {};
+    const VECTOR2 goal       = GetTargetRect_(targetRect) ? ClampToRect_(_targetCenter, targetRect) : _targetCenter;
+    const VECTOR2 v0         = { m_velocity.x, m_velocity.y * kStepSec };   // 현재 속도 (px/틱)
+    const int     minTicks   = Max(MinMoveTicks_(goal.x - m_center.x, v0.x), MinMoveTicks_(goal.y - m_center.y, v0.y));
 
     m_bMoving        = true;
     m_bGlide         = false;
@@ -291,12 +291,12 @@ void Camera::UpdateEffectiveBounds_()
     ApproachEdge_(m_effBounds.max.y, m_effVel.max.y, target.max.y, -1.f);
 }
 
-Vec2 Camera::ClampToRect_(
-    const Vec2  _center,
-    const Aabb& _bounds) const
+VECTOR2 Camera::ClampToRect_(
+    const VECTOR2 _center,
+    const Aabb&   _bounds) const
 {
-    const Vec2 half   = { m_tuning.viewSize.x * 0.5f, m_tuning.viewSize.y * 0.5f };
-    Vec2       result = _center;
+    const VECTOR2 half   = { m_tuning.viewSize.x * 0.5f, m_tuning.viewSize.y * 0.5f };
+    VECTOR2       result = _center;
 
     const float minX = _bounds.min.x + half.x;
     const float maxX = _bounds.max.x - half.x;
@@ -308,8 +308,8 @@ Vec2 Camera::ClampToRect_(
     return result;
 }
 
-Vec2 Camera::ClampCenter_(
-    const Vec2 _center) const
+VECTOR2 Camera::ClampCenter_(
+    const VECTOR2 _center) const
 {
     bool       bHasBounds = false;
     const Aabb bounds     = GetActiveBounds_(bHasBounds);
@@ -319,10 +319,10 @@ Vec2 Camera::ClampCenter_(
     }
     return ClampToRect_(_center, bounds);
 }
-Vec2 Camera::SnapTopLeft_(
-    const Vec2 _center) const
+VECTOR2 Camera::SnapTopLeft_(
+    const VECTOR2 _center) const
 {
-    Vec2 topLeft = { RoundToInt_(_center.x - m_tuning.viewSize.x * 0.5f), RoundToInt_(_center.y - m_tuning.viewSize.y * 0.5f) };
+    VECTOR2 topLeft = { RoundToInt_(_center.x - m_tuning.viewSize.x * 0.5f), RoundToInt_(_center.y - m_tuning.viewSize.y * 0.5f) };
 
     bool       bHasBounds = false;
     const Aabb bounds     = GetActiveBounds_(bHasBounds);
@@ -373,7 +373,7 @@ void Camera::ShiftLock(
 }
 
 void Camera::SnapTo(
-    const Vec2 _viewCenter)
+    const VECTOR2 _viewCenter)
 {
     m_bMoving      = false;
     m_bScrollFloor = false;
@@ -464,7 +464,7 @@ void Camera::Update(
         Aabb targetRect = {};
         if (GetTargetRect_(targetRect))
         {
-            const Vec2 goalNow = ClampToRect_(m_moveRaw, targetRect);
+            const VECTOR2 goalNow = ClampToRect_(m_moveRaw, targetRect);
             m_moveTarget.x += Clamp(goalNow.x - m_moveTarget.x, -kBoundsEase, kBoundsEase);
             m_moveTarget.y += Clamp(goalNow.y - m_moveTarget.y, -kBoundsEase, kBoundsEase);
         }
@@ -500,13 +500,13 @@ void Camera::Update(
     }
     else
     {
-        const Vec2  before      = m_center;
-        const Vec2  focus       = { m_target.x + m_tuning.targetOffset.x, m_target.y + m_tuning.targetOffset.y };
-        const float focusDeltaX = m_bHasPrevFocus ? focus.x - m_prevFocusX : 0.f;
-        m_prevFocusX            = focus.x;
-        m_bHasPrevFocus         = true;
+        const VECTOR2 before      = m_center;
+        const VECTOR2 focus       = { m_target.x + m_tuning.targetOffset.x, m_target.y + m_tuning.targetOffset.y };
+        const float   focusDeltaX = m_bHasPrevFocus ? focus.x - m_prevFocusX : 0.f;
+        m_prevFocusX              = focus.x;
+        m_bHasPrevFocus           = true;
 
-        Vec2 desired = {
+        VECTOR2 desired = {
             ApplyDeadzone_(m_center.x, focus.x, m_tuning.deadzoneHalf.x),
             ApplyDeadzone_(m_center.y, focus.y, m_tuning.deadzoneHalf.y)
         };
@@ -563,7 +563,7 @@ void Camera::Update(
     }
 }
 
-Vec2 Camera::GetPosition() const
+VECTOR2 Camera::GetPosition() const
 {
     return SnapTopLeft_(m_center);
 }
@@ -626,7 +626,7 @@ const Aabb& Camera::GetLockBounds() const
 }
 
 void Camera::SetTarget(
-    const Vec2 _target)
+    const VECTOR2 _target)
 {
     m_target = _target;
 }
@@ -646,7 +646,7 @@ float Camera::GetScrollFloorX() const
     return m_scrollFloorX;
 }
 
-Vec2 Camera::GetViewCenter() const
+VECTOR2 Camera::GetViewCenter() const
 {
     return m_center;
 }

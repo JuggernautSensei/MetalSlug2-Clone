@@ -12,20 +12,20 @@ namespace
 {
 [[nodiscard]] bool SegmentHitsGround_(
     const GroundMap& _ground,
-    const Vec2       _from,
-    const Vec2       _to,
-    Vec2&            _outLastFree)
+    const VECTOR2    _from,
+    const VECTOR2    _to,
+    VECTOR2&         _outLastFree)
 {
     const float dx   = _to.x - _from.x;
     const float dy   = _to.y - _from.y;
     const float dist = Sqrt(dx * dx + dy * dy);
     const int   n    = Max(1, CeilToInt(dist / 2.f));
 
-    Vec2 lastFree = _from;
+    VECTOR2 lastFree = _from;
     for (int i = 1; i <= n; ++i)
     {
-        const float t = static_cast<float>(i) / static_cast<float>(n);
-        const Vec2  p = { _from.x + dx * t, _from.y + dy * t };
+        const float   t = static_cast<float>(i) / static_cast<float>(n);
+        const VECTOR2 p = { _from.x + dx * t, _from.y + dy * t };
         if (_ground.IsSolidAt(p))
         {
             _outLastFree = lastFree;
@@ -39,9 +39,9 @@ namespace
 // 발판 윗면을 가로지르는 선분 (낙하 중에만). 가장 먼저 닿는 윗면과 그 교점을 돌려준다
 [[nodiscard]] bool SegmentHitsPlatform_(
     Span<const Platform> _platforms,
-    const Vec2           _from,
-    const Vec2           _to,
-    Vec2&                _outTop)
+    const VECTOR2        _from,
+    const VECTOR2        _to,
+    VECTOR2&             _outTop)
 {
     bool  bHit  = false;
     float bestT = 2.f;
@@ -66,9 +66,9 @@ namespace
 }
 
 [[nodiscard]] Aabb SweptBox_(
-    const Vec2 _a,
-    const Vec2 _b,
-    const Vec2 _size)
+    const VECTOR2 _a,
+    const VECTOR2 _b,
+    const VECTOR2 _size)
 {
     return Aabb::FromMinMax(
         { Min(_a.x, _b.x) - _size.x * 0.5f, Min(_a.y, _b.y) - _size.y * 0.5f },
@@ -146,7 +146,7 @@ void ProjectileSystem::SpawnShot(
 
 void ProjectileSystem::ExplodeBomb_(
     Bomb&         _bomb,
-    const Vec2    _at,
+    const VECTOR2 _at,
     CombatSystem& _combat)
 {
     _bomb.bAlive = false;
@@ -165,7 +165,7 @@ void ProjectileSystem::ExplodeBomb_(
 
 void ProjectileSystem::SpawnShotBlast_(
     const ShotSpawn& _params,
-    const Vec2       _at,
+    const VECTOR2    _at,
     CombatSystem&    _combat)
 {
     if (_params.blastSize.x <= 0.f || _params.blastSize.y <= 0.f || _params.blastTicks <= 0)
@@ -240,7 +240,7 @@ void ProjectileSystem::Step(
         }
         else if (_pGround)
         {
-            Vec2 lastFree;
+            VECTOR2 lastFree = {};
             if (SegmentHitsGround_(*_pGround, bullet.renderPrev, bullet.position, lastFree))
             {
                 bullet.bAlive = false;
@@ -332,18 +332,18 @@ void ProjectileSystem::Step(
         else if ((_pGround || !_platforms.empty()) && (params.bExplodeOnSolid || bRoll) && (shot.position.x != shot.renderPrev.x || shot.position.y != shot.renderPrev.y))
         {
             // 접촉은 스프라이트 바닥(중심 + groundProbeY) 기준으로 판정한다: 중심으로 판정하면 반쯤 지면에 묻힌 뒤 터진다
-            const float probe      = params.groundProbeY;
-            const Vec2  from       = { shot.renderPrev.x, shot.renderPrev.y + probe };
-            const Vec2  to         = { shot.position.x, shot.position.y + probe };
-            Vec2        lastFree   = from;
-            Vec2        topHit     = to;
-            const bool  bGroundHit = _pGround && SegmentHitsGround_(*_pGround, from, to, lastFree);
-            const bool  bPlatHit   = !bGroundHit && SegmentHitsPlatform_(_platforms, from, to, topHit);
+            const float   probe      = params.groundProbeY;
+            const VECTOR2 from       = { shot.renderPrev.x, shot.renderPrev.y + probe };
+            const VECTOR2 to         = { shot.position.x, shot.position.y + probe };
+            VECTOR2       lastFree   = from;
+            VECTOR2       topHit     = to;
+            const bool    bGroundHit = _pGround && SegmentHitsGround_(*_pGround, from, to, lastFree);
+            const bool    bPlatHit   = !bGroundHit && SegmentHitsPlatform_(_platforms, from, to, topHit);
             if (bGroundHit || bPlatHit)
             {
                 if (bRoll)
                 {
-                    Vec2 standing = shot.position;
+                    VECTOR2 standing = shot.position;
                     if (bGroundHit)
                     {
                         for (int guard = 0; guard < 64 && _pGround->IsSolidAt({ standing.x, standing.y + probe }); ++guard)
@@ -366,8 +366,8 @@ void ProjectileSystem::Step(
                 }
                 else
                 {
-                    shot.bAlive   = false;
-                    const Vec2 at = bGroundHit ? lastFree : topHit;
+                    shot.bAlive      = false;
+                    const VECTOR2 at = bGroundHit ? lastFree : topHit;
                     m_shotFx.push_back({
                         { at.x, at.y - probe },
                         params.visual,
@@ -407,9 +407,9 @@ void ProjectileSystem::Step(
         {
             constexpr float kBounceDamping  = 0.4f;
             constexpr float kGroundFriction = 0.82f;
-            Vec2            lastFree;
+            VECTOR2         lastFree        = {};
 
-            const Vec2 nextX = { bomb.position.x + bomb.velocity.x * _dt, bomb.position.y };
+            const VECTOR2 nextX = { bomb.position.x + bomb.velocity.x * _dt, bomb.position.y };
             if (_pGround && SegmentHitsGround_(*_pGround, bomb.position, nextX, lastFree))
             {
                 bomb.velocity.x = -bomb.velocity.x * kBounceDamping;
@@ -419,7 +419,7 @@ void ProjectileSystem::Step(
                 bomb.position = nextX;
             }
 
-            const Vec2 nextY = { bomb.position.x, bomb.position.y + bomb.velocity.y * _dt };
+            const VECTOR2 nextY = { bomb.position.x, bomb.position.y + bomb.velocity.y * _dt };
             if (_pGround && SegmentHitsGround_(*_pGround, bomb.position, nextY, lastFree))
             {
                 bomb.position = lastFree;
@@ -450,9 +450,9 @@ void ProjectileSystem::Step(
             continue;
         }
 
-        const Vec2 next = { bomb.position.x + bomb.velocity.x * _dt, bomb.position.y + bomb.velocity.y * _dt };
+        const VECTOR2 next = { bomb.position.x + bomb.velocity.x * _dt, bomb.position.y + bomb.velocity.y * _dt };
 
-        Vec2 lastFree;
+        VECTOR2 lastFree = {};
         if (_pGround && SegmentHitsGround_(*_pGround, bomb.position, next, lastFree))
         {
             bomb.position = lastFree;

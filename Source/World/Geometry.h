@@ -17,24 +17,24 @@
 
 struct Aabb
 {
-    Vec2 min = { 0.f, 0.f };
-    Vec2 max = { 0.f, 0.f };
+    VECTOR2 min = { 0.f, 0.f };
+    VECTOR2 max = { 0.f, 0.f };
 
-    [[nodiscard]] static Aabb FromMinMax(const Vec2 _min, const Vec2 _max);
+    [[nodiscard]] static Aabb FromMinMax(const VECTOR2 _min, const VECTOR2 _max);
 
-    [[nodiscard]] static Aabb FromMinSize(const Vec2 _min, const Vec2 _size);
+    [[nodiscard]] static Aabb FromMinSize(const VECTOR2 _min, const VECTOR2 _size);
 
-    [[nodiscard]] static Aabb FromCenterSize(const Vec2 _center, const Vec2 _size);
+    [[nodiscard]] static Aabb FromCenterSize(const VECTOR2 _center, const VECTOR2 _size);
 
-    [[nodiscard]] static Aabb FromBottomCenter(const Vec2 _bottomCenter, const Vec2 _size);
+    [[nodiscard]] static Aabb FromBottomCenter(const VECTOR2 _bottomCenter, const VECTOR2 _size);
 
     [[nodiscard]] float GetWidth() const;
 
     [[nodiscard]] float GetHeight() const;
 
-    [[nodiscard]] Vec2 GetSize() const;
+    [[nodiscard]] VECTOR2 GetSize() const;
 
-    [[nodiscard]] Vec2 GetCenter() const;
+    [[nodiscard]] VECTOR2 GetCenter() const;
 
     [[nodiscard]] bool IsEmpty() const;
 
@@ -45,7 +45,7 @@ struct Aabb
     }
 
     [[nodiscard]] __forceinline constexpr bool Contains(
-        const Vec2 _point) const
+        const VECTOR2 _point) const
     {
         return _point.x >= min.x && _point.x < max.x && _point.y >= min.y && _point.y < max.y;
     }

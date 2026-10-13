@@ -56,16 +56,16 @@ struct PropPart
 {
     ePropRole role   = ePropRole::Hurt;
     ePropWhen when   = ePropWhen::Intact;
-    Vec2      size   = { 0.f, 0.f };
-    Vec2      offset = { 0.f, 0.f };
+    VECTOR2   size   = { 0.f, 0.f };
+    VECTOR2   offset = { 0.f, 0.f };
 };
 
 struct PropExplosion
 {
-    String clip   = {};
-    int    count  = 1;
-    float  spread = 0.f;   // 중심 기준 ±spread 난수 오프셋 (px)
-    Vec2   offset = { 0.f, 0.f };
+    String  clip   = {};
+    int     count  = 1;
+    float   spread = 0.f;   // 중심 기준 ±spread 난수 오프셋 (px)
+    VECTOR2 offset = { 0.f, 0.f };
 };
 
 struct PropDebris
@@ -90,8 +90,8 @@ struct PropDrop
 
 struct PropChild
 {
-    String def    = {};
-    Vec2   offset = { 0.f, 0.f };
+    String  def    = {};
+    VECTOR2 offset = { 0.f, 0.f };
 };
 
 struct PropFall
@@ -110,9 +110,9 @@ struct PropSecondary
 
 struct PropGroundPatch
 {
-    String sprite = {};
-    Vec2   size   = { 0.f, 0.f };
-    Vec2   inset  = { 0.f, 0.f };
+    String  sprite = {};
+    VECTOR2 size   = { 0.f, 0.f };
+    VECTOR2 inset  = { 0.f, 0.f };
 };
 
 struct PropVariant
@@ -158,8 +158,8 @@ struct PropDef
 
 struct PropBoxOverride
 {
-    Vec2 size   = { 0.f, 0.f };
-    Vec2 offset = { 0.f, 0.f };
+    VECTOR2 size   = { 0.f, 0.f };
+    VECTOR2 offset = { 0.f, 0.f };
 };
 
 struct PropSpawnParams

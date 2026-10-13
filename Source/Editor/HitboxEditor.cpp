@@ -778,18 +778,18 @@ void HitboxEditor::DrawExtraOverlay_(
         m_bBoxDrag = false;
         return;
     }
-    const Vec2 camRaw = pState->GetCamera().GetPosition();
-    const Vec2 camera = { std::floor(camRaw.x), std::floor(camRaw.y) };
+    const VECTOR2 camRaw = pState->GetCamera().GetPosition();
+    const VECTOR2 camera = { std::floor(camRaw.x), std::floor(camRaw.y) };
 
-    float      mouseX = 0.f;
-    float      mouseY = 0.f;
-    const bool bDown  = (SDL_GetMouseState(&mouseX, &mouseY) & SDL_BUTTON_LMASK) != 0;
-    const bool bClick = bDown && !m_bPrevDown;
-    m_bPrevDown       = bDown;
-    float      lx     = 0.f;
-    float      ly     = 0.f;
-    const bool bMouse = SDL_RenderCoordinatesFromWindow(_renderer.GetNative(), mouseX, mouseY, &lx, &ly) && !ImGui::GetIO().WantCaptureMouse;
-    const Vec2 mouse  = { lx + camera.x, ly + camera.y };
+    float      mouseX    = 0.f;
+    float      mouseY    = 0.f;
+    const bool bDown     = (SDL_GetMouseState(&mouseX, &mouseY) & SDL_BUTTON_LMASK) != 0;
+    const bool bClick    = bDown && !m_bPrevDown;
+    m_bPrevDown          = bDown;
+    float         lx     = 0.f;
+    float         ly     = 0.f;
+    const bool    bMouse = SDL_RenderCoordinatesFromWindow(_renderer.GetNative(), mouseX, mouseY, &lx, &ly) && !ImGui::GetIO().WantCaptureMouse;
+    const VECTOR2 mouse  = { lx + camera.x, ly + camera.y };
     if (!bDown)
     {
         m_bBoxDrag = false;
@@ -803,8 +803,8 @@ void HitboxEditor::DrawExtraOverlay_(
         {
             continue;
         }
-        const float facing = static_cast<float>(e.facing < 0 ? -1 : 1);
-        const Vec2  local  = { (mouse.x - e.body.position.x) * facing, mouse.y - e.body.position.y };
+        const float   facing = static_cast<float>(e.facing < 0 ? -1 : 1);
+        const VECTOR2 local  = { (mouse.x - e.body.position.x) * facing, mouse.y - e.body.position.y };
         for (int i = 0; i < static_cast<int>(pDef->hitboxes.size()); ++i)
         {
             const ExtraBoxDef& box   = pDef->hitboxes[static_cast<size_t>(i)];
@@ -862,14 +862,14 @@ void HitboxEditor::DrawOverlay(
     const HitboxEntry& entry = entries[static_cast<size_t>(m_activeEntry)];
     const HitboxTitle  title = MakeHitboxTitle_(entry);
     const RGBA         color = HitboxKindColor_(title.kind);
-    const Vec2         size  = { static_cast<float>(entry.value[0]), static_cast<float>(entry.value[1]) };
+    const VECTOR2      size  = { static_cast<float>(entry.value[0]), static_cast<float>(entry.value[1]) };
     if (m_activeFile == 0)
     {
         const PlayerController& player = pState->GetPlayer();
-        const Vec2              feet   = player.GetFeet();
+        const VECTOR2           feet   = player.GetFeet();
         if (title.kind == eHitboxKind::Attack)
         {
-            const Vec2 center = { feet.x + static_cast<float>(player.GetFacing()) * 30.f, feet.y - 30.f };
+            const VECTOR2 center = { feet.x + static_cast<float>(player.GetFacing()) * 30.f, feet.y - 30.f };
             _lab.DrawMark(_renderer, Aabb::FromCenterSize(center, size), center, color, title.en);
         }
         else

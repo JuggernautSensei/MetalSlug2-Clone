@@ -41,7 +41,7 @@ class FakeStageHost final : public IStageHost
 {
 public:
     int64_t       now           = 0;
-    Vec2          playerFeet    = { 0.f, 378.f };
+    VECTOR2       playerFeet    = { 0.f, 378.f };
     bool          bGameOver     = false;
     GroundQueryFn groundFn      = DefaultGround_;
     bool          bAutoDefeat   = false;
@@ -56,7 +56,7 @@ public:
     String                             endNext;
     String                             currentGround;
     String                             currentBackdrop;
-    Vector<Vec2>                       warps;
+    Vector<VECTOR2>                    warps;
     Vector<std::pair<SpawnId, String>> commands;
     Vector<uint32_t>                   clears;
     float                              invincibleSeconds = 0.f;
@@ -87,14 +87,14 @@ public:
         const float _x,
         const float _fromY) const override;
 
-    Vec2 PlayerFeet() const override;
-    bool IsGameOver() const override;
+    VECTOR2 PlayerFeet() const override;
+    bool    IsGameOver() const override;
 
     void SetPlayerInvincible(
         const float _seconds) override;
 
     void WarpPlayer(
-        const Vec2 _feet) override;
+        const VECTOR2 _feet) override;
 
     void SetBackdrop(
         const StringView _modeId) override;

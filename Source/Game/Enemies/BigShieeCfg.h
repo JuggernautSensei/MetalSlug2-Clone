@@ -18,15 +18,15 @@ inline constexpr int kBigShieeDepthDisc    = -96;
 //  - 포탑/주포 좌표는 선체 원점 기준 (x 오른쪽 +, y 아래 +). 포탑 좌표는 정답 이미지 (Docs/img/BigShieeReference.png) 에서 실측한 값이다.
 struct BigShieeTurretCfg
 {
-    char  letter    = 'A';
-    int   side      = 0;   // 초기 방향: 0 = 왼쪽 (Idle1 계열), 1 = 오른쪽 (Idle3 계열). 쏘기 전에 플레이어 쪽으로 돈다
-    bool  bTwin     = true;
-    Vec2  anchor    = { 0.f, 0.f };
-    Vec2  boxSize   = { 70.f, 56.f };
-    Vec2  boxOffset = { 0.f, -30.f };
-    Vec2  muzzle    = { -22.f, -40.f };
-    float muzzleGap = 16.f;
-    int   hp        = 40;
+    char    letter    = 'A';
+    int     side      = 0;   // 초기 방향: 0 = 왼쪽 (Idle1 계열), 1 = 오른쪽 (Idle3 계열). 쏘기 전에 플레이어 쪽으로 돈다
+    bool    bTwin     = true;
+    VECTOR2 anchor    = { 0.f, 0.f };
+    VECTOR2 boxSize   = { 70.f, 56.f };
+    VECTOR2 boxOffset = { 0.f, -30.f };
+    VECTOR2 muzzle    = { -22.f, -40.f };
+    float   muzzleGap = 16.f;
+    int     hp        = 40;
 };
 
 struct BigShieeCfg
@@ -43,25 +43,25 @@ struct BigShieeCfg
 
     ARRAY<BigShieeTurretCfg, kBigShieeTurretCount> turrets     = {};
     int                                            turretScore = 1000;
-    Vec2                                           antennaP    = { 0.f, 0.f };   // 선체 위 리브 패널 (정답 이미지에서 실측)
-    Vec2                                           antennaQ    = { 0.f, 0.f };
+    VECTOR2                                        antennaP    = { 0.f, 0.f };   // 선체 위 리브 패널 (정답 이미지에서 실측)
+    VECTOR2                                        antennaQ    = { 0.f, 0.f };
 
     // 입장: 선체 가운데가 카메라 왼쪽 + startScreenX 에서 출발해 화면 기준 위치 표 (초, 화면 x) 를 따라 들어온다. 표가 끝나면 월드에 고정된다
-    float           startScreenX    = -230.f;
-    ARRAY<Vec2, 24> entranceKeys    = {};
-    int             numEntranceKeys = 0;
+    float              startScreenX    = -230.f;
+    ARRAY<VECTOR2, 24> entranceKeys    = {};
+    int                numEntranceKeys = 0;
 
     // 자동 스크롤 (카메라): 보스가 살아 있는 동안 px/s. 멈춤 구간은 보스 생성 기준 (시작, 길이) 초
-    float          scrollSpeed         = 20.f;
-    float          scrollStartSec      = 1.4f;
-    float          scrollBudgetPx      = 0.f;   // 보스 생성 뒤 누적 스크롤이 이만큼이면 카메라가 멈춘다 (아레나 끝). 0 = 끝없이
-    ARRAY<Vec2, 8> scrollPauses        = {};
-    int            numScrollPauses     = 0;
-    float          deployPauseDelaySec = 0.8f;
-    float          deployPauseSec      = 9.5f;
-    float          latePauseFirstSec   = 12.5f;
-    float          latePausePeriodSec  = 19.f;
-    float          latePauseSec        = 1.2f;
+    float             scrollSpeed         = 20.f;
+    float             scrollStartSec      = 1.4f;
+    float             scrollBudgetPx      = 0.f;   // 보스 생성 뒤 누적 스크롤이 이만큼이면 카메라가 멈춘다 (아레나 끝). 0 = 끝없이
+    ARRAY<VECTOR2, 8> scrollPauses        = {};
+    int               numScrollPauses     = 0;
+    float             deployPauseDelaySec = 0.8f;
+    float             deployPauseSec      = 9.5f;
+    float             latePauseFirstSec   = 12.5f;
+    float             latePausePeriodSec  = 19.f;
+    float             latePauseSec        = 1.2f;
 
     // 선체 주행: 입장이 끝난 뒤 월드에 고정되어 카메라 스크롤에 밀려 왼쪽으로 흐른다. 화면 x 가 driveTriggerX 아래로 가면 (원작: 약 9 초마다)
     // driveTargetX 까지 돌진해 선수 (X 문양) 를 화면 폭의 약 90% 에 되돌린다. 주포 전개 중에는 하지 않는다
@@ -87,10 +87,10 @@ struct BigShieeCfg
     float           turretAimBandPx   = 72.f;
     int             turretTrackTicks  = 0;   // 쉬는 포탑이 조준 위치로 한 칸 도는 최소 간격 (틱). 0 = 쉬는 동안 안 돈다
 
-    Vec2            cannonAnchor         = { 30.f, -170.f };   // 주포 받침 (선체 원점 기준). 선체 가운데 상부 (X 문양 쪽 오른쪽) 에서 올라온다
-    Vec2            cannonBoxSize        = { 120.f, 190.f };
-    Vec2            cannonBoxOffset      = { 32.f, -265.f };
-    Vec2            cannonAimOrigin      = { 110.5f, -301.f };
+    VECTOR2         cannonAnchor         = { 30.f, -170.f };   // 주포 받침 (선체 원점 기준). 선체 가운데 상부 (X 문양 쪽 오른쪽) 에서 올라온다
+    VECTOR2         cannonBoxSize        = { 120.f, 190.f };
+    VECTOR2         cannonBoxOffset      = { 32.f, -265.f };
+    VECTOR2         cannonAimOrigin      = { 110.5f, -301.f };
     float           deployDelaySec       = 0.5f;
     float           firstMissileSec      = 1.2f;
     float           missileIntervalSec   = 3.0f;
@@ -103,13 +103,13 @@ struct BigShieeCfg
     ARRAY<float, 5> cannonMuzzleX        = { -42.f, -24.f, 0.f, 24.f, 42.f };
 
     // 탄피: 고폭탄을 쏠 때 포구 + casingOffset 에서 튀어 나와 해석적으로 떨어진다 (판정 없음, 슬롯 1 개)
-    Vec2  casingOffset    = { 60.f, -20.f };
-    float casingScale     = 2.f;
-    Vec2  casingVel       = { 36.f, -60.f };   // px/s (y 는 아래 +, 음수 = 살짝 위로 튄다)
-    float casingGravity   = 900.f;
-    float casingGroundDy  = 0.f;
-    float casingLingerSec = 0.2f;
-    float casingFps       = 12.f;
+    VECTOR2 casingOffset    = { 60.f, -20.f };
+    float   casingScale     = 2.f;
+    VECTOR2 casingVel       = { 36.f, -60.f };   // px/s (y 는 아래 +, 음수 = 살짝 위로 튄다)
+    float   casingGravity   = 900.f;
+    float   casingGroundDy  = 0.f;
+    float   casingLingerSec = 0.2f;
+    float   casingFps       = 12.f;
 
     // 낙하산 인질 보급 (pow_chute): 보스가 살아 있는 동안 chuteFirstSec 뒤부터 chuteIntervalSec 마다 카메라 위쪽 밖에서 떨어진다.
     float chuteFirstSec     = 6.f;
@@ -128,15 +128,15 @@ struct BigShieeCfg
     float           dyingWreckSec         = 6.3f;
     float           dyingDoneSec          = 8.4f;
     float           wreckSmokeIntervalSec = 0.35f;
-    Vec2            wreckOffset           = { 0.f, 0.f };
-    Vec2            cannonWreckOffset     = { 150.f, -60.f };
+    VECTOR2         wreckOffset           = { 0.f, 0.f };
+    VECTOR2         cannonWreckOffset     = { 150.f, -60.f };
 
     // 파괴 연출 위치 (선체/포탑 원점 기준)
-    float chuteEdgeX        = 30.f;
-    Vec2  turretBlastOffset = { 0.f, -24.f };
-    Vec2  turretSmokeOffset = { 0.f, -10.f };
-    Vec2  deathFlameOffset  = { 0.f, 40.f };
-    float deathBlastDy      = 120.f;
-    Vec2  deathHugeOffset   = { 20.f, -150.f };
-    Vec2  deathDiscOffset   = { -40.f, -170.f };
+    float   chuteEdgeX        = 30.f;
+    VECTOR2 turretBlastOffset = { 0.f, -24.f };
+    VECTOR2 turretSmokeOffset = { 0.f, -10.f };
+    VECTOR2 deathFlameOffset  = { 0.f, 40.f };
+    float   deathBlastDy      = 120.f;
+    VECTOR2 deathHugeOffset   = { 20.f, -150.f };
+    VECTOR2 deathDiscOffset   = { -40.f, -170.f };
 };

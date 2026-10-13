@@ -17,7 +17,7 @@ struct PlayerContext
     PhysicsWorld      physics       = {};
     CombatSystem*     pCombat       = nullptr;
     ProjectileSystem* pProjectiles  = nullptr;
-    Vec2              respawnFeet   = { 0.f, 0.f };
+    VECTOR2           respawnFeet   = { 0.f, 0.f };
     eGodMode          godMode       = eGodMode::Off;
     bool              bInfiniteAmmo = false;
 };
@@ -42,7 +42,7 @@ enum class eChutePhase : uint8_t
 class PlayerController
 {
 public:
-    void Reset(const Tuning& _tuning, Vec2 _spawnFeet);
+    void Reset(const Tuning& _tuning, VECTOR2 _spawnFeet);
 
     bool SnapToGround(const PhysicsWorld& _world, float _maxDist);
 
@@ -61,21 +61,21 @@ public:
     [[nodiscard]] eChutePhase GetChutePhase() const;
     [[nodiscard]] bool        IsChuteVisible(const Tuning& _tuning) const;
     // 카메라/월드 로직용 발 위치. 낙하 중에는 착지 지점을 준다 (화면이 지면 기준으로 고정되도록).
-    [[nodiscard]] Vec2 GetLogicalFeet() const;
+    [[nodiscard]] VECTOR2 GetLogicalFeet() const;
 
     void               BeginRide();
-    void               SetRideFeet(Vec2 _feet, int _facing);
-    void               EndRide(Vec2 _feet, Vec2 _velocity, int _facing, int _invincibleTicks);
+    void               SetRideFeet(VECTOR2 _feet, int _facing);
+    void               EndRide(VECTOR2 _feet, VECTOR2 _velocity, int _facing, int _invincibleTicks);
     [[nodiscard]] bool IsRiding() const;
 
     void ExtendInvincibility(int _ticks);
 
     [[nodiscard]] ePlayerState       GetState() const;
-    [[nodiscard]] Vec2               GetFeet() const;
-    [[nodiscard]] Vec2               GetPrevFeet() const;
+    [[nodiscard]] VECTOR2            GetFeet() const;
+    [[nodiscard]] VECTOR2            GetPrevFeet() const;
     [[nodiscard]] int                GetZ() const;
     void                             SetZ(int _z);
-    [[nodiscard]] Vec2               GetVelocity() const;
+    [[nodiscard]] VECTOR2            GetVelocity() const;
     [[nodiscard]] int                GetFacing() const;
     [[nodiscard]] bool               IsGrounded() const;
     [[nodiscard]] ePose              GetPose() const;
@@ -102,21 +102,21 @@ public:
     [[nodiscard]] uint64_t HashState() const;
 
 private:
-    void               TickAlive_(const PlayerContext& _ctx, const InputHistory& _input);
-    void               TickDead_(const PlayerContext& _ctx);
-    void               TickMovement_(const PlayerContext& _ctx, const PlayerCommand& _command);
-    void               TickActions_(const PlayerContext& _ctx, const PlayerCommand& _command);
-    void               TickKnife_(const PlayerContext& _ctx, const PlayerCommand& _command);
-    void               TickBomb_(const PlayerContext& _ctx, const PlayerCommand& _command);
-    void               TickShot_(const PlayerContext& _ctx, const PlayerCommand& _command);
-    void               FireBullet_(const PlayerContext& _ctx, const WeaponTuning& _weapon);
-    [[nodiscard]] Vec2 MakeMuzzle_(const Tuning& _tuning, const WeaponTuning& _weapon) const;
-    void               CancelBurst_();
-    void               StartFlame_(const PlayerContext& _ctx, const WeaponTuning& _flame);
-    void               TickFlame_(const PlayerContext& _ctx, const WeaponTuning& _flame);
-    void               SpawnFlameParticle_(const PlayerContext& _ctx, const WeaponTuning& _flame);
-    void               StopFlameSpawn_();
-    void               EndFlame_();
+    void                  TickAlive_(const PlayerContext& _ctx, const InputHistory& _input);
+    void                  TickDead_(const PlayerContext& _ctx);
+    void                  TickMovement_(const PlayerContext& _ctx, const PlayerCommand& _command);
+    void                  TickActions_(const PlayerContext& _ctx, const PlayerCommand& _command);
+    void                  TickKnife_(const PlayerContext& _ctx, const PlayerCommand& _command);
+    void                  TickBomb_(const PlayerContext& _ctx, const PlayerCommand& _command);
+    void                  TickShot_(const PlayerContext& _ctx, const PlayerCommand& _command);
+    void                  FireBullet_(const PlayerContext& _ctx, const WeaponTuning& _weapon);
+    [[nodiscard]] VECTOR2 MakeMuzzle_(const Tuning& _tuning, const WeaponTuning& _weapon) const;
+    void                  CancelBurst_();
+    void                  StartFlame_(const PlayerContext& _ctx, const WeaponTuning& _flame);
+    void                  TickFlame_(const PlayerContext& _ctx, const WeaponTuning& _flame);
+    void                  SpawnFlameParticle_(const PlayerContext& _ctx, const WeaponTuning& _flame);
+    void                  StopFlameSpawn_();
+    void                  EndFlame_();
     // 사격 입력 한 번마다 시뮬레이션 상태(발사 수, 발 위치)에서 시드를 만든다 (리플레이/해시 결정성 유지)
     [[nodiscard]] uint64_t MakeShotSeed_() const;
     void                   Respawn_(const PlayerContext& _ctx);
@@ -127,12 +127,12 @@ private:
     void                   StartChuteRelease_();
 
     Body       m_body     = {};
-    Vec2       m_prevFeet = { 0.f, 0.f };
+    VECTOR2    m_prevFeet = { 0.f, 0.f };
     int        m_z        = kDefaultZ;
     MoveResult m_lastMove = {};
 
     eChutePhase m_chutePhase      = eChutePhase::None;
-    Vec2        m_chuteLandFeet   = { 0.f, 0.f };
+    VECTOR2     m_chuteLandFeet   = { 0.f, 0.f };
     int         m_chuteBlinkTicks = 0;
 
     PlayerInputBuffer m_input  = {};

@@ -13,9 +13,9 @@
 
 namespace
 {
-[[nodiscard]] Vec2 ReadVec2_(
+[[nodiscard]] VECTOR2 ReadVec2_(
     const ParamValue& _value,
-    const Vec2        _default)
+    const VECTOR2     _default)
 {
     if (!_value.IsArray() || _value.GetSize() < 2)
     {
@@ -134,8 +134,8 @@ std::optional<GroundMap> LoadGroundMask(
     return mask;
 }
 
-Vec2 ItemFeetFromCenter(
-    const Vec2 _center)
+VECTOR2 ItemFeetFromCenter(
+    const VECTOR2 _center)
 {
     return { _center.x, _center.y + 16.f };
 }

@@ -26,7 +26,7 @@ public:
     [[nodiscard]] int               Ticks(StringView _key, float _defaultSec);
     [[nodiscard]] bool              Bool(StringView _key, bool _bDefault);
     [[nodiscard]] String            Str(StringView _key);
-    [[nodiscard]] Vec2              ReadVec2(StringView _key, Vec2 _default);
+    [[nodiscard]] VECTOR2           ReadVec2(StringView _key, VECTOR2 _default);
     [[nodiscard]] BoxDef            Box(StringView _key);
     [[nodiscard]] bool              NumArray(StringView _key, Span<float> _out);
     [[nodiscard]] int               NumList(StringView _key, Span<float> _out);

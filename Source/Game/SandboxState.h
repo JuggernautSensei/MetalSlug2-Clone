@@ -28,7 +28,7 @@ struct SandboxConfig
     GroundMap        ground          = {};
     Vector<Platform> platforms       = {};
     Aabb             cameraBounds    = Aabb::FromMinMax({ 0.f, 0.f }, { 3520.f, 448.f });
-    Vec2             spawnFeet       = { 100.f, 378.f };
+    VECTOR2          spawnFeet       = { 100.f, 378.f };
     bool             bSpawnTargets   = true;
     bool             bLoadTuningFile = true;
     Tuning           tuning          = {};
@@ -44,7 +44,7 @@ struct SandboxConfig
     int              heliHp          = -1;   // 헬기 랩 전용: 헬기 체력 (-1: 정의 기본값)
     bool             bGodMode        = false;
     bool             bSlugLab        = false;
-    Vector<Vec2>     slugFeet        = {};
+    Vector<VECTOR2>  slugFeet        = {};
 };
 
 class SandboxState final : public IGameState
@@ -73,9 +73,9 @@ public:
     [[nodiscard]] const EnemyDefLibrary&  GetEnemyLib() const;
     [[nodiscard]] EnemyDefLibrary&        GetEnemyLibMutable();
 
-    uint32_t AddTarget(eDummyKind _kind, Vec2 _feet, bool _bShooter = false);
+    uint32_t AddTarget(eDummyKind _kind, VECTOR2 _feet, bool _bShooter = false);
 
-    EnemyHandle SpawnEnemy(StringView _defName, Vec2 _feet, const SpawnParams& _params = {});
+    EnemyHandle SpawnEnemy(StringView _defName, VECTOR2 _feet, const SpawnParams& _params = {});
 
     void RestartGame();
 
@@ -93,14 +93,14 @@ private:
     void                       UpdateWalls_();
     void                       UpdatePropCollision_();
     [[nodiscard]] PhysicsWorld MakePhysicsWorld_() const;
-    [[nodiscard]] Vec2         GetRespawnFeet_() const;
+    [[nodiscard]] VECTOR2      GetRespawnFeet_() const;
     [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;
     void                       SpawnDebugEnemy_(int _slot, float _aheadPx = 180.f);
     void                       TickBusLab_();
     [[nodiscard]] bool         LoadEnemyDefs_(const FilePath& _assetRoot, EnemyDefLibrary& _out) const;
 
-    void DrawWorld_(Vec2 _cameraPos, float _alpha);
-    void DrawDebugBoxes_(Renderer& _renderer, Vec2 _cameraPos) const;
+    void DrawWorld_(VECTOR2 _cameraPos, float _alpha);
+    void DrawDebugBoxes_(Renderer& _renderer, VECTOR2 _cameraPos) const;
     void DrawHud_();
     void RequestSounds_(const Vector<FxRequest>& _fx);
 
@@ -115,7 +115,7 @@ private:
     PropDefLibrary   m_propDefs  = {};
     PropWorld        m_props { &m_propDefs, 1 };
     Camera           m_camera        = {};
-    Vec2             m_prevCameraPos = { 0.f, 0.f };
+    VECTOR2          m_prevCameraPos = { 0.f, 0.f };
 
     PlayerController m_player      = {};
     PlayerRig        m_rig         = {};

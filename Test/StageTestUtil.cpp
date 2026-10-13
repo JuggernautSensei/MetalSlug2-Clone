@@ -70,7 +70,7 @@ std::optional<float> FakeStageHost::GetGroundFindY(
     return groundFn(_x, _fromY);
 }
 
-Vec2 FakeStageHost::PlayerFeet() const
+VECTOR2 FakeStageHost::PlayerFeet() const
 {
     return playerFeet;
 }
@@ -88,7 +88,7 @@ void FakeStageHost::SetPlayerInvincible(
 }
 
 void FakeStageHost::WarpPlayer(
-    const Vec2 _feet)
+    const VECTOR2 _feet)
 {
     playerFeet = _feet;
     warps.push_back(_feet);

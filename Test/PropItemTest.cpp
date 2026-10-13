@@ -51,7 +51,7 @@ void TickItems_(
 }
 
 [[nodiscard]] Aabb PlayerBoxAt_(
-    const Vec2 _feet)
+    const VECTOR2 _feet)
 {
     return Aabb::FromBottomCenter(_feet, { 24.f, 40.f });
 }

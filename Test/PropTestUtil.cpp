@@ -63,7 +63,7 @@ GroundMap MakeFloorMap(
 }
 
 Body MakeBody(
-    const Vec2 _feet)
+    const VECTOR2 _feet)
 {
     Body body;
     body.position = _feet;

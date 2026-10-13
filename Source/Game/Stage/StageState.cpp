@@ -89,8 +89,8 @@ void StageState::OnExit()
 
 const InputHistory& StageState::MakeBotInput_()
 {
-    InputFrame frame = {};
-    const Vec2 feet  = m_player.GetFeet();
+    InputFrame    frame = {};
+    const VECTOR2 feet  = m_player.GetFeet();
 
     bool  bTarget = false;
     float bestDx  = 0.f;
@@ -294,7 +294,7 @@ void StageState::Restart_()
 
     m_runner->Begin();
 
-    m_startFeet = m_runner->ResolvePlayerStart().value_or(Vec2 { m_data.player.x, 0.f });
+    m_startFeet = m_runner->ResolvePlayerStart().value_or(VECTOR2 { m_data.player.x, 0.f });
     UpdateWalls_();
     m_player.Reset(m_tuning, m_startFeet);
     m_player.SnapToGround(MakePhysicsWorld_(), 16.f);
@@ -647,9 +647,9 @@ PhysicsWorld StageState::MakeEnemyPhysicsWorld_() const
     return world;
 }
 
-Vec2 StageState::GetRespawnFeet_() const
+VECTOR2 StageState::GetRespawnFeet_() const
 {
-    const Vec2 cam = m_camera.GetPosition();
+    const VECTOR2 cam = m_camera.GetPosition();
     return { cam.x + m_tuning.player.respawnOffsetX, cam.y - m_tuning.player.respawnDropY };
 }
 
@@ -751,7 +751,7 @@ const GroundMap* StageState::FindPatchMask_(
 
 void StageState::ApplyGroundPatch_(
     const String& _sprite,
-    const Vec2    _topLeft)
+    const VECTOR2 _topLeft)
 {
     GroundMap*       pGround = m_host.GetActiveGroundMut();
     const GroundMap* pMask   = FindPatchMask_(_sprite);
@@ -872,8 +872,8 @@ void StageState::Render(
     }
     renderer.BeginFrame({ 156, 190, 224, 255 });
 
-    const Vec2 camNow    = m_camera.GetPosition();
-    const Vec2 cameraPos = { std::floor(m_prevCameraPos.x + (camNow.x - m_prevCameraPos.x) * _alpha), std::floor(m_prevCameraPos.y + (camNow.y - m_prevCameraPos.y) * _alpha) };
+    const VECTOR2 camNow    = m_camera.GetPosition();
+    const VECTOR2 cameraPos = { std::floor(m_prevCameraPos.x + (camNow.x - m_prevCameraPos.x) * _alpha), std::floor(m_prevCameraPos.y + (camNow.y - m_prevCameraPos.y) * _alpha) };
 
     DrawBackdrop_(cameraPos);
     DrawWorld_(cameraPos, _alpha);
@@ -885,7 +885,7 @@ void StageState::Render(
 }
 
 void StageState::DrawBackdrop_(
-    const Vec2 _cameraPos)
+    const VECTOR2 _cameraPos)
 {
     const BackdropMode* pMode = m_data.FindBackdrop(m_runner->GetBackdropMode());
     if (!pMode)
@@ -942,8 +942,8 @@ void StageState::DrawBackdrop_(
 }
 
 void StageState::DrawWorld_(
-    const Vec2  _cameraPos,
-    const float _alpha)
+    const VECTOR2 _cameraPos,
+    const float   _alpha)
 {
     Renderer&               renderer = Renderer::GetSingleton();
     SpriteBatch&            sprites  = SpriteBatch::GetSingleton();
@@ -967,9 +967,9 @@ void StageState::DrawWorld_(
         {
             continue;
         }
-        const Aabb box   = entity.GetBox();
-        const Vec2 tl    = ToScreen(box.min, _cameraPos);
-        const RGBA color = entity.IsAlive() ? GetPlaceholderColor_(entity) : RGBA { 90, 90, 90, 255 };
+        const Aabb    box   = entity.GetBox();
+        const VECTOR2 tl    = ToScreen(box.min, _cameraPos);
+        const RGBA    color = entity.IsAlive() ? GetPlaceholderColor_(entity) : RGBA { 90, 90, 90, 255 };
         if (entity.bHittable || !entity.IsAlive())
         {
             renderer.FillRect(tl, entity.size, color);
@@ -984,7 +984,7 @@ void StageState::DrawWorld_(
     }
 
     {
-        const Vec2 feet = Lerp(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
+        const VECTOR2 feet = Lerp(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
         // 시작 낙하산: 레이어 19 로 그려 플레이어(레이어 20)보다 뒤에 놓인다.
         if (m_player.IsChuteVisible(m_tuning))
         {
@@ -1011,7 +1011,7 @@ void StageState::DrawWorld_(
     {
         for (const Bullet& bullet: m_projectiles.GetBullets())
         {
-            const Vec2 pos = Lerp(bullet.renderPrev, bullet.position, _alpha);
+            const VECTOR2 pos = Lerp(bullet.renderPrev, bullet.position, _alpha);
             if (bullet.team == eTeam::Player && SubmitPlayerBullet(sprites, &anims, m_spriteLib, bullet, pos, ResolveZ(bullet.z, kPlayerBulletDepth)))
             {
                 continue;
@@ -1022,7 +1022,7 @@ void StageState::DrawWorld_(
 
         for (const Bomb& bomb: m_projectiles.GetBombs())
         {
-            const Vec2 pos = Lerp(bomb.renderPrev, bomb.position, _alpha);
+            const VECTOR2 pos = Lerp(bomb.renderPrev, bomb.position, _alpha);
             if (const AnimFrame* pFrame = m_bombAnim.GetFrameData(anims))
             {
                 sprites.Submit(ResolveZ(bomb.params.z, kPlayerBombDepth), 0, *pFrame, pos);
@@ -1039,8 +1039,8 @@ void StageState::DrawWorld_(
 }
 
 void StageState::DrawDebugBoxes_(
-    Renderer&  _renderer,
-    const Vec2 _cameraPos) const
+    Renderer&     _renderer,
+    const VECTOR2 _cameraPos) const
 {
     for (const Hurtbox& hurtbox: m_combat.GetHurtboxes())
     {
@@ -1066,8 +1066,8 @@ void StageState::DrawDebugBoxes_(
         _cameraPos,
         { 80, 120, 255, 255 });
 
-    const Vec2  feet = m_player.GetFeet();
-    const float fh   = m_player.GetBody().footHalfWidth;
+    const VECTOR2 feet = m_player.GetFeet();
+    const float   fh   = m_player.GetBody().footHalfWidth;
     _renderer.DrawLine(ToScreen({ feet.x - fh, feet.y }, _cameraPos), ToScreen({ feet.x + fh, feet.y }, _cameraPos), { 255, 255, 0, 255 });
     _renderer.DrawLine(ToScreen({ feet.x, feet.y - 4.f }, _cameraPos), ToScreen({ feet.x, feet.y + 4.f }, _cameraPos), { 255, 255, 0, 255 });
 
@@ -1113,7 +1113,7 @@ HudModel StageState::BuildHudModel() const
 }
 
 void StageState::DrawHud_(
-    const Vec2)
+    const VECTOR2)
 {
     Renderer& renderer = Renderer::GetSingleton();
 
@@ -1123,8 +1123,8 @@ void StageState::DrawHud_(
     {
         const String&              lastId = m_host.GetLastSectionId();
         const String               gates  = JoinIds_(m_runner->GetOpenGateIds());
-        const Vec2                 pos    = m_player.GetFeet();
-        const Vec2                 vel    = m_player.GetVelocity();
+        const VECTOR2              pos    = m_player.GetFeet();
+        const VECTOR2              vel    = m_player.GetVelocity();
         const std::optional<float> nextX  = m_runner->GetNextTriggerX();
 
         const String debug = std::format(

@@ -36,20 +36,20 @@ struct MoveTuning
 
 struct BodyTuning
 {
-    Vec2  standSize     = { 20.f, 58.f };
-    Vec2  crouchSize    = { 20.f, 36.f };
-    Vec2  hurtStand     = { 16.f, 54.f };
-    Vec2  hurtCrouch    = { 16.f, 32.f };
-    float footHalfWidth = 4.f;
+    VECTOR2 standSize     = { 20.f, 58.f };
+    VECTOR2 crouchSize    = { 20.f, 36.f };
+    VECTOR2 hurtStand     = { 16.f, 54.f };
+    VECTOR2 hurtCrouch    = { 16.f, 32.f };
+    float   footHalfWidth = 4.f;
 };
 
 struct MuzzleSet
 {
-    Vec2 forward  = { 44.f, -51.f };
-    Vec2 up       = { 0.f, -106.f };
-    Vec2 diagUp   = { 40.f, -62.f };
-    Vec2 down     = { 2.f, -2.f };
-    Vec2 diagDown = { 20.f, -10.f };
+    VECTOR2 forward  = { 44.f, -51.f };
+    VECTOR2 up       = { 0.f, -106.f };
+    VECTOR2 diagUp   = { 40.f, -62.f };
+    VECTOR2 down     = { 2.f, -2.f };
+    VECTOR2 diagDown = { 20.f, -10.f };
 };
 
 struct MuzzleTuning
@@ -73,39 +73,39 @@ struct MuzzleTuning
 
 struct WeaponTuning
 {
-    int   damage            = 3;
-    int   fireIntervalTicks = 5;
-    int   holdRepeatTicks   = 0;       // 0 = 홀드 자동 연사 없음 (연타만 발사)
-    int   ammo              = 0;       // 0 = 무한
-    float projectileSpeed   = 800.f;   // px/s
-    int   maxAlive          = 4;       // 동시에 살아 있는 탄 수 상한 (0 = 무제한)
-    bool  bPierce           = false;
-    Vec2  hitSize           = { 14.f, 10.f };
-    float range             = 420.f;
-    int   shotOverlayTicks  = 14;
-    Vec2  blastSize         = { 0.f, 0.f };   // 착탄 폭발 상자 (0 = 폭발 없음)
-    int   blastDamage       = 0;
-    int   blastTicks        = 0;
+    int     damage            = 3;
+    int     fireIntervalTicks = 5;
+    int     holdRepeatTicks   = 0;       // 0 = 홀드 자동 연사 없음 (연타만 발사)
+    int     ammo              = 0;       // 0 = 무한
+    float   projectileSpeed   = 800.f;   // px/s
+    int     maxAlive          = 4;       // 동시에 살아 있는 탄 수 상한 (0 = 무제한)
+    bool    bPierce           = false;
+    VECTOR2 hitSize           = { 14.f, 10.f };
+    float   range             = 420.f;
+    int     shotOverlayTicks  = 14;
+    VECTOR2 blastSize         = { 0.f, 0.f };   // 착탄 폭발 상자 (0 = 폭발 없음)
+    int     blastDamage       = 0;
+    int     blastTicks        = 0;
     // 연속 발사(버스트): 한 번 입력에 나가는 발수는 [burstShotsMin, burstShotsMax] 의 결정적 난수 (0/1 = 단발)
-    int   burstShotsMin      = 0;
-    int   burstShotsMax      = 0;
-    int   burstIntervalTicks = 0;
-    float spreadDeg          = 0.f;            // 탄마다 조준각에 더하는 난수 흩뿌림 (±도)
-    Vec2  muzzleJitter       = { 0.f, 0.f };   // 탄마다 발사 시작점에 더하는 난수 오프셋 (±px)
-    Vec2  muzzleAdjust       = { 0.f, 0.f };
+    int     burstShotsMin      = 0;
+    int     burstShotsMax      = 0;
+    int     burstIntervalTicks = 0;
+    float   spreadDeg          = 0.f;            // 탄마다 조준각에 더하는 난수 흩뿌림 (±도)
+    VECTOR2 muzzleJitter       = { 0.f, 0.f };   // 탄마다 발사 시작점에 더하는 난수 오프셋 (±px)
+    VECTOR2 muzzleAdjust       = { 0.f, 0.f };
     // 파이어샷 분출 (flame 전용): 입력 1회 = 입자 particleCount 개를 particleIntervalTicks 간격으로 흩뿌린다 (탄약은 1발)
-    int   particleCount         = 0;
-    int   particleIntervalTicks = 0;
-    float particleSpeedMin      = 0.f;   // 입자 속도 범위 (px/s, 결정적 난수)
-    float particleSpeedMax      = 0.f;
-    int   particleLifeMinTicks  = 0;   // 입자 수명 범위 (틱). 사거리 = 속도 x 수명
-    int   particleLifeMaxTicks  = 0;
-    int   hitReleaseTicks       = 0;   // 한 입력의 공유 판정 ID 를 이 간격마다 풀어 같은 대상이 다시 맞게 한다 (0 = 풀지 않음)
-    Vec2  particleHitSizeEnd    = { 0.f, 0.f };
-    float particleScaleStart    = 1.f;   // 수명 시작/끝의 표시 배율 (판정과 무관)
-    float particleScaleEnd      = 1.f;
-    float speedAccel            = 0.f;   // 발사 후 가속 (px/s², 0 = 등속). 탄 방향으로 speedMax 까지
-    float speedMax              = 0.f;   // 가속 상한 (px/s). 0 이면 상한 없음
+    int     particleCount         = 0;
+    int     particleIntervalTicks = 0;
+    float   particleSpeedMin      = 0.f;   // 입자 속도 범위 (px/s, 결정적 난수)
+    float   particleSpeedMax      = 0.f;
+    int     particleLifeMinTicks  = 0;   // 입자 수명 범위 (틱). 사거리 = 속도 x 수명
+    int     particleLifeMaxTicks  = 0;
+    int     hitReleaseTicks       = 0;   // 한 입력의 공유 판정 ID 를 이 간격마다 풀어 같은 대상이 다시 맞게 한다 (0 = 풀지 않음)
+    VECTOR2 particleHitSizeEnd    = { 0.f, 0.f };
+    float   particleScaleStart    = 1.f;   // 수명 시작/끝의 표시 배율 (판정과 무관)
+    float   particleScaleEnd      = 1.f;
+    float   speedAccel            = 0.f;   // 발사 후 가속 (px/s², 0 = 등속). 탄 방향으로 speedMax 까지
+    float   speedMax              = 0.f;   // 가속 상한 (px/s). 0 이면 상한 없음
 };
 
 struct WeaponsTuning
@@ -211,21 +211,21 @@ struct KnifeTuning
 
 struct BombTuning
 {
-    int   initial       = 10;
-    int   maxInFlight   = 3;
-    int   throwTicks    = 12;
-    int   releaseTick   = 3;
-    Vec2  releaseOffset = { 14.f, -36.f };
-    float speedX        = 260.f;
-    float speedY        = -330.f;
-    int   fuseTicks     = 72;   // 던진 뒤 터질 때까지 (1.2 s)
-    float inheritMoveX  = 0.35f;
-    float gravity       = 900.f;
-    Vec2  hitSize       = { 12.f, 12.f };
-    int   damage        = 20;
-    Vec2  blastSize     = { 110.f, 130.f };
-    float blastUp       = 40.f;
-    int   blastTicks    = 10;
+    int     initial       = 10;
+    int     maxInFlight   = 3;
+    int     throwTicks    = 12;
+    int     releaseTick   = 3;
+    VECTOR2 releaseOffset = { 14.f, -36.f };
+    float   speedX        = 260.f;
+    float   speedY        = -330.f;
+    int     fuseTicks     = 72;   // 던진 뒤 터질 때까지 (1.2 s)
+    float   inheritMoveX  = 0.35f;
+    float   gravity       = 900.f;
+    VECTOR2 hitSize       = { 12.f, 12.f };
+    int     damage        = 20;
+    VECTOR2 blastSize     = { 110.f, 130.f };
+    float   blastUp       = 40.f;
+    int     blastTicks    = 10;
 };
 
 struct PlayerTuning
@@ -240,18 +240,18 @@ struct PlayerTuning
     int   idleActionTicks   = 480;
     int   idleActionLength  = 100;   // 대기 연출 길이 (틱). 끝나면 다시 대기 시간을 센다
     // 시작 낙하산: 착지 발 위치보다 이만큼 위에서 일정 속도로 내려온다. 공격키로 낙하산이 깜빡이며 사라지고 조작이 시작된다.
-    float chuteStartHeightPx    = 260.f;
-    float chuteFallSpeedPxSec   = 110.f;
-    int   chuteBlinkTicks       = 24;
-    int   chuteBlinkPeriodTicks = 3;
-    Vec2  chuteOffset           = { 0.f, -110.f };
+    float   chuteStartHeightPx    = 260.f;
+    float   chuteFallSpeedPxSec   = 110.f;
+    int     chuteBlinkTicks       = 24;
+    int     chuteBlinkPeriodTicks = 3;
+    VECTOR2 chuteOffset           = { 0.f, -110.f };
 };
 
 struct CameraSettings
 {
-    Vec2  deadzoneHalf = { 24.f, 16.f };
-    float smoothTime   = 0.14f;
-    float lookAheadX   = 0.f;
+    VECTOR2 deadzoneHalf = { 24.f, 16.f };
+    float   smoothTime   = 0.14f;
+    float   lookAheadX   = 0.f;
 };
 
 struct SandboxTuning

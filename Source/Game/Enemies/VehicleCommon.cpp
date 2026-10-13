@@ -38,7 +38,7 @@ void TickVehicleDeath(
 void RequestFxAt(
     EnemyEnv&        _env,
     const StringView _clip,
-    const Vec2       _at,
+    const VECTOR2    _at,
     const int        _facing,
     const int        _depth,
     const float      _delaySec)

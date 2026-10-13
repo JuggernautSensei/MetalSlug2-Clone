@@ -21,7 +21,7 @@ struct SpawnRequest
     String      def     = {};
     String      stageId = {};
 
-    Vec2          position     = { 0.f, 0.f };
+    VECTOR2       position     = { 0.f, 0.f };
     ePositionMode positionMode = ePositionMode::Feet;
     float         halfHeight   = 0.f;
 
@@ -45,7 +45,7 @@ struct SpawnRequest
     bool        bHasAmbush = false;
     AmbushSpec  ambush     = {};
 
-    Vec2            size           = { 0.f, 0.f };
+    VECTOR2         size           = { 0.f, 0.f };
     eCollisionLayer collisionLayer = eCollisionLayer::Wall;
 
     String anim   = {};
@@ -76,11 +76,11 @@ public:
 
     [[nodiscard]] virtual std::optional<float> GetGroundFindY(float _x, float _fromY) const = 0;
 
-    [[nodiscard]] virtual Vec2 PlayerFeet() const                  = 0;
-    [[nodiscard]] virtual bool IsGameOver() const                  = 0;
-    virtual void               SetPlayerInvincible(float _seconds) = 0;
+    [[nodiscard]] virtual VECTOR2 PlayerFeet() const                  = 0;
+    [[nodiscard]] virtual bool    IsGameOver() const                  = 0;
+    virtual void                  SetPlayerInvincible(float _seconds) = 0;
 
-    virtual void WarpPlayer(Vec2 _feet) = 0;
+    virtual void WarpPlayer(VECTOR2 _feet) = 0;
 
     virtual void SetBackdrop(StringView _modeId)                             = 0;
     virtual void ShowBanner(const String& _text, float _seconds)             = 0;

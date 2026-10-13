@@ -19,8 +19,8 @@ bool LoadVehicleLib(
 }
 
 VehicleRig::VehicleRig(
-    const Vec2  _player,
-    const float _camLeft)
+    const VECTOR2 _player,
+    const float   _camLeft)
     : m_world(&m_lib, 7)
     , m_ground(MakeFlatGround(3000))
     , m_player(
@@ -67,7 +67,7 @@ Vector<EnemyEvent>& VehicleRig::Events()
 }
 
 void VehicleRig::SetPlayer(
-    const Vec2 _feet)
+    const VECTOR2 _feet)
 {
     m_player = _feet;
 }
@@ -80,7 +80,7 @@ void VehicleRig::SetView(
 
 EnemyHandle VehicleRig::Spawn(
     const char*        _name,
-    const Vec2         _feet,
+    const VECTOR2      _feet,
     const SpawnParams& _params)
 {
     const PhysicsWorld world = MakeWorld_();

@@ -23,8 +23,8 @@ struct Lcg
 
 struct Circle
 {
-    Vec2  center = { 0.f, 0.f };
-    float radius = 0.f;
+    VECTOR2 center = { 0.f, 0.f };
+    float   radius = 0.f;
 
     [[nodiscard]] bool Overlaps(
         const Circle& _other) const
@@ -182,12 +182,12 @@ TEST(GroundMap, SlopeEstimateOnRampAndFlat)
     map.FillRect(100, 100, 119, 119, true);
 
     EXPECT_NEAR(map.EstimateSlope(50, 50, 4, 8), -1.f, 1e-4f);
-    const Vec2 normal = map.EstimateNormal(50, 50, 4, 8);
+    const VECTOR2 normal = map.EstimateNormal(50, 50, 4, 8);
     EXPECT_NEAR(normal.x, -0.70710678f, 1e-4f);
     EXPECT_NEAR(normal.y, -0.70710678f, 1e-4f);
 
     EXPECT_FLOAT_EQ(map.EstimateSlope(110, 100, 4, 8), 0.f);
-    const Vec2 flat = map.EstimateNormal(110, 100, 4, 8);
+    const VECTOR2 flat = map.EstimateNormal(110, 100, 4, 8);
     EXPECT_FLOAT_EQ(flat.x, 0.f);
     EXPECT_FLOAT_EQ(flat.y, -1.f);
 }
@@ -201,12 +201,12 @@ TEST(Geometry, AabbFactoriesAndAccessors)
     EXPECT_FLOAT_EQ(a.max.y, 200.f);
     EXPECT_FLOAT_EQ(a.GetWidth(), 24.f);
     EXPECT_FLOAT_EQ(a.GetHeight(), 40.f);
-    EXPECT_EQ(a.GetCenter(), (Vec2 { 100.f, 180.f }));
+    EXPECT_EQ(a.GetCenter(), (VECTOR2 { 100.f, 180.f }));
 
     const Aabb b = Aabb::FromCenterSize({ 10.f, 10.f }, { 4.f, 6.f });
-    EXPECT_EQ(b.min, (Vec2 { 8.f, 7.f }));
-    EXPECT_EQ(b.max, (Vec2 { 12.f, 13.f }));
-    EXPECT_EQ(b.GetSize(), (Vec2 { 4.f, 6.f }));
+    EXPECT_EQ(b.min, (VECTOR2 { 8.f, 7.f }));
+    EXPECT_EQ(b.max, (VECTOR2 { 12.f, 13.f }));
+    EXPECT_EQ(b.GetSize(), (VECTOR2 { 4.f, 6.f }));
 }
 
 TEST(Geometry, AabbOverlapIsStrictSoTouchingEdgesDoNotOverlap)
@@ -221,9 +221,9 @@ TEST(Geometry, AabbOverlapIsStrictSoTouchingEdgesDoNotOverlap)
 TEST(Geometry, AabbContainsPointAndBox)
 {
     const Aabb a = Aabb::FromMinMax({ 0.f, 0.f }, { 10.f, 10.f });
-    EXPECT_TRUE(a.Contains(Vec2 { 0.f, 0.f }));
-    EXPECT_TRUE(a.Contains(Vec2 { 9.99f, 5.f }));
-    EXPECT_FALSE(a.Contains(Vec2 { 10.f, 5.f }));
+    EXPECT_TRUE(a.Contains(VECTOR2 { 0.f, 0.f }));
+    EXPECT_TRUE(a.Contains(VECTOR2 { 9.99f, 5.f }));
+    EXPECT_FALSE(a.Contains(VECTOR2 { 10.f, 5.f }));
     EXPECT_TRUE(a.Contains(Aabb::FromMinMax({ 2.f, 2.f }, { 8.f, 8.f })));
     EXPECT_TRUE(a.Contains(a));
     EXPECT_FALSE(a.Contains(Aabb::FromMinMax({ 2.f, 2.f }, { 12.f, 8.f })));

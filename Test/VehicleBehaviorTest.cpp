@@ -48,9 +48,9 @@ void StepAndLog_(
 }
 
 [[nodiscard]] EnemyHandle SpawnJeepFacingThePlayer_(
-    VehicleRig& _rig,
-    const Vec2  _player,
-    const float _x)
+    VehicleRig&   _rig,
+    const VECTOR2 _player,
+    const float   _x)
 {
     _rig.SetPlayer(_player);
     return _rig.Spawn("jeep", { _x, kGround }, Facing_(-1));
@@ -638,7 +638,7 @@ bool RunUntilBurst_(
     CombatSystem&              _combat,
     const GroundMap*           _pGround,
     const Span<const Platform> _platforms,
-    Vec2&                      _outFx)
+    VECTOR2&                   _outFx)
 {
     for (int i = 0; i < 600; ++i)
     {
@@ -695,8 +695,8 @@ TEST(VehicleSarubia, GrenadeMuzzleIsMirroredByFacing)
     StepAndLog_(rigRight, hRight, logRight, 260);
     ASSERT_EQ(logRight.shots.size(), 1u);
 
-    const Vec2 left  = logLeft.shots.front().position;
-    const Vec2 right = logRight.shots.front().position;
+    const VECTOR2 left  = logLeft.shots.front().position;
+    const VECTOR2 right = logRight.shots.front().position;
     EXPECT_NEAR(left.x - kOriginX, -(right.x - kOriginX), 1.f) << "좌우 발사 위치는 원점 기준 대칭";
     EXPECT_NEAR(left.y, right.y, 1.f);
     EXPECT_NEAR(left.y, kGround - 150.f, 6.f) << "포신 끝 높이 (발 기준 약 -150)";

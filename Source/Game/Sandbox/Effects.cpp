@@ -26,7 +26,7 @@ void EffectList::Clear()
 void EffectList::Spawn(
     const AnimationLibrary& _library,
     const StringView        _clipName,
-    const Vec2              _position,
+    const VECTOR2           _position,
     const int               _depth,
     const bool              _bFlipX)
 {
@@ -47,9 +47,9 @@ void EffectList::Spawn(
 void EffectList::SpawnDebris(
     const AnimationLibrary& _library,
     const StringView        _clipName,
-    const Vec2              _position,
+    const VECTOR2           _position,
     const int               _depth,
-    const Vec2              _velocity,
+    const VECTOR2           _velocity,
     const bool              _bFlipX)
 {
     const size_t before = m_effects.size();

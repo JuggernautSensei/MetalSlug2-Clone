@@ -150,7 +150,7 @@ bool GroundMap::IsOutOfBoundsSolid_(
 }
 
 bool GroundMap::IsSolidAt(
-    const Vec2 _point) const
+    const VECTOR2 _point) const
 {
     return IsSolid(static_cast<int>(std::floor(_point.x)), static_cast<int>(std::floor(_point.y)));
 }
@@ -253,7 +253,7 @@ float GroundMap::EstimateSlope(
     return static_cast<float>(*right - *left) / static_cast<float>(_halfWidth * 2);
 }
 
-Vec2 GroundMap::EstimateNormal(
+VECTOR2 GroundMap::EstimateNormal(
     const int _x,
     const int _y,
     const int _halfWidth,

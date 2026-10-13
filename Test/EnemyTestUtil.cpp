@@ -27,7 +27,7 @@ bool LoadEnemyLib(
 }
 
 SandboxConfig MakeEnemyConfig(
-    const Vec2 _spawn)
+    const VECTOR2 _spawn)
 {
     SandboxConfig config = MakeFlatConfig();
     config.spawnFeet     = _spawn;
@@ -36,8 +36,8 @@ SandboxConfig MakeEnemyConfig(
 }
 
 EnemyRig::EnemyRig(
-    const Vec2  _player,
-    const float _camLeft)
+    const VECTOR2 _player,
+    const float   _camLeft)
     : m_world(&m_lib, 7)
     , m_ground(MakeFlatGround(3000))
     , m_player(_player)
@@ -95,14 +95,14 @@ void EnemyRig::SetAnims(
 }
 
 void EnemyRig::SetPlayer(
-    const Vec2 _feet)
+    const VECTOR2 _feet)
 {
     m_player = _feet;
 }
 
 EnemyHandle EnemyRig::Spawn(
     const char*        _name,
-    const Vec2         _feet,
+    const VECTOR2      _feet,
     const SpawnParams& _params)
 {
     const PhysicsWorld world = MakeWorld_();

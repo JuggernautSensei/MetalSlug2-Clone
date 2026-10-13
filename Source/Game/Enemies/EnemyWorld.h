@@ -30,9 +30,9 @@ public:
     // 테스트 전용: 전투 중 난수열만 바꾼다 (적 목록 유지)
     void ReseedRng(uint64_t _seed);
 
-    EnemyHandle Spawn(StringView _defName, Vec2 _feet, const SpawnParams& _params = {}, const PhysicsWorld* _pSnapWorld = nullptr);
+    EnemyHandle Spawn(StringView _defName, VECTOR2 _feet, const SpawnParams& _params = {}, const PhysicsWorld* _pSnapWorld = nullptr);
 
-    EnemyHandle SpawnByIndex(int _defIndex, Vec2 _feet, const SpawnParams& _params = {}, const PhysicsWorld* _pSnapWorld = nullptr);
+    EnemyHandle SpawnByIndex(int _defIndex, VECTOR2 _feet, const SpawnParams& _params = {}, const PhysicsWorld* _pSnapWorld = nullptr);
 
     void RegisterHurtboxes(CombatSystem& _combat) const;
     void Tick(const EnemyContext& _ctx);
@@ -77,7 +77,7 @@ public:
 
     void ClearMonsters(bool _bIncludeNpc = false);
 
-    void RefreshBodies(int _defIndex, Vec2 _size);
+    void RefreshBodies(int _defIndex, VECTOR2 _size);
 
     void KillAll(bool _bAwardScore = false);
 
@@ -86,7 +86,7 @@ public:
     [[nodiscard]] int        Roll(int _n);
     void                     PushEvent(EnemyEvent _event);
     void                     RequestFx(EnemyFxRequest _request);
-    EnemyHandle              SpawnDeferred(int _defIndex, Vec2 _feet, const SpawnParams& _params);
+    EnemyHandle              SpawnDeferred(int _defIndex, VECTOR2 _feet, const SpawnParams& _params);
     void                     NoteSuccessor(EnemyHandle _old, EnemyHandle _new);
     [[nodiscard]] EnemyEvent MakeEvent(const Enemy& _e, eEnemyEventKind _kind) const;
 
@@ -113,13 +113,13 @@ private:
     {
         uint32_t    id       = 0;
         int         defIndex = -1;
-        Vec2        feet     = { 0.f, 0.f };
+        VECTOR2     feet     = { 0.f, 0.f };
         SpawnParams params   = {};
     };
 
     [[nodiscard]] size_t FindIndex_(uint32_t _id) const;
 
-    void Create_(uint32_t _id, int _defIndex, Vec2 _feet, const SpawnParams& _params, const PhysicsWorld* _pSnapWorld);
+    void Create_(uint32_t _id, int _defIndex, VECTOR2 _feet, const SpawnParams& _params, const PhysicsWorld* _pSnapWorld);
 
     void BeginDying_(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
     void RemoveGone_();

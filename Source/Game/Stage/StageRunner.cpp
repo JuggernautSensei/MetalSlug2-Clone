@@ -90,7 +90,7 @@ void StageRunner::Begin()
     }
 }
 
-std::optional<Vec2> StageRunner::ResolvePlayerStart() const
+std::optional<VECTOR2> StageRunner::ResolvePlayerStart() const
 {
     const PlayerStart& start = m_pData->player;
     float              y     = start.y;
@@ -107,7 +107,7 @@ std::optional<Vec2> StageRunner::ResolvePlayerStart() const
     {
         y += start.halfHeight;
     }
-    return Vec2 { start.x, y };
+    return VECTOR2 { start.x, y };
 }
 
 Aabb StageRunner::CurrentViewRect_() const
@@ -125,7 +125,7 @@ const String& StageRunner::GetBackdropMode() const
     return m_backdropMode;
 }
 
-Vec2 StageRunner::GetCameraOffset() const
+VECTOR2 StageRunner::GetCameraOffset() const
 {
     return m_cameraOffset;
 }
@@ -180,8 +180,8 @@ void StageRunner::ApplyCameraLock_()
     }
 }
 
-Vec2 StageRunner::ComputeCameraTarget(
-    const Vec2 _playerFeet) const
+VECTOR2 StageRunner::ComputeCameraTarget(
+    const VECTOR2 _playerFeet) const
 {
     return { _playerFeet.x + m_cameraOffset.x, _playerFeet.y - kStageCameraTargetLift + m_cameraOffset.y };
 }
@@ -217,7 +217,7 @@ void StageRunner::Tick()
 
     CancelAbortables_();
 
-    const Vec2 feet = m_pHost->PlayerFeet();
+    const VECTOR2 feet = m_pHost->PlayerFeet();
     while (m_nextSection < static_cast<int>(m_pData->sections.size()) && feet.x > m_pData->sections[static_cast<size_t>(m_nextSection)].triggerX && !m_bFinished)
     {
         const int index = m_nextSection++;
@@ -702,8 +702,8 @@ void StageRunner::ExecSpawn_(
         request.sprite         = _spec.sprite;
         request.pParams        = &_spec.params;
 
-        Vec2 position = { 0.f, 0.f };
-        bool bSkip    = false;
+        VECTOR2 position = { 0.f, 0.f };
+        bool    bSkip    = false;
         if (_spec.bHasCamera)
         {
             const Aabb          view = CurrentViewRect_();
@@ -855,7 +855,7 @@ bool StageRunner::WarpToSection_(
 
     const float targetX = _targetX;
     const Aabb  bounds  = GetEffectiveBounds();
-    Vec2        feet    = m_pHost->PlayerFeet();
+    VECTOR2     feet    = m_pHost->PlayerFeet();
     feet.x              = targetX;
     if (const std::optional<float> ground = m_pHost->GetGroundFindY(targetX, bounds.min.y))
     {
@@ -980,7 +980,7 @@ uint64_t StageRunner::HashState() const
     {
         MixU64_(hasher, static_cast<uint8_t>(c));
     }
-    const Vec2 center = m_pCamera->GetViewCenter();
+    const VECTOR2 center = m_pCamera->GetViewCenter();
     MixFloat_(hasher, center.x);
     MixFloat_(hasher, center.y);
     return hasher.Finalize();

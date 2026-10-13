@@ -35,21 +35,21 @@ struct ItemPickup
     eSupplyKind supply = eSupplyKind::Bomb;
     int         amount = 0;
     int         score  = 0;
-    Vec2        pos    = { 0.f, 0.f };
+    VECTOR2     pos    = { 0.f, 0.f };
 };
 
 struct ItemFxRequest
 {
-    String clip    = {};
-    Vec2   pos     = { 0.f, 0.f };
-    int    zOffset = 0;
+    String  clip    = {};
+    VECTOR2 pos     = { 0.f, 0.f };
+    int     zOffset = 0;
 };
 
 struct PropItem
 {
     uint32_t   id         = 0;
     int        defIndex   = -1;
-    Vec2       feet       = { 0.f, 0.f };
+    VECTOR2    feet       = { 0.f, 0.f };
     int        z          = kDefaultZ;
     Body       body       = {};
     float      ageSec     = 0.f;
@@ -66,10 +66,10 @@ struct PropItem
 
 struct ScorePopup
 {
-    Vec2  pos    = { 0.f, 0.f };
-    int   score  = 0;
-    float ageSec = 0.f;
-    int   z      = kDefaultZ;
+    VECTOR2 pos    = { 0.f, 0.f };
+    int     score  = 0;
+    float   ageSec = 0.f;
+    int     z      = kDefaultZ;
 };
 
 class ItemWorld
@@ -80,7 +80,7 @@ public:
     void SetLibrary(const PropDefLibrary* _pLibrary);
     void Reset(uint64_t _seed = 1);
 
-    uint32_t Spawn(StringView _name, Vec2 _feet, bool _bBounce = false, int _z = kDefaultZ);
+    uint32_t Spawn(StringView _name, VECTOR2 _feet, bool _bBounce = false, int _z = kDefaultZ);
 
     bool SetZ(uint32_t _id, int _z);
 
@@ -102,7 +102,7 @@ public:
     [[nodiscard]] uint64_t               HashState() const;
 
 private:
-    void SpawnPopup_(Vec2 _pos, int _score, int _z);
+    void SpawnPopup_(VECTOR2 _pos, int _score, int _z);
     void BindAnim_(PropItem& _item, const AnimationLibrary& _anims) const;
 
     const PropDefLibrary* m_pLibrary = nullptr;

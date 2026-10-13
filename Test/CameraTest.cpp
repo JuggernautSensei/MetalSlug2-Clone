@@ -37,11 +37,11 @@ namespace
     return camera;
 }
 
-[[nodiscard]] Vector<Vec2> RunForwardOnly_()
+[[nodiscard]] Vector<VECTOR2> RunForwardOnly_()
 {
     Camera camera = MakeLevelCamera_();
     camera.SetForwardOnly(true);
-    Vector<Vec2> out;
+    Vector<VECTOR2> out;
     for (int i = 0; i < 600; ++i)
     {
         camera.SetTarget({ 320.f + static_cast<float>(i) * 2.7f, 224.f });
@@ -59,7 +59,7 @@ TEST(Camera, OutputIsAlwaysIntegralWhileFollowingFractionalTarget)
     {
         camera.SetTarget({ 320.f + static_cast<float>(i) * 3.37f, 224.f + std::sin(static_cast<float>(i) * 0.05f) * 3.1f });
         camera.Update();
-        const Vec2 position = camera.GetPosition();
+        const VECTOR2 position = camera.GetPosition();
         ASSERT_TRUE(IsIntegral_(position.x)) << "tick " << i << " x=" << position.x;
         ASSERT_TRUE(IsIntegral_(position.y)) << "tick " << i << " y=" << position.y;
     }
@@ -76,7 +76,7 @@ TEST(Camera, FollowConvergesToTargetWithinDeadzone)
 
     const CameraTuning& tuning = camera.GetTuning();
     EXPECT_LE(Abs(camera.GetViewCenter().x - 1500.f), tuning.deadzoneHalf.x + 0.01f);
-    const Vec2 settled = camera.GetPosition();
+    const VECTOR2 settled = camera.GetPosition();
     for (int i = 0; i < 120; ++i)
     {
         camera.Update();
@@ -107,9 +107,9 @@ TEST(Camera, HorizontalGlidesWithoutSnapAndVerticalIsSmooth)
 
 TEST(Camera, TargetInsideDeadzoneDoesNotMoveTheCamera)
 {
-    Camera      camera = MakeLevelCamera_();
-    const Vec2  start  = camera.GetPosition();
-    const float dz     = camera.GetTuning().deadzoneHalf.x;
+    Camera        camera = MakeLevelCamera_();
+    const VECTOR2 start  = camera.GetPosition();
+    const float   dz     = camera.GetTuning().deadzoneHalf.x;
 
     for (int i = 0; i < 60; ++i)
     {
@@ -384,7 +384,7 @@ public:
 
 private:
     [[nodiscard]] bool IsWallAhead_(
-        const Vec2 _feet) const
+        const VECTOR2 _feet) const
     {
         constexpr float kRange = 46.f;
         for (const Wall& wall: m_pState->GetProps().GetWalls())
@@ -418,8 +418,8 @@ TEST(CameraRegression, RealStageBotRunHasNoJerkOverFirst5000Ticks)
 {
     CameraBotSim  sim;
     const Camera& cam         = sim.State().GetCamera();
-    Vec2          prevF       = cam.GetViewCenter();
-    Vec2          prevI       = cam.GetPosition();
+    VECTOR2       prevF       = cam.GetViewCenter();
+    VECTOR2       prevI       = cam.GetPosition();
     float         prevDx      = 0.f;
     float         prevDy      = 0.f;
     float         prevDxI     = 0.f;
@@ -436,12 +436,12 @@ TEST(CameraRegression, RealStageBotRunHasNoJerkOverFirst5000Ticks)
         {
             break;
         }
-        const Vec2  f   = cam.GetViewCenter();
-        const Vec2  pix = cam.GetPosition();
-        const float dx  = f.x - prevF.x;
-        const float dy  = f.y - prevF.y;
-        const float dxI = pix.x - prevI.x;
-        const float dyI = pix.y - prevI.y;
+        const VECTOR2 f   = cam.GetViewCenter();
+        const VECTOR2 pix = cam.GetPosition();
+        const float   dx  = f.x - prevF.x;
+        const float   dy  = f.y - prevF.y;
+        const float   dxI = pix.x - prevI.x;
+        const float   dyI = pix.y - prevI.y;
         if (i >= 120)
         {
             maxStep     = Max(maxStep, Max(Abs(dx), Abs(dy)));
@@ -587,14 +587,14 @@ TEST(Camera, SetBoundsChangeMovesCameraAtMost2_5PerTick)
     camera.SnapToTarget();
     camera.SetBounds(Aabb::FromMinMax({ 0.f, 100.f }, { 4000.f, 548.f }));
 
-    Vec2  prev    = camera.GetViewCenter();
-    float maxStep = 0.f;
+    VECTOR2 prev    = camera.GetViewCenter();
+    float   maxStep = 0.f;
     for (int i = 0; i < 150; ++i)
     {
         camera.Update();
-        const Vec2 center = camera.GetViewCenter();
-        maxStep           = Max(maxStep, Max(Abs(center.x - prev.x), Abs(center.y - prev.y)));
-        prev              = center;
+        const VECTOR2 center = camera.GetViewCenter();
+        maxStep              = Max(maxStep, Max(Abs(center.x - prev.x), Abs(center.y - prev.y)));
+        prev                 = center;
     }
     EXPECT_LE(maxStep, 2.5f);
     EXPECT_NEAR(camera.GetViewCenter().y, 324.f, 0.01f);

@@ -23,8 +23,8 @@ inline constexpr int kAimSettleTicks = 20;
     const int _floorY = 378);
 
 [[nodiscard]] SandboxConfig MakeConfig(
-    GroundMap  _ground,
-    const Vec2 _spawn = { 100.f, 378.f });
+    GroundMap     _ground,
+    const VECTOR2 _spawn = { 100.f, 378.f });
 
 [[nodiscard]] SandboxConfig MakeFlatConfig();
 
@@ -77,9 +77,9 @@ private:
 [[nodiscard]] bool LoadAnims(
     AnimationLibrary& _out);
 
-#define SLUG_REQUIRE_BAKED(_anims)                                   \
-    AnimationLibrary& _anims = AnimationLibrary::GetSingleton();     \
-    if (!LoadAnims(_anims))                                          \
-    {                                                                \
-        GTEST_SKIP() << "Assets 없음";                               \
+#define SLUG_REQUIRE_BAKED(_anims)                               \
+    AnimationLibrary& _anims = AnimationLibrary::GetSingleton(); \
+    if (!LoadAnims(_anims))                                      \
+    {                                                            \
+        GTEST_SKIP() << "Assets 없음";                           \
     }

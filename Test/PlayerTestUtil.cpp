@@ -11,8 +11,8 @@ GroundMap MakeFlatGround(
 }
 
 SandboxConfig MakeConfig(
-    GroundMap  _ground,
-    const Vec2 _spawn)
+    GroundMap     _ground,
+    const VECTOR2 _spawn)
 {
     SandboxConfig config;
     config.bLoadGround     = false;

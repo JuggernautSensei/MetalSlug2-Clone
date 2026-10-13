@@ -12,7 +12,7 @@ constexpr int kDecorMaxAdvance = 64;
 DecorSpawn MakeDecorSpawn(
     const StringView  _clip,
     const eStageLayer _layer,
-    const Vec2        _pos,
+    const VECTOR2     _pos,
     const ParamValue* _pParams)
 {
     DecorSpawn spawn;
@@ -213,8 +213,8 @@ void DecorWorld::Clear()
 
 bool DecorWorld::Get(
     const uint32_t _id,
-    Vec2&          _outPos,
-    Vec2&          _outVelocity,
+    VECTOR2&       _outPos,
+    VECTOR2&       _outVelocity,
     StringView&    _outClip,
     bool&          _bOutFinished) const
 {

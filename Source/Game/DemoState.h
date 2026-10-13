@@ -9,13 +9,13 @@ public:
     void               Render(float _alpha) override;
     [[nodiscard]] bool IsFinished() const override;
 
-    [[nodiscard]] Vec2     GetPosition() const;
+    [[nodiscard]] VECTOR2  GetPosition() const;
     [[nodiscard]] uint64_t DebugHash() const override;
 
 private:
     static constexpr float kSpeedPerTick = 2.f;   // 120 px/s @ 60Hz
 
-    Vec2 m_prevPos   = { 320.f, 224.f };
-    Vec2 m_pos       = { 320.f, 224.f };
-    bool m_bFinished = false;
+    VECTOR2 m_prevPos   = { 320.f, 224.f };
+    VECTOR2 m_pos       = { 320.f, 224.f };
+    bool    m_bFinished = false;
 };

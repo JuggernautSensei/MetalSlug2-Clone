@@ -200,9 +200,9 @@ void Tick_(
         case eJeepState::Shot:
             if (ClipReachedFrame(_e, _def, c.fireFrame))
             {
-                const float facing = static_cast<float>(_e.facing);
-                const Vec2  back   = { -facing, 0.f };
-                const Vec2  shift  = { c.rocketShiftX * static_cast<float>(_e.counter & 1) * -facing, 0.f };
+                const float   facing = static_cast<float>(_e.facing);
+                const VECTOR2 back   = { -facing, 0.f };
+                const VECTOR2 shift  = { c.rocketShiftX * static_cast<float>(_e.counter & 1) * -facing, 0.f };
                 (void)FireWeapon(_e, _def, _env, c.weaponRocket, back, shift);
             }
             if (IsClipDone(_e, _def))

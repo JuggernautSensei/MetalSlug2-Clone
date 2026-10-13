@@ -25,9 +25,9 @@ struct PhysicsWorld
 
 struct Body
 {
-    Vec2 position = { 0.f, 0.f };
-    Vec2 velocity = { 0.f, 0.f };
-    Vec2 size     = { 24.f, 40.f };
+    VECTOR2 position = { 0.f, 0.f };
+    VECTOR2 velocity = { 0.f, 0.f };
+    VECTOR2 size     = { 24.f, 40.f };
 
     float footHalfWidth = 1.f;
 
@@ -58,8 +58,8 @@ struct MoveResult
     int platformIndex = -1;
     int wallIndex     = -1;
 
-    float groundSlope  = 0.f;
-    Vec2  groundNormal = { 0.f, -1.f };
+    float   groundSlope  = 0.f;
+    VECTOR2 groundNormal = { 0.f, -1.f };
 };
 
 class Physics

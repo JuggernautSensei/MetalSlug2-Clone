@@ -13,18 +13,18 @@ inline constexpr int kDecorBackDepth = 11;
 
 struct DecorStep
 {
-    String clip     = {};
-    float  seconds  = 1.f;   // 구간 길이 (초)
-    Vec2   velocity = { 0.f, 0.f };
-    bool   bFlipX   = false;
+    String  clip     = {};
+    float   seconds  = 1.f;   // 구간 길이 (초)
+    VECTOR2 velocity = { 0.f, 0.f };
+    bool    bFlipX   = false;
 };
 
 struct DecorSpawn
 {
     String            clip     = {};
     eStageLayer       layer    = eStageLayer::Background;
-    Vec2              pos      = { 0.f, 0.f };
-    Vec2              velocity = { 0.f, 0.f };
+    VECTOR2           pos      = { 0.f, 0.f };
+    VECTOR2           velocity = { 0.f, 0.f };
     bool              bFlipX   = false;
     bool              bLoop    = false;
     float             scale    = 1.f;   // 배율 (1 = 원본, 피벗 고정)
@@ -38,7 +38,7 @@ struct DecorSpawn
 //  sequence: [{ "clip", "seconds", "velocity": [vx, vy], "flip" }, ...]
 //  loop: bool (sequence 반복)
 //  flip: bool (단일 clip 좌우 반전)
-[[nodiscard]] DecorSpawn MakeDecorSpawn(StringView _clip, eStageLayer _layer, Vec2 _pos, const ParamValue* _pParams);
+[[nodiscard]] DecorSpawn MakeDecorSpawn(StringView _clip, eStageLayer _layer, VECTOR2 _pos, const ParamValue* _pParams);
 
 class DecorWorld
 {
@@ -46,9 +46,9 @@ class DecorWorld
     {
         uint32_t          id         = 0;
         eStageLayer       layer      = eStageLayer::Background;
-        Vec2              pos        = { 0.f, 0.f };
+        VECTOR2           pos        = { 0.f, 0.f };
         int               z          = kDefaultZ;
-        Vec2              velocity   = { 0.f, 0.f };
+        VECTOR2           velocity   = { 0.f, 0.f };
         bool              bFlipX     = false;
         bool              bLoop      = false;
         bool              bFinished  = false;
@@ -72,7 +72,7 @@ public:
 
     [[nodiscard]] size_t GetCount() const;
 
-    [[nodiscard]] bool Get(uint32_t _id, Vec2& _outPos, Vec2& _outVelocity, StringView& _outClip, bool& _bOutFinished) const;
+    [[nodiscard]] bool Get(uint32_t _id, VECTOR2& _outPos, VECTOR2& _outVelocity, StringView& _outClip, bool& _bOutFinished) const;
 
 private:
     void EnterStep_(Instance& _inst, const AnimationLibrary& _anims) const;

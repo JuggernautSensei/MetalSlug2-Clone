@@ -159,7 +159,7 @@ bool ReadVec2Field(
     const JsonReader& _object,
     const StringView  _key,
     const bool        _bRequired,
-    Vec2&             _out,
+    VECTOR2&          _out,
     StringView&       _reason,
     bool* const       _pFound)
 {

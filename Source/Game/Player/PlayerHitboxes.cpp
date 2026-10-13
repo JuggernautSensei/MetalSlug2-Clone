@@ -20,7 +20,7 @@ namespace
 }   // namespace
 
 Aabb MakeKnifeTriggerBox(
-    const Vec2         _feet,
+    const VECTOR2      _feet,
     const int          _facing,
     const float        _bodyHalfWidth,
     const KnifeTuning& _knife)
@@ -32,7 +32,7 @@ Aabb MakeKnifeTriggerBox(
 }
 
 Aabb MakeKnifeSwingBox(
-    const Vec2         _feet,
+    const VECTOR2      _feet,
     const int          _facing,
     const KnifeTuning& _knife)
 {
@@ -41,8 +41,8 @@ Aabb MakeKnifeSwingBox(
     return Aabb::FromMinMax({ x0, _feet.y - _knife.top }, { x1, _feet.y - _knife.bottom });
 }
 
-Vec2 GetMuzzlePosition(
-    const Vec2          _feet,
+VECTOR2 GetMuzzlePosition(
+    const VECTOR2       _feet,
     const int           _facing,
     const ePose         _pose,
     const eAim          _aim,
@@ -50,7 +50,7 @@ Vec2 GetMuzzlePosition(
 {
     const MuzzleSet& set = GetSet_(_pose, _muzzle);
 
-    Vec2 local = set.forward;
+    VECTOR2 local = set.forward;
     switch (_aim)
     {
         case eAim::Up: local = set.up; break;
@@ -62,7 +62,7 @@ Vec2 GetMuzzlePosition(
     return { _feet.x + local.x * static_cast<float>(_facing), _feet.y + local.y };
 }
 
-Vec2 GetAimDirection(
+VECTOR2 GetAimDirection(
     const eAim _aim,
     const int  _facing)
 {
@@ -78,8 +78,8 @@ Vec2 GetAimDirection(
     return { f, 0.f };
 }
 
-Vec2 GetBombReleasePosition(
-    const Vec2        _feet,
+VECTOR2 GetBombReleasePosition(
+    const VECTOR2     _feet,
     const int         _facing,
     const ePose       _pose,
     const BombTuning& _bomb)
@@ -89,11 +89,11 @@ Vec2 GetBombReleasePosition(
 }
 
 Aabb MakePlayerHurtboxBox(
-    const Vec2        _feet,
+    const VECTOR2     _feet,
     const ePose       _pose,
     const BodyTuning& _body)
 {
-    const Vec2 size = _pose == ePose::Crouch ? _body.hurtCrouch : _body.hurtStand;
+    const VECTOR2 size = _pose == ePose::Crouch ? _body.hurtCrouch : _body.hurtStand;
     return Aabb::FromBottomCenter(_feet, size);
 }
 

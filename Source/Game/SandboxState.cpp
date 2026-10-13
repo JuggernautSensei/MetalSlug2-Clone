@@ -170,7 +170,7 @@ void SandboxState::RestartGame()
     m_slugs.Reset(m_slugTuning);
     m_slugWalls.clear();
     m_prevSlugStats = {};
-    for (const Vec2& feet: m_config.slugFeet)
+    for (const VECTOR2& feet: m_config.slugFeet)
     {
         (void)m_slugs.Spawn(feet, 1);
     }
@@ -192,8 +192,8 @@ void SandboxState::RestartGame()
     }
     if (m_config.bHeliLab)
     {
-        const Vec2  cam = m_camera.GetPosition();
-        SpawnParams params;
+        const VECTOR2 cam = m_camera.GetPosition();
+        SpawnParams   params;
         params.facing     = -1;
         params.bActivated = true;
         params.hp         = m_config.heliHp;
@@ -216,8 +216,8 @@ void SandboxState::RestartGame()
     }
     if (m_config.bVehicleLab)
     {
-        const Vec2  feet = m_player.GetFeet();
-        SpawnParams left;
+        const VECTOR2 feet = m_player.GetFeet();
+        SpawnParams   left;
         left.facing = -1;
         (void)SpawnEnemy("jeep", { 200.f, feet.y }, left);
         (void)SpawnEnemy("btank", { 380.f, feet.y }, left);
@@ -276,7 +276,7 @@ void SandboxState::AddDefaultTargets_()
 
 uint32_t SandboxState::AddTarget(
     const eDummyKind _kind,
-    const Vec2       _feet,
+    const VECTOR2    _feet,
     const bool       _bShooter)
 {
     return m_targets.Add(_kind, _feet, _bShooter, m_tuning.sandbox);
@@ -362,7 +362,7 @@ const GroundMap& SandboxState::GetGround() const
 
 EnemyHandle SandboxState::SpawnEnemy(
     const StringView   _defName,
-    const Vec2         _feet,
+    const VECTOR2      _feet,
     const SpawnParams& _params)
 {
     const PhysicsWorld world = MakeEnemyPhysicsWorld_();
@@ -377,7 +377,7 @@ void SandboxState::SpawnDebugEnemy_(
     {
         static constexpr ARRAY<const char*, 4> kVehicles     = { "jeep", "btank", "missle_tank", "sarubia" };
         constexpr int                          kVehicleCount = static_cast<int>(kVehicles.size());
-        const Vec2                             feet          = m_player.GetFeet();
+        const VECTOR2                          feet          = m_player.GetFeet();
         const StringView                       name          = kVehicles[m_vehicleCursor % kVehicleCount];
         m_vehicleCursor                                      = (m_vehicleCursor + 1) % kVehicleCount;
         SpawnParams params;
@@ -394,8 +394,8 @@ void SandboxState::SpawnDebugEnemy_(
     }
 
     const StringView name = kSlots[_slot];
-    const Vec2       feet = m_player.GetFeet();
-    Vec2             at   = { feet.x + _aheadPx, feet.y };
+    const VECTOR2    feet = m_player.GetFeet();
+    VECTOR2          at   = { feet.x + _aheadPx, feet.y };
     if (name == "flying_bzk")
     {
         at.y = feet.y - 150.f;
@@ -455,9 +455,9 @@ PhysicsWorld SandboxState::MakePhysicsWorld_() const
     return world;
 }
 
-Vec2 SandboxState::GetRespawnFeet_() const
+VECTOR2 SandboxState::GetRespawnFeet_() const
 {
-    const Vec2 cam = m_camera.GetPosition();
+    const VECTOR2 cam = m_camera.GetPosition();
     return { cam.x + m_tuning.player.respawnOffsetX, cam.y - m_tuning.player.respawnDropY };
 }
 
@@ -775,8 +775,8 @@ void SandboxState::Render(
     Renderer& renderer = Renderer::GetSingleton();
     renderer.BeginFrame({ 156, 190, 224, 255 });
 
-    const Vec2 camNow    = m_camera.GetPosition();
-    const Vec2 cameraPos = { std::floor(m_prevCameraPos.x + (camNow.x - m_prevCameraPos.x) * _alpha), std::floor(m_prevCameraPos.y + (camNow.y - m_prevCameraPos.y) * _alpha) };
+    const VECTOR2 camNow    = m_camera.GetPosition();
+    const VECTOR2 cameraPos = { std::floor(m_prevCameraPos.x + (camNow.x - m_prevCameraPos.x) * _alpha), std::floor(m_prevCameraPos.y + (camNow.y - m_prevCameraPos.y) * _alpha) };
 
     if (m_bgHandle >= 0)
     {
@@ -792,8 +792,8 @@ void SandboxState::Render(
 }
 
 void SandboxState::DrawWorld_(
-    const Vec2  _cameraPos,
-    const float _alpha)
+    const VECTOR2 _cameraPos,
+    const float   _alpha)
 {
     Renderer&               renderer = Renderer::GetSingleton();
     SpriteBatch&            sprites  = SpriteBatch::GetSingleton();
@@ -820,9 +820,9 @@ void SandboxState::DrawWorld_(
             continue;
         }
 
-        const Aabb box   = Aabb::FromBottomCenter(dummy.feet, dummy.size);
-        const RGBA color = IsHitFlashOn(dummy.flashTicks) ? RGBA { 255, 150, 150, 255 } : (dummy.kind == eDummyKind::Bus ? RGBA { 196, 150, 70, 255 } : RGBA { 96, 120, 70, 255 });
-        const Vec2 tl    = ToScreen(box.min, _cameraPos);
+        const Aabb    box   = Aabb::FromBottomCenter(dummy.feet, dummy.size);
+        const RGBA    color = IsHitFlashOn(dummy.flashTicks) ? RGBA { 255, 150, 150, 255 } : (dummy.kind == eDummyKind::Bus ? RGBA { 196, 150, 70, 255 } : RGBA { 96, 120, 70, 255 });
+        const VECTOR2 tl    = ToScreen(box.min, _cameraPos);
         renderer.FillRect(tl, dummy.size, color);
         renderer.DrawRect(tl, dummy.size, { 20, 20, 20, 255 });
         renderer.DrawDebugText({ tl.x + 4.f, tl.y + 4.f }, std::format("{}\n{}/{}", GetDummyName(dummy.kind), dummy.health.hp, dummy.health.maxHp), { 255, 255, 255, 255 });
@@ -836,7 +836,7 @@ void SandboxState::DrawWorld_(
     }
 
     {
-        const Vec2 feet = Lerp(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
+        const VECTOR2 feet = Lerp(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
         if (m_bRigBound)
         {
             const RigState rigState = m_player.MakeRigState();
@@ -855,7 +855,7 @@ void SandboxState::DrawWorld_(
     {
         for (const Bullet& bullet: m_projectiles.GetBullets())
         {
-            const Vec2 pos = Lerp(bullet.renderPrev, bullet.position, _alpha);
+            const VECTOR2 pos = Lerp(bullet.renderPrev, bullet.position, _alpha);
             if (IsSlugOwner(bullet.owner) && SubmitSlugBullet(sprites, anims, bullet, pos, ResolveZ(bullet.z, kPlayerBulletDepth)))
             {
                 continue;
@@ -870,7 +870,7 @@ void SandboxState::DrawWorld_(
 
         for (const Bomb& bomb: m_projectiles.GetBombs())
         {
-            const Vec2 pos = Lerp(bomb.renderPrev, bomb.position, _alpha);
+            const VECTOR2 pos = Lerp(bomb.renderPrev, bomb.position, _alpha);
             if (IsSlugOwner(bomb.params.owner) && SubmitSlugShell(sprites, anims, bomb, pos, ResolveZ(bomb.params.z, kPlayerBombDepth)))
             {
                 continue;
@@ -891,8 +891,8 @@ void SandboxState::DrawWorld_(
 }
 
 void SandboxState::DrawDebugBoxes_(
-    Renderer&  _renderer,
-    const Vec2 _cameraPos) const
+    Renderer&     _renderer,
+    const VECTOR2 _cameraPos) const
 {
     for (const Hurtbox& hurtbox: m_combat.GetHurtboxes())
     {
@@ -906,8 +906,8 @@ void SandboxState::DrawDebugBoxes_(
     const Aabb body = m_player.GetBodyBox();
     DrawBox(_renderer, body, _cameraPos, { 80, 120, 255, 255 });
 
-    const Vec2  feet = m_player.GetFeet();
-    const float fh   = m_player.GetBody().footHalfWidth;
+    const VECTOR2 feet = m_player.GetFeet();
+    const float   fh   = m_player.GetBody().footHalfWidth;
     _renderer.DrawLine(ToScreen({ feet.x - fh, feet.y }, _cameraPos), ToScreen({ feet.x + fh, feet.y }, _cameraPos), { 255, 255, 0, 255 });
     _renderer.DrawLine(ToScreen({ feet.x, feet.y - 4.f }, _cameraPos), ToScreen({ feet.x, feet.y + 4.f }, _cameraPos), { 255, 255, 0, 255 });
 
@@ -937,9 +937,9 @@ void SandboxState::DrawHud_()
 
     if (g_debug.bDebugDraw)
     {
-        const Vec2   vel   = p.GetVelocity();
-        const Vec2   pos   = p.GetFeet();
-        const String debug = std::format(
+        const VECTOR2 vel   = p.GetVelocity();
+        const VECTOR2 pos   = p.GetFeet();
+        const String  debug = std::format(
             "STATE {} {}  AIM {}  OVL {}\nPOS {:.1f},{:.1f}  VEL {:.0f},{:.0f}  GND {}\nINV {}  KNIFE-RANGE {}  TICK {}  FPS {:.0f}\nF1 BOX  F2 PAUSE  F3 STEP  F4 SLOW  J SHOT  K JUMP  L BOMB",
             GetStateName(p.GetState()),
             p.GetFacing() > 0 ? "R" : "L",

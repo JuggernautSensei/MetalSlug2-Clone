@@ -53,18 +53,18 @@ namespace
     return count;
 }
 
-[[nodiscard]] Vec2 SpriteSize_(
+[[nodiscard]] VECTOR2 SpriteSize_(
     const StringView _name)
 {
-    static const std::map<String, Vec2> kSizes = {
+    static const std::map<String, VECTOR2> kSizes = {
         { "PlayerStateUI_Bomb", { 124.f, 34.f } },
         {     "InfiniteUI_Red",  { 40.f, 16.f } },
         {       "PressStartUI", { 174.f, 30.f } },
         {         "PlayerHPUI", { 106.f, 16.f } },
         {            "LEVEL_1",  { 96.f, 16.f } },
     };
-    const std::map<String, Vec2>::const_iterator it = kSizes.find(String { _name });
-    return it == kSizes.end() ? Vec2 { 0.f, 0.f } : it->second;
+    const std::map<String, VECTOR2>::const_iterator it = kSizes.find(String { _name });
+    return it == kSizes.end() ? VECTOR2 { 0.f, 0.f } : it->second;
 }
 
 [[nodiscard]] bool InsideScreen_(
@@ -83,9 +83,9 @@ namespace
         case eHudItemKind::Text: return InsideScreen_(LayoutText(_item.text, _item.x, _item.y, _item.style).bounds, _layout);
         case eHudItemKind::Sprite:
         {
-            const Vec2 size = SpriteSize_(_item.text);
-            const int  w    = static_cast<int>(size.x) * _item.scale;
-            const int  h    = static_cast<int>(size.y) * _item.scale;
+            const VECTOR2 size = SpriteSize_(_item.text);
+            const int     w    = static_cast<int>(size.x) * _item.scale;
+            const int     h    = static_cast<int>(size.y) * _item.scale;
             return InsideScreen_({ _item.x - w / 2, _item.y - h / 2, w, h }, _layout);
         }
         case eHudItemKind::TimeDigits:
@@ -722,7 +722,7 @@ TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
     EXPECT_EQ(config.GetTotalTicks(), 270);   // 페이드 인 0.5 s + 홀드 3 s + 페이드 아웃 0.67 s + 대기 0.33 s 후 타이틀
     EXPECT_EQ(config.artSprite, "UI_GameOver_Helmet");
 
-    UiSystem    ui;
+    UiSystem ui;
     ui.Init();
     AudioSystem audio { true };
     ScreenFlow  flow;
@@ -768,7 +768,7 @@ TEST(UiFlow, PhasesChangeAtExactTicks)
     config.holdTicks   = 3;
     config.sfx         = "Jingle";
 
-    UiSystem    ui;
+    UiSystem ui;
     ui.Init();
     AudioSystem audio { true };
     ScreenFlow  flow;
@@ -817,7 +817,7 @@ TEST(UiFlow, MissionCompleteShowsResultsBeforeTheCompleteBanner)
     EXPECT_EQ(config.resultsTicks, MissionResultsTicks(16));
     EXPECT_EQ(config.GetTotalTicks(), 60 + 276 + 210 + 90 + 30);
 
-    UiSystem    ui;
+    UiSystem ui;
     ui.Init();
     AudioSystem audio { true };
     ScreenFlow  flow;
@@ -898,7 +898,7 @@ TEST(UiResults, RescueTallyCountsUpAndReachesGreatWithSixteen)
 
 TEST(UiResults, ScreenFlowExposesResultsViewOnlyDuringResultsPhase)
 {
-    UiSystem    ui;
+    UiSystem ui;
     ui.Init();
     AudioSystem audio { true };
     ScreenFlow  flow;
@@ -969,7 +969,7 @@ TEST(UiBanner, EachGlyphHasItsOwnDirectionAndDelay)
 
 TEST(UiFlow, TickBeforeStartAndAfterDoneIsHarmless)
 {
-    UiSystem    ui;
+    UiSystem ui;
     ui.Init();
     AudioSystem audio { true };
     ScreenFlow  flow;
@@ -997,8 +997,8 @@ struct TitleSim
     explicit TitleSim(
         TitleConfig _config = {})
     {
-        pTitle     = new TitleState { std::move(_config) };
-        runner     = Scoped<SimRunner> {
+        pTitle = new TitleState { std::move(_config) };
+        runner = Scoped<SimRunner> {
             new SimRunner { Scoped<IGameState> { pTitle } }
         };
     }
@@ -1023,7 +1023,7 @@ struct TitleSim
 
     [[nodiscard]] bool IsStillTitle() const { return runner->GetState() == pTitle; }
 
-    AudioSystem&      audio = RecordAudio();
+    AudioSystem&      audio  = RecordAudio();
     TitleState*       pTitle = nullptr;
     Scoped<SimRunner> runner = nullptr;
 };

@@ -116,7 +116,7 @@ void Tick_(
         case eMissleTankState::Shot:
             if (ClipReachedFrame(_e, _def, c.fireFrame))
             {
-                const Vec2 jitter = { 0.f, static_cast<float>(_env.world.Roll(24)) };
+                const VECTOR2 jitter = { 0.f, static_cast<float>(_env.world.Roll(24)) };
                 (void)FireWeapon(_e, _def, _env, IsUp_(_e) ? c.weaponUp : c.weaponDown, { 0.f, 0.f }, jitter);
             }
             if (_e.clip >= 0 && _e.stateTicks >= _def.GetClip(_e.clip).GetDurationTicks())

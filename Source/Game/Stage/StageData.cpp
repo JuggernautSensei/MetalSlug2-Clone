@@ -196,12 +196,12 @@ String ParamValue::GetString(
     return (pValue && pValue->IsString()) ? pValue->m_string : String { _default };
 }
 
-Vec2 ParamValue::GetVec2(
+VECTOR2 ParamValue::GetVec2(
     const StringView _key,
-    const Vec2       _default) const
+    const VECTOR2    _default) const
 {
     const ParamValue* pValue = Find(_key);
-    Vec2              out    = _default;
+    VECTOR2           out    = _default;
     if (pValue && pValue->TryGetVec2(out))
     {
         return out;
@@ -210,7 +210,7 @@ Vec2 ParamValue::GetVec2(
 }
 
 bool ParamValue::TryGetVec2(
-    Vec2& _out) const
+    VECTOR2& _out) const
 {
     if (m_type != eType::Array || m_items.size() != 2 || !m_items[0].IsNumber() || !m_items[1].IsNumber())
     {
@@ -261,10 +261,10 @@ float BoundsCurve::EvaluateTop(
         {
             if (_playerX <= top[i].x)
             {
-                const Vec2  a = top[i - 1];
-                const Vec2  b = top[i];
-                const float t = (_playerX - a.x) / (b.x - a.x);
-                result        = a.y + (b.y - a.y) * t;
+                const VECTOR2 a = top[i - 1];
+                const VECTOR2 b = top[i];
+                const float   t = (_playerX - a.x) / (b.x - a.x);
+                result          = a.y + (b.y - a.y) * t;
                 break;
             }
         }
@@ -707,7 +707,7 @@ private:
         const String&     _where,
         const StringView  _key,
         const bool        _bRequired,
-        Vec2&             _out,
+        VECTOR2&          _out,
         bool*             _pFound = nullptr);
 
     bool GetObject_(
@@ -921,7 +921,7 @@ bool Parser::GetVec2_(
     const String&     _where,
     const StringView  _key,
     const bool        _bRequired,
-    Vec2&             _out,
+    VECTOR2&          _out,
     bool* const       _pFound)
 {
     StringView reason;

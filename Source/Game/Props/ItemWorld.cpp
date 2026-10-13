@@ -38,9 +38,9 @@ constexpr float kRollMaxVx      = 49.f;
 
 namespace
 {
-[[nodiscard]] Vec2 BottomAlignedOrigin_(
+[[nodiscard]] VECTOR2 BottomAlignedOrigin_(
     const AnimFrame& _frame,
-    const Vec2       _feet)
+    const VECTOR2    _feet)
 {
     return { _feet.x, _feet.y - static_cast<float>(_frame.h - _frame.pivotY) };
 }
@@ -74,7 +74,7 @@ void ItemWorld::ClearAll()
 
 uint32_t ItemWorld::Spawn(
     const StringView _name,
-    const Vec2       _feet,
+    const VECTOR2    _feet,
     const bool       _bBounce,
     const int        _z)
 {
@@ -226,9 +226,9 @@ void ItemWorld::Tick(
 }
 
 void ItemWorld::SpawnPopup_(
-    const Vec2 _pos,
-    const int  _score,
-    const int  _z)
+    const VECTOR2 _pos,
+    const int     _score,
+    const int     _z)
 {
     ScorePopup popup;
     popup.pos   = _pos;
@@ -409,7 +409,7 @@ void ItemWorld::Submit(
         int cursor = static_cast<int>(popup.pos.x) - width / 2;
         for (const AnimFrame& frame: glyphs)
         {
-            const Vec2 origin = { static_cast<float>(cursor + frame.pivotX), popup.pos.y - rise - 32.f + static_cast<float>(frame.pivotY) };
+            const VECTOR2 origin = { static_cast<float>(cursor + frame.pivotX), popup.pos.y - rise - 32.f + static_cast<float>(frame.pivotY) };
             _sprites.Submit(ResolveZ(popup.z, kPopupRenderDepth), static_cast<int>(popup.pos.y), frame, origin);
             cursor += frame.w;
         }

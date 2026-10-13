@@ -42,7 +42,7 @@ public:
 
     [[nodiscard]] bool IsSolid(const int _x, const int _y) const;
 
-    [[nodiscard]] bool IsSolidAt(Vec2 _point) const;
+    [[nodiscard]] bool IsSolidAt(VECTOR2 _point) const;
 
     [[nodiscard]] bool IsRectSolid(int _x0, int _y0, int _x1, int _y1) const;
 
@@ -50,7 +50,7 @@ public:
 
     [[nodiscard]] float EstimateSlope(int _x, int _y, int _halfWidth, int _searchRange) const;
 
-    [[nodiscard]] Vec2 EstimateNormal(int _x, int _y, int _halfWidth, int _searchRange) const;
+    [[nodiscard]] VECTOR2 EstimateNormal(int _x, int _y, int _halfWidth, int _searchRange) const;
 
 private:
     [[nodiscard]] bool IsOutOfBoundsSolid_(int _x, int _y) const;

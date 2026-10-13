@@ -288,7 +288,7 @@ TEST(PlayerWeapon, ProjectileBlastAppearsOnRangeEndOnlyWithBlastSize)
         spawn.direction   = { 1.f, 0.f };
         spawn.speed       = 300.f;
         spawn.range       = 60.f;
-        spawn.blastSize   = bBlast ? Vec2 { 96.f, 96.f } : Vec2 { 0.f, 0.f };
+        spawn.blastSize   = bBlast ? VECTOR2 { 96.f, 96.f } : VECTOR2 { 0.f, 0.f };
         spawn.blastDamage = 15;
         spawn.blastTicks  = 6;
 
@@ -412,7 +412,7 @@ TEST(PlayerWeapon, AimStatesFireEveryWeaponInTheExpectedDirection)
             sim.Step();
 
             ASSERT_GE(BulletsOf_(sim), 1u) << aim.name << " weapon " << raw;
-            const Vec2 v = sim.State().GetProjectiles().GetBullets()[0].velocity;
+            const VECTOR2 v = sim.State().GetProjectiles().GetBullets()[0].velocity;
             if (aim.signX != 0.f)   // 똑바로 위/아래 탄은 cos(90도) 의 미세한 부호 오차가 있을 수 있어 크기만 본다
             {
                 EXPECT_EQ(v.x > 0.f, aim.signX > 0.f) << aim.name << " weapon " << raw;
@@ -469,7 +469,7 @@ namespace
 {
 [[nodiscard]] Bullet MakeVisualBullet_(
     const eWeapon _weapon,
-    const Vec2    _velocity,
+    const VECTOR2 _velocity,
     const int     _ageTicks,
     const float   _travelled,
     const float   _range)
@@ -505,7 +505,7 @@ TEST(PlayerWeaponVisual, FlameShotClipsExistInOutputAndEveryStageDraws)
 
     const SpriteLibrary sprites;
     SpriteBatch         batch;
-    const Vec2          at = { 0.f, 0.f };
+    const VECTOR2       at = { 0.f, 0.f };
     EXPECT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Flame, { 300.f, 0.f }, 0, 0.f, 220.f), at, 30));
     EXPECT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Flame, { 300.f, 0.f }, 20, 100.f, 220.f), at, 30));
     EXPECT_TRUE(SubmitPlayerBullet(batch, &anims, sprites, MakeVisualBullet_(eWeapon::Flame, { 300.f, 0.f }, 60, 210.f, 220.f), at, 30));
@@ -519,8 +519,8 @@ TEST(PlayerWeaponVisual, RocketSpriteRotatesToItsFlightDirection)
     const SpriteLibrary sprites;
     struct Case
     {
-        Vec2  velocity;
-        float expectDeg;
+        VECTOR2 velocity = {};
+        float   expectDeg;
     };
     const float kDiag = 640.f * 0.70710678f;
     for (const Case& c: {
@@ -595,7 +595,7 @@ namespace
     RasterFixture_&         _fx,
     const AnimationLibrary& _anims,
     const eWeapon           _weapon,
-    const Vec2              _velocity,
+    const VECTOR2           _velocity,
     const int               _ageTicks,
     const float             _travelled,
     const float             _range)
@@ -612,7 +612,7 @@ namespace
     SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
     SDL_RenderClear(pRenderer);
     (void)SubmitPlayerBullet(batch, &_anims, sprites, MakeVisualBullet_(_weapon, _velocity, _ageTicks, _travelled, _range), { 128.f, 128.f }, 30);
-    batch.Flush(Vec2 { 0.f, 0.f });
+    batch.Flush(VECTOR2 { 0.f, 0.f });
     SDL_FlushRenderer(pRenderer);
 
     for (int y = 0; y < kRasterSize_; ++y)
@@ -712,10 +712,10 @@ TEST(PlayerWeapon, ShotgunHitboxTurnsWithTheAimDirection)
 {
     const Tuning        tuning   = {};
     const WeaponTuning& shotgun  = tuning.weapons.shotgun;
-    const Vec2          side     = MakeBulletSpawn(eWeapon::Shotgun, shotgun, 0, { 0.f, 0.f }, { 0.f, 0.f }, { 1.f, 0.f }).size;
-    const Vec2          up       = MakeBulletSpawn(eWeapon::Shotgun, shotgun, 0, { 0.f, 0.f }, { 0.f, 0.f }, { 0.f, -1.f }).size;
-    const Vec2          down     = MakeBulletSpawn(eWeapon::Shotgun, shotgun, 0, { 0.f, 0.f }, { 0.f, 0.f }, { 0.f, 1.f }).size;
-    const Vec2          diagonal = MakeBulletSpawn(eWeapon::Shotgun, shotgun, 0, { 0.f, 0.f }, { 0.f, 0.f }, { 0.7071f, -0.7071f }).size;
+    const VECTOR2       side     = MakeBulletSpawn(eWeapon::Shotgun, shotgun, 0, { 0.f, 0.f }, { 0.f, 0.f }, { 1.f, 0.f }).size;
+    const VECTOR2       up       = MakeBulletSpawn(eWeapon::Shotgun, shotgun, 0, { 0.f, 0.f }, { 0.f, 0.f }, { 0.f, -1.f }).size;
+    const VECTOR2       down     = MakeBulletSpawn(eWeapon::Shotgun, shotgun, 0, { 0.f, 0.f }, { 0.f, 0.f }, { 0.f, 1.f }).size;
+    const VECTOR2       diagonal = MakeBulletSpawn(eWeapon::Shotgun, shotgun, 0, { 0.f, 0.f }, { 0.f, 0.f }, { 0.7071f, -0.7071f }).size;
     const float         longSide = Max(shotgun.hitSize.y, shotgun.hitSize.x);
 
     EXPECT_FLOAT_EQ(side.x, shotgun.hitSize.x);

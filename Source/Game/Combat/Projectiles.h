@@ -10,22 +10,22 @@ struct BulletSpawn
 {
     eTeam    team        = eTeam::Player;
     uint32_t owner       = kNoOwner;
-    Vec2     position    = { 0.f, 0.f };
-    Vec2     sweepFrom   = { 0.f, 0.f };
-    Vec2     direction   = { 1.f, 0.f };   // 단위 벡터
+    VECTOR2  position    = { 0.f, 0.f };
+    VECTOR2  sweepFrom   = { 0.f, 0.f };
+    VECTOR2  direction   = { 1.f, 0.f };   // 단위 벡터
     float    speed       = 600.f;          // px/s
     int      damage      = 1;
-    Vec2     size        = { 14.f, 10.f };
+    VECTOR2  size        = { 14.f, 10.f };
     float    range       = 400.f;
     bool     bPierce     = false;
     uint8_t  tag         = 0;
     eHitKind kind        = eHitKind::Bullet;
-    Vec2     blastSize   = { 0.f, 0.f };   // 착탄/사거리 끝 폭발 상자 (0 = 폭발 없음)
+    VECTOR2  blastSize   = { 0.f, 0.f };   // 착탄/사거리 끝 폭발 상자 (0 = 폭발 없음)
     int      blastDamage = 0;
     int      blastTicks  = 0;
     bool     bTrail      = false;
     uint32_t hitId       = kNoHitId;
-    Vec2     sizeEnd     = { 0.f, 0.f };   // 0 이면 판정 크기 고정. 아니면 사거리 진행에 따라 size -> sizeEnd 로 커진다
+    VECTOR2  sizeEnd     = { 0.f, 0.f };   // 0 이면 판정 크기 고정. 아니면 사거리 진행에 따라 size -> sizeEnd 로 커진다
     float    scaleStart  = 1.f;            // 표시 배율 (판정과 무관)
     float    scaleEnd    = 1.f;
     int      z           = kDefaultZ;
@@ -35,11 +35,11 @@ struct BulletSpawn
 
 struct Bullet
 {
-    Vec2     position     = { 0.f, 0.f };
-    Vec2     renderPrev   = { 0.f, 0.f };
-    Vec2     hitFrom      = { 0.f, 0.f };
-    Vec2     velocity     = { 0.f, 0.f };   // px/s
-    Vec2     size         = { 14.f, 10.f };
+    VECTOR2  position     = { 0.f, 0.f };
+    VECTOR2  renderPrev   = { 0.f, 0.f };
+    VECTOR2  hitFrom      = { 0.f, 0.f };
+    VECTOR2  velocity     = { 0.f, 0.f };   // px/s
+    VECTOR2  size         = { 14.f, 10.f };
     float    travelled    = 0.f;
     float    range        = 400.f;
     int      damage       = 1;
@@ -50,14 +50,14 @@ struct Bullet
     bool     bPierce      = false;
     bool     bAlive       = true;
     uint8_t  tag          = 0;
-    Vec2     blastSize    = { 0.f, 0.f };
+    VECTOR2  blastSize    = { 0.f, 0.f };
     int      blastDamage  = 0;
     int      blastTicks   = 0;
     bool     bTrail       = false;
     int      ageTicks     = 0;
     bool     bSharedHitId = false;
-    Vec2     sizeStart    = { 0.f, 0.f };
-    Vec2     sizeEnd      = { 0.f, 0.f };
+    VECTOR2  sizeStart    = { 0.f, 0.f };
+    VECTOR2  sizeEnd      = { 0.f, 0.f };
     float    scaleStart   = 1.f;
     float    scaleEnd     = 1.f;
     int      z            = kDefaultZ;
@@ -69,12 +69,12 @@ struct BombSpawn
 {
     eTeam    team       = eTeam::Player;
     uint32_t owner      = kNoOwner;
-    Vec2     position   = { 0.f, 0.f };
-    Vec2     velocity   = { 0.f, 0.f };   // px/s
+    VECTOR2  position   = { 0.f, 0.f };
+    VECTOR2  velocity   = { 0.f, 0.f };   // px/s
     float    gravity    = 900.f;
-    Vec2     hitSize    = { 12.f, 12.f };
+    VECTOR2  hitSize    = { 12.f, 12.f };
     int      damage     = 20;
-    Vec2     blastSize  = { 104.f, 72.f };
+    VECTOR2  blastSize  = { 104.f, 72.f };
     float    blastUp    = 28.f;
     int      blastTicks = 10;
     bool     bBounce    = false;
@@ -84,9 +84,9 @@ struct BombSpawn
 
 struct Bomb
 {
-    Vec2      position   = { 0.f, 0.f };
-    Vec2      renderPrev = { 0.f, 0.f };
-    Vec2      velocity   = { 0.f, 0.f };
+    VECTOR2   position   = { 0.f, 0.f };
+    VECTOR2   renderPrev = { 0.f, 0.f };
+    VECTOR2   velocity   = { 0.f, 0.f };
     BombSpawn params     = {};
     bool      bAlive     = true;
     int       ageTicks   = 0;
@@ -106,13 +106,13 @@ struct ShotSpawn
 {
     eTeam    team            = eTeam::Enemy;
     uint32_t owner           = kNoOwner;
-    Vec2     position        = { 0.f, 0.f };
-    Vec2     velocity        = { 0.f, 0.f };   // 초기 속도 px/s
-    Vec2     accel           = { 0.f, 0.f };
+    VECTOR2  position        = { 0.f, 0.f };
+    VECTOR2  velocity        = { 0.f, 0.f };   // 초기 속도 px/s
+    VECTOR2  accel           = { 0.f, 0.f };
     float    maxSpeed        = 0.f;
     float    gravity         = 0.f;      // px/s²
     float    maxFallSpeed    = 3000.f;   // px/s
-    Vec2     size            = { 20.f, 20.f };
+    VECTOR2  size            = { 20.f, 20.f };
     int      damage          = 1;
     eHitKind kind            = eHitKind::Bullet;
     int      lifetimeTicks   = 300;
@@ -127,19 +127,19 @@ struct ShotSpawn
     bool  bExpireFx    = false;
     float groundProbeY = 0.f;   // 지면/지붕 접촉 판정 점: 중심에서 아래로 이만큼 (스프라이트 바닥이 닿는 높이). 0 = 중심
 
-    Vec2  blastSize   = { 0.f, 0.f };   // 터질 때 남기는 폭발 판정 (0 = 없음, 불기둥/고폭탄)
-    float blastUp     = 0.f;
-    int   blastTicks  = 0;
-    int   blastDamage = 1;
-    int   z           = kDefaultZ;
+    VECTOR2 blastSize   = { 0.f, 0.f };   // 터질 때 남기는 폭발 판정 (0 = 없음, 불기둥/고폭탄)
+    float   blastUp     = 0.f;
+    int     blastTicks  = 0;
+    int     blastDamage = 1;
+    int     z           = kDefaultZ;
 };
 
 struct Shot
 {
-    Vec2      position   = { 0.f, 0.f };
-    Vec2      renderPrev = { 0.f, 0.f };
-    Vec2      hitFrom    = { 0.f, 0.f };
-    Vec2      velocity   = { 0.f, 0.f };
+    VECTOR2   position   = { 0.f, 0.f };
+    VECTOR2   renderPrev = { 0.f, 0.f };
+    VECTOR2   hitFrom    = { 0.f, 0.f };
+    VECTOR2   velocity   = { 0.f, 0.f };
     ShotSpawn params     = {};
     uint32_t  hitId      = kNoHitId;
     int       ageTicks   = 0;
@@ -150,7 +150,7 @@ struct Shot
 
 struct ShotFx
 {
-    Vec2     position = { 0.f, 0.f };
+    VECTOR2  position = { 0.f, 0.f };
     uint16_t visual   = 0;
     int      zOffset  = 0;
 };
@@ -166,7 +166,7 @@ enum class eFxKind : uint8_t
 struct FxRequest
 {
     eFxKind kind     = eFxKind::BulletImpact;
-    Vec2    position = { 0.f, 0.f };
+    VECTOR2 position = { 0.f, 0.f };
     int     zOffset  = 0;
 };
 
@@ -198,9 +198,9 @@ public:
     [[nodiscard]] Vector<ShotFx> TakeShotFx();
 
 private:
-    void ExplodeBomb_(Bomb& _bomb, Vec2 _at, CombatSystem& _combat);
+    void ExplodeBomb_(Bomb& _bomb, VECTOR2 _at, CombatSystem& _combat);
     void SpawnBulletBlast_(const Bullet& _bullet, CombatSystem& _combat);
-    void SpawnShotBlast_(const ShotSpawn& _params, Vec2 _at, CombatSystem& _combat);
+    void SpawnShotBlast_(const ShotSpawn& _params, VECTOR2 _at, CombatSystem& _combat);
 
     Vector<Bullet>    m_bullets = {};
     Vector<Bomb>      m_bombs   = {};

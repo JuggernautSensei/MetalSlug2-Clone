@@ -86,7 +86,7 @@ private:
         const StringView  _field,
         const JsonReader& _reader,
         const StringView  _key,
-        Vec2&             _out);
+        VECTOR2&          _out);
 
     [[nodiscard]] bool ReadBox_(
         const StringView  _def,
@@ -315,7 +315,7 @@ bool EnemyDefParser::ReadVec2_(
     const StringView  _field,
     const JsonReader& _reader,
     const StringView  _key,
-    Vec2&             _out)
+    VECTOR2&          _out)
 {
     StringView reason;
     if (ReadVec2Field(_reader, _key, false, _out, reason))
@@ -1048,8 +1048,8 @@ bool EnemyDefParser::ParseEnemy_(
         {
             ExtraBoxDef  box;
             String       boxKind;
-            Vec2         offset = { 0.f, 0.f };
-            Vec2         frames = { 0.f, -1.f };
+            VECTOR2      offset = { 0.f, 0.f };
+            VECTOR2      frames = { 0.f, -1.f };
             const String field  = std::format("hitboxes[{}]", boxIndex++);
             if (!CheckObjectKeys_(name, field, item, kExtraBoxKeys)
                 || !ReadStr_(name, field, item, "id", box.id, false)

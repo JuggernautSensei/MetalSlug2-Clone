@@ -144,7 +144,7 @@ Vector<PropEvent> PropWorld::TakeEvents()
 
 PropHandle PropWorld::Spawn(
     const StringView       _defName,
-    const Vec2             _center,
+    const VECTOR2          _center,
     const PropSpawnParams& _params)
 {
     return SpawnByIndex(m_pLibrary->FindIndex(_defName), _center, _params);
@@ -152,7 +152,7 @@ PropHandle PropWorld::Spawn(
 
 PropHandle PropWorld::SpawnByIndex(
     const int              _defIndex,
-    const Vec2             _center,
+    const VECTOR2          _center,
     const PropSpawnParams& _params)
 {
     if (_defIndex < 0 || static_cast<size_t>(_defIndex) >= m_pLibrary->GetDefs().size())
@@ -234,7 +234,7 @@ PropHandle PropWorld::SpawnByIndex(
 
 uint32_t PropWorld::SpawnItem(
     const StringView _name,
-    const Vec2       _feet,
+    const VECTOR2    _feet,
     const bool       _bBounce,
     const int        _z)
 {
@@ -339,7 +339,7 @@ void PropWorld::OnHitEvents(
 void PropWorld::Destroy_(
     PropInstance&  _inst,
     const PropDef& _def,
-    const Vec2     _center)
+    const VECTOR2  _center)
 {
     _inst.bDestroyed          = true;
     _inst.destroyTimerSec     = 0.f;
@@ -385,13 +385,13 @@ void PropWorld::Destroy_(
 
 void PropWorld::Detonate_(
     const PropBurst& _burst,
-    const Vec2       _center)
+    const VECTOR2    _center)
 {
     for (const PropExplosion& e: _burst.explosions)
     {
         for (int i = 0; i < e.count; ++i)
         {
-            Vec2 p = { _center.x + e.offset.x, _center.y + e.offset.y };
+            VECTOR2 p = { _center.x + e.offset.x, _center.y + e.offset.y };
             if (e.spread > 0.f)
             {
                 p.x += RollFloat_(-e.spread, e.spread);
@@ -413,14 +413,14 @@ void PropWorld::Detonate_(
 
 void PropWorld::QueueDrops_(
     const PropDef& _def,
-    const Vec2     _center)
+    const VECTOR2  _center)
 {
     for (const PropDrop& drop: _def.drops)
     {
         for (int i = 0; i < drop.count; ++i)
         {
             const float    dx = drop.spreadX > 0.f ? RollFloat_(-drop.spreadX, drop.spreadX) : 0.f;
-            const Vec2     feet { _center.x + dx, _center.y };
+            const VECTOR2  feet { _center.x + dx, _center.y };
             const uint32_t itemId = m_items.Spawn(drop.item, feet, drop.bBounce);
             if (itemId != 0)
             {
@@ -731,8 +731,8 @@ bool PropWorld::GetVisualBounds(
     {
         return false;
     }
-    const Vec2 topLeft = { _inst.pos.x - static_cast<float>(frame.pivotX), _inst.pos.y - static_cast<float>(frame.pivotY) };
-    _out               = Aabb::FromMinSize(topLeft, { static_cast<float>(frame.w), static_cast<float>(frame.h) });
+    const VECTOR2 topLeft = { _inst.pos.x - static_cast<float>(frame.pivotX), _inst.pos.y - static_cast<float>(frame.pivotY) };
+    _out                  = Aabb::FromMinSize(topLeft, { static_cast<float>(frame.w), static_cast<float>(frame.h) });
     return true;
 }
 
@@ -777,7 +777,7 @@ void PropWorld::Submit(
 
 bool ApplyGroundPatch(
     GroundMap&       _map,
-    const Vec2       _topLeft,
+    const VECTOR2    _topLeft,
     const GroundMap& _footprint)
 {
     // 발자국(마스크의 고체 픽셀)만 공기로 지운다. 발자국 밖 픽셀은 절대 건드리지 않는다.

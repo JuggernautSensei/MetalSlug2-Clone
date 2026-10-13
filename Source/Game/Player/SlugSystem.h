@@ -14,7 +14,7 @@ class SlugSystem
 public:
     void Reset(const SlugTuning& _tuning);
 
-    int Spawn(Vec2 _feet, int _facing, int _hp = -1);
+    int Spawn(VECTOR2 _feet, int _facing, int _hp = -1);
 
     // 플레이어 Tick 앞에서 호출한다. 탑승 판정, 차량 Tick, 하차/파괴 처리, 플레이어 위치 동기화.
     void Tick(const SlugContext& _ctx, const InputHistory& _input, PlayerController& _player);

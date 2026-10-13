@@ -31,10 +31,10 @@ namespace
     return value - 180.f;
 }
 
-[[nodiscard]] Vec2 GetDamageFxOffset_(
+[[nodiscard]] VECTOR2 GetDamageFxOffset_(
     const int _index)
 {
-    static constexpr ARRAY<Vec2, 4> kOffsets = {
+    static constexpr ARRAY<VECTOR2, 4> kOffsets = {
         {
          { -30.f, -78.f },
          { 18.f, -84.f },
@@ -48,7 +48,7 @@ namespace
 
 void SlugVehicle::Init(
     const SlugTuning& _tuning,
-    const Vec2        _feet,
+    const VECTOR2     _feet,
     const int         _facing,
     const uint32_t    _ownerId,
     const int         _hp)
@@ -469,8 +469,8 @@ void SlugVehicle::FireVulcan_(
     {
         return;
     }
-    const float rad = m_vulcanAngle * kDeg2Rad;
-    const Vec2  dir = { std::cos(rad), -std::sin(rad) };
+    const float   rad = m_vulcanAngle * kDeg2Rad;
+    const VECTOR2 dir = { std::cos(rad), -std::sin(rad) };
 
     BulletSpawn spawn;
     spawn.team      = eTeam::Player;
@@ -691,8 +691,8 @@ void SlugVehicle::OnHitEvents(
         bool bFront = true;
         if (event.hitboxIndex < _hitboxes.size())
         {
-            const Vec2 center = _hitboxes[event.hitboxIndex].box.GetCenter();
-            bFront            = (center.x - m_body.position.x) * static_cast<float>(m_facing) >= 0.f;
+            const VECTOR2 center = _hitboxes[event.hitboxIndex].box.GetCenter();
+            bFront               = (center.x - m_body.position.x) * static_cast<float>(m_facing) >= 0.f;
         }
         ApplyHit_(damage, bFront);
     }
@@ -738,7 +738,7 @@ void SlugVehicle::UpdateDamageFx_()
 
 void SlugVehicle::SpawnFx_(
     const eSlugFxKind _kind,
-    const Vec2        _position,
+    const VECTOR2     _position,
     const int         _variant,
     const int         _maxTicks)
 {
@@ -871,7 +871,7 @@ bool SlugVehicle::IsAlive() const
     return m_mode != eSlugMode::Gone && m_mode != eSlugMode::Exploding;
 }
 
-Vec2 SlugVehicle::GetFeet() const
+VECTOR2 SlugVehicle::GetFeet() const
 {
     return m_body.position;
 }
@@ -887,12 +887,12 @@ void SlugVehicle::SetZ(
     m_z = _z;
 }
 
-Vec2 SlugVehicle::GetPrevFeet() const
+VECTOR2 SlugVehicle::GetPrevFeet() const
 {
     return m_prevFeet;
 }
 
-Vec2 SlugVehicle::GetVelocity() const
+VECTOR2 SlugVehicle::GetVelocity() const
 {
     return m_body.velocity;
 }
@@ -1014,8 +1014,8 @@ Aabb SlugVehicle::GetBoardBox() const
 
 Hurtbox SlugVehicle::MakeHurtbox() const
 {
-    const float t    = static_cast<float>(m_crouchLevel) / static_cast<float>(kCrouchLevels);
-    const Vec2  size = { m_tuning.body.hurtStand.x, Lerp(m_tuning.body.hurtStand.y, m_tuning.body.hurtCrouch.y, t) };
+    const float   t    = static_cast<float>(m_crouchLevel) / static_cast<float>(kCrouchLevels);
+    const VECTOR2 size = { m_tuning.body.hurtStand.x, Lerp(m_tuning.body.hurtStand.y, m_tuning.body.hurtCrouch.y, t) };
 
     Hurtbox hurtbox;
     hurtbox.box           = Aabb::FromBottomCenter(m_body.position, size);
@@ -1025,29 +1025,29 @@ Hurtbox SlugVehicle::MakeHurtbox() const
     return hurtbox;
 }
 
-Vec2 SlugVehicle::MountOffset_() const
+VECTOR2 SlugVehicle::MountOffset_() const
 {
     const float t = static_cast<float>(m_crouchLevel) / static_cast<float>(kCrouchLevels);
     return { Lerp(m_tuning.vulcan.mountStand.x, m_tuning.vulcan.mountCrouch.x, t), Lerp(m_tuning.vulcan.mountStand.y, m_tuning.vulcan.mountCrouch.y, t) };
 }
 
-Vec2 SlugVehicle::GetVulcanMount() const
+VECTOR2 SlugVehicle::GetVulcanMount() const
 {
-    const Vec2 offset = MountOffset_();
+    const VECTOR2 offset = MountOffset_();
     return { m_body.position.x + offset.x * static_cast<float>(m_facing), m_body.position.y + offset.y };
 }
 
-Vec2 SlugVehicle::GetVulcanMuzzle() const
+VECTOR2 SlugVehicle::GetVulcanMuzzle() const
 {
-    const float rad   = m_vulcanAngle * kDeg2Rad;
-    const Vec2  mount = GetVulcanMount();
+    const float   rad   = m_vulcanAngle * kDeg2Rad;
+    const VECTOR2 mount = GetVulcanMount();
     return { mount.x + std::cos(rad) * m_tuning.vulcan.barrelLength, mount.y - std::sin(rad) * m_tuning.vulcan.barrelLength };
 }
 
-Vec2 SlugVehicle::GetCannonMuzzle() const
+VECTOR2 SlugVehicle::GetCannonMuzzle() const
 {
-    const float t      = static_cast<float>(m_crouchLevel) / static_cast<float>(kCrouchLevels);
-    const Vec2  offset = { Lerp(m_tuning.cannon.muzzleStand.x, m_tuning.cannon.muzzleCrouch.x, t), Lerp(m_tuning.cannon.muzzleStand.y, m_tuning.cannon.muzzleCrouch.y, t) };
+    const float   t      = static_cast<float>(m_crouchLevel) / static_cast<float>(kCrouchLevels);
+    const VECTOR2 offset = { Lerp(m_tuning.cannon.muzzleStand.x, m_tuning.cannon.muzzleCrouch.x, t), Lerp(m_tuning.cannon.muzzleStand.y, m_tuning.cannon.muzzleCrouch.y, t) };
     return { m_body.position.x + offset.x * static_cast<float>(m_facing), m_body.position.y + offset.y };
 }
 

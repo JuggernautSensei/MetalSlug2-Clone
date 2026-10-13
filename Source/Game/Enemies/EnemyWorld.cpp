@@ -38,7 +38,7 @@ namespace
 
 // +y (아래) 를 향한 그림을 속도 방향에 맞추는 시계 방향 회전 (도, 아래 = 0)
 [[nodiscard]] float RotationDeg_(
-    const Vec2 _velocity)
+    const VECTOR2 _velocity)
 {
     return std::atan2(-_velocity.x, _velocity.y) * kRad2Deg;
 }
@@ -109,7 +109,7 @@ int GetEnemyDefaultZ(
 
 EnemyHandle EnemyWorld::Spawn(
     const StringView    _defName,
-    const Vec2          _feet,
+    const VECTOR2       _feet,
     const SpawnParams&  _params,
     const PhysicsWorld* _pSnapWorld)
 {
@@ -118,7 +118,7 @@ EnemyHandle EnemyWorld::Spawn(
 
 EnemyHandle EnemyWorld::SpawnByIndex(
     const int           _defIndex,
-    const Vec2          _feet,
+    const VECTOR2       _feet,
     const SpawnParams&  _params,
     const PhysicsWorld* _pSnapWorld)
 {
@@ -134,7 +134,7 @@ EnemyHandle EnemyWorld::SpawnByIndex(
 
 EnemyHandle EnemyWorld::SpawnDeferred(
     const int          _defIndex,
-    const Vec2         _feet,
+    const VECTOR2      _feet,
     const SpawnParams& _params)
 {
     const uint32_t id = m_nextId++;
@@ -150,7 +150,7 @@ EnemyHandle EnemyWorld::SpawnDeferred(
 void EnemyWorld::Create_(
     const uint32_t      _id,
     const int           _defIndex,
-    const Vec2          _feet,
+    const VECTOR2       _feet,
     const SpawnParams&  _params,
     const PhysicsWorld* _pSnapWorld)
 {
@@ -525,7 +525,7 @@ void EnemyWorld::SpawnShotTrails_(
         }
         const int   facing = shot.velocity.x < 0.f ? -1 : 1;
         const float sign   = static_cast<float>(facing);
-        Vec2        offset = { proj.trail.offset.x * sign * proj.scale, proj.trail.offset.y * proj.scale };
+        VECTOR2     offset = { proj.trail.offset.x * sign * proj.scale, proj.trail.offset.y * proj.scale };
         if (proj.bRotate)
         {
             const float rad = RotationDeg_(shot.velocity) * kDeg2Rad;
@@ -653,7 +653,7 @@ void EnemyWorld::Submit(
         const EnemyDef&    def  = m_pLibrary->Get(e.defIndex);
         const BehaviorOps& ops  = GetBehaviorOps(e.behavior);
         const int          side = SideIndex_(e.facing);
-        const Vec2         feet = Lerp(e.prevFeet, e.body.position, _alpha);
+        const VECTOR2      feet = Lerp(e.prevFeet, e.body.position, _alpha);
 
         if (ops.submitParts)
         {
@@ -747,7 +747,7 @@ void EnemyWorld::Submit(
         {
             continue;
         }
-        const Vec2        pos = Lerp(shot.renderPrev, shot.position, _alpha);
+        const VECTOR2     pos = Lerp(shot.renderPrev, shot.position, _alpha);
         SpriteDrawOptions options;
         options.scale = m_pLibrary->GetProjectile(projIndex).scale;
         if (m_pLibrary->GetProjectile(projIndex).bRotate)
@@ -884,7 +884,7 @@ Vector<Aabb> EnemyWorld::GetSolidBoxes() const
         if (def.behavior == eEnemyBehavior::Bus && def.bus.landingW > 0.f)
         {
             // 버스 계단 위 승강대: 계단 병사가 올라서는 낮은 벽 (윗면 = stairsTop.y, 지면까지)
-            const Vec2 top = { e.body.position.x + def.bus.stairsTop.x, e.body.position.y + def.bus.stairsTop.y };
+            const VECTOR2 top = { e.body.position.x + def.bus.stairsTop.x, e.body.position.y + def.bus.stairsTop.y };
             boxes.push_back(Aabb::FromMinMax({ top.x - def.bus.landingW * 0.5f, top.y }, { top.x + def.bus.landingW * 0.5f, e.body.position.y }));
         }
         if (def.behavior == eEnemyBehavior::Bus && def.bus.roofTop.y != 0.f && def.bus.roofSpan.y > def.bus.roofSpan.x)
@@ -1028,8 +1028,8 @@ Vector<EnemyEvent> EnemyWorld::TakeEvents()
 }
 
 void EnemyWorld::RefreshBodies(
-    const int  _defIndex,
-    const Vec2 _size)
+    const int     _defIndex,
+    const VECTOR2 _size)
 {
     for (Enemy& e: m_enemies)
     {

@@ -26,7 +26,7 @@ bool EnemyHandle::IsNull() const
     return id == 0;
 }
 
-Vec2 Enemy::GetFeet() const
+VECTOR2 Enemy::GetFeet() const
 {
     return body.position;
 }

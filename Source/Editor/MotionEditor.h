@@ -11,9 +11,9 @@ class Renderer;
 // 무기 하나의 편집 값 묶음 (JSON 키: muzzle, muzzleFx.offset, motionClip, effects)
 struct MotionWeaponValues
 {
-    Vec2                 muzzle     = { 0.f, 0.f };
+    VECTOR2              muzzle     = { 0.f, 0.f };
     bool                 bHasFx     = false;
-    Vec2                 fxOffset   = { 0.f, 0.f };
+    VECTOR2              fxOffset   = { 0.f, 0.f };
     String               motionClip = {};
     Vector<WeaponEffect> effects    = {};
 };

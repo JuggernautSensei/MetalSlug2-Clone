@@ -248,9 +248,9 @@ String DefReader::Str(
     return value.GetValue();
 }
 
-Vec2 DefReader::ReadVec2(
+VECTOR2 DefReader::ReadVec2(
     const StringView _key,
-    const Vec2       _default)
+    const VECTOR2    _default)
 {
     ParamEntry* pEntry = Find_(_key);
     if (!pEntry)

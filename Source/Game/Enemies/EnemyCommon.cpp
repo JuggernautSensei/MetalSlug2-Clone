@@ -115,7 +115,7 @@ bool ClimbStep(
     Enemy&          _e,
     const EnemyDef& _def)
 {
-    Vec2 target = _e.arena.max;
+    VECTOR2 target = _e.arena.max;
     if (_e.aux == 0)
     {
         target = _e.arena.min;
@@ -124,9 +124,9 @@ bool ClimbStep(
     {
         target = _e.climbEnd;
     }
-    const Vec2  delta = { target.x - _e.body.position.x, target.y - _e.body.position.y };
-    const float dist  = Sqrt(delta.x * delta.x + delta.y * delta.y);
-    const float step  = _def.physics.speed * kStepSec;
+    const VECTOR2 delta = { target.x - _e.body.position.x, target.y - _e.body.position.y };
+    const float   dist  = Sqrt(delta.x * delta.x + delta.y * delta.y);
+    const float   step  = _def.physics.speed * kStepSec;
 
     _e.body.velocity = { 0.f, 0.f };
     if (Abs(delta.x) > 0.01f)
@@ -290,10 +290,10 @@ String ResolveSide(
 }
 
 void RequestFx(
-    EnemyEnv&    _env,
-    const FxDef& _fx,
-    const Vec2   _origin,
-    const int    _facing)
+    EnemyEnv&     _env,
+    const FxDef&  _fx,
+    const VECTOR2 _origin,
+    const int     _facing)
 {
     if (_fx.clip.empty())
     {
@@ -316,7 +316,7 @@ void RequestFx(
     _env.world.RequestFx(std::move(request));
 }
 
-Vec2 GetMuzzleWorld(
+VECTOR2 GetMuzzleWorld(
     const Enemy&    _e,
     const EnemyDef& _def,
     const int       _weapon)
@@ -357,8 +357,8 @@ bool FireWeapon(
     const EnemyDef& _def,
     EnemyEnv&       _env,
     const int       _weapon,
-    const Vec2      _dir,
-    const Vec2      _muzzleExtra)
+    const VECTOR2   _dir,
+    const VECTOR2   _muzzleExtra)
 {
     if (_weapon < 0 || !_env.ctx.pProjectiles || !_env.ctx.pCombat || !_env.ctx.player.bAlive)
     {
@@ -371,10 +371,10 @@ bool FireWeapon(
     }
     const ProjectileDef& proj   = _env.lib.GetProjectile(weapon.projectile);
     const float          facing = static_cast<float>(_e.facing < 0 ? -1 : 1);
-    const Vec2           base   = GetMuzzleWorld(_e, _def, _weapon);
-    const Vec2           muzzle = { base.x + _muzzleExtra.x, base.y + _muzzleExtra.y };
+    const VECTOR2        base   = GetMuzzleWorld(_e, _def, _weapon);
+    const VECTOR2        muzzle = { base.x + _muzzleExtra.x, base.y + _muzzleExtra.y };
 
-    Vec2 dir = weapon.aim == eWeaponAim::Given ? _dir : Vec2 { facing, 0.f };
+    VECTOR2 dir = weapon.aim == eWeaponAim::Given ? _dir : VECTOR2 { facing, 0.f };
     if (weapon.tiltThreshold > 0.f)
     {
         const float dy = _env.ctx.player.center.y - muzzle.y;
@@ -499,7 +499,7 @@ void TickMelee(
     }
 
     const WeaponDef& weapon = _def.weapons[static_cast<size_t>(_e.meleeWeapon)];
-    const Vec2       origin = weapon.bHitboxFollows ? _e.body.position : _e.meleeOrigin;
+    const VECTOR2    origin = weapon.bHitboxFollows ? _e.body.position : _e.meleeOrigin;
 
     Hitbox hitbox;
     hitbox.box     = weapon.hitbox.At(origin, _e.facing);
@@ -689,7 +689,7 @@ void TickSoldierDeath(
 bool SubmitNamedPart(
     const EnemyRenderEnv& _render,
     const StringView      _name,
-    const Vec2            _origin,
+    const VECTOR2         _origin,
     const int             _ticks,
     const bool            _bLoop,
     const int             _sortKey,
