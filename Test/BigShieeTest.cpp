@@ -632,11 +632,11 @@ TEST(BigShiee, MissileFliesAlongTheFiringRowAngleWithMatchingSprite)
                     continue;
                 }
                 bSeen                 = true;
-                const float launchDeg = std::atan2(shot.velocity.x, shot.velocity.y) * (180.f / 3.14159265f);
+                const float launchDeg = std::atan2(shot.velocity.x, shot.velocity.y) * kRad2Deg;
                 EXPECT_NEAR(launchDeg, deg, 0.05f) << "행 " << row << ": 발사 방향 == 행 각도";
                 EXPECT_EQ(rig.E(boss)->ext[kBigShieeExtCannonRow], row) << "사격 행 == 발사한 행";
                 EXPECT_EQ(CannonYaw_(rig, boss), row * 2) << "머리 프레임 == 사격 행 정면";
-                const float spriteDeg = std::atan2(-shot.velocity.x, shot.velocity.y) * (180.f / 3.14159265f);
+                const float spriteDeg = std::atan2(-shot.velocity.x, shot.velocity.y) * kRad2Deg;
                 EXPECT_NEAR(-spriteDeg, deg, 0.05f) << "스프라이트 회전 (아래 = 0, 시계 방향) 이 속도 방향과 같다";
             }
         }
@@ -745,7 +745,7 @@ TEST(BigShiee, MissileTravelDirectionMatchesTheBarrelArtWithinFiveDegrees)
             }
         }
         ASSERT_TRUE(bLast) << "행 " << row;
-        const float travelDeg = std::atan2(last.x - first.x, last.y - first.y) * (180.f / 3.14159265f);
+        const float travelDeg = std::atan2(last.x - first.x, last.y - first.y) * kRad2Deg;
         EXPECT_NEAR(travelDeg, kBarrelDeg[static_cast<size_t>(row)], 5.f) << "행 " << row << ": 날아간 방향 (아래 0, 오른쪽 +)";
         EXPECT_EQ(rig.E(boss)->ext[kBigShieeExtCannonRow], row);
     }

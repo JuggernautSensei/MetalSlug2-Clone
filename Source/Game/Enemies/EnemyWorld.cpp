@@ -40,7 +40,7 @@ namespace
 [[nodiscard]] float RotationDeg_(
     const Vec2 _velocity)
 {
-    return std::atan2(-_velocity.x, _velocity.y) * (180.f / 3.14159265f);
+    return std::atan2(-_velocity.x, _velocity.y) * kRad2Deg;
 }
 
 [[nodiscard]] PhysicsTuning MakePhys_(
@@ -534,7 +534,7 @@ void EnemyWorld::SpawnShotTrails_(
         Vec2        offset = { proj.trail.offset.x * sign * proj.scale, proj.trail.offset.y * proj.scale };
         if (proj.bRotate)
         {
-            const float rad = RotationDeg_(shot.velocity) * (3.14159265f / 180.f);
+            const float rad = RotationDeg_(shot.velocity) * kDeg2Rad;
             const float ox  = proj.trail.offset.x * proj.scale;
             const float oy  = proj.trail.offset.y * proj.scale;
             offset          = { ox * std::cos(rad) - oy * std::sin(rad), ox * std::sin(rad) + oy * std::cos(rad) };

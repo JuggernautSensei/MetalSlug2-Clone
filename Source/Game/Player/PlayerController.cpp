@@ -904,7 +904,7 @@ void PlayerController::FireBullet_(
     Vec2 direction = GetAimDirection(m_aim, m_facing);
     if (m_weapon.weapon == eWeapon::Hmg)
     {
-        const float rad = m_aimDegree * (3.14159265f / 180.f);
+        const float rad = m_aimDegree * kDeg2Rad;
         direction       = { static_cast<float>(m_facing) * std::cos(rad), -std::sin(rad) };
         if (_weapon.muzzleJitter.y > 0.f)
         {

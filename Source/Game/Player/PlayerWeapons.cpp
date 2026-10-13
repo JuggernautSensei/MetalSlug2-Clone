@@ -5,7 +5,6 @@
 
 #include "Base/Math.h"
 
-constexpr float kDegToRad      = 3.14159265f / 180.f;
 constexpr float kDiagonalRatio = 0.6f;   // 짧은 축/긴 축 비율이 이 이상이면 대각 조준으로 보고 정사각 판정을 쓴다 (약 31~59도)
 
 namespace
@@ -152,7 +151,7 @@ BulletSpawn MakeFlameParticleSpawn(
     RngMt19937&         _rng)
 {
     // 방향: 기준 방향을 +-spreadDeg 안에서 무작위로 돌린다 (순서 고정: 각도, 세로 지터, 속도, 수명)
-    const float spreadRad = Random<float>(_rng, -_tuning.spreadDeg, _tuning.spreadDeg) * kDegToRad;
+    const float spreadRad = Random<float>(_rng, -_tuning.spreadDeg, _tuning.spreadDeg) * kDeg2Rad;
     const float c         = std::cos(spreadRad);
     const float s         = std::sin(spreadRad);
     const Vec2  direction = { _direction.x * c - _direction.y * s, _direction.x * s + _direction.y * c };

@@ -548,7 +548,7 @@ void TickChute_(
     const Vec2  muzzle = World_(_e.body.position, _c.cannonAimOrigin);
     const float dx     = _env.ctx.player.center.x - muzzle.x;
     const float dy     = std::max(40.f, _env.ctx.player.center.y - muzzle.y);
-    return std::atan2(dx, dy) * (180.f / 3.14159265f);
+    return std::atan2(dx, dy) * kRad2Deg;
 }
 
 // Aim 프레임 yaw (0..8) 의 방향각: 짝수는 사격 행 각도, 홀수는 이웃 두 행의 가운데
@@ -675,7 +675,7 @@ void FireMissile_(
     const Vec2         delta  = { (c.cannonMuzzleX[row] - c.cannonMuzzleX[kAimRows / 2]) * sign, 0.f };
     const Vec2         base   = weapon >= 0 ? GetMuzzleWorld(_e, _def, weapon) : _e.body.position;
     const Vec2         muzzle = { base.x + delta.x, base.y + delta.y };
-    const float        rad    = c.cannonAimDeg[row] * (3.14159265f / 180.f);
+    const float        rad    = c.cannonAimDeg[row] * kDeg2Rad;
     const Vec2         dir    = { std::sin(rad), std::cos(rad) };
     EventLogFormat("bigshiee.missile_fire", "\"row\":{},\"x\":{:.1f},\"y\":{:.1f},\"dx\":{:.3f},\"dy\":{:.3f}", row, muzzle.x, muzzle.y, dir.x, dir.y);
     (void)FireWeapon(_e, _def, _env, weapon, dir, delta);

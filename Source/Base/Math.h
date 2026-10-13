@@ -4,12 +4,12 @@
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
-#include <numbers>
 #include <type_traits>
 
-inline constexpr float kPi      = std::numbers::pi_v<float>;
-inline constexpr float kDeg2Rad = kPi / 180.f;
-inline constexpr float kRad2Deg = 180.f / kPi;
+#include <JugX/Math.h>
+
+using jug::kDeg2Rad;
+using jug::kRad2Deg;
 
 template<typename T, typename U>
 [[nodiscard]] constexpr std::common_type_t<T, U> Min(const T _x, const U _y)

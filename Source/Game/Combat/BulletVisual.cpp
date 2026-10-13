@@ -93,7 +93,7 @@ bool SubmitPlayerBullet(
     {
         case eWeapon::Hmg:
         {
-            float degrees = std::atan2(-vy, vx) * (180.f / 3.14159265f);
+            float degrees = std::atan2(-vy, vx) * kRad2Deg;
             if (degrees < 0.f)
             {
                 degrees += 360.f;
@@ -126,8 +126,7 @@ bool SubmitPlayerBullet(
             {
                 return false;
             }
-            constexpr float kRadToDeg = 180.f / 3.14159265f;
-            float           degrees   = std::atan2(vy, vx) * kRadToDeg - (bRight ? 0.f : 180.f);
+            float           degrees   = std::atan2(vy, vx) * kRad2Deg - (bRight ? 0.f : 180.f);
             if (degrees > 180.f)
             {
                 degrees -= 360.f;
