@@ -192,18 +192,10 @@ bool PropDefParser::Keys_(
     {
         return Fail_(_where, "", "객체가 필요합니다");
     }
-    for (const JsonMember& member: _obj.GetObject())
+    StringView badKey;
+    if (!CheckJsonKeys(_obj, Span<const StringView> { _allowed.begin(), _allowed.size() }, badKey))
     {
-        const StringView k      = member.first;
-        bool             bFound = false;
-        for (const StringView allowed: _allowed)
-        {
-            bFound = bFound || allowed == k;
-        }
-        if (!bFound)
-        {
-            return Fail_(_where, k, "알 수 없는 키입니다");
-        }
+        return Fail_(_where, badKey, "알 수 없는 키입니다");
     }
     return true;
 }
@@ -215,17 +207,8 @@ bool PropDefParser::Num_(
     float&            _out,
     const bool        _bRequired)
 {
-    if (!_obj.HasField(_key))
-    {
-        return _bRequired ? Fail_(_where, _key, "필수 항목이 없습니다") : true;
-    }
-    const Result<double> value = _obj.ReadField<double>(_key);
-    if (!value)
-    {
-        return Fail_(_where, _key, "숫자가 필요합니다");
-    }
-    _out = static_cast<float>(value.GetValue());
-    return true;
+    StringView reason;
+    return ReadFloatField(_obj, _key, _bRequired, _out, reason) || Fail_(_where, _key, reason);
 }
 
 bool PropDefParser::Int_(
@@ -236,9 +219,9 @@ bool PropDefParser::Int_(
     const bool        _bRequired)
 {
     float value = 0.f;
-    if (!_obj.HasField(_key))
+    if (!HasKey(_obj, _key))
     {
-        return _bRequired ? Fail_(_where, _key, "필수 항목이 없습니다") : true;
+        return _bRequired ? Fail_(_where, _key, "필수 값이 없습니다") : true;
     }
     if (!Num_(_obj, _where, _key, value, true))
     {
@@ -246,7 +229,7 @@ bool PropDefParser::Int_(
     }
     if (value != static_cast<float>(static_cast<int>(value)))
     {
-        return Fail_(_where, _key, "정수가 필요합니다");
+        return Fail_(_where, _key, "정수가 아닙니다");
     }
     _out = static_cast<int>(value);
     return true;
@@ -258,17 +241,8 @@ bool PropDefParser::Bool_(
     const StringView  _key,
     bool&             _out)
 {
-    if (!_obj.HasField(_key))
-    {
-        return true;
-    }
-    const Result<bool> value = _obj.ReadField<bool>(_key);
-    if (!value)
-    {
-        return Fail_(_where, _key, "true/false 가 필요합니다");
-    }
-    _out = value.GetValue();
-    return true;
+    StringView reason;
+    return ReadBoolField(_obj, _key, false, _out, reason) || Fail_(_where, _key, reason);
 }
 
 bool PropDefParser::Str_(
@@ -278,17 +252,8 @@ bool PropDefParser::Str_(
     String&           _out,
     const bool        _bRequired)
 {
-    if (!_obj.HasField(_key))
-    {
-        return _bRequired ? Fail_(_where, _key, "필수 항목이 없습니다") : true;
-    }
-    const Result<String> value = _obj.ReadField<String>(_key);
-    if (!value)
-    {
-        return Fail_(_where, _key, "문자열이 필요합니다");
-    }
-    _out = value.GetValue();
-    return true;
+    StringView reason;
+    return ReadStringField(_obj, _key, _bRequired, _out, reason) || Fail_(_where, _key, reason);
 }
 
 bool PropDefParser::Vec2_(
@@ -298,28 +263,8 @@ bool PropDefParser::Vec2_(
     Vec2&             _out,
     const bool        _bRequired)
 {
-    if (!_obj.HasField(_key))
-    {
-        return _bRequired ? Fail_(_where, _key, "필수 항목이 없습니다") : true;
-    }
-    const Result<JsonReader> arr = _obj.FindField(_key);
-    if (!arr || !arr->IsArray() || arr->GetSize() != 2)
-    {
-        return Fail_(_where, _key, "[x, y] 배열이 필요합니다");
-    }
-    ARRAY<float, 2> xy = { 0.f, 0.f };
-    int             i  = 0;
-    for (const JsonReader item: arr->GetArray())
-    {
-        const Result<double> v = item.Read<double>();
-        if (!v || i >= 2)
-        {
-            return Fail_(_where, _key, "숫자 배열이 필요합니다");
-        }
-        xy[i++] = static_cast<float>(v.GetValue());
-    }
-    _out = { xy[0], xy[1] };
-    return true;
+    StringView reason;
+    return ReadVec2Field(_obj, _key, _bRequired, _out, reason) || Fail_(_where, _key, reason);
 }
 
 bool PropDefParser::Visual_(
@@ -328,7 +273,7 @@ bool PropDefParser::Visual_(
     const StringView  _key,
     PropVisual&       _out)
 {
-    if (!_obj.HasField(_key))
+    if (!HasKey(_obj, _key))
     {
         return true;
     }
@@ -341,8 +286,8 @@ bool PropDefParser::Visual_(
     {
         return false;
     }
-    const bool bAnim   = v->HasField("anim");
-    const bool bSprite = v->HasField("sprite");
+    const bool bAnim   = HasKey(*v, "anim");
+    const bool bSprite = HasKey(*v, "sprite");
     if (bAnim == bSprite)
     {
         return Fail_(_where, _key, "anim 또는 sprite 중 하나만 지정해야 합니다");
@@ -396,7 +341,7 @@ bool PropDefParser::Parts_(
             return false;
         }
         Vector<ePropRole> roles;
-        if (!item.HasField("role"))
+        if (!HasKey(item, "role"))
         {
             return Fail_(where, "role", "필수 항목이 없습니다");
         }
@@ -422,7 +367,7 @@ bool PropDefParser::Parts_(
         }
 
         ePropWhen when = ePropWhen::Intact;
-        if (item.HasField("when"))
+        if (HasKey(item, "when"))
         {
             const Result<String> w = item.ReadField<String>("when");
             if (!w)
@@ -473,7 +418,7 @@ bool PropDefParser::Burst_(
     {
         return false;
     }
-    if (_obj.HasField("explosions"))
+    if (HasKey(_obj, "explosions"))
     {
         const Result<JsonReader> arr = _obj.FindField("explosions");
         if (!arr || !arr->IsArray())
@@ -491,7 +436,7 @@ bool PropDefParser::Burst_(
             _out.explosions.push_back(e);
         }
     }
-    if (_obj.HasField("debris"))
+    if (HasKey(_obj, "debris"))
     {
         const Result<JsonReader> d     = _obj.FindField("debris");
         const String             where = std::format("{}.debris", _where);
@@ -581,11 +526,11 @@ bool PropDefParser::Def_(
     {
         return false;
     }
-    if (_obj.HasField("parts") && !Parts_(_obj.FindField("parts").GetValue(), where, def.parts))
+    if (HasKey(_obj, "parts") && !Parts_(_obj.FindField("parts").GetValue(), where, def.parts))
     {
         return false;
     }
-    if (_obj.HasField("variants"))
+    if (HasKey(_obj, "variants"))
     {
         const Result<JsonReader> arr = _obj.FindField("variants");
         if (!arr || !arr->IsArray() || arr->GetSize() == 0)
@@ -600,28 +545,28 @@ bool PropDefParser::Def_(
             {
                 return false;
             }
-            if (item.HasField("parts") && !Parts_(item.FindField("parts").GetValue(), where2, v.parts))
+            if (HasKey(item, "parts") && !Parts_(item.FindField("parts").GetValue(), where2, v.parts))
             {
                 return false;
             }
             def.variants.push_back(std::move(v));
         }
     }
-    if (_obj.HasField("onDamaged"))
+    if (HasKey(_obj, "onDamaged"))
     {
         if (!Burst_(_obj.FindField("onDamaged").GetValue(), where, def.onDamaged))
         {
             return false;
         }
     }
-    if (_obj.HasField("onDestroy"))
+    if (HasKey(_obj, "onDestroy"))
     {
         if (!Burst_(_obj.FindField("onDestroy").GetValue(), where, def.onDestroy))
         {
             return false;
         }
     }
-    if (_obj.HasField("secondary"))
+    if (HasKey(_obj, "secondary"))
     {
         const Result<JsonReader> s      = _obj.FindField("secondary");
         const String             where2 = where + ".secondary";
@@ -631,15 +576,15 @@ bool PropDefParser::Def_(
         }
         def.bHasSecondary = true;
     }
-    if (_obj.HasField("drops") && !Drops_(_obj.FindField("drops").GetValue(), where, def.drops))
+    if (HasKey(_obj, "drops") && !Drops_(_obj.FindField("drops").GetValue(), where, def.drops))
     {
         return false;
     }
-    if (_obj.HasField("spawns") && !Spawns_(_obj.FindField("spawns").GetValue(), where, def.spawns))
+    if (HasKey(_obj, "spawns") && !Spawns_(_obj.FindField("spawns").GetValue(), where, def.spawns))
     {
         return false;
     }
-    if (_obj.HasField("fall"))
+    if (HasKey(_obj, "fall"))
     {
         const Result<JsonReader> f      = _obj.FindField("fall");
         const String             where2 = where + ".fall";
@@ -649,7 +594,7 @@ bool PropDefParser::Def_(
         }
         def.bHasFall = true;
     }
-    if (_obj.HasField("groundPatch"))
+    if (HasKey(_obj, "groundPatch"))
     {
         const Result<JsonReader> g      = _obj.FindField("groundPatch");
         const String             where2 = where + ".groundPatch";
@@ -703,7 +648,7 @@ bool PropDefParser::Item_(
     }
 
     String weapon;
-    if (Str_(_obj, where, "weapon", weapon, false) && _obj.HasField("weapon"))
+    if (Str_(_obj, where, "weapon", weapon, false) && HasKey(_obj, "weapon"))
     {
         if (weapon == "hmg")
         {
@@ -727,7 +672,7 @@ bool PropDefParser::Item_(
         }
     }
     String supply;
-    if (Str_(_obj, where, "supply", supply, false) && _obj.HasField("supply"))
+    if (Str_(_obj, where, "supply", supply, false) && HasKey(_obj, "supply"))
     {
         if (supply == "bomb")
         {
@@ -750,7 +695,7 @@ bool PropDefParser::Item_(
     {
         return false;
     }
-    if (item.kind == eItemKind::Gun && (item.weapon == eWeapon::Pistol || !_obj.HasField("weapon")))
+    if (item.kind == eItemKind::Gun && (item.weapon == eWeapon::Pistol || !HasKey(_obj, "weapon")))
     {
         return Fail_(where, "weapon", "gun 종류는 weapon 이 필요합니다");
     }
@@ -815,7 +760,7 @@ bool PropDefParser::Run(
         return Fail_("Props.json", "version", "지원하지 않는 버전입니다 (1 만 지원)");
     }
 
-    if (_root.HasField("defs"))
+    if (HasKey(_root, "defs"))
     {
         const Result<JsonReader> defs = _root.FindField("defs");
         if (!defs || !defs->IsObject())
@@ -830,7 +775,7 @@ bool PropDefParser::Run(
             }
         }
     }
-    if (_root.HasField("items"))
+    if (HasKey(_root, "items"))
     {
         const Result<JsonReader> items = _root.FindField("items");
         if (!items || !items->IsObject())
@@ -845,7 +790,7 @@ bool PropDefParser::Run(
             }
         }
     }
-    if (_root.HasField("groups"))
+    if (HasKey(_root, "groups"))
     {
         const Result<JsonReader> groups = _root.FindField("groups");
         if (!groups || !groups->IsObject())
@@ -902,7 +847,7 @@ bool PropDefParser::ParseParams(
     {
         return Fail_(where, "hp", "0 이상이어야 합니다");
     }
-    if (_params.HasField("sprites"))
+    if (HasKey(_params, "sprites"))
     {
         const Result<JsonReader> arr = _params.FindField("sprites");
         if (!arr || !arr->IsArray() || arr->GetSize() < 1 || arr->GetSize() > 2)
@@ -923,7 +868,7 @@ bool PropDefParser::ParseParams(
     }
     for (const char* pBoxKey: { "hitbox", "standBox" })
     {
-        if (!_params.HasField(pBoxKey))
+        if (!HasKey(_params, pBoxKey))
         {
             continue;
         }
@@ -961,7 +906,7 @@ Result<PropDefLibrary> PropDefLibrary::Parse(
     const StringView _json,
     String*          _pMessageOrNull)
 {
-    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, eJsonLoadOption::AllowComments);
+    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, kJsonBomComments);
     if (!doc)
     {
         if (_pMessageOrNull)
@@ -989,7 +934,7 @@ Result<PropDefLibrary> PropDefLibrary::Load(
     const FilePath& _path,
     String*         _pMessageOrNull)
 {
-    Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(_path, eJsonLoadOption::AllowComments);
+    Result<JsonDeserializer> doc = LoadJsonFile(_path, kJsonBomComments);
     if (!doc)
     {
         if (_pMessageOrNull)
