@@ -1,5 +1,8 @@
 # MetalSlug2 Clone — 아키텍처 포트폴리오 문서
 
+> **갱신 (최신 상태)**: 리플레이/`--hash`/`--gen-replay`와 해시 회귀 기준선(`Test/Replays`, `Regress.ps1`, `Baseline.txt`)은 AI 검증용 장치라 **삭제**되었다(복구: 태그 `backup-before-replay-removal`). 현재 `Scripts/Verify.ps1` 은 캡처 해시 7개 + 튜닝 덤프 + 단위 테스트(895개)만 확인한다. 아래 문서의 리플레이/해시 15개 서술은 삭제 이전 기준이다.
+
+
 > C++20 + SDL3 로 만든 2D 액션 게임(메탈슬러그 2 Mission 4)의 **결정적 시뮬레이션 구조**와,
 > 이를 **동작 변경 0** 으로 자체 유틸 → 자작 라이브러리(JugX) 기반의 평평한 구조로 재정비한 과정을 정리한 문서.
 

@@ -33,10 +33,10 @@ namespace
 
 IntRect ComputeDestRect(
     const AnimFrame& _frame,
-    const VECTOR2    _worldOrigin,
-    const VECTOR2    _cameraPos,
-    const bool       _bFlipX,
-    const bool       _bFlipY)
+    VECTOR2          _worldOrigin,
+    VECTOR2          _cameraPos,
+    bool             _bFlipX,
+    bool             _bFlipY)
 {
     const int originX = FloorToInt(_worldOrigin.x - _cameraPos.x);
     const int originY = FloorToInt(_worldOrigin.y - _cameraPos.y);
@@ -66,12 +66,12 @@ void SortSpriteCommands(
 }
 
 TextureViewRects ComputeTextureView(
-    const int     _texW,
-    const int     _texH,
-    const VECTOR2 _texWorldPos,
-    const VECTOR2 _cameraPos,
-    const int     _viewW,
-    const int     _viewH)
+    int     _texW,
+    int     _texH,
+    VECTOR2 _texWorldPos,
+    VECTOR2 _cameraPos,
+    int     _viewW,
+    int     _viewH)
 {
     TextureViewRects result;
     if (_texW <= 0 || _texH <= 0 || _viewW <= 0 || _viewH <= 0)
@@ -138,7 +138,7 @@ namespace
 bool g_bTraceLoad = false;
 
 [[nodiscard]] uint64_t HashRgba_(
-    const Span<const uint8_t> _rgba)
+    Span<const uint8_t> _rgba)
 {
     Fnv1a hasher;
     hasher.Mix(_rgba);
@@ -146,11 +146,11 @@ bool g_bTraceLoad = false;
 }
 
 void TraceAtlasPage_(
-    const size_t              _page,
-    const FilePath&           _path,
-    const int                 _width,
-    const int                 _height,
-    const Span<const uint8_t> _rgba)
+    size_t              _page,
+    const FilePath&     _path,
+    int                 _width,
+    int                 _height,
+    Span<const uint8_t> _rgba)
 {
     if (g_bTraceLoad)
     {
@@ -159,11 +159,11 @@ void TraceAtlasPage_(
 }
 
 void TraceStandalone_(
-    const int                 _handle,
-    const FilePath&           _path,
-    const int                 _width,
-    const int                 _height,
-    const Span<const uint8_t> _rgba)
+    int                 _handle,
+    const FilePath&     _path,
+    int                 _width,
+    int                 _height,
+    Span<const uint8_t> _rgba)
 {
     if (g_bTraceLoad)
     {
@@ -173,7 +173,7 @@ void TraceStandalone_(
 }   // namespace
 
 void SetLoadTraceEnabled(
-    const bool _bEnabled)
+    bool _bEnabled)
 {
     g_bTraceLoad = _bEnabled;
 }
@@ -212,18 +212,18 @@ const ARRAY<FlashRampNode, 17> kFlashRamp = {
 };
 
 uint8_t LerpChannel_(
-    const int _from,
-    const int _to,
-    const int _t,
-    const int _span)
+    int _from,
+    int _to,
+    int _t,
+    int _span)
 {
     return static_cast<uint8_t>(_from + (_to - _from) * _t / _span);
 }
 }   // namespace
 
 Vector<uint8_t> BuildHitFlashRgba(
-    const Span<const uint8_t> _rgba,
-    const size_t              _pixelCount)
+    Span<const uint8_t> _rgba,
+    size_t              _pixelCount)
 {
     Vector<uint8_t> out(_pixelCount * 4);
     for (size_t i = 0; i < _pixelCount; ++i)
@@ -242,7 +242,7 @@ namespace
 {
 [[nodiscard]] Result<DecodedImage> DecodeImage_(
     const FilePath& _path,
-    const bool      _bBuildFlash)
+    bool            _bBuildFlash)
 {
     Result<DecodedImage> decoded = DecodePngFile_(_path);
     if (!decoded || !_bBuildFlash)
@@ -260,9 +260,9 @@ namespace
 }   // namespace
 
 Vector<Result<DecodedImage>> DecodeImages(
-    const Span<const FilePath> _paths,
-    const bool                 _bBuildFlash,
-    const int                  _numWorkers)
+    Span<const FilePath> _paths,
+    bool                 _bBuildFlash,
+    int                  _numWorkers)
 {
     Vector<Result<DecodedImage>> results(_paths.size(), Result<DecodedImage> { Error { eError::InvalidData } });
     if (_numWorkers <= 1)
@@ -285,14 +285,14 @@ namespace
 SDL_Texture* PickTexture_(
     SDL_Texture* const _pNormal,
     SDL_Texture* const _pFlash,
-    const float        _flashAmount)
+    float              _flashAmount)
 {
     return (_flashAmount >= 0.5f && _pFlash) ? _pFlash : _pNormal;
 }
 }   // namespace
 
 RGBA ApplyHitFlashRamp(
-    const RGBA _color)
+    RGBA _color)
 {
     const int l = (static_cast<int>(_color.r) + static_cast<int>(_color.g) + static_cast<int>(_color.b)) / 3;
     for (size_t i = 1; i < kFlashRamp.size(); ++i)
@@ -356,9 +356,9 @@ void SpriteBatch::Shutdown()
 }
 
 Result<void> SpriteBatch::AddAtlasPageFromRgba(
-    const int                 _width,
-    const int                 _height,
-    const Span<const uint8_t> _rgba)
+    int                 _width,
+    int                 _height,
+    Span<const uint8_t> _rgba)
 {
     if (_width <= 0 || _height <= 0 || _rgba.size() < static_cast<size_t>(_width) * static_cast<size_t>(_height) * 4)
     {
@@ -369,10 +369,10 @@ Result<void> SpriteBatch::AddAtlasPageFromRgba(
 }
 
 Result<void> SpriteBatch::AddAtlasPageFromRgba(
-    const int                 _width,
-    const int                 _height,
-    const Span<const uint8_t> _rgba,
-    const Span<const uint8_t> _flashRgba)
+    int                 _width,
+    int                 _height,
+    Span<const uint8_t> _rgba,
+    Span<const uint8_t> _flashRgba)
 {
     if (!m_pRenderer || _width <= 0 || _height <= 0 || _rgba.size() < static_cast<size_t>(_width) * static_cast<size_t>(_height) * 4)
     {
@@ -436,7 +436,7 @@ Result<int> SpriteBatch::AddStandaloneTexture(
 
 bool SpriteBatch::LoadAtlasPagesParallel(
     const AnimationLibrary& _library,
-    const int               _numWorkers)
+    int                     _numWorkers)
 {
     const ScopedPhaseTimer timer { "atlas-pages", "all" };
     Vector<FilePath>       paths;
@@ -466,8 +466,8 @@ bool SpriteBatch::LoadAtlasPagesParallel(
 }
 
 Vector<int> SpriteBatch::LoadStandaloneTexturesParallel(
-    const Span<const FilePath> _paths,
-    const int                  _numWorkers)
+    Span<const FilePath> _paths,
+    int                  _numWorkers)
 {
     Vector<int>  handles(_paths.size(), -1);
     const size_t chunk = static_cast<size_t>(Max(1, _numWorkers));
@@ -492,9 +492,9 @@ Vector<int> SpriteBatch::LoadStandaloneTexturesParallel(
 }
 
 Result<int> SpriteBatch::AddStandaloneTextureFromRgba(
-    const int                 _width,
-    const int                 _height,
-    const Span<const uint8_t> _rgba)
+    int                 _width,
+    int                 _height,
+    Span<const uint8_t> _rgba)
 {
     if (!m_pRenderer || _width <= 0 || _height <= 0 || _rgba.size() < static_cast<size_t>(_width) * static_cast<size_t>(_height) * 4)
     {
@@ -547,7 +547,7 @@ void SpriteBatch::DrawStandaloneRect_(
     const StandaloneTexture& _texture,
     const SDL_FRect&         _src,
     const SDL_FRect&         _dst,
-    const RGBA               _tint) const
+    RGBA                     _tint) const
 {
     if (_src.w <= 0.f || _src.h <= 0.f)
     {
@@ -591,12 +591,12 @@ Result<int> SpriteBatch::LoadStandaloneTexture(
 }
 
 void SpriteBatch::DrawTexture(
-    const int     _handle,
-    const VECTOR2 _texWorldPos,
-    const VECTOR2 _cameraPos,
-    const int     _viewW,
-    const int     _viewH,
-    const RGBA    _tint) const
+    int     _handle,
+    VECTOR2 _texWorldPos,
+    VECTOR2 _cameraPos,
+    int     _viewW,
+    int     _viewH,
+    RGBA    _tint) const
 {
     if (!m_pRenderer || _handle < 0 || static_cast<size_t>(_handle) >= m_textures.size())
     {
@@ -616,14 +616,14 @@ void SpriteBatch::DrawTexture(
 }
 
 void SpriteBatch::DrawTextureRepeatX(
-    const int     _handle,
-    const VECTOR2 _texWorldPos,
-    const VECTOR2 _cameraPos,
-    const int     _viewW,
-    const int     _viewH,
-    const float   _fromX,
-    const int     _tileX,
-    const int     _tileW) const
+    int     _handle,
+    VECTOR2 _texWorldPos,
+    VECTOR2 _cameraPos,
+    int     _viewW,
+    int     _viewH,
+    float   _fromX,
+    int     _tileX,
+    int     _tileW) const
 {
     if (!m_pRenderer || _handle < 0 || static_cast<size_t>(_handle) >= m_textures.size() || _tileW <= 0)
     {
@@ -669,8 +669,8 @@ void SpriteBatch::DrawTextureRepeatX(
 
 void SpriteBatch::DrawFrame(
     const AnimFrame&         _frame,
-    const VECTOR2            _worldOrigin,
-    const VECTOR2            _cameraPos,
+    VECTOR2                  _worldOrigin,
+    VECTOR2                  _cameraPos,
     const SpriteDrawOptions& _options) const
 {
     if (!m_pRenderer || _frame.IsEmpty() || _frame.atlas < 0 || static_cast<size_t>(_frame.atlas) >= m_pages.size())
@@ -717,7 +717,7 @@ void SpriteBatch::DrawFrame(
 
 void SpriteBatch::DrawFrame(
     const AnimFrame&         _frame,
-    const VECTOR2            _worldOrigin,
+    VECTOR2                  _worldOrigin,
     const Camera&            _camera,
     const SpriteDrawOptions& _options) const
 {
@@ -750,10 +750,10 @@ void SpriteBatch::DrawFrameRect(
 }
 
 void SpriteBatch::Submit(
-    const int                _depth,
-    const int                _sortKey,
+    int                      _depth,
+    int                      _sortKey,
     const AnimFrame&         _frame,
-    const VECTOR2            _worldOrigin,
+    VECTOR2                  _worldOrigin,
     const SpriteDrawOptions& _options)
 {
     SpriteCommand command;
@@ -792,11 +792,11 @@ int SpriteBatch::FindStandalone(
 }
 
 void SpriteBatch::SubmitStandalone(
-    const int                _depth,
-    const int                _sortKey,
-    const int                _handle,
+    int                      _depth,
+    int                      _sortKey,
+    int                      _handle,
     const IntRect&           _src,
-    const VECTOR2            _worldCenter,
+    VECTOR2                  _worldCenter,
     const SpriteDrawOptions& _options)
 {
     SpriteCommand command;
@@ -812,7 +812,7 @@ void SpriteBatch::SubmitStandalone(
 
 void SpriteBatch::DrawCommand_(
     const SpriteCommand& _command,
-    const VECTOR2        _cameraPos) const
+    VECTOR2              _cameraPos) const
 {
     if (_command.standalone < 0)
     {
@@ -832,7 +832,7 @@ void SpriteBatch::DrawCommand_(
 }
 
 void SpriteBatch::Flush(
-    const VECTOR2 _cameraPos)
+    VECTOR2 _cameraPos)
 {
     SortSpriteCommands(m_commands);
     for (const SpriteCommand& command: m_commands)
@@ -844,8 +844,8 @@ void SpriteBatch::Flush(
 }
 
 void SpriteBatch::FlushBelowDepth(
-    const VECTOR2 _cameraPos,
-    const int     _depth)
+    VECTOR2 _cameraPos,
+    int     _depth)
 {
     SortSpriteCommands(m_commands);
     size_t count = 0;

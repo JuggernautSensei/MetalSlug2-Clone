@@ -45,11 +45,11 @@ namespace
 
 [[nodiscard]] SupportResult FindSupport_(
     const StepContext& _ctx,
-    const float        _x,
-    const float        _yMin,
-    const float        _yMax,
-    const float        _yMinOneWay,
-    const bool         _bCheckBlocked)
+    float              _x,
+    float              _yMin,
+    float              _yMax,
+    float              _yMinOneWay,
+    bool               _bCheckBlocked)
 {
     const Body& body = _ctx.body;
     const float fh   = FootHalf_(body);
@@ -148,9 +148,9 @@ namespace
 void TestLateralBlock_(
     const Aabb&           _testBox,
     const Aabb&           _block,
-    const float           _oldX,
-    const float           _half,
-    const int             _dir,
+    float                 _oldX,
+    float                 _half,
+    int                   _dir,
     std::optional<float>& _snapX)
 {
     if (!_testBox.Overlaps(_block))
@@ -172,11 +172,11 @@ void TestLateralBlock_(
 
 void TestCeilingBlock_(
     const Aabb& _block,
-    const float _left,
-    const float _right,
-    const float _top0,
-    const float _top1,
-    const float _bodyHeight,
+    float       _left,
+    float       _right,
+    float       _top0,
+    float       _top1,
+    float       _bodyHeight,
     float&      _stopFeet)
 {
     if (_block.min.x < _right && _block.max.x > _left && _block.max.y > _top1 && _block.max.y <= _top0 + kOneWayEpsilon && _block.min.y < _top0)
@@ -191,11 +191,11 @@ void TestCeilingBlock_(
 
 [[nodiscard]] std::optional<float> FindLateralBlock_(
     const StepContext& _ctx,
-    const float        _oldX,
-    const float        _newX,
-    const float        _feetY,
-    const int          _dir,
-    const float        _stepZone)
+    float              _oldX,
+    float              _newX,
+    float              _feetY,
+    int                _dir,
+    float              _stepZone)
 {
     const Body& body  = _ctx.body;
     const float half  = HalfWidthOf_(body);
@@ -259,9 +259,9 @@ void TestCeilingBlock_(
 
 [[nodiscard]] bool IsHeadBlocked_(
     const StepContext& _ctx,
-    const float        _x,
-    const float        _oldFeet,
-    const float        _newFeet)
+    float              _x,
+    float              _oldFeet,
+    float              _newFeet)
 {
     const Body& body   = _ctx.body;
     const float half   = HalfWidthOf_(body);
@@ -315,7 +315,7 @@ void SetSupport_(
 
 [[nodiscard]] bool Resettle_(
     StepContext& _ctx,
-    const float  _x)
+    float        _x)
 {
     Body&       body   = _ctx.body;
     const float feet   = body.position.y;
@@ -346,7 +346,7 @@ void SetSupport_(
 
 void MoveX_(
     StepContext& _ctx,
-    const float  _dx)
+    float        _dx)
 {
     Body& body = _ctx.body;
     if (_dx == 0.f)
@@ -388,7 +388,7 @@ void MoveX_(
 
 void MoveY_(
     StepContext& _ctx,
-    const float  _dy)
+    float        _dy)
 {
     Body& body = _ctx.body;
     if (_dy == 0.f)
@@ -472,7 +472,7 @@ MoveResult Physics::Step(
     Body&                _body,
     const PhysicsWorld&  _world,
     const PhysicsTuning& _tuning,
-    const float          _dt)
+    float                _dt)
 {
     StepContext ctx = { _body, _world, _tuning, {}, false };
 
@@ -534,7 +534,7 @@ MoveResult Physics::Step(
 bool Physics::SnapToGround(
     Body&               _body,
     const PhysicsWorld& _world,
-    const float         _maxDist)
+    float               _maxDist)
 {
     const PhysicsTuning tuning;
     StepContext         ctx = { _body, _world, tuning, {}, false };
@@ -557,7 +557,7 @@ Aabb Body::GetBox() const
 }
 
 void Body::RequestDropThrough(
-    const int _steps)
+    int _steps)
 {
     dropThroughSteps = _steps;
 }

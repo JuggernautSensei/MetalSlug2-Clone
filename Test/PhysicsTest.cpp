@@ -9,9 +9,9 @@
 namespace
 {
 [[nodiscard]] GroundMap MakeFlat_(
-    const int _w      = 400,
-    const int _h      = 160,
-    const int _floorY = 100)
+    int _w      = 400,
+    int _h      = 160,
+    int _floorY = 100)
 {
     GroundMap map = GroundMap::MakeEmpty(_w, _h);
     map.FillRect(0, _floorY, _w - 1, _h - 1, true);
@@ -19,8 +19,8 @@ namespace
 }
 
 [[nodiscard]] Body MakeBody_(
-    const float _x,
-    const float _feetY)
+    float _x,
+    float _feetY)
 {
     Body body;
     body.position = { _x, _feetY };
@@ -30,7 +30,7 @@ namespace
 [[nodiscard]] MoveResult Tick_(
     Body&               _body,
     const PhysicsWorld& _world,
-    const float         _vx = 0.f)
+    float               _vx = 0.f)
 {
     _body.velocity.x = _vx;
     return Physics::Step(_body, _world);
@@ -46,8 +46,8 @@ namespace
 
 [[nodiscard]] Body StandingOn_(
     const PhysicsWorld& _world,
-    const float         _x,
-    const float         _y)
+    float               _x,
+    float               _y)
 {
     Body body = MakeBody_(_x, _y);
     EXPECT_TRUE(Physics::SnapToGround(body, _world, 64.f));
@@ -198,9 +198,9 @@ TEST(Physics, StandingStillStaysGroundedWithoutDrift)
 namespace
 {
 [[nodiscard]] GroundMap MakeRamp45_(
-    const int _rampStart = 50,
-    const int _rampEnd   = 90,
-    const int _baseY     = 100)
+    int _rampStart = 50,
+    int _rampEnd   = 90,
+    int _baseY     = 100)
 {
     GroundMap map = GroundMap::MakeEmpty(400, 200);
     for (int c = 0; c < 400; ++c)
@@ -220,10 +220,10 @@ namespace
 }
 
 [[nodiscard]] int RampSurfaceAt_(
-    const int _c,
-    const int _rampStart = 50,
-    const int _rampEnd   = 90,
-    const int _baseY     = 100)
+    int _c,
+    int _rampStart = 50,
+    int _rampEnd   = 90,
+    int _baseY     = 100)
 {
     if (_c >= _rampEnd)
     {

@@ -7,7 +7,7 @@ void BeginVehicleDeath(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
-    const int       _destroyClip)
+    int             _destroyClip)
 {
     _e.body.velocity.x = 0.f;
     _e.deathTicks      = 0;
@@ -36,12 +36,12 @@ void TickVehicleDeath(
 }
 
 void RequestFxAt(
-    EnemyEnv&        _env,
-    const StringView _clip,
-    const VECTOR2    _at,
-    const int        _facing,
-    const int        _depth,
-    const float      _delaySec)
+    EnemyEnv&  _env,
+    StringView _clip,
+    VECTOR2    _at,
+    int        _facing,
+    int        _depth,
+    float      _delaySec)
 {
     FxDef fx;
     fx.clip     = String(_clip);

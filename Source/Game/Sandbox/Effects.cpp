@@ -8,8 +8,8 @@
 namespace
 {
 void StepDebris_(
-    Effect&     _effect,
-    const float _dt)
+    Effect& _effect,
+    float   _dt)
 {
     _effect.ageSec += _dt;
     _effect.velocity.y += kDebrisGravity * _dt;
@@ -25,10 +25,10 @@ void EffectList::Clear()
 
 void EffectList::Spawn(
     const AnimationLibrary& _library,
-    const StringView        _clipName,
-    const VECTOR2           _position,
-    const int               _depth,
-    const bool              _bFlipX)
+    StringView              _clipName,
+    VECTOR2                 _position,
+    int                     _depth,
+    bool                    _bFlipX)
 {
     const AnimId id = _library.Find(_clipName);
     if (id.IsNull())
@@ -46,11 +46,11 @@ void EffectList::Spawn(
 
 void EffectList::SpawnDebris(
     const AnimationLibrary& _library,
-    const StringView        _clipName,
-    const VECTOR2           _position,
-    const int               _depth,
-    const VECTOR2           _velocity,
-    const bool              _bFlipX)
+    StringView              _clipName,
+    VECTOR2                 _position,
+    int                     _depth,
+    VECTOR2                 _velocity,
+    bool                    _bFlipX)
 {
     const size_t before = m_effects.size();
     Spawn(_library, _clipName, _position, _depth, _bFlipX);
@@ -64,8 +64,8 @@ void EffectList::SpawnDebris(
 
 void EffectList::Update(
     const AnimationLibrary& _library,
-    const float             _dt,
-    const float             _cullBelowY)
+    float                   _dt,
+    float                   _cullBelowY)
 {
     for (Effect& effect: m_effects)
     {

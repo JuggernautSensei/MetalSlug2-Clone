@@ -12,8 +12,8 @@ namespace
 {
 [[nodiscard]] bool SegmentHitsGround_(
     const GroundMap& _ground,
-    const VECTOR2    _from,
-    const VECTOR2    _to,
+    VECTOR2          _from,
+    VECTOR2          _to,
     VECTOR2&         _outLastFree)
 {
     const float dx   = _to.x - _from.x;
@@ -39,8 +39,8 @@ namespace
 // 발판 윗면을 가로지르는 선분
 [[nodiscard]] bool SegmentHitsPlatform_(
     Span<const Platform> _platforms,
-    const VECTOR2        _from,
-    const VECTOR2        _to,
+    VECTOR2              _from,
+    VECTOR2              _to,
     VECTOR2&             _outTop)
 {
     bool  bHit  = false;
@@ -66,9 +66,9 @@ namespace
 }
 
 [[nodiscard]] Aabb SweptBox_(
-    const VECTOR2 _a,
-    const VECTOR2 _b,
-    const VECTOR2 _size)
+    VECTOR2 _a,
+    VECTOR2 _b,
+    VECTOR2 _size)
 {
     return Aabb::FromMinMax(
         { Min(_a.x, _b.x) - _size.x * 0.5f, Min(_a.y, _b.y) - _size.y * 0.5f },
@@ -146,7 +146,7 @@ void ProjectileSystem::SpawnShot(
 
 void ProjectileSystem::ExplodeBomb_(
     Bomb&         _bomb,
-    const VECTOR2 _at,
+    VECTOR2       _at,
     CombatSystem& _combat)
 {
     _bomb.bAlive = false;
@@ -165,7 +165,7 @@ void ProjectileSystem::ExplodeBomb_(
 
 void ProjectileSystem::SpawnShotBlast_(
     const ShotSpawn& _params,
-    const VECTOR2    _at,
+    VECTOR2          _at,
     CombatSystem&    _combat)
 {
     if (_params.blastSize.x <= 0.f || _params.blastSize.y <= 0.f || _params.blastTicks <= 0)
@@ -205,10 +205,10 @@ void ProjectileSystem::SpawnBulletBlast_(
 }
 
 void ProjectileSystem::Step(
-    const GroundMap*           _pGround,
-    CombatSystem&              _combat,
-    const float                _dt,
-    const Span<const Platform> _platforms)
+    const GroundMap*     _pGround,
+    CombatSystem&        _combat,
+    float                _dt,
+    Span<const Platform> _platforms)
 {
     for (Bullet& bullet: m_bullets)
     {
@@ -494,8 +494,8 @@ void ProjectileSystem::Step(
 }
 
 void ProjectileSystem::OnHitEvents(
-    const Span<const HitEvent> _events,
-    CombatSystem&              _combat)
+    Span<const HitEvent> _events,
+    CombatSystem&        _combat)
 {
     for (const HitEvent& event: _events)
     {
@@ -537,8 +537,8 @@ void ProjectileSystem::OnHitEvents(
 }
 
 int ProjectileSystem::CountBullets(
-    const uint32_t _owner,
-    const uint8_t  _tag) const
+    uint32_t _owner,
+    uint8_t  _tag) const
 {
     int count = 0;
     for (const Bullet& bullet: m_bullets)
@@ -552,7 +552,7 @@ int ProjectileSystem::CountBullets(
 }
 
 int ProjectileSystem::CountBombs(
-    const uint32_t _owner) const
+    uint32_t _owner) const
 {
     int count = 0;
     for (const Bomb& bomb: m_bombs)
@@ -566,7 +566,7 @@ int ProjectileSystem::CountBombs(
 }
 
 int ProjectileSystem::CountShots(
-    const uint32_t _owner) const
+    uint32_t _owner) const
 {
     int count = 0;
     for (const Shot& shot: m_shots)

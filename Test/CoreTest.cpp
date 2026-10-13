@@ -51,7 +51,7 @@ TEST(FixedStepClock, AlphaIsFractionOfStep)
 namespace
 {
 [[nodiscard]] InputFrame Held_(
-    const eAction _action)
+    eAction _action)
 {
     InputFrame frame;
     frame.Set(_action, true);

@@ -57,3 +57,8 @@
 
 ## 6. 관련 문서
 `Docs/Architecture.md`(프로젝트/아키텍처/자가평가), `Docs/Wayfinder/StyleRubric.md`(정리 기준), `Docs/Wayfinder/Stage2_Plan.md`(Opus 원안 + 개정표), `Docs/Wayfinder/Prune_Code.md`·`Prune_Assets.md`(삭제 조사), `Docs/Wayfinder/AnimLoop_Analysis.md`, `Docs/Wayfinder/TypeAudit.md`(W12).
+
+## 7. 최신 갱신 (리플레이 삭제 이후)
+- 리플레이/해시 장치 삭제(`b986871`), 주석 토막화(`0260265`), 헤더 한 줄·const 제거(`86df276`), `.cpp` 값 전달 const 제거. 백업 태그 `backup-before-replay-removal`.
+- 사용자 원칙: "돌아가기만 하면 되는" 기준이 아니라 **사람이 읽고 자기 코드 같은지**가 합격 기준. 값 전달 `MemoryView` 는 템플릿 생성자 때문에 const 가 필요(복원함).
+- 남음: 큰 파일/`IStageHost`·테스트 시임 정리(구조), `main` 병합·푸시.

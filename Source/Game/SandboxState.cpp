@@ -273,9 +273,9 @@ void SandboxState::AddDefaultTargets_()
 }
 
 uint32_t SandboxState::AddTarget(
-    const eDummyKind _kind,
-    const VECTOR2    _feet,
-    const bool       _bShooter)
+    eDummyKind _kind,
+    VECTOR2    _feet,
+    bool       _bShooter)
 {
     return m_targets.Add(_kind, _feet, _bShooter, m_tuning.sandbox);
 }
@@ -359,8 +359,8 @@ const GroundMap& SandboxState::GetGround() const
 }
 
 EnemyHandle SandboxState::SpawnEnemy(
-    const StringView   _defName,
-    const VECTOR2      _feet,
+    StringView         _defName,
+    VECTOR2            _feet,
     const SpawnParams& _params)
 {
     const PhysicsWorld world = MakeEnemyPhysicsWorld_();
@@ -368,8 +368,8 @@ EnemyHandle SandboxState::SpawnEnemy(
 }
 
 void SandboxState::SpawnDebugEnemy_(
-    const int   _slot,
-    const float _aheadPx)
+    int   _slot,
+    float _aheadPx)
 {
     if (_slot == 8)
     {
@@ -768,7 +768,7 @@ uint64_t SandboxState::HashState() const
 }
 
 void SandboxState::Render(
-    const float _alpha)
+    float _alpha)
 {
     Renderer& renderer = Renderer::GetSingleton();
     renderer.BeginFrame({ 156, 190, 224, 255 });
@@ -790,8 +790,8 @@ void SandboxState::Render(
 }
 
 void SandboxState::DrawWorld_(
-    const VECTOR2 _cameraPos,
-    const float   _alpha)
+    VECTOR2 _cameraPos,
+    float   _alpha)
 {
     Renderer&               renderer = Renderer::GetSingleton();
     SpriteBatch&            sprites  = SpriteBatch::GetSingleton();
@@ -889,8 +889,8 @@ void SandboxState::DrawWorld_(
 }
 
 void SandboxState::DrawDebugBoxes_(
-    Renderer&     _renderer,
-    const VECTOR2 _cameraPos) const
+    Renderer& _renderer,
+    VECTOR2   _cameraPos) const
 {
     for (const Hurtbox& hurtbox: m_combat.GetHurtboxes())
     {

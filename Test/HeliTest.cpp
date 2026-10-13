@@ -38,9 +38,9 @@ struct HeliLog
 namespace
 {
 [[nodiscard]] HeliLog RunHeli_(
-    VehicleRig&       _rig,
-    const EnemyHandle _heli,
-    const int         _ticks)
+    VehicleRig& _rig,
+    EnemyHandle _heli,
+    int         _ticks)
 {
     HeliLog         log;
     RbSet<uint32_t> seenBombs;

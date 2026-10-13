@@ -34,7 +34,7 @@ void DemoState::Tick(
 }
 
 void DemoState::Render(
-    const float _alpha)
+    float _alpha)
 {
     Renderer& renderer = Renderer::GetSingleton();
     renderer.BeginFrame({ 24, 28, 40, 255 });

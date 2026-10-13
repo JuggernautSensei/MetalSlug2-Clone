@@ -78,7 +78,7 @@ constexpr ARRAY<const char*, 3> kFlameTokens   = { "SG", "MG", "DG" };
 namespace
 {
 [[nodiscard]] const ARRAY<const char*, 3>& GetTokens_(
-    const eWeapon _weapon)
+    eWeapon _weapon)
 {
     switch (_weapon)
     {
@@ -91,9 +91,9 @@ namespace
 }
 
 void ReplaceKey_(
-    String&          _inOut,
-    const StringView _key,
-    const StringView _value)
+    String&    _inOut,
+    StringView _key,
+    StringView _value)
 {
     const size_t pos = _inOut.find(_key);
     if (pos != String::npos)
@@ -105,7 +105,7 @@ void ReplaceKey_(
 [[nodiscard]] String Expand_(
     const char* _pPattern,
     const char* _pWeaponToken,
-    const bool  _bRight)
+    bool        _bRight)
 {
     String result = _pPattern;
     ReplaceKey_(result, "{W}", _pWeaponToken);
@@ -114,36 +114,36 @@ void ReplaceKey_(
 }
 
 [[nodiscard]] bool IsAirTimelineSlot_(
-    const eRigClip _slot)
+    eRigClip _slot)
 {
     return _slot == eRigClip::JumpIdle || _slot == eRigClip::JumpMove || _slot == eRigClip::LowerJumpIdle || _slot == eRigClip::LowerJumpMove;
 }
 
 [[nodiscard]] int FacingIndex_(
-    const int _facing)
+    int _facing)
 {
     return _facing < 0 ? 0 : 1;
 }
 }   // namespace
 
 const char* GetRigClipName(
-    const eRigClip _clip)
+    eRigClip _clip)
 {
     const size_t index = static_cast<size_t>(_clip);
     return index < kRigClipCount ? kSlots[index].pLabel : "?";
 }
 
 bool PlayerRig::IsSlotRequired(
-    const eRigClip _slot)
+    eRigClip _slot)
 {
     return kSlots[static_cast<size_t>(_slot)].bRequired;
 }
 
 String PlayerRig::ResolveClipName(
     const AnimationLibrary& _library,
-    const eRigClip          _slot,
-    const eWeapon           _weapon,
-    const int               _facing)
+    eRigClip                _slot,
+    eWeapon                 _weapon,
+    int                     _facing)
 {
     const SlotDef&               def    = kSlots[static_cast<size_t>(_slot)];
     const ARRAY<const char*, 3>& tokens = GetTokens_(_weapon);
@@ -219,15 +219,15 @@ PlayerRig::BindReport PlayerRig::Bind(
 }
 
 const PlayerRig::SlotTable& PlayerRig::GetTable_(
-    const eWeapon _weapon,
-    const int     _facing) const
+    eWeapon _weapon,
+    int     _facing) const
 {
     return m_tables[static_cast<size_t>(_weapon)][static_cast<size_t>(FacingIndex_(_facing))];
 }
 
 PlayerRig::Slot PlayerRig::GetSlot_(
     const SlotTable& _table,
-    const eRigClip   _slot) const
+    eRigClip         _slot) const
 {
     eRigClip current = _slot;
     for (int guard = 0; guard < 4; ++guard)
@@ -248,15 +248,15 @@ PlayerRig::Slot PlayerRig::GetSlot_(
 }
 
 AnimId PlayerRig::GetSlotClip(
-    const eWeapon  _weapon,
-    const int      _facing,
-    const eRigClip _slot) const
+    eWeapon  _weapon,
+    int      _facing,
+    eRigClip _slot) const
 {
     return GetSlot_(GetTable_(_weapon, _facing), _slot).id;
 }
 
 float PlayerRig::ClipTicks_(
-    const AnimId _clip) const
+    AnimId _clip) const
 {
     const AnimClip* pClip = m_pLibrary ? m_pLibrary->GetOrNull(_clip) : nullptr;
     return pClip ? pClip->GetTotalDurationSec() * 60.f : 1.f;
@@ -410,11 +410,11 @@ void PlayerRig::Update(
 }
 
 void PlayerRig::Submit(
-    SpriteBatch&  _sprites,
-    const VECTOR2 _feet,
-    const int     _depth,
-    const int     _sortKey,
-    const RGBA    _tint) const
+    SpriteBatch& _sprites,
+    VECTOR2      _feet,
+    int          _depth,
+    int          _sortKey,
+    RGBA         _tint) const
 {
     if (!m_pLibrary)
     {
@@ -464,7 +464,7 @@ float PlayerRig::GetOriginLift() const
 }
 
 VECTOR2 PlayerRig::GetOrigin(
-    const VECTOR2 _feet) const
+    VECTOR2 _feet) const
 {
     return { _feet.x, _feet.y - m_originLift };
 }

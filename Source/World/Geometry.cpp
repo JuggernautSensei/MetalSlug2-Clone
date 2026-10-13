@@ -1,15 +1,15 @@
 #include "World/Geometry.h"
 
 Aabb Aabb::FromMinMax(
-    const VECTOR2 _min,
-    const VECTOR2 _max)
+    VECTOR2 _min,
+    VECTOR2 _max)
 {
     return Aabb { _min, _max };
 }
 
 Aabb Aabb::FromMinSize(
-    const VECTOR2 _min,
-    const VECTOR2 _size)
+    VECTOR2 _min,
+    VECTOR2 _size)
 {
     return Aabb {
         _min, { _min.x + _size.x, _min.y + _size.y }
@@ -17,8 +17,8 @@ Aabb Aabb::FromMinSize(
 }
 
 Aabb Aabb::FromCenterSize(
-    const VECTOR2 _center,
-    const VECTOR2 _size)
+    VECTOR2 _center,
+    VECTOR2 _size)
 {
     const VECTOR2 half = { _size.x * 0.5f, _size.y * 0.5f };
     return Aabb {
@@ -28,8 +28,8 @@ Aabb Aabb::FromCenterSize(
 }
 
 Aabb Aabb::FromBottomCenter(
-    const VECTOR2 _bottomCenter,
-    const VECTOR2 _size)
+    VECTOR2 _bottomCenter,
+    VECTOR2 _size)
 {
     return Aabb {
         { _bottomCenter.x - _size.x * 0.5f, _bottomCenter.y - _size.y },

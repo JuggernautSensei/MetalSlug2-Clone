@@ -11,7 +11,7 @@
 #include "Game/Enemies/EnemyDefParse.h"
 
 const char* GetBehaviorName(
-    const eEnemyBehavior _behavior)
+    eEnemyBehavior _behavior)
 {
     switch (_behavior)
     {
@@ -35,7 +35,7 @@ const char* GetBehaviorName(
 }
 
 std::optional<eEnemyBehavior> FindBehavior(
-    const StringView _name)
+    StringView _name)
 {
     for (int i = 0; i < static_cast<int>(eEnemyBehavior::Count); ++i)
     {
@@ -49,13 +49,13 @@ std::optional<eEnemyBehavior> FindBehavior(
 }
 
 int SecToTicks(
-    const float _sec)
+    float _sec)
 {
     return static_cast<int>(std::lround(static_cast<double>(_sec) * 60.));
 }
 
 int ClipDef::TickOfFrame(
-    const int _frame) const
+    int _frame) const
 {
     return static_cast<int>((static_cast<int64_t>(_frame) * frameUnits + kAnimUnitsPerTick - 1) / kAnimUnitsPerTick);
 }
@@ -66,7 +66,7 @@ int ClipDef::GetDurationTicks() const
 }
 
 int EnemyDef::FindClip(
-    const StringView _logicalName) const
+    StringView _logicalName) const
 {
     for (size_t i = 0; i < clips.size(); ++i)
     {
@@ -79,13 +79,13 @@ int EnemyDef::FindClip(
 }
 
 bool EnemyDef::ShouldFlipArt(
-    const int _facing) const
+    int _facing) const
 {
     return (artFacing == eArtFacing::Left && _facing > 0) || (artFacing == eArtFacing::Right && _facing < 0);
 }
 
 int EnemyDef::FindWeapon(
-    const StringView _name) const
+    StringView _name) const
 {
     for (size_t i = 0; i < weapons.size(); ++i)
     {
@@ -98,15 +98,15 @@ int EnemyDef::FindWeapon(
 }
 
 ParamEntry::ParamEntry(
-    String           _key,
-    const JsonReader _value)
+    String     _key,
+    JsonReader _value)
     : key(std::move(_key))
     , value(_value)
 {
 }
 
 DefReader::DefReader(
-    const StringView    _defName,
+    StringView          _defName,
     EnemyDef&           _def,
     Vector<ParamEntry>& _params,
     String&             _error)
@@ -118,8 +118,8 @@ DefReader::DefReader(
 }
 
 void DefReader::Fail(
-    const StringView _field,
-    const StringView _message)
+    StringView _field,
+    StringView _message)
 {
     if (m_error.empty())
     {
@@ -128,7 +128,7 @@ void DefReader::Fail(
 }
 
 ParamEntry* DefReader::Find_(
-    const StringView _key)
+    StringView _key)
 {
     for (ParamEntry& entry: m_params)
     {
@@ -142,7 +142,7 @@ ParamEntry* DefReader::Find_(
 }
 
 bool DefReader::Has(
-    const StringView _key) const
+    StringView _key) const
 {
     for (const ParamEntry& entry: m_params)
     {
@@ -155,14 +155,14 @@ bool DefReader::Has(
 }
 
 const JsonReader* DefReader::FindRaw(
-    const StringView _key)
+    StringView _key)
 {
     ParamEntry* pEntry = Find_(_key);
     return pEntry ? &pEntry->value : nullptr;
 }
 
 float DefReader::Num(
-    const StringView _key)
+    StringView _key)
 {
     ParamEntry* pEntry = Find_(_key);
     if (!pEntry)
@@ -180,41 +180,41 @@ float DefReader::Num(
 }
 
 float DefReader::Num(
-    const StringView _key,
-    const float      _default)
+    StringView _key,
+    float      _default)
 {
     return Has(_key) ? Num(_key) : _default;
 }
 
 int DefReader::Int(
-    const StringView _key)
+    StringView _key)
 {
     return static_cast<int>(std::lround(static_cast<double>(Num(_key))));
 }
 
 int DefReader::Int(
-    const StringView _key,
-    const int        _default)
+    StringView _key,
+    int        _default)
 {
     return Has(_key) ? Int(_key) : _default;
 }
 
 int DefReader::Ticks(
-    const StringView _key)
+    StringView _key)
 {
     return SecToTicks(Num(_key));
 }
 
 int DefReader::Ticks(
-    const StringView _key,
-    const float      _defaultSec)
+    StringView _key,
+    float      _defaultSec)
 {
     return SecToTicks(Num(_key, _defaultSec));
 }
 
 bool DefReader::Bool(
-    const StringView _key,
-    const bool       _bDefault)
+    StringView _key,
+    bool       _bDefault)
 {
     ParamEntry* pEntry = Find_(_key);
     if (!pEntry)
@@ -231,7 +231,7 @@ bool DefReader::Bool(
 }
 
 String DefReader::Str(
-    const StringView _key)
+    StringView _key)
 {
     ParamEntry* pEntry = Find_(_key);
     if (!pEntry)
@@ -249,8 +249,8 @@ String DefReader::Str(
 }
 
 VECTOR2 DefReader::ReadVec2(
-    const StringView _key,
-    const VECTOR2    _default)
+    StringView _key,
+    VECTOR2    _default)
 {
     ParamEntry* pEntry = Find_(_key);
     if (!pEntry)
@@ -278,7 +278,7 @@ VECTOR2 DefReader::ReadVec2(
 }
 
 BoxDef DefReader::Box(
-    const StringView _key)
+    StringView _key)
 {
     BoxDef      box;
     ParamEntry* pEntry = Find_(_key);
@@ -296,10 +296,10 @@ BoxDef DefReader::Box(
 
 void DefReader::ReadBoxField_(
     const ParamEntry& _entry,
-    const StringView  _key,
-    const StringView  _name,
+    StringView        _key,
+    StringView        _name,
     float&            _out,
-    const bool        _bRequired)
+    bool              _bRequired)
 {
     StringView reason;
     if (!ReadFloatField(_entry.value, _name, _bRequired, _out, reason))
@@ -309,8 +309,8 @@ void DefReader::ReadBoxField_(
 }
 
 bool DefReader::NumArray(
-    const StringView  _key,
-    const Span<float> _out)
+    StringView  _key,
+    Span<float> _out)
 {
     ParamEntry* pEntry = Find_(_key);
     if (!pEntry)
@@ -339,8 +339,8 @@ bool DefReader::NumArray(
 }
 
 int DefReader::NumList(
-    const StringView  _key,
-    const Span<float> _out)
+    StringView  _key,
+    Span<float> _out)
 {
     ParamEntry* pEntry = Find_(_key);
     if (!pEntry)
@@ -368,7 +368,7 @@ int DefReader::NumList(
 }
 
 int DefReader::Clip(
-    const StringView _logical)
+    StringView _logical)
 {
     const int index = m_def.FindClip(_logical);
     if (index < 0)
@@ -379,13 +379,13 @@ int DefReader::Clip(
 }
 
 int DefReader::ClipOpt(
-    const StringView _logical) const
+    StringView _logical) const
 {
     return m_def.FindClip(_logical);
 }
 
 int DefReader::Weapon(
-    const StringView _name)
+    StringView _name)
 {
     const int index = m_def.FindWeapon(_name);
     if (index < 0)
@@ -413,13 +413,13 @@ bool DefReader::HasError() const
 }
 
 const EnemyDef& EnemyDefLibrary::Get(
-    const int _index) const
+    int _index) const
 {
     return m_defs[static_cast<size_t>(_index)];
 }
 
 const ProjectileDef& EnemyDefLibrary::GetProjectile(
-    const int _index) const
+    int _index) const
 {
     return m_projectiles[static_cast<size_t>(_index)];
 }

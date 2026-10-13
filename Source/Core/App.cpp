@@ -35,8 +35,8 @@ namespace
 }   // namespace
 
 int App::Run(
-    const int _argc,
-    char**    _argv)
+    int    _argc,
+    char** _argv)
 {
     m_processTimer.Start();
     m_cmdArgs.reserve(static_cast<size_t>(_argc));
@@ -368,8 +368,8 @@ void App::Shutdown_()
 }
 
 void App::OnKeyDown_(
-    const SDL_Scancode _key,
-    const bool         _bRepeat)
+    SDL_Scancode _key,
+    bool         _bRepeat)
 {
     if (_bRepeat)
     {
@@ -414,7 +414,7 @@ void App::OnKeyDown_(
 }
 
 void App::OnKeyUp_(
-    const SDL_Scancode _key)
+    SDL_Scancode _key)
 {
     m_input.OnKeyUp(_key);
 }
@@ -425,7 +425,7 @@ void App::OnFocusLost_()
 }
 
 void App::Update_(
-    const float _deltaTimeSec)
+    float _deltaTimeSec)
 {
     AudioSystem::GetSingleton().Update(_deltaTimeSec);
 
@@ -496,7 +496,7 @@ void App::Tick_()
 }
 
 void App::Render_(
-    const float _alpha)
+    float _alpha)
 {
     m_pRunner->Render(_alpha);
     if (m_bEditor)

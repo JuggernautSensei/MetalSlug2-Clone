@@ -8,7 +8,7 @@
 #include "Game/Ui/UiDemoState.h"
 
 Scoped<IGameState> CreateState(
-    const StringView _name)
+    StringView _name)
 {
     if (_name == "demo")
     {

@@ -3,15 +3,15 @@
 #include "Base/Math.h"
 
 VoiceAllocator::VoiceAllocator(
-    const int _capacity,
-    const int _maxPerSound)
+    int _capacity,
+    int _maxPerSound)
 {
     Reset(_capacity, _maxPerSound);
 }
 
 void VoiceAllocator::Reset(
-    const int _capacity,
-    const int _maxPerSound)
+    int _capacity,
+    int _maxPerSound)
 {
     m_maxPerSound = Max(1, _maxPerSound);
     m_slots.assign(static_cast<size_t>(Max(1, _capacity)), Slot {});
@@ -19,7 +19,7 @@ void VoiceAllocator::Reset(
 }
 
 VoiceAllocator::Acquired VoiceAllocator::Acquire(
-    const int _soundId)
+    int _soundId)
 {
     if (CountSound(_soundId) >= m_maxPerSound)
     {
@@ -40,7 +40,7 @@ VoiceAllocator::Acquired VoiceAllocator::Acquire(
 }
 
 void VoiceAllocator::Release(
-    const int _slot)
+    int _slot)
 {
     if (_slot >= 0 && static_cast<size_t>(_slot) < m_slots.size())
     {
@@ -54,13 +54,13 @@ int VoiceAllocator::GetCapacity() const
 }
 
 bool VoiceAllocator::IsActive(
-    const int _slot) const
+    int _slot) const
 {
     return m_slots[static_cast<size_t>(_slot)].bActive;
 }
 
 int VoiceAllocator::GetSoundId(
-    const int _slot) const
+    int _slot) const
 {
     return m_slots[static_cast<size_t>(_slot)].soundId;
 }
@@ -76,7 +76,7 @@ int VoiceAllocator::GetActiveCount() const
 }
 
 int VoiceAllocator::CountSound(
-    const int _soundId) const
+    int _soundId) const
 {
     int count = 0;
     for (const Slot& slot: m_slots)
@@ -87,7 +87,7 @@ int VoiceAllocator::CountSound(
 }
 
 int VoiceAllocator::FindOldest_(
-    const int _soundId) const
+    int _soundId) const
 {
     int      best       = -1;
     uint64_t bestSerial = UINT64_MAX;
@@ -104,9 +104,9 @@ int VoiceAllocator::FindOldest_(
 }
 
 VoiceAllocator::Acquired VoiceAllocator::Take_(
-    const int  _slot,
-    const int  _soundId,
-    const bool _bStolen)
+    int  _slot,
+    int  _soundId,
+    bool _bStolen)
 {
     Slot& slot   = m_slots[static_cast<size_t>(_slot)];
     slot.bActive = true;

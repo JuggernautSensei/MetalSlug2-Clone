@@ -59,8 +59,8 @@ namespace
 [[nodiscard]] const AnimFrame* PickClipFrame_(
     const AnimationLibrary* _pAnims,
     const String&           _name,
-    const int               _ageTicks,
-    const bool              _bLoop)
+    int                     _ageTicks,
+    bool                    _bLoop)
 {
     const AnimClip* pClip = _pAnims ? _pAnims->FindClip(_name) : nullptr;
     if (!pClip || pClip->frames.empty())
@@ -78,8 +78,8 @@ bool SubmitPlayerBullet(
     const AnimationLibrary* _pAnims,
     const SpriteLibrary&    _spriteLib,
     const Bullet&           _bullet,
-    const VECTOR2           _pos,
-    const int               _depth)
+    VECTOR2                 _pos,
+    int                     _depth)
 {
     const eWeapon weapon    = static_cast<eWeapon>(_bullet.tag);
     const float   vx        = _bullet.velocity.x;
@@ -165,9 +165,9 @@ bool SubmitPlayerBullet(
 }
 
 void PlayShotSfx(
-    AudioSystem&  _audio,
-    const eWeapon _weapon,
-    const int     _shotIndex)
+    AudioSystem& _audio,
+    eWeapon      _weapon,
+    int          _shotIndex)
 {
     switch (_weapon)
     {
@@ -185,8 +185,8 @@ void PlayShotSfx(
 }
 
 void PlayWeaponPickupSfx(
-    AudioSystem&  _audio,
-    const eWeapon _weapon)
+    AudioSystem& _audio,
+    eWeapon      _weapon)
 {
     if (_weapon == eWeapon::Pistol)
     {

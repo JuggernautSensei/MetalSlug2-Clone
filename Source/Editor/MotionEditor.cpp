@@ -23,14 +23,14 @@ constexpr double kMotionEpsilon    = 0.00005;
 namespace
 {
 double MotionRound_(
-    const double _value)
+    double _value)
 {
     return std::round(_value * 10000.0) / 10000.0;
 }
 
 int MotionKey_(
-    const JsonNode&  _node,
-    const StringView _key)
+    const JsonNode& _node,
+    StringView      _key)
 {
     if (_node.type == 'a')
     {
@@ -49,7 +49,7 @@ int MotionKey_(
 
 int MotionPath_(
     const Vector<JsonNode>& _nodes,
-    const int               _root,
+    int                     _root,
     const Vector<String>&   _path)
 {
     int index = _root;
@@ -65,9 +65,9 @@ int MotionPath_(
 }
 
 Vector<String> MotionJoin_(
-    Vector<String>   _base,
-    const StringView _a,
-    const StringView _b = {})
+    Vector<String> _base,
+    StringView     _a,
+    StringView     _b = {})
 {
     _base.push_back(String { _a });
     if (!_b.empty())
@@ -80,7 +80,7 @@ Vector<String> MotionJoin_(
 void MotionInsertMember_(
     String&                 _text,
     const Vector<JsonNode>& _nodes,
-    const int               _object,
+    int                     _object,
     const String&           _member)
 {
     const JsonNode& obj = _nodes[static_cast<size_t>(_object)];
@@ -96,7 +96,7 @@ void MotionInsertMember_(
 bool MotionPatchNumber_(
     String&               _text,
     const Vector<String>& _path,
-    const double          _value)
+    double                _value)
 {
     JsonScanner scanner { _text };
     const int   root = scanner.Parse();
@@ -122,7 +122,7 @@ bool MotionPatchNumber_(
 bool MotionPatchBool_(
     String&               _text,
     const Vector<String>& _path,
-    const bool            _value)
+    bool                  _value)
 {
     JsonScanner scanner { _text };
     const int   root = scanner.Parse();
@@ -142,10 +142,10 @@ bool MotionPatchBool_(
 
 void MotionCollectParams_(
     const Vector<JsonNode>& _nodes,
-    const int               _object,
+    int                     _object,
     const Vector<String>&   _path,
     const String&           _label,
-    const int               _depth,
+    int                     _depth,
     Vector<MotionParam>&    _out)
 {
     const JsonNode& object = _nodes[static_cast<size_t>(_object)];
@@ -185,7 +185,7 @@ void MotionCollectParams_(
 bool MotionPatchVec2_(
     String&        _text,
     Vector<String> _path,
-    const VECTOR2  _value)
+    VECTOR2        _value)
 {
     _path.push_back("0");
     if (!MotionPatchNumber_(_text, _path, static_cast<double>(_value.x)))
@@ -237,7 +237,7 @@ bool MotionSameEffects_(
 bool MotionPatchString_(
     String&               _text,
     const Vector<String>& _object,
-    const StringView      _key,
+    StringView            _key,
     const String&         _value)
 {
     JsonScanner scanner { _text };
@@ -332,7 +332,7 @@ Result<void> MotionDocument::Load(
 }
 
 Result<void> MotionDocument::LoadFromText(
-    const StringView _json)
+    StringView _json)
 {
     m_text      = String { _json };
     m_savedText = m_text;
@@ -352,8 +352,8 @@ Result<void> MotionDocument::Save(
 }
 
 bool MotionDocument::ApplyWeapon(
-    const StringView          _def,
-    const StringView          _weapon,
+    StringView                _def,
+    StringView                _weapon,
     const MotionWeaponValues& _values)
 {
     const Vector<String> base = MotionJoin_({ "defs" }, _def);
@@ -377,18 +377,18 @@ bool MotionDocument::ApplyWeapon(
 }
 
 bool MotionDocument::ApplyClipSec(
-    const StringView _def,
-    const StringView _clip,
-    const double     _sec)
+    StringView _def,
+    StringView _clip,
+    double     _sec)
 {
     return MotionPatchNumber_(m_text, MotionJoin_(MotionJoin_(MotionJoin_({ "defs" }, _def), "clips", _clip), "sec"), _sec);
 }
 
 bool MotionDocument::ApplyPartDepth(
-    const StringView _def,
-    const StringView _part,
-    const int        _depth,
-    const int        _sort)
+    StringView _def,
+    StringView _part,
+    int        _depth,
+    int        _sort)
 {
     const Vector<String> part = MotionJoin_(MotionJoin_(MotionJoin_({ "defs" }, _def), "params", "parts"), _part);
     return MotionPatchNumber_(m_text, MotionJoin_(part, "depth"), static_cast<double>(_depth)) && MotionPatchNumber_(m_text, MotionJoin_(part, "sort"), static_cast<double>(_sort));
@@ -399,9 +399,9 @@ namespace
 bool MotionSetInt_(
     String&               _text,
     const Vector<String>& _object,
-    const StringView      _key,
-    const int             _value,
-    const int             _default)
+    StringView            _key,
+    int                   _value,
+    int                   _default)
 {
     JsonScanner scanner { _text };
     const int   root = scanner.Parse();
@@ -423,12 +423,12 @@ bool MotionSetInt_(
 }   // namespace
 
 bool MotionDocument::SetPartDepth(
-    const StringView _def,
-    const StringView _part,
-    const int        _depth,
-    const int        _sort,
-    const int        _defaultDepth,
-    const int        _defaultSort)
+    StringView _def,
+    StringView _part,
+    int        _depth,
+    int        _sort,
+    int        _defaultDepth,
+    int        _defaultSort)
 {
     const Vector<String> params = MotionJoin_(MotionJoin_({ "defs" }, _def), "params");
     const bool           bSame  = _depth == _defaultDepth && _sort == _defaultSort;
@@ -468,7 +468,7 @@ bool MotionDocument::SetPartDepth(
 }
 
 Vector<MotionParam> MotionDocument::ListParams(
-    const StringView _def) const
+    StringView _def) const
 {
     Vector<MotionParam> out;
     JsonScanner         scanner { m_text };
@@ -487,7 +487,7 @@ Vector<MotionParam> MotionDocument::ListParams(
 }
 
 bool MotionDocument::SetParam(
-    const StringView   _def,
+    StringView         _def,
     const MotionParam& _param)
 {
     Vector<String> path = MotionJoin_({ "defs" }, _def, "params");
@@ -545,7 +545,7 @@ bool MotionIsAttackClip_(
 }
 
 ImVec4 MotionColor_(
-    const RGBA _c)
+    RGBA _c)
 {
     return ImVec4 { _c.r / 255.f, _c.g / 255.f, _c.b / 255.f, 1.f };
 }
@@ -555,8 +555,8 @@ const RGBA kMotionFxColor     = { 255, 200, 40, 255 };
 const RGBA kMotionEffectColor = { 80, 255, 255, 255 };
 
 EnemyPartDepth* MotionPart_(
-    BusCfg&          _c,
-    const StringView _name)
+    BusCfg&    _c,
+    StringView _name)
 {
     if (_name == "innerSoldier")
     {
@@ -882,7 +882,7 @@ void MotionEditor::DrawParts_(
 void MotionEditor::DrawWeapon_(
     EnemyLab& _lab,
     EnemyDef& _def,
-    const int _weapon)
+    int       _weapon)
 {
     WeaponDef& w = _def.weapons[static_cast<size_t>(_weapon)];
     ImGui::PushID(_weapon);

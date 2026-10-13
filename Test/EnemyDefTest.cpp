@@ -16,9 +16,9 @@ namespace
 }
 
 [[nodiscard]] String ReplaceOnce_(
-    String       _text,
-    const String _from,
-    const String _to)
+    String _text,
+    String _from,
+    String _to)
 {
     const size_t pos = _text.find(_from);
     if (pos == String::npos)
@@ -29,8 +29,8 @@ namespace
 }
 
 [[nodiscard]] String ResolveSideText_(
-    String     _name,
-    const bool _bLeft)
+    String _name,
+    bool   _bLeft)
 {
     const size_t pos = _name.find("{side}");
     if (pos != String::npos)

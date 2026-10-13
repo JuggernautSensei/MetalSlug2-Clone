@@ -41,7 +41,7 @@ namespace
 }
 
 [[nodiscard]] Result<AnimEditClip> ParseClip_(
-    const StringView  _name,
+    StringView        _name,
     const JsonReader& _clip)
 {
     if (!_clip.IsObject())
@@ -99,8 +99,8 @@ namespace
 
 // 가장 짧게 왕복되는 표기
 void AppendNumber_(
-    String&      _out,
-    const double _value)
+    String& _out,
+    double  _value)
 {
     ARRAY<char, 64>            buf = {};
     const std::to_chars_result r   = std::to_chars(buf.data(), buf.data() + buf.size(), _value);
@@ -108,8 +108,8 @@ void AppendNumber_(
 }
 
 void AppendString_(
-    String&          _out,
-    const StringView _text)
+    String&    _out,
+    StringView _text)
 {
     _out += '"';
     for (const char c: _text)
@@ -124,16 +124,16 @@ void AppendString_(
 }
 
 void AppendField_(
-    String&          _out,
-    const StringView _key,
-    const int        _value)
+    String&    _out,
+    StringView _key,
+    int        _value)
 {
     _out += std::format("      \"{}\": {},\n", _key, _value);
 }
 }   // namespace
 
 Result<void> AnimDocument::LoadFromText(
-    const StringView _json)
+    StringView _json)
 {
     Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, kJsonBom);
     if (!doc)
@@ -225,7 +225,7 @@ Result<void> AnimDocument::Save(
 }
 
 int AnimDocument::FindClip(
-    const StringView _name) const
+    StringView _name) const
 {
     for (size_t i = 0; i < m_clips.size(); ++i)
     {
@@ -238,7 +238,7 @@ int AnimDocument::FindClip(
 }
 
 void AnimDocument::PushUndo_(
-    const int _clip)
+    int _clip)
 {
     if (m_undo.size() >= kMaxUndo)
     {
@@ -254,10 +254,10 @@ void AnimDocument::PushUndo_(
 }
 
 void AnimDocument::SetPivot(
-    const int _clip,
-    const int _frame,
-    const int _pivotX,
-    const int _pivotY)
+    int _clip,
+    int _frame,
+    int _pivotX,
+    int _pivotY)
 {
     AnimEditClip& clip = m_clips[static_cast<size_t>(_clip)];
     if (_frame < 0 || _frame >= static_cast<int>(clip.frames.size()))
@@ -276,9 +276,9 @@ void AnimDocument::SetPivot(
 }
 
 void AnimDocument::ApplyPivotToAll(
-    const int _clip,
-    const int _pivotX,
-    const int _pivotY)
+    int _clip,
+    int _pivotX,
+    int _pivotY)
 {
     PushUndo_(_clip);
     for (AnimFrame& frame: m_clips[static_cast<size_t>(_clip)].frames)
@@ -289,24 +289,24 @@ void AnimDocument::ApplyPivotToAll(
 }
 
 void AnimDocument::SetFrameDuration(
-    const int    _clip,
-    const double _duration)
+    int    _clip,
+    double _duration)
 {
     PushUndo_(_clip);
     m_clips[static_cast<size_t>(_clip)].frameDuration = _duration;
 }
 
 void AnimDocument::SetLoop(
-    const int  _clip,
-    const bool _bLoop)
+    int  _clip,
+    bool _bLoop)
 {
     PushUndo_(_clip);
     m_clips[static_cast<size_t>(_clip)].bLoop = _bLoop;
 }
 
 void AnimDocument::SetLoopStart(
-    const int _clip,
-    const int _loopStart)
+    int _clip,
+    int _loopStart)
 {
     PushUndo_(_clip);
     m_clips[static_cast<size_t>(_clip)].loopStart = _loopStart;
@@ -458,7 +458,7 @@ void AnimEditor::Shutdown()
 }
 
 void AnimEditor::SelectClip(
-    const StringView _name)
+    StringView _name)
 {
     const int index = m_doc.FindClip(_name);
     if (index >= 0)
@@ -469,7 +469,7 @@ void AnimEditor::SelectClip(
 }
 
 SDL_Texture* AnimEditor::GetPage_(
-    const int _atlas)
+    int _atlas)
 {
     if (_atlas < 0 || _atlas > 255 || m_pRenderer == nullptr)
     {
@@ -806,7 +806,7 @@ void AnimEditor::DrawCanvas_(
 }
 
 void AnimEditor::HandleKeys_(
-    const int _clipIndex)
+    int _clipIndex)
 {
     const ImGuiIO& io = ImGui::GetIO();
     if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S, false))
@@ -884,7 +884,7 @@ int AnimDocument::GetLastChangedClip() const
 }
 
 void AnimDocument::ApplyClipTo(
-    const int         _clip,
+    int               _clip,
     AnimationLibrary& _library) const
 {
     if (_clip < 0 || _clip >= static_cast<int>(m_clips.size()))

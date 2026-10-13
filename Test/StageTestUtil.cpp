@@ -2,7 +2,7 @@
 
 std::optional<float> DefaultGround_(
     const float,
-    const float _fromY)
+    float _fromY)
 {
     if (_fromY <= 378.f)
     {
@@ -29,13 +29,13 @@ SpawnId FakeStageHost::SpawnEntity(
 }
 
 bool FakeStageHost::IsDefeated(
-    const SpawnId _id) const
+    SpawnId _id) const
 {
     return defeated.contains(_id);
 }
 
 bool FakeStageHost::IsDestroyFinished(
-    const SpawnId _id) const
+    SpawnId _id) const
 {
     return destroyed.contains(_id);
 }
@@ -48,23 +48,23 @@ void FakeStageHost::ClearEntities(
 }
 
 void FakeStageHost::SendCommand(
-    const SpawnId    _id,
-    const StringView _command)
+    SpawnId    _id,
+    StringView _command)
 {
     commands.emplace_back(_id, String { _command });
     Log_("cmd:" + std::to_string(_id) + ":" + String { _command });
 }
 
 void FakeStageHost::SetGround(
-    const StringView _name)
+    StringView _name)
 {
     currentGround = String { _name };
     Log_("ground:" + currentGround);
 }
 
 std::optional<float> FakeStageHost::GetGroundFindY(
-    const float _x,
-    const float _fromY) const
+    float _x,
+    float _fromY) const
 {
     groundQueries.emplace_back(_x, _fromY);
     return groundFn(_x, _fromY);
@@ -81,14 +81,14 @@ bool FakeStageHost::IsGameOver() const
 }
 
 void FakeStageHost::SetPlayerInvincible(
-    const float _seconds)
+    float _seconds)
 {
     invincibleSeconds = _seconds;
     Log_("invincible:" + std::to_string(_seconds));
 }
 
 void FakeStageHost::WarpPlayer(
-    const VECTOR2 _feet)
+    VECTOR2 _feet)
 {
     playerFeet = _feet;
     warps.push_back(_feet);
@@ -96,7 +96,7 @@ void FakeStageHost::WarpPlayer(
 }
 
 void FakeStageHost::SetBackdrop(
-    const StringView _modeId)
+    StringView _modeId)
 {
     currentBackdrop = String { _modeId };
     Log_("backdrop:" + currentBackdrop);
@@ -104,41 +104,41 @@ void FakeStageHost::SetBackdrop(
 
 void FakeStageHost::ShowBanner(
     const String& _text,
-    const float   _seconds)
+    float         _seconds)
 {
     Log_("banner:" + _text + ":" + std::to_string(_seconds));
 }
 
 void FakeStageHost::FadeTo(
-    const eFadeTarget _target,
-    const float       _seconds)
+    eFadeTarget _target,
+    float       _seconds)
 {
     Log_(String { "fade:" } + (_target == eFadeTarget::Black ? "black" : "clear") + ":" + std::to_string(_seconds));
 }
 
 void FakeStageHost::PlayBgm(
-    const StringView _name,
-    const bool       _bLoop)
+    StringView _name,
+    bool       _bLoop)
 {
     Log_("bgm:" + String { _name } + (_bLoop ? ":loop" : ":once"));
 }
 
 void FakeStageHost::ChangeBgm(
-    const StringView _name,
-    const bool       _bLoop,
-    const float      _fadeOutSec)
+    StringView _name,
+    bool       _bLoop,
+    float      _fadeOutSec)
 {
     Log_("bgmChange:" + String { _name } + (_bLoop ? ":loop:" : ":once:") + std::to_string(_fadeOutSec));
 }
 
 void FakeStageHost::PlaySfx(
-    const StringView _name)
+    StringView _name)
 {
     Log_("sfx:" + String { _name });
 }
 
 void FakeStageHost::EndStage(
-    const StringView _nextState)
+    StringView _nextState)
 {
     bEnded  = true;
     endNext = String { _nextState };
@@ -146,8 +146,8 @@ void FakeStageHost::EndStage(
 }
 
 void FakeStageHost::OnSectionEntered(
-    const int        _index,
-    const StringView _id)
+    int        _index,
+    StringView _id)
 {
     Log_("section:" + std::to_string(_index) + ":" + String { _id });
 }
@@ -247,7 +247,7 @@ RunnerFixture::RunnerFixture(
 }
 
 void RunnerFixture::Step(
-    const int _count)
+    int _count)
 {
     for (int i = 0; i < _count; ++i)
     {
@@ -257,8 +257,8 @@ void RunnerFixture::Step(
 }
 
 void RunnerFixture::StepAt(
-    const float _x,
-    const int   _count)
+    float _x,
+    int   _count)
 {
     host.playerFeet.x = _x;
     Step(_count);

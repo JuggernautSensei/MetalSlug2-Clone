@@ -67,7 +67,7 @@ namespace
 }
 
 [[nodiscard]] const TurretNames& GetNames_(
-    const char _letter)
+    char _letter)
 {
     static const ARRAY<TurretNames, kBigShieeTurretCount> kNames = MakeNames_();
     const size_t                                          index  = static_cast<size_t>(Clamp(_letter - 'A', 0, kBigShieeTurretCount - 1));
@@ -81,32 +81,32 @@ namespace
 }
 
 [[nodiscard]] int& Slot_(
-    Enemy&    _e,
-    const int _base,
-    const int _index = 0)
+    Enemy& _e,
+    int    _base,
+    int    _index = 0)
 {
     return _e.ext[static_cast<size_t>(_base + _index)];
 }
 
 [[nodiscard]] int GetSlot_(
     const Enemy& _e,
-    const int    _base,
-    const int    _index = 0)
+    int          _base,
+    int          _index = 0)
 {
     return _e.ext[static_cast<size_t>(_base + _index)];
 }
 
 [[nodiscard]] eBigShieeTurretMode GetTurretMode_(
     const Enemy& _e,
-    const int    _i)
+    int          _i)
 {
     return static_cast<eBigShieeTurretMode>(GetSlot_(_e, kBigShieeExtMode, _i));
 }
 
 void SetTurretMode_(
-    Enemy&                    _e,
-    const int                 _i,
-    const eBigShieeTurretMode _mode)
+    Enemy&              _e,
+    int                 _i,
+    eBigShieeTurretMode _mode)
 {
     Slot_(_e, kBigShieeExtMode, _i)  = static_cast<int>(_mode);
     Slot_(_e, kBigShieeExtTicks, _i) = 0;
@@ -119,7 +119,7 @@ void SetTurretMode_(
 }
 
 [[nodiscard]] const char* CannonModeName_(
-    const eBigShieeCannonMode _mode)
+    eBigShieeCannonMode _mode)
 {
     switch (_mode)
     {
@@ -132,8 +132,8 @@ void SetTurretMode_(
 }
 
 void SetCannonMode_(
-    Enemy&                    _e,
-    const eBigShieeCannonMode _mode)
+    Enemy&              _e,
+    eBigShieeCannonMode _mode)
 {
     EventLogFormat("bigshiee.cannon", "\"mode\":\"{}\",\"yaw\":{}", CannonModeName_(_mode), GetSlot_(_e, kBigShieeExtCannonYaw));
     Slot_(_e, kBigShieeExtCannonMode)  = static_cast<int>(_mode);
@@ -141,16 +141,16 @@ void SetCannonMode_(
 }
 
 [[nodiscard]] VECTOR2 World_(
-    const VECTOR2 _origin,
-    const VECTOR2 _rel)
+    VECTOR2 _origin,
+    VECTOR2 _rel)
 {
     return { _origin.x + _rel.x, _origin.y + _rel.y };
 }
 
 // 키 표 를 선형 보간
 [[nodiscard]] float Interp_(
-    const Span<const VECTOR2> _keys,
-    const float               _t)
+    Span<const VECTOR2> _keys,
+    float               _t)
 {
     if (_keys.empty())
     {
@@ -173,7 +173,7 @@ void SetCannonMode_(
 }
 
 [[nodiscard]] float LastKeyTime_(
-    const Span<const VECTOR2> _keys)
+    Span<const VECTOR2> _keys)
 {
     return _keys.empty() ? 0.f : _keys.back().x;
 }
@@ -242,17 +242,17 @@ void SetCannonMode_(
 
 // 클립 길이
 [[nodiscard]] int ClipTicks_(
-    const EnemyEnv&  _env,
-    const StringView _name,
-    const int        _fallback)
+    const EnemyEnv& _env,
+    StringView      _name,
+    int             _fallback)
 {
     return _env.ctx.pAnims ? Max(1, GetNamedPartTicks(*_env.ctx.pAnims, _name)) : _fallback;
 }
 
 // 사격 클립 길이
 [[nodiscard]] int ShotTicks_(
-    const EnemyEnv&  _env,
-    const StringView _name)
+    const EnemyEnv& _env,
+    StringView      _name)
 {
     const AnimClip* pClip = _env.ctx.pAnims ? _env.ctx.pAnims->FindClip(_name) : nullptr;
     const int       count = pClip ? pClip->GetFrameCount() : kShotFrames;
@@ -270,12 +270,12 @@ void SetCannonMode_(
 
 bool SubmitFrame_(
     const EnemyRenderEnv& _render,
-    const StringView      _name,
-    const int             _frame,
-    const VECTOR2         _origin,
-    const int             _depth,
-    const int             _sort,
-    const float           _flash)
+    StringView            _name,
+    int                   _frame,
+    VECTOR2               _origin,
+    int                   _depth,
+    int                   _sort,
+    float                 _flash)
 {
     const AnimClip* pClip = _render.anims.FindClip(_name);
     if (!pClip || pClip->frames.empty())
@@ -333,8 +333,8 @@ void Init_(
 [[nodiscard]] VECTOR2 ExtraFromWorld_(
     const Enemy&    _e,
     const EnemyDef& _def,
-    const int       _weapon,
-    const VECTOR2   _muzzle)
+    int             _weapon,
+    VECTOR2         _muzzle)
 {
     if (_weapon < 0)
     {
@@ -349,7 +349,7 @@ void Init_(
     const BigShieeCfg&       _c,
     const BigShieeTurretCfg& _turret,
     const EnemyEnv&          _env,
-    const int                _pos)
+    int                      _pos)
 {
     if (!_env.ctx.player.bAlive)
     {
@@ -365,7 +365,7 @@ void Init_(
 
 [[nodiscard]] float MuzzleX_(
     const BigShieeTurretCfg& _turret,
-    const int                _pos)
+    int                      _pos)
 {
     return _pos <= 0 ? _turret.muzzle.x : (_pos >= kTurnMax ? -_turret.muzzle.x : 0.f);
 }
@@ -374,8 +374,8 @@ void FireShell_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
-    const int       _turret,
-    const int       _barrel)
+    int             _turret,
+    int             _barrel)
 {
     const BigShieeCfg&       c      = _def.bigShiee;
     const BigShieeTurretCfg& turret = c.turrets[static_cast<size_t>(_turret)];
@@ -391,7 +391,7 @@ void TickTurret_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
-    const int       _i)
+    int             _i)
 {
     const BigShieeCfg&        c      = _def.bigShiee;
     const BigShieeTurretCfg&  turret = c.turrets[static_cast<size_t>(_i)];
@@ -549,7 +549,7 @@ void TickChute_(
 
 [[nodiscard]] float YawDeg_(
     const BigShieeCfg& _c,
-    const int          _yaw)
+    int                _yaw)
 {
     const size_t low = static_cast<size_t>(_yaw / 2);
     if (_yaw % 2 == 0)
@@ -561,7 +561,7 @@ void TickChute_(
 
 [[nodiscard]] int NearestYaw_(
     const BigShieeCfg& _c,
-    const float        _deg)
+    float              _deg)
 {
     int best = 0;
     for (int yaw = 1; yaw <= kYawMax; ++yaw)
@@ -578,7 +578,7 @@ void TickChute_(
     const Enemy&       _e,
     const BigShieeCfg& _c,
     const EnemyEnv&    _env,
-    const bool         _bFire)
+    bool               _bFire)
 {
     if (!_env.ctx.player.bAlive)
     {
@@ -603,7 +603,7 @@ void TickChute_(
 void TurnCannon_(
     Enemy&             _e,
     const BigShieeCfg& _c,
-    const int          _target)
+    int                _target)
 {
     int& yaw  = Slot_(_e, kBigShieeExtCannonYaw);
     int& wait = Slot_(_e, kBigShieeExtCannonTurn);
@@ -1064,7 +1064,7 @@ void SubmitHull_(
     const Enemy&          _e,
     const BigShieeCfg&    _c,
     const EnemyRenderEnv& _render,
-    const VECTOR2         _feet)
+    VECTOR2               _feet)
 {
     const bool           bMoving = GetSlot_(_e, kBigShieeExtMoving) != 0;
     const eBigShieePhase phase   = Phase_(_e);
@@ -1095,8 +1095,8 @@ void SubmitTurret_(
     const Enemy&          _e,
     const BigShieeCfg&    _c,
     const EnemyRenderEnv& _render,
-    const VECTOR2         _feet,
-    const int             _i)
+    VECTOR2               _feet,
+    int                   _i)
 {
     const BigShieeTurretCfg&  turret = _c.turrets[static_cast<size_t>(_i)];
     const EnemyPartDepth&     part   = _c.partTurrets[static_cast<size_t>(_i)];
@@ -1135,7 +1135,7 @@ void SubmitTurret_(
 [[nodiscard]] int DeployClipTicks_(
     const BigShieeCfg&    _c,
     const EnemyRenderEnv& _render,
-    const int             _ticks)
+    int                   _ticks)
 {
     const int clipTicks = GetNamedPartTicks(_render.anims, "Boss_Cannon_Deploy");
     if (_c.cannonDeployTicks <= 0 || clipTicks <= 0)
@@ -1149,8 +1149,8 @@ void SubmitCannon_(
     const Enemy&          _e,
     const BigShieeCfg&    _c,
     const EnemyRenderEnv& _render,
-    const VECTOR2         _feet,
-    const float           _flash)
+    VECTOR2               _feet,
+    float                 _flash)
 {
     const eBigShieeCannonMode mode   = GetCannonMode_(_e);
     const int                 ticks  = GetSlot_(_e, kBigShieeExtCannonTicks);
@@ -1265,7 +1265,7 @@ namespace
 template<size_t kCapacity>
 int ReadKeys_(
     DefReader&                 _r,
-    const StringView           _key,
+    StringView                 _key,
     ARRAY<VECTOR2, kCapacity>& _out)
 {
     ARRAY<float, kCapacity * 2> flat  = {};

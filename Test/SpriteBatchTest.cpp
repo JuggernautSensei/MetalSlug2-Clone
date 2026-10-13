@@ -11,10 +11,10 @@
 namespace
 {
 [[nodiscard]] AnimFrame MakeFrame_(
-    const int _w,
-    const int _h,
-    const int _pivotX,
-    const int _pivotY)
+    int _w,
+    int _h,
+    int _pivotX,
+    int _pivotY)
 {
     AnimFrame frame;
     frame.w      = _w;
@@ -26,9 +26,9 @@ namespace
 
 void AddCommand_(
     Vector<SpriteCommand>& _commands,
-    const int              _depth,
-    const int              _key,
-    const int              _tag)
+    int                    _depth,
+    int                    _key,
+    int                    _tag)
 {
     SpriteCommand command;
     command.depth   = _depth;
@@ -163,8 +163,8 @@ struct SoftwareTarget
     SDL_Renderer* pRenderer = nullptr;
 
     explicit SoftwareTarget(
-        const int _w,
-        const int _h)
+        int _w,
+        int _h)
     {
         pSurface = SDL_CreateSurface(_w, _h, SDL_PIXELFORMAT_RGBA32);
         if (pSurface)
@@ -194,8 +194,8 @@ struct SoftwareTarget
     }
 
     [[nodiscard]] uint32_t PixelRgb(
-        const int _x,
-        const int _y) const
+        int _x,
+        int _y) const
     {
         SDL_FlushRenderer(pRenderer);
         Uint8 r = 0;
@@ -534,7 +534,7 @@ TEST(SpriteBatchSdl, FlushBelowDepthLetsTheTerrainTextureCoverLowLayers)
 namespace
 {
 [[nodiscard]] Vector<FilePath> AtlasPagePaths_(
-    const int _count)
+    int _count)
 {
     Vector<FilePath> paths;
     for (int i = 0; i < _count; ++i)

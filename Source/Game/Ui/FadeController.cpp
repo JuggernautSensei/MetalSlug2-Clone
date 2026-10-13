@@ -26,10 +26,10 @@ void FadeController::SetBlack()
 }
 
 void FadeController::Begin_(
-    const float  _target,
-    const int    _ticks,
-    const ePhase _movingPhase,
-    const ePhase _donePhase)
+    float  _target,
+    int    _ticks,
+    ePhase _movingPhase,
+    ePhase _donePhase)
 {
     m_target    = _target;
     m_donePhase = _donePhase;
@@ -49,13 +49,13 @@ void FadeController::Begin_(
 }
 
 void FadeController::FadeToBlack(
-    const int _ticks)
+    int _ticks)
 {
     Begin_(1.f, _ticks, ePhase::FadingToBlack, ePhase::Black);
 }
 
 void FadeController::FadeToClear(
-    const int _ticks)
+    int _ticks)
 {
     Begin_(0.f, _ticks, ePhase::FadingToClear, ePhase::Clear);
 }

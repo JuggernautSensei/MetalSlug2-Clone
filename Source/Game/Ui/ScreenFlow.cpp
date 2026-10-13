@@ -17,7 +17,7 @@ ScreenFlowConfig MakeGameOverFlowConfig()
     config.bgmFadeSeconds = 0.5f;
     config.delayTicks     = 0;
     config.artSprite      = "UI_GameOver_Helmet";
-    config.artFadeInTicks = 30;                            // 0.5 s 페이드 인
+    config.artFadeInTicks = 30;   // 0.5 s 페이드 인
     config.bannerTicks    = config.artFadeInTicks + 180;
     config.fadeTicks      = 40;
     config.holdTicks      = 20;
@@ -25,7 +25,7 @@ ScreenFlowConfig MakeGameOverFlowConfig()
 }
 
 StringView MissionRankText(
-    const int _rescued)
+    int _rescued)
 {
     if (_rescued >= 15)
     {
@@ -39,7 +39,7 @@ StringView MissionRankText(
 }
 
 int MissionRankBonus(
-    const int _rescued)
+    int _rescued)
 {
     if (_rescued >= 15)
     {
@@ -53,21 +53,21 @@ int MissionRankBonus(
 }
 
 int MissionBonusScore(
-    const int _rescued)
+    int _rescued)
 {
     const int rescued = Max(0, _rescued);
     return rescued * kPowBonusScore + MissionRankBonus(rescued);
 }
 
 int MissionResultsTicks(
-    const int _rescued)
+    int _rescued)
 {
     return kResultsFadeTicks + Max(0, _rescued) * kTicksPerPow + kRankDelayTicks + kRankHoldTicks;
 }
 
 MissionResultsView MakeMissionResultsView(
-    const int _rescued,
-    const int _localTicks)
+    int _rescued,
+    int _localTicks)
 {
     const int          rescued = Max(0, _rescued);
     MissionResultsView view;
@@ -96,7 +96,7 @@ MissionResultsView MakeMissionResultsView(
 }
 
 ScreenFlowConfig MakeMissionCompleteFlowConfig(
-    const int _rescued)
+    int _rescued)
 {
     ScreenFlowConfig config;
     config.bannerText     = "MISSION 4\nCOMPLETE!";

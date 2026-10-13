@@ -28,7 +28,7 @@ constexpr ARRAY<const char*, 6> kDepthFileNames = { "Enemies.json", "BigShiee.js
 void AddConst_(
     Vector<DepthRow>& _rows,
     const char*       _name,
-    const int         _value)
+    int               _value)
 {
     DepthRow row;
     row.name  = _name;
@@ -38,9 +38,9 @@ void AddConst_(
 
 void Collect_(
     const Vector<JsonNode>& _nodes,
-    const int               _index,
+    int                     _index,
     const String&           _path,
-    const int               _file,
+    int                     _file,
     const String&           _fileName,
     Vector<DepthRow>&       _out)
 {
@@ -131,8 +131,8 @@ void DepthEditor::Rebuild_()
 }
 
 void DepthEditor::Patch_(
-    const int _row,
-    const int _value)
+    int _row,
+    int _value)
 {
     const DepthRow& row  = m_rows[static_cast<size_t>(_row)];
     String&         text = m_texts[static_cast<size_t>(row.file)];
@@ -142,8 +142,8 @@ void DepthEditor::Patch_(
 }
 
 void DepthEditor::PatchPart_(
-    const StringView      _def,
-    const StringView      _part,
+    StringView            _def,
+    StringView            _part,
     const EnemyPartDepth& _value,
     const EnemyPartDepth& _default)
 {
@@ -260,7 +260,7 @@ void DepthEditor::Draw(
     {
         order.push_back(static_cast<int>(i));
     }
-    std::stable_sort(order.begin(), order.end(), [this](const int _a, const int _b) { return m_rows[static_cast<size_t>(_a)].value < m_rows[static_cast<size_t>(_b)].value; });
+    std::stable_sort(order.begin(), order.end(), [this](int _a, int _b) { return m_rows[static_cast<size_t>(_a)].value < m_rows[static_cast<size_t>(_b)].value; });
     int editRow   = -1;
     int editValue = 0;
     for (const int index: order)

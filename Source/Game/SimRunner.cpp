@@ -21,7 +21,7 @@ SimRunner::~SimRunner()
 }
 
 void SimRunner::Step(
-    const InputFrame _input)
+    InputFrame _input)
 {
     m_history.Push(_input);
     ++m_tickCount;
@@ -40,7 +40,7 @@ void SimRunner::Step(
 }
 
 void SimRunner::Run(
-    const Span<const InputFrame> _inputs)
+    Span<const InputFrame> _inputs)
 {
     for (const InputFrame& input: _inputs)
     {
@@ -49,7 +49,7 @@ void SimRunner::Run(
 }
 
 void SimRunner::Render(
-    const float _alpha)
+    float _alpha)
 {
     if (m_pState)
     {

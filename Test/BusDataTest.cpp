@@ -39,7 +39,7 @@ namespace
 void ExpectBursts_(
     const Vector<BusBurstDef>& _got,
     const OldBurst*            _want,
-    const size_t               _count)
+    size_t                     _count)
 {
     ASSERT_EQ(_got.size(), _count);
     for (size_t i = 0; i < _count; ++i)

@@ -16,10 +16,10 @@ const Vector<HitEvent>& CombatSystem::Resolve()
 }
 
 bool CombatSystem::HasTargetIn(
-    const eTeam    _attackerTeam,
-    const eHitKind _kind,
-    const Aabb&    _box,
-    const uint32_t _ignoreOwner) const
+    eTeam       _attackerTeam,
+    eHitKind    _kind,
+    const Aabb& _box,
+    uint32_t    _ignoreOwner) const
 {
     for (const Hurtbox& hurtbox: m_hurtboxes)
     {
@@ -57,7 +57,7 @@ uint32_t CombatSystem::NewHitId()
 }
 
 void CombatSystem::ReleaseHitId(
-    const uint32_t _hitId)
+    uint32_t _hitId)
 {
     m_resolver.Release(_hitId);
 }

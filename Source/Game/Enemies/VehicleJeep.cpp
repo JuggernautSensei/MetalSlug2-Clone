@@ -41,9 +41,9 @@ namespace
 }
 
 void Go_(
-    Enemy&           _e,
-    const EnemyDef&  _def,
-    const eJeepState _state)
+    Enemy&          _e,
+    const EnemyDef& _def,
+    eJeepState      _state)
 {
     EnterState(_e, static_cast<int>(_state));
     SetClip(_e, ClipOf_(_e, _def.jeep), true);

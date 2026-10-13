@@ -23,14 +23,14 @@ void PlayerInputBuffer::Update(
 }
 
 bool PlayerInputBuffer::IsBuffered(
-    const eAction _action,
-    const int     _windowTicks) const
+    eAction _action,
+    int     _windowTicks) const
 {
     return m_ticksSincePress[_action] < _windowTicks;
 }
 
 void PlayerInputBuffer::Consume(
-    const eAction _action)
+    eAction _action)
 {
     m_ticksSincePress[_action] = kNever;
 }

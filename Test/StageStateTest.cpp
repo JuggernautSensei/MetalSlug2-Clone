@@ -14,7 +14,7 @@ class StageSim
 {
 public:
     explicit StageSim(
-        const bool _bDebugDraw = false)
+        bool _bDebugDraw = false)
     {
         g_debug.bDebugDraw = _bDebugDraw;
         m_pState           = new StageState;
@@ -27,19 +27,19 @@ public:
     ~StageSim() { g_debug = {}; }
 
     void Hold(
-        const eAction _action)
+        eAction _action)
     {
         m_frame.Set(_action, true);
     }
 
     void Release(
-        const eAction _action)
+        eAction _action)
     {
         m_frame.Set(_action, false);
     }
 
     void Step(
-        const int _count = 1)
+        int _count = 1)
     {
         for (int i = 0; i < _count; ++i)
         {
@@ -56,9 +56,9 @@ private:
 namespace
 {
 [[nodiscard]] SpawnRequest MakeRequest_(
-    const char*       _def,
-    const eEntityKind _kind,
-    const VECTOR2     _position)
+    const char* _def,
+    eEntityKind _kind,
+    VECTOR2     _position)
 {
     SpawnRequest request;
     request.def      = _def;
@@ -68,8 +68,8 @@ namespace
 }
 
 [[nodiscard]] HitEvent MakeHit_(
-    const SpawnId _target,
-    const int     _damage)
+    SpawnId _target,
+    int     _damage)
 {
     HitEvent event;
     event.target = _target;

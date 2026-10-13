@@ -16,13 +16,13 @@
 inline constexpr int kAimSettleTicks = 20;
 
 [[nodiscard]] GroundMap MakeFlatGround(
-    const int _width  = 1600,
-    const int _height = 448,
-    const int _floorY = 378);
+    int _width  = 1600,
+    int _height = 448,
+    int _floorY = 378);
 
 [[nodiscard]] SandboxConfig MakeConfig(
-    GroundMap     _ground,
-    const VECTOR2 _spawn = { 100.f, 378.f });
+    GroundMap _ground,
+    VECTOR2   _spawn = { 100.f, 378.f });
 
 [[nodiscard]] SandboxConfig MakeFlatConfig();
 
@@ -36,32 +36,32 @@ public:
     [[nodiscard]] PlayerController& Player();
     [[nodiscard]] Tuning&           Tune();
 
-    void Hold(const eAction _action);
-    void Release(const eAction _action);
+    void Hold(eAction _action);
+    void Release(eAction _action);
     void ReleaseAll();
-    void Set(const eAction _action, const bool _bHeld);
+    void Set(eAction _action, bool _bHeld);
 
     void Step(
-        const int _count = 1);
+        int _count = 1);
 
     void Tap(
-        const eAction _action);
+        eAction _action);
 
     void StepWith(
-        const InputFrame _frame);
+        InputFrame _frame);
 
     [[nodiscard]] int StepUntilGrounded(
-        const int _maxTicks);
+        int _maxTicks);
 
     [[nodiscard]] int StepUntilAirborne(
-        const int _maxTicks);
+        int _maxTicks);
 
     [[nodiscard]] int StepUntilDead(
-        const int _maxTicks);
+        int _maxTicks);
 
     [[nodiscard]] int StepUntilWeapon(
-        const int     _maxTicks,
-        const eWeapon _weapon);
+        int     _maxTicks,
+        eWeapon _weapon);
 
     [[nodiscard]] float X();
     [[nodiscard]] float Y();

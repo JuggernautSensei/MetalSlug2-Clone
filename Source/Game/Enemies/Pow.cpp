@@ -22,8 +22,8 @@ namespace
 [[nodiscard]] int VariantClip_(
     const Enemy&  _e,
     const PowCfg& _c,
-    const int     _slot,
-    const int     _base)
+    int           _slot,
+    int           _base)
 {
     const int v = _e.aiVariant;
     if (v >= 1 && v <= PowCfg::kVariantCount)
@@ -41,7 +41,7 @@ void Go_(
     Enemy&          _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
-    const ePowState _state)
+    ePowState       _state)
 {
     const PowCfg& cfg = _def.pow;
     EnterState(_e, static_cast<int>(_state));

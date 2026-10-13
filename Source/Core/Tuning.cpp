@@ -215,7 +215,7 @@ public:
     }
 
     void Begin(
-        const StringView _key)
+        StringView _key)
     {
         std::optional<JsonReader> child;
         if (const std::optional<JsonReader>& top = m_stack.back(); top && top->HasField(_key))
@@ -238,8 +238,8 @@ public:
     }
 
     void Field(
-        const StringView _key,
-        float&           _value)
+        StringView _key,
+        float&     _value)
     {
         double v = 0.0;
         if (ReadNumber_(_key, v))
@@ -249,8 +249,8 @@ public:
     }
 
     void Field(
-        const StringView _key,
-        int&             _value)
+        StringView _key,
+        int&       _value)
     {
         double v = 0.0;
         if (ReadNumber_(_key, v))
@@ -260,8 +260,8 @@ public:
     }
 
     void Field(
-        const StringView _key,
-        bool&            _value)
+        StringView _key,
+        bool&      _value)
     {
         const std::optional<JsonReader>& top = m_stack.back();
         if (!top || !top->HasField(_key))
@@ -278,8 +278,8 @@ public:
     }
 
     void Field(
-        const StringView _key,
-        VECTOR2&         _value)
+        StringView _key,
+        VECTOR2&   _value)
     {
         const std::optional<JsonReader>& top = m_stack.back();
         if (!top || !top->HasField(_key))
@@ -312,8 +312,8 @@ public:
 
 private:
     bool ReadNumber_(
-        const StringView _key,
-        double&          _out)
+        StringView _key,
+        double&    _out)
     {
         const std::optional<JsonReader>& top = m_stack.back();
         if (!top || !top->HasField(_key))
@@ -338,7 +338,7 @@ class DumpVisitor
 {
 public:
     void Begin(
-        const StringView _key)
+        StringView _key)
     {
         m_path.push_back(String { _key });
     }
@@ -349,29 +349,29 @@ public:
     }
 
     void Field(
-        const StringView _key,
-        const float      _value)
+        StringView _key,
+        float      _value)
     {
         Line_(_key, std::format("{:.4f}", _value));
     }
 
     void Field(
-        const StringView _key,
-        const int        _value)
+        StringView _key,
+        int        _value)
     {
         Line_(_key, std::to_string(_value));
     }
 
     void Field(
-        const StringView _key,
-        const bool       _value)
+        StringView _key,
+        bool       _value)
     {
         Line_(_key, _value ? "true" : "false");
     }
 
     void Field(
-        const StringView _key,
-        const VECTOR2    _value)
+        StringView _key,
+        VECTOR2    _value)
     {
         Line_(_key, std::format("[{:.4f}, {:.4f}]", _value.x, _value.y));
     }
@@ -380,8 +380,8 @@ public:
 
 private:
     void Line_(
-        const StringView _key,
-        const String&    _value)
+        StringView    _key,
+        const String& _value)
     {
         for (const String& part: m_path)
         {
@@ -415,7 +415,7 @@ namespace
 }   // namespace
 
 Result<Tuning> ParseTuning(
-    const StringView _json)
+    StringView _json)
 {
     Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, kJsonBomComments);
     if (!doc)
@@ -451,8 +451,8 @@ FilePath GetDefaultTuningPath(
 }
 
 void TuningWatcher::Init(
-    FilePath  _path,
-    const int _pollIntervalTicks)
+    FilePath _path,
+    int      _pollIntervalTicks)
 {
     m_path        = std::move(_path);
     m_interval    = _pollIntervalTicks < 1 ? 1 : _pollIntervalTicks;
@@ -504,7 +504,7 @@ bool TuningWatcher::Poll(
 }
 
 int WeaponsTuning::GetPickupAmmo(
-    const eWeapon _weapon) const
+    eWeapon _weapon) const
 {
     switch (_weapon)
     {
@@ -517,7 +517,7 @@ int WeaponsTuning::GetPickupAmmo(
 }
 
 const WeaponTuning& WeaponsTuning::Get(
-    const eWeapon _weapon) const
+    eWeapon _weapon) const
 {
     switch (_weapon)
     {

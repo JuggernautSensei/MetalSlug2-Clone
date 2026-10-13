@@ -10,10 +10,10 @@ namespace
 {
 [[nodiscard]] AnimClip MakeClip_(
     const char* _name,
-    const int   _frameCount,
-    const float _frameDuration,
-    const bool  _bLoop,
-    const int   _loopStart = 0)
+    int         _frameCount,
+    float       _frameDuration,
+    bool        _bLoop,
+    int         _loopStart = 0)
 {
     AnimClip clip;
     clip.name          = _name;
@@ -57,9 +57,9 @@ constexpr const char* kSampleJson = R"({
 namespace
 {
 [[nodiscard]] int ExpectedLoopFrame_(
-    const int64_t _ticks,
-    const int64_t _durationUnits,
-    const int     _frameCount)
+    int64_t _ticks,
+    int64_t _durationUnits,
+    int     _frameCount)
 {
     const int64_t frame = (_ticks * (kAnimTimeUnitsPerSec / 60)) / _durationUnits;
     return static_cast<int>(frame % _frameCount);

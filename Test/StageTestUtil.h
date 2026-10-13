@@ -30,7 +30,7 @@ struct HostEvent
 
 [[nodiscard]] std::optional<float> DefaultGround_(
     const float,
-    const float _fromY);
+    float _fromY);
 
 using GroundQueryFn = std::optional<float> (*)(float, float);
 
@@ -64,63 +64,63 @@ public:
         const SpawnRequest& _request) override;
 
     bool IsDefeated(
-        const SpawnId _id) const override;
+        SpawnId _id) const override;
 
     bool IsDestroyFinished(
-        const SpawnId _id) const override;
+        SpawnId _id) const override;
 
     void ClearEntities(
         const EntityFilter& _filter) override;
 
     void SendCommand(
-        const SpawnId    _id,
-        const StringView _command) override;
+        SpawnId    _id,
+        StringView _command) override;
 
     void SetGround(
-        const StringView _name) override;
+        StringView _name) override;
 
     std::optional<float> GetGroundFindY(
-        const float _x,
-        const float _fromY) const override;
+        float _x,
+        float _fromY) const override;
 
     VECTOR2 PlayerFeet() const override;
     bool    IsGameOver() const override;
 
     void SetPlayerInvincible(
-        const float _seconds) override;
+        float _seconds) override;
 
     void WarpPlayer(
-        const VECTOR2 _feet) override;
+        VECTOR2 _feet) override;
 
     void SetBackdrop(
-        const StringView _modeId) override;
+        StringView _modeId) override;
 
     void ShowBanner(
         const String& _text,
-        const float   _seconds) override;
+        float         _seconds) override;
 
     void FadeTo(
-        const eFadeTarget _target,
-        const float       _seconds) override;
+        eFadeTarget _target,
+        float       _seconds) override;
 
     void PlayBgm(
-        const StringView _name,
-        const bool       _bLoop) override;
+        StringView _name,
+        bool       _bLoop) override;
 
     void ChangeBgm(
-        const StringView _name,
-        const bool       _bLoop,
-        const float      _fadeOutSec) override;
+        StringView _name,
+        bool       _bLoop,
+        float      _fadeOutSec) override;
 
     void PlaySfx(
-        const StringView _name) override;
+        StringView _name) override;
 
     void EndStage(
-        const StringView _nextState) override;
+        StringView _nextState) override;
 
     void OnSectionEntered(
-        const int        _index,
-        const StringView _id) override;
+        int        _index,
+        StringView _id) override;
 
     [[nodiscard]] int CountEvents(
         const String& _prefix) const;
@@ -156,11 +156,11 @@ public:
         const String& _json);
 
     void Step(
-        const int _count = 1);
+        int _count = 1);
 
     void StepAt(
-        const float _x,
-        const int   _count = 1);
+        float _x,
+        int   _count = 1);
 
     StageData     data;
     FakeStageHost host;

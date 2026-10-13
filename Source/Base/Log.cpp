@@ -6,8 +6,8 @@
 #include <JugX/CoreLogger.h>
 
 void LogMessage(
-    const eLogLevel  _level,
-    const StringView _message)
+    eLogLevel  _level,
+    StringView _message)
 {
     const char* pPrefix = "";
     switch (_level)
@@ -39,9 +39,9 @@ public:
 
 private:
     void LogImpl(
-        const eLogLevel       _level,
-        const jug::StringView _msg,
-        const bool            _bEndOfLog) override
+        eLogLevel       _level,
+        jug::StringView _msg,
+        bool            _bEndOfLog) override
     {
         if (_bEndOfLog)
         {
@@ -50,10 +50,10 @@ private:
     }
 
     void VLogImpl(
-        const eLogLevel        _level,
-        const jug::StringView  _msg,
-        const std::format_args _args,
-        const bool             _bEndOfLog) override
+        eLogLevel        _level,
+        jug::StringView  _msg,
+        std::format_args _args,
+        bool             _bEndOfLog) override
     {
         if (_bEndOfLog)
         {
@@ -78,7 +78,7 @@ unsigned long long g_EventTick = 0;
 }   // namespace
 
 bool OpenEventLog(
-    const StringView _path)
+    StringView _path)
 {
     const String path(_path);
     g_pEventLog = nullptr;
@@ -98,8 +98,8 @@ void SetEventLogTick(
 }
 
 void WriteEventLog(
-    const StringView _event,
-    const StringView _fields)
+    StringView _event,
+    StringView _fields)
 {
     if (!g_pEventLog)
     {

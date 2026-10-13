@@ -48,9 +48,9 @@ struct Circle
 namespace
 {
 [[nodiscard]] Circle MakeCircle_(
-    const float _x,
-    const float _y,
-    const float _radius)
+    float _x,
+    float _y,
+    float _radius)
 {
     Circle circle;
     circle.center = { _x, _y };

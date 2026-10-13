@@ -150,7 +150,7 @@ void WriteFile_(
 
 void Touch_(
     const FilePath& _path,
-    const int       _seconds)
+    int             _seconds)
 {
     std::error_code ec;
     std::filesystem::last_write_time(_path, std::filesystem::last_write_time(_path, ec) + std::chrono::seconds(_seconds), ec);

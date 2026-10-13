@@ -12,10 +12,10 @@ enum class eHangState
 namespace
 {
 void Go_(
-    Enemy&           _e,
-    const EnemyDef&  _def,
-    EnemyEnv&        _env,
-    const eHangState _state)
+    Enemy&          _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env,
+    eHangState      _state)
 {
     const HangCfg& cfg = _def.hang;
     EnterState(_e, static_cast<int>(_state));

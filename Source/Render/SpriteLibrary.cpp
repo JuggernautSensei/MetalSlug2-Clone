@@ -56,7 +56,7 @@ namespace
 }   // namespace
 
 Result<SpriteLibrary> SpriteLibrary::LoadFromJson(
-    const StringView _json)
+    StringView _json)
 {
     Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, kJsonBom);
     if (!doc)
@@ -91,7 +91,7 @@ void SpriteLibrary::AddSprite(
 }
 
 const SpriteInfo* SpriteLibrary::Find(
-    const StringView _name) const
+    StringView _name) const
 {
     const NameMap::const_iterator it = m_nameToIndex.find(String { _name });
     return it == m_nameToIndex.end() ? nullptr : &m_sprites[it->second];

@@ -29,8 +29,8 @@ class VehicleRig
 {
 public:
     explicit VehicleRig(
-        const VECTOR2 _player  = { 100.f, 378.f },
-        const float   _camLeft = 0.f);
+        VECTOR2 _player  = { 100.f, 378.f },
+        float   _camLeft = 0.f);
 
     [[nodiscard]] bool          IsLoaded() const;
     [[nodiscard]] const String& GetMessage() const;
@@ -42,38 +42,38 @@ public:
     [[nodiscard]] Vector<EnemyEvent>& Events();
 
     void SetPlayer(
-        const VECTOR2 _feet);
+        VECTOR2 _feet);
 
     void SetView(
-        const float _camLeft);
+        float _camLeft);
 
     EnemyHandle Spawn(
         const char*        _name,
-        const VECTOR2      _feet,
+        VECTOR2            _feet,
         const SpawnParams& _params = {});
 
     void Step(
-        const int _count = 1);
+        int _count = 1);
 
     [[nodiscard]] int Ticks() const;
 
     size_t Strike(
-        const uint32_t _owner,
-        const eHitKind _kind,
-        const int      _damage,
-        const eTeam    _team = eTeam::Player);
+        uint32_t _owner,
+        eHitKind _kind,
+        int      _damage,
+        eTeam    _team = eTeam::Player);
 
     [[nodiscard]] int CountEvents(
-        const eEnemyEventKind _kind) const;
+        eEnemyEventKind _kind) const;
 
     [[nodiscard]] int SumScore(
-        const eEnemyEventKind _kind) const;
+        eEnemyEventKind _kind) const;
 
     [[nodiscard]] int CountShots(
-        const EnemyHandle _owner) const;
+        EnemyHandle _owner) const;
 
     [[nodiscard]] const Enemy* E(
-        const EnemyHandle _handle) const;
+        EnemyHandle _handle) const;
 
     [[nodiscard]] int PlayerHits() const;
 

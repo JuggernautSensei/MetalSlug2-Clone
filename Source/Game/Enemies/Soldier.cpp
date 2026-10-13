@@ -41,10 +41,10 @@ void Go_(
 }
 
 void Reposition_(
-    Enemy&              _e,
-    const EnemyDef&     _def,
-    EnemyEnv&           _env,
-    const eSoldierState _fallback)
+    Enemy&          _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env,
+    eSoldierState   _fallback)
 {
     const SoldierCfg& cfg = _def.soldier;
     const float       dy  = DyToPlayer(_e, _env);
@@ -63,10 +63,10 @@ void Reposition_(
 }
 
 void Go_(
-    Enemy&              _e,
-    const EnemyDef&     _def,
-    EnemyEnv&           _env,
-    const eSoldierState _requestedState)
+    Enemy&          _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env,
+    eSoldierState   _requestedState)
 {
     const SoldierCfg& cfg   = _def.soldier;
     eSoldierState     state = _requestedState;

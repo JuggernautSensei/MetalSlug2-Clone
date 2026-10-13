@@ -52,8 +52,8 @@ namespace
 }   // namespace
 
 Result<SoundBank> SoundBank::LoadFromJson(
-    const StringView _json,
-    const FilePath&  _root)
+    StringView      _json,
+    const FilePath& _root)
 {
     Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, kJsonBom);
     if (!doc)
@@ -87,21 +87,21 @@ void SoundBank::Add(
 }
 
 const SoundEntry* SoundBank::Find(
-    const StringView _name) const
+    StringView _name) const
 {
     const int index = FindIndex(_name);
     return index < 0 ? nullptr : &m_entries[static_cast<size_t>(index)];
 }
 
 int SoundBank::FindIndex(
-    const StringView _name) const
+    StringView _name) const
 {
     const NameMap::const_iterator it = m_nameToIndex.find(String { _name });
     return it == m_nameToIndex.end() ? -1 : static_cast<int>(it->second);
 }
 
 const SoundEntry& SoundBank::Get(
-    const int _index) const
+    int _index) const
 {
     return m_entries[static_cast<size_t>(_index)];
 }

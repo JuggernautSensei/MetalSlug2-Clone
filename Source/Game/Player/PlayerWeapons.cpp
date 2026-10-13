@@ -10,8 +10,8 @@ constexpr float kDiagonalRatio = 0.6f;
 namespace
 {
 [[nodiscard]] VECTOR2 OrientSize_(
-    const VECTOR2 _size,
-    const VECTOR2 _direction)
+    VECTOR2 _size,
+    VECTOR2 _direction)
 {
     const float ax = Abs(_direction.x);
     const float ay = Abs(_direction.y);
@@ -39,9 +39,9 @@ void ResetWeapons(
 }
 
 void GiveWeapon(
-    WeaponState&  _state,
-    const eWeapon _weapon,
-    const int     _ammo)
+    WeaponState& _state,
+    eWeapon      _weapon,
+    int          _ammo)
 {
     if (_weapon == eWeapon::Pistol)
     {
@@ -66,9 +66,9 @@ void TickWeapon(
 bool ShouldFire(
     const WeaponState&  _state,
     const WeaponTuning& _tuning,
-    const int           _aliveBullets,
-    const bool          _bShotBuffered,
-    const bool          _bShotHeld)
+    int                 _aliveBullets,
+    bool                _bShotBuffered,
+    bool                _bShotHeld)
 {
     if (_tuning.maxAlive > 0 && _aliveBullets >= _tuning.maxAlive)
     {
@@ -97,7 +97,7 @@ void OnFired(
 }
 
 eWeapon WeaponFromDebugSlot(
-    const int _slot)
+    int _slot)
 {
     switch (_slot)
     {
@@ -110,12 +110,12 @@ eWeapon WeaponFromDebugSlot(
 }
 
 BulletSpawn MakeBulletSpawn(
-    const eWeapon       _weapon,
+    eWeapon             _weapon,
     const WeaponTuning& _tuning,
-    const uint32_t      _owner,
-    const VECTOR2       _muzzle,
-    const VECTOR2       _sweepFrom,
-    const VECTOR2       _direction)
+    uint32_t            _owner,
+    VECTOR2             _muzzle,
+    VECTOR2             _sweepFrom,
+    VECTOR2             _direction)
 {
     BulletSpawn spawn;
     spawn.team        = eTeam::Player;
@@ -143,11 +143,11 @@ BulletSpawn MakeBulletSpawn(
 
 BulletSpawn MakeFlameParticleSpawn(
     const WeaponTuning& _tuning,
-    const uint32_t      _owner,
-    const VECTOR2       _muzzle,
-    const VECTOR2       _sweepFrom,
-    const VECTOR2       _direction,
-    const uint32_t      _hitId,
+    uint32_t            _owner,
+    VECTOR2             _muzzle,
+    VECTOR2             _sweepFrom,
+    VECTOR2             _direction,
+    uint32_t            _hitId,
     RngMt19937&         _rng)
 {
     const float   spreadRad = Random<float>(_rng, -_tuning.spreadDeg, _tuning.spreadDeg) * kDeg2Rad;

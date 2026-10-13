@@ -22,10 +22,10 @@ enum class eShielderState
 namespace
 {
 [[nodiscard]] int PickDir_(
-    const int _dir,
-    const int _fwd,
-    const int _up,
-    const int _down)
+    int _dir,
+    int _fwd,
+    int _up,
+    int _down)
 {
     return _dir == 1 ? _up : (_dir == 2 ? _down : _fwd);
 }
@@ -60,11 +60,11 @@ namespace
 }
 
 void Go_(
-    Enemy&               _e,
-    const EnemyDef&      _def,
-    EnemyEnv&            _env,
-    const eShielderState _state,
-    const int            _dir = -1)
+    Enemy&          _e,
+    const EnemyDef& _def,
+    EnemyEnv&       _env,
+    eShielderState  _state,
+    int             _dir = -1)
 {
     const ShielderCfg& cfg = _def.shielder;
     EnterState(_e, static_cast<int>(_state));

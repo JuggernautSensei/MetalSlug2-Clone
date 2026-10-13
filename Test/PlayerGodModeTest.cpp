@@ -17,7 +17,7 @@ struct GodHarness
     InputHistory     history = {};
     eGodMode         mode    = eGodMode::Off;
 
-    explicit GodHarness(const eGodMode _mode)
+    explicit GodHarness(eGodMode _mode)
         : mode(_mode)
     {
         player.Reset(tuning, { 100.f, 378.f });

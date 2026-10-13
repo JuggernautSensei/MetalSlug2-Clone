@@ -10,9 +10,9 @@ constexpr float kDecorMinSec = 0.01f;
 constexpr int kDecorMaxAdvance = 64;
 
 DecorSpawn MakeDecorSpawn(
-    const StringView  _clip,
-    const eStageLayer _layer,
-    const VECTOR2     _pos,
+    StringView        _clip,
+    eStageLayer       _layer,
+    VECTOR2           _pos,
     const ParamValue* _pParams)
 {
     DecorSpawn spawn;
@@ -135,7 +135,7 @@ void DecorWorld::Advance_(
 
 void DecorWorld::Tick(
     const AnimationLibrary& _anims,
-    const float             _dt)
+    float                   _dt)
 {
     for (Instance& inst: m_items)
     {
@@ -184,8 +184,8 @@ void DecorWorld::Submit(
 }
 
 bool DecorWorld::SetZ(
-    const uint32_t _id,
-    const int      _z)
+    uint32_t _id,
+    int      _z)
 {
     for (Instance& inst: m_items)
     {
@@ -199,7 +199,7 @@ bool DecorWorld::SetZ(
 }
 
 void DecorWorld::ClearByLayerMask(
-    const uint32_t _layerMask)
+    uint32_t _layerMask)
 {
     std::erase_if(m_items, [_layerMask](const Instance& _inst) { return (_layerMask & LayerBit(_inst.layer)) != 0; });
 }
@@ -211,11 +211,11 @@ void DecorWorld::Clear()
 }
 
 bool DecorWorld::Get(
-    const uint32_t _id,
-    VECTOR2&       _outPos,
-    VECTOR2&       _outVelocity,
-    StringView&    _outClip,
-    bool&          _bOutFinished) const
+    uint32_t    _id,
+    VECTOR2&    _outPos,
+    VECTOR2&    _outVelocity,
+    StringView& _outClip,
+    bool&       _bOutFinished) const
 {
     for (const Instance& inst: m_items)
     {

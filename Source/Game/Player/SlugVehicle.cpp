@@ -21,7 +21,7 @@ constexpr int kHitAgeNone     = -1;
 namespace
 {
 [[nodiscard]] float WrapDegree_(
-    const float _degree)
+    float _degree)
 {
     float value = std::fmod(_degree + 180.f, 360.f);
     if (value < 0.f)
@@ -32,7 +32,7 @@ namespace
 }
 
 [[nodiscard]] VECTOR2 GetDamageFxOffset_(
-    const int _index)
+    int _index)
 {
     static constexpr ARRAY<VECTOR2, 4> kOffsets = {
         {
@@ -48,10 +48,10 @@ namespace
 
 void SlugVehicle::Init(
     const SlugTuning& _tuning,
-    const VECTOR2     _feet,
-    const int         _facing,
-    const uint32_t    _ownerId,
-    const int         _hp)
+    VECTOR2           _feet,
+    int               _facing,
+    uint32_t          _ownerId,
+    int               _hp)
 {
     m_tuning  = _tuning;
     m_ownerId = _ownerId;
@@ -324,7 +324,7 @@ void SlugVehicle::TickExploding_(
 }
 
 void SlugVehicle::UpdateCrouch_(
-    const bool _bWantCrouch)
+    bool _bWantCrouch)
 {
     const int target = _bWantCrouch ? kCrouchLevels : 0;
     if (m_crouchLevel == target)
@@ -639,7 +639,7 @@ void SlugVehicle::BeginExit_(
 }
 
 void SlugVehicle::BeginDestroy_(
-    const bool _bEjectPlayer)
+    bool _bEjectPlayer)
 {
     if (m_mode == eSlugMode::Exploding || m_mode == eSlugMode::Gone)
     {
@@ -663,8 +663,8 @@ void SlugVehicle::BeginDestroy_(
 }
 
 void SlugVehicle::OnHitEvents(
-    const Span<const HitEvent> _events,
-    const Span<const Hitbox>   _hitboxes)
+    Span<const HitEvent> _events,
+    Span<const Hitbox>   _hitboxes)
 {
     for (const HitEvent& event: _events)
     {
@@ -698,8 +698,8 @@ void SlugVehicle::OnHitEvents(
 }
 
 void SlugVehicle::ApplyHit_(
-    const int  _damage,
-    const bool _bFromFront)
+    int  _damage,
+    bool _bFromFront)
 {
     if (m_invincibleTicks > 0 || m_hp <= 0 || m_godMode == eGodMode::Invincible)
     {
@@ -736,10 +736,10 @@ void SlugVehicle::UpdateDamageFx_()
 }
 
 void SlugVehicle::SpawnFx_(
-    const eSlugFxKind _kind,
-    const VECTOR2     _position,
-    const int         _variant,
-    const int         _maxTicks)
+    eSlugFxKind _kind,
+    VECTOR2     _position,
+    int         _variant,
+    int         _maxTicks)
 {
     SlugFx fx;
     fx.kind     = _kind;
@@ -757,7 +757,7 @@ void SlugVehicle::UpdatePose_()
 
     if (m_mode == eSlugMode::Boarding)
     {
-        m_pose = eSlugPose::BoardingIn;
+        m_pose          = eSlugPose::BoardingIn;
         const int third = Max(1, m_tuning.board.boardTicks / 3);
         m_poseFrame     = 3 + Min(2, m_modeTicks / third);
         return;
@@ -854,7 +854,7 @@ SlugEjectRequest SlugVehicle::TakeEjectRequest()
 }
 
 void SlugVehicle::AddCannonAmmo(
-    const int _count)
+    int _count)
 {
     m_cannonAmmo = Clamp(m_cannonAmmo + _count, 0, m_tuning.cannon.ammoMax);
 }
@@ -880,7 +880,7 @@ int SlugVehicle::GetZ() const
 }
 
 void SlugVehicle::SetZ(
-    const int _z)
+    int _z)
 {
     m_z = _z;
 }

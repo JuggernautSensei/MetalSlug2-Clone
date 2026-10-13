@@ -3,8 +3,8 @@
 #include "Base/Log.h"
 
 ScopedPhaseTimer::ScopedPhaseTimer(
-    const char*      _pPhase,
-    const StringView _detail)
+    const char* _pPhase,
+    StringView  _detail)
     : m_pPhase(_pPhase)
     , m_detail(_detail)
 {

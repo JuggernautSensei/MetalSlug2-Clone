@@ -90,7 +90,7 @@ void Editor::SelectStage(
 }
 
 void Editor::SetGodMode(
-    const eGodMode _mode)
+    eGodMode _mode)
 {
     m_godMode = _mode;
 }
@@ -122,8 +122,8 @@ bool Editor::OwnsKeyboard() const
 }
 
 void Editor::Frame(
-    const float    _fps,
-    const uint64_t _tick)
+    float    _fps,
+    uint64_t _tick)
 {
     if (!m_bInit)
     {
@@ -194,8 +194,8 @@ void Editor::DrawMenuBar_()
 }
 
 void Editor::DrawEditorWindow_(
-    const float    _fps,
-    const uint64_t _tick)
+    float    _fps,
+    uint64_t _tick)
 {
     const ImGuiViewport* pHost = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(ImVec2 { pHost->Pos.x + 16.f, pHost->Pos.y + 40.f }, ImGuiCond_FirstUseEver);

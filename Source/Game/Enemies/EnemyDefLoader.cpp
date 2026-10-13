@@ -40,9 +40,9 @@ private:
     [[nodiscard]] bool CheckKeys_(const Chain& _chain, StringView _defName, Span<const StringView> _allowed);
 
     [[nodiscard]] bool CheckObjectKeys_(
-        const StringView        _def,
-        const StringView        _field,
-        const JsonReader&       _object,
+        StringView             _def,
+        StringView             _field,
+        const JsonReader&      _object,
         Span<const StringView> _allowed);
 
     [[nodiscard]] std::optional<JsonReader> Find_(const Chain& _chain, StringView _key) const;
@@ -51,58 +51,58 @@ private:
     void Fail_(StringView _def, StringView _field, StringView _msg);
 
     [[nodiscard]] bool ReadNum_(
-        const StringView  _def,
-        const StringView  _field,
+        StringView        _def,
+        StringView        _field,
         const JsonReader& _reader,
-        const StringView  _key,
+        StringView        _key,
         float&            _out,
         bool              _bRequired);
 
     [[nodiscard]] bool ReadInt_(
-        const StringView  _def,
-        const StringView  _field,
+        StringView        _def,
+        StringView        _field,
         const JsonReader& _reader,
-        const StringView  _key,
+        StringView        _key,
         int&              _out,
         bool              _bRequired);
 
     [[nodiscard]] bool ReadBool_(
-        const StringView  _def,
-        const StringView  _field,
+        StringView        _def,
+        StringView        _field,
         const JsonReader& _reader,
-        const StringView  _key,
+        StringView        _key,
         bool&             _out);
 
     [[nodiscard]] bool ReadStr_(
-        const StringView  _def,
-        const StringView  _field,
+        StringView        _def,
+        StringView        _field,
         const JsonReader& _reader,
-        const StringView  _key,
+        StringView        _key,
         String&           _out,
         bool              _bRequired);
 
     [[nodiscard]] bool ReadVec2_(
-        const StringView  _def,
-        const StringView  _field,
+        StringView        _def,
+        StringView        _field,
         const JsonReader& _reader,
-        const StringView  _key,
+        StringView        _key,
         VECTOR2&          _out);
 
     [[nodiscard]] bool ReadBox_(
-        const StringView  _def,
-        const StringView  _field,
+        StringView        _def,
+        StringView        _field,
         const JsonReader& _reader,
         BoxDef&           _out);
 
     [[nodiscard]] bool ReadClip_(
-        const StringView  _def,
-        const StringView  _field,
+        StringView        _def,
+        StringView        _field,
         const JsonReader& _reader,
         ClipDef&          _out);
 
     [[nodiscard]] bool ReadFx_(
-        const StringView  _def,
-        const StringView  _field,
+        StringView        _def,
+        StringView        _field,
         const JsonReader& _reader,
         FxDef&            _out);
 
@@ -120,7 +120,7 @@ private:
     [[nodiscard]] bool ReadDeathClip_(
         const EnemyDef&   _def,
         const JsonReader& _death,
-        const StringView  _key,
+        StringView        _key,
         int&              _out);
 
     EnemyDefLibrary&     m_lib;
@@ -189,11 +189,11 @@ constexpr ARRAY<StringView, 27> kProjectileKeys = {
     "scale"
 };
 constexpr ARRAY<const char*, 11> kKnownKinds       = { "walker", "vehicle", "turret", "flyer", "boss", "prop", "npc", "item", "projectile", "effect", "debris" };
-constexpr ARRAY<StringView, 4>  kActivationKeys   = { "note", "mode", "marginPx", "latch" };
-constexpr ARRAY<StringView, 8>  kPhysicsKeys      = { "note", "gravity", "maxFall", "speed", "jumpVy", "dropSpeed", "footHalfWidth", "useGravity" };
-constexpr ARRAY<StringView, 10> kWeaponKeys       = { "note", "projectile", "muzzle", "aim", "tilt", "arc", "muzzleFx", "hitbox", "motionClip", "effects" };
-constexpr ARRAY<StringView, 5>  kWeaponEffectKeys = { "note", "clip", "offset", "frame", "depth" };
-constexpr ARRAY<StringView, 17> kDeathKeys        = {
+constexpr ARRAY<StringView, 4>   kActivationKeys   = { "note", "mode", "marginPx", "latch" };
+constexpr ARRAY<StringView, 8>   kPhysicsKeys      = { "note", "gravity", "maxFall", "speed", "jumpVy", "dropSpeed", "footHalfWidth", "useGravity" };
+constexpr ARRAY<StringView, 10>  kWeaponKeys       = { "note", "projectile", "muzzle", "aim", "tilt", "arc", "muzzleFx", "hitbox", "motionClip", "effects" };
+constexpr ARRAY<StringView, 5>   kWeaponEffectKeys = { "note", "clip", "offset", "frame", "depth" };
+constexpr ARRAY<StringView, 17>  kDeathKeys        = {
     "note",
     "bomb",
     "slash",
@@ -233,9 +233,9 @@ EnemyDefParser::EnemyDefParser(
 }
 
 void EnemyDefParser::Fail_(
-    const StringView _def,
-    const StringView _field,
-    const StringView _msg)
+    StringView _def,
+    StringView _field,
+    StringView _msg)
 {
     if (error.empty())
     {
@@ -244,12 +244,12 @@ void EnemyDefParser::Fail_(
 }
 
 bool EnemyDefParser::ReadNum_(
-    const StringView  _def,
-    const StringView  _field,
+    StringView        _def,
+    StringView        _field,
     const JsonReader& _reader,
-    const StringView  _key,
+    StringView        _key,
     float&            _out,
-    const bool        _bRequired)
+    bool              _bRequired)
 {
     StringView reason;
     if (ReadFloatField(_reader, _key, _bRequired, _out, reason))
@@ -261,12 +261,12 @@ bool EnemyDefParser::ReadNum_(
 }
 
 bool EnemyDefParser::ReadInt_(
-    const StringView  _def,
-    const StringView  _field,
+    StringView        _def,
+    StringView        _field,
     const JsonReader& _reader,
-    const StringView  _key,
+    StringView        _key,
     int&              _out,
-    const bool        _bRequired)
+    bool              _bRequired)
 {
     float value = static_cast<float>(_out);
     if (!ReadNum_(_def, _field, _reader, _key, value, _bRequired))
@@ -278,10 +278,10 @@ bool EnemyDefParser::ReadInt_(
 }
 
 bool EnemyDefParser::ReadBool_(
-    const StringView  _def,
-    const StringView  _field,
+    StringView        _def,
+    StringView        _field,
     const JsonReader& _reader,
-    const StringView  _key,
+    StringView        _key,
     bool&             _out)
 {
     StringView reason;
@@ -294,12 +294,12 @@ bool EnemyDefParser::ReadBool_(
 }
 
 bool EnemyDefParser::ReadStr_(
-    const StringView  _def,
-    const StringView  _field,
+    StringView        _def,
+    StringView        _field,
     const JsonReader& _reader,
-    const StringView  _key,
+    StringView        _key,
     String&           _out,
-    const bool        _bRequired)
+    bool              _bRequired)
 {
     StringView reason;
     if (ReadStringField(_reader, _key, _bRequired, _out, reason))
@@ -311,10 +311,10 @@ bool EnemyDefParser::ReadStr_(
 }
 
 bool EnemyDefParser::ReadVec2_(
-    const StringView  _def,
-    const StringView  _field,
+    StringView        _def,
+    StringView        _field,
     const JsonReader& _reader,
-    const StringView  _key,
+    StringView        _key,
     VECTOR2&          _out)
 {
     StringView reason;
@@ -327,10 +327,10 @@ bool EnemyDefParser::ReadVec2_(
 }
 
 bool EnemyDefParser::CheckObjectKeys_(
-    const StringView              _def,
-    const StringView              _field,
-    const JsonReader&             _object,
-    const Span<const StringView> _allowed)
+    StringView             _def,
+    StringView             _field,
+    const JsonReader&      _object,
+    Span<const StringView> _allowed)
 {
     if (!_object.IsObject())
     {
@@ -347,8 +347,8 @@ bool EnemyDefParser::CheckObjectKeys_(
 }
 
 bool EnemyDefParser::ReadBox_(
-    const StringView  _def,
-    const StringView  _field,
+    StringView        _def,
+    StringView        _field,
     const JsonReader& _reader,
     BoxDef&           _out)
 {
@@ -372,8 +372,8 @@ bool EnemyDefParser::ReadBox_(
 }
 
 bool EnemyDefParser::ReadClip_(
-    const StringView  _def,
-    const StringView  _field,
+    StringView        _def,
+    StringView        _field,
     const JsonReader& _reader,
     ClipDef&          _out)
 {
@@ -399,8 +399,8 @@ bool EnemyDefParser::ReadClip_(
 }
 
 bool EnemyDefParser::ReadFx_(
-    const StringView  _def,
-    const StringView  _field,
+    StringView        _def,
+    StringView        _field,
     const JsonReader& _reader,
     FxDef&            _out)
 {
@@ -417,9 +417,9 @@ bool EnemyDefParser::ReadFx_(
 }
 
 bool EnemyDefParser::BuildChain_(
-    const StringView _name,
-    const int        _depth,
-    Chain&           _out)
+    StringView _name,
+    int        _depth,
+    Chain&     _out)
 {
     if (_depth > 8)
     {
@@ -451,9 +451,9 @@ bool EnemyDefParser::BuildChain_(
 }
 
 bool EnemyDefParser::CheckKeys_(
-    const Chain&                  _chain,
-    const StringView              _defName,
-    const Span<const StringView> _allowed)
+    const Chain&           _chain,
+    StringView             _defName,
+    Span<const StringView> _allowed)
 {
     for (const JsonReader& reader: _chain)
     {
@@ -466,8 +466,8 @@ bool EnemyDefParser::CheckKeys_(
 }
 
 std::optional<JsonReader> EnemyDefParser::Find_(
-    const Chain&     _chain,
-    const StringView _key) const
+    const Chain& _chain,
+    StringView   _key) const
 {
     for (size_t i = _chain.size(); i > 0; --i)
     {
@@ -484,8 +484,8 @@ std::optional<JsonReader> EnemyDefParser::Find_(
 }
 
 EnemyDefParser::Entries EnemyDefParser::Merge_(
-    const Chain&     _chain,
-    const StringView _key) const
+    const Chain& _chain,
+    StringView   _key) const
 {
     Entries entries;
     for (const JsonReader& reader: _chain)
@@ -842,7 +842,7 @@ bool EnemyDefParser::ParseWeapon_(
 bool EnemyDefParser::ReadDeathClip_(
     const EnemyDef&   _def,
     const JsonReader& _death,
-    const StringView  _key,
+    StringView        _key,
     int&              _out)
 {
     if (!HasKey(_death, _key))
@@ -1276,7 +1276,7 @@ bool EnemyDefParser::Run(
 }
 
 bool EnemyDefParser::RunMany(
-    const Span<const JsonReader> _roots)
+    Span<const JsonReader> _roots)
 {
     for (const JsonReader& root: _roots)
     {
@@ -1407,8 +1407,8 @@ bool EnemyDefParser::Finish_()
 }
 
 Result<EnemyDefLibrary> EnemyDefLibrary::Parse(
-    const StringView _json,
-    String*          _pMessage)
+    StringView _json,
+    String*    _pMessage)
 {
     Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, kJsonBomComments);
     if (!doc)
@@ -1529,35 +1529,35 @@ FilePath EnemyDefLibrary::GetDefaultDirectory(
 }
 
 const EnemyDef* EnemyDefLibrary::Find(
-    const StringView _name) const
+    StringView _name) const
 {
     const int index = FindIndex(_name);
     return index < 0 ? nullptr : &m_defs[static_cast<size_t>(index)];
 }
 
 EnemyDef* EnemyDefLibrary::FindMutable(
-    const StringView _name)
+    StringView _name)
 {
     const int index = FindIndex(_name);
     return index < 0 ? nullptr : &m_defs[static_cast<size_t>(index)];
 }
 
 int EnemyDefLibrary::FindIndex(
-    const StringView _name) const
+    StringView _name) const
 {
     const HashMap<String, int>::const_iterator it = m_defIndex.find(String { _name });
     return it == m_defIndex.end() ? -1 : it->second;
 }
 
 const ProjectileDef* EnemyDefLibrary::FindProjectile(
-    const StringView _name) const
+    StringView _name) const
 {
     const int index = FindProjectileIndex(_name);
     return index < 0 ? nullptr : &m_projectiles[static_cast<size_t>(index)];
 }
 
 int EnemyDefLibrary::FindProjectileIndex(
-    const StringView _name) const
+    StringView _name) const
 {
     const HashMap<String, int>::const_iterator it = m_projIndex.find(String { _name });
     return it == m_projIndex.end() ? -1 : it->second;

@@ -30,7 +30,7 @@ namespace
 {
 void AppendBigEndian32_(
     Vector<uint8_t>& _out,
-    const uint32_t   _value)
+    uint32_t         _value)
 {
     _out.push_back(static_cast<uint8_t>(_value >> 24));
     _out.push_back(static_cast<uint8_t>(_value >> 16));
@@ -56,8 +56,8 @@ void AppendPngChunk_(
 
 [[nodiscard]] bool EncodePalettePng_(
     const Vector<uint8_t>& _pixels,
-    const int              _width,
-    const int              _height,
+    int                    _width,
+    int                    _height,
     Vector<uint8_t>&       _out)
 {
     Vector<uint8_t> raw;
@@ -143,8 +143,8 @@ Result<void> GroundMaskDocument::Save(
 }
 
 void GroundMaskDocument::Create(
-    const int _width,
-    const int _height)
+    int _width,
+    int _height)
 {
     m_width  = Max(_width, 0);
     m_height = Max(_height, 0);
@@ -170,15 +170,15 @@ int GroundMaskDocument::GetHeight() const
 }
 
 bool GroundMaskDocument::IsInside(
-    const int _x,
-    const int _y) const
+    int _x,
+    int _y) const
 {
     return _x >= 0 && _y >= 0 && _x < m_width && _y < m_height;
 }
 
 bool GroundMaskDocument::IsSolid(
-    const int _x,
-    const int _y) const
+    int _x,
+    int _y) const
 {
     return IsInside(_x, _y) && m_pixels[static_cast<size_t>(_y) * static_cast<size_t>(m_width) + static_cast<size_t>(_x)] != 0;
 }
@@ -227,10 +227,10 @@ void GroundMaskDocument::EndStroke()
 }
 
 void GroundMaskDocument::Stamp(
-    const int  _x,
-    const int  _y,
-    const int  _brush,
-    const bool _bSolid)
+    int  _x,
+    int  _y,
+    int  _brush,
+    bool _bSolid)
 {
     const bool bOwnStroke = !m_bInStroke;
     if (bOwnStroke)
@@ -254,12 +254,12 @@ void GroundMaskDocument::Stamp(
 }
 
 void GroundMaskDocument::DrawLine(
-    const int  _x0,
-    const int  _y0,
-    const int  _x1,
-    const int  _y1,
-    const int  _brush,
-    const bool _bSolid)
+    int  _x0,
+    int  _y0,
+    int  _x1,
+    int  _y1,
+    int  _brush,
+    bool _bSolid)
 {
     const bool bOwnStroke = !m_bInStroke;
     if (bOwnStroke)
@@ -299,11 +299,11 @@ void GroundMaskDocument::DrawLine(
 }
 
 void GroundMaskDocument::FillRect(
-    const int  _x0,
-    const int  _y0,
-    const int  _x1,
-    const int  _y1,
-    const bool _bSolid)
+    int  _x0,
+    int  _y0,
+    int  _x1,
+    int  _y1,
+    bool _bSolid)
 {
     const bool bOwnStroke = !m_bInStroke;
     if (bOwnStroke)
@@ -324,9 +324,9 @@ void GroundMaskDocument::FillRect(
 }
 
 void GroundMaskDocument::FloodFill(
-    const int  _x,
-    const int  _y,
-    const bool _bSolid)
+    int  _x,
+    int  _y,
+    bool _bSolid)
 {
     if (!IsInside(_x, _y))
     {
@@ -416,9 +416,9 @@ bool GroundMaskDocument::TakeDirtyColumns(
 }
 
 void GroundMaskDocument::SetPixel_(
-    const int     _x,
-    const int     _y,
-    const uint8_t _value)
+    int     _x,
+    int     _y,
+    uint8_t _value)
 {
     if (!IsInside(_x, _y))
     {
@@ -435,7 +435,7 @@ void GroundMaskDocument::SetPixel_(
 }
 
 void GroundMaskDocument::MarkColumn_(
-    const int _x)
+    int _x)
 {
     if (m_dirtyX1 < m_dirtyX0)
     {
@@ -586,8 +586,8 @@ void GroundEditor::LoadBackground_(
 }
 
 void GroundEditor::UploadMaskColumns_(
-    const int _x0,
-    const int _x1)
+    int _x0,
+    int _x1)
 {
     const int       w = m_doc.GetWidth();
     const int       h = m_doc.GetHeight();
@@ -902,9 +902,9 @@ void GroundEditor::DrawView_()
 }
 
 void GroundEditor::HandleCanvasInput_(
-    const int  _pixelX,
-    const int  _pixelY,
-    const bool _bHovered)
+    int  _pixelX,
+    int  _pixelY,
+    bool _bHovered)
 {
     const ImGuiIO& io = ImGui::GetIO();
     if (!m_bDragging)
@@ -969,8 +969,8 @@ void GroundEditor::HandleCanvasInput_(
 }
 
 void GroundEditor::CommitDrag_(
-    const int _pixelX,
-    const int _pixelY)
+    int _pixelX,
+    int _pixelY)
 {
     if (m_tool == eGroundTool::Rect)
     {
