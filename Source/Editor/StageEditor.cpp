@@ -491,7 +491,7 @@ String StageDocument::FormatNumber(
 {
     ARRAY<char, 64>      buf = {};
     std::to_chars_result r   = {};
-    if (_value == std::floor(_value) && std::fabs(_value) < 1e9)
+    if (_value == std::floor(_value) && Abs(_value) < 1e9)
     {
         r = std::to_chars(buf.data(), buf.data() + buf.size(), static_cast<long long>(_value));
     }
@@ -1454,10 +1454,10 @@ bool StageEditor::PickSection_(
             const bool           bInY = _my >= ay - tol && _my <= by + tol;
             const bool           bInX = _mx >= ax - tol && _mx <= bx + tol;
             int                  mask = 0;
-            mask |= (bInY && std::fabs(_mx - ax) <= tol) ? 1 : 0;
-            mask |= (bInX && std::fabs(_my - ay) <= tol) ? 2 : 0;
-            mask |= (bInY && std::fabs(_mx - bx) <= tol) ? 4 : 0;
-            mask |= (bInX && std::fabs(_my - by) <= tol) ? 8 : 0;
+            mask |= (bInY && Abs(_mx - ax) <= tol) ? 1 : 0;
+            mask |= (bInX && Abs(_my - ay) <= tol) ? 2 : 0;
+            mask |= (bInY && Abs(_mx - bx) <= tol) ? 4 : 0;
+            mask |= (bInX && Abs(_my - by) <= tol) ? 8 : 0;
             if (mask != 0)
             {
                 _section = i;
@@ -1473,7 +1473,7 @@ bool StageEditor::PickSection_(
         const float             px     = _originX + (static_cast<float>(s.triggerX) - m_scrollX) * m_zoom;
         const float             ty     = _originY + static_cast<float>(i % 3) * 12.f;
         const float             tw     = ImGui::CalcTextSize(s.id.c_str()).x;
-        const bool              bLine  = std::fabs(_mx - px) <= tol;
+        const bool              bLine  = Abs(_mx - px) <= tol;
         const bool              bLabel = _mx >= px && _mx <= px + tw + 6.f && _my >= ty && _my <= ty + 14.f;
         if (bLine || bLabel)
         {
@@ -1514,7 +1514,7 @@ void StageEditor::LoadStrips_(
     Vector<uint8_t> tmp;
     for (int x = 0; x < w; x += kStripWidth)
     {
-        const int    sw   = std::min(kStripWidth, w - x);
+        const int    sw   = Min(kStripWidth, w - x);
         SDL_Texture* pTex = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, sw, h);
         if (pTex == nullptr)
         {
@@ -1620,7 +1620,7 @@ int StageEditor::GroundY_(
     {
         return -1;
     }
-    for (int y = std::max(0, _fromY); y < m_groundH; ++y)
+    for (int y = Max(0, _fromY); y < m_groundH; ++y)
     {
         if (m_solid[static_cast<size_t>(y) * static_cast<size_t>(m_groundW) + static_cast<size_t>(_x)] != 0)
         {
@@ -1706,7 +1706,7 @@ void StageEditor::Draw()
     const ImGuiViewport* pHost  = ImGui::GetMainViewport();
     const bool           bSmall = io.DisplaySize.x < 900.f;
     ImGui::SetNextWindowPos(ImVec2 { pHost->Pos.x + (bSmall ? 0.f : 344.f), pHost->Pos.y + 40.f }, ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2 { bSmall ? io.DisplaySize.x : std::max(480.f, io.DisplaySize.x - 360.f), std::max(320.f, io.DisplaySize.y - 56.f) }, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2 { bSmall ? io.DisplaySize.x : Max(io.DisplaySize.x - 360.f, 480.f), Max(io.DisplaySize.y - 56.f, 320.f) }, ImGuiCond_FirstUseEver);
     if (ImGui::Begin("Stage Map"))
     {
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && !io.WantTextInput)
@@ -2013,7 +2013,7 @@ void StageEditor::DrawView_()
         {
             const float worldX = m_scrollX + (io.MousePos.x - originX) / m_zoom;
             const float worldY = m_scrollY + (io.MousePos.y - originY) / m_zoom;
-            m_zoom             = std::clamp(m_zoom * (io.MouseWheel > 0.f ? 1.25f : 0.8f), 0.05f, 4.f);
+            m_zoom             = Clamp(m_zoom * (io.MouseWheel > 0.f ? 1.25f : 0.8f), 0.05f, 4.f);
             m_scrollX          = worldX - (io.MousePos.x - originX) / m_zoom;
             m_scrollY          = worldY - (io.MousePos.y - originY) / m_zoom;
         }
@@ -2034,8 +2034,8 @@ void StageEditor::DrawView_()
     }
     const float worldW = static_cast<float>(m_doc.GetWorldWidth());
     const float worldH = static_cast<float>(m_doc.GetWorldHeight());
-    m_scrollX          = std::clamp(m_scrollX, -64.f / m_zoom, std::max(0.f, worldW - viewW) + 64.f / m_zoom);
-    m_scrollY          = std::clamp(m_scrollY, -64.f / m_zoom, std::max(0.f, worldH - viewH) + 64.f / m_zoom);
+    m_scrollX          = Clamp(m_scrollX, -64.f / m_zoom, Max(worldW - viewW, 0.f) + 64.f / m_zoom);
+    m_scrollY          = Clamp(m_scrollY, -64.f / m_zoom, Max(worldH - viewH, 0.f) + 64.f / m_zoom);
 
     const float zoom = m_zoom;
     const float sx   = m_scrollX;

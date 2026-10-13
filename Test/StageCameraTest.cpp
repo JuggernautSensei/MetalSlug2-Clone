@@ -320,9 +320,9 @@ TEST(StageRunnerCamera, Stage0SlopeMatchesTheLegacyFormula)
     int total = 0;
     for (float x = 6500.f; x <= 8800.f; x += 0.5f)
     {
-        const float legacy = std::trunc(std::min(850.f, 350.f + (x - 6650.f) * 0.255f));
+        const float legacy = std::trunc(Min(350.f + (x - 6650.f) * 0.255f, 850.f));
         const float ours   = curve.EvaluateTop(x);
-        ASSERT_LE(std::abs(ours - legacy), 1.f) << "x=" << x << " ours=" << ours << " legacy=" << legacy;
+        ASSERT_LE(Abs(ours - legacy), 1.f) << "x=" << x << " ours=" << ours << " legacy=" << legacy;
         exact += ours == legacy ? 1 : 0;
         ++total;
     }
@@ -366,7 +366,7 @@ TEST(StageRunnerCamera, FollowsPlayerForwardOnlyAndNeverScrollsBack)
         fx.StepAt(x);
         const float camX = fx.camera.GetPosition().x;
         ASSERT_GE(camX, maxX) << i;
-        maxX = std::max(maxX, camX);
+        maxX = Max(camX, maxX);
     }
     EXPECT_GT(maxX, 500.f);
 }

@@ -77,7 +77,7 @@ void Tick_(
     const Vec2 probeTo = { _e.body.position.x, _e.body.position.y + c.groundProbeY };
     // 플레이어 바로 위에서 떨어지는 폭탄은 그 머리 위 구조물(강 한가운데 건물 등)에 막히지 않고 플레이어 발 높이까지 내려와 터진다
     const EnemyPlayerInfo& player   = _env.ctx.player;
-    const bool             bAimed   = player.bAlive && std::abs(probeTo.x - player.feet.x) <= c.hitSize.x * 0.5f + c.blastSize.x * 0.5f;
+    const bool             bAimed   = player.bAlive && Abs(probeTo.x - player.feet.x) <= c.hitSize.x * 0.5f + c.blastSize.x * 0.5f;
     const bool             bPassing = bAimed && probeTo.y < player.feet.y;
     const bool             bArrived = bAimed && probeTo.y >= player.feet.y;
     if (bArrived || (!bPassing && Touches_(_env.ctx.physics, probeTo)))

@@ -51,7 +51,7 @@ namespace
             continue;
         }
         const int bottom = f.h - f.pivotY;
-        low              = bAny ? std::max(low, bottom) : bottom;
+        low              = bAny ? Max(low, bottom) : bottom;
         bAny             = true;
     }
     _out = low;
@@ -125,7 +125,7 @@ TEST(AnimIntegrity, LeftRightTwinsKeepTheSameFootAnchor)
         }
         ++checked;
         // 오타(OffsetY -430 등)는 수백 px 튄다. 정상 차이는 두 자릿수 이하다 (전함 이펙트 34px 가 최대).
-        EXPECT_LE(std::abs(left - right), 64) << clip.name.c_str() << " vs " << twinName.c_str();
+        EXPECT_LE(Abs(left - right), 64) << clip.name.c_str() << " vs " << twinName.c_str();
         EXPECT_EQ(clip.bLoop, pTwin->bLoop) << clip.name.c_str();
     }
     EXPECT_GT(checked, 100);

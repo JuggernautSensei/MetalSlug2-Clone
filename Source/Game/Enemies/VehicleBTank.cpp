@@ -39,7 +39,7 @@ void Go_(
     SetClip(_e, clip, _state != eBTankState::Idle);
     if (_state == eBTankState::Idle && clip >= 0)
     {
-        _e.clipTicks = std::max(_e.clipTicks, _def.GetClip(clip).GetDurationTicks());
+        _e.clipTicks = Max(_e.clipTicks, _def.GetClip(clip).GetDurationTicks());
     }
 }
 

@@ -18,7 +18,7 @@ namespace
 {
     const float dx   = _to.x - _from.x;
     const float dy   = _to.y - _from.y;
-    const float dist = std::sqrt(dx * dx + dy * dy);
+    const float dist = Sqrt(dx * dx + dy * dy);
     const int   n    = Max(1, CeilToInt(dist / 2.f));
 
     Vec2 lastFree = _from;
@@ -215,7 +215,7 @@ void ProjectileSystem::Step(
         bullet.renderPrev = bullet.position;
         if (bullet.accel != 0.f)
         {
-            const float speed = std::sqrt(bullet.velocity.x * bullet.velocity.x + bullet.velocity.y * bullet.velocity.y);
+            const float speed = Sqrt(bullet.velocity.x * bullet.velocity.x + bullet.velocity.y * bullet.velocity.y);
             if (speed > 0.f)
             {
                 float next = speed + bullet.accel * _dt;
@@ -230,7 +230,7 @@ void ProjectileSystem::Step(
         }
         bullet.position.x += bullet.velocity.x * _dt;
         bullet.position.y += bullet.velocity.y * _dt;
-        bullet.travelled += std::sqrt(bullet.velocity.x * bullet.velocity.x + bullet.velocity.y * bullet.velocity.y) * _dt;
+        bullet.travelled += Sqrt(bullet.velocity.x * bullet.velocity.x + bullet.velocity.y * bullet.velocity.y) * _dt;
         ++bullet.ageTicks;
 
         if (bullet.travelled > bullet.range)
@@ -300,7 +300,7 @@ void ProjectileSystem::Step(
             shot.velocity.y += params.accel.y * _dt;
             if (params.maxSpeed > 0.f)
             {
-                const float speed = std::sqrt(shot.velocity.x * shot.velocity.x + shot.velocity.y * shot.velocity.y);
+                const float speed = Sqrt(shot.velocity.x * shot.velocity.x + shot.velocity.y * shot.velocity.y);
                 if (speed > params.maxSpeed)
                 {
                     const float scale = params.maxSpeed / speed;

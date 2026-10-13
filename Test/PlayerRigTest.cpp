@@ -338,7 +338,7 @@ TEST(PlayerRigFeet, RunCycleOriginNeverMovesVerticallyAndAnchorDriftIsAtMostTwoP
         {
             const AnimFrame& a  = pClip->frames[i];
             const AnimFrame& b  = pClip->frames[(i + 1) % pClip->frames.size()];
-            const int        dy = std::abs((a.h - a.pivotY) - (b.h - b.pivotY));
+            const int        dy = Abs((a.h - a.pivotY) - (b.h - b.pivotY));
             EXPECT_LE(dy, 2) << name << " frame " << i;
         }
     }
@@ -394,8 +394,8 @@ TEST(PlayerRigFeet, EveryPlayerClipHasSanePivots)
             {
                 continue;
             }
-            EXPECT_LE(std::abs(frame.pivotY), frame.h + 160) << clip.name;
-            EXPECT_LE(std::abs(frame.pivotX), frame.w + 160) << clip.name;
+            EXPECT_LE(Abs(frame.pivotY), frame.h + 160) << clip.name;
+            EXPECT_LE(Abs(frame.pivotX), frame.w + 160) << clip.name;
         }
     }
     EXPECT_GT(checked, 100);

@@ -96,7 +96,7 @@ TEST(Tuning, JumpFeelNumbersMatchTheDesignTargets)
     {
         vy += t.move.gravity / 60.f;
         y += vy / 60.f;
-        apex = std::min(apex, y);
+        apex = Min(y, apex);
         ++ticks;
     } while (y < 0.f && ticks < 1000);
 

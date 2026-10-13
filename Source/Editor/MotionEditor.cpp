@@ -113,7 +113,7 @@ bool MotionPatchNumber_(
     const JsonNode& node = scanner.nodes[static_cast<size_t>(index)];
     const double    old  = std::strtod(node.str.c_str(), nullptr);
     const double    now  = MotionRound_(_value);
-    if (std::fabs(old - now) > kMotionEpsilon)
+    if (Abs(old - now) > kMotionEpsilon)
     {
         _text.replace(static_cast<size_t>(node.begin), static_cast<size_t>(node.end - node.begin), StageDocument::FormatNumber(now));
     }
@@ -227,7 +227,7 @@ bool MotionSameEffects_(
     {
         const double dx = MotionRound_(static_cast<double>(_a[i].offset.x)) - MotionRound_(static_cast<double>(_b[i].offset.x));
         const double dy = MotionRound_(static_cast<double>(_a[i].offset.y)) - MotionRound_(static_cast<double>(_b[i].offset.y));
-        if (_a[i].clip != _b[i].clip || _a[i].frame != _b[i].frame || _a[i].depth != _b[i].depth || std::fabs(dx) > kMotionEpsilon || std::fabs(dy) > kMotionEpsilon)
+        if (_a[i].clip != _b[i].clip || _a[i].frame != _b[i].frame || _a[i].depth != _b[i].depth || Abs(dx) > kMotionEpsilon || Abs(dy) > kMotionEpsilon)
         {
             return false;
         }
@@ -829,7 +829,7 @@ void MotionEditor::DrawParams_(
         else
         {
             float v = static_cast<float>(p.v[0]);
-            bEdit   = ImGui::DragFloat(label.c_str(), &v, 0.01f + std::fabs(v) * 0.005f, 0.f, 0.f, "%.3f");
+            bEdit   = ImGui::DragFloat(label.c_str(), &v, 0.01f + Abs(v) * 0.005f, 0.f, 0.f, "%.3f");
             p.v[0]  = static_cast<double>(v);
         }
         ImGui::PopID();

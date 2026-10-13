@@ -101,7 +101,7 @@ const InputHistory& StageState::MakeBotInput_()
             continue;
         }
         const float dx = hurtbox.box.GetCenter().x - feet.x;
-        if (!bTarget || std::abs(dx) < std::abs(bestDx))
+        if (!bTarget || Abs(dx) < Abs(bestDx))
         {
             bTarget = true;
             bestDx  = dx;
@@ -112,7 +112,7 @@ const InputHistory& StageState::MakeBotInput_()
     {
         frame.Set(eAction::Right, true);
     }
-    else if (std::abs(bestDx) > 14.f)
+    else if (Abs(bestDx) > 14.f)
     {
         frame.Set(bestDx > 0.f ? eAction::Right : eAction::Left, true);
         frame.Set(eAction::Up, true);
@@ -917,7 +917,7 @@ void StageState::DrawBackdrop_(
     const int  tileW = bTile ? static_cast<int>(pMode->period) : pSprite->width;
     if (!bTile && pSprite->width >= Renderer::kLogicalWidth)
     {
-        left = std::clamp(left, Renderer::kLogicalWidth - pSprite->width, 0);
+        left = Clamp(left, Renderer::kLogicalWidth - pSprite->width, 0);
     }
     int x = bTile ? left % tileW : left;
     if (bTile && x > 0)
@@ -974,7 +974,7 @@ void StageState::DrawWorld_(
         {
             renderer.FillRect(tl, entity.size, color);
             renderer.DrawRect(tl, entity.size, { 20, 20, 20, 255 });
-            renderer.DrawDebugText({ tl.x + 2.f, tl.y + 2.f }, std::format("{}\n{}/{}", entity.def, std::max(0, entity.health.hp), entity.health.maxHp), { 255, 255, 255, 255 });
+            renderer.DrawDebugText({ tl.x + 2.f, tl.y + 2.f }, std::format("{}\n{}/{}", entity.def, Max(0, entity.health.hp), entity.health.maxHp), { 255, 255, 255, 255 });
         }
         else
         {

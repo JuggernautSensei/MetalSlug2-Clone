@@ -38,7 +38,7 @@ void Go_(
     const Enemy&    _e,
     const EnemyEnv& _env)
 {
-    return std::abs(DxToPlayer(_e, _env));
+    return Abs(DxToPlayer(_e, _env));
 }
 
 void Reposition_(

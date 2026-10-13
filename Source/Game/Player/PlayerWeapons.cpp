@@ -13,11 +13,11 @@ namespace
     const Vec2 _size,
     const Vec2 _direction)
 {
-    const float ax = std::abs(_direction.x);
-    const float ay = std::abs(_direction.y);
-    if (ax > 0.f && ay > 0.f && std::min(ax, ay) / std::max(ax, ay) >= kDiagonalRatio)
+    const float ax = Abs(_direction.x);
+    const float ay = Abs(_direction.y);
+    if (ax > 0.f && ay > 0.f && Min(ay, ax) / Max(ay, ax) >= kDiagonalRatio)
     {
-        const float side = std::max(_size.x, _size.y);
+        const float side = Max(_size.y, _size.x);
         return { side, side };
     }
     if (ay > ax)

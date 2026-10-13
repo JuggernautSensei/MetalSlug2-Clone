@@ -92,7 +92,7 @@ TEST(Bus, SpawnsStairSoldiersOffScreenOnTheRightAndCapsTheCount)
     {
         rig.Step(1);
         const Vector<const Enemy*> soldiers = StairSoldiers_(rig);
-        maxCount                            = std::max(maxCount, soldiers.size());
+        maxCount                            = Max(maxCount, soldiers.size());
         if (firstX < 0.f && !soldiers.empty())
         {
             firstX = soldiers.front()->body.position.x;
@@ -118,8 +118,8 @@ TEST(Bus, StairSoldiersWalkUpTheStairsToTheLanding)
         rig.Step(1);
         for (const Enemy* pSoldier: StairSoldiers_(rig))
         {
-            minY = std::min(minY, pSoldier->body.position.y);
-            if (std::abs(pSoldier->body.position.x - (kAnchorX + 100.f)) < 3.f && pSoldier->body.position.y < kGround - 100.f)
+            minY = Min(pSoldier->body.position.y, minY);
+            if (Abs(pSoldier->body.position.x - (kAnchorX + 100.f)) < 3.f && pSoldier->body.position.y < kGround - 100.f)
             {
                 bReachedTop = true;
             }
@@ -168,7 +168,7 @@ TEST(Bus, BazookaSoldiersClimbTheStairsToTheRoofAndFireRockets)
                     continue;
                 }
                 bSpawnedBzk = true;
-                if (std::abs(soldier.body.position.x - (2400.f + 100.f)) < 3.f && soldier.body.position.y < kGround - 100.f)
+                if (Abs(soldier.body.position.x - (2400.f + 100.f)) < 3.f && soldier.body.position.y < kGround - 100.f)
                 {
                     bReachedRoof = true;
                 }
@@ -228,7 +228,7 @@ TEST(Bus, StairSoldiersClimbToTheRoofWithoutGettingStuck)
                 continue;
             }
             const Vec2 pos = pSoldier->body.position;
-            if (std::abs(pos.x - last[k].x) + std::abs(pos.y - last[k].y) > 0.1f)
+            if (Abs(pos.x - last[k].x) + Abs(pos.y - last[k].y) > 0.1f)
             {
                 lastMove[k] = tick;
                 last[k]     = pos;
@@ -376,7 +376,7 @@ TEST(Bus, StairSoldiersNeverSinkIntoTheBusBodyAndStandOnItsTop)
                 {
                     continue;
                 }
-                topTicks += (std::abs(pSoldier->body.position.y - topY) < 2.f && pSoldier->bGrounded) ? 1 : 0;
+                topTicks += (Abs(pSoldier->body.position.y - topY) < 2.f && pSoldier->bGrounded) ? 1 : 0;
                 EXPECT_LE(pSoldier->body.position.y, topY + 2.f) << "시드 " << seed << " tick " << tick << ": 병사가 버스 몸체 안으로 들어갔다 (" << x << "," << pSoldier->body.position.y - kGround << ")";
             }
         }

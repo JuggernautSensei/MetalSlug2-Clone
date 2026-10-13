@@ -408,7 +408,7 @@ TEST(SpriteBatchSdl, WideStandaloneTextureIsSeamlessAcrossStrips)
     {
         target.Clear();
         batch.DrawTexture(*handle, { 0.f, 0.f }, Vec2 { static_cast<float>(cam), 0.f }, 64, kH);
-        const int visibleW = std::min(64, kW - cam);
+        const int visibleW = Min(64, kW - cam);
         for (int sx = 0; sx < visibleW; ++sx)
         {
             const int      wx       = cam + sx;

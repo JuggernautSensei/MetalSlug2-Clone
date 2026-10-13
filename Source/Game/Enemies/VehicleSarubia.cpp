@@ -67,7 +67,7 @@ void Tick_(
     }
 
     const float dx      = DxToPlayer(_e, _env);
-    const float absDx   = std::abs(dx);
+    const float absDx   = Abs(dx);
     const bool  bBehind = dx * static_cast<float>(_e.facing) < 0.f;
 
     switch (static_cast<eSarubiaState>(_e.state))

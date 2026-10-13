@@ -101,7 +101,7 @@ void NoSpread_(
         {
             const Span<const Bullet> bullets = _sim.State().GetProjectiles().GetBullets();
             const Vec2               v       = bullets[bullets.size() - 1].velocity;
-            return std::atan2(-v.y, std::abs(v.x)) * 180.f / 3.14159265f;
+            return std::atan2(-v.y, Abs(v.x)) * 180.f / 3.14159265f;
         }
     }
     return std::nanf("");
@@ -129,7 +129,7 @@ TEST(PlayerShot, PistolNeverHasMoreThanMaxAliveBullets)
     {
         sim.Set(eAction::Shot, i % 2 == 0);
         sim.Step();
-        peak = std::max(peak, BulletCount_(sim));
+        peak = Max(peak, BulletCount_(sim));
         ASSERT_LE(BulletCount_(sim), cap) << "tick " << i;
     }
     EXPECT_EQ(peak, cap);
@@ -285,7 +285,7 @@ void ExpectHmgJitterIsPerpendicular_(
     ASSERT_GE(bullets.size(), 3u);
 
     const Vec2     velocity  = bullets[0].velocity;
-    const float    speed     = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+    const float    speed     = Sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
     const Vec2     direction = { velocity.x / speed, velocity.y / speed };
     std::set<long> angles;
     std::set<long> offsets;
@@ -294,7 +294,7 @@ void ExpectHmgJitterIsPerpendicular_(
         angles.insert(std::lround(std::atan2(bullet.velocity.y, bullet.velocity.x) * 1000.f));
         const Vec2  delta = { bullet.position.x - bullets[0].position.x, bullet.position.y - bullets[0].position.y };
         const float cross = direction.x * delta.y - direction.y * delta.x;
-        EXPECT_LE(std::fabs(cross), 2.f * jitter + 0.01f);
+        EXPECT_LE(Abs(cross), 2.f * jitter + 0.01f);
         offsets.insert(std::lround(cross * 100.f));
     }
     EXPECT_EQ(angles.size(), 1u);
@@ -453,9 +453,9 @@ TEST(PlayerShot, AimDirectionsShootInThoseDirections)
         {
             EXPECT_EQ(v.x > 0.f, c.signX > 0.f);
         }
-        EXPECT_EQ(std::abs(v.x) < 0.01f, c.signX == 0.f);
+        EXPECT_EQ(Abs(v.x) < 0.01f, c.signX == 0.f);
         EXPECT_EQ(v.y < 0.f, c.signY < 0.f);
-        EXPECT_EQ(std::abs(v.y) < 0.01f, c.signY == 0.f);
+        EXPECT_EQ(Abs(v.y) < 0.01f, c.signY == 0.f);
     }
 }
 
@@ -473,7 +473,7 @@ TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToNinety)
     {
         const Span<const Bullet> first = sim.State().GetProjectiles().GetBullets();
         const Vec2               v     = first[first.size() - 1].velocity;
-        angles.push_back(std::atan2(-v.y, std::abs(v.x)) * 180.f / 3.14159265f);
+        angles.push_back(std::atan2(-v.y, Abs(v.x)) * 180.f / 3.14159265f);
     }
     for (int tick = 0; tick < 40; ++tick)
     {
@@ -484,7 +484,7 @@ TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToNinety)
             shots                            = fired;
             const Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
             const Vec2               v       = bullets[bullets.size() - 1].velocity;
-            angles.push_back(std::atan2(-v.y, std::abs(v.x)) * 180.f / 3.14159265f);
+            angles.push_back(std::atan2(-v.y, Abs(v.x)) * 180.f / 3.14159265f);
         }
     }
 
@@ -881,7 +881,7 @@ TEST(PlayerBomb, BombExplodesOnTheGroundAndBlastHitsEveryDummyKind)
         sim.Step(80);
         const TrainingDummy& dummy = Dummy_(sim, id);
         EXPECT_EQ(dummy.hitsTaken, 1) << GetDummyName(kind);
-        EXPECT_EQ(hp - dummy.health.hp, std::min(hp, sim.Tune().bomb.damage)) << GetDummyName(kind);
+        EXPECT_EQ(hp - dummy.health.hp, Min(hp, sim.Tune().bomb.damage)) << GetDummyName(kind);
         EXPECT_EQ(dummy.lastKind, eHitKind::Blast);
     }
 }
@@ -925,7 +925,7 @@ TEST(PlayerBomb, NoMoreThanMaxInFlight)
         sim.Set(eAction::Bomb, i % 6 == 0);
         sim.Step();
         const size_t inFlight = sim.State().GetProjectiles().GetBombs().size();
-        peak                  = std::max(peak, inFlight);
+        peak                  = Max(peak, inFlight);
         ASSERT_LE(inFlight, static_cast<size_t>(sim.Tune().bomb.maxInFlight));
     }
     EXPECT_EQ(peak, static_cast<size_t>(sim.Tune().bomb.maxInFlight));
@@ -952,7 +952,7 @@ TEST(PlayerBomb, ThrowArcLandsAheadOfThePlayer)
         sim.Step();
         for (const Bomb& bomb: sim.State().GetProjectiles().GetBombs())
         {
-            maxX = std::max(maxX, bomb.position.x);
+            maxX = Max(bomb.position.x, maxX);
         }
     }
     EXPECT_GT(maxX, sim.X() + 100.f);

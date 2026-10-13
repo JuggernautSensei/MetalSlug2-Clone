@@ -416,7 +416,7 @@ TEST(Physics, JumpReachesExpectedApexAndReturns)
     {
         const MoveResult result = Tick_(body, world);
         bLeft                   = bLeft || result.bLeftGround;
-        minY                    = std::min(minY, body.position.y);
+        minY                    = Min(body.position.y, minY);
         if (result.bLanded)
         {
             bLanded = true;

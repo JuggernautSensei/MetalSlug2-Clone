@@ -1,5 +1,7 @@
 #include "Audio/AudioMath.h"
 
+#include "Base/Math.h"
+
 AudioRng::AudioRng(const uint32_t _seed)
     : m_state(_seed == 0 ? 1u : _seed)
 {
@@ -49,7 +51,7 @@ bool BgmFader::Update(
     {
         return false;
     }
-    gain = std::max(0.f, gain + ratePerSec * _dtSec);
+    gain = Max(gain + ratePerSec * _dtSec, 0.f);
     return gain <= 0.f;
 }
 
@@ -62,6 +64,6 @@ float ComputePitch(
     const float _variation,
     const float _unit01)
 {
-    const float v = std::clamp(_variation, 0.f, 0.9f);
+    const float v = Clamp(_variation, 0.f, 0.9f);
     return 1.f + v * (_unit01 * 2.f - 1.f);
 }

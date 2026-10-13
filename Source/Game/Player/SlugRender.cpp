@@ -237,8 +237,8 @@ bool SubmitSlugBullet(
     {
         return false;
     }
-    const float dx    = std::abs(_bullet.velocity.x);
-    const float dy    = std::abs(_bullet.velocity.y);
+    const float dx    = Abs(_bullet.velocity.x);
+    const float dy    = Abs(_bullet.velocity.y);
     const float angle = std::atan2(dy, dx) * kRad2Deg;
     const int   frame = Clamp(static_cast<int>(std::lround(angle / kBulletFrameStep)), 0, kBulletFrameCount - 1);
 
@@ -265,8 +265,8 @@ bool SubmitSlugShell(
     {
         return false;
     }
-    const float angle = std::atan2(-_bomb.velocity.y, std::abs(_bomb.velocity.x)) * kRad2Deg;
-    const int   row   = Clamp(static_cast<int>(std::lround((90.f - std::abs(angle)) / kVulcanAngleStep)), 0, kShellRowCount - 1);
+    const float angle = std::atan2(-_bomb.velocity.y, Abs(_bomb.velocity.x)) * kRad2Deg;
+    const int   row   = Clamp(static_cast<int>(std::lround((90.f - Abs(angle)) / kVulcanAngleStep)), 0, kShellRowCount - 1);
     const int   col   = Clamp(3 + _bomb.ageTicks / 3, 3, kShellColCount - 1);
 
     const AnimFrame* pFrame = GetFrame_(_anims, GetShellClipName(row), col);

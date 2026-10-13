@@ -53,7 +53,7 @@ void Tick_(
     if (_e.state == static_cast<int>(eHangState::Idle))
     {
         FacePlayer(_e, _env);
-        if (std::abs(DxToPlayer(_e, _env)) <= cfg.detectX && _e.bActive)
+        if (Abs(DxToPlayer(_e, _env)) <= cfg.detectX && _e.bActive)
         {
             ++_e.aux;
             if (_e.aux >= cfg.throwTicks)

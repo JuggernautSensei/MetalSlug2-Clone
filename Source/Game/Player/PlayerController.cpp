@@ -148,7 +148,7 @@ bool PlayerController::IsChuteVisible(
     {
         return false;
     }
-    const int period = std::max(1, _tuning.player.chuteBlinkPeriodTicks);
+    const int period = Max(1, _tuning.player.chuteBlinkPeriodTicks);
     return (m_chuteBlinkTicks / period) % 2 == 0;
 }
 
@@ -538,14 +538,14 @@ void PlayerController::UpdateAim_(
         constexpr float kSweepPerTick  = 350.f / 60.f;
         constexpr float kReturnPerTick = 1000.f / 60.f;
         const float     step           = m_shotTicksLeft > 0 || _command.bShotHeld ? kSweepPerTick : kReturnPerTick;
-        m_aimDegree += std::clamp(targetDeg - m_aimDegree, -step, step);
+        m_aimDegree += Clamp(targetDeg - m_aimDegree, -step, step);
     }
     else
     {
         m_aimDegree = targetDeg;
     }
 
-    const float absDeg = std::abs(m_aimDegree);
+    const float absDeg = Abs(m_aimDegree);
     if (absDeg < 22.5f)
     {
         m_aim = eAim::Forward;

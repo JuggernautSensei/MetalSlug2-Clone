@@ -54,7 +54,7 @@ DecorSpawn MakeDecorSpawn(
             }
             if (const ParamValue* pSeconds = item.Find("seconds"))
             {
-                step.seconds = std::max(kDecorMinSec, pSeconds->AsFloat(1.f));
+                step.seconds = Max(pSeconds->AsFloat(1.f), kDecorMinSec);
             }
             if (const ParamValue* pStepVelocity = item.Find("velocity"))
             {

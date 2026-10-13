@@ -379,8 +379,8 @@ TEST(VehicleDebris, TankDebrisFliesUpFallsBelowScreenAndDisappears)
         {
             if (fx.bDebris)
             {
-                minY = std::min(minY, fx.position.y);
-                maxY = std::max(maxY, fx.position.y);
+                minY = Min(fx.position.y, minY);
+                maxY = Max(fx.position.y, maxY);
             }
         }
     }
@@ -702,7 +702,7 @@ TEST(VehicleSarubia, GrenadeMuzzleIsMirroredByFacing)
     EXPECT_NEAR(left.y, kGround - 150.f, 6.f) << "포신 끝 높이 (발 기준 약 -150)";
     const EnemyDef& sarubiaDef = rigLeft.Lib().Get(rigLeft.Lib().FindIndex("sarubia"));
     const float     muzzleX    = sarubiaDef.weapons[static_cast<size_t>(sarubiaDef.FindWeapon("grenade"))].muzzle.x;
-    EXPECT_NEAR(std::abs(left.x - kOriginX), muzzleX, 6.f) << "포신 끝 수평 거리 = 데이터 muzzle.x";
+    EXPECT_NEAR(Abs(left.x - kOriginX), muzzleX, 6.f) << "포신 끝 수평 거리 = 데이터 muzzle.x";
 }
 
 // 공중에 스폰된 탈것은 중력으로 떨어져 지면에 닿고 그대로 머문다.

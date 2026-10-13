@@ -142,9 +142,9 @@ void StepFollow_(
         _e.body.position.y = Min(_e.body.position.y + _c.enterSpeedY * kStepSec, hoverY);
     }
     const float dx = FollowTargetX_(_c, _env) - _e.body.position.x;
-    if (std::abs(dx) > _c.followDeadzone)
+    if (Abs(dx) > _c.followDeadzone)
     {
-        const float step = Min(_c.followSpeed * kStepSec, std::abs(dx));
+        const float step = Min(_c.followSpeed * kStepSec, Abs(dx));
         _e.body.position.x += (dx < 0.f ? -step : step);
     }
 }
@@ -242,7 +242,7 @@ void StepLow_(
         _e.body.position.y = Min(_e.body.position.y + _c.descendSpeedY * kStepSec, lowY);
     }
     const float dx   = LowTargetX_(_e, _c, _env) - _e.body.position.x;
-    const float step = Min(_c.lowSpeed * kStepSec, std::abs(dx));
+    const float step = Min(_c.lowSpeed * kStepSec, Abs(dx));
     _e.body.position.x += (dx < 0.f ? -step : step);
 }
 

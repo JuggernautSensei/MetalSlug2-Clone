@@ -19,12 +19,12 @@ HudModel UiDemoState::MakeModel_() const
     model.lives         = 2;
     model.score         = 1'234'560 + m_tick * 10;
     model.bInfiniteAmmo = m_tick < 300;
-    model.ammo          = std::max(0, 200 - (m_tick - 300) / 2);
+    model.ammo          = Max(0, 200 - (m_tick - 300) / 2);
     model.bombs         = 7;
     model.bShowTimer    = true;
-    model.timerSeconds  = std::max(0, 60 - m_tick / 60);
+    model.timerSeconds  = Max(0, 60 - m_tick / 60);
     model.bShowBoss     = m_tick >= 260;
-    model.bossHpRatio   = std::clamp(1.f - static_cast<float>(m_tick - 260) / 400.f, 0.f, 1.f);
+    model.bossHpRatio   = Clamp(1.f - static_cast<float>(m_tick - 260) / 400.f, 0.f, 1.f);
     model.levelSprite   = "LEVEL_1";
     return model;
 }

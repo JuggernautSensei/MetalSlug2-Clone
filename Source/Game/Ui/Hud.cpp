@@ -46,25 +46,25 @@ namespace
 String FormatScore(
     const int _score)
 {
-    return std::to_string(std::clamp(_score, 0, 9'999'999));
+    return std::to_string(Clamp(_score, 0, 9'999'999));
 }
 
 String FormatAmmo(
     const int _ammo)
 {
-    return std::to_string(std::clamp(_ammo, 0, 999));
+    return std::to_string(Clamp(_ammo, 0, 999));
 }
 
 String FormatBombs(
     const int _bombs)
 {
-    return std::to_string(std::clamp(_bombs, 0, 99));
+    return std::to_string(Clamp(_bombs, 0, 99));
 }
 
 String FormatTimer(
     const int _seconds)
 {
-    return std::format("{:02}", std::clamp(_seconds, 0, 99));
+    return std::format("{:02}", Clamp(_seconds, 0, 99));
 }
 
 HudModel MakeHudModel(
@@ -90,7 +90,7 @@ Vector<HudItem> BuildHudItems(
     if (_model.bShowPlayer)
     {
         items.push_back(MakeText_(FormatScore(_model.score), _layout.scoreRightX, _layout.scoreY, eTextAlign::Right, eFontColor::Default));
-        items.push_back(MakeText_(std::format("1UP={}", std::max(0, _model.lives)), _layout.livesX, _layout.livesY, eTextAlign::Left, eFontColor::White));
+        items.push_back(MakeText_(std::format("1UP={}", Max(0, _model.lives)), _layout.livesX, _layout.livesY, eTextAlign::Left, eFontColor::White));
 
         items.push_back(MakeSprite_(_model.bSlugMode ? "PlayerStateUI_Cannon" : "PlayerStateUI_Bomb", _layout.armsPanelX + 62, _layout.armsPanelY + 17));
 
@@ -112,7 +112,7 @@ Vector<HudItem> BuildHudItems(
 
     if (_model.bShowGauge)
     {
-        const float ratio = std::clamp(_model.gaugeRatio, 0.f, 1.f);
+        const float ratio = Clamp(_model.gaugeRatio, 0.f, 1.f);
         const int   fillW = static_cast<int>(static_cast<float>(_layout.gaugeInnerW) * ratio + 0.5f);
         HudItem     back;
         back.kind  = eHudItemKind::Rect;
@@ -162,10 +162,10 @@ Vector<HudItem> BuildHudItems(
     {
         constexpr int kFrameW = 106;
         constexpr int kFrameH = 16;
-        const int     scale   = std::max(1, _layout.bossBarScale);
+        const int     scale   = Max(1, _layout.bossBarScale);
         const int     left    = _layout.bossBarCenterX - (kFrameW * scale) / 2;
         const int     top     = _layout.bossBarTopY;
-        const float   ratio   = std::clamp(_model.bossHpRatio, 0.f, 1.f);
+        const float   ratio   = Clamp(_model.bossHpRatio, 0.f, 1.f);
         const int     fillW   = static_cast<int>(static_cast<float>(_layout.bossBarInnerW * scale) * ratio + 0.5f);
 
         HudItem back;

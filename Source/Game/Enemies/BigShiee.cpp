@@ -70,7 +70,7 @@ namespace
     const char _letter)
 {
     static const ARRAY<TurretNames, kBigShieeTurretCount> kNames = MakeNames_();
-    const size_t                                          index  = static_cast<size_t>(std::clamp(_letter - 'A', 0, kBigShieeTurretCount - 1));
+    const size_t                                          index  = static_cast<size_t>(Clamp(_letter - 'A', 0, kBigShieeTurretCount - 1));
     return kNames[index];
 }
 
@@ -246,7 +246,7 @@ void SetCannonMode_(
     const StringView _name,
     const int        _fallback)
 {
-    return _env.ctx.pAnims ? std::max(1, GetNamedPartTicks(*_env.ctx.pAnims, _name)) : _fallback;
+    return _env.ctx.pAnims ? Max(1, GetNamedPartTicks(*_env.ctx.pAnims, _name)) : _fallback;
 }
 
 // 사격 클립 길이 (틱). 마지막 칸은 Aim 자세의 복사본이라 보여 주지 않고 Aim 으로 돌아간다
@@ -256,7 +256,7 @@ void SetCannonMode_(
 {
     const AnimClip* pClip = _env.ctx.pAnims ? _env.ctx.pAnims->FindClip(_name) : nullptr;
     const int       count = pClip ? pClip->GetFrameCount() : kShotFrames;
-    return std::max(1, ClipTicks_(_env, _name, 34) * std::max(1, count - 1) / std::max(1, count));
+    return Max(1, ClipTicks_(_env, _name, 34) * Max(1, count - 1) / Max(1, count));
 }
 
 [[nodiscard]] int RandTicks_(
@@ -265,7 +265,7 @@ void SetCannonMode_(
 {
     const int lo = SecToTicks(_rangeSec[0]);
     const int hi = SecToTicks(_rangeSec[1]);
-    return lo + Roll(_env, std::max(1, hi - lo + 1));
+    return lo + Roll(_env, Max(1, hi - lo + 1));
 }
 
 bool SubmitFrame_(
@@ -282,7 +282,7 @@ bool SubmitFrame_(
     {
         return false;
     }
-    const AnimFrame& frame = pClip->frames[static_cast<size_t>(std::clamp(_frame, 0, pClip->GetFrameCount() - 1))];
+    const AnimFrame& frame = pClip->frames[static_cast<size_t>(Clamp(_frame, 0, pClip->GetFrameCount() - 1))];
     if (frame.IsEmpty())
     {
         return false;
@@ -507,19 +507,19 @@ void TickChute_(
         return;
     }
     // 낙하 중에도 카메라가 자동 스크롤로 오른쪽으로 간다. 착지 때 화면 밖에 떨어지지 않도록 x 를 착지 시점 예상 화면 안으로 민다
-    const float fallDist = std::max(0.f, _env.ctx.player.feet.y - (view.min.y - c.chuteStartAboveY));
+    const float fallDist = Max(_env.ctx.player.feet.y - (view.min.y - c.chuteStartAboveY), 0.f);
     const float descend  = _env.lib.Get(index).flyingBzk.descendSpeed;
     const float fallSec  = descend > 0.f ? fallDist / descend : 0.f;
     const float scroll   = AgeSec_(_e) >= c.scrollStartSec && !IsScrollPaused_(_e, c) && !IsScrollStopped_(_e, c) ? c.scrollSpeed * fallSec : 0.f;
 
-    const int   spread = std::max(1, static_cast<int>(c.chuteSpreadX));
+    const int   spread = Max(1, static_cast<int>(c.chuteSpreadX));
     const float dx     = static_cast<float>(Roll(_env, 2 * spread + 1) - spread);
     float       x      = view.max.x + scroll - c.chuteRightMarginX + dx;
     const float lo     = view.min.x + scroll + c.chuteEdgeX;
     const float hi     = view.max.x + scroll - c.chuteEdgeX;
     if (lo <= hi)
     {
-        x = std::clamp(x, lo, hi);
+        x = Clamp(x, lo, hi);
     }
     const Vec2  feet = { x, view.min.y - c.chuteStartAboveY };
     SpawnParams params;
@@ -547,7 +547,7 @@ void TickChute_(
 {
     const Vec2  muzzle = World_(_e.body.position, _c.cannonAimOrigin);
     const float dx     = _env.ctx.player.center.x - muzzle.x;
-    const float dy     = std::max(40.f, _env.ctx.player.center.y - muzzle.y);
+    const float dy     = Max(_env.ctx.player.center.y - muzzle.y, 40.f);
     return std::atan2(dx, dy) * kRad2Deg;
 }
 
@@ -571,7 +571,7 @@ void TickChute_(
     int best = 0;
     for (int yaw = 1; yaw <= kYawMax; ++yaw)
     {
-        if (std::abs(YawDeg_(_c, yaw) - _deg) < std::abs(YawDeg_(_c, best) - _deg))
+        if (Abs(YawDeg_(_c, yaw) - _deg) < Abs(YawDeg_(_c, best) - _deg))
         {
             best = yaw;
         }
@@ -598,7 +598,7 @@ void TickChute_(
     int best = 0;
     for (int row = 1; row < kAimRows; ++row)
     {
-        if (std::abs(_c.cannonAimDeg[static_cast<size_t>(row)] - deg) < std::abs(_c.cannonAimDeg[static_cast<size_t>(best)] - deg))
+        if (Abs(_c.cannonAimDeg[static_cast<size_t>(row)] - deg) < Abs(_c.cannonAimDeg[static_cast<size_t>(best)] - deg))
         {
             best = row;
         }
@@ -631,9 +631,9 @@ void TurnCannon_(
     const BigShieeCfg& _c)
 {
     const float fromY = static_cast<float>(GetSlot_(_e, kBigShieeExtCasingY));
-    const float drop  = std::max(0.f, _e.body.position.y + _c.casingGroundDy - fromY);
+    const float drop  = Max(_e.body.position.y + _c.casingGroundDy - fromY, 0.f);
     const float disc  = _c.casingVel.y * _c.casingVel.y + 2.f * _c.casingGravity * drop;
-    return (-_c.casingVel.y + std::sqrt(disc)) / _c.casingGravity;
+    return (-_c.casingVel.y + Sqrt(disc)) / _c.casingGravity;
 }
 
 bool CasingNow_(
@@ -655,10 +655,10 @@ bool CasingNow_(
     {
         return false;
     }
-    const float tFly = std::min(t, tLand);
+    const float tFly = Min(tLand, t);
     _outAt           = { from.x + _c.casingVel.x * tFly, from.y + _c.casingVel.y * tFly + 0.5f * _c.casingGravity * tFly * tFly };
     _outFrame        = static_cast<int>(t * _c.casingFps) % kCasingFrames;
-    _outAlpha        = t <= tLand || _c.casingLingerSec <= 0.f ? 1.f : std::clamp(1.f - (t - tLand) / _c.casingLingerSec, 0.f, 1.f);
+    _outAlpha        = t <= tLand || _c.casingLingerSec <= 0.f ? 1.f : Clamp(1.f - (t - tLand) / _c.casingLingerSec, 0.f, 1.f);
     return true;
 }
 
@@ -669,7 +669,7 @@ void FireMissile_(
     EnemyEnv&       _env)
 {
     const BigShieeCfg& c      = _def.bigShiee;
-    const size_t       row    = static_cast<size_t>(std::clamp(GetSlot_(_e, kBigShieeExtCannonRow), 0, kAimRows - 1));
+    const size_t       row    = static_cast<size_t>(Clamp(GetSlot_(_e, kBigShieeExtCannonRow), 0, kAimRows - 1));
     const int          weapon = _def.FindWeapon("missile");
     const float        sign   = static_cast<float>(_e.facing < 0 ? -1 : 1);
     const Vec2         delta  = { (c.cannonMuzzleX[row] - c.cannonMuzzleX[kAimRows / 2]) * sign, 0.f };
@@ -823,8 +823,8 @@ void Tick_(
         {
             const float remaining = c.driveTargetX - screenX;
             const float prev      = static_cast<float>(GetSlot_(_e, kBigShieeExtSpeedX));
-            speed                 = std::min({ c.driveSpeed, prev + c.driveAccel * kStepSec, std::sqrt(std::max(0.f, 2.f * c.driveAccel * remaining)) });
-            speed                 = std::max(speed, 14.f);
+            speed                 = std::min({ c.driveSpeed, prev + c.driveAccel * kStepSec, Sqrt(Max(2.f * c.driveAccel * remaining, 0.f)) });
+            speed                 = Max(14.f, speed);
             if (remaining <= speed * kStepSec)
             {
                 _e.body.position.x = view.min.x + c.driveTargetX;
@@ -837,7 +837,7 @@ void Tick_(
             }
         }
     }
-    Slot_(_e, kBigShieeExtMoving) = std::abs(speed) > 12.f ? 1 : 0;
+    Slot_(_e, kBigShieeExtMoving) = Abs(speed) > 12.f ? 1 : 0;
     Slot_(_e, kBigShieeExtSpeedX) = static_cast<int>(std::lround(speed));
 
     if (_e.aux % 30 == 0)
@@ -869,7 +869,7 @@ void Tick_(
         {
             const float k                    = Clamp(1.f - ratio / c.lowHpFxBelow, 0.f, 1.f);
             const float sec                  = c.lowHpFxSec[0] + (c.lowHpFxSec[1] - c.lowHpFxSec[0]) * k;
-            Slot_(_e, kBigShieeExtNextDmgFx) = _e.aux + std::max(1, SecToTicks(sec));
+            Slot_(_e, kBigShieeExtNextDmgFx) = _e.aux + Max(1, SecToTicks(sec));
             const float w                    = c.lowHpFxArea[2] - c.lowHpFxArea[0];
             const float h                    = c.lowHpFxArea[3] - c.lowHpFxArea[1];
             const float rx                   = c.lowHpFxArea[0] + w * static_cast<float>(Roll(_env, 1000)) / 1000.f;
@@ -1034,7 +1034,7 @@ void TickDying_(
     }
     if (bWreck)
     {
-        const int interval = std::max(1, SecToTicks(c.wreckSmokeIntervalSec));
+        const int interval = Max(1, SecToTicks(c.wreckSmokeIntervalSec));
         if (_e.deathTicks % interval == 0 && t < c.dyingDoneSec + 1.f)
         {
             const float rx = static_cast<float>(Roll(_env, 440)) - 220.f;
@@ -1044,8 +1044,8 @@ void TickDying_(
         return;
     }
 
-    const float progress = std::clamp(t / c.dyingWreckSec, 0.f, 1.f);
-    const int   interval = std::max(1, static_cast<int>(static_cast<float>(SecToTicks(c.dyingBlastIntervalSec)) * (1.4f - progress)));
+    const float progress = Clamp(t / c.dyingWreckSec, 0.f, 1.f);
+    const int   interval = Max(1, static_cast<int>(static_cast<float>(SecToTicks(c.dyingBlastIntervalSec)) * (1.4f - progress)));
     if (_e.deathTicks % interval == 0)
     {
         const float rx   = static_cast<float>(Roll(_env, 480)) - 260.f;
@@ -1093,7 +1093,7 @@ void SubmitHull_(
     }
     else if (phase == eBigShieePhase::Deploy)
     {
-        const int step = (age - GetSlot_(_e, kBigShieeExtLidStart)) / std::max(1, _c.hullStepTicks);
+        const int step = (age - GetSlot_(_e, kBigShieeExtLidStart)) / Max(1, _c.hullStepTicks);
         clip           = step <= 0 ? "Boss_Hull_D1" : (step == 1 ? "Boss_Hull_D3" : (step == 2 ? "Boss_Hull_D6" : (step == 3 ? "Boss_Hull_D9" : "Boss_Hull_Open")));
         ticks          = step >= 4 ? age : 0;
     }
@@ -1129,7 +1129,7 @@ void SubmitTurret_(
             (void)SubmitFrame_(_render, names.turn, pos, origin, part.depth, part.sort - _i, flash);
             break;
         case eBigShieeTurretMode::Shot:
-            (void)SubmitNamedPart(_render, names.shot[static_cast<size_t>(std::min(2, pos / kTurnMid))], origin, ticks, false, part.sort, part.depth, false, flash);
+            (void)SubmitNamedPart(_render, names.shot[static_cast<size_t>(Min(2, pos / kTurnMid))], origin, ticks, false, part.sort, part.depth, false, flash);
             break;
         default:
             if (pos % kTurnMid != 0)
@@ -1167,8 +1167,8 @@ void SubmitCannon_(
 {
     const eBigShieeCannonMode mode   = GetCannonMode_(_e);
     const int                 ticks  = GetSlot_(_e, kBigShieeExtCannonTicks);
-    const int                 row    = std::clamp(GetSlot_(_e, kBigShieeExtCannonRow), 0, kAimRows - 1);
-    const int                 yaw    = std::clamp(GetSlot_(_e, kBigShieeExtCannonYaw), 0, kYawMax);
+    const int                 row    = Clamp(GetSlot_(_e, kBigShieeExtCannonRow), 0, kAimRows - 1);
+    const int                 yaw    = Clamp(GetSlot_(_e, kBigShieeExtCannonYaw), 0, kYawMax);
     const Vec2                origin = World_(_feet, _c.cannonAnchor);
     const String              shot   = "Boss_Cannon_Shot" + std::to_string(row + 1);
     switch (mode)
@@ -1382,7 +1382,7 @@ void ParseBigShieeCfg(
     (void)_r.NumArray("volleyIntervalSec", c.volleyIntervalSec);
     c.firstVolleySec   = _r.Num("firstVolleySec", c.firstVolleySec);
     c.prepTicks        = _r.Int("prepTicks", c.prepTicks);
-    c.turnFrameTicks   = std::max(1, _r.Int("turnFrameTicks", c.turnFrameTicks));
+    c.turnFrameTicks   = Max(1, _r.Int("turnFrameTicks", c.turnFrameTicks));
     c.shotTicks        = _r.Int("shotTicks", c.shotTicks);
     c.fireTick         = _r.Int("fireTick", c.fireTick);
     c.pairGapTicks     = _r.Int("pairGapTicks", c.pairGapTicks);
@@ -1397,10 +1397,10 @@ void ParseBigShieeCfg(
     c.firstMissileSec      = _r.Num("firstMissileSec", c.firstMissileSec);
     c.missileIntervalSec   = _r.Num("missileIntervalSec", c.missileIntervalSec);
     c.missileFireTick      = _r.Int("missileFireTick", c.missileFireTick);
-    c.hullStepTicks        = std::max(1, _r.Int("hullStepTicks", c.hullStepTicks));
+    c.hullStepTicks        = Max(1, _r.Int("hullStepTicks", c.hullStepTicks));
     c.cannonDeployDelaySec = _r.Num("cannonDeployDelaySec", c.cannonDeployDelaySec);
     c.cannonDeployTicks    = _r.Int("cannonDeployTicks", c.cannonDeployTicks);
-    c.cannonTurnTicks      = std::max(1, _r.Int("cannonTurnTicks", c.cannonTurnTicks));
+    c.cannonTurnTicks      = Max(1, _r.Int("cannonTurnTicks", c.cannonTurnTicks));
     (void)_r.NumArray("cannonAimDeg", c.cannonAimDeg);
     (void)_r.NumArray("cannonMuzzleX", c.cannonMuzzleX);
 

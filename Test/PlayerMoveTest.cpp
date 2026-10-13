@@ -411,7 +411,7 @@ namespace
         {
             _sim.Release(eAction::Jump);
         }
-        minY = std::min(minY, _sim.Y());
+        minY = Min(_sim.Y(), minY);
         ++ticks;
     } while (!_sim.Player().IsGrounded() && ticks < 300);
     return { groundY - minY, ticks };
@@ -621,7 +621,7 @@ TEST(PlayerJump, HeadBumpsCeilingAndFallsBack)
     for (int i = 0; i < 80; ++i)
     {
         sim.Step();
-        minHeadY = std::min(minHeadY, sim.Y() - sim.Tune().body.standSize.y);
+        minHeadY = Min(sim.Y() - sim.Tune().body.standSize.y, minHeadY);
     }
     EXPECT_GE(minHeadY, 300.f);
     EXPECT_TRUE(sim.Player().IsGrounded());

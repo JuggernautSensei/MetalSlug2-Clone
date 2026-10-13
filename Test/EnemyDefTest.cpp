@@ -358,8 +358,8 @@ TEST(EnemyDefs, ClipFrameCountAndTimingMatchTheAnimation)
             const AnimClip* pLeft  = anims.FindClip(ResolveSideText_(named.clip.name.c_str(), true));
             const AnimClip* pRight = anims.FindClip(ResolveSideText_(named.clip.name.c_str(), false));
             ASSERT_NE(pLeft, nullptr) << named.clip.name.c_str();
-            const bool bLeftOk  = pLeft->GetFrameCount() == named.clip.frames && std::abs(pLeft->frameDuration - named.clip.frameSec) < 0.002f;
-            const bool bRightOk = pRight && pRight->GetFrameCount() == named.clip.frames && std::abs(pRight->frameDuration - named.clip.frameSec) < 0.002f;
+            const bool bLeftOk  = pLeft->GetFrameCount() == named.clip.frames && Abs(pLeft->frameDuration - named.clip.frameSec) < 0.002f;
+            const bool bRightOk = pRight && pRight->GetFrameCount() == named.clip.frames && Abs(pRight->frameDuration - named.clip.frameSec) < 0.002f;
             EXPECT_TRUE(bLeftOk || bRightOk) << def.name.c_str() << "." << named.name.c_str() << " frames " << named.clip.frames << " sec " << named.clip.frameSec;
         }
     }

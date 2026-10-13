@@ -1013,7 +1013,7 @@ bool EnemyDefParser::ParseEnemy_(
         Fail_(name, "hp", "1 이상이어야 합니다");
         return false;
     }
-    if (ttk > 0.f && std::abs(static_cast<float>(def.hp) - ttk * m_lib.m_globals.dpsRef) > 0.05f * static_cast<float>(def.hp))
+    if (ttk > 0.f && Abs(static_cast<float>(def.hp) - ttk * m_lib.m_globals.dpsRef) > 0.05f * static_cast<float>(def.hp))
     {
         SLUG_LOG_WARN("{}: hp({}) 가 ttk({}) x dpsRef({}) 와 5% 이상 다릅니다", name, def.hp, ttk, m_lib.m_globals.dpsRef);
     }

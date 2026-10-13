@@ -55,21 +55,21 @@ int MissionRankBonus(
 int MissionBonusScore(
     const int _rescued)
 {
-    const int rescued = std::max(0, _rescued);
+    const int rescued = Max(0, _rescued);
     return rescued * kPowBonusScore + MissionRankBonus(rescued);
 }
 
 int MissionResultsTicks(
     const int _rescued)
 {
-    return kResultsFadeTicks + std::max(0, _rescued) * kTicksPerPow + kRankDelayTicks + kRankHoldTicks;
+    return kResultsFadeTicks + Max(0, _rescued) * kTicksPerPow + kRankDelayTicks + kRankHoldTicks;
 }
 
 MissionResultsView MakeMissionResultsView(
     const int _rescued,
     const int _localTicks)
 {
-    const int          rescued = std::max(0, _rescued);
+    const int          rescued = Max(0, _rescued);
     MissionResultsView view;
     if (_localTicks < 0 || _localTicks >= MissionResultsTicks(rescued))
     {
@@ -77,13 +77,13 @@ MissionResultsView MakeMissionResultsView(
     }
 
     view.bBoxVisible = true;
-    view.boxAlpha    = static_cast<uint8_t>(std::min(255, _localTicks * 255 / kResultsFadeTicks));
+    view.boxAlpha    = static_cast<uint8_t>(Min(255, _localTicks * 255 / kResultsFadeTicks));
 
     const int countEnd = kResultsFadeTicks + rescued * kTicksPerPow;
     const int rankAt   = countEnd + kRankDelayTicks;
     if (_localTicks >= kResultsFadeTicks)
     {
-        view.rescued = std::min(rescued, (_localTicks - kResultsFadeTicks) / kTicksPerPow + 1);
+        view.rescued = Min(rescued, (_localTicks - kResultsFadeTicks) / kTicksPerPow + 1);
     }
     view.bCounting  = _localTicks >= kResultsFadeTicks && _localTicks < countEnd;
     view.bonusScore = _localTicks < rankAt ? view.rescued * kPowBonusScore : MissionBonusScore(rescued);
@@ -104,7 +104,7 @@ ScreenFlowConfig MakeMissionCompleteFlowConfig(
     config.sfx            = kMissionComplete;
     config.bgmFadeSeconds = 0.f;
     config.delayTicks     = 60;
-    config.rescuedCount   = std::max(0, _rescued);
+    config.rescuedCount   = Max(0, _rescued);
     config.resultsTicks   = MissionResultsTicks(config.rescuedCount);
     config.bannerTicks    = 210;
     config.fadeTicks      = 90;
@@ -176,7 +176,7 @@ GameOverArtView ScreenFlow::GetArtView() const
         const int localTicks = m_elapsed - (m_config.delayTicks + m_config.resultsTicks);
         if (m_config.artFadeInTicks > 0)
         {
-            view.alpha = static_cast<uint8_t>(std::clamp(localTicks * 255 / m_config.artFadeInTicks, 0, 255));
+            view.alpha = static_cast<uint8_t>(Clamp(localTicks * 255 / m_config.artFadeInTicks, 0, 255));
         }
     }
     return view;
@@ -198,9 +198,9 @@ void ScreenFlow::BeginBanner_(
     m_phase = eFlowPhase::Banner;
 
     BannerSpec spec   = MakeBannerSpec(m_config.bannerText, static_cast<float>(m_config.bannerTicks) / 60.f);
-    spec.fadeInTicks  = std::min(18, m_config.bannerTicks / 4);
+    spec.fadeInTicks  = Min(18, m_config.bannerTicks / 4);
     spec.fadeOutTicks = spec.fadeInTicks;
-    spec.holdTicks    = std::max(0, m_config.bannerTicks - 2 * spec.fadeInTicks);
+    spec.holdTicks    = Max(0, m_config.bannerTicks - 2 * spec.fadeInTicks);
     spec.color        = m_config.bannerColor;
     _ui.GetBanner().Show(std::move(spec));
 

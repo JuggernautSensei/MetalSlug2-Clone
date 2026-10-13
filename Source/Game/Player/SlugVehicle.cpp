@@ -363,14 +363,14 @@ void SlugVehicle::Move_(
         const float rate       = move.runSpeed / static_cast<float>(Max(1, bReversing ? move.brakeTicks : move.accelTicks)) * kStepSec * 60.f;
         const float diff       = target - vx;
         vx += Clamp(diff, -rate, rate);
-        m_accelDir = std::abs(target) > std::abs(vx) + 0.01f ? 1 : (std::abs(target) < std::abs(vx) - 0.01f ? -1 : 0);
+        m_accelDir = Abs(target) > Abs(vx) + 0.01f ? 1 : (Abs(target) < Abs(vx) - 0.01f ? -1 : 0);
     }
     else
     {
         vx         = target;
         m_accelDir = 0;
     }
-    m_accelPhase = Clamp(std::abs(vx) / Max(1.f, move.runSpeed) * 3.99f, 0.f, 3.99f);
+    m_accelPhase = Clamp(Abs(vx) / Max(1.f, move.runSpeed) * 3.99f, 0.f, 3.99f);
 
     const bool bCoyote = m_bCoyote && m_airTicks >= 1 && m_airTicks <= move.coyoteTicks;
     if (m_mode == eSlugMode::Driven && _command.bJumpBuffered && (bGrounded || bCoyote))
@@ -408,9 +408,9 @@ void SlugVehicle::Move_(
         m_landTicks = 0;
     }
 
-    if (std::abs(vx) > 1.f)
+    if (Abs(vx) > 1.f)
     {
-        m_driveFrame += std::abs(vx) / Max(1.f, move.runSpeed) * static_cast<float>(GetSlugClipInfo(eSlugClip::Drive).fps) / 60.f;
+        m_driveFrame += Abs(vx) / Max(1.f, move.runSpeed) * static_cast<float>(GetSlugClipInfo(eSlugClip::Drive).fps) / 60.f;
         const float n = static_cast<float>(GetSlugClipInfo(eSlugClip::Drive).frames);
         if (m_driveFrame >= n)
         {
@@ -441,7 +441,7 @@ void SlugVehicle::UpdateVulcan_(
 
     const float step = m_tuning.vulcan.sweepDegPerSec / 60.f;
     const float diff = WrapDegree_(target - m_vulcanAngle);
-    if (std::abs(diff) <= step)
+    if (Abs(diff) <= step)
     {
         m_vulcanAngle = target;
     }
@@ -576,7 +576,7 @@ void SlugVehicle::UpdateCrush_(
     {
         return;
     }
-    const bool bActive = m_body.bGrounded && std::abs(m_body.velocity.x) >= crush.minSpeed && m_moveX != 0 && m_crouchLevel < kCrouchLevels / 2;
+    const bool bActive = m_body.bGrounded && Abs(m_body.velocity.x) >= crush.minSpeed && m_moveX != 0 && m_crouchLevel < kCrouchLevels / 2;
     if (!bActive)
     {
         ReleaseCrushId_(_ctx);
@@ -810,7 +810,7 @@ void SlugVehicle::UpdatePose_()
     }
     if (m_crouchLevel >= kCrouchLevels)
     {
-        const bool bMoving = std::abs(m_body.velocity.x) > 1.f;
+        const bool bMoving = Abs(m_body.velocity.x) > 1.f;
         m_pose             = bMoving ? eSlugPose::LowDrive : eSlugPose::LowIdle;
         m_poseFrame        = bMoving ? static_cast<int>(m_driveFrame) : (m_tick / 10) % 3;
         return;
@@ -824,7 +824,7 @@ void SlugVehicle::UpdatePose_()
         return;
     }
 
-    const float speed = std::abs(m_body.velocity.x);
+    const float speed = Abs(m_body.velocity.x);
     if (speed > 1.f)
     {
         if (m_accelDir > 0 && speed < m_tuning.move.runSpeed - 1.f)

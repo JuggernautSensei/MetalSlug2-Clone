@@ -260,7 +260,7 @@ Vec2 GroundMap::EstimateNormal(
     const int _searchRange) const
 {
     const float slope  = EstimateSlope(_x, _y, _halfWidth, _searchRange);
-    const float invLen = 1.f / std::sqrt(slope * slope + 1.f);
+    const float invLen = 1.f / Sqrt(slope * slope + 1.f);
     return { slope * invLen, -invLen };
 }
 

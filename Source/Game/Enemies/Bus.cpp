@@ -267,7 +267,7 @@ void SubmitDebris_(
         if (y > groundY)
         {
             const float disc = d.velocity.y * d.velocity.y + 2.f * kDebrisGravity * (groundY - start.y);
-            tFly             = disc > 0.f ? (-d.velocity.y + std::sqrt(disc)) / kDebrisGravity : 0.f;
+            tFly             = disc > 0.f ? (-d.velocity.y + Sqrt(disc)) / kDebrisGravity : 0.f;
             y                = groundY;
         }
         const Vec2 at    = { start.x + d.velocity.x * tFly, y };
@@ -294,7 +294,7 @@ void SubmitDamaged_(
     if (const AnimClip* pBack = _render.anims.FindClip(back); pBack != nullptr && !pBack->frames.empty() && !pBack->frames[0].IsEmpty())
     {
         AnimFrame cover = pBack->frames[0];
-        cover.w         = std::max(1, std::min(cover.w, cover.pivotX + static_cast<int>(_c.coverMaxX)));
+        cover.w         = Max(1, Min(cover.w, cover.pivotX + static_cast<int>(_c.coverMaxX)));
         SpriteDrawOptions options;
         options.flashAmount = _render.flash;
         _render.sprites.Submit(_c.partCover.depth + _render.zOffset, _c.partCover.sort, cover, _feet, options);
@@ -343,8 +343,8 @@ void SubmitLive_(
                 SubmitPart_(_render, c.partStairs, "Bus_StairsRail", feet, stairsT - kFlyTicks - kLandTicks, false);
             }
         }
-        SubmitPart_(_render, c.partBody, "Bus_OpenBody", feet, std::min(openT, kPersist), false);
-        SubmitPart_(_render, c.partCover, "Bus_OpenTop", feet, std::min(openT, kPersist), false);
+        SubmitPart_(_render, c.partBody, "Bus_OpenBody", feet, Min(openT, kPersist), false);
+        SubmitPart_(_render, c.partCover, "Bus_OpenTop", feet, Min(openT, kPersist), false);
         return;
     }
 

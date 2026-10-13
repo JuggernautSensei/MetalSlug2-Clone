@@ -10,7 +10,7 @@ FilePath EnemyDefsPath()
 bool OnGround(
     const Enemy* _pEnemy)
 {
-    return _pEnemy && _pEnemy->bGrounded && std::abs(_pEnemy->body.position.y - 378.f) < 0.5f;
+    return _pEnemy && _pEnemy->bGrounded && Abs(_pEnemy->body.position.y - 378.f) < 0.5f;
 }
 
 bool LoadEnemyLib(

@@ -616,7 +616,7 @@ void AnimEditor::DrawDetail_()
     const int           clipIndex  = m_selected;
     const AnimEditClip& clip       = m_doc.GetClips()[static_cast<size_t>(clipIndex)];
     const int           frameCount = static_cast<int>(clip.frames.size());
-    m_frame                        = std::clamp(m_frame, 0, std::max(frameCount - 1, 0));
+    m_frame                        = Clamp(m_frame, 0, Max(frameCount - 1, 0));
 
     ImGui::Separator();
     ImGui::TextUnformatted(clip.name.c_str());
@@ -629,7 +629,7 @@ void AnimEditor::DrawDetail_()
     ImGui::SameLine();
     ImGui::SetNextItemWidth(110.f);
     int loopStart = clip.loopStart;
-    if (ImGui::InputInt("loopStart", &loopStart) && loopStart >= 0 && loopStart < std::max(frameCount, 1))
+    if (ImGui::InputInt("loopStart", &loopStart) && loopStart >= 0 && loopStart < Max(frameCount, 1))
     {
         m_doc.SetLoopStart(clipIndex, loopStart);
     }
@@ -668,7 +668,7 @@ void AnimEditor::DrawDetail_()
     if (m_bPlaying && frameCount > 0)
     {
         m_playTimer += ImGui::GetIO().DeltaTime;
-        const float step = static_cast<float>(std::max(clip.frameDuration, 0.001));
+        const float step = static_cast<float>(Max(0.001, clip.frameDuration));
         while (m_playTimer >= step)
         {
             m_playTimer -= step;
@@ -678,7 +678,7 @@ void AnimEditor::DrawDetail_()
             }
             else if (clip.bLoop)
             {
-                m_frame = std::clamp(clip.loopStart, 0, frameCount - 1);
+                m_frame = Clamp(clip.loopStart, 0, frameCount - 1);
             }
             else
             {
@@ -764,11 +764,11 @@ void AnimEditor::DrawCanvas_(
         const float wheel = ImGui::GetIO().MouseWheel;
         if (wheel > 0.f)
         {
-            m_zoom = std::min(m_zoom + 1, 8);
+            m_zoom = Min(m_zoom + 1, 8);
         }
         else if (wheel < 0.f)
         {
-            m_zoom = std::max(m_zoom - 1, 1);
+            m_zoom = Max(m_zoom - 1, 1);
         }
     }
 
@@ -914,7 +914,7 @@ void AnimDocument::ApplyClipTo(
     AnimClip clip;
     clip.name          = src.name;
     clip.bLoop         = src.bLoop;
-    clip.loopStart     = std::clamp(src.loopStart, 0, static_cast<int>(src.frames.size()) - 1);
+    clip.loopStart     = Clamp(src.loopStart, 0, static_cast<int>(src.frames.size()) - 1);
     clip.frameDuration = static_cast<float>(src.frameDuration);
     clip.cellW         = src.cellW;
     clip.cellH         = src.cellH;

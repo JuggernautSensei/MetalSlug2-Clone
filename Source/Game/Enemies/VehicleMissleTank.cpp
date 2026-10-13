@@ -69,7 +69,7 @@ void Tick_(
 {
     const MissleTankCfg& c = _def.missleTank;
     _e.body.velocity.x     = 0.f;
-    const float dx         = std::abs(DxToPlayer(_e, _env));
+    const float dx         = Abs(DxToPlayer(_e, _env));
 
     switch (static_cast<eMissleTankState>(_e.state))
     {

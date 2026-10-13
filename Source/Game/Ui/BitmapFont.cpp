@@ -43,7 +43,7 @@ TextLayout LayoutText(
     const int        _y,
     const TextStyle& _style)
 {
-    const int scale   = std::max(1, _style.scale);
+    const int scale   = Max(1, _style.scale);
     const int cell    = kGlyphSize * scale;
     const int advance = cell + _style.letterSpacing;
     const int gap     = _style.lineGap * scale;
@@ -84,7 +84,7 @@ TextLayout LayoutText(
             layout.quads.push_back(quad);
         }
 
-        layout.width = std::max(layout.width, width);
+        layout.width = Max(layout.width, width);
         ++lineIndex;
         lineStart = lineEnd + 1;
     }
@@ -159,7 +159,7 @@ AnimFrame BitmapFont::GetTimeDigitFrame(
     AnimFrame     frame = m_timeStrip;
     frame.x             = m_timeStrip.x + _digit * kCell;
     frame.w             = kCell;
-    frame.h             = std::min(kCell, m_timeStrip.h);
+    frame.h             = Min(kCell, m_timeStrip.h);
     frame.pivotX        = 0;
     frame.pivotY        = 0;
     return frame;
@@ -179,7 +179,7 @@ void BitmapFont::DrawText(
     options.tint.a = _style.alpha;
 
     SDL_Renderer* pNative = _renderer.GetNative();
-    const int     scale   = std::max(1, _style.scale);
+    const int     scale   = Max(1, _style.scale);
 
     for (const GlyphQuad& quad: layout.quads)
     {

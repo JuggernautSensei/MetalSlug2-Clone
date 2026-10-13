@@ -75,7 +75,7 @@ TEST(Camera, FollowConvergesToTargetWithinDeadzone)
     }
 
     const CameraTuning& tuning = camera.GetTuning();
-    EXPECT_LE(std::abs(camera.GetViewCenter().x - 1500.f), tuning.deadzoneHalf.x + 0.01f);
+    EXPECT_LE(Abs(camera.GetViewCenter().x - 1500.f), tuning.deadzoneHalf.x + 0.01f);
     const Vec2 settled = camera.GetPosition();
     for (int i = 0; i < 120; ++i)
     {
@@ -177,7 +177,7 @@ TEST(Camera, ForwardOnlyNeverMovesBackward)
 
         const float x = camera.GetPosition().x;
         ASSERT_GE(x, maxX) << "tick " << i;
-        maxX = std::max(maxX, x);
+        maxX = Max(x, maxX);
     }
     EXPECT_GT(maxX, 700.f);
 }
@@ -444,16 +444,16 @@ TEST(CameraRegression, RealStageBotRunHasNoJerkOverFirst5000Ticks)
         const float dyI = pix.y - prevI.y;
         if (i >= 120)
         {
-            maxStep     = Max(maxStep, Max(std::abs(dx), std::abs(dy)));
-            maxAccel    = Max(maxAccel, std::abs(dx - prevDx));
-            maxAccelY   = Max(maxAccelY, std::abs(dy - prevDy));
-            maxIntStep  = Max(maxIntStep, Max(std::abs(dxI), std::abs(dyI)));
-            maxIntAccel = Max(maxIntAccel, std::abs(dxI - prevDxI));
-            EXPECT_LE(std::abs(dx), 12.f) << "tick " << i;
-            EXPECT_LE(std::abs(dy), 12.f) << "tick " << i;
-            EXPECT_LE(std::abs(dx - prevDx), 1.5f) << "tick " << i;
-            EXPECT_LE(std::abs(dy - prevDy), 1.5f) << "tick " << i;
-            EXPECT_LE(std::abs(dxI), 12.f) << "tick " << i;
+            maxStep     = Max(maxStep, Max(Abs(dx), Abs(dy)));
+            maxAccel    = Max(maxAccel, Abs(dx - prevDx));
+            maxAccelY   = Max(maxAccelY, Abs(dy - prevDy));
+            maxIntStep  = Max(maxIntStep, Max(Abs(dxI), Abs(dyI)));
+            maxIntAccel = Max(maxIntAccel, Abs(dxI - prevDxI));
+            EXPECT_LE(Abs(dx), 12.f) << "tick " << i;
+            EXPECT_LE(Abs(dy), 12.f) << "tick " << i;
+            EXPECT_LE(Abs(dx - prevDx), 1.5f) << "tick " << i;
+            EXPECT_LE(Abs(dy - prevDy), 1.5f) << "tick " << i;
+            EXPECT_LE(Abs(dxI), 12.f) << "tick " << i;
         }
         prevDx  = dx;
         prevDy  = dy;
@@ -567,9 +567,9 @@ TEST(Camera, UnlockAfterLockGlidesWithCappedStepAndSettlesInTime)
     {
         camera.Update();
         const float center = camera.GetViewCenter().x;
-        maxStep            = Max(maxStep, std::abs(center - prev));
+        maxStep            = Max(maxStep, Abs(center - prev));
         prev               = center;
-        if (ticks < 0 && std::abs(goal - center) < 1.f)
+        if (ticks < 0 && Abs(goal - center) < 1.f)
         {
             ticks = i + 1;
         }
@@ -593,7 +593,7 @@ TEST(Camera, SetBoundsChangeMovesCameraAtMost2_5PerTick)
     {
         camera.Update();
         const Vec2 center = camera.GetViewCenter();
-        maxStep           = Max(maxStep, Max(std::abs(center.x - prev.x), std::abs(center.y - prev.y)));
+        maxStep           = Max(maxStep, Max(Abs(center.x - prev.x), Abs(center.y - prev.y)));
         prev              = center;
     }
     EXPECT_LE(maxStep, 2.5f);
@@ -612,7 +612,7 @@ TEST(Camera, LockWhileCameraOutsideGlidesInInsteadOfJumping)
     for (int i = 0; i < 300; ++i)
     {
         camera.Update();
-        maxStep = Max(maxStep, std::abs(camera.GetViewCenter().x - prev));
+        maxStep = Max(maxStep, Abs(camera.GetViewCenter().x - prev));
         prev    = camera.GetViewCenter().x;
     }
     EXPECT_LE(maxStep, 12.f);

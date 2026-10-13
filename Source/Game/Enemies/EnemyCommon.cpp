@@ -50,7 +50,7 @@ float DistToPlayer(
 {
     const float dx = DxToPlayer(_e, _env);
     const float dy = DyToPlayer(_e, _env);
-    return std::sqrt(dx * dx + dy * dy);
+    return Sqrt(dx * dx + dy * dy);
 }
 
 int SideToPlayer(
@@ -58,7 +58,7 @@ int SideToPlayer(
     const EnemyEnv& _env)
 {
     const float dx = DxToPlayer(_e, _env);
-    if (std::abs(dx) <= kFaceDeadzone)
+    if (Abs(dx) <= kFaceDeadzone)
     {
         return _e.facing;
     }
@@ -125,11 +125,11 @@ bool ClimbStep(
         target = _e.climbEnd;
     }
     const Vec2  delta = { target.x - _e.body.position.x, target.y - _e.body.position.y };
-    const float dist  = std::sqrt(delta.x * delta.x + delta.y * delta.y);
+    const float dist  = Sqrt(delta.x * delta.x + delta.y * delta.y);
     const float step  = _def.physics.speed * kStepSec;
 
     _e.body.velocity = { 0.f, 0.f };
-    if (std::abs(delta.x) > 0.01f)
+    if (Abs(delta.x) > 0.01f)
     {
         _e.facing = delta.x < 0.f ? -1 : 1;
     }
@@ -164,7 +164,7 @@ constexpr float kRoofLeaveZone  = 30.f;
 bool OnRoof(
     const Enemy& _e)
 {
-    return _e.roofSpan.y > _e.roofSpan.x && _e.bGrounded && std::abs(_e.body.position.y - _e.climbEnd.y) < 2.f;
+    return _e.roofSpan.y > _e.roofSpan.x && _e.bGrounded && Abs(_e.body.position.y - _e.climbEnd.y) < 2.f;
 }
 
 bool AtRoofEdge(
@@ -378,13 +378,13 @@ bool FireWeapon(
     if (weapon.tiltThreshold > 0.f)
     {
         const float dy = _env.ctx.player.center.y - muzzle.y;
-        if (std::abs(dy) > weapon.tiltThreshold)
+        if (Abs(dy) > weapon.tiltThreshold)
         {
             dir.y += dy > 0.f ? weapon.tiltDy : -weapon.tiltDy;
         }
     }
     {
-        const float length = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+        const float length = Sqrt(dir.x * dir.x + dir.y * dir.y);
         if (length > 0.0001f)
         {
             dir = { dir.x / length, dir.y / length };
@@ -441,14 +441,14 @@ bool FireWeapon(
         const float ty   = _env.ctx.player.center.y;
         const float dy   = ty - muzzle.y;
         const float disc = vy0 * vy0 + 2.f * g * dy;
-        float       t    = g > 0.f ? (disc >= 0.f ? (-vy0 + std::sqrt(disc)) / g : -vy0 / g) : 1.f;
+        float       t    = g > 0.f ? (disc >= 0.f ? (-vy0 + Sqrt(disc)) / g : -vy0 / g) : 1.f;
         if (t < 0.1f)
         {
             t = 0.1f;
         }
         const float dx   = tx - muzzle.x;
-        const float sign = std::abs(dx) < 1.f ? facing : (dx < 0.f ? -1.f : 1.f);
-        const float vx   = Clamp(std::abs(dx) / t, weapon.arcMinVx, weapon.arcMaxVx);
+        const float sign = Abs(dx) < 1.f ? facing : (dx < 0.f ? -1.f : 1.f);
+        const float vx   = Clamp(Abs(dx) / t, weapon.arcMinVx, weapon.arcMaxVx);
         spawn.velocity   = { vx * sign, vy0 };
     }
 
@@ -697,7 +697,7 @@ bool SubmitNamedPart(
     const bool            _bFlipX,
     const float           _partFlash)
 {
-    const float flash = std::max(_render.flash, _partFlash);
+    const float flash = Max(_partFlash, _render.flash);
     if (const AnimClip* pClip = _render.anims.FindClip(_name))
     {
         if (pClip->frames.empty())
@@ -708,10 +708,10 @@ bool SubmitNamedPart(
         int           index = 0;
         if (units > 0)
         {
-            index = static_cast<int>((static_cast<int64_t>(std::max(0, _ticks)) * kAnimUnitsPerTick) / units);
+            index = static_cast<int>((static_cast<int64_t>(Max(0, _ticks)) * kAnimUnitsPerTick) / units);
         }
         const int count        = pClip->GetFrameCount();
-        index                  = _bLoop ? index % count : std::min(index, count - 1);
+        index                  = _bLoop ? index % count : Min(index, count - 1);
         const AnimFrame& frame = pClip->frames[static_cast<size_t>(index)];
         if (frame.IsEmpty())
         {

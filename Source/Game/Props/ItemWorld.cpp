@@ -189,7 +189,7 @@ void ItemWorld::Tick(
                 item.rollVx          = 0.f;
             }
             item.body.velocity.x -= item.body.velocity.x * tuning.rollFrictionPerSec * _dt;
-            if (std::abs(item.body.velocity.x) < tuning.rollStopSpeed)
+            if (Abs(item.body.velocity.x) < tuning.rollStopSpeed)
             {
                 item.body.velocity.x = 0.f;
             }
@@ -206,7 +206,7 @@ void ItemWorld::Tick(
             // 공중에서는 일정하게 돈다. 바닥에서는 수평 속도에 비례해 느려지고 정지하면 멈춘다
             const float speedX = item.rollVx != 0.f ? item.rollVx : item.body.velocity.x;
             item.spinScale     = item.body.bGrounded
-                                   ? std::clamp(std::abs(speedX) / tuning.rollSpinRefSpeed, 0.f, 1.f)
+                                   ? Clamp(Abs(speedX) / tuning.rollSpinRefSpeed, 0.f, 1.f)
                                    : 1.f;
         }
     }

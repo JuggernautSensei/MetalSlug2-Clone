@@ -64,7 +64,7 @@ bool UiSystem::DrawSprite(
         return false;
     }
 
-    const int scale = std::max(1, _scale);
+    const int scale = Max(1, _scale);
     const int w     = pInfo->frame.w * scale;
     const int h     = pInfo->frame.h * scale;
 
@@ -152,8 +152,8 @@ void UiSystem::DrawBanner()
     }
     lines.push_back(current);
 
-    const int num  = std::max(1, m_layout.missionGlyphNum);
-    const int den  = std::max(1, m_layout.missionGlyphDen);
+    const int num  = Max(1, m_layout.missionGlyphNum);
+    const int den  = Max(1, m_layout.missionGlyphDen);
     RGBA      tint = { 255, 255, 255, 255 };
     if (spec.color == eFontColor::Red)
     {
@@ -229,7 +229,7 @@ void UiSystem::DrawMissionResults() const
     m_font.DrawText(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), cx, m_layout.resultsPlayerY - kGlyphSize / 2, "1P", yellow);
 
     ARRAY<char, 8> countBuf = {};
-    std::snprintf(countBuf.data(), countBuf.size(), "%02d", std::clamp(m_results.rescued, 0, 99));
+    std::snprintf(countBuf.data(), countBuf.size(), "%02d", Clamp(m_results.rescued, 0, 99));
     m_font.DrawTimeDigits(SpriteBatch::GetSingleton(), cx, m_layout.resultsCountTopY, countBuf.data(), a);
     if (m_results.bCounting)
     {
@@ -239,7 +239,7 @@ void UiSystem::DrawMissionResults() const
     }
 
     ARRAY<char, 16> scoreBuf = {};
-    std::snprintf(scoreBuf.data(), scoreBuf.size(), "%d", std::clamp(m_results.bonusScore, 0, 9'999'999));
+    std::snprintf(scoreBuf.data(), scoreBuf.size(), "%d", Clamp(m_results.bonusScore, 0, 9'999'999));
     m_font.DrawTimeDigits(SpriteBatch::GetSingleton(), cx, m_layout.resultsScoreTopY, scoreBuf.data(), a);
 
     if (m_results.bRankVisible)
@@ -273,7 +273,7 @@ void UiSystem::DrawGameOverArt_() const
     // 화면을 덮도록 비율을 유지해 확대하고 가운데를 기준으로 잘라 그린다
     const float screenW = static_cast<float>(m_layout.screenW);
     const float screenH = static_cast<float>(m_layout.screenH);
-    const float scale   = std::max(screenW / static_cast<float>(pInfo->frame.w), screenH / static_cast<float>(pInfo->frame.h));
+    const float scale   = Max(screenH / static_cast<float>(pInfo->frame.h), screenW / static_cast<float>(pInfo->frame.w));
     const int   w       = static_cast<int>(static_cast<float>(pInfo->frame.w) * scale);
     const int   h       = static_cast<int>(static_cast<float>(pInfo->frame.h) * scale);
 

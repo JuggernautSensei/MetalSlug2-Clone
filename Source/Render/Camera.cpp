@@ -31,7 +31,7 @@ namespace
 [[nodiscard]] float BrakeSpeed_(
     const float _gap)
 {
-    return (-kGlideAccel + std::sqrt(kGlideAccel * kGlideAccel + 8.f * kGlideAccel * _gap)) * 0.5f;
+    return (-kGlideAccel + Sqrt(kGlideAccel * kGlideAccel + 8.f * kGlideAccel * _gap)) * 0.5f;
 }
 
 // 한 축의 이동(거리 _dist, 시작 속도 _v0 px/틱)을 가속도 kGlideAccel·속도 kMaxStep 상한 안에서 끝내는 최소 틱 수
@@ -40,9 +40,9 @@ namespace
     const float _dist,
     const float _v0)
 {
-    const float d      = std::abs(_dist);
-    const float v      = std::abs(_v0);
-    const float tAccel = (4.f * v + std::sqrt(16.f * v * v + 24.f * kGlideAccel * d)) / (2.f * kGlideAccel);
+    const float d      = Abs(_dist);
+    const float v      = Abs(_v0);
+    const float tAccel = (4.f * v + Sqrt(16.f * v * v + 24.f * kGlideAccel * d)) / (2.f * kGlideAccel);
     const float tVel   = 1.5f * d / Max(1.f, kMaxStep - v);
     return static_cast<int>(std::ceil(Max(tAccel, tVel)));
 }
@@ -72,7 +72,7 @@ void SmoothDamp_(
         _velocity = 0.f;
     }
 
-    if (std::abs(out - _target) < 0.001f && std::abs(_velocity) < 0.01f)
+    if (Abs(out - _target) < 0.001f && Abs(_velocity) < 0.01f)
     {
         out       = _target;
         _velocity = 0.f;
@@ -139,8 +139,8 @@ void Camera::Lock(
     }
     const Vec2 goal = ClampCenter_(m_center);
     // 움직이던 카메라는 멈추지 않고 감속 이동으로 넘긴다 (순간 정지 = 튐). 정지 상태의 반올림 수준 차이만 순간 보정한다.
-    const bool bNear  = std::abs(goal.x - m_center.x) <= 1.f && std::abs(goal.y - m_center.y) <= 1.f;
-    const bool bStill = std::abs(m_velocity.x) <= 1.f && std::abs(m_velocity.y) <= 1.f;
+    const bool bNear  = Abs(goal.x - m_center.x) <= 1.f && Abs(goal.y - m_center.y) <= 1.f;
+    const bool bStill = Abs(m_velocity.x) <= 1.f && Abs(m_velocity.y) <= 1.f;
     if (bNear && bStill)
     {
         m_center = goal;
@@ -262,9 +262,9 @@ void Camera::ApproachEdge_(
 
     // 좁아지는 쪽: 속도 kBoundsEase 이하, 가감속 kGlideAccel 이하로 제동하며 옮긴다 (카메라가 밀려도 한 프레임에 튀지 않는다)
     const float dir     = dist < 0.f ? -1.f : 1.f;
-    const float vTarget = dir * Min(kBoundsEase, BrakeSpeed_(std::abs(dist)));
+    const float vTarget = dir * Min(kBoundsEase, BrakeSpeed_(Abs(dist)));
     _vel                = Clamp(vTarget, _vel - kGlideAccel, _vel + kGlideAccel);
-    const float move    = Clamp(_vel, -std::abs(dist), std::abs(dist));
+    const float move    = Clamp(_vel, -Abs(dist), Abs(dist));
     _edge += move;
     _vel = move;
 }
@@ -396,7 +396,7 @@ void Camera::StepX_(
     const float _focusDeltaX)
 {
     const float gap = _desiredX - m_center.x;
-    if (!m_bGlide && std::abs(gap) > kGlideEnterGap)
+    if (!m_bGlide && Abs(gap) > kGlideEnterGap)
     {
         m_bGlide = true;
     }
@@ -406,13 +406,13 @@ void Camera::StepX_(
         // 제동 곡선 추적: 남은 거리에서 멈출 수 있는 속도 BrakeSpeed_ 와 상한 kMaxStep 중 작은 값을 목표 속도로 삼고,
         // 속도는 틱당 kGlideAccel 이상 바뀌지 않는다. 목표가 움직여도 멈칫하지 않고, 목표를 넘지도 않는다
         const float dir     = gap < 0.f ? -1.f : 1.f;
-        const float vTarget = dir * Min(kMaxStep, BrakeSpeed_(std::abs(gap)));
+        const float vTarget = dir * Min(kMaxStep, BrakeSpeed_(Abs(gap)));
         const float vNext   = Clamp(vTarget, m_velocity.x - kGlideAccel, m_velocity.x + kGlideAccel);
-        const float move    = Clamp(vNext, -std::abs(gap), std::abs(gap));
+        const float move    = Clamp(vNext, -Abs(gap), Abs(gap));
         m_center.x += move;
         m_velocity.x = move;
 
-        if (std::abs(_desiredX - m_center.x) < kGlideExitGap)
+        if (Abs(_desiredX - m_center.x) < kGlideExitGap)
         {
             m_center.x  = _desiredX;   // 도착: 남은 오차는 보이지 않을 만큼 작다
             m_bGlide    = false;
@@ -446,9 +446,9 @@ void Camera::StepX_(
     }
 
     // 한 틱에 직전 속도의 1.5배(최소 1px)를 넘어 빨라지지 않는다 (간격에 막혀 짧아진 걸음 뒤에 갑자기 커지지 않도록)
-    const float limit = Max(kStepFloor, kStepGrowth * std::abs(m_velocity.x));
+    const float limit = Max(kStepFloor, kStepGrowth * Abs(m_velocity.x));
     // 제동 곡선: 간격이나 영역 경계에 가까워지면 틱당 감속이 kGlideAccel 을 넘지 않는다 (벽에 부딪혀 한 프레임에 멈추지 않는다)
-    const float stepAbs = Min(Min(std::abs(gap), m_pushSpeed), Min(limit, BrakeSpeed_(std::abs(gap))));
+    const float stepAbs = Min(Min(Abs(gap), m_pushSpeed), Min(limit, BrakeSpeed_(Abs(gap))));
     m_velocity.x        = dir * stepAbs;
     m_center.x += m_velocity.x;
 }
@@ -542,7 +542,7 @@ void Camera::Update(
             const float gapY   = desired.y - yBefore;
             float       stepY  = m_center.y - yBefore;
             stepY              = Clamp(stepY, m_stepY - kGlideAccel, m_stepY + kGlideAccel);
-            const float reachY = Min(std::abs(gapY), BrakeSpeed_(std::abs(gapY)));
+            const float reachY = Min(Abs(gapY), BrakeSpeed_(Abs(gapY)));
             stepY              = Clamp(stepY, -reachY, reachY);
             m_center.y         = yBefore + stepY;
             m_stepY            = stepY;

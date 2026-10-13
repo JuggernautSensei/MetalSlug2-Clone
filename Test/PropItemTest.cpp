@@ -376,7 +376,7 @@ TEST(PropItem, RollFrictionComesFromItemTuning)
     ASSERT_TRUE(items.Find(id)->body.bGrounded);
     items.Tick(FloorWorld_(ground), kDt, -1.0e9f, nullptr, &tuning);
     const float v0 = items.Find(id)->body.velocity.x;
-    ASSERT_GT(std::abs(v0), 1.f);
+    ASSERT_GT(Abs(v0), 1.f);
     for (int i = 0; i < 300; ++i)
     {
         items.Tick(FloorWorld_(ground), kDt, -1.0e9f, nullptr, &tuning);

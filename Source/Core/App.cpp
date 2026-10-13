@@ -336,7 +336,7 @@ void App::Init_()
     }
 
     const FilePath assetRoot  = FindAssetRoot();
-    const int      numWorkers = m_bNoAsyncLoad ? 1 : std::clamp(static_cast<int>(std::thread::hardware_concurrency()) - 1, 1, 8);
+    const int      numWorkers = m_bNoAsyncLoad ? 1 : Clamp(static_cast<int>(std::thread::hardware_concurrency()) - 1, 1, 8);
     SLUG_LOG_INFO("[load] workers {}", numWorkers);
     bool bAnimsLoaded = false;
     if (Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(assetRoot))

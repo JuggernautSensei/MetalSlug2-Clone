@@ -370,7 +370,7 @@ void EnemyLab::Draw()
         {
             ImGui::SameLine();
             const String label = std::format("{}x##scale{}", scale, static_cast<int>(scale * 100.f));
-            if (ImGui::RadioButton(label.c_str(), std::abs(m_timeScale - scale) < 0.001f))
+            if (ImGui::RadioButton(label.c_str(), Abs(m_timeScale - scale) < 0.001f))
             {
                 SetTimeScale(scale);
             }

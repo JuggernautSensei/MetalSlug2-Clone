@@ -170,8 +170,8 @@ void GroundMaskDocument::Create(
     const int _width,
     const int _height)
 {
-    m_width  = std::max(_width, 0);
-    m_height = std::max(_height, 0);
+    m_width  = Max(_width, 0);
+    m_height = Max(_height, 0);
     m_pixels.assign(static_cast<size_t>(m_width) * static_cast<size_t>(m_height), 0);
     m_history.clear();
     m_stroke.clear();
@@ -261,7 +261,7 @@ void GroundMaskDocument::Stamp(
     {
         BeginStroke();
     }
-    const int size = std::max(_brush, 1);
+    const int size = Max(_brush, 1);
     const int left = _x - size / 2;
     const int top  = _y - size / 2;
     for (int y = top; y < top + size; ++y)
@@ -290,8 +290,8 @@ void GroundMaskDocument::DrawLine(
     {
         BeginStroke();
     }
-    const int dx    = std::abs(_x1 - _x0);
-    const int dy    = -std::abs(_y1 - _y0);
+    const int dx    = Abs(_x1 - _x0);
+    const int dy    = -Abs(_y1 - _y0);
     const int stepX = _x0 < _x1 ? 1 : -1;
     const int stepY = _y0 < _y1 ? 1 : -1;
     int       error = dx + dy;
@@ -334,9 +334,9 @@ void GroundMaskDocument::FillRect(
     {
         BeginStroke();
     }
-    for (int y = std::max(std::min(_y0, _y1), 0); y <= std::min(std::max(_y0, _y1), m_height - 1); ++y)
+    for (int y = Max(Min(_y0, _y1), 0); y <= Min(Max(_y0, _y1), m_height - 1); ++y)
     {
-        for (int x = std::max(std::min(_x0, _x1), 0); x <= std::min(std::max(_x0, _x1), m_width - 1); ++x)
+        for (int x = Max(Min(_x0, _x1), 0); x <= Min(Max(_x0, _x1), m_width - 1); ++x)
         {
             SetPixel_(x, y, _bSolid ? 1 : 0);
         }
@@ -467,8 +467,8 @@ void GroundMaskDocument::MarkColumn_(
         m_dirtyX1 = _x;
         return;
     }
-    m_dirtyX0 = std::min(m_dirtyX0, _x);
-    m_dirtyX1 = std::max(m_dirtyX1, _x);
+    m_dirtyX0 = Min(m_dirtyX0, _x);
+    m_dirtyX1 = Max(m_dirtyX1, _x);
 }
 
 void GroundEditor::Init(
@@ -525,7 +525,7 @@ void GroundEditor::LoadMask_(
     m_scrollY = 0.f;
     for (int x = 0; x < m_doc.GetWidth(); x += kGroundStripWidth)
     {
-        const int    sw   = std::min(kGroundStripWidth, m_doc.GetWidth() - x);
+        const int    sw   = Min(kGroundStripWidth, m_doc.GetWidth() - x);
         SDL_Texture* pTex = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, sw, m_doc.GetHeight());
         if (pTex == nullptr)
         {
@@ -595,7 +595,7 @@ void GroundEditor::LoadBackground_(
     m_bgH = h;
     for (int x = 0; x < w; x += kGroundStripWidth)
     {
-        const int    sw   = std::min(kGroundStripWidth, w - x);
+        const int    sw   = Min(kGroundStripWidth, w - x);
         SDL_Texture* pTex = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, sw, h);
         if (pTex == nullptr)
         {
@@ -664,7 +664,7 @@ void GroundEditor::Draw()
     const ImGuiIO&       io    = ImGui::GetIO();
     const ImGuiViewport* pHost = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(ImVec2 { pHost->Pos.x + 344.f, pHost->Pos.y + 40.f }, ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2 { std::max(480.f, io.DisplaySize.x - 360.f), std::max(320.f, io.DisplaySize.y - 56.f) }, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2 { Max(io.DisplaySize.x - 360.f, 480.f), Max(io.DisplaySize.y - 56.f, 320.f) }, ImGuiCond_FirstUseEver);
     if (ImGui::Begin("Ground Mask"))
     {
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && !io.WantTextInput)
@@ -811,7 +811,7 @@ void GroundEditor::DrawView_()
         {
             const float worldX = m_scrollX + (io.MousePos.x - originX) / m_zoom;
             const float worldY = m_scrollY + (io.MousePos.y - originY) / m_zoom;
-            m_zoom             = std::clamp(m_zoom * (io.MouseWheel > 0.f ? 1.25f : 0.8f), kGroundMinZoom, kGroundMaxZoom);
+            m_zoom             = Clamp(m_zoom * (io.MouseWheel > 0.f ? 1.25f : 0.8f), kGroundMinZoom, kGroundMaxZoom);
             m_scrollX          = worldX - (io.MousePos.x - originX) / m_zoom;
             m_scrollY          = worldY - (io.MousePos.y - originY) / m_zoom;
         }
@@ -825,8 +825,8 @@ void GroundEditor::DrawView_()
     const float worldH = static_cast<float>(m_doc.GetHeight());
     const float viewW  = canvasSize.x / m_zoom;
     const float viewH  = (canvasSize.y - readoutHeight) / m_zoom;
-    m_scrollX          = std::clamp(m_scrollX, -64.f / m_zoom, std::max(0.f, worldW - viewW) + 64.f / m_zoom);
-    m_scrollY          = std::clamp(m_scrollY, -64.f / m_zoom, std::max(0.f, worldH - viewH) + 64.f / m_zoom);
+    m_scrollX          = Clamp(m_scrollX, -64.f / m_zoom, Max(worldW - viewW, 0.f) + 64.f / m_zoom);
+    m_scrollY          = Clamp(m_scrollY, -64.f / m_zoom, Max(worldH - viewH, 0.f) + 64.f / m_zoom);
     const float zoom   = m_zoom;
 
     const int pixelX = static_cast<int>(std::floor(m_scrollX + (io.MousePos.x - originX) / zoom));
@@ -869,15 +869,15 @@ void GroundEditor::DrawView_()
     pDraw->AddRect(w0, w1, IM_COL32(200, 200, 90, 255));
     if (zoom >= kGroundGridZoom)
     {
-        const int firstX = std::max(0, static_cast<int>(std::floor(sx)));
-        const int lastX  = std::min(m_doc.GetWidth(), static_cast<int>(std::ceil(sx + viewW)));
+        const int firstX = Max(0, static_cast<int>(std::floor(sx)));
+        const int lastX  = Min(m_doc.GetWidth(), static_cast<int>(std::ceil(sx + viewW)));
         for (int x = firstX; x <= lastX; ++x)
         {
             const float px = std::round(originX + (static_cast<float>(x) - sx) * zoom);
             pDraw->AddLine(ImVec2 { px, canvasPos.y }, ImVec2 { px, canvasPos.y + canvasSize.y }, IM_COL32(255, 255, 255, 40));
         }
-        const int firstY = std::max(0, static_cast<int>(std::floor(sy)));
-        const int lastY  = std::min(m_doc.GetHeight(), static_cast<int>(std::ceil(sy + viewH)));
+        const int firstY = Max(0, static_cast<int>(std::floor(sy)));
+        const int lastY  = Min(m_doc.GetHeight(), static_cast<int>(std::ceil(sy + viewH)));
         for (int y = firstY; y <= lastY; ++y)
         {
             const float py = std::round(originY + (static_cast<float>(y) - sy) * zoom);
@@ -896,10 +896,10 @@ void GroundEditor::DrawView_()
                        IM_COL32(255, 255, 0, 255));
         if (m_bDragging && m_tool == eGroundTool::Rect)
         {
-            const int x0 = std::min(m_startX, pixelX);
-            const int x1 = std::max(m_startX, pixelX);
-            const int y0 = std::min(m_startY, pixelY);
-            const int y1 = std::max(m_startY, pixelY);
+            const int x0 = Min(m_startX, pixelX);
+            const int x1 = Max(m_startX, pixelX);
+            const int y0 = Min(m_startY, pixelY);
+            const int y1 = Max(m_startY, pixelY);
             pDraw->AddRect(ImVec2 { originX + (static_cast<float>(x0) - sx) * zoom, originY + (static_cast<float>(y0) - sy) * zoom },
                            ImVec2 { originX + (static_cast<float>(x1 + 1) - sx) * zoom, originY + (static_cast<float>(y1 + 1) - sy) * zoom },
                            IM_COL32(255, 255, 0, 255),
@@ -912,7 +912,7 @@ void GroundEditor::DrawView_()
             pDraw->AddLine(ImVec2 { originX + (static_cast<float>(m_startX) + 0.5f - sx) * zoom, originY + (static_cast<float>(m_startY) + 0.5f - sy) * zoom },
                            ImVec2 { originX + (static_cast<float>(pixelX) + 0.5f - sx) * zoom, originY + (static_cast<float>(pixelY) + 0.5f - sy) * zoom },
                            IM_COL32(255, 255, 0, 255),
-                           std::max(1.f, static_cast<float>(m_brush) * zoom));
+                           Max(static_cast<float>(m_brush) * zoom, 1.f));
         }
     }
 

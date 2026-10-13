@@ -84,10 +84,10 @@ TextureViewRects ComputeTextureView(
     const int camX = FloorToInt(_cameraPos.x);
     const int camY = FloorToInt(_cameraPos.y);
 
-    const int x0 = std::max(texX, camX);
-    const int y0 = std::max(texY, camY);
-    const int x1 = std::min(texX + _texW, camX + _viewW);
-    const int y1 = std::min(texY + _texH, camY + _viewH);
+    const int x0 = Max(texX, camX);
+    const int y0 = Max(texY, camY);
+    const int x1 = Min(texX + _texW, camX + _viewW);
+    const int y1 = Min(texY + _texH, camY + _viewH);
     if (x1 <= x0 || y1 <= y0)
     {
         return result;
@@ -457,10 +457,10 @@ bool SpriteBatch::LoadAtlasPagesParallel(
         paths.push_back(_library.GetRoot() / page);
     }
 
-    const size_t chunk = static_cast<size_t>(std::max(1, _numWorkers));
+    const size_t chunk = static_cast<size_t>(Max(1, _numWorkers));
     for (size_t begin = 0; begin < paths.size(); begin += chunk)
     {
-        const size_t                       count  = std::min(chunk, paths.size() - begin);
+        const size_t                       count  = Min(chunk, paths.size() - begin);
         const Vector<Result<DecodedImage>> images = DecodeImages(Span<const FilePath> { paths.data() + begin, count }, true, _numWorkers);
         for (size_t i = 0; i < count; ++i)
         {
@@ -482,10 +482,10 @@ Vector<int> SpriteBatch::LoadStandaloneTexturesParallel(
     const int                  _numWorkers)
 {
     Vector<int>  handles(_paths.size(), -1);
-    const size_t chunk = static_cast<size_t>(std::max(1, _numWorkers));
+    const size_t chunk = static_cast<size_t>(Max(1, _numWorkers));
     for (size_t begin = 0; begin < _paths.size(); begin += chunk)
     {
-        const size_t                       count  = std::min(chunk, _paths.size() - begin);
+        const size_t                       count  = Min(chunk, _paths.size() - begin);
         const Vector<Result<DecodedImage>> images = DecodeImages(Span<const FilePath> { _paths.data() + begin, count }, false, _numWorkers);
         for (size_t i = 0; i < count; ++i)
         {
@@ -517,7 +517,7 @@ Result<int> SpriteBatch::AddStandaloneTextureFromRgba(
 
     // 가로가 kMaxStripW 를 넘으면 띠로 쪼갠다 (구형 GPU/드라이버의 8192 제한에서 최후반부가 깨지는 문제 방지)
     constexpr int     kMaxStripW = 2048;
-    const int         stripW     = std::min(_width, kMaxStripW);
+    const int         stripW     = Min(_width, kMaxStripW);
     StandaloneTexture texture    = {};
     texture.width                = _width;
     texture.height               = _height;
@@ -526,7 +526,7 @@ Result<int> SpriteBatch::AddStandaloneTextureFromRgba(
     Vector<uint8_t> strip;
     for (int x = 0; x < _width; x += stripW)
     {
-        const int w = std::min(stripW, _width - x);
+        const int w = Min(stripW, _width - x);
         strip.resize(static_cast<size_t>(w) * static_cast<size_t>(_height) * 4);
         for (int y = 0; y < _height; ++y)
         {
@@ -566,13 +566,13 @@ void SpriteBatch::DrawStandaloneRect_(
         return;
     }
     const float scaleX = _dst.w / _src.w;
-    const int   first  = std::max(0, static_cast<int>(_src.x) / _texture.stripW);
-    const int   last   = std::min(static_cast<int>(_texture.strips.size()) - 1, static_cast<int>(_src.x + _src.w - 0.001f) / _texture.stripW);
+    const int   first  = Max(0, static_cast<int>(_src.x) / _texture.stripW);
+    const int   last   = Min(static_cast<int>(_texture.strips.size()) - 1, static_cast<int>(_src.x + _src.w - 0.001f) / _texture.stripW);
     for (int k = first; k <= last; ++k)
     {
         const float stripL = static_cast<float>(k * _texture.stripW);
-        const float l      = std::max(_src.x, stripL);
-        const float r      = std::min(_src.x + _src.w, stripL + static_cast<float>(_texture.stripW));
+        const float l      = Max(stripL, _src.x);
+        const float r      = Min(stripL + static_cast<float>(_texture.stripW), _src.x + _src.w);
         if (r <= l)
         {
             continue;
@@ -649,8 +649,8 @@ void SpriteBatch::DrawTextureRepeatX(
     const int camY = FloorToInt(_cameraPos.y);
     const int from = FloorToInt(_fromX);
 
-    const int y0 = std::max(texY, camY);
-    const int y1 = std::min(texY + texture.height, camY + _viewH);
+    const int y0 = Max(texY, camY);
+    const int y1 = Min(texY + texture.height, camY + _viewH);
     if (y1 <= y0)
     {
         return;
@@ -667,8 +667,8 @@ void SpriteBatch::DrawTextureRepeatX(
         {
             break;
         }
-        const int x0 = std::max(segStart, viewLeft);
-        const int x1 = std::min(segStart + _tileW, viewRight);
+        const int x0 = Max(segStart, viewLeft);
+        const int x1 = Min(segStart + _tileW, viewRight);
         if (x1 <= x0)
         {
             continue;

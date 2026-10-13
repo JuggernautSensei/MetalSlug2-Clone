@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "Base/Math.h"
 #include "Base/SlugError.h"
 #include "Base/Log.h"
 #include "Base/PhaseTimer.h"
@@ -99,7 +100,7 @@ namespace
 [[nodiscard]] float Clamp01_(
     const float _v)
 {
-    return std::clamp(_v, 0.f, 1.f);
+    return Clamp(_v, 0.f, 1.f);
 }
 }   // namespace
 

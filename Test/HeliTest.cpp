@@ -139,7 +139,7 @@ TEST(Heli, LowPhaseCrossesTheScreenDroppingThreeAndRest)
     ASSERT_GE(firstLow, 0) << "저공 구간에 들어가지 않았다";
     EXPECT_NEAR(static_cast<float>(firstLow), static_cast<float>(highEnd), 3.f);
     EXPECT_GT(log.ys[static_cast<size_t>(lastLow)], cfg.lowDy - 2.f) << "저공 높이까지 내려온다";
-    EXPECT_GT(std::abs(log.xs[static_cast<size_t>(lastLow)] - log.xs[static_cast<size_t>(firstLow)]), 150.f) << "x 축으로 크게 가로지른다";
+    EXPECT_GT(Abs(log.xs[static_cast<size_t>(lastLow)] - log.xs[static_cast<size_t>(firstLow)]), 150.f) << "x 축으로 크게 가로지른다";
 
     int lowBombs = 0;
     for (const int state: log.bombStates)
@@ -234,10 +234,10 @@ TEST(HeliFx, BombLandingSpawnsExplosionAndDust)
         world.Tick(ctx);
         for (const Effect& fx: world.GetEffects().GetEffects())
         {
-            maxDepth = std::max(maxDepth, fx.depth);
+            maxDepth = Max(maxDepth, fx.depth);
             bDust    = bDust || fx.depth == 57;
         }
-        maxCount = std::max(maxCount, static_cast<int>(world.GetEffects().GetCount()));
+        maxCount = Max(maxCount, static_cast<int>(world.GetEffects().GetCount()));
     }
     EXPECT_EQ(maxDepth, 58) << "폭발은 최전면 레이어";
     EXPECT_GE(maxCount, 2) << "폭발 + 먼지";
@@ -284,7 +284,7 @@ TEST(HeliFx, DestructionSpawnsALargeExplosionAndStaggeredBursts)
     for (int i = 0; i < 40; ++i)
     {
         world.Tick(ctx);
-        most = std::max(most, world.GetEffects().GetCount());
+        most = Max(most, world.GetEffects().GetCount());
     }
     EXPECT_GT(most, first) << "시간차 폭발/연기가 이어진다";
 }

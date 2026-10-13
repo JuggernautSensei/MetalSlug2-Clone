@@ -34,16 +34,16 @@ namespace
     const int count = pClip->GetFrameCount();
     if (count <= kFlameHeadFrames + kFlameFadeFrames)
     {
-        return &pClip->frames[static_cast<size_t>(std::clamp(_bullet.ageTicks / kFlameHeadTicks, 0, count - 1))];
+        return &pClip->frames[static_cast<size_t>(Clamp(_bullet.ageTicks / kFlameHeadTicks, 0, count - 1))];
     }
 
-    const float speed      = std::max(1.f, std::abs(_bullet.velocity.x) + std::abs(_bullet.velocity.y));
+    const float speed      = Max(Abs(_bullet.velocity.x) + Abs(_bullet.velocity.y), 1.f);
     const float fadeLength = speed * kFlameFadeTicks / 60.f;
     const float remaining  = _bullet.range - _bullet.travelled;
     if (remaining < fadeLength)
     {
-        const float progress = std::clamp(1.f - remaining / fadeLength, 0.f, 1.f);
-        const int   fadeStep = std::min(kFlameFadeFrames - 1, static_cast<int>(progress * static_cast<float>(kFlameFadeFrames)));
+        const float progress = Clamp(1.f - remaining / fadeLength, 0.f, 1.f);
+        const int   fadeStep = Min(kFlameFadeFrames - 1, static_cast<int>(progress * static_cast<float>(kFlameFadeFrames)));
         return &pClip->frames[static_cast<size_t>(count - kFlameFadeFrames + fadeStep)];
     }
 
@@ -70,7 +70,7 @@ namespace
     }
     const int count = pClip->GetFrameCount();
     const int index = static_cast<int>(static_cast<float>(_ageTicks) * kTickSec / pClip->frameDuration);
-    return &pClip->frames[static_cast<size_t>(_bLoop ? index % count : std::min(index, count - 1))];
+    return &pClip->frames[static_cast<size_t>(_bLoop ? index % count : Min(index, count - 1))];
 }
 }   // namespace
 
@@ -85,7 +85,7 @@ bool SubmitPlayerBullet(
     const eWeapon weapon    = static_cast<eWeapon>(_bullet.tag);
     const float   vx        = _bullet.velocity.x;
     const float   vy        = _bullet.velocity.y;
-    const bool    bVertical = std::abs(vy) > std::abs(vx);
+    const bool    bVertical = Abs(vy) > Abs(vx);
     const bool    bRight    = vx >= 0.f;
     const char*   pDir      = bVertical ? (vy < 0.f ? "Up" : "Down") : (bRight ? "Right" : "Left");
 
@@ -146,7 +146,7 @@ bool SubmitPlayerBullet(
                 return false;
             }
             // 수명에 따라 표시 배율이 커진다 (판정 성장과 같은 진행도: travelled / range)
-            const float t       = _bullet.range > 0.f ? std::clamp(_bullet.travelled / _bullet.range, 0.f, 1.f) : 1.f;
+            const float t       = _bullet.range > 0.f ? Clamp(_bullet.travelled / _bullet.range, 0.f, 1.f) : 1.f;
             const float scale   = Lerp(_bullet.scaleStart, _bullet.scaleEnd, t);
             const Vec2  shifted = { _pos.x + (bRight ? kFlameForwardShift : -kFlameForwardShift), _pos.y };
             _sprites.Submit(_depth, 0, *pFrame, shifted, { .bFlipX = !bRight, .scale = scale });

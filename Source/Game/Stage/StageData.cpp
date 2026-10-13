@@ -884,7 +884,7 @@ bool Parser::GetInt_(
     }
     if (bFound)
     {
-        if (value != std::floor(value) || std::abs(value) > 2147483647.0)
+        if (value != std::floor(value) || Abs(value) > 2147483647.0)
         {
             return Fail_(_where, std::format("{}: 정수가 아닙니다", _key));
         }

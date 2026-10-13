@@ -132,7 +132,7 @@ void Tick_(
     const float        speed = _def.physics.speed;
 
     const float dy    = DyToPlayer(_e, _env);
-    const float absDx = std::abs(DxToPlayer(_e, _env));
+    const float absDx = Abs(DxToPlayer(_e, _env));
 
     switch (static_cast<eShielderState>(_e.state))
     {
@@ -207,7 +207,7 @@ void Tick_(
             {
                 Go_(_e, _def, _env, Roll(_env, 2) == 0 ? eShielderState::MoveStop : eShielderState::Move);
             }
-            else if (absDx <= cfg.detect && std::abs(dy) <= cfg.moveDy)
+            else if (absDx <= cfg.detect && Abs(dy) <= cfg.moveDy)
             {
                 Go_(_e, _def, _env, eShielderState::ShotStart);
             }

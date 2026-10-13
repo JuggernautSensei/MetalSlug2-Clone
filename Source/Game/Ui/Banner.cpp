@@ -18,8 +18,8 @@ BannerSpec MakeBannerSpec(
 {
     constexpr int kTicksPerSec = 60;
 
-    const int total = std::max(1, static_cast<int>(std::lround(_seconds * static_cast<float>(kTicksPerSec))));
-    const int fade  = std::min(18, total / 4);
+    const int total = Max(1, static_cast<int>(std::lround(_seconds * static_cast<float>(kTicksPerSec))));
+    const int fade  = Min(18, total / 4);
 
     BannerSpec spec;
     spec.text         = String { _text };
@@ -73,8 +73,8 @@ GlyphPose ComputeMissionGlyphPose(
 
     if (_elapsed < _fadeIn)
     {
-        const int delay = std::min(_index * kMissionStagger, std::max(0, _fadeIn / 2));
-        const int span  = std::max(1, _fadeIn - delay);
+        const int delay = Min(_index * kMissionStagger, Max(0, _fadeIn / 2));
+        const int span  = Max(1, _fadeIn - delay);
         if (_elapsed < delay)
         {
             pose.dx    = kDirX[dir] * kMissionFlyDistance;
@@ -82,11 +82,11 @@ GlyphPose ComputeMissionGlyphPose(
             pose.alpha = 0;
             return pose;
         }
-        const float t = std::min(1.f, static_cast<float>(_elapsed - delay) / static_cast<float>(span));
+        const float t = Min(static_cast<float>(_elapsed - delay) / static_cast<float>(span), 1.f);
         const float k = 1.f - (1.f - t) * (1.f - t) * (1.f - t);
         pose.dx       = static_cast<int>(std::lround(static_cast<float>(kDirX[dir] * kMissionFlyDistance) * (1.f - k)));
         pose.dy       = static_cast<int>(std::lround(static_cast<float>(kDirY[dir] * kMissionFlyDistance) * (1.f - k)));
-        pose.alpha    = static_cast<uint8_t>(std::clamp(t, 0.f, 1.f) * 255.f + 0.5f);
+        pose.alpha    = static_cast<uint8_t>(Clamp(t, 0.f, 1.f) * 255.f + 0.5f);
         return pose;
     }
 
@@ -96,19 +96,19 @@ GlyphPose ComputeMissionGlyphPose(
         return pose;
     }
 
-    const int delay = std::min(_index * kMissionOutStagger, std::max(0, _fadeOut / 2));
-    const int span  = std::max(1, _fadeOut - delay);
+    const int delay = Min(_index * kMissionOutStagger, Max(0, _fadeOut / 2));
+    const int span  = Max(1, _fadeOut - delay);
     const int local = _elapsed - outAt - delay;
     if (local <= 0)
     {
         pose.alpha = 255;
         return pose;
     }
-    const float t = std::min(1.f, static_cast<float>(local) / static_cast<float>(span));
+    const float t = Min(static_cast<float>(local) / static_cast<float>(span), 1.f);
     const float k = t * t * t;
     pose.dx       = static_cast<int>(std::lround(static_cast<float>(kDirX[dir] * kMissionFlyDistance) * k));
     pose.dy       = static_cast<int>(std::lround(static_cast<float>(kDirY[dir] * kMissionFlyDistance) * k));
-    pose.alpha    = static_cast<uint8_t>(std::clamp(1.f - t, 0.f, 1.f) * 255.f + 0.5f);
+    pose.alpha    = static_cast<uint8_t>(Clamp(1.f - t, 0.f, 1.f) * 255.f + 0.5f);
     return pose;
 }
 

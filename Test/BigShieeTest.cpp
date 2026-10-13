@@ -92,7 +92,7 @@ TEST(BigShiee, EntersFromOffscreenLeftSlowlyWithoutPopping)
     {
         rig.Step(1);
         const float x = rig.E(boss)->body.position.x;
-        EXPECT_LT(std::abs(x - prev), 4.f) << "한 틱에 4px 넘게 움직이면 뿅 나타나는 것이다 (tick " << t << ")";
+        EXPECT_LT(Abs(x - prev), 4.f) << "한 틱에 4px 넘게 움직이면 뿅 나타나는 것이다 (tick " << t << ")";
         EXPECT_GE(x, prev - 0.001f);
         prev = x;
     }
@@ -145,7 +145,7 @@ TEST(BigShiee, FiresLobbedShellsOneVolleyAtATime)
     for (int t = 0; t < 1200; ++t)
     {
         rig.Step(1);
-        maxShots = std::max(maxShots, rig.Projectiles().CountShots(boss.id));
+        maxShots = Max(maxShots, rig.Projectiles().CountShots(boss.id));
     }
     EXPECT_GT(rig.E(boss)->shotsFired, 4);
     EXPECT_LE(maxShots, 8);
@@ -576,7 +576,7 @@ TEST(BigShiee, CannonTurnsOneFramePerTurnTicksAndOnlyFiresWhenAligned)
         }
         if (aimStart >= 0 && yaw != lastYaw)
         {
-            EXPECT_EQ(std::abs(yaw - lastYaw), 1) << "한 번에 한 프레임씩만 돈다";
+            EXPECT_EQ(Abs(yaw - lastYaw), 1) << "한 번에 한 프레임씩만 돈다";
             EXPECT_GE(tick - lastStep, turn);
             lastYaw  = yaw;
             lastStep = tick;
@@ -892,8 +892,8 @@ TEST(BigShieeScroll, StopsAfterBudgetThenShuttles)
         if (stopTick >= 0 && tick > stopTick + 60)
         {
             const float screenX = BossScreenX_(rig, boss, camLeft);
-            minX                = std::min(minX, screenX);
-            maxX                = std::max(maxX, screenX);
+            minX                = Min(screenX, minX);
+            maxX                = Max(screenX, maxX);
             const int driving   = rig.E(boss)->ext[kBigShieeExtDriving];
             if (driving != 0 && prevDrive == 0 && surges < 16)
             {
@@ -936,7 +936,7 @@ TEST(BigShieeScroll, ReversesOnceAfterTheCannonDeploys)
         if (x < prevX - 0.01f)
         {
             ++backTicks;
-            maxBack = std::max(maxBack, prevX - x);
+            maxBack = Max(prevX - x, maxBack);
         }
         prevX = x;
         camLeft += rig.World().TakeCameraScroll();
@@ -1002,7 +1002,7 @@ namespace
         }
         for (const Shot& shot: rig.Projectiles().GetShots())
         {
-            if (shot.params.owner == boss.id && shot.params.visual == static_cast<uint16_t>(proj + 1) && shot.ageTicks <= 1 && std::abs(shot.velocity.x) > std::abs(_outShellVx))
+            if (shot.params.owner == boss.id && shot.params.visual == static_cast<uint16_t>(proj + 1) && shot.ageTicks <= 1 && Abs(shot.velocity.x) > Abs(_outShellVx))
             {
                 _outShellVx = shot.velocity.x;
             }
@@ -1057,7 +1057,7 @@ TEST(BigShieeTurretAim, IdleTurretsTrackThePlayerOneTurnFrameAtATime)
         const int pos = rig.E(boss)->ext[static_cast<size_t>(kBigShieeExtPos + 3)];
         if (lastPos >= 0)
         {
-            maxStep = std::max(maxStep, std::abs(pos - lastPos));
+            maxStep = Max(maxStep, Abs(pos - lastPos));
         }
         lastPos = pos;
     }
@@ -1089,7 +1089,7 @@ TEST(BigShieeMissile, AcceleratesFromMuzzleToGround)
             {
                 continue;
             }
-            const float speed = std::sqrt(shot.velocity.x * shot.velocity.x + shot.velocity.y * shot.velocity.y);
+            const float speed = Sqrt(shot.velocity.x * shot.velocity.x + shot.velocity.y * shot.velocity.y);
             if (shot.ageTicks == 1)
             {
                 first = speed;
@@ -1132,7 +1132,7 @@ TEST(BigShieeCasing, SpawnsOnEachShotAndFallsOffTheScreenWithin120Ticks)
     }
     EXPECT_EQ(spawns, 2) << "발마다 탄피 한 개";
     const float drop = -(muzzle.y + c.casingOffset.y) + c.casingGroundDy;
-    const float land = (-c.casingVel.y + std::sqrt(c.casingVel.y * c.casingVel.y + 2.f * c.casingGravity * drop)) / c.casingGravity;
+    const float land = (-c.casingVel.y + Sqrt(c.casingVel.y * c.casingVel.y + 2.f * c.casingGravity * drop)) / c.casingGravity;
     EXPECT_LT((land + c.casingLingerSec) * 60.f, 120.f);
 }
 

@@ -225,7 +225,7 @@ TEST(PlayerWeapon, RocketRespectsItsMaxAliveLimit)
     for (int tick = 0; tick < 200; ++tick)
     {
         sim.Step();
-        maxSeen = std::max(maxSeen, static_cast<int>(BulletsOf_(sim)));
+        maxSeen = Max(maxSeen, static_cast<int>(BulletsOf_(sim)));
     }
     EXPECT_LE(maxSeen, sim.Tune().weapons.rocket.maxAlive);
     EXPECT_GE(maxSeen, 1);
@@ -417,9 +417,9 @@ TEST(PlayerWeapon, AimStatesFireEveryWeaponInTheExpectedDirection)
             {
                 EXPECT_EQ(v.x > 0.f, aim.signX > 0.f) << aim.name << " weapon " << raw;
             }
-            EXPECT_EQ(std::abs(v.x) < 0.01f, aim.signX == 0.f) << aim.name << " weapon " << raw;
+            EXPECT_EQ(Abs(v.x) < 0.01f, aim.signX == 0.f) << aim.name << " weapon " << raw;
             EXPECT_EQ(v.y < 0.f, aim.signY < 0.f) << aim.name << " weapon " << raw;
-            EXPECT_EQ(std::abs(v.y) < 0.01f, aim.signY == 0.f) << aim.name << " weapon " << raw;
+            EXPECT_EQ(Abs(v.y) < 0.01f, aim.signY == 0.f) << aim.name << " weapon " << raw;
         }
     }
 }
@@ -626,10 +626,10 @@ namespace
             SDL_ReadSurfacePixel(pSurface, x, y, &r, &g, &b, &a);
             if (r + g + b > 24)
             {
-                box.minX = std::min(box.minX, x);
-                box.minY = std::min(box.minY, y);
-                box.maxX = std::max(box.maxX, x);
-                box.maxY = std::max(box.maxY, y);
+                box.minX = Min(box.minX, x);
+                box.minY = Min(box.minY, y);
+                box.maxX = Max(box.maxX, x);
+                box.maxY = Max(box.maxY, y);
             }
         }
     }
@@ -716,7 +716,7 @@ TEST(PlayerWeapon, ShotgunHitboxTurnsWithTheAimDirection)
     const Vec2          up       = MakeBulletSpawn(eWeapon::Shotgun, shotgun, 0, { 0.f, 0.f }, { 0.f, 0.f }, { 0.f, -1.f }).size;
     const Vec2          down     = MakeBulletSpawn(eWeapon::Shotgun, shotgun, 0, { 0.f, 0.f }, { 0.f, 0.f }, { 0.f, 1.f }).size;
     const Vec2          diagonal = MakeBulletSpawn(eWeapon::Shotgun, shotgun, 0, { 0.f, 0.f }, { 0.f, 0.f }, { 0.7071f, -0.7071f }).size;
-    const float         longSide = std::max(shotgun.hitSize.x, shotgun.hitSize.y);
+    const float         longSide = Max(shotgun.hitSize.y, shotgun.hitSize.x);
 
     EXPECT_FLOAT_EQ(side.x, shotgun.hitSize.x);
     EXPECT_FLOAT_EQ(side.y, shotgun.hitSize.y);
@@ -829,11 +829,11 @@ TEST(PlayerWeaponVisual, FlameAttackMotionIsBiggerThanTheOriginalLoop)
     int oldArea = 0;
     for (const AnimFrame& frame: pNew->frames)
     {
-        newArea = std::max(newArea, frame.w * frame.h);
+        newArea = Max(newArea, frame.w * frame.h);
     }
     for (const AnimFrame& frame: pOld->frames)
     {
-        oldArea = std::max(oldArea, frame.w * frame.h);
+        oldArea = Max(oldArea, frame.w * frame.h);
     }
     EXPECT_GT(newArea * 10, oldArea * 13);   // 최소 30% 이상 큰 면적
 }

@@ -735,7 +735,7 @@ void EnemyWorld::Submit(
             continue;
         }
 
-        int ticks = std::max(0, shot.ageTicks - shot.params.startDelayTicks);
+        int ticks = Max(0, shot.ageTicks - shot.params.startDelayTicks);
         if (bLand)
         {
             ticks = landAge;
@@ -746,7 +746,7 @@ void EnemyWorld::Submit(
         }
         else if (bRoll && shot.bLanded)
         {
-            ticks = std::max(0, landAge - landTicks);
+            ticks = Max(0, landAge - landTicks);
         }
         const AnimFrame* pFrame = &pClip->frames[static_cast<size_t>(FrameAt_(*pClip, static_cast<int64_t>(ticks) * kAnimUnitsPerTick))];
         if (pFrame->IsEmpty())

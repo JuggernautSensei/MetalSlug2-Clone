@@ -128,7 +128,7 @@ void TrainingTargets::TickShooters(
 
         const float dx = _playerFeet.x - dummy.feet.x;
         dummy.facing   = dx < 0.f ? -1 : 1;
-        if (!_bPlayerAlive || std::abs(dx) > _tuning.shooterRange)
+        if (!_bPlayerAlive || Abs(dx) > _tuning.shooterRange)
         {
             dummy.shootTimer = _tuning.shooterIntervalTicks;
             continue;

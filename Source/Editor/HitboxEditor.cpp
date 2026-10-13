@@ -239,7 +239,7 @@ bool HitboxDocument::SetValue(
     {
         return false;
     }
-    if (std::fabs(entry.value[f] - _value) < 1e-9)
+    if (Abs(entry.value[f] - _value) < 1e-9)
     {
         return true;
     }
@@ -820,7 +820,7 @@ void HitboxEditor::DrawExtraOverlay_(
             const Aabb         world = box.box.At(e.body.position, e.facing);
             const RGBA         color = box.kind == eExtraBoxKind::Attack ? RGBA { 255, 50, 50, 255 } : RGBA { 60, 255, 90, 255 };
             _lab.DrawMark(_renderer, world, { world.GetCenter().x, world.GetCenter().y }, color, bSel ? "> " + box.id : box.id);
-            const bool bIn = bMouse && std::fabs(local.x - box.box.cx) <= box.box.w * 0.5f && std::fabs(local.y - box.box.cy) <= box.box.h * 0.5f;
+            const bool bIn = bMouse && Abs(local.x - box.box.cx) <= box.box.w * 0.5f && Abs(local.y - box.box.cy) <= box.box.h * 0.5f;
             bHover         = bHover || bIn;
             if (bClick && bIn && !m_bBoxDrag)
             {

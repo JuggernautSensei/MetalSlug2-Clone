@@ -1,5 +1,7 @@
 #include "Audio/VoiceAllocator.h"
 
+#include "Base/Math.h"
+
 VoiceAllocator::VoiceAllocator(
     const int _capacity,
     const int _maxPerSound)
@@ -11,8 +13,8 @@ void VoiceAllocator::Reset(
     const int _capacity,
     const int _maxPerSound)
 {
-    m_maxPerSound = std::max(1, _maxPerSound);
-    m_slots.assign(static_cast<size_t>(std::max(1, _capacity)), Slot {});
+    m_maxPerSound = Max(1, _maxPerSound);
+    m_slots.assign(static_cast<size_t>(Max(1, _capacity)), Slot {});
     m_nextSerial = 1;
 }
 

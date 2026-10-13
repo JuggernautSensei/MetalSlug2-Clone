@@ -11,35 +11,12 @@
 using jug::kDeg2Rad;
 using jug::kRad2Deg;
 
-template<typename T, typename U>
-[[nodiscard]] constexpr std::common_type_t<T, U> Min(const T _x, const U _y)
-{
-    return _x < _y ? _x : _y;
-}
-
-template<typename T, typename U>
-[[nodiscard]] constexpr std::common_type_t<T, U> Max(const T _x, const U _y)
-{
-    return _x > _y ? _x : _y;
-}
-
-template<typename T>
-[[nodiscard]] constexpr T Clamp(const T _x, const T _min, const T _max)
-{
-    return _x < _min ? _min : (_x > _max ? _max : _x);
-}
-
-template<typename T>
-[[nodiscard]] constexpr T Abs(const T _x)
-{
-    return _x < T { 0 } ? -_x : _x;
-}
-
-template<typename T>
-[[nodiscard]] constexpr T Lerp(const T _x, const T _y, const float _t)
-{
-    return static_cast<T>(_x + (_y - _x) * _t);
-}
+using jug::Abs;
+using jug::Clamp;
+using jug::Lerp;
+using jug::Max;
+using jug::Min;
+using jug::Sqrt;
 
 // _rng.Generate() 의 64비트 값을 [_lo, _hi] 로 편다
 template<typename RngT>
@@ -119,3 +96,8 @@ struct Vec2
     float x = 0.f;
     float y = 0.f;
 };
+
+[[nodiscard]] constexpr Vec2 Lerp(const Vec2 _x, const Vec2 _y, const float _t)
+{
+    return _x + (_y - _x) * _t;
+}

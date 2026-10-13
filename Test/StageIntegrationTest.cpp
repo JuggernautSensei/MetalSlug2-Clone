@@ -386,7 +386,7 @@ TEST(StageIntegration, BotCanWalkTheWholeStageToTheStageEnd)
         sim.BotStep(true, true);
         if (sim.Current() == sim.StagePtr())
         {
-            bestX = std::max(bestX, sim.State().GetPlayer().GetFeet().x);
+            bestX = Max(sim.State().GetPlayer().GetFeet().x, bestX);
             if (sim.IsBossAlive() && ++bossTicks >= 900)
             {
                 sim.DamageBoss();
@@ -446,10 +446,10 @@ TEST(StageIntegration, BotStillWalksToTheStageEndAfterEveryOpenlandPropIsDestroy
             sim.DamageBoss();
         }
         const Vec2 feet = sim.State().GetPlayer().GetFeet();
-        bestX           = std::max(bestX, feet.x);
+        bestX           = Max(feet.x, bestX);
         if (feet.x >= 9000.f)
         {
-            maxFeetY = std::max(maxFeetY, feet.y);
+            maxFeetY = Max(feet.y, maxFeetY);
         }
         if (feet.x >= 9000.f && feet.x <= 10600.f && i % 10 == 0)
         {
@@ -908,7 +908,7 @@ TEST(StageIntegration, BusStairSoldiersReachTheRoofAndNeverEnterTheBusBodyWithTh
                 continue;
             }
             const float dx = enemy.body.position.x - busX;
-            if (std::abs(enemy.body.position.y - roofY) < 1.f && enemy.bGrounded)
+            if (Abs(enemy.body.position.y - roofY) < 1.f && enemy.bGrounded)
             {
                 ++roofTicks;
             }
@@ -917,7 +917,7 @@ TEST(StageIntegration, BusStairSoldiersReachTheRoofAndNeverEnterTheBusBodyWithTh
                 ++awayTicks;
             }
             // 버스 몸통 (solid x +-85) 위 구간에서는 지붕 높이보다 아래에 있으면 안 된다 (계단 오르기는 x >= 88)
-            if (std::abs(dx) < 80.f && enemy.body.position.y > roofY + 1.f)
+            if (Abs(dx) < 80.f && enemy.body.position.y > roofY + 1.f)
             {
                 if (badTicks == 0)
                 {
@@ -961,8 +961,8 @@ TEST(StageIntegration, BusLockGlideMovesTheCameraSmoothly)
         sim.BotStep(true, false);
         const float x   = sim.State().GetCamera().GetPosition().x;
         const float vel = x - prevX;
-        maxAccel        = std::max(maxAccel, std::abs(vel - prevVel));
-        maxVel          = std::max(maxVel, std::abs(vel));
+        maxAccel        = Max(Abs(vel - prevVel), maxAccel);
+        maxVel          = Max(Abs(vel), maxVel);
         prevVel         = vel;
         prevX           = x;
     }
@@ -1168,8 +1168,8 @@ public:
             bLocked         = bLocked || m_samples[i].lockDepth >= 1;
             if (bLocked)
             {
-                maxAccel = std::max(maxAccel, std::abs(vel - prevVel));
-                if (vel * prevVel < 0.f && std::abs(vel) >= 2.f && std::abs(prevVel) >= 2.f)
+                maxAccel = Max(Abs(vel - prevVel), maxAccel);
+                if (vel * prevVel < 0.f && Abs(vel) >= 2.f && Abs(prevVel) >= 2.f)
                 {
                     ++reversals;
                 }
