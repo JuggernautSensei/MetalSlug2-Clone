@@ -87,9 +87,6 @@
     <ClCompile Include="..\..\Test\PlayerMoveTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Test\PlayerReplayTest.cpp">
-      <Filter>Test</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Test\PlayerRigTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
@@ -103,9 +100,6 @@
       <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Test\PropWorldTest.cpp">
-      <Filter>Test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Test\ReplayTest.cpp">
       <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Test\SpriteBatchTest.cpp">

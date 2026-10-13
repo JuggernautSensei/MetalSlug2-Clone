@@ -67,19 +67,6 @@ int App::Run(
         Update_(TimeCastF(frameTimer.GetElapsedCount(), eTimeUnit::Sec));
     }
 
-    if (m_bHash && m_pRunner)
-    {
-        const uint64_t tickCount = m_pRunner->GetTickCount();
-        const uint64_t bFinished = m_pRunner->IsFinished() ? 1ull : 0ull;
-        const uint64_t stateHash = m_pRunner->GetState() != nullptr ? m_pRunner->GetState()->DebugHash() : 0ull;
-        Fnv1a          hasher;
-        hasher.Mix(tickCount);
-        hasher.Mix(bFinished);
-        hasher.Mix(stateHash);
-        const uint64_t hash = hasher.Finalize();
-        std::printf("ticks=%llu finished=%d hash=%016llx\n", static_cast<unsigned long long>(m_pRunner->GetTickCount()), m_pRunner->IsFinished() ? 1 : 0, static_cast<unsigned long long>(hash));
-    }
-
     Shutdown_();
     SDL_Quit();
     return m_returnCode;
@@ -144,26 +131,6 @@ void App::ParseArgs_()
         else if (args[i] == "--seed" && bHasValue)
         {
             m_seed = std::strtoull(args[++i].c_str(), nullptr, 10);
-        }
-        else if (args[i] == "--record" && bHasValue)
-        {
-            m_recordPath = args[++i];
-        }
-        else if (args[i] == "--replay" && bHasValue)
-        {
-            m_replayPath = args[++i];
-        }
-        else if (args[i] == "--hash")
-        {
-            m_bHash = true;
-        }
-        else if (args[i] == "--ticks" && bHasValue)
-        {
-            m_maxTicks = std::strtoull(args[++i].c_str(), nullptr, 10);
-        }
-        else if (args[i] == "--replay-hold")
-        {
-            m_bReplayHold = true;
         }
         else if (args[i] == "--editor")
         {
@@ -296,31 +263,6 @@ void App::Init_()
 {
     ParseArgs_();
 
-    if (m_bHash && m_replayPath.empty())
-    {
-        std::fprintf(stderr, "usage: MetalSlug2_Clone --replay <file> --hash [--state <name>] [--ticks <n>]\n");
-        m_returnCode = 1;
-        m_bRunning   = false;
-        return;
-    }
-    if (!m_replayPath.empty())
-    {
-        Result<ReplayData> loaded = LoadReplay(m_replayPath);
-        if (!loaded)
-        {
-            SLUG_LOG_FATAL("리플레이 로드 실패: {}", loaded.GetError().MakeMessage());
-            m_returnCode = 1;
-            m_bRunning   = false;
-            return;
-        }
-        m_playback  = loaded.Take();
-        m_bPlayback = true;
-        m_seed      = m_playback.seed;
-        if (m_stateName.empty())
-        {
-            m_stateName = m_playback.stateName;
-        }
-    }
     if (m_stateName.empty())
     {
         const bool bHasAssets = std::filesystem::exists(FindAssetRoot() / "manifest.json");
@@ -380,13 +322,10 @@ void App::Init_()
     SLUG_LOG_INFO("[load] renderer-init since-run-start {:.1f} ms", rendererMs);
     SpriteBatch::GetSingleton().Init(Renderer::GetSingleton().GetNative());
     SpriteBatch::GetSingleton().SetAssetRoot(assetRoot);
-    if (bAnimsLoaded && !m_bHash)
+    if (bAnimsLoaded)
     {
         (void)SpriteBatch::GetSingleton().LoadAtlasPagesParallel(AnimationLibrary::GetSingleton(), numWorkers);
     }
-
-    m_recording.seed      = m_seed;
-    m_recording.stateName = m_stateName;
 
     g_debug.numLoadWorkers = numWorkers;
     m_editor.SetAnimLibrary(m_bEditor ? &AnimationLibrary::GetSingleton() : nullptr);
@@ -394,7 +333,7 @@ void App::Init_()
 
     {
         AudioConfig audioConfig;
-        audioConfig.bEnabled = !m_bNoAudio && !m_bHash && m_capturePath.empty();
+        audioConfig.bEnabled = !m_bNoAudio && m_capturePath.empty();
         if (const Result<void> audio = AudioSystem::GetSingleton().InitFromDirectory(assetRoot, audioConfig); !audio)
         {
             SLUG_LOG_WARN("sounds.json 을 읽지 못해 소리 없이 계속합니다: {}", audio.GetError().MakeMessage());
@@ -421,26 +360,11 @@ void App::Init_()
 
 void App::Shutdown_()
 {
-    SaveRecording_();
     m_pRunner.Reset();
     AudioSystem::GetSingleton().Shutdown();
     SpriteBatch::GetSingleton().Shutdown();
     m_editor.Shutdown();
     Renderer::GetSingleton().Shutdown();
-}
-
-void App::SaveRecording_() const
-{
-    if (m_recordPath.empty())
-    {
-        return;
-    }
-    if (const Result<void> result = SaveReplay(m_recordPath, m_recording); !result)
-    {
-        SLUG_LOG_ERROR("리플레이 저장 실패: {}", result.GetError().MakeMessage());
-        return;
-    }
-    SLUG_LOG_INFO("리플레이 저장: {} ({} 틱)", m_recordPath.string(), m_recording.frames.size());
 }
 
 void App::OnKeyDown_(
@@ -510,21 +434,6 @@ void App::Update_(
         return;
     }
 
-    if (m_bHash)
-    {
-        // 실시간 대기/렌더 없이 리플레이 끝(또는 상태 종료, --ticks)까지 연속 실행
-        while (m_bRunning)
-        {
-            Tick_();
-            if (m_pRunner->IsFinished() || (m_maxTicks > 0 && m_pRunner->GetTickCount() >= m_maxTicks))
-            {
-                break;
-            }
-        }
-        m_bRunning = false;
-        return;
-    }
-
     if (_deltaTimeSec > 0.f)
     {
         g_debug.fps = g_debug.fps <= 0.f ? 1.f / _deltaTimeSec : g_debug.fps * 0.95f + (1.f / _deltaTimeSec) * 0.05f;
@@ -577,33 +486,10 @@ void App::Update_(
 
 void App::Tick_()
 {
-    InputFrame frame;
-    if (m_bPlayback)
-    {
-        if (m_playbackHead < m_playback.frames.size())
-        {
-            frame = m_playback.frames[m_playbackHead++];
-        }
-        else if (!m_bReplayHold)
-        {
-            m_bRunning = false;
-            return;
-        }
-    }
-    else
-    {
-        frame = m_input.Sample();
-    }
-
-    if (!m_recordPath.empty())
-    {
-        m_recording.frames.push_back(frame);
-    }
-
+    const InputFrame frame = m_input.Sample();
     SetEventLogTick(m_pRunner->GetTickCount() + 1);
     m_pRunner->Step(frame);
-
-    if (!m_bPlayback && m_pRunner->GetHistory().WasPressed(eAction::Pause))
+    if (m_pRunner->GetHistory().WasPressed(eAction::Pause))
     {
         m_bRunning = false;
     }

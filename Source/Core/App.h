@@ -5,7 +5,6 @@
 #include "Base/Types.h"
 #include "Core/FixedStep.h"
 #include "Core/Input.h"
-#include "Core/Replay.h"
 #include "Editor/Editor.h"
 #include "Game/GameState.h"
 #include "Game/SimRunner.h"
@@ -31,7 +30,6 @@ private:
     void ParseArgs_();
     void Tick_();
     void Render_(float _alpha);
-    void SaveRecording_() const;
 
     Timer m_processTimer = {};
 
@@ -46,11 +44,6 @@ private:
 
     String   m_stateName      = {};
     uint64_t m_seed           = 1;
-    FilePath m_recordPath     = {};
-    FilePath m_replayPath     = {};
-    bool     m_bReplayHold    = false;
-    bool     m_bHash          = false;
-    uint64_t m_maxTicks       = 0;
     bool     m_bNoAudio       = false;
     bool     m_bNoAsyncLoad   = false;
     bool     m_bEditor        = false;
@@ -62,10 +55,6 @@ private:
     String   m_editorGod      = {};
     Editor   m_editor         = {};
 
-    ReplayData m_recording    = {};
-    ReplayData m_playback     = {};
-    size_t     m_playbackHead = 0;
-    bool       m_bPlayback    = false;
 
     FilePath         m_capturePath      = {};
     int              m_captureFrame     = 30;

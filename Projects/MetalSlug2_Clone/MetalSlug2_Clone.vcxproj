@@ -141,7 +141,6 @@
     <ClCompile Include="..\..\Source\Editor\ImGuiSdlRendererViewports.cpp" />
     <ClCompile Include="..\..\Source\Core\AssetPath.cpp" />
     <ClCompile Include="..\..\Source\Core\Input.cpp" />
-    <ClCompile Include="..\..\Source\Core\Replay.cpp" />
     <ClCompile Include="..\..\Source\Core\Tuning.cpp" />
     <ClCompile Include="..\..\Source\Game\Combat\BulletVisual.cpp" />
     <ClCompile Include="..\..\Source\Game\Combat\CombatSystem.cpp" />
@@ -234,7 +233,6 @@
     <ClInclude Include="..\..\Source\Core\AssetPath.h" />
     <ClInclude Include="..\..\Source\Core\FixedStep.h" />
     <ClInclude Include="..\..\Source\Core\Input.h" />
-    <ClInclude Include="..\..\Source\Core\Replay.h" />
     <ClInclude Include="..\..\Source\Core\Tuning.h" />
     <ClInclude Include="..\..\Source\Game\Combat\BulletVisual.h" />
     <ClInclude Include="..\..\Source\Game\Combat\CombatSystem.h" />

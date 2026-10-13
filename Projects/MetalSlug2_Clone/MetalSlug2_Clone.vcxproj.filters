@@ -132,9 +132,6 @@
     <ClCompile Include="..\..\Source\Core\Input.cpp">
       <Filter>Source\Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Core\Replay.cpp">
-      <Filter>Source\Core</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\Core\Tuning.cpp">
       <Filter>Source\Core</Filter>
     </ClCompile>
@@ -399,9 +396,6 @@
       <Filter>Source\Core</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Core\Input.h">
-      <Filter>Source\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Core\Replay.h">
       <Filter>Source\Core</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Core\Tuning.h">

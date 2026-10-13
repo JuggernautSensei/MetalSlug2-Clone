@@ -146,7 +146,6 @@
     <ClCompile Include="..\..\Source\Editor\ImGuiSdlRendererViewports.cpp" />
     <ClCompile Include="..\..\Source\Core\AssetPath.cpp" />
     <ClCompile Include="..\..\Source\Core\Input.cpp" />
-    <ClCompile Include="..\..\Source\Core\Replay.cpp" />
     <ClCompile Include="..\..\Source\Core\Tuning.cpp" />
     <ClCompile Include="..\..\Source\Game\Combat\BulletVisual.cpp" />
     <ClCompile Include="..\..\Source\Game\Combat\CombatSystem.cpp" />
@@ -241,13 +240,11 @@
     <ClCompile Include="..\..\Test\PhysicsTest.cpp" />
     <ClCompile Include="..\..\Test\PlayerCombatTest.cpp" />
     <ClCompile Include="..\..\Test\PlayerMoveTest.cpp" />
-    <ClCompile Include="..\..\Test\PlayerReplayTest.cpp" />
     <ClCompile Include="..\..\Test\PlayerRigTest.cpp" />
     <ClCompile Include="..\..\Test\PlayerWeaponTest.cpp" />
     <ClCompile Include="..\..\Test\PropDefTest.cpp" />
     <ClCompile Include="..\..\Test\PropItemTest.cpp" />
     <ClCompile Include="..\..\Test\PropWorldTest.cpp" />
-    <ClCompile Include="..\..\Test\ReplayTest.cpp" />
     <ClCompile Include="..\..\Test\SpriteBatchTest.cpp" />
     <ClCompile Include="..\..\Test\StageCameraTest.cpp" />
     <ClCompile Include="..\..\Test\StageDataTest.cpp" />
@@ -289,7 +286,6 @@
     <ClInclude Include="..\..\Source\Core\AssetPath.h" />
     <ClInclude Include="..\..\Source\Core\FixedStep.h" />
     <ClInclude Include="..\..\Source\Core\Input.h" />
-    <ClInclude Include="..\..\Source\Core\Replay.h" />
     <ClInclude Include="..\..\Source\Core\Tuning.h" />
     <ClInclude Include="..\..\Source\Game\Combat\BulletVisual.h" />
     <ClInclude Include="..\..\Source\Game\Combat\CombatSystem.h" />
