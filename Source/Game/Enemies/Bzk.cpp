@@ -128,7 +128,7 @@ void TickClimb_(
     const float dx  = Abs(_env.ctx.player.center.x - cx);
     const float dy  = _env.ctx.player.center.y - cy;
     _bDown          = dy > 0.f;
-    const float deg = std::atan2(Abs(dy), Max(dx, 0.001f)) * kRad2Deg;
+    const float deg = ATan2(Abs(dy), Max(dx, 0.001f)) * kRad2Deg;
     for (int i = 0; i < 4; ++i)
     {
         if (deg < _cfg.angleStep[i])

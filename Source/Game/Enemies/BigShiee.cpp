@@ -548,7 +548,7 @@ void TickChute_(
     const VECTOR2 muzzle = World_(_e.body.position, _c.cannonAimOrigin);
     const float   dx     = _env.ctx.player.center.x - muzzle.x;
     const float   dy     = Max(_env.ctx.player.center.y - muzzle.y, 40.f);
-    return std::atan2(dx, dy) * kRad2Deg;
+    return ATan2(dx, dy) * kRad2Deg;
 }
 
 // Aim 프레임 yaw (0..8) 의 방향각: 짝수는 사격 행 각도, 홀수는 이웃 두 행의 가운데
@@ -904,7 +904,7 @@ void Tick_(
     }
     TickCannon_(_e, _def, _env);
     const int casingStart = GetSlot_(_e, kBigShieeExtCasingTick);
-    if (casingStart > 0 && _e.aux - casingStart == static_cast<int>(std::ceil((CasingLandSec_(_e, c) + c.casingLingerSec) / kStepSec)))
+    if (casingStart > 0 && _e.aux - casingStart == static_cast<int>(Ceil((CasingLandSec_(_e, c) + c.casingLingerSec) / kStepSec)))
     {
         EventLogFormat("bigshiee.casing_gone", "\"x\":{}", GetSlot_(_e, kBigShieeExtCasingX));
     }

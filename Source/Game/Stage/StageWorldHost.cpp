@@ -596,8 +596,8 @@ std::optional<float> StageWorldHost::GetGroundFindY(
     {
         return std::nullopt;
     }
-    const int x = static_cast<int>(std::floor(_x));
-    const int y = static_cast<int>(std::floor(_fromY));
+    const int x = static_cast<int>(Floor(_x));
+    const int y = static_cast<int>(Floor(_fromY));
     if (const std::optional<int> row = pGround->FindGroundY(x, y, pGround->GetHeight()))
     {
         return static_cast<float>(*row);

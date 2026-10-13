@@ -40,7 +40,7 @@ namespace
 [[nodiscard]] float RotationDeg_(
     const VECTOR2 _velocity)
 {
-    return std::atan2(-_velocity.x, _velocity.y) * kRad2Deg;
+    return ATan2(-_velocity.x, _velocity.y) * kRad2Deg;
 }
 
 [[nodiscard]] PhysicsTuning MakePhys_(

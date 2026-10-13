@@ -50,8 +50,8 @@ public:
 
     Vector<SpawnLogEntry>              spawns;
     Vector<HostEvent>                  events;
-    std::set<SpawnId>                  defeated;
-    std::set<SpawnId>                  destroyed;
+    RbSet<SpawnId>                     defeated;
+    RbSet<SpawnId>                     destroyed;
     bool                               bEnded = false;
     String                             endNext;
     String                             currentGround;

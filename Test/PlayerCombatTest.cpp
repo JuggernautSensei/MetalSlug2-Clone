@@ -101,7 +101,7 @@ void NoSpread_(
         {
             const Span<const Bullet> bullets = _sim.State().GetProjectiles().GetBullets();
             const VECTOR2            v       = bullets[bullets.size() - 1].velocity;
-            return std::atan2(-v.y, Abs(v.x)) * 180.f / 3.14159265f;
+            return ATan2(-v.y, Abs(v.x)) * 180.f / 3.14159265f;
         }
     }
     return std::nanf("");
@@ -284,14 +284,14 @@ void ExpectHmgJitterIsPerpendicular_(
     const Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
     ASSERT_GE(bullets.size(), 3u);
 
-    const VECTOR2  velocity  = bullets[0].velocity;
-    const float    speed     = Sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-    const VECTOR2  direction = { velocity.x / speed, velocity.y / speed };
-    std::set<long> angles;
-    std::set<long> offsets;
+    const VECTOR2 velocity  = bullets[0].velocity;
+    const float   speed     = Sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+    const VECTOR2 direction = { velocity.x / speed, velocity.y / speed };
+    RbSet<long>   angles;
+    RbSet<long>   offsets;
     for (const Bullet& bullet: bullets)
     {
-        angles.insert(std::lround(std::atan2(bullet.velocity.y, bullet.velocity.x) * 1000.f));
+        angles.insert(std::lround(ATan2(bullet.velocity.y, bullet.velocity.x) * 1000.f));
         const VECTOR2 delta = { bullet.position.x - bullets[0].position.x, bullet.position.y - bullets[0].position.y };
         const float   cross = direction.x * delta.y - direction.y * delta.x;
         EXPECT_LE(Abs(cross), 2.f * jitter + 0.01f);
@@ -473,7 +473,7 @@ TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToNinety)
     {
         const Span<const Bullet> first = sim.State().GetProjectiles().GetBullets();
         const VECTOR2            v     = first[first.size() - 1].velocity;
-        angles.push_back(std::atan2(-v.y, Abs(v.x)) * 180.f / 3.14159265f);
+        angles.push_back(ATan2(-v.y, Abs(v.x)) * 180.f / 3.14159265f);
     }
     for (int tick = 0; tick < 40; ++tick)
     {
@@ -484,7 +484,7 @@ TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToNinety)
             shots                            = fired;
             const Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
             const VECTOR2            v       = bullets[bullets.size() - 1].velocity;
-            angles.push_back(std::atan2(-v.y, Abs(v.x)) * 180.f / 3.14159265f);
+            angles.push_back(ATan2(-v.y, Abs(v.x)) * 180.f / 3.14159265f);
         }
     }
 

@@ -545,7 +545,7 @@ void PropWorld::Tick(
                 inst.pos.y += inst.fallVy * dt;
                 if (_ctx.pGround != nullptr)
                 {
-                    const std::optional<int> surface = _ctx.pGround->FindGroundY(static_cast<int>(std::floor(inst.pos.x)), static_cast<int>(std::floor(inst.pos.y)), 2000);
+                    const std::optional<int> surface = _ctx.pGround->FindGroundY(static_cast<int>(Floor(inst.pos.x)), static_cast<int>(Floor(inst.pos.y)), 2000);
                     if (surface && inst.pos.y + inst.fallHalfHeight >= static_cast<float>(*surface))
                     {
                         inst.pos.y        = static_cast<float>(*surface) - inst.fallHalfHeight;
@@ -786,8 +786,8 @@ bool ApplyGroundPatch(
     //  2) 발자국 사각형 안 고체 픽셀의 kMaxClearPercent % 를 넘게 지우면 거부
     constexpr uint64_t kMaxClearPercent = 50;
 
-    const int x0 = static_cast<int>(std::floor(_topLeft.x));
-    const int y0 = static_cast<int>(std::floor(_topLeft.y));
+    const int x0 = static_cast<int>(Floor(_topLeft.x));
+    const int y0 = static_cast<int>(Floor(_topLeft.y));
     const int w  = _footprint.GetWidth();
     const int h  = _footprint.GetHeight();
 

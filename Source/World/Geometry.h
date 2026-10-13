@@ -6,13 +6,13 @@
 [[nodiscard]] __forceinline int FloorToInt(
     const float _value)
 {
-    return static_cast<int>(std::floor(_value));
+    return static_cast<int>(Floor(_value));
 }
 
 [[nodiscard]] __forceinline int CeilToInt(
     const float _value)
 {
-    return static_cast<int>(std::ceil(_value));
+    return static_cast<int>(Ceil(_value));
 }
 
 struct Aabb

@@ -44,7 +44,7 @@ namespace
     const float v      = Abs(_v0);
     const float tAccel = (4.f * v + Sqrt(16.f * v * v + 24.f * kGlideAccel * d)) / (2.f * kGlideAccel);
     const float tVel   = 1.5f * d / Max(1.f, kMaxStep - v);
-    return static_cast<int>(std::ceil(Max(tAccel, tVel)));
+    return static_cast<int>(Ceil(Max(tAccel, tVel)));
 }
 
 // 임계감쇠 스프링 (Unity SmoothDamp 와 같은 형태). 속도 상한은 px/s

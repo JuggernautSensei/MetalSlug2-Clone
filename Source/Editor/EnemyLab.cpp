@@ -668,8 +668,8 @@ void EnemyLab::DrawOverlay(
         if (m_bShowProbe)
         {
             const VECTOR2 feet  = e.GetFeet();
-            const int     x     = static_cast<int>(std::floor(feet.x));
-            const int     y     = static_cast<int>(std::floor(feet.y));
+            const int     x     = static_cast<int>(Floor(feet.x));
+            const int     y     = static_cast<int>(Floor(feet.y));
             int           depth = kLabProbeDepth;
             for (int dy = 0; dy < kLabProbeDepth; ++dy)
             {

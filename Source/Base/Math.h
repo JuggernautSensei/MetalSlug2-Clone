@@ -12,7 +12,10 @@ using jug::kDeg2Rad;
 using jug::kRad2Deg;
 
 using jug::Abs;
+using jug::ATan2;
+using jug::Ceil;
 using jug::Clamp;
+using jug::Floor;
 using jug::Lerp;
 using jug::Max;
 using jug::Min;

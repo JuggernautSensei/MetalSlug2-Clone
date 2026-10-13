@@ -10,10 +10,10 @@
 
 namespace
 {
-[[nodiscard]] std::set<std::pair<int, int>> GroundTestSolidSet_(
+[[nodiscard]] RbSet<std::pair<int, int>> GroundTestSolidSet_(
     const GroundMaskDocument& _doc)
 {
-    std::set<std::pair<int, int>> out;
+    RbSet<std::pair<int, int>> out;
     for (int y = 0; y < _doc.GetHeight(); ++y)
     {
         for (int x = 0; x < _doc.GetWidth(); ++x)
@@ -69,7 +69,7 @@ TEST(GroundEditorTest, PencilEraserRectAndFillProduceExpectedPixels)
     doc.Create(20, 10);
 
     doc.Stamp(5, 5, 1, true);
-    EXPECT_EQ(GroundTestSolidSet_(doc), (std::set<std::pair<int, int>> {
+    EXPECT_EQ(GroundTestSolidSet_(doc), (RbSet<std::pair<int, int>> {
                                             { 5, 5 }
     }));
 
@@ -125,17 +125,17 @@ TEST(GroundEditorTest, UndoRedoRestoreExactlyAndStrokesGroupEdits)
     doc.Create(16, 16);
     EXPECT_FALSE(doc.IsDirty());
 
-    const std::set<std::pair<int, int>> empty = GroundTestSolidSet_(doc);
+    const RbSet<std::pair<int, int>> empty = GroundTestSolidSet_(doc);
     doc.BeginStroke();
     doc.DrawLine(0, 0, 15, 15, 3, true);
     doc.Stamp(8, 0, 1, true);
     doc.EndStroke();
-    const std::set<std::pair<int, int>> afterStroke = GroundTestSolidSet_(doc);
+    const RbSet<std::pair<int, int>> afterStroke = GroundTestSolidSet_(doc);
     EXPECT_FALSE(afterStroke.empty());
     EXPECT_TRUE(doc.IsDirty());
 
     doc.FloodFill(15, 0, true);
-    const std::set<std::pair<int, int>> afterFill = GroundTestSolidSet_(doc);
+    const RbSet<std::pair<int, int>> afterFill = GroundTestSolidSet_(doc);
     EXPECT_GT(afterFill.size(), afterStroke.size());
 
     doc.Undo();

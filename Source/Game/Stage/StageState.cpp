@@ -910,8 +910,8 @@ void StageState::DrawBackdrop_(
 
     const int pivotX = pSprite->bStandalone ? pSprite->width / 2 : pSprite->frame.pivotX;
     const int pivotY = pSprite->bStandalone ? pSprite->height / 2 : pSprite->frame.pivotY;
-    int       left   = static_cast<int>(std::floor(centerX)) - pivotX;
-    const int top    = static_cast<int>(std::floor(centerY)) - pivotY;
+    int       left   = static_cast<int>(Floor(centerX)) - pivotX;
+    const int top    = static_cast<int>(Floor(centerY)) - pivotY;
 
     const bool bTile = pMode->period > 0.f;
     const int  tileW = bTile ? static_cast<int>(pMode->period) : pSprite->width;

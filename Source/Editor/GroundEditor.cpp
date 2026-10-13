@@ -806,8 +806,8 @@ void GroundEditor::DrawView_()
     m_scrollY          = Clamp(m_scrollY, -64.f / m_zoom, Max(worldH - viewH, 0.f) + 64.f / m_zoom);
     const float zoom   = m_zoom;
 
-    const int pixelX = static_cast<int>(std::floor(m_scrollX + (io.MousePos.x - originX) / zoom));
-    const int pixelY = static_cast<int>(std::floor(m_scrollY + (io.MousePos.y - originY) / zoom));
+    const int pixelX = static_cast<int>(Floor(m_scrollX + (io.MousePos.x - originX) / zoom));
+    const int pixelY = static_cast<int>(Floor(m_scrollY + (io.MousePos.y - originY) / zoom));
     HandleCanvasInput_(pixelX, pixelY, bHovered);
 
     int dirtyX0 = 0;
@@ -846,15 +846,15 @@ void GroundEditor::DrawView_()
     pDraw->AddRect(w0, w1, IM_COL32(200, 200, 90, 255));
     if (zoom >= kGroundGridZoom)
     {
-        const int firstX = Max(0, static_cast<int>(std::floor(sx)));
-        const int lastX  = Min(m_doc.GetWidth(), static_cast<int>(std::ceil(sx + viewW)));
+        const int firstX = Max(0, static_cast<int>(Floor(sx)));
+        const int lastX  = Min(m_doc.GetWidth(), static_cast<int>(Ceil(sx + viewW)));
         for (int x = firstX; x <= lastX; ++x)
         {
             const float px = std::round(originX + (static_cast<float>(x) - sx) * zoom);
             pDraw->AddLine(ImVec2 { px, canvasPos.y }, ImVec2 { px, canvasPos.y + canvasSize.y }, IM_COL32(255, 255, 255, 40));
         }
-        const int firstY = Max(0, static_cast<int>(std::floor(sy)));
-        const int lastY  = Min(m_doc.GetHeight(), static_cast<int>(std::ceil(sy + viewH)));
+        const int firstY = Max(0, static_cast<int>(Floor(sy)));
+        const int lastY  = Min(m_doc.GetHeight(), static_cast<int>(Ceil(sy + viewH)));
         for (int y = firstY; y <= lastY; ++y)
         {
             const float py = std::round(originY + (static_cast<float>(y) - sy) * zoom);

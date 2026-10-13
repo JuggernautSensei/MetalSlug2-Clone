@@ -56,14 +56,14 @@ namespace
 [[nodiscard]] VECTOR2 SpriteSize_(
     const StringView _name)
 {
-    static const std::map<String, VECTOR2> kSizes = {
+    static const RbMap<String, VECTOR2> kSizes = {
         { "PlayerStateUI_Bomb", { 124.f, 34.f } },
         {     "InfiniteUI_Red",  { 40.f, 16.f } },
         {       "PressStartUI", { 174.f, 30.f } },
         {         "PlayerHPUI", { 106.f, 16.f } },
         {            "LEVEL_1",  { 96.f, 16.f } },
     };
-    const std::map<String, VECTOR2>::const_iterator it = kSizes.find(String { _name });
+    const RbMap<String, VECTOR2>::const_iterator it = kSizes.find(String { _name });
     return it == kSizes.end() ? VECTOR2 { 0.f, 0.f } : it->second;
 }
 
@@ -160,7 +160,7 @@ TEST(UiFont, UnsupportedCharactersHaveNoGlyph)
 
 TEST(UiFont, EveryColumnIsReachableAndStaysInsideTheStrip)
 {
-    std::map<int, int> hits;
+    RbMap<int, int> hits;
     for (char c = 'A'; c <= 'Z'; ++c)
     {
         ++hits[GetGlyphIndex(c)];

@@ -28,7 +28,7 @@ void UpdatePosture_(
 {
     const float dx  = Abs(_env.ctx.player.center.x - _e.body.position.x);
     const float dy  = _env.ctx.player.center.y - (_e.body.position.y + _cfg.muzzleBase.y);
-    const float deg = dy > 0.f ? std::atan2(dy, Max(dx, 0.001f)) * kRad2Deg : 0.f;
+    const float deg = dy > 0.f ? ATan2(dy, Max(dx, 0.001f)) * kRad2Deg : 0.f;
     for (int i = 0; i < 5; ++i)
     {
         if (Abs(deg - _cfg.postureDeg[i]) <= _cfg.windowDeg)

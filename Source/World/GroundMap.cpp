@@ -152,7 +152,7 @@ bool GroundMap::IsOutOfBoundsSolid_(
 bool GroundMap::IsSolidAt(
     const VECTOR2 _point) const
 {
-    return IsSolid(static_cast<int>(std::floor(_point.x)), static_cast<int>(std::floor(_point.y)));
+    return IsSolid(static_cast<int>(Floor(_point.x)), static_cast<int>(Floor(_point.y)));
 }
 
 bool GroundMap::IsRectSolid(

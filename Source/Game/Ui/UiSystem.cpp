@@ -4,7 +4,7 @@
 #include "Render/Renderer.h"
 #include "Render/SpriteBatch.h"
 #include <algorithm>
-#include <cstdio>
+#include <JugX/StringFormat.h>
 #include <utility>
 
 #include "Base/Log.h"
@@ -229,7 +229,7 @@ void UiSystem::DrawMissionResults() const
     m_font.DrawText(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), cx, m_layout.resultsPlayerY - kGlyphSize / 2, "1P", yellow);
 
     ARRAY<char, 8> countBuf = {};
-    std::snprintf(countBuf.data(), countBuf.size(), "%02d", Clamp(m_results.rescued, 0, 99));
+    jug::Format(countBuf, "{:02}", Clamp(m_results.rescued, 0, 99));
     m_font.DrawTimeDigits(SpriteBatch::GetSingleton(), cx, m_layout.resultsCountTopY, countBuf.data(), a);
     if (m_results.bCounting)
     {
@@ -239,7 +239,7 @@ void UiSystem::DrawMissionResults() const
     }
 
     ARRAY<char, 16> scoreBuf = {};
-    std::snprintf(scoreBuf.data(), scoreBuf.size(), "%d", Clamp(m_results.bonusScore, 0, 9'999'999));
+    jug::Format(scoreBuf, "{}", Clamp(m_results.bonusScore, 0, 9'999'999));
     m_font.DrawTimeDigits(SpriteBatch::GetSingleton(), cx, m_layout.resultsScoreTopY, scoreBuf.data(), a);
 
     if (m_results.bRankVisible)

@@ -67,7 +67,7 @@ TEST(AnimIntegrity, AtlasRectanglesNeverOverlapAndStayInsidePages)
         GTEST_SKIP() << "Assets 없음";
     }
 
-    std::map<int, std::set<ARRAY<int, 4>>> byPage;
+    RbMap<int, RbSet<ARRAY<int, 4>>> byPage;
     for (const AnimClip& clip: lib.GetClips())
     {
         for (const AnimFrame& f: clip.frames)
@@ -80,7 +80,7 @@ TEST(AnimIntegrity, AtlasRectanglesNeverOverlapAndStayInsidePages)
             }
         }
     }
-    for (const std::pair<const int, std::set<ARRAY<int, 4>>>& page: byPage)
+    for (const std::pair<const int, RbSet<ARRAY<int, 4>>>& page: byPage)
     {
         const Vector<ARRAY<int, 4>> rects(page.second.begin(), page.second.end());
         for (size_t i = 0; i < rects.size(); ++i)
@@ -145,11 +145,11 @@ TEST(AnimIntegrity, EveryDefClipExistsWithMatchingFrameCountAndSingleFamily)
     const EnemyDefLibrary defs = loaded.Take();
 
     // 정의가 여러 계열의 클립을 쓰는 것이 의도인 경우만 허용한다
-    const std::set<String> mixedOk = { "pow" };
+    const RbSet<String> mixedOk = { "pow" };
 
     for (const EnemyDef& def: defs.GetDefs())
     {
-        std::set<String> families;
+        RbSet<String> families;
         for (const NamedClip& named: def.clips)
         {
             const ClipDef& clip = named.clip;
@@ -186,7 +186,7 @@ TEST(AnimIntegrity, StageDecorSequencesStayWithinOneActor)
     Result<JsonDeserializer> doc = LoadJsonFile(FindAssetRoot() / "Stage" / "Stage0.json");
     ASSERT_TRUE(doc);
 
-    const std::map<String, std::set<String>> actors = {
+    const RbMap<String, RbSet<String>> actors = {
         { "Parker",                                                                { "Parker", "Parker_Run", "Parker_Run_2", "Parker_Stopping" } },
         {    "Kid", { "Order_Boy_Run_Left", "Order_Boy_Run_Right", "Order_Idle", "Order_Turn", "Order_Run_2", "Order_Stopping", "Order_Recoil" } },
     };

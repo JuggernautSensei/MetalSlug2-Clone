@@ -1,4 +1,4 @@
-#include "Game/StateFactory.h"
+﻿#include "Game/StateFactory.h"
 
 #include "Base/Types.h"
 #include "Game/DemoState.h"
@@ -81,8 +81,8 @@ Scoped<IGameState> CreateState(
         config.spawnFeet     = { 200.f, 378.f };
         config.bSlugLab      = true;
         config.bSpawnTargets = false;
-        config.slugFeet.push_back({ 430.f, 378.f });
-        config.slugFeet.push_back({ 2300.f, 378.f });
+        config.slugFeet.emplace_back(430.f, 378.f);
+        config.slugFeet.emplace_back(2300.f, 378.f);
         return Scoped<IGameState> { new SandboxState { config } };
     }
     if (_name == "stage0")

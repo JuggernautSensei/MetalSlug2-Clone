@@ -407,11 +407,11 @@ TEST(StageIntegration, BotStillWalksToTheStageEndAfterEveryOpenlandPropIsDestroy
     }
     ASSERT_GE(sim.State().GetPlayer().GetFeet().x, 8990.f);
 
-    std::set<uint32_t> destroyedIds;
-    float              bestX        = 0.f;
-    float              maxFeetY     = 0.f;
-    bool               bRoadChecked = false;
-    int                bossTicks    = 0;
+    RbSet<uint32_t> destroyedIds;
+    float           bestX        = 0.f;
+    float           maxFeetY     = 0.f;
+    bool            bRoadChecked = false;
+    int             bossTicks    = 0;
     for (int i = 0; i < 60000 && sim.Current() == sim.StagePtr(); ++i)
     {
         PropWorld&       props = sim.State().GetProps();

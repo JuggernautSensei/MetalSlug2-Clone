@@ -43,9 +43,9 @@ namespace
     const EnemyHandle _heli,
     const int         _ticks)
 {
-    HeliLog            log;
-    std::set<uint32_t> seenBombs;
-    std::set<uint32_t> seenShots;
+    HeliLog         log;
+    RbSet<uint32_t> seenBombs;
+    RbSet<uint32_t> seenShots;
     for (int i = 0; i < _ticks; ++i)
     {
         _rig.Step(1);
@@ -304,7 +304,7 @@ TEST(Heli, HoverIdleCyclesPitchFramesWithoutTouchingSimState)
     const BehaviorOps& ops = GetBehaviorOps(eEnemyBehavior::Heli);
     ASSERT_NE(ops.bodyFrame, nullptr);
 
-    std::set<const AnimFrame*> shown;
+    RbSet<const AnimFrame*> shown;
     for (int i = 0; i < 6 * def.heli.idleStepTicks * (def.heli.idlePitchTo - def.heli.idlePitchFrom); ++i)
     {
         rig.Step(1);
