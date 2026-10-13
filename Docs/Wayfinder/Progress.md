@@ -4,11 +4,11 @@
 작업 주체: 메인 세션이 Sonnet 에이전트들에게 웨이브 단위로 위임(Opus 는 2단계 계획 1회). 이 문서와 `git log` 만으로 이어갈 수 있게 정리함.
 
 ## 0. 가장 먼저 할 일 (다음 컨텍스트)
-1. `git log --oneline | head -20`, `git status --short | grep -v Trash` 로 현재 상태 확인.
-2. **W12(타입 JugX 교체) 에이전트가 이 문서 작성 시점에 실행 중이었다.** 작업 트리에 미커밋 수정(`Base/Math.h`, `Editor/*`, `Game/Enemies/*` 등)이 있으면 W12 가 끝나지 않은 것이다.
-   - 에이전트가 이미 죽었다면: `powershell -NoProfile -ExecutionPolicy Bypass -File Scripts/Verify.ps1` 로 현재 트리를 검증 → PASS 면 커밋(`git add -A -- Source Test Projects Docs/Architecture.md`), FAIL 이면 마지막 W12 커밋 이후의 미커밋 변경만 `git checkout -- Source Test`(주의: 사용자 변경 `Assets/anim.json` 은 건드리지 말 것) 로 되돌리고 원인 파악.
-   - 마지막 W12 커밋: `0006ef9 Vec2: replace MS2 Vec2 with JugX VECTOR2 ...` (이 시점까지는 Verify 통과 상태로 커밋됨).
-3. `Docs/Wayfinder/TypeAudit.md`(W12 점검표, untracked 일 수 있음) 가 있으면 읽고 "유지" 분류 항목을 확인.
+1. `git log --oneline | head -5`, `git status --short | grep -v Trash`, `git stash list` 로 상태 확인. 작업 트리는 **검증된 마지막 커밋 상태로 깨끗**하다(미추적 `Docs/Wayfinder/TypeAudit.md` 만 있을 수 있음).
+2. **W12(타입 JugX 교체)는 사용자 요청으로 중단**되었다. 완료된 W12 커밋은 `0006ef9`(Vec2→VECTOR2)까지이고, 그 뒤 진행분(Math.h/Types.h/Editor/Enemies/StageState 등 28개 파일)은 **검증 전 상태로 스태시**에 있다: `stash@{0}: W12 WIP (unverified...)`.
+   - 이어가기: `git stash pop` → 빌드 → `Scripts/Verify.ps1` + `Scripts/TraceLoad.ps1` → PASS 면 커밋(`git add -A -- Source Test Projects Docs/Architecture.md`), FAIL 이면 `git checkout -- Source Test Projects` 로 되돌리고 원인 파악(또는 `git stash drop`).
+   - `Docs/Wayfinder/TypeAudit.md` 에 점검표(교체/유지 판정)가 있다.
+3. 작업 브랜치는 `main` 보다 앞서 있고 **아직 `main` 병합/푸시 전**이다(사용자가 나중에 하겠다고 함). 병합은 `git checkout main && git merge --ff-only claude/affectionate-brahmagupta-tgqzo1 && git push origin main`.
 
 ## 1. 사용자 요구 (불변 규칙)
 - **결과/동작 불변이 절대 조건**: `Scripts/Verify.ps1` → `VERIFY: PASS`(리플레이 해시 15, 캡처 7, 튜닝 해시, 단위 테스트 902/902 통과) + `Scripts/TraceLoad.ps1` → `TRACELOAD: PASS`. 기준선 파일(`Docs/Wayfinder/Baseline*.txt`, `Test/Replays`)은 `-Update` 로 갱신하지 않는다.
