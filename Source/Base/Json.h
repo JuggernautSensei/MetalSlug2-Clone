@@ -18,9 +18,7 @@ inline constexpr jug::Flags<eJsonLoadOption> kJsonBomComments = { eJsonLoadOptio
 [[nodiscard]] Result<JsonReader> TryField(const JsonReader& _object, StringView _key);
 
 template<typename T>
-[[nodiscard]] Result<T> TryRead(
-    const JsonReader& _object,
-    const StringView  _key)
+[[nodiscard]] Result<T> TryRead(const JsonReader& _object, StringView _key)
 {
     const Result<JsonReader> field = TryField(_object, _key);
     if (!field)

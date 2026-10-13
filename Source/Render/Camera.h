@@ -28,10 +28,10 @@ public:
     void               Unlock();
     [[nodiscard]] bool IsLocked() const;
 
-    void               SetForwardOnly(const bool _bForwardOnly);
+    void               SetForwardOnly(bool _bForwardOnly);
     [[nodiscard]] bool IsForwardOnly() const;
 
-    void               SetForwardOnlyY(const bool _bForwardOnlyY);
+    void               SetForwardOnlyY(bool _bForwardOnlyY);
     [[nodiscard]] bool IsForwardOnlyY() const;
 
     void               BeginMove(VECTOR2 _targetCenter, float _seconds);
@@ -44,7 +44,7 @@ public:
     [[nodiscard]] const Aabb& GetBounds() const;
     [[nodiscard]] const Aabb& GetLockBounds() const;
 
-    void SetTarget(const VECTOR2 _target);
+    void SetTarget(VECTOR2 _target);
 
     void AddScrollFloor(float _dx);
 

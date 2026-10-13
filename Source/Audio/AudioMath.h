@@ -2,12 +2,12 @@
 #include <algorithm>
 #include <cstdint>
 
-[[nodiscard]] float ComputePitch(const float _variation, const float _unit01);
+[[nodiscard]] float ComputePitch(float _variation, float _unit01);
 
 class AudioRng
 {
 public:
-    explicit AudioRng(const uint32_t _seed = 0x9E3779B9u);
+    explicit AudioRng(uint32_t _seed = 0x9E3779B9u);
 
     [[nodiscard]] uint32_t NextU32();
 
@@ -25,9 +25,9 @@ struct BgmFader
 
     void Reset();
 
-    void BeginFadeOut(const float _seconds);
+    void BeginFadeOut(float _seconds);
 
-    [[nodiscard]] bool Update(const float _dtSec);
+    [[nodiscard]] bool Update(float _dtSec);
 
     [[nodiscard]] bool IsDone() const;
 };

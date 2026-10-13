@@ -41,9 +41,9 @@ inline constexpr int kGlyphSize    = 16;
 inline constexpr int kGlyphColumns = 35;
 inline constexpr int kGlyphRows    = 2;
 
-[[nodiscard]] int GetGlyphIndex(const char _ch);
+[[nodiscard]] int GetGlyphIndex(char _ch);
 
-[[nodiscard]] int MeasureChars(const int _charCount, const int _scale, const int _letterSpacing = 0);
+[[nodiscard]] int MeasureChars(int _charCount, int _scale, int _letterSpacing = 0);
 
 struct GlyphQuad
 {

@@ -37,7 +37,7 @@ void       PrepareBody(Enemy& _e, const EnemyDef& _def);
 
 [[nodiscard]] bool FloorAhead(const Enemy& _e, const EnemyEnv& _env, float _dist, float _drop);
 
-[[nodiscard]] int Roll(EnemyEnv& _env, const int _n);
+[[nodiscard]] int Roll(EnemyEnv& _env, int _n);
 
 void RequestFx(EnemyEnv& _env, const FxDef& _fx, VECTOR2 _origin, int _facing);
 
@@ -57,15 +57,6 @@ void CancelMelee(Enemy& _e, EnemyEnv& _env);
 void BeginSoldierDeath(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
 void TickSoldierDeath(Enemy& _e, const EnemyDef& _def, EnemyEnv& _env);
 
-bool SubmitNamedPart(
-    const EnemyRenderEnv& _render,
-    StringView            _name,
-    VECTOR2               _origin,
-    int                   _ticks,
-    bool                  _bLoop,
-    int                   _sortKey,
-    int                   _depth,
-    bool                  _bFlipX    = false,
-    float                 _partFlash = 0.f);
+bool SubmitNamedPart(const EnemyRenderEnv& _render, StringView _name, VECTOR2 _origin, int _ticks, bool _bLoop, int _sortKey, int _depth, bool _bFlipX = false, float _partFlash = 0.f);
 
 [[nodiscard]] int GetNamedPartTicks(const AnimationLibrary& _anims, StringView _name);

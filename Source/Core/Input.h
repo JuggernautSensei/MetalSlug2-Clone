@@ -25,9 +25,9 @@ struct InputFrame
 {
     IndexedFlags<eAction> held = {};
 
-    [[nodiscard]] bool IsHeld(const eAction _action) const;
+    [[nodiscard]] bool IsHeld(eAction _action) const;
 
-    void Set(const eAction _action, const bool _bHeld);
+    void Set(eAction _action, bool _bHeld);
 
     [[nodiscard]] constexpr bool operator==(const InputFrame&) const = default;
 };

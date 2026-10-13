@@ -39,7 +39,7 @@ public:
     [[nodiscard]] bool HasPeriodicTail() const;
     void               MaterializeTail(int _periods);
 
-    [[nodiscard]] bool IsSolid(const int _x, const int _y) const;
+    [[nodiscard]] bool IsSolid(int _x, int _y) const;
 
     [[nodiscard]] bool IsSolidAt(VECTOR2 _point) const;
 

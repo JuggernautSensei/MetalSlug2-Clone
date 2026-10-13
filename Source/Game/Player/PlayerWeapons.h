@@ -31,11 +31,4 @@ void OnFired(WeaponState& _state);
 [[nodiscard]] BulletSpawn MakeBulletSpawn(eWeapon _weapon, const WeaponTuning& _tuning, uint32_t _owner, VECTOR2 _muzzle, VECTOR2 _sweepFrom, VECTOR2 _direction);
 
 // 파이어샷 분출 입자 하나
-[[nodiscard]] BulletSpawn MakeFlameParticleSpawn(
-    const WeaponTuning& _tuning,
-    uint32_t            _owner,
-    VECTOR2             _muzzle,
-    VECTOR2             _sweepFrom,
-    VECTOR2             _direction,
-    uint32_t            _hitId,
-    RngMt19937&         _rng);
+[[nodiscard]] BulletSpawn MakeFlameParticleSpawn(const WeaponTuning& _tuning, uint32_t _owner, VECTOR2 _muzzle, VECTOR2 _sweepFrom, VECTOR2 _direction, uint32_t _hitId, RngMt19937& _rng);

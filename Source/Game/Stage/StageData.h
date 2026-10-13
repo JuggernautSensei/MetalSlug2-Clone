@@ -102,7 +102,7 @@ enum class eStageLayer : uint8_t
     Count
 };
 
-[[nodiscard]] uint32_t LayerBit(const eStageLayer _layer);
+[[nodiscard]] uint32_t LayerBit(eStageLayer _layer);
 
 enum class eCollisionLayer : uint8_t
 {
@@ -398,6 +398,6 @@ struct StageData
 
 [[nodiscard]] Result<StageData> LoadStageFromFile(const FilePath& _path, String* _pMessage = nullptr);
 
-[[nodiscard]] bool ShouldRunAction(const eWhen _when, const bool _bSilent);
+[[nodiscard]] bool ShouldRunAction(eWhen _when, bool _bSilent);
 
 [[nodiscard]] const char* GetActionTypeName(eActionType _type);

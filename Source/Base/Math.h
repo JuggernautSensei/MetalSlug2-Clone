@@ -23,7 +23,7 @@ using jug::Sqrt;
 using jug::VECTOR2;
 
 template<typename RngT>
-[[nodiscard]] float RandRange(RngT& _rng, const float _lo, const float _hi)
+[[nodiscard]] float RandRange(RngT& _rng, float _lo, float _hi)
 {
     const double unit = static_cast<double>(_rng.Generate()) / 18'446'744'073'709'551'615.0;
     return _lo + static_cast<float>(unit) * (_hi - _lo);

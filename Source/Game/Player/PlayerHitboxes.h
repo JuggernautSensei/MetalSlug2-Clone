@@ -17,4 +17,4 @@
 
 [[nodiscard]] Aabb MakePlayerHurtboxBox(VECTOR2 _feet, ePose _pose, const BodyTuning& _body);
 
-[[nodiscard]] bool IsKnifeSwingActive(const int _ticksSinceStart, const KnifeTuning& _knife);
+[[nodiscard]] bool IsKnifeSwingActive(int _ticksSinceStart, const KnifeTuning& _knife);

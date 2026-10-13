@@ -4,11 +4,7 @@
 struct RGBA
 {
     constexpr RGBA() = default;
-    __forceinline constexpr RGBA(
-        const uint8_t _r,
-        const uint8_t _g,
-        const uint8_t _b,
-        const uint8_t _a = 255)
+    __forceinline constexpr RGBA(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a = 255)
         : r(_r)
         , g(_g)
         , b(_b)

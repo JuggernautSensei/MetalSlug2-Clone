@@ -13,10 +13,7 @@ void LogMessage(eLogLevel _level, StringView _message);
 void InstallCoreLogger();
 
 template<typename... Args>
-void LogFormat(
-    const eLogLevel                   _level,
-    const std::format_string<Args...> _format,
-    Args&&... _args)
+void LogFormat(eLogLevel _level, std::format_string<Args...> _format, Args&&... _args)
 {
     LogMessage(_level, std::format(_format, std::forward<Args>(_args)...));
 }
@@ -27,10 +24,7 @@ void SetEventLogTick(unsigned long long _tick);
 void WriteEventLog(StringView _event, StringView _fields);
 
 template<typename... Args>
-void EventLogFormat(
-    const StringView                  _event,
-    const std::format_string<Args...> _fields,
-    Args&&... _args)
+void EventLogFormat(StringView _event, std::format_string<Args...> _fields, Args&&... _args)
 {
     if (IsEventLogOpen())
     {

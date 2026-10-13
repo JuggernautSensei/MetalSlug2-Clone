@@ -78,7 +78,7 @@ struct WeaponTuning
     int     holdRepeatTicks       = 0;
     int     ammo                  = 0;
     float   projectileSpeed       = 800.f;
-    int     maxAlive              = 4;       // 동시에 살아 있는 탄 수 상한
+    int     maxAlive              = 4;   // 동시에 살아 있는 탄 수 상한
     bool    bPierce               = false;
     VECTOR2 hitSize               = { 14.f, 10.f };
     float   range                 = 420.f;
@@ -187,9 +187,9 @@ struct WeaponsTuning
     int rocketPickupAmmo  = 20;
     int flamePickupAmmo   = 30;
 
-    [[nodiscard]] int GetPickupAmmo(const eWeapon _weapon) const;
+    [[nodiscard]] int GetPickupAmmo(eWeapon _weapon) const;
 
-    [[nodiscard]] const WeaponTuning& Get(const eWeapon _weapon) const;
+    [[nodiscard]] const WeaponTuning& Get(eWeapon _weapon) const;
 };
 
 struct KnifeTuning
@@ -227,15 +227,15 @@ struct BombTuning
 
 struct PlayerTuning
 {
-    int   lives             = 3;
-    int   deathTicks        = 110;
-    int   respawnInvincible = 120;
-    int   blinkPeriodTicks  = 4;
-    float respawnOffsetX    = 100.f;
-    float respawnDropY      = 160.f;
-    int   gameOverTicks     = 180;
-    int   idleActionTicks   = 480;
-    int   idleActionLength  = 100;   // 대기 연출 길이
+    int     lives                 = 3;
+    int     deathTicks            = 110;
+    int     respawnInvincible     = 120;
+    int     blinkPeriodTicks      = 4;
+    float   respawnOffsetX        = 100.f;
+    float   respawnDropY          = 160.f;
+    int     gameOverTicks         = 180;
+    int     idleActionTicks       = 480;
+    int     idleActionLength      = 100;   // 대기 연출 길이
     float   chuteStartHeightPx    = 260.f;
     float   chuteFallSpeedPxSec   = 110.f;
     int     chuteBlinkTicks       = 24;

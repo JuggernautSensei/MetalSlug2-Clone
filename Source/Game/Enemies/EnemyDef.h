@@ -43,9 +43,7 @@ struct BoxDef
     float cx = 0.f;
     float cy = 0.f;
 
-    [[nodiscard]] Aabb At(
-        const VECTOR2 _feet,
-        const int     _facing) const
+    [[nodiscard]] Aabb At(VECTOR2 _feet, int _facing) const
     {
         const float cxWorld = _feet.x + cx * static_cast<float>(_facing < 0 ? -1 : 1);
         return Aabb::FromCenterSize({ cxWorld, _feet.y + cy }, { w, h });
@@ -75,8 +73,7 @@ struct ClipDef
 
     [[nodiscard]] int GetDurationTicks() const;
 
-    [[nodiscard]] bool IsFinished(
-        const int _ticks) const
+    [[nodiscard]] bool IsFinished(int _ticks) const
     {
         return !bLoop && _ticks >= GetDurationTicks();
     }
@@ -233,7 +230,7 @@ struct SoldierCfg
     int   fireFrame      = 10;
     int   slashFrame     = 9;
     int   jumpSlashFrame = 2;
-    int   jumpReadyTicks = 30;    // JumpSlashReady → JumpSlash
+    int   jumpReadyTicks = 30;   // JumpSlashReady → JumpSlash
     float retreatBelow   = 0.f;
     float wallProbeW     = 40.f;
     float wallProbeH     = 50.f;
@@ -783,8 +780,7 @@ struct EnemyDef
     bool bHitFlash     = false;
     bool bCenterAnchor = false;
 
-    [[nodiscard]] const ClipDef& GetClip(
-        const int _index) const
+    [[nodiscard]] const ClipDef& GetClip(int _index) const
     {
         return clips[static_cast<size_t>(_index)].clip;
     }

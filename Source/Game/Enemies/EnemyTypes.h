@@ -16,11 +16,11 @@ inline constexpr uint32_t kShieldOwnerBit = 0x40000000u;
 
 inline constexpr uint32_t kEnemyIdMask = 0x00FFFFFFu;
 
-[[nodiscard]] uint32_t MakePartOwner(const uint32_t _enemyId, const uint32_t _partIndex);
+[[nodiscard]] uint32_t MakePartOwner(uint32_t _enemyId, uint32_t _partIndex);
 
-[[nodiscard]] int GetPartIndex(const uint32_t _owner);
+[[nodiscard]] int GetPartIndex(uint32_t _owner);
 
-[[nodiscard]] bool IsEnemyOwner(const uint32_t _owner);
+[[nodiscard]] bool IsEnemyOwner(uint32_t _owner);
 
 struct EnemyHandle
 {
@@ -162,9 +162,9 @@ struct Enemy
 // 전체 스프라이트 플래시 양
 [[nodiscard]] float HitFlashAmount(const Enemy& _e);
 
-[[nodiscard]] float PartFlashAmount(const Enemy& _e, const int _part);
+[[nodiscard]] float PartFlashAmount(const Enemy& _e, int _part);
 
-void TriggerPartHitFlash(Enemy& _e, const int _part);
+void TriggerPartHitFlash(Enemy& _e, int _part);
 
 struct EnemyFilter
 {
