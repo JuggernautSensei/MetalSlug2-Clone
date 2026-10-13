@@ -50,5 +50,4 @@ Assets/
 - 로더: `LoadGroundMask` (`Source/Game/Stage/StageMapping.cpp`).
 
 ## 확인
-- `Scripts/Regress.ps1` : 빌드 + 리플레이 해시 비교 (`Docs/Wayfinder/Baseline.txt`).
 - `Scripts/ValidateStage.ps1` : 스테이지가 참조하는 스프라이트/클립/소리 이름이 존재하는지.

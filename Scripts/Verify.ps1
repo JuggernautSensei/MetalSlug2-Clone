@@ -1,6 +1,6 @@
 # 동작 불변 검증: 리팩터링 전후 결과가 같은지 한 번에 확인한다.
 #   1) 빌드 (게임 + SlugTest)
-#   3) 캡처 해시    : 상태별 스크린샷 SHA256 (Docs/Wayfinder/BaselineCapture.txt, 오프스크린 + 소프트웨어 렌더)
+#   3) 캡처 해시    : 상태별 스크린샷 SHA256 (Scripts/Baseline/BaselineCapture.txt, 오프스크린 + 소프트웨어 렌더)
 #   4) 튜닝 덤프 해시 (--dump-tuning)
 #   5) SlugTest     : 실패 목록이 알려진 기존 실패와 같은지
 # 사용: powershell -NoProfile -File Scripts/Verify.ps1 [-Update] [-NoBuild] [-Config Debug|Release]
@@ -16,7 +16,7 @@ Set-Location $root
 
 $knownFailures = @('AnimIntegrity.LeftRightTwinsKeepTheSameFootAnchor')
 $captureStates = @('stage0', 'bosslab', 'helilab', 'buslab', 'title', 'uidemo', 'sandbox')
-$baselinePath  = Join-Path $root 'Docs/Wayfinder/BaselineCapture.txt'
+$baselinePath  = Join-Path $root 'Scripts/Baseline/BaselineCapture.txt'
 $bFail = $false
 
 if (-not $NoBuild)

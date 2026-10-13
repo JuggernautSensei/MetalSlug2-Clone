@@ -32,9 +32,8 @@ C++20 + SDL3 로 만든 메탈슬러그 2 스타일 2D 액션 게임 (Mission 4 
 ## 폴더
 - `Source/Base` 공용 유틸(Json, Result, Log) / `Core` App, 입력, 리플레이, 튜닝 / `Render` 스프라이트, 카메라 / `Audio` / `World` 지면, 물리, 전투 / `Game` 상태, 플레이어, 적, 소품, 스테이지 / `Editor` ImGui 에디터
 - `Assets/` anim.json, sprites.json, sounds.json, manifest.json, `Atlas/` `Textures/` `Audio/` `Ground/` `Stage/` `Defs/` `Tuning/`
-- `Test/` GoogleTest (`SlugTest.exe`), `Test/Replays/` 회귀 리플레이
-- `Projects/` vcxproj (MetalSlug2_Clone, SlugTest) / `Scripts/` Build, Regress, ValidateStage
-- `Docs/` 편집용 문서 (아래 목록) / `Docs/Wayfinder/` 정리 작업 기록
+- `Test/` GoogleTest (`SlugTest.exe`)
+- `Projects/` vcxproj (MetalSlug2_Clone, SlugTest) / `Scripts/` Build, Verify, TraceLoad, ValidateStage
 - `Output/` `Intermediate/` `Captures/` 빌드/캡처 산출물 (git 무시)
 
 ## 편집 방법 (`--editor`, 저장은 모두 Ctrl+S)
@@ -56,16 +55,9 @@ C++20 + SDL3 로 만든 메탈슬러그 2 스타일 2D 액션 게임 (Mission 4 
 
 - 창 없이 캡처(자동 검증용): 환경변수 `SDL_VIDEO_DRIVER=offscreen`, `SDL_RENDER_DRIVER=software` 를 설정하고 `--capture` 로 실행하면 창이 뜨지 않는다 (렌더 방식이 달라 실제 창 결과와 픽셀이 조금 다를 수 있으니 전/후 비교는 같은 방식끼리만).
 
-## 회귀 확인
-- 의도적으로 동작을 바꿨다면 `Scripts/Regress.ps1 -Update` 로 기준 해시를 갱신한다.
-- 에셋 이름 확인: `Scripts/ValidateStage.ps1`. 단위 테스트: `SlugTest.exe`.
+## 검증
+- `Scripts/Verify.ps1` : 빌드 후 캡처 해시 7개 + 튜닝 덤프 + 단위 테스트를 기준선(`Scripts/Baseline/`)과 비교.
+- `Scripts/TraceLoad.ps1` : 텍스처 로드 순서/내용 비교. 에셋 이름 확인: `Scripts/ValidateStage.ps1`.
 
-## 코드 규칙 (자세히: `Docs/CodingStyle.md`, JugX/JugGfx 스타일)
-1. `auto` 금지.
-2. 변수에 담는 람다 금지 (알고리즘 인자만 허용).
-3. C 배열 금지 (`std::array`, `Vector`).
-4. 네임스페이스 금지.
-5. `.h` 는 선언만. 템플릿/`__forceinline` 만 헤더에 본문을 둔다.
-6. 주석은 최소한으로, 필요한 곳에 한 줄.
-7. 타입/함수 PascalCase, 멤버 `m_`, 매개변수 `_`, 상수 `k`, `enum class eX`, Allman 중괄호.
-8. 에러는 `Result<T>`, 예외 없음.
+## 코드 규칙
+- `Docs/RULES.md` (규칙, 작업 순서) / `Docs/ROADMAP.md` (구조 개편 계획).

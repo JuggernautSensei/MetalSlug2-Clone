@@ -1,6 +1,6 @@
 # 텍스처 로드 진단: --trace-load 의 "[tex]" 줄을 상태/모드(async, sync) 별로 모아 기준선과 비교한다.
 #   - async 표와 --no-async-load(sync) 표가 같아야 한다.
-#   - 각 표가 Docs/Wayfinder/BaselineTextures.txt 와 같아야 한다.
+#   - 각 표가 Scripts/Baseline/BaselineTextures.txt 와 같아야 한다.
 # 사용: powershell -NoProfile -File Scripts/TraceLoad.ps1 [-Update] [-Config Debug|Release]
 #   -Update  기준선을 현재 값으로 기록 (의도한 로드 변경일 때만)
 param(
@@ -14,7 +14,7 @@ Set-Location $root
 $states       = @('title', 'stage0', 'bosslab', 'sandbox')
 $modes        = @('async', 'sync')
 $exe          = Join-Path $root "Output/$Config/MetalSlug2_Clone.exe"
-$baselinePath = Join-Path $root 'Docs/Wayfinder/BaselineTextures.txt'
+$baselinePath = Join-Path $root 'Scripts/Baseline/BaselineTextures.txt'
 $tmpDir       = Join-Path $env:TEMP 'slug_traceload'
 New-Item -ItemType Directory -Force -Path $tmpDir | Out-Null
 

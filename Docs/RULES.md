@@ -1,7 +1,7 @@
-# HANDOFF — 다음 AI 에이전트가 가장 먼저 읽을 문서
+# RULES — AI 에이전트가 가장 먼저 읽을 문서 (규칙 + 작업 순서)
 
 작성 시점: 2026-10-13. 브랜치 `claude/affectionate-brahmagupta-tgqzo1` (작업 중), `main` 은 원본 코드 그대로(병합/푸시는 사용자가 함).
-이 문서만 읽고 바로 작업을 시작할 수 있게 정리했다. 세부 근거는 `Docs/Wayfinder/*` 에 있고, 1번 작업이 끝나면 그 폴더는 사라진다.
+이 문서만 읽고 바로 작업을 시작할 수 있게 정리했다. 구조 개편 상세 계획은 `Docs/ROADMAP.md`. 작업 기록 문서는 만들지 않는다.
 
 ## 0. 현재 상태 (사실)
 - 게임: C++20 + SDL3, 소스 약 4.4만 줄, 단위 테스트 895개(전부 통과), 캡처 해시 7개 + 튜닝 해시.
@@ -45,14 +45,9 @@
 `final`, `auto`(반복자/구조화 바인딩 정도), 람다(알고리즘 인자) 는 사용자 코드에도 있다.
 
 ## 3. 작업 순서 (효과 순)
-### T1. md 정리 및 통합 (코드 수정 없음, 먼저)
-- 삭제: `Docs/Wayfinder/*`(작업 기록/분석/계획 — 단 `Plan_Restructure.md`, `NextSteps_UserDirectives.md` 는 내용을 `Docs/ROADMAP.md` 로
-  흡수 후 삭제), `Docs/Portfolio_Architecture.md`, `Docs/Architecture.md`(필요한 20~40줄만 RULES 로 흡수), `Docs/CodingStyle.md`(삭제만).
-- 유지/검증: 데이터 포맷 사양 5개 `AssetFormat`/`StageFormat`/`EnemyDefsSchema`/`PropSpecs`/`DepthSpec`(현재 코드와 맞는지 확인).
-- 신규: `Docs/RULES.md` 하나(이 문서 2절 + 아키텍처 요약 + 데이터 포맷 요약 + 금지 + 로드맵 링크 + "AI 전용 도구" 절). 이 HANDOFF 는
-  T1 이 끝나면 RULES/ROADMAP 으로 흡수하고 삭제해도 된다. README 는 빌드/실행/폴더만 남기고 코드 규칙은 RULES 로.
-- 삭제 전 `grep -rn <파일명>` 으로 참조 확인. `.claude/` 의 hooks/settings 가 삭제한 md 를 참조하면 보고만.
-- 커밋: `Docs: consolidate rules into Docs/RULES.md, remove legacy md`.
+### T1. md 정리 및 통합 — **완료**(남은 문서: RULES.md, ROADMAP.md, README.md, 데이터 포맷 사양 5개)
+- `Docs/Wayfinder/`, `Architecture.md`, `Portfolio_Architecture.md`, `CodingStyle.md` 는 삭제됨. 검증 기준선은 `Scripts/Baseline/`.
+- 남은 일: 데이터 포맷 사양 5개(`AssetFormat`/`StageFormat`/`EnemyDefsSchema`/`PropSpecs`/`DepthSpec`)가 현재 코드와 맞는지 확인.
 
 ### T2. 동치 검증 도구 `Tools/SimCheck` (게임 코드에 검증 장치를 넣지 않는다)
 - 별도 콘솔 exe 프로젝트를 `MetalSlug2_Clone.sln` 에 추가. 게임과 같은 `Source/` 를 컴파일하되 `Source/Main.cpp` 와
