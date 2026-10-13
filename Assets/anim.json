@@ -2172,7 +2172,7 @@
       ]
     },
     "MissleTank_Up_Destroy_Left": {
-      "loop": true,
+      "loop": false,
       "loopStart": 0,
       "frameDuration": 0.08,
       "cellW": 225,
@@ -2853,7 +2853,7 @@
       ]
     },
     "Jeep_ReAimming_Left": {
-      "loop": true,
+      "loop": false,
       "loopStart": 0,
       "frameDuration": 0.08,
       "cellW": 118,
@@ -3094,7 +3094,7 @@
       ]
     },
     "Jeep_Shot_Ready_Left": {
-      "loop": true,
+      "loop": false,
       "loopStart": 0,
       "frameDuration": 0.08,
       "cellW": 166,
@@ -3153,7 +3153,7 @@
       ]
     },
     "Jeep_Turn_Left": {
-      "loop": true,
+      "loop": false,
       "loopStart": 0,
       "frameDuration": 0.08,
       "cellW": 126,
@@ -7190,18 +7190,18 @@
       "cellW": 52,
       "cellH": 84,
       "frames": [
-        { "atlas": 12, "x": 1611, "y": 1, "w": 42, "h": 84, "pivotX": 21, "pivotY": 84 },
-        { "atlas": 12, "x": 1476, "y": 1, "w": 44, "h": 84, "pivotX": 21, "pivotY": 84 },
-        { "atlas": 12, "x": 1288, "y": 1, "w": 46, "h": 84, "pivotX": 21, "pivotY": 84 },
-        { "atlas": 12, "x": 992, "y": 1, "w": 50, "h": 84, "pivotX": 23, "pivotY": 84 },
-        { "atlas": 12, "x": 1335, "y": 1, "w": 46, "h": 84, "pivotX": 21, "pivotY": 84 },
-        { "atlas": 12, "x": 1521, "y": 1, "w": 44, "h": 84, "pivotX": 21, "pivotY": 84 },
-        { "atlas": 12, "x": 1654, "y": 1, "w": 42, "h": 84, "pivotX": 21, "pivotY": 84 },
-        { "atlas": 12, "x": 1697, "y": 1, "w": 42, "h": 84, "pivotX": 21, "pivotY": 84 },
-        { "atlas": 12, "x": 1382, "y": 1, "w": 46, "h": 84, "pivotX": 23, "pivotY": 84 },
-        { "atlas": 12, "x": 780, "y": 1, "w": 52, "h": 84, "pivotX": 27, "pivotY": 84 },
-        { "atlas": 12, "x": 1190, "y": 1, "w": 48, "h": 84, "pivotX": 25, "pivotY": 84 },
-        { "atlas": 12, "x": 1783, "y": 1, "w": 40, "h": 84, "pivotX": 21, "pivotY": 84 }
+        { "atlas": 12, "x": 1611, "y": 1, "w": 42, "h": 84, "pivotX": 20, "pivotY": 40 },
+        { "atlas": 12, "x": 1476, "y": 1, "w": 44, "h": 84, "pivotX": 20, "pivotY": 40 },
+        { "atlas": 12, "x": 1288, "y": 1, "w": 46, "h": 84, "pivotX": 20, "pivotY": 40 },
+        { "atlas": 12, "x": 992, "y": 1, "w": 50, "h": 84, "pivotX": 22, "pivotY": 40 },
+        { "atlas": 12, "x": 1335, "y": 1, "w": 46, "h": 84, "pivotX": 20, "pivotY": 40 },
+        { "atlas": 12, "x": 1521, "y": 1, "w": 44, "h": 84, "pivotX": 20, "pivotY": 40 },
+        { "atlas": 12, "x": 1654, "y": 1, "w": 42, "h": 84, "pivotX": 20, "pivotY": 40 },
+        { "atlas": 12, "x": 1697, "y": 1, "w": 42, "h": 84, "pivotX": 20, "pivotY": 40 },
+        { "atlas": 12, "x": 1382, "y": 1, "w": 46, "h": 84, "pivotX": 22, "pivotY": 40 },
+        { "atlas": 12, "x": 780, "y": 1, "w": 52, "h": 84, "pivotX": 26, "pivotY": 40 },
+        { "atlas": 12, "x": 1190, "y": 1, "w": 48, "h": 84, "pivotX": 24, "pivotY": 40 },
+        { "atlas": 12, "x": 1783, "y": 1, "w": 40, "h": 84, "pivotX": 20, "pivotY": 40 }
       ]
     },
     "Parker_Stopping": {
@@ -7231,18 +7231,18 @@
       "cellW": 52,
       "cellH": 84,
       "frames": [
-        { "atlas": 10, "x": 2005, "y": 449, "w": 38, "h": 84, "pivotX": 20, "pivotY": 84 },
-        { "atlas": 4, "x": 2003, "y": 559, "w": 38, "h": 84, "pivotX": 20, "pivotY": 84 },
-        { "atlas": 12, "x": 1865, "y": 1, "w": 40, "h": 84, "pivotX": 20, "pivotY": 84 },
-        { "atlas": 12, "x": 1566, "y": 1, "w": 44, "h": 84, "pivotX": 22, "pivotY": 84 },
-        { "atlas": 12, "x": 1906, "y": 1, "w": 40, "h": 84, "pivotX": 20, "pivotY": 84 },
-        { "atlas": 12, "x": 1947, "y": 1, "w": 40, "h": 84, "pivotX": 20, "pivotY": 84 },
-        { "atlas": 12, "x": 1988, "y": 1, "w": 40, "h": 84, "pivotX": 20, "pivotY": 84 },
-        { "atlas": 11, "x": 2007, "y": 1340, "w": 40, "h": 84, "pivotX": 20, "pivotY": 84 },
-        { "atlas": 12, "x": 1429, "y": 1, "w": 46, "h": 84, "pivotX": 22, "pivotY": 84 },
-        { "atlas": 12, "x": 833, "y": 1, "w": 52, "h": 84, "pivotX": 26, "pivotY": 84 },
-        { "atlas": 12, "x": 1239, "y": 1, "w": 48, "h": 84, "pivotX": 24, "pivotY": 84 },
-        { "atlas": 3, "x": 2001, "y": 678, "w": 38, "h": 84, "pivotX": 20, "pivotY": 84 }
+        { "atlas": 10, "x": 2005, "y": 449, "w": 38, "h": 84, "pivotX": 20, "pivotY": 40 },
+        { "atlas": 4, "x": 2003, "y": 559, "w": 38, "h": 84, "pivotX": 20, "pivotY": 40 },
+        { "atlas": 12, "x": 1865, "y": 1, "w": 40, "h": 84, "pivotX": 20, "pivotY": 40 },
+        { "atlas": 12, "x": 1566, "y": 1, "w": 44, "h": 84, "pivotX": 22, "pivotY": 40 },
+        { "atlas": 12, "x": 1906, "y": 1, "w": 40, "h": 84, "pivotX": 20, "pivotY": 40 },
+        { "atlas": 12, "x": 1947, "y": 1, "w": 40, "h": 84, "pivotX": 20, "pivotY": 40 },
+        { "atlas": 12, "x": 1988, "y": 1, "w": 40, "h": 84, "pivotX": 20, "pivotY": 40 },
+        { "atlas": 11, "x": 2007, "y": 1340, "w": 40, "h": 84, "pivotX": 20, "pivotY": 40 },
+        { "atlas": 12, "x": 1429, "y": 1, "w": 46, "h": 84, "pivotX": 22, "pivotY": 40 },
+        { "atlas": 12, "x": 833, "y": 1, "w": 52, "h": 84, "pivotX": 26, "pivotY": 40 },
+        { "atlas": 12, "x": 1239, "y": 1, "w": 48, "h": 84, "pivotX": 24, "pivotY": 40 },
+        { "atlas": 3, "x": 2001, "y": 678, "w": 38, "h": 84, "pivotX": 20, "pivotY": 40 }
       ]
     },
     "Order_Boy_Run_Left": {
