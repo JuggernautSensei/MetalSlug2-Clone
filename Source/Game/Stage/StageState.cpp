@@ -27,7 +27,7 @@
 
 constexpr int   kAutoTowerDamage    = 24;
 constexpr float kAutoTowerMarginPx  = 120.f;
-constexpr int   kAutoTurretInterval = 12;   // bAutoDamage: 포탑 단계 피해 간격 (틱). 주포는 6 틱
+constexpr int   kAutoTurretInterval = 12;
 
 namespace
 {
@@ -143,7 +143,7 @@ void StageState::Load_()
     }
     m_data = data.Take();
 
-    // 소품 컬링이 스프라이트 크기를 본다
+    // 소품 컬링이 스프라이트 크기를
     if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(FindAssetRoot()))
     {
         m_spriteLib = library.Take();
@@ -417,7 +417,7 @@ void StageState::Tick(
             }
             if (part != kBigShieeCannonPart && m_tickCount % kAutoTurretInterval != 0)
             {
-                continue;   // 포탑 단계는 원작 속도 (약 25 s) 로 느리게, 주포는 20 dps
+                continue;
             }
             HitEvent event;
             event.damage       = 2;
@@ -732,7 +732,7 @@ const GroundMap* StageState::FindPatchMask_(
     {
         if (mask->CountSolidPixels() == 0)
         {
-            // 빈 발자국은 아무것도 지우지 않는다. 데이터(베이크) 오류이므로 로그로 드러낸다.
+            // 빈 발자국은 아무것도 지우지
             SLUG_LOG_ERROR("지면 패치 마스크 '{}' 에 발자국 픽셀이 없습니다 (무시)", path.string());
         }
         else
@@ -985,7 +985,6 @@ void StageState::DrawWorld_(
 
     {
         const VECTOR2 feet = Lerp(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
-        // 시작 낙하산: 레이어 19 로 그려 플레이어(레이어 20)보다 뒤에 놓인다.
         if (m_player.IsChuteVisible(m_tuning))
         {
             if (const AnimFrame* pFrame = m_chuteAnim.GetFrameData(anims))

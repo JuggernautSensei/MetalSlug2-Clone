@@ -1,4 +1,3 @@
-// 스테이지 테스트 공용 도우미: IStageHost 기록용 가짜 구현체, 스테이지 JSON 래퍼, StageRunner 픽스처.
 #pragma once
 #include <optional>
 #include <set>
@@ -29,12 +28,10 @@ struct HostEvent
     String  text;
 };
 
-// 기본 바닥 질의: y=378 에 평평한 바닥이 있고, 그보다 아래에서 시작하면 바닥이 없다.
 [[nodiscard]] std::optional<float> DefaultGround_(
     const float,
     const float _fromY);
 
-// 바닥 질의 함수: (x, fromY) -> 바닥 y. 바닥이 없으면 nullopt
 using GroundQueryFn = std::optional<float> (*)(float, float);
 
 class FakeStageHost final : public IStageHost
@@ -61,7 +58,6 @@ public:
     Vector<uint32_t>                   clears;
     float                              invincibleSeconds = 0.f;
 
-    // GetGroundFindY 가 받은 (x, fromY) 질의를 순서대로 기록한다 (const 질의라 mutable)
     mutable Vector<std::pair<float, float>> groundQueries;
 
     SpawnId SpawnEntity(

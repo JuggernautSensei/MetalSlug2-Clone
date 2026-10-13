@@ -39,7 +39,7 @@ struct Body
     bool bCollideOneWay = true;
 
     bool bGrounded        = false;
-    int  dropThroughSteps = 0;   // > 0 이면 남은 틱 동안 원웨이를 무시한다
+    int  dropThroughSteps = 0;   // > 0 이면 남은 틱 동안 원웨이를 무시
 
     [[nodiscard]] Aabb GetBox() const;
 

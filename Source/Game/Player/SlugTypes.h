@@ -4,11 +4,10 @@
 #include "Base/Math.h"
 #include "Base/Types.h"
 
-// 메탈슬러그 SV-001 의 소유자 번호. 플레이어(1) 다음 번호부터 차량 개별 번호로 쓴다 (kSlugOwnerBase + 인덱스).
 inline constexpr uint32_t kSlugOwnerBase = 100;
 inline constexpr size_t   kMaxSlugs      = 8;
 
-// 차량의 큰 상태. 조종 중 세부 동작(달리기, 점프, 앉기, 피격 경직)은 애니메이션 상태로 따로 도출한다.
+// 차량의 큰 상태
 enum class eSlugMode : uint8_t
 {
     Parked,
@@ -26,7 +25,7 @@ enum class eSlugPose : uint8_t
     Drive,
     AccelStart,
     AccelStop,
-    Crouching,   // 앉는 중/서는 중 (눌림 단계 1..7)
+    Crouching,
     LowIdle,
     LowDrive,
     Jump,
@@ -48,13 +47,13 @@ struct SlugBodyTuning
 
 struct SlugMoveTuning
 {
-    float runSpeed         = 150.f;   // px/s
+    float runSpeed         = 150.f;
     float crouchSpeed      = 70.f;
     float airSpeed         = 150.f;
     int   accelTicks       = 6;
     int   brakeTicks       = 8;
-    float jumpSpeed        = 500.f;    // px/s 초속
-    float gravity          = 1224.f;   // px/s²
+    float jumpSpeed        = 500.f;
+    float gravity          = 1224.f;
     float terminalVelocity = 700.f;
     int   coyoteTicks      = 4;
     int   jumpBufferTicks  = 4;
@@ -75,13 +74,13 @@ struct SlugVulcanTuning
     float   bulletRange       = 760.f;
     int     damage            = 3;
     VECTOR2 bulletSize        = { 22.f, 12.f };
-    int     shotFlashTicks    = 8;   // 발사 한 번의 총구 불꽃 클립 길이 (4프레임)
-    int     maxAlive          = 0;   // 0 = 제한 없음
+    int     shotFlashTicks    = 8;   // 발사 한 번의 총구 불꽃 클립 길이
+    int     maxAlive          = 0;
 };
 
 struct SlugCannonTuning
 {
-    int     ammoStart        = 10;   // 탑승 시 HUD 의 CANNON 수 (원작 V1 3:21.4)
+    int     ammoStart        = 10;   // 탑승 시 HUD 의 CANNON 수
     int     ammoMax          = 99;
     int     cooldownTicks    = 20;
     float   speed            = 520.f;
@@ -96,7 +95,7 @@ struct SlugCannonTuning
     VECTOR2 muzzleStand      = { 60.f, -58.f };
     VECTOR2 muzzleCrouch     = { 62.f, -30.f };
     int     muzzleFlashTicks = 36;
-    int     pickupAmmo       = 5;   // 폭탄 보급 상자 하나가 주는 캐논탄 (원작 V1 4:40, 9 -> 14)
+    int     pickupAmmo       = 5;   // 폭탄 보급 상자 하나가 주는 캐논탄
 };
 
 struct SlugDamageTuning
@@ -106,7 +105,7 @@ struct SlugDamageTuning
     int     meleeDamage          = 8;
     int     blastDamage          = 20;
     int     hazardDamage         = 12;
-    int     hitInvincibleTicks   = 18;   // 피격 직후 짧은 무적 (연타 방지)
+    int     hitInvincibleTicks   = 18;   // 피격 직후 짧은 무적
     float   smokeRatio           = 0.50f;
     float   fireRatio            = 0.25f;
     int     ejectInvincibleTicks = 90;

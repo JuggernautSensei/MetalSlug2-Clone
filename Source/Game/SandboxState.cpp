@@ -228,7 +228,6 @@ void SandboxState::RestartGame()
     m_bBusUnlocked = false;
     if (m_config.bBusLab)
     {
-        // 원작 락: 카메라 오른쪽 끝 3136 에서 멈춘다. 버스 앵커는 화면 왼쪽 끝 + 489 = 2985 (Stage0_1 잔해 지형의 중심과 같다)
         SpawnParams params;
         params.facing = -1;
         m_busHandle   = SpawnEnemy("bus", { m_config.cameraBounds.max.x - 640.f + 489.f, 378.f }, params);
@@ -246,7 +245,6 @@ void SandboxState::TickBusLab_()
     {
         return;
     }
-    // 스테이지 데이터의 gate(destroyFinished) 와 같다: 지면을 잔해가 있는 Stage0_1 로 바꾸고 카메라 락을 푼다
     m_bBusUnlocked = true;
     if (!FindAssetRoot().empty())
     {
@@ -753,15 +751,15 @@ uint64_t SandboxState::HashState() const
     hash ^= m_targets.HashState() * 1099511628211ull;
     if (m_enemies.GetCount() > 0)
     {
-        hash ^= m_enemies.HashState() * 1099511628211ull;   // 적이 없으면 해시가 바뀌지 않는다
+        hash ^= m_enemies.HashState() * 1099511628211ull;   // 적이 없으면 해시가 바뀌지
     }
     if (m_props.GetCount() > 0)
     {
-        hash ^= m_props.HashState() * 1099511628211ull;   // 소품이 없으면 해시가 바뀌지 않는다
+        hash ^= m_props.HashState() * 1099511628211ull;   // 소품이 없으면 해시가 바뀌지
     }
     if (m_slugs.GetCount() > 0)
     {
-        hash ^= m_slugs.HashState() * 1099511628211ull;   // 차량이 없으면 해시가 바뀌지 않는다
+        hash ^= m_slugs.HashState() * 1099511628211ull;   // 차량이 없으면 해시가 바뀌지
     }
     hash ^= static_cast<uint64_t>(m_projectiles.GetBullets().size()) << 8;
     hash ^= static_cast<uint64_t>(m_projectiles.GetBombs().size()) << 16;

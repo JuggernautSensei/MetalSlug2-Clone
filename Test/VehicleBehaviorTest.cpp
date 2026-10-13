@@ -1,4 +1,3 @@
-// 탈것 동작 테스트: Jeep, BTank, MissleTank, Sarubia 의 AI, 피격, 파괴 검증
 #include <algorithm>
 #include <cmath>
 #include <vector>
@@ -56,7 +55,6 @@ void StepAndLog_(
     return _rig.Spawn("jeep", { _x, kGround }, Facing_(-1));
 }
 
-// _owner 가 쏜 첫 수류탄의 x. 없으면 -1
 [[nodiscard]] float GrenadeX_(
     VehicleRig&       _rig,
     const EnemyHandle _owner)
@@ -77,11 +75,11 @@ TEST(VehicleJeep, DrivesAtTwoHundredPixelsPerSecondTowardTheEdgeOnThePlayersSide
     VehicleRig rig({ 100.f, kGround });
     ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
     const EnemyHandle h = rig.Spawn("jeep", { 400.f, kGround }, Facing_(-1));
-    rig.Step(90);   // 1 s 대기 후 좌측 가장자리로 출발
+    rig.Step(90);
     const float x0 = rig.E(h)->body.position.x;
     rig.Step(30);
     const float x1 = rig.E(h)->body.position.x;
-    EXPECT_NEAR(x0 - x1, 100.f, 3.f);   // 200 px/s * 0.5 s
+    EXPECT_NEAR(x0 - x1, 100.f, 3.f);
     EXPECT_EQ(rig.E(h)->facing, -1);
     EXPECT_EQ(rig.E(h)->state, 2) << "Move 상태여야 한다";
 }
@@ -113,7 +111,7 @@ TEST(VehicleJeep, RocketsLeaveFromTheRearTowardThePlayer)
     const Shot& rocket = log.shots.front();
     EXPECT_LT(rocket.velocity.x, 0.f) << "플레이어(왼쪽)를 향해 뒤로 나간다";
     EXPECT_NEAR(rocket.velocity.y, 29.85f, 1.5f);
-    EXPECT_EQ(rocket.params.startDelayTicks, 24);   // 점화 0.4 s
+    EXPECT_EQ(rocket.params.startDelayTicks, 24);
 }
 
 TEST(VehicleJeep, VolleyIsFourRocketsInTwoPairsWithPauses)
@@ -170,10 +168,9 @@ TEST(VehicleJeep, ARocketHitsAPlayerAtItsFlightHeight)
     EXPECT_GE(rig.PlayerHits(), 1);
 }
 
-// 뷰 왼쪽 밖에서 우향으로 활성화된 지프: 대기 없이 왼쪽 가장자리까지 달려가 서고, 한 번 돌아 오른쪽 플레이어에게 쏜다
 TEST(VehicleJeep, EntersFromOffscreenLeftWithoutIdlingAndShootsRightAfterTheAimHold)
 {
-    VehicleRig rig({ 800.f, kGround }, 500.f);   // 뷰 500..1140
+    VehicleRig rig({ 800.f, kGround }, 500.f);
     ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
     const EnemyHandle h = rig.Spawn("jeep", { 440.f, kGround }, Facing_(1));
     rig.Step(3);
@@ -212,7 +209,6 @@ TEST(VehicleJeep, OffscreenRightActivationRunsToTheRightEdgeFirst)
 
 namespace
 {
-// 우향 전차의 스프라이트 반전 / FX 반전 / 방향 전환
 void SubmitTank_(
     VehicleRig&             _rig,
     const AnimationLibrary& _anims,
@@ -323,8 +319,6 @@ namespace
 }
 }   // namespace
 
-// 탱크 파괴: 폭발은 플레이어(20)보다 앞 레이어, 금속 잔해는 위로 솟구쳤다가 중력으로 떨어져 지면을 지나 화면 하단 밖으로 사라진다 (수명 5 s 전에).
-// VehicleRig 는 애니 라이브러리가 없어 이펙트를 만들지 않으므로, 실제 애니로 EnemyWorld 를 직접 구동한다.
 TEST(VehicleDebris, TankDebrisFliesUpFallsBelowScreenAndDisappears)
 {
     SLUG_REQUIRE_BAKED(anims);
@@ -369,7 +363,6 @@ TEST(VehicleDebris, TankDebrisFliesUpFallsBelowScreenAndDisappears)
     }
     EXPECT_TRUE(bRose) << "잔해가 위로 튀지 않았다";
 
-    // 생성 후 약 4 s 동안 추적: 솟구친 최고점, 지면(kGround)을 지나 떨어진 최저점을 기록한다
     float minY = 1.0e9f;
     float maxY = -1.0e9f;
     for (int i = 0; i < 240; ++i)
@@ -408,7 +401,7 @@ TEST(VehicleBTank, DestructionRemovesItAfterFourSeconds)
 TEST(VehicleMissleTank, FiresFiveMissilesPerVolleyWhenTheTargetIsNear)
 {
     VehicleRig        rig({ 100.f, kGround });
-    const EnemyHandle h = rig.Spawn("missle_tank", { 380.f, kGround }, Facing_(-1));   // dx = 280 (<= 300: 직사)
+    const EnemyHandle h = rig.Spawn("missle_tank", { 380.f, kGround }, Facing_(-1));
     SpawnLog          log;
     StepAndLog_(rig, h, log, 400);
     EXPECT_EQ(log.ticks.size(), 5u);
@@ -422,7 +415,7 @@ TEST(VehicleMissleTank, FiresFiveMissilesPerVolleyWhenTheTargetIsNear)
 TEST(VehicleMissleTank, AimsUpForFarTargetsAndTheVolleyArcs)
 {
     VehicleRig        rig({ 100.f, kGround });
-    const EnemyHandle h = rig.Spawn("missle_tank", { 500.f, kGround }, Facing_(-1));   // dx = 400 (> 300: 곡사)
+    const EnemyHandle h = rig.Spawn("missle_tank", { 500.f, kGround }, Facing_(-1));
     SpawnLog          log;
     StepAndLog_(rig, h, log, 500);
     ASSERT_FALSE(log.shots.empty());
@@ -470,7 +463,7 @@ TEST(VehicleSarubia, WalksTowardAFarPlayerAtOneHundredPixelsPerSecond)
 TEST(VehicleSarubia, GrenadeFallsStraightDownThenRollsAlongTheGround)
 {
     VehicleRig        rig({ 100.f, kGround });
-    const EnemyHandle h = rig.Spawn("sarubia", { 380.f, kGround }, Facing_(-1));   // dx = -280: 사격 구간
+    const EnemyHandle h = rig.Spawn("sarubia", { 380.f, kGround }, Facing_(-1));
     SpawnLog          log;
     StepAndLog_(rig, h, log, 260);
     ASSERT_EQ(log.shots.size(), 1u);
@@ -532,7 +525,6 @@ TEST(VehicleSarubia, DeathExplodesAtOnceAndLeavesAfterTwoSeconds)
 
 namespace
 {
-// 드롭 발사 시점의 스폰 위치가 헬기 기준 (_offsetX, +60) 인지 확인하고 드롭 발수를 누적한다
 void CheckDropSpawnOffsets_(
     VehicleRig&       _rig,
     const EnemyHandle _h,
@@ -582,7 +574,6 @@ TEST(VehicleHitFlash, JeepFlashesOnNonLethalHitBlinksUnderFireAndExpires)
     EXPECT_FALSE(IsHitFlashOn(rig.E(h)->hitFlashTicks)) << "ON 구간이 끝나면 꺼진다 (계속 켜져 있으면 안 된다)";
     EXPECT_FLOAT_EQ(HitFlashAmount(*rig.E(h)), 0.f);
 
-    // 연사: 4 틱 간격으로 쏘아도 반드시 꺼지는 틱이 나타난다 (버그: 계속 빨간 채로 유지)
     int onTicks  = 0;
     int offTicks = 0;
     for (int i = 0; i < 48; ++i)
@@ -632,7 +623,6 @@ ShotSpawn MakeFallingShell_(
     return spawn;
 }
 
-// 착탄(FX) 이 나올 때까지 돌리고 그 지점을 돌려준다. 10 s 안에 없으면 false
 bool RunUntilBurst_(
     ProjectileSystem&          _ps,
     CombatSystem&              _combat,
@@ -677,7 +667,6 @@ TEST(VehicleSarubia, GrenadeRollsWithItsSpriteBottomOnTheGround)
     EXPECT_LT(shot.position.x, 300.f) << "착지 후 바라보는 쪽(-x)으로 굴러간다";
 }
 
-// 사루비아 수류탄 발사 위치(muzzle)는 facing 에 따라 좌우 대칭이다. 포신 끝은 발 기준 약 y -150 (스프라이트 상단 영역)
 TEST(VehicleSarubia, GrenadeMuzzleIsMirroredByFacing)
 {
     constexpr float kOriginX = 380.f;
@@ -705,7 +694,6 @@ TEST(VehicleSarubia, GrenadeMuzzleIsMirroredByFacing)
     EXPECT_NEAR(Abs(left.x - kOriginX), muzzleX, 6.f) << "포신 끝 수평 거리 = 데이터 muzzle.x";
 }
 
-// 공중에 스폰된 탈것은 중력으로 떨어져 지면에 닿고 그대로 머문다.
 TEST(VehicleGravity, EveryVehicleFallsOntoTheGroundAndStaysThere)
 {
     for (const char* pName: { "jeep", "btank", "missle_tank", "sarubia" })

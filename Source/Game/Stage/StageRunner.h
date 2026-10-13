@@ -35,13 +35,12 @@ public:
 
     void Tick();
 
-    // 자동 전진 (보스 스크롤): 잠금 중이면 현재 잠금 사각형과 카메라 잠금을 _dx 만큼 옮기고 (Camera::ShiftLock), 아니면 카메라 중심 x 하한을 올린다 (Camera::AddScrollFloor).
     void AddCameraScroll(float _dx);
 
     bool WarpToSection(int _index);
     bool WarpToSection(StringView _id);
     bool WarpToBoss();
-    bool WarpToX(float _x);   // 디버그: 임의 월드 x 로 워프 (앞 구간은 조용히 적용)
+    bool WarpToX(float _x);
 
     [[nodiscard]] VECTOR2     ComputeCameraTarget(VECTOR2 _playerFeet) const;
     [[nodiscard]] ScreenWalls MakeScreenWalls() const;

@@ -13,24 +13,24 @@ struct BulletSpawn
     VECTOR2  position    = { 0.f, 0.f };
     VECTOR2  sweepFrom   = { 0.f, 0.f };
     VECTOR2  direction   = { 1.f, 0.f };   // 단위 벡터
-    float    speed       = 600.f;          // px/s
+    float    speed       = 600.f;
     int      damage      = 1;
     VECTOR2  size        = { 14.f, 10.f };
     float    range       = 400.f;
     bool     bPierce     = false;
     uint8_t  tag         = 0;
     eHitKind kind        = eHitKind::Bullet;
-    VECTOR2  blastSize   = { 0.f, 0.f };   // 착탄/사거리 끝 폭발 상자 (0 = 폭발 없음)
+    VECTOR2  blastSize   = { 0.f, 0.f };
     int      blastDamage = 0;
     int      blastTicks  = 0;
     bool     bTrail      = false;
     uint32_t hitId       = kNoHitId;
-    VECTOR2  sizeEnd     = { 0.f, 0.f };   // 0 이면 판정 크기 고정. 아니면 사거리 진행에 따라 size -> sizeEnd 로 커진다
-    float    scaleStart  = 1.f;            // 표시 배율 (판정과 무관)
+    VECTOR2  sizeEnd     = { 0.f, 0.f };   // 0 이면 판정 크기 고정
+    float    scaleStart  = 1.f;            // 표시 배율
     float    scaleEnd    = 1.f;
     int      z           = kDefaultZ;
-    float    accel       = 0.f;   // px/s² (진행 방향). 0 = 등속
-    float    maxSpeed    = 0.f;   // accel 로 오르는 속도 상한 (0 = 상한 없음)
+    float    accel       = 0.f;
+    float    maxSpeed    = 0.f;   // accel 로 오르는 속도 상한
 };
 
 struct Bullet
@@ -38,7 +38,7 @@ struct Bullet
     VECTOR2  position     = { 0.f, 0.f };
     VECTOR2  renderPrev   = { 0.f, 0.f };
     VECTOR2  hitFrom      = { 0.f, 0.f };
-    VECTOR2  velocity     = { 0.f, 0.f };   // px/s
+    VECTOR2  velocity     = { 0.f, 0.f };
     VECTOR2  size         = { 14.f, 10.f };
     float    travelled    = 0.f;
     float    range        = 400.f;
@@ -70,7 +70,7 @@ struct BombSpawn
     eTeam    team       = eTeam::Player;
     uint32_t owner      = kNoOwner;
     VECTOR2  position   = { 0.f, 0.f };
-    VECTOR2  velocity   = { 0.f, 0.f };   // px/s
+    VECTOR2  velocity   = { 0.f, 0.f };
     float    gravity    = 900.f;
     VECTOR2  hitSize    = { 12.f, 12.f };
     int      damage     = 20;
@@ -107,11 +107,11 @@ struct ShotSpawn
     eTeam    team            = eTeam::Enemy;
     uint32_t owner           = kNoOwner;
     VECTOR2  position        = { 0.f, 0.f };
-    VECTOR2  velocity        = { 0.f, 0.f };   // 초기 속도 px/s
+    VECTOR2  velocity        = { 0.f, 0.f };
     VECTOR2  accel           = { 0.f, 0.f };
     float    maxSpeed        = 0.f;
-    float    gravity         = 0.f;      // px/s²
-    float    maxFallSpeed    = 3000.f;   // px/s
+    float    gravity         = 0.f;
+    float    maxFallSpeed    = 3000.f;
     VECTOR2  size            = { 20.f, 20.f };
     int      damage          = 1;
     eHitKind kind            = eHitKind::Bullet;
@@ -122,12 +122,12 @@ struct ShotSpawn
     uint8_t  tag             = 0;
 
     float rollSpeed    = 0.f;
-    float rollDirX     = 1.f;   // 굴러가는 방향 (±1)
+    float rollDirX     = 1.f;   // 굴러가는 방향
     int   rollTicks    = 0;
     bool  bExpireFx    = false;
-    float groundProbeY = 0.f;   // 지면/지붕 접촉 판정 점: 중심에서 아래로 이만큼 (스프라이트 바닥이 닿는 높이). 0 = 중심
+    float groundProbeY = 0.f;
 
-    VECTOR2 blastSize   = { 0.f, 0.f };   // 터질 때 남기는 폭발 판정 (0 = 없음, 불기둥/고폭탄)
+    VECTOR2 blastSize   = { 0.f, 0.f };   // 터질 때 남기는 폭발 판정
     float   blastUp     = 0.f;
     int     blastTicks  = 0;
     int     blastDamage = 1;
@@ -179,7 +179,6 @@ public:
     void SpawnBomb(const BombSpawn& _spawn);
     void SpawnShot(const ShotSpawn& _spawn, CombatSystem& _combat);
 
-    // _platforms: 적/스테이지 발판(지붕). 낙하 중인 shell 은 윗면을 가로지르면 그 위에 착지한다 (빈 span = 지형만)
     void Step(const GroundMap* _pGround, CombatSystem& _combat, float _dt, Span<const Platform> _platforms = {});
 
     void OnHitEvents(Span<const HitEvent> _events, CombatSystem& _combat);

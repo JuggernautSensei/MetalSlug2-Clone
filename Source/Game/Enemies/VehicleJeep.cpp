@@ -57,7 +57,7 @@ void Go_(
     return _e.aux < 0 ? _view.min.x + _c.edgeInset : _view.max.x - _c.edgeInset;
 }
 
-// 주차 지점(가장자리 + edgeInset) 이거나 그보다 바깥이면 그쪽 가장자리 (-1 왼쪽 / +1 오른쪽), 화면 안쪽이면 0
+// 주차 지점 이거나 그보다
 [[nodiscard]] int ParkSide_(
     const Enemy&   _e,
     const JeepCfg& _c,

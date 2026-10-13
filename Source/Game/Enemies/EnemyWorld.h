@@ -27,7 +27,6 @@ public:
 
     void Reset(uint64_t _seed = 1);
 
-    // 테스트 전용: 전투 중 난수열만 바꾼다 (적 목록 유지)
     void ReseedRng(uint64_t _seed);
 
     EnemyHandle Spawn(StringView _defName, VECTOR2 _feet, const SpawnParams& _params = {}, const PhysicsWorld* _pSnapWorld = nullptr);
@@ -57,20 +56,19 @@ public:
 
     [[nodiscard]] int CountAlive(StringView _defName) const;
 
-    // 보스 자동 전진 (카메라 중심 하한 상승량, px). 행동이 틱 중 요청하고 StageState 가 TakeCameraScroll 로 가져가 StageRunner 에 넘긴다.
+    // 보스 자동 전진
     void  RequestCameraScroll(float _dx);
     float TakeCameraScroll();
 
-    // 살아 있는(Alive) 적의 def.solid 상자 (월드 AABB). StageState 가 벽으로 합친다.
+    // 살아 있는 적의 def.solid 상자
     [[nodiscard]] Vector<Aabb> GetSolidBoxes() const;
 
-    // 에디터(랩) 전용: 선택한 적이 무기를 즉시 쏘거나, 무기의 motionClip 을 재생하며 _fireFrame 에서 쏜다
     bool FireWeaponNow(EnemyHandle _handle, int _weapon);
     bool PlayMotion(EnemyHandle _handle, int _weapon, int _fireFrame);
 
     [[nodiscard]] Span<const Enemy> GetEnemies() const;
     [[nodiscard]] size_t            GetCount() const;
-    [[nodiscard]] const EffectList& GetEffects() const;   // 월드 이펙트 (폭발/혈흔/잔해), 테스트/디버그용 읽기 전용
+    [[nodiscard]] const EffectList& GetEffects() const;
 
     [[nodiscard]] Vector<EnemyEvent> TakeEvents();
     [[nodiscard]] Vector<String>     TakeSounds();

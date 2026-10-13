@@ -107,7 +107,7 @@ uint32_t ItemWorld::Spawn(
     }
     if (_bBounce)
     {
-        // 수직으로만 튀어 오른다 (x 튐 없음). 방향 난수는 RNG 흐름 유지를 위해 한 번 소비만 한다.
+        // 수직으로만 튀어 오른다
         (void)m_rng.Generate();
         item.body.velocity.y = kSupplyBounceVy;
         item.body.velocity.x = 0.f;
@@ -203,7 +203,7 @@ void ItemWorld::Tick(
 
         if (def.kind == eItemKind::Score && def.bRoll)
         {
-            // 공중에서는 일정하게 돈다. 바닥에서는 수평 속도에 비례해 느려지고 정지하면 멈춘다
+            // 공중에서는 일정하게 돈다
             const float speedX = item.rollVx != 0.f ? item.rollVx : item.body.velocity.x;
             item.spinScale     = item.body.bGrounded
                                    ? Clamp(Abs(speedX) / tuning.rollSpinRefSpeed, 0.f, 1.f)

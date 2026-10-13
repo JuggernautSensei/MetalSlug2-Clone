@@ -20,7 +20,7 @@ private:
 struct BgmFader
 {
     float gain       = 1.f;
-    float ratePerSec = 0.f;   // 음수: 페이드 아웃 중
+    float ratePerSec = 0.f;
     bool  bFading    = false;
 
     void Reset();

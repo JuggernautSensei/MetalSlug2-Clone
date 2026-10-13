@@ -28,7 +28,6 @@ namespace
     return camera;
 }
 
-// 배너 액션 하나짜리 스테이지를 _ticks 틱 돌린 뒤의 러너 해시
 [[nodiscard]] uint64_t HashAfterTicks_(
     const int _ticks)
 {
@@ -80,7 +79,6 @@ TEST(CameraStageExt, BeginMoveIsSmoothstepAndTickExactThenTrackingResumes)
     camera.BeginMove({ 820.f, 424.f }, 0.5f);
     EXPECT_TRUE(camera.IsMoving());
 
-    // 거리 500 은 최대 속도 12px/틱 때문에 63틱이 필요하다 (smoothstep: 출발·도착 속도 0)
     constexpr int kTicks = 63;
     for (int k = 1; k <= kTicks; ++k)
     {
@@ -113,7 +111,7 @@ TEST(CameraStageExt, BeginMoveWithZeroSecondsSnapsAndMoveRespectsBounds)
     EXPECT_FALSE(camera.IsMoving());
     EXPECT_FLOAT_EQ(camera.GetViewCenter().x, 1500.f);
 
-    camera.BeginMove({ 9000.f, 300.f }, 1.f);   // 경계 밖 목표: 이동 중 매 틱 경계로 클램프 (최대 속도 때문에 약 5초)
+    camera.BeginMove({ 9000.f, 300.f }, 1.f);
     for (int i = 0; i < 300 && camera.IsMoving(); ++i)
     {
         camera.Update();
@@ -239,7 +237,7 @@ TEST(StageRunnerCamera, GlideLockMovesThenLocks)
 {
     RunnerFixture fx { OneSection_(R"J([{"type":"lockCamera","rect":[2470,0,3110,448],"glide":1.0}])J") };
     fx.camera.SnapTo({ 2400.f, 224.f });
-    fx.StepAt(2700.f, 1);   // tick 0: 락 요청, 이동 1틱
+    fx.StepAt(2700.f, 1);
     EXPECT_TRUE(fx.camera.IsMoving());
     EXPECT_FALSE(fx.camera.IsLocked());
     EXPECT_TRUE(fx.runner.MakeScreenWalls().bHasRight);
@@ -326,7 +324,7 @@ TEST(StageRunnerCamera, Stage0SlopeMatchesTheLegacyFormula)
         exact += ours == legacy ? 1 : 0;
         ++total;
     }
-    EXPECT_GT(exact, total * 9 / 10);   // 거의 모든 점이 정확히 일치 (float 경계에서만 1 차이)
+    EXPECT_GT(exact, total * 9 / 10);
 
     EXPECT_FLOAT_EQ(curve.EvaluateTop(6500.f), 311.f);
     EXPECT_FLOAT_EQ(curve.EvaluateTop(8610.7843137f), 850.f);
@@ -346,7 +344,6 @@ TEST(StageRunnerCamera, CameraMoveActionReachesTargetThenResumesTracking)
     fx.camera.SnapTo({ 320.f, 224.f });
     fx.StepAt(5.f, 1);
     EXPECT_TRUE(fx.camera.IsMoving());
-    // 거리 680 은 최대 속도 12px/틱 때문에 0.5초보다 길게 걸린다 (도착 시점에 정확히 목표에 선다)
     for (int i = 0; i < 200 && fx.camera.IsMoving(); ++i)
     {
         fx.StepAt(5.f, 1);

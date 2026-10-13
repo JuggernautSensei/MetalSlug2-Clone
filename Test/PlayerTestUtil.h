@@ -1,4 +1,3 @@
-// 플레이어/샌드박스 테스트 공용 도우미: 평지 설정과 Sim(SandboxState 를 SimRunner 로 한 틱씩 돌리는 하네스).
 #pragma once
 #include <cmath>
 #include <memory>
@@ -14,7 +13,6 @@
 #include "Game/SimRunner.h"
 #include "Render/Animation.h"
 
-// 조준 키를 누른 뒤 조준각이 목표각에 닿을 때까지 기다리는 틱 (HMG 는 연속 조준각이라 시간이 걸린다)
 inline constexpr int kAimSettleTicks = 20;
 
 [[nodiscard]] GroundMap MakeFlatGround(

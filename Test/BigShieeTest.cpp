@@ -1,4 +1,3 @@
-// 최종보스 전함 (Docs/Spec_BigShiee.md): 입장, 포탑/주포 체력과 파괴, 주포 전개, 사망 연출, 자동 스크롤, 결정성, 낙하산 인질 보급을 검증한다.
 
 #include <algorithm>
 #include <cmath>
@@ -466,7 +465,6 @@ TEST(BigShiee, ChuteDropsLandInsideTheScrollingViewNearTheLeftEdge)
     ASSERT_GE(chuteDef, 0);
     rig.Step(static_cast<int>(6.5f * 60.f));
 
-    // 낙하 거리 (발 y 기준, 카메라 위 40px 에서 출발) / 낙하 속도 만큼 카메라가 오른쪽으로 간다 (scrollSpeed 20 px/s)
     constexpr float kFallSec = (378.f + 40.f) / 60.f;
     const float     drift    = 20.f * kFallSec;
     int             found    = 0;
@@ -481,11 +479,9 @@ TEST(BigShiee, ChuteDropsLandInsideTheScrollingViewNearTheLeftEdge)
     EXPECT_EQ(found, 1);
 }
 
-// ---- 주포 머리 (yaw 추적 / 발사 각도 == 사격 행 == 미사일 스프라이트) ----
 
 namespace
 {
-// 포탑을 다 부수고 주포 전개가 시작되기 직전까지 진행한다 (플레이어는 _playerFeet)
 [[nodiscard]] EnemyHandle StartCannon_(
     EnemyRig&     _rig,
     const VECTOR2 _playerFeet)
@@ -498,7 +494,6 @@ namespace
     return boss;
 }
 
-// 플레이어를 보스 포구에서 _deg 방향 (수직 아래 0, 오른쪽 +) 의 지면 위 한 점으로 옮긴다
 void PlacePlayerAtAngle_(
     EnemyRig&         _rig,
     const EnemyHandle _boss,
@@ -644,8 +639,6 @@ TEST(BigShiee, MissileFliesAlongTheFiringRowAngleWithMatchingSprite)
     }
 }
 
-// 사격 행 r 의 Aim 짝은 yaw 2r. 플레이어를 훑게 (-60 .. 60 도) 해서 쏘게 하고, 쏘기 직전 틱에 이미 그 프레임이 보였는지,
-// 사격 중 머리가 안 도는지, 끝난 뒤 같은 프레임으로 돌아오는지 본다.
 TEST(BigShiee, EachShotStartsAndEndsOnItsPairedAimFrame)
 {
     SLUG_REQUIRE_BAKED(anims);
@@ -701,12 +694,8 @@ TEST(BigShiee, EachShotStartsAndEndsOnItsPairedAimFrame)
     EXPECT_GE(distinct, 4) << "훑는 동안 거의 모든 행이 쓰였다";
 }
 
-// 발사 각도: 포구에서 10 틱 날아간 변위의 방향이 사격 행 각도 (그림에서 잰 포신 방향) 와 5 도 안에서 같고,
-// 플레이어가 있는 쪽의 행이 고르며 (왼쪽 = 음수 = Aim 0), 머리 프레임의 방향각도 플레이어 쪽이다.
 TEST(BigShiee, MissileTravelDirectionMatchesTheBarrelArtWithinFiveDegrees)
 {
-    // 원작 영상 (V2 303 s, 카메라 정지 구간) 에서 잰 왼쪽 행 비행 방향 -47.3 도. Aim 프레임의 포구 중심 x (머리 중심 기준) 는
-    // -62 / -29 / 0 / +28 / +61 px 로 좌우 대칭이고 선형 비례로 보면 -47 / -22 / 0 / +22 / +47 도.
     const ARRAY<float, 5> kBarrelDeg = { -47.f, -22.f, 0.f, 22.f, 47.f };
     EnemyRig              probe({ kCamLeft + 100.f, 378.f }, kCamLeft);
     LoadBossLib_(probe);
@@ -785,7 +774,6 @@ TEST(BigShiee, ReadyHeadFollowsThePlayerAngleWithoutMirroring)
     }
 }
 
-// ---- 실제 애니 길이로 돌린 전개/발사 시퀀스 (원작 영상 V2 실측, Docs/Wayfinder/Boss_sync.md) ----
 
 TEST(BigShieeSync, LidOpensFirstThenCannonRisesThenMissilesFireOnFootageCadence)
 {
@@ -843,7 +831,6 @@ TEST(BigShieeSync, LidOpensFirstThenCannonRisesThenMissilesFireOnFootageCadence)
     EXPECT_NEAR(missileTicks[2] - missileTicks[1], SecToTicks(def.bigShiee.missileIntervalSec), 3);
 }
 
-// ---- 카메라 예산 (아레나 끝) + 선체 왕복 ----
 
 namespace
 {
@@ -947,7 +934,6 @@ TEST(BigShieeScroll, ReversesOnceAfterTheCannonDeploys)
     EXPECT_NEAR(maxBack, c.reverseSpeed / 60.f, 0.2f);
 }
 
-// ---- 포탑 조준 (플레이어 쪽으로 머리를 돌려 Shot1/2/3) ----
 
 namespace
 {
@@ -965,7 +951,6 @@ namespace
     return dx > _c.turretAimBandPx ? 8 : 4;
 }
 
-// 플레이어 x = 선체 원점 + _anchorX. 포탑이 Shot 에 들어갈 때마다 머리 위치가 플레이어 쪽 구간과 맞는지 보고, 본 위치별 (0 / 4 / 8) 횟수를 돌려준다
 [[nodiscard]] ARRAY<int, 3> RunTurretAim_(
     const float _anchorX,
     float&      _outShellVx)
@@ -1065,7 +1050,6 @@ TEST(BigShieeTurretAim, IdleTurretsTrackThePlayerOneTurnFrameAtATime)
     EXPECT_EQ(lastPos, 0) << "플레이어가 왼쪽이면 결국 왼쪽 (Turn 프레임 0)";
 }
 
-// ---- 고폭탄 가속 / 탄피 ----
 
 TEST(BigShieeMissile, AcceleratesFromMuzzleToGround)
 {
@@ -1153,7 +1137,6 @@ TEST(BigShieeCasing, HopsSlightlyThenFallsToTheGroundLineAtTwoPointFourScale)
 
 namespace
 {
-// 사용자가 모션 창에서 고치는 weapons.missile.muzzle 이 실제 발사 위치다: 값을 (dx, dy) 옮기면 모든 사격 행에서 첫 위치가 정확히 (dx*facing, dy) 만큼 옮겨 간다
 [[nodiscard]] VECTOR2 FirstMissileAt_(
     const float _dx,
     const float _dy,

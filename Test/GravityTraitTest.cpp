@@ -1,4 +1,3 @@
-// 중력 특성 테스트: 지상형 정의는 공중 스폰 시 지면으로 떨어지고, 비중력 정의는 떨어지지 않는다
 #include "VehicleTestUtil.h"
 
 struct GravityCase

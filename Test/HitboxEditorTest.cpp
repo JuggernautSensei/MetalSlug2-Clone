@@ -1,4 +1,3 @@
-// Hitbox 패널의 문서 모델: 원본 서식을 유지한 채 박스 숫자만 제자리 교체한다.
 
 #include <gtest/gtest.h>
 
@@ -78,7 +77,6 @@ TEST(HitboxEditorTest, TuningHurtStandChangeTouchesOnlyThatNumber)
     std::error_code ec;
     std::filesystem::remove(tmp, ec);
 
-    // 같은 길이로 맞춰 바이트 비교: 바뀐 숫자 토큰 하나만 다르다.
     const size_t pos = original.find("\"hurtStand\": [16, 54]");
     ASSERT_NE(pos, String::npos);
     String expected = original;

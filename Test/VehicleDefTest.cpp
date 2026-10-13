@@ -1,4 +1,3 @@
-// 탈것 정의 테스트: 적 정의 JSON 로드와 탈것별 필드 검증
 #include <cmath>
 
 #include "Base/SlugError.h"
@@ -17,7 +16,6 @@ namespace
     return pDef ? *pDef : kEmpty;
 }
 
-// 지연(delaySec > 0) 이펙트가 몇 개인지 센다
 [[nodiscard]] int CountDelayed_(
     const EnemyDef& _def)
 {
@@ -197,7 +195,7 @@ TEST(VehicleDefs, VehicleDeathsDeclareTheirDelayedEffectsAndRemovalTimes)
     EXPECT_FLOAT_EQ(Need_(lib, "missle_tank").death.removeAtSec, 2.f);
     EXPECT_FLOAT_EQ(Need_(lib, "sarubia").death.removeAtSec, 2.f);
     EXPECT_GE(Need_(lib, "sarubia").death.fx.size(), 9u);
-    EXPECT_FLOAT_EQ(Need_(lib, "btank").death.fx[0].offset.y, -40.f);   // (0,+35) = 발 기준 -40
+    EXPECT_FLOAT_EQ(Need_(lib, "btank").death.fx[0].offset.y, -40.f);
 }
 
 TEST(VehicleDefs, AnUnknownBehaviorParameterFailsTheLoadWithTheDefinitionName)

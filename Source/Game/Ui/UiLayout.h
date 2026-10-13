@@ -6,7 +6,7 @@ struct UiLayout
     int screenW = 640;
     int screenH = 448;
 
-    int timeGlyphW = 32;   // TimeNumberUI 한 칸 (32x32, 숫자 10칸)
+    int timeGlyphW = 32;   // TimeNumberUI 한 칸
     int timeGlyphH = 32;
 
     int scoreRightX = 148;
@@ -23,7 +23,7 @@ struct UiLayout
     int infiniteCenterDX = 38;   // 패널 기준 무한대 기호 중심
     int infiniteCenterDY = 25;
 
-    int gaugeX      = 24;   // 슬러그 게이지 프레임 왼쪽 위 (PlayerHPUI 106x16)
+    int gaugeX      = 24;   // 슬러그 게이지 프레임 왼쪽 위
     int gaugeY      = 20;
     int gaugeInnerX = 4;
     int gaugeInnerY = 4;
@@ -60,7 +60,7 @@ struct UiLayout
     int levelCenterY = 432;
 
     int bossBarCenterX = 320;
-    int bossBarTopY    = 56;   // 상단 HUD 줄 (점수/타이머 y 8..40) 아래 중앙
+    int bossBarTopY    = 56;   // 상단 HUD 줄 아래 중앙
     int bossBarScale   = 2;
     int bossBarInnerX  = 4;
     int bossBarInnerY  = 4;

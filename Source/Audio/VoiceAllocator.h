@@ -36,7 +36,7 @@ private:
     {
         bool     bActive = false;
         int      soundId = -1;
-        uint64_t serial  = 0;   // 시작 순서 (작을수록 오래됨)
+        uint64_t serial  = 0;   // 시작 순서
     };
 
     [[nodiscard]] int FindOldest_(const int _soundId) const;

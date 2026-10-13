@@ -22,7 +22,7 @@ struct AnimEditClip
     Vector<AnimFrame> frames        = {};
 };
 
-// anim.json 문서 (UI 없음). 편집은 Set*/ApplyPivotToAll 로만 하고, 매번 Undo 스택에 쌓는다.
+// anim.json 문서
 class AnimDocument
 {
 public:
@@ -67,7 +67,7 @@ private:
     int                  m_lastChanged = -1;
 };
 
-// Animation 탭 UI. 아틀라스 페이지는 처음 쓸 때 텍스처로 읽는다.
+// Animation 탭 UI
 class AnimEditor final
 {
 public:
@@ -86,7 +86,7 @@ public:
     [[nodiscard]] AnimDocument& GetDocument();
     [[nodiscard]] const String& GetStatus() const;
 
-    // 에디터 프레임 안(ImGui::NewFrame 이후)에서 호출한다.
+    // 에디터 프레임 안에서 호출
     void Draw();
 
 private:

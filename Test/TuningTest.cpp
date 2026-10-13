@@ -1,4 +1,3 @@
-// Tuning/TextureView 테스트: 튜닝 JSON 로드와 기본값, 파일 감시, 텍스처 뷰 클리핑 검증
 
 #include <gtest/gtest.h>
 
@@ -121,13 +120,13 @@ TEST(Tuning, WeaponTablesAreInternallyConsistent)
     }
     EXPECT_EQ(t.weapons.pistol.ammo, 0);
     EXPECT_GE(t.weapons.pistol.damage, 3);
-    EXPECT_GE(t.weapons.hmg.burstShotsMin, 3);   // HMG 는 한 번 입력에 3~5발 버스트 (발수는 난수)
+    EXPECT_GE(t.weapons.hmg.burstShotsMin, 3);
     EXPECT_LE(t.weapons.hmg.burstShotsMax, 5);
     EXPECT_LE(t.weapons.hmg.burstShotsMin, t.weapons.hmg.burstShotsMax);
-    EXPECT_GE(t.weapons.hmg.spreadDeg, 0.f);   // 흩뿌림/위치 흔들림은 0 이상 (0 = 끔)
+    EXPECT_GE(t.weapons.hmg.spreadDeg, 0.f);
     EXPECT_GE(t.weapons.hmg.muzzleJitter.x, 0.f);
     EXPECT_GE(t.weapons.hmg.muzzleJitter.y, 0.f);
-    EXPECT_EQ(t.weapons.pistol.holdRepeatTicks, 0);   // 권총/화염/HMG 는 홀드 자동 연사 없음
+    EXPECT_EQ(t.weapons.pistol.holdRepeatTicks, 0);
     EXPECT_EQ(t.weapons.flame.holdRepeatTicks, 0);
     EXPECT_EQ(t.weapons.hmg.holdRepeatTicks, 0);
     EXPECT_GT(t.bomb.damage, t.weapons.shotgun.damage);

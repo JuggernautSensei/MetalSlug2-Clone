@@ -396,7 +396,6 @@ void PlayerController::TickAlive_(
             TickChuteDescend_(*_ctx.pTuning);
             return;
         }
-        // 낙하 중 공격키: 낙하산을 깜빡이며 떼고 이 틱부터 조작을 연다. 누른 공격키로 발사하지는 않는다.
         m_input.Consume(eAction::Shot);
         StartChuteRelease_();
         command = {};
@@ -712,7 +711,6 @@ void PlayerController::TickBomb_(
 
 void PlayerController::CancelBurst_()
 {
-    // 점프/칼/폭탄으로 버스트가 끊기면 남은 탄을 버리고 사격 연출도 즉시 끝낸다 (이동은 끊지 않는다: 원작은 달리며 연사)
     if (m_burstLeft > 0)
     {
         m_shotTicksLeft = 0;
@@ -723,7 +721,6 @@ void PlayerController::CancelBurst_()
 
 void PlayerController::StopFlameSpawn_()
 {
-    // 분출 중 점프/칼/폭탄이 끼면 새 입자는 더 나오지 않는다. 이미 나간 입자와 판정 해제 타이밍은 끝까지 진행한다
     if (m_flameTick < 0)
     {
         return;
@@ -747,7 +744,6 @@ void PlayerController::StartFlame_(
     const PlayerContext& _ctx,
     const WeaponTuning&  _flame)
 {
-    // 입력 1회 = 탄약 1발, 발사 카운트 1. 입자 개수만큼 탄약/카운트/사운드를 쓰지 않는다
     EndFlame_();
     ++m_stats.shotsFired;
     OnFired(m_weapon);
@@ -799,7 +795,7 @@ void PlayerController::TickShot_(
     const Tuning&       tuning = *_ctx.pTuning;
     const WeaponTuning& weapon = tuning.weapons.Get(m_weapon.weapon);
 
-    // 파이어샷 분출은 사격 입력과 별개로 끝까지 돈다 (달리며 쏴도 계속 분출). 점프/칼/폭탄이면 새 입자만 멈춘다
+    // 파이어샷 분출은 사격 입력과 별개로 끝까지 돈다
     if (m_flameTick >= 0)
     {
         if (m_knifeTick >= 0 || m_throwTick >= 0 || m_bSlashShown || m_bThrowShown || (m_pose == ePose::Air) != m_bFlameAir)
@@ -874,7 +870,6 @@ void PlayerController::TickShot_(
 
 uint64_t PlayerController::MakeShotSeed_() const
 {
-    // 상태만으로 정해지는 시드: 누적 발사 수 + 발 위치 비트 (같은 입력 시퀀스는 항상 같은 탄도)
     uint64_t seed = 0x9E37'79B9'7F4A'7C15ull ^ static_cast<uint64_t>(m_stats.shotsFired);
     seed          = seed * 6'364'136'223'846'793'005ull + std::bit_cast<uint32_t>(m_body.position.x);
     seed          = seed * 6'364'136'223'846'793'005ull + std::bit_cast<uint32_t>(m_body.position.y);

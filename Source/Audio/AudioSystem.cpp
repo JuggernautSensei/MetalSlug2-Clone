@@ -8,7 +8,7 @@
 #include "Base/PhaseTimer.h"
 #include "Base/Types.h"
 
-// miniaudio 구현부는 이 파일에서만 만든다 (stb_vorbis 는 헤더 전용으로 선언만 가져온다).
+// miniaudio 구현부는 이 파일에서만 만든다
 #define STB_VORBIS_HEADER_ONLY
 #pragma warning(push, 0)
 #include <stb_vorbis.c>

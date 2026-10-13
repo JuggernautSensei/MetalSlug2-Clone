@@ -1,5 +1,4 @@
-﻿// 샌드박스 상태에서 적 스폰, 전투, 디버그 스폰 슬롯과 상태 해시 결정성을 검증한다.
-
+﻿
 #include <cmath>
 #include <cstring>
 #include <vector>
@@ -23,7 +22,6 @@ struct EnemyDirectState
 
 namespace
 {
-// 플레이어가 죽을 때까지 최대 _maxTicks 틱을 진행한다 (Sim::StepUntil 과 같은 규약: 경과 틱, 실패 -1)
 [[nodiscard]] int StepUntilPlayerDead_(
     Sim&      _sim,
     const int _maxTicks)
@@ -236,7 +234,6 @@ TEST(EnemySandbox, SandboxHashIsDeterministicWithEnemiesPresent)
     EXPECT_EQ(first, second);
 }
 
-// 혈흔은 발 원점이 아니라 피격 상자 중심(가슴, body.cy = -37.5)에서 터진다
 TEST(EnemySandbox, BloodSplatsAtTheChestOfAKnifedSoldier)
 {
     SLUG_REQUIRE_BAKED(anims);
@@ -249,7 +246,7 @@ TEST(EnemySandbox, BloodSplatsAtTheChestOfAKnifedSoldier)
         sim.Step(1);
     }
     ASSERT_TRUE(sim.State().GetEnemies().IsDefeated(h));
-    sim.Step(1);   // 사망 틱 다음에 혈흔 연출이 생성된다 (수명 약 0.44 s 이므로 바로 확인)
+    sim.Step(1);
     const Enemy* pEnemy = sim.State().GetEnemies().Get(h);
     ASSERT_NE(pEnemy, nullptr);
 
@@ -262,7 +259,6 @@ TEST(EnemySandbox, BloodSplatsAtTheChestOfAKnifedSoldier)
         }
         ++bloodCount;
         EXPECT_NEAR(fx.position.x, pEnemy->body.position.x, 0.5f);
-        // 혈흔 y 보정 상수 (kBloodOffsetY) 는 소스 익명 네임스페이스라 값 대신 상체 윗부분 (발 기준 -68 ~ -62, 가슴~어깨) 으로 검증한다
         const float chestDy = fx.position.y - pEnemy->body.position.y;
         EXPECT_GE(chestDy, -68.f);
         EXPECT_LE(chestDy, -62.f);
@@ -270,7 +266,6 @@ TEST(EnemySandbox, BloodSplatsAtTheChestOfAKnifedSoldier)
     EXPECT_GE(bloodCount, 1);
 }
 
-// 칼 사망은 베는 클립이 끝나면 시체를 남기지 않는다 (마지막 프레임 고정 방지)
 TEST(EnemySandbox, KnifedSoldierLeavesNoCorpseOnceTheSlashClipEnds)
 {
     Sim sim { MakeEnemyConfig() };
@@ -279,8 +274,8 @@ TEST(EnemySandbox, KnifedSoldierLeavesNoCorpseOnceTheSlashClipEnds)
     sim.Tap(eAction::Shot);
     sim.Step(30);
     ASSERT_TRUE(sim.State().GetEnemies().IsDefeated(h));
-    ASSERT_NE(sim.State().GetEnemies().Get(h), nullptr);   // 클립(0.96 s) 중에는 아직 있다
+    ASSERT_NE(sim.State().GetEnemies().Get(h), nullptr);
 
     sim.Step(90);
-    EXPECT_EQ(sim.State().GetEnemies().Get(h), nullptr);   // 탭 후 약 2 s 에 제거
+    EXPECT_EQ(sim.State().GetEnemies().Get(h), nullptr);
 }

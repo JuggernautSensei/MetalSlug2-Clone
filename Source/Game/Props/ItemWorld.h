@@ -20,7 +20,7 @@ inline constexpr uint32_t kItemIdBase             = 7000;
 inline constexpr float    kItemLifetimeSec        = 15.f;
 inline constexpr float    kItemBlinkStartSec      = 10.5f;
 inline constexpr float    kItemBlinkPeriod        = 0.2f;
-inline constexpr float    kItemGravity            = 1400.f;   // px/s²
+inline constexpr float    kItemGravity            = 1400.f;
 inline constexpr float    kItemPickupHideSec      = 0.06f;
 inline constexpr float    kScorePopupBlinkSec     = 0.07f;
 inline constexpr float    kScorePopupRiseDelaySec = 1.05f;
@@ -55,7 +55,7 @@ struct PropItem
     float      ageSec     = 0.f;
     bool       bBounce    = false;
     float      rollVx     = 0.f;
-    float      spinScale  = 1.f;   // 회전 애니 배속 (0 이면 정지). 굴러가는 점수 아이템만 바뀐다
+    float      spinScale  = 1.f;   // 회전 애니 배속
     bool       bBegun     = false;
     bool       bPickedUp  = false;
     float      pickupSec  = 0.f;
@@ -84,7 +84,7 @@ public:
 
     bool SetZ(uint32_t _id, int _z);
 
-    // _pTuning 이 null 이면 ItemTuning 기본값을 쓴다 (테스트 호환)
+    // _pTuning 이 null 이면 ItemTuning 기본값을 쓴다
     void Tick(const PhysicsWorld& _world, float _dt, float _cameraLeft, const AnimationLibrary* _pAnims, const ItemTuning* _pTuning = nullptr);
 
     [[nodiscard]] Vector<ItemPickup> Collect(const Aabb& _playerBox);

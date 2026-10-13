@@ -31,7 +31,7 @@ struct PlayerStats
     int deaths       = 0;
 };
 
-// 시작 낙하산 단계. None: 일반 조작, Descend: 낙하 중 (공격키 외 입력 잠금), Release: 낙하산 깜빡임 소멸 중 (조작 가능).
+// 시작 낙하산 단계
 enum class eChutePhase : uint8_t
 {
     None,
@@ -60,7 +60,6 @@ public:
 
     [[nodiscard]] eChutePhase GetChutePhase() const;
     [[nodiscard]] bool        IsChuteVisible(const Tuning& _tuning) const;
-    // 카메라/월드 로직용 발 위치. 낙하 중에는 착지 지점을 준다 (화면이 지면 기준으로 고정되도록).
     [[nodiscard]] VECTOR2 GetLogicalFeet() const;
 
     void               BeginRide();
@@ -117,7 +116,7 @@ private:
     void                  SpawnFlameParticle_(const PlayerContext& _ctx, const WeaponTuning& _flame);
     void                  StopFlameSpawn_();
     void                  EndFlame_();
-    // 사격 입력 한 번마다 시뮬레이션 상태(발사 수, 발 위치)에서 시드를 만든다 (리플레이/해시 결정성 유지)
+    // 사격 입력 한 번마다
     [[nodiscard]] uint64_t MakeShotSeed_() const;
     void                   Respawn_(const PlayerContext& _ctx);
     void                   UpdateAim_(const PlayerCommand& _command);
@@ -153,16 +152,16 @@ private:
 
     int        m_shotTicksLeft       = 0;
     int        m_shotOverlayTicks    = 0;
-    RngMt19937 m_shotRng             = RngMt19937 { std::mt19937_64::default_seed };   // 탄 흩뿌림/발수 난수 (버스트 시작마다 MakeShotSeed_ 로 재시드)
+    RngMt19937 m_shotRng             = RngMt19937 { std::mt19937_64::default_seed };
     int        m_burstLeft           = 0;
     int        m_burstTimer          = 0;
     bool       m_bBurstAir           = false;
-    int        m_flameTick           = -1;   // 파이어샷 분출 경과 틱 (-1 = 분출 없음). 입자 스폰/판정 해제/종료의 기준
+    int        m_flameTick           = -1;   // 파이어샷 분출 경과 틱
     bool       m_bFlameStop          = false;
     bool       m_bFlameAir           = false;
     uint32_t   m_flameHitId          = kNoHitId;
-    RngMt19937 m_flameRng            = RngMt19937 { std::mt19937_64::default_seed };   // 입자 방향/속도/수명 난수 (분출마다 MakeShotSeed_ 로 재시드)
-    int        m_knifeTick           = -1;                                             // -1: 베기 없음, 0.. : 발동 후 경과 틱
+    RngMt19937 m_flameRng            = RngMt19937 { std::mt19937_64::default_seed };
+    int        m_knifeTick           = -1;
     uint32_t   m_knifeHitId          = kNoHitId;
     bool       m_bSlashSecond        = false;
     int        m_throwTick           = -1;
@@ -185,5 +184,5 @@ private:
     Vector<uint32_t> m_pendingRelease  = {};
 
     const Tuning* m_pTuning = nullptr;
-    eGodMode      m_godMode = eGodMode::Off;   // 에디터 디버그 (해시 제외)
+    eGodMode      m_godMode = eGodMode::Off;   // 에디터 디버그
 };

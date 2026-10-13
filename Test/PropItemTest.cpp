@@ -1,4 +1,3 @@
-// 아이템 테스트: 아이템 낙하, 줍기, 효과 적용과 드롭 결정성 검증
 #include <cmath>
 #include <string>
 
@@ -55,7 +54,6 @@ void TickItems_(
 {
     return Aabb::FromBottomCenter(_feet, { 24.f, 40.f });
 }
-// 같은 시드로 random_score 그룹에서 20개를 뽑은 이름 나열
 [[nodiscard]] String NamesFromSeed_(
     const uint64_t _seed)
 {
@@ -70,7 +68,6 @@ void TickItems_(
     return out;
 }
 
-// 아이템 5개를 떨어뜨려 200틱 진행한 뒤의 상태 해시
 [[nodiscard]] uint64_t HashAfterSpawn_(
     const uint64_t _seed,
     const char*    _item)
@@ -244,21 +241,21 @@ TEST(PropItem, GunItemShowsPickupEffectThenDisappears)
     ASSERT_EQ(fx.size(), 1u);
     EXPECT_EQ(fx[0].clip.c_str(), String { "Get_Item_Effect" });
 
-    TickItems_(items, FloorWorld_(ground), 5);   // 0.06 s 이후
+    TickItems_(items, FloorWorld_(ground), 5);
     EXPECT_EQ(items.GetCount(), 0u);
 }
 
 TEST(PropItem, PopupRisesAndExpiresAfterSpec)
 {
     ItemWorld items { &GetPropLib(), 1 };
-    (void)items.Collect(PlayerBoxAt_({ 100.f, 140.f }));   // 빈 상태: 팝업 없음
+    (void)items.Collect(PlayerBoxAt_({ 100.f, 140.f }));
     items.Spawn("item_apple", { 100.f, 140.f });
     (void)items.Collect(PlayerBoxAt_({ 100.f, 140.f }));
     const GroundMap ground = MakeFloorMap(400, 200, 140);
     ASSERT_EQ(items.GetPopups().size(), 1u);
-    TickItems_(items, FloorWorld_(ground), 150);   // 2.5 s
+    TickItems_(items, FloorWorld_(ground), 150);
     EXPECT_EQ(items.GetPopups().size(), 1u);
-    TickItems_(items, FloorWorld_(ground), 20);   // 2.8 s 이후
+    TickItems_(items, FloorWorld_(ground), 20);
     EXPECT_TRUE(items.GetPopups().empty());
 }
 
@@ -324,7 +321,6 @@ TEST(PropItem, SameOperationsGiveSameHashAndDifferentOnesDiffer)
     EXPECT_NE(HashAfterSpawn_(3, "random_score"), HashAfterSpawn_(4, "random_score"));
 }
 
-// 굴러가는 아이템: 회전(spinScale)은 감속과 함께 줄고, 멈추면 0 으로 고정된다
 TEST(PropItem, RollingSpinSlowsDownAndFreezesWhenStopped)
 {
     const GroundMap ground = MakeFloorMap(400, 200, 140);
@@ -361,7 +357,6 @@ TEST(PropItem, NonRollingItemKeepsFullSpin)
     EXPECT_FLOAT_EQ(items.Find(id)->spinScale, 1.f);
 }
 
-// ItemTuning 이 감속률을 실제로 바꾼다 (0 이면 속도가 줄지 않는다)
 TEST(PropItem, RollFrictionComesFromItemTuning)
 {
     const GroundMap ground = MakeFloorMap(400, 200, 140);

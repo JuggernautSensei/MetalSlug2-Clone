@@ -1,4 +1,3 @@
-// 애니 오프셋 에디터 데이터 계층 (AnimDocument) 테스트. UI 없음. Assets/anim.json 이 없으면 건너뛴다.
 #include <chrono>
 #include <filesystem>
 
@@ -32,7 +31,6 @@ TEST(AnimEditorTest, LoadEditSaveReloadOnlyPivotDiffers)
     ASSERT_TRUE(doc.Load(source));
     ASSERT_GT(doc.GetClips().size(), 1u);
 
-    // 정규화 저장 -> 재로드 -> 재저장이 바이트 동일해야 한다. 원본과도 같다면 서식이 완전 보존된 것.
     ASSERT_TRUE(doc.Save(tmp1));
     AnimDocument reloaded;
     ASSERT_TRUE(reloaded.Load(tmp1));
@@ -163,7 +161,7 @@ TEST(AnimEditorHotReload, ExternalChangeReloadsOnlyWhenThereAreNoUnsavedEdits)
     AnimEditor editor;
     editor.Open(path);
     editor.SetLibrary(&lib);
-    EXPECT_FALSE(editor.CheckExternal());   // 변화 없음
+    EXPECT_FALSE(editor.CheckExternal());
 
     String edited = kHotJson;
     edited.replace(edited.find("\"pivotX\": 4"), 11, "\"pivotX\": 7");

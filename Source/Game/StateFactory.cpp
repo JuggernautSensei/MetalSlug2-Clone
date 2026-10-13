@@ -50,7 +50,6 @@ Scoped<IGameState> CreateState(
     }
     if (_name == "bosslab" || _name == "bosslab_god" || _name == "bosslab_bot")
     {
-        // 최종보스 전함 연습장: 실제 스테이지와 같은 배경/지면/카메라 스크롤 (Assets/Stage/BossLab.json = Stage0 의 openland 끝 + boss_arena).
         StageStateConfig config;
         config.stageFile   = "BossLab.json";
         config.bGod        = _name != "bosslab";
@@ -62,7 +61,7 @@ Scoped<IGameState> CreateState(
     if (_name == "helilab" || _name == "helilab_god" || _name == "helilab_bot" || _name == "helilab_kill")
     {
         SandboxConfig config;
-        config.spawnFeet     = { 1500.f, 262.f };   // 원작 망루 위 플레이어 높이 (V1 3:09 의 발 y 약 262)
+        config.spawnFeet     = { 1500.f, 262.f };   // 원작 망루 위 플레이어 높이
         config.bSpawnTargets = false;
         config.bHeliLab      = true;
         config.platforms.push_back({ Aabb::FromMinMax({ 1380.f, 262.f }, { 1700.f, 282.f }), false });   // 망루 윗면 대용
@@ -73,7 +72,6 @@ Scoped<IGameState> CreateState(
     }
     if (_name == "sluglab")
     {
-        // 평지에 주차된 SV-001 과 표적. 스펙: Docs/Spec_Slug.md
         SandboxConfig config;
         config.bLoadGround = false;
         config.ground      = GroundMap::MakeEmpty(3520, 448);

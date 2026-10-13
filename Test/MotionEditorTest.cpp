@@ -1,4 +1,3 @@
-// Motions 창의 문서 모델: 바뀐 숫자만 제자리 교체, 무편집은 바이트 동일, effects 왕복.
 
 #include <gtest/gtest.h>
 

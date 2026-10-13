@@ -21,7 +21,6 @@ enum class eSoldierState
     Climb
 };
 
-// aiVariant: 1 = 제자리 (이동 없음), 2 = 버스 계단 병사 (Climb 뒤 일반 AI), 3 = 계단 병사 + 제자리 (탐지 거리 무시)
 constexpr int kVariantStay      = 1;
 constexpr int kVariantClimb     = 2;
 constexpr int kVariantClimbStay = 3;
@@ -148,7 +147,6 @@ void Go_(
     }
 }
 
-// 버스 계단 병사: 스폰 위치 -> arena.min (계단 아래) -> arena.max (계단 위) 를 일정 속도로 걷는다 (물리/중력 없음). 끝나면 낙하로 넘어가 일반 AI.
 void TickClimb_(
     Enemy&          _e,
     const EnemyDef& _def,

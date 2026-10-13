@@ -12,7 +12,7 @@ struct BannerSpec
     int        fadeOutTicks = 18;
     eFontColor color        = eFontColor::Yellow;
     bool       bBold        = true;
-    int        centerY      = -1;   // <0 이면 UiLayout::missionLine1Y
+    int        centerY      = -1;
 
     [[nodiscard]] int GetTotalTicks() const;
 };
@@ -30,7 +30,7 @@ struct GlyphPose
 
 [[nodiscard]] GlyphPose ComputeMissionGlyphPose(int _elapsed, int _fadeIn, int _hold, int _fadeOut, int _index);
 
-// 미션 폰트 스프라이트 이름 (UI_Mission_A..Z, _1.._9, _Excl, _Question). 지원하지 않는 글자는 빈 문자열.
+// 미션 폰트 스프라이트 이름
 [[nodiscard]] String MakeMissionGlyphName(char _ch);
 
 class BannerSystem

@@ -213,7 +213,7 @@ struct SpawnSpec
     bool       bHasRepeat = false;
     RepeatSpec repeat     = {};
 
-    int         facing     = 0;   // -1 왼쪽, +1 오른쪽, 0 = def 기본
+    int         facing     = 0;
     bool        bHasZ      = false;
     int         z          = 0;
     bool        bHasHp     = false;
@@ -240,8 +240,8 @@ struct WaveEntry
 {
     float     delay = 0.f;
     SpawnSpec spawn = {};
-    float     every = 0.f;   // 시간 반복 주기(초). times > 1 이면 필수 (이전 발동 시각 + every)
-    int       times = 1;     // 시간 반복 횟수 (1 = 한 번). 취소는 clear waves 가 전체 반복을 지운다
+    float     every = 0.f;   // 시간 반복 주기
+    int       times = 1;     // 시간 반복 횟수
 };
 
 struct RectRef
@@ -275,7 +275,7 @@ struct StageAction
     String command    = {};
     String next       = {};
     bool   bLoop      = true;
-    float  fadeOutSec = 0.f;   // PlayBgm: > 0 이면 현재 BGM 을 줄인 뒤 교체
+    float  fadeOutSec = 0.f;
 
     bool     bClearWaves = false;
     uint32_t clearLayers = 0;
@@ -302,7 +302,7 @@ struct BackdropMode
     String  sprite    = {};
     VECTOR2 offset    = { 0.f, 0.f };
     float   parallaxX = 0.f;
-    float   period    = 0.f;   // 가로 반복 간격. 0 이면 스프라이트 너비
+    float   period    = 0.f;   // 가로 반복 간격
 };
 
 struct NamedRect
@@ -350,7 +350,6 @@ struct PlayerStart
     float   fromY       = 0.f;
 };
 
-// 엔드리스 지형 (보스전): x >= fromX 의 지면 비트맵과 배경 텍스처를 [tileX, tileX + tileW) 구간의 주기 반복으로 본다.
 struct EndlessTail
 {
     bool  bEnabled = false;

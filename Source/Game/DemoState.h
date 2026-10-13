@@ -13,7 +13,7 @@ public:
     [[nodiscard]] uint64_t DebugHash() const override;
 
 private:
-    static constexpr float kSpeedPerTick = 2.f;   // 120 px/s @ 60Hz
+    static constexpr float kSpeedPerTick = 2.f;
 
     VECTOR2 m_prevPos   = { 320.f, 224.f };
     VECTOR2 m_pos       = { 320.f, 224.f };

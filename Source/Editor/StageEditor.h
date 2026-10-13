@@ -94,9 +94,8 @@ public:
     [[nodiscard]] bool                         IsDirty() const;
     [[nodiscard]] bool                         CanUndo() const;
     bool                                       SetPosition(int _entity, double _x, double _y, bool _bUndo = true);
-    // _z 가 _defaultZ 와 같으면 "z" 멤버를 지우고, 다르면 넣거나 바꾼다 (제자리 패치)
     bool SetZ(int _entity, int _z, int _defaultZ, bool _bUndo = true);
-    // groundSnap 을 끄고 y 를 박는다 (이미 y 가 있으면 groundSnap 만 끈다)
+    // groundSnap 을 끄고 y 를 박는다
     bool UnlockGround(int _entity, double _y, bool _bUndo = true);
     int  Add(StringView _def, StringView _kind, int _section, double _x, double _y);
     int  Duplicate(int _entity, double _dx, double _dy);

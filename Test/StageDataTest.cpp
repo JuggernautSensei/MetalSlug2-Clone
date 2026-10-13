@@ -1,4 +1,3 @@
-// 스테이지 데이터 테스트: 스테이지 JSON 로드, 오류 메시지, 실제 스테이지 파일 검증
 #include <cmath>
 #include <filesystem>
 
@@ -399,7 +398,7 @@ TEST(StageDataReal, OpenlandPowsAreAboutEvery700PxAndCoverTheWeaponMix)
     for (size_t i = 1; i < xs.size(); ++i)
     {
         EXPECT_GE(xs[i] - xs[i - 1], 500.f);
-        EXPECT_LE(xs[i] - xs[i - 1], 1000.f);   // openland_2->3 간격은 1000 까지 허용
+        EXPECT_LE(xs[i] - xs[i - 1], 1000.f);
     }
     const Vector<String> expected = { "gunitem_mg", "gunitem_rl", "bomb_supple", "gunitem_sg", "gunitem_fs" };
     EXPECT_EQ(drops, Vector<String>(expected.begin(), expected.end()));
@@ -417,7 +416,6 @@ TEST(StageDataReal, OpenlandHousesAndBlocksStayAlignedWithTheGroundMaskBumps)
     mask->SetPeriodicTail(14094, 13070, 1024);
     mask->MaterializeTail(3);
 
-    // 집/다리 블록은 충돌 마스크의 둔덕에 묶여 있다 (섹션을 통째로 끌면 어긋난다). 집 x 기준: 평평한 윗면 -140..+150 이 단단하고 +-230 밖은 비어 있어야 한다
     int houses = 0;
     for (const StageSection& section: data.sections)
     {
@@ -455,7 +453,6 @@ TEST(StageDataReal, BossArenaStreetHasItsHousesAndBlocksAheadOfTheCamera)
     ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
-    // HMG 픽업은 마지막 구간 전 (openland_4, 화면 밖) 에 놓는다. 마지막 섹션 자체에는 픽업/적 소품을 넣지 않는다
     const StageSection& openland4 = data.sections[static_cast<size_t>(data.FindSection("openland_4"))];
     int                 hmgCount  = 0;
     int                 houses    = 0;
@@ -501,7 +498,6 @@ TEST(StageDataReal, Stage0AmbientWalkersUseSequenceParams)
     ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
-    // 인트로: 노인(Parker) 이 길을 오간다
     const int intro = data.FindSection("intro");
     ASSERT_GE(intro, 0);
     const SpawnSpec* pOld    = nullptr;
@@ -521,7 +517,6 @@ TEST(StageDataReal, Stage0AmbientWalkersUseSequenceParams)
     ASSERT_NE(pOld, nullptr);
     const ParamValue* pSequence = pOld->params.Find("sequence");
     ASSERT_NE(pSequence, nullptr);
-    // 영상: 노인은 한동안 서 있다가(Parker 대기) 왼쪽으로 걸어 나간다(Parker_Run_2, 원본 아트가 왼쪽을 본다 -> flip 없음)
     EXPECT_EQ(pSequence->GetSize(), 2u);
     EXPECT_EQ(pSequence->At(0).GetString("clip"), "Parker");
     EXPECT_EQ(pSequence->At(1).GetString("clip"), "Parker_Run_2");
@@ -548,13 +543,11 @@ TEST(StageDataReal, BossArenaIsBehindTheSarubiaLockAndClearsOnlyAfterTheBossIsDe
     ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
-    // 사루비아 락 (openland_4, 오른쪽 끝 13080, 플레이어 최대 13066) 안에서는 아레나 트리거에 닿을 수 없다
     const StageSection& arena = data.sections.back();
     EXPECT_EQ(arena.id, "boss_arena");
     EXPECT_GT(arena.triggerX, 13066.f);
     EXPECT_EQ(data.FindSection("boss_arena"), data.FindSection("openland_4") + 1);
 
-    // 순서: 보스 BGM (필드 BGM 2 초 페이드아웃) -> 락 -> 보스 스폰 -> 게이트 (destroyFinished) -> 게이트 안에서 해제 후 클리어
     ASSERT_EQ(arena.actions.size(), 4u);
     EXPECT_EQ(arena.actions[0].type, eActionType::PlayBgm);
     EXPECT_EQ(arena.actions[0].name, "Boss_BGM");
@@ -574,7 +567,6 @@ TEST(StageDataReal, BossArenaIsBehindTheSarubiaLockAndClearsOnlyAfterTheBossIsDe
     EXPECT_EQ(gate.actions[3].type, eActionType::EndStage);
 }
 
-// 강 지프는 heli_river 락 왼쪽 끝 (5357) 보다 60 px 왼쪽 밖에서 나타난다
 TEST(StageDataReal, RiverJeepSpawnsSixtyPixelsLeftOfTheHeliLock)
 {
     String            diag;
@@ -604,7 +596,6 @@ TEST(StageDataReal, Stage0LoadsWithExpectedCounts)
     ASSERT_TRUE(result) << diag;
     const StageData data = result.Take();
 
-    // 기대값은 현행 Stage0.json 을 센 결과 (spawn 은 repeat.count 펼침 포함, 게이트 안 spawn 포함)
     EXPECT_EQ(data.sections.size(), 22u);
     EXPECT_EQ(data.CountSpawns(), 195);
     EXPECT_EQ(data.CountWaveEntries(), 33);
@@ -640,7 +631,6 @@ TEST(StageDataReal, Stage0KeySemantics)
     const StageData data = result.Take();
 
     const StageSection& groundSwap = data.sections[static_cast<size_t>(data.FindSection("ground_swap"))];
-    // ground_swap: setGround(silent) + 버스 사전 스폰 (id bus). bus 섹션은 락/게이트만 남았다
     ASSERT_EQ(groundSwap.actions.size(), 2u);
     EXPECT_EQ(groundSwap.actions[0].type, eActionType::SetGround);
     EXPECT_EQ(groundSwap.actions[0].when, eWhen::Silent);
@@ -648,7 +638,6 @@ TEST(StageDataReal, Stage0KeySemantics)
     EXPECT_EQ(groundSwap.actions[1].spawn.def, "bus");
     EXPECT_EQ(groundSwap.actions[1].spawn.id, "bus");
 
-    // 클리어 (endStage) 는 보스 아레나의 게이트 (destroyFinished) 안에서만 실행된다
     const StageSection& arena = data.sections.back();
     ASSERT_FALSE(arena.actions.empty());
     ASSERT_EQ(arena.actions.back().type, eActionType::Gate);
@@ -670,7 +659,6 @@ TEST(StageDataReal, Stage0KeySemantics)
     EXPECT_TRUE(bFence);
 }
 
-// 지형은 평탄화하지 않는다 (원작처럼 부서진 지붕/잔해 언덕). 보스 아레나 (12760..14090) 에 고체 언덕이 남아 있다.
 TEST(StageDataReal, BossArenaKeepsTheUnevenTerrainWithoutFlattening)
 {
     const std::filesystem::path root   = FindAssetRoot();

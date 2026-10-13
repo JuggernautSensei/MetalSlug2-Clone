@@ -34,15 +34,15 @@ struct EnemyHandle
 struct SpawnParams
 {
     int      facing     = -1;
-    int      hp         = -1;   // -1: def 기본값
+    int      hp         = -1;
     String   drop       = {};
     int      aiVariant  = 0;
-    float    delaySec   = 0.f;   // 이 시간 뒤에 등장 (그 동안은 판정/렌더 없음)
+    float    delaySec   = 0.f;   // 이 시간 뒤에 등장
     uint32_t userTag    = 0;
     bool     bActivated = false;
     Aabb     arena      = {};
-    VECTOR2  climbEnd   = { 0.f, 0.f };   // 계단 병사: arena.max 뒤 마지막 오름 목표 (y 가 0 이면 없음)
-    VECTOR2  roofSpan   = { 0.f, 0.f };   // 계단 병사: 지붕 발판의 월드 x 범위 [최소, 최대] (최대 <= 최소 이면 없음)
+    VECTOR2  climbEnd   = { 0.f, 0.f };
+    VECTOR2  roofSpan   = { 0.f, 0.f };
     int      z          = kDefaultZ;
 };
 
@@ -53,7 +53,7 @@ enum class eEnemyEventKind : uint8_t
     Freed,
     Transformed,
     Removed,
-    PartDestroyed   // 다부위 보스의 부위 파괴 (점수만 준다, 적 사망/게이트와 무관)
+    PartDestroyed   // 다부위 보스의 부위 파괴
 };
 
 struct EnemyEvent
@@ -129,7 +129,7 @@ struct Enemy
     int  clipTicks = 0;
     bool bVisible  = true;
 
-    int                              hitFlashTicks  = 0;   // 전체 피격 플래시 남은 틱 (0 = 없음, 피격 시 kHitFlashTicks 로 채움, ON 중 재피격은 무시: Game/Combat/HitFlash.h)
+    int                              hitFlashTicks  = 0;   // 전체 피격 플래시 남은 틱
     ARRAY<int, kEnemyFlashPartCount> partFlashTicks = {};
 
     uint32_t meleeHitId     = kNoHitId;
@@ -159,7 +159,7 @@ struct Enemy
     [[nodiscard]] bool IsAlive() const;
 };
 
-// 전체 스프라이트 플래시 양 (0 또는 1). 렌더 경로에서 SpriteDrawOptions::flashAmount 로 전달한다.
+// 전체 스프라이트 플래시 양
 [[nodiscard]] float HitFlashAmount(const Enemy& _e);
 
 [[nodiscard]] float PartFlashAmount(const Enemy& _e, const int _part);
@@ -168,7 +168,7 @@ void TriggerPartHitFlash(Enemy& _e, const int _part);
 
 struct EnemyFilter
 {
-    int      defIndex     = -1;   // -1: 전부
-    uint32_t userTag      = 0;    // 0: 전부
+    int      defIndex     = -1;
+    uint32_t userTag      = 0;
     bool     bHostileOnly = true;
 };

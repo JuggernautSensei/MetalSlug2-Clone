@@ -22,7 +22,6 @@ using jug::Min;
 using jug::Sqrt;
 using jug::VECTOR2;
 
-// _rng.Generate() 의 64비트 값을 [_lo, _hi] 로 편다
 template<typename RngT>
 [[nodiscard]] float RandRange(RngT& _rng, const float _lo, const float _hi)
 {

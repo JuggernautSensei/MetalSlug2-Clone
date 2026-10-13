@@ -36,7 +36,7 @@ namespace
     return false;
 }
 
-// 발판 윗면을 가로지르는 선분 (낙하 중에만). 가장 먼저 닿는 윗면과 그 교점을 돌려준다
+// 발판 윗면을 가로지르는 선분
 [[nodiscard]] bool SegmentHitsPlatform_(
     Span<const Platform> _platforms,
     const VECTOR2        _from,
@@ -331,7 +331,6 @@ void ProjectileSystem::Step(
         }
         else if ((_pGround || !_platforms.empty()) && (params.bExplodeOnSolid || bRoll) && (shot.position.x != shot.renderPrev.x || shot.position.y != shot.renderPrev.y))
         {
-            // 접촉은 스프라이트 바닥(중심 + groundProbeY) 기준으로 판정한다: 중심으로 판정하면 반쯤 지면에 묻힌 뒤 터진다
             const float   probe      = params.groundProbeY;
             const VECTOR2 from       = { shot.renderPrev.x, shot.renderPrev.y + probe };
             const VECTOR2 to         = { shot.position.x, shot.position.y + probe };

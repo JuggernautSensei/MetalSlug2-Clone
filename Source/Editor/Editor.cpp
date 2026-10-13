@@ -130,8 +130,7 @@ void Editor::Frame(
         return;
     }
 
-    // 논리 해상도(640x448) 프레젠테이션 중에는 ImGui 가 작게 그려지고 마우스 좌표도 어긋난다.
-    // SDL3 마우스 이벤트는 창 픽셀 좌표이므로, ImGui 를 그리는 동안만 프레젠테이션을 끈다.
+    // 논리 해상도 프레젠테이션 중에는 ImGui 가 작게 그려지고 마우스 좌표도 어긋난다
     int                             logicalW = 0;
     int                             logicalH = 0;
     SDL_RendererLogicalPresentation mode     = SDL_LOGICAL_PRESENTATION_DISABLED;

@@ -1,4 +1,3 @@
-// 플레이어 무기 테스트: 무기별 발사 속도, 탄약, 투사체 폭발/연기, 조준 방향, 건 아이템 정의, 결정성 검증
 #include <algorithm>
 #include <cmath>
 #include <vector>
@@ -111,7 +110,6 @@ TEST(PlayerWeapon, TapOnlyWeaponsNeverRepeatOnHold)
 
 TEST(PlayerWeapon, HmgBurstBulletsFollowTheAimAngleOfEachShot)
 {
-    // 버스트 도중 위를 누르면 조준각이 스윕하므로 뒤쪽 탄일수록 더 위를 향한다
     Sim sim;
     sim.Step(2);
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
@@ -125,7 +123,6 @@ TEST(PlayerWeapon, HmgBurstBulletsFollowTheAimAngleOfEachShot)
 
 TEST(PlayerWeapon, EveryWeaponKeepsTheShotOverlayWhileRunning)
 {
-    // 달리며 쏴도 사격 오버레이(Shot)는 무기의 연출 길이만큼 끊기지 않고 유지된다 (HMG 는 버스트 길이)
     for (const eWeapon weapon: { eWeapon::Pistol, eWeapon::Hmg, eWeapon::Shotgun, eWeapon::Rocket, eWeapon::Flame })
     {
         Sim sim;
@@ -241,7 +238,7 @@ TEST(PlayerWeapon, HmgShotDamagesAJeepByItsTunedDamage)
     sim.Tune().weapons.hmg.muzzleJitter = { 0.f, 0.f };
     sim.Tap(eAction::Shot);
     sim.Step(90);
-    EXPECT_EQ(DummyOf_(sim, id).health.hp, hp - sim.Tune().weapons.hmg.damage * sim.Player().GetStats().shotsFired);   // 한 번 눌러 버스트 전체가 명중 (발수는 난수)
+    EXPECT_EQ(DummyOf_(sim, id).health.hp, hp - sim.Tune().weapons.hmg.damage * sim.Player().GetStats().shotsFired);
 }
 
 TEST(PlayerWeapon, ShotgunAndFlamePierceBothJeeps)
@@ -250,7 +247,6 @@ TEST(PlayerWeapon, ShotgunAndFlamePierceBothJeeps)
     {
         Sim sim;
         sim.State().AddTarget(eDummyKind::Jeep, { 220.f, 378.f });
-        // 화염 사거리는 200px 이라 두 번째 지프는 그 안에 둔다 (속도 180px/s 라 도달까지 약 60틱)
         const uint32_t second = sim.State().AddTarget(eDummyKind::Jeep, { 290.f, 378.f });
         sim.Player().PickUpWeapon(weapon, sim.Tune());
         sim.Hold(eAction::Shot);
@@ -376,7 +372,6 @@ TEST(PlayerWeapon, AimStatesFireEveryWeaponInTheExpectedDirection)
         float       signX  = 0.f;
         float       signY  = 0.f;
     };
-    // 위 + 방향(upRight)도 모든 무기가 똑바로 위 (HMG 는 정지 조준하면 각도 90도)
     const ARRAY<Aim, 5> aims = {
         {
          { "forward", false, true, false, false, 1.f, 0.f },
@@ -413,7 +408,7 @@ TEST(PlayerWeapon, AimStatesFireEveryWeaponInTheExpectedDirection)
 
             ASSERT_GE(BulletsOf_(sim), 1u) << aim.name << " weapon " << raw;
             const VECTOR2 v = sim.State().GetProjectiles().GetBullets()[0].velocity;
-            if (aim.signX != 0.f)   // 똑바로 위/아래 탄은 cos(90도) 의 미세한 부호 오차가 있을 수 있어 크기만 본다
+            if (aim.signX != 0.f)
             {
                 EXPECT_EQ(v.x > 0.f, aim.signX > 0.f) << aim.name << " weapon " << raw;
             }
@@ -486,8 +481,6 @@ namespace
 }
 }   // namespace
 
-// 파이어샷 회귀: 원작 시트 클립(FlameShot_Orig_*)이 베이크 산출물에 있고, 머리/반복/페이드 모든 단계가 그려져야 한다.
-// (시트를 바꾼 뒤 Assets 의 anim.json 에 없으면 클립이 없어 불꽃이 보이지 않았다)
 TEST(PlayerWeaponVisual, FlameShotClipsExistInOutputAndEveryStageDraws)
 {
     SLUG_REQUIRE_BAKED(anims);
@@ -512,7 +505,6 @@ TEST(PlayerWeaponVisual, FlameShotClipsExistInOutputAndEveryStageDraws)
     EXPECT_EQ(batch.GetPendingCommands().size(), 3u);
 }
 
-// 로켓: 가로 스프라이트를 진행 방향 각도로 돌려 그린다 (위/아래/대각/왼쪽 포함)
 TEST(PlayerWeaponVisual, RocketSpriteRotatesToItsFlightDirection)
 {
     SLUG_REQUIRE_BAKED(anims);
@@ -540,7 +532,6 @@ TEST(PlayerWeaponVisual, RocketSpriteRotatesToItsFlightDirection)
     }
 }
 
-// 소프트웨어 렌더러로 실제 래스터화한 결과: 검은 배경 위에 그려진 픽셀의 경계 상자 (없으면 빈 상자)
 struct PixelBox_
 {
     int minX = 1 << 20;
@@ -555,7 +546,6 @@ struct PixelBox_
 
 constexpr int kRasterSize_ = 256;
 
-// 소프트웨어 렌더러 + 아틀라스 한 벌 (테스트마다 한 번만 만든다: 아틀라스 PNG 디코드가 무겁다)
 struct RasterFixture_
 {
     SDL_Surface*  pSurface  = nullptr;
@@ -637,7 +627,6 @@ namespace
 }
 }   // namespace
 
-// 파이어샷이 실제로 화면에 칠해지는가 (머리/반복/페이드 세 단계 모두 픽셀이 남는다)
 TEST(PlayerWeaponVisual, FlameShotIsRasterisedAtEveryStage)
 {
     SLUG_REQUIRE_BAKED(anims);
@@ -655,7 +644,6 @@ TEST(PlayerWeaponVisual, FlameShotIsRasterisedAtEveryStage)
     EXPECT_GE(loop.Width(), 60);
 }
 
-// 로켓을 위로 쏘면 세로로 긴 상자가 그려져야 한다 (수평 스프라이트 그대로면 가로로 길다)
 TEST(PlayerWeaponVisual, RocketFiredUpIsDrawnTallNotWide)
 {
     SLUG_REQUIRE_BAKED(anims);
@@ -674,7 +662,6 @@ TEST(PlayerWeaponVisual, RocketFiredUpIsDrawnTallNotWide)
 
 namespace
 {
-// 파이어샷 입자가 나온 틱 목록 (입자는 스폰된 틱에 ageTicks == 1 로 보인다)
 [[nodiscard]] Vector<int> FlameSpawnTicks_(
     Sim&      _sim,
     const int _ticks)
@@ -694,7 +681,6 @@ namespace
     return spawnTicks;
 }
 
-// 같은 입력으로 파이어샷을 쏜 뒤 _ticks 틱 시점의 탄 목록 (결정성 비교용)
 [[nodiscard]] Vector<Bullet> FlameBulletsAfter_(
     const int _ticks)
 {
@@ -707,7 +693,6 @@ namespace
 }
 }   // namespace
 
-// 샷건 판정은 조준 방향에 따라 돈다: 가로는 가로로 길고, 위/아래는 세로로 길고, 대각은 큰 쪽 기준 정사각
 TEST(PlayerWeapon, ShotgunHitboxTurnsWithTheAimDirection)
 {
     const Tuning        tuning   = {};
@@ -738,10 +723,9 @@ TEST(PlayerWeapon, ShotgunFiredUpSpawnsATallHitboxInTheWorld)
     sim.Tap(eAction::Shot);
     const Span<const Bullet> bullets = sim.State().GetProjectiles().GetBullets();
     ASSERT_GE(bullets.size(), 1u);
-    EXPECT_GT(bullets[0].size.y, bullets[0].size.x);   // 세로 사격 판정은 세로로 길다 (회전하지 않는 버그 회귀)
+    EXPECT_GT(bullets[0].size.y, bullets[0].size.x);
 }
 
-// 파이어샷: 입력 1회 = 탄약 1발 (입자 여러 개가 나와도 탄약은 한 번만 줄어든다)
 TEST(PlayerWeapon, FlameInputCostsOneAmmoNotOnePerParticle)
 {
     Sim sim;
@@ -753,7 +737,6 @@ TEST(PlayerWeapon, FlameInputCostsOneAmmoNotOnePerParticle)
     EXPECT_EQ(sim.Player().GetWeapon().ammo, ammoBefore - 1);
 }
 
-// 파이어샷은 한 번에 3발이 나가는 게 아니라 정해진 간격으로 끊어 분출한다 (입자 12개, 2틱 간격)
 TEST(PlayerWeapon, FlameSpraysParticlesInTimedPuffs)
 {
     Sim sim;
@@ -768,7 +751,6 @@ TEST(PlayerWeapon, FlameSpraysParticlesInTimedPuffs)
     }
 }
 
-// 달리며 쏴도 분출은 끊기지 않고 끝까지 나온다
 TEST(PlayerWeapon, FlameKeepsSprayingWhileRunning)
 {
     Sim sim;
@@ -781,7 +763,6 @@ TEST(PlayerWeapon, FlameKeepsSprayingWhileRunning)
     EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);
 }
 
-// 한 번의 분출이 한 대상에게 주는 피해는 판정 ID 풀기 간격 기준 상한을 넘지 않는다 (분출 길이 / 풀기 간격 회)
 TEST(PlayerWeapon, FlameTotalDamageToOneTargetIsCapped)
 {
     Sim            sim;
@@ -798,7 +779,6 @@ TEST(PlayerWeapon, FlameTotalDamageToOneTargetIsCapped)
     EXPECT_LE(dealt, maxWindows * flame.damage);
 }
 
-// 같은 입력이면 입자의 위치/방향/속도가 모두 같다 (리플레이 결정성)
 TEST(PlayerWeapon, FlameParticlesAreDeterministicForTheSameInputs)
 {
     const Vector<Bullet> first  = FlameBulletsAfter_(30);
@@ -815,7 +795,6 @@ TEST(PlayerWeapon, FlameParticlesAreDeterministicForTheSameInputs)
     }
 }
 
-// 새 파이어샷 클립(FlameShot_AttackMotion)은 베이크 산출물에 있고, 불꽃 루프보다 크다
 TEST(PlayerWeaponVisual, FlameAttackMotionIsBiggerThanTheOriginalLoop)
 {
     SLUG_REQUIRE_BAKED(anims);
@@ -835,5 +814,5 @@ TEST(PlayerWeaponVisual, FlameAttackMotionIsBiggerThanTheOriginalLoop)
     {
         oldArea = Max(oldArea, frame.w * frame.h);
     }
-    EXPECT_GT(newArea * 10, oldArea * 13);   // 최소 30% 이상 큰 면적
+    EXPECT_GT(newArea * 10, oldArea * 13);
 }

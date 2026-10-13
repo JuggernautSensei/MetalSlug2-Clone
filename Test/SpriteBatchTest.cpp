@@ -1,4 +1,3 @@
-// 스프라이트 배치 테스트: 정렬 순서, 목적지 사각형, 기본 옵션, SDL 렌더링 검증
 #include <filesystem>
 #include <format>
 #include <SDL3/SDL.h>
@@ -25,7 +24,6 @@ namespace
     return frame;
 }
 
-// 정렬 시험용 명령 하나를 큐에 넣는다. seq 는 제출 순서, frame.x 는 식별용 태그
 void AddCommand_(
     Vector<SpriteCommand>& _commands,
     const int              _depth,
@@ -82,9 +80,9 @@ TEST(SpriteDest, FlipMirrorsAroundTheOriginKeepingThePivotOnIt)
     const IntRect   normal  = ComputeDestRect(frame, { 100.f, 100.f }, { 0.f, 0.f }, false);
     const IntRect   flipped = ComputeDestRect(frame, { 100.f, 100.f }, { 0.f, 0.f }, true);
 
-    EXPECT_EQ(normal.x, 90);   // [90, 130)
+    EXPECT_EQ(normal.x, 90);
     EXPECT_EQ(normal.x + normal.w, 130);
-    EXPECT_EQ(flipped.x, 70);   // [70, 110)
+    EXPECT_EQ(flipped.x, 70);
     EXPECT_EQ(flipped.x + flipped.w, 110);
     EXPECT_EQ(100 - normal.x, flipped.x + flipped.w - 100);
     EXPECT_EQ(normal.x + normal.w - 100, 100 - flipped.x);
@@ -113,7 +111,7 @@ TEST(SpriteSort, OrdersByDepthThenSortKeyThenSubmission)
 
     AddCommand_(commands, 2, 0, 0);
     AddCommand_(commands, 1, 5, 1);
-    AddCommand_(commands, 1, 5, 2);   // 키 동점: 제출 순서 유지 (안정)
+    AddCommand_(commands, 1, 5, 2);
     AddCommand_(commands, 1, 1, 3);
     AddCommand_(commands, 0, 99, 4);
     AddCommand_(commands, 1, 5, 5);
@@ -138,7 +136,7 @@ TEST(SpriteSort, BatchSubmitAssignsSequenceAndFlushClearsQueue)
     EXPECT_EQ(batch.GetPendingCommands()[0].seq, 0u);
     EXPECT_EQ(batch.GetPendingCommands()[2].seq, 2u);
 
-    batch.Flush(VECTOR2 { 0.f, 0.f });   // 렌더러 없음 → 그리지 않고 큐만 비운다
+    batch.Flush(VECTOR2 { 0.f, 0.f });
     EXPECT_TRUE(batch.GetPendingCommands().empty());
 }
 
@@ -274,7 +272,6 @@ TEST(SpriteBatchSdl, ScaleShrinksAroundThePivotAndLeavesTheDefaultUnchanged)
     ASSERT_TRUE(batch.AddAtlasPageFromRgba(4, 4, atlas).IsOK());
     const AnimFrame frame = MakeFrame_(4, 4, 2, 4);
 
-    // 배율 0.5: 피벗 (10,20) 은 그대로 두고 4x4 가 2x2 로 줄어 (9..10, 18..19) 를 덮는다
     SpriteDrawOptions half;
     half.scale = 0.5f;
     target.Clear();
@@ -287,7 +284,6 @@ TEST(SpriteBatchSdl, ScaleShrinksAroundThePivotAndLeavesTheDefaultUnchanged)
     EXPECT_EQ(target.PixelRgb(10, 20), kBlack);
     EXPECT_EQ(target.PixelRgb(8, 16), kBlack);
 
-    // 기본값 (1) 은 원래 4x4 (8..11, 16..19) 그대로
     target.Clear();
     batch.DrawFrame(frame, { 10.7f, 20.9f }, VECTOR2 { 0.f, 0.f }, SpriteDrawOptions {});
     EXPECT_EQ(target.PixelRgb(8, 16), kRed);
@@ -374,7 +370,6 @@ TEST(SpriteBatchSdl, EmptyFramesAndMissingPagesAreSkipped)
     EXPECT_EQ(target.PixelRgb(5, 5), kBlack);
 }
 
-// 가로로 아주 긴 단독 텍스처(Stage0_Main 14094px) 는 내부에서 띠로 쪼개 그린다: 띠 경계(2048 배수)를 가로질러도 열이 어긋나지 않아야 한다
 TEST(SpriteBatchSdl, WideStandaloneTextureIsSeamlessAcrossStrips)
 {
     SoftwareTarget target { 64, 4 };
@@ -463,7 +458,6 @@ TEST(SpriteBatchSdl, HitFlashDrawsOrangeRampVariantOnlyWhenRequested)
     SpriteDrawOptions options;
     options.flashAmount = 1.f;
     batch.DrawFrame(frame, { 10.f, 20.f }, VECTOR2 { 0.f, 0.f }, options);
-    // 평균 밝기 100 -> 램프 (약 225,137,44): 밝기 100 회색이 주황으로 바뀐다
     const RGBA     expected = ApplyHitFlashRamp({ 100, 100, 100, 255 });
     const uint32_t px       = target.PixelRgb(10, 19);
     EXPECT_NEAR(static_cast<int>((px >> 16) & 0xFFu), expected.r, 2);
@@ -494,7 +488,6 @@ TEST(SpriteBatchSdl, HitFlashRampIsMonotoneKeepsAlphaAndMapsBlackToDarkOrange)
     EXPECT_LT(black.b, 10);
 }
 
-// 지형 텍스처보다 뒤 레이어는 텍스처 아래에 깔리고, 나머지는 텍스처 위에 그려진다
 TEST(SpriteBatchSdl, FlushBelowDepthLetsTheTerrainTextureCoverLowLayers)
 {
     SoftwareTarget target { 16, 16 };

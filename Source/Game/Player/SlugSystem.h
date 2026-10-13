@@ -8,7 +8,6 @@
 #include "World/Combat.h"
 #include "World/Physics.h"
 
-// 호스트(SandboxState / StageState)가 가진 SV-001 묶음. 탑승/하차를 PlayerController 와 이어 준다.
 class SlugSystem
 {
 public:
@@ -16,12 +15,12 @@ public:
 
     int Spawn(VECTOR2 _feet, int _facing, int _hp = -1);
 
-    // 플레이어 Tick 앞에서 호출한다. 탑승 판정, 차량 Tick, 하차/파괴 처리, 플레이어 위치 동기화.
+    // 플레이어 Tick 앞에서 호출
     void Tick(const SlugContext& _ctx, const InputHistory& _input, PlayerController& _player);
 
     void OnHitEvents(Span<const HitEvent> _events, Span<const Hitbox> _hitboxes);
 
-    // 폭탄 보급 상자를 탑승 중에 먹으면 캐논탄이 된다. 처리했으면 true (플레이어 폭탄은 늘지 않는다).
+    // 폭탄 보급 상자를 탑승 중에 먹으면 캐논탄이
     bool OnBombSupply(int _amount);
 
     [[nodiscard]] int                     GetCount() const;

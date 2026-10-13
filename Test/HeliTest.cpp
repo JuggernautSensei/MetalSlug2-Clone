@@ -1,4 +1,3 @@
-// 헬기 테스트: 폭격 사이클 (고공 3발 + 휴지, 저공 가로지르기 3발 + 휴지, 미사일, 복귀 반복), 폭탄/격추 이펙트, 히트박스
 #include <algorithm>
 #include <cmath>
 #include <set>
@@ -10,7 +9,7 @@
 #include "VehicleTestUtil.h"
 
 constexpr float kGround      = 378.f;
-constexpr int   kStateBomb   = 0;   // Heli.cpp 의 eHeliState 순서와 같다 (Bomb, Low, PodOut, Move, Volley, MoveBack, Turn)
+constexpr int   kStateBomb   = 0;
 constexpr int   kStateLow    = 1;
 constexpr int   kStateVolley = 4;
 
@@ -91,7 +90,6 @@ TEST(Heli, DefinitionLoadsWithHeliAndBombDefs)
     EXPECT_GE(rig.Lib().FindIndex("heli_bomb"), 0);
 }
 
-// 고공 폭격: 3발 연속 (bombIntervalTicks 간격) -> 휴지 -> 3발 -> 휴지, 폭탄은 수직으로만 떨어진다
 TEST(Heli, HighPhaseDropsThreeBombsThenRestsThenThreeAgain)
 {
     VehicleRig rig({ 300.f, kGround });
@@ -114,7 +112,6 @@ TEST(Heli, HighPhaseDropsThreeBombsThenRestsThenThreeAgain)
     EXPECT_EQ(log.bombTicks[5] - log.bombTicks[4], interval);
 }
 
-// 저공: 고공 구간이 끝나면 낮게 내려와 x 축으로 가로지르며 3발 + 휴지를 반복한다
 TEST(Heli, LowPhaseCrossesTheScreenDroppingThreeAndRest)
 {
     VehicleRig rig({ 300.f, kGround });
@@ -149,7 +146,6 @@ TEST(Heli, LowPhaseCrossesTheScreenDroppingThreeAndRest)
     EXPECT_EQ(lowBombs, cfg.lowBursts * cfg.burstCount) << "저공 구간 폭탄 수";
 }
 
-// 사이클: 고공 -> 저공 -> 미사일 -> 고공 복귀 -> 반복
 TEST(Heli, CycleFiresMissilesThenReturnsToTheHighPhase)
 {
     VehicleRig rig({ 300.f, kGround });
@@ -201,7 +197,6 @@ TEST(Heli, HurtboxCoversTheSprite)
     EXPECT_TRUE(bFound);
 }
 
-// 폭탄이 터지면 폭발 이펙트 (최전면 레이어 58) 가 실제 애니로 생긴다. 착지하면 먼지도 깔린다.
 TEST(HeliFx, BombLandingSpawnsExplosionAndDust)
 {
     SLUG_REQUIRE_BAKED(anims);
@@ -244,7 +239,6 @@ TEST(HeliFx, BombLandingSpawnsExplosionAndDust)
     EXPECT_TRUE(bDust);
 }
 
-// 격추: 큰 폭발 + 시간차 폭발/연기 (원작 3:14 우상단 대폭발)
 TEST(HeliFx, DestructionSpawnsALargeExplosionAndStaggeredBursts)
 {
     SLUG_REQUIRE_BAKED(anims);
@@ -289,7 +283,6 @@ TEST(HeliFx, DestructionSpawnsALargeExplosionAndStaggeredBursts)
     EXPECT_GT(most, first) << "시간차 폭발/연기가 이어진다";
 }
 
-// 호버 idle: 비행 클립일 때 몸통이 Pitch 프레임을 왕복하고 (렌더 전용), 로터 행이 같은 번호를 따른다. 시뮬레이션 상태는 건드리지 않는다
 TEST(Heli, HoverIdleCyclesPitchFramesWithoutTouchingSimState)
 {
     VehicleRig rig({ 300.f, kGround });

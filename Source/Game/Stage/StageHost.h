@@ -25,7 +25,7 @@ struct SpawnRequest
     ePositionMode positionMode = ePositionMode::Feet;
     float         halfHeight   = 0.f;
 
-    int    facing = 0;   // -1 왼쪽, +1 오른쪽, 0 = def 기본
+    int    facing = 0;
     bool   bHasZ  = false;
     int    z      = 0;
     bool   bHasHp = false;

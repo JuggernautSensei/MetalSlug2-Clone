@@ -30,13 +30,13 @@ inline constexpr const char* kLetsGo          = "Sfx_LetsGo";
 inline constexpr const char* kHereWeGo        = "Sfx_HereWeGo";
 inline constexpr const char* kTitleVoice      = "Title_MS2";
 
-// 전용 에셋이 없는 효과는 가장 가까운 기존 베이크 사운드로 대체한다.
+// 전용 에셋이 없는 효과는 가장 가까운 기존 베이크 사운드로 대체
 inline constexpr const char* kBombThrow  = "PlayerSlash1";    // 투척 휘익 소리 대용
 inline constexpr const char* kExplosion  = "PlayerBomb";      // 폭발 대용
 inline constexpr const char* kEnemyDeath = "PlayerGunDead";   // 적 사망 대용
 inline constexpr const char* kMenuSelect = "OK";
 
-// 테스트가 모든 효과 이름이 베이크 사운드로 해석되는지 검사하는 목록 (새 상수는 여기에도 추가)
+// 테스트가 모든 효과 이름이 베이크 사운드로 해석되는지 검사하는 목록
 inline constexpr ARRAY<const char*, 25> kAll = {
     kPistolShot,
     kFlameShot,
@@ -93,7 +93,7 @@ struct AudioConfig
     float    masterVolume = 1.f;
     float    sfxVolume    = 1.f;
     float    bgmVolume    = 0.6f;
-    uint32_t pitchSeed    = 0x9E3779B9u;   // 피치 변동용 오디오 전용 RNG (시뮬레이션 RNG 와 무관)
+    uint32_t pitchSeed    = 0x9E3779B9u;   // 피치 변동용 오디오 전용 RNG
 };
 
 class AudioSystem final
@@ -120,7 +120,7 @@ public:
     void AllStop();
     void ChangeBgm(StringView _name, float _fadeOutSec, bool _bLoop = true);
 
-    bool               bRecord;   // 테스트가 요청 순서를 검사한다 (장치 없이도 기록)
+    bool               bRecord;   // 테스트가 요청 순서를 검사한다
     Vector<AudioEvent> events = {};
 
     [[nodiscard]] bool          IsInitialized() const;

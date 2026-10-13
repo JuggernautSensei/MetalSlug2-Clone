@@ -30,7 +30,7 @@ public:
     [[nodiscard]] bool                   CanRedo() const;
     [[nodiscard]] const Vector<uint8_t>& GetPixels() const;
 
-    // 연속 호출을 하나의 undo 단위로 묶는다. 안 부르면 각 편집이 한 단위.
+    // 연속 호출을 하나의 undo 단위로 묶는다
     void BeginStroke();
     void EndStroke();
 

@@ -6,7 +6,6 @@ struct KeyBinding
     SDL_Scancode key;
 };
 
-// clang-format off
 constexpr ARRAY<KeyBinding, 18> kBindings = { {
     {  eAction::Left,        SDL_SCANCODE_A },
     {  eAction::Left,     SDL_SCANCODE_LEFT },
@@ -27,7 +26,6 @@ constexpr ARRAY<KeyBinding, 18> kBindings = { {
     { eAction::Start, SDL_SCANCODE_KP_ENTER },
     { eAction::Start,    SDL_SCANCODE_SPACE },
 } };
-// clang-format on
 
 void InputSystem::OnKeyDown(
     const SDL_Scancode _key)

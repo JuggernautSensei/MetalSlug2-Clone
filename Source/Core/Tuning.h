@@ -19,12 +19,12 @@ inline constexpr size_t kWeaponCount = static_cast<size_t>(eWeapon::Count);
 
 struct MoveTuning
 {
-    float runSpeed         = 250.f;    // px/s, 입력 즉시 최고 속도 (메탈슬러그식 디지털 이동)
-    float crouchSpeed      = 125.f;    // px/s
-    float airSpeed         = 250.f;    // px/s, 공중 제어 100%
-    float jumpSpeed        = 600.f;    // px/s 초속
-    float gravity          = 1400.f;   // px/s²
-    float terminalVelocity = 1000.f;   // px/s
+    float runSpeed         = 250.f;
+    float crouchSpeed      = 125.f;
+    float airSpeed         = 250.f;
+    float jumpSpeed        = 600.f;
+    float gravity          = 1400.f;
+    float terminalVelocity = 1000.f;
     int   coyoteTicks      = 4;
     int   jumpBufferTicks  = 4;
     int   shotBufferTicks  = 6;
@@ -73,39 +73,37 @@ struct MuzzleTuning
 
 struct WeaponTuning
 {
-    int     damage            = 3;
-    int     fireIntervalTicks = 5;
-    int     holdRepeatTicks   = 0;       // 0 = 홀드 자동 연사 없음 (연타만 발사)
-    int     ammo              = 0;       // 0 = 무한
-    float   projectileSpeed   = 800.f;   // px/s
-    int     maxAlive          = 4;       // 동시에 살아 있는 탄 수 상한 (0 = 무제한)
-    bool    bPierce           = false;
-    VECTOR2 hitSize           = { 14.f, 10.f };
-    float   range             = 420.f;
-    int     shotOverlayTicks  = 14;
-    VECTOR2 blastSize         = { 0.f, 0.f };   // 착탄 폭발 상자 (0 = 폭발 없음)
-    int     blastDamage       = 0;
-    int     blastTicks        = 0;
-    // 연속 발사(버스트): 한 번 입력에 나가는 발수는 [burstShotsMin, burstShotsMax] 의 결정적 난수 (0/1 = 단발)
-    int     burstShotsMin      = 0;
-    int     burstShotsMax      = 0;
-    int     burstIntervalTicks = 0;
-    float   spreadDeg          = 0.f;            // 탄마다 조준각에 더하는 난수 흩뿌림 (±도)
-    VECTOR2 muzzleJitter       = { 0.f, 0.f };   // 탄마다 발사 시작점에 더하는 난수 오프셋 (±px)
-    VECTOR2 muzzleAdjust       = { 0.f, 0.f };
-    // 파이어샷 분출 (flame 전용): 입력 1회 = 입자 particleCount 개를 particleIntervalTicks 간격으로 흩뿌린다 (탄약은 1발)
+    int     damage                = 3;
+    int     fireIntervalTicks     = 5;
+    int     holdRepeatTicks       = 0;
+    int     ammo                  = 0;
+    float   projectileSpeed       = 800.f;
+    int     maxAlive              = 4;       // 동시에 살아 있는 탄 수 상한
+    bool    bPierce               = false;
+    VECTOR2 hitSize               = { 14.f, 10.f };
+    float   range                 = 420.f;
+    int     shotOverlayTicks      = 14;
+    VECTOR2 blastSize             = { 0.f, 0.f };   // 착탄 폭발 상자
+    int     blastDamage           = 0;
+    int     blastTicks            = 0;
+    int     burstShotsMin         = 0;
+    int     burstShotsMax         = 0;
+    int     burstIntervalTicks    = 0;
+    float   spreadDeg             = 0.f;            // 탄마다
+    VECTOR2 muzzleJitter          = { 0.f, 0.f };   // 탄마다
+    VECTOR2 muzzleAdjust          = { 0.f, 0.f };
     int     particleCount         = 0;
     int     particleIntervalTicks = 0;
-    float   particleSpeedMin      = 0.f;   // 입자 속도 범위 (px/s, 결정적 난수)
+    float   particleSpeedMin      = 0.f;   // 입자 속도 범위
     float   particleSpeedMax      = 0.f;
-    int     particleLifeMinTicks  = 0;   // 입자 수명 범위 (틱). 사거리 = 속도 x 수명
+    int     particleLifeMinTicks  = 0;   // 입자 수명 범위
     int     particleLifeMaxTicks  = 0;
-    int     hitReleaseTicks       = 0;   // 한 입력의 공유 판정 ID 를 이 간격마다 풀어 같은 대상이 다시 맞게 한다 (0 = 풀지 않음)
+    int     hitReleaseTicks       = 0;   // 한 입력의 공유 판정 ID 를 이 간격마다
     VECTOR2 particleHitSizeEnd    = { 0.f, 0.f };
-    float   particleScaleStart    = 1.f;   // 수명 시작/끝의 표시 배율 (판정과 무관)
+    float   particleScaleStart    = 1.f;
     float   particleScaleEnd      = 1.f;
-    float   speedAccel            = 0.f;   // 발사 후 가속 (px/s², 0 = 등속). 탄 방향으로 speedMax 까지
-    float   speedMax              = 0.f;   // 가속 상한 (px/s). 0 이면 상한 없음
+    float   speedAccel            = 0.f;   // 발사 후 가속
+    float   speedMax              = 0.f;   // 가속 상한
 };
 
 struct WeaponsTuning
@@ -129,7 +127,7 @@ struct WeaponsTuning
         .burstShotsMax      = 5,
         .burstIntervalTicks = 4,
         .muzzleJitter       = {  0.f,  6.f },
-        .muzzleAdjust       = {  6.f, 10.f }, // MG 정면 사격 클립의 총구 실측 (44,-51) -> (50,-41)
+        .muzzleAdjust       = {  6.f, 10.f },
     };
     WeaponTuning shotgun = {
         14,
@@ -160,7 +158,6 @@ struct WeaponsTuning
         .speedAccel        = 1600.f,
         .speedMax          = 900.f,
     };
-    // 파이어샷: fireIntervalTicks = 분출 길이 (particleCount x particleIntervalTicks) 라 분출 중 재발사되지 않는다
     WeaponTuning flame = {
         .damage                = 3,
         .fireIntervalTicks     = 24,
@@ -218,7 +215,7 @@ struct BombTuning
     VECTOR2 releaseOffset = { 14.f, -36.f };
     float   speedX        = 260.f;
     float   speedY        = -330.f;
-    int     fuseTicks     = 72;   // 던진 뒤 터질 때까지 (1.2 s)
+    int     fuseTicks     = 72;   // 던진 뒤 터질 때까지
     float   inheritMoveX  = 0.35f;
     float   gravity       = 900.f;
     VECTOR2 hitSize       = { 12.f, 12.f };
@@ -238,8 +235,7 @@ struct PlayerTuning
     float respawnDropY      = 160.f;
     int   gameOverTicks     = 180;
     int   idleActionTicks   = 480;
-    int   idleActionLength  = 100;   // 대기 연출 길이 (틱). 끝나면 다시 대기 시간을 센다
-    // 시작 낙하산: 착지 발 위치보다 이만큼 위에서 일정 속도로 내려온다. 공격키로 낙하산이 깜빡이며 사라지고 조작이 시작된다.
+    int   idleActionLength  = 100;   // 대기 연출 길이
     float   chuteStartHeightPx    = 260.f;
     float   chuteFallSpeedPxSec   = 110.f;
     int     chuteBlinkTicks       = 24;
@@ -268,7 +264,7 @@ struct SandboxTuning
 
 struct ItemTuning
 {
-    float rollFrictionPerSec = 0.5f;   // 굴러가는 점수 아이템 감속률 (1/s). v -= v * rate * dt
+    float rollFrictionPerSec = 0.5f;   // 굴러가는 점수 아이템 감속률
     float rollSpinRefSpeed   = 50.f;
     float rollStopSpeed      = 1.f;
 };

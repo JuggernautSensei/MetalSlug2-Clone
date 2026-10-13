@@ -8,7 +8,7 @@ class AnimationLibrary;
 class EnemyLab;
 class Renderer;
 
-// 무기 하나의 편집 값 묶음 (JSON 키: muzzle, muzzleFx.offset, motionClip, effects)
+// 무기 하나의 편집 값 묶음
 struct MotionWeaponValues
 {
     VECTOR2              muzzle     = { 0.f, 0.f };
@@ -18,7 +18,6 @@ struct MotionWeaponValues
     Vector<WeaponEffect> effects    = {};
 };
 
-// params 의 값 하나: 숫자('n'), 불('b'), [x, y] 두 숫자('v')
 struct MotionParam
 {
     String           label = {};
@@ -28,7 +27,7 @@ struct MotionParam
     ARRAY<double, 2> v     = {};
 };
 
-// 정의 JSON 텍스트를 그대로 들고 바뀐 값의 토큰만 제자리 교체한다 (무편집 저장은 바이트 동일).
+// 정의 JSON 텍스트를 그대로 들고 바뀐 값의 토큰만 제자리 교체한다
 class MotionDocument
 {
 public:
@@ -36,12 +35,10 @@ public:
     [[nodiscard]] Result<void> LoadFromText(StringView _json);
     [[nodiscard]] Result<void> Save(const FilePath& _path);
 
-    // 파일 안에 해당 정의/무기/클립/부위가 직접 있으면 true (상속된 것은 false)
     bool ApplyWeapon(StringView _def, StringView _weapon, const MotionWeaponValues& _values);
     bool ApplyClipSec(StringView _def, StringView _clip, double _sec);
     bool ApplyPartDepth(StringView _def, StringView _part, int _depth, int _sort);
 
-    // params.parts.<part> 을 쓴다: 없는 parts/부품/키는 값이 기본값과 다를 때만 끼워 넣는다 (무편집은 바이트 동일)
     bool SetPartDepth(StringView _def, StringView _part, int _depth, int _sort, int _defaultDepth, int _defaultSort);
 
     [[nodiscard]] Vector<MotionParam> ListParams(StringView _def) const;

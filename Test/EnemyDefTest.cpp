@@ -1,5 +1,4 @@
-﻿// 적 정의 파일 로드, 보병 종류별 값, 행동 이름 변환, 정의 오류 거부와 베이크된 애니메이션 일치를 검증한다.
-
+﻿
 #include <cmath>
 #include <string>
 
@@ -231,8 +230,8 @@ TEST(EnemyDefs, ClipTimingMatchesTheSpecTicks)
     const EnemyDef& def       = lib.Get(lib.FindIndex("soldier_bomb"));
     const ClipDef&  throwClip = def.GetClip(def.FindClip("throw"));
     EXPECT_EQ(throwClip.frames, 14);
-    EXPECT_EQ(throwClip.TickOfFrame(10), 48);      // f10 = 0.80 s
-    EXPECT_EQ(throwClip.GetDurationTicks(), 68);   // 14 * 0.08 s = 67.2 틱 → 올림 68
+    EXPECT_EQ(throwClip.TickOfFrame(10), 48);
+    EXPECT_EQ(throwClip.GetDurationTicks(), 68);
     EXPECT_TRUE(def.GetClip(def.FindClip("idle")).bLoop);
 }
 

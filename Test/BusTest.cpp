@@ -1,4 +1,3 @@
-// 버스 중간보스 테스트: 사전 배치 (슬라이드 인 없음), 카메라 뷰 오른쪽 끝 기준 개방 트리거, 개방 전 무적, 계단 병사 스폰/오르기
 #include <algorithm>
 #include <cmath>
 #include <vector>
@@ -11,7 +10,7 @@ constexpr float    kGround       = 378.f;
 constexpr float    kAnchorX      = 2985.f;
 constexpr float    kStairAnchorX = 2400.f;
 constexpr uint32_t kStairTag     = 0x42555300u;
-constexpr int      kStateParked  = 0;   // Bus.cpp 의 eBusState 순서
+constexpr int      kStateParked  = 0;
 
 namespace
 {
@@ -146,7 +145,6 @@ TEST(Bus, NeverFiresItsOwnProjectiles)
 
 TEST(Bus, BazookaSoldiersClimbTheStairsToTheRoofAndFireRockets)
 {
-    // 바주카병도 계단을 올라 승강대 (버스 위) 에 서서 로켓을 쏜다. 평지 길이 (3000) 안에서 검증하도록 버스 앵커를 2400 으로 둔다.
     bool bSpawnedBzk  = false;
     bool bReachedRoof = false;
     bool bFiredRocket = false;
@@ -289,7 +287,7 @@ TEST(Bus, StairSoldiersOnTheLandingAreDrawnInFrontOfTheBodyAndBehindTheCoverInEv
     ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
     const EnemyHandle h     = rig.Spawn("bus", { kStairAnchorX, kGround }, BusParams_());
     const BusCfg&     c     = rig.Lib().Get(rig.Lib().FindIndex("bus")).bus;
-    const float       roofY = kGround + c.stairsTop.y;   // 계단 끝 승강대 (지붕 없음)
+    const float       roofY = kGround + c.stairsTop.y;
 
     const ARRAY<int, 3> wantStages = { 0, 1, 4 };
     for (const int wantStage: wantStages)
@@ -397,7 +395,6 @@ TEST(Bus, StairSoldiersLeapForwardOverTheLandingWallOntoTheBus)
         rig.Step(1);
         for (const Enemy* pSoldier: StairSoldiers_(rig))
         {
-            // 승강대 벽 (landing x ± landingW/2) 안쪽 (버스 쪽) 으로 넘어와 땅(윗면) 에 서 있다
             if (pSoldier->body.position.x < kAnchorX + c.stairsTop.x - c.landingW * 0.5f - 6.f && pSoldier->body.position.y < kGround - 100.f && pSoldier->bGrounded)
             {
                 bPastLanding = true;
@@ -430,7 +427,7 @@ TEST(Bus, BlastKilledSoldierIsRemovedOnlyAfterFallingOutOfTheCamera)
         }
         lastY = pEnemy->body.position.y;
     }
-    viewBottom = 448.f;   // VehicleRig 뷰: y 0..448
+    viewBottom = 448.f;
     ASSERT_TRUE(bGone) << "시체는 결국 지워져야 한다";
     EXPECT_GT(lastY - 90.f, viewBottom - 20.f) << "화면 아래로 거의 완전히 나간 뒤에 지워져야 한다 (lastY=" << lastY << ", viewBottom=" << viewBottom << ")";
 }

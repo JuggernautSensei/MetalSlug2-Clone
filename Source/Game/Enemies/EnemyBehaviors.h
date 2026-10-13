@@ -20,7 +20,7 @@ struct EnemyFxRequest
     int     delayTicks = 0;
     bool    bFlipX     = false;
     bool    bDebris    = false;
-    VECTOR2 velocity   = { 0.f, 0.f };   // px/s
+    VECTOR2 velocity   = { 0.f, 0.f };
 };
 
 struct EnemyEnv
@@ -65,7 +65,6 @@ struct BehaviorOps
 
     void (*onCommand)(Enemy& _e, const EnemyDef& _def, StringView _command) = nullptr;
 
-    // 몸통 프레임 대체 (렌더 전용): 돌려주면 현재 클립 프레임 대신 그린다. nullptr 이면 클립 프레임
     const AnimFrame* (*bodyFrame)(const Enemy& _e, const EnemyDef& _def, const AnimationLibrary& _anims) = nullptr;
 };
 

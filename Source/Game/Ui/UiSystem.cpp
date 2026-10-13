@@ -210,7 +210,6 @@ void UiSystem::DrawMissionResults() const
     const IntRect box = { m_layout.resultsBoxX, m_layout.resultsBoxY, m_layout.resultsBoxW, m_layout.resultsBoxH };
     const int     cx  = box.x + box.w / 2;
 
-    // 상자: 어두운 남색 바탕 + 연보라 테두리 (원본 영상 색)
     Renderer::GetSingleton().FillRect({ static_cast<float>(box.x), static_cast<float>(box.y) }, { static_cast<float>(box.w), static_cast<float>(box.h) }, { 12, 10, 60, static_cast<uint8_t>(a * 225 / 255) });
     const RGBA border = { 180, 170, 240, a };
     Renderer::GetSingleton().FillRect({ static_cast<float>(box.x), static_cast<float>(box.y) }, { static_cast<float>(box.w), 2.f }, border);

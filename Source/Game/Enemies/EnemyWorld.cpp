@@ -36,7 +36,6 @@ namespace
     return static_cast<int>(index >= n ? n - 1 : index);
 }
 
-// +y (아래) 를 향한 그림을 속도 방향에 맞추는 시계 방향 회전 (도, 아래 = 0)
 [[nodiscard]] float RotationDeg_(
     const VECTOR2 _velocity)
 {
@@ -255,7 +254,6 @@ void EnemyWorld::OnHitEvents(
 
         if (ops.onHit && ops.onHit(e, def, env, event))
         {
-            // 행동이 소비한 피격 (부위 피격 등): 부위 플래시만 건다 (선체 플래시 아님)
             if (def.bHitFlash)
             {
                 TriggerPartHitFlash(e, GetPartIndex(event.target));
@@ -472,7 +470,7 @@ void EnemyWorld::Tick(
             }
             TickWeaponEffects(e, def, env);
             TickExtraBoxes_(e, def, env);
-            // 체력이 0 이 된 살아 있는 적 (행동이 직접 체력을 깎은 경우, 예: 캐논 헤드) 은 여기서 사망 처리한다
+            // 체력이 0 이 된 살아 있는 적 은 여기서 사망 처리
             if (e.life == eEnemyLife::Alive && e.health.IsDead())
             {
                 BeginDying_(e, def, env);
@@ -689,7 +687,7 @@ void EnemyWorld::Submit(
         options.bFlipX      = def.ShouldFlipArt(e.facing);
         _sprites.Submit(def.partBody.depth + e.z - GetEnemyDefaultZ(e.behavior), static_cast<int>(feet.y) + def.partBody.sort, *pFrame, { feet.x, feet.y - lift }, options);
 
-        // 낙하산은 살아 있는 동안만 그린다. 사망 순간 즉시 사라지고 착지 변신 FX 는 FlyingBzk 가 맡는다.
+        // 낙하산은 살아 있는 동안만 그린다
         if (def.overlayClip >= 0 && e.life == eEnemyLife::Alive)
         {
             const AnimClip* pOver = _anims.GetOrNull(m_clipIds[static_cast<size_t>(e.defIndex)][static_cast<size_t>(def.overlayClip)][side]);
@@ -883,7 +881,6 @@ Vector<Aabb> EnemyWorld::GetSolidBoxes() const
         }
         if (def.behavior == eEnemyBehavior::Bus && def.bus.landingW > 0.f)
         {
-            // 버스 계단 위 승강대: 계단 병사가 올라서는 낮은 벽 (윗면 = stairsTop.y, 지면까지)
             const VECTOR2 top = { e.body.position.x + def.bus.stairsTop.x, e.body.position.y + def.bus.stairsTop.y };
             boxes.push_back(Aabb::FromMinMax({ top.x - def.bus.landingW * 0.5f, top.y }, { top.x + def.bus.landingW * 0.5f, e.body.position.y }));
         }

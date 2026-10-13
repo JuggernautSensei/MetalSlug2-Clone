@@ -77,7 +77,7 @@ HudModel MakeHudModel(
     model.bInfiniteAmmo = !_player.GetWeapon().HasFiniteAmmo();
     model.ammo          = _player.GetWeapon().ammo;
     model.bombs         = _player.GetWeapon().bombs;
-    // 원작 HUD 는 무기 글자 없이 탄수 숫자만 보여준다 (weaponLetter 는 0 으로 둔다)
+    // 원작 HUD 는 무기 글자 없이 탄수 숫자만 보여준다
     return model;
 }
 

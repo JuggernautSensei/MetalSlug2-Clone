@@ -1,4 +1,3 @@
-// JSON 으로 옮긴 값이 옛 코드 상수와 같은지 확인한다.
 
 #include "Base/SlugError.h"
 #include "Base/Types.h"

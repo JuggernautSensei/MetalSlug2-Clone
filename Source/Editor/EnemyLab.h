@@ -30,7 +30,7 @@ public:
     bool              ReloadDefs(SandboxState& _state);
     bool              ReloadDefsKeep(SandboxState& _state);
     void              SetAutoReloadBlocked(bool _bBlocked);
-    void              SetMouseCaptured(bool _bCaptured);   // 다른 편집기가 월드 클릭을 쓰는 중이면 선택/스폰을 막는다
+    void              SetMouseCaptured(bool _bCaptured);
     [[nodiscard]] int GetDefIndex() const;
     void              ForgetSet();
     void              SelectAt(const SandboxState& _state, VECTOR2 _world);

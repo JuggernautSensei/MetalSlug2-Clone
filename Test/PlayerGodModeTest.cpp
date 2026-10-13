@@ -1,4 +1,3 @@
-// 에디터 전용 무적 모드 (PlayerContext 의 godMode). 기본값은 Off 이다.
 
 #include <gtest/gtest.h>
 

@@ -7,7 +7,7 @@ struct DepthRow
 {
     String name  = {};
     int    value = 0;
-    int    file  = -1;   // -1 = 코드 상수 (읽기 전용), 그 외 = 정의 JSON 번호
+    int    file  = -1;
     int    begin = 0;
     int    end   = 0;
 };

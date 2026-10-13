@@ -1,4 +1,3 @@
-// AI 탭의 UI 없는 부분: 스폰/전멸/재스폰/정의 리로드와 일시정지-스텝 제어.
 
 #include <cmath>
 #include <memory>

@@ -1,4 +1,3 @@
-// 지면 비트맵(GroundMap)의 로드, 경계 정책, 지면/천장 질의와 기하(Geometry) 유틸을 검증한다.
 
 #include <gtest/gtest.h>
 
@@ -83,7 +82,7 @@ TEST(GroundMap, OutOfBoundsPolicyDefaultsAndOverrides)
     EXPECT_FALSE(map.IsSolid(10, 5));
     EXPECT_FALSE(map.IsSolid(5, -1));
     EXPECT_TRUE(map.IsSolid(5, 10));
-    EXPECT_TRUE(map.IsSolid(-3, 12));   // 아래쪽 바깥이면 가로 위치와 무관하게 고체
+    EXPECT_TRUE(map.IsSolid(-3, 12));
 
     GroundBoundsPolicy policy;
     policy.bSolidLeft   = true;
@@ -146,7 +145,7 @@ TEST(GroundMap, IsRectSolidHandlesReversedBoundsAndSingleByteRanges)
     map.SetSolid(11, 3, true);
     EXPECT_TRUE(map.IsRectSolid(11, 3, 11, 3));
     EXPECT_TRUE(map.IsRectSolid(14, 5, 9, 1));
-    EXPECT_FALSE(map.IsRectSolid(8, 0, 10, 7));   // 같은 바이트 안, 비어 있음
+    EXPECT_FALSE(map.IsRectSolid(8, 0, 10, 7));
     EXPECT_TRUE(map.IsRectSolid(8, 0, 11, 7));
 }
 
@@ -242,7 +241,6 @@ TEST(Geometry, CircleOverlaps)
 
 TEST(GroundMap, PeriodicTailRepeatsTheTileBeyondTheWidth)
 {
-    // 폭 16, 타일 [12,16) 의 앞 두 열만 고체. 꼬리 (x >= 16) 는 12 + (x - 16) % 4 로 접힌다.
     GroundMap map = GroundMap::MakeEmpty(16, 10);
     for (int y = 0; y < 10; ++y)
     {
@@ -256,6 +254,6 @@ TEST(GroundMap, PeriodicTailRepeatsTheTileBeyondTheWidth)
     EXPECT_FALSE(map.IsSolid(18, 3));
     EXPECT_FALSE(map.IsSolid(19, 3));
     EXPECT_TRUE(map.IsSolid(20, 3));
-    EXPECT_FALSE(map.IsSolid(16 + 4 * 100 + 2, 3));   // 주기 반복은 무한
+    EXPECT_FALSE(map.IsSolid(16 + 4 * 100 + 2, 3));
     EXPECT_TRUE(map.IsSolid(16 + 4 * 100, 3));
 }

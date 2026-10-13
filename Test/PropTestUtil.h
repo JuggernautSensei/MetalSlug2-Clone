@@ -1,4 +1,3 @@
-// Prop/Item 테스트 공용 도우미: Props.json 로드, 베이크 라이브러리 로드, 히트/바닥/바디 생성.
 #pragma once
 #include <string>
 

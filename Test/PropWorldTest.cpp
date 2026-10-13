@@ -1,4 +1,3 @@
-// Prop 월드 테스트: 파괴, 피격, 이벤트와 아이템 드롭 검증
 #include <algorithm>
 #include <cmath>
 #include <string>
@@ -90,7 +89,6 @@ void TickN_(
     return &events;
 }
 
-// 트럭 6대와 보트 1대를 세우고 보트를 부순 뒤 120틱 진행한 상태 해시
 [[nodiscard]] uint64_t HashAfterTrucks_(
     const uint64_t _seed)
 {
@@ -226,7 +224,6 @@ TEST(PropWorld, HurtboxesAreNeutralWithPropOwnerAndNoHazard)
     EXPECT_FALSE(hb.accepts.Has(eHitKind::Melee));
     EXPECT_TRUE(hb.accepts.Has(eHitKind::Blast));
     EXPECT_FALSE(hb.accepts.Has(eHitKind::Hazard));
-    // shop_0 hurt 은 220x160 @(0,-50): 중심 (1274, 178)
     EXPECT_FLOAT_EQ(hb.box.min.x, 1274.f - 110.f);
     EXPECT_FLOAT_EQ(hb.box.max.y, 228.f - 50.f + 80.f);
 }
@@ -361,7 +358,7 @@ TEST(PropWorld, PlayerLandsOnOneWayShopPlatform)
 TEST(PropWorld, PlayerIsBlockedByBridgeWall)
 {
     PropWorld world { &GetPropLib(), 1 };
-    world.Spawn("bridge_house", { 200.f, 90.f });   // 벽 150x100 → x [125,275], y [40,140]
+    world.Spawn("bridge_house", { 200.f, 90.f });
     const GroundMap    ground = MakeFloorMap(400, 200, 160);
     const PhysicsWorld pw { &ground, world.GetPlatforms(), world.GetWalls() };
 
@@ -401,13 +398,13 @@ TEST(PropWorld, ExplodeOnDeathBoatBurstsAfterTwoSecondsThenRemoved)
     (void)world.TakeEvents();
 
     TickN_(world, 110);
-    EXPECT_EQ(world.GetCount(), 1u);   // 아직 2 s 전
+    EXPECT_EQ(world.GetCount(), 1u);
     TickN_(world, 15);
     EXPECT_EQ(world.GetCount(), 0u);
     const Vector<PropEvent> events = world.TakeEvents();
     EXPECT_TRUE(HasEvent_(events, ePropEventKind::SecondaryBurst));
     EXPECT_TRUE(HasEvent_(events, ePropEventKind::Removed));
-    EXPECT_EQ(world.GetDebris().size(), 8u);   // 3 + 5 (5 s 수명 이내)
+    EXPECT_EQ(world.GetDebris().size(), 8u);
 }
 
 TEST(PropWorld, PlainBoatLeavesWreckWithoutSecondaryBurst)
@@ -439,7 +436,7 @@ TEST(PropWorld, ShopFiveSpawnsSignThatFallsToGroundAndDetonates)
     }
     EXPECT_TRUE(bRemoved);
     EXPECT_EQ(world.GetCount(), 1u);
-    EXPECT_EQ(world.GetDebris().size(), 12u);   // 상점 6 + 간판 6 (5 s 이내 폭발)
+    EXPECT_EQ(world.GetDebris().size(), 12u);
 }
 
 TEST(PropWorld, GroundHouseDamageStagesAndGroundPatch)
@@ -477,7 +474,7 @@ TEST(PropWorld, ApplyGroundPatchClearsOnlyTheFootprintAndKeepsTheFloor)
     GroundMap map = GroundMap::MakeEmpty(10, 10);
     map.FillRect(0, 7, 9, 9, true);
     map.FillRect(3, 4, 5, 6, true);
-    GroundMap footprint = GroundMap::MakeEmpty(10, 10);   // 발자국 사각형은 지면 전체 크기, 고체는 3x3 만
+    GroundMap footprint = GroundMap::MakeEmpty(10, 10);
     footprint.FillRect(3, 4, 5, 6, true);
     EXPECT_TRUE(ApplyGroundPatch(map, { 0.f, 0.f }, footprint));
     EXPECT_FALSE(map.IsSolid(3, 4));
@@ -494,12 +491,10 @@ TEST(PropWorld, ApplyGroundPatchRefusesFootprintsThatCutTheFloorOrClearMostOfThe
     map.FillRect(3, 4, 5, 6, true);
     const uint64_t before = map.CountSolidPixels();
 
-    // 바닥 줄 (y 7..9) 을 지우는 발자국: 거부, 지면 불변
     const GroundMap cutsFloor = GroundMap::MakeFromRows(ARRAY<StringView, 3> { "###", "###", "###" });
     EXPECT_FALSE(ApplyGroundPatch(map, { 0.f, 7.f }, cutsFloor));
     EXPECT_EQ(map.CountSolidPixels(), before);
 
-    // 빈 사각형이 아니라 전부 채운 마스크: 거부
     GroundMap everything = GroundMap::MakeEmpty(10, 10);
     everything.FillRect(0, 0, 9, 9, true);
     EXPECT_FALSE(ApplyGroundPatch(map, { 0.f, 0.f }, everything));
@@ -549,7 +544,7 @@ TEST(PropWorld, CullingKeepsAWidePropWhileAnyPartOfItsSpriteIsOnScreen)
     ASSERT_TRUE(LoadLibs(anims, sprites));
     PropWorld world { &GetPropLib(), 1 };
     world.SetSpriteLibrary(&sprites);
-    world.Spawn("big_house", { 1000.f, 1257.f });   // 폭 498: 앵커가 cullMargin 밖이어도 오른쪽 끝은 화면에 남는다
+    world.Spawn("big_house", { 1000.f, 1257.f });
 
     PropTickContext ctx;
     ctx.pAnims = &anims;
@@ -622,7 +617,6 @@ TEST(PropWorld, SubmitQueuesSpritesOnLayersFromDefinitions)
     EXPECT_FLOAT_EQ(cmds[1].origin.x, 30.f);
 }
 
-// 상자 (crate): 측면은 막히지 않고 위에서만 착지한다 (Stage0 box_collider 대체)
 TEST(PropWorld, CrateIsOneWayPlatformNotWall)
 {
     PropWorld        world { &GetPropLib(), 1 };
@@ -649,7 +643,6 @@ TEST(PropWorld, CrateLetsBodyWalkThroughAndLandOnTop)
     pw.pGround   = &ground;
     pw.platforms = platforms;
 
-    // 바닥 위를 걸어서 상자 몸통 아래를 통과한다
     Body walker = MakeBody({ 1000.f, 378.f });
     for (int i = 0; i < 120; ++i)
     {
@@ -658,7 +651,6 @@ TEST(PropWorld, CrateLetsBodyWalkThroughAndLandOnTop)
     }
     EXPECT_GT(walker.position.x, 1200.f);
 
-    // 위에서 떨어뜨리면 윗면(305)에 선다
     Body faller = MakeBody({ 1119.f, 250.f });
     for (int i = 0; i < 90 && !faller.bGrounded; ++i)
     {
@@ -676,7 +668,6 @@ TEST(PropWorld, OtherWallPropsKeepTheirWalls)
     EXPECT_EQ(world.GetWalls().size(), 1u);
 }
 
-// 건물 깊이 규칙: 먼저 나오는(작은 x) 가게가 앞에 그려진다 = 그리기 키가 더 크다. shop_2 의 y 보정은 없다.
 TEST(PropWorld, BuildingSortKeyPutsSmallerXInFront)
 {
     PropWorld        world { &GetPropLib(), 1 };
@@ -688,7 +679,6 @@ TEST(PropWorld, BuildingSortKeyPutsSmallerXInFront)
     EXPECT_EQ(world.Get(s2)->sortOffsetY, 0.f);
 }
 
-// 건물 깊이 규칙: 같은 x 에서는 y 가 작은(뒤쪽) 쪽이 먼저 그려진다
 TEST(PropWorld, BuildingSortKeyTiesBreakByY)
 {
     PropWorld        world { &GetPropLib(), 1 };
@@ -699,7 +689,6 @@ TEST(PropWorld, BuildingSortKeyTiesBreakByY)
     EXPECT_LT(PropWorld::SortKey(*world.Get(back)), PropWorld::SortKey(*world.Get(front)));
 }
 
-// 실제 Stage0 의 가게 6채: x 가 커질수록 그리기 키가 엄격히 작아진다 (앞 → 뒤 = x 오름차순)
 TEST(PropWorldStage0, ShopsDrawFrontToBackByX)
 {
     String            diag;

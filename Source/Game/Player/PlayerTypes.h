@@ -14,7 +14,7 @@ enum class ePlayerState : uint8_t
     Count
 };
 
-// 에디터 전용 디버그 무적 모드. Off 이외에는 --editor 에서만 켜진다.
+// 에디터 전용 디버그 무적 모드
 enum class eGodMode : uint8_t
 {
     Off,

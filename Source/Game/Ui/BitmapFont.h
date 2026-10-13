@@ -34,12 +34,12 @@ struct TextStyle
     eTextAlign align         = eTextAlign::Left;
     uint8_t    alpha         = 255;
     int        lineGap       = 4;
-    int        letterSpacing = 0;   // 글자 사이 추가 간격 (px, 배율 무관)
+    int        letterSpacing = 0;   // 글자 사이 추가 간격
 };
 
 inline constexpr int kGlyphSize    = 16;
 inline constexpr int kGlyphColumns = 35;
-inline constexpr int kGlyphRows    = 2;   // 0 = 굵게, 1 = 가늘게
+inline constexpr int kGlyphRows    = 2;
 
 [[nodiscard]] int GetGlyphIndex(const char _ch);
 
@@ -48,7 +48,7 @@ inline constexpr int kGlyphRows    = 2;   // 0 = 굵게, 1 = 가늘게
 struct GlyphQuad
 {
     char    ch        = ' ';
-    int     glyph     = -1;   // 열 인덱스. -1: 스프라이트 글리프 없음
+    int     glyph     = -1;
     IntRect dst       = {};
     bool    bFallback = false;
 };

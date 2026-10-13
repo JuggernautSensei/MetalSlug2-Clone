@@ -97,7 +97,7 @@ namespace
     return clip;
 }
 
-// 가장 짧게 왕복되는 표기 (0.1, 0.08333333333333333, 1)
+// 가장 짧게 왕복되는 표기
 void AppendNumber_(
     String&      _out,
     const double _value)
@@ -763,7 +763,6 @@ void AnimEditor::DrawCanvas_(
     pDraw->PushClipRect(min, max, true);
     pDraw->AddRectFilled(min, max, IM_COL32(40, 40, 48, 255));
 
-    // 엔티티 원점 = 캔버스 가로 중앙, 세로 70%
     const float originX = static_cast<float>(static_cast<int>(min.x + size.x * 0.5f));
     const float originY = static_cast<float>(static_cast<int>(min.y + size.y * 0.7f));
     const float zoom    = static_cast<float>(m_zoom);
@@ -771,7 +770,6 @@ void AnimEditor::DrawCanvas_(
     const int frameCount = static_cast<int>(_clip.frames.size());
     for (int pass = 0; pass < 2 && frameCount > 0; ++pass)
     {
-        // pass 0 = 이전 프레임 고스트, pass 1 = 현재 프레임
         if (pass == 0 && (!m_bOnion || frameCount < 2))
         {
             continue;

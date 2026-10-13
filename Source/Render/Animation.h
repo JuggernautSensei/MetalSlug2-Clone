@@ -28,7 +28,7 @@ struct AnimClip
     String            name          = {};
     bool              bLoop         = false;
     int               loopStart     = 0;
-    float             frameDuration = 0.1f;   // 초, 전 프레임 동일
+    float             frameDuration = 0.1f;
     int               cellW         = 0;
     int               cellH         = 0;
     Vector<AnimFrame> frames        = {};

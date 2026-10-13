@@ -1,4 +1,3 @@
-// 장식 월드의 스폰 파라미터 해석, 시퀀스 이동/반전/루프와 레이어 마스크 정리를 검증한다.
 
 #include <gtest/gtest.h>
 
@@ -137,25 +136,25 @@ TEST(DecorWorld, SequenceAdvancesStepsAndFinishesWithoutLoop)
     StringView clip;
     bool       bFinished = false;
 
-    RunTicks_(world, *lib, 20);   // 0.33 s: 첫 구간 (A, +60)
+    RunTicks_(world, *lib, 20);
     ASSERT_TRUE(world.Get(id, pos, velocity, clip, bFinished));
     EXPECT_EQ(clip, "A");
     EXPECT_NEAR(pos.x, 120.f, 0.5f);
     EXPECT_FALSE(bFinished);
 
-    RunTicks_(world, *lib, 20);   // 0.67 s: 둘째 구간 (B, 정지)
+    RunTicks_(world, *lib, 20);
     ASSERT_TRUE(world.Get(id, pos, velocity, clip, bFinished));
     EXPECT_EQ(clip, "B");
     EXPECT_NEAR(pos.x, 129.f, 1.f);
     EXPECT_FLOAT_EQ(velocity.x, 0.f);
 
-    RunTicks_(world, *lib, 20);   // 1.0 s: 셋째 구간 (A, -60, 반전) 진행 중
+    RunTicks_(world, *lib, 20);
     ASSERT_TRUE(world.Get(id, pos, velocity, clip, bFinished));
     EXPECT_EQ(clip, "A");
     EXPECT_FLOAT_EQ(velocity.x, -60.f);
     EXPECT_FALSE(bFinished);
 
-    RunTicks_(world, *lib, 30);   // 1.5 s: 시퀀스 끝, 제자리 정지
+    RunTicks_(world, *lib, 30);
     ASSERT_TRUE(world.Get(id, pos, velocity, clip, bFinished));
     EXPECT_TRUE(bFinished);
     EXPECT_FLOAT_EQ(velocity.x, 0.f);
@@ -171,7 +170,7 @@ TEST(DecorWorld, SequenceLoopsBackToFirstStep)
     DecorWorld     world;
     const uint32_t id = world.Spawn(MakeDecorSpawn("A", eStageLayer::Background, { 100.f, 50.f }, &params));
 
-    RunTicks_(world, *lib, 90);   // 1.5 s: 한 바퀴 돌고 첫 구간 (A, +60) 으로 복귀
+    RunTicks_(world, *lib, 90);
     VECTOR2    pos      = {};
     VECTOR2    velocity = {};
     StringView clip;
@@ -195,7 +194,7 @@ TEST(DecorWorld, SingleClipMovesAtConstantVelocityAndNeverFinishes)
 
     DecorWorld     world;
     const uint32_t id = world.Spawn(MakeDecorSpawn("A", eStageLayer::FarBackground, { 100.f, 50.f }, &params));
-    RunTicks_(world, *lib, 60);   // 1 s
+    RunTicks_(world, *lib, 60);
 
     VECTOR2    pos = {};
     VECTOR2    vel = {};

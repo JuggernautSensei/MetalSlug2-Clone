@@ -1,4 +1,3 @@
-// 탈것(Jeep/BTank/MissleTank/Sarubia) 테스트 공용 도우미: 정의 로드와 VehicleRig(적 월드 + 전투 + 투사체 틱 하네스).
 #pragma once
 #include <cstdint>
 #include <vector>

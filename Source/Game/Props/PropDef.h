@@ -64,7 +64,7 @@ struct PropExplosion
 {
     String  clip   = {};
     int     count  = 1;
-    float   spread = 0.f;   // 중심 기준 ±spread 난수 오프셋 (px)
+    float   spread = 0.f;   // 중심 기준 ±spread 난수 오프셋
     VECTOR2 offset = { 0.f, 0.f };
 };
 
@@ -127,9 +127,9 @@ struct PropVariant
 struct PropDef
 {
     String name        = {};
-    int    hp          = 0;   // 0 이면 피격 불가 (불사)
+    int    hp          = 0;   // 0 이면 피격 불가
     float  cullMargin  = 200.f;
-    float  sortOffsetY = 0.f;   // 같은 레이어 안 그리기 순서 키 = pos.y + sortOffsetY (개별 보정용)
+    float  sortOffsetY = 0.f;
     bool   bSortByX    = false;
     int    depth       = kPropDepthBack;
 
@@ -137,7 +137,7 @@ struct PropDef
     PropVisual damaged     = {};
     PropVisual destroyed   = {};
     PropVisual hit         = {};
-    int        damagedAtHp = -1;   // hp <= 이 값이면 damaged 를 쓴다 (-1: 없음)
+    int        damagedAtHp = -1;
 
     Vector<PropPart>    parts    = {};
     Vector<PropVariant> variants = {};
@@ -164,7 +164,7 @@ struct PropBoxOverride
 
 struct PropSpawnParams
 {
-    int                            hp              = -1;   // -1: def 값
+    int                            hp              = -1;
     String                         idleSprite      = {};
     String                         destroySprite   = {};
     std::optional<PropBoxOverride> hitbox          = std::nullopt;

@@ -28,7 +28,7 @@ struct TrainingDummy
     int        facing     = -1;
     Health     health     = {};
     int        flashTicks = 0;
-    int        deadTicks  = -1;   // -1: 생존, 0..: 사망 후 경과 틱
+    int        deadTicks  = -1;
     int        shootTimer = 0;
     int        hitsTaken  = 0;
     eHitKind   lastKind   = eHitKind::Bullet;

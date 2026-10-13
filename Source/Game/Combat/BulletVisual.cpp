@@ -12,13 +12,12 @@
 
 constexpr float kTickSec = 1.f / 60.f;
 
-// 파이어샷 입자: 베이크된 큰 불꽃 클립(FlameShot_AttackMotion, 26프레임, 최대 94x94) 을 Head -> Loop(반복) -> Fade 로 쓴다
 constexpr const char* kFlameClip         = "FlameShot_AttackMotion";
-constexpr int         kFlameHeadFrames   = 4;   // 머리: 앞 4프레임 (입자 생성 직후)
-constexpr int         kFlameFadeFrames   = 6;   // 꼬리: 마지막 6프레임 (사거리 끝)
+constexpr int         kFlameHeadFrames   = 4;
+constexpr int         kFlameFadeFrames   = 6;
 constexpr int         kFlameHeadTicks    = 2;
 constexpr float       kFlameFadeTicks    = 8.f;
-constexpr float       kFlameForwardShift = 24.f;   // 불꽃 중심을 총구보다 앞으로 (큰 프레임이 총을 가리지 않게)
+constexpr float       kFlameForwardShift = 24.f;   // 불꽃 중심을 총구보다
 
 namespace
 {
@@ -120,7 +119,7 @@ bool SubmitPlayerBullet(
         }
         case eWeapon::Rocket:
         {
-            // 로켓 스프라이트는 가로(오른쪽 향함/왼쪽 향함) 한 방향뿐이다. 진행 방향 각도만큼 피벗 기준으로 돌려 그린다
+            // 로켓 스프라이트는 가로 한 방향뿐
             const AnimFrame* pFrame = PickClipFrame_(_pAnims, bRight ? "Aparch_Missle_Right" : "Aparch_Missle_Left", _bullet.ageTicks, true);
             if (!pFrame)
             {
@@ -145,7 +144,7 @@ bool SubmitPlayerBullet(
             {
                 return false;
             }
-            // 수명에 따라 표시 배율이 커진다 (판정 성장과 같은 진행도: travelled / range)
+            // 수명에 따라 표시 배율이 커진다
             const float   t       = _bullet.range > 0.f ? Clamp(_bullet.travelled / _bullet.range, 0.f, 1.f) : 1.f;
             const float   scale   = Lerp(_bullet.scaleStart, _bullet.scaleEnd, t);
             const VECTOR2 shifted = { _pos.x + (bRight ? kFlameForwardShift : -kFlameForwardShift), _pos.y };

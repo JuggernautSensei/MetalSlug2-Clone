@@ -41,7 +41,7 @@ struct SandboxConfig
     bool             bBusBot         = false;
     bool             bHeliLab        = false;
     bool             bHeliBot        = false;
-    int              heliHp          = -1;   // 헬기 랩 전용: 헬기 체력 (-1: 정의 기본값)
+    int              heliHp          = -1;
     bool             bGodMode        = false;
     bool             bSlugLab        = false;
     Vector<VECTOR2>  slugFeet        = {};
@@ -80,7 +80,6 @@ public:
     void RestartGame();
 
     [[nodiscard]] bool ReloadEnemyDefs(const FilePath& _assetRoot);
-    // 정의/투사체 이름 목록이 같을 때만 적을 유지한 채 정의를 교체한다. 다르면 false (아무것도 바꾸지 않음)
     [[nodiscard]] bool             ReloadEnemyDefsKeep(const FilePath& _assetRoot);
     [[nodiscard]] const GroundMap& GetGround() const;
 
@@ -126,12 +125,12 @@ private:
     EnemyWorld       m_enemies { &m_enemyLib };
     EnemyHandle      m_busHandle     = {};
     bool             m_bBusUnlocked  = false;
-    int              m_vehicleCursor = 0;   // 숫자키 9: 다음에 뽑을 차량 번호
+    int              m_vehicleCursor = 0;
     EffectList       m_effects       = {};
     AnimPlayer       m_bombAnim      = {};
     SlugSystem       m_slugs         = {};
     SlugTuning       m_slugTuning    = {};
-    Vector<Wall>     m_slugWalls     = {};   // 적이 SV-001 위로 올라타지 못하게 막는 벽
+    Vector<Wall>     m_slugWalls     = {};
     Vector<Wall>     m_enemyWalls    = {};
     SlugStats        m_prevSlugStats = {};
 

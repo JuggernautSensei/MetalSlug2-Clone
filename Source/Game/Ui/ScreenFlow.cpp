@@ -3,9 +3,9 @@
 #include <algorithm>
 
 constexpr int kResultsFadeTicks = 12;
-constexpr int kTicksPerPow      = 6;   // 구출 수 한 명 집계 간격 (0.1초)
+constexpr int kTicksPerPow      = 6;   // 구출 수 한 명 집계 간격
 constexpr int kRankDelayTicks   = 18;
-constexpr int kRankHoldTicks    = 150;   // 등급 표시 후 대기 (2.5초)
+constexpr int kRankHoldTicks    = 150;   // 등급 표시 후 대기
 constexpr int kPowBonusScore    = 10'000;
 
 ScreenFlowConfig MakeGameOverFlowConfig()
@@ -18,7 +18,7 @@ ScreenFlowConfig MakeGameOverFlowConfig()
     config.delayTicks     = 0;
     config.artSprite      = "UI_GameOver_Helmet";
     config.artFadeInTicks = 30;                            // 0.5 s 페이드 인
-    config.bannerTicks    = config.artFadeInTicks + 180;   // 페이드 인 + 3 s 홀드
+    config.bannerTicks    = config.artFadeInTicks + 180;
     config.fadeTicks      = 40;
     config.holdTicks      = 20;
     return config;

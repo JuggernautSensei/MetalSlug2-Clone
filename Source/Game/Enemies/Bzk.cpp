@@ -20,7 +20,6 @@ enum class eBzkState
     Climb
 };
 
-// aiVariant 2 = 버스 계단 바주카병: Climb (스폰 -> arena.min -> arena.max, 물리 없음) 뒤 Fall 로 승강대에 선다.
 constexpr int kVariantClimb = 2;
 
 namespace

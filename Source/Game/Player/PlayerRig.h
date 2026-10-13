@@ -110,7 +110,7 @@ private:
     const AnimationLibrary* m_pLibrary = nullptr;
     RigTuning               m_tuning   = {};
 
-    ARRAY<ARRAY<SlotTable, 2>, kWeaponCount> m_tables = {};   // [weapon][0 = Left, 1 = Right]
+    ARRAY<ARRAY<SlotTable, 2>, kWeaponCount> m_tables = {};
 
     AnimPlayer m_upper     = {};
     AnimPlayer m_lower     = {};

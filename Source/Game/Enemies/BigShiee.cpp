@@ -8,29 +8,29 @@
 #include "Game/Enemies/EnemyDefParse.h"
 #include "Game/Enemies/VehicleCommon.h"
 
-// 최종보스 전함 '빅 셰이' (원작 MS2 Mission 4). 설계/수치/측정 근거: Docs/Spec_BigShiee.md
-// 모든 파츠는 음수 레이어로 그려 StageState 가 지면 텍스처보다 먼저 그린다 (하늘 < 선체 < 지붕/지면 < 플레이어).
+// 최종보스 전함 '빅 셰이'
+// 모든 파츠는 음수 레이어로 그려 StageState 가 지면 텍스처보다
 
 namespace
 {
-// 보스 파츠(포탑/주포)는 총알과 폭발만 받는다. 칼질(근접)은 선체 보스의 장갑에 먹히지 않는다
+// 보스 파츠는 총알과 폭발만 받는다
 const HitKindMask kBigShieeAccepts = HitKindMask { eHitKind::Bullet, eHitKind::Blast };
 }   // namespace
 
-// 낙하산 인질 정의 (Assets/Defs/BigShiee.json) 와 구출 시 드롭 무기 (헤비머신건 / 로켓 / 샷건 / 화염)
+// 낙하산 인질 정의 와 구출 시 드롭 무기
 constexpr StringView kChuteDef = "pow_chute";
 namespace
 {
 const ARRAY<StringView, 4> kChuteDrops = { "gunitem_mg", "gunitem_rl", "gunitem_sg", "gunitem_fs" };
 }   // namespace
 
-constexpr int kTurnMax      = 8;   // Turn 클립 프레임 수 - 1 (0 = 왼쪽, kTurnMid = 위, 8 = 오른쪽)
+constexpr int kTurnMax      = 8;
 constexpr int kTurnMid      = 4;
-constexpr int kAimRows      = 5;   // 주포 사격 행 (Boss_Cannon_Shot1..5, 왼쪽 .. 오른쪽)
+constexpr int kAimRows      = 5;   // 주포 사격 행
 constexpr int kCasingFrames = 6;
 constexpr int kCasingDepth  = 54;
 constexpr int kShotFrames   = 8;
-constexpr int kYawMax       = 8;   // 주포 yaw 프레임 (Boss_Cannon_Aim 0..8, 사격 행 r = yaw 2r)
+constexpr int kYawMax       = 8;   // 주포 yaw 프레임
 
 namespace
 {
@@ -147,7 +147,7 @@ void SetCannonMode_(
     return { _origin.x + _rel.x, _origin.y + _rel.y };
 }
 
-// 키 표 (x = 초, y = 값) 를 선형 보간한다. 범위 밖은 양 끝 값.
+// 키 표 를 선형 보간
 [[nodiscard]] float Interp_(
     const Span<const VECTOR2> _keys,
     const float               _t)
@@ -198,7 +198,7 @@ void SetCannonMode_(
     return static_cast<float>(_e.aux) * kStepSec;
 }
 
-// 주포 단계 기준 시간 (초). 전개 전이면 음수.
+// 주포 단계 기준 시간
 [[nodiscard]] float DeploySec_(
     const Enemy& _e)
 {
@@ -232,7 +232,7 @@ void SetCannonMode_(
     return late >= 0.f && std::fmod(late, _c.latePausePeriodSec) < _c.latePauseSec;
 }
 
-// 누적 스크롤이 예산에 닿았으면 카메라는 더 가지 않는다 (아레나 끝)
+// 누적 스크롤이 예산에 닿았으면 카메라는 더 가지 않는다
 [[nodiscard]] bool IsScrollStopped_(
     const Enemy&       _e,
     const BigShieeCfg& _c)
@@ -240,7 +240,7 @@ void SetCannonMode_(
     return _c.scrollBudgetPx > 0.f && static_cast<float>(GetSlot_(_e, kBigShieeExtScrollTicks)) * _c.scrollSpeed * kStepSec >= _c.scrollBudgetPx;
 }
 
-// 클립 길이 (틱). 애니메이션 라이브러리가 없는 환경 (테스트) 에서는 기본값
+// 클립 길이
 [[nodiscard]] int ClipTicks_(
     const EnemyEnv&  _env,
     const StringView _name,
@@ -249,7 +249,7 @@ void SetCannonMode_(
     return _env.ctx.pAnims ? Max(1, GetNamedPartTicks(*_env.ctx.pAnims, _name)) : _fallback;
 }
 
-// 사격 클립 길이 (틱). 마지막 칸은 Aim 자세의 복사본이라 보여 주지 않고 Aim 으로 돌아간다
+// 사격 클립 길이
 [[nodiscard]] int ShotTicks_(
     const EnemyEnv&  _env,
     const StringView _name)
@@ -320,7 +320,7 @@ void Init_(
     Slot_(_e, kBigShieeExtLastKill)    = -1;
     SetCannonMode_(_e, eBigShieeCannonMode::Hidden);
 
-    // 선체는 카메라 왼쪽 밖에서 시작한다 (카메라 뷰가 없는 테스트 환경에서는 스폰 위치 그대로)
+    // 선체는 카메라 왼쪽 밖에서 시작한다
     const Aabb& view = _env.ctx.cameraView;
     if (view.max.x > view.min.x)
     {
@@ -330,7 +330,6 @@ void Init_(
     EnterState(_e, static_cast<int>(eBigShieePhase::Entrance));
 }
 
-// 포탄: 포구에서 플레이어 쪽으로 올라갔다 떨어지는 곡사 (weapon "shell" 의 arc)
 [[nodiscard]] VECTOR2 ExtraFromWorld_(
     const Enemy&    _e,
     const EnemyDef& _def,
@@ -345,7 +344,6 @@ void Init_(
     return { _muzzle.x - base.x, _muzzle.y - base.y };
 }
 
-// 조준 위치 (Turn 프레임 0 / 4 / 8): 플레이어 발 x - 포구 x 가 turretAimBandPx 안이면 위, 밖이면 왼쪽/오른쪽. 플레이어가 없으면 지금 위치
 [[nodiscard]] int AimPos_(
     const Enemy&             _e,
     const BigShieeCfg&       _c,
@@ -365,7 +363,6 @@ void Init_(
     return dx > _c.turretAimBandPx ? kTurnMax : kTurnMid;
 }
 
-// 포구 x: 머리가 왼쪽이면 muzzle.x, 위면 0, 오른쪽이면 반대편 (muzzle.x 는 왼쪽을 본 자세 기준)
 [[nodiscard]] float MuzzleX_(
     const BigShieeTurretCfg& _turret,
     const int                _pos)
@@ -411,7 +408,7 @@ void TickTurret_(
     {
         case eBigShieeTurretMode::Idle:
         {
-            // 쉬는 동안 turretTrackTicks 마다 한 칸씩 플레이어 쪽으로 (Turn 프레임 정지 자세)
+            // 쉬는 동안 turretTrackTicks 마다
             const int target = AimPos_(_e, c, turret, _env, pos);
             if (c.turretTrackTicks > 0 && ticks >= c.turretTrackTicks && pos != target)
             {
@@ -487,7 +484,6 @@ void TickVolley_(
     Slot_(_e, kBigShieeExtNextVolley) = _e.aux + RandTicks_(_env, c.volleyIntervalSec);
 }
 
-// 낙하산 인질 보급: 카메라 위쪽 밖, 화면 오른쪽 가장자리 근처로 떨어뜨린다 (지연 스폰: 틱 루프 중 Enemy 벡터를 바꾸지 않는다)
 void TickChute_(
     Enemy&          _e,
     const EnemyDef& _def,
@@ -506,7 +502,7 @@ void TickChute_(
     {
         return;
     }
-    // 낙하 중에도 카메라가 자동 스크롤로 오른쪽으로 간다. 착지 때 화면 밖에 떨어지지 않도록 x 를 착지 시점 예상 화면 안으로 민다
+    // 낙하 중에도 카메라가 자동 스크롤로 오른쪽으로 간다
     const float fallDist = Max(_env.ctx.player.feet.y - (view.min.y - c.chuteStartAboveY), 0.f);
     const float descend  = _env.lib.Get(index).flyingBzk.descendSpeed;
     const float fallSec  = descend > 0.f ? fallDist / descend : 0.f;
@@ -551,7 +547,6 @@ void TickChute_(
     return ATan2(dx, dy) * kRad2Deg;
 }
 
-// Aim 프레임 yaw (0..8) 의 방향각: 짝수는 사격 행 각도, 홀수는 이웃 두 행의 가운데
 [[nodiscard]] float YawDeg_(
     const BigShieeCfg& _c,
     const int          _yaw)
@@ -579,7 +574,6 @@ void TickChute_(
     return best;
 }
 
-// 이 틱에 맞출 yaw: 발사 차례면 플레이어에 가장 가까운 사격 행의 yaw (짝수), 아니면 플레이어를 바라보는 yaw
 [[nodiscard]] int TargetYaw_(
     const Enemy&       _e,
     const BigShieeCfg& _c,
@@ -662,7 +656,6 @@ bool CasingNow_(
     return true;
 }
 
-// 고폭탄: 사격 행의 각도로 나가고 (스프라이트도 같은 방향으로 돈다), 포구는 행의 포신 위치
 void FireMissile_(
     Enemy&          _e,
     const EnemyDef& _def,
@@ -679,7 +672,7 @@ void FireMissile_(
     const VECTOR2      dir    = { std::sin(rad), std::cos(rad) };
     EventLogFormat("bigshiee.missile_fire", "\"row\":{},\"x\":{:.1f},\"y\":{:.1f},\"dx\":{:.3f},\"dy\":{:.3f}", row, muzzle.x, muzzle.y, dir.x, dir.y);
     (void)FireWeapon(_e, _def, _env, weapon, dir, delta);
-    // 사격 순간 포구 섬광 (흰 원 -> 어두운 연기) 과 연기
+    // 사격 순간 포구 섬광 과 연기
     EventLogFormat("bigshiee.muzzle_fx", "\"x\":{:.1f},\"y\":{:.1f}", muzzle.x, muzzle.y);
     RequestFxAt(_env, "Bazuka_Shot_Effect", muzzle, _e.facing, 55);
     RequestFxAt(_env, "Boss_Smoke_Small", muzzle, _e.facing, 54);
@@ -762,8 +755,7 @@ void Tick_(
     _e.body.velocity = { 0.f, 0.f };
     const float t    = AgeSec_(_e);
 
-    // 자동 스크롤: 카메라가 플레이어와 무관하게 오른쪽으로 천천히 간다 (원작 실측 약 20 px/s, 가끔 정지)
-    // 예산 (scrollBudgetPx) 을 다 쓰면 카메라는 멈추고 (아레나 끝) 대신 선체가 왕복한다
+    // 예산 을 다
     const bool bScrolling = t >= c.scrollStartSec && !IsScrollPaused_(_e, c);
     const bool bStopped   = IsScrollStopped_(_e, c);
     if (bScrolling && !bStopped)
@@ -804,7 +796,6 @@ void Tick_(
         }
         else if (driving == 0 && bStopped && bScrolling && c.shuttleDriftSec > 0.f)
         {
-            // 카메라가 멈춘 뒤: 카메라가 가던 것처럼 선체가 왼쪽으로 흐르다가 shuttleDriftSec 뒤 돌진
             _e.body.position.x -= c.scrollSpeed * kStepSec;
             if (++drift >= SecToTicks(c.shuttleDriftSec))
             {
@@ -854,7 +845,6 @@ void Tick_(
         TickTurret_(_e, _def, _env, i);
     }
 
-    // 딸피 연출: 남은 체력 (포탑 + 주포) 비율이 낮을수록 선체 위에 작은 폭발이 더 자주 터진다
     if (_e.life == eEnemyLife::Alive && c.lowHpFxBelow > 0.f)
     {
         int curHp = _e.health.hp;
@@ -895,7 +885,7 @@ void Tick_(
             EventLogFormat("bigshiee.lid", "\"step\":{}", sinceLid / c.hullStepTicks);
         }
     }
-    // 선수 (뚜껑) 가 다 열리고 cannonDeployDelaySec 뒤에 주포가 올라온다 (원작: 뚜껑 -> 잠시 뒤 주포)
+    // 선수 가 다
     if (Phase_(_e) == eBigShieePhase::Deploy && GetCannonMode_(_e) == eBigShieeCannonMode::Hidden
         && _e.aux - GetSlot_(_e, kBigShieeExtLidStart) >= SecToTicks(c.cannonDeployDelaySec))
     {
@@ -911,7 +901,6 @@ void Tick_(
     TickChute_(_e, _def, _env);
 }
 
-// 포탑/주포 피격. 포탑은 자체 체력, 주포는 보스 체력 (e.health). 소비한 피격은 true (부위 플래시는 EnemyWorld 가 건다)
 bool OnHit_(
     Enemy&          _e,
     const EnemyDef& _def,
@@ -965,7 +954,7 @@ void RegisterHurtboxes_(
     const EnemyDef& _def,
     CombatSystem&   _combat)
 {
-    // 첫 틱 (Init_) 전에는 위치가 스폰 지점 그대로라 판정을 등록하지 않는다
+    // 첫 틱 전에는 위치가 스폰 지점 그대로라 판정을 등록하지
     if (!_e.bInit)
     {
         return;
@@ -998,7 +987,6 @@ void RegisterHurtboxes_(
     }
 }
 
-// 사망 연출 (사망 시점 기준 초): 주포 상단 화염 -> 선체 연쇄 폭발 -> 주포 붕괴 + 잔해 -> 연기 구름
 void OnDeath_(
     Enemy&          _e,
     const EnemyDef& _def,
@@ -1072,7 +1060,6 @@ bool DeathDone_(
     return static_cast<float>(_e.deathTicks) * kStepSec >= _def.bigShiee.dyingDoneSec;
 }
 
-// 선체 셀: 전개 중에는 선수가 열리는 순서 (D1 -> D3 -> D6 -> D9) 로 바뀌고 끝나면 열린 상태
 void SubmitHull_(
     const Enemy&          _e,
     const BigShieeCfg&    _c,
@@ -1144,7 +1131,7 @@ void SubmitTurret_(
     }
 }
 
-// 전개 틱을 클립 틱으로 바꾼다 (cannonDeployTicks 가 클립 길이와 다르면 늘이거나 줄인다)
+// 전개 틱을 클립 틱으로 바꾼다
 [[nodiscard]] int DeployClipTicks_(
     const BigShieeCfg&    _c,
     const EnemyRenderEnv& _render,
@@ -1222,7 +1209,7 @@ void SubmitParts_(
     const EnemyDef&       _def,
     const EnemyRenderEnv& _render)
 {
-    // 첫 틱 (Init_) 전에는 스폰 지점에 그려지므로 숨긴다
+    // 첫 틱 전에는 스폰 지점에 그려지므로 숨긴다
     if (!_e.bInit)
     {
         return;
@@ -1275,7 +1262,6 @@ const BehaviorOps kBigShieeOps = {
 
 namespace
 {
-// [t0, v0, t1, v1, ...] 키 표를 읽는다 (가변 길이, 최대 kCapacity 쌍). 읽은 쌍 수를 돌려준다 (키가 없으면 -1)
 template<size_t kCapacity>
 int ReadKeys_(
     DefReader&                 _r,

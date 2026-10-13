@@ -1,4 +1,3 @@
-// Physics 단위 테스트: 중력, 지면 스냅, 경사, 원웨이 플랫폼, 충돌 해소와 결정성 검증
 #include <bit>
 #include <cmath>
 
@@ -497,7 +496,7 @@ TEST(Physics, WallStopsWalkingFlushAndZeroesVelocity)
 TEST(Physics, LeftWallStopsToo)
 {
     GroundMap map = MakeFlat_();
-    map.FillRect(0, 0, 49, 99, true);   // 열 0..49 벽 (오른쪽 면 = 50)
+    map.FillRect(0, 0, 49, 99, true);
     const PhysicsWorld world = WorldOf_(map);
     Body               body  = StandingOn_(world, 150.f, 100.f);
 

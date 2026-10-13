@@ -46,10 +46,9 @@ public:
 
     void SetTarget(const VECTOR2 _target);
 
-    // 자동 전진 (보스전 스크롤): 카메라 중심 x 의 하한을 _dx 만큼 올린다. 하한보다 왼쪽으로는 가지 않고 (매 틱 강제),
     void AddScrollFloor(float _dx);
 
-    // 잠금 영역을 가로로 _dx 만큼 옮긴다 (보스전 자동 스크롤: 잠금 사각형이 카메라와 함께 오른쪽으로 간다). 잠금 중이 아니면 무시.
+    // 잠금 영역을 가로로 _dx 만큼 옮긴다
     void                ShiftLock(float _dx);
     void                ClearScrollFloor();
     [[nodiscard]] bool  HasScrollFloor() const;
@@ -85,11 +84,11 @@ private:
     bool    m_bHasPrevFocus = false;
     VECTOR2 m_target        = { 320.f, 224.f };
     Aabb    m_effBounds     = {};
-    Aabb    m_effVel        = {};   // 경계 변별 속도 (px/틱), 제동·가속 상한 적용용
+    Aabb    m_effVel        = {};
     bool    m_bHasEff       = false;
     bool    m_bGlide        = false;
     float   m_lastDirX      = 1.f;
-    float   m_stepY         = 0.f;   // 직전 틱 세로 걸음 (px/틱)
+    float   m_stepY         = 0.f;   // 직전 틱 세로 걸음
 
     Aabb m_bounds        = {};
     bool m_bHasBounds    = false;
@@ -100,7 +99,7 @@ private:
 
     bool    m_bMoving        = false;
     VECTOR2 m_moveStart      = { 0.f, 0.f };
-    VECTOR2 m_moveStartVel   = { 0.f, 0.f };   // 이동 시작 시점의 속도 (px/틱): 달리던 카메라가 멈칫하지 않도록 이어받는다
+    VECTOR2 m_moveStartVel   = { 0.f, 0.f };
     VECTOR2 m_moveTarget     = { 0.f, 0.f };
     VECTOR2 m_moveRaw        = { 0.f, 0.f };
     int     m_moveTotalTicks = 0;

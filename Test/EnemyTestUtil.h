@@ -1,7 +1,5 @@
 #pragma once
 
-// 적 테스트 공용 도구: 정의 로드, 샌드박스 설정, 월드를 직접 구동하는 EnemyRig.
-
 #include <vector>
 
 #include "Base/Math.h"

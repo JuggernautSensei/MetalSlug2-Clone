@@ -54,7 +54,6 @@ void AppendPngChunk_(
     AppendBigEndian32_(_out, stbiw__crc32(typeAndBody.data(), static_cast<int>(typeAndBody.size())));
 }
 
-// 원본 마스크와 같은 8비트 팔레트 PNG: 인덱스 0 = 공기(흰색), 1 = 땅(파랑).
 [[nodiscard]] bool EncodePalettePng_(
     const Vector<uint8_t>& _pixels,
     const int              _width,

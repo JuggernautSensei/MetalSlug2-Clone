@@ -1,4 +1,3 @@
-// 탈것 샌드박스 테스트: 샌드박스에 탈것을 스폰했을 때 결정성 검증
 #include <cmath>
 #include <vector>
 
@@ -21,7 +20,6 @@ struct VehicleDirectState
 
 namespace
 {
-// 모든 탈것을 세워 두고 1200틱 동안 매 틱의 상태 해시를 _hashes 에 모은다
 void RunHashes_(
     Vector<uint64_t>& _hashes)
 {

@@ -1,4 +1,3 @@
-// 플레이어 리그 테스트: 애니메이션 이름 매핑, 발 위치, 포즈 선택 검증
 #include "Base/Types.h"
 #include "Game/Player/PlayerRig.h"
 #include "PlayerTestUtil.h"
@@ -249,7 +248,6 @@ TEST(PlayerRigPose, HmgRunAndShootCombinesShotUpperWithRunLower)
     sim.Hold(eAction::Right);
     sim.Step(5);
     sim.Tap(eAction::Shot);
-    // 버스트 최소 길이(3발 x 4틱 = 12틱) 안에서 달리는 동안: 상체는 사격, 하체는 달리기
     for (int i = 0; i < 3; ++i)
     {
         EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Shot_MG_Right")) << "tick " << i;

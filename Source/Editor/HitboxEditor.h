@@ -17,7 +17,6 @@ enum class eHitboxField : int
     Count
 };
 
-// JSON 안의 박스 하나. {w,h,cx,cy} 객체이거나 [w,h] 두 숫자 배열(hurtStand, hitSize 등).
 struct HitboxEntry
 {
     String           owner = {};
@@ -29,7 +28,6 @@ struct HitboxEntry
     [[nodiscard]] bool HasField(eHitboxField _field) const;
 };
 
-// 파일 텍스트를 그대로 들고, 숫자 토큰만 제자리 교체한다 (키 순서/서식 유지, 무편집 저장은 바이트 동일).
 class HitboxDocument
 {
 public:

@@ -1,4 +1,3 @@
-// 플레이어 전투 테스트: 샷, 나이프, 폭탄, 사망/리스폰/게임오버와 투사체 판정 검증
 #include <cmath>
 #include <set>
 #include <vector>
@@ -46,7 +45,6 @@ void UnlimitedBullets_(
     _sim.Tune().weapons.hmg.maxAlive    = 0;
 }
 
-// 조준각/발사 위치를 정확히 검사하는 테스트용: HMG 흩뿌림과 위치 흔들림을 끈다 (난수 흩뿌림 자체는 HmgShotsKeepAimAngleAndJitterAcrossTheAimDirection 가 본다)
 void NoSpread_(
     Sim& _sim)
 {
@@ -71,7 +69,6 @@ void NoSpread_(
     return frames;
 }
 
-// 더미가 죽을 때까지 진행한다. 죽은 틱 수를, 끝내 안 죽으면 -1 을 돌려준다.
 [[nodiscard]] int StepUntilDummyDead_(
     Sim&           _sim,
     const uint32_t _id,
@@ -88,7 +85,6 @@ void NoSpread_(
     return !Dummy_(_sim, _id).IsAlive() ? _maxTicks : -1;
 }
 
-// 다음 탄이 발사될 때까지 틱을 진행하고, 그 탄의 발사각(도, 위가 +)을 돌려준다. 발사가 없으면 NaN
 [[nodiscard]] float StepUntilShotAngleDeg_(
     Sim&      _sim,
     const int _maxTicks)
@@ -219,7 +215,7 @@ TEST(PlayerShot, HmgTapFiresABurstSpreadOverTheShotMotion)
     ASSERT_GE(hmg.burstShotsMin, 3);
     ASSERT_LE(hmg.burstShotsMax, 5);
 
-    sim.Tap(eAction::Shot);   // 틱 0: 첫 발이 즉시 나간다
+    sim.Tap(eAction::Shot);
     EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);
     Vector<int> shotTicks = { 0 };
     int         last      = 1;
@@ -233,7 +229,6 @@ TEST(PlayerShot, HmgTapFiresABurstSpreadOverTheShotMotion)
             last = shots;
         }
     }
-    // 한 번 눌러 버스트 하나: 발수는 [min, max] 난수 (결정적), 간격은 고정
     const int shots = static_cast<int>(shotTicks.size());
     EXPECT_GE(shots, hmg.burstShotsMin);
     EXPECT_LE(shots, hmg.burstShotsMax);
@@ -257,7 +252,6 @@ TEST(PlayerShot, HmgHoldDoesNotAutoFireBeyondOneBurst)
 
 TEST(PlayerShot, HmgBurstLengthIsShotsTimesInterval)
 {
-    // 사격 모션 길이 = 실제 발수 x 간격 (원작: 발사 간격 2영상프레임 = 4틱, 한 번 입력당 3~5발)
     Sim sim;
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Tap(eAction::Shot);
@@ -309,7 +303,6 @@ TEST(PlayerShot, HmgShotsKeepAimAngleAndJitterAcrossTheAimDirection)
 
 TEST(PlayerShot, MovingDoesNotCancelTheHmgBurst)
 {
-    // 원작: 헤비머신건은 달리면서도 연사가 이어진다. 이동은 버스트를 끊지 않는다
     Sim sim;
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Step(2);
@@ -337,7 +330,7 @@ TEST(PlayerShot, MovingDoesNotCancelTheHmgBurst)
         sim.Step();
     }
     const int shots = sim.Player().GetStats().shotsFired;
-    EXPECT_GE(shots, hmg.burstShotsMin);   // 버스트 전체 발수가 나간다 (난수 3~5)
+    EXPECT_GE(shots, hmg.burstShotsMin);
     EXPECT_LE(shots, hmg.burstShotsMax);
     EXPECT_EQ(overlayTicks, shots * hmg.burstIntervalTicks);
     EXPECT_FALSE(bGap);
@@ -346,7 +339,6 @@ TEST(PlayerShot, MovingDoesNotCancelTheHmgBurst)
 
 TEST(PlayerShot, JumpStillCancelsTheHmgBurst)
 {
-    // 지상 -> 공중 전환은 여전히 버스트를 끊는다 (이동과 달리 점프는 취소)
     Sim sim;
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Step(2);
@@ -368,7 +360,7 @@ TEST(PlayerShot, FlameDoesNotAutoFireOnHold)
     sim.Hold(eAction::Shot);
     sim.Step(120);
     EXPECT_EQ(sim.Player().GetStats().shotsFired, 1);
-    EXPECT_GE(sim.Tune().weapons.flame.hitSize.x, 60.f);   // 원작 불꽃 크기에 맞춘 판정
+    EXPECT_GE(sim.Tune().weapons.flame.hitSize.x, 60.f);
 }
 
 TEST(PlayerShot, FiniteAmmoDecreasesAndRevertsToPistol)
@@ -423,7 +415,6 @@ TEST(PlayerShot, AimDirectionsShootInThoseDirections)
         float signX  = 0.f;
         float signY  = 0.f;
     };
-    // 앞 / 위 / 위 + 방향(권총은 대각 없이 똑바로 위) / 위 + 방향(HMG 도 정지 조준하면 똑바로 위, 각도 90도)
     const ARRAY<Case, 4> cases = {
         {
          { false, false, true, 1.f, 0.f },
@@ -490,7 +481,6 @@ TEST(PlayerShot, HmgUpPlusDirectionSweepsBulletAngleFromZeroToNinety)
 
     ASSERT_GE(angles.size(), 4u);
     EXPECT_LT(angles.front(), 10.f);
-    // 발사 간격 4틱 x 3~5발: 조준각은 350도/s 로 쓸고 가며 마지막 발은 대각 중간이거나 똑바로 위 (90도에서 멈춘다)
     EXPECT_GE(angles.back(), 40.f);
     EXPECT_LE(angles.back(), 90.5f);
     size_t increases = 0;
@@ -549,7 +539,7 @@ TEST(PlayerShot, AirAimDownShootsDownAndBulletDiesOnGround)
     EXPECT_NEAR(sim.State().GetProjectiles().GetBullets()[0].velocity.x, 0.f, 0.01f);
 
     sim.Release(eAction::Shot);
-    sim.Step(10);   // 사거리(42틱)에 닿기 전에 지면에서 사라진다
+    sim.Step(10);
     EXPECT_EQ(BulletCount_(sim), 0u);
 }
 
@@ -573,7 +563,7 @@ TEST(PlayerShot, BulletsExpireAtTheirRange)
     sim.Tap(eAction::Shot);
     sim.Step(25);
     EXPECT_EQ(BulletCount_(sim), 1u);
-    sim.Step(15);   // 420 px / 800 px/s = 31.5 틱 이후
+    sim.Step(15);
     EXPECT_EQ(BulletCount_(sim), 0u);
 }
 
@@ -604,7 +594,7 @@ TEST(PlayerShot, EveryShotIsOneHitIdThatIsReleasedAfterwards)
     sim.Step(120);
     sim.ReleaseAll();
     sim.Step(120);
-    EXPECT_EQ(sim.State().GetCombat().GetResolver().GetTrackedHitCount(), 0u);   // HitId 누수 없음
+    EXPECT_EQ(sim.State().GetCombat().GetResolver().GetTrackedHitCount(), 0u);
 }
 
 TEST(PlayerKnife, AdjacentGruntDiesFromOneSlashAndNoBulletIsFired)
@@ -691,7 +681,7 @@ TEST(PlayerKnife, TappedShotOnAVehicleKeepsFiringThePistol)
     }
     ASSERT_GE(killed, 0);
     EXPECT_EQ(sim.Player().GetStats().knifeSlashes, 0);
-    EXPECT_GE(sim.Player().GetStats().shotsFired, 7);   // 권총 3 x 7 = 21 >= 지프 체력 20
+    EXPECT_GE(sim.Player().GetStats().shotsFired, 7);
 }
 
 TEST(PlayerKnife, TriggerRangeBoundary)
@@ -890,9 +880,6 @@ TEST(PlayerBomb, BlastHitsAllTargetsInRadiusOnce)
 {
     Sim sim;
     sim.Step(2);
-    // 수류탄은 새 튜닝(260/-330, 중력 900)에서 약 x 330 근처 지면에 떨어진다.
-    // 지프(90x50)는 그 지점 바로 앞, 버스(170x90)는 공중 경로와 겹치지 않게 뒤에 둬서
-    // 폭발 범위(110x130) 안에서 둘 다 한 번씩만 맞는지 본다.
     const uint32_t a = sim.State().AddTarget(eDummyKind::Jeep, { 320.f, 378.f });
     const uint32_t b = sim.State().AddTarget(eDummyKind::Bus, { 420.f, 378.f });
     sim.Tap(eAction::Bomb);
@@ -909,7 +896,7 @@ TEST(PlayerBomb, BombExplodesOnContactWithATargetInMidAir)
     sim.Step(2);
     const uint32_t id = sim.State().AddTarget(eDummyKind::Bus, { sim.X() + 130.f, 378.f });
     sim.Tap(eAction::Bomb);
-    sim.Step(25);   // 지면에 닿기 한참 전 (착탄은 ~46 틱)
+    sim.Step(25);
     EXPECT_EQ(Dummy_(sim, id).health.hp, Dummy_(sim, id).health.maxHp - sim.Tune().bomb.damage);
     EXPECT_EQ(sim.State().GetProjectiles().GetBombs().size(), 0u);
 }
@@ -917,7 +904,7 @@ TEST(PlayerBomb, BombExplodesOnContactWithATargetInMidAir)
 TEST(PlayerBomb, NoMoreThanMaxInFlight)
 {
     Sim sim;
-    sim.Tune().bomb.throwTicks = 4;   // 던지기 동작을 짧게 해서 비행 상한이 막는지 본다
+    sim.Tune().bomb.throwTicks = 4;
     size_t peak                = 0;
     sim.Hold(eAction::Bomb);
     for (int i = 0; i < 120; ++i)

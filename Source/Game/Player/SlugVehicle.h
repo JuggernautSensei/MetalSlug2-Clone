@@ -14,7 +14,7 @@
 struct SlugContext
 {
     const SlugTuning* pTuning      = nullptr;
-    const MoveTuning* pInputMove   = nullptr;   // 입력 버퍼 창 길이 (플레이어와 같은 값을 쓴다)
+    const MoveTuning* pInputMove   = nullptr;   // 입력 버퍼 창 길이
     PhysicsWorld      physics      = {};
     CombatSystem*     pCombat      = nullptr;
     ProjectileSystem* pProjectiles = nullptr;
@@ -51,7 +51,7 @@ struct SlugFx
     int         maxTicks = 0;
 };
 
-// 사운드 연동용 누적 통계 (플레이어 PlayerStats 와 같은 방식으로 호스트가 차이를 본다)
+// 사운드 연동용 누적 통계
 struct SlugStats
 {
     int vulcanShots = 0;
@@ -157,14 +157,14 @@ private:
     bool  m_bCoyote     = true;
     bool  m_bJumping    = false;
     int   m_landTicks   = 0;
-    int   m_crouchLevel = 8;   // 0 = 선 자세, 8 = 완전히 눌린 자세 (Slug_Crouch 프레임 번호)
+    int   m_crouchLevel = 8;
     int   m_crouchTimer = 0;
     int   m_moveX       = 0;
     float m_driveFrame  = 0.f;
     int   m_accelDir    = 0;
-    float m_accelPhase  = 0.f;   // 가속/감속 프레임 위치 0..3
+    float m_accelPhase  = 0.f;
 
-    float m_vulcanAngle    = 0.f;   // 도, 0 = 오른쪽, +90 = 위 (몸이 보는 방향과 무관)
+    float m_vulcanAngle    = 0.f;
     float m_vulcanTarget   = 0.f;
     int   m_vulcanCooldown = 0;
     int   m_vulcanShotAge  = 1000;
@@ -174,8 +174,8 @@ private:
     int      m_hp                = 100;
     int      m_flashTicks        = 0;
     int      m_invincibleTicks   = 0;
-    eGodMode m_godMode           = eGodMode::Off;   // 에디터 디버그 (해시 제외)
-    int      m_hitAge            = -1;              // 피격 경직 클립 경과 틱 (-1 = 없음)
+    eGodMode m_godMode           = eGodMode::Off;   // 에디터 디버그
+    int      m_hitAge            = -1;              // 피격 경직 클립 경과 틱
     bool     m_bHitFront         = true;
     int      m_exitCooldown      = 0;
     int      m_parkAnimTicks     = 0;

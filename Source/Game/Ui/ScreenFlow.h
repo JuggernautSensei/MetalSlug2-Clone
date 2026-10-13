@@ -30,7 +30,7 @@ struct ScreenFlowConfig
     int        bannerTicks    = 120;
     int        fadeTicks      = 40;
     int        holdTicks      = 20;
-    String     artSprite      = {};   // 비어 있지 않으면 배너 대신 전면 아트를 bannerTicks 동안 보인다 (앞 artFadeInTicks 는 페이드 인)
+    String     artSprite      = {};   // 비어 있지 않으면 배너 대신 전면 아트를 bannerTicks 동안 보인다
     int        artFadeInTicks = 0;
 
     [[nodiscard]] int GetTotalTicks() const;

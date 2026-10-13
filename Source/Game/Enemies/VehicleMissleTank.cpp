@@ -58,7 +58,7 @@ void Init_(
     Go_(_e, _def, eMissleTankState::Idle);
     if (_def.missleTank.clipAppear >= 0)
     {
-        SetClip(_e, _def.missleTank.clipAppear, true);   // 스폰 연출 (Idle 첫 1 s 안에 끝난다)
+        SetClip(_e, _def.missleTank.clipAppear, true);   // 스폰 연출
     }
 }
 

@@ -454,7 +454,7 @@ void App::Update_(
     int steps = 0;
     if (!m_captureTicks.empty())
     {
-        steps = 1;   // 결정적 캡처: 렌더 프레임당 정확히 1틱
+        steps = 1;
     }
     else if (g_debug.bPaused)
     {

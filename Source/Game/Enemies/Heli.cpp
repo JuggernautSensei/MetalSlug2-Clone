@@ -6,7 +6,7 @@
 #include "Game/Enemies/EnemyDefParse.h"
 #include "Game/Enemies/VehicleCommon.h"
 
-// 헬기 상태 (Enemy::state 에 int 로 저장). 시간/수치는 Docs/Spec_Helicopter.md
+// 헬기 상태
 enum class eHeliState
 {
     Bomb,
@@ -15,20 +15,19 @@ enum class eHeliState
     Move,
     Volley,
     MoveBack,
-    Turn   // 방향 전환 (원작 미관측: 시트의 Turning 프레임 기반)
+    Turn   // 방향 전환
 };
 
-// Enemy::ext 슬롯 (좌표는 1/16 px 고정소수점으로 저장)
 constexpr int kExtStartX   = 0;
 constexpr int kExtStartY   = 1;
 constexpr int kExtTargetX  = 2;
 constexpr int kExtTargetY  = 3;
 constexpr int kExtBombTime = 4;
 constexpr int kExtTurnFlip = 5;
-constexpr int kExtPodTicks = 6;   // 포드 전개 후 경과 틱 (-1 = 접힘)
+constexpr int kExtPodTicks = 6;   // 포드 전개 후 경과 틱
 constexpr int kExtCycle    = 7;
 constexpr int kExtPassDir  = 8;
-constexpr int kExtIdleTick = 9;   // 호버 idle 위상 (렌더 전용, 해시에 들어가지 않는다)
+constexpr int kExtIdleTick = 9;   // 호버 idle 위상
 
 constexpr float kFixedScale = 16.f;
 constexpr int   kCurveSteps = 12;
@@ -47,7 +46,7 @@ namespace
     return static_cast<float>(_value) / kFixedScale;
 }
 
-// 곡선 표 (균등 간격 13점) 선형 보간
+// 곡선 표 선형 보간
 [[nodiscard]] float SampleCurve_(
     const ARRAY<float, 13>& _curve,
     const float             _u)
@@ -407,11 +406,11 @@ void OnDeath_(
     EnemyEnv&       _env)
 {
     BeginVehicleDeath(_e, _def, _env, -1);
-    _e.bVisible = false;   // 원작: 추락 없이 즉시 대폭발로 사라진다
+    _e.bVisible = false;
     SetPodTicks_(_e, -1);
 }
 
-// 지금 몸통이 보여 주는 Pitch 프레임 (비행 클립이면 idle 왕복, Pitch 클립이면 재생 중인 프레임, 그 밖이면 -1)
+// 지금 몸통이 보여 주는 Pitch 프레임
 [[nodiscard]] int ShownPitchFrame_(
     const Enemy&            _e,
     const EnemyDef&         _def,

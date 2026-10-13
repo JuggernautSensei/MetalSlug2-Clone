@@ -12,9 +12,7 @@
 
 constexpr float kFaceDeadzone = 4.f;
 
-// 사망 혈흔 y 보정은 DeathDef::bloodOffsetY (body.cy -37.5 에 더해 가슴 높이 약 -65 가 된다)
 
-// Enemy::deathPhase 에 int 로 저장된다
 enum class eDeathPhase
 {
     None  = 0,
@@ -308,7 +306,7 @@ void RequestFx(
     request.bFlipX     = _fx.bMirror && _facing > 0;
     if (_fx.bDebris)
     {
-        // 잔해는 위로 솟구쳤다가 떨어진다 (EffectList 가 중력 처리). 난수는 월드 RNG 로 뽑아 리플레이가 결정적이다.
+        // 잔해는 위로 솟구쳤다가 떨어진다
         const float vx   = kDebrisVxMin + static_cast<float>(_env.world.Roll(static_cast<int>(kDebrisVxMax - kDebrisVxMin) + 1));
         const float vy   = kDebrisVyMax - static_cast<float>(_env.world.Roll(static_cast<int>(kDebrisVyMax - kDebrisVyMin) + 1));
         request.velocity = { vx, vy };
@@ -575,7 +573,6 @@ void BeginSoldierDeath(
         RequestFx(_env, fx, _e.body.position, _e.facing);
     }
 
-    // 사람 적이 총/칼에 죽으면 작은 피 튐 (폭발 피격은 제외). 좌우는 id 홀짝으로 정해 RNG 를 소모하지 않는다 (리플레이 해시 유지)
     if (_def.bHuman && _e.lastHitKind != eHitKind::Blast)
     {
         const float    side = _e.facing < 0 ? -1.f : 1.f;
@@ -605,8 +602,6 @@ void TickSoldierDeath(
     if (bFlying)
     {
         ++_e.deathTicks;
-        // 폭발에 날아간 시체는 땅을 통과해 계속 떨어진다: 카메라 아래로 완전히 (스프라이트 윗끝까지) 나가야 지운다.
-        // 카메라 정보가 없거나 (뷰 비어 있음) 너무 오래 (10 초) 남으면 원래 높이 + 60 에서 지운다.
         constexpr float kSpriteHeight = 90.f;
         const Aabb&     view          = _env.ctx.cameraView;
         const bool      bFell         = _e.body.velocity.y > 0.f && _e.body.position.y > static_cast<float>(_e.aux) + 60.f;
@@ -625,7 +620,7 @@ void TickSoldierDeath(
         return;
     }
 
-    // 칼 사망은 시체를 남기지 않는다. 베는 클립이 끝나면 바로 숨기고 제거한다.
+    // 칼 사망은 시체를 남기지
     if (_e.deathPhase == static_cast<int>(eDeathPhase::Slash))
     {
         if (ClipFinished(_e, _def))

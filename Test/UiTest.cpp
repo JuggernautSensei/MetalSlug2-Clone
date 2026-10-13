@@ -1,4 +1,3 @@
-// UI 테스트: 배너, 폰트, 페이드, HUD, 화면 흐름, 타이틀, 결과 화면 검증
 #include <filesystem>
 #include <map>
 
@@ -107,7 +106,6 @@ namespace
     return model;
 }
 
-// Banner/Results 등 단계 흐름을 _tick 에 닿을 때까지 한 틱씩 진행한다. _t 는 지금까지 진행한 틱 수
 void AdvanceFlowTo_(
     int&         _t,
     UiSystem&    _ui,
@@ -123,7 +121,6 @@ void AdvanceFlowTo_(
     }
 }
 
-// HUD 항목 중 Rect 종류만 골라낸다
 [[nodiscard]] Vector<HudItem> HudRects_(
     const Vector<HudItem>& _items)
 {
@@ -147,7 +144,7 @@ TEST(UiFont, GlyphIndexMapsLettersDigitsAndZero)
     EXPECT_EQ(GetGlyphIndex('O'), 14);
     EXPECT_EQ(GetGlyphIndex('1'), 26);
     EXPECT_EQ(GetGlyphIndex('9'), 34);
-    EXPECT_EQ(GetGlyphIndex('0'), 14);   // 0 은 'O' 로 대신한다
+    EXPECT_EQ(GetGlyphIndex('0'), 14);
 }
 
 TEST(UiFont, UnsupportedCharactersHaveNoGlyph)
@@ -631,7 +628,7 @@ TEST(UiHud, BossBarFillScalesWithRatioAndFrameDrawsLast)
 
     ASSERT_EQ(fullRects.size(), 2u);
     ASSERT_EQ(halfRects.size(), 2u);
-    ASSERT_EQ(emptyRects.size(), 1u);   // 비어 있으면 채움 없음
+    ASSERT_EQ(emptyRects.size(), 1u);
     EXPECT_EQ(fullRects[1].w, layout.bossBarInnerW * layout.bossBarScale);
     EXPECT_NEAR(halfRects[1].w, fullRects[1].w / 2, 1);
     EXPECT_EQ(full.back().text, "PlayerHPUI");
@@ -719,7 +716,7 @@ TEST(UiSystem, TicksAdvanceBannerFadeAndBlinkClock)
 TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
 {
     const ScreenFlowConfig config = MakeGameOverFlowConfig();
-    EXPECT_EQ(config.GetTotalTicks(), 270);   // 페이드 인 0.5 s + 홀드 3 s + 페이드 아웃 0.67 s + 대기 0.33 s 후 타이틀
+    EXPECT_EQ(config.GetTotalTicks(), 270);
     EXPECT_EQ(config.artSprite, "UI_GameOver_Helmet");
 
     UiSystem ui;

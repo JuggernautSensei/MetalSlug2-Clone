@@ -482,7 +482,6 @@ SpawnId StageWorldHost::SpawnEntity(
 
     if (m_pProps && _request.kind == eEntityKind::Decor && _request.def == "anim_decor" && !_request.anim.empty())
     {
-        // 시각 전용 장식: 판정 없이 PropWorld 의 DecorWorld 가 재생/이동한다
         const eStageLayer layer = _request.bHasLayer ? _request.layer : eStageLayer::Background;
         m_pProps->SpawnDecor(MakeDecorSpawn(_request.anim, layer, _request.position, pParams));
     }

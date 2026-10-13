@@ -7,9 +7,7 @@
 #include "Game/Enemies/EnemyDefParse.h"
 #include "Game/Enemies/VehicleCommon.h"
 
-// 더블데커 버스 중간보스 (원작 MS2 Mission 4, Docs/Spec_Bus.md).
-// 시각은 시트 33825 에서 자른 Bus_* 클립을 겹쳐 그린다 (뒤 조각 -> 본체 -> 창 파편). 앵커 = 바퀴 바닥 중앙.
-// 좌표/폭발/파편/부품 깊이 표는 Assets/Defs/Bus.json (BusCfg).
+// 더블데커 버스 중간보스
 
 enum class eBusState
 {
@@ -22,7 +20,6 @@ constexpr int kFlyTicks  = 32;   // 계단 비행 8 프레임 x 4 틱
 constexpr int kLandTicks = 6;    // 계단 착지 3 프레임 x 2 틱
 constexpr int kPersist   = 1 << 20;
 
-// ext 슬롯 0..7 = 단계 진입 틱. 그 뒤는 병사 타이머.
 constexpr int kExtNextSoldier = 8;
 
 constexpr uint32_t kStairSoldierTag  = 0x42555300u;
@@ -50,7 +47,7 @@ void SubmitPart_(
     SubmitNamedPart(_render, _clip, _at, _ticks, _bLoop, _depth.sort, _depth.depth);
 }
 
-// 차체 단계 (0 = 개방 상태, 1..3 = 파손 D1..D3)
+// 차체 단계
 [[nodiscard]] int BodyLevel_(
     const int _stage)
 {
@@ -124,7 +121,7 @@ void Init_(
     _e.clip = -1;
 }
 
-// 계단 병사 한 명을 버스 오른쪽 화면 밖에 낸다 (결정적 난수로 종류 선택).
+// 계단 병사 한 명을 버스 오른쪽 화면 밖에 낸다
 void SpawnStairSoldier_(
     Enemy&          _e,
     const EnemyDef& _def,
@@ -276,7 +273,6 @@ void SubmitDebris_(
     }
 }
 
-// Bus_BackD* 는 이름과 달리 뒷벽이 아니라 앞면 덮개 + 계단 그림이다 (Bus_BodyD* 는 승강대 기둥/좌석까지 든 전체 몸통)
 void SubmitDamaged_(
     const EnemyRenderEnv& _render,
     const BusCfg&         _c,

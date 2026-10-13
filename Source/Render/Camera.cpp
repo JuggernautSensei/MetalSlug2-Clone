@@ -5,18 +5,18 @@
 #include "Base/Math.h"
 #include "Render/Renderer.h"
 
-constexpr float kRampStart     = 1.f;     // px/틱: 스크롤 시작 속도
-constexpr float kRampAccel     = 0.19f;   // px/틱²: 플레이어를 따라 가속
+constexpr float kRampStart     = 1.f;
+constexpr float kRampAccel     = 0.19f;
 constexpr float kDecayPerTick  = 0.80f;
-constexpr float kStopSpeed     = 0.05f;   // px/틱 미만이면 정지
+constexpr float kStopSpeed     = 0.05f;
 constexpr float kGlideEnterGap = 96.f;
 constexpr float kGlideExitGap  = 0.05f;
-constexpr float kGlideAccel    = 1.f;    // px/틱²: 글라이드 가감속 상한
-constexpr float kMaxStep       = 12.f;   // px/틱 속도 상한 (글라이드, 수직 추적 공통)
+constexpr float kGlideAccel    = 1.f;
+constexpr float kMaxStep       = 12.f;
 constexpr float kStepGrowth    = 1.5f;
-constexpr float kStepFloor     = 1.f;                   // 걸음이 작을 때 허용되는 최소 증가폭 (px/틱)
-constexpr float kMaxSpeedSec   = kMaxStep / kStepSec;   // px/s
-constexpr float kBoundsEase    = 2.f;                   // px/틱: 클램프 영역이 좁아지는 속도 (edge 당)
+constexpr float kStepFloor     = 1.f;                   // 걸음이 작을 때 허용되는 최소 증가폭
+constexpr float kMaxSpeedSec   = kMaxStep / kStepSec;
+constexpr float kBoundsEase    = 2.f;
 constexpr float kCorrectionSec = 0.5f;
 
 namespace
@@ -27,15 +27,13 @@ namespace
     return std::floor(_value + 0.5f);
 }
 
-// 남은 간격 _gap 에서 감속 kGlideAccel 로 틱 단위 이산 적분하며 정확히 멈출 수 있는 최대 속도 (v + (v-a) + ... = gap)
 [[nodiscard]] float BrakeSpeed_(
     const float _gap)
 {
     return (-kGlideAccel + Sqrt(kGlideAccel * kGlideAccel + 8.f * kGlideAccel * _gap)) * 0.5f;
 }
 
-// 한 축의 이동(거리 _dist, 시작 속도 _v0 px/틱)을 가속도 kGlideAccel·속도 kMaxStep 상한 안에서 끝내는 최소 틱 수
-// Hermite 곡선: 시작 가속도 = (6·D − 4·T·v0)/T², 속도 ≈ 1.5·D/T + v0
+// 한 축의 이동을 가속도 kGlideAccel·속도 kMaxStep 상한 안에서 끝내는 최소 틱 수
 [[nodiscard]] int MinMoveTicks_(
     const float _dist,
     const float _v0)
@@ -47,7 +45,7 @@ namespace
     return static_cast<int>(Ceil(Max(tAccel, tVel)));
 }
 
-// 임계감쇠 스프링 (Unity SmoothDamp 와 같은 형태). 속도 상한은 px/s
+// 임계감쇠 스프링
 void SmoothDamp_(
     float&      _current,
     float&      _velocity,
@@ -138,7 +136,7 @@ void Camera::Lock(
         return;
     }
     const VECTOR2 goal = ClampCenter_(m_center);
-    // 움직이던 카메라는 멈추지 않고 감속 이동으로 넘긴다 (순간 정지 = 튐). 정지 상태의 반올림 수준 차이만 순간 보정한다.
+    // 움직이던 카메라는 멈추지 않고 감속 이동으로 넘긴다
     const bool bNear  = Abs(goal.x - m_center.x) <= 1.f && Abs(goal.y - m_center.y) <= 1.f;
     const bool bStill = Abs(m_velocity.x) <= 1.f && Abs(m_velocity.y) <= 1.f;
     if (bNear && bStill)
@@ -169,10 +167,10 @@ void Camera::BeginMove(
         return;
     }
 
-    // 도착점은 "지금" 유효한 영역이 아니라 가고 있는 최종 영역(잠금 또는 SetBounds 목표) 기준으로 잡는다
+    // 도착점은 "지금" 유효한 영역이 아니라 가고 있는 최종 영역 기준으로 잡는다
     Aabb          targetRect = {};
     const VECTOR2 goal       = GetTargetRect_(targetRect) ? ClampToRect_(_targetCenter, targetRect) : _targetCenter;
-    const VECTOR2 v0         = { m_velocity.x, m_velocity.y * kStepSec };   // 현재 속도 (px/틱)
+    const VECTOR2 v0         = { m_velocity.x, m_velocity.y * kStepSec };   // 현재 속도
     const int     minTicks   = Max(MinMoveTicks_(goal.x - m_center.x, v0.x), MinMoveTicks_(goal.y - m_center.y, v0.y));
 
     m_bMoving        = true;
@@ -230,8 +228,7 @@ bool Camera::GetTargetRect_(
     _rect = m_bounds;
     if (m_bPendingLock)
     {
-        // 잠금 글라이드 중에는 곧 적용될 잠금 영역까지 넓힌다: 잠금 사각형이 월드 경계 밖으로 나가도 (보스 아레나)
-        // 도착점이 경계에 막혀 멈췄다가 잠금 시점에 화면이 한 번에 튀지 않는다
+        // 도착점이 경계에 막혀 멈췄다가 잠금 시점에 화면이 한 번에 튀지
         _rect.min.x = Min(_rect.min.x, m_pendingLock.min.x);
         _rect.min.y = Min(_rect.min.y, m_pendingLock.min.y);
         _rect.max.x = Max(_rect.max.x, m_pendingLock.max.x);
@@ -260,7 +257,6 @@ void Camera::ApproachEdge_(
         return;
     }
 
-    // 좁아지는 쪽: 속도 kBoundsEase 이하, 가감속 kGlideAccel 이하로 제동하며 옮긴다 (카메라가 밀려도 한 프레임에 튀지 않는다)
     const float dir     = dist < 0.f ? -1.f : 1.f;
     const float vTarget = dir * Min(kBoundsEase, BrakeSpeed_(Abs(dist)));
     _vel                = Clamp(vTarget, _vel - kGlideAccel, _vel + kGlideAccel);
@@ -403,8 +399,7 @@ void Camera::StepX_(
 
     if (m_bGlide)
     {
-        // 제동 곡선 추적: 남은 거리에서 멈출 수 있는 속도 BrakeSpeed_ 와 상한 kMaxStep 중 작은 값을 목표 속도로 삼고,
-        // 속도는 틱당 kGlideAccel 이상 바뀌지 않는다. 목표가 움직여도 멈칫하지 않고, 목표를 넘지도 않는다
+        // 속도는 틱당 kGlideAccel 이상 바뀌지
         const float dir     = gap < 0.f ? -1.f : 1.f;
         const float vTarget = dir * Min(kMaxStep, BrakeSpeed_(Abs(gap)));
         const float vNext   = Clamp(vTarget, m_velocity.x - kGlideAccel, m_velocity.x + kGlideAccel);
@@ -414,7 +409,7 @@ void Camera::StepX_(
 
         if (Abs(_desiredX - m_center.x) < kGlideExitGap)
         {
-            m_center.x  = _desiredX;   // 도착: 남은 오차는 보이지 않을 만큼 작다
+            m_center.x  = _desiredX;
             m_bGlide    = false;
             m_pushSpeed = 0.f;
         }
@@ -428,8 +423,8 @@ void Camera::StepX_(
         m_lastDirX  = dir;
     }
 
-    // 플레이어가 추적 방향으로 움직인 양만큼 가속한다 (상한 = 플레이어 속도).
-    // 멈추거나 되돌아가면 틱마다 감속해서 남은 간격을 넘지 않고 천천히 멈춘다
+    // 플레이어가 추적 방향으로 움직인 양만큼 가속한다
+    // 멈추거나 되돌아가면 틱마다
     const float moveX = _focusDeltaX * dir;
     if (moveX > m_pushSpeed)
     {
@@ -445,9 +440,8 @@ void Camera::StepX_(
         m_pushSpeed = 0.f;
     }
 
-    // 한 틱에 직전 속도의 1.5배(최소 1px)를 넘어 빨라지지 않는다 (간격에 막혀 짧아진 걸음 뒤에 갑자기 커지지 않도록)
+    // 한 틱에 직전 속도의 1.5배를 넘어 빨라지지 않는다
     const float limit = Max(kStepFloor, kStepGrowth * Abs(m_velocity.x));
-    // 제동 곡선: 간격이나 영역 경계에 가까워지면 틱당 감속이 kGlideAccel 을 넘지 않는다 (벽에 부딪혀 한 프레임에 멈추지 않는다)
     const float stepAbs = Min(Min(Abs(gap), m_pushSpeed), Min(limit, BrakeSpeed_(Abs(gap))));
     m_velocity.x        = dir * stepAbs;
     m_center.x += m_velocity.x;
@@ -460,7 +454,7 @@ void Camera::Update(
 
     if (m_bMoving)
     {
-        // 도착점은 이동 중에도 최종 영역 안으로 유지한다. 영역이 바뀌면 도착점도 틱당 kBoundsEase 이하로만 따라간다 (경로가 튀지 않도록)
+        // 도착점은 이동 중에도 최종 영역 안으로 유지
         Aabb targetRect = {};
         if (GetTargetRect_(targetRect))
         {
@@ -482,7 +476,6 @@ void Camera::Update(
         }
         else
         {
-            // Hermite: 시작 속도는 달리던 속도를 이어받고, 도착 속도는 0 이라 멈춤/출발이 한 프레임에 일어나지 않는다
             const float T   = static_cast<float>(m_moveTotalTicks);
             const float s   = static_cast<float>(m_moveElapsed) / T;
             const float s2  = s * s;
@@ -538,7 +531,7 @@ void Camera::Update(
             const float yBefore = m_center.y;
             SmoothDamp_(m_center.y, m_velocity.y, desired.y, m_tuning.smoothTime, _dt, kMaxSpeedSec);
 
-            // 세로 걸음도 틱당 변화가 kGlideAccel 이하 (데드존 경계·착지로 목표가 튀어도 스프링이 한 번에 튕기지 않는다)
+            // 세로 걸음도 틱당 변화가 kGlideAccel 이하
             const float gapY   = desired.y - yBefore;
             float       stepY  = m_center.y - yBefore;
             stepY              = Clamp(stepY, m_stepY - kGlideAccel, m_stepY + kGlideAccel);

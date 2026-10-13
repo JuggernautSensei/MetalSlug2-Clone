@@ -18,7 +18,7 @@ enum class ePowState
 
 namespace
 {
-// 외형 변형 클립 (aiVariant 1..3). 변형에 해당 슬롯이 없으면 기본 클립을 쓴다
+// 외형 변형 클립
 [[nodiscard]] int VariantClip_(
     const Enemy&  _e,
     const PowCfg& _c,

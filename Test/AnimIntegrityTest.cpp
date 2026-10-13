@@ -1,5 +1,3 @@
-// 애니메이션 데이터 무결성 테스트 (Docs/AnimAudit.md): 클립 오매핑/좌우 피벗 튐/아틀라스 겹침/스테이지 NPC 클립 혼입을 잡는다.
-// Assets 가 없으면 건너뛴다.
 #include <algorithm>
 #include <cmath>
 #include <map>
@@ -30,7 +28,6 @@ namespace
     return true;
 }
 
-// 클립 이름의 첫 토큰 (엔티티 계열): "MissleTank_Up_Idle_Left" -> "MissleTank"
 [[nodiscard]] String FamilyOf_(
     const String& _name)
 {
@@ -124,7 +121,6 @@ TEST(AnimIntegrity, LeftRightTwinsKeepTheSameFootAnchor)
             continue;
         }
         ++checked;
-        // 오타(OffsetY -430 등)는 수백 px 튄다. 정상 차이는 두 자릿수 이하다 (전함 이펙트 34px 가 최대).
         EXPECT_LE(Abs(left - right), 64) << clip.name.c_str() << " vs " << twinName.c_str();
         EXPECT_EQ(clip.bLoop, pTwin->bLoop) << clip.name.c_str();
     }
@@ -144,7 +140,6 @@ TEST(AnimIntegrity, EveryDefClipExistsWithMatchingFrameCountAndSingleFamily)
     ASSERT_TRUE(loaded) << message.c_str();
     const EnemyDefLibrary defs = loaded.Take();
 
-    // 정의가 여러 계열의 클립을 쓰는 것이 의도인 경우만 허용한다
     const RbSet<String> mixedOk = { "pow" };
 
     for (const EnemyDef& def: defs.GetDefs())
@@ -162,12 +157,10 @@ TEST(AnimIntegrity, EveryDefClipExistsWithMatchingFrameCountAndSingleFamily)
             }
             families.insert(FamilyOf_(clip.name));
         }
-        // 한 정의의 몸 클립은 한 계열이어야 한다
         if (def.clips.empty() || mixedOk.count(def.name) > 0)
         {
             continue;
         }
-        // 인간형의 공통 사망 클립(SD_Die_*, human_base 상속)은 몸 계열과 따로 센다.
         if (families.size() > 1)
         {
             families.erase("SD");

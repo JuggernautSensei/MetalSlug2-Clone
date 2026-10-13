@@ -9,7 +9,7 @@
 #include "Base/Types.h"
 #include "Game/Ui/BitmapFont.h"
 
-constexpr float kHitFlashSec = 0.5f;   // 피격 연출 최대 길이 (Hit 클립이 없으면 연출 없음)
+constexpr float kHitFlashSec = 0.5f;   // 피격 연출 최대 길이
 
 namespace
 {
@@ -599,7 +599,6 @@ void PropWorld::Tick(
     {
         if (!inst.bRemove && inst.pos.x < _ctx.cameraLeft - inst.cullMargin)
         {
-            // 폭이 큰 소품 (집) 은 앵커가 멀어져도 일부가 화면에 남을 수 있다: 스프라이트가 화면 왼쪽 밖으로 완전히 나간 뒤에만 지운다
             Aabb bounds = {};
             if (GetVisualBounds(inst, _ctx.pAnims, bounds) && bounds.max.x >= _ctx.cameraLeft)
             {
@@ -680,7 +679,6 @@ int PropWorld::SortKey(
 {
     if (_inst.bSortByX)
     {
-        // 건물: 작은 x (먼저 나오는 건물) 일수록 키가 커서 앞에 그려진다. 동률은 y 로 정한다.
         return -static_cast<int>(_inst.pos.x) * kBuildingDepthXScale + static_cast<int>(_inst.pos.y);
     }
     return static_cast<int>(_inst.pos.y + _inst.sortOffsetY);
@@ -780,9 +778,8 @@ bool ApplyGroundPatch(
     const VECTOR2    _topLeft,
     const GroundMap& _footprint)
 {
-    // 발자국(마스크의 고체 픽셀)만 공기로 지운다. 발자국 밖 픽셀은 절대 건드리지 않는다.
-    // 가드 (하나라도 걸리면 아무것도 바꾸지 않고 false):
-    //  1) 발자국이 어떤 열의 바닥(발자국 사각형 안 가장 아래 고체 픽셀)을 지우면 거부 (도로가 뚫리는 경우)
+    // 발자국만 공기로 지운다
+    // 1) 발자국이 어떤 열의 바닥을 지우면 거부
     //  2) 발자국 사각형 안 고체 픽셀의 kMaxClearPercent % 를 넘게 지우면 거부
     constexpr uint64_t kMaxClearPercent = 50;
 

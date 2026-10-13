@@ -28,14 +28,13 @@
 #include "World/GroundMap.h"
 #include "World/Physics.h"
 
-// 상태 변형 (연습장): 다른 스테이지 파일, 봇 입력, 무적. 기본값은 정규 스테이지 (stage0)
 struct StageStateConfig
 {
     String stageFile   = "Stage0.json";
     bool   bBot        = false;
     bool   bGod        = false;
     bool   bHmg        = false;
-    bool   bAutoDamage = false;   // 보스 파트에 일정 속도 (약 20 dps) 로 판정 피해를 준다 (보스전 전 과정을 결정적으로 캡처하는 용도)
+    bool   bAutoDamage = false;   // 보스 파트에 일정 속도 로 판정 피해를 준다
 };
 
 class StageState final : public IGameState
@@ -164,7 +163,7 @@ private:
     eWeapon     m_prevWeapon = eWeapon::Pistol;
     int         m_prevScore  = 0;
 
-    DisplayTimer m_timer          = {};   // 화면 표시용 카운트다운 (사망과 무관)
+    DisplayTimer m_timer          = {};   // 화면 표시용 카운트다운
     String       m_timerSectionId = {};
     int          m_rescuedPows    = 0;
 

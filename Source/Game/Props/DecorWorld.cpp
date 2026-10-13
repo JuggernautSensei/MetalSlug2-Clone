@@ -2,11 +2,11 @@
 
 #include <algorithm>
 
-// 끝나지 않는 구간 (단일 clip 장식)
+// 끝나지 않는 구간
 constexpr float kDecorForeverSec = 1e9f;
-// 구간 최소 길이 (0 이하 구간이 무한 전진하는 것을 막는다)
+// 구간 최소 길이
 constexpr float kDecorMinSec = 0.01f;
-// 한 틱에서 넘길 수 있는 구간 수 상한 (잘못된 데이터 방어)
+// 한 틱에서 넘길 수 있는 구간 수 상한
 constexpr int kDecorMaxAdvance = 64;
 
 DecorSpawn MakeDecorSpawn(
@@ -122,7 +122,6 @@ void DecorWorld::Advance_(
     {
         if (!_inst.bLoop)
         {
-            // 마지막 구간 종료: 제자리에서 마지막 clip 을 계속 재생한다
             _inst.bFinished = true;
             _inst.velocity  = { 0.f, 0.f };
             _inst.stepLeft  = kDecorForeverSec;

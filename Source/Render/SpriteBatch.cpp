@@ -178,7 +178,7 @@ void SetLoadTraceEnabled(
     g_bTraceLoad = _bEnabled;
 }
 
-// 피격 플래시 램프 노드 (원작 버스 피격 프레임 실측: 입력 평균 밝기 L -> 출력 RGB)
+// 피격 플래시 램프 노드
 struct FlashRampNode
 {
     int l = 0;
@@ -397,7 +397,7 @@ Result<void> SpriteBatch::AddAtlasPageFromRgba(
     SDL_SetTextureBlendMode(pTexture, SDL_BLENDMODE_BLEND);
     SDL_SetTextureScaleMode(pTexture, SDL_SCALEMODE_NEAREST);
 
-    // 피격 플래시 변환본 (실패해도 일반 페이지는 쓸 수 있다: 그 경우 플래시만 생략된다)
+    // 피격 플래시 변환본
     SDL_Texture* pFlash = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, _width, _height);
     if (pFlash && _flashRgba.size() >= static_cast<size_t>(_width) * static_cast<size_t>(_height) * 4 && SDL_UpdateTexture(pFlash, nullptr, _flashRgba.data(), _width * 4))
     {
@@ -503,7 +503,7 @@ Result<int> SpriteBatch::AddStandaloneTextureFromRgba(
 
     const ScopedPhaseTimer timer { "gpu-upload", "standalone" };
 
-    // 가로가 kMaxStripW 를 넘으면 띠로 쪼갠다 (구형 GPU/드라이버의 8192 제한에서 최후반부가 깨지는 문제 방지)
+    // 가로가 kMaxStripW 를 넘으면 띠로 쪼갠다
     constexpr int     kMaxStripW = 2048;
     const int         stripW     = Min(_width, kMaxStripW);
     StandaloneTexture texture    = {};
@@ -644,7 +644,6 @@ void SpriteBatch::DrawTextureRepeatX(
         return;
     }
 
-    // 엔드리스 구간: 세그먼트 k 는 월드 [from + k*tileW, from + (k+1)*tileW) 를 텍스처 열 [_tileX, _tileX+tileW) 로 그린다
     const int viewLeft  = camX;
     const int viewRight = camX + _viewW;
     const int firstK    = viewLeft > from ? (viewLeft - from) / _tileW : 0;
@@ -690,7 +689,7 @@ void SpriteBatch::DrawFrame(
     const SDL_FRect src = { static_cast<float>(_frame.x), static_cast<float>(_frame.y), static_cast<float>(_frame.w), static_cast<float>(_frame.h) };
     SDL_FRect       dst = { static_cast<float>(dest.x), static_cast<float>(dest.y), static_cast<float>(dest.w), static_cast<float>(dest.h) };
 
-    // 피벗 점(프레임 기준점, 플립 반영)의 화면 위치는 배율과 무관하게 고정한다
+    // 피벗 점의 화면 위치는 배율과 무관하게 고정
     const float cx      = _options.bFlipX ? static_cast<float>(_frame.w - _frame.pivotX) : static_cast<float>(_frame.pivotX);
     const float cy      = _options.bFlipY ? static_cast<float>(_frame.h - _frame.pivotY) : static_cast<float>(_frame.pivotY);
     const bool  bScaled = _options.scale > 0.f && _options.scale != 1.f;
@@ -707,7 +706,7 @@ void SpriteBatch::DrawFrame(
     SDL_SetTextureAlphaMod(pDraw, _options.tint.a);
     if (_options.rotationDeg != 0.f)
     {
-        // 피벗 점(프레임 기준점)이 월드 원점에 놓인 채 돈다. dst 좌표계에서 피벗 위치를 중심으로 준다 (배율 적용된 dst 기준)
+        // 피벗 점이 월드 원점에 놓인 채 돈다
         const float      s      = bScaled ? _options.scale : 1.f;
         const SDL_FPoint center = { cx * s, cy * s };
         SDL_RenderTextureRotated(m_pRenderer, pDraw, &src, &dst, static_cast<double>(_options.rotationDeg), &center, FlipFlags_(_options));

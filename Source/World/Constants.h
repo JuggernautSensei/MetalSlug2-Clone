@@ -1,6 +1,6 @@
 #pragma once
 
-inline constexpr float kStepSec = 1.f / 60.f;   // 고정 스텝 (FixedStepClock 과 동일한 60Hz)
+inline constexpr float kStepSec = 1.f / 60.f;   // 고정 스텝
 
 inline constexpr float kGravity          = 1400.f;
 inline constexpr float kTerminalVelocity = 3000.f;

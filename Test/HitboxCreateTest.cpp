@@ -1,4 +1,3 @@
-// 생성 상자(hitboxes) 로더/문서/등록 + params 제자리 교체 왕복.
 
 #include <gtest/gtest.h>
 

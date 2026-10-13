@@ -1,4 +1,3 @@
-// 팀 판정표, 히트/허트박스 해석(관통, 방어, 단일 타격 등), 결정성과 Health 를 검증한다.
 
 #include <gtest/gtest.h>
 
@@ -207,7 +206,7 @@ TEST(Combat, NonPierceHitboxIsConsumedByFirstHitInIndexOrder)
     const Vector<HitEvent> events = Resolve_(resolver, { MakeHit_(eTeam::Player, eHitKind::Bullet, Box_(0, 0, 100, 10), 1) }, { MakeHurt_(eTeam::Enemy, Box_(40, 0, 50, 10), 1), MakeHurt_(eTeam::Enemy, Box_(10, 0, 20, 10), 2) });
 
     ASSERT_EQ(events.size(), 1u);
-    EXPECT_EQ(events[0].hurtboxIndex, 0u);   // 결정적: 가장 낮은 hurtbox 인덱스가 먼저
+    EXPECT_EQ(events[0].hurtboxIndex, 0u);
 }
 
 TEST(Combat, ConsumedBulletDoesNotHitAgainOnLaterFrames)

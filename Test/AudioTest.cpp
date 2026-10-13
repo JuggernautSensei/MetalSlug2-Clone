@@ -1,4 +1,3 @@
-// 사운드 뱅크 파싱, 보이스 할당, 오디오 수학, 싱크, 건식 오디오 시스템과 오디오가 시뮬레이션 결정성에 영향을 주지 않는지 검증한다.
 
 #include <gtest/gtest.h>
 
@@ -487,7 +486,7 @@ TEST(AudioDevice, RealEnginePlaysEverySoundWithoutFailing)
 {
     AudioConfig config;
     config.bEnabled     = true;
-    config.masterVolume = 0.001f;   // 테스트 중 소리가 거의 나지 않게
+    config.masterVolume = 0.001f;
 
     AudioSystem audio;
     if (!audio.InitFromDirectory(Root_(), config))

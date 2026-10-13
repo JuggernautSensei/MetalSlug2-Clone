@@ -1,4 +1,3 @@
-// 애니메이션 라이브러리의 JSON 로드/조회와 AnimPlayer 의 고정 틱 진행(루프, 종료, 속도, 위상 동기화)을 검증한다.
 
 #include <gtest/gtest.h>
 
@@ -344,7 +343,7 @@ TEST(AnimPlayer, SpeedScaleStretchesTime)
     {
         (void)fast.Update(lib, kStepSec, 2.f);
     }
-    EXPECT_EQ(fast.GetFrame(), 2);   // 6틱 = 0.1초 × 2배 = 0.2초 → 프레임 2
+    EXPECT_EQ(fast.GetFrame(), 2);
 }
 
 TEST(AnimPlayer, UpdateWithoutClipIsHarmless)

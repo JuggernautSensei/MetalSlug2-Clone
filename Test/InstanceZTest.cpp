@@ -1,4 +1,3 @@
-// 인스턴스 z: 스폰 z 가 제출 depth 를 옮기고 부품 상대 오프셋은 유지된다. 스테이지 "z" 파서/에디터 패치.
 #include <algorithm>
 
 #include <gtest/gtest.h>

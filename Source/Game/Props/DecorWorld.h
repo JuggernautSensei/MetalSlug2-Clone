@@ -7,14 +7,14 @@
 #include "Render/Animation.h"
 #include "Render/SpriteBatch.h"
 
-// 장식 레이어 정렬 번호 (소품 background 12 보다 뒤에 그려진다)
+// 장식 레이어 정렬 번호
 inline constexpr int kDecorFarDepth  = 4;
 inline constexpr int kDecorBackDepth = 11;
 
 struct DecorStep
 {
     String  clip     = {};
-    float   seconds  = 1.f;   // 구간 길이 (초)
+    float   seconds  = 1.f;   // 구간 길이
     VECTOR2 velocity = { 0.f, 0.f };
     bool    bFlipX   = false;
 };
@@ -27,17 +27,12 @@ struct DecorSpawn
     VECTOR2           velocity = { 0.f, 0.f };
     bool              bFlipX   = false;
     bool              bLoop    = false;
-    float             scale    = 1.f;   // 배율 (1 = 원본, 피벗 고정)
+    float             scale    = 1.f;
     int               z        = kDefaultZ;
     Vector<DecorStep> sequence = {};
 };
 
-// anim_decor 의 params 를 DecorSpawn 으로 읽는다.
-//  velocity: [vx, vy]
-//  scale: 배율 (기본 1, 0 이하는 1 로 본다)
-//  sequence: [{ "clip", "seconds", "velocity": [vx, vy], "flip" }, ...]
-//  loop: bool (sequence 반복)
-//  flip: bool (단일 clip 좌우 반전)
+// anim_decor 의 params 를 DecorSpawn 으로 읽는다
 [[nodiscard]] DecorSpawn MakeDecorSpawn(StringView _clip, eStageLayer _layer, VECTOR2 _pos, const ParamValue* _pParams);
 
 class DecorWorld

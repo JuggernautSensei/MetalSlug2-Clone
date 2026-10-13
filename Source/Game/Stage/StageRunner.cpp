@@ -245,7 +245,6 @@ void StageRunner::AddCameraScroll(
     }
     if (!m_locks.empty())
     {
-        // 잠금 중: 잠금 사각형을 카메라와 함께 옮긴다 (바닥만 올리면 잠금 오른쪽 끝에 막힌다). 플레이어 화면 가두기도 이 사각형을 따른다
         m_locks.back().rect.min.x += _dx;
         m_locks.back().rect.max.x += _dx;
         m_pCamera->ShiftLock(_dx);

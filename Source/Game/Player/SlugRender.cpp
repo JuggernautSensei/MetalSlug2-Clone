@@ -179,7 +179,6 @@ void SubmitSlug(
         }
     }
 
-    // 발칸 (몸이 보는 방향과 무관하게 월드 각도로 돈다)
     if (_slug.IsVulcanVisible())
     {
         const int        idx    = VulcanIndexFromAngle(_slug.GetVulcanAngle());

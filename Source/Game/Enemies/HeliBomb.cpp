@@ -7,7 +7,6 @@
 
 namespace
 {
-// 지면/벽 접촉 검사 (발판은 보지 않는다: 감시초소 같은 구조물 발판에 막혀 플레이어에게 닿지 못한다). _to 는 접촉 판정 점의 현재 위치
 [[nodiscard]] bool Touches_(
     const PhysicsWorld& _world,
     const VECTOR2       _to)
@@ -75,7 +74,7 @@ void Tick_(
     _e.body.position.y += _e.body.velocity.y * kStepSec;
 
     const VECTOR2 probeTo = { _e.body.position.x, _e.body.position.y + c.groundProbeY };
-    // 플레이어 바로 위에서 떨어지는 폭탄은 그 머리 위 구조물(강 한가운데 건물 등)에 막히지 않고 플레이어 발 높이까지 내려와 터진다
+    // 플레이어 바로 위에서 떨어지는 폭탄은 그 머리 위 구조물에 막히지 않고 플레이어 발 높이까지 내려와 터진다
     const EnemyPlayerInfo& player   = _env.ctx.player;
     const bool             bAimed   = player.bAlive && Abs(probeTo.x - player.feet.x) <= c.hitSize.x * 0.5f + c.blastSize.x * 0.5f;
     const bool             bPassing = bAimed && probeTo.y < player.feet.y;

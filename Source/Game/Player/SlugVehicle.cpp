@@ -11,7 +11,7 @@
 #include "Render/SpriteBatch.h"
 
 constexpr int kCrouchLevels   = 8;
-constexpr int kExplosionTicks = 66;   // Slug_Explosion 30프레임 @ 30fps = 60틱 + 여유
+constexpr int kExplosionTicks = 66;
 constexpr int kFxSmokeTicks   = 54;
 constexpr int kFxFireTicks    = 40;
 constexpr int kSmokeInterval  = 16;
@@ -223,7 +223,7 @@ void SlugVehicle::TickParked_(
     }
     ReleaseCrushId_(_ctx);
 
-    // 위험 상태로 버려진 차량은 스스로 폭발한다 (SELF-DESTRUCT 팔레트 깜빡임). 다시 타면 취소된다.
+    // 위험 상태로 버려진 차량은 스스로 폭발한다
     const bool bDanger = m_hp > 0 && GetHpRatio() <= m_tuning.damage.fireRatio;
     if (bDanger && m_selfDestructTicks < 0 && m_exitCooldown <= 0 && m_parkAnimTicks <= 0 && m_stats.exits > 0)
     {
@@ -263,7 +263,6 @@ void SlugVehicle::TickDriven_(
     m_input.Update(_input);
     const PlayerCommand command = m_input.Read(_input, *_ctx.pInputMove);
 
-    // 위 + 점프 = 하차 (조준 위로 점프하면 내려 버린다는 원작의 악명 높은 조작)
     if (command.bUpHeld && command.bJumpBuffered)
     {
         m_input.Consume(eAction::Jump);
@@ -759,7 +758,6 @@ void SlugVehicle::UpdatePose_()
     if (m_mode == eSlugMode::Boarding)
     {
         m_pose = eSlugPose::BoardingIn;
-        // Enter 클립: 3 (레이더) -> 4 (포신 올림) -> 5 (안테나)
         const int third = Max(1, m_tuning.board.boardTicks / 3);
         m_poseFrame     = 3 + Min(2, m_modeTicks / third);
         return;

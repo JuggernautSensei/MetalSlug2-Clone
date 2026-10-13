@@ -31,7 +31,7 @@ public:
     [[nodiscard]] bool              NumArray(StringView _key, Span<float> _out);
     [[nodiscard]] int               NumList(StringView _key, Span<float> _out);
     [[nodiscard]] bool              Has(StringView _key) const;
-    [[nodiscard]] const JsonReader* FindRaw(StringView _key);   // 객체/객체 배열 같은 구조 값을 직접 읽을 때 (사용 표시, 없으면 nullptr)
+    [[nodiscard]] const JsonReader* FindRaw(StringView _key);
 
     [[nodiscard]] int Clip(StringView _logical);
     [[nodiscard]] int ClipOpt(StringView _logical) const;
@@ -68,5 +68,4 @@ void ParseHeliCfg(DefReader& _reader, EnemyDef& _def);
 void ParseHeliBombCfg(DefReader& _reader, EnemyDef& _def);
 void ParseBigShieeCfg(DefReader& _reader, EnemyDef& _def);
 
-// params.parts: GetEnemyPartSlots 의 이름만 허용, 각 부품은 {depth, sort} 정수 (둘 다 선택)
 void ParseEnemyParts(DefReader& _reader, EnemyDef& _def);

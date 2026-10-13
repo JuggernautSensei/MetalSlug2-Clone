@@ -1,4 +1,3 @@
-// StageRunner 테스트: 트리거, 스폰, 웨이브, 게이트, 워프, 타이밍 등 섹션 액션 진행 검증
 #include <cmath>
 #include <optional>
 #include <string>
@@ -24,7 +23,6 @@ constexpr const char* kTallBounds = R"J({"initialBounds":[0,0,4000,1000]})J";
 
 namespace
 {
-// (x == 100 에만 바닥 352 가 있는) 플레이어 시작 바닥 질의
 [[nodiscard]] std::optional<float> PlayerStartGround_(
     const float _x,
     const float)
@@ -32,7 +30,6 @@ namespace
     return _x == 100.f ? std::optional<float> { 352.f } : std::nullopt;
 }
 
-// x < 1000 이고 fromY <= 300 일 때만 바닥 300 이 있는 질의 (그 밖은 바닥 없음)
 [[nodiscard]] std::optional<float> SnapGround_(
     const float _x,
     const float _fromY)
@@ -44,7 +41,6 @@ namespace
     return std::nullopt;
 }
 
-// 시드를 바꿔 웨이브를 70틱 돌린 뒤 스폰된 x 좌표 목록
 [[nodiscard]] Vector<float> CollectWaveXs_(
     const String&  _json,
     const uint64_t _seed)
@@ -559,9 +555,9 @@ TEST(StageRunnerClear, ClearWavesCancelsWavesAndGatesButKeepsOtherDelayedActions
     fx.StepAt(5.f, 100);
     EXPECT_EQ(fx.runner.GetPendingWaveCount(), 0);
     EXPECT_EQ(fx.runner.GetOpenGateCount(), 0);
-    EXPECT_EQ(fx.host.CountSpawnsOf("w"), 1);   // 0.5 s 웨이브는 clear(1.0 s) 전에 이미 스폰됨
+    EXPECT_EQ(fx.host.CountSpawnsOf("w"), 1);
     fx.StepAt(5.f, 400);
-    EXPECT_EQ(fx.host.CountSpawnsOf("w"), 1);   // 5 s 웨이브는 취소됨
+    EXPECT_EQ(fx.host.CountSpawnsOf("w"), 1);
     EXPECT_NE(fx.host.FindEvent("banner:kept"), nullptr);
 }
 
@@ -576,7 +572,7 @@ TEST(StageRunnerClear, ClearLayersGoesToTheHostWithMask)
 TEST(StageRunnerFlow, EndStageFinishesTheRunner)
 {
     RunnerFixture fx { OneSection_(R"J([{"type":"banner","text":"bye","seconds":1},{"type":"endStage","next":"title","delay":0.5},{"type":"banner","text":"never","seconds":1,"delay":2.0}])J") };
-    fx.StepAt(5.f, 30);   // tick 0..29
+    fx.StepAt(5.f, 30);
     EXPECT_FALSE(fx.runner.IsFinished());
     fx.StepAt(5.f);
     EXPECT_TRUE(fx.runner.IsFinished());
@@ -691,7 +687,7 @@ TEST(StageRunnerWarp, SilentRunsOnlyWhenAlwaysOrSilentActions)
     fx.Step();
     EXPECT_EQ(fx.host.CountEvents("banner:S1"), 1);
     EXPECT_EQ(fx.host.CountEvents("section:1"), 1);
-    EXPECT_EQ(fx.host.CountEvents("section:0"), 0);   // 건너뛴 섹션은 OnSectionEntered 없음
+    EXPECT_EQ(fx.host.CountEvents("section:0"), 0);
 }
 
 TEST(StageRunnerWarp, CannotWarpBackwardOrOutOfRange)
@@ -742,7 +738,6 @@ TEST(StageRunnerWarp, WarpClearsPendingWavesGatesAndNonPermanentLocks)
 
 namespace
 {
-// 보스 워프 후 30틱 진행한 뒤의 (러너 해시, 스폰 수)
 [[nodiscard]] std::pair<uint64_t, size_t> WarpToBossAndHash_()
 {
     RunnerFixture fx { WrapStage(kWarpStage) };
@@ -751,7 +746,6 @@ namespace
     return std::pair<uint64_t, size_t> { fx.runner.HashState(), fx.host.spawns.size() };
 }
 
-// 적이 아닌(항상 생성되는) 스폰의 def 이름 목록
 [[nodiscard]] Vector<String> NonEnemyDefs_(
     const FakeStageHost& _host)
 {

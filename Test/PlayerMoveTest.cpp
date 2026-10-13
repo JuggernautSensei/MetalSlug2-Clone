@@ -1,4 +1,3 @@
-// 플레이어 이동 테스트: 시작 상태, 달리기, 웅크리기, 점프, 조준, 결정성 검증
 #include "Base/Types.h"
 #include "Game/StateFactory.h"
 #include "PlayerTestUtil.h"
@@ -23,7 +22,6 @@ TEST(PlayerStart, StartsGroundedIdleFacingRightWithThreeLives)
     EXPECT_FLOAT_EQ(sim.Y(), 378.f);
 }
 
-// 시작 낙하산: 낙하 중 입력 잠금, 공격키로 깜빡이며 소멸 후 조작, 착지 시 자동 소멸
 TEST(PlayerChute, DescendsSlowlyFromStartHeightWithoutPhysics)
 {
     Sim         sim;
@@ -365,7 +363,6 @@ TEST(PlayerAim, DownInAirAimsDown)
     EXPECT_FALSE(sim.Player().IsGrounded());
     EXPECT_EQ(sim.Player().GetAim(), eAim::Down);
 
-    // HMG 도 아래 키를 누르면 똑바로 아래 (조준각 -90도, 대각에 머물지 않는다)
     Sim hmg;
     hmg.Player().PickUpWeapon(eWeapon::Hmg, hmg.Tune());
     hmg.Tap(eAction::Jump);
@@ -525,7 +522,7 @@ TEST(PlayerJump, JumpBufferBoundaryIsFourTicks)
     EXPECT_EQ(ok.Player().GetStats().jumps, 1);
 
     Sim late = MakeLandingSim_();
-    late.Step(landing - 5);   // 한 틱 더 일찍(착지 4 틱 전): 버퍼(4틱)를 벗어난다
+    late.Step(landing - 5);
     late.Tap(eAction::Jump);
     late.Step(8);
     EXPECT_EQ(late.Player().GetStats().jumps, 0);
@@ -612,7 +609,7 @@ TEST(PlayerJump, NoJumpWhenCeilingIsRightAboveTheHead)
 TEST(PlayerJump, HeadBumpsCeilingAndFallsBack)
 {
     GroundMap ground = MakeFlatGround();
-    ground.FillRect(0, 280, 1599, 299, true);   // 천장 하단 y=300: 서 있는 머리(320) 위 20 px 여유
+    ground.FillRect(0, 280, 1599, 299, true);
     Sim sim { MakeConfig(std::move(ground)) };
 
     sim.Step(2);

@@ -1,4 +1,3 @@
-// 카메라의 추적, 데드존, 경계, 흔들림, 정수 출력과 실제 스테이지 봇 주행 시 끊김 없음을 검증한다.
 
 #include <gtest/gtest.h>
 
@@ -311,7 +310,6 @@ TEST(Camera, ScrollRampsUpWhilePlayerRunsAndStopsInstantlyWhenPlayerStops)
     EXPECT_LT(firstStep, 2.f);
     EXPECT_NEAR(lastStep, 4.17f, 0.05f);
 
-    // 플레이어가 멈추면 감속하며 멈춘다 (한 프레임에 멈추지 않고, 플레이어보다 앞서 나가지 않는다)
     camera.Update();
     const float stopStep = camera.GetViewCenter().x - previousCenter;
     EXPECT_GT(stopStep, 0.f);
@@ -323,7 +321,6 @@ TEST(Camera, ScrollRampsUpWhilePlayerRunsAndStopsInstantlyWhenPlayerStops)
     EXPECT_LE(camera.GetViewCenter().x, x - half + 0.01f);
 }
 
-// StageIntegrationTest.cpp 의 IntegrationSim::BotStep 과 같은 봇 (실제 스테이지 구동용)
 class CameraBotSim
 {
 public:
@@ -636,7 +633,6 @@ TEST(Camera, ForwardOnlyNeverMovesBackwardWhenBoundsShrink)
     }
 }
 
-// 자동 전진 (보스 스크롤): 하한 (AddScrollFloor) 은 카메라를 오른쪽으로만 민다. 정지 target 이어도 하한까지 간다.
 TEST(Camera, ScrollFloorDrivesTheViewRightEvenWithoutAPlayerPush)
 {
     Camera camera = MakeLevelCamera_();
@@ -645,7 +641,7 @@ TEST(Camera, ScrollFloorDrivesTheViewRightEvenWithoutAPlayerPush)
     const float x0 = camera.GetViewCenter().x;
     for (int i = 0; i < 60; ++i)
     {
-        camera.AddScrollFloor(0.3f);   // 18 px/s
+        camera.AddScrollFloor(0.3f);
         camera.Update(kStepSec);
     }
     EXPECT_TRUE(camera.HasScrollFloor());

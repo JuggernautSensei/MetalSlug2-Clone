@@ -1,4 +1,3 @@
-// 부품 depth: 플레이어/아이템 z, 헬기 부품 override, params.parts 엄격 파서, Depth 창 패치 왕복.
 #include <algorithm>
 #include <filesystem>
 
@@ -19,7 +18,6 @@ namespace
     return text ? text.GetValue() : String {};
 }
 
-// Defs/*.json 를 임시 폴더로 복사하고 _name 파일만 _text 로 바꿔 적재한다
 [[nodiscard]] bool LoadPatched_(
     const char*      _name,
     const String&    _text,

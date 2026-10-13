@@ -1,4 +1,3 @@
-// 탈것 투사체 테스트: 탈것이 쏘는 탄과 폭발의 궤적/판정 검증
 #include <cmath>
 
 #include "Base/Types.h"

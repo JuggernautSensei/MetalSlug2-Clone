@@ -22,7 +22,6 @@
 #include <utility>
 #include <vector>
 
-// JugX: 우산 헤더(JugX.h)는 Windows.h 를 끌어와 GetObject 매크로가 JsonReader 를 깨므로 필요한 것만 개별 include
 #include <JugX/Config.h>
 #include <JugX/Macro.h>
 #include <JugX/Platform.h>

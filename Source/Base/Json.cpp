@@ -8,7 +8,7 @@ namespace
 {
 constexpr StringView kMissing = "필수 값이 없습니다";
 
-// 키가 없으면 false (필수면 _reason 도 채운다)
+// 키가 없으면 false
 [[nodiscard]] bool Probe_(
     const JsonReader& _object,
     const StringView  _key,
@@ -189,9 +189,9 @@ bool ReadVec2Field(
 }
 
 bool CheckJsonKeys(
-    const JsonReader&           _object,
+    const JsonReader&            _object,
     const Span<const StringView> _allowed,
-    StringView&                 _badKey)
+    StringView&                  _badKey)
 {
     for (const std::pair<StringView, JsonReader> member: _object.GetObject())
     {

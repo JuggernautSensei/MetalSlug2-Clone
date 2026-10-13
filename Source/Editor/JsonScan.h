@@ -1,7 +1,7 @@
 #pragma once
 #include "Base/Types.h"
 
-// 텍스트 위치(begin/end)를 보존하는 최소 JSON 스캐너. 에디터가 원본 서식을 유지한 채 숫자만 제자리 교체하는 용도.
+// 텍스트 위치를 보존하는 최소 JSON 스캐너
 struct JsonNode
 {
     char           type  = 0;
@@ -17,7 +17,6 @@ class JsonScanner
 public:
     explicit JsonScanner(StringView _text);
 
-    // 루트 노드 인덱스, 실패하면 -1
     int Parse();
 
     Vector<JsonNode> nodes = {};

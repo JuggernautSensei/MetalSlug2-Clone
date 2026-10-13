@@ -1,4 +1,3 @@
-// 적 월드의 스폰, 활성화, 피격, 처치 이벤트, 방패, POW, 피격 점멸과 1800틱 결정성을 검증한다.
 
 #include <algorithm>
 #include <cmath>
@@ -10,7 +9,6 @@ constexpr float kGroundY = 378.f;
 
 namespace
 {
-// 높은 체력(20)의 병사를 쓰러뜨리는 데 필요한 타격 횟수를 돌려준다 (로드 실패 -1, 미처치 -2)
 [[nodiscard]] int HitsToKill_(
     const eHitKind _kind,
     const int      _damage)
@@ -107,7 +105,7 @@ TEST(EnemyWorld, ActivationWaitsForTheScreenThenLatches)
     rig.Step(30);
     EXPECT_FALSE(rig.E(h)->bActive);
 
-    rig.SetView(300.f);   // 화면 [300, 940] → 1000 ≤ 1090
+    rig.SetView(300.f);
     rig.Step(1);
     EXPECT_TRUE(rig.E(h)->bActive);
 
@@ -128,7 +126,7 @@ TEST(EnemyWorld, InactiveMissileSoldierDoesNotFireWhileOffscreen)
 
 TEST(EnemyWorld, EnemyBehindTheCameraIsRemovedWithARemovedEvent)
 {
-    EnemyRig rig({ 100.f, kGroundY }, 400.f);   // 화면 [400, 1040]: 뒤쪽 한계 = 200
+    EnemyRig rig({ 100.f, kGroundY }, 400.f);
     ASSERT_TRUE(rig.IsLoaded());
     const EnemyHandle h = rig.Spawn("soldier_bomb", { 100.f, kGroundY });
     rig.Step(1);
@@ -449,7 +447,6 @@ TEST(EnemyHitFlash, SingleHitIsOneOnPulseThenOffUntilNextHit)
 
 TEST(EnemyHitFlash, ContinuousFireKeepsBlinkingInsteadOfStayingOn)
 {
-    // 원작 HMG 연사 (영상 약 4~8 틱 간격).
     for (int interval: { 2, 3, 4, 6, 8 })
     {
         int  timer    = 0;
@@ -576,7 +573,6 @@ TEST(EnemyWorld, ParachuteOverlayIsDrawnBehindTheParachutist)
     EXPECT_TRUE(bOverlay);
 }
 
-// 낙하 중 병사가 죽으면 낙하산 오버레이는 그 순간부터 더 이상 제출되지 않는다 (착지 변신 FX 는 별도)
 TEST(EnemyWorld, ParachuteOverlayDisappearsWhenTheParachutistDies)
 {
     SLUG_REQUIRE_BAKED(anims);

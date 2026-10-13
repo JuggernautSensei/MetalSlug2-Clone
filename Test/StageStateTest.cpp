@@ -1,4 +1,3 @@
-// StageState 테스트: 스테이지 상태 전환, 호스트 자리표시자, 디버그 옵션 검증
 #include <cmath>
 
 #include <gtest/gtest.h>
@@ -96,7 +95,6 @@ TEST(StageState, LoadsStage0AndStartsAtTheScriptedPlayerStart)
 
 TEST(StageState, PlayerLandsOnTheGroundAfterTheStart)
 {
-    // 시작 낙하산: 입력 없이 두면 낙하 (260px / 110px/s, 약 140틱) 후 착지하고 낙하산이 사라진다
     StageSim sim;
     EXPECT_EQ(sim.State().GetPlayer().GetChutePhase(), eChutePhase::Descend);
     for (int i = 0; i < 400; ++i)
@@ -127,8 +125,6 @@ TEST(StageState, HoldingRightAdvancesThroughSectionsAndTheCameraNeverScrollsBack
         sim.Step();
         const float camX    = sim.State().GetCamera().GetPosition().x;
         const bool  bLocked = sim.State().GetRunner().GetLockDepth() > 0;
-        // 카메라 락 (bus 등) 은 글라이드로 락 rect 쪽으로 옮겨 가므로 (rect 왼쪽이 현재 카메라보다 뒤일 수 있다) 잠긴 동안은 역행을 허용한다.
-        // 락이 없는 구간에서는 카메라가 절대 뒤로 가지 않는다.
         if (!bLocked)
         {
             ASSERT_GE(camX, lastCamX - 1e-3f) << "tick " << i << " feet.x " << sim.State().GetPlayer().GetFeet().x;

@@ -17,7 +17,6 @@ struct SDL_Renderer;
 
 class Renderer;
 
-// --editor 모드 전용 ImGui 루트 패널. 일반 모드에서는 Init 자체를 호출하지 않는다.
 class Editor final
 {
 public:
@@ -33,7 +32,7 @@ public:
     [[nodiscard]] EnemyLab& GetLab();
     void                    DrawLabOverlay(Renderer& _renderer);
 
-    // 게임 프레임을 다 그린 뒤, 스크린샷/Present 전에 호출한다.
+    // 게임 프레임을 다
     void Frame(float _fps, uint64_t _tick);
 
     [[nodiscard]] bool OwnsKeyboard() const;

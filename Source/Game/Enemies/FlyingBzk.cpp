@@ -166,7 +166,6 @@ void OnDeath_(
     BeginSoldierDeath(_e, _def, _env);
 }
 
-// 낙하 인질 (bNoHurtbox) 은 판정 상자를 등록하지 않아 총알/폭발이 닿지 않는다. 일반 낙하산 병은 기본 판정 그대로
 void RegisterHurtboxes_(
     const Enemy&    _e,
     const EnemyDef& _def,

@@ -1,4 +1,3 @@
-// Prop 정의 테스트: Props.json 파싱 규칙과 오류 보고 검증
 #include <string>
 
 #include "Base/Json.h"

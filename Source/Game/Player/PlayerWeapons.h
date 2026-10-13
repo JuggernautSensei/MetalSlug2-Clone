@@ -30,7 +30,7 @@ void OnFired(WeaponState& _state);
 
 [[nodiscard]] BulletSpawn MakeBulletSpawn(eWeapon _weapon, const WeaponTuning& _tuning, uint32_t _owner, VECTOR2 _muzzle, VECTOR2 _sweepFrom, VECTOR2 _direction);
 
-// 파이어샷 분출 입자 하나 (방향/속도/수명은 _rng 에서 결정적으로 뽑는다, _hitId 는 분출 전체가 공유)
+// 파이어샷 분출 입자 하나
 [[nodiscard]] BulletSpawn MakeFlameParticleSpawn(
     const WeaponTuning& _tuning,
     uint32_t            _owner,

@@ -1,4 +1,3 @@
-// 스테이지 통합 테스트: StageState 와 월드 호스트가 실제 에셋으로 스테이지를 진행하는지 검증
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -103,7 +102,6 @@ public:
 
     void Hold(const eAction _action) { m_frame.Set(_action, true); }
 
-    // 살아 있는 최종보스 (BigShiee) 가 있는지
     [[nodiscard]] bool IsBossAlive() const
     {
         for (const Enemy& enemy: m_pState->GetEnemies().GetEnemies())
@@ -116,8 +114,6 @@ public:
         return false;
     }
 
-    // 보스 파트 (포탑 0..6, 주포 7) 에 판정 피해 1회씩. 포탑이 다 부서져야 주포가 올라오고, 주포 체력이 0 이 되면 사망 연출
-    // (dying -> destroyFinished 로 클리어 게이트가 열린다). 매 틱 호출해도 된다
     void DamageBoss()
     {
         Vector<HitEvent> hits;
@@ -269,7 +265,6 @@ TEST(StageIntegration, GroundHouseFootprintClearsOnlyTheHouseAndKeepsTheStreet)
     const uint64_t streetBefore = ground.CountSolidPixels();
     EXPECT_TRUE(ground.IsSolid(9830, 1230));
 
-    // 집 (9830,1269) 의 지면 패치 좌상단 = center - (size/2 - inset)
     EXPECT_TRUE(ApplyGroundPatch(ground, { 9189.f, 898.f }, *mask));
     EXPECT_FALSE(ground.IsSolid(9830, 1230));
     EXPECT_FALSE(ground.IsSolid(9760, 1270));
@@ -398,12 +393,10 @@ TEST(StageIntegration, BotCanWalkTheWholeStageToTheStageEnd)
 
 TEST(StageIntegration, BotStillWalksToTheStageEndAfterEveryOpenlandPropIsDestroyed)
 {
-    // 회귀: 개활지(집/큰 집/탑/다리 블록) 의 파괴물을 전부 부숴도 지면 패치가 도로를 뚫어 진행이 막히면 안 된다.
-    // 섹션 트리거가 지나야 소품이 나오므로, 봇이 전진하면서 개활지 소품을 매 틱 맞춰 부순다.
-    IntegrationSim sim(true);   // 워프(F5)는 디버그 모드에서만 동작한다
+    IntegrationSim sim(true);
     for (int i = 0; i < 40 && sim.State().GetPlayer().GetFeet().x < 8990.f; ++i)
     {
-        sim.Warp(1);   // F5: 다음 섹션 (개활지 시작까지)
+        sim.Warp(1);
     }
     ASSERT_GE(sim.State().GetPlayer().GetFeet().x, 8990.f);
 
@@ -456,7 +449,6 @@ TEST(StageIntegration, BotStillWalksToTheStageEndAfterEveryOpenlandPropIsDestroy
         }
         if (!bRoadChecked && feet.x >= 12850.f)
         {
-            // 파괴물이 모두 부서진 뒤의 도로: 9000..12850 구간의 바닥 행이 전부 고체여야 한다
             const GroundMap* pGround = sim.State().GetHost().GetActiveGround();
             ASSERT_NE(pGround, nullptr);
             for (int x = 9000; x < 12850; x += 10)
@@ -514,7 +506,6 @@ const Enemy* FindSarubia_(
 }
 }   // namespace
 
-// 실제 Stage0 흐름에서 사루비아가 플레이어 총알에 체력이 줄고 결국 죽는지
 TEST(StageIntegration, SarubiaLosesHpToPlayerBulletsAndDiesInStage0)
 {
     IntegrationSim sim(true);
@@ -538,7 +529,6 @@ TEST(StageIntegration, SarubiaLosesHpToPlayerBulletsAndDiesInStage0)
     EXPECT_NE(pEnd->life, eEnemyLife::Alive) << "startHp=" << startHp << " endHp=" << pEnd->health.hp;
 }
 
-// 사루비아 판정 영역: 상부(포탑/망루, 발 기준 y -130 근처)를 쏜 총알이 통과하지 않아야 한다.
 TEST(StageIntegration, SarubiaHurtboxCoversTheTurretAboveItsTreads)
 {
     IntegrationSim sim(true);
@@ -626,11 +616,11 @@ TEST(StageIntegration, TimedWaveEntryRepeatsEveryPeriodForItsTimesOnly)
 
     fx.Step(20);
     EXPECT_EQ(fx.runner.GetSpawnedCount(), 0);
-    fx.Step(20);   // t = 40 ticks: 첫 발동 (0.5 s)
+    fx.Step(20);
     EXPECT_EQ(fx.runner.GetSpawnedCount(), 1);
-    fx.Step(30);   // 두 번째 (1.0 s)
+    fx.Step(30);
     EXPECT_EQ(fx.runner.GetSpawnedCount(), 2);
-    fx.Step(30);   // 세 번째 (1.5 s)
+    fx.Step(30);
     EXPECT_EQ(fx.runner.GetSpawnedCount(), 3);
     fx.Step(300);
     EXPECT_EQ(fx.runner.GetSpawnedCount(), 3);
@@ -641,7 +631,7 @@ TEST(StageIntegration, ClearWavesCancelsTheWholeTimedRepeat)
     GateFixture fx(WrapStage(R"J([{"id":"a","triggerX":0,"actions":[
         {"type":"spawnWave","entries":[{"delay":0.5,"every":0.5,"times":5,"kind":"enemy","def":"soldier_sword","x":400,"y":378}]},
         {"type":"clear","waves":true,"delay":0.8}]}])J"));
-    fx.Step(200);   // 0.5 s 첫 발동 뒤 0.8 s 에 clear: 나머지 반복은 취소
+    fx.Step(200);
     EXPECT_EQ(fx.runner.GetSpawnedCount(), 1);
     EXPECT_EQ(fx.runner.GetPendingWaveCount(), 0);
 }
@@ -663,7 +653,7 @@ TEST(StageIntegration, PropRoofCarriesThePlayerAboveTheGround)
 TEST(StageIntegration, DebugWarpToTheStageEndEndsTheStageThroughTheFlow)
 {
     IntegrationSim sim(true);
-    sim.Warp(2);   // F6: 마지막 구간 (stage_end)
+    sim.Warp(2);
     sim.Step(2);
 
     const IGameState* pStage = sim.StagePtr();
@@ -698,7 +688,6 @@ TEST(StageIntegration, GameOverRunsTheGameOverFlowAndReturnsToTitle)
 
 namespace
 {
-// 스크립트 봇을 3000틱 돌리며 매 틱의 상태 해시를 모은다
 [[nodiscard]] Vector<uint64_t> RunBotHashes_()
 {
     IntegrationSim   sim;
@@ -723,7 +712,6 @@ TEST(StageIntegration, ScriptedBotRunIsDeterministicOver3000Ticks)
 
 namespace
 {
-// 살아 있는 behavior 적 하나에 판정 피해를 준다 (해제 조건 검증용, 정상 피격 경로 OnHitEvents 사용)
 [[nodiscard]] bool KillFirstAlive_(
     StageState&          _state,
     const eEnemyBehavior _behavior)
@@ -768,7 +756,6 @@ namespace
 
 TEST(StageIntegration, HeliSpawnsAtTheHeliTriggerAndLocksTheCamera)
 {
-    // 강 구간 헬기 (heli_river, triggerX 5480): 카메라를 5480..6280 에 잠그고, 헬기와 지프 (river_jeep) 가 모두 죽어야 풀린다
     IntegrationSim sim(true);
     const int      heliSection = sim.State().GetData().FindSection("heli_river");
     ASSERT_GE(heliSection, 0);
@@ -781,16 +768,14 @@ TEST(StageIntegration, HeliSpawnsAtTheHeliTriggerAndLocksTheCamera)
     {
         sim.BotStep(true, false);
     }
-    sim.BotStep(true, false, 90);   // 락 글라이드 (1.0 s) 완료 대기
+    sim.BotStep(true, false, 90);
 
     EXPECT_GE(sim.State().GetPlayer().GetFeet().x, 5458.f);
     EXPECT_GE(sim.State().GetRunner().GetLockDepth(), 1);
     const float camLeft = sim.State().GetCamera().GetPosition().x;
-    // 락 rect [5480,288,6120,736] 는 뷰 폭 640 과 같아 카메라가 5480 에 고정된다 (망루 guard_post x 5800 이 화면 가운데)
     EXPECT_NEAR(camLeft, 5388.f, 2.f);
     EXPECT_TRUE(HasAlive_(sim.State(), eEnemyBehavior::Heli));
 
-    // 헬기가 실제 락된 화면 (640x448) 안에 들어오는 틱이 있어야 한다 (화면 밖에만 머물면 플레이어에게 안 보인다)
     bool bHeliVisible = false;
     for (int t = 0; t < 900 && !bHeliVisible; ++t)
     {
@@ -806,19 +791,16 @@ TEST(StageIntegration, HeliSpawnsAtTheHeliTriggerAndLocksTheCamera)
     }
     EXPECT_TRUE(bHeliVisible) << "헬기가 락된 화면 안에 한 번도 들어오지 않았다";
 
-    // 지프 (river_jeep) 는 river_mid 트리거 (5600) 에서 스폰된다
     for (int t = 0; t < 900 && sim.State().GetPlayer().GetFeet().x < 5610.f; ++t)
     {
         sim.BotStep(true, false);
     }
     EXPECT_TRUE(HasAlive_(sim.State(), eEnemyBehavior::Jeep));
 
-    // 헬기만 죽이면 지프가 살아 있어 락이 유지된다
     EXPECT_TRUE(KillFirstAlive_(sim.State(), eEnemyBehavior::Heli));
     sim.BotStep(true, false, 120);
     EXPECT_GE(sim.State().GetRunner().GetLockDepth(), 1) << "지프가 살아 있는 동안 카메라 락 유지";
 
-    // 지프까지 죽으면 게이트 heli_dead 가 열려 락이 풀린다
     EXPECT_TRUE(KillFirstAlive_(sim.State(), eEnemyBehavior::Jeep));
     sim.BotStep(true, false, 120);
     EXPECT_EQ(sim.State().GetRunner().GetLockDepth(), 0);
@@ -851,13 +833,11 @@ TEST(StageIntegration, BusIsPreplacedInsideTheLockedViewAndLocksTheCameraAtTheBu
     }
     EXPECT_TRUE(bFound);
 
-    // 버스와 헬기가 모두 사라지면 두 잠금 (게이트 bus_clear / heli_dead) 이 풀려 스택이 비어야 한다
     sim.State().GetEnemies().KillAll(false);
     sim.BotStep(false, false, 120);
     EXPECT_EQ(sim.State().GetRunner().GetLockDepth(), 0);
 }
 
-// 실제 Stage0 (StageState) 에서 플레이어가 버스 왼쪽에 서서 쏠 때: 계단 병사가 지붕까지 오르고, 지붕에서 걸어 버스 몸통 안으로 떨어지지 않는다
 TEST(StageIntegration, BusStairSoldiersReachTheRoofAndNeverEnterTheBusBodyWithThePlayerOnTheLeft)
 {
     IntegrationSim sim(true);
@@ -915,7 +895,6 @@ TEST(StageIntegration, BusStairSoldiersReachTheRoofAndNeverEnterTheBusBodyWithTh
             {
                 ++awayTicks;
             }
-            // 버스 몸통 (solid x +-85) 위 구간에서는 지붕 높이보다 아래에 있으면 안 된다 (계단 오르기는 x >= 88)
             if (Abs(dx) < 80.f && enemy.body.position.y > roofY + 1.f)
             {
                 if (badTicks == 0)
@@ -934,7 +913,6 @@ TEST(StageIntegration, BusStairSoldiersReachTheRoofAndNeverEnterTheBusBodyWithTh
 
 TEST(StageIntegration, BusLockGlideMovesTheCameraSmoothly)
 {
-    // bus 섹션 락 글라이드 (2.5 s) 동안 카메라 수평 속도의 틱 간 변화가 2 px/tick 이내여야 한다 (급정지/급가속 금지)
     IntegrationSim sim(true);
     const int      busSection = sim.State().GetData().FindSection("bus");
     for (int i = 0; i < busSection; ++i)
@@ -948,7 +926,6 @@ TEST(StageIntegration, BusLockGlideMovesTheCameraSmoothly)
     }
     ASSERT_GE(sim.State().GetRunner().GetLockDepth(), 1);
 
-    // 락 직전까지 따라가던 속도 (약 4 px/tick) 를 기준으로 삼는다. 첫 틱은 기준 속도로 채운다
     float prevX = sim.State().GetCamera().GetPosition().x;
     sim.BotStep(true, false);
     float prevVel  = sim.State().GetCamera().GetPosition().x - prevX;
@@ -970,7 +947,6 @@ TEST(StageIntegration, BusLockGlideMovesTheCameraSmoothly)
     EXPECT_LE(maxAccel, 2.f) << "카메라 수평 속도 변화가 2 px/tick 를 넘으면 안 된다 (최대 속도 " << maxVel << ")";
 }
 
-// 보스 진입 구간 기록기: 틱마다 카메라/락/보스를 남기고, 소품/아이템이 사라진 틱을 (화면 안이었는지와 함께) 모은다
 struct BossEntrySample
 {
     int   tick      = 0;
@@ -1026,7 +1002,6 @@ public:
         const Camera& camera = state.GetCamera();
         const VECTOR2 cam    = camera.GetPosition();
 
-        // 직전 틱 끝의 화면 (플레이어가 마지막으로 본 화면) 기준으로 사라진 것의 가시성을 판정한다
         const float prevLeft  = m_bHasPrev ? m_prevCamX : cam.x;
         const float prevRight = prevLeft + 640.f;
 
@@ -1138,7 +1113,6 @@ public:
     [[nodiscard]] const Vector<BossEntrySample>&  GetSamples() const { return m_samples; }
     [[nodiscard]] const Vector<BossEntryRemoval>& GetRemovals() const { return m_removals; }
 
-    // 화면 안에 있던 것이 컬링으로 사라진 건수 (파괴 후 제거 / 습득 / 수명 만료는 제외). kind 가 비면 소품+아이템 모두
     [[nodiscard]] int CountVisibleRemovals(
         const String& _kind) const
     {
@@ -1153,7 +1127,6 @@ public:
         return count;
     }
 
-    // 락 이후 (lockDepth >= 1 이 된 틱부터) 화면 왼쪽 x (렌더 기준) 의 틱당 속도 변화 최대값. 방향 반전 (양쪽 속도 2 px/tick 이상) 횟수는 _pReversals 로 돌려준다
     [[nodiscard]] float MaxAccelSinceLock(
         int* _pReversals) const
     {
@@ -1194,8 +1167,6 @@ private:
 
 namespace
 {
-// 보스 아레나 트리거 (x 13700) 까지 간다. 사루비아 락 (openland_4, 플레이어 x 는 13066 을 못 넘는다) 은 남은 적을 치워 푼다.
-// _pRecorder 가 있으면 마지막 접근 구간 (사루비아 정리 뒤) 의 틱을 기록한다
 void ReachBossArena_(
     IntegrationSim&    _sim,
     BossEntryRecorder* _pRecorder = nullptr)
@@ -1221,7 +1192,6 @@ void ReachBossArena_(
     }
 }
 
-// 보스 진입 후 _ticks 틱을 기록한다
 void RecordBossEntry_(
     IntegrationSim&    _sim,
     BossEntryRecorder& _rec,
@@ -1280,7 +1250,6 @@ int CountPropsInView_(
 
 TEST(StageIntegration, BossArenaEntryNeverRemovesAVisiblePropOrItem)
 {
-    // 보스 진입 (사루비아 락 해제 -> 보스 락 글라이드 -> 자동 스크롤) 동안 화면 안에 있던 소품/아이템이 컬링으로 사라지면 안 된다
     IntegrationSim    sim(true);
     BossEntryRecorder rec;
     RecordBossEntry_(sim, rec, 900);
@@ -1290,7 +1259,6 @@ TEST(StageIntegration, BossArenaEntryNeverRemovesAVisiblePropOrItem)
 
 TEST(StageIntegration, BossArenaLockGlideKeepsTheScreenContinuous)
 {
-    // 락 글라이드 + 자동 스크롤 동안 화면 왼쪽 x 의 틱 간 변화가 글라이드 가속 상한 (2 px/tick) 안이고 방향이 뒤집히지 않는다
     IntegrationSim    sim(true);
     BossEntryRecorder rec;
     RecordBossEntry_(sim, rec, 900);
@@ -1302,7 +1270,6 @@ TEST(StageIntegration, BossArenaLockGlideKeepsTheScreenContinuous)
 
 TEST(StageIntegration, BossArenaPlacesHousesAndRoofsOnTheFloorInsideTheLockedView)
 {
-    // 보스 아레나 바닥: 락 중 화면 안에 살아 있는 소품 (집/지붕/망루) 이 있어야 휑하지 않다
     IntegrationSim sim(true);
     ReachBossArena_(sim);
     sim.BotStep(true, false, 150);
@@ -1330,14 +1297,12 @@ TEST(StageIntegration, BossDeathUnlocksTheCameraAndEndsTheStageThroughTheClearGa
     ASSERT_TRUE(sim.IsBossAlive());
     ASSERT_GE(sim.State().GetRunner().GetLockDepth(), 1);
 
-    // 캐논이 올라와 맞을 때까지 매 틱 쏜다 (캐논 파괴 -> 얼굴 -> 사망). 사망 연출 중이면 살아 있지 않다
     for (int t = 0; t < 5000 && sim.IsBossAlive(); ++t)
     {
         sim.DamageBoss();
         sim.BotStep(false, false);
     }
     ASSERT_FALSE(sim.IsBossAlive()) << "보스가 사망 단계에 들어가지 않았다";
-    // 사망 연출 (dyingDoneSec 10 s) 중에는 스테이지가 끝나면 안 된다 (클리어 게이트는 destroyFinished 뒤에만 연다)
     sim.BotStep(false, false, 300);
     ASSERT_EQ(sim.Current(), sim.StagePtr()) << "사망 연출 중에 스테이지가 끝났다";
     for (int t = 0; t < 1800 && sim.Current() == sim.StagePtr(); ++t)
