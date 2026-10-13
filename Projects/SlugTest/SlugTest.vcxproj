@@ -144,7 +144,6 @@
     <ClCompile Include="..\..\Source\Editor\JsonScan.cpp" />
     <ClCompile Include="..\..\Source\Editor\Editor.cpp" />
     <ClCompile Include="..\..\Source\Editor\ImGuiSdlRendererViewports.cpp" />
-    <ClCompile Include="..\..\Source\Core\Headless.cpp" />
     <ClCompile Include="..\..\Source\Core\AssetPath.cpp" />
     <ClCompile Include="..\..\Source\Core\Input.cpp" />
     <ClCompile Include="..\..\Source\Core\Replay.cpp" />
@@ -287,7 +286,6 @@
     <ClInclude Include="..\..\Source\Editor\JsonScan.h" />
     <ClInclude Include="..\..\Source\Editor\Editor.h" />
     <ClInclude Include="..\..\Source\Editor\ImGuiSdlRendererViewports.h" />
-    <ClInclude Include="..\..\Source\Core\Headless.h" />
     <ClInclude Include="..\..\Source\Core\AssetPath.h" />
     <ClInclude Include="..\..\Source\Core\FixedStep.h" />
     <ClInclude Include="..\..\Source\Core\Input.h" />

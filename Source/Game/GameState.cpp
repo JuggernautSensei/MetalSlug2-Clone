@@ -2,17 +2,6 @@
 
 DebugSwitches g_debug;
 
-bool GameContext::IsHeadless() const
-{
-    return pRenderer == nullptr;
-}
-
-AudioSystem& GameContext::GetAudio() const
-{
-    static AudioSystem s_silent;
-    return pAudio ? *pAudio : s_silent;
-}
-
 void IGameState::OnEnter(GameContext&)
 {
 }

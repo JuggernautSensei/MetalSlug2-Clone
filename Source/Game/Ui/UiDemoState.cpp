@@ -34,7 +34,7 @@ void UiDemoState::Tick(
 {
     ++m_tick;
     m_ui.Tick();
-    m_flow.Tick(m_ui, _ctx.GetAudio());
+    m_flow.Tick(m_ui, AudioSystem::GetSingleton());
 
     if (m_tick == 10)
     {
@@ -48,11 +48,11 @@ void UiDemoState::Tick(
     }
     else if (m_tick == 420)
     {
-        m_flow.Start(MakeMissionCompleteFlowConfig(16), m_ui, _ctx.GetAudio());
+        m_flow.Start(MakeMissionCompleteFlowConfig(16), m_ui, AudioSystem::GetSingleton());
     }
     else if (m_tick == 1200)
     {
-        m_flow.Start(MakeGameOverFlowConfig(), m_ui, _ctx.GetAudio());
+        m_flow.Start(MakeGameOverFlowConfig(), m_ui, AudioSystem::GetSingleton());
     }
 }
 
@@ -60,13 +60,13 @@ void UiDemoState::Render(
     GameContext& _ctx,
     const float)
 {
-    Renderer& renderer = *_ctx.pRenderer;
+    Renderer& renderer = Renderer::GetSingleton();
     renderer.BeginFrame({ 156, 190, 224, 255 });
-    (void)m_ui.DrawStandalone(_ctx, "Stage0_Main", -900, -880);
+    (void)m_ui.DrawStandalone("Stage0_Main", -900, -880);
 
-    m_ui.DrawHud(_ctx, MakeModel_());
+    m_ui.DrawHud(MakeModel_());
     m_ui.SetMissionResults(m_flow.GetResultsView());
-    m_ui.DrawOverlays(_ctx);
+    m_ui.DrawOverlays();
 }
 
 int UiDemoState::GetTickCount() const

@@ -240,7 +240,7 @@ TEST(EnemySandbox, SandboxHashIsDeterministicWithEnemiesPresent)
 TEST(EnemySandbox, BloodSplatsAtTheChestOfAKnifedSoldier)
 {
     SLUG_REQUIRE_BAKED(anims);
-    Sim sim { MakeEnemyConfig(), &anims };
+    Sim sim { MakeEnemyConfig() };
     sim.Step(2);
     const EnemyHandle h = sim.State().SpawnEnemy("soldier_bomb", { sim.X() + 25.f, kGroundY });
     sim.Tap(eAction::Shot);

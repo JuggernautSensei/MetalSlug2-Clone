@@ -53,7 +53,7 @@ void SimRunner::Run(
 void SimRunner::Render(
     const float _alpha)
 {
-    if (m_pState && !m_ctx.IsHeadless())
+    if (m_pState)
     {
         m_pState->Render(m_ctx, _alpha);
     }

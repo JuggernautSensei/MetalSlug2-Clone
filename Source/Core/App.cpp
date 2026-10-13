@@ -395,9 +395,6 @@ void App::Init_()
     m_recording.seed      = m_seed;
     m_recording.stateName = m_stateName;
 
-    m_ctx.pRenderer   = &Renderer::GetSingleton();
-    m_ctx.pSprites    = &SpriteBatch::GetSingleton();
-    m_ctx.pAnims      = &AnimationLibrary::GetSingleton();
     m_ctx.loadWorkers = numWorkers;
     m_editor.SetAnimLibrary(m_bEditor ? &AnimationLibrary::GetSingleton() : nullptr);
     m_ctx.assetRoot       = FindAssetRoot();
@@ -406,11 +403,7 @@ void App::Init_()
     {
         AudioConfig audioConfig;
         audioConfig.bEnabled = !m_bNoAudio && !m_bHash && m_capturePath.empty();
-        if (const Result<void> audio = AudioSystem::GetSingleton().InitFromDirectory(assetRoot, audioConfig); audio)
-        {
-            m_ctx.pAudio = &AudioSystem::GetSingleton();
-        }
-        else
+        if (const Result<void> audio = AudioSystem::GetSingleton().InitFromDirectory(assetRoot, audioConfig); !audio)
         {
             SLUG_LOG_WARN("sounds.json 을 읽지 못해 소리 없이 계속합니다: {}", audio.GetError().MakeMessage());
         }
@@ -438,7 +431,6 @@ void App::Shutdown_()
 {
     SaveRecording_();
     m_pRunner.Reset();
-    m_ctx.pAudio = nullptr;
     AudioSystem::GetSingleton().Shutdown();
     SpriteBatch::GetSingleton().Shutdown();
     m_editor.Shutdown();

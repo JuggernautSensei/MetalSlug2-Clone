@@ -32,8 +32,7 @@ class Sim
 {
 public:
     explicit Sim(
-        SandboxConfig     _config = MakeFlatConfig(),
-        AnimationLibrary* _pAnims = nullptr);
+        SandboxConfig _config = MakeFlatConfig());
 
     [[nodiscard]] SandboxState&     State();
     [[nodiscard]] PlayerController& Player();
@@ -79,9 +78,9 @@ private:
 [[nodiscard]] bool LoadAnims(
     AnimationLibrary& _out);
 
-#define SLUG_REQUIRE_BAKED(_anims)     \
-    AnimationLibrary _anims;           \
-    if (!LoadAnims(_anims))            \
-    {                                  \
-        GTEST_SKIP() << "Assets 없음"; \
+#define SLUG_REQUIRE_BAKED(_anims)                                   \
+    AnimationLibrary& _anims = AnimationLibrary::GetSingleton();     \
+    if (!LoadAnims(_anims))                                          \
+    {                                                                \
+        GTEST_SKIP() << "Assets 없음";                               \
     }

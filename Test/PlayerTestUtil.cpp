@@ -31,11 +31,8 @@ SandboxConfig MakeFlatConfig()
 }
 
 Sim::Sim(
-    SandboxConfig     _config,
-    AnimationLibrary* _pAnims)
+    SandboxConfig _config)
 {
-    m_ctx.pAnims = _pAnims;
-
     m_pState  = new SandboxState { std::move(_config) };
     m_pRunner = Scoped<SimRunner> {
         new SimRunner { m_ctx, Scoped<IGameState> { m_pState } }

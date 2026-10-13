@@ -17,7 +17,6 @@ class PropWorld;
 class PlayerController;
 class UiSystem;
 struct Tuning;
-struct GameContext;
 
 inline constexpr uint32_t kPlaceholderOwnerBase  = 9000;
 inline constexpr int      kPlaceholderDeathTicks = 30;
@@ -71,7 +70,6 @@ public:
     void BindRects(Span<const NamedRect> _rects);
     void BindPlayer(PlayerController* _pPlayer, const Tuning* _pTuning);
     void BindUi(UiSystem* _pUi);
-    void SetContext(GameContext* _pCtx);
     void AddGroundMap(StringView _name, GroundMap _map);
 
     void Reset();
@@ -140,7 +138,6 @@ private:
     PlayerController* m_pPlayer  = nullptr;
     const Tuning*     m_pTuning  = nullptr;
     UiSystem*         m_pUi      = nullptr;
-    GameContext*      m_pCtx     = nullptr;
 
     Vector<NamedRect>     m_rects     = {};
     Vector<SpawnRoute>    m_routes    = {};

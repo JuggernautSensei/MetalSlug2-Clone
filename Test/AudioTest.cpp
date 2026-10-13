@@ -289,15 +289,15 @@ TEST(AudioSinks, TestAudioRecordsEventsInOrder)
     EXPECT_TRUE(LastBgm(audio).empty());
 }
 
-TEST(AudioSinks, GameContextFallsBackToSilentAudio)
+TEST(AudioSinks, SingletonIsSilentUntilRecordingIsRequested)
 {
-    GameContext ctx;
-    EXPECT_FALSE(ctx.GetAudio().IsInitialized());
-    ctx.GetAudio().Play("anything", 1.f, 0.5f);
+    AudioSystem& audio = AudioSystem::GetSingleton();
+    EXPECT_FALSE(audio.IsInitialized());
+    audio.Play("anything", 1.f, 0.5f);
+    EXPECT_TRUE(audio.events.empty());
 
-    AudioSystem audio { true };
-    ctx.pAudio = &audio;
-    ctx.GetAudio().Play("X");
+    RecordAudio();
+    audio.Play("X");
     EXPECT_EQ(CountPlays(audio, "X"), 1);
 }
 
@@ -394,10 +394,8 @@ TEST(AudioSystemDry, MissingDirectoryReturnsErrorButSystemStaysInert)
 
 struct AudioSim
 {
-    explicit AudioSim(
-        AudioSystem* _pAudio)
+    AudioSim()
     {
-        ctx.pAudio                  = _pAudio;
         Scoped<SandboxState> pOwned = MakeScoped<SandboxState>(MakeFlatConfig());
         pState                      = pOwned.GetPtr();
         runner                      = MakeScoped<SimRunner>(ctx, Scoped<IGameState> { pOwned.Release() });
@@ -422,29 +420,32 @@ struct AudioSim
     Scoped<SimRunner> runner = nullptr;
 };
 
-TEST(AudioDeterminism, SameStateHashWithNullTestAndDryAudio)
+TEST(AudioDeterminism, SameStateHashWithSilentRecordingAndDryAudio)
 {
-    AudioSim withNull { nullptr };
-    withNull.RunScript(600);
+    AudioSystem& audio = AudioSystem::GetSingleton();
 
-    AudioSystem testAudio { true };
-    AudioSim    withTest { &testAudio };
-    withTest.RunScript(600);
+    AudioSim silent;
+    silent.RunScript(600);
+    EXPECT_TRUE(audio.events.empty());
 
-    AudioSystem dry;
-    dry.Init(MakeBank_(), MakeDryConfig_());
-    AudioSim withDry { &dry };
-    withDry.RunScript(600);
+    RecordAudio();
+    AudioSim recording;
+    recording.RunScript(600);
+    EXPECT_GT(CountKind(audio, eAudioEvent::Play), 0);
 
-    EXPECT_EQ(withNull.pState->HashState(), withTest.pState->HashState());
-    EXPECT_EQ(withNull.pState->HashState(), withDry.pState->HashState());
-    EXPECT_GT(CountKind(testAudio, eAudioEvent::Play), 0);
+    audio.bRecord = false;
+    audio.Init(MakeBank_(), MakeDryConfig_());
+    AudioSim dry;
+    dry.RunScript(600);
+
+    EXPECT_EQ(silent.pState->HashState(), recording.pState->HashState());
+    EXPECT_EQ(silent.pState->HashState(), dry.pState->HashState());
 }
 
 TEST(AudioSandbox, PistolShotRequestsShotSound)
 {
-    AudioSystem audio { true };
-    AudioSim    sim { &audio };
+    AudioSystem& audio = RecordAudio();
+    AudioSim     sim;
 
     InputFrame shot;
     shot.Set(eAction::Shot, true);
@@ -459,8 +460,8 @@ TEST(AudioSandbox, PistolShotRequestsShotSound)
 
 TEST(AudioSandbox, BombThrowRequestsBombThrowName)
 {
-    AudioSystem audio { true };
-    AudioSim    sim { &audio };
+    AudioSystem& audio = RecordAudio();
+    AudioSim     sim;
 
     InputFrame bomb;
     bomb.Set(eAction::Bomb, true);
@@ -474,9 +475,9 @@ TEST(AudioSandbox, BombThrowRequestsBombThrowName)
 
 TEST(AudioSandbox, EntersWithStageBgmAndStopsOnExit)
 {
-    AudioSystem audio { true };
+    AudioSystem& audio = RecordAudio();
     {
-        AudioSim sim { &audio };
+        AudioSim sim;
         EXPECT_EQ(LastBgm(audio), kBgmStage);
     }
     EXPECT_GE(CountKind(audio, eAudioEvent::AllStop), 1);

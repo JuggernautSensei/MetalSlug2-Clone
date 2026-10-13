@@ -1,4 +1,4 @@
-// 리플레이/SimRunner 테스트: 리플레이 직렬화와 SimRunner 의 고정 틱 진행, 헤드리스 컨텍스트 검증
+// 리플레이/SimRunner 테스트: 리플레이 직렬화와 SimRunner 의 고정 틱 진행 검증
 #include <gtest/gtest.h>
 
 #include "Base/Math.h"
@@ -91,13 +91,12 @@ TEST(SimRunner, StateFactoryKnowsDemoOnly)
     EXPECT_FALSE(static_cast<bool>(CreateState("does-not-exist")));
 }
 
-TEST(SimRunner, HeadlessContextHasNoRenderer)
+TEST(SimRunner, RendersThroughTheServicesWithoutFinishingTheState)
 {
     GameContext ctx;
-    EXPECT_TRUE(ctx.IsHeadless());
-    SimRunner runner { ctx, CreateState("demo") };
+    SimRunner   runner { ctx, CreateState("demo") };
     runner.Step({});
-    runner.Render(0.f);   // 헤드리스에서는 렌더가 무시되어야 한다 (크래시 없음)
+    runner.Render(0.f);
     EXPECT_EQ(runner.GetTickCount(), 1u);
     EXPECT_FALSE(runner.IsFinished());
 

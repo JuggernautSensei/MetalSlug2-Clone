@@ -37,7 +37,7 @@ void DemoState::Render(
     GameContext& _ctx,
     const float  _alpha)
 {
-    Renderer& renderer = *_ctx.pRenderer;
+    Renderer& renderer = Renderer::GetSingleton();
     renderer.BeginFrame({ 24, 28, 40, 255 });
 
     const Vec2 drawPos = m_prevPos + (m_pos - m_prevPos) * _alpha;

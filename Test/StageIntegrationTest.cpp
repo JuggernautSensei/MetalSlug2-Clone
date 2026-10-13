@@ -1047,7 +1047,7 @@ public:
             t.bDestroyed = inst.bDestroyed;
             t.bFalling   = inst.bFalling;
             Aabb bounds  = {};
-            if (state.GetProps().GetVisualBounds(inst, _sim.Ctx().pAnims, bounds))
+            if (state.GetProps().GetVisualBounds(inst, &AnimationLibrary::GetSingleton(), bounds))
             {
                 t.left  = bounds.min.x;
                 t.right = bounds.max.x;

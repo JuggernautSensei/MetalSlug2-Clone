@@ -5,7 +5,6 @@
 #include "Base/Log.h"
 #include "Base/SlugError.h"
 #include "Core/App.h"
-#include "Core/Headless.h"
 #include "Core/Replay.h"
 #include "Core/Tuning.h"
 
@@ -54,10 +53,6 @@ int main(
     char**    _argv)
 {
     InstallCoreLogger();
-    if (_argc > 1 && std::strcmp(_argv[1], "--headless") == 0)
-    {
-        return RunHeadless(_argc, _argv);
-    }
     if (_argc > 1 && std::strcmp(_argv[1], "--dump-tuning") == 0)
     {
         std::fputs(DumpTuning(Tuning {}).c_str(), stdout);

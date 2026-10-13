@@ -24,15 +24,15 @@ public:
 
     void Tick();
 
-    void DrawHud(GameContext& _ctx, const HudModel& _model);
-    void DrawBanner(GameContext& _ctx);
-    void DrawMissionResults(GameContext& _ctx) const;
-    void DrawFade(GameContext& _ctx);
-    void DrawOverlays(GameContext& _ctx);
+    void DrawHud(const HudModel& _model);
+    void DrawBanner();
+    void DrawMissionResults() const;
+    void DrawFade();
+    void DrawOverlays();
 
-    void DrawText(GameContext& _ctx, int _x, int _y, StringView _text, const TextStyle& _style) const;
-    bool DrawSprite(GameContext& _ctx, StringView _name, int _centerX, int _centerY, int _scale = 1, uint8_t _alpha = 255) const;
-    bool DrawStandalone(GameContext& _ctx, StringView _name, int _x, int _y, uint8_t _alpha = 255) const;
+    void DrawText(int _x, int _y, StringView _text, const TextStyle& _style) const;
+    bool DrawSprite(StringView _name, int _centerX, int _centerY, int _scale = 1, uint8_t _alpha = 255) const;
+    bool DrawStandalone(StringView _name, int _x, int _y, uint8_t _alpha = 255) const;
 
     [[nodiscard]] BannerSystem&         GetBanner();
     [[nodiscard]] const BannerSystem&   GetBanner() const;
@@ -47,7 +47,7 @@ public:
     void SetGameOverArt(const GameOverArtView& _view);
 
 private:
-    void DrawGameOverArt_(GameContext& _ctx) const;
+    void DrawGameOverArt_() const;
 
     UiLayout           m_layout   = {};
     BitmapFont         m_font     = {};

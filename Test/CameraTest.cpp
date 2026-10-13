@@ -323,7 +323,7 @@ TEST(Camera, ScrollRampsUpWhilePlayerRunsAndStopsInstantlyWhenPlayerStops)
     EXPECT_LE(camera.GetViewCenter().x, x - half + 0.01f);
 }
 
-// StageIntegrationTest.cpp 의 IntegrationSim::BotStep 과 같은 봇 (헤드리스 실제 스테이지 구동용)
+// StageIntegrationTest.cpp 의 IntegrationSim::BotStep 과 같은 봇 (실제 스테이지 구동용)
 class CameraBotSim
 {
 public:

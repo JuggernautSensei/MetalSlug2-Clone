@@ -35,13 +35,13 @@ void SandboxState::OnEnter(
     m_prevScore          = m_player.GetScore();
     m_bGameOverAnnounced = false;
 
-    _ctx.GetAudio().PlayBgm(kBgmStage, true);
+    AudioSystem::GetSingleton().PlayBgm(kBgmStage, true);
 }
 
 void SandboxState::OnExit(
     GameContext& _ctx)
 {
-    _ctx.GetAudio().AllStop();
+    AudioSystem::GetSingleton().AllStop();
 }
 
 void SandboxState::BuildWorld_(
@@ -57,11 +57,8 @@ void SandboxState::BuildWorld_(
         if (Result<Tuning> loaded = LoadTuning(path))
         {
             m_tuning = loaded.Take();
-            if (!_ctx.IsHeadless())
-            {
-                m_watcher.Init(path, 60);
-                m_bWatch = true;
-            }
+            m_watcher.Init(path, 60);
+            m_bWatch = true;
         }
         else
         {
@@ -129,31 +126,29 @@ void SandboxState::BuildWorld_(
     UpdatePropCollision_();
 
     m_bRigBound = false;
-    if (_ctx.pAnims && _ctx.pAnims->GetClipCount() > 0)
+    const AnimationLibrary& anims = AnimationLibrary::GetSingleton();
+    if (anims.GetClipCount() > 0)
     {
-        (void)m_rig.Bind(*_ctx.pAnims, m_tuning.rig);
+        (void)m_rig.Bind(anims, m_tuning.rig);
         m_bRigBound = true;
-        m_bombClip  = _ctx.pAnims->Find("PlayerBomb");
+        m_bombClip  = anims.Find("PlayerBomb");
         m_bombAnim.Play(m_bombClip, true);
     }
 
-    if (!_ctx.IsHeadless())
+    if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot))
     {
-        if (Result<SpriteLibrary> library = SpriteLibrary::LoadFromDirectory(_ctx.assetRoot))
+        m_spriteLib = library.Take();
+    }
+    m_enemies.SetSpriteLibrary(&m_spriteLib);
+    if (m_config.bBackground)
+    {
+        if (const Result<int> handle = SpriteBatch::GetSingleton().LoadStandaloneTexture(_ctx.assetRoot / "Textures" / "Stage0_Main.png"))
         {
-            m_spriteLib = library.Take();
+            m_bgHandle = handle.GetValue();
         }
-        m_enemies.SetSpriteLibrary(&m_spriteLib);
-        if (m_config.bBackground && _ctx.pSprites)
+        else
         {
-            if (const Result<int> handle = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / "Textures" / "Stage0_Main.png"))
-            {
-                m_bgHandle = handle.GetValue();
-            }
-            else
-            {
-                SLUG_LOG_WARN("Stage0_Main 배경을 읽지 못했습니다");
-            }
+            SLUG_LOG_WARN("Stage0_Main 배경을 읽지 못했습니다");
         }
     }
 }
@@ -495,9 +490,9 @@ void SandboxState::Tick(
     if (m_bWatch && m_watcher.Poll(m_tuning))
     {
         m_camera.SetTuning(MakeCameraTuning(m_tuning.camera));
-        if (_ctx.pAnims && m_bRigBound)
+        if (m_bRigBound)
         {
-            (void)m_rig.Bind(*_ctx.pAnims, m_tuning.rig);
+            (void)m_rig.Bind(AnimationLibrary::GetSingleton(), m_tuning.rig);
         }
     }
 
@@ -505,7 +500,7 @@ void SandboxState::Tick(
     {
         PropTickContext propCtx;
         propCtx.pGround      = &m_ground;
-        propCtx.pAnims       = _ctx.pAnims;
+        propCtx.pAnims       = &AnimationLibrary::GetSingleton();
         propCtx.cameraLeft   = m_camera.GetPosition().x;
         propCtx.cameraBottom = m_camera.GetPosition().y + Renderer::kLogicalHeight;
         propCtx.pItemTuning  = &m_tuning.items;
@@ -581,7 +576,7 @@ void SandboxState::Tick(
         enemyCtx.player.bInvulnerable = pRidden->GetMode() != eSlugMode::Driven;
     }
     enemyCtx.cameraView = Aabb::FromMinSize(m_camera.GetPosition(), { static_cast<float>(Renderer::kLogicalWidth), static_cast<float>(Renderer::kLogicalHeight) });
-    enemyCtx.pAnims     = _ctx.pAnims;
+    enemyCtx.pAnims     = &AnimationLibrary::GetSingleton();
     m_enemies.Tick(enemyCtx);
 
     m_projectiles.Step(&m_ground, m_combat, kStepSec);
@@ -606,53 +601,51 @@ void SandboxState::Tick(
     const Vector<FxRequest> fx = m_projectiles.TakeFx();
     RequestSounds_(_ctx, fx);
     m_ui.Tick();
-    if (_ctx.pAnims)
+    const AnimationLibrary& anims = AnimationLibrary::GetSingleton();
+    for (const FxRequest& request: fx)
     {
-        for (const FxRequest& request: fx)
+        if (request.kind == eFxKind::BombExplosion)
         {
-            if (request.kind == eFxKind::BombExplosion)
-            {
-                m_effects.Spawn(*_ctx.pAnims, "PlayerBombExplosion", request.position, kBombBlastDepth + request.zOffset);
-            }
-            else if (request.kind == eFxKind::RocketExplosion)
-            {
-                m_effects.Spawn(*_ctx.pAnims, "Explosion_Mid", request.position, 56 + request.zOffset);
-            }
-            else if (request.kind == eFxKind::RocketSmoke)
-            {
-                m_effects.Spawn(*_ctx.pAnims, "Rocket_Smoke", request.position, 28 + request.zOffset);
-            }
-            else
-            {
-                m_effects.Spawn(*_ctx.pAnims, "Bullet_Destroy_Effect", request.position, kBulletHitDepth + request.zOffset);
-            }
+            m_effects.Spawn(anims, "PlayerBombExplosion", request.position, kBombBlastDepth + request.zOffset);
         }
-        m_effects.Update(*_ctx.pAnims, kStepSec);
-        m_bombAnim.Update(*_ctx.pAnims, kStepSec);
+        else if (request.kind == eFxKind::RocketExplosion)
+        {
+            m_effects.Spawn(anims, "Explosion_Mid", request.position, 56 + request.zOffset);
+        }
+        else if (request.kind == eFxKind::RocketSmoke)
+        {
+            m_effects.Spawn(anims, "Rocket_Smoke", request.position, 28 + request.zOffset);
+        }
+        else
+        {
+            m_effects.Spawn(anims, "Bullet_Destroy_Effect", request.position, kBulletHitDepth + request.zOffset);
+        }
+    }
+    m_effects.Update(anims, kStepSec);
+    m_bombAnim.Update(anims, kStepSec);
 
-        for (TrainingDummy& dummy: m_targets.GetDummies())
+    for (TrainingDummy& dummy: m_targets.GetDummies())
+    {
+        if (dummy.kind != eDummyKind::Grunt)
         {
-            if (dummy.kind != eDummyKind::Grunt)
-            {
-                continue;
-            }
-            const char* side = dummy.facing < 0 ? "Left" : "Right";
-            if (dummy.deadTicks >= 0)
-            {
-                const char* death = dummy.lastKind == eHitKind::Melee ? "SD_Die_Slash" : (dummy.lastKind == eHitKind::Blast ? "SD_Die_Bomb" : "SD_Die_Stand_1");
-                dummy.anim.Play(_ctx.pAnims->Find(std::format("{}_{}", death, side)), false);
-            }
-            else
-            {
-                dummy.anim.Play(_ctx.pAnims->Find(std::format("SD_Idle_{}", side)), false);
-            }
-            dummy.anim.Update(*_ctx.pAnims, kStepSec);
+            continue;
         }
+        const char* side = dummy.facing < 0 ? "Left" : "Right";
+        if (dummy.deadTicks >= 0)
+        {
+            const char* death = dummy.lastKind == eHitKind::Melee ? "SD_Die_Slash" : (dummy.lastKind == eHitKind::Blast ? "SD_Die_Bomb" : "SD_Die_Stand_1");
+            dummy.anim.Play(anims.Find(std::format("{}_{}", death, side)), false);
+        }
+        else
+        {
+            dummy.anim.Play(anims.Find(std::format("SD_Idle_{}", side)), false);
+        }
+        dummy.anim.Update(anims, kStepSec);
+    }
 
-        if (m_bRigBound)
-        {
-            m_rig.Update(m_player.MakeRigState());
-        }
+    if (m_bRigBound)
+    {
+        m_rig.Update(m_player.MakeRigState());
     }
 
     m_prevCameraPos = m_camera.GetPosition();
@@ -668,7 +661,7 @@ void SandboxState::Tick(
         m_prevWeapon         = m_player.GetWeapon().weapon;
         m_prevScore          = m_player.GetScore();
         m_bGameOverAnnounced = false;
-        _ctx.GetAudio().PlayBgm(kBgmStage, true);
+        AudioSystem::GetSingleton().PlayBgm(kBgmStage, true);
     }
 }
 
@@ -676,7 +669,7 @@ void SandboxState::RequestSounds_(
     GameContext&             _ctx,
     const Vector<FxRequest>& _fx)
 {
-    AudioSystem&       audio  = _ctx.GetAudio();
+    AudioSystem&       audio  = AudioSystem::GetSingleton();
     const PlayerStats& stats  = m_player.GetStats();
     const eWeapon      weapon = m_player.GetWeapon().weapon;
 
@@ -781,15 +774,15 @@ void SandboxState::Render(
     GameContext& _ctx,
     const float  _alpha)
 {
-    Renderer& renderer = *_ctx.pRenderer;
+    Renderer& renderer = Renderer::GetSingleton();
     renderer.BeginFrame({ 156, 190, 224, 255 });
 
     const Vec2 camNow    = m_camera.GetPosition();
     const Vec2 cameraPos = { std::floor(m_prevCameraPos.x + (camNow.x - m_prevCameraPos.x) * _alpha), std::floor(m_prevCameraPos.y + (camNow.y - m_prevCameraPos.y) * _alpha) };
 
-    if (m_bgHandle >= 0 && _ctx.pSprites)
+    if (m_bgHandle >= 0)
     {
-        _ctx.pSprites->DrawTexture(m_bgHandle, { 0.f, 0.f }, cameraPos, Renderer::kLogicalWidth, Renderer::kLogicalHeight);
+        SpriteBatch::GetSingleton().DrawTexture(m_bgHandle, { 0.f, 0.f }, cameraPos, Renderer::kLogicalWidth, Renderer::kLogicalHeight);
     }
 
     DrawWorld_(_ctx, cameraPos, _alpha);
@@ -805,18 +798,18 @@ void SandboxState::DrawWorld_(
     const Vec2   _cameraPos,
     const float  _alpha)
 {
-    Renderer&               renderer = *_ctx.pRenderer;
-    SpriteBatch&            sprites  = *_ctx.pSprites;
-    const AnimationLibrary* pAnims   = _ctx.pAnims;
+    Renderer&               renderer = Renderer::GetSingleton();
+    SpriteBatch&            sprites  = SpriteBatch::GetSingleton();
+    const AnimationLibrary& anims    = AnimationLibrary::GetSingleton();
 
     for (const TrainingDummy& dummy: m_targets.GetDummies())
     {
         const bool bDying = dummy.deadTicks >= 0;
-        if (dummy.kind == eDummyKind::Grunt && pAnims)
+        if (dummy.kind == eDummyKind::Grunt)
         {
-            if (const AnimFrame* pFrame = dummy.anim.GetFrameData(*pAnims))
+            if (const AnimFrame* pFrame = dummy.anim.GetFrameData(anims))
             {
-                const AnimClip*   pClip = pAnims->GetOrNull(dummy.anim.GetClip());
+                const AnimClip*   pClip = anims.GetOrNull(dummy.anim.GetClip());
                 const float       lift  = pClip ? static_cast<float>(pClip->GetFootBaseline()) : 0.f;
                 SpriteDrawOptions options;
                 options.flashAmount = IsHitFlashOn(dummy.flashTicks) ? 1.f : 0.f;
@@ -838,22 +831,16 @@ void SandboxState::DrawWorld_(
         renderer.DrawDebugText({ tl.x + 4.f, tl.y + 4.f }, std::format("{}\n{}/{}", GetDummyName(dummy.kind), dummy.health.hp, dummy.health.maxHp), { 255, 255, 255, 255 });
     }
 
-    if (pAnims)
-    {
-        m_enemies.Submit(sprites, *pAnims, m_projectiles, _alpha);
-    }
+    m_enemies.Submit(sprites, anims, m_projectiles, _alpha);
 
-    if (pAnims)
+    for (const SlugVehicle& slug: m_slugs.GetAll())
     {
-        for (const SlugVehicle& slug: m_slugs.GetAll())
-        {
-            SubmitSlug(sprites, *pAnims, slug, _alpha);
-        }
+        SubmitSlug(sprites, anims, slug, _alpha);
     }
 
     {
         const Vec2 feet = Lerp(m_player.GetPrevFeet(), m_player.GetFeet(), _alpha);
-        if (m_bRigBound && pAnims)
+        if (m_bRigBound)
         {
             const RigState rigState = m_player.MakeRigState();
             if (rigState.bVisible)
@@ -872,11 +859,11 @@ void SandboxState::DrawWorld_(
         for (const Bullet& bullet: m_projectiles.GetBullets())
         {
             const Vec2 pos = Lerp(bullet.renderPrev, bullet.position, _alpha);
-            if (pAnims && IsSlugOwner(bullet.owner) && SubmitSlugBullet(sprites, *pAnims, bullet, pos, ResolveZ(bullet.z, kPlayerBulletDepth)))
+            if (IsSlugOwner(bullet.owner) && SubmitSlugBullet(sprites, anims, bullet, pos, ResolveZ(bullet.z, kPlayerBulletDepth)))
             {
                 continue;
             }
-            if (bullet.team == eTeam::Player && SubmitPlayerBullet(sprites, pAnims, m_spriteLib, bullet, pos, ResolveZ(bullet.z, kPlayerBulletDepth)))
+            if (bullet.team == eTeam::Player && SubmitPlayerBullet(sprites, &anims, m_spriteLib, bullet, pos, ResolveZ(bullet.z, kPlayerBulletDepth)))
             {
                 continue;
             }
@@ -887,27 +874,21 @@ void SandboxState::DrawWorld_(
         for (const Bomb& bomb: m_projectiles.GetBombs())
         {
             const Vec2 pos = Lerp(bomb.renderPrev, bomb.position, _alpha);
-            if (pAnims && IsSlugOwner(bomb.params.owner) && SubmitSlugShell(sprites, *pAnims, bomb, pos, ResolveZ(bomb.params.z, kPlayerBombDepth)))
+            if (IsSlugOwner(bomb.params.owner) && SubmitSlugShell(sprites, anims, bomb, pos, ResolveZ(bomb.params.z, kPlayerBombDepth)))
             {
                 continue;
             }
-            if (pAnims)
+            if (const AnimFrame* pFrame = m_bombAnim.GetFrameData(anims))
             {
-                if (const AnimFrame* pFrame = m_bombAnim.GetFrameData(*pAnims))
-                {
-                    sprites.Submit(ResolveZ(bomb.params.z, kPlayerBombDepth), 0, *pFrame, pos);
-                    continue;
-                }
+                sprites.Submit(ResolveZ(bomb.params.z, kPlayerBombDepth), 0, *pFrame, pos);
+                continue;
             }
             renderer.FillRect(ToScreen({ pos.x - 5.f, pos.y - 5.f }, _cameraPos), { 10.f, 10.f }, { 40, 40, 40, 255 });
         }
     }
 
-    if (pAnims)
-    {
-        m_props.Submit(sprites, *pAnims, m_spriteLib);
-        m_effects.Submit(*pAnims, sprites);
-    }
+    m_props.Submit(sprites, anims, m_spriteLib);
+    m_effects.Submit(anims, sprites);
 
     sprites.Flush(_cameraPos);
 }
@@ -945,7 +926,7 @@ void SandboxState::DrawDebugBoxes_(
 void SandboxState::DrawHud_(
     GameContext& _ctx)
 {
-    Renderer&               renderer = *_ctx.pRenderer;
+    Renderer&               renderer = Renderer::GetSingleton();
     const PlayerController& p        = m_player;
 
     HudModel hud = MakeHudModel(p);
@@ -956,7 +937,7 @@ void SandboxState::DrawHud_(
         hud.bShowGauge = true;
         hud.gaugeRatio = pRidden->GetHpRatio();
     }
-    m_ui.DrawHud(_ctx, hud);
+    m_ui.DrawHud(hud);
 
     if (g_debug.bDebugDraw)
     {
@@ -985,10 +966,10 @@ void SandboxState::DrawHud_(
     {
         TextStyle style;
         style.align = eTextAlign::Center;
-        m_ui.DrawText(_ctx, Renderer::kLogicalWidth / 2, 216, "PAUSED", style);
+        m_ui.DrawText(Renderer::kLogicalWidth / 2, 216, "PAUSED", style);
     }
 
-    m_ui.DrawOverlays(_ctx);
+    m_ui.DrawOverlays();
 }
 
 PlayerController& SandboxState::GetPlayer()

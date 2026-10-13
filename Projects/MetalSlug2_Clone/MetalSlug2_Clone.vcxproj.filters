@@ -99,9 +99,6 @@
     <ClCompile Include="..\..\Source\Main.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Core\Headless.cpp">
-      <Filter>Source\Core</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\Core\App.cpp">
       <Filter>Source\Core</Filter>
     </ClCompile>
@@ -367,9 +364,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source\Base\Types.h">
       <Filter>Source\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Core\Headless.h">
-      <Filter>Source\Core</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Core\App.h">
       <Filter>Source\Core</Filter>

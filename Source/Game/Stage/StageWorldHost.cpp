@@ -177,12 +177,6 @@ void StageWorldHost::BindUi(
     m_pUi = _pUi;
 }
 
-void StageWorldHost::SetContext(
-    GameContext* const _pCtx)
-{
-    m_pCtx = _pCtx;
-}
-
 void StageWorldHost::AddGroundMap(
     const StringView _name,
     GroundMap        _map)
@@ -680,10 +674,7 @@ void StageWorldHost::PlayBgm(
     const StringView _name,
     const bool       _bLoop)
 {
-    if (m_pCtx)
-    {
-        m_pCtx->GetAudio().PlayBgm(_name, _bLoop);
-    }
+    AudioSystem::GetSingleton().PlayBgm(_name, _bLoop);
 }
 
 void StageWorldHost::ChangeBgm(
@@ -691,19 +682,13 @@ void StageWorldHost::ChangeBgm(
     const bool       _bLoop,
     const float      _fadeOutSec)
 {
-    if (m_pCtx)
-    {
-        m_pCtx->GetAudio().ChangeBgm(_name, _fadeOutSec, _bLoop);
-    }
+    AudioSystem::GetSingleton().ChangeBgm(_name, _fadeOutSec, _bLoop);
 }
 
 void StageWorldHost::PlaySfx(
     const StringView _name)
 {
-    if (m_pCtx)
-    {
-        m_pCtx->GetAudio().Play(_name);
-    }
+    AudioSystem::GetSingleton().Play(_name);
 }
 
 void StageWorldHost::EndStage(

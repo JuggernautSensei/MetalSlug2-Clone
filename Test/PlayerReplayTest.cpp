@@ -53,7 +53,7 @@ TEST(PlayerReplay, RegressionReplayPlaysTheSameWayTwiceAndHitsTheMilestones)
     EXPECT_EQ(hashes[0], hashes[1]);
 }
 
-TEST(PlayerReplay, HeadlessReplayThroughTheStateFactoryUsesTheSamePath)
+TEST(PlayerReplay, ReplayThroughTheStateFactoryUsesTheSamePath)
 {
     GameContext ctx;
     SimRunner   runner { ctx, CreateState("sandbox") };

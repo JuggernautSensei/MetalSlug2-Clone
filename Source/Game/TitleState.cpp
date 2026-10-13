@@ -51,17 +51,17 @@ void TitleState::OnEnter(
     m_ui.GetFade().SetBlack();
     m_ui.GetFade().FadeToClear(m_config.fadeInTicks);
 
-    _ctx.GetAudio().StopBgm();
+    AudioSystem::GetSingleton().StopBgm();
     if (m_config.bPlayVoice)
     {
-        _ctx.GetAudio().Play(kTitleVoice);
+        AudioSystem::GetSingleton().Play(kTitleVoice);
     }
 }
 
 void TitleState::OnExit(
     GameContext& _ctx)
 {
-    _ctx.GetAudio().AllStop();
+    AudioSystem::GetSingleton().AllStop();
 }
 
 Scoped<IGameState> TitleState::CreateNext_() const
@@ -98,7 +98,7 @@ void TitleState::Tick(
     {
         m_bStarting = true;
         m_selected  = m_config.nextState.empty() ? String { CreateState("stage0") ? "stage0" : "sandbox" } : m_config.nextState;
-        _ctx.GetAudio().Play(kOk);
+        AudioSystem::GetSingleton().Play(kOk);
         m_ui.GetFade().FadeToBlack(m_config.startFadeTicks);
     }
 }
@@ -112,11 +112,11 @@ void TitleState::Render(
     GameContext& _ctx,
     const float)
 {
-    Renderer&       renderer = *_ctx.pRenderer;
+    Renderer&       renderer = Renderer::GetSingleton();
     const UiLayout& layout   = m_ui.GetLayout();
 
     renderer.BeginFrame({ 0, 0, 0, 255 });
-    if (!m_ui.DrawStandalone(_ctx, "TitleBackground", 0, 0))
+    if (!m_ui.DrawStandalone("TitleBackground", 0, 0))
     {
         DrawBackground_(renderer);
     }
@@ -127,16 +127,16 @@ void TitleState::Render(
         TextStyle start;
         start.color = eFontColor::White;
         start.align = eTextAlign::Center;
-        m_ui.DrawText(_ctx, layout.screenW / 2, layout.titlePressStartY, "PRESS START", start);
+        m_ui.DrawText(layout.screenW / 2, layout.titlePressStartY, "PRESS START", start);
     }
 
     TextStyle hint;
     hint.color = eFontColor::Yellow;
     hint.bBold = false;
     hint.align = eTextAlign::Center;
-    m_ui.DrawText(_ctx, layout.screenW / 2, layout.titleHintY, "PRESS ENTER OR SPACE", hint);
+    m_ui.DrawText(layout.screenW / 2, layout.titleHintY, "PRESS ENTER OR SPACE", hint);
 
-    m_ui.DrawOverlays(_ctx);
+    m_ui.DrawOverlays();
 }
 
 bool TitleState::IsStarting() const

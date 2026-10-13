@@ -1,5 +1,13 @@
 #include "TestAudio.h"
 
+AudioSystem& RecordAudio()
+{
+    AudioSystem& audio = AudioSystem::GetSingleton();
+    audio.bRecord      = true;
+    audio.events.clear();
+    return audio;
+}
+
 int CountPlays(
     const AudioSystem& _audio,
     const StringView   _name)

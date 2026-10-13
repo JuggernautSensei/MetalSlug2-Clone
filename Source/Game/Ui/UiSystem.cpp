@@ -2,44 +2,11 @@
 
 #include <algorithm>
 #include <cstdio>
-#include <map>
 #include <utility>
 
 #include "Base/Log.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
-
-using CacheKey = std::pair<const SpriteBatch*, String>;
-using CacheMap = std::map<CacheKey, int>;
-
-namespace
-{
-[[nodiscard]] int LoadStandaloneCached_(
-    GameContext&     _ctx,
-    const StringView _name,
-    const StringView _file)
-{
-    static CacheMap s_cache;
-
-    const CacheKey key { _ctx.pSprites, String { _name } };
-    if (const CacheMap::const_iterator it = s_cache.find(key); it != s_cache.end())
-    {
-        return it->second;
-    }
-
-    int handle = -1;
-    if (const Result<int> loaded = _ctx.pSprites->LoadStandaloneTexture(_ctx.assetRoot / FilePath { _file }))
-    {
-        handle = loaded.GetValue();
-    }
-    else
-    {
-        SLUG_LOG_WARN("UI 텍스처를 읽지 못했습니다: {}", _file);
-    }
-    s_cache.emplace(key, handle);
-    return handle;
-}
-}   // namespace
 
 void UiSystem::Init(
     const GameContext& _ctx)
@@ -49,7 +16,7 @@ void UiSystem::Init(
     m_fade.SetClear();
     m_bSprites = false;
 
-    if (_ctx.IsHeadless() || _ctx.assetRoot.empty())
+    if (_ctx.assetRoot.empty())
     {
         return;
     }
@@ -74,31 +41,21 @@ void UiSystem::Tick()
 }
 
 void UiSystem::DrawText(
-    GameContext&     _ctx,
     const int        _x,
     const int        _y,
     const StringView _text,
     const TextStyle& _style) const
 {
-    if (_ctx.IsHeadless() || !_ctx.pSprites)
-    {
-        return;
-    }
-    m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, _x, _y, _text, _style);
+    m_font.DrawText(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), _x, _y, _text, _style);
 }
 
 bool UiSystem::DrawSprite(
-    GameContext&     _ctx,
     const StringView _name,
     const int        _centerX,
     const int        _centerY,
     const int        _scale,
     const uint8_t    _alpha) const
 {
-    if (_ctx.IsHeadless() || !_ctx.pSprites)
-    {
-        return false;
-    }
     const SpriteInfo* pInfo = m_sprites.Find(_name);
     if (!pInfo || pInfo->bStandalone)
     {
@@ -111,50 +68,40 @@ bool UiSystem::DrawSprite(
 
     SpriteDrawOptions options;
     options.tint.a = _alpha;
-    _ctx.pSprites->DrawFrameRect(pInfo->frame, { _centerX - w / 2, _centerY - h / 2, w, h }, options);
+    SpriteBatch::GetSingleton().DrawFrameRect(pInfo->frame, { _centerX - w / 2, _centerY - h / 2, w, h }, options);
     return true;
 }
 
 bool UiSystem::DrawStandalone(
-    GameContext&     _ctx,
     const StringView _name,
     const int        _x,
     const int        _y,
     const uint8_t    _alpha) const
 {
-    if (_ctx.IsHeadless() || !_ctx.pSprites)
-    {
-        return false;
-    }
     const SpriteInfo* pInfo = m_sprites.Find(_name);
     if (!pInfo || !pInfo->bStandalone)
     {
         return false;
     }
 
-    const int handle = LoadStandaloneCached_(_ctx, _name, pInfo->file);
+    const int handle = SpriteBatch::GetSingleton().FindStandalone(pInfo->file);
     if (handle < 0)
     {
         return false;
     }
-    _ctx.pSprites->DrawTexture(handle, { static_cast<float>(_x), static_cast<float>(_y) }, { 0.f, 0.f }, Renderer::kLogicalWidth, Renderer::kLogicalHeight, { 255, 255, 255, _alpha });
+    SpriteBatch::GetSingleton().DrawTexture(handle, { static_cast<float>(_x), static_cast<float>(_y) }, { 0.f, 0.f }, Renderer::kLogicalWidth, Renderer::kLogicalHeight, { 255, 255, 255, _alpha });
     return true;
 }
 
 void UiSystem::DrawHud(
-    GameContext&    _ctx,
     const HudModel& _model)
 {
-    if (_ctx.IsHeadless() || !_ctx.pSprites)
-    {
-        return;
-    }
 
     HudModel model = _model;
     model.uiTick   = m_tick;
 
-    Renderer&    renderer = *_ctx.pRenderer;
-    SpriteBatch& sprites  = *_ctx.pSprites;
+    Renderer&    renderer = Renderer::GetSingleton();
+    SpriteBatch& sprites  = SpriteBatch::GetSingleton();
 
     for (const HudItem& item: BuildHudItems(model, m_layout))
     {
@@ -164,7 +111,7 @@ void UiSystem::DrawHud(
                 m_font.DrawText(renderer, sprites, item.x, item.y, item.text, item.style);
                 break;
             case eHudItemKind::Sprite:
-                (void)DrawSprite(_ctx, item.text, item.x, item.y, item.scale);
+                (void)DrawSprite(item.text, item.x, item.y, item.scale);
                 break;
             case eHudItemKind::TimeDigits:
                 m_font.DrawTimeDigits(sprites, item.x, item.y, item.text);
@@ -176,10 +123,9 @@ void UiSystem::DrawHud(
     }
 }
 
-void UiSystem::DrawBanner(
-    GameContext& _ctx)
+void UiSystem::DrawBanner()
 {
-    if (_ctx.IsHeadless() || !_ctx.pSprites || !m_banner.IsActive())
+    if (!m_banner.IsActive())
     {
         return;
     }
@@ -244,17 +190,16 @@ void UiSystem::DrawBanner(
                 SpriteDrawOptions options;
                 options.tint   = tint;
                 options.tint.a = pose.alpha;
-                _ctx.pSprites->DrawFrameRect(pInfo->frame, { x + pose.dx, lineY - h / 2 + pose.dy, w, h }, options);
+                SpriteBatch::GetSingleton().DrawFrameRect(pInfo->frame, { x + pose.dx, lineY - h / 2 + pose.dy, w, h }, options);
             }
             x += pInfo->frame.w * num / den + m_layout.missionGlyphGap;
         }
     }
 }
 
-void UiSystem::DrawMissionResults(
-    GameContext& _ctx) const
+void UiSystem::DrawMissionResults() const
 {
-    if (_ctx.IsHeadless() || !_ctx.pSprites || !m_results.bBoxVisible)
+    if (!m_results.bBoxVisible)
     {
         return;
     }
@@ -264,62 +209,56 @@ void UiSystem::DrawMissionResults(
     const int     cx  = box.x + box.w / 2;
 
     // 상자: 어두운 남색 바탕 + 연보라 테두리 (원본 영상 색)
-    _ctx.pRenderer->FillRect({ static_cast<float>(box.x), static_cast<float>(box.y) }, { static_cast<float>(box.w), static_cast<float>(box.h) }, { 12, 10, 60, static_cast<uint8_t>(a * 225 / 255) });
+    Renderer::GetSingleton().FillRect({ static_cast<float>(box.x), static_cast<float>(box.y) }, { static_cast<float>(box.w), static_cast<float>(box.h) }, { 12, 10, 60, static_cast<uint8_t>(a * 225 / 255) });
     const RGBA border = { 180, 170, 240, a };
-    _ctx.pRenderer->FillRect({ static_cast<float>(box.x), static_cast<float>(box.y) }, { static_cast<float>(box.w), 2.f }, border);
-    _ctx.pRenderer->FillRect({ static_cast<float>(box.x), static_cast<float>(box.y + box.h - 2) }, { static_cast<float>(box.w), 2.f }, border);
-    _ctx.pRenderer->FillRect({ static_cast<float>(box.x), static_cast<float>(box.y) }, { 2.f, static_cast<float>(box.h) }, border);
-    _ctx.pRenderer->FillRect({ static_cast<float>(box.x + box.w - 2), static_cast<float>(box.y) }, { 2.f, static_cast<float>(box.h) }, border);
+    Renderer::GetSingleton().FillRect({ static_cast<float>(box.x), static_cast<float>(box.y) }, { static_cast<float>(box.w), 2.f }, border);
+    Renderer::GetSingleton().FillRect({ static_cast<float>(box.x), static_cast<float>(box.y + box.h - 2) }, { static_cast<float>(box.w), 2.f }, border);
+    Renderer::GetSingleton().FillRect({ static_cast<float>(box.x), static_cast<float>(box.y) }, { 2.f, static_cast<float>(box.h) }, border);
+    Renderer::GetSingleton().FillRect({ static_cast<float>(box.x + box.w - 2), static_cast<float>(box.y) }, { 2.f, static_cast<float>(box.h) }, border);
 
     TextStyle white;
     white.color = eFontColor::White;
     white.align = eTextAlign::Center;
     white.alpha = a;
-    m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, m_layout.resultsTitleX, m_layout.resultsTitleY - kGlyphSize / 2, "RECAPTURED PRISONER", white);
+    m_font.DrawText(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), m_layout.resultsTitleX, m_layout.resultsTitleY - kGlyphSize / 2, "RECAPTURED PRISONER", white);
 
     TextStyle yellow = white;
     yellow.color     = eFontColor::Yellow;
-    m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, cx, m_layout.resultsPlayerY - kGlyphSize / 2, "1P", yellow);
+    m_font.DrawText(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), cx, m_layout.resultsPlayerY - kGlyphSize / 2, "1P", yellow);
 
     ARRAY<char, 8> countBuf = {};
     std::snprintf(countBuf.data(), countBuf.size(), "%02d", std::clamp(m_results.rescued, 0, 99));
-    m_font.DrawTimeDigits(*_ctx.pSprites, cx, m_layout.resultsCountTopY, countBuf.data(), a);
+    m_font.DrawTimeDigits(SpriteBatch::GetSingleton(), cx, m_layout.resultsCountTopY, countBuf.data(), a);
     if (m_results.bCounting)
     {
         TextStyle label = white;
         label.align     = eTextAlign::Left;
-        m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, cx + 36, m_layout.resultsCountTopY + 12, "X10000", label);
+        m_font.DrawText(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), cx + 36, m_layout.resultsCountTopY + 12, "X10000", label);
     }
 
     ARRAY<char, 16> scoreBuf = {};
     std::snprintf(scoreBuf.data(), scoreBuf.size(), "%d", std::clamp(m_results.bonusScore, 0, 9'999'999));
-    m_font.DrawTimeDigits(*_ctx.pSprites, cx, m_layout.resultsScoreTopY, scoreBuf.data(), a);
+    m_font.DrawTimeDigits(SpriteBatch::GetSingleton(), cx, m_layout.resultsScoreTopY, scoreBuf.data(), a);
 
     if (m_results.bRankVisible)
     {
-        m_font.DrawText(*_ctx.pRenderer, *_ctx.pSprites, cx, m_layout.resultsRankY - kGlyphSize / 2, m_results.rankText, yellow);
+        m_font.DrawText(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), cx, m_layout.resultsRankY - kGlyphSize / 2, m_results.rankText, yellow);
     }
 }
 
-void UiSystem::DrawFade(
-    GameContext& _ctx)
+void UiSystem::DrawFade()
 {
-    if (_ctx.IsHeadless())
-    {
-        return;
-    }
     const uint8_t alpha = m_fade.GetAlpha255();
     if (alpha == 0)
     {
         return;
     }
-    _ctx.pRenderer->FillRect({ 0.f, 0.f }, { static_cast<float>(m_layout.screenW), static_cast<float>(m_layout.screenH) }, { 0, 0, 0, alpha });
+    Renderer::GetSingleton().FillRect({ 0.f, 0.f }, { static_cast<float>(m_layout.screenW), static_cast<float>(m_layout.screenH) }, { 0, 0, 0, alpha });
 }
 
-void UiSystem::DrawGameOverArt_(
-    GameContext& _ctx) const
+void UiSystem::DrawGameOverArt_() const
 {
-    if (_ctx.IsHeadless() || !_ctx.pSprites || !m_art.bVisible || m_art.alpha == 0)
+    if (!m_art.bVisible || m_art.alpha == 0)
     {
         return;
     }
@@ -338,16 +277,15 @@ void UiSystem::DrawGameOverArt_(
 
     SpriteDrawOptions options;
     options.tint.a = m_art.alpha;
-    _ctx.pSprites->DrawFrameRect(pInfo->frame, { (m_layout.screenW - w) / 2, (m_layout.screenH - h) / 2, w, h }, options);
+    SpriteBatch::GetSingleton().DrawFrameRect(pInfo->frame, { (m_layout.screenW - w) / 2, (m_layout.screenH - h) / 2, w, h }, options);
 }
 
-void UiSystem::DrawOverlays(
-    GameContext& _ctx)
+void UiSystem::DrawOverlays()
 {
-    DrawMissionResults(_ctx);
-    DrawGameOverArt_(_ctx);
-    DrawFade(_ctx);
-    DrawBanner(_ctx);
+    DrawMissionResults();
+    DrawGameOverArt_();
+    DrawFade();
+    DrawBanner();
 }
 
 BannerSystem& UiSystem::GetBanner()

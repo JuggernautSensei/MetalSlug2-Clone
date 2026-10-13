@@ -11,16 +11,8 @@
 
 struct GameContext
 {
-    Renderer*         pRenderer   = nullptr;
-    SpriteBatch*      pSprites    = nullptr;
-    AnimationLibrary* pAnims      = nullptr;
-    FilePath          assetRoot   = {};
-    AudioSystem*      pAudio      = nullptr;
-    int               loadWorkers = 1;
-
-    [[nodiscard]] bool IsHeadless() const;
-
-    [[nodiscard]] AudioSystem& GetAudio() const;
+    FilePath assetRoot   = {};
+    int      loadWorkers = 1;
 };
 
 struct DebugSwitches
@@ -54,6 +46,6 @@ public:
 
     [[nodiscard]] virtual bool IsFinished() const;
 
-    // 회귀 기준선용 상태 해시 (Headless 가 끝에 출력). 구현하지 않은 상태는 0.
+    // 회귀 기준선용 상태 해시 (--hash 가 끝에 출력). 구현하지 않은 상태는 0.
     [[nodiscard]] virtual uint64_t DebugHash() const;
 };

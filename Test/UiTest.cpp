@@ -695,7 +695,7 @@ TEST(UiHud, MakeHudModelReadsPlayerController)
     EXPECT_EQ(after.bombs, 13);
 }
 
-TEST(UiSystem, HeadlessTicksAdvanceBannerFadeAndBlinkClock)
+TEST(UiSystem, TicksAdvanceBannerFadeAndBlinkClock)
 {
     GameContext ctx;
     UiSystem    ui;
@@ -713,9 +713,9 @@ TEST(UiSystem, HeadlessTicksAdvanceBannerFadeAndBlinkClock)
     EXPECT_TRUE(ui.GetBanner().IsActive());
     EXPECT_GT(ui.GetBanner().GetAlpha(), 0.f);
 
-    ui.DrawHud(ctx, MakeModel_());
-    ui.DrawOverlays(ctx);
-    EXPECT_FALSE(ui.DrawSprite(ctx, "PressStartUI", 0, 0));
+    ui.DrawHud(MakeModel_());
+    ui.DrawOverlays();
+    EXPECT_FALSE(ui.DrawSprite("PressStartUI", 0, 0));
 }
 
 TEST(UiFlow, GameOverTotalIsThreeSecondsAndEndsInDone)
@@ -1004,7 +1004,6 @@ struct TitleSim
     explicit TitleSim(
         TitleConfig _config = {})
     {
-        ctx.pAudio = &audio;
         pTitle     = new TitleState { std::move(_config) };
         runner     = Scoped<SimRunner> {
             new SimRunner { ctx, Scoped<IGameState> { pTitle } }
@@ -1032,7 +1031,7 @@ struct TitleSim
     [[nodiscard]] bool IsStillTitle() const { return runner->GetState() == pTitle; }
 
     GameContext       ctx;
-    AudioSystem       audio { true };
+    AudioSystem&      audio = RecordAudio();
     TitleState*       pTitle = nullptr;
     Scoped<SimRunner> runner = nullptr;
 };

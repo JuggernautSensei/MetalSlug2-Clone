@@ -83,7 +83,7 @@ TEST(PlayerRigNames, DgHasNoDiagonalShotClipSoItFallsBackToTheAimPose)
 TEST(PlayerRigPose, IdleUsesIdleUpperAndLowerClips)
 {
     SLUG_REQUIRE_BAKED(anims);
-    Sim sim { MakeFlatConfig(), &anims };
+    Sim sim { MakeFlatConfig() };
     sim.Step(3);
     const PlayerRig& rig = sim.State().GetRig();
     EXPECT_EQ(rig.GetUpperClip(), Id_(anims, "Player_Stand_Idle_DG_Right"));
@@ -93,7 +93,7 @@ TEST(PlayerRigPose, IdleUsesIdleUpperAndLowerClips)
 TEST(PlayerRigPose, RunSwitchesToRunClipsOnTheSameTickAndFacingPicksTheSide)
 {
     SLUG_REQUIRE_BAKED(anims);
-    Sim sim { MakeFlatConfig(), &anims };
+    Sim sim { MakeFlatConfig() };
     sim.Step(3);
 
     sim.Hold(eAction::Right);
@@ -111,7 +111,7 @@ TEST(PlayerRigPose, RunSwitchesToRunClipsOnTheSameTickAndFacingPicksTheSide)
 TEST(PlayerRigPose, UpperAndLowerShareOnePhaseWhileRunning)
 {
     SLUG_REQUIRE_BAKED(anims);
-    Sim sim { MakeFlatConfig(), &anims };
+    Sim sim { MakeFlatConfig() };
     sim.Hold(eAction::Right);
     for (int i = 0; i < 90; ++i)
     {
@@ -123,7 +123,7 @@ TEST(PlayerRigPose, UpperAndLowerShareOnePhaseWhileRunning)
 TEST(PlayerRigPose, UpperKeepsThePhaseAfterAShotOverlayEndsWhileRunning)
 {
     SLUG_REQUIRE_BAKED(anims);
-    Sim sim { MakeFlatConfig(), &anims };
+    Sim sim { MakeFlatConfig() };
     sim.Hold(eAction::Right);
     sim.Step(10);
     sim.Tap(eAction::Shot);
@@ -135,7 +135,7 @@ TEST(PlayerRigPose, UpperKeepsThePhaseAfterAShotOverlayEndsWhileRunning)
 TEST(PlayerRigPose, CrouchJumpAndAirClips)
 {
     SLUG_REQUIRE_BAKED(anims);
-    Sim sim { MakeFlatConfig(), &anims };
+    Sim sim { MakeFlatConfig() };
     sim.Step(2);
 
     sim.Hold(eAction::Down);
@@ -167,7 +167,7 @@ TEST(PlayerRigPose, ShotSlashAndThrowOverlaysPickTheirClips)
 {
     SLUG_REQUIRE_BAKED(anims);
     {
-        Sim sim { MakeFlatConfig(), &anims };
+        Sim sim { MakeFlatConfig() };
         sim.Step(2);
         sim.Tap(eAction::Shot);
         EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Shot_DG_Right"));
@@ -175,20 +175,20 @@ TEST(PlayerRigPose, ShotSlashAndThrowOverlaysPickTheirClips)
         EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Idle_DG_Right"));
     }
     {
-        Sim sim { MakeFlatConfig(), &anims };
+        Sim sim { MakeFlatConfig() };
         sim.Step(2);
         sim.Hold(eAction::Up);
         sim.Tap(eAction::Shot);
         EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Shot_Up_DG_Right"));
     }
     {
-        Sim sim { MakeFlatConfig(), &anims };
+        Sim sim { MakeFlatConfig() };
         sim.Step(2);
         sim.Tap(eAction::Bomb);
         EXPECT_EQ(sim.State().GetRig().GetUpperClip(), Id_(anims, "Player_Stand_Throw_DG_Right"));
     }
     {
-        Sim sim { MakeFlatConfig(), &anims };
+        Sim sim { MakeFlatConfig() };
         sim.Step(2);
         sim.State().AddTarget(eDummyKind::Grunt, { sim.X() + 25.f, 378.f });
         sim.Tap(eAction::Shot);
@@ -204,7 +204,7 @@ TEST(PlayerRigPose, CrouchAndAirVariantsOfTheOverlays)
 {
     SLUG_REQUIRE_BAKED(anims);
     {
-        Sim sim { MakeFlatConfig(), &anims };
+        Sim sim { MakeFlatConfig() };
         sim.Step(2);
         sim.Hold(eAction::Down);
         sim.Step(2);
@@ -213,7 +213,7 @@ TEST(PlayerRigPose, CrouchAndAirVariantsOfTheOverlays)
         sim.Release(eAction::Down);
     }
     {
-        Sim sim { MakeFlatConfig(), &anims };
+        Sim sim { MakeFlatConfig() };
         sim.Step(2);
         sim.Tap(eAction::Jump);
         sim.Step(8);
@@ -226,7 +226,7 @@ TEST(PlayerRigPose, CrouchAndAirVariantsOfTheOverlays)
 TEST(PlayerRigPose, HmgUsesMachineGunShotClipAndShotgunItsOwn)
 {
     SLUG_REQUIRE_BAKED(anims);
-    Sim sim { MakeFlatConfig(), &anims };
+    Sim sim { MakeFlatConfig() };
     sim.Step(2);
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Tap(eAction::Shot);
@@ -243,7 +243,7 @@ TEST(PlayerRigPose, HmgUsesMachineGunShotClipAndShotgunItsOwn)
 TEST(PlayerRigPose, HmgRunAndShootCombinesShotUpperWithRunLower)
 {
     SLUG_REQUIRE_BAKED(anims);
-    Sim sim { MakeFlatConfig(), &anims };
+    Sim sim { MakeFlatConfig() };
     sim.Step(2);
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Hold(eAction::Right);
@@ -261,7 +261,7 @@ TEST(PlayerRigPose, HmgRunAndShootCombinesShotUpperWithRunLower)
 TEST(PlayerRigPose, EveryNewShotRestartsTheShotAnimation)
 {
     SLUG_REQUIRE_BAKED(anims);
-    Sim sim { MakeFlatConfig(), &anims };
+    Sim sim { MakeFlatConfig() };
     sim.Step(2);
     sim.Player().PickUpWeapon(eWeapon::Hmg, sim.Tune());
     sim.Tap(eAction::Shot);
@@ -277,7 +277,7 @@ TEST(PlayerRigPose, EveryNewShotRestartsTheShotAnimation)
 TEST(PlayerRigPose, DeathPlaysTheDeathClipAndFacingPicksTheSide)
 {
     SLUG_REQUIRE_BAKED(anims);
-    Sim sim { MakeFlatConfig(), &anims };
+    Sim sim { MakeFlatConfig() };
     sim.Step(2);
     sim.Hold(eAction::Left);
     sim.Step(3);
@@ -290,7 +290,7 @@ TEST(PlayerRigPose, DeathPlaysTheDeathClipAndFacingPicksTheSide)
 TEST(PlayerRigFeet, IdleAndRunLowerBodyFeetSitOnTheGround)
 {
     SLUG_REQUIRE_BAKED(anims);
-    Sim sim { MakeFlatConfig(), &anims };
+    Sim sim { MakeFlatConfig() };
     sim.Step(3);
 
     const PlayerRig& rig = sim.State().GetRig();
@@ -319,7 +319,7 @@ TEST(PlayerRigFeet, IdleAndRunLowerBodyFeetSitOnTheGround)
 TEST(PlayerRigFeet, RunCycleOriginNeverMovesVerticallyAndAnchorDriftIsAtMostTwoPixels)
 {
     SLUG_REQUIRE_BAKED(anims);
-    Sim sim { MakeFlatConfig(), &anims };
+    Sim sim { MakeFlatConfig() };
     sim.Hold(eAction::Right);
     sim.Step(2);
 
@@ -364,7 +364,7 @@ TEST(PlayerRigFeet, RunCycleOriginNeverMovesVerticallyAndAnchorDriftIsAtMostTwoP
 TEST(PlayerRigFeet, CrouchAndIdleBodiesAlsoStandOnTheGround)
 {
     SLUG_REQUIRE_BAKED(anims);
-    Sim sim { MakeFlatConfig(), &anims };
+    Sim sim { MakeFlatConfig() };
     sim.Hold(eAction::Down);
     sim.Step(5);
 
