@@ -301,21 +301,11 @@ void DefReader::ReadBoxField_(
     float&            _out,
     const bool        _bRequired)
 {
-    if (!_entry.value.HasField(_name))
+    StringView reason;
+    if (!ReadFloatField(_entry.value, _name, _bRequired, _out, reason))
     {
-        if (_bRequired)
-        {
-            Fail(std::format("params.{}.{}", _key, _name), "필수 값이 없습니다");
-        }
-        return;
+        Fail(std::format("params.{}.{}", _key, _name), reason);
     }
-    const Result<double> value = _entry.value.ReadField<double>(_name);
-    if (!value)
-    {
-        Fail(std::format("params.{}.{}", _key, _name), "숫자가 아닙니다");
-        return;
-    }
-    _out = static_cast<float>(value.GetValue());
 }
 
 bool DefReader::NumArray(

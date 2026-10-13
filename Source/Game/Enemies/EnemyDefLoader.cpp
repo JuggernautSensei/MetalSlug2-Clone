@@ -37,13 +37,13 @@ private:
     [[nodiscard]] bool Finish_();
 
     [[nodiscard]] bool BuildChain_(StringView _name, int _depth, Chain& _out);
-    [[nodiscard]] bool CheckKeys_(const Chain& _chain, StringView _defName, Span<const char* const> _allowed);
+    [[nodiscard]] bool CheckKeys_(const Chain& _chain, StringView _defName, Span<const StringView> _allowed);
 
     [[nodiscard]] bool CheckObjectKeys_(
         const StringView        _def,
         const StringView        _field,
         const JsonReader&       _object,
-        Span<const char* const> _allowed);
+        Span<const StringView> _allowed);
 
     [[nodiscard]] std::optional<JsonReader> Find_(const Chain& _chain, StringView _key) const;
     [[nodiscard]] Entries                   Merge_(const Chain& _chain, StringView _key) const;
@@ -128,9 +128,9 @@ private:
     HashMap<String, int> m_rawIndex = {};
 };
 
-constexpr ARRAY<const char*, 4>  kRootKeys   = { "note", "version", "globals", "defs" };
-constexpr ARRAY<const char*, 5>  kGlobalKeys = { "note", "dpsRef", "activationMarginPx", "despawnBehindCameraPx", "despawnBelowCameraPx" };
-constexpr ARRAY<const char*, 27> kEnemyKeys  = {
+constexpr ARRAY<StringView, 4>  kRootKeys   = { "note", "version", "globals", "defs" };
+constexpr ARRAY<StringView, 5>  kGlobalKeys = { "note", "dpsRef", "activationMarginPx", "despawnBehindCameraPx", "despawnBelowCameraPx" };
+constexpr ARRAY<StringView, 27> kEnemyKeys  = {
     "note",
     "extends",
     "abstract",
@@ -159,7 +159,7 @@ constexpr ARRAY<const char*, 27> kEnemyKeys  = {
     "centerAnchor",
     "artFacing"
 };
-constexpr ARRAY<const char*, 27> kProjectileKeys = {
+constexpr ARRAY<StringView, 27> kProjectileKeys = {
     "note",
     "extends",
     "abstract",
@@ -189,11 +189,11 @@ constexpr ARRAY<const char*, 27> kProjectileKeys = {
     "scale"
 };
 constexpr ARRAY<const char*, 11> kKnownKinds       = { "walker", "vehicle", "turret", "flyer", "boss", "prop", "npc", "item", "projectile", "effect", "debris" };
-constexpr ARRAY<const char*, 4>  kActivationKeys   = { "note", "mode", "marginPx", "latch" };
-constexpr ARRAY<const char*, 8>  kPhysicsKeys      = { "note", "gravity", "maxFall", "speed", "jumpVy", "dropSpeed", "footHalfWidth", "useGravity" };
-constexpr ARRAY<const char*, 10> kWeaponKeys       = { "note", "projectile", "muzzle", "aim", "tilt", "arc", "muzzleFx", "hitbox", "motionClip", "effects" };
-constexpr ARRAY<const char*, 5>  kWeaponEffectKeys = { "note", "clip", "offset", "frame", "depth" };
-constexpr ARRAY<const char*, 17> kDeathKeys        = {
+constexpr ARRAY<StringView, 4>  kActivationKeys   = { "note", "mode", "marginPx", "latch" };
+constexpr ARRAY<StringView, 8>  kPhysicsKeys      = { "note", "gravity", "maxFall", "speed", "jumpVy", "dropSpeed", "footHalfWidth", "useGravity" };
+constexpr ARRAY<StringView, 10> kWeaponKeys       = { "note", "projectile", "muzzle", "aim", "tilt", "arc", "muzzleFx", "hitbox", "motionClip", "effects" };
+constexpr ARRAY<StringView, 5>  kWeaponEffectKeys = { "note", "clip", "offset", "frame", "depth" };
+constexpr ARRAY<StringView, 17> kDeathKeys        = {
     "note",
     "bomb",
     "slash",
@@ -212,36 +212,19 @@ constexpr ARRAY<const char*, 17> kDeathKeys        = {
     "bombVelocity",
     "fx"
 };
-constexpr ARRAY<const char*, 5> kClipKeys      = { "note", "name", "frames", "sec", "loop" };
-constexpr ARRAY<const char*, 5> kBoxKeys       = { "note", "w", "h", "cx", "cy" };
-constexpr ARRAY<const char*, 7> kFxKeys        = { "note", "clip", "offset", "delay", "depth", "debris", "mirror" };
-constexpr ARRAY<const char*, 4> kSpeedRampKeys = { "note", "from", "accel", "max" };
-constexpr ARRAY<const char*, 4> kAnimKeys      = { "note", "begin", "fly", "land" };
-constexpr ARRAY<const char*, 4> kExplosionKeys = { "note", "fx", "offset", "sfx" };
-constexpr ARRAY<const char*, 6> kBlastKeys     = { "note", "w", "h", "up", "sec", "damage" };
-constexpr ARRAY<const char*, 3> kDropKeys      = { "note", "item", "count" };
-constexpr ARRAY<const char*, 3> kOverlayKeys   = { "note", "clip", "offset" };
-constexpr ARRAY<const char*, 3> kTiltKeys      = { "note", "threshold", "dy" };
-constexpr ARRAY<const char*, 3> kArcKeys       = { "note", "minVx", "maxVx" };
-constexpr ARRAY<const char*, 8> kExtraBoxKeys  = { "note", "id", "kind", "w", "h", "offset", "frames", "damage" };
-constexpr ARRAY<const char*, 8> kHitboxKeys    = { "note", "w", "h", "cx", "cy", "lifeSec", "damage", "follow" };
-
-namespace
-{
-[[nodiscard]] bool Contains_(
-    const Span<const char* const> _list,
-    const StringView              _key)
-{
-    for (const char* pItem: _list)
-    {
-        if (_key == pItem)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-}   // namespace
+constexpr ARRAY<StringView, 5> kClipKeys      = { "note", "name", "frames", "sec", "loop" };
+constexpr ARRAY<StringView, 5> kBoxKeys       = { "note", "w", "h", "cx", "cy" };
+constexpr ARRAY<StringView, 7> kFxKeys        = { "note", "clip", "offset", "delay", "depth", "debris", "mirror" };
+constexpr ARRAY<StringView, 4> kSpeedRampKeys = { "note", "from", "accel", "max" };
+constexpr ARRAY<StringView, 4> kAnimKeys      = { "note", "begin", "fly", "land" };
+constexpr ARRAY<StringView, 4> kExplosionKeys = { "note", "fx", "offset", "sfx" };
+constexpr ARRAY<StringView, 6> kBlastKeys     = { "note", "w", "h", "up", "sec", "damage" };
+constexpr ARRAY<StringView, 3> kDropKeys      = { "note", "item", "count" };
+constexpr ARRAY<StringView, 3> kOverlayKeys   = { "note", "clip", "offset" };
+constexpr ARRAY<StringView, 3> kTiltKeys      = { "note", "threshold", "dy" };
+constexpr ARRAY<StringView, 3> kArcKeys       = { "note", "minVx", "maxVx" };
+constexpr ARRAY<StringView, 8> kExtraBoxKeys  = { "note", "id", "kind", "w", "h", "offset", "frames", "damage" };
+constexpr ARRAY<StringView, 8> kHitboxKeys    = { "note", "w", "h", "cx", "cy", "lifeSec", "damage", "follow" };
 
 EnemyDefParser::EnemyDefParser(
     EnemyDefLibrary& _library)
@@ -268,22 +251,13 @@ bool EnemyDefParser::ReadNum_(
     float&            _out,
     const bool        _bRequired)
 {
-    if (!_reader.IsObject() || !_reader.HasField(_key))
+    StringView reason;
+    if (ReadFloatField(_reader, _key, _bRequired, _out, reason))
     {
-        if (_bRequired)
-        {
-            Fail_(_def, std::format("{}.{}", _field, _key), "필수 값이 없습니다");
-        }
-        return !_bRequired;
+        return true;
     }
-    const Result<double> value = _reader.ReadField<double>(_key);
-    if (!value)
-    {
-        Fail_(_def, std::format("{}.{}", _field, _key), "숫자가 아닙니다");
-        return false;
-    }
-    _out = static_cast<float>(value.GetValue());
-    return true;
+    Fail_(_def, std::format("{}.{}", _field, _key), reason);
+    return false;
 }
 
 bool EnemyDefParser::ReadInt_(
@@ -310,18 +284,13 @@ bool EnemyDefParser::ReadBool_(
     const StringView  _key,
     bool&             _out)
 {
-    if (!_reader.IsObject() || !_reader.HasField(_key))
+    StringView reason;
+    if (ReadBoolField(_reader, _key, false, _out, reason))
     {
         return true;
     }
-    const Result<bool> value = _reader.ReadField<bool>(_key);
-    if (!value)
-    {
-        Fail_(_def, std::format("{}.{}", _field, _key), "true/false 가 아닙니다");
-        return false;
-    }
-    _out = value.GetValue();
-    return true;
+    Fail_(_def, std::format("{}.{}", _field, _key), reason);
+    return false;
 }
 
 bool EnemyDefParser::ReadStr_(
@@ -332,22 +301,13 @@ bool EnemyDefParser::ReadStr_(
     String&           _out,
     const bool        _bRequired)
 {
-    if (!_reader.IsObject() || !_reader.HasField(_key))
+    StringView reason;
+    if (ReadStringField(_reader, _key, _bRequired, _out, reason))
     {
-        if (_bRequired)
-        {
-            Fail_(_def, std::format("{}.{}", _field, _key), "필수 값이 없습니다");
-        }
-        return !_bRequired;
+        return true;
     }
-    const Result<String> value = _reader.ReadField<String>(_key);
-    if (!value)
-    {
-        Fail_(_def, std::format("{}.{}", _field, _key), "문자열이 아닙니다");
-        return false;
-    }
-    _out = value.GetValue();
-    return true;
+    Fail_(_def, std::format("{}.{}", _field, _key), reason);
+    return false;
 }
 
 bool EnemyDefParser::ReadVec2_(
@@ -357,50 +317,31 @@ bool EnemyDefParser::ReadVec2_(
     const StringView  _key,
     Vec2&             _out)
 {
-    if (!_reader.IsObject() || !_reader.HasField(_key))
+    StringView reason;
+    if (ReadVec2Field(_reader, _key, false, _out, reason))
     {
         return true;
     }
-    const Result<JsonReader> array = _reader.FindField(_key);
-    if (!array || !array->IsArray() || array->GetSize() != 2)
-    {
-        Fail_(_def, std::format("{}.{}", _field, _key), "[x, y] 배열이 아닙니다");
-        return false;
-    }
-    ARRAY<float, 2> values = {};
-    int             i      = 0;
-    for (const JsonReader item: array->GetArray())
-    {
-        const Result<double> value = item.Read<double>();
-        if (!value)
-        {
-            Fail_(_def, std::format("{}.{}", _field, _key), "숫자가 아닌 원소가 있습니다");
-            return false;
-        }
-        values[i++] = static_cast<float>(value.GetValue());
-    }
-    _out = { values[0], values[1] };
-    return true;
+    Fail_(_def, std::format("{}.{}", _field, _key), reason);
+    return false;
 }
 
 bool EnemyDefParser::CheckObjectKeys_(
     const StringView              _def,
     const StringView              _field,
     const JsonReader&             _object,
-    const Span<const char* const> _allowed)
+    const Span<const StringView> _allowed)
 {
     if (!_object.IsObject())
     {
         Fail_(_def, _field, "객체가 필요합니다");
         return false;
     }
-    for (const Member& member: _object.GetObject())
+    StringView badKey;
+    if (!CheckJsonKeys(_object, _allowed, badKey))
     {
-        if (!Contains_(_allowed, member.first))
-        {
-            Fail_(_def, _field, std::format("알 수 없는 키 '{}'", member.first));
-            return false;
-        }
+        Fail_(_def, _field, std::format("알 수 없는 키 '{}'", badKey));
+        return false;
     }
     return true;
 }
@@ -492,7 +433,7 @@ bool EnemyDefParser::BuildChain_(
         return false;
     }
     const RawDef& raw = m_raw[static_cast<size_t>(it->second)];
-    if (raw.reader.HasField("extends"))
+    if (HasKey(raw.reader, "extends"))
     {
         const Result<String> parent = raw.reader.ReadField<String>("extends");
         if (!parent)
@@ -512,7 +453,7 @@ bool EnemyDefParser::BuildChain_(
 bool EnemyDefParser::CheckKeys_(
     const Chain&                  _chain,
     const StringView              _defName,
-    const Span<const char* const> _allowed)
+    const Span<const StringView> _allowed)
 {
     for (const JsonReader& reader: _chain)
     {
@@ -530,7 +471,7 @@ std::optional<JsonReader> EnemyDefParser::Find_(
 {
     for (size_t i = _chain.size(); i > 0; --i)
     {
-        if (_chain[i - 1].HasField(_key))
+        if (HasKey(_chain[i - 1], _key))
         {
             const Result<JsonReader> field = _chain[i - 1].FindField(_key);
             if (field)
@@ -549,7 +490,7 @@ EnemyDefParser::Entries EnemyDefParser::Merge_(
     Entries entries;
     for (const JsonReader& reader: _chain)
     {
-        if (!reader.HasField(_key))
+        if (!HasKey(reader, _key))
         {
             continue;
         }
@@ -649,7 +590,7 @@ bool EnemyDefParser::ParseProjectile_(
         Fail_(name, "anim", "{fly[, begin]} 가 필요합니다");
         return false;
     }
-    if (!anim->HasField("fly"))
+    if (!HasKey(*anim, "fly"))
     {
         Fail_(name, "anim.fly", "필수 값이 없습니다");
         return false;
@@ -660,7 +601,7 @@ bool EnemyDefParser::ParseProjectile_(
         {
             return false;
         }
-        if (anim->HasField("begin"))
+        if (HasKey(*anim, "begin"))
         {
             const Result<JsonReader> begin = anim->FindField("begin");
             if (!begin || !ReadClip_(name, "anim.begin", begin.GetValue(), projectile.begin))
@@ -668,7 +609,7 @@ bool EnemyDefParser::ParseProjectile_(
                 return false;
             }
         }
-        if (anim->HasField("land"))
+        if (HasKey(*anim, "land"))
         {
             const Result<JsonReader> land = anim->FindField("land");
             if (!land || !ReadClip_(name, "anim.land", land.GetValue(), projectile.land))
@@ -686,7 +627,7 @@ bool EnemyDefParser::ParseProjectile_(
         {
             return false;
         }
-        if (explosion->HasField("sfx") && !ReadStr_(name, "explosion", *explosion, "sfx", projectile.explosionSfx, true))
+        if (HasKey(*explosion, "sfx") && !ReadStr_(name, "explosion", *explosion, "sfx", projectile.explosionSfx, true))
         {
             return false;
         }
@@ -805,7 +746,7 @@ bool EnemyDefParser::ParseWeapon_(
         }
     }
 
-    if (_reader.HasField("tilt"))
+    if (HasKey(_reader, "tilt"))
     {
         const Result<JsonReader> tilt = _reader.FindField("tilt");
         if (!tilt
@@ -816,7 +757,7 @@ bool EnemyDefParser::ParseWeapon_(
             return false;
         }
     }
-    if (_reader.HasField("arc"))
+    if (HasKey(_reader, "arc"))
     {
         const Result<JsonReader> arc = _reader.FindField("arc");
         if (!arc
@@ -828,7 +769,7 @@ bool EnemyDefParser::ParseWeapon_(
         }
         _out.bArc = true;
     }
-    if (_reader.HasField("muzzleFx"))
+    if (HasKey(_reader, "muzzleFx"))
     {
         const Result<JsonReader> fx = _reader.FindField("muzzleFx");
         if (!fx || !ReadFx_(_def, field + ".muzzleFx", fx.GetValue(), _out.muzzleFx))
@@ -840,7 +781,7 @@ bool EnemyDefParser::ParseWeapon_(
     {
         return false;
     }
-    if (_reader.HasField("effects"))
+    if (HasKey(_reader, "effects"))
     {
         const Result<JsonReader> effects = _reader.FindField("effects");
         if (!effects || !effects->IsArray())
@@ -869,7 +810,7 @@ bool EnemyDefParser::ParseWeapon_(
             return false;
         }
     }
-    if (_reader.HasField("hitbox"))
+    if (HasKey(_reader, "hitbox"))
     {
         const Result<JsonReader> hitbox = _reader.FindField("hitbox");
         if (!hitbox || !CheckObjectKeys_(_def, field + ".hitbox", hitbox.GetValue(), kHitboxKeys))
@@ -904,7 +845,7 @@ bool EnemyDefParser::ReadDeathClip_(
     const StringView  _key,
     int&              _out)
 {
-    if (!_death.HasField(_key))
+    if (!HasKey(_death, _key))
     {
         return true;
     }
@@ -956,7 +897,7 @@ bool EnemyDefParser::ParseDeath_(
         return false;
     }
 
-    if (_death.HasField("fx"))
+    if (HasKey(_death, "fx"))
     {
         const Result<JsonReader> fx = _death.FindField("fx");
         if (!fx || !fx->IsArray())
@@ -1367,7 +1308,7 @@ bool EnemyDefParser::AddRoot_(
         return false;
     }
 
-    if (_root.HasField("globals"))
+    if (HasKey(_root, "globals"))
     {
         const Result<JsonReader> globals = _root.FindField("globals");
         EnemyGlobals&            g       = m_lib.m_globals;
@@ -1469,7 +1410,7 @@ Result<EnemyDefLibrary> EnemyDefLibrary::Parse(
     const StringView _json,
     String*          _pMessage)
 {
-    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, eJsonLoadOption::AllowComments);
+    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, kJsonBomComments);
     if (!doc)
     {
         if (_pMessage)
@@ -1498,7 +1439,7 @@ Result<EnemyDefLibrary> EnemyDefLibrary::Load(
     const FilePath& _path,
     String*         _pMessage)
 {
-    Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(_path, eJsonLoadOption::AllowComments);
+    Result<JsonDeserializer> doc = LoadJsonFile(_path, kJsonBomComments);
     if (!doc)
     {
         if (_pMessage)
@@ -1553,7 +1494,7 @@ Result<EnemyDefLibrary> EnemyDefLibrary::LoadDirectory(
     roots.reserve(files.size());
     for (const FilePath& file: files)
     {
-        Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(file, eJsonLoadOption::AllowComments);
+        Result<JsonDeserializer> doc = LoadJsonFile(file, kJsonBomComments);
         if (!doc)
         {
             if (_pMessage)
