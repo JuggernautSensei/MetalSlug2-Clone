@@ -11,8 +11,6 @@
 
 constexpr float kHitFlashSec = 0.5f;   // 피격 연출 최대 길이 (Hit 클립이 없으면 연출 없음)
 
-constexpr size_t kVisualCount = static_cast<size_t>(ePropVisual::Count);
-
 namespace
 {
 [[nodiscard]] uint64_t MixHash_(
@@ -182,19 +180,19 @@ PropHandle PropWorld::SpawnByIndex(
         inst.pos.y += pVar->dy;
     }
 
-    ARRAY<PropVisual, kVisualCount>& vis             = inst.visuals;
-    vis[static_cast<size_t>(ePropVisual::Idle)]      = (pVar && pVar->idle.ref != eVisualRef::None) ? pVar->idle : def.idle;
-    vis[static_cast<size_t>(ePropVisual::Damaged)]   = def.damaged;
-    vis[static_cast<size_t>(ePropVisual::Destroyed)] = def.destroyed;
-    vis[static_cast<size_t>(ePropVisual::Hit)]       = (pVar && pVar->hit.ref != eVisualRef::None) ? pVar->hit : def.hit;
-    vis[static_cast<size_t>(ePropVisual::Landed)]    = def.fall.landed;
+    DIRECT_ENUM_ARRAY<ePropVisual, PropVisual>& vis = inst.visuals;
+    vis[ePropVisual::Idle]                          = (pVar && pVar->idle.ref != eVisualRef::None) ? pVar->idle : def.idle;
+    vis[ePropVisual::Damaged]                       = def.damaged;
+    vis[ePropVisual::Destroyed]                     = def.destroyed;
+    vis[ePropVisual::Hit]                           = (pVar && pVar->hit.ref != eVisualRef::None) ? pVar->hit : def.hit;
+    vis[ePropVisual::Landed]                        = def.fall.landed;
     if (!_params.idleSprite.empty())
     {
-        vis[static_cast<size_t>(ePropVisual::Idle)] = PropVisual { eVisualRef::Sprite, _params.idleSprite };
+        vis[ePropVisual::Idle] = PropVisual { eVisualRef::Sprite, _params.idleSprite };
     }
     if (!_params.destroySprite.empty())
     {
-        vis[static_cast<size_t>(ePropVisual::Destroyed)] = PropVisual { eVisualRef::Sprite, _params.destroySprite };
+        vis[ePropVisual::Destroyed] = PropVisual { eVisualRef::Sprite, _params.destroySprite };
     }
 
     inst.parts = (pVar && !pVar->parts.empty()) ? pVar->parts : def.parts;
@@ -312,7 +310,7 @@ void PropWorld::OnHitEvents(
         damaged.value    = applied;
         m_events.push_back(damaged);
 
-        if (inst.visuals[static_cast<size_t>(ePropVisual::Hit)].ref != eVisualRef::None)
+        if (inst.visuals[ePropVisual::Hit].ref != eVisualRef::None)
         {
             inst.bHitPlaying  = true;
             inst.hitTimerSec  = kHitFlashSec;
@@ -445,16 +443,16 @@ ePropVisual PropWorld::ComputeVisual_(
     {
         return _inst.landTimerSec >= 0.f ? ePropVisual::Landed : ePropVisual::Idle;
     }
-    if (_inst.bDestroyed && _inst.visuals[static_cast<size_t>(ePropVisual::Destroyed)].ref != eVisualRef::None)
+    if (_inst.bDestroyed && _inst.visuals[ePropVisual::Destroyed].ref != eVisualRef::None)
     {
         return ePropVisual::Destroyed;
     }
-    if (_inst.bHitPlaying && _inst.visuals[static_cast<size_t>(ePropVisual::Hit)].ref != eVisualRef::None)
+    if (_inst.bHitPlaying && _inst.visuals[ePropVisual::Hit].ref != eVisualRef::None)
     {
         return ePropVisual::Hit;
     }
     const PropDef& def = m_pLibrary->GetDefs()[static_cast<size_t>(_inst.defIndex)];
-    if (def.damagedAtHp >= 0 && _inst.health.hp > 0 && _inst.health.hp <= def.damagedAtHp && _inst.visuals[static_cast<size_t>(ePropVisual::Damaged)].ref != eVisualRef::None)
+    if (def.damagedAtHp >= 0 && _inst.health.hp > 0 && _inst.health.hp <= def.damagedAtHp && _inst.visuals[ePropVisual::Damaged].ref != eVisualRef::None)
     {
         return ePropVisual::Damaged;
     }
@@ -481,7 +479,7 @@ void PropWorld::UpdateVisual_(
     {
         return;
     }
-    const PropVisual& pv = _inst.visuals[static_cast<size_t>(next)];
+    const PropVisual& pv = _inst.visuals[next];
     if (bChange)
     {
         _inst.bVisualBound = true;
@@ -696,7 +694,7 @@ namespace
     const SpriteLibrary*    _pSprites,
     AnimFrame&              _out)
 {
-    const PropVisual& pv = _inst.visuals[static_cast<size_t>(_inst.visual)];
+    const PropVisual& pv = _inst.visuals[_inst.visual];
     if (pv.ref == eVisualRef::Sprite)
     {
         const SpriteInfo* pSprite = _pSprites != nullptr ? _pSprites->Find(pv.name) : nullptr;

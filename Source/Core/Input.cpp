@@ -110,14 +110,13 @@ bool InputHistory::WasPressedWithin(
     const eAction _action,
     const int     _frames) const
 {
-    const size_t   window = static_cast<size_t>(_frames < 1 ? 1 : (_frames > static_cast<int>(kCapacity) - 1 ? static_cast<int>(kCapacity) - 1 : _frames));
-    const uint16_t mask   = static_cast<uint16_t>(1u << static_cast<unsigned>(_action));
+    const size_t window = static_cast<size_t>(_frames < 1 ? 1 : (_frames > static_cast<int>(kCapacity) - 1 ? static_cast<int>(kCapacity) - 1 : _frames));
 
     for (size_t ago = 0; ago < window && ago < m_count; ++ago)
     {
         const size_t index   = (m_head + kCapacity - ago) % kCapacity;
-        const bool   bNow    = (m_frames[index].held & mask) != 0;
-        const bool   bBefore = (ago + 1 < m_count) ? ((m_frames[(index + kCapacity - 1) % kCapacity].held & mask) != 0) : false;
+        const bool   bNow    = m_frames[index].held.Has(_action);
+        const bool   bBefore = (ago + 1 < m_count) ? m_frames[(index + kCapacity - 1) % kCapacity].held.Has(_action) : false;
         if (bNow && !bBefore)
         {
             return true;
@@ -129,13 +128,19 @@ bool InputHistory::WasPressedWithin(
 bool InputFrame::IsHeld(
     const eAction _action) const
 {
-    return ((held >> static_cast<unsigned>(_action)) & 1u) != 0;
+    return held.Has(_action);
 }
 
 void InputFrame::Set(
     const eAction _action,
     const bool    _bHeld)
 {
-    const uint16_t mask = static_cast<uint16_t>(1u << static_cast<unsigned>(_action));
-    held                = _bHeld ? static_cast<uint16_t>(held | mask) : static_cast<uint16_t>(held & ~mask);
+    if (_bHeld)
+    {
+        held.Enable(_action);
+    }
+    else
+    {
+        held.Disable(_action);
+    }
 }

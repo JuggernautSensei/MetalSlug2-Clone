@@ -2,13 +2,17 @@
 #include <cstdint>
 #include <cstring>
 
+#include <JugX/EnumArray.h>
+#include <JugX/EnumFlags.h>
 #include <JugX/MemoryHasher.h>
 #include <JugX/Typedef.h>
 
 using jug::ARRAY;
+using jug::DIRECT_ENUM_ARRAY;
 using jug::FilePath;
 using jug::Fnv1a;
 using jug::HashMap;
+using jug::IndexedFlags;
 using jug::RbSet;
 using jug::Span;
 using jug::SteadyClock;

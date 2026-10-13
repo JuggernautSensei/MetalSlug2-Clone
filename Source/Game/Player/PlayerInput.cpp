@@ -2,7 +2,7 @@
 
 void PlayerInputBuffer::Reset()
 {
-    m_ticksSincePress.fill(kNever);
+    m_ticksSincePress.Fill(kNever);
 }
 
 void PlayerInputBuffer::Update(
@@ -13,11 +13,11 @@ void PlayerInputBuffer::Update(
         const eAction action = static_cast<eAction>(i);
         if (_history.WasPressed(action))
         {
-            m_ticksSincePress[i] = 0;
+            m_ticksSincePress[action] = 0;
         }
-        else if (m_ticksSincePress[i] < kNever)
+        else if (m_ticksSincePress[action] < kNever)
         {
-            ++m_ticksSincePress[i];
+            ++m_ticksSincePress[action];
         }
     }
 }
@@ -26,13 +26,13 @@ bool PlayerInputBuffer::IsBuffered(
     const eAction _action,
     const int     _windowTicks) const
 {
-    return m_ticksSincePress[static_cast<size_t>(_action)] < _windowTicks;
+    return m_ticksSincePress[_action] < _windowTicks;
 }
 
 void PlayerInputBuffer::Consume(
     const eAction _action)
 {
-    m_ticksSincePress[static_cast<size_t>(_action)] = kNever;
+    m_ticksSincePress[_action] = kNever;
 }
 
 PlayerCommand PlayerInputBuffer::Read(

@@ -76,7 +76,7 @@ Vector<uint8_t> SerializeReplay(
     Append_<uint32_t>(bytes, static_cast<uint32_t>(_replay.frames.size()));
     for (const InputFrame& frame: _replay.frames)
     {
-        Append_<uint16_t>(bytes, frame.held);
+        Append_<uint16_t>(bytes, frame.held.GetFlags());
     }
     return bytes;
 }
@@ -125,10 +125,12 @@ Result<ReplayData> DeserializeReplay(
     replay.frames.resize(frameCount);
     for (InputFrame& frame: replay.frames)
     {
-        if (!reader.Read(frame.held))
+        uint16_t held = 0;
+        if (!reader.Read(held))
         {
             return Error { eError::InvalidData };
         }
+        frame.held = IndexedFlags<eAction> { held };
     }
     return replay;
 }

@@ -79,7 +79,7 @@ public:
     [[nodiscard]] AnimFrame GetTimeDigitFrame(int _digit) const;
 
 private:
-    ARRAY<AnimFrame, static_cast<size_t>(eFontColor::Count)> m_strips    = {};
-    AnimFrame                                                m_timeStrip = {};
-    bool                                                     m_bReady    = false;
+    DIRECT_ENUM_ARRAY<eFontColor, AnimFrame> m_strips    = {};
+    AnimFrame                                m_timeStrip = {};
+    bool                                     m_bReady    = false;
 };

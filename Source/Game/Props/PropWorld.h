@@ -60,17 +60,17 @@ enum class ePropVisual : uint8_t
 
 struct PropInstance
 {
-    PropHandle                                                 id          = kNoProp;
-    int                                                        defIndex    = -1;
-    int                                                        variant     = -1;
-    Vec2                                                       pos         = { 0.f, 0.f };
-    int                                                        depth       = kPropDepthBack;
-    float                                                      cullMargin  = 200.f;
-    float                                                      sortOffsetY = 0.f;
-    bool                                                       bSortByX    = false;
-    Health                                                     health      = {};
-    ARRAY<PropVisual, static_cast<size_t>(ePropVisual::Count)> visuals     = {};
-    Vector<PropPart>                                           parts       = {};
+    PropHandle                                 id          = kNoProp;
+    int                                        defIndex    = -1;
+    int                                        variant     = -1;
+    Vec2                                       pos         = { 0.f, 0.f };
+    int                                        depth       = kPropDepthBack;
+    float                                      cullMargin  = 200.f;
+    float                                      sortOffsetY = 0.f;
+    bool                                       bSortByX    = false;
+    Health                                     health      = {};
+    DIRECT_ENUM_ARRAY<ePropVisual, PropVisual> visuals     = {};
+    Vector<PropPart>                           parts       = {};
 
     ePropVisual visual            = ePropVisual::Idle;
     bool        bVisualBound      = false;

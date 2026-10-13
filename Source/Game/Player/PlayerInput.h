@@ -29,5 +29,5 @@ public:
 private:
     static constexpr int kNever = 1'000'000;
 
-    ARRAY<int, kActionCount> m_ticksSincePress = {};
+    DIRECT_ENUM_ARRAY<eAction, int> m_ticksSincePress = {};
 };

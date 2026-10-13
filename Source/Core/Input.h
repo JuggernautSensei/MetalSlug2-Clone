@@ -5,7 +5,7 @@
 
 #include "Base/Types.h"
 
-enum class eAction : uint8_t
+enum class eAction : uint16_t
 {
     Left,
     Right,
@@ -23,7 +23,7 @@ inline constexpr size_t kActionCount = static_cast<size_t>(eAction::Count);
 
 struct InputFrame
 {
-    uint16_t held = 0;
+    IndexedFlags<eAction> held = {};
 
     [[nodiscard]] bool IsHeld(const eAction _action) const;
 

@@ -111,11 +111,12 @@ bool BitmapFont::Init(
     m_bReady = false;
     for (size_t i = 0; i < static_cast<size_t>(eFontColor::Count); ++i)
     {
-        m_strips[i] = {};
-        if (const SpriteInfo* pInfo = _sprites.Find(GetFontSpriteName_(static_cast<eFontColor>(i))); pInfo && !pInfo->bStandalone)
+        const eFontColor color = static_cast<eFontColor>(i);
+        m_strips[color]        = {};
+        if (const SpriteInfo* pInfo = _sprites.Find(GetFontSpriteName_(color)); pInfo && !pInfo->bStandalone)
         {
-            m_strips[i] = pInfo->frame;
-            m_bReady    = true;
+            m_strips[color] = pInfo->frame;
+            m_bReady        = true;
         }
     }
     m_timeStrip = {};
@@ -131,7 +132,7 @@ AnimFrame BitmapFont::GetGlyphFrame(
     const bool       _bBold,
     const int        _glyph) const
 {
-    const AnimFrame& strip = m_strips[static_cast<size_t>(_color)];
+    const AnimFrame& strip = m_strips[_color];
     if (strip.IsEmpty() || _glyph < 0 || _glyph >= kGlyphColumns)
     {
         return {};
