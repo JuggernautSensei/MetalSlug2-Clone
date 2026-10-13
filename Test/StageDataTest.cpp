@@ -115,7 +115,7 @@ TEST(StageData, PlayBgmParsesFadeOutSecAndRejectsBadValues)
     EXPECT_FLOAT_EQ(data.sections[0].actions[1].fadeOutSec, 2.f);
 
     EXPECT_NE(LoadError(OneSection_(R"J([{"type":"playBgm","name":"A","fadeOutSec":-1}])J")).find("'fadeOutSec' must be >= 0"), String::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"playBgm","name":"A","fadeOutSec":"2"}])J")).find("'fadeOutSec' must be a number"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"playBgm","name":"A","fadeOutSec":"2"}])J")).find("fadeOutSec: 숫자가 아닙니다"), String::npos);
 }
 
 TEST(StageData, ShouldRunActionTruthTable)
@@ -235,7 +235,7 @@ TEST(StageDataErrors, UnknownTopLevelKey)
     String json = OneSection_("[]");
     json.insert(1, R"J("bogus":1,)J");
     const String error = LoadError(json);
-    EXPECT_NE(error.find("unknown key 'bogus'"), String::npos) << error;
+    EXPECT_NE(error.find("알 수 없는 키 'bogus'"), String::npos) << error;
     EXPECT_NE(error.find("root"), String::npos) << error;
 }
 
@@ -244,7 +244,7 @@ TEST(StageDataErrors, UnknownActionKeyReportsSectionAndActionIndex)
     const String error = LoadError(OneSection_(R"J([{"type":"banner","text":"x","seconds":1},{"type":"banner","text":"y","seconds":1,"colour":"red"}])J"));
     EXPECT_NE(error.find("sections[0] 's0'"), String::npos) << error;
     EXPECT_NE(error.find("action #1"), String::npos) << error;
-    EXPECT_NE(error.find("unknown key 'colour'"), String::npos) << error;
+    EXPECT_NE(error.find("알 수 없는 키 'colour'"), String::npos) << error;
 }
 
 TEST(StageDataErrors, UnknownActionTypeAndEnumValues)
@@ -257,12 +257,12 @@ TEST(StageDataErrors, UnknownActionTypeAndEnumValues)
 
 TEST(StageDataErrors, MissingRequiredAndWrongTypes)
 {
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","seconds":1}])J")).find("missing required field 'text'"), String::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","text":5,"seconds":1}])J")).find("'text' must be a string"), String::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","text":"x","seconds":"1"}])J")).find("'seconds' must be a number"), String::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":1,"repeat":{"count":2.5}}])J")).find("'count' must be an integer"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","seconds":1}])J")).find("text: 필수 값이 없습니다"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","text":5,"seconds":1}])J")).find("text: 문자열이 아닙니다"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","text":"x","seconds":"1"}])J")).find("seconds: 숫자가 아닙니다"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":1,"repeat":{"count":2.5}}])J")).find("count: 정수가 아닙니다"), String::npos);
     EXPECT_NE(LoadError(OneSection_(R"J([{"type":"banner","text":"x","seconds":1,"delay":-1}])J")).find("'delay' must be >= 0"), String::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"cameraMove","to":[1],"seconds":1}])J")).find("array of 2 numbers"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"cameraMove","to":[1],"seconds":1}])J")).find("[x, y] 숫자 배열이 아닙니다"), String::npos);
 }
 
 TEST(StageDataErrors, SpawnPositionRules)
@@ -284,18 +284,18 @@ TEST(StageDataErrors, OriginAndHalfHeightRules)
 
 TEST(StageDataErrors, KindSpecificFields)
 {
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"collider","def":"box","x":1,"y":2}])J")).find("missing required field 'size'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"collider","def":"box","x":1,"y":2}])J")).find("size: 필수 값이 없습니다"), String::npos);
     EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"size":[1,1]}])J")).find("only valid for kind 'collider'"), String::npos);
     EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"decor","def":"anim_decor","x":1,"y":2}])J")).find("needs 'anim'"), String::npos);
     EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"prop","def":"a","x":1,"y":2,"anim":"Parker"}])J")).find("only valid for kind 'decor'"), String::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"params":[1,2]}])J")).find("'params' must be an object"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawn","kind":"enemy","def":"a","x":1,"y":2,"params":[1,2]}])J")).find("params: 객체가 아닙니다"), String::npos);
 }
 
 TEST(StageDataErrors, WaveEntryRules)
 {
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawnWave","entries":[{"kind":"enemy","def":"a","x":1,"y":2}]}])J")).find("missing required field 'delay'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawnWave","entries":[{"kind":"enemy","def":"a","x":1,"y":2}]}])J")).find("delay: 필수 값이 없습니다"), String::npos);
     EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawnWave","entries":[]}])J")).find("must not be empty"), String::npos);
-    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawnWave","entries":[{"delay":1,"type":"spawn","kind":"enemy","def":"a","x":1,"y":2}]}])J")).find("unknown key 'type'"), String::npos);
+    EXPECT_NE(LoadError(OneSection_(R"J([{"type":"spawnWave","entries":[{"delay":1,"type":"spawn","kind":"enemy","def":"a","x":1,"y":2}]}])J")).find("알 수 없는 키 'type'"), String::npos);
 }
 
 TEST(StageDataErrors, WaveTimeRepeatRules)

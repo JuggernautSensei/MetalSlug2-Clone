@@ -827,16 +827,11 @@ bool Parser::GetField_(
     std::optional<JsonReader>& _out)
 {
     _out.reset();
-    if (!_obj.HasField(_key))
+    if (!HasKey(_obj, _key))
     {
-        if (_bRequired)
-        {
-            return Fail_(_where, std::format("missing required field '{}'", _key));
-        }
-        return true;
+        return !_bRequired || Fail_(_where, std::format("{}: 필수 값이 없습니다", _key));
     }
-    const Result<JsonReader> found = _obj.FindField(_key);
-    _out                           = found.GetValue();
+    _out = _obj.FindField(_key).GetValue();
     return true;
 }
 
@@ -848,25 +843,8 @@ bool Parser::GetNumber_(
     double&           _out,
     bool* const       _pFound)
 {
-    std::optional<JsonReader> field = std::nullopt;
-    if (!GetField_(_obj, _where, _key, _bRequired, field))
-    {
-        return false;
-    }
-    if (_pFound)
-    {
-        *_pFound = field.has_value();
-    }
-    if (!field)
-    {
-        return true;
-    }
-    if (!field->IsNumber())
-    {
-        return Fail_(_where, std::format("field '{}' must be a number", _key));
-    }
-    _out = field->Read<double>().GetValue();
-    return true;
+    StringView reason;
+    return ReadNumberField(_obj, _key, _bRequired, _out, reason, _pFound) || Fail_(_where, std::format("{}: {}", _key, reason));
 }
 
 bool Parser::GetFloat_(
@@ -908,7 +886,7 @@ bool Parser::GetInt_(
     {
         if (value != std::floor(value) || std::abs(value) > 2147483647.0)
         {
-            return Fail_(_where, std::format("field '{}' must be an integer", _key));
+            return Fail_(_where, std::format("{}: 정수가 아닙니다", _key));
         }
         _out = static_cast<int>(value);
     }
@@ -923,25 +901,8 @@ bool Parser::GetBool_(
     bool&             _out,
     bool* const       _pFound)
 {
-    std::optional<JsonReader> field = std::nullopt;
-    if (!GetField_(_obj, _where, _key, _bRequired, field))
-    {
-        return false;
-    }
-    if (_pFound)
-    {
-        *_pFound = field.has_value();
-    }
-    if (!field)
-    {
-        return true;
-    }
-    if (!field->IsBool())
-    {
-        return Fail_(_where, std::format("field '{}' must be a boolean", _key));
-    }
-    _out = field->Read<bool>().GetValue();
-    return true;
+    StringView reason;
+    return ReadBoolField(_obj, _key, _bRequired, _out, reason, _pFound) || Fail_(_where, std::format("{}: {}", _key, reason));
 }
 
 bool Parser::GetString_(
@@ -952,25 +913,8 @@ bool Parser::GetString_(
     String&           _out,
     bool* const       _pFound)
 {
-    std::optional<JsonReader> field = std::nullopt;
-    if (!GetField_(_obj, _where, _key, _bRequired, field))
-    {
-        return false;
-    }
-    if (_pFound)
-    {
-        *_pFound = field.has_value();
-    }
-    if (!field)
-    {
-        return true;
-    }
-    if (!field->IsString())
-    {
-        return Fail_(_where, std::format("field '{}' must be a string", _key));
-    }
-    _out = field->Read<String>().GetValue();
-    return true;
+    StringView reason;
+    return ReadStringField(_obj, _key, _bRequired, _out, reason, _pFound) || Fail_(_where, std::format("{}: {}", _key, reason));
 }
 
 bool Parser::GetVec2_(
@@ -981,35 +925,8 @@ bool Parser::GetVec2_(
     Vec2&             _out,
     bool* const       _pFound)
 {
-    std::optional<JsonReader> field = std::nullopt;
-    if (!GetField_(_obj, _where, _key, _bRequired, field))
-    {
-        return false;
-    }
-    if (_pFound)
-    {
-        *_pFound = field.has_value();
-    }
-    if (!field)
-    {
-        return true;
-    }
-    if (!field->IsArray() || field->GetSize() != 2)
-    {
-        return Fail_(_where, std::format("field '{}' must be an array of 2 numbers", _key));
-    }
-    ARRAY<float, 2> values = { 0.f, 0.f };
-    int             index  = 0;
-    for (const JsonReader element: field->GetArray())
-    {
-        if (!element.IsNumber())
-        {
-            return Fail_(_where, std::format("field '{}' must be an array of 2 numbers", _key));
-        }
-        values[index++] = static_cast<float>(element.Read<double>().GetValue());
-    }
-    _out = { values[0], values[1] };
-    return true;
+    StringView reason;
+    return ReadVec2Field(_obj, _key, _bRequired, _out, reason, _pFound) || Fail_(_where, std::format("{}: {}", _key, reason));
 }
 
 bool Parser::GetObject_(
@@ -1025,7 +942,7 @@ bool Parser::GetObject_(
     }
     if (_out && !_out->IsObject())
     {
-        return Fail_(_where, std::format("field '{}' must be an object", _key));
+        return Fail_(_where, std::format("{}: 객체가 아닙니다", _key));
     }
     return true;
 }
@@ -1043,7 +960,7 @@ bool Parser::GetArray_(
     }
     if (_out && !_out->IsArray())
     {
-        return Fail_(_where, std::format("field '{}' must be an array", _key));
+        return Fail_(_where, std::format("{}: 배열이 아닙니다", _key));
     }
     return true;
 }
@@ -1054,7 +971,7 @@ bool Parser::ExpectObject_(
 {
     if (!_json.IsObject())
     {
-        return Fail_(_where, "must be an object");
+        return Fail_(_where, "객체가 필요합니다");
     }
     return true;
 }
@@ -1068,26 +985,10 @@ bool Parser::CheckKeys_(
     {
         return false;
     }
-    for (const JsonEntry& entry: _obj.GetObject())
+    StringView badKey;
+    if (!CheckJsonKeys(_obj, Span<const StringView> { _allowed.begin(), _allowed.size() }, badKey))
     {
-        const StringView key = entry.first;
-        if (key == "note")
-        {
-            continue;
-        }
-        bool bKnown = false;
-        for (const StringView allowed: _allowed)
-        {
-            if (allowed == key)
-            {
-                bKnown = true;
-                break;
-            }
-        }
-        if (!bKnown)
-        {
-            return Fail_(_where, std::format("unknown key '{}'", key));
-        }
+        return Fail_(_where, std::format("알 수 없는 키 '{}'", badKey));
     }
     return true;
 }
@@ -1376,7 +1277,7 @@ bool Parser::ParseCamera_(
     }
     m_out.camera.bForward = policy == "forward";
 
-    if (camera->HasField("initialBounds"))
+    if (HasKey(*camera, "initialBounds"))
     {
         std::optional<JsonReader> bounds = std::nullopt;
         if (!GetField_(*camera, where, "initialBounds", true, bounds) || !ParseRectArray_(*bounds, where, "initialBounds", m_out.camera.initialBounds))
@@ -1513,7 +1414,7 @@ bool Parser::ParseCameraAnchor_(
         return false;
     }
 
-    if (anchor->HasField("dx"))
+    if (HasKey(*anchor, "dx"))
     {
         std::optional<JsonReader> dx = std::nullopt;
         if (!GetField_(*anchor, where, "dx", true, dx))
@@ -1591,7 +1492,7 @@ bool Parser::ParseSpawn_(
         }
         if (!bKnown)
         {
-            return Fail_(_where, std::format("unknown key '{}'", key));
+            return Fail_(_where, std::format("알 수 없는 키 '{}'", key));
         }
     }
 
@@ -1611,7 +1512,7 @@ bool Parser::ParseSpawn_(
         return false;
     }
 
-    _out.bHasCamera = _obj.HasField("camera");
+    _out.bHasCamera = HasKey(_obj, "camera");
     if (_out.bHasCamera)
     {
         if (_out.bHasX || _out.bHasY)
@@ -1663,7 +1564,7 @@ bool Parser::ParseSpawn_(
         return Fail_(_where, "legacyCenter creature needs 'halfHeight'");
     }
 
-    if (_obj.HasField("repeat"))
+    if (HasKey(_obj, "repeat"))
     {
         std::optional<JsonReader> repeat = std::nullopt;
         if (!GetObject_(_obj, _where, "repeat", true, repeat))
@@ -1682,7 +1583,7 @@ bool Parser::ParseSpawn_(
         _out.bHasRepeat = true;
     }
 
-    if (_obj.HasField("facing"))
+    if (HasKey(_obj, "facing"))
     {
         String facing = {};
         if (!GetString_(_obj, _where, "facing", true, facing))
@@ -1716,7 +1617,7 @@ bool Parser::ParseSpawn_(
         return Fail_(_where, "'cullMargin' must be >= 0");
     }
 
-    if (_obj.HasField("ambush"))
+    if (HasKey(_obj, "ambush"))
     {
         std::optional<JsonReader> ambush = std::nullopt;
         if (!GetObject_(_obj, _where, "ambush", true, ambush))
@@ -1752,7 +1653,7 @@ bool Parser::ParseSpawn_(
             return Fail_(_where, "'size' must be positive");
         }
     }
-    else if (_obj.HasField("size") || _obj.HasField("collisionLayer"))
+    else if (HasKey(_obj, "size") || HasKey(_obj, "collisionLayer"))
     {
         return Fail_(_where, "'size'/'collisionLayer' are only valid for kind 'collider'");
     }
@@ -1781,7 +1682,7 @@ bool Parser::ParseSpawn_(
         return Fail_(_where, "'anim'/'sprite' are only valid for kind 'decor'");
     }
 
-    if (_obj.HasField("params"))
+    if (HasKey(_obj, "params"))
     {
         std::optional<JsonReader> params = std::nullopt;
         if (!GetObject_(_obj, _where, "params", true, params))
@@ -1811,7 +1712,7 @@ bool Parser::ParseActionList_(
     {
         StageAction action   = {};
         String      typeName = "?";
-        if (json.IsObject() && json.HasField("type") && json.FindField("type")->IsString())
+        if (json.IsObject() && HasKey(json, "type") && json.FindField("type")->IsString())
         {
             typeName = json.FindField("type")->Read<String>().GetValue();
         }
@@ -2115,7 +2016,7 @@ bool Parser::ParseSections_(
     for (const JsonReader json: sections->GetArray())
     {
         String id = "?";
-        if (json.IsObject() && json.HasField("id") && json.FindField("id")->IsString())
+        if (json.IsObject() && HasKey(json, "id") && json.FindField("id")->IsString())
         {
             id = json.FindField("id")->Read<String>().GetValue();
         }
@@ -2326,7 +2227,7 @@ Result<StageData> LoadStageFromJson(
         _pMessage->clear();
     }
 
-    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, eJsonLoadOption::AllowBOM);
+    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, kJsonBom);
     if (!doc)
     {
         return MakeFailure_(_pMessage, "JSON syntax error", eError::Parse);

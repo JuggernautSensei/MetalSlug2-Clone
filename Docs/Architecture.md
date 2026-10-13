@@ -26,7 +26,7 @@ C++20 + SDL3 로 만든 메탈슬러그 2 스타일 2D 액션 게임(Mission 4 �
 
 1. **`Source/Render/SpriteBatch.cpp` 의 병렬 디코드 함수** — 비동기 로딩이 약 600줄짜리 3겹 구조(`AsyncLoader` + `MainThreadQueue` + Job/Notice)에서 **함수 하나**로 줄었다. 워커는 "파일 읽기 + PNG 디코드 + 피격 플래시 이미지"만 하고, 메인 스레드가 결과를 요청 순서대로 받아 GPU 텍스처를 만든다. 대가는 Release `stage0` 첫 프레임 약 +100ms(+8%).
 2. **`Source/Base/` 와 `Base/Pch.h`** — 자체 유틸이 JugX 로 교체되었다(`Types`, `Handle`, `HashMap`, `Result/Error`, `Random`, `Assert`, 로그 코어). `using namespace jug` 는 쓰지 않고 `using jug::X;` 로 교체한 이름만 가져온다(`RGBA`, `Min/Max` 같은 MS2 고유 이름과 충돌하기 때문).
-3. **의도적으로 JugX 로 바꾸지 않은 것** — `Vec2`(JugX 는 나눗셈이 역수 곱 + 기본 생성자 미초기화), `RGBA`(8바이트 union, 필드 순서 다름), `Min/Max/Abs/Lerp`(혼합 타입 절삭, 부호비트 차이), `Json`(에러 계약·에디터 의존), `EventLog`. 바꾸면 해시·캡처가 달라질 수 있다.
+3. **의도적으로 JugX 로 바꾸지 않은 것** — `Vec2`(JugX 는 나눗셈이 역수 곱 + 기본 생성자 미초기화), `RGBA`(8바이트 union, 필드 순서 다름), `Min/Max/Abs/Lerp`(혼합 타입 절삭, 부호비트 차이), `EventLog`. 바꾸면 해시·캡처가 달라질 수 있다.
 4. **JugX 서브모듈의 알려진 버그 2건(우회 중)** — `JugX/Random.h:77`(실수 범위 난수가 컴파일 불가), `JugX/Scoped.h`(변환 생성자의 `requires` 조건이 거꾸로). 수정은 로컬에서 끝났고 푸시 대기 중이다. 푸시 후 우회 코드(`Random<float>(rng)*(max-min)+min` 4곳, `Scoped<Base>{ new Derived }` 약 11곳)를 되돌릴 수 있다.
 5. **`Scripts/Verify.ps1`** — 동작 불변을 지키는 유일한 안전망. 기준선은 `Docs/Wayfinder/Baseline*.txt` 에 있고, 의도한 동작 변경이 아니면 `-Update` 를 쓰지 않는다.
 6. **`Assets/anim.json` 의 `loop` 불일치 4건** — `AnimIntegrity.LeftRightTwinsKeepTheSameFootAnchor` 실패의 원인(`MissleTank_Up_Destroy`, `Jeep_ReAimming`, `Jeep_Shot_Ready`, `Jeep_Turn` 은 `_Left=true`, `_Right=false`). 코드가 아니라 데이터 문제이고, 고치면 재생이 달라지므로 사용자 결정 사항이다.
@@ -68,7 +68,7 @@ main (Source/Main.cpp)
 
 ```text
 Source/
-  Base/    JugX 별칭/래퍼(Types, Handle, SlugError, Log) + 게임 고유 유틸(Json, Math/Vec2, RGBA, PhaseTimer)
+  Base/    JugX 별칭/래퍼(Types, Handle, SlugError, Log) + 게임 고유 유틸(Json = JugX JsonReader 별칭 + 정의 파서 공용 필드 리더, Math/Vec2, RGBA, PhaseTimer)
   Core/    App(루프), Input, Replay, FixedStep, AssetPath, Tuning
   Render/  Renderer(SDL), SpriteBatch(그리기 + 병렬 디코드), Animation, SpriteLibrary, Camera
   Audio/   AudioSystem(miniaudio), SoundBank, VoiceAllocator, AudioMath
@@ -201,7 +201,7 @@ Assets/
 |---|---|
 | 동작·결과 불변 | **달성** — 해시 15/15, 캡처 7/7, 튜닝, TraceLoad, 단위 테스트 모두 변경 전과 동일 |
 | JugX 유사성 | **표면은 높음**(서식·이름·주석·헤더), **구조는 중간**(사전조건 assert 습관, Context 묶음, 큰 파일) |
-| 단순성 | **중간 이상** — 가장 복잡하던 로더/인터페이스/중복 제거. 거대 파일, JSON 필드 리더는 남음 |
+| 단순성 | **중간 이상** — 가장 복잡하던 로더/인터페이스/중복 제거. 거대 파일은 남음 (JSON 필드 리더는 JugX `JsonReader` + `Base/Json` 공용 함수로 통합) |
 | 리소스 compact | **달성(추적 파일 기준)** — 추적 파일 2,036 → 429개. `Trash/`(925MB)·`VideoScore`·`Raw`·미참조 이미지·`Sfx_Bingo.mp3` 삭제. 디스크에만 있는 복구 불가 파일은 보존 |
 
 ### 남은 일 (사용자 결정/권한 필요)
