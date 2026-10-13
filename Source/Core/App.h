@@ -54,6 +54,8 @@ private:
     FilePath m_recordPath     = {};
     FilePath m_replayPath     = {};
     bool     m_bReplayHold    = false;
+    bool     m_bHash          = false;
+    uint64_t m_maxTicks       = 0;
     bool     m_bNoAudio       = false;
     bool     m_bNoAsyncLoad   = false;
     bool     m_bEditor        = false;

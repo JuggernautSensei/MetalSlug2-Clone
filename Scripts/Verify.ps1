@@ -1,6 +1,6 @@
 # 동작 불변 검증: 리팩터링 전후 결과가 같은지 한 번에 확인한다.
 #   1) 빌드 (게임 + SlugTest)
-#   2) Regress.ps1  : 헤드리스 리플레이 해시 (Docs/Wayfinder/Baseline.txt)
+#   2) Regress.ps1  : 리플레이 해시 (--replay --hash) (Docs/Wayfinder/Baseline.txt)
 #   3) 캡처 해시    : 상태별 스크린샷 SHA256 (Docs/Wayfinder/BaselineCapture.txt, 오프스크린 + 소프트웨어 렌더)
 #   4) 튜닝 덤프 해시 (--dump-tuning)
 #   5) SlugTest     : 실패 목록이 알려진 기존 실패와 같은지
@@ -38,7 +38,7 @@ if ($LASTEXITCODE -ne 0) { $bFail = $true }
 
 # 2) 캡처 + 튜닝 해시
 $current = @()
-$tuning = (& $exe --headless --dump-tuning) -join "`n"
+$tuning = (& $exe --dump-tuning) -join "`n"
 $sha = [System.Security.Cryptography.SHA256]::Create()
 $current += 'tuning ' + (($sha.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($tuning)) | ForEach-Object { $_.ToString('x2') }) -join '')
 

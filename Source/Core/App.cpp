@@ -1,6 +1,7 @@
 #include "Core/App.h"
 
 #include <algorithm>
+#include <cstdio>
 #include <cstdlib>
 #include <filesystem>
 #include <format>
@@ -30,6 +31,18 @@ namespace
         --scale;
     }
     return scale;
+}
+
+uint64_t FnvMix_(
+    uint64_t       _hash,
+    const uint64_t _value)
+{
+    for (int i = 0; i < 8; ++i)
+    {
+        _hash ^= (_value >> (i * 8)) & 0xFFull;
+        _hash *= 1099511628211ull;
+    }
+    return _hash;
 }
 }   // namespace
 
@@ -64,6 +77,15 @@ int App::Run(
         const SteadyClock::time_point now = SteadyClock::now();
         Update_(std::chrono::duration<float>(now - lastTime).count());
         lastTime = now;
+    }
+
+    if (m_bHash && m_pRunner)
+    {
+        uint64_t hash = 14695981039346656037ull;
+        hash          = FnvMix_(hash, m_pRunner->GetTickCount());
+        hash          = FnvMix_(hash, m_pRunner->IsFinished() ? 1ull : 0ull);
+        hash          = FnvMix_(hash, m_pRunner->GetState() != nullptr ? m_pRunner->GetState()->DebugHash() : 0ull);
+        std::printf("ticks=%llu finished=%d hash=%016llx\n", static_cast<unsigned long long>(m_pRunner->GetTickCount()), m_pRunner->IsFinished() ? 1 : 0, static_cast<unsigned long long>(hash));
     }
 
     Shutdown_();
@@ -138,6 +160,14 @@ void App::ParseArgs_()
         else if (args[i] == "--replay" && bHasValue)
         {
             m_replayPath = args[++i];
+        }
+        else if (args[i] == "--hash")
+        {
+            m_bHash = true;
+        }
+        else if (args[i] == "--ticks" && bHasValue)
+        {
+            m_maxTicks = std::strtoull(args[++i].c_str(), nullptr, 10);
         }
         else if (args[i] == "--replay-hold")
         {
@@ -274,6 +304,13 @@ void App::Init_()
 {
     ParseArgs_();
 
+    if (m_bHash && m_replayPath.empty())
+    {
+        std::fprintf(stderr, "usage: MetalSlug2_Clone --replay <file> --hash [--state <name>] [--ticks <n>]\n");
+        m_returnCode = 1;
+        m_bRunning   = false;
+        return;
+    }
     if (!m_replayPath.empty())
     {
         Result<ReplayData> loaded = LoadReplay(m_replayPath);
@@ -350,7 +387,7 @@ void App::Init_()
     SLUG_LOG_INFO("[load] renderer-init since-run-start {:.1f} ms", rendererMs);
     m_sprites.Init(m_renderer.GetNative());
     m_sprites.SetAssetRoot(assetRoot);
-    if (bAnimsLoaded)
+    if (bAnimsLoaded && !m_bHash)
     {
         (void)m_sprites.LoadAtlasPagesParallel(m_anims, numWorkers);
     }
@@ -368,7 +405,7 @@ void App::Init_()
 
     {
         AudioConfig audioConfig;
-        audioConfig.bEnabled = !m_bNoAudio && m_capturePath.empty();
+        audioConfig.bEnabled = !m_bNoAudio && !m_bHash && m_capturePath.empty();
         if (const Result<void> audio = m_audio.InitFromDirectory(assetRoot, audioConfig); audio)
         {
             m_ctx.pAudio = &m_audio;
@@ -486,6 +523,21 @@ void App::Update_(
 
     if (!m_pRunner)
     {
+        return;
+    }
+
+    if (m_bHash)
+    {
+        // 실시간 대기/렌더 없이 리플레이 끝(또는 상태 종료, --ticks)까지 연속 실행
+        while (m_bRunning)
+        {
+            Tick_();
+            if (m_pRunner->IsFinished() || (m_maxTicks > 0 && m_pRunner->GetTickCount() >= m_maxTicks))
+            {
+                break;
+            }
+        }
+        m_bRunning = false;
         return;
     }
 
