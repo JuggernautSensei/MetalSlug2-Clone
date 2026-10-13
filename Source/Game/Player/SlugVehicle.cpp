@@ -1068,18 +1068,18 @@ const Body& SlugVehicle::GetBody() const
 
 uint64_t SlugVehicle::HashState() const
 {
-    uint64_t hash = 14'695'981'039'346'656'037ull;
-    HashBytes(hash, m_body.position.x);
-    HashBytes(hash, m_body.position.y);
-    HashBytes(hash, m_body.velocity.x);
-    HashBytes(hash, m_body.velocity.y);
-    HashBytes(hash, static_cast<uint8_t>(m_mode));
-    HashBytes(hash, m_hp);
-    HashBytes(hash, m_cannonAmmo);
-    HashBytes(hash, m_vulcanAngle);
-    HashBytes(hash, m_crouchLevel);
-    HashBytes(hash, m_facing);
-    HashBytes(hash, m_stats.vulcanShots);
-    HashBytes(hash, m_stats.cannonShots);
-    return hash;
+    Fnv1a hasher;
+    hasher.Mix(m_body.position.x);
+    hasher.Mix(m_body.position.y);
+    hasher.Mix(m_body.velocity.x);
+    hasher.Mix(m_body.velocity.y);
+    hasher.Mix(m_mode);
+    hasher.Mix(m_hp);
+    hasher.Mix(m_cannonAmmo);
+    hasher.Mix(m_vulcanAngle);
+    hasher.Mix(m_crouchLevel);
+    hasher.Mix(m_facing);
+    hasher.Mix(m_stats.vulcanShots);
+    hasher.Mix(m_stats.cannonShots);
+    return hasher.Finalize();
 }

@@ -32,18 +32,6 @@ namespace
     }
     return scale;
 }
-
-uint64_t FnvMix_(
-    uint64_t       _hash,
-    const uint64_t _value)
-{
-    for (int i = 0; i < 8; ++i)
-    {
-        _hash ^= (_value >> (i * 8)) & 0xFFull;
-        _hash *= 1099511628211ull;
-    }
-    return _hash;
-}
 }   // namespace
 
 int App::Run(
@@ -81,10 +69,14 @@ int App::Run(
 
     if (m_bHash && m_pRunner)
     {
-        uint64_t hash = 14695981039346656037ull;
-        hash          = FnvMix_(hash, m_pRunner->GetTickCount());
-        hash          = FnvMix_(hash, m_pRunner->IsFinished() ? 1ull : 0ull);
-        hash          = FnvMix_(hash, m_pRunner->GetState() != nullptr ? m_pRunner->GetState()->DebugHash() : 0ull);
+        const uint64_t tickCount = m_pRunner->GetTickCount();
+        const uint64_t bFinished = m_pRunner->IsFinished() ? 1ull : 0ull;
+        const uint64_t stateHash = m_pRunner->GetState() != nullptr ? m_pRunner->GetState()->DebugHash() : 0ull;
+        Fnv1a          hasher;
+        hasher.Mix(tickCount);
+        hasher.Mix(bFinished);
+        hasher.Mix(stateHash);
+        const uint64_t hash = hasher.Finalize();
         std::printf("ticks=%llu finished=%d hash=%016llx\n", static_cast<unsigned long long>(m_pRunner->GetTickCount()), m_pRunner->IsFinished() ? 1 : 0, static_cast<unsigned long long>(hash));
     }
 

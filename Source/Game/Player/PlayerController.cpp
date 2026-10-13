@@ -968,28 +968,28 @@ RigState PlayerController::MakeRigState() const
 
 uint64_t PlayerController::HashState() const
 {
-    uint64_t hash = 14'695'981'039'346'656'037ull;
-    HashBytes(hash, m_body.position.x);
-    HashBytes(hash, m_body.position.y);
-    HashBytes(hash, m_body.velocity.x);
-    HashBytes(hash, m_body.velocity.y);
-    HashBytes(hash, static_cast<uint8_t>(m_state));
-    HashBytes(hash, static_cast<uint8_t>(m_weapon.weapon));
-    HashBytes(hash, m_weapon.ammo);
-    HashBytes(hash, m_weapon.bombs);
-    HashBytes(hash, m_lives);
-    HashBytes(hash, m_score);
-    HashBytes(hash, m_invincibleTicks);
-    HashBytes(hash, m_facing);
-    HashBytes(hash, m_stats.shotsFired);
-    HashBytes(hash, m_burstLeft);
-    HashBytes(hash, m_stats.knifeSlashes);
-    HashBytes(hash, m_stats.bombsThrown);
-    HashBytes(hash, m_stats.jumps);
-    HashBytes(hash, m_stats.deaths);
-    HashBytes(hash, static_cast<uint8_t>(m_chutePhase));
-    HashBytes(hash, m_chuteBlinkTicks);
-    return hash;
+    Fnv1a hasher;
+    hasher.Mix(m_body.position.x);
+    hasher.Mix(m_body.position.y);
+    hasher.Mix(m_body.velocity.x);
+    hasher.Mix(m_body.velocity.y);
+    hasher.Mix(m_state);
+    hasher.Mix(m_weapon.weapon);
+    hasher.Mix(m_weapon.ammo);
+    hasher.Mix(m_weapon.bombs);
+    hasher.Mix(m_lives);
+    hasher.Mix(m_score);
+    hasher.Mix(m_invincibleTicks);
+    hasher.Mix(m_facing);
+    hasher.Mix(m_stats.shotsFired);
+    hasher.Mix(m_burstLeft);
+    hasher.Mix(m_stats.knifeSlashes);
+    hasher.Mix(m_stats.bombsThrown);
+    hasher.Mix(m_stats.jumps);
+    hasher.Mix(m_stats.deaths);
+    hasher.Mix(m_chutePhase);
+    hasher.Mix(m_chuteBlinkTicks);
+    return hasher.Finalize();
 }
 
 void PlayerController::BeginRide()

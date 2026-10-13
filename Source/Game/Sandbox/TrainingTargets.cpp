@@ -9,16 +9,10 @@
 namespace
 {
 void MixHash_(
-    uint64_t& _hash,
+    Fnv1a&    _hasher,
     const int _value)
 {
-    ARRAY<uint8_t, sizeof(int)> bytes = {};
-    std::memcpy(bytes.data(), &_value, sizeof(int));
-    for (const uint8_t byte: bytes)
-    {
-        _hash ^= byte;
-        _hash *= 1'099'511'628'211ull;
-    }
+    _hasher.Mix(_value);
 }
 }   // namespace
 
@@ -225,16 +219,16 @@ void TrainingTargets::Tick(
 
 uint64_t TrainingTargets::HashState() const
 {
-    uint64_t hash = 14'695'981'039'346'656'037ull;
+    Fnv1a hasher;
     for (const TrainingDummy& dummy: m_dummies)
     {
-        MixHash_(hash, static_cast<int>(dummy.id));
-        MixHash_(hash, dummy.health.hp);
-        MixHash_(hash, dummy.deadTicks);
-        MixHash_(hash, dummy.hitsTaken);
+        MixHash_(hasher, static_cast<int>(dummy.id));
+        MixHash_(hasher, dummy.health.hp);
+        MixHash_(hasher, dummy.deadTicks);
+        MixHash_(hasher, dummy.hitsTaken);
     }
-    MixHash_(hash, m_killCount);
-    return hash;
+    MixHash_(hasher, m_killCount);
+    return hasher.Finalize();
 }
 
 Span<const TrainingDummy> TrainingTargets::GetDummies() const

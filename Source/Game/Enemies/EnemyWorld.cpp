@@ -53,16 +53,10 @@ namespace
 }
 
 void MixHash_(
-    uint64_t&     _hash,
+    Fnv1a&        _hasher,
     const int64_t _value)
 {
-    ARRAY<unsigned char, sizeof(int64_t)> bytes = {};
-    std::memcpy(bytes.data(), &_value, sizeof(int64_t));
-    for (const unsigned char byte: bytes)
-    {
-        _hash ^= byte;
-        _hash *= 1'099'511'628'211ull;
-    }
+    _hasher.Mix(_value);
 }
 
 [[nodiscard]] int SideIndex_(
@@ -1097,29 +1091,29 @@ void EnemyWorld::KillAll(
 
 uint64_t EnemyWorld::HashState() const
 {
-    uint64_t hash = 14'695'981'039'346'656'037ull;
+    Fnv1a hasher;
     for (const Enemy& e: m_enemies)
     {
-        MixHash_(hash, static_cast<int64_t>(e.id));
-        MixHash_(hash, e.defIndex);
-        MixHash_(hash, static_cast<int64_t>(e.life));
-        MixHash_(hash, e.state);
-        MixHash_(hash, e.stateTicks);
-        MixHash_(hash, e.clipTicks);
-        MixHash_(hash, e.clip);
-        MixHash_(hash, e.health.hp);
-        MixHash_(hash, e.facing);
-        MixHash_(hash, e.counter);
-        MixHash_(hash, e.aux);
-        MixHash_(hash, e.aux2);
-        MixHash_(hash, e.aux3);
-        MixHash_(hash, e.aux4);
-        MixHash_(hash, e.shotsFired);
-        MixHash_(hash, static_cast<int64_t>(e.body.position.x * 16.f));
-        MixHash_(hash, static_cast<int64_t>(e.body.position.y * 16.f));
+        MixHash_(hasher, static_cast<int64_t>(e.id));
+        MixHash_(hasher, e.defIndex);
+        MixHash_(hasher, static_cast<int64_t>(e.life));
+        MixHash_(hasher, e.state);
+        MixHash_(hasher, e.stateTicks);
+        MixHash_(hasher, e.clipTicks);
+        MixHash_(hasher, e.clip);
+        MixHash_(hasher, e.health.hp);
+        MixHash_(hasher, e.facing);
+        MixHash_(hasher, e.counter);
+        MixHash_(hasher, e.aux);
+        MixHash_(hasher, e.aux2);
+        MixHash_(hasher, e.aux3);
+        MixHash_(hasher, e.aux4);
+        MixHash_(hasher, e.shotsFired);
+        MixHash_(hasher, static_cast<int64_t>(e.body.position.x * 16.f));
+        MixHash_(hasher, static_cast<int64_t>(e.body.position.y * 16.f));
     }
-    MixHash_(hash, static_cast<int64_t>(m_events.size()));
-    return hash;
+    MixHash_(hasher, static_cast<int64_t>(m_events.size()));
+    return hasher.Finalize();
 }
 
 int EnemyWorld::Roll(
