@@ -58,7 +58,7 @@ namespace
 Result<SpriteLibrary> SpriteLibrary::LoadFromJson(
     const StringView _json)
 {
-    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json);
+    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, kJsonBom);
     if (!doc)
     {
         return Error { eError::Parse };
@@ -69,7 +69,7 @@ Result<SpriteLibrary> SpriteLibrary::LoadFromJson(
 Result<SpriteLibrary> SpriteLibrary::LoadFromDirectory(
     const FilePath& _bakedRoot)
 {
-    Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(_bakedRoot / "sprites.json");
+    Result<JsonDeserializer> doc = LoadJsonFile(_bakedRoot / "sprites.json");
     if (!doc)
     {
         return Error { eError::FileOpen };

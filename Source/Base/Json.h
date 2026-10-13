@@ -1,124 +1,45 @@
 #pragma once
-#include <cstdint>
-#include <type_traits>
-#include <utility>
+#include <JugX/JsonDeserializer.h>
 
+#include "Base/Math.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 
-struct yyjson_doc;
-struct yyjson_val;
+using jug::eJsonLoadOption;
+using jug::JsonDeserializer;
+using jug::JsonReader;
 
-enum class eJsonLoadOption : uint32_t
+inline constexpr jug::Flags<eJsonLoadOption> kJsonBom         = eJsonLoadOption::AllowBOM;
+inline constexpr jug::Flags<eJsonLoadOption> kJsonBomComments = { eJsonLoadOption::AllowBOM, eJsonLoadOption::AllowComments };
+
+[[nodiscard]] Result<JsonDeserializer> LoadJsonFile(const FilePath& _path, jug::Flags<eJsonLoadOption> _flags = kJsonBom);
+
+// JsonReader::HasField/FindField 는 비객체/없는 키에서 assert/ERROR 로그라서 선택 필드는 이쪽으로 조회한다
+[[nodiscard]] bool               HasKey(const JsonReader& _object, StringView _key);
+[[nodiscard]] Result<JsonReader> TryField(const JsonReader& _object, StringView _key);
+
+template<typename T>
+[[nodiscard]] Result<T> TryRead(
+    const JsonReader& _object,
+    const StringView  _key)
 {
-    None          = 0,
-    AllowComments = 1u << 0,
-    AllowBOM      = 1u << 1
-};
-
-class JsonDeserializer;
-
-class JsonReader
-{
-    friend class JsonDeserializer;
-
-public:
-    template<typename T>
-    [[nodiscard]] Result<T> Read() const
+    const Result<JsonReader> field = TryField(_object, _key);
+    if (!field)
     {
-        if constexpr (std::is_same_v<T, bool>)
-        {
-            return ReadBool_();
-        }
-        else if constexpr (std::is_same_v<T, String>)
-        {
-            return ReadString_();
-        }
-        else if constexpr (std::is_floating_point_v<T>)
-        {
-            const Result<double> value = ReadDouble_();
-            if (!value)
-            {
-                return value.GetError();
-            }
-            return static_cast<T>(value.GetValue());
-        }
-        else if constexpr (std::is_signed_v<T>)
-        {
-            const Result<int64_t> value = ReadInt_();
-            if (!value)
-            {
-                return value.GetError();
-            }
-            return static_cast<T>(value.GetValue());
-        }
-        else
-        {
-            static_assert(std::is_unsigned_v<T>, "Unsupported JSON read type.");
-            const Result<uint64_t> value = ReadUInt_();
-            if (!value)
-            {
-                return value.GetError();
-            }
-            return static_cast<T>(value.GetValue());
-        }
+        return field.GetError();
     }
+    return field->Read<T>();
+}
 
-    template<typename T>
-    [[nodiscard]] Result<T> ReadField(const StringView _key) const
-    {
-        const Result<JsonReader> field = FindField(_key);
-        if (!field)
-        {
-            return field.GetError();
-        }
-        return field->Read<T>();
-    }
-
-    [[nodiscard]] Result<JsonReader>                        FindField(StringView _key) const;
-    [[nodiscard]] bool                                      HasField(StringView _key) const;
-    [[nodiscard]] Vector<JsonReader>                        GetArray() const;
-    [[nodiscard]] Vector<std::pair<StringView, JsonReader>> GetObject() const;
-
-    [[nodiscard]] size_t GetSize() const;
-
-    [[nodiscard]] bool IsNull() const;
-    [[nodiscard]] bool IsBool() const;
-    [[nodiscard]] bool IsNumber() const;
-    [[nodiscard]] bool IsString() const;
-    [[nodiscard]] bool IsArray() const;
-    [[nodiscard]] bool IsObject() const;
-
-private:
-    explicit JsonReader(yyjson_val* _pValue);
-
-    [[nodiscard]] Result<bool>     ReadBool_() const;
-    [[nodiscard]] Result<int64_t>  ReadInt_() const;
-    [[nodiscard]] Result<uint64_t> ReadUInt_() const;
-    [[nodiscard]] Result<double>   ReadDouble_() const;
-    [[nodiscard]] Result<String>   ReadString_() const;
-
-    yyjson_val* m_pValue = nullptr;
-};
-
+// 반올림한 정수 (필수 필드)
 [[nodiscard]] bool ReadInt(const JsonReader& _object, StringView _key, int& _out);
 
-class JsonDeserializer
-{
-public:
-    [[nodiscard]] static Result<JsonDeserializer> Load(StringView _json, eJsonLoadOption _option = eJsonLoadOption::None);
-    [[nodiscard]] static Result<JsonDeserializer> LoadFromFile(const FilePath& _path, eJsonLoadOption _option = eJsonLoadOption::None);
+// 정의 파서 공용 필드 읽기: 필드가 없으면 (필수가 아닐 때) true 이고 _out/_pFound 는 그대로(false), 틀리면 false 와 _reason
+[[nodiscard]] bool ReadNumberField(const JsonReader& _object, StringView _key, bool _bRequired, double& _out, StringView& _reason, bool* _pFound = nullptr);
+[[nodiscard]] bool ReadFloatField(const JsonReader& _object, StringView _key, bool _bRequired, float& _out, StringView& _reason);
+[[nodiscard]] bool ReadBoolField(const JsonReader& _object, StringView _key, bool _bRequired, bool& _out, StringView& _reason, bool* _pFound = nullptr);
+[[nodiscard]] bool ReadStringField(const JsonReader& _object, StringView _key, bool _bRequired, String& _out, StringView& _reason, bool* _pFound = nullptr);
+[[nodiscard]] bool ReadVec2Field(const JsonReader& _object, StringView _key, bool _bRequired, Vec2& _out, StringView& _reason, bool* _pFound = nullptr);
 
-    JsonDeserializer(const JsonDeserializer&)            = delete;
-    JsonDeserializer& operator=(const JsonDeserializer&) = delete;
-    JsonDeserializer(JsonDeserializer&& _other) noexcept;
-    JsonDeserializer& operator=(JsonDeserializer&& _other) noexcept;
-    ~JsonDeserializer();
-
-    [[nodiscard]] JsonReader GetReader() const;
-
-private:
-    explicit JsonDeserializer(yyjson_doc* _pDoc);
-
-    yyjson_doc* m_pDoc = nullptr;
-};
+// "note" 는 항상 허용. 허용 밖의 키가 있으면 false 와 그 키 (_object 는 객체여야 한다)
+[[nodiscard]] bool CheckJsonKeys(const JsonReader& _object, Span<const StringView> _allowed, StringView& _badKey);

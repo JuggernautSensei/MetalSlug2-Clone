@@ -318,7 +318,7 @@ bool ComboStr_(
     const char*       _key,
     const int         _default)
 {
-    const Result<int> v = _r.ReadField<int>(_key);
+    const Result<int> v = TryRead<int>(_r, _key);
     return v ? v.GetValue() : _default;
 }
 
@@ -326,7 +326,7 @@ bool ComboStr_(
     const JsonReader& _r,
     StageSpriteFrame& _out)
 {
-    const Result<String> file = _r.ReadField<String>("file");
+    const Result<String> file = TryRead<String>(_r, "file");
     if (file)
     {
         _out.file   = file.GetValue();
@@ -358,7 +358,7 @@ bool ComboStr_(
 {
     for (const char* key: { "sprite", "anim" })
     {
-        const Result<String> v = _r.ReadField<String>(key);
+        const Result<String> v = TryRead<String>(_r, key);
         if (v)
         {
             return v.GetValue();
@@ -371,10 +371,10 @@ bool ComboStr_(
     const JsonReader& _clips,
     const char*       _key)
 {
-    const Result<JsonReader> c = _clips.FindField(_key);
+    const Result<JsonReader> c = TryField(_clips, _key);
     if (c)
     {
-        const Result<String> n = c->ReadField<String>("name");
+        const Result<String> n = TryRead<String>(*c, "name");
         if (n)
         {
             return n.GetValue();
@@ -388,7 +388,7 @@ bool ComboStr_(
     const JsonReader& _def,
     const int         _depth)
 {
-    const Result<JsonReader> clips = _def.FindField("clips");
+    const Result<JsonReader> clips = TryField(_def, "clips");
     if (clips && clips->IsObject())
     {
         for (const char* key: { "idle", "stand" })
@@ -400,10 +400,10 @@ bool ComboStr_(
             }
         }
     }
-    const Result<String> parent = _def.ReadField<String>("extends");
+    const Result<String> parent = TryRead<String>(_def, "extends");
     if (parent && _depth < 8)
     {
-        const Result<JsonReader> p = _defs.FindField(parent.GetValue());
+        const Result<JsonReader> p = TryField(_defs, parent.GetValue());
         if (p)
         {
             return IdleClip_(_defs, p.GetValue(), _depth + 1);
@@ -415,12 +415,12 @@ bool ComboStr_(
 [[nodiscard]] String FirstClip_(
     const JsonReader& _def)
 {
-    const Result<JsonReader> clips = _def.FindField("clips");
+    const Result<JsonReader> clips = TryField(_def, "clips");
     if (clips && clips->IsObject())
     {
         for (const std::pair<StringView, JsonReader>& c: clips->GetObject())
         {
-            const Result<String> n = c.second.ReadField<String>("name");
+            const Result<String> n = TryRead<String>(c.second, "name");
             if (n)
             {
                 return n.GetValue();
@@ -601,7 +601,7 @@ bool StageDocument::Reparse_()
 Result<void> StageDocument::LoadFromText(
     const StringView _json)
 {
-    if (!JsonDeserializer::Load(_json))
+    if (!JsonDeserializer::Load(_json, kJsonBom))
     {
         return Error { eError::Parse };
     }
@@ -1170,12 +1170,12 @@ void StageEditor::LoadDefs_()
         {
             continue;
         }
-        const Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(entry.path(), eJsonLoadOption::AllowComments);
+        const Result<JsonDeserializer> doc = LoadJsonFile(entry.path(), kJsonBomComments);
         if (!doc)
         {
             continue;
         }
-        const Result<JsonReader> defs = doc->GetReader().FindField("defs");
+        const Result<JsonReader> defs = TryField(doc->GetReader(), "defs");
         if (!defs || !defs->IsObject())
         {
             continue;
@@ -1188,8 +1188,8 @@ void StageEditor::LoadDefs_()
             {
                 continue;
             }
-            const Result<bool>   bAbstract = v.ReadField<bool>("abstract");
-            const Result<String> kind      = v.ReadField<String>("kind");
+            const Result<bool>   bAbstract = TryRead<bool>(v, "abstract");
+            const Result<String> kind      = TryRead<String>(v, "kind");
             if ((bAbstract && bAbstract.GetValue()) || (kind && kind.GetValue() == "projectile"))
             {
                 continue;
@@ -1198,12 +1198,12 @@ void StageEditor::LoadDefs_()
             if (fileKind == "prop")
             {
                 defZ = kPropDepthBack;
-                if (const Result<int> depth = v.ReadField<int>("depth"))
+                if (const Result<int> depth = TryRead<int>(v, "depth"))
                 {
                     defZ = depth.GetValue();
                 }
             }
-            else if (const Result<String> behavior = v.ReadField<String>("behavior"); behavior && behavior.GetValue() == "bigshiee")
+            else if (const Result<String> behavior = TryRead<String>(v, "behavior"); behavior && behavior.GetValue() == "bigshiee")
             {
                 defZ = kBigShieeDepthHull;
             }
@@ -1213,17 +1213,16 @@ void StageEditor::LoadDefs_()
             {
                 for (const char* state: { "idle", "damaged", "destroyed" })
                 {
-                    const Result<JsonReader> s = v.FindField(state);
+                    const Result<JsonReader> s = TryField(v, state);
                     if (s && name.empty())
                     {
                         name = VisualName_(s.GetValue());
                     }
                 }
-                const Result<JsonReader> variants = v.FindField("variants");
+                const Result<JsonReader> variants = TryField(v, "variants");
                 if (name.empty() && variants && variants->IsArray())
                 {
-                    const Vector<JsonReader> list = variants->GetArray();
-                    const Result<JsonReader> idle = list.empty() ? Result<JsonReader> { Error { eError::InvalidData } } : list[0].FindField("idle");
+                    const Result<JsonReader> idle = variants->GetSize() == 0 ? Result<JsonReader> { Error { eError::InvalidData } } : TryField(*variants->BeginArray(), "idle");
                     if (idle)
                     {
                         name = VisualName_(idle.GetValue());
@@ -1243,29 +1242,28 @@ void StageEditor::LoadDefs_()
                 m_defSprite[fileKind + "/" + String { def.first }] = name;
             }
         }
-        const Result<JsonReader> items = doc->GetReader().FindField("items");
+        const Result<JsonReader> items = TryField(doc->GetReader(), "items");
         if (items && items->IsObject())
         {
             for (const std::pair<StringView, JsonReader>& it: items->GetObject())
             {
-                const Result<JsonReader> visual = it.second.FindField("visual");
+                const Result<JsonReader> visual = TryField(it.second, "visual");
                 if (visual)
                 {
                     m_defSprite["item/" + String { it.first }] = VisualName_(visual.GetValue());
                 }
             }
         }
-        const Result<JsonReader> groups = doc->GetReader().FindField("groups");
+        const Result<JsonReader> groups = TryField(doc->GetReader(), "groups");
         if (groups && groups->IsObject())
         {
             for (const std::pair<StringView, JsonReader>& g: groups->GetObject())
             {
-                const Vector<JsonReader> list = g.second.GetArray();
-                if (list.empty())
+                if (!g.second.IsArray() || g.second.GetSize() == 0)
                 {
                     continue;
                 }
-                const Result<String> first = list[0].Read<String>();
+                const Result<String> first = (*g.second.BeginArray()).Read<String>();
                 if (first && m_defSprite.contains("item/" + first.GetValue()))
                 {
                     const String value                        = m_defSprite["item/" + first.GetValue()];
@@ -1282,32 +1280,31 @@ void StageEditor::LoadDefs_()
 void StageEditor::LoadFrames_()
 {
     m_frames.clear();
-    const Result<JsonDeserializer> anim = JsonDeserializer::LoadFromFile(FindAssetRoot() / "anim.json");
+    const Result<JsonDeserializer> anim = LoadJsonFile(FindAssetRoot() / "anim.json");
     if (anim)
     {
-        const Result<JsonReader> all = anim->GetReader().FindField("animations");
+        const Result<JsonReader> all = TryField(anim->GetReader(), "animations");
         if (all && all->IsObject())
         {
             for (const std::pair<StringView, JsonReader>& a: all->GetObject())
             {
-                const Result<JsonReader> frames = a.second.FindField("frames");
+                const Result<JsonReader> frames = TryField(a.second, "frames");
                 if (!frames)
                 {
                     continue;
                 }
-                const Vector<JsonReader> list = frames->GetArray();
-                StageSpriteFrame         f;
-                if (!list.empty() && ReadFrame_(list[0], f))
+                StageSpriteFrame f;
+                if (frames->IsArray() && frames->GetSize() > 0 && ReadFrame_(*frames->BeginArray(), f))
                 {
                     m_frames[String { a.first }] = f;
                 }
             }
         }
     }
-    const Result<JsonDeserializer> sprites = JsonDeserializer::LoadFromFile(FindAssetRoot() / "sprites.json");
+    const Result<JsonDeserializer> sprites = LoadJsonFile(FindAssetRoot() / "sprites.json");
     if (sprites)
     {
-        const Result<JsonReader> all = sprites->GetReader().FindField("sprites");
+        const Result<JsonReader> all = TryField(sprites->GetReader(), "sprites");
         if (all && all->IsObject())
         {
             for (const std::pair<StringView, JsonReader>& s: all->GetObject())
@@ -1588,16 +1585,16 @@ void StageEditor::LoadStage_(
     m_scrollX  = 0.f;
     m_scrollY  = 0.f;
     ClearTextures_();
-    const Result<JsonDeserializer> sprites = JsonDeserializer::LoadFromFile(FindAssetRoot() / "sprites.json");
+    const Result<JsonDeserializer> sprites = LoadJsonFile(FindAssetRoot() / "sprites.json");
     if (sprites)
     {
-        const Result<JsonReader> all = sprites->GetReader().FindField("sprites");
+        const Result<JsonReader> all = TryField(sprites->GetReader(), "sprites");
         if (all)
         {
-            const Result<JsonReader> sprite = all->FindField(m_doc.GetBackground());
+            const Result<JsonReader> sprite = TryField(*all, m_doc.GetBackground());
             if (sprite)
             {
-                const Result<String> file = sprite->ReadField<String>("file");
+                const Result<String> file = TryRead<String>(*sprite, "file");
                 if (file)
                 {
                     LoadStrips_(FindAssetRoot() / file.GetValue(), false, m_bgStrips, m_bgW, m_bgH);

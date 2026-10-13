@@ -404,17 +404,8 @@ bool ReadNumField_(
     const StringView  _key,
     float&            _out)
 {
-    if (!_o.HasField(_key))
-    {
-        return true;
-    }
-    const Result<double> value = _o.ReadField<double>(_key);
-    if (!value)
-    {
-        return false;
-    }
-    _out = static_cast<float>(value.GetValue());
-    return true;
+    StringView reason;
+    return ReadFloatField(_o, _key, false, _out, reason);
 }
 
 bool ReadIntField_(
@@ -436,13 +427,8 @@ bool ReadStrField_(
     const StringView  _key,
     String&           _out)
 {
-    const Result<String> value = _o.ReadField<String>(_key);
-    if (!value)
-    {
-        return false;
-    }
-    _out = value.GetValue();
-    return true;
+    StringView reason;
+    return ReadStringField(_o, _key, true, _out, reason);
 }
 
 bool ReadVecField_(
@@ -450,24 +436,8 @@ bool ReadVecField_(
     const StringView  _key,
     Vec2&             _out)
 {
-    if (!_o.HasField(_key))
-    {
-        return true;
-    }
-    const Result<JsonReader> field = _o.FindField(_key);
-    if (!field || !field->IsArray() || field->GetSize() != 2)
-    {
-        return false;
-    }
-    const Vector<JsonReader> items = field->GetArray();
-    const Result<double>     x     = items[0].Read<double>();
-    const Result<double>     y     = items[1].Read<double>();
-    if (!x || !y)
-    {
-        return false;
-    }
-    _out = { static_cast<float>(x.GetValue()), static_cast<float>(y.GetValue()) };
-    return true;
+    StringView reason;
+    return ReadVec2Field(_o, _key, false, _out, reason);
 }
 
 void ParseBursts_(

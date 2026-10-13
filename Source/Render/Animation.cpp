@@ -180,7 +180,7 @@ int64_t AnimClip::GetFrameDurationUnits() const
 Result<AnimationLibrary> AnimationLibrary::LoadFromJson(
     const StringView _animJson)
 {
-    Result<JsonDeserializer> doc = JsonDeserializer::Load(_animJson);
+    Result<JsonDeserializer> doc = JsonDeserializer::Load(_animJson, kJsonBom);
     if (!doc)
     {
         return Error { eError::Parse };
@@ -198,7 +198,7 @@ Result<AnimationLibrary> AnimationLibrary::LoadFromDirectory(
     const FilePath& _bakedRoot)
 {
     const ScopedPhaseTimer   timer { "anim-library", "manifest+anim" };
-    Result<JsonDeserializer> manifestDoc = JsonDeserializer::LoadFromFile(_bakedRoot / "manifest.json");
+    Result<JsonDeserializer> manifestDoc = LoadJsonFile(_bakedRoot / "manifest.json");
     if (!manifestDoc)
     {
         return Error { eError::FileOpen };
@@ -226,7 +226,7 @@ Result<AnimationLibrary> AnimationLibrary::LoadFromDirectory(
         return pages.GetError();
     }
 
-    Result<JsonDeserializer> animDoc = JsonDeserializer::LoadFromFile(_bakedRoot / animFile);
+    Result<JsonDeserializer> animDoc = LoadJsonFile(_bakedRoot / animFile);
     if (!animDoc)
     {
         return Error { eError::FileOpen };

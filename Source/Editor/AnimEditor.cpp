@@ -137,7 +137,7 @@ void AppendField_(
 Result<void> AnimDocument::LoadFromText(
     const StringView _json)
 {
-    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json);
+    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, kJsonBom);
     if (!doc)
     {
         return Error { eError::Parse };

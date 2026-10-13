@@ -183,7 +183,7 @@ TEST(AnimIntegrity, StageDecorSequencesStayWithinOneActor)
     {
         GTEST_SKIP() << "Assets 없음";
     }
-    Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(FindAssetRoot() / "Stage" / "Stage0.json");
+    Result<JsonDeserializer> doc = LoadJsonFile(FindAssetRoot() / "Stage" / "Stage0.json");
     ASSERT_TRUE(doc);
 
     const std::map<String, std::set<String>> actors = {
@@ -196,15 +196,15 @@ TEST(AnimIntegrity, StageDecorSequencesStayWithinOneActor)
     ASSERT_TRUE(sections);
     for (const JsonReader section: sections->GetArray())
     {
-        const Result<JsonReader> actions = section.FindField("actions");
+        const Result<JsonReader> actions = TryField(section, "actions");
         if (!actions)
         {
             continue;
         }
         for (const JsonReader action: actions->GetArray())
         {
-            const Result<String> kind = action.ReadField<String>("kind");
-            const Result<String> anim = action.ReadField<String>("anim");
+            const Result<String> kind = TryRead<String>(action, "kind");
+            const Result<String> anim = TryRead<String>(action, "anim");
             if (!kind || kind.GetValue() != "decor" || !anim)
             {
                 continue;
@@ -214,12 +214,12 @@ TEST(AnimIntegrity, StageDecorSequencesStayWithinOneActor)
             ASSERT_NE(pStart, nullptr) << anim.GetValue().c_str();
 
             const String             actor  = anim.GetValue().rfind("Parker", 0) == 0 ? "Parker" : (anim.GetValue().rfind("Order_", 0) == 0 ? "Kid" : "");
-            const Result<JsonReader> params = action.FindField("params");
+            const Result<JsonReader> params = TryField(action, "params");
             if (!params)
             {
                 continue;
             }
-            const Result<JsonReader> sequence = params->FindField("sequence");
+            const Result<JsonReader> sequence = TryField(*params, "sequence");
             if (!sequence)
             {
                 continue;

@@ -417,7 +417,7 @@ namespace
 Result<Tuning> ParseTuning(
     const StringView _json)
 {
-    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, eJsonLoadOption::AllowComments);
+    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, kJsonBomComments);
     if (!doc)
     {
         return Error { eError::Parse };
@@ -428,7 +428,7 @@ Result<Tuning> ParseTuning(
 Result<Tuning> LoadTuning(
     const FilePath& _path)
 {
-    Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(_path, eJsonLoadOption::AllowComments);
+    Result<JsonDeserializer> doc = LoadJsonFile(_path, kJsonBomComments);
     if (!doc)
     {
         return Error { eError::FileOpen };

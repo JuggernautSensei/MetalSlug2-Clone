@@ -55,7 +55,7 @@ Result<SoundBank> SoundBank::LoadFromJson(
     const StringView _json,
     const FilePath&  _root)
 {
-    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json);
+    Result<JsonDeserializer> doc = JsonDeserializer::Load(_json, kJsonBom);
     if (!doc)
     {
         return Error { eError::Parse };
@@ -66,7 +66,7 @@ Result<SoundBank> SoundBank::LoadFromJson(
 Result<SoundBank> SoundBank::LoadFromDirectory(
     const FilePath& _bakedRoot)
 {
-    Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(_bakedRoot / "sounds.json");
+    Result<JsonDeserializer> doc = LoadJsonFile(_bakedRoot / "sounds.json");
     if (!doc)
     {
         return Error { eError::FileOpen };
