@@ -16,7 +16,6 @@ class JsonScanner
 {
 public:
     explicit JsonScanner(StringView _text);
-
     int Parse();
 
     Vector<JsonNode> nodes = {};
@@ -30,3 +29,5 @@ private:
     size_t     m_pos   = 0;
     bool       m_bFail = false;
 };
+
+[[nodiscard]] String FormatJsonNumber(double _value);

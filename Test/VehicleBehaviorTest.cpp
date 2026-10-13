@@ -2,7 +2,6 @@
 #include <cmath>
 #include <vector>
 
-#include "Base/Math.h"
 #include "VehicleTestUtil.h"
 
 constexpr float kGround = 378.f;
@@ -73,7 +72,7 @@ void StepAndLog_(
 TEST(VehicleJeep, DrivesAtTwoHundredPixelsPerSecondTowardTheEdgeOnThePlayersSide)
 {
     VehicleRig rig({ 100.f, kGround });
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     const EnemyHandle h = rig.Spawn("jeep", { 400.f, kGround }, Facing_(-1));
     rig.Step(90);
     const float x0 = rig.E(h)->body.position.x;
@@ -171,7 +170,7 @@ TEST(VehicleJeep, ARocketHitsAPlayerAtItsFlightHeight)
 TEST(VehicleJeep, EntersFromOffscreenLeftWithoutIdlingAndShootsRightAfterTheAimHold)
 {
     VehicleRig rig({ 800.f, kGround }, 500.f);
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     const EnemyHandle h = rig.Spawn("jeep", { 440.f, kGround }, Facing_(1));
     rig.Step(3);
     EXPECT_EQ(rig.E(h)->state, 2) << "대기 없이 바로 Move";
@@ -398,7 +397,7 @@ TEST(VehicleBTank, DestructionRemovesItAfterFourSeconds)
     EXPECT_EQ(rig.E(h), nullptr);
 }
 
-TEST(VehicleMissleTank, FiresFiveMissilesPerVolleyWhenTheTargetIsNear)
+TEST(VehicleMissileTank, FiresFiveMissilesPerVolleyWhenTheTargetIsNear)
 {
     VehicleRig        rig({ 100.f, kGround });
     const EnemyHandle h = rig.Spawn("missle_tank", { 380.f, kGround }, Facing_(-1));
@@ -412,7 +411,7 @@ TEST(VehicleMissleTank, FiresFiveMissilesPerVolleyWhenTheTargetIsNear)
     }
 }
 
-TEST(VehicleMissleTank, AimsUpForFarTargetsAndTheVolleyArcs)
+TEST(VehicleMissileTank, AimsUpForFarTargetsAndTheVolleyArcs)
 {
     VehicleRig        rig({ 100.f, kGround });
     const EnemyHandle h = rig.Spawn("missle_tank", { 500.f, kGround }, Facing_(-1));
@@ -423,7 +422,7 @@ TEST(VehicleMissleTank, AimsUpForFarTargetsAndTheVolleyArcs)
     EXPECT_NEAR(log.shots.front().velocity.x, -300.f, 1.f);
 }
 
-TEST(VehicleMissleTank, OnlyTicksWhileThePlayerIsWithinSixHundredPixels)
+TEST(VehicleMissileTank, OnlyTicksWhileThePlayerIsWithinSixHundredPixels)
 {
     VehicleRig        rig({ 100.f, kGround });
     const EnemyHandle h = rig.Spawn("missle_tank", { 900.f, kGround }, Facing_(-1));
@@ -432,7 +431,7 @@ TEST(VehicleMissleTank, OnlyTicksWhileThePlayerIsWithinSixHundredPixels)
     EXPECT_TRUE(log.ticks.empty());
 }
 
-TEST(VehicleMissleTank, DestructionIsSilentUntilTwoSecondsLater)
+TEST(VehicleMissileTank, DestructionIsSilentUntilTwoSecondsLater)
 {
     VehicleRig        rig({ 100.f, kGround });
     const EnemyHandle h = rig.Spawn("missle_tank", { 380.f, kGround }, Facing_(-1));
@@ -535,7 +534,7 @@ void CheckDropSpawnOffsets_(
     for (int i = 0; i < _steps; ++i)
     {
         _rig.Step(1);
-        const Enemy* pEnemy = _rig.E(_h);
+        const EnemyState* pEnemy = _rig.E(_h);
         ASSERT_NE(pEnemy, nullptr);
         for (const Shot& shot: _rig.Projectiles().GetShots())
         {
@@ -555,7 +554,7 @@ void CheckDropSpawnOffsets_(
 TEST(VehicleHitFlash, JeepFlashesOnNonLethalHitBlinksUnderFireAndExpires)
 {
     VehicleRig rig({ 100.f, kGround });
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     const EnemyHandle h = rig.Spawn("jeep", { 400.f, kGround }, Facing_(-1));
     ASSERT_NE(rig.E(h), nullptr);
     EXPECT_TRUE(rig.Lib().Get(rig.E(h)->defIndex).bHitFlash) << "hp 80 차량은 기본 플래시 대상";
@@ -595,7 +594,7 @@ TEST(VehicleHitFlash, JeepFlashesOnNonLethalHitBlinksUnderFireAndExpires)
 TEST(VehicleHitFlash, LethalHitDoesNotFlash)
 {
     VehicleRig rig({ 100.f, kGround });
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     const EnemyHandle h = rig.Spawn("jeep", { 400.f, kGround }, Facing_(-1));
     rig.Step(2);
     ASSERT_GT(rig.Strike(h.id, eHitKind::Bullet, 100000), 0u);
@@ -699,7 +698,7 @@ TEST(VehicleGravity, EveryVehicleFallsOntoTheGroundAndStaysThere)
     for (const char* pName: { "jeep", "btank", "missle_tank", "sarubia" })
     {
         VehicleRig rig({ 100.f, kGround });
-        ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+        ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
         const EnemyHandle h = rig.Spawn(pName, { 400.f, kGround - 150.f }, Facing_(-1));
         ASSERT_NE(rig.E(h), nullptr) << pName;
         EXPECT_FALSE(rig.E(h)->bGrounded) << pName;

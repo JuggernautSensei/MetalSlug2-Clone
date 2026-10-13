@@ -1,79 +1,15 @@
-﻿#pragma once
+#pragma once
 #include <cstdint>
 
-#include "Base/Math.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "World/Geometry.h"
 
 inline constexpr int kDefaultTerrainDepth = -90;
 
-class ParamValue
-{
-public:
-    enum class eType : uint8_t
-    {
-        Null,
-        Bool,
-        Number,
-        String,
-        Array,
-        Object
-    };
+#include "Game/Stage/StageParams.h"
 
-    [[nodiscard]] static ParamValue MakeBool(bool _bValue);
-    [[nodiscard]] static ParamValue MakeNumber(double _value);
-    [[nodiscard]] static ParamValue MakeString(String _value);
-    [[nodiscard]] static ParamValue MakeArray();
-    [[nodiscard]] static ParamValue MakeObject();
-
-    void PushBack(ParamValue _value);
-    void Set(String _key, ParamValue _value);
-
-    [[nodiscard]] bool IsNull() const;
-    [[nodiscard]] bool IsBool() const;
-    [[nodiscard]] bool IsNumber() const;
-    [[nodiscard]] bool IsString() const;
-    [[nodiscard]] bool IsArray() const;
-    [[nodiscard]] bool IsObject() const;
-
-    [[nodiscard]] bool AsBool(bool _bDefault = false) const;
-
-    [[nodiscard]] float AsFloat(float _default = 0.f) const;
-
-    [[nodiscard]] int AsInt(int _default = 0) const;
-
-    [[nodiscard]] const String& AsString() const;
-
-    [[nodiscard]] size_t            GetSize() const;
-    [[nodiscard]] const ParamValue& At(size_t _index) const;
-
-    [[nodiscard]] const ParamValue* Find(StringView _key) const;
-    [[nodiscard]] bool              Has(StringView _key) const;
-
-    [[nodiscard]] bool GetBool(StringView _key, bool _bDefault = false) const;
-
-    [[nodiscard]] int GetInt(StringView _key, int _default = 0) const;
-
-    [[nodiscard]] String GetString(StringView _key, StringView _default = {}) const;
-
-    [[nodiscard]] VECTOR2 GetVec2(StringView _key, VECTOR2 _default = { 0.f, 0.f }) const;
-
-    [[nodiscard]] bool TryGetVec2(VECTOR2& _out) const;
-
-    [[nodiscard]] static const ParamValue& EmptyObject();
-    [[nodiscard]] static const ParamValue& NullValue();
-
-private:
-    eType              m_type   = eType::Null;
-    bool               m_bValue = false;
-    double             m_number = 0.0;
-    String             m_string = {};
-    Vector<ParamValue> m_items  = {};
-    Vector<String>     m_keys   = {};
-};
-
-enum class eEntityKind : uint8_t
+enum class eEntityKind
 {
     Enemy,
     Npc,
@@ -83,13 +19,13 @@ enum class eEntityKind : uint8_t
     Collider
 };
 
-enum class eOrigin : uint8_t
+enum class eOrigin
 {
     Feet,
     LegacyCenter
 };
 
-enum class eStageLayer : uint8_t
+enum class eStageLayer
 {
     FarBackground,
     Background,
@@ -104,27 +40,27 @@ enum class eStageLayer : uint8_t
 
 [[nodiscard]] uint32_t LayerBit(eStageLayer _layer);
 
-enum class eCollisionLayer : uint8_t
+enum class eCollisionLayer
 {
     Wall,
     GroundExceptPlayer
 };
 
-enum class eAnchorX : uint8_t
+enum class eAnchorX
 {
     Left,
     Right,
     Center
 };
 
-enum class eAnchorY : uint8_t
+enum class eAnchorY
 {
     Top,
     Bottom,
     Center
 };
 
-enum class eActionType : uint8_t
+enum class eActionType
 {
     Spawn,
     SpawnWave,
@@ -145,20 +81,20 @@ enum class eActionType : uint8_t
     EndStage
 };
 
-enum class eWhen : uint8_t
+enum class eWhen
 {
     Normal,
     Silent,
     Always
 };
 
-enum class eGateUntil : uint8_t
+enum class eGateUntil
 {
     Defeated,
     DestroyFinished
 };
 
-enum class eFadeTarget : uint8_t
+enum class eFadeTarget
 {
     Black,
     Clear
@@ -231,8 +167,7 @@ struct SpawnSpec
     String anim   = {};
     String sprite = {};
 
-    ParamValue params = ParamValue::MakeObject();
-
+    ParamValue        params = ParamValue::MakeObject();
     [[nodiscard]] int GetCount() const;
 };
 
@@ -325,8 +260,7 @@ struct BoundsCurve
     bool            bTrunc     = false;
 
     [[nodiscard]] float EvaluateTop(float _playerX) const;
-
-    [[nodiscard]] Aabb EvaluateBounds(float _playerX) const;
+    [[nodiscard]] Aabb  EvaluateBounds(float _playerX) const;
 };
 
 struct CameraConfig
@@ -388,10 +322,9 @@ struct StageData
     [[nodiscard]] const NamedRect*    FindRect(StringView _name) const;
     [[nodiscard]] const BackdropMode* FindBackdrop(StringView _id) const;
     [[nodiscard]] bool                HasGroundMap(StringView _name) const;
-
-    [[nodiscard]] int CountSpawns() const;
-    [[nodiscard]] int CountWaveEntries() const;
-    [[nodiscard]] int CountGates() const;
+    [[nodiscard]] int                 CountSpawns() const;
+    [[nodiscard]] int                 CountWaveEntries() const;
+    [[nodiscard]] int                 CountGates() const;
 };
 
 [[nodiscard]] Result<StageData> LoadStageFromJson(StringView _json, String* _pMessage = nullptr);

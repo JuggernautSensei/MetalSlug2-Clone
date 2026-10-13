@@ -1,5 +1,4 @@
 #pragma once
-#include "Base/Math.h"
 #include "Core/Tuning.h"
 #include "Game/Player/PlayerTypes.h"
 #include "World/Combat.h"

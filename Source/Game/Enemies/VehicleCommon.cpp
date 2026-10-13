@@ -1,10 +1,9 @@
 #include "Game/Enemies/VehicleCommon.h"
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 
 void BeginVehicleDeath(
-    Enemy&          _e,
+    EnemyState&     _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
     const int       _destroyClip)
@@ -22,7 +21,7 @@ void BeginVehicleDeath(
 }
 
 void TickVehicleDeath(
-    Enemy&          _e,
+    EnemyState&     _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
@@ -52,8 +51,8 @@ void RequestFxAt(
 }
 
 bool IsClipDone(
-    const Enemy&    _e,
-    const EnemyDef& _def)
+    const EnemyState& _e,
+    const EnemyDef&   _def)
 {
     return _e.clip >= 0 && _e.stateTicks >= _def.GetClip(_e.clip).GetDurationTicks();
 }

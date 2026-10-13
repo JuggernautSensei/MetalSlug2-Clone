@@ -1,7 +1,6 @@
 #pragma once
 #include <cstdint>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Core/Tuning.h"
 #include "Game/Props/PropDef.h"
@@ -76,25 +75,17 @@ class ItemWorld
 {
 public:
     explicit ItemWorld(const PropDefLibrary* _pLibrary, uint64_t _seed = 1);
-
-    void SetLibrary(const PropDefLibrary* _pLibrary);
-    void Reset(uint64_t _seed = 1);
-
+    void     SetLibrary(const PropDefLibrary* _pLibrary);
+    void     Reset(uint64_t _seed = 1);
     uint32_t Spawn(StringView _name, VECTOR2 _feet, bool _bBounce = false, int _z = kDefaultZ);
-
-    bool SetZ(uint32_t _id, int _z);
+    bool     SetZ(uint32_t _id, int _z);
 
     // _pTuning 이 null 이면 ItemTuning 기본값을 쓴다
-    void Tick(const PhysicsWorld& _world, float _dt, float _cameraLeft, const AnimationLibrary* _pAnims, const ItemTuning* _pTuning = nullptr);
-
-    [[nodiscard]] Vector<ItemPickup> Collect(const Aabb& _playerBox);
-
-    [[nodiscard]] Vector<ItemFxRequest> TakeFx();
-
-    void Submit(SpriteBatch& _sprites, const AnimationLibrary& _anims, const SpriteLibrary& _spriteLib, const BitmapFont* _pFont) const;
-
-    void ClearAll();
-
+    void                                 Tick(const PhysicsWorld& _world, float _dt, float _cameraLeft, const AnimationLibrary* _pAnims, const ItemTuning* _pTuning = nullptr);
+    [[nodiscard]] Vector<ItemPickup>     Collect(const Aabb& _playerBox);
+    [[nodiscard]] Vector<ItemFxRequest>  TakeFx();
+    void                                 Submit(SpriteBatch& _sprites, const AnimationLibrary& _anims, const SpriteLibrary& _spriteLib, const BitmapFont* _pFont) const;
+    void                                 ClearAll();
     [[nodiscard]] Span<const PropItem>   GetItems() const;
     [[nodiscard]] Span<const ScorePopup> GetPopups() const;
     [[nodiscard]] const PropItem*        Find(uint32_t _id) const;

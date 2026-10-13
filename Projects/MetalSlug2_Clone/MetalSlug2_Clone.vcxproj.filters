@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source">
@@ -87,13 +87,10 @@
     <ClCompile Include="..\..\Source\Base\SlugError.cpp">
       <Filter>Source\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Base\Json.cpp">
+    <ClCompile Include="..\..\Source\Base\JsonFields.cpp">
       <Filter>Source\Base</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Base\Log.cpp">
-      <Filter>Source\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\Base\PhaseTimer.cpp">
       <Filter>Source\Base</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Main.cpp">
@@ -105,10 +102,16 @@
     <ClCompile Include="..\..\Source\Editor\AnimEditor.cpp">
       <Filter>Source\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\Editor\AnimDocument.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\Editor\GroundEditor.cpp">
       <Filter>Source\Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Editor\StageEditor.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Editor\StageDocument.cpp">
       <Filter>Source\Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Editor\DepthEditor.cpp">
@@ -117,7 +120,13 @@
     <ClCompile Include="..\..\Source\Editor\HitboxEditor.cpp">
       <Filter>Source\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\Editor\HitboxDocument.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\Editor\MotionEditor.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Editor\MotionDocument.cpp">
       <Filter>Source\Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Editor\JsonScan.cpp">
@@ -156,7 +165,7 @@
     <ClCompile Include="..\..\Source\Game\Enemies\Bzk.cpp">
       <Filter>Source\Game\Enemies</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Game\Enemies\EnemyBehaviors.cpp">
+    <ClCompile Include="..\..\Source\Game\Enemies\Enemy.cpp">
       <Filter>Source\Game\Enemies</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Game\Enemies\EnemyCommon.cpp">
@@ -201,13 +210,19 @@
     <ClCompile Include="..\..\Source\Game\Enemies\VehicleJeep.cpp">
       <Filter>Source\Game\Enemies</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Game\Enemies\VehicleMissleTank.cpp">
+    <ClCompile Include="..\..\Source\Game\Enemies\VehicleMissileTank.cpp">
       <Filter>Source\Game\Enemies</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Game\Enemies\VehicleSarubia.cpp">
       <Filter>Source\Game\Enemies</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Game\Player\PlayerController.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\PlayerMovement.cpp">
+      <Filter>Source\Game\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Player\PlayerAttack.cpp">
       <Filter>Source\Game\Player</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Game\Player\PlayerHitboxes.cpp">
@@ -259,6 +274,9 @@
       <Filter>Source\Game</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Game\Stage\StageData.cpp">
+      <Filter>Source\Game\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Game\Stage\StageParams.cpp">
       <Filter>Source\Game\Stage</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Game\Stage\StageMapping.cpp">
@@ -341,22 +359,10 @@
     <ClInclude Include="..\..\Source\Base\SlugError.h">
       <Filter>Source\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\Base\Handle.h">
-      <Filter>Source\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Base\Json.h">
+    <ClInclude Include="..\..\Source\Base\JsonFields.h">
       <Filter>Source\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Base\Log.h">
-      <Filter>Source\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Base\PhaseTimer.h">
-      <Filter>Source\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Base\Math.h">
-      <Filter>Source\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Base\RGBA.h">
       <Filter>Source\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Base\Types.h">
@@ -368,10 +374,16 @@
     <ClInclude Include="..\..\Source\Editor\AnimEditor.h">
       <Filter>Source\Editor</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\Editor\AnimDocument.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\Editor\GroundEditor.h">
       <Filter>Source\Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Editor\StageEditor.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Editor\StageDocument.h">
       <Filter>Source\Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Editor\DepthEditor.h">
@@ -380,7 +392,13 @@
     <ClInclude Include="..\..\Source\Editor\HitboxEditor.h">
       <Filter>Source\Editor</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\Editor\HitboxDocument.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\Editor\MotionEditor.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Editor\MotionDocument.h">
       <Filter>Source\Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Editor\JsonScan.h">
@@ -419,10 +437,52 @@
     <ClInclude Include="..\..\Source\Game\Enemies\BigShiee.h">
       <Filter>Source\Game\Enemies</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\Game\Enemies\BigShieeCfg.h">
+    <ClInclude Include="..\..\Source\Game\Enemies\BigShieeConfig.h">
       <Filter>Source\Game\Enemies</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\Game\Enemies\EnemyBehaviors.h">
+    <ClInclude Include="..\..\Source\Game\Enemies\Enemy.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\BigShieeEnemy.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\BTankEnemy.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\BusEnemy.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\BzkEnemy.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\FlyingBzkEnemy.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\HangEnemy.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\HeliBombEnemy.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\HeliEnemy.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\JeepEnemy.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\MissileTankEnemy.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\PowEnemy.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\SarubiaEnemy.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\ShielderEnemy.h">
+      <Filter>Source\Game\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Enemies\SoldierEnemy.h">
       <Filter>Source\Game\Enemies</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyCommon.h">
@@ -504,6 +564,9 @@
       <Filter>Source\Game</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Stage\StageData.h">
+      <Filter>Source\Game\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Game\Stage\StageParams.h">
       <Filter>Source\Game\Stage</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Stage\StageHost.h">

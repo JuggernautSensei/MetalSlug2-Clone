@@ -7,16 +7,12 @@ class SimRunner
 public:
     explicit SimRunner(Scoped<IGameState> _pState);
     ~SimRunner();
-
-    SimRunner(const SimRunner&)            = delete;
-    SimRunner& operator=(const SimRunner&) = delete;
-
-    void Step(InputFrame _input);
-    void Run(Span<const InputFrame> _inputs);
-
-    void Render(float _alpha);
-    void SwitchState(Scoped<IGameState> _pNext);
-
+    SimRunner(const SimRunner&)                                   = delete;
+    SimRunner&                        operator=(const SimRunner&) = delete;
+    void                              Step(InputFrame _input);
+    void                              Run(Span<const InputFrame> _inputs);
+    void                              Render(float _alpha);
+    void                              SwitchState(Scoped<IGameState> _pNext);
     [[nodiscard]] IGameState*         GetState() const;
     [[nodiscard]] uint64_t            GetTickCount() const;
     [[nodiscard]] const InputHistory& GetHistory() const;

@@ -1,8 +1,8 @@
 #pragma once
-#include "Game/Enemies/BigShieeCfg.h"
+#include "Game/Enemies/BigShieeConfig.h"
 
 // 전함 보스 단계
-enum class eBigShieePhase : int
+enum class eBigShieePhase
 {
     Entrance,
     Battery,
@@ -10,7 +10,7 @@ enum class eBigShieePhase : int
     Cannon
 };
 
-enum class eBigShieeTurretMode : int
+enum class eBigShieeTurretMode
 {
     Idle,
     Prep,
@@ -19,7 +19,7 @@ enum class eBigShieeTurretMode : int
     Dead
 };
 
-enum class eBigShieeCannonMode : int
+enum class eBigShieeCannonMode
 {
     Hidden,
     Deploy,
@@ -28,27 +28,30 @@ enum class eBigShieeCannonMode : int
     Shot
 };
 
-inline constexpr int kBigShieeExtHp          = 0;    // [0..6] 포탑 체력
-inline constexpr int kBigShieeExtMode        = 7;    // [7..13] eBigShieeTurretMode
-inline constexpr int kBigShieeExtTicks       = 14;   // [14..20] 현재 모드 경과 틱
-inline constexpr int kBigShieeExtPos         = 21;   // [21..27] 머리 위치 0
-inline constexpr int kBigShieeExtNextVolley  = 28;   // 다음 포격 시각
-inline constexpr int kBigShieeExtCannonMode  = 29;
-inline constexpr int kBigShieeExtCannonTicks = 30;
-inline constexpr int kBigShieeExtCannonRow   = 31;
-inline constexpr int kBigShieeExtNextMissile = 32;   // 다음 고폭탄 시각
-inline constexpr int kBigShieeExtDeployStart = 33;
-inline constexpr int kBigShieeExtMoving      = 34;
-inline constexpr int kBigShieeExtLastKill    = 35;
-inline constexpr int kBigShieeExtScrollTicks = 36;
-inline constexpr int kBigShieeExtDriving     = 38;
-inline constexpr int kBigShieeExtSpeedX      = 37;   // 마지막 틱 선체 월드 속도
-inline constexpr int kBigShieeExtNextChute   = 39;   // 다음 낙하산 인질 스폰 시각
-inline constexpr int kBigShieeExtCannonYaw   = 40;
-inline constexpr int kBigShieeExtCannonTurn  = 41;
-inline constexpr int kBigShieeExtLidStart    = 42;
-inline constexpr int kBigShieeExtCasingTick  = 44;
-inline constexpr int kBigShieeExtCasingX     = 45;
-inline constexpr int kBigShieeExtCasingY     = 46;
-inline constexpr int kBigShieeExtNextDmgFx   = 47;   // 다음 소폭발 시각
-inline constexpr int kBigShieeExtDriftTicks  = 43;
+struct BigShieeData
+{
+    ARRAY<int, kBigShieeTurretCount>                 turretHp       = {};
+    ARRAY<eBigShieeTurretMode, kBigShieeTurretCount> turretMode     = {};
+    ARRAY<int, kBigShieeTurretCount>                 turretTicks    = {};
+    ARRAY<int, kBigShieeTurretCount>                 turretPosition = {};
+    int                                              nextVolley     = 0;
+    eBigShieeCannonMode                              cannonMode     = eBigShieeCannonMode::Hidden;
+    int                                              cannonTicks    = 0;
+    int                                              cannonRow      = 0;
+    int                                              nextMissile    = 0;
+    int                                              deployStart    = 0;
+    int                                              moving         = 0;
+    int                                              lastKill       = 0;
+    int                                              scrollTicks    = 0;
+    int                                              driving        = 0;
+    int                                              speedX         = 0;
+    int                                              nextChute      = 0;
+    int                                              cannonYaw      = 0;
+    int                                              cannonTurn     = 0;
+    int                                              lidStart       = 0;
+    int                                              casingTick     = 0;
+    int                                              casingX        = 0;
+    int                                              casingY        = 0;
+    int                                              nextDamageFx   = 0;
+    int                                              driftTicks     = 0;
+};

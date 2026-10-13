@@ -1,8 +1,7 @@
 #include "Render/SpriteLibrary.h"
 
 #include "Base/SlugError.h"
-#include "Base/Json.h"
-#include "Base/PhaseTimer.h"
+#include "Base/JsonFields.h"
 #include "Base/Types.h"
 
 namespace
@@ -69,12 +68,12 @@ Result<SpriteLibrary> SpriteLibrary::LoadFromJson(
 Result<SpriteLibrary> SpriteLibrary::LoadFromDirectory(
     const FilePath& _bakedRoot)
 {
-    Result<JsonDeserializer> doc = LoadJsonFile(_bakedRoot / "sprites.json");
+    Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(_bakedRoot / "sprites.json", kJsonBom);
     if (!doc)
     {
         return Error { eError::FileOpen };
     }
-    const ScopedPhaseTimer timer { "sprites-parse", "sprites.json" };
+
     return Parse_(doc->GetReader());
 }
 

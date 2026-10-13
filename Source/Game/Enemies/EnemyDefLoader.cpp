@@ -3,9 +3,8 @@
 #include <format>
 
 #include "Base/SlugError.h"
-#include "Base/Json.h"
+#include "Base/JsonFields.h"
 #include "Base/Log.h"
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Enemies/EnemyDef.h"
 #include "Game/Enemies/EnemyDefParse.h"
@@ -19,7 +18,7 @@ public:
     [[nodiscard]] bool Run(const JsonReader& _root);
     [[nodiscard]] bool RunMany(Span<const JsonReader> _roots);
 
-    String error = {};
+    [[nodiscard]] const String& GetError() const noexcept { return m_error; }
 
 private:
     using Chain   = Vector<JsonReader>;
@@ -40,9 +39,9 @@ private:
     [[nodiscard]] bool CheckKeys_(const Chain& _chain, StringView _defName, Span<const StringView> _allowed);
 
     [[nodiscard]] bool CheckObjectKeys_(
-        const StringView        _def,
-        const StringView        _field,
-        const JsonReader&       _object,
+        const StringView       _def,
+        const StringView       _field,
+        const JsonReader&      _object,
         Span<const StringView> _allowed);
 
     [[nodiscard]] std::optional<JsonReader> Find_(const Chain& _chain, StringView _key) const;
@@ -126,6 +125,7 @@ private:
     EnemyDefLibrary&     m_lib;
     Vector<RawDef>       m_raw      = {};
     HashMap<String, int> m_rawIndex = {};
+    String               m_error    = {};
 };
 
 constexpr ARRAY<StringView, 4>  kRootKeys   = { "note", "version", "globals", "defs" };
@@ -189,11 +189,11 @@ constexpr ARRAY<StringView, 27> kProjectileKeys = {
     "scale"
 };
 constexpr ARRAY<const char*, 11> kKnownKinds       = { "walker", "vehicle", "turret", "flyer", "boss", "prop", "npc", "item", "projectile", "effect", "debris" };
-constexpr ARRAY<StringView, 4>  kActivationKeys   = { "note", "mode", "marginPx", "latch" };
-constexpr ARRAY<StringView, 8>  kPhysicsKeys      = { "note", "gravity", "maxFall", "speed", "jumpVy", "dropSpeed", "footHalfWidth", "useGravity" };
-constexpr ARRAY<StringView, 10> kWeaponKeys       = { "note", "projectile", "muzzle", "aim", "tilt", "arc", "muzzleFx", "hitbox", "motionClip", "effects" };
-constexpr ARRAY<StringView, 5>  kWeaponEffectKeys = { "note", "clip", "offset", "frame", "depth" };
-constexpr ARRAY<StringView, 17> kDeathKeys        = {
+constexpr ARRAY<StringView, 4>   kActivationKeys   = { "note", "mode", "marginPx", "latch" };
+constexpr ARRAY<StringView, 8>   kPhysicsKeys      = { "note", "gravity", "maxFall", "speed", "jumpVy", "dropSpeed", "footHalfWidth", "useGravity" };
+constexpr ARRAY<StringView, 10>  kWeaponKeys       = { "note", "projectile", "muzzle", "aim", "tilt", "arc", "muzzleFx", "hitbox", "motionClip", "effects" };
+constexpr ARRAY<StringView, 5>   kWeaponEffectKeys = { "note", "clip", "offset", "frame", "depth" };
+constexpr ARRAY<StringView, 17>  kDeathKeys        = {
     "note",
     "bomb",
     "slash",
@@ -237,9 +237,9 @@ void EnemyDefParser::Fail_(
     const StringView _field,
     const StringView _msg)
 {
-    if (error.empty())
+    if (m_error.empty())
     {
-        error = _field.empty() ? std::format("{}: {}", _def, _msg) : std::format("{}: {}: {}", _def, _field, _msg);
+        m_error = _field.empty() ? std::format("{}: {}", _def, _msg) : std::format("{}: {}: {}", _def, _field, _msg);
     }
 }
 
@@ -327,9 +327,9 @@ bool EnemyDefParser::ReadVec2_(
 }
 
 bool EnemyDefParser::CheckObjectKeys_(
-    const StringView              _def,
-    const StringView              _field,
-    const JsonReader&             _object,
+    const StringView             _def,
+    const StringView             _field,
+    const JsonReader&            _object,
     const Span<const StringView> _allowed)
 {
     if (!_object.IsObject())
@@ -451,8 +451,8 @@ bool EnemyDefParser::BuildChain_(
 }
 
 bool EnemyDefParser::CheckKeys_(
-    const Chain&                  _chain,
-    const StringView              _defName,
+    const Chain&                 _chain,
+    const StringView             _defName,
     const Span<const StringView> _allowed)
 {
     for (const JsonReader& reader: _chain)
@@ -1237,28 +1237,28 @@ bool EnemyDefParser::ParseEnemy_(
         DefReader reader { name, def, params, message };
         switch (def.behavior)
         {
-            case eEnemyBehavior::Soldier: ParseSoldierCfg(reader, def); break;
-            case eEnemyBehavior::Bzk: ParseBzkCfg(reader, def); break;
-            case eEnemyBehavior::Hang: ParseHangCfg(reader, def); break;
-            case eEnemyBehavior::FlyingBzk: ParseFlyingBzkCfg(reader, def); break;
-            case eEnemyBehavior::Shielder: ParseShielderCfg(reader, def); break;
-            case eEnemyBehavior::Pow: ParsePowCfg(reader, def); break;
-            case eEnemyBehavior::Jeep: ParseJeepCfg(reader, def); break;
-            case eEnemyBehavior::BTank: ParseBTankCfg(reader, def); break;
-            case eEnemyBehavior::MissleTank: ParseMissleTankCfg(reader, def); break;
-            case eEnemyBehavior::Sarubia: ParseSarubiaCfg(reader, def); break;
-            case eEnemyBehavior::Bus: ParseBusCfg(reader, def); break;
-            case eEnemyBehavior::Heli: ParseHeliCfg(reader, def); break;
-            case eEnemyBehavior::HeliBomb: ParseHeliBombCfg(reader, def); break;
-            case eEnemyBehavior::BigShiee: ParseBigShieeCfg(reader, def); break;
+            case eEnemyBehavior::Soldier: ParseSoldierConfig(reader, def); break;
+            case eEnemyBehavior::Bzk: ParseBzkConfig(reader, def); break;
+            case eEnemyBehavior::Hang: ParseHangConfig(reader, def); break;
+            case eEnemyBehavior::FlyingBzk: ParseFlyingBzkConfig(reader, def); break;
+            case eEnemyBehavior::Shielder: ParseShielderConfig(reader, def); break;
+            case eEnemyBehavior::Pow: ParsePowConfig(reader, def); break;
+            case eEnemyBehavior::Jeep: ParseJeepConfig(reader, def); break;
+            case eEnemyBehavior::BTank: ParseBTankConfig(reader, def); break;
+            case eEnemyBehavior::MissileTank: ParseMissileTankConfig(reader, def); break;
+            case eEnemyBehavior::Sarubia: ParseSarubiaConfig(reader, def); break;
+            case eEnemyBehavior::Bus: ParseBusConfig(reader, def); break;
+            case eEnemyBehavior::Heli: ParseHeliConfig(reader, def); break;
+            case eEnemyBehavior::HeliBomb: ParseHeliBombConfig(reader, def); break;
+            case eEnemyBehavior::BigShiee: ParseBigShieeConfig(reader, def); break;
             case eEnemyBehavior::Count: break;
         }
         ParseEnemyParts(reader, def);
         if (!reader.Finish())
         {
-            if (error.empty())
+            if (m_error.empty())
             {
-                error = message;
+                m_error = message;
             }
             return false;
         }
@@ -1427,9 +1427,9 @@ Result<EnemyDefLibrary> EnemyDefLibrary::Parse(
     {
         if (_pMessage)
         {
-            *_pMessage = parser.error;
+            *_pMessage = parser.GetError();
         }
-        SLUG_LOG_ERROR("적 정의 오류: {}", parser.error);
+        SLUG_LOG_ERROR("적 정의 오류: {}", parser.GetError());
         return Error { eError::EnemyDef };
     }
     return library;
@@ -1439,7 +1439,7 @@ Result<EnemyDefLibrary> EnemyDefLibrary::Load(
     const FilePath& _path,
     String*         _pMessage)
 {
-    Result<JsonDeserializer> doc = LoadJsonFile(_path, kJsonBomComments);
+    Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(_path, kJsonBomComments);
     if (!doc)
     {
         if (_pMessage)
@@ -1456,9 +1456,9 @@ Result<EnemyDefLibrary> EnemyDefLibrary::Load(
     {
         if (_pMessage)
         {
-            *_pMessage = parser.error;
+            *_pMessage = parser.GetError();
         }
-        SLUG_LOG_ERROR("적 정의 오류 ({}): {}", _path.string(), parser.error);
+        SLUG_LOG_ERROR("적 정의 오류 ({}): {}", _path.string(), parser.GetError());
         return Error { eError::EnemyDef };
     }
     return library;
@@ -1494,7 +1494,7 @@ Result<EnemyDefLibrary> EnemyDefLibrary::LoadDirectory(
     roots.reserve(files.size());
     for (const FilePath& file: files)
     {
-        Result<JsonDeserializer> doc = LoadJsonFile(file, kJsonBomComments);
+        Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(file, kJsonBomComments);
         if (!doc)
         {
             if (_pMessage)
@@ -1514,9 +1514,9 @@ Result<EnemyDefLibrary> EnemyDefLibrary::LoadDirectory(
     {
         if (_pMessage)
         {
-            *_pMessage = parser.error;
+            *_pMessage = parser.GetError();
         }
-        SLUG_LOG_ERROR("적 정의 오류 ({}): {}", _dir.string(), parser.error);
+        SLUG_LOG_ERROR("적 정의 오류 ({}): {}", _dir.string(), parser.GetError());
         return Error { eError::EnemyDef };
     }
     return library;

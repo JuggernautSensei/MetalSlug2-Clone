@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-enum class ePlayerState : uint8_t
+enum class ePlayerState
 {
     Idle,
     Run,
@@ -15,7 +15,7 @@ enum class ePlayerState : uint8_t
 };
 
 // 에디터 전용 디버그 무적 모드
-enum class eGodMode : uint8_t
+enum class eGodMode
 {
     Off,
     NoDeath,
@@ -23,7 +23,7 @@ enum class eGodMode : uint8_t
     Count
 };
 
-enum class eOverlay : uint8_t
+enum class eOverlay
 {
     None,
     Shot,
@@ -31,7 +31,7 @@ enum class eOverlay : uint8_t
     Throw
 };
 
-enum class eAim : uint8_t
+enum class eAim
 {
     Forward,
     Up,
@@ -40,7 +40,7 @@ enum class eAim : uint8_t
     DiagDown
 };
 
-enum class ePose : uint8_t
+enum class ePose
 {
     Stand,
     Crouch,

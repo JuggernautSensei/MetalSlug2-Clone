@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <SDL3/SDL.h>
 
-#include "Base/RGBA.h"
 #include "Base/Types.h"
 
 namespace
@@ -166,7 +165,7 @@ AnimFrame BitmapFont::GetTimeDigitFrame(
     return frame;
 }
 
-void BitmapFont::DrawText(
+void BitmapFont::DrawString(
     Renderer&        _renderer,
     SpriteBatch&     _sprites,
     const int        _x,

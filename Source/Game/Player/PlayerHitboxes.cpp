@@ -1,7 +1,5 @@
 #include "Game/Player/PlayerHitboxes.h"
 
-#include "Base/Math.h"
-
 constexpr float kInvSqrt2 = 0.70710678f;
 
 namespace

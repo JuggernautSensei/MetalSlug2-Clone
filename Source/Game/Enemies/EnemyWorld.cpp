@@ -4,9 +4,8 @@
 #include <cstring>
 
 #include "Base/Log.h"
-#include "Base/Math.h"
 #include "Base/Types.h"
-#include "Game/Enemies/BigShieeCfg.h"
+#include "Game/Enemies/BigShieeConfig.h"
 #include "Game/Enemies/EnemyCommon.h"
 #include "World/Constants.h"
 
@@ -155,13 +154,14 @@ void EnemyWorld::Create_(
 {
     const EnemyDef& def = m_pLibrary->Get(_defIndex);
 
-    Enemy e;
-    e.id         = _id;
-    e.defIndex   = _defIndex;
-    e.behavior   = def.behavior;
-    e.delayTicks = SecToTicks(_params.delaySec);
-    e.z          = _params.z != kDefaultZ ? _params.z : GetEnemyDefaultZ(def.behavior);
-    e.life       = e.delayTicks > 0 ? eEnemyLife::Pending : eEnemyLife::Alive;
+    Scoped<Enemy> pEnemy = MakeEnemy(def.behavior);
+    EnemyState&   e      = pEnemy->m_state;
+    e.id                 = _id;
+    e.defIndex           = _defIndex;
+    e.behavior           = def.behavior;
+    e.delayTicks         = SecToTicks(_params.delaySec);
+    e.z                  = _params.z != kDefaultZ ? _params.z : GetEnemyDefaultZ(def.behavior);
+    e.life               = e.delayTicks > 0 ? eEnemyLife::Pending : eEnemyLife::Alive;
 
     e.body.position      = _feet;
     e.body.size          = { def.body.w, def.body.h };
@@ -184,33 +184,22 @@ void EnemyWorld::Create_(
     e.clip      = -1;
     e.bVisible  = true;
 
-    m_enemies.push_back(e);
+    m_enemies.push_back(std::move(pEnemy));
 }
 
 void EnemyWorld::RegisterHurtboxes(
     CombatSystem& _combat) const
 {
-    for (const Enemy& e: m_enemies)
+    for (const Scoped<Enemy>& pEnemy: m_enemies)
     {
+        Enemy&            enemy = *pEnemy;
+        const EnemyState& e     = enemy.m_state;
         if (e.life != eEnemyLife::Alive)
         {
             continue;
         }
-        const EnemyDef&    def = m_pLibrary->Get(e.defIndex);
-        const BehaviorOps& ops = GetBehaviorOps(e.behavior);
-        if (ops.registerHurtboxes)
-        {
-            ops.registerHurtboxes(e, def, _combat);
-        }
-        else
-        {
-            Hurtbox hurtbox;
-            hurtbox.box     = def.hurtbox.At(e.body.position, e.facing);
-            hurtbox.team    = def.team;
-            hurtbox.owner   = e.id;
-            hurtbox.accepts = AcceptsFor(def.bHuman);
-            _combat.AddHurtbox(hurtbox);
-        }
+        const EnemyDef& def = m_pLibrary->Get(e.defIndex);
+        enemy.RegisterHurtboxes(def, _combat);
         for (const ExtraBoxDef& box: def.hitboxes)
         {
             if (box.kind != eExtraBoxKind::Hurt)
@@ -242,17 +231,18 @@ void EnemyWorld::OnHitEvents(
         {
             continue;
         }
-        Enemy& e = m_enemies[idx];
+        Enemy&      enemy = *m_enemies[idx];
+        EnemyState& e     = enemy.m_state;
         if (e.life != eEnemyLife::Alive)
         {
             continue;
         }
 
-        const EnemyDef&    def = m_pLibrary->Get(e.defIndex);
-        const BehaviorOps& ops = GetBehaviorOps(e.behavior);
-        EnemyEnv           env { *this, m_lastCtx, *m_pLibrary, MakePhys_(def), e.z - GetEnemyDefaultZ(e.behavior) };
+        const EnemyDef& def = m_pLibrary->Get(e.defIndex);
 
-        if (ops.onHit && ops.onHit(e, def, env, event))
+        EnemyEnv env { *this, m_lastCtx, *m_pLibrary, MakePhys_(def), e.z - GetEnemyDefaultZ(e.behavior) };
+
+        if (enemy.OnHit(def, env, event))
         {
             if (def.bHitFlash)
             {
@@ -268,7 +258,7 @@ void EnemyWorld::OnHitEvents(
         }
         if (e.health.IsDead())
         {
-            BeginDying_(e, def, env);
+            BeginDying_(enemy, def, env);
         }
         else if (applied > 0 && def.bHitFlash)
         {
@@ -278,25 +268,22 @@ void EnemyWorld::OnHitEvents(
 }
 
 void EnemyWorld::BeginDying_(
-    Enemy&          _e,
+    Enemy&          _enemy,
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
+    EnemyState& _e     = _enemy.m_state;
     _e.life            = eEnemyLife::Dying;
     _e.body.velocity.x = 0.f;
     PushEvent(MakeEvent(_e, eEnemyEventKind::Died));
-    const BehaviorOps& ops = GetBehaviorOps(_e.behavior);
-    if (ops.onDeath)
-    {
-        ops.onDeath(_e, _def, _env);
-    }
+    _enemy.OnDeath(_def, _env);
 }
 
 namespace
 {
 void ReleaseExtraBoxHit_(
-    Enemy&    _e,
-    EnemyEnv& _env)
+    EnemyState& _e,
+    EnemyEnv&   _env)
 {
     if (_e.boxHitId != kNoHitId && _env.ctx.pCombat)
     {
@@ -306,7 +293,7 @@ void ReleaseExtraBoxHit_(
 }
 
 void TickExtraBoxes_(
-    Enemy&          _e,
+    EnemyState&     _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
@@ -361,8 +348,10 @@ void EnemyWorld::Tick(
 {
     m_lastCtx = _ctx;
 
-    for (Enemy& e: m_enemies)
+    for (const Scoped<Enemy>& pEnemy: m_enemies)
     {
+        Enemy&      enemy = *pEnemy;
+        EnemyState& e     = enemy.m_state;
         TickHitFlash(e.hitFlashTicks);
         for (int& ticks: e.partFlashTicks)
         {
@@ -405,15 +394,17 @@ void EnemyWorld::Tick(
     }
 
     const Aabb& view = _ctx.cameraView;
-    for (Enemy& e: m_enemies)
+    for (const Scoped<Enemy>& pEnemy: m_enemies)
     {
+        Enemy&      enemy = *pEnemy;
+        EnemyState& e     = enemy.m_state;
         if (e.life == eEnemyLife::Gone)
         {
             continue;
         }
-        const EnemyDef&    def = m_pLibrary->Get(e.defIndex);
-        const BehaviorOps& ops = GetBehaviorOps(e.behavior);
-        EnemyEnv           env { *this, m_lastCtx, *m_pLibrary, MakePhys_(def), e.z - GetEnemyDefaultZ(e.behavior) };
+        const EnemyDef& def = m_pLibrary->Get(e.defIndex);
+
+        EnemyEnv env { *this, m_lastCtx, *m_pLibrary, MakePhys_(def), e.z - GetEnemyDefaultZ(e.behavior) };
 
         if (e.life == eEnemyLife::Pending)
         {
@@ -427,10 +418,7 @@ void EnemyWorld::Tick(
         if (!e.bInit)
         {
             e.bInit = true;
-            if (ops.init)
-            {
-                ops.init(e, def, env);
-            }
+            enemy.Init(def, env);
         }
 
         e.prevFeet = e.body.position;
@@ -450,10 +438,7 @@ void EnemyWorld::Tick(
 
             ++e.stateTicks;
             ++e.clipTicks;
-            if (ops.tick)
-            {
-                ops.tick(e, def, env);
-            }
+            enemy.Tick(def, env);
             if (m_play.id == e.id)
             {
                 ++m_play.ticks;
@@ -473,7 +458,7 @@ void EnemyWorld::Tick(
             // 체력이 0 이 된 살아 있는 적 은 여기서 사망 처리
             if (e.life == eEnemyLife::Alive && e.health.IsDead())
             {
-                BeginDying_(e, def, env);
+                BeginDying_(enemy, def, env);
             }
         }
         else if (e.life == eEnemyLife::Dying)
@@ -481,14 +466,7 @@ void EnemyWorld::Tick(
             ++e.stateTicks;
             ++e.clipTicks;
             ReleaseExtraBoxHit_(e, env);
-            if (ops.tickDying)
-            {
-                ops.tickDying(e, def, env);
-            }
-            else
-            {
-                e.life = eEnemyLife::Gone;
-            }
+            enemy.TickDying(def, env);
         }
     }
 
@@ -540,12 +518,13 @@ void EnemyWorld::RemoveGone_()
     size_t keep = 0;
     for (size_t i = 0; i < m_enemies.size(); ++i)
     {
-        Enemy& e = m_enemies[i];
+        Enemy&      enemy = *m_enemies[i];
+        EnemyState& e     = enemy.m_state;
         if (e.life != eEnemyLife::Gone)
         {
             if (keep != i)
             {
-                m_enemies[keep] = e;
+                m_enemies[keep] = std::move(m_enemies[i]);
             }
             ++keep;
             continue;
@@ -603,12 +582,12 @@ void EnemyWorld::BindAnims(
     {
         const EnemyDef& def = m_pLibrary->Get(static_cast<int>(d));
         m_clipIds[d].resize(def.clips.size());
-        for (size_t c = 0; c < def.clips.size(); ++c)
+        for (size_t config = 0; config < def.clips.size(); ++config)
         {
             for (int side = 0; side < 2; ++side)
             {
-                const String name     = ResolveSide(def.clips[c].clip.name, side == 0 ? -1 : 1);
-                m_clipIds[d][c][side] = _anims.Find(name);
+                const String name          = ResolveSide(def.clips[config].clip.name, side == 0 ? -1 : 1);
+                m_clipIds[d][config][side] = _anims.Find(name);
             }
         }
     }
@@ -642,22 +621,23 @@ void EnemyWorld::Submit(
         BindAnims(_anims);
     }
 
-    for (const Enemy& e: m_enemies)
+    for (const Scoped<Enemy>& pEnemy: m_enemies)
     {
+        Enemy&            enemy = *pEnemy;
+        const EnemyState& e     = enemy.m_state;
         if (!e.bVisible || e.life == eEnemyLife::Pending || e.life == eEnemyLife::Gone)
         {
             continue;
         }
-        const EnemyDef&    def  = m_pLibrary->Get(e.defIndex);
-        const BehaviorOps& ops  = GetBehaviorOps(e.behavior);
-        const int          side = SideIndex_(e.facing);
-        const VECTOR2      feet = Lerp(e.prevFeet, e.body.position, _alpha);
+        const EnemyDef& def = m_pLibrary->Get(e.defIndex);
 
-        if (ops.submitParts)
+        const int     side = SideIndex_(e.facing);
+        const VECTOR2 feet = Lerp(e.prevFeet, e.body.position, _alpha);
+
         {
             const int            zOffset = e.z - GetEnemyDefaultZ(e.behavior);
             const EnemyRenderEnv render { _sprites, _anims, m_pSprites, _projectiles, feet, _alpha, kEnemyDepth, HitFlashAmount(e), zOffset };
-            ops.submitParts(e, def, render);
+            enemy.SubmitParts(def, render);
         }
         if (e.clip < 0)
         {
@@ -670,12 +650,9 @@ void EnemyWorld::Submit(
             continue;
         }
         const AnimFrame* pFrame = &pClip->frames[static_cast<size_t>(FrameAt_(*pClip, static_cast<int64_t>(e.clipTicks) * kAnimUnitsPerTick))];
-        if (ops.bodyFrame)
+        if (const AnimFrame* pPose = enemy.BodyFrame(def, _anims))
         {
-            if (const AnimFrame* pPose = ops.bodyFrame(e, def, _anims))
-            {
-                pFrame = pPose;
-            }
+            pFrame = pPose;
         }
         if (pFrame->IsEmpty())
         {
@@ -763,7 +740,7 @@ size_t EnemyWorld::FindIndex_(
 {
     for (size_t i = 0; i < m_enemies.size(); ++i)
     {
-        if (m_enemies[i].id == _id)
+        if (m_enemies[i]->m_state.id == _id)
         {
             return i;
         }
@@ -780,8 +757,9 @@ bool EnemyWorld::FireWeaponNow(
     {
         return false;
     }
-    Enemy&          e   = m_enemies[idx];
-    const EnemyDef& def = m_pLibrary->Get(e.defIndex);
+    Enemy&          enemy = *m_enemies[idx];
+    EnemyState&     e     = enemy.m_state;
+    const EnemyDef& def   = m_pLibrary->Get(e.defIndex);
     if (_weapon < 0 || _weapon >= static_cast<int>(def.weapons.size()))
     {
         return false;
@@ -800,8 +778,9 @@ bool EnemyWorld::PlayMotion(
     {
         return false;
     }
-    const Enemy&    e   = m_enemies[idx];
-    const EnemyDef& def = m_pLibrary->Get(e.defIndex);
+    Enemy&            enemy = *m_enemies[idx];
+    const EnemyState& e     = enemy.m_state;
+    const EnemyDef&   def   = m_pLibrary->Get(e.defIndex);
     if (_weapon < 0 || _weapon >= static_cast<int>(def.weapons.size()))
     {
         return false;
@@ -821,11 +800,11 @@ bool EnemyWorld::PlayMotion(
     return true;
 }
 
-const Enemy* EnemyWorld::Get(
+const EnemyState* EnemyWorld::Get(
     const EnemyHandle _handle) const
 {
     const size_t idx = FindIndex_(_handle.id);
-    return idx < m_enemies.size() ? &m_enemies[idx] : nullptr;
+    return idx < m_enemies.size() ? &m_enemies[idx]->m_state : nullptr;
 }
 
 bool EnemyWorld::SetZ(
@@ -837,7 +816,7 @@ bool EnemyWorld::SetZ(
     {
         return false;
     }
-    m_enemies[idx].z = _z;
+    m_enemies[idx]->m_state.z = _z;
     return true;
 }
 
@@ -868,8 +847,10 @@ EnemyHandle EnemyWorld::ResolveHandle(
 Vector<Aabb> EnemyWorld::GetSolidBoxes() const
 {
     Vector<Aabb> boxes;
-    for (const Enemy& e: m_enemies)
+    for (const Scoped<Enemy>& pEnemy: m_enemies)
     {
+        Enemy&            enemy = *pEnemy;
+        const EnemyState& e     = enemy.m_state;
         if (e.life != eEnemyLife::Alive)
         {
             continue;
@@ -894,23 +875,6 @@ Vector<Aabb> EnemyWorld::GetSolidBoxes() const
     return boxes;
 }
 
-void EnemyWorld::SendCommand(
-    const EnemyHandle _handle,
-    const StringView  _command)
-{
-    const size_t idx = FindIndex_(ResolveHandle(_handle).id);
-    if (idx >= m_enemies.size() || m_enemies[idx].life != eEnemyLife::Alive)
-    {
-        return;
-    }
-    Enemy&             e   = m_enemies[idx];
-    const BehaviorOps& ops = GetBehaviorOps(e.behavior);
-    if (ops.onCommand)
-    {
-        ops.onCommand(e, m_pLibrary->Get(e.defIndex), _command);
-    }
-}
-
 bool EnemyWorld::IsDefeated(
     const EnemyHandle _handle) const
 {
@@ -918,7 +882,7 @@ bool EnemyWorld::IsDefeated(
     {
         return true;
     }
-    const Enemy* pEnemy = Get(ResolveHandle(_handle));
+    const EnemyState* pEnemy = Get(ResolveHandle(_handle));
     if (!pEnemy)
     {
         return true;
@@ -944,7 +908,7 @@ bool EnemyWorld::IsDestroyFinished(
     {
         return true;
     }
-    const Enemy* pEnemy = Get(ResolveHandle(_handle));
+    const EnemyState* pEnemy = Get(ResolveHandle(_handle));
     if (!pEnemy || pEnemy->life == eEnemyLife::Gone)
     {
         return true;
@@ -953,15 +917,17 @@ bool EnemyWorld::IsDestroyFinished(
     {
         return false;
     }
-    const BehaviorOps& ops = GetBehaviorOps(pEnemy->behavior);
-    return ops.deathDone ? ops.deathDone(*pEnemy, m_pLibrary->Get(pEnemy->defIndex)) : false;
+    const size_t idx = FindIndex_(pEnemy->id);
+    return m_enemies[idx]->DeathDone(m_pLibrary->Get(pEnemy->defIndex));
 }
 
 bool EnemyWorld::IsTagDefeated(
     const uint32_t _userTag) const
 {
-    for (const Enemy& e: m_enemies)
+    for (const Scoped<Enemy>& pEnemy: m_enemies)
     {
+        Enemy&            enemy = *pEnemy;
+        const EnemyState& e     = enemy.m_state;
         if (e.userTag == _userTag && (e.life == eEnemyLife::Alive || e.life == eEnemyLife::Pending))
         {
             return false;
@@ -974,8 +940,10 @@ int EnemyWorld::CountAlive(
     const EnemyFilter& _filter) const
 {
     int count = 0;
-    for (const Enemy& e: m_enemies)
+    for (const Scoped<Enemy>& pEnemy: m_enemies)
     {
+        Enemy&            enemy = *pEnemy;
+        const EnemyState& e     = enemy.m_state;
         if (e.life != eEnemyLife::Alive && e.life != eEnemyLife::Pending)
         {
             continue;
@@ -1028,8 +996,10 @@ void EnemyWorld::RefreshBodies(
     const int     _defIndex,
     const VECTOR2 _size)
 {
-    for (Enemy& e: m_enemies)
+    for (const Scoped<Enemy>& pEnemy: m_enemies)
     {
+        Enemy&      enemy = *pEnemy;
+        EnemyState& e     = enemy.m_state;
         if (e.defIndex == _defIndex)
         {
             e.body.size = _size;
@@ -1043,13 +1013,14 @@ void EnemyWorld::ClearMonsters(
     size_t keep = 0;
     for (size_t i = 0; i < m_enemies.size(); ++i)
     {
-        Enemy&     e       = m_enemies[i];
-        const bool bRemove = m_pLibrary->Get(e.defIndex).team == eTeam::Enemy || _bIncludeNpc;
+        Enemy&      enemy   = *m_enemies[i];
+        EnemyState& e       = enemy.m_state;
+        const bool  bRemove = m_pLibrary->Get(e.defIndex).team == eTeam::Enemy || _bIncludeNpc;
         if (!bRemove)
         {
             if (keep != i)
             {
-                m_enemies[keep] = e;
+                m_enemies[keep] = std::move(m_enemies[i]);
             }
             ++keep;
             continue;
@@ -1065,7 +1036,8 @@ void EnemyWorld::KillAll(
     size_t keep = 0;
     for (size_t i = 0; i < m_enemies.size(); ++i)
     {
-        Enemy& e = m_enemies[i];
+        Enemy&      enemy = *m_enemies[i];
+        EnemyState& e     = enemy.m_state;
         if (e.life == eEnemyLife::Pending)
         {
             continue;
@@ -1079,7 +1051,7 @@ void EnemyWorld::KillAll(
         }
         if (keep != i)
         {
-            m_enemies[keep] = e;
+            m_enemies[keep] = std::move(m_enemies[i]);
         }
         ++keep;
     }
@@ -1089,8 +1061,10 @@ void EnemyWorld::KillAll(
 uint64_t EnemyWorld::HashState() const
 {
     Fnv1a hasher;
-    for (const Enemy& e: m_enemies)
+    for (const Scoped<Enemy>& pEnemy: m_enemies)
     {
+        Enemy&            enemy = *pEnemy;
+        const EnemyState& e     = enemy.m_state;
         MixHash_(hasher, static_cast<int64_t>(e.id));
         MixHash_(hasher, e.defIndex);
         MixHash_(hasher, static_cast<int64_t>(e.life));
@@ -1100,11 +1074,7 @@ uint64_t EnemyWorld::HashState() const
         MixHash_(hasher, e.clip);
         MixHash_(hasher, e.health.hp);
         MixHash_(hasher, e.facing);
-        MixHash_(hasher, e.counter);
-        MixHash_(hasher, e.aux);
-        MixHash_(hasher, e.aux2);
-        MixHash_(hasher, e.aux3);
-        MixHash_(hasher, e.aux4);
+        enemy.HashActionState(hasher);
         MixHash_(hasher, e.shotsFired);
         MixHash_(hasher, static_cast<int64_t>(e.body.position.x * 16.f));
         MixHash_(hasher, static_cast<int64_t>(e.body.position.y * 16.f));
@@ -1146,7 +1116,7 @@ void EnemyWorld::NoteSuccessor(
 }
 
 EnemyEvent EnemyWorld::MakeEvent(
-    const Enemy&          _e,
+    const EnemyState&     _e,
     const eEnemyEventKind _kind) const
 {
     EnemyEvent event;
@@ -1187,7 +1157,7 @@ void EnemyWorld::RequestCameraScroll(
     m_cameraScroll += _dx;
 }
 
-Span<const Enemy> EnemyWorld::GetEnemies() const
+Span<const Scoped<Enemy>> EnemyWorld::GetEnemies() const
 {
     return m_enemies;
 }
@@ -1200,4 +1170,10 @@ const EffectList& EnemyWorld::GetEffects() const
 size_t EnemyWorld::GetCount() const
 {
     return m_enemies.size();
+}
+
+const Enemy* EnemyWorld::FindEnemy(const EnemyHandle _handle) const
+{
+    const size_t idx = FindIndex_(_handle.id);
+    return idx < m_enemies.size() ? m_enemies[idx].GetPtr() : nullptr;
 }

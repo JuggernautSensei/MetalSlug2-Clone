@@ -2,7 +2,6 @@
 #include <cstdint>
 #include <optional>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Stage/StageData.h"
 #include "Game/Stage/StageHost.h"
@@ -23,53 +22,41 @@ class StageRunner
 {
 public:
     StageRunner(const StageData& _data, IStageHost& _host, Camera& _camera, RngMt19937& _rng);
-
-    StageRunner(const StageRunner&)            = delete;
-    StageRunner& operator=(const StageRunner&) = delete;
-    StageRunner(StageRunner&&)                 = delete;
-    StageRunner& operator=(StageRunner&&)      = delete;
-
-    void Begin();
-
+    StageRunner(const StageRunner&)                               = delete;
+    StageRunner& operator=(const StageRunner&)                    = delete;
+    StageRunner(StageRunner&&)                                    = delete;
+    StageRunner&                         operator=(StageRunner&&) = delete;
+    void                                 Begin();
     [[nodiscard]] std::optional<VECTOR2> ResolvePlayerStart() const;
-
-    void Tick();
-
-    void AddCameraScroll(float _dx);
-
-    bool WarpToSection(int _index);
-    bool WarpToSection(StringView _id);
-    bool WarpToBoss();
-    bool WarpToX(float _x);
-
-    [[nodiscard]] VECTOR2     ComputeCameraTarget(VECTOR2 _playerFeet) const;
-    [[nodiscard]] ScreenWalls MakeScreenWalls() const;
-
-    [[nodiscard]] bool                 IsFinished() const;
-    [[nodiscard]] int64_t              GetTick() const;
-    [[nodiscard]] int                  GetNextSectionIndex() const;
-    [[nodiscard]] std::optional<float> GetNextTriggerX() const;
-    [[nodiscard]] int                  GetPendingActionCount() const;
-    [[nodiscard]] int                  GetPendingWaveCount() const;
-    [[nodiscard]] int                  GetOpenGateCount() const;
-    [[nodiscard]] Vector<String>       GetOpenGateIds() const;
-
-    [[nodiscard]] const String& GetGroundName() const;
-    [[nodiscard]] const String& GetBackdropMode() const;
-    [[nodiscard]] VECTOR2       GetCameraOffset() const;
-    [[nodiscard]] const Aabb&   GetBaseBounds() const;
-    [[nodiscard]] Aabb          GetEffectiveBounds() const;
-    [[nodiscard]] int           GetLockDepth() const;
-    [[nodiscard]] bool          HasPermanentLock() const;
-    [[nodiscard]] bool          IsCurveActive(size_t _curveIndex) const;
-
-    [[nodiscard]] Span<const SpawnId> FindSpawnIds(StringView _stageId) const;
-    [[nodiscard]] bool                WasSpawnSkipped(StringView _stageId) const;
-
-    [[nodiscard]] int GetSpawnedCount() const;
-    [[nodiscard]] int GetSkippedCount() const;
-
-    [[nodiscard]] uint64_t HashState() const;
+    void                                 Tick();
+    void                                 AddCameraScroll(float _dx);
+    bool                                 WarpToSection(int _index);
+    bool                                 WarpToSection(StringView _id);
+    bool                                 WarpToBoss();
+    bool                                 WarpToX(float _x);
+    [[nodiscard]] VECTOR2                ComputeCameraTarget(VECTOR2 _playerFeet) const;
+    [[nodiscard]] ScreenWalls            MakeScreenWalls() const;
+    [[nodiscard]] bool                   IsFinished() const;
+    [[nodiscard]] int64_t                GetTick() const;
+    [[nodiscard]] int                    GetNextSectionIndex() const;
+    [[nodiscard]] std::optional<float>   GetNextTriggerX() const;
+    [[nodiscard]] int                    GetPendingActionCount() const;
+    [[nodiscard]] int                    GetPendingWaveCount() const;
+    [[nodiscard]] int                    GetOpenGateCount() const;
+    [[nodiscard]] Vector<String>         GetOpenGateIds() const;
+    [[nodiscard]] const String&          GetGroundName() const;
+    [[nodiscard]] const String&          GetBackdropMode() const;
+    [[nodiscard]] VECTOR2                GetCameraOffset() const;
+    [[nodiscard]] const Aabb&            GetBaseBounds() const;
+    [[nodiscard]] Aabb                   GetEffectiveBounds() const;
+    [[nodiscard]] int                    GetLockDepth() const;
+    [[nodiscard]] bool                   HasPermanentLock() const;
+    [[nodiscard]] bool                   IsCurveActive(size_t _curveIndex) const;
+    [[nodiscard]] Span<const SpawnId>    FindSpawnIds(StringView _stageId) const;
+    [[nodiscard]] bool                   WasSpawnSkipped(StringView _stageId) const;
+    [[nodiscard]] int                    GetSpawnedCount() const;
+    [[nodiscard]] int                    GetSkippedCount() const;
+    [[nodiscard]] uint64_t               HashState() const;
 
 private:
     struct PendingItem
@@ -110,28 +97,24 @@ private:
     };
 
     [[nodiscard]] static int64_t ToTicks_(float _seconds);
-
-    void FireSection_(int _index, bool _bSilent);
-    bool WarpToSection_(int _index, float _targetX);
-    void RunActions_(const Vector<StageAction>& _actions, const ExecContext& _ctx);
-    void Execute_(const StageAction& _action, const ExecContext& _ctx);
-    void ExecSpawn_(const SpawnSpec& _spec, const ExecContext& _ctx, bool _bWave);
-    void ExecLock_(const StageAction& _action, const ExecContext& _ctx);
-    void ExecUnlock_();
-    void ExecClear_(const StageAction& _action);
-
-    void               ProcessPending_();
-    void               ProcessCurves_();
-    void               ProcessGates_();
-    void               CancelAbortables_();
-    [[nodiscard]] bool IsGateSatisfied_(const GateState& _gate) const;
-
-    void               ApplyCameraBounds_();
-    void               ApplyCameraLock_();
-    [[nodiscard]] Aabb CurrentViewRect_() const;
-
-    SpawnRecord*       FindRecord_(StringView _stageId);
-    const SpawnRecord* FindRecord_(StringView _stageId) const;
+    void                         FireSection_(int _index, bool _bSilent);
+    bool                         WarpToSection_(int _index, float _targetX);
+    void                         RunActions_(const Vector<StageAction>& _actions, const ExecContext& _ctx);
+    void                         Execute_(const StageAction& _action, const ExecContext& _ctx);
+    void                         ExecSpawn_(const SpawnSpec& _spec, const ExecContext& _ctx, bool _bWave);
+    void                         ExecLock_(const StageAction& _action, const ExecContext& _ctx);
+    void                         ExecUnlock_();
+    void                         ExecClear_(const StageAction& _action);
+    void                         ProcessPending_();
+    void                         ProcessCurves_();
+    void                         ProcessGates_();
+    void                         CancelAbortables_();
+    [[nodiscard]] bool           IsGateSatisfied_(const GateState& _gate) const;
+    void                         ApplyCameraBounds_();
+    void                         ApplyCameraLock_();
+    [[nodiscard]] Aabb           CurrentViewRect_() const;
+    SpawnRecord*                 FindRecord_(StringView _stageId);
+    const SpawnRecord*           FindRecord_(StringView _stageId) const;
 
     const StageData* m_pData   = nullptr;
     IStageHost*      m_pHost   = nullptr;

@@ -1,9 +1,8 @@
-﻿#pragma once
+#pragma once
 #include <cstdint>
 #include <optional>
 #include <utility>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Combat/CombatSystem.h"
 #include "Game/Combat/HitFlash.h"
@@ -39,7 +38,7 @@ struct PlaceholderEntity
     [[nodiscard]] bool IsAlive() const;
 };
 
-enum class eRouteKind : uint8_t
+enum class eRouteKind
 {
     Placeholder,
     Enemy,
@@ -63,53 +62,48 @@ struct StageCollider
     eStageLayer     stageLayer = eStageLayer::Collider;
 };
 
-class StageWorldHost final : public IStageHost
+class StageWorldHost : public IStageHost
 {
 public:
-    void BindWorld(EnemyWorld* _pEnemies, PropWorld* _pProps);
-    void BindRects(Span<const NamedRect> _rects);
-    void BindPlayer(PlayerController* _pPlayer, const Tuning* _pTuning);
-    void BindUi(UiSystem* _pUi);
-    void AddGroundMap(StringView _name, GroundMap _map);
-
-    void Reset();
-
-    void RegisterPlaceholderHurtboxes(CombatSystem& _combat) const;
-    int  ApplyPlaceholderEvents(Span<const HitEvent> _events);
-    void TickPlaceholders();
-
+    void                                        BindWorld(EnemyWorld* _pEnemies, PropWorld* _pProps);
+    void                                        BindRects(Span<const NamedRect> _rects);
+    void                                        BindPlayer(PlayerController* _pPlayer, const Tuning* _pTuning);
+    void                                        BindUi(UiSystem* _pUi);
+    void                                        AddGroundMap(StringView _name, GroundMap _map);
+    void                                        Reset();
+    void                                        RegisterPlaceholderHurtboxes(CombatSystem& _combat) const;
+    int                                         ApplyPlaceholderEvents(Span<const HitEvent> _events);
+    void                                        TickPlaceholders();
     [[nodiscard]] Span<const PlaceholderEntity> GetPlaceholderEntities() const;
     [[nodiscard]] const String&                 GetLastSectionId() const;
     [[nodiscard]] int                           GetLastSectionIndex() const;
     [[nodiscard]] const String&                 GetEndStateName() const;
     [[nodiscard]] bool                          IsEndRequested() const;
-
-    [[nodiscard]] Span<const StageCollider> GetColliders() const;
-    [[nodiscard]] const SpawnRoute*         FindRoute(SpawnId _id) const;
-    [[nodiscard]] const GroundMap*          GetActiveGround() const;
-    [[nodiscard]] GroundMap*                GetActiveGroundMut();
-    [[nodiscard]] const String&             GetActiveGroundName() const;
-    [[nodiscard]] uint64_t                  HashState() const;
-
-    SpawnId                            SpawnEntity(const SpawnRequest& _request) override;
-    [[nodiscard]] bool                 IsDefeated(SpawnId _id) const override;
-    [[nodiscard]] bool                 IsDestroyFinished(SpawnId _id) const override;
-    void                               ClearEntities(const EntityFilter& _filter) override;
-    void                               SendCommand(SpawnId _id, StringView _command) override;
-    void                               SetGround(StringView _name) override;
-    [[nodiscard]] std::optional<float> GetGroundFindY(float _x, float _fromY) const override;
-    [[nodiscard]] VECTOR2              PlayerFeet() const override;
-    [[nodiscard]] bool                 IsGameOver() const override;
-    void                               SetPlayerInvincible(float _seconds) override;
-    void                               WarpPlayer(VECTOR2 _feet) override;
-    void                               SetBackdrop(StringView _modeId) override;
-    void                               ShowBanner(const String& _text, float _seconds) override;
-    void                               FadeTo(eFadeTarget _target, float _seconds) override;
-    void                               PlayBgm(StringView _name, bool _bLoop) override;
-    void                               ChangeBgm(StringView _name, bool _bLoop, float _fadeOutSec) override;
-    void                               PlaySfx(StringView _name) override;
-    void                               EndStage(StringView _nextState) override;
-    void                               OnSectionEntered(int _index, StringView _id) override;
+    [[nodiscard]] Span<const StageCollider>     GetColliders() const;
+    [[nodiscard]] const SpawnRoute*             FindRoute(SpawnId _id) const;
+    [[nodiscard]] const GroundMap*              GetActiveGround() const;
+    [[nodiscard]] GroundMap*                    GetActiveGroundMut();
+    [[nodiscard]] const String&                 GetActiveGroundName() const;
+    [[nodiscard]] uint64_t                      HashState() const;
+    SpawnId                                     SpawnEntity(const SpawnRequest& _request) override;
+    [[nodiscard]] bool                          IsDefeated(SpawnId _id) const override;
+    [[nodiscard]] bool                          IsDestroyFinished(SpawnId _id) const override;
+    void                                        ClearEntities(const EntityFilter& _filter) override;
+    void                                        SendCommand(SpawnId _id, StringView _command) override;
+    void                                        SetGround(StringView _name) override;
+    [[nodiscard]] std::optional<float>          GetGroundFindY(float _x, float _fromY) const override;
+    [[nodiscard]] VECTOR2                       PlayerFeet() const override;
+    [[nodiscard]] bool                          IsGameOver() const override;
+    void                                        SetPlayerInvincible(float _seconds) override;
+    void                                        WarpPlayer(VECTOR2 _feet) override;
+    void                                        SetBackdrop(StringView _modeId) override;
+    void                                        ShowBanner(const String& _text, float _seconds) override;
+    void                                        FadeTo(eFadeTarget _target, float _seconds) override;
+    void                                        PlayBgm(StringView _name, bool _bLoop) override;
+    void                                        ChangeBgm(StringView _name, bool _bLoop, float _fadeOutSec) override;
+    void                                        PlaySfx(StringView _name) override;
+    void                                        EndStage(StringView _nextState) override;
+    void                                        OnSectionEntered(int _index, StringView _id) override;
 
 private:
     struct NamedGround

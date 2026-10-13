@@ -5,7 +5,6 @@
 
 #include "Audio/AudioMath.h"
 #include "Audio/AudioSystem.h"
-#include "Audio/AudioSystem.h"
 #include "Audio/SoundBank.h"
 #include "Audio/VoiceAllocator.h"
 #include "Base/SlugError.h"
@@ -29,6 +28,35 @@ constexpr const char* kBankJson = R"({
 
 namespace
 {
+// 테스트가 모든 효과 이름이 베이크 사운드로 해석되는지 검사하는 목록
+inline constexpr ARRAY<const char*, 25> kSoundNames = {
+    kPistolShot,
+    kFlameShot,
+    kKnife1,
+    kKnife2,
+    kBombExplode,
+    kPlayerDeath,
+    "PlayerReload",
+    kPickupCoin,
+    kOk,
+    kVoiceHmg,
+    kVoiceShotgun,
+    kVoiceRocket,
+    kVoiceFlame,
+    "PlayerGun_EC",
+    kBgmStage,
+    kGameOver,
+    kPowerUp,
+    kMissionComplete,
+    "Sfx_LetsGo",
+    "Sfx_HereWeGo",
+    kTitleVoice,
+    kBombThrow,
+    kExplosion,
+    kEnemyDeath,
+    "OK",
+};
+
 [[nodiscard]] SoundBank MakeBank_()
 {
     Result<SoundBank> bank = SoundBank::LoadFromJson(kBankJson, "root");
@@ -132,7 +160,7 @@ TEST(AudioBank, EveryKnownSfxNameResolvesToSound)
     {
         GTEST_SKIP() << "Assets 없음";
     }
-    for (const char* name: kAll)
+    for (const char* name: kSoundNames)
     {
         EXPECT_NE(bank->Find(name), nullptr) << "sfx 이름이 베이크 사운드에 없음: " << name;
     }

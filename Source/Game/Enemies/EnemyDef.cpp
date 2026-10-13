@@ -4,9 +4,8 @@
 #include <format>
 
 #include "Base/SlugError.h"
-#include "Base/Json.h"
+#include "Base/JsonFields.h"
 #include "Base/Log.h"
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Enemies/EnemyDefParse.h"
 
@@ -23,7 +22,7 @@ const char* GetBehaviorName(
         case eEnemyBehavior::Pow: return "pow";
         case eEnemyBehavior::Jeep: return "jeep";
         case eEnemyBehavior::BTank: return "btank";
-        case eEnemyBehavior::MissleTank: return "missle_tank";
+        case eEnemyBehavior::MissileTank: return "missle_tank";
         case eEnemyBehavior::Sarubia: return "sarubia";
         case eEnemyBehavior::Bus: return "bus";
         case eEnemyBehavior::Heli: return "heli";
@@ -407,11 +406,6 @@ bool DefReader::Finish()
     return m_error.empty();
 }
 
-bool DefReader::HasError() const
-{
-    return !m_error.empty();
-}
-
 const EnemyDef& EnemyDefLibrary::Get(
     const int _index) const
 {
@@ -461,15 +455,15 @@ void GetEnemyPartSlots(
     _out.clear();
     if (_def.behavior == eEnemyBehavior::Bus)
     {
-        BusCfg& c = _def.bus;
-        _out.push_back({ "innerSoldier", &c.partInnerSoldier });
-        _out.push_back({ "wreck", &c.partWreck });
-        _out.push_back({ "back", &c.partBack });
-        _out.push_back({ "stairs", &c.partStairs });
-        _out.push_back({ "body", &c.partBody });
-        _out.push_back({ "cover", &c.partCover });
-        _out.push_back({ "window", &c.partWindow });
-        _out.push_back({ "debris", &c.partDebris });
+        BusConfig& config = _def.bus;
+        _out.push_back({ "innerSoldier", &config.partInnerSoldier });
+        _out.push_back({ "wreck", &config.partWreck });
+        _out.push_back({ "back", &config.partBack });
+        _out.push_back({ "stairs", &config.partStairs });
+        _out.push_back({ "body", &config.partBody });
+        _out.push_back({ "cover", &config.partCover });
+        _out.push_back({ "window", &config.partWindow });
+        _out.push_back({ "debris", &config.partDebris });
     }
     else if (_def.behavior == eEnemyBehavior::Heli)
     {
@@ -480,16 +474,16 @@ void GetEnemyPartSlots(
     }
     else if (_def.behavior == eEnemyBehavior::BigShiee)
     {
-        BigShieeCfg& c = _def.bigShiee;
-        _out.push_back({ "hull", &c.partHull });
-        _out.push_back({ "antenna", &c.partAntenna });
-        _out.push_back({ "cannon", &c.partCannon });
+        BigShieeConfig& config = _def.bigShiee;
+        _out.push_back({ "hull", &config.partHull });
+        _out.push_back({ "antenna", &config.partAntenna });
+        _out.push_back({ "cannon", &config.partCannon });
         for (size_t i = 0; i < kTurretPartNames.size(); ++i)
         {
-            _out.push_back({ kTurretPartNames[i], &c.partTurrets[i] });
+            _out.push_back({ kTurretPartNames[i], &config.partTurrets[i] });
         }
-        _out.push_back({ "disc", &c.partDisc });
-        _out.push_back({ "wreck", &c.partWreck });
+        _out.push_back({ "disc", &config.partDisc });
+        _out.push_back({ "wreck", &config.partWreck });
     }
     if (_def.overlayClip >= 0)
     {

@@ -1,5 +1,4 @@
 #pragma once
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Core/Input.h"
 #include "Core/Tuning.h"
@@ -32,7 +31,7 @@ struct PlayerStats
 };
 
 // 시작 낙하산 단계
-enum class eChutePhase : uint8_t
+enum class eChutePhase
 {
     None,
     Descend,
@@ -41,34 +40,28 @@ enum class eChutePhase : uint8_t
 
 class PlayerController
 {
+    JUG_CLASS(PlayerController, NO_COPY, NO_MOVE)
+
 public:
-    void Reset(const Tuning& _tuning, VECTOR2 _spawnFeet);
-
-    bool SnapToGround(const PhysicsWorld& _world, float _maxDist);
-
-    void BeginChuteDescent(const Tuning& _tuning);
-
-    void Tick(const PlayerContext& _ctx, const InputHistory& _input);
-
-    bool OnHitEvents(Span<const HitEvent> _events);
-    void Kill();
-
-    void AddScore(int _score);
-    void PickUpWeapon(eWeapon _weapon, const Tuning& _tuning);
-    void AddBombs(int _count);
-    void SetVictory();
-
-    [[nodiscard]] eChutePhase GetChutePhase() const;
-    [[nodiscard]] bool        IsChuteVisible(const Tuning& _tuning) const;
-    [[nodiscard]] VECTOR2 GetLogicalFeet() const;
-
-    void               BeginRide();
-    void               SetRideFeet(VECTOR2 _feet, int _facing);
-    void               EndRide(VECTOR2 _feet, VECTOR2 _velocity, int _facing, int _invincibleTicks);
-    [[nodiscard]] bool IsRiding() const;
-
-    void ExtendInvincibility(int _ticks);
-
+    PlayerController() = default;
+    void                             Reset(const Tuning& _tuning, VECTOR2 _spawnFeet);
+    bool                             SnapToGround(const PhysicsWorld& _world, float _maxDist);
+    void                             BeginChuteDescent(const Tuning& _tuning);
+    void                             Tick(const PlayerContext& _ctx, const InputHistory& _input);
+    bool                             OnHitEvents(Span<const HitEvent> _events);
+    void                             Kill();
+    void                             AddScore(int _score);
+    void                             PickUpWeapon(eWeapon _weapon, const Tuning& _tuning);
+    void                             AddBombs(int _count);
+    void                             SetVictory();
+    [[nodiscard]] eChutePhase        GetChutePhase() const;
+    [[nodiscard]] bool               IsChuteVisible(const Tuning& _tuning) const;
+    [[nodiscard]] VECTOR2            GetLogicalFeet() const;
+    void                             BeginRide();
+    void                             SetRideFeet(VECTOR2 _feet, int _facing);
+    void                             EndRide(VECTOR2 _feet, VECTOR2 _velocity, int _facing, int _invincibleTicks);
+    [[nodiscard]] bool               IsRiding() const;
+    void                             ExtendInvincibility(int _ticks);
     [[nodiscard]] ePlayerState       GetState() const;
     [[nodiscard]] VECTOR2            GetFeet() const;
     [[nodiscard]] VECTOR2            GetPrevFeet() const;
@@ -95,10 +88,8 @@ public:
     [[nodiscard]] Aabb               GetBodyBox() const;
     [[nodiscard]] Hurtbox            MakeHurtbox(const Tuning& _tuning) const;
     [[nodiscard]] bool               IsKnifeTargetInRange() const;
-
-    [[nodiscard]] RigState MakeRigState() const;
-
-    [[nodiscard]] uint64_t HashState() const;
+    [[nodiscard]] RigState           MakeRigState() const;
+    [[nodiscard]] uint64_t           HashState() const;
 
 private:
     void                  TickAlive_(const PlayerContext& _ctx, const InputHistory& _input);

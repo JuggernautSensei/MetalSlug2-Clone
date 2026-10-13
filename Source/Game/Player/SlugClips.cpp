@@ -3,7 +3,6 @@
 #include <cmath>
 #include <format>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 
 constexpr DIRECT_ENUM_ARRAY<eSlugClip, SlugClipInfo> kClipTable = {

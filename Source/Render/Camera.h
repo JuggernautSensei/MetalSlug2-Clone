@@ -1,7 +1,6 @@
-﻿#pragma once
+#pragma once
 #include <cstdint>
 
-#include "Base/Math.h"
 #include "Core/Tuning.h"
 #include "World/Constants.h"
 #include "World/Geometry.h"
@@ -19,48 +18,35 @@ class Camera
 public:
     Camera() = default;
     explicit Camera(const CameraTuning& _tuning);
-
     void                              SetTuning(const CameraTuning& _tuning);
     [[nodiscard]] const CameraTuning& GetTuning() const;
-
-    void               SetBounds(const Aabb& _worldBounds);
-    void               Lock(const Aabb& _lockBounds);
-    void               Unlock();
-    [[nodiscard]] bool IsLocked() const;
-
-    void               SetForwardOnly(bool _bForwardOnly);
-    [[nodiscard]] bool IsForwardOnly() const;
-
-    void               SetForwardOnlyY(bool _bForwardOnlyY);
-    [[nodiscard]] bool IsForwardOnlyY() const;
-
-    void               BeginMove(VECTOR2 _targetCenter, float _seconds);
-    void               CancelMove();
-    [[nodiscard]] bool IsMoving() const;
-
-    void               LockWithGlide(const Aabb& _lockBounds, float _glideSeconds);
-    [[nodiscard]] bool HasPendingLock() const;
-
-    [[nodiscard]] const Aabb& GetBounds() const;
-    [[nodiscard]] const Aabb& GetLockBounds() const;
-
-    void SetTarget(VECTOR2 _target);
-
-    void AddScrollFloor(float _dx);
+    void                              SetBounds(const Aabb& _worldBounds);
+    void                              Lock(const Aabb& _lockBounds);
+    void                              Unlock();
+    [[nodiscard]] bool                IsLocked() const;
+    void                              SetForwardOnly(bool _bForwardOnly);
+    [[nodiscard]] bool                IsForwardOnly() const;
+    void                              SetForwardOnlyY(bool _bForwardOnlyY);
+    [[nodiscard]] bool                IsForwardOnlyY() const;
+    void                              BeginMove(VECTOR2 _targetCenter, float _seconds);
+    void                              CancelMove();
+    [[nodiscard]] bool                IsMoving() const;
+    void                              LockWithGlide(const Aabb& _lockBounds, float _glideSeconds);
+    [[nodiscard]] bool                HasPendingLock() const;
+    [[nodiscard]] const Aabb&         GetBounds() const;
+    [[nodiscard]] const Aabb&         GetLockBounds() const;
+    void                              SetTarget(VECTOR2 _target);
+    void                              AddScrollFloor(float _dx);
 
     // 잠금 영역을 가로로 _dx 만큼 옮긴다
-    void                ShiftLock(float _dx);
-    void                ClearScrollFloor();
-    [[nodiscard]] bool  HasScrollFloor() const;
-    [[nodiscard]] float GetScrollFloorX() const;
-
-    void SnapToTarget();
-    void SnapTo(VECTOR2 _viewCenter);
-
-    void Update(float _dt = kStepSec);
-
+    void                  ShiftLock(float _dx);
+    void                  ClearScrollFloor();
+    [[nodiscard]] bool    HasScrollFloor() const;
+    [[nodiscard]] float   GetScrollFloorX() const;
+    void                  SnapToTarget();
+    void                  SnapTo(VECTOR2 _viewCenter);
+    void                  Update(float _dt = kStepSec);
     [[nodiscard]] VECTOR2 GetPosition() const;
-
     [[nodiscard]] VECTOR2 GetViewCenter() const;
     [[nodiscard]] Aabb    GetViewRect() const;
 

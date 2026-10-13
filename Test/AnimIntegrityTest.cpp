@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 
-#include "Base/Json.h"
+#include "Base/JsonFields.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
 #include "EnemyTestUtil.h"
@@ -176,7 +176,7 @@ TEST(AnimIntegrity, StageDecorSequencesStayWithinOneActor)
     {
         GTEST_SKIP() << "Assets 없음";
     }
-    Result<JsonDeserializer> doc = LoadJsonFile(FindAssetRoot() / "Stage" / "Stage0.json");
+    Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(FindAssetRoot() / "Stage" / "Stage0.json", kJsonBom);
     ASSERT_TRUE(doc);
 
     const RbMap<String, RbSet<String>> actors = {

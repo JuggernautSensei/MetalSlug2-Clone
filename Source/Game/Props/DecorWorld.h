@@ -1,7 +1,6 @@
 #pragma once
 #include <cstdint>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Stage/StageData.h"
 #include "Render/Animation.h"
@@ -56,18 +55,14 @@ class DecorWorld
     };
 
 public:
-    uint32_t Spawn(const DecorSpawn& _spawn);
-    bool     SetZ(uint32_t _id, int _z);
-
-    void Tick(const AnimationLibrary& _anims, float _dt);
-    void Submit(SpriteBatch& _sprites, const AnimationLibrary& _anims) const;
-
-    void ClearByLayerMask(uint32_t _layerMask);
-    void Clear();
-
+    uint32_t             Spawn(const DecorSpawn& _spawn);
+    bool                 SetZ(uint32_t _id, int _z);
+    void                 Tick(const AnimationLibrary& _anims, float _dt);
+    void                 Submit(SpriteBatch& _sprites, const AnimationLibrary& _anims) const;
+    void                 ClearByLayerMask(uint32_t _layerMask);
+    void                 Clear();
     [[nodiscard]] size_t GetCount() const;
-
-    [[nodiscard]] bool Get(uint32_t _id, VECTOR2& _outPos, VECTOR2& _outVelocity, StringView& _outClip, bool& _bOutFinished) const;
+    [[nodiscard]] bool   Get(uint32_t _id, VECTOR2& _outPos, VECTOR2& _outVelocity, StringView& _outClip, bool& _bOutFinished) const;
 
 private:
     void EnterStep_(Instance& _inst, const AnimationLibrary& _anims) const;

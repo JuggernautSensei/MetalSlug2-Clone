@@ -8,7 +8,7 @@ FilePath EnemyDefsPath()
 }
 
 bool OnGround(
-    const Enemy* _pEnemy)
+    const EnemyState* _pEnemy)
 {
     return _pEnemy && _pEnemy->bGrounded && Abs(_pEnemy->body.position.y - 378.f) < 0.5f;
 }
@@ -52,7 +52,7 @@ bool EnemyRig::IsLoaded() const
     return m_bLoaded;
 }
 
-const String& EnemyRig::GetMessage() const
+const String& EnemyRig::GetLoadMessage() const
 {
     return m_message;
 }
@@ -196,7 +196,7 @@ int EnemyRig::SumScore(
     return sum;
 }
 
-const Enemy* EnemyRig::E(
+const EnemyState* EnemyRig::E(
     const EnemyHandle _handle) const
 {
     return m_world.Get(_handle);
@@ -252,4 +252,9 @@ void EnemyRig::CountPlayerHits_(
             ++m_playerHits;
         }
     }
+}
+
+const EnemyWorld& EnemyRig::World() const
+{
+    return m_world;
 }

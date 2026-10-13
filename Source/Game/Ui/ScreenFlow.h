@@ -6,7 +6,7 @@
 #include "Game/Ui/BitmapFont.h"
 #include "Game/Ui/UiSystem.h"
 
-enum class eFlowPhase : uint8_t
+enum class eFlowPhase
 {
     Idle,
     Delay,
@@ -48,10 +48,9 @@ struct ScreenFlowConfig
 class ScreenFlow
 {
 public:
-    void Start(const ScreenFlowConfig& _config, UiSystem& _ui, AudioSystem& _audio);
-    void Tick(UiSystem& _ui, AudioSystem& _audio);
-    void Reset();
-
+    void                             Start(const ScreenFlowConfig& _config, UiSystem& _ui, AudioSystem& _audio);
+    void                             Tick(UiSystem& _ui, AudioSystem& _audio);
+    void                             Reset();
     [[nodiscard]] eFlowPhase         GetPhase() const;
     [[nodiscard]] bool               IsRunning() const;
     [[nodiscard]] bool               IsDone() const;

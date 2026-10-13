@@ -1,6 +1,5 @@
 #include "Game/DemoState.h"
 
-#include "Base/Math.h"
 #include "Render/Renderer.h"
 
 void DemoState::Tick(

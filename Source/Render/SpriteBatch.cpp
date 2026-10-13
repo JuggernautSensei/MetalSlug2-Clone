@@ -7,8 +7,6 @@
 #include <execution>
 #include <SDL3/SDL.h>
 
-#include "Base/Math.h"
-#include "Base/RGBA.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
@@ -19,7 +17,6 @@
 #include <stb_image.h>
 
 #include "Base/Log.h"
-#include "Base/PhaseTimer.h"
 
 namespace
 {
@@ -104,7 +101,6 @@ namespace
 [[nodiscard]] Result<DecodedImage> DecodePngFile_(
     const FilePath& _pngPath)
 {
-    const ScopedPhaseTimer timer { "png-decode", _pngPath.filename().string() };
 
     const Result<Vector<uint8_t>> file = ReadFileBytes(_pngPath);
     if (!file)
@@ -252,7 +248,7 @@ namespace
 
     DecodedImage image = decoded.Take();
     {
-        const ScopedPhaseTimer timer { "flash-build", _path.filename().string() };
+
         image.flashRgba = BuildHitFlashRgba(image.rgba, static_cast<size_t>(image.width) * static_cast<size_t>(image.height));
     }
     return image;
@@ -379,8 +375,7 @@ Result<void> SpriteBatch::AddAtlasPageFromRgba(
         return Error { eError::InvalidData };
     }
 
-    const ScopedPhaseTimer timer { "gpu-upload", "atlas page" };
-    SDL_Texture*           pTexture = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, _width, _height);
+    SDL_Texture* pTexture = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, _width, _height);
     if (!pTexture)
     {
         SLUG_LOG_ERROR("SDL_CreateTexture 실패: {}", SDL_GetError());
@@ -438,8 +433,8 @@ bool SpriteBatch::LoadAtlasPagesParallel(
     const AnimationLibrary& _library,
     const int               _numWorkers)
 {
-    const ScopedPhaseTimer timer { "atlas-pages", "all" };
-    Vector<FilePath>       paths;
+
+    Vector<FilePath> paths;
     for (const String& page: _library.GetAtlasPages())
     {
         paths.push_back(_library.GetRoot() / page);
@@ -500,8 +495,6 @@ Result<int> SpriteBatch::AddStandaloneTextureFromRgba(
     {
         return Error { eError::InvalidData };
     }
-
-    const ScopedPhaseTimer timer { "gpu-upload", "standalone" };
 
     // 가로가 kMaxStripW 를 넘으면 띠로 쪼갠다
     constexpr int     kMaxStripW = 2048;

@@ -1,7 +1,7 @@
 #include "Audio/SoundBank.h"
 
 #include "Base/SlugError.h"
-#include "Base/Json.h"
+#include "Base/JsonFields.h"
 #include "Base/Types.h"
 
 namespace
@@ -66,7 +66,7 @@ Result<SoundBank> SoundBank::LoadFromJson(
 Result<SoundBank> SoundBank::LoadFromDirectory(
     const FilePath& _bakedRoot)
 {
-    Result<JsonDeserializer> doc = LoadJsonFile(_bakedRoot / "sounds.json");
+    Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(_bakedRoot / "sounds.json", kJsonBom);
     if (!doc)
     {
         return Error { eError::FileOpen };
@@ -109,11 +109,6 @@ const SoundEntry& SoundBank::Get(
 size_t SoundBank::GetCount() const
 {
     return m_entries.size();
-}
-
-bool SoundBank::IsEmpty() const
-{
-    return m_entries.empty();
 }
 
 Span<const SoundEntry> SoundBank::GetEntries() const

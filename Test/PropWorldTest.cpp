@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 
-#include "Base/Math.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"

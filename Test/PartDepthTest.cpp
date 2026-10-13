@@ -100,7 +100,7 @@ TEST(PartDepth, HeliPartOverrideChangesOnlyThatPart)
 {
     SLUG_REQUIRE_BAKED(anims);
     VehicleRig rig({ 300.f, 378.f });
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage();
     SpawnParams params;
     params.facing     = -1;
     params.bActivated = true;
@@ -149,10 +149,10 @@ TEST(PartDepth, DepthEditorPatchRoundTripOnTempCopy)
     EnemyDefLibrary lib;
     String          message;
     ASSERT_TRUE(LoadPatched_("Helicopter.json", doc.GetText(), lib, message)) << message;
-    const HeliCfg& cfg = lib.Get(lib.FindIndex("heli")).heli;
-    EXPECT_EQ(cfg.partRotor.depth, 18);
-    EXPECT_EQ(cfg.partRotor.sort, 3);
-    EXPECT_EQ(cfg.partPod.depth, 16);
+    const HeliConfig& config = lib.Get(lib.FindIndex("heli")).heli;
+    EXPECT_EQ(config.partRotor.depth, 18);
+    EXPECT_EQ(config.partRotor.sort, 3);
+    EXPECT_EQ(config.partPod.depth, 16);
 
     ASSERT_TRUE(doc.SetPartDepth("heli", "rotor", 19, 3, 16, 0));
     EXPECT_NE(doc.GetText().find("\"depth\": 19"), String::npos);

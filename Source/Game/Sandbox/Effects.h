@@ -1,5 +1,4 @@
 #pragma once
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Render/Animation.h"
 #include "Render/SpriteBatch.h"
@@ -30,15 +29,11 @@ struct Effect
 class EffectList
 {
 public:
-    void Clear();
-
-    void Spawn(const AnimationLibrary& _library, StringView _clipName, VECTOR2 _position, int _depth = 50, bool _bFlipX = false);
-
-    void SpawnDebris(const AnimationLibrary& _library, StringView _clipName, VECTOR2 _position, int _depth, VECTOR2 _velocity, bool _bFlipX = false);
-
-    void Update(const AnimationLibrary& _library, float _dt, float _cullBelowY = 1.0e9f);
-    void Submit(const AnimationLibrary& _library, SpriteBatch& _sprites) const;
-
+    void                             Clear();
+    void                             Spawn(const AnimationLibrary& _library, StringView _clipName, VECTOR2 _position, int _depth = 50, bool _bFlipX = false);
+    void                             SpawnDebris(const AnimationLibrary& _library, StringView _clipName, VECTOR2 _position, int _depth, VECTOR2 _velocity, bool _bFlipX = false);
+    void                             Update(const AnimationLibrary& _library, float _dt, float _cullBelowY = 1.0e9f);
+    void                             Submit(const AnimationLibrary& _library, SpriteBatch& _sprites) const;
     [[nodiscard]] size_t             GetCount() const;
     [[nodiscard]] Span<const Effect> GetEffects() const;
 

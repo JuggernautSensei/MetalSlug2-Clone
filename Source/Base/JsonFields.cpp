@@ -1,8 +1,6 @@
-#include "Base/Json.h"
+#include "Base/JsonFields.h"
 
 #include <cmath>
-
-#include "Base/PhaseTimer.h"
 
 namespace
 {
@@ -28,14 +26,6 @@ constexpr StringView kMissing = "필수 값이 없습니다";
     return bFound;
 }
 }   // namespace
-
-Result<JsonDeserializer> LoadJsonFile(
-    const FilePath&                   _path,
-    const jug::Flags<eJsonLoadOption> _flags)
-{
-    const ScopedPhaseTimer timer { "json", _path.filename().string() };
-    return JsonDeserializer::LoadFromFile(_path, _flags);
-}
 
 bool HasKey(
     const JsonReader& _object,

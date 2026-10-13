@@ -1,4 +1,4 @@
-﻿#include "Game/SandboxState.h"
+#include "Game/SandboxState.h"
 
 #include "Audio/AudioSystem.h"
 #include "Core/AssetPath.h"
@@ -10,8 +10,6 @@
 #include <format>
 
 #include "Base/Log.h"
-#include "Base/Math.h"
-#include "Base/RGBA.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Game/Combat/BulletVisual.h"
@@ -960,7 +958,7 @@ void SandboxState::DrawHud_()
     {
         TextStyle style;
         style.align = eTextAlign::Center;
-        m_ui.DrawText(Renderer::kLogicalWidth / 2, 216, "PAUSED", style);
+        m_ui.DrawString(Renderer::kLogicalWidth / 2, 216, "PAUSED", style);
     }
 
     m_ui.DrawOverlays();

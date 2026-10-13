@@ -4,9 +4,8 @@
 #include <initializer_list>
 
 #include "Base/SlugError.h"
-#include "Base/Json.h"
+#include "Base/JsonFields.h"
 #include "Base/Log.h"
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Render/Animation.h"
 #include "Render/SpriteLibrary.h"
@@ -113,7 +112,7 @@ public:
 
     [[nodiscard]] bool ParseParams(const PropDef& _def, const JsonReader& _params, PropSpawnParams& _out);
 
-    String error = {};
+    [[nodiscard]] const String& GetError() const noexcept { return m_error; }
 
 private:
     bool Fail_(StringView _where, StringView _field, StringView _msg);
@@ -169,6 +168,7 @@ private:
     bool CheckRefs_();
 
     PropDefLibrary& m_lib;
+    String          m_error = {};
 };
 
 bool PropDefParser::Fail_(
@@ -176,9 +176,9 @@ bool PropDefParser::Fail_(
     const StringView _field,
     const StringView _msg)
 {
-    if (error.empty())
+    if (m_error.empty())
     {
-        error = std::format("{}: {}: {}", String { _where }, String { _field }, String { _msg });
+        m_error = std::format("{}: {}: {}", String { _where }, String { _field }, String { _msg });
     }
     return false;
 }
@@ -922,9 +922,9 @@ Result<PropDefLibrary> PropDefLibrary::Parse(
     {
         if (_pMessageOrNull)
         {
-            *_pMessageOrNull = parser.error;
+            *_pMessageOrNull = parser.GetError();
         }
-        SLUG_LOG_ERROR("소품 정의 오류: {}", parser.error);
+        SLUG_LOG_ERROR("소품 정의 오류: {}", parser.GetError());
         return Error { eError::PropDefInvalid };
     }
     return library;
@@ -934,7 +934,7 @@ Result<PropDefLibrary> PropDefLibrary::Load(
     const FilePath& _path,
     String*         _pMessageOrNull)
 {
-    Result<JsonDeserializer> doc = LoadJsonFile(_path, kJsonBomComments);
+    Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(_path, kJsonBomComments);
     if (!doc)
     {
         if (_pMessageOrNull)
@@ -950,9 +950,9 @@ Result<PropDefLibrary> PropDefLibrary::Load(
     {
         if (_pMessageOrNull)
         {
-            *_pMessageOrNull = parser.error;
+            *_pMessageOrNull = parser.GetError();
         }
-        SLUG_LOG_ERROR("소품 정의 오류 ({}): {}", _path.string(), parser.error);
+        SLUG_LOG_ERROR("소품 정의 오류 ({}): {}", _path.string(), parser.GetError());
         return Error { eError::PropDefInvalid };
     }
     return library;
@@ -1010,7 +1010,7 @@ bool PropDefLibrary::ParseSpawnParams(
     _out = {};
     if (!parser.ParseParams(*pDef, _params, _out))
     {
-        _error = parser.error;
+        _error = parser.GetError();
         return false;
     }
     return true;

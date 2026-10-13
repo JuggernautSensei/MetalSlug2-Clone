@@ -1,14 +1,13 @@
 #pragma once
 #include <cstdint>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 
 inline constexpr uint32_t kSlugOwnerBase = 100;
 inline constexpr size_t   kMaxSlugs      = 8;
 
 // 차량의 큰 상태
-enum class eSlugMode : uint8_t
+enum class eSlugMode
 {
     Parked,
     Boarding,
@@ -17,7 +16,7 @@ enum class eSlugMode : uint8_t
     Gone
 };
 
-enum class eSlugPose : uint8_t
+enum class eSlugPose
 {
     ParkedOpen,
     BoardingIn,
@@ -74,7 +73,6 @@ struct SlugVulcanTuning
     float   bulletRange       = 760.f;
     int     damage            = 3;
     VECTOR2 bulletSize        = { 22.f, 12.f };
-    int     shotFlashTicks    = 8;   // 발사 한 번의 총구 불꽃 클립 길이
     int     maxAlive          = 0;
 };
 
@@ -124,7 +122,6 @@ struct SlugBoardTuning
     float   exitJumpSpeed     = 380.f;
     float   exitSpeedX        = 90.f;
     int     exitTicks         = 20;
-    int     arrowGapPx        = 6;
 };
 
 struct SlugCrushTuning

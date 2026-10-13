@@ -1,18 +1,10 @@
 #pragma once
-#include <JugX/JsonDeserializer.h>
 
-#include "Base/Math.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 
-using jug::eJsonLoadOption;
-using jug::JsonDeserializer;
-using jug::JsonReader;
-
 inline constexpr jug::Flags<eJsonLoadOption> kJsonBom         = eJsonLoadOption::AllowBOM;
 inline constexpr jug::Flags<eJsonLoadOption> kJsonBomComments = { eJsonLoadOption::AllowBOM, eJsonLoadOption::AllowComments };
-
-[[nodiscard]] Result<JsonDeserializer> LoadJsonFile(const FilePath& _path, jug::Flags<eJsonLoadOption> _flags = kJsonBom);
 
 [[nodiscard]] bool               HasKey(const JsonReader& _object, StringView _key);
 [[nodiscard]] Result<JsonReader> TryField(const JsonReader& _object, StringView _key);

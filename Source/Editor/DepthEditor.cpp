@@ -9,7 +9,7 @@
 #include "Editor/EnemyLab.h"
 #include "Editor/JsonScan.h"
 #include "Editor/MotionEditor.h"
-#include "Game/Enemies/BigShieeCfg.h"
+#include "Game/Enemies/BigShieeConfig.h"
 #include "Game/Enemies/EnemyDef.h"
 #include "Game/Enemies/EnemyWorld.h"
 #include "Game/Player/SlugRender.h"

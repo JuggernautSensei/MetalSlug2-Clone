@@ -8,7 +8,6 @@
 
 #include <gtest/gtest.h>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
 #include "Core/Input.h"
@@ -104,8 +103,9 @@ public:
 
     [[nodiscard]] bool IsBossAlive() const
     {
-        for (const Enemy& enemy: m_pState->GetEnemies().GetEnemies())
+        for (const Scoped<Enemy>& pEnemy: m_pState->GetEnemies().GetEnemies())
         {
+            const EnemyState& enemy = pEnemy->GetState();
             if (enemy.life == eEnemyLife::Alive && enemy.behavior == eEnemyBehavior::BigShiee)
             {
                 return true;
@@ -117,8 +117,9 @@ public:
     void DamageBoss()
     {
         Vector<HitEvent> hits;
-        for (const Enemy& enemy: m_pState->GetEnemies().GetEnemies())
+        for (const Scoped<Enemy>& pEnemy: m_pState->GetEnemies().GetEnemies())
         {
+            const EnemyState& enemy = pEnemy->GetState();
             if (enemy.life == eEnemyLife::Alive && enemy.behavior == eEnemyBehavior::BigShiee)
             {
                 for (uint32_t part = 0; part <= 7u; ++part)
@@ -300,8 +301,9 @@ TEST(StageIntegration, SpawnedEnemiesStandOnTheGroundAtTheirScriptedFeet)
     IntegrationSim sim;
     sim.Step(2);
     bool bFound = false;
-    for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
+    for (const Scoped<Enemy>& pEnemy: sim.State().GetEnemies().GetEnemies())
     {
+        const EnemyState& enemy = pEnemy->GetState();
         const VECTOR2 feet = enemy.body.position;
         if (enemy.life == eEnemyLife::Alive && feet.x > 880.f && feet.x < 920.f)
         {
@@ -478,8 +480,9 @@ TEST(StageIntegration, SarubiaGateStartsInsideTheLockedScreenSoItCanBeShot)
 
     const float camLeft = sim.State().GetCamera().GetPosition().x;
     bool        bFound  = false;
-    for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
+    for (const Scoped<Enemy>& pEnemy: sim.State().GetEnemies().GetEnemies())
     {
+        const EnemyState& enemy = pEnemy->GetState();
         if (enemy.life == eEnemyLife::Alive && enemy.behavior == eEnemyBehavior::Sarubia)
         {
             bFound = true;
@@ -492,11 +495,12 @@ TEST(StageIntegration, SarubiaGateStartsInsideTheLockedScreenSoItCanBeShot)
 
 namespace
 {
-const Enemy* FindSarubia_(
+const EnemyState* FindSarubia_(
     IntegrationSim& _sim)
 {
-    for (const Enemy& enemy: _sim.State().GetEnemies().GetEnemies())
+    for (const Scoped<Enemy>& pEnemy: _sim.State().GetEnemies().GetEnemies())
     {
+        const EnemyState& enemy = pEnemy->GetState();
         if (enemy.behavior == eEnemyBehavior::Sarubia)
         {
             return &enemy;
@@ -517,14 +521,14 @@ TEST(StageIntegration, SarubiaLosesHpToPlayerBulletsAndDiesInStage0)
     }
     sim.BotStep(true, true, 300);
 
-    const Enemy* pStart = FindSarubia_(sim);
+    const EnemyState* pStart = FindSarubia_(sim);
     ASSERT_NE(pStart, nullptr);
     const int startHp = pStart->health.hp;
     for (int t = 0; t < 240 && FindSarubia_(sim) && FindSarubia_(sim)->life == eEnemyLife::Alive; ++t)
     {
         sim.BotStep(true, true, 30);
     }
-    const Enemy* pEnd = FindSarubia_(sim);
+    const EnemyState* pEnd = FindSarubia_(sim);
     ASSERT_NE(pEnd, nullptr);
     EXPECT_NE(pEnd->life, eEnemyLife::Alive) << "startHp=" << startHp << " endHp=" << pEnd->health.hp;
 }
@@ -540,9 +544,10 @@ TEST(StageIntegration, SarubiaHurtboxCoversTheTurretAboveItsTreads)
     }
     sim.BotStep(true, true, 300);
 
-    const Enemy* pSaru = nullptr;
-    for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
+    const EnemyState* pSaru = nullptr;
+    for (const Scoped<Enemy>& pEnemy: sim.State().GetEnemies().GetEnemies())
     {
+        const EnemyState& enemy = pEnemy->GetState();
         if (enemy.behavior == eEnemyBehavior::Sarubia)
         {
             pSaru = &enemy;
@@ -717,8 +722,9 @@ namespace
     const eEnemyBehavior _behavior)
 {
     Vector<HitEvent> hits;
-    for (const Enemy& enemy: _state.GetEnemies().GetEnemies())
+    for (const Scoped<Enemy>& pEnemy: _state.GetEnemies().GetEnemies())
     {
+        const EnemyState& enemy = pEnemy->GetState();
         if (enemy.life == eEnemyLife::Alive && enemy.behavior == _behavior)
         {
             HitEvent ev;
@@ -743,8 +749,9 @@ namespace
     const StageState&    _state,
     const eEnemyBehavior _behavior)
 {
-    for (const Enemy& enemy: _state.GetEnemies().GetEnemies())
+    for (const Scoped<Enemy>& pEnemy: _state.GetEnemies().GetEnemies())
     {
+        const EnemyState& enemy = pEnemy->GetState();
         if (enemy.life == eEnemyLife::Alive && enemy.behavior == _behavior)
         {
             return true;
@@ -781,8 +788,9 @@ TEST(StageIntegration, HeliSpawnsAtTheHeliTriggerAndLocksTheCamera)
     {
         sim.BotStep(true, false);
         const VECTOR2 cam = sim.State().GetCamera().GetPosition();
-        for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
+        for (const Scoped<Enemy>& pEnemy: sim.State().GetEnemies().GetEnemies())
         {
+            const EnemyState& enemy = pEnemy->GetState();
             if (enemy.life == eEnemyLife::Alive && enemy.behavior == eEnemyBehavior::Heli && enemy.body.position.x >= cam.x && enemy.body.position.x <= cam.x + 640.f && enemy.body.position.y >= cam.y && enemy.body.position.y <= cam.y + 448.f)
             {
                 bHeliVisible = true;
@@ -822,8 +830,9 @@ TEST(StageIntegration, BusIsPreplacedInsideTheLockedViewAndLocksTheCameraAtTheBu
     EXPECT_NEAR(camLeft, 2457.f, 2.f);
 
     bool bFound = false;
-    for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
+    for (const Scoped<Enemy>& pEnemy: sim.State().GetEnemies().GetEnemies())
     {
+        const EnemyState& enemy = pEnemy->GetState();
         if (enemy.life == eEnemyLife::Alive && enemy.behavior == eEnemyBehavior::Bus)
         {
             bFound = true;
@@ -865,8 +874,9 @@ TEST(StageIntegration, BusStairSoldiersReachTheRoofAndNeverEnterTheBusBodyWithTh
         float busY  = 0.f;
         float roofY = 0.f;
         bool  bBus  = false;
-        for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
+        for (const Scoped<Enemy>& pEnemy: sim.State().GetEnemies().GetEnemies())
         {
+            const EnemyState& enemy = pEnemy->GetState();
             if (enemy.behavior == eEnemyBehavior::Bus && enemy.life == eEnemyLife::Alive)
             {
                 const EnemyDef& def = sim.State().GetEnemies().GetLibrary()->Get(enemy.defIndex);
@@ -880,8 +890,9 @@ TEST(StageIntegration, BusStairSoldiersReachTheRoofAndNeverEnterTheBusBodyWithTh
         {
             continue;
         }
-        for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
+        for (const Scoped<Enemy>& pEnemy: sim.State().GetEnemies().GetEnemies())
         {
+            const EnemyState& enemy = pEnemy->GetState();
             if (enemy.userTag != 0x42555300u || enemy.life != eEnemyLife::Alive)
             {
                 continue;
@@ -1096,8 +1107,9 @@ public:
         sample.lockDepth = state.GetRunner().GetLockDepth();
         sample.moving    = camera.IsMoving() ? 1 : 0;
         sample.playerX   = state.GetPlayer().GetFeet().x;
-        for (const Enemy& enemy: state.GetEnemies().GetEnemies())
+        for (const Scoped<Enemy>& pEnemy: state.GetEnemies().GetEnemies())
         {
+            const EnemyState& enemy = pEnemy->GetState();
             if (enemy.behavior == eEnemyBehavior::BigShiee)
             {
                 sample.bossX = enemy.body.position.x;
@@ -1218,8 +1230,9 @@ TEST(StageIntegration, BossSpawnsAtTheArenaTriggerAfterSarubiaAndLocksTheCamera)
     EXPECT_GE(camLeft, 13700.f - 2.f) << "락 사각형은 자동 스크롤로 오른쪽으로만 간다";
     EXPECT_LT(camLeft, 13700.f + 120.f);
     EXPECT_TRUE(sim.IsBossAlive());
-    for (const Enemy& enemy: sim.State().GetEnemies().GetEnemies())
+    for (const Scoped<Enemy>& pEnemy: sim.State().GetEnemies().GetEnemies())
     {
+        const EnemyState& enemy = pEnemy->GetState();
         if (enemy.life == eEnemyLife::Alive && enemy.behavior == eEnemyBehavior::BigShiee)
         {
             EXPECT_NEAR(enemy.body.position.y, 1286.f, 2.f) << "보스 발은 아레나 지면 (openland, groundSnap)";

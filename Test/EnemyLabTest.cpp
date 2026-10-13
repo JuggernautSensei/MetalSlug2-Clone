@@ -17,7 +17,7 @@ TEST(EnemyLabTest, SpawnByNameCreatesOneEnemyAtThePosition)
     const EnemyHandle h      = lab.Spawn(sim.State(), "soldier_sword", { 400.f, 378.f }, 1);
     ASSERT_FALSE(h.IsNull());
     EXPECT_EQ(sim.State().GetEnemies().GetCount(), before + 1);
-    const Enemy* pEnemy = sim.State().GetEnemies().Get(h);
+    const EnemyState* pEnemy = sim.State().GetEnemies().Get(h);
     ASSERT_NE(pEnemy, nullptr);
     EXPECT_NEAR(pEnemy->body.position.x, 400.f, 0.5f);
     EXPECT_NEAR(pEnemy->body.position.y, 378.f, 0.5f);
@@ -40,7 +40,7 @@ TEST(EnemyLabTest, SpawnNearPlayerUsesTheOffset)
     EnemyLab          lab;
     const VECTOR2     feet   = sim.State().GetPlayer().GetFeet();
     const EnemyHandle h      = lab.SpawnNearPlayer(sim.State(), "soldier_sword", 150.f, -1);
-    const Enemy*      pEnemy = sim.State().GetEnemies().Get(h);
+    const EnemyState*      pEnemy = sim.State().GetEnemies().Get(h);
     ASSERT_NE(pEnemy, nullptr);
     EXPECT_NEAR(pEnemy->body.position.x, feet.x + 150.f, 0.5f);
 }

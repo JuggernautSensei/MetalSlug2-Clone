@@ -1,4 +1,4 @@
-﻿#include "Core/AssetPath.h"
+#include "Core/AssetPath.h"
 
 #include <filesystem>
 #include <iterator>
@@ -9,9 +9,6 @@
 #if defined(_WIN32)
 #    include <windows.h>
 #endif
-
-#include <JugX/FileReader.h>
-#include <JugX/FileWriter.h>
 
 #include "Base/SlugError.h"
 

@@ -3,11 +3,8 @@
 #include <cmath>
 
 #include "Base/SlugError.h"
-#include "Base/Handle.h"
-#include "Base/Json.h"
+#include "Base/JsonFields.h"
 #include "Base/Log.h"
-#include "Base/Math.h"
-#include "Base/PhaseTimer.h"
 #include "Base/Types.h"
 
 constexpr double kUnitsPerSec = static_cast<double>(kAnimTimeUnitsPerSec);
@@ -197,8 +194,8 @@ AnimationLibrary& AnimationLibrary::GetSingleton()
 Result<AnimationLibrary> AnimationLibrary::LoadFromDirectory(
     const FilePath& _bakedRoot)
 {
-    const ScopedPhaseTimer   timer { "anim-library", "manifest+anim" };
-    Result<JsonDeserializer> manifestDoc = LoadJsonFile(_bakedRoot / "manifest.json");
+
+    Result<JsonDeserializer> manifestDoc = JsonDeserializer::LoadFromFile(_bakedRoot / "manifest.json", kJsonBom);
     if (!manifestDoc)
     {
         return Error { eError::FileOpen };
@@ -226,13 +223,12 @@ Result<AnimationLibrary> AnimationLibrary::LoadFromDirectory(
         return pages.GetError();
     }
 
-    Result<JsonDeserializer> animDoc = LoadJsonFile(_bakedRoot / animFile);
+    Result<JsonDeserializer> animDoc = JsonDeserializer::LoadFromFile(_bakedRoot / animFile, kJsonBom);
     if (!animDoc)
     {
         return Error { eError::FileOpen };
     }
 
-    const ScopedPhaseTimer   parseTimer { "anim-parse", "anim.json" };
     Result<AnimationLibrary> library = ParseAnimDocument_(animDoc->GetReader());
     if (!library)
     {

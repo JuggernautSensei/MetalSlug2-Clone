@@ -1,8 +1,8 @@
+#include "Game/Enemies/BusEnemy.h"
 #include <algorithm>
 #include <cmath>
 #include <vector>
 
-#include "Base/Math.h"
 #include "Render/SpriteBatch.h"
 #include "VehicleTestUtil.h"
 
@@ -21,12 +21,13 @@ namespace
     return params;
 }
 
-[[nodiscard]] Vector<const Enemy*> StairSoldiers_(
+[[nodiscard]] Vector<const EnemyState*> StairSoldiers_(
     VehicleRig& _rig)
 {
-    Vector<const Enemy*> out;
-    for (const Enemy& enemy: _rig.World().GetEnemies())
+    Vector<const EnemyState*> out;
+    for (const Scoped<Enemy>& pEnemy: _rig.World().GetEnemies())
     {
+        const EnemyState& enemy = pEnemy->GetState();
         if (enemy.userTag == kStairTag && enemy.life != eEnemyLife::Gone)
         {
             out.push_back(&enemy);
@@ -39,7 +40,7 @@ namespace
 TEST(Bus, StaysAtItsSpawnAnchorWithoutSlidingIn)
 {
     VehicleRig rig({ 2700.f, kGround }, 0.f);
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     const EnemyHandle h = rig.Spawn("bus", { 3236.f, kGround }, BusParams_());
     rig.Step(300);
     EXPECT_FLOAT_EQ(rig.E(h)->body.position.x, 3236.f);
@@ -52,7 +53,7 @@ TEST(Bus, StaysAtItsSpawnAnchorWithoutSlidingIn)
 TEST(Bus, OpensOnlyWhenTheViewRightEdgeReachesTheBusLeftEdge)
 {
     VehicleRig rig({ 2500.f, kGround }, 2200.f);
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     const EnemyHandle h = rig.Spawn("bus", { kAnchorX, kGround }, BusParams_());
     rig.Step(60);
     EXPECT_EQ(rig.E(h)->state, kStateParked);
@@ -65,7 +66,7 @@ TEST(Bus, OpensOnlyWhenTheViewRightEdgeReachesTheBusLeftEdge)
 TEST(Bus, IsInvulnerableAndSilentBeforeItOpens)
 {
     VehicleRig rig({ 2700.f, kGround }, 0.f);
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     const EnemyHandle h  = rig.Spawn("bus", { kAnchorX, kGround }, BusParams_());
     const int         hp = rig.E(h)->health.hp;
     rig.Step(2);
@@ -83,15 +84,15 @@ TEST(Bus, IsInvulnerableAndSilentBeforeItOpens)
 TEST(Bus, SpawnsStairSoldiersOffScreenOnTheRightAndCapsTheCount)
 {
     VehicleRig rig({ 2700.f, kGround }, 2496.f);
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     const EnemyHandle h        = rig.Spawn("bus", { kAnchorX, kGround }, BusParams_());
     size_t            maxCount = 0;
     float             firstX   = -1.f;
     for (int i = 0; i < 900; ++i)
     {
         rig.Step(1);
-        const Vector<const Enemy*> soldiers = StairSoldiers_(rig);
-        maxCount                            = Max(maxCount, soldiers.size());
+        const Vector<const EnemyState*> soldiers = StairSoldiers_(rig);
+        maxCount                                 = Max(maxCount, soldiers.size());
         if (firstX < 0.f && !soldiers.empty())
         {
             firstX = soldiers.front()->body.position.x;
@@ -108,14 +109,14 @@ TEST(Bus, SpawnsStairSoldiersOffScreenOnTheRightAndCapsTheCount)
 TEST(Bus, StairSoldiersWalkUpTheStairsToTheLanding)
 {
     VehicleRig rig({ 2700.f, kGround }, 2496.f);
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     (void)rig.Spawn("bus", { kAnchorX, kGround }, BusParams_());
     bool  bReachedTop = false;
     float minY        = kGround;
     for (int i = 0; i < 900 && !bReachedTop; ++i)
     {
         rig.Step(1);
-        for (const Enemy* pSoldier: StairSoldiers_(rig))
+        for (const EnemyState* pSoldier: StairSoldiers_(rig))
         {
             minY = Min(pSoldier->body.position.y, minY);
             if (Abs(pSoldier->body.position.x - (kAnchorX + 100.f)) < 3.f && pSoldier->body.position.y < kGround - 100.f)
@@ -130,7 +131,7 @@ TEST(Bus, StairSoldiersWalkUpTheStairsToTheLanding)
 TEST(Bus, NeverFiresItsOwnProjectiles)
 {
     VehicleRig rig({ 2700.f, kGround }, 2496.f);
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     const EnemyHandle h = rig.Spawn("bus", { kAnchorX, kGround }, BusParams_());
     for (int i = 0; i < 900; ++i)
     {
@@ -151,7 +152,7 @@ TEST(Bus, BazookaSoldiersClimbTheStairsToTheRoofAndFireRockets)
     for (uint64_t seed = 1; seed <= 12 && !bFiredRocket; ++seed)
     {
         VehicleRig rig({ 2100.f, kGround }, 2000.f);
-        ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+        ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
         rig.World().ReseedRng(seed);
         const EnemyHandle h        = rig.Spawn("bus", { 2400.f, kGround }, BusParams_());
         const int         bzkIndex = rig.World().GetLibrary()->FindIndex("soldier_bzk");
@@ -159,8 +160,9 @@ TEST(Bus, BazookaSoldiersClimbTheStairsToTheRoofAndFireRockets)
         for (int i = 0; i < 900 && !bFiredRocket; ++i)
         {
             rig.Step(1);
-            for (const Enemy& soldier: rig.World().GetEnemies())
+            for (const Scoped<Enemy>& pEnemy: rig.World().GetEnemies())
             {
+                const EnemyState& soldier = pEnemy->GetState();
                 if (soldier.userTag != kStairTag || soldier.defIndex != bzkIndex || soldier.life == eEnemyLife::Gone)
                 {
                     continue;
@@ -198,7 +200,7 @@ namespace
 TEST(Bus, StairSoldiersClimbToTheRoofWithoutGettingStuck)
 {
     VehicleRig rig({ 2100.f, kGround }, 2000.f);
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     (void)rig.Spawn("bus", { kStairAnchorX, kGround }, BusParams_());
     const float roofY = RoofY_(rig);
 
@@ -210,7 +212,7 @@ TEST(Bus, StairSoldiersClimbToTheRoofWithoutGettingStuck)
     for (int tick = 0; tick < 700; ++tick)
     {
         rig.Step(1);
-        for (const Enemy* pSoldier: StairSoldiers_(rig))
+        for (const EnemyState* pSoldier: StairSoldiers_(rig))
         {
             size_t k = 0;
             while (k < ids.size() && ids[k] != pSoldier->id)
@@ -255,7 +257,7 @@ TEST(Bus, StairSoldiersDoNotAttackBeforeReachingTheRoof)
     for (uint64_t seed = 1; seed <= 6; ++seed)
     {
         VehicleRig rig({ 2100.f, kGround }, 2000.f);
-        ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+        ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
         rig.World().ReseedRng(seed);
         (void)rig.Spawn("bus", { kStairAnchorX, kGround }, BusParams_());
         const float      roofY = RoofY_(rig);
@@ -263,7 +265,7 @@ TEST(Bus, StairSoldiersDoNotAttackBeforeReachingTheRoof)
         for (int tick = 0; tick < 700; ++tick)
         {
             rig.Step(1);
-            for (const Enemy* pSoldier: StairSoldiers_(rig))
+            for (const EnemyState* pSoldier: StairSoldiers_(rig))
             {
                 if (pSoldier->body.position.y <= roofY + 3.f)
                 {
@@ -284,29 +286,31 @@ TEST(Bus, StairSoldiersOnTheLandingAreDrawnInFrontOfTheBodyAndBehindTheCoverInEv
 {
     SLUG_REQUIRE_BAKED(anims);
     VehicleRig rig({ 2100.f, kGround }, 2000.f);
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     const EnemyHandle h     = rig.Spawn("bus", { kStairAnchorX, kGround }, BusParams_());
-    const BusCfg&     c     = rig.Lib().Get(rig.Lib().FindIndex("bus")).bus;
+    const BusConfig&  c     = rig.Lib().Get(rig.Lib().FindIndex("bus")).bus;
     const float       roofY = kGround + c.stairsTop.y;
 
     const ARRAY<int, 3> wantStages = { 0, 1, 4 };
+    const BusEnemy*     pBus       = static_cast<const BusEnemy*>(rig.World().FindEnemy(h));
+    ASSERT_NE(pBus, nullptr);
     for (const int wantStage: wantStages)
     {
-        for (int i = 0; i < 1500 && rig.E(h)->aux2 < wantStage; ++i)
+        for (int i = 0; i < 1500 && pBus->GetDamageStage() < wantStage; ++i)
         {
             rig.Step(1);
-            if (rig.E(h)->aux > 400)
+            if (pBus->GetElapsedTicks() > 400)
             {
                 (void)rig.Strike(h.id, eHitKind::Bullet, 1);
             }
         }
-        ASSERT_EQ(rig.E(h)->aux2, wantStage);
+        ASSERT_EQ(pBus->GetDamageStage(), wantStage);
         int   onRoof   = 0;
         float soldierY = roofY;
         for (int i = 0; i < 900 && onRoof == 0; ++i)
         {
             rig.Step(1);
-            for (const Enemy* pSoldier: StairSoldiers_(rig))
+            for (const EnemyState* pSoldier: StairSoldiers_(rig))
             {
                 if (pSoldier->body.position.y < kGround - 90.f)
                 {
@@ -315,7 +319,7 @@ TEST(Bus, StairSoldiersOnTheLandingAreDrawnInFrontOfTheBodyAndBehindTheCoverInEv
                 }
             }
         }
-        ASSERT_EQ(rig.E(h)->aux2, wantStage) << "지붕 병사를 기다리는 동안 단계가 바뀌었다";
+        ASSERT_EQ(pBus->GetDamageStage(), wantStage) << "지붕 병사를 기다리는 동안 단계가 바뀌었다";
         ASSERT_GT(onRoof, 0) << "단계 " << wantStage << " 에서 지붕 위 병사가 없다";
 
         SpriteBatch sprites;
@@ -358,7 +362,7 @@ TEST(Bus, StairSoldiersNeverSinkIntoTheBusBodyAndStandOnItsTop)
     for (uint64_t seed = 1; seed <= 6; ++seed)
     {
         VehicleRig rig({ 2100.f, kGround }, 2000.f);
-        ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+        ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
         rig.World().ReseedRng(seed);
         (void)rig.Spawn("bus", { kStairAnchorX, kGround }, BusParams_());
         const Aabb  body     = rig.Lib().Get(rig.Lib().FindIndex("bus")).solid.At({ kStairAnchorX, kGround }, -1);
@@ -367,7 +371,7 @@ TEST(Bus, StairSoldiersNeverSinkIntoTheBusBodyAndStandOnItsTop)
         for (int tick = 0; tick < 1500; ++tick)
         {
             rig.Step(1);
-            for (const Enemy* pSoldier: StairSoldiers_(rig))
+            for (const EnemyState* pSoldier: StairSoldiers_(rig))
             {
                 const float x = pSoldier->body.position.x;
                 if (pSoldier->life != eEnemyLife::Alive || x <= body.min.x + 4.f || x >= body.max.x - 4.f)
@@ -385,15 +389,15 @@ TEST(Bus, StairSoldiersNeverSinkIntoTheBusBodyAndStandOnItsTop)
 TEST(Bus, StairSoldiersLeapForwardOverTheLandingWallOntoTheBus)
 {
     VehicleRig rig({ 2700.f, kGround }, 2496.f);
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     (void)rig.Spawn("bus", { kAnchorX, kGround }, BusParams_());
-    const BusCfg& c = rig.Lib().Get(rig.Lib().FindIndex("bus")).bus;
+    const BusConfig& c = rig.Lib().Get(rig.Lib().FindIndex("bus")).bus;
 
     bool bPastLanding = false;
     for (int i = 0; i < 1500 && !bPastLanding; ++i)
     {
         rig.Step(1);
-        for (const Enemy* pSoldier: StairSoldiers_(rig))
+        for (const EnemyState* pSoldier: StairSoldiers_(rig))
         {
             if (pSoldier->body.position.x < kAnchorX + c.stairsTop.x - c.landingW * 0.5f - 6.f && pSoldier->body.position.y < kGround - 100.f && pSoldier->bGrounded)
             {
@@ -407,7 +411,7 @@ TEST(Bus, StairSoldiersLeapForwardOverTheLandingWallOntoTheBus)
 TEST(Bus, BlastKilledSoldierIsRemovedOnlyAfterFallingOutOfTheCamera)
 {
     VehicleRig rig({ 2100.f, kGround }, 2000.f);
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     const EnemyHandle h = rig.Spawn("soldier_bomb", { 2300.f, kGround }, SpawnParams {});
     rig.Step(30);
     ASSERT_NE(rig.E(h), nullptr);
@@ -419,7 +423,7 @@ TEST(Bus, BlastKilledSoldierIsRemovedOnlyAfterFallingOutOfTheCamera)
     for (int tick = 0; tick < 900 && !bGone; ++tick)
     {
         rig.Step(1);
-        const Enemy* pEnemy = rig.E(h);
+        const EnemyState* pEnemy = rig.E(h);
         if (pEnemy == nullptr || pEnemy->life == eEnemyLife::Gone)
         {
             bGone = true;

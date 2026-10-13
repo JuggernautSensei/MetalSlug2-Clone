@@ -1,20 +1,8 @@
 #include "Game/Sandbox/TrainingTargets.h"
 
 #include <cmath>
-#include <cstring>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
-
-namespace
-{
-void MixHash_(
-    Fnv1a&    _hasher,
-    const int _value)
-{
-    _hasher.Mix(_value);
-}
-}   // namespace
 
 VECTOR2 GetDummySize(
     const eDummyKind _kind)
@@ -222,12 +210,13 @@ uint64_t TrainingTargets::HashState() const
     Fnv1a hasher;
     for (const TrainingDummy& dummy: m_dummies)
     {
-        MixHash_(hasher, static_cast<int>(dummy.id));
-        MixHash_(hasher, dummy.health.hp);
-        MixHash_(hasher, dummy.deadTicks);
-        MixHash_(hasher, dummy.hitsTaken);
+        const int id = static_cast<int>(dummy.id);
+        hasher.Mix(id);
+        hasher.Mix(dummy.health.hp);
+        hasher.Mix(dummy.deadTicks);
+        hasher.Mix(dummy.hitsTaken);
     }
-    MixHash_(hasher, m_killCount);
+    hasher.Mix(m_killCount);
     return hasher.Finalize();
 }
 

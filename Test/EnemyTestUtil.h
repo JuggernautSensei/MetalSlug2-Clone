@@ -2,7 +2,6 @@
 
 #include <vector>
 
-#include "Base/Math.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
@@ -16,7 +15,7 @@
 
 [[nodiscard]] FilePath EnemyDefsPath();
 
-[[nodiscard]] bool OnGround(const Enemy* _pEnemy);
+[[nodiscard]] bool OnGround(const EnemyState* _pEnemy);
 
 bool LoadEnemyLib(
     EnemyDefLibrary& _out,
@@ -37,9 +36,10 @@ public:
         const float   _camLeft = 0.f);
 
     [[nodiscard]] bool          IsLoaded() const;
-    [[nodiscard]] const String& GetMessage() const;
+    [[nodiscard]] const String& GetLoadMessage() const;
 
     [[nodiscard]] EnemyWorld&         World();
+    [[nodiscard]] const EnemyWorld&   World() const;
     [[nodiscard]] EnemyDefLibrary&    Lib();
     [[nodiscard]] CombatSystem&       Combat();
     [[nodiscard]] ProjectileSystem&   Projectiles();
@@ -76,7 +76,7 @@ public:
     [[nodiscard]] int SumScore(
         const eEnemyEventKind _kind) const;
 
-    [[nodiscard]] const Enemy* E(
+    [[nodiscard]] const EnemyState* E(
         const EnemyHandle _handle) const;
 
 private:

@@ -4,7 +4,7 @@
 class FadeController
 {
 public:
-    enum class ePhase : uint8_t
+    enum class ePhase
     {
         Clear,
         FadingToBlack,
@@ -12,14 +12,11 @@ public:
         FadingToClear
     };
 
-    void SetClear();
-    void SetBlack();
-
-    void FadeToBlack(int _ticks);
-    void FadeToClear(int _ticks);
-
-    void Tick();
-
+    void                  SetClear();
+    void                  SetBlack();
+    void                  FadeToBlack(int _ticks);
+    void                  FadeToClear(int _ticks);
+    void                  Tick();
     [[nodiscard]] float   GetAlpha() const;
     [[nodiscard]] bool    IsBusy() const;
     [[nodiscard]] bool    IsBlack() const;

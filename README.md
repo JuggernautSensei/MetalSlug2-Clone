@@ -4,7 +4,7 @@ C++20 + SDL3 로 만든 메탈슬러그 2 스타일 2D 액션 게임 (Mission 4 
 에셋은 `Assets/` 의 JSON/PNG 를 손으로 고치면 바로 반영된다 (변환 단계 없음).
 
 ## 요구 사항
-- Visual Studio 2022 (MSVC, C++20)
+- Visual Studio / MSBuild (MSVC v145, C++20)
 - vcpkg (manifest 모드, `vcpkg.json`: sdl3, yyjson, stb, miniaudio, gtest, imgui)
 
 ## 빌드
@@ -18,8 +18,8 @@ C++20 + SDL3 로 만든 메탈슬러그 2 스타일 2D 액션 게임 (Mission 4 
 | 옵션 | 의미 |
 |---|---|
 | `--state <이름>` | 시작 상태 (`demo`, `sandbox`, `enemylab`, `buslab`, `bosslab`, `helilab` ...) |
-| `--seed <n>` | 난수 시드 |
-| `--dump-tuning` / `--gen-replay <out> <state> <ticks> <flip>` | 튜닝 덤프 / 합성 리플레이 생성 후 종료 (첫 인자일 때만) |
+| `--seed <n>` | 현재 파싱만 하며 시뮬레이션 시드에는 반영되지 않음 |
+| `--dump-tuning` | 기본 튜닝 덤프 후 종료 (첫 인자일 때만) |
 | `--no-audio` | 소리 끔 |
 | `--capture <bmp>` `--capture-frame <n>` `--capture-ticks <a,b,..>` | 스크린샷 |
 | `--weapon <n>` `--hold <J/K/Up/Down/Left/Right>` `--life <n>` | 디버그 시작값 |
@@ -30,7 +30,7 @@ C++20 + SDL3 로 만든 메탈슬러그 2 스타일 2D 액션 게임 (Mission 4 
 | `--editor-god <off/nodeath/invincible>` | 에디터 Player 무적 모드 초기값 (`--editor` 에서만 적용) |
 
 ## 폴더
-- `Source/Base` 공용 유틸(Json, Result, Log) / `Core` App, 입력, 리플레이, 튜닝 / `Render` 스프라이트, 카메라 / `Audio` / `World` 지면, 물리, 전투 / `Game` 상태, 플레이어, 적, 소품, 스테이지 / `Editor` ImGui 에디터
+- `Source/Base` 공용 유틸(Json, Result, Log) / `Core` App, 입력, 고정 스텝, 튜닝 / `Render` 스프라이트, 카메라 / `Audio` / `World` 지면, 물리, 전투 / `Game` 상태, 플레이어, 적, 소품, 스테이지 / `Editor` ImGui 에디터
 - `Assets/` anim.json, sprites.json, sounds.json, manifest.json, `Atlas/` `Textures/` `Audio/` `Ground/` `Stage/` `Defs/` `Tuning/`
 - `Test/` GoogleTest (`SlugTest.exe`)
 - `Projects/` vcxproj (MetalSlug2_Clone, SlugTest) / `Scripts/` Build, Verify, TraceLoad, ValidateStage
@@ -46,7 +46,7 @@ C++20 + SDL3 로 만든 메탈슬러그 2 스타일 2D 액션 게임 (Mission 4 
 
 - Animation 탭의 모든 편집(pivot/nudge/Apply to all/loop/frameDuration/Undo)은 실행 중인 게임 스프라이트에 즉시 반영된다 (재시작 불필요).
 - `Assets/anim.json` 을 밖에서 고치면 약 1초 안에 자동 리로드 (`reloaded anim.json`). 저장 안 된 편집이 있으면 경고만 하고, `Reload` 버튼이 디스크 내용으로 되돌린다. `sprites.json` 은 대상 아님.
-- Editor 창 상단 `Player`: `Off` / `No death` (피격은 받되 죽음/라이프 소모 없음) / `Invincible` (피격 판정 없음). 일반 실행/리플레이는 항상 Off.
+- Editor 창 상단 `Player`: `Off` / `No death` (피격은 받되 죽음/라이프 소모 없음) / `Invincible` (피격 판정 없음). 일반 실행은 항상 Off.
 - AI 탭의 `Hitbox` 창: 플레이어(`Tuning.json`)와 적/보스(`Defs/*.json`)의 박스 w,h,cx,cy 를 숫자/드래그/`-` `+` 로 고치면 실행 중인 랩에 바로 반영된다.
 - `--editor` 에서는 ImGui 창에 포커스가 있거나 키 입력을 ImGui 가 쓰는 동안 게임에는 키가 전달되지 않는다 (게임 화면을 클릭하면 다시 게임 입력). `Hitbox` 에서 편집 중인 박스는 월드에 굵은 외곽선+라벨로 표시된다.
 - `Hitbox` 의 `Save` 는 바뀐 숫자만 원본 JSON 에 제자리 교체한다 (서식/키 순서 유지, 편집이 없으면 바이트 동일).

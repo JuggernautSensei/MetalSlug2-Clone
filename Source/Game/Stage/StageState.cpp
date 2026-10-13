@@ -11,13 +11,10 @@
 
 #include "Audio/AudioSystem.h"
 #include "Base/Log.h"
-#include "Base/Math.h"
-#include "Base/PhaseTimer.h"
-#include "Base/RGBA.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Game/Combat/BulletVisual.h"
-#include "Game/Enemies/BigShiee.h"
+#include "Game/Enemies/BigShieeEnemy.h"
 #include "Game/Player/PlayerHitboxes.h"
 #include "Game/Player/PlayerWeapons.h"
 #include "Game/Stage/StageMapping.h"
@@ -132,9 +129,8 @@ void StageState::Load_()
     m_bFailed   = false;
     m_assetRoot = FindAssetRoot();
 
-    const ScopedPhaseTimer stageTimer { "stage-load", m_config.stageFile };
-    String                 loadMessage;
-    Result<StageData>      data = LoadStageFromFile(FindAssetRoot() / "Stage" / m_config.stageFile, &loadMessage);
+    String            loadMessage;
+    Result<StageData> data = LoadStageFromFile(FindAssetRoot() / "Stage" / m_config.stageFile, &loadMessage);
     if (!data)
     {
         SLUG_LOG_ERROR("{} 을 읽지 못했습니다: {}", m_config.stageFile, loadMessage);
@@ -150,10 +146,10 @@ void StageState::Load_()
     }
     m_props.SetSpriteLibrary(&m_spriteLib);
     {
-        const ScopedPhaseTimer textureTimer { "stage-textures", "all" };
-        const FilePath         bgPath = FindAssetRoot() / "Textures" / (m_data.background + ".png");
-        Vector<FilePath>       paths  = { bgPath };
-        Vector<size_t>         owners = {};
+
+        const FilePath   bgPath = FindAssetRoot() / "Textures" / (m_data.background + ".png");
+        Vector<FilePath> paths  = { bgPath };
+        Vector<size_t>   owners = {};
         for (size_t i = 0; i < m_data.backdrops.size(); ++i)
         {
             const SpriteInfo* pInfo = m_spriteLib.Find(m_data.backdrops[i].sprite);
@@ -186,8 +182,8 @@ void StageState::Load_()
     const int flatHeight = static_cast<int>(m_data.worldSize.y);
     for (const String& name: m_data.groundMaps)
     {
-        const FilePath         path = FindAssetRoot() / "Ground" / (name + ".png");
-        const ScopedPhaseTimer groundTimer { "ground-mask", name };
+        const FilePath path = FindAssetRoot() / "Ground" / (name + ".png");
+
         if (std::optional<GroundMap> map = LoadGroundMask(path))
         {
             GroundMap ground = std::move(*map);
@@ -222,10 +218,10 @@ void StageState::Load_()
     }
 
     {
-        const ScopedPhaseTimer enemyTimer { "enemy-defs", "all" };
-        String                 message  = {};
-        const FilePath         defsPath = EnemyDefLibrary::GetDefaultDirectory(FindAssetRoot());
-        m_enemyLib                      = {};
+
+        String         message  = {};
+        const FilePath defsPath = EnemyDefLibrary::GetDefaultDirectory(FindAssetRoot());
+        m_enemyLib              = {};
         if (Result<EnemyDefLibrary> lib = std::filesystem::is_directory(defsPath) ? EnemyDefLibrary::LoadDirectory(defsPath, &message) : EnemyDefLibrary::Load(defsPath, &message))
         {
             m_enemyLib = lib.Take();
@@ -237,8 +233,8 @@ void StageState::Load_()
         m_enemies.SetLibrary(&m_enemyLib);
     }
     {
-        const ScopedPhaseTimer propTimer { "prop-defs", "all" };
-        String                 message = {};
+
+        String message = {};
         if (Result<PropDefLibrary> lib = PropDefLibrary::Load(FindAssetRoot() / "Defs" / "Props" / "Props.json", &message))
         {
             m_propDefs = lib.Take();
@@ -400,16 +396,18 @@ void StageState::Tick(
     if (m_config.bAutoDamage && m_tickCount % 6 == 0)
     {
         Vector<HitEvent> auto_;
-        for (const Enemy& enemy: m_enemies.GetEnemies())
+        for (const Scoped<Enemy>& pEnemy: m_enemies.GetEnemies())
         {
+            const EnemyState& enemy = pEnemy->GetState();
             if (enemy.life != eEnemyLife::Alive || enemy.behavior != eEnemyBehavior::BigShiee)
             {
                 continue;
             }
-            int part = kBigShieeCannonPart;
+            const BigShieeData& boss = static_cast<const BigShieeEnemy&>(*pEnemy).GetBossData();
+            int                 part = kBigShieeCannonPart;
             for (int i = 0; i < kBigShieeTurretCount; ++i)
             {
-                if (enemy.ext[static_cast<size_t>(kBigShieeExtHp + i)] > 0)
+                if (boss.turretHp[static_cast<size_t>(i)] > 0)
                 {
                     part = i;
                     break;
@@ -1164,7 +1162,7 @@ void StageState::DrawHud_(
     {
         TextStyle style = {};
         style.align     = eTextAlign::Center;
-        m_ui.DrawText(Renderer::kLogicalWidth / 2, 216, "PAUSED", style);
+        m_ui.DrawString(Renderer::kLogicalWidth / 2, 216, "PAUSED", style);
     }
 
     m_ui.SetMissionResults(m_flow.GetResultsView());

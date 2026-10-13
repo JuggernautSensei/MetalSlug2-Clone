@@ -36,11 +36,9 @@ struct GlyphPose
 class BannerSystem
 {
 public:
-    void Show(BannerSpec _spec);
-    void Clear();
-
-    void Tick();
-
+    void                            Show(BannerSpec _spec);
+    void                            Clear();
+    void                            Tick();
     [[nodiscard]] bool              IsActive() const;
     [[nodiscard]] int               GetElapsedTicks() const;
     [[nodiscard]] float             GetAlpha() const;

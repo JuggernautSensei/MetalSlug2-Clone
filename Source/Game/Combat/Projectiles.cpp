@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cmath>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Render/SpriteBatch.h"
 #include "World/Geometry.h"

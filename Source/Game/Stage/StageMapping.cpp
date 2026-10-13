@@ -2,7 +2,6 @@
 
 #include <cstdint>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
 

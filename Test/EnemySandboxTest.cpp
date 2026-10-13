@@ -1,4 +1,4 @@
-﻿
+
 #include <cmath>
 #include <cstring>
 #include <vector>
@@ -109,7 +109,7 @@ TEST(EnemySandbox, HangHoversAtItsSpawnHeight)
     Sim               sim { MakeEnemyConfig() };
     const EnemyHandle h = sim.State().SpawnEnemy("soldier_hang", { 300.f, 260.f });
     sim.Step(120);
-    const Enemy* pHang = sim.State().GetEnemies().Get(h);
+    const EnemyState* pHang = sim.State().GetEnemies().Get(h);
     ASSERT_NE(pHang, nullptr);
     EXPECT_NEAR(pHang->body.position.y, 260.f, 0.01f);
 }
@@ -121,7 +121,7 @@ TEST(EnemySandbox, FlyingBzkDescendsAndTurnsIntoASoldierOnLanding)
     sim.Step(600);
     const EnemyHandle heir = sim.State().GetEnemies().ResolveHandle(para);
     ASSERT_NE(heir.id, para.id);
-    const Enemy* pHeir = sim.State().GetEnemies().Get(heir);
+    const EnemyState* pHeir = sim.State().GetEnemies().Get(heir);
     ASSERT_NE(pHeir, nullptr);
     EXPECT_EQ(sim.State().GetEnemyLib().Get(pHeir->defIndex).name, "soldier_bzk");
 }
@@ -131,7 +131,7 @@ TEST(EnemySandbox, InactiveMissileSoldierStaysSilentWhileFarAway)
     Sim               sim { MakeEnemyConfig() };
     const EnemyHandle h = sim.State().SpawnEnemy("soldier_missile", { 1200.f, kGroundY });
     sim.Step(600);
-    const Enemy* pEnemy = sim.State().GetEnemies().Get(h);
+    const EnemyState* pEnemy = sim.State().GetEnemies().Get(h);
     ASSERT_NE(pEnemy, nullptr);
     EXPECT_FALSE(pEnemy->bActive);
     EXPECT_EQ(sim.State().GetProjectiles().CountShots(h.id), 0);
@@ -247,7 +247,7 @@ TEST(EnemySandbox, BloodSplatsAtTheChestOfAKnifedSoldier)
     }
     ASSERT_TRUE(sim.State().GetEnemies().IsDefeated(h));
     sim.Step(1);
-    const Enemy* pEnemy = sim.State().GetEnemies().Get(h);
+    const EnemyState* pEnemy = sim.State().GetEnemies().Get(h);
     ASSERT_NE(pEnemy, nullptr);
 
     int bloodCount = 0;

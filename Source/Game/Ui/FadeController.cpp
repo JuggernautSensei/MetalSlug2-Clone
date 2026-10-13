@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <cmath>
 
-#include "Base/Math.h"
-
 void FadeController::SetClear()
 {
     m_alpha     = 0.f;

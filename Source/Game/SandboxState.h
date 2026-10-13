@@ -1,6 +1,4 @@
 #pragma once
-#include "Base/Handle.h"
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Core/Tuning.h"
 #include "Game/Combat/CombatSystem.h"
@@ -47,17 +45,15 @@ struct SandboxConfig
     Vector<VECTOR2>  slugFeet        = {};
 };
 
-class SandboxState final : public IGameState
+class SandboxState : public IGameState
 {
 public:
     SandboxState();
     explicit SandboxState(SandboxConfig _config);
-
-    void OnEnter() override;
-    void OnExit() override;
-    void Tick(const InputHistory& _input) override;
-    void Render(float _alpha) override;
-
+    void                                  OnEnter() override;
+    void                                  OnExit() override;
+    void                                  Tick(const InputHistory& _input) override;
+    void                                  Render(float _alpha) override;
     [[nodiscard]] PlayerController&       GetPlayer();
     [[nodiscard]] const PlayerController& GetPlayer() const;
     [[nodiscard]] TrainingTargets&        GetTargets();
@@ -72,19 +68,14 @@ public:
     [[nodiscard]] const EnemyWorld&       GetEnemies() const;
     [[nodiscard]] const EnemyDefLibrary&  GetEnemyLib() const;
     [[nodiscard]] EnemyDefLibrary&        GetEnemyLibMutable();
-
-    uint32_t AddTarget(eDummyKind _kind, VECTOR2 _feet, bool _bShooter = false);
-
-    EnemyHandle SpawnEnemy(StringView _defName, VECTOR2 _feet, const SpawnParams& _params = {});
-
-    void RestartGame();
-
-    [[nodiscard]] bool ReloadEnemyDefs(const FilePath& _assetRoot);
-    [[nodiscard]] bool             ReloadEnemyDefsKeep(const FilePath& _assetRoot);
-    [[nodiscard]] const GroundMap& GetGround() const;
-
-    [[nodiscard]] uint64_t HashState() const;
-    [[nodiscard]] uint64_t DebugHash() const override;
+    uint32_t                              AddTarget(eDummyKind _kind, VECTOR2 _feet, bool _bShooter = false);
+    EnemyHandle                           SpawnEnemy(StringView _defName, VECTOR2 _feet, const SpawnParams& _params = {});
+    void                                  RestartGame();
+    [[nodiscard]] bool                    ReloadEnemyDefs(const FilePath& _assetRoot);
+    [[nodiscard]] bool                    ReloadEnemyDefsKeep(const FilePath& _assetRoot);
+    [[nodiscard]] const GroundMap&        GetGround() const;
+    [[nodiscard]] uint64_t                HashState() const;
+    [[nodiscard]] uint64_t                DebugHash() const override;
 
 private:
     void                       BuildWorld_();
@@ -97,11 +88,10 @@ private:
     void                       SpawnDebugEnemy_(int _slot, float _aheadPx = 180.f);
     void                       TickBusLab_();
     [[nodiscard]] bool         LoadEnemyDefs_(const FilePath& _assetRoot, EnemyDefLibrary& _out) const;
-
-    void DrawWorld_(VECTOR2 _cameraPos, float _alpha);
-    void DrawDebugBoxes_(Renderer& _renderer, VECTOR2 _cameraPos) const;
-    void DrawHud_();
-    void RequestSounds_(const Vector<FxRequest>& _fx);
+    void                       DrawWorld_(VECTOR2 _cameraPos, float _alpha);
+    void                       DrawDebugBoxes_(Renderer& _renderer, VECTOR2 _cameraPos) const;
+    void                       DrawHud_();
+    void                       RequestSounds_(const Vector<FxRequest>& _fx);
 
     SandboxConfig m_config  = {};
     Tuning        m_tuning  = {};

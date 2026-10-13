@@ -1,7 +1,5 @@
 #include "Audio/VoiceAllocator.h"
 
-#include "Base/Math.h"
-
 VoiceAllocator::VoiceAllocator(
     const int _capacity,
     const int _maxPerSound)

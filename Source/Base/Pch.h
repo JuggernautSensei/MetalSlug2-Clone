@@ -1,45 +1,10 @@
 #pragma once
-#include <algorithm>
-#include <array>
-#include <chrono>
-#include <cmath>
-#include <cstddef>
-#include <cstdint>
-#include <cstdio>
-#include <cstring>
-#include <filesystem>
-#include <format>
-#include <fstream>
-#include <functional>
-#include <iterator>
-#include <memory>
-#include <optional>
-#include <set>
-#include <span>
-#include <string>
-#include <string_view>
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
-#include <JugX/Config.h>
-#include <JugX/Macro.h>
-#include <JugX/Platform.h>
-#include <JugX/Typedef.h>
-#include <JugX/Assert.h>
-#include <JugX/Handle.h>
-#include <JugX/Random.h>
-#include <JugX/Error.h>
-#include <JugX/Result.h>
-#include <JugX/Scoped.h>
+#include <Windows.h>
+#undef GetObject
+
+#include <JugX/JugX.h>
+
+using namespace jug;
 
 #include "Base/Types.h"
-#include "Base/Handle.h"
-
-using jug::Error;
-using jug::kOK;
-using jug::MakeScoped;
-using jug::Random;
-using jug::Result;
-using jug::RngMt19937;
-using jug::Scoped;

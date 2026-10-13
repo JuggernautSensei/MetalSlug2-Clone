@@ -3,7 +3,6 @@
 #include <cmath>
 
 #include "Base/SlugError.h"
-#include "Base/Math.h"
 #include "Base/Types.h"
 
 namespace
@@ -272,11 +271,6 @@ int GroundMap::GetWidth() const
 int GroundMap::GetHeight() const
 {
     return m_height;
-}
-
-bool GroundMap::IsEmpty() const
-{
-    return m_width == 0 || m_height == 0;
 }
 
 void GroundMap::SetBoundsPolicy(

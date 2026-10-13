@@ -1,21 +1,20 @@
 #pragma once
 #include <cstdint>
 
-#include "Base/RGBA.h"
 #include "Base/Types.h"
 #include "Render/Animation.h"
 #include "Render/Renderer.h"
 #include "Render/SpriteBatch.h"
 #include "Render/SpriteLibrary.h"
 
-enum class eTextAlign : uint8_t
+enum class eTextAlign
 {
     Left,
     Center,
     Right
 };
 
-enum class eFontColor : uint8_t
+enum class eFontColor
 {
     Default,
     White,
@@ -67,14 +66,10 @@ struct TextLayout
 class BitmapFont
 {
 public:
-    bool Init(const SpriteLibrary& _sprites);
-
-    [[nodiscard]] bool HasSprites() const;
-
-    void DrawText(Renderer& _renderer, SpriteBatch& _sprites, int _x, int _y, StringView _text, const TextStyle& _style) const;
-
-    void DrawTimeDigits(SpriteBatch& _sprites, int _centerX, int _topY, StringView _digits, uint8_t _alpha = 255) const;
-
+    bool                    Init(const SpriteLibrary& _sprites);
+    [[nodiscard]] bool      HasSprites() const;
+    void                    DrawString(Renderer& _renderer, SpriteBatch& _sprites, int _x, int _y, StringView _text, const TextStyle& _style) const;
+    void                    DrawTimeDigits(SpriteBatch& _sprites, int _centerX, int _topY, StringView _digits, uint8_t _alpha = 255) const;
     [[nodiscard]] AnimFrame GetGlyphFrame(eFontColor _color, bool _bBold, int _glyph) const;
     [[nodiscard]] AnimFrame GetTimeDigitFrame(int _digit) const;
 

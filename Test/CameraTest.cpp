@@ -7,7 +7,6 @@
 #include <cstdio>
 #include <memory>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
 #include "Core/Input.h"

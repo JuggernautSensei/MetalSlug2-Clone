@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <SDL3/SDL.h>
 
 #include "Audio/AudioSystem.h"
@@ -12,7 +12,7 @@
 #include "Render/Renderer.h"
 #include "Render/SpriteBatch.h"
 
-class App final
+class App
 {
 public:
     int Run(int _argc, char** _argv);
@@ -26,12 +26,9 @@ private:
     void               OnKeyUp_(SDL_Scancode _key);
     void               OnFocusLost_();
     void               Update_(float _deltaTimeSec);
-
-    void ParseArgs_();
-    void Tick_();
-    void Render_(float _alpha);
-
-    Timer m_processTimer = {};
+    void               ParseArgs_();
+    void               Tick_();
+    void               Render_(float _alpha);
 
     bool           m_bRunning   = false;
     int            m_returnCode = 0;
@@ -42,19 +39,18 @@ private:
 
     Scoped<SimRunner> m_pRunner = nullptr;
 
-    String   m_stateName      = {};
-    uint64_t m_seed           = 1;
-    bool     m_bNoAudio       = false;
-    bool     m_bNoAsyncLoad   = false;
-    bool     m_bEditor        = false;
-    bool     m_bEditorKeys    = false;
-    String   m_editorAnim     = {};
-    String   m_editorTab      = {};
-    String   m_editorStage    = {};
-    String   m_editorLabSpawn = {};
-    String   m_editorGod      = {};
-    Editor   m_editor         = {};
+    String m_stateName = {};
 
+    bool   m_bNoAudio       = false;
+    bool   m_bNoAsyncLoad   = false;
+    bool   m_bEditor        = false;
+    bool   m_bEditorKeys    = false;
+    String m_editorAnim     = {};
+    String m_editorTab      = {};
+    String m_editorStage    = {};
+    String m_editorLabSpawn = {};
+    String m_editorGod      = {};
+    Editor m_editor         = {};
 
     FilePath         m_capturePath      = {};
     int              m_captureFrame     = 30;

@@ -4,7 +4,6 @@
 
 #include <SDL3/SDL.h>
 
-#include "Base/Math.h"
 #include "Game/Combat/BulletVisual.h"
 #include "Game/Combat/Projectiles.h"
 #include "Game/Player/PlayerWeapons.h"
@@ -260,16 +259,16 @@ TEST(PlayerWeapon, RocketBlastDamagesDirectTargetOnceAndSparesFarTargets)
 {
     Sim            sim;
     const uint32_t direct = sim.State().AddTarget(eDummyKind::Jeep, { 300.f, 378.f });
-    const uint32_t far    = sim.State().AddTarget(eDummyKind::Jeep, { 1100.f, 378.f });
+    const uint32_t farTarget    = sim.State().AddTarget(eDummyKind::Jeep, { 1100.f, 378.f });
     sim.Player().PickUpWeapon(eWeapon::Rocket, sim.Tune());
     const int directHp = DummyOf_(sim, direct).health.hp;
-    const int farHp    = DummyOf_(sim, far).health.hp;
+    const int farHp    = DummyOf_(sim, farTarget).health.hp;
 
     sim.Tap(eAction::Shot);
     sim.Step(120);
 
     EXPECT_EQ(DummyOf_(sim, direct).health.hp, directHp - sim.Tune().weapons.rocket.blastDamage);
-    EXPECT_EQ(DummyOf_(sim, far).health.hp, farHp);
+    EXPECT_EQ(DummyOf_(sim, farTarget).health.hp, farHp);
 }
 
 TEST(PlayerWeapon, ProjectileBlastAppearsOnRangeEndOnlyWithBlastSize)

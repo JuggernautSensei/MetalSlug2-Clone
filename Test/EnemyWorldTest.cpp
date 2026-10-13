@@ -316,7 +316,7 @@ TEST(EnemyWorld, FlyingBzkLandsAndTransformsIntoSoldierBzk)
 
     const EnemyHandle heir = rig.World().ResolveHandle(para);
     ASSERT_NE(heir.id, para.id) << "낙하산 병이 착지하지 않았다";
-    const Enemy* pHeir = rig.E(heir);
+    const EnemyState* pHeir = rig.E(heir);
     ASSERT_NE(pHeir, nullptr);
     EXPECT_EQ(rig.Lib().Get(pHeir->defIndex).name, "soldier_bzk");
     EXPECT_EQ(rig.E(para), nullptr);
@@ -510,7 +510,7 @@ TEST(EnemyHitFlash, OneHitDefinitionNeverFlashesEvenWhenSpawnedWithMoreHp)
 
 TEST(EnemyHitFlash, PartFlashIsPerPartAndIgnoresOutOfRangeIndices)
 {
-    Enemy e;
+    EnemyState e;
     TriggerPartHitFlash(e, 2);
     EXPECT_EQ(e.partFlashTicks[2], kHitFlashTicks);
     EXPECT_EQ(e.partFlashTicks[1], 0);
@@ -538,8 +538,8 @@ TEST(EnemyWorld, PowVariantPicksItsOwnClipSetAndDefaultsToOlder)
     const EnemyHandle hVar  = rig.Spawn("pow", { 500.f, kGroundY }, variant);
     rig.Step(1);
 
-    const Enemy* pBase = rig.E(hBase);
-    const Enemy* pVar  = rig.E(hVar);
+    const EnemyState* pBase = rig.E(hBase);
+    const EnemyState* pVar  = rig.E(hVar);
     ASSERT_NE(pBase, nullptr);
     ASSERT_NE(pVar, nullptr);
     ASSERT_EQ(pBase->state, 0);

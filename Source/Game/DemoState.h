@@ -1,14 +1,12 @@
 #pragma once
-#include "Base/Math.h"
 #include "Game/GameState.h"
 
-class DemoState final : public IGameState
+class DemoState : public IGameState
 {
 public:
-    void               Tick(const InputHistory& _input) override;
-    void               Render(float _alpha) override;
-    [[nodiscard]] bool IsFinished() const override;
-
+    void                   Tick(const InputHistory& _input) override;
+    void                   Render(float _alpha) override;
+    [[nodiscard]] bool     IsFinished() const override;
     [[nodiscard]] VECTOR2  GetPosition() const;
     [[nodiscard]] uint64_t DebugHash() const override;
 

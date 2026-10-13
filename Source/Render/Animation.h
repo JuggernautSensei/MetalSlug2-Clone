@@ -1,7 +1,6 @@
 #pragma once
 #include <cstdint>
 
-#include "Base/Handle.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 
@@ -33,40 +32,29 @@ struct AnimClip
     int               cellH         = 0;
     Vector<AnimFrame> frames        = {};
 
-    [[nodiscard]] int GetFrameCount() const;
-
+    [[nodiscard]] int     GetFrameCount() const;
     [[nodiscard]] int64_t GetFrameDurationUnits() const;
-
     [[nodiscard]] int64_t GetTotalDurationUnits() const;
-
-    [[nodiscard]] float GetTotalDurationSec() const;
-
-    [[nodiscard]] int GetFootBaseline() const;
+    [[nodiscard]] float   GetTotalDurationSec() const;
+    [[nodiscard]] int     GetFootBaseline() const;
 };
 
 class AnimationLibrary
 {
 public:
-    [[nodiscard]] static AnimationLibrary& GetSingleton();
-
+    [[nodiscard]] static AnimationLibrary&        GetSingleton();
     [[nodiscard]] static Result<AnimationLibrary> LoadFromDirectory(const FilePath& _bakedRoot);
-
     [[nodiscard]] static Result<AnimationLibrary> LoadFromJson(StringView _animJson);
-
-    AnimId AddClip(AnimClip _clip);
-
-    [[nodiscard]] AnimId Find(StringView _name) const;
-
-    [[nodiscard]] bool            IsValid(AnimId _id) const;
-    [[nodiscard]] const AnimClip& Get(AnimId _id) const;
-    [[nodiscard]] const AnimClip* GetOrNull(AnimId _id) const;
-    [[nodiscard]] const AnimClip* FindClip(StringView _name) const;
-
-    [[nodiscard]] size_t               GetClipCount() const;
-    [[nodiscard]] Span<const AnimClip> GetClips() const;
-
-    [[nodiscard]] Span<const String> GetAtlasPages() const;
-    [[nodiscard]] const FilePath&    GetRoot() const;
+    AnimId                                        AddClip(AnimClip _clip);
+    [[nodiscard]] AnimId                          Find(StringView _name) const;
+    [[nodiscard]] bool                            IsValid(AnimId _id) const;
+    [[nodiscard]] const AnimClip&                 Get(AnimId _id) const;
+    [[nodiscard]] const AnimClip*                 GetOrNull(AnimId _id) const;
+    [[nodiscard]] const AnimClip*                 FindClip(StringView _name) const;
+    [[nodiscard]] size_t                          GetClipCount() const;
+    [[nodiscard]] Span<const AnimClip>            GetClips() const;
+    [[nodiscard]] Span<const String>              GetAtlasPages() const;
+    [[nodiscard]] const FilePath&                 GetRoot() const;
 
 private:
     using NameMap = HashMap<String, uint32_t>;
@@ -80,20 +68,15 @@ private:
 class AnimPlayer
 {
 public:
-    void Play(AnimId _clip, bool _bRestart = false);
-
-    bool Update(const AnimationLibrary& _library, float _dt, float _speed = 1.f);
-
-    void SetNormalizedTime(const AnimClip& _clip, float _t);
-
-    void SyncPhase(const AnimClip& _clip, const AnimPlayer& _other, const AnimClip& _otherClip);
-
-    [[nodiscard]] AnimId  GetClip() const;
-    [[nodiscard]] int     GetFrame() const;
-    [[nodiscard]] int64_t GetTimeUnits() const;
-    [[nodiscard]] bool    IsFinished() const;
-    [[nodiscard]] float   GetNormalizedTime(const AnimClip& _clip) const;
-
+    void                           Play(AnimId _clip, bool _bRestart = false);
+    bool                           Update(const AnimationLibrary& _library, float _dt, float _speed = 1.f);
+    void                           SetNormalizedTime(const AnimClip& _clip, float _t);
+    void                           SyncPhase(const AnimClip& _clip, const AnimPlayer& _other, const AnimClip& _otherClip);
+    [[nodiscard]] AnimId           GetClip() const;
+    [[nodiscard]] int              GetFrame() const;
+    [[nodiscard]] int64_t          GetTimeUnits() const;
+    [[nodiscard]] bool             IsFinished() const;
+    [[nodiscard]] float            GetNormalizedTime(const AnimClip& _clip) const;
     [[nodiscard]] const AnimFrame* GetFrameData(const AnimationLibrary& _library) const;
 
 private:

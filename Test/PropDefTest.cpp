@@ -1,6 +1,6 @@
 #include <string>
 
-#include "Base/Json.h"
+#include "Base/JsonFields.h"
 #include "Base/Types.h"
 #include "PropTestUtil.h"
 

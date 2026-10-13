@@ -1,4 +1,4 @@
-﻿#include "Game/StateFactory.h"
+#include "Game/StateFactory.h"
 
 #include "Base/Types.h"
 #include "Game/DemoState.h"
@@ -12,11 +12,11 @@ Scoped<IGameState> CreateState(
 {
     if (_name == "demo")
     {
-        return Scoped<IGameState> { new DemoState };
+        return MakeScoped<DemoState>();
     }
     if (_name == "sandbox")
     {
-        return Scoped<IGameState> { new SandboxState };
+        return MakeScoped<SandboxState>();
     }
     if (_name == "proplab")
     {
@@ -24,19 +24,19 @@ Scoped<IGameState> CreateState(
         config.spawnFeet     = { 1500.f, 378.f };
         config.bSpawnTargets = false;
         config.bPropLab      = true;
-        return Scoped<IGameState> { new SandboxState { config } };
+        return MakeScoped<SandboxState>(config);
     }
     if (_name == "enemylab")
     {
         SandboxConfig config;
         config.bEnemyLab = true;
-        return Scoped<IGameState> { new SandboxState { config } };
+        return MakeScoped<SandboxState>(config);
     }
     if (_name == "vehiclelab")
     {
         SandboxConfig config;
         config.bVehicleLab = true;
-        return Scoped<IGameState> { new SandboxState { config } };
+        return MakeScoped<SandboxState>(config);
     }
     if (_name == "buslab" || _name == "buslab_bot")
     {
@@ -46,7 +46,7 @@ Scoped<IGameState> CreateState(
         config.bSpawnTargets = false;
         config.bBusLab       = true;
         config.bBusBot       = _name == "buslab_bot";
-        return Scoped<IGameState> { new SandboxState { config } };
+        return MakeScoped<SandboxState>(config);
     }
     if (_name == "bosslab" || _name == "bosslab_god" || _name == "bosslab_bot")
     {
@@ -56,7 +56,7 @@ Scoped<IGameState> CreateState(
         config.bBot        = _name == "bosslab_bot";
         config.bHmg        = _name == "bosslab_bot";
         config.bAutoDamage = _name == "bosslab_bot";
-        return Scoped<IGameState> { new StageState { config } };
+        return MakeScoped<StageState>(config);
     }
     if (_name == "helilab" || _name == "helilab_god" || _name == "helilab_bot" || _name == "helilab_kill")
     {
@@ -68,7 +68,7 @@ Scoped<IGameState> CreateState(
         config.bGodMode = _name != "helilab";
         config.bHeliBot = _name == "helilab_bot" || _name == "helilab_kill";
         config.heliHp   = _name == "helilab_kill" ? 40 : -1;
-        return Scoped<IGameState> { new SandboxState { config } };
+        return MakeScoped<SandboxState>(config);
     }
     if (_name == "sluglab")
     {
@@ -81,19 +81,19 @@ Scoped<IGameState> CreateState(
         config.bSpawnTargets = false;
         config.slugFeet.emplace_back(430.f, 378.f);
         config.slugFeet.emplace_back(2300.f, 378.f);
-        return Scoped<IGameState> { new SandboxState { config } };
+        return MakeScoped<SandboxState>(config);
     }
     if (_name == "stage0")
     {
-        return Scoped<IGameState> { new StageState };
+        return MakeScoped<StageState>();
     }
     if (_name == "title")
     {
-        return Scoped<IGameState> { new TitleState };
+        return MakeScoped<TitleState>();
     }
     if (_name == "uidemo")
     {
-        return Scoped<IGameState> { new UiDemoState };
+        return MakeScoped<UiDemoState>();
     }
     return nullptr;
 }

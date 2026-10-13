@@ -1,5 +1,4 @@
 #pragma once
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Core/Tuning.h"
 #include "Game/Combat/CombatSystem.h"
@@ -8,7 +7,7 @@
 #include "Render/Animation.h"
 #include "World/Combat.h"
 
-enum class eDummyKind : uint8_t
+enum class eDummyKind
 {
     Grunt,
     Jeep,
@@ -40,18 +39,12 @@ struct TrainingDummy
 class TrainingTargets
 {
 public:
-    void Clear();
-
-    uint32_t Add(eDummyKind _kind, VECTOR2 _feet, bool _bShooter, const SandboxTuning& _tuning);
-
-    void RegisterHurtboxes(CombatSystem& _combat) const;
-
-    void TickShooters(const SandboxTuning& _tuning, VECTOR2 _playerFeet, bool _bPlayerAlive, ProjectileSystem& _projectiles, CombatSystem& _combat);
-
-    int ApplyEvents(Span<const HitEvent> _events, const SandboxTuning& _tuning);
-
-    void Tick(const SandboxTuning& _tuning);
-
+    void                                    Clear();
+    uint32_t                                Add(eDummyKind _kind, VECTOR2 _feet, bool _bShooter, const SandboxTuning& _tuning);
+    void                                    RegisterHurtboxes(CombatSystem& _combat) const;
+    void                                    TickShooters(const SandboxTuning& _tuning, VECTOR2 _playerFeet, bool _bPlayerAlive, ProjectileSystem& _projectiles, CombatSystem& _combat);
+    int                                     ApplyEvents(Span<const HitEvent> _events, const SandboxTuning& _tuning);
+    void                                    Tick(const SandboxTuning& _tuning);
     [[nodiscard]] Span<const TrainingDummy> GetDummies() const;
     [[nodiscard]] Span<TrainingDummy>       GetDummies();
     [[nodiscard]] const TrainingDummy*      Find(uint32_t _id) const;

@@ -2,10 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstring>
 #include <string>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Player/PlayerController.h"
 #include "Game/Player/PlayerWeapons.h"
@@ -25,9 +23,7 @@ void MixFloat_(
     uint64_t&   _hash,
     const float _value)
 {
-    uint32_t bits = 0;
-    static_assert(sizeof(bits) == sizeof(_value));
-    std::memcpy(&bits, &_value, sizeof(bits));
+    const uint32_t bits = std::bit_cast<uint32_t>(_value);
     MixValue_(_hash, bits);
 }
 }   // namespace
@@ -103,7 +99,7 @@ uint32_t ItemWorld::Spawn(
 
     if (def.kind == eItemKind::Score && def.bRoll)
     {
-        item.rollVx = RandRange(m_rng, kRollMinVx, kRollMaxVx);
+        item.rollVx = kRollMinVx + static_cast<float>(Random<double>(m_rng)) * (kRollMaxVx - kRollMinVx);
     }
     if (_bBounce)
     {

@@ -8,10 +8,8 @@ class AudioRng
 {
 public:
     explicit AudioRng(uint32_t _seed = 0x9E3779B9u);
-
     [[nodiscard]] uint32_t NextU32();
-
-    [[nodiscard]] float NextUnit();
+    [[nodiscard]] float    NextUnit();
 
 private:
     uint32_t m_state;
@@ -23,11 +21,8 @@ struct BgmFader
     float ratePerSec = 0.f;
     bool  bFading    = false;
 
-    void Reset();
-
-    void BeginFadeOut(float _seconds);
-
+    void               Reset();
+    void               BeginFadeOut(float _seconds);
     [[nodiscard]] bool Update(float _dtSec);
-
     [[nodiscard]] bool IsDone() const;
 };

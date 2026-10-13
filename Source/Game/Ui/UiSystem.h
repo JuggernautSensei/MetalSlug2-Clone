@@ -20,20 +20,16 @@ struct GameOverArtView
 class UiSystem
 {
 public:
-    void Init();
-
-    void Tick();
-
-    void DrawHud(const HudModel& _model);
-    void DrawBanner();
-    void DrawMissionResults() const;
-    void DrawFade();
-    void DrawOverlays();
-
-    void DrawText(int _x, int _y, StringView _text, const TextStyle& _style) const;
-    bool DrawSprite(StringView _name, int _centerX, int _centerY, int _scale = 1, uint8_t _alpha = 255) const;
-    bool DrawStandalone(StringView _name, int _x, int _y, uint8_t _alpha = 255) const;
-
+    void                                Init();
+    void                                Tick();
+    void                                DrawHud(const HudModel& _model);
+    void                                DrawBanner();
+    void                                DrawMissionResults() const;
+    void                                DrawFade();
+    void                                DrawOverlays();
+    void                                DrawString(int _x, int _y, StringView _text, const TextStyle& _style) const;
+    bool                                DrawSprite(StringView _name, int _centerX, int _centerY, int _scale = 1, uint8_t _alpha = 255) const;
+    bool                                DrawStandalone(StringView _name, int _x, int _y, uint8_t _alpha = 255) const;
     [[nodiscard]] BannerSystem&         GetBanner();
     [[nodiscard]] const BannerSystem&   GetBanner() const;
     [[nodiscard]] FadeController&       GetFade();
@@ -41,10 +37,9 @@ public:
     [[nodiscard]] const UiLayout&       GetLayout() const;
     [[nodiscard]] int                   GetTick() const;
     [[nodiscard]] bool                  HasSprites() const;
-
-    void ShowBanner(StringView _text, float _seconds);
-    void SetMissionResults(const MissionResultsView& _view);
-    void SetGameOverArt(const GameOverArtView& _view);
+    void                                ShowBanner(StringView _text, float _seconds);
+    void                                SetMissionResults(const MissionResultsView& _view);
+    void                                SetGameOverArt(const GameOverArtView& _view);
 
 private:
     void DrawGameOverArt_() const;

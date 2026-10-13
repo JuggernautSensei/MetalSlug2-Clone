@@ -2,7 +2,6 @@
 #include <cstdint>
 #include <optional>
 
-#include "Base/Math.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 
@@ -20,36 +19,23 @@ public:
     static constexpr uint8_t kSolidMask = 1;
 
     [[nodiscard]] static GroundMap MakeEmpty(int _width, int _height);
-
     [[nodiscard]] static GroundMap MakeFromRows(Span<const StringView> _rows, char _solid = '#');
-
     GroundMap() = default;
-
-    void SetSolid(int _x, int _y, bool _bSolid);
-    void FillRect(int _x0, int _y0, int _x1, int _y1, bool _bSolid);
-
-    [[nodiscard]] int      GetWidth() const;
-    [[nodiscard]] int      GetHeight() const;
-    [[nodiscard]] bool     IsEmpty() const;
-    [[nodiscard]] uint64_t CountSolidPixels() const;
-
-    void SetBoundsPolicy(const GroundBoundsPolicy& _policy);
-
-    void               SetPeriodicTail(int _from, int _tailX, int _tailW);
-    [[nodiscard]] bool HasPeriodicTail() const;
-    void               MaterializeTail(int _periods);
-
-    [[nodiscard]] bool IsSolid(int _x, int _y) const;
-
-    [[nodiscard]] bool IsSolidAt(VECTOR2 _point) const;
-
-    [[nodiscard]] bool IsRectSolid(int _x0, int _y0, int _x1, int _y1) const;
-
+    void                             SetSolid(int _x, int _y, bool _bSolid);
+    void                             FillRect(int _x0, int _y0, int _x1, int _y1, bool _bSolid);
+    [[nodiscard]] int                GetWidth() const;
+    [[nodiscard]] int                GetHeight() const;
+    [[nodiscard]] uint64_t           CountSolidPixels() const;
+    void                             SetBoundsPolicy(const GroundBoundsPolicy& _policy);
+    void                             SetPeriodicTail(int _from, int _tailX, int _tailW);
+    [[nodiscard]] bool               HasPeriodicTail() const;
+    void                             MaterializeTail(int _periods);
+    [[nodiscard]] bool               IsSolid(int _x, int _y) const;
+    [[nodiscard]] bool               IsSolidAt(VECTOR2 _point) const;
+    [[nodiscard]] bool               IsRectSolid(int _x0, int _y0, int _x1, int _y1) const;
     [[nodiscard]] std::optional<int> FindGroundY(int _x, int _fromY, int _maxDist) const;
-
-    [[nodiscard]] float EstimateSlope(int _x, int _y, int _halfWidth, int _searchRange) const;
-
-    [[nodiscard]] VECTOR2 EstimateNormal(int _x, int _y, int _halfWidth, int _searchRange) const;
+    [[nodiscard]] float              EstimateSlope(int _x, int _y, int _halfWidth, int _searchRange) const;
+    [[nodiscard]] VECTOR2            EstimateNormal(int _x, int _y, int _halfWidth, int _searchRange) const;
 
 private:
     [[nodiscard]] bool IsOutOfBoundsSolid_(int _x, int _y) const;

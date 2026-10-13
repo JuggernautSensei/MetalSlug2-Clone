@@ -1,7 +1,5 @@
 #include "World/Physics.h"
 
-#include "Base/Math.h"
-
 constexpr float kOneWayEpsilon = 0.001f;
 constexpr float kInf           = 1e30f;
 

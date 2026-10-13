@@ -3,10 +3,6 @@
 #include <string_view>
 #include <utility>
 
-#include <JugX/Logger.h>
-
-using jug::eLogLevel;
-
 void LogMessage(eLogLevel _level, StringView _message);
 
 // JugX 코어 로거를 LogMessage 로 보낸다

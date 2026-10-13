@@ -1,7 +1,5 @@
 #include "Audio/AudioMath.h"
 
-#include "Base/Math.h"
-
 AudioRng::AudioRng(const uint32_t _seed)
     : m_state(_seed == 0 ? 1u : _seed)
 {

@@ -75,7 +75,7 @@ TEST(VehicleSandbox, GroundVehiclesRestOnTheGround)
     sim.Step(30);
     for (const EnemyHandle h: { jeep, btank, missile, saru })
     {
-        const Enemy* pEnemy = sim.State().GetEnemies().Get(h);
+        const EnemyState* pEnemy = sim.State().GetEnemies().Get(h);
         ASSERT_NE(pEnemy, nullptr);
         EXPECT_NEAR(pEnemy->body.position.y, kGroundY, 0.5f);
     }
@@ -92,7 +92,7 @@ TEST(VehicleSandbox, SandboxHashIsDeterministicWithAllVehiclesPresent)
     EXPECT_EQ(first, second);
 }
 
-TEST(VehicleSandbox, PistolBurstsWearDownAMissleTankAtThreeDamagePerHit)
+TEST(VehicleSandbox, PistolBurstsWearDownAMissileTankAtThreeDamagePerHit)
 {
     Sim sim { MakeEnemyConfig() };
     sim.Step(2);
@@ -101,7 +101,7 @@ TEST(VehicleSandbox, PistolBurstsWearDownAMissleTankAtThreeDamagePerHit)
     sim.Step(40);
     sim.Release(eAction::Shot);
     sim.Step(2);
-    const Enemy* pEnemy = sim.State().GetEnemies().Get(h);
+    const EnemyState* pEnemy = sim.State().GetEnemies().Get(h);
     ASSERT_NE(pEnemy, nullptr);
     EXPECT_LT(pEnemy->health.hp, 100);
     EXPECT_EQ(pEnemy->health.hp % 3, 100 % 3) << "피해는 3 의 배수로만 들어온다";

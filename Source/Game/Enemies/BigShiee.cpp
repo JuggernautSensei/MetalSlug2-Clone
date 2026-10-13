@@ -1,15 +1,15 @@
+#include "Game/Enemies/BigShieeEnemy.h"
+
 #include <algorithm>
 #include <cmath>
 
 #include "Base/Log.h"
-#include "Base/Math.h"
 #include "Game/Enemies/BigShiee.h"
 #include "Game/Enemies/EnemyCommon.h"
 #include "Game/Enemies/EnemyDefParse.h"
 #include "Game/Enemies/VehicleCommon.h"
 
 // 최종보스 전함 '빅 셰이'
-// 모든 파츠는 음수 레이어로 그려 StageState 가 지면 텍스처보다
 
 namespace
 {
@@ -74,50 +74,6 @@ namespace
     return kNames[index];
 }
 
-[[nodiscard]] eBigShieePhase Phase_(
-    const Enemy& _e)
-{
-    return static_cast<eBigShieePhase>(_e.state);
-}
-
-[[nodiscard]] int& Slot_(
-    Enemy&    _e,
-    const int _base,
-    const int _index = 0)
-{
-    return _e.ext[static_cast<size_t>(_base + _index)];
-}
-
-[[nodiscard]] int GetSlot_(
-    const Enemy& _e,
-    const int    _base,
-    const int    _index = 0)
-{
-    return _e.ext[static_cast<size_t>(_base + _index)];
-}
-
-[[nodiscard]] eBigShieeTurretMode GetTurretMode_(
-    const Enemy& _e,
-    const int    _i)
-{
-    return static_cast<eBigShieeTurretMode>(GetSlot_(_e, kBigShieeExtMode, _i));
-}
-
-void SetTurretMode_(
-    Enemy&                    _e,
-    const int                 _i,
-    const eBigShieeTurretMode _mode)
-{
-    Slot_(_e, kBigShieeExtMode, _i)  = static_cast<int>(_mode);
-    Slot_(_e, kBigShieeExtTicks, _i) = 0;
-}
-
-[[nodiscard]] eBigShieeCannonMode GetCannonMode_(
-    const Enemy& _e)
-{
-    return static_cast<eBigShieeCannonMode>(GetSlot_(_e, kBigShieeExtCannonMode));
-}
-
 [[nodiscard]] const char* CannonModeName_(
     const eBigShieeCannonMode _mode)
 {
@@ -129,15 +85,6 @@ void SetTurretMode_(
         case eBigShieeCannonMode::Shot: return "Shot";
         default: return "Hidden";
     }
-}
-
-void SetCannonMode_(
-    Enemy&                    _e,
-    const eBigShieeCannonMode _mode)
-{
-    EventLogFormat("bigshiee.cannon", "\"mode\":\"{}\",\"yaw\":{}", CannonModeName_(_mode), GetSlot_(_e, kBigShieeExtCannonYaw));
-    Slot_(_e, kBigShieeExtCannonMode)  = static_cast<int>(_mode);
-    Slot_(_e, kBigShieeExtCannonTicks) = 0;
 }
 
 [[nodiscard]] VECTOR2 World_(
@@ -178,67 +125,9 @@ void SetCannonMode_(
     return _keys.empty() ? 0.f : _keys.back().x;
 }
 
-[[nodiscard]] int AliveTurrets_(
-    const Enemy& _e)
-{
-    int count = 0;
-    for (int i = 0; i < kBigShieeTurretCount; ++i)
-    {
-        if (GetSlot_(_e, kBigShieeExtHp, i) > 0)
-        {
-            ++count;
-        }
-    }
-    return count;
-}
-
-[[nodiscard]] float AgeSec_(
-    const Enemy& _e)
-{
-    return static_cast<float>(_e.aux) * kStepSec;
-}
-
 // 주포 단계 기준 시간
-[[nodiscard]] float DeploySec_(
-    const Enemy& _e)
-{
-    const int start = GetSlot_(_e, kBigShieeExtDeployStart);
-    return start < 0 ? -1.f : static_cast<float>(_e.aux - start) * kStepSec;
-}
-
-[[nodiscard]] bool IsScrollPaused_(
-    const Enemy&       _e,
-    const BigShieeCfg& _c)
-{
-    const float t = AgeSec_(_e);
-    for (int i = 0; i < _c.numScrollPauses; ++i)
-    {
-        const VECTOR2 pause = _c.scrollPauses[static_cast<size_t>(i)];
-        if (t >= pause.x && t < pause.x + pause.y)
-        {
-            return true;
-        }
-    }
-    const float td = DeploySec_(_e);
-    if (td < 0.f)
-    {
-        return false;
-    }
-    if (td >= _c.deployPauseDelaySec && td < _c.deployPauseDelaySec + _c.deployPauseSec)
-    {
-        return true;
-    }
-    const float late = td - _c.latePauseFirstSec;
-    return late >= 0.f && std::fmod(late, _c.latePausePeriodSec) < _c.latePauseSec;
-}
 
 // 누적 스크롤이 예산에 닿았으면 카메라는 더 가지 않는다
-[[nodiscard]] bool IsScrollStopped_(
-    const Enemy&       _e,
-    const BigShieeCfg& _c)
-{
-    return _c.scrollBudgetPx > 0.f && static_cast<float>(GetSlot_(_e, kBigShieeExtScrollTicks)) * _c.scrollSpeed * kStepSec >= _c.scrollBudgetPx;
-}
 
 // 클립 길이
 [[nodiscard]] int ClipTicks_(
@@ -293,280 +182,33 @@ bool SubmitFrame_(
     return true;
 }
 
-void Init_(
-    Enemy&          _e,
-    const EnemyDef& _def,
-    EnemyEnv&       _env)
-{
-    const BigShieeCfg& c = _def.bigShiee;
-    PrepareBody(_e, _def);
-    _e.facing     = 1;
-    _e.aux        = 0;
-    _e.counter    = 0;
-    _e.deathTicks = 0;
-    _e.ext.fill(0);
-
-    for (int i = 0; i < kBigShieeTurretCount; ++i)
-    {
-        const BigShieeTurretCfg& turret = c.turrets[static_cast<size_t>(i)];
-        Slot_(_e, kBigShieeExtHp, i)    = turret.hp;
-        Slot_(_e, kBigShieeExtMode, i)  = static_cast<int>(eBigShieeTurretMode::Idle);
-        Slot_(_e, kBigShieeExtPos, i)   = turret.side * kTurnMax;
-    }
-    Slot_(_e, kBigShieeExtNextVolley)  = SecToTicks(c.firstVolleySec);
-    Slot_(_e, kBigShieeExtNextChute)   = SecToTicks(c.chuteFirstSec);
-    Slot_(_e, kBigShieeExtDeployStart) = -1;
-    Slot_(_e, kBigShieeExtLidStart)    = -1;
-    Slot_(_e, kBigShieeExtLastKill)    = -1;
-    SetCannonMode_(_e, eBigShieeCannonMode::Hidden);
-
-    // 선체는 카메라 왼쪽 밖에서 시작한다
-    const Aabb& view = _env.ctx.cameraView;
-    if (view.max.x > view.min.x)
-    {
-        _e.body.position.x = view.min.x + c.startScreenX;
-    }
-    _e.prevFeet = _e.body.position;
-    EnterState(_e, static_cast<int>(eBigShieePhase::Entrance));
-}
-
-[[nodiscard]] VECTOR2 ExtraFromWorld_(
-    const Enemy&    _e,
-    const EnemyDef& _def,
-    const int       _weapon,
-    const VECTOR2   _muzzle)
-{
-    if (_weapon < 0)
-    {
-        return { 0.f, 0.f };
-    }
-    const VECTOR2 base = GetMuzzleWorld(_e, _def, _weapon);
-    return { _muzzle.x - base.x, _muzzle.y - base.y };
-}
-
-[[nodiscard]] int AimPos_(
-    const Enemy&             _e,
-    const BigShieeCfg&       _c,
-    const BigShieeTurretCfg& _turret,
-    const EnemyEnv&          _env,
-    const int                _pos)
-{
-    if (!_env.ctx.player.bAlive)
-    {
-        return _pos;
-    }
-    const float dx = _env.ctx.player.feet.x - (_e.body.position.x + _turret.anchor.x + _turret.muzzle.x);
-    if (dx < -_c.turretAimBandPx)
-    {
-        return 0;
-    }
-    return dx > _c.turretAimBandPx ? kTurnMax : kTurnMid;
-}
-
 [[nodiscard]] float MuzzleX_(
-    const BigShieeTurretCfg& _turret,
-    const int                _pos)
+    const BigShieeTurretConfig& _turret,
+    const int                   _pos)
 {
     return _pos <= 0 ? _turret.muzzle.x : (_pos >= kTurnMax ? -_turret.muzzle.x : 0.f);
 }
 
-void FireShell_(
-    Enemy&          _e,
-    const EnemyDef& _def,
-    EnemyEnv&       _env,
-    const int       _turret,
-    const int       _barrel)
-{
-    const BigShieeCfg&       c      = _def.bigShiee;
-    const BigShieeTurretCfg& turret = c.turrets[static_cast<size_t>(_turret)];
-    const int                aim    = GetSlot_(_e, kBigShieeExtPos, _turret) / kTurnMid + 1;
-    const float              gap    = turret.bTwin ? (_barrel == 0 ? -0.5f : 0.5f) * turret.muzzleGap : 0.f;
-    const VECTOR2            muzzle = World_(_e.body.position, { turret.anchor.x + MuzzleX_(turret, GetSlot_(_e, kBigShieeExtPos, _turret)) + gap, turret.anchor.y + turret.muzzle.y });
-    const int                weapon = _def.FindWeapon("shell");
-    EventLogFormat("bigshiee.turret_fire", "\"turret\":{},\"barrel\":{},\"aim\":{},\"x\":{:.1f},\"y\":{:.1f}", _turret, _barrel, aim, muzzle.x, muzzle.y);
-    (void)FireWeapon(_e, _def, _env, weapon, { 0.f, 0.f }, ExtraFromWorld_(_e, _def, weapon, muzzle));
-}
-
-void TickTurret_(
-    Enemy&          _e,
-    const EnemyDef& _def,
-    EnemyEnv&       _env,
-    const int       _i)
-{
-    const BigShieeCfg&        c      = _def.bigShiee;
-    const BigShieeTurretCfg&  turret = c.turrets[static_cast<size_t>(_i)];
-    const eBigShieeTurretMode mode   = GetTurretMode_(_e, _i);
-    if (mode == eBigShieeTurretMode::Dead)
-    {
-        return;
-    }
-    int& ticks = Slot_(_e, kBigShieeExtTicks, _i);
-    int& pos   = Slot_(_e, kBigShieeExtPos, _i);
-    ++ticks;
-
-    switch (mode)
-    {
-        case eBigShieeTurretMode::Idle:
-        {
-            // 쉬는 동안 turretTrackTicks 마다
-            const int target = AimPos_(_e, c, turret, _env, pos);
-            if (c.turretTrackTicks > 0 && ticks >= c.turretTrackTicks && pos != target)
-            {
-                pos += target > pos ? 1 : -1;
-                ticks = 0;
-            }
-            break;
-        }
-        case eBigShieeTurretMode::Prep:
-            if (ticks >= c.prepTicks)
-            {
-                SetTurretMode_(_e, _i, pos != AimPos_(_e, c, turret, _env, pos) ? eBigShieeTurretMode::Turn : eBigShieeTurretMode::Shot);
-            }
-            break;
-        case eBigShieeTurretMode::Turn:
-            if (ticks % c.turnFrameTicks == 0)
-            {
-                const int target = AimPos_(_e, c, turret, _env, pos);
-                pos += target > pos ? 1 : (target < pos ? -1 : 0);
-                if (pos == target)
-                {
-                    SetTurretMode_(_e, _i, eBigShieeTurretMode::Shot);
-                }
-            }
-            break;
-        case eBigShieeTurretMode::Shot:
-            if (ticks == c.fireTick)
-            {
-                FireShell_(_e, _def, _env, _i, 0);
-                const VECTOR2 puff = World_(_e.body.position, { turret.anchor.x + MuzzleX_(turret, pos), turret.anchor.y + turret.muzzle.y });
-                RequestFxAt(_env, GetNames_(turret.letter).puff, puff, _e.facing, 55);
-            }
-            else if (turret.bTwin && ticks == c.fireTick + c.pairGapTicks)
-            {
-                FireShell_(_e, _def, _env, _i, 1);
-            }
-            if (ticks >= c.shotTicks)
-            {
-                SetTurretMode_(_e, _i, eBigShieeTurretMode::Idle);
-            }
-            break;
-        default:
-            break;
-    }
-}
-
-void TickVolley_(
-    Enemy&          _e,
-    const EnemyDef& _def,
-    EnemyEnv&       _env)
-{
-    const BigShieeCfg& c = _def.bigShiee;
-    if (_e.aux < GetSlot_(_e, kBigShieeExtNextVolley))
-    {
-        return;
-    }
-    ARRAY<int, kBigShieeTurretCount> idle  = {};
-    int                              count = 0;
-    for (int i = 0; i < kBigShieeTurretCount; ++i)
-    {
-        if (GetSlot_(_e, kBigShieeExtHp, i) > 0 && GetTurretMode_(_e, i) == eBigShieeTurretMode::Idle)
-        {
-            idle[static_cast<size_t>(count++)] = i;
-        }
-    }
-    if (count <= 0)
-    {
-        Slot_(_e, kBigShieeExtNextVolley) = _e.aux + 30;
-        return;
-    }
-    const int pick = idle[static_cast<size_t>(Roll(_env, count))];
-    SetTurretMode_(_e, pick, eBigShieeTurretMode::Prep);
-    Slot_(_e, kBigShieeExtNextVolley) = _e.aux + RandTicks_(_env, c.volleyIntervalSec);
-}
-
-void TickChute_(
-    Enemy&          _e,
-    const EnemyDef& _def,
-    EnemyEnv&       _env)
-{
-    const BigShieeCfg& c = _def.bigShiee;
-    if (_e.aux < GetSlot_(_e, kBigShieeExtNextChute))
-    {
-        return;
-    }
-    Slot_(_e, kBigShieeExtNextChute) = _e.aux + SecToTicks(c.chuteIntervalSec);
-
-    const Aabb& view  = _env.ctx.cameraView;
-    const int   index = _env.lib.FindIndex(kChuteDef);
-    if (index < 0 || view.max.x <= view.min.x || !_env.ctx.player.bAlive)
-    {
-        return;
-    }
-    // 낙하 중에도 카메라가 자동 스크롤로 오른쪽으로 간다
-    const float fallDist = Max(_env.ctx.player.feet.y - (view.min.y - c.chuteStartAboveY), 0.f);
-    const float descend  = _env.lib.Get(index).flyingBzk.descendSpeed;
-    const float fallSec  = descend > 0.f ? fallDist / descend : 0.f;
-    const float scroll   = AgeSec_(_e) >= c.scrollStartSec && !IsScrollPaused_(_e, c) && !IsScrollStopped_(_e, c) ? c.scrollSpeed * fallSec : 0.f;
-
-    const int   spread = Max(1, static_cast<int>(c.chuteSpreadX));
-    const float dx     = static_cast<float>(Roll(_env, 2 * spread + 1) - spread);
-    float       x      = view.max.x + scroll - c.chuteRightMarginX + dx;
-    const float lo     = view.min.x + scroll + c.chuteEdgeX;
-    const float hi     = view.max.x + scroll - c.chuteEdgeX;
-    if (lo <= hi)
-    {
-        x = Clamp(x, lo, hi);
-    }
-    const VECTOR2 feet = { x, view.min.y - c.chuteStartAboveY };
-    SpawnParams   params;
-    params.facing     = 1;
-    params.bActivated = true;
-    params.drop       = String(kChuteDrops[static_cast<size_t>(Roll(_env, static_cast<int>(kChuteDrops.size())))]);
-    (void)_env.world.SpawnDeferred(index, feet, params);
-}
-
-[[nodiscard]] bool CannonVulnerable_(
-    const Enemy& _e)
-{
-    const eBigShieeCannonMode mode = GetCannonMode_(_e);
-    if (mode == eBigShieeCannonMode::Hidden)
-    {
-        return false;
-    }
-    return mode != eBigShieeCannonMode::Deploy || GetSlot_(_e, kBigShieeExtCannonTicks) >= 30;
-}
-
-[[nodiscard]] float PlayerAngleDeg_(
-    const Enemy&       _e,
-    const BigShieeCfg& _c,
-    const EnemyEnv&    _env)
-{
-    const VECTOR2 muzzle = World_(_e.body.position, _c.cannonAimOrigin);
-    const float   dx     = _env.ctx.player.center.x - muzzle.x;
-    const float   dy     = Max(_env.ctx.player.center.y - muzzle.y, 40.f);
-    return ATan2(dx, dy) * kRad2Deg;
-}
-
 [[nodiscard]] float YawDeg_(
-    const BigShieeCfg& _c,
-    const int          _yaw)
+    const BigShieeConfig& _config,
+    const int             _yaw)
 {
     const size_t low = static_cast<size_t>(_yaw / 2);
     if (_yaw % 2 == 0)
     {
-        return _c.cannonAimDeg[low];
+        return _config.cannonAimDeg[low];
     }
-    return (_c.cannonAimDeg[low] + _c.cannonAimDeg[low + 1]) * 0.5f;
+    return (_config.cannonAimDeg[low] + _config.cannonAimDeg[low + 1]) * 0.5f;
 }
 
 [[nodiscard]] int NearestYaw_(
-    const BigShieeCfg& _c,
-    const float        _deg)
+    const BigShieeConfig& _config,
+    const float           _deg)
 {
     int best = 0;
     for (int yaw = 1; yaw <= kYawMax; ++yaw)
     {
-        if (Abs(YawDeg_(_c, yaw) - _deg) < Abs(YawDeg_(_c, best) - _deg))
+        if (Abs(YawDeg_(_config, yaw) - _deg) < Abs(YawDeg_(_config, best) - _deg))
         {
             best = yaw;
         }
@@ -574,201 +216,81 @@ void TickChute_(
     return best;
 }
 
-[[nodiscard]] int TargetYaw_(
-    const Enemy&       _e,
-    const BigShieeCfg& _c,
-    const EnemyEnv&    _env,
-    const bool         _bFire)
+// 전개 틱을 클립 틱으로 바꾼다
+[[nodiscard]] int DeployClipTicks_(
+    const BigShieeConfig& _config,
+    const EnemyRenderEnv& _render,
+    const int             _ticks)
 {
-    if (!_env.ctx.player.bAlive)
+    const int clipTicks = GetNamedPartTicks(_render.anims, "Boss_Cannon_Deploy");
+    if (_config.cannonDeployTicks <= 0 || clipTicks <= 0)
     {
-        return GetSlot_(_e, kBigShieeExtCannonYaw);
+        return _ticks;
     }
-    const float deg = PlayerAngleDeg_(_e, _c, _env);
-    if (!_bFire)
-    {
-        return NearestYaw_(_c, deg);
-    }
-    int best = 0;
-    for (int row = 1; row < kAimRows; ++row)
-    {
-        if (Abs(_c.cannonAimDeg[static_cast<size_t>(row)] - deg) < Abs(_c.cannonAimDeg[static_cast<size_t>(best)] - deg))
-        {
-            best = row;
-        }
-    }
-    return best * 2;
+    return _ticks * clipTicks / _config.cannonDeployTicks;
 }
 
-void TurnCannon_(
-    Enemy&             _e,
-    const BigShieeCfg& _c,
-    const int          _target)
-{
-    int& yaw  = Slot_(_e, kBigShieeExtCannonYaw);
-    int& wait = Slot_(_e, kBigShieeExtCannonTurn);
-    if (yaw == _target)
-    {
-        wait = 0;
-        return;
-    }
-    if (++wait >= _c.cannonTurnTicks)
-    {
-        wait = 0;
-        yaw += _target > yaw ? 1 : -1;
-        EventLogFormat("bigshiee.yaw", "\"yaw\":{}", yaw);
-    }
-}
+}   // namespace
 
-[[nodiscard]] float CasingLandSec_(
-    const Enemy&       _e,
-    const BigShieeCfg& _c)
-{
-    const float fromY = static_cast<float>(GetSlot_(_e, kBigShieeExtCasingY));
-    const float drop  = Max(_e.body.position.y + _c.casingGroundDy - fromY, 0.f);
-    const float disc  = _c.casingVel.y * _c.casingVel.y + 2.f * _c.casingGravity * drop;
-    return (-_c.casingVel.y + Sqrt(disc)) / _c.casingGravity;
-}
-
-bool CasingNow_(
-    const Enemy&       _e,
-    const BigShieeCfg& _c,
-    VECTOR2&           _outAt,
-    int&               _outFrame,
-    float&             _outAlpha)
-{
-    const int start = GetSlot_(_e, kBigShieeExtCasingTick);
-    if (start <= 0)
-    {
-        return false;
-    }
-    const float   t     = static_cast<float>(_e.aux - start) * kStepSec;
-    const VECTOR2 from  = { static_cast<float>(GetSlot_(_e, kBigShieeExtCasingX)), static_cast<float>(GetSlot_(_e, kBigShieeExtCasingY)) };
-    const float   tLand = CasingLandSec_(_e, _c);
-    if (t < 0.f || t > tLand + _c.casingLingerSec)
-    {
-        return false;
-    }
-    const float tFly = Min(tLand, t);
-    _outAt           = { from.x + _c.casingVel.x * tFly, from.y + _c.casingVel.y * tFly + 0.5f * _c.casingGravity * tFly * tFly };
-    _outFrame        = static_cast<int>(t * _c.casingFps) % kCasingFrames;
-    _outAlpha        = t <= tLand || _c.casingLingerSec <= 0.f ? 1.f : Clamp(1.f - (t - tLand) / _c.casingLingerSec, 0.f, 1.f);
-    return true;
-}
-
-void FireMissile_(
-    Enemy&          _e,
+void BigShieeEnemy::Init(
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
-    const BigShieeCfg& c      = _def.bigShiee;
-    const size_t       row    = static_cast<size_t>(Clamp(GetSlot_(_e, kBigShieeExtCannonRow), 0, kAimRows - 1));
-    const int          weapon = _def.FindWeapon("missile");
-    const float        sign   = static_cast<float>(_e.facing < 0 ? -1 : 1);
-    const VECTOR2      delta  = { (c.cannonMuzzleX[row] - c.cannonMuzzleX[kAimRows / 2]) * sign, 0.f };
-    const VECTOR2      base   = weapon >= 0 ? GetMuzzleWorld(_e, _def, weapon) : _e.body.position;
-    const VECTOR2      muzzle = { base.x + delta.x, base.y + delta.y };
-    const float        rad    = c.cannonAimDeg[row] * kDeg2Rad;
-    const VECTOR2      dir    = { std::sin(rad), std::cos(rad) };
-    EventLogFormat("bigshiee.missile_fire", "\"row\":{},\"x\":{:.1f},\"y\":{:.1f},\"dx\":{:.3f},\"dy\":{:.3f}", row, muzzle.x, muzzle.y, dir.x, dir.y);
-    (void)FireWeapon(_e, _def, _env, weapon, dir, delta);
-    // 사격 순간 포구 섬광 과 연기
-    EventLogFormat("bigshiee.muzzle_fx", "\"x\":{:.1f},\"y\":{:.1f}", muzzle.x, muzzle.y);
-    RequestFxAt(_env, "Bazuka_Shot_Effect", muzzle, _e.facing, 55);
-    RequestFxAt(_env, "Boss_Smoke_Small", muzzle, _e.facing, 54);
-    const VECTOR2 casing              = { muzzle.x + c.casingOffset.x, muzzle.y + c.casingOffset.y };
-    Slot_(_e, kBigShieeExtCasingTick) = _e.aux;
-    Slot_(_e, kBigShieeExtCasingX)    = static_cast<int>(std::lround(casing.x));
-    Slot_(_e, kBigShieeExtCasingY)    = static_cast<int>(std::lround(casing.y));
-    EventLogFormat("bigshiee.casing", "\"x\":{:.1f},\"y\":{:.1f}", casing.x, casing.y);
+    EnemyState&           _e     = GetMutableState();
+    const BigShieeConfig& config = _def.bigShiee;
+    PrepareBody(_e, _def);
+    _e.facing     = 1;
+    m_ageTicks    = 0;
+    _e.deathTicks = 0;
+    m_boss        = {};
+
+    for (int i = 0; i < kBigShieeTurretCount; ++i)
+    {
+        const BigShieeTurretConfig& turret            = config.turrets[static_cast<size_t>(i)];
+        m_boss.turretHp[static_cast<size_t>(i)]       = turret.hp;
+        m_boss.turretMode[static_cast<size_t>(i)]     = eBigShieeTurretMode::Idle;
+        m_boss.turretPosition[static_cast<size_t>(i)] = turret.side * kTurnMax;
+    }
+    m_boss.nextVolley  = SecToTicks(config.firstVolleySec);
+    m_boss.nextChute   = SecToTicks(config.chuteFirstSec);
+    m_boss.deployStart = -1;
+    m_boss.lidStart    = -1;
+    m_boss.lastKill    = -1;
+    SetCannonMode_(eBigShieeCannonMode::Hidden);
+
+    // 선체는 카메라 왼쪽 밖에서 시작한다
+    const Aabb& view = _env.ctx.cameraView;
+    if (view.max.x > view.min.x)
+    {
+        _e.body.position.x = view.min.x + config.startScreenX;
+    }
+    _e.prevFeet = _e.body.position;
+    EnterState(_e, static_cast<int>(eBigShieePhase::Entrance));
 }
 
-void TickCannon_(
-    Enemy&          _e,
+void BigShieeEnemy::Tick(
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
-    const BigShieeCfg&        c    = _def.bigShiee;
-    const eBigShieeCannonMode mode = GetCannonMode_(_e);
-    if (mode == eBigShieeCannonMode::Hidden)
-    {
-        return;
-    }
-    int& ticks = Slot_(_e, kBigShieeExtCannonTicks);
-    ++ticks;
-
-    if (mode == eBigShieeCannonMode::Deploy)
-    {
-        const int deployTicks = c.cannonDeployTicks > 0 ? c.cannonDeployTicks : ClipTicks_(_env, "Boss_Cannon_Deploy", 70);
-        if (ticks >= deployTicks)
-        {
-            SetCannonMode_(_e, eBigShieeCannonMode::Aim);
-            Slot_(_e, kBigShieeExtCannonYaw)  = 0;
-            Slot_(_e, kBigShieeExtCannonTurn) = 0;
-        }
-    }
-    else if (mode == eBigShieeCannonMode::Aim)
-    {
-        const int target = TargetYaw_(_e, c, _env, false);
-        TurnCannon_(_e, c, target);
-        if (GetSlot_(_e, kBigShieeExtCannonYaw) == target)
-        {
-            SetCannonMode_(_e, eBigShieeCannonMode::Ready);
-            Slot_(_e, kBigShieeExtNextMissile) = _e.aux + SecToTicks(c.firstMissileSec);
-            EnterState(_e, static_cast<int>(eBigShieePhase::Cannon));
-        }
-    }
-    else if (mode == eBigShieeCannonMode::Ready)
-    {
-        const bool bFire    = _e.aux >= GetSlot_(_e, kBigShieeExtNextMissile) && _env.ctx.player.bAlive;
-        const int  target   = TargetYaw_(_e, c, _env, bFire);
-        const bool bAligned = GetSlot_(_e, kBigShieeExtCannonYaw) == target;
-        TurnCannon_(_e, c, target);
-        if (bFire && bAligned)
-        {
-            Slot_(_e, kBigShieeExtCannonRow)   = target / 2;
-            Slot_(_e, kBigShieeExtNextMissile) = _e.aux + SecToTicks(c.missileIntervalSec);
-            SetCannonMode_(_e, eBigShieeCannonMode::Shot);
-        }
-    }
-    else if (mode == eBigShieeCannonMode::Shot)
-    {
-        if (ticks == c.missileFireTick)
-        {
-            FireMissile_(_e, _def, _env);
-        }
-        const String shot = "Boss_Cannon_Shot" + std::to_string(GetSlot_(_e, kBigShieeExtCannonRow) + 1);
-        if (ticks >= ShotTicks_(_env, shot))
-        {
-            SetCannonMode_(_e, eBigShieeCannonMode::Ready);
-        }
-    }
-}
-
-void Tick_(
-    Enemy&          _e,
-    const EnemyDef& _def,
-    EnemyEnv&       _env)
-{
-    const BigShieeCfg& c = _def.bigShiee;
-    ++_e.aux;
+    EnemyState&           _e     = GetMutableState();
+    const BigShieeConfig& config = _def.bigShiee;
+    ++m_ageTicks;
     _e.body.velocity = { 0.f, 0.f };
-    const float t    = AgeSec_(_e);
+    const float t    = AgeSec_();
 
-    // 예산 을 다
-    const bool bScrolling = t >= c.scrollStartSec && !IsScrollPaused_(_e, c);
-    const bool bStopped   = IsScrollStopped_(_e, c);
+    const bool bScrolling = t >= config.scrollStartSec && !IsScrollPaused_(config);
+    const bool bStopped   = IsScrollStopped_(config);
     if (bScrolling && !bStopped)
     {
-        _env.world.RequestCameraScroll(c.scrollSpeed * kStepSec);
-        ++Slot_(_e, kBigShieeExtScrollTicks);
+        _env.world.RequestCameraScroll(config.scrollSpeed * kStepSec);
+        ++m_boss.scrollTicks;
     }
 
     const Aabb& view  = _env.ctx.cameraView;
     float       speed = 0.f;
-    if (Phase_(_e) == eBigShieePhase::Entrance)
+    if (Phase_() == eBigShieePhase::Entrance)
     {
-        const Span<const VECTOR2> keys { c.entranceKeys.data(), static_cast<size_t>(c.numEntranceKeys) };
+        const Span<const VECTOR2> keys { config.entranceKeys.data(), static_cast<size_t>(config.numEntranceKeys) };
         const float               now  = Interp_(keys, t);
         const float               prev = Interp_(keys, t - kStepSec);
         speed                          = (now - prev) / kStepSec;
@@ -782,27 +304,27 @@ void Tick_(
             EnterState(_e, static_cast<int>(eBigShieePhase::Battery));
         }
     }
-    else if ((Phase_(_e) == eBigShieePhase::Battery || Phase_(_e) == eBigShieePhase::Cannon) && view.max.x > view.min.x)
+    else if ((Phase_() == eBigShieePhase::Battery || Phase_() == eBigShieePhase::Cannon) && view.max.x > view.min.x)
     {
         const float screenX = _e.body.position.x - view.min.x;
-        int&        driving = Slot_(_e, kBigShieeExtDriving);
-        int&        drift   = Slot_(_e, kBigShieeExtDriftTicks);
-        const float td      = DeploySec_(_e);
-        const bool  bBack   = c.reverseSec > 0.f && driving == 0 && td >= c.reverseAtSec && td < c.reverseAtSec + c.reverseSec;
+        int&        driving = m_boss.driving;
+        int&        drift   = m_boss.driftTicks;
+        const float td      = DeploySec_();
+        const bool  bBack   = config.reverseSec > 0.f && driving == 0 && td >= config.reverseAtSec && td < config.reverseAtSec + config.reverseSec;
         if (bBack)
         {
-            _e.body.position.x -= c.reverseSpeed * kStepSec;
-            speed = -c.reverseSpeed;
+            _e.body.position.x -= config.reverseSpeed * kStepSec;
+            speed = -config.reverseSpeed;
         }
-        else if (driving == 0 && bStopped && bScrolling && c.shuttleDriftSec > 0.f)
+        else if (driving == 0 && bStopped && bScrolling && config.shuttleDriftSec > 0.f)
         {
-            _e.body.position.x -= c.scrollSpeed * kStepSec;
-            if (++drift >= SecToTicks(c.shuttleDriftSec))
+            _e.body.position.x -= config.scrollSpeed * kStepSec;
+            if (++drift >= SecToTicks(config.shuttleDriftSec))
             {
                 driving = 1;
             }
         }
-        if (driving == 0 && screenX < c.driveTriggerX)
+        if (driving == 0 && screenX < config.driveTriggerX)
         {
             driving = 1;
         }
@@ -812,13 +334,13 @@ void Tick_(
         }
         if (driving != 0)
         {
-            const float remaining = c.driveTargetX - screenX;
-            const float prev      = static_cast<float>(GetSlot_(_e, kBigShieeExtSpeedX));
-            speed                 = std::min({ c.driveSpeed, prev + c.driveAccel * kStepSec, Sqrt(Max(2.f * c.driveAccel * remaining, 0.f)) });
+            const float remaining = config.driveTargetX - screenX;
+            const float prev      = static_cast<float>(m_boss.speedX);
+            speed                 = std::min({ config.driveSpeed, prev + config.driveAccel * kStepSec, Sqrt(Max(2.f * config.driveAccel * remaining, 0.f)) });
             speed                 = Max(14.f, speed);
             if (remaining <= speed * kStepSec)
             {
-                _e.body.position.x = view.min.x + c.driveTargetX;
+                _e.body.position.x = view.min.x + config.driveTargetX;
                 speed              = 0.f;
                 driving            = 0;
             }
@@ -828,91 +350,91 @@ void Tick_(
             }
         }
     }
-    Slot_(_e, kBigShieeExtMoving) = Abs(speed) > 12.f ? 1 : 0;
-    Slot_(_e, kBigShieeExtSpeedX) = static_cast<int>(std::lround(speed));
+    m_boss.moving = Abs(speed) > 12.f ? 1 : 0;
+    m_boss.speedX = static_cast<int>(std::lround(speed));
 
-    if (_e.aux % 30 == 0)
+    if (m_ageTicks % 30 == 0)
     {
         EventLogFormat("bigshiee.cam", "\"cam\":{:.1f},\"boss\":{:.1f}", view.min.x, _e.body.position.x);
     }
 
-    if (Phase_(_e) == eBigShieePhase::Entrance || Phase_(_e) == eBigShieePhase::Battery)
+    if (Phase_() == eBigShieePhase::Entrance || Phase_() == eBigShieePhase::Battery)
     {
-        TickVolley_(_e, _def, _env);
+        TickVolley_(_def, _env);
     }
     for (int i = 0; i < kBigShieeTurretCount; ++i)
     {
-        TickTurret_(_e, _def, _env, i);
+        TickTurret_(_def, _env, i);
     }
 
-    if (_e.life == eEnemyLife::Alive && c.lowHpFxBelow > 0.f)
+    if (_e.life == eEnemyLife::Alive && config.lowHpFxBelow > 0.f)
     {
         int curHp = _e.health.hp;
         int maxHp = _e.health.maxHp;
         for (int i = 0; i < kBigShieeTurretCount; ++i)
         {
-            curHp += GetSlot_(_e, kBigShieeExtHp, i);
-            maxHp += c.turrets[static_cast<size_t>(i)].hp;
+            curHp += m_boss.turretHp[static_cast<size_t>(i)];
+            maxHp += config.turrets[static_cast<size_t>(i)].hp;
         }
         const float ratio = maxHp > 0 ? static_cast<float>(curHp) / static_cast<float>(maxHp) : 1.f;
-        if (ratio < c.lowHpFxBelow && _e.aux >= GetSlot_(_e, kBigShieeExtNextDmgFx))
+        if (ratio < config.lowHpFxBelow && m_ageTicks >= m_boss.nextDamageFx)
         {
-            const float k                    = Clamp(1.f - ratio / c.lowHpFxBelow, 0.f, 1.f);
-            const float sec                  = c.lowHpFxSec[0] + (c.lowHpFxSec[1] - c.lowHpFxSec[0]) * k;
-            Slot_(_e, kBigShieeExtNextDmgFx) = _e.aux + Max(1, SecToTicks(sec));
-            const float w                    = c.lowHpFxArea[2] - c.lowHpFxArea[0];
-            const float h                    = c.lowHpFxArea[3] - c.lowHpFxArea[1];
-            const float rx                   = c.lowHpFxArea[0] + w * static_cast<float>(Roll(_env, 1000)) / 1000.f;
-            const float ry                   = c.lowHpFxArea[1] + h * static_cast<float>(Roll(_env, 1000)) / 1000.f;
-            RequestFxAt(_env, c.lowHpFxClip.c_str(), World_(_e.body.position, { rx, ry }), _e.facing, 57);
+            const float k       = Clamp(1.f - ratio / config.lowHpFxBelow, 0.f, 1.f);
+            const float sec     = config.lowHpFxSec[0] + (config.lowHpFxSec[1] - config.lowHpFxSec[0]) * k;
+            m_boss.nextDamageFx = m_ageTicks + Max(1, SecToTicks(sec));
+            const float w       = config.lowHpFxArea[2] - config.lowHpFxArea[0];
+            const float h       = config.lowHpFxArea[3] - config.lowHpFxArea[1];
+            const float rx      = config.lowHpFxArea[0] + w * static_cast<float>(Roll(_env, 1000)) / 1000.f;
+            const float ry      = config.lowHpFxArea[1] + h * static_cast<float>(Roll(_env, 1000)) / 1000.f;
+            RequestFxAt(_env, config.lowHpFxClip.c_str(), World_(_e.body.position, { rx, ry }), _e.facing, 57);
         }
     }
 
-    if ((Phase_(_e) == eBigShieePhase::Battery || Phase_(_e) == eBigShieePhase::Entrance) && AliveTurrets_(_e) == 0)
+    if ((Phase_() == eBigShieePhase::Battery || Phase_() == eBigShieePhase::Entrance) && AliveTurrets_() == 0)
     {
-        const int lastKill = GetSlot_(_e, kBigShieeExtLastKill);
-        if (lastKill >= 0 && _e.aux - lastKill >= SecToTicks(c.deployDelaySec))
+        const int lastKill = m_boss.lastKill;
+        if (lastKill >= 0 && m_ageTicks - lastKill >= SecToTicks(config.deployDelaySec))
         {
             EnterState(_e, static_cast<int>(eBigShieePhase::Deploy));
-            Slot_(_e, kBigShieeExtLidStart) = _e.aux;
+            m_boss.lidStart = m_ageTicks;
         }
     }
-    if (Phase_(_e) == eBigShieePhase::Deploy && GetSlot_(_e, kBigShieeExtLidStart) >= 0)
+    if (Phase_() == eBigShieePhase::Deploy && m_boss.lidStart >= 0)
     {
-        const int sinceLid = _e.aux - GetSlot_(_e, kBigShieeExtLidStart);
-        if (sinceLid % c.hullStepTicks == 0 && sinceLid / c.hullStepTicks <= 4)
+        const int sinceLid = m_ageTicks - m_boss.lidStart;
+        if (sinceLid % config.hullStepTicks == 0 && sinceLid / config.hullStepTicks <= 4)
         {
-            EventLogFormat("bigshiee.lid", "\"step\":{}", sinceLid / c.hullStepTicks);
+            EventLogFormat("bigshiee.lid", "\"step\":{}", sinceLid / config.hullStepTicks);
         }
     }
     // 선수 가 다
-    if (Phase_(_e) == eBigShieePhase::Deploy && GetCannonMode_(_e) == eBigShieeCannonMode::Hidden
-        && _e.aux - GetSlot_(_e, kBigShieeExtLidStart) >= SecToTicks(c.cannonDeployDelaySec))
+    if (Phase_() == eBigShieePhase::Deploy && m_boss.cannonMode == eBigShieeCannonMode::Hidden
+        && m_ageTicks - m_boss.lidStart >= SecToTicks(config.cannonDeployDelaySec))
     {
-        Slot_(_e, kBigShieeExtDeployStart) = _e.aux;
-        SetCannonMode_(_e, eBigShieeCannonMode::Deploy);
+        m_boss.deployStart = m_ageTicks;
+        SetCannonMode_(eBigShieeCannonMode::Deploy);
     }
-    TickCannon_(_e, _def, _env);
-    const int casingStart = GetSlot_(_e, kBigShieeExtCasingTick);
-    if (casingStart > 0 && _e.aux - casingStart == static_cast<int>(Ceil((CasingLandSec_(_e, c) + c.casingLingerSec) / kStepSec)))
+    TickCannon_(_def, _env);
+    const int casingStart = m_boss.casingTick;
+    if (casingStart > 0 && m_ageTicks - casingStart == static_cast<int>(Ceil((CasingLandSec_(config) + config.casingLingerSec) / kStepSec)))
     {
-        EventLogFormat("bigshiee.casing_gone", "\"x\":{}", GetSlot_(_e, kBigShieeExtCasingX));
+        EventLogFormat("bigshiee.casing_gone", "\"x\":{}", m_boss.casingX);
     }
-    TickChute_(_e, _def, _env);
+    TickChute_(_def, _env);
 }
 
-bool OnHit_(
-    Enemy&          _e,
+bool BigShieeEnemy::OnHit(
     const EnemyDef& _def,
     EnemyEnv&       _env,
     const HitEvent& _event)
 {
-    const BigShieeCfg& c    = _def.bigShiee;
-    const int          part = GetPartIndex(_event.target);
+    EnemyState&           _e     = GetMutableState();
+    const BigShieeConfig& config = _def.bigShiee;
+    const int             part   = GetPartIndex(_event.target);
 
     if (part >= 0 && part < kBigShieeTurretCount)
     {
-        int& hp = Slot_(_e, kBigShieeExtHp, part);
+        int& hp = m_boss.turretHp[static_cast<size_t>(part)];
         if (hp <= 0)
         {
             return true;
@@ -921,26 +443,26 @@ bool OnHit_(
         if (hp <= 0)
         {
             hp = 0;
-            SetTurretMode_(_e, part, eBigShieeTurretMode::Dead);
-            Slot_(_e, kBigShieeExtPos, part) = c.turrets[static_cast<size_t>(part)].side * kTurnMax;
-            Slot_(_e, kBigShieeExtLastKill)  = _e.aux;
+            SetTurretMode_(part, eBigShieeTurretMode::Dead);
+            m_boss.turretPosition[static_cast<size_t>(part)] = config.turrets[static_cast<size_t>(part)].side * kTurnMax;
+            m_boss.lastKill                                  = m_ageTicks;
             EventLogFormat("bigshiee.turret_dead", "\"turret\":{}", part);
 
-            const BigShieeTurretCfg& turret    = c.turrets[static_cast<size_t>(part)];
-            const VECTOR2            at        = World_(_e.body.position, { turret.anchor.x + c.turretBlastOffset.x, turret.anchor.y + c.turretBlastOffset.y });
-            EnemyEvent               destroyed = _env.world.MakeEvent(_e, eEnemyEventKind::PartDestroyed);
-            destroyed.score                    = c.turretScore;
-            destroyed.pos                      = at;
+            const BigShieeTurretConfig& turret    = config.turrets[static_cast<size_t>(part)];
+            const VECTOR2               at        = World_(_e.body.position, { turret.anchor.x + config.turretBlastOffset.x, turret.anchor.y + config.turretBlastOffset.y });
+            EnemyEvent                  destroyed = _env.world.MakeEvent(_e, eEnemyEventKind::PartDestroyed);
+            destroyed.score                       = config.turretScore;
+            destroyed.pos                         = at;
             _env.world.PushEvent(destroyed);
             RequestFxAt(_env, turret.bTwin ? "Explosion_Large" : "Explosion_Mid", at, _e.facing, 56);
-            RequestFxAt(_env, "Boss_Smoke_Big", { at.x + c.turretSmokeOffset.x, at.y + c.turretSmokeOffset.y }, _e.facing, 54, 0.25f);
+            RequestFxAt(_env, "Boss_Smoke_Big", { at.x + config.turretSmokeOffset.x, at.y + config.turretSmokeOffset.y }, _e.facing, 54, 0.25f);
         }
         return true;
     }
 
     if (part == kBigShieeCannonPart)
     {
-        if (CannonVulnerable_(_e))
+        if (CannonVulnerable_())
         {
             (void)_e.health.ApplyDamage(_event.damage);
         }
@@ -949,81 +471,43 @@ bool OnHit_(
     return true;
 }
 
-void RegisterHurtboxes_(
-    const Enemy&    _e,
-    const EnemyDef& _def,
-    CombatSystem&   _combat)
-{
-    // 첫 틱 전에는 위치가 스폰 지점 그대로라 판정을 등록하지
-    if (!_e.bInit)
-    {
-        return;
-    }
-    const BigShieeCfg& c = _def.bigShiee;
-    for (int i = 0; i < kBigShieeTurretCount; ++i)
-    {
-        if (GetSlot_(_e, kBigShieeExtHp, i) <= 0)
-        {
-            continue;
-        }
-        const BigShieeTurretCfg& turret = c.turrets[static_cast<size_t>(i)];
-        const VECTOR2            center = World_(_e.body.position, { turret.anchor.x + turret.boxOffset.x, turret.anchor.y + turret.boxOffset.y });
-        Hurtbox                  hurtbox;
-        hurtbox.box     = Aabb::FromCenterSize(center, turret.boxSize);
-        hurtbox.team    = _def.team;
-        hurtbox.owner   = MakePartOwner(_e.id, static_cast<uint32_t>(i));
-        hurtbox.accepts = kBigShieeAccepts;
-        _combat.AddHurtbox(hurtbox);
-    }
-    if (CannonVulnerable_(_e))
-    {
-        const VECTOR2 center = World_(_e.body.position, c.cannonBoxOffset);
-        Hurtbox       hurtbox;
-        hurtbox.box     = Aabb::FromCenterSize(center, c.cannonBoxSize);
-        hurtbox.team    = _def.team;
-        hurtbox.owner   = MakePartOwner(_e.id, static_cast<uint32_t>(kBigShieeCannonPart));
-        hurtbox.accepts = kBigShieeAccepts;
-        _combat.AddHurtbox(hurtbox);
-    }
-}
-
-void OnDeath_(
-    Enemy&          _e,
+void BigShieeEnemy::OnDeath(
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
-    const BigShieeCfg& c = _def.bigShiee;
-    _e.deathTicks        = 0;
+    EnemyState&           _e     = GetMutableState();
+    const BigShieeConfig& config = _def.bigShiee;
+    _e.deathTicks                = 0;
     EventLogFormat("bigshiee.death", "\"x\":{:.1f}", _e.body.position.x);
-    const VECTOR2 top = World_(_e.body.position, { c.cannonBoxOffset.x, c.cannonBoxOffset.y - c.cannonBoxSize.y * 0.4f });
-    RequestFxAt(_env, "PlayerBombExplosion", { top.x + c.deathFlameOffset.x, top.y + c.deathFlameOffset.y }, _e.facing, 56);
+    const VECTOR2 top = World_(_e.body.position, { config.cannonBoxOffset.x, config.cannonBoxOffset.y - config.cannonBoxSize.y * 0.4f });
+    RequestFxAt(_env, "PlayerBombExplosion", { top.x + config.deathFlameOffset.x, top.y + config.deathFlameOffset.y }, _e.facing, 56);
     RequestFxAt(_env, "Explosion_Large", top, _e.facing, 57, 0.15f);
 }
 
-void TickDying_(
-    Enemy&          _e,
+void BigShieeEnemy::TickDying(
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
-    const BigShieeCfg& c = _def.bigShiee;
-    _e.body.velocity     = { 0.f, 0.f };
+    EnemyState&           _e     = GetMutableState();
+    const BigShieeConfig& config = _def.bigShiee;
+    _e.body.velocity             = { 0.f, 0.f };
     ++_e.deathTicks;
     const float   t      = static_cast<float>(_e.deathTicks) * kStepSec;
     const VECTOR2 origin = _e.body.position;
 
-    const bool bWreck = t >= c.dyingWreckSec;
-    if (bWreck && static_cast<float>(_e.deathTicks - 1) * kStepSec < c.dyingWreckSec)
+    const bool bWreck = t >= config.dyingWreckSec;
+    if (bWreck && static_cast<float>(_e.deathTicks - 1) * kStepSec < config.dyingWreckSec)
     {
         EventLogFormat("bigshiee.wreck", "\"x\":{:.1f}", origin.x);
     }
-    if (t >= c.dyingDoneSec && static_cast<float>(_e.deathTicks - 1) * kStepSec < c.dyingDoneSec)
+    if (t >= config.dyingDoneSec && static_cast<float>(_e.deathTicks - 1) * kStepSec < config.dyingDoneSec)
     {
         EventLogFormat("bigshiee.done", "\"x\":{:.1f}", origin.x);
     }
     if (bWreck)
     {
-        const int interval = Max(1, SecToTicks(c.wreckSmokeIntervalSec));
-        if (_e.deathTicks % interval == 0 && t < c.dyingDoneSec + 1.f)
+        const int interval = Max(1, SecToTicks(config.wreckSmokeIntervalSec));
+        if (_e.deathTicks % interval == 0 && t < config.dyingDoneSec + 1.f)
         {
             const float rx = static_cast<float>(Roll(_env, 440)) - 220.f;
             const float ry = static_cast<float>(Roll(_env, 260)) - 260.f;
@@ -1032,8 +516,8 @@ void TickDying_(
         return;
     }
 
-    const float progress = Clamp(t / c.dyingWreckSec, 0.f, 1.f);
-    const int   interval = Max(1, static_cast<int>(static_cast<float>(SecToTicks(c.dyingBlastIntervalSec)) * (1.4f - progress)));
+    const float progress = Clamp(t / config.dyingWreckSec, 0.f, 1.f);
+    const int   interval = Max(1, static_cast<int>(static_cast<float>(SecToTicks(config.dyingBlastIntervalSec)) * (1.4f - progress)));
     if (_e.deathTicks % interval == 0)
     {
         const float rx   = static_cast<float>(Roll(_env, 480)) - 260.f;
@@ -1045,220 +529,102 @@ void TickDying_(
     {
         const float rx = static_cast<float>(Roll(_env, 300)) - 200.f;
         const float ry = static_cast<float>(Roll(_env, 160)) - 260.f;
-        RequestFxAt(_env, "PlayerBombExplosion", World_(origin, { rx, ry + c.deathBlastDy }), _e.facing, 56);
+        RequestFxAt(_env, "PlayerBombExplosion", World_(origin, { rx, ry + config.deathBlastDy }), _e.facing, 56);
     }
-    if (_e.deathTicks == SecToTicks(c.dyingWreckSec) - 6)
+    if (_e.deathTicks == SecToTicks(config.dyingWreckSec) - 6)
     {
-        RequestFxAt(_env, "Explosion_Huge", World_(origin, c.deathHugeOffset), _e.facing, 58);
+        RequestFxAt(_env, "Explosion_Huge", World_(origin, config.deathHugeOffset), _e.facing, 58);
     }
 }
 
-bool DeathDone_(
-    const Enemy&    _e,
-    const EnemyDef& _def)
+void BigShieeEnemy::RegisterHurtboxes(
+    const EnemyDef& _def,
+    CombatSystem&   _combat) const
 {
-    return static_cast<float>(_e.deathTicks) * kStepSec >= _def.bigShiee.dyingDoneSec;
-}
-
-void SubmitHull_(
-    const Enemy&          _e,
-    const BigShieeCfg&    _c,
-    const EnemyRenderEnv& _render,
-    const VECTOR2         _feet)
-{
-    const bool           bMoving = GetSlot_(_e, kBigShieeExtMoving) != 0;
-    const eBigShieePhase phase   = Phase_(_e);
-    const int            age     = _e.aux;
-    const char*          clip    = bMoving ? "Boss_Hull_Drive" : "Boss_Hull_Idle";
-    bool                 bLoop   = true;
-    int                  ticks   = age;
-
-    if (_e.life == eEnemyLife::Dying)
-    {
-        clip  = "Boss_Hull_Open";
-        ticks = 0;
-    }
-    else if (phase == eBigShieePhase::Deploy)
-    {
-        const int step = (age - GetSlot_(_e, kBigShieeExtLidStart)) / Max(1, _c.hullStepTicks);
-        clip           = step <= 0 ? "Boss_Hull_D1" : (step == 1 ? "Boss_Hull_D3" : (step == 2 ? "Boss_Hull_D6" : (step == 3 ? "Boss_Hull_D9" : "Boss_Hull_Open")));
-        ticks          = step >= 4 ? age : 0;
-    }
-    else if (phase == eBigShieePhase::Cannon)
-    {
-        clip = bMoving ? "Boss_Hull_OpenDrive" : "Boss_Hull_Open";
-    }
-    SubmitNamedPart(_render, clip, _feet, ticks, bLoop, _c.partHull.sort, _c.partHull.depth);
-}
-
-void SubmitTurret_(
-    const Enemy&          _e,
-    const BigShieeCfg&    _c,
-    const EnemyRenderEnv& _render,
-    const VECTOR2         _feet,
-    const int             _i)
-{
-    const BigShieeTurretCfg&  turret = _c.turrets[static_cast<size_t>(_i)];
-    const EnemyPartDepth&     part   = _c.partTurrets[static_cast<size_t>(_i)];
-    const TurretNames&        names  = GetNames_(turret.letter);
-    const eBigShieeTurretMode mode   = GetTurretMode_(_e, _i);
-    const VECTOR2             origin = World_(_feet, turret.anchor);
-    const int                 ticks  = GetSlot_(_e, kBigShieeExtTicks, _i);
-    const int                 pos    = GetSlot_(_e, kBigShieeExtPos, _i);
-    const float               flash  = PartFlashAmount(_e, _i);
-
-    switch (mode)
-    {
-        case eBigShieeTurretMode::Dead:
-            (void)SubmitNamedPart(_render, names.dead, origin, 0, false, part.sort, part.depth);
-            break;
-        case eBigShieeTurretMode::Turn:
-            (void)SubmitFrame_(_render, names.turn, pos, origin, part.depth, part.sort - _i, flash);
-            break;
-        case eBigShieeTurretMode::Shot:
-            (void)SubmitNamedPart(_render, names.shot[static_cast<size_t>(Min(2, pos / kTurnMid))], origin, ticks, false, part.sort, part.depth, false, flash);
-            break;
-        default:
-            if (pos % kTurnMid != 0)
-            {
-                (void)SubmitFrame_(_render, names.turn, pos, origin, part.depth, part.sort - _i, flash);
-            }
-            else
-            {
-                (void)SubmitNamedPart(_render, names.idle[static_cast<size_t>(pos / kTurnMid)], origin, _e.aux + _i * 7, true, part.sort, part.depth, false, flash);
-            }
-            break;
-    }
-}
-
-// 전개 틱을 클립 틱으로 바꾼다
-[[nodiscard]] int DeployClipTicks_(
-    const BigShieeCfg&    _c,
-    const EnemyRenderEnv& _render,
-    const int             _ticks)
-{
-    const int clipTicks = GetNamedPartTicks(_render.anims, "Boss_Cannon_Deploy");
-    if (_c.cannonDeployTicks <= 0 || clipTicks <= 0)
-    {
-        return _ticks;
-    }
-    return _ticks * clipTicks / _c.cannonDeployTicks;
-}
-
-void SubmitCannon_(
-    const Enemy&          _e,
-    const BigShieeCfg&    _c,
-    const EnemyRenderEnv& _render,
-    const VECTOR2         _feet,
-    const float           _flash)
-{
-    const eBigShieeCannonMode mode   = GetCannonMode_(_e);
-    const int                 ticks  = GetSlot_(_e, kBigShieeExtCannonTicks);
-    const int                 row    = Clamp(GetSlot_(_e, kBigShieeExtCannonRow), 0, kAimRows - 1);
-    const int                 yaw    = Clamp(GetSlot_(_e, kBigShieeExtCannonYaw), 0, kYawMax);
-    const VECTOR2             origin = World_(_feet, _c.cannonAnchor);
-    const String              shot   = "Boss_Cannon_Shot" + std::to_string(row + 1);
-    switch (mode)
-    {
-        case eBigShieeCannonMode::Deploy:
-            (void)SubmitNamedPart(_render, "Boss_Cannon_Deploy", origin, DeployClipTicks_(_c, _render, ticks), false, _c.partCannon.sort, _c.partCannon.depth, false, _flash);
-            break;
-        case eBigShieeCannonMode::Aim:
-        case eBigShieeCannonMode::Ready:
-            (void)SubmitFrame_(_render, "Boss_Cannon_Aim", yaw, origin, _c.partCannon.depth, _c.partCannon.sort, _flash);
-            break;
-        case eBigShieeCannonMode::Shot:
-            (void)SubmitNamedPart(_render, shot, origin, ticks, false, _c.partCannon.sort, _c.partCannon.depth, false, _flash);
-            break;
-        default:
-            break;
-    }
-}
-
-void SubmitCasing_(
-    const Enemy&          _e,
-    const BigShieeCfg&    _c,
-    const EnemyRenderEnv& _render)
-{
-    VECTOR2 at    = { 0.f, 0.f };
-    int     frame = 0;
-    float   alpha = 1.f;
-    if (!_render.pSprites || !CasingNow_(_e, _c, at, frame, alpha))
+    const EnemyState& _e = GetState();
+    // 첫 틱 전에는 위치가 스폰 지점 그대로라 판정을 등록하지
+    if (!_e.bInit)
     {
         return;
     }
-    const SpriteInfo* pInfo = _render.pSprites->Find("Boss_CasingStrip");
-    if (!pInfo || !pInfo->bStandalone)
+    const BigShieeConfig& config = _def.bigShiee;
+    for (int i = 0; i < kBigShieeTurretCount; ++i)
     {
-        return;
+        if (m_boss.turretHp[static_cast<size_t>(i)] <= 0)
+        {
+            continue;
+        }
+        const BigShieeTurretConfig& turret = config.turrets[static_cast<size_t>(i)];
+        const VECTOR2               center = World_(_e.body.position, { turret.anchor.x + turret.boxOffset.x, turret.anchor.y + turret.boxOffset.y });
+        Hurtbox                     hurtbox;
+        hurtbox.box     = Aabb::FromCenterSize(center, turret.boxSize);
+        hurtbox.team    = _def.team;
+        hurtbox.owner   = MakePartOwner(_e.id, static_cast<uint32_t>(i));
+        hurtbox.accepts = kBigShieeAccepts;
+        _combat.AddHurtbox(hurtbox);
     }
-    const int handle = _render.sprites.FindStandalone(pInfo->file);
-    if (handle < 0)
+    if (CannonVulnerable_())
     {
-        return;
+        const VECTOR2 center = World_(_e.body.position, config.cannonBoxOffset);
+        Hurtbox       hurtbox;
+        hurtbox.box     = Aabb::FromCenterSize(center, config.cannonBoxSize);
+        hurtbox.team    = _def.team;
+        hurtbox.owner   = MakePartOwner(_e.id, static_cast<uint32_t>(kBigShieeCannonPart));
+        hurtbox.accepts = kBigShieeAccepts;
+        _combat.AddHurtbox(hurtbox);
     }
-    const int         cellW = pInfo->width / kCasingFrames;
-    SpriteDrawOptions options;
-    options.tint.a = static_cast<uint8_t>(std::lround(alpha * 255.f));
-    options.scale  = _c.casingScale;
-    _render.sprites.SubmitStandalone(kCasingDepth + _render.zOffset, 0, handle, { frame * cellW, 0, cellW, pInfo->height }, at, options);
 }
 
-void SubmitParts_(
-    const Enemy&          _e,
+void BigShieeEnemy::SubmitParts(
     const EnemyDef&       _def,
-    const EnemyRenderEnv& _render)
+    const EnemyRenderEnv& _render) const
 {
+    const EnemyState& _e = GetState();
     // 첫 틱 전에는 스폰 지점에 그려지므로 숨긴다
     if (!_e.bInit)
     {
         return;
     }
-    const BigShieeCfg& c    = _def.bigShiee;
-    const VECTOR2      feet = _render.feet;
+    const BigShieeConfig& config = _def.bigShiee;
+    const VECTOR2         feet   = _render.feet;
 
     if (_e.life == eEnemyLife::Dying)
     {
         const float t = static_cast<float>(_e.deathTicks) * kStepSec;
-        if (t >= c.dyingWreckSec)
+        if (t >= config.dyingWreckSec)
         {
-            (void)SubmitNamedPart(_render, "Boss_Wreck", World_(feet, c.wreckOffset), 0, false, c.partWreck.sort, c.partWreck.depth);
-            (void)SubmitNamedPart(_render, "Boss_CannonWreck", World_(feet, c.cannonWreckOffset), 0, false, c.partCannon.sort, c.partCannon.depth);
+            (void)SubmitNamedPart(_render, "Boss_Wreck", World_(feet, config.wreckOffset), 0, false, config.partWreck.sort, config.partWreck.depth);
+            (void)SubmitNamedPart(_render, "Boss_CannonWreck", World_(feet, config.cannonWreckOffset), 0, false, config.partCannon.sort, config.partCannon.depth);
             return;
         }
-        SubmitHull_(_e, c, _render, feet);
-        (void)SubmitNamedPart(_render, "Boss_AntennaP", World_(feet, c.antennaP), 0, false, c.partAntenna.sort, c.partAntenna.depth);
-        (void)SubmitNamedPart(_render, "Boss_AntennaQ", World_(feet, c.antennaQ), 0, false, c.partAntenna.sort, c.partAntenna.depth);
+        SubmitHull_(config, _render, feet);
+        (void)SubmitNamedPart(_render, "Boss_AntennaP", World_(feet, config.antennaP), 0, false, config.partAntenna.sort, config.partAntenna.depth);
+        (void)SubmitNamedPart(_render, "Boss_AntennaQ", World_(feet, config.antennaQ), 0, false, config.partAntenna.sort, config.partAntenna.depth);
         for (int i = 0; i < kBigShieeTurretCount; ++i)
         {
-            SubmitTurret_(_e, c, _render, feet, i);
+            SubmitTurret_(config, _render, feet, i);
         }
-        SubmitCannon_(_e, c, _render, feet, (_e.deathTicks / 3) % 2 == 0 ? 1.f : 0.f);
+        SubmitCannon_(config, _render, feet, (_e.deathTicks / 3) % 2 == 0 ? 1.f : 0.f);
         return;
     }
 
-    SubmitHull_(_e, c, _render, feet);
-    (void)SubmitNamedPart(_render, "Boss_AntennaP", World_(feet, c.antennaP), 0, false, c.partAntenna.sort, c.partAntenna.depth);
-    (void)SubmitNamedPart(_render, "Boss_AntennaQ", World_(feet, c.antennaQ), 0, false, c.partAntenna.sort, c.partAntenna.depth);
+    SubmitHull_(config, _render, feet);
+    (void)SubmitNamedPart(_render, "Boss_AntennaP", World_(feet, config.antennaP), 0, false, config.partAntenna.sort, config.partAntenna.depth);
+    (void)SubmitNamedPart(_render, "Boss_AntennaQ", World_(feet, config.antennaQ), 0, false, config.partAntenna.sort, config.partAntenna.depth);
     for (int i = 0; i < kBigShieeTurretCount; ++i)
     {
-        SubmitTurret_(_e, c, _render, feet, i);
+        SubmitTurret_(config, _render, feet, i);
     }
-    SubmitCannon_(_e, c, _render, feet, PartFlashAmount(_e, kBigShieeCannonPart));
-    SubmitCasing_(_e, c, _render);
+    SubmitCannon_(config, _render, feet, PartFlashAmount(_e, kBigShieeCannonPart));
+    SubmitCasing_(config, _render);
 }
-}   // namespace
 
-const BehaviorOps kBigShieeOps = {
-    .init              = &Init_,
-    .tick              = &Tick_,
-    .onHit             = &OnHit_,
-    .onDeath           = &OnDeath_,
-    .tickDying         = &TickDying_,
-    .registerHurtboxes = &RegisterHurtboxes_,
-    .submitParts       = &SubmitParts_,
-    .deathDone         = &DeathDone_,
-};
+bool BigShieeEnemy::DeathDone(
+    const EnemyDef& _def) const
+{
+    const EnemyState& _e = GetState();
+    return static_cast<float>(_e.deathTicks) * kStepSec >= _def.bigShiee.dyingDoneSec;
+}
 
 namespace
 {
@@ -1282,11 +648,11 @@ int ReadKeys_(
 }
 }   // namespace
 
-void ParseBigShieeCfg(
+void ParseBigShieeConfig(
     DefReader& _r,
     EnemyDef&  _def)
 {
-    BigShieeCfg& c = _def.bigShiee;
+    BigShieeConfig& config = _def.bigShiee;
 
     ARRAY<float, kBigShieeTurretCount * 2> anchors  = {};
     ARRAY<float, kBigShieeTurretCount * 4> boxes    = {};
@@ -1303,9 +669,9 @@ void ParseBigShieeCfg(
     const float                            gap      = _r.Num("muzzleGap", 16.f);
     for (size_t i = 0; i < static_cast<size_t>(kBigShieeTurretCount); ++i)
     {
-        BigShieeTurretCfg& t = c.turrets[i];
-        t.letter             = kLetters[i];
-        t.muzzleGap          = gap;
+        BigShieeTurretConfig& t = config.turrets[i];
+        t.letter                = kLetters[i];
+        t.muzzleGap             = gap;
         if (bAnchors)
         {
             t.anchor = { anchors[i * 2], anchors[i * 2 + 1] };
@@ -1332,98 +698,683 @@ void ParseBigShieeCfg(
             t.hp = static_cast<int>(hps[i]);
         }
     }
-    c.turretScore = _r.Int("turretScore", c.turretScore);
-    c.antennaP    = _r.ReadVec2("antennaP", c.antennaP);
-    c.antennaQ    = _r.ReadVec2("antennaQ", c.antennaQ);
+    config.turretScore = _r.Int("turretScore", config.turretScore);
+    config.antennaP    = _r.ReadVec2("antennaP", config.antennaP);
+    config.antennaQ    = _r.ReadVec2("antennaQ", config.antennaQ);
 
-    c.startScreenX = _r.Num("startScreenX", c.startScreenX);
-    if (const int n = ReadKeys_(_r, "entranceKeys", c.entranceKeys); n >= 0)
+    config.startScreenX = _r.Num("startScreenX", config.startScreenX);
+    if (const int n = ReadKeys_(_r, "entranceKeys", config.entranceKeys); n >= 0)
     {
-        c.numEntranceKeys = n;
+        config.numEntranceKeys = n;
     }
 
-    c.scrollSpeed         = _r.Num("scrollSpeed", c.scrollSpeed);
-    c.scrollStartSec      = _r.Num("scrollStartSec", c.scrollStartSec);
-    c.deployPauseDelaySec = _r.Num("deployPauseDelaySec", c.deployPauseDelaySec);
-    c.deployPauseSec      = _r.Num("deployPauseSec", c.deployPauseSec);
-    c.latePauseFirstSec   = _r.Num("latePauseFirstSec", c.latePauseFirstSec);
-    c.latePausePeriodSec  = _r.Num("latePausePeriodSec", c.latePausePeriodSec);
-    c.latePauseSec        = _r.Num("latePauseSec", c.latePauseSec);
-    if (const int n = ReadKeys_(_r, "scrollPauses", c.scrollPauses); n >= 0)
+    config.scrollSpeed         = _r.Num("scrollSpeed", config.scrollSpeed);
+    config.scrollStartSec      = _r.Num("scrollStartSec", config.scrollStartSec);
+    config.deployPauseDelaySec = _r.Num("deployPauseDelaySec", config.deployPauseDelaySec);
+    config.deployPauseSec      = _r.Num("deployPauseSec", config.deployPauseSec);
+    config.latePauseFirstSec   = _r.Num("latePauseFirstSec", config.latePauseFirstSec);
+    config.latePausePeriodSec  = _r.Num("latePausePeriodSec", config.latePausePeriodSec);
+    config.latePauseSec        = _r.Num("latePauseSec", config.latePauseSec);
+    if (const int n = ReadKeys_(_r, "scrollPauses", config.scrollPauses); n >= 0)
     {
-        c.numScrollPauses = n;
+        config.numScrollPauses = n;
     }
 
-    c.driveTriggerX = _r.Num("driveTriggerX", c.driveTriggerX);
-    c.driveTargetX  = _r.Num("driveTargetX", c.driveTargetX);
-    c.driveSpeed    = _r.Num("driveSpeed", c.driveSpeed);
-    c.driveAccel    = _r.Num("driveAccel", c.driveAccel);
+    config.driveTriggerX = _r.Num("driveTriggerX", config.driveTriggerX);
+    config.driveTargetX  = _r.Num("driveTargetX", config.driveTargetX);
+    config.driveSpeed    = _r.Num("driveSpeed", config.driveSpeed);
+    config.driveAccel    = _r.Num("driveAccel", config.driveAccel);
 
-    c.scrollBudgetPx  = _r.Num("scrollBudgetPx", c.scrollBudgetPx);
-    c.shuttleDriftSec = _r.Num("shuttleDriftSec", c.shuttleDriftSec);
-    c.reverseAtSec    = _r.Num("reverseAtSec", c.reverseAtSec);
-    c.reverseSec      = _r.Num("reverseSec", c.reverseSec);
-    c.reverseSpeed    = _r.Num("reverseSpeed", c.reverseSpeed);
+    config.scrollBudgetPx  = _r.Num("scrollBudgetPx", config.scrollBudgetPx);
+    config.shuttleDriftSec = _r.Num("shuttleDriftSec", config.shuttleDriftSec);
+    config.reverseAtSec    = _r.Num("reverseAtSec", config.reverseAtSec);
+    config.reverseSec      = _r.Num("reverseSec", config.reverseSec);
+    config.reverseSpeed    = _r.Num("reverseSpeed", config.reverseSpeed);
 
-    (void)_r.NumArray("volleyIntervalSec", c.volleyIntervalSec);
-    c.firstVolleySec   = _r.Num("firstVolleySec", c.firstVolleySec);
-    c.prepTicks        = _r.Int("prepTicks", c.prepTicks);
-    c.turnFrameTicks   = Max(1, _r.Int("turnFrameTicks", c.turnFrameTicks));
-    c.shotTicks        = _r.Int("shotTicks", c.shotTicks);
-    c.fireTick         = _r.Int("fireTick", c.fireTick);
-    c.pairGapTicks     = _r.Int("pairGapTicks", c.pairGapTicks);
-    c.turretAimBandPx  = _r.Num("turretAimBandPx", c.turretAimBandPx);
-    c.turretTrackTicks = _r.Int("turretTrackTicks", c.turretTrackTicks);
+    (void)_r.NumArray("volleyIntervalSec", config.volleyIntervalSec);
+    config.firstVolleySec   = _r.Num("firstVolleySec", config.firstVolleySec);
+    config.prepTicks        = _r.Int("prepTicks", config.prepTicks);
+    config.turnFrameTicks   = Max(1, _r.Int("turnFrameTicks", config.turnFrameTicks));
+    config.shotTicks        = _r.Int("shotTicks", config.shotTicks);
+    config.fireTick         = _r.Int("fireTick", config.fireTick);
+    config.pairGapTicks     = _r.Int("pairGapTicks", config.pairGapTicks);
+    config.turretAimBandPx  = _r.Num("turretAimBandPx", config.turretAimBandPx);
+    config.turretTrackTicks = _r.Int("turretTrackTicks", config.turretTrackTicks);
 
-    c.cannonAnchor         = _r.ReadVec2("cannonAnchor", c.cannonAnchor);
-    c.cannonBoxSize        = _r.ReadVec2("cannonBoxSize", c.cannonBoxSize);
-    c.cannonBoxOffset      = _r.ReadVec2("cannonBoxOffset", c.cannonBoxOffset);
-    c.cannonAimOrigin      = _r.ReadVec2("cannonAimOrigin", c.cannonAimOrigin);
-    c.deployDelaySec       = _r.Num("deployDelaySec", c.deployDelaySec);
-    c.firstMissileSec      = _r.Num("firstMissileSec", c.firstMissileSec);
-    c.missileIntervalSec   = _r.Num("missileIntervalSec", c.missileIntervalSec);
-    c.missileFireTick      = _r.Int("missileFireTick", c.missileFireTick);
-    c.hullStepTicks        = Max(1, _r.Int("hullStepTicks", c.hullStepTicks));
-    c.cannonDeployDelaySec = _r.Num("cannonDeployDelaySec", c.cannonDeployDelaySec);
-    c.cannonDeployTicks    = _r.Int("cannonDeployTicks", c.cannonDeployTicks);
-    c.cannonTurnTicks      = Max(1, _r.Int("cannonTurnTicks", c.cannonTurnTicks));
-    (void)_r.NumArray("cannonAimDeg", c.cannonAimDeg);
-    (void)_r.NumArray("cannonMuzzleX", c.cannonMuzzleX);
+    config.cannonAnchor         = _r.ReadVec2("cannonAnchor", config.cannonAnchor);
+    config.cannonBoxSize        = _r.ReadVec2("cannonBoxSize", config.cannonBoxSize);
+    config.cannonBoxOffset      = _r.ReadVec2("cannonBoxOffset", config.cannonBoxOffset);
+    config.cannonAimOrigin      = _r.ReadVec2("cannonAimOrigin", config.cannonAimOrigin);
+    config.deployDelaySec       = _r.Num("deployDelaySec", config.deployDelaySec);
+    config.firstMissileSec      = _r.Num("firstMissileSec", config.firstMissileSec);
+    config.missileIntervalSec   = _r.Num("missileIntervalSec", config.missileIntervalSec);
+    config.missileFireTick      = _r.Int("missileFireTick", config.missileFireTick);
+    config.hullStepTicks        = Max(1, _r.Int("hullStepTicks", config.hullStepTicks));
+    config.cannonDeployDelaySec = _r.Num("cannonDeployDelaySec", config.cannonDeployDelaySec);
+    config.cannonDeployTicks    = _r.Int("cannonDeployTicks", config.cannonDeployTicks);
+    config.cannonTurnTicks      = Max(1, _r.Int("cannonTurnTicks", config.cannonTurnTicks));
+    (void)_r.NumArray("cannonAimDeg", config.cannonAimDeg);
+    (void)_r.NumArray("cannonMuzzleX", config.cannonMuzzleX);
 
-    c.casingOffset    = _r.ReadVec2("casingOffset", c.casingOffset);
-    c.casingScale     = _r.Num("casingScale", c.casingScale);
-    c.casingVel       = _r.ReadVec2("casingVel", c.casingVel);
-    c.casingGravity   = _r.Num("casingGravity", c.casingGravity);
-    c.casingGroundDy  = _r.Num("casingGroundDy", c.casingGroundDy);
-    c.casingLingerSec = _r.Num("casingLingerSec", c.casingLingerSec);
-    c.casingFps       = _r.Num("casingFps", c.casingFps);
+    config.casingOffset    = _r.ReadVec2("casingOffset", config.casingOffset);
+    config.casingScale     = _r.Num("casingScale", config.casingScale);
+    config.casingVel       = _r.ReadVec2("casingVel", config.casingVel);
+    config.casingGravity   = _r.Num("casingGravity", config.casingGravity);
+    config.casingGroundDy  = _r.Num("casingGroundDy", config.casingGroundDy);
+    config.casingLingerSec = _r.Num("casingLingerSec", config.casingLingerSec);
+    config.casingFps       = _r.Num("casingFps", config.casingFps);
 
-    c.lowHpFxBelow = _r.Num("lowHpFxBelow", c.lowHpFxBelow);
-    (void)_r.NumArray("lowHpFxSec", c.lowHpFxSec);
-    (void)_r.NumArray("lowHpFxArea", c.lowHpFxArea);
+    config.lowHpFxBelow = _r.Num("lowHpFxBelow", config.lowHpFxBelow);
+    (void)_r.NumArray("lowHpFxSec", config.lowHpFxSec);
+    (void)_r.NumArray("lowHpFxArea", config.lowHpFxArea);
     if (_r.FindRaw("lowHpFxClip") != nullptr)
     {
-        c.lowHpFxClip = _r.Str("lowHpFxClip");
+        config.lowHpFxClip = _r.Str("lowHpFxClip");
     }
 
-    c.dyingBlastIntervalSec = _r.Num("dyingBlastIntervalSec", c.dyingBlastIntervalSec);
-    c.dyingWreckSec         = _r.Num("dyingWreckSec", c.dyingWreckSec);
-    c.dyingDoneSec          = _r.Num("dyingDoneSec", c.dyingDoneSec);
-    c.wreckSmokeIntervalSec = _r.Num("wreckSmokeIntervalSec", c.wreckSmokeIntervalSec);
-    c.wreckOffset           = _r.ReadVec2("wreckOffset", c.wreckOffset);
-    c.cannonWreckOffset     = _r.ReadVec2("cannonWreckOffset", c.cannonWreckOffset);
+    config.dyingBlastIntervalSec = _r.Num("dyingBlastIntervalSec", config.dyingBlastIntervalSec);
+    config.dyingWreckSec         = _r.Num("dyingWreckSec", config.dyingWreckSec);
+    config.dyingDoneSec          = _r.Num("dyingDoneSec", config.dyingDoneSec);
+    config.wreckSmokeIntervalSec = _r.Num("wreckSmokeIntervalSec", config.wreckSmokeIntervalSec);
+    config.wreckOffset           = _r.ReadVec2("wreckOffset", config.wreckOffset);
+    config.cannonWreckOffset     = _r.ReadVec2("cannonWreckOffset", config.cannonWreckOffset);
 
-    c.chuteFirstSec     = _r.Num("chuteFirstSec", c.chuteFirstSec);
-    c.chuteIntervalSec  = _r.Num("chuteIntervalSec", c.chuteIntervalSec);
-    c.chuteSpreadX      = _r.Num("chuteSpreadX", c.chuteSpreadX);
-    c.chuteRightMarginX = _r.Num("chuteRightMarginX", c.chuteRightMarginX);
-    c.chuteStartAboveY  = _r.Num("chuteStartAboveY", c.chuteStartAboveY);
-    c.chuteEdgeX        = _r.Num("chuteEdgeX", c.chuteEdgeX);
+    config.chuteFirstSec     = _r.Num("chuteFirstSec", config.chuteFirstSec);
+    config.chuteIntervalSec  = _r.Num("chuteIntervalSec", config.chuteIntervalSec);
+    config.chuteSpreadX      = _r.Num("chuteSpreadX", config.chuteSpreadX);
+    config.chuteRightMarginX = _r.Num("chuteRightMarginX", config.chuteRightMarginX);
+    config.chuteStartAboveY  = _r.Num("chuteStartAboveY", config.chuteStartAboveY);
+    config.chuteEdgeX        = _r.Num("chuteEdgeX", config.chuteEdgeX);
 
-    c.turretBlastOffset = _r.ReadVec2("turretBlastOffset", c.turretBlastOffset);
-    c.turretSmokeOffset = _r.ReadVec2("turretSmokeOffset", c.turretSmokeOffset);
-    c.deathFlameOffset  = _r.ReadVec2("deathFlameOffset", c.deathFlameOffset);
-    c.deathBlastDy      = _r.Num("deathBlastDy", c.deathBlastDy);
-    c.deathHugeOffset   = _r.ReadVec2("deathHugeOffset", c.deathHugeOffset);
-    c.deathDiscOffset   = _r.ReadVec2("deathDiscOffset", c.deathDiscOffset);
+    config.turretBlastOffset = _r.ReadVec2("turretBlastOffset", config.turretBlastOffset);
+    config.turretSmokeOffset = _r.ReadVec2("turretSmokeOffset", config.turretSmokeOffset);
+    config.deathFlameOffset  = _r.ReadVec2("deathFlameOffset", config.deathFlameOffset);
+    config.deathBlastDy      = _r.Num("deathBlastDy", config.deathBlastDy);
+    config.deathHugeOffset   = _r.ReadVec2("deathHugeOffset", config.deathHugeOffset);
+    config.deathDiscOffset   = _r.ReadVec2("deathDiscOffset", config.deathDiscOffset);
+}
+
+[[nodiscard]] eBigShieePhase BigShieeEnemy::Phase_() const
+{
+    const EnemyState& _e = GetState();
+    return static_cast<eBigShieePhase>(_e.state);
+}
+
+void BigShieeEnemy::SetTurretMode_(
+    const int                 _i,
+    const eBigShieeTurretMode _mode)
+{
+    m_boss.turretMode[static_cast<size_t>(_i)]  = _mode;
+    m_boss.turretTicks[static_cast<size_t>(_i)] = 0;
+}
+
+void BigShieeEnemy::SetCannonMode_(
+    const eBigShieeCannonMode _mode)
+{
+    EventLogFormat("bigshiee.cannon", "\"mode\":\"{}\",\"yaw\":{}", CannonModeName_(_mode), m_boss.cannonYaw);
+    m_boss.cannonMode  = _mode;
+    m_boss.cannonTicks = 0;
+}
+
+[[nodiscard]] int BigShieeEnemy::AliveTurrets_() const
+{
+    int count = 0;
+    for (int i = 0; i < kBigShieeTurretCount; ++i)
+    {
+        if (m_boss.turretHp[static_cast<size_t>(i)] > 0)
+        {
+            ++count;
+        }
+    }
+    return count;
+}
+
+[[nodiscard]] float BigShieeEnemy::AgeSec_() const
+{
+    return static_cast<float>(m_ageTicks) * kStepSec;
+}
+
+[[nodiscard]] float BigShieeEnemy::DeploySec_() const
+{
+    const int start = m_boss.deployStart;
+    return start < 0 ? -1.f : static_cast<float>(m_ageTicks - start) * kStepSec;
+}
+
+[[nodiscard]] bool BigShieeEnemy::IsScrollPaused_(
+    const BigShieeConfig& _config) const
+{
+    const float t = AgeSec_();
+    for (int i = 0; i < _config.numScrollPauses; ++i)
+    {
+        const VECTOR2 pause = _config.scrollPauses[static_cast<size_t>(i)];
+        if (t >= pause.x && t < pause.x + pause.y)
+        {
+            return true;
+        }
+    }
+    const float td = DeploySec_();
+    if (td < 0.f)
+    {
+        return false;
+    }
+    if (td >= _config.deployPauseDelaySec && td < _config.deployPauseDelaySec + _config.deployPauseSec)
+    {
+        return true;
+    }
+    const float late = td - _config.latePauseFirstSec;
+    return late >= 0.f && std::fmod(late, _config.latePausePeriodSec) < _config.latePauseSec;
+}
+
+[[nodiscard]] bool BigShieeEnemy::IsScrollStopped_(
+    const BigShieeConfig& _config) const
+{
+    return _config.scrollBudgetPx > 0.f && static_cast<float>(m_boss.scrollTicks) * _config.scrollSpeed * kStepSec >= _config.scrollBudgetPx;
+}
+
+[[nodiscard]] VECTOR2 BigShieeEnemy::ExtraFromWorld_(
+    const EnemyDef& _def,
+    const int       _weapon,
+    const VECTOR2   _muzzle) const
+{
+    const EnemyState& _e = GetState();
+    if (_weapon < 0)
+    {
+        return { 0.f, 0.f };
+    }
+    const VECTOR2 base = GetMuzzleWorld(_e, _def, _weapon);
+    return { _muzzle.x - base.x, _muzzle.y - base.y };
+}
+
+[[nodiscard]] int BigShieeEnemy::AimPos_(
+    const BigShieeConfig&       _config,
+    const BigShieeTurretConfig& _turret,
+    const EnemyEnv&             _env,
+    const int                   _pos) const
+{
+    const EnemyState& _e = GetState();
+    if (!_env.ctx.player.bAlive)
+    {
+        return _pos;
+    }
+    const float dx = _env.ctx.player.feet.x - (_e.body.position.x + _turret.anchor.x + _turret.muzzle.x);
+    if (dx < -_config.turretAimBandPx)
+    {
+        return 0;
+    }
+    return dx > _config.turretAimBandPx ? kTurnMax : kTurnMid;
+}
+
+void BigShieeEnemy::FireShell_(
+    const EnemyDef& _def,
+    EnemyEnv&       _env,
+    const int       _turret,
+    const int       _barrel)
+{
+    EnemyState&                 _e     = GetMutableState();
+    const BigShieeConfig&       config = _def.bigShiee;
+    const BigShieeTurretConfig& turret = config.turrets[static_cast<size_t>(_turret)];
+    const int                   aim    = m_boss.turretPosition[static_cast<size_t>(_turret)] / kTurnMid + 1;
+    const float                 gap    = turret.bTwin ? (_barrel == 0 ? -0.5f : 0.5f) * turret.muzzleGap : 0.f;
+    const VECTOR2               muzzle = World_(_e.body.position, { turret.anchor.x + MuzzleX_(turret, m_boss.turretPosition[static_cast<size_t>(_turret)]) + gap, turret.anchor.y + turret.muzzle.y });
+    const int                   weapon = _def.FindWeapon("shell");
+    EventLogFormat("bigshiee.turret_fire", "\"turret\":{},\"barrel\":{},\"aim\":{},\"x\":{:.1f},\"y\":{:.1f}", _turret, _barrel, aim, muzzle.x, muzzle.y);
+    (void)FireWeapon(_e, _def, _env, weapon, { 0.f, 0.f }, ExtraFromWorld_(_def, weapon, muzzle));
+}
+
+void BigShieeEnemy::TickTurret_(
+    const EnemyDef& _def,
+    EnemyEnv&       _env,
+    const int       _i)
+{
+    EnemyState&                 _e     = GetMutableState();
+    const BigShieeConfig&       config = _def.bigShiee;
+    const BigShieeTurretConfig& turret = config.turrets[static_cast<size_t>(_i)];
+    const eBigShieeTurretMode   mode   = m_boss.turretMode[static_cast<size_t>(_i)];
+    if (mode == eBigShieeTurretMode::Dead)
+    {
+        return;
+    }
+    int& ticks = m_boss.turretTicks[static_cast<size_t>(_i)];
+    int& pos   = m_boss.turretPosition[static_cast<size_t>(_i)];
+    ++ticks;
+
+    switch (mode)
+    {
+        case eBigShieeTurretMode::Idle:
+        {
+            // 쉬는 동안 turretTrackTicks 마다
+            const int target = AimPos_(config, turret, _env, pos);
+            if (config.turretTrackTicks > 0 && ticks >= config.turretTrackTicks && pos != target)
+            {
+                pos += target > pos ? 1 : -1;
+                ticks = 0;
+            }
+            break;
+        }
+        case eBigShieeTurretMode::Prep:
+            if (ticks >= config.prepTicks)
+            {
+                SetTurretMode_(_i, pos != AimPos_(config, turret, _env, pos) ? eBigShieeTurretMode::Turn : eBigShieeTurretMode::Shot);
+            }
+            break;
+        case eBigShieeTurretMode::Turn:
+            if (ticks % config.turnFrameTicks == 0)
+            {
+                const int target = AimPos_(config, turret, _env, pos);
+                pos += target > pos ? 1 : (target < pos ? -1 : 0);
+                if (pos == target)
+                {
+                    SetTurretMode_(_i, eBigShieeTurretMode::Shot);
+                }
+            }
+            break;
+        case eBigShieeTurretMode::Shot:
+            if (ticks == config.fireTick)
+            {
+                FireShell_(_def, _env, _i, 0);
+                const VECTOR2 puff = World_(_e.body.position, { turret.anchor.x + MuzzleX_(turret, pos), turret.anchor.y + turret.muzzle.y });
+                RequestFxAt(_env, GetNames_(turret.letter).puff, puff, _e.facing, 55);
+            }
+            else if (turret.bTwin && ticks == config.fireTick + config.pairGapTicks)
+            {
+                FireShell_(_def, _env, _i, 1);
+            }
+            if (ticks >= config.shotTicks)
+            {
+                SetTurretMode_(_i, eBigShieeTurretMode::Idle);
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+void BigShieeEnemy::TickVolley_(
+    const EnemyDef& _def,
+    EnemyEnv&       _env)
+{
+    const BigShieeConfig& config = _def.bigShiee;
+    if (m_ageTicks < m_boss.nextVolley)
+    {
+        return;
+    }
+    ARRAY<int, kBigShieeTurretCount> idle  = {};
+    int                              count = 0;
+    for (int i = 0; i < kBigShieeTurretCount; ++i)
+    {
+        if (m_boss.turretHp[static_cast<size_t>(i)] > 0 && m_boss.turretMode[static_cast<size_t>(i)] == eBigShieeTurretMode::Idle)
+        {
+            idle[static_cast<size_t>(count++)] = i;
+        }
+    }
+    if (count <= 0)
+    {
+        m_boss.nextVolley = m_ageTicks + 30;
+        return;
+    }
+    const int pick = idle[static_cast<size_t>(Roll(_env, count))];
+    SetTurretMode_(pick, eBigShieeTurretMode::Prep);
+    m_boss.nextVolley = m_ageTicks + RandTicks_(_env, config.volleyIntervalSec);
+}
+
+void BigShieeEnemy::TickChute_(
+    const EnemyDef& _def,
+    EnemyEnv&       _env)
+{
+    const BigShieeConfig& config = _def.bigShiee;
+    if (m_ageTicks < m_boss.nextChute)
+    {
+        return;
+    }
+    m_boss.nextChute = m_ageTicks + SecToTicks(config.chuteIntervalSec);
+
+    const Aabb& view  = _env.ctx.cameraView;
+    const int   index = _env.lib.FindIndex(kChuteDef);
+    if (index < 0 || view.max.x <= view.min.x || !_env.ctx.player.bAlive)
+    {
+        return;
+    }
+    // 낙하 중에도 카메라가 자동 스크롤로 오른쪽으로 간다
+    const float fallDist = Max(_env.ctx.player.feet.y - (view.min.y - config.chuteStartAboveY), 0.f);
+    const float descend  = _env.lib.Get(index).flyingBzk.descendSpeed;
+    const float fallSec  = descend > 0.f ? fallDist / descend : 0.f;
+    const float scroll   = AgeSec_() >= config.scrollStartSec && !IsScrollPaused_(config) && !IsScrollStopped_(config) ? config.scrollSpeed * fallSec : 0.f;
+
+    const int   spread = Max(1, static_cast<int>(config.chuteSpreadX));
+    const float dx     = static_cast<float>(Roll(_env, 2 * spread + 1) - spread);
+    float       x      = view.max.x + scroll - config.chuteRightMarginX + dx;
+    const float lo     = view.min.x + scroll + config.chuteEdgeX;
+    const float hi     = view.max.x + scroll - config.chuteEdgeX;
+    if (lo <= hi)
+    {
+        x = Clamp(x, lo, hi);
+    }
+    const VECTOR2 feet = { x, view.min.y - config.chuteStartAboveY };
+    SpawnParams   params;
+    params.facing     = 1;
+    params.bActivated = true;
+    params.drop       = String(kChuteDrops[static_cast<size_t>(Roll(_env, static_cast<int>(kChuteDrops.size())))]);
+    (void)_env.world.SpawnDeferred(index, feet, params);
+}
+
+[[nodiscard]] bool BigShieeEnemy::CannonVulnerable_() const
+{
+    const eBigShieeCannonMode mode = m_boss.cannonMode;
+    if (mode == eBigShieeCannonMode::Hidden)
+    {
+        return false;
+    }
+    return mode != eBigShieeCannonMode::Deploy || m_boss.cannonTicks >= 30;
+}
+
+[[nodiscard]] float BigShieeEnemy::PlayerAngleDeg_(
+    const BigShieeConfig& _config,
+    const EnemyEnv&       _env) const
+{
+    const EnemyState& _e     = GetState();
+    const VECTOR2     muzzle = World_(_e.body.position, _config.cannonAimOrigin);
+    const float       dx     = _env.ctx.player.center.x - muzzle.x;
+    const float       dy     = Max(_env.ctx.player.center.y - muzzle.y, 40.f);
+    return ATan2(dx, dy) * kRad2Deg;
+}
+
+[[nodiscard]] int BigShieeEnemy::TargetYaw_(
+    const BigShieeConfig& _config,
+    const EnemyEnv&       _env,
+    const bool            _bFire) const
+{
+    if (!_env.ctx.player.bAlive)
+    {
+        return m_boss.cannonYaw;
+    }
+    const float deg = PlayerAngleDeg_(_config, _env);
+    if (!_bFire)
+    {
+        return NearestYaw_(_config, deg);
+    }
+    int best = 0;
+    for (int row = 1; row < kAimRows; ++row)
+    {
+        if (Abs(_config.cannonAimDeg[static_cast<size_t>(row)] - deg) < Abs(_config.cannonAimDeg[static_cast<size_t>(best)] - deg))
+        {
+            best = row;
+        }
+    }
+    return best * 2;
+}
+
+void BigShieeEnemy::TurnCannon_(
+    const BigShieeConfig& _config,
+    const int             _target)
+{
+    int& yaw  = m_boss.cannonYaw;
+    int& wait = m_boss.cannonTurn;
+    if (yaw == _target)
+    {
+        wait = 0;
+        return;
+    }
+    if (++wait >= _config.cannonTurnTicks)
+    {
+        wait = 0;
+        yaw += _target > yaw ? 1 : -1;
+        EventLogFormat("bigshiee.yaw", "\"yaw\":{}", yaw);
+    }
+}
+
+[[nodiscard]] float BigShieeEnemy::CasingLandSec_(
+    const BigShieeConfig& _config) const
+{
+    const EnemyState& _e    = GetState();
+    const float       fromY = static_cast<float>(m_boss.casingY);
+    const float       drop  = Max(_e.body.position.y + _config.casingGroundDy - fromY, 0.f);
+    const float       disc  = _config.casingVel.y * _config.casingVel.y + 2.f * _config.casingGravity * drop;
+    return (-_config.casingVel.y + Sqrt(disc)) / _config.casingGravity;
+}
+
+bool BigShieeEnemy::CasingNow_(
+    const BigShieeConfig& _config,
+    VECTOR2&              _outAt,
+    int&                  _outFrame,
+    float&                _outAlpha) const
+{
+    const int start = m_boss.casingTick;
+    if (start <= 0)
+    {
+        return false;
+    }
+    const float   t     = static_cast<float>(m_ageTicks - start) * kStepSec;
+    const VECTOR2 from  = { static_cast<float>(m_boss.casingX), static_cast<float>(m_boss.casingY) };
+    const float   tLand = CasingLandSec_(_config);
+    if (t < 0.f || t > tLand + _config.casingLingerSec)
+    {
+        return false;
+    }
+    const float tFly = Min(tLand, t);
+    _outAt           = { from.x + _config.casingVel.x * tFly, from.y + _config.casingVel.y * tFly + 0.5f * _config.casingGravity * tFly * tFly };
+    _outFrame        = static_cast<int>(t * _config.casingFps) % kCasingFrames;
+    _outAlpha        = t <= tLand || _config.casingLingerSec <= 0.f ? 1.f : Clamp(1.f - (t - tLand) / _config.casingLingerSec, 0.f, 1.f);
+    return true;
+}
+
+void BigShieeEnemy::FireMissile_(
+    const EnemyDef& _def,
+    EnemyEnv&       _env)
+{
+    EnemyState&           _e     = GetMutableState();
+    const BigShieeConfig& config = _def.bigShiee;
+    const size_t          row    = static_cast<size_t>(Clamp(m_boss.cannonRow, 0, kAimRows - 1));
+    const int             weapon = _def.FindWeapon("missile");
+    const float           sign   = static_cast<float>(_e.facing < 0 ? -1 : 1);
+    const VECTOR2         delta  = { (config.cannonMuzzleX[row] - config.cannonMuzzleX[kAimRows / 2]) * sign, 0.f };
+    const VECTOR2         base   = weapon >= 0 ? GetMuzzleWorld(_e, _def, weapon) : _e.body.position;
+    const VECTOR2         muzzle = { base.x + delta.x, base.y + delta.y };
+    const float           rad    = config.cannonAimDeg[row] * kDeg2Rad;
+    const VECTOR2         dir    = { std::sin(rad), std::cos(rad) };
+    EventLogFormat("bigshiee.missile_fire", "\"row\":{},\"x\":{:.1f},\"y\":{:.1f},\"dx\":{:.3f},\"dy\":{:.3f}", row, muzzle.x, muzzle.y, dir.x, dir.y);
+    (void)FireWeapon(_e, _def, _env, weapon, dir, delta);
+    // 사격 순간 포구 섬광 과 연기
+    EventLogFormat("bigshiee.muzzle_fx", "\"x\":{:.1f},\"y\":{:.1f}", muzzle.x, muzzle.y);
+    RequestFxAt(_env, "Bazuka_Shot_Effect", muzzle, _e.facing, 55);
+    RequestFxAt(_env, "Boss_Smoke_Small", muzzle, _e.facing, 54);
+    const VECTOR2 casing = { muzzle.x + config.casingOffset.x, muzzle.y + config.casingOffset.y };
+    m_boss.casingTick    = m_ageTicks;
+    m_boss.casingX       = static_cast<int>(std::lround(casing.x));
+    m_boss.casingY       = static_cast<int>(std::lround(casing.y));
+    EventLogFormat("bigshiee.casing", "\"x\":{:.1f},\"y\":{:.1f}", casing.x, casing.y);
+}
+
+void BigShieeEnemy::TickCannon_(
+    const EnemyDef& _def,
+    EnemyEnv&       _env)
+{
+    EnemyState&               _e     = GetMutableState();
+    const BigShieeConfig&     config = _def.bigShiee;
+    const eBigShieeCannonMode mode   = m_boss.cannonMode;
+    if (mode == eBigShieeCannonMode::Hidden)
+    {
+        return;
+    }
+    int& ticks = m_boss.cannonTicks;
+    ++ticks;
+
+    if (mode == eBigShieeCannonMode::Deploy)
+    {
+        const int deployTicks = config.cannonDeployTicks > 0 ? config.cannonDeployTicks : ClipTicks_(_env, "Boss_Cannon_Deploy", 70);
+        if (ticks >= deployTicks)
+        {
+            SetCannonMode_(eBigShieeCannonMode::Aim);
+            m_boss.cannonYaw  = 0;
+            m_boss.cannonTurn = 0;
+        }
+    }
+    else if (mode == eBigShieeCannonMode::Aim)
+    {
+        const int target = TargetYaw_(config, _env, false);
+        TurnCannon_(config, target);
+        if (m_boss.cannonYaw == target)
+        {
+            SetCannonMode_(eBigShieeCannonMode::Ready);
+            m_boss.nextMissile = m_ageTicks + SecToTicks(config.firstMissileSec);
+            EnterState(_e, static_cast<int>(eBigShieePhase::Cannon));
+        }
+    }
+    else if (mode == eBigShieeCannonMode::Ready)
+    {
+        const bool bFire    = m_ageTicks >= m_boss.nextMissile && _env.ctx.player.bAlive;
+        const int  target   = TargetYaw_(config, _env, bFire);
+        const bool bAligned = m_boss.cannonYaw == target;
+        TurnCannon_(config, target);
+        if (bFire && bAligned)
+        {
+            m_boss.cannonRow   = target / 2;
+            m_boss.nextMissile = m_ageTicks + SecToTicks(config.missileIntervalSec);
+            SetCannonMode_(eBigShieeCannonMode::Shot);
+        }
+    }
+    else if (mode == eBigShieeCannonMode::Shot)
+    {
+        if (ticks == config.missileFireTick)
+        {
+            FireMissile_(_def, _env);
+        }
+        const String shot = "Boss_Cannon_Shot" + std::to_string(m_boss.cannonRow + 1);
+        if (ticks >= ShotTicks_(_env, shot))
+        {
+            SetCannonMode_(eBigShieeCannonMode::Ready);
+        }
+    }
+}
+
+void BigShieeEnemy::SubmitHull_(
+    const BigShieeConfig& _config,
+    const EnemyRenderEnv& _render,
+    const VECTOR2         _feet) const
+{
+    const EnemyState&    _e      = GetState();
+    const bool           bMoving = m_boss.moving != 0;
+    const eBigShieePhase phase   = Phase_();
+    const int            age     = m_ageTicks;
+    const char*          clip    = bMoving ? "Boss_Hull_Drive" : "Boss_Hull_Idle";
+    bool                 bLoop   = true;
+    int                  ticks   = age;
+
+    if (_e.life == eEnemyLife::Dying)
+    {
+        clip  = "Boss_Hull_Open";
+        ticks = 0;
+    }
+    else if (phase == eBigShieePhase::Deploy)
+    {
+        const int step = (age - m_boss.lidStart) / Max(1, _config.hullStepTicks);
+        clip           = step <= 0 ? "Boss_Hull_D1" : (step == 1 ? "Boss_Hull_D3" : (step == 2 ? "Boss_Hull_D6" : (step == 3 ? "Boss_Hull_D9" : "Boss_Hull_Open")));
+        ticks          = step >= 4 ? age : 0;
+    }
+    else if (phase == eBigShieePhase::Cannon)
+    {
+        clip = bMoving ? "Boss_Hull_OpenDrive" : "Boss_Hull_Open";
+    }
+    SubmitNamedPart(_render, clip, _feet, ticks, bLoop, _config.partHull.sort, _config.partHull.depth);
+}
+
+void BigShieeEnemy::SubmitTurret_(
+    const BigShieeConfig& _config,
+    const EnemyRenderEnv& _render,
+    const VECTOR2         _feet,
+    const int             _i) const
+{
+    const EnemyState&           _e     = GetState();
+    const BigShieeTurretConfig& turret = _config.turrets[static_cast<size_t>(_i)];
+    const EnemyPartDepth&       part   = _config.partTurrets[static_cast<size_t>(_i)];
+    const TurretNames&          names  = GetNames_(turret.letter);
+    const eBigShieeTurretMode   mode   = m_boss.turretMode[static_cast<size_t>(_i)];
+    const VECTOR2               origin = World_(_feet, turret.anchor);
+    const int                   ticks  = m_boss.turretTicks[static_cast<size_t>(_i)];
+    const int                   pos    = m_boss.turretPosition[static_cast<size_t>(_i)];
+    const float                 flash  = PartFlashAmount(_e, _i);
+
+    switch (mode)
+    {
+        case eBigShieeTurretMode::Dead:
+            (void)SubmitNamedPart(_render, names.dead, origin, 0, false, part.sort, part.depth);
+            break;
+        case eBigShieeTurretMode::Turn:
+            (void)SubmitFrame_(_render, names.turn, pos, origin, part.depth, part.sort - _i, flash);
+            break;
+        case eBigShieeTurretMode::Shot:
+            (void)SubmitNamedPart(_render, names.shot[static_cast<size_t>(Min(2, pos / kTurnMid))], origin, ticks, false, part.sort, part.depth, false, flash);
+            break;
+        default:
+            if (pos % kTurnMid != 0)
+            {
+                (void)SubmitFrame_(_render, names.turn, pos, origin, part.depth, part.sort - _i, flash);
+            }
+            else
+            {
+                (void)SubmitNamedPart(_render, names.idle[static_cast<size_t>(pos / kTurnMid)], origin, m_ageTicks + _i * 7, true, part.sort, part.depth, false, flash);
+            }
+            break;
+    }
+}
+
+void BigShieeEnemy::SubmitCannon_(
+    const BigShieeConfig& _config,
+    const EnemyRenderEnv& _render,
+    const VECTOR2         _feet,
+    const float           _flash) const
+{
+    const eBigShieeCannonMode mode   = m_boss.cannonMode;
+    const int                 ticks  = m_boss.cannonTicks;
+    const int                 row    = Clamp(m_boss.cannonRow, 0, kAimRows - 1);
+    const int                 yaw    = Clamp(m_boss.cannonYaw, 0, kYawMax);
+    const VECTOR2             origin = World_(_feet, _config.cannonAnchor);
+    const String              shot   = "Boss_Cannon_Shot" + std::to_string(row + 1);
+    switch (mode)
+    {
+        case eBigShieeCannonMode::Deploy:
+            (void)SubmitNamedPart(_render, "Boss_Cannon_Deploy", origin, DeployClipTicks_(_config, _render, ticks), false, _config.partCannon.sort, _config.partCannon.depth, false, _flash);
+            break;
+        case eBigShieeCannonMode::Aim:
+        case eBigShieeCannonMode::Ready:
+            (void)SubmitFrame_(_render, "Boss_Cannon_Aim", yaw, origin, _config.partCannon.depth, _config.partCannon.sort, _flash);
+            break;
+        case eBigShieeCannonMode::Shot:
+            (void)SubmitNamedPart(_render, shot, origin, ticks, false, _config.partCannon.sort, _config.partCannon.depth, false, _flash);
+            break;
+        default:
+            break;
+    }
+}
+
+void BigShieeEnemy::SubmitCasing_(
+    const BigShieeConfig& _config,
+    const EnemyRenderEnv& _render) const
+{
+    VECTOR2 at    = { 0.f, 0.f };
+    int     frame = 0;
+    float   alpha = 1.f;
+    if (!_render.pSprites || !CasingNow_(_config, at, frame, alpha))
+    {
+        return;
+    }
+    const SpriteInfo* pInfo = _render.pSprites->Find("Boss_CasingStrip");
+    if (!pInfo || !pInfo->bStandalone)
+    {
+        return;
+    }
+    const int handle = _render.sprites.FindStandalone(pInfo->file);
+    if (handle < 0)
+    {
+        return;
+    }
+    const int         cellW = pInfo->width / kCasingFrames;
+    SpriteDrawOptions options;
+    options.tint.a = static_cast<uint8_t>(std::lround(alpha * 255.f));
+    options.scale  = _config.casingScale;
+    _render.sprites.SubmitStandalone(kCasingDepth + _render.zOffset, 0, handle, { frame * cellW, 0, cellW, pInfo->height }, at, options);
+}
+
+void BigShieeEnemy::HashActionState(Fnv1a& _hash) const
+{
+    HashActionState_(_hash, 0, m_ageTicks);
 }

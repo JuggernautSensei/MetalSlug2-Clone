@@ -1,7 +1,6 @@
 #include <cmath>
 #include <string>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Player/PlayerController.h"
 #include "PropTestUtil.h"

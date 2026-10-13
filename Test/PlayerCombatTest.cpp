@@ -2,7 +2,6 @@
 #include <set>
 #include <vector>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Player/PlayerHitboxes.h"
 #include "PlayerTestUtil.h"

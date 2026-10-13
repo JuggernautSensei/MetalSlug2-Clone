@@ -3,8 +3,6 @@
 #include <format>
 
 #include "Base/Log.h"
-#include "Base/Math.h"
-#include "Base/RGBA.h"
 #include "Base/Types.h"
 #include "World/Constants.h"
 
@@ -180,7 +178,7 @@ PlayerRig::BindReport PlayerRig::Bind(
     m_lower    = {};
 
     BindReport report;
-    for (size_t w = 0; w < kWeaponCount; ++w)
+    for (size_t w = 0; w < (CountOf<eWeapon>() - 1); ++w)
     {
         for (int side = 0; side < 2; ++side)
         {

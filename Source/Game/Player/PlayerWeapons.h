@@ -1,34 +1,51 @@
 #pragma once
-#include "Base/Math.h"
 #include "Core/Tuning.h"
 #include "Game/Combat/Projectiles.h"
 #include "Game/Player/PlayerTypes.h"
 
 struct WeaponState
 {
+    void               Reset(const Tuning& _tuning);
+    void               Give(eWeapon _weapon, int _ammo);
+    void               Tick();
+    [[nodiscard]] bool ShouldFire(const WeaponTuning& _tuning, int _aliveBullets, bool _bShotBuffered, bool _bShotHeld) const;
+    void               OnFired();
+    [[nodiscard]] bool HasFiniteAmmo() const;
+
     static constexpr int kLongAgo = 1'000'000;
 
     eWeapon weapon         = eWeapon::Pistol;
     int     ammo           = 0;
     int     bombs          = 0;
     int     ticksSinceShot = kLongAgo;
-
-    [[nodiscard]] bool HasFiniteAmmo() const;
 };
 
-void ResetWeapons(WeaponState& _state, const Tuning& _tuning);
+struct ShotAim
+{
+    uint32_t owner     = kPlayerOwnerId;
+    VECTOR2  muzzle    = {};
+    VECTOR2  sweepFrom = {};
+    VECTOR2  direction = {};
+    float    degrees   = 0.f;
+    int      facing    = 1;
+    uint32_t hitId     = kNoHitId;
+};
 
-void GiveWeapon(WeaponState& _state, eWeapon _weapon, int _ammo);
+class Weapon
+{
+    JUG_CLASS(Weapon, NO_COPY, NO_MOVE)
 
-void TickWeapon(WeaponState& _state);
+public:
+    explicit Weapon(eWeapon _kind);
+    virtual ~Weapon() = default;
+    [[nodiscard]] virtual BulletSpawn MakeShot(const WeaponTuning& _tuning, const ShotAim& _aim, RngMt19937& _rng) const;
 
-[[nodiscard]] bool ShouldFire(const WeaponState& _state, const WeaponTuning& _tuning, int _aliveBullets, bool _bShotBuffered, bool _bShotHeld);
+private:
+    eWeapon m_kind;
+};
 
-void OnFired(WeaponState& _state);
+[[nodiscard]] const Weapon& GetWeaponBehavior(eWeapon _kind);
 
 [[nodiscard]] eWeapon WeaponFromDebugSlot(int _slot);
 
 [[nodiscard]] BulletSpawn MakeBulletSpawn(eWeapon _weapon, const WeaponTuning& _tuning, uint32_t _owner, VECTOR2 _muzzle, VECTOR2 _sweepFrom, VECTOR2 _direction);
-
-// 파이어샷 분출 입자 하나
-[[nodiscard]] BulletSpawn MakeFlameParticleSpawn(const WeaponTuning& _tuning, uint32_t _owner, VECTOR2 _muzzle, VECTOR2 _sweepFrom, VECTOR2 _direction, uint32_t _hitId, RngMt19937& _rng);

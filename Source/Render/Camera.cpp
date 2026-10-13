@@ -2,7 +2,6 @@
 
 #include <cmath>
 
-#include "Base/Math.h"
 #include "Render/Renderer.h"
 
 constexpr float kRampStart     = 1.f;
@@ -14,7 +13,7 @@ constexpr float kGlideExitGap  = 0.05f;
 constexpr float kGlideAccel    = 1.f;
 constexpr float kMaxStep       = 12.f;
 constexpr float kStepGrowth    = 1.5f;
-constexpr float kStepFloor     = 1.f;                   // 걸음이 작을 때 허용되는 최소 증가폭
+constexpr float kStepFloor     = 1.f;   // 걸음이 작을 때 허용되는 최소 증가폭
 constexpr float kMaxSpeedSec   = kMaxStep / kStepSec;
 constexpr float kBoundsEase    = 2.f;
 constexpr float kCorrectionSec = 0.5f;
@@ -441,7 +440,7 @@ void Camera::StepX_(
     }
 
     // 한 틱에 직전 속도의 1.5배를 넘어 빨라지지 않는다
-    const float limit = Max(kStepFloor, kStepGrowth * Abs(m_velocity.x));
+    const float limit   = Max(kStepFloor, kStepGrowth * Abs(m_velocity.x));
     const float stepAbs = Min(Min(Abs(gap), m_pushSpeed), Min(limit, BrakeSpeed_(Abs(gap))));
     m_velocity.x        = dir * stepAbs;
     m_center.x += m_velocity.x;

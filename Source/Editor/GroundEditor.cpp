@@ -17,7 +17,7 @@
 #include <stb_image_write.h>
 #pragma warning(pop)
 
-#include "Base/Json.h"
+#include "Base/JsonFields.h"
 #include "Core/AssetPath.h"
 
 constexpr int   kGroundStripWidth = 2048;
@@ -529,7 +529,7 @@ void GroundEditor::LoadBackground_(
 {
     m_bBgLoaded                              = true;
     const FilePath                 stagePath = FindAssetRoot() / "Stage" / (_maskName.substr(0, _maskName.find('_')) + ".json");
-    const Result<JsonDeserializer> stage     = LoadJsonFile(stagePath);
+    const Result<JsonDeserializer> stage     = JsonDeserializer::LoadFromFile(stagePath, kJsonBom);
     if (!stage)
     {
         return;
@@ -540,7 +540,7 @@ void GroundEditor::LoadBackground_(
         return;
     }
     const Result<String>           background = world->ReadField<String>("background");
-    const Result<JsonDeserializer> sprites    = LoadJsonFile(FindAssetRoot() / "sprites.json");
+    const Result<JsonDeserializer> sprites    = JsonDeserializer::LoadFromFile(FindAssetRoot() / "sprites.json", kJsonBom);
     if (!background || !sprites)
     {
         return;

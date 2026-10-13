@@ -1,7 +1,6 @@
 #pragma once
 #include <cstdint>
 
-#include "Base/RGBA.h"
 #include "Base/Types.h"
 #include "Game/Ui/BitmapFont.h"
 #include "Game/Ui/UiLayout.h"
@@ -42,9 +41,8 @@ public:
     static constexpr int kStartSeconds  = 60;
     static constexpr int kTicksPerDigit = 390;
 
-    void Reset();
-    void Tick();
-
+    void              Reset();
+    void              Tick();
     [[nodiscard]] int GetSeconds() const;
     [[nodiscard]] int GetRemainingTicks() const;
 
@@ -65,7 +63,7 @@ struct MissionResultsView
 
 [[nodiscard]] HudModel MakeHudModel(const PlayerController& _player);
 
-enum class eHudItemKind : uint8_t
+enum class eHudItemKind
 {
     Text,
     Sprite,

@@ -1,5 +1,4 @@
 #pragma once
-#include "Base/Math.h"
 #include "Base/Types.h"
 
 inline constexpr int kBigShieeTurretCount = 7;
@@ -13,7 +12,7 @@ inline constexpr int kBigShieeDepthTurret  = -97;
 inline constexpr int kBigShieeDepthDisc    = -96;
 
 // 최종보스 전함 '빅 셰이' 설정
-struct BigShieeTurretCfg
+struct BigShieeTurretConfig
 {
     char    letter    = 'A';
     int     side      = 0;
@@ -26,7 +25,7 @@ struct BigShieeTurretCfg
     int     hp        = 40;
 };
 
-struct BigShieeCfg
+struct BigShieeConfig
 {
     // 부품 깊이
     EnemyPartDepth                              partHull    = { kBigShieeDepthHull, 0 };
@@ -38,10 +37,10 @@ struct BigShieeCfg
         { { kBigShieeDepthTurret, 0 }, { kBigShieeDepthTurret, 1 }, { kBigShieeDepthTurret, 2 }, { kBigShieeDepthTurret, 3 }, { kBigShieeDepthTurret, 4 }, { kBigShieeDepthTurret, 5 }, { kBigShieeDepthTurret, 6 } }
     };
 
-    ARRAY<BigShieeTurretCfg, kBigShieeTurretCount> turrets     = {};
-    int                                            turretScore = 1000;
-    VECTOR2                                        antennaP    = { 0.f, 0.f };   // 선체 위 리브 패널
-    VECTOR2                                        antennaQ    = { 0.f, 0.f };
+    ARRAY<BigShieeTurretConfig, kBigShieeTurretCount> turrets     = {};
+    int                                               turretScore = 1000;
+    VECTOR2                                           antennaP    = { 0.f, 0.f };   // 선체 위 리브 패널
+    VECTOR2                                           antennaQ    = { 0.f, 0.f };
 
     float              startScreenX    = -230.f;
     ARRAY<VECTOR2, 24> entranceKeys    = {};

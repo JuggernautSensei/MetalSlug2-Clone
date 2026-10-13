@@ -1,6 +1,4 @@
 #pragma once
-#include "Base/Math.h"
-#include "Base/RGBA.h"
 #include "Base/Types.h"
 #include "Game/Enemies/EnemyTypes.h"
 
@@ -16,42 +14,37 @@ struct EnemyLabSpawn
     int     z      = kDefaultZ;
 };
 
-class EnemyLab final
+class EnemyLab
 {
 public:
-    void Init(SimRunner* _pRunner, const String& _stateName, const FilePath& _assetRoot);
-    void SetAutoSpawn(const String& _defName);
-
-    EnemyHandle       Spawn(SandboxState& _state, StringView _defName, VECTOR2 _feet, int _facing, int _z = kDefaultZ);
-    EnemyHandle       SpawnNearPlayer(SandboxState& _state, StringView _defName, float _offsetX, int _facing, int _z = kDefaultZ);
-    void              KillAll(SandboxState& _state);
-    void              Clear(SandboxState& _state);
-    int               RespawnLast(SandboxState& _state);
-    bool              ReloadDefs(SandboxState& _state);
-    bool              ReloadDefsKeep(SandboxState& _state);
-    void              SetAutoReloadBlocked(bool _bBlocked);
-    void              SetMouseCaptured(bool _bCaptured);
-    [[nodiscard]] int GetDefIndex() const;
-    void              ForgetSet();
-    void              SelectAt(const SandboxState& _state, VECTOR2 _world);
-
+    void                          Init(SimRunner* _pRunner, const String& _stateName, const FilePath& _assetRoot);
+    void                          SetAutoSpawn(const String& _defName);
+    EnemyHandle                   Spawn(SandboxState& _state, StringView _defName, VECTOR2 _feet, int _facing, int _z = kDefaultZ);
+    EnemyHandle                   SpawnNearPlayer(SandboxState& _state, StringView _defName, float _offsetX, int _facing, int _z = kDefaultZ);
+    void                          KillAll(SandboxState& _state);
+    void                          Clear(SandboxState& _state);
+    int                           RespawnLast(SandboxState& _state);
+    bool                          ReloadDefs(SandboxState& _state);
+    bool                          ReloadDefsKeep(SandboxState& _state);
+    void                          SetAutoReloadBlocked(bool _bBlocked);
+    void                          SetMouseCaptured(bool _bCaptured);
+    [[nodiscard]] int             GetDefIndex() const;
+    void                          ForgetSet();
+    void                          SelectAt(const SandboxState& _state, VECTOR2 _world);
     [[nodiscard]] EnemyHandle     GetSelected() const;
     [[nodiscard]] size_t          GetSetCount() const;
     [[nodiscard]] const FilePath& GetAssetRoot() const;
-
-    void                SetPaused(bool _bPaused);
-    void                RequestSteps(int _count);
-    void                SetTimeScale(float _scale);
-    [[nodiscard]] float GetTimeScale() const;
-    [[nodiscard]] int   TakeSteps(int _naturalSteps);
-
-    [[nodiscard]] SandboxState* GetSandbox() const;
-    void                        EnterLab();
-    void                        LeaveLab();
-
-    void Draw();
-    void DrawOverlay(Renderer& _renderer);
-    void DrawMark(Renderer& _renderer, const Aabb& _world, VECTOR2 _anchor, RGBA _color, StringView _label) const;
+    void                          SetPaused(bool _bPaused);
+    void                          RequestSteps(int _count);
+    void                          SetTimeScale(float _scale);
+    [[nodiscard]] float           GetTimeScale() const;
+    [[nodiscard]] int             TakeSteps(int _naturalSteps);
+    [[nodiscard]] SandboxState*   GetSandbox() const;
+    void                          EnterLab();
+    void                          LeaveLab();
+    void                          Draw();
+    void                          DrawOverlay(Renderer& _renderer);
+    void                          DrawMark(Renderer& _renderer, const Aabb& _world, VECTOR2 _anchor, RGBA _color, StringView _label) const;
 
 private:
     void DrawSpawnUi_(SandboxState& _state);

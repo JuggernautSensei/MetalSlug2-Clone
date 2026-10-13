@@ -82,7 +82,7 @@ TEST(VehicleDefs, BehaviorNamesRoundTripThroughTheLoader)
 {
     EnemyDefLibrary lib;
     ASSERT_TRUE(LoadVehicleLib(lib));
-    const ARRAY<eEnemyBehavior, 4> expected = { eEnemyBehavior::Jeep, eEnemyBehavior::BTank, eEnemyBehavior::MissleTank, eEnemyBehavior::Sarubia };
+    const ARRAY<eEnemyBehavior, 4> expected = { eEnemyBehavior::Jeep, eEnemyBehavior::BTank, eEnemyBehavior::MissileTank, eEnemyBehavior::Sarubia };
     for (size_t i = 0; i < 4; ++i)
     {
         EXPECT_EQ(Need_(lib, kVehicleNames[i]).behavior, expected[i]) << kVehicleNames[i];

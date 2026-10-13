@@ -1,11 +1,10 @@
 #pragma once
 #include <cstdint>
 
-#include "Base/Math.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 
-enum class eWeapon : uint8_t
+enum class eWeapon
 {
     Pistol,
     Hmg,
@@ -14,8 +13,6 @@ enum class eWeapon : uint8_t
     Flame,
     Count
 };
-
-inline constexpr size_t kWeaponCount = static_cast<size_t>(eWeapon::Count);
 
 struct MoveTuning
 {
@@ -187,8 +184,7 @@ struct WeaponsTuning
     int rocketPickupAmmo  = 20;
     int flamePickupAmmo   = 30;
 
-    [[nodiscard]] int GetPickupAmmo(eWeapon _weapon) const;
-
+    [[nodiscard]] int                 GetPickupAmmo(eWeapon _weapon) const;
     [[nodiscard]] const WeaponTuning& Get(eWeapon _weapon) const;
 };
 
@@ -300,10 +296,8 @@ struct Tuning
 class TuningWatcher
 {
 public:
-    void Init(FilePath _path, int _pollIntervalTicks = 60);
-
-    bool Poll(Tuning& _out);
-
+    void              Init(FilePath _path, int _pollIntervalTicks = 60);
+    bool              Poll(Tuning& _out);
     [[nodiscard]] int GetReloadCount() const;
 
 private:

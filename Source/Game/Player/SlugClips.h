@@ -5,7 +5,7 @@
 
 // 32522.png 에서 잘라낸 클립
 // 모든 몸통 클립은 오른쪽을
-enum class eSlugClip : uint8_t
+enum class eSlugClip
 {
     Idle,
     Drive,

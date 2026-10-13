@@ -1,5 +1,4 @@
 #pragma once
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Combat/CombatSystem.h"
 #include "World/Combat.h"
@@ -155,7 +154,7 @@ struct ShotFx
     int      zOffset  = 0;
 };
 
-enum class eFxKind : uint8_t
+enum class eFxKind
 {
     BulletImpact,
     BombExplosion,
@@ -173,28 +172,21 @@ struct FxRequest
 class ProjectileSystem
 {
 public:
-    void Clear();
-
-    void SpawnBullet(const BulletSpawn& _spawn, CombatSystem& _combat);
-    void SpawnBomb(const BombSpawn& _spawn);
-    void SpawnShot(const ShotSpawn& _spawn, CombatSystem& _combat);
-
-    void Step(const GroundMap* _pGround, CombatSystem& _combat, float _dt, Span<const Platform> _platforms = {});
-
-    void OnHitEvents(Span<const HitEvent> _events, CombatSystem& _combat);
-
-    [[nodiscard]] int CountBullets(uint32_t _owner, uint8_t _tag) const;
-    [[nodiscard]] int CountBombs(uint32_t _owner) const;
-    [[nodiscard]] int CountShots(uint32_t _owner) const;
-
+    void                             Clear();
+    void                             SpawnBullet(const BulletSpawn& _spawn, CombatSystem& _combat);
+    void                             SpawnBomb(const BombSpawn& _spawn);
+    void                             SpawnShot(const ShotSpawn& _spawn, CombatSystem& _combat);
+    void                             Step(const GroundMap* _pGround, CombatSystem& _combat, float _dt, Span<const Platform> _platforms = {});
+    void                             OnHitEvents(Span<const HitEvent> _events, CombatSystem& _combat);
+    [[nodiscard]] int                CountBullets(uint32_t _owner, uint8_t _tag) const;
+    [[nodiscard]] int                CountBombs(uint32_t _owner) const;
+    [[nodiscard]] int                CountShots(uint32_t _owner) const;
     [[nodiscard]] Span<const Bullet> GetBullets() const;
     [[nodiscard]] Span<const Bomb>   GetBombs() const;
     [[nodiscard]] Span<const Blast>  GetBlasts() const;
     [[nodiscard]] Span<const Shot>   GetShots() const;
-
-    [[nodiscard]] Vector<FxRequest> TakeFx();
-
-    [[nodiscard]] Vector<ShotFx> TakeShotFx();
+    [[nodiscard]] Vector<FxRequest>  TakeFx();
+    [[nodiscard]] Vector<ShotFx>     TakeShotFx();
 
 private:
     void ExplodeBomb_(Bomb& _bomb, VECTOR2 _at, CombatSystem& _combat);

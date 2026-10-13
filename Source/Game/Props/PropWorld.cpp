@@ -2,10 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstring>
 
 #include "Base/Log.h"
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Ui/BitmapFont.h"
 
@@ -24,8 +22,7 @@ namespace
     const uint64_t _h,
     const float    _f)
 {
-    uint32_t bits = 0;
-    std::memcpy(&bits, &_f, sizeof(bits));
+    const uint32_t bits = std::bit_cast<uint32_t>(_f);
     return MixHash_(_h, bits);
 }
 }   // namespace
@@ -74,7 +71,7 @@ float PropWorld::RollFloat_(
     const float _lo,
     const float _hi)
 {
-    return RandRange(m_rng, _lo, _hi);
+    return _lo + static_cast<float>(Random<double>(m_rng)) * (_hi - _lo);
 }
 
 int PropWorld::RollInt_(

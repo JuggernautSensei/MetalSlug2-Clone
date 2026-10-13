@@ -1,7 +1,6 @@
 #include "Game/TitleState.h"
 
 #include "Audio/AudioSystem.h"
-#include "Base/RGBA.h"
 #include "Base/Types.h"
 #include "Game/StateFactory.h"
 #include "Game/Ui/Hud.h"
@@ -125,14 +124,14 @@ void TitleState::Render(
         TextStyle start;
         start.color = eFontColor::White;
         start.align = eTextAlign::Center;
-        m_ui.DrawText(layout.screenW / 2, layout.titlePressStartY, "PRESS START", start);
+        m_ui.DrawString(layout.screenW / 2, layout.titlePressStartY, "PRESS START", start);
     }
 
     TextStyle hint;
     hint.color = eFontColor::Yellow;
     hint.bBold = false;
     hint.align = eTextAlign::Center;
-    m_ui.DrawText(layout.screenW / 2, layout.titleHintY, "PRESS ENTER OR SPACE", hint);
+    m_ui.DrawString(layout.screenW / 2, layout.titleHintY, "PRESS ENTER OR SPACE", hint);
 
     m_ui.DrawOverlays();
 }

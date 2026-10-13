@@ -1,7 +1,6 @@
 #pragma once
 #include <optional>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Props/PropDef.h"
 #include "Game/Stage/StageData.h"

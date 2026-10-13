@@ -15,15 +15,12 @@ class SoundBank
 public:
     [[nodiscard]] static Result<SoundBank> LoadFromJson(StringView _json, const FilePath& _root = {});
     [[nodiscard]] static Result<SoundBank> LoadFromDirectory(const FilePath& _bakedRoot);
-
-    void Add(SoundEntry _entry);
-
-    [[nodiscard]] const SoundEntry*      Find(StringView _name) const;
-    [[nodiscard]] int                    FindIndex(StringView _name) const;
-    [[nodiscard]] const SoundEntry&      Get(int _index) const;
-    [[nodiscard]] size_t                 GetCount() const;
-    [[nodiscard]] bool                   IsEmpty() const;
-    [[nodiscard]] Span<const SoundEntry> GetEntries() const;
+    void                                   Add(SoundEntry _entry);
+    [[nodiscard]] const SoundEntry*        Find(StringView _name) const;
+    [[nodiscard]] int                      FindIndex(StringView _name) const;
+    [[nodiscard]] const SoundEntry&        Get(int _index) const;
+    [[nodiscard]] size_t                   GetCount() const;
+    [[nodiscard]] Span<const SoundEntry>   GetEntries() const;
 
 private:
     using NameMap = HashMap<String, uint32_t>;

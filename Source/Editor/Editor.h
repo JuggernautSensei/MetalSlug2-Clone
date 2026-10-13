@@ -17,7 +17,7 @@ struct SDL_Renderer;
 
 class Renderer;
 
-class Editor final
+class Editor
 {
 public:
     [[nodiscard]] bool      Init(SDL_Window* _pWindow, SDL_Renderer* _pRenderer);
@@ -33,8 +33,7 @@ public:
     void                    DrawLabOverlay(Renderer& _renderer);
 
     // 게임 프레임을 다
-    void Frame(float _fps, uint64_t _tick);
-
+    void               Frame(float _fps, uint64_t _tick);
     [[nodiscard]] bool OwnsKeyboard() const;
 
 private:

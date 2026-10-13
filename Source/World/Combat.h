@@ -1,18 +1,18 @@
-﻿#pragma once
+#pragma once
 #include <cstdint>
 #include <initializer_list>
 
 #include "Base/Types.h"
 #include "World/Geometry.h"
 
-enum class eTeam : uint8_t
+enum class eTeam
 {
     Player,
     Enemy,
     Neutral
 };
 
-enum class eHitKind : uint8_t
+enum class eHitKind
 {
     Bullet,
     Melee,
@@ -25,10 +25,8 @@ struct HitKindMask
 {
     constexpr HitKindMask() = default;
     HitKindMask(std::initializer_list<eHitKind> _kinds);
-
     [[nodiscard]] static HitKindMask All();
-
-    [[nodiscard]] bool Has(eHitKind _kind) const;
+    [[nodiscard]] bool               Has(eHitKind _kind) const;
 
 private:
     static uint32_t Bit_(eHitKind _kind);
@@ -79,11 +77,9 @@ class HitResolver
 {
 public:
     [[nodiscard]] Vector<HitEvent> Resolve(Span<const Hitbox> _hitboxes, Span<const Hurtbox> _hurtboxes);
-
-    void Release(uint32_t _hitId);
-    void Clear();
-
-    [[nodiscard]] size_t GetTrackedHitCount() const;
+    void                           Release(uint32_t _hitId);
+    void                           Clear();
+    [[nodiscard]] size_t           GetTrackedHitCount() const;
 
 private:
     struct HitRecord
@@ -103,10 +99,7 @@ struct Health
     int maxHp = 1;
 
     [[nodiscard]] static Health Make(int _maxHp);
-
-    [[nodiscard]] bool IsDead() const;
-
-    [[nodiscard]] bool IsAlive() const;
-
-    int ApplyDamage(int _damage);
+    [[nodiscard]] bool          IsDead() const;
+    [[nodiscard]] bool          IsAlive() const;
+    int                         ApplyDamage(int _damage);
 };

@@ -3,8 +3,6 @@
 #include <memory>
 #include <optional>
 
-#include "Base/Handle.h"
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Core/Tuning.h"
 #include "Game/Combat/CombatSystem.h"
@@ -37,25 +35,21 @@ struct StageStateConfig
     bool   bAutoDamage = false;   // 보스 파트에 일정 속도 로 판정 피해를 준다
 };
 
-class StageState final : public IGameState
+class StageState : public IGameState
 {
 public:
     StageState();
     explicit StageState(const StageStateConfig& _config);
-
-    StageState(const StageState&)            = delete;
-    StageState& operator=(const StageState&) = delete;
-    StageState(StageState&&)                 = delete;
-    StageState& operator=(StageState&&)      = delete;
-
-    void OnEnter() override;
-    void OnExit() override;
-    void Tick(const InputHistory& _input) override;
-    void Render(float _alpha) override;
-
-    [[nodiscard]] Scoped<IGameState> TakeNextState() override;
-    [[nodiscard]] bool               IsFinished() const override;
-
+    StageState(const StageState&)                                 = delete;
+    StageState& operator=(const StageState&)                      = delete;
+    StageState(StageState&&)                                      = delete;
+    StageState&                           operator=(StageState&&) = delete;
+    void                                  OnEnter() override;
+    void                                  OnExit() override;
+    void                                  Tick(const InputHistory& _input) override;
+    void                                  Render(float _alpha) override;
+    [[nodiscard]] Scoped<IGameState>      TakeNextState() override;
+    [[nodiscard]] bool                    IsFinished() const override;
     [[nodiscard]] bool                    IsLoaded() const;
     [[nodiscard]] const StageData&        GetData() const;
     [[nodiscard]] const StageRunner&      GetRunner() const;
@@ -75,7 +69,7 @@ public:
     [[nodiscard]] HudModel                BuildHudModel() const;
 
 private:
-    enum class eEndKind : uint8_t
+    enum class eEndKind
     {
         None,
         Mission,
@@ -95,22 +89,19 @@ private:
     void                              HandleDebugWarp_();
     void                              StartFlow_(eEndKind _kind);
     [[nodiscard]] bool                IsFlowing_() const;
-
-    void                       UpdateWalls_();
-    [[nodiscard]] PhysicsWorld MakePhysicsWorld_() const;
-    [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;
-    [[nodiscard]] VECTOR2      GetRespawnFeet_() const;
-
-    void                           ConsumeEnemyEvents_();
-    void                           ConsumePropEvents_();
-    void                           ApplyGroundPatch_(const String& _sprite, VECTOR2 _topLeft);
-    [[nodiscard]] const GroundMap* FindPatchMask_(const String& _sprite);
-    void                           RequestSounds_(const Vector<FxRequest>& _fx);
-
-    void DrawBackdrop_(VECTOR2 _cameraPos);
-    void DrawWorld_(VECTOR2 _cameraPos, float _alpha);
-    void DrawDebugBoxes_(Renderer& _renderer, VECTOR2 _cameraPos) const;
-    void DrawHud_(VECTOR2 _cameraPos);
+    void                              UpdateWalls_();
+    [[nodiscard]] PhysicsWorld        MakePhysicsWorld_() const;
+    [[nodiscard]] PhysicsWorld        MakeEnemyPhysicsWorld_() const;
+    [[nodiscard]] VECTOR2             GetRespawnFeet_() const;
+    void                              ConsumeEnemyEvents_();
+    void                              ConsumePropEvents_();
+    void                              ApplyGroundPatch_(const String& _sprite, VECTOR2 _topLeft);
+    [[nodiscard]] const GroundMap*    FindPatchMask_(const String& _sprite);
+    void                              RequestSounds_(const Vector<FxRequest>& _fx);
+    void                              DrawBackdrop_(VECTOR2 _cameraPos);
+    void                              DrawWorld_(VECTOR2 _cameraPos, float _alpha);
+    void                              DrawDebugBoxes_(Renderer& _renderer, VECTOR2 _cameraPos) const;
+    void                              DrawHud_(VECTOR2 _cameraPos);
 
     StageStateConfig           m_config     = {};
     InputHistory               m_botInput   = {};

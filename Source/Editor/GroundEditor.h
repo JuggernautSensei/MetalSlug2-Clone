@@ -17,10 +17,9 @@ struct GroundPixelChange
 class GroundMaskDocument
 {
 public:
-    [[nodiscard]] Result<void> Load(const FilePath& _path);
-    [[nodiscard]] Result<void> Save(const FilePath& _path);
-    void                       Create(int _width, int _height);
-
+    [[nodiscard]] Result<void>           Load(const FilePath& _path);
+    [[nodiscard]] Result<void>           Save(const FilePath& _path);
+    void                                 Create(int _width, int _height);
     [[nodiscard]] int                    GetWidth() const;
     [[nodiscard]] int                    GetHeight() const;
     [[nodiscard]] bool                   IsInside(int _x, int _y) const;
@@ -31,16 +30,14 @@ public:
     [[nodiscard]] const Vector<uint8_t>& GetPixels() const;
 
     // 연속 호출을 하나의 undo 단위로 묶는다
-    void BeginStroke();
-    void EndStroke();
-
-    void Stamp(int _x, int _y, int _brush, bool _bSolid);
-    void DrawLine(int _x0, int _y0, int _x1, int _y1, int _brush, bool _bSolid);
-    void FillRect(int _x0, int _y0, int _x1, int _y1, bool _bSolid);
-    void FloodFill(int _x, int _y, bool _bSolid);
-    void Undo();
-    void Redo();
-
+    void               BeginStroke();
+    void               EndStroke();
+    void               Stamp(int _x, int _y, int _brush, bool _bSolid);
+    void               DrawLine(int _x0, int _y0, int _x1, int _y1, int _brush, bool _bSolid);
+    void               FillRect(int _x0, int _y0, int _x1, int _y1, bool _bSolid);
+    void               FloodFill(int _x, int _y, bool _bSolid);
+    void               Undo();
+    void               Redo();
     [[nodiscard]] bool TakeDirtyColumns(int& _x0, int& _x1);
 
 private:
@@ -69,7 +66,7 @@ enum class eGroundTool
     Fill
 };
 
-class GroundEditor final
+class GroundEditor
 {
 public:
     void Init(SDL_Renderer* _pRenderer);

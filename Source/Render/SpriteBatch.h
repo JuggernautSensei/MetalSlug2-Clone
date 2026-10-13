@@ -1,8 +1,6 @@
 #pragma once
 #include <cstdint>
 
-#include "Base/Math.h"
-#include "Base/RGBA.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Render/Animation.h"
@@ -88,47 +86,36 @@ class SpriteBatch
 public:
     SpriteBatch() = default;
     ~SpriteBatch();
-
     [[nodiscard]] static SpriteBatch& GetSingleton();
-
-    SpriteBatch(const SpriteBatch&)            = delete;
-    SpriteBatch& operator=(const SpriteBatch&) = delete;
-
-    void Init(SDL_Renderer* _pRenderer);
-    void Shutdown();
-
+    SpriteBatch(const SpriteBatch&)                          = delete;
+    SpriteBatch&               operator=(const SpriteBatch&) = delete;
+    void                       Init(SDL_Renderer* _pRenderer);
+    void                       Shutdown();
     [[nodiscard]] Result<void> AddAtlasPageFromRgba(int _width, int _height, Span<const uint8_t> _rgba);
     [[nodiscard]] Result<void> AddAtlasPageFromRgba(int _width, int _height, Span<const uint8_t> _rgba, Span<const uint8_t> _flashRgba);
     [[nodiscard]] Result<void> AddAtlasPage(const DecodedImage& _image);
     // 페이지를 _numWorkers 장씩 병렬 디코드해 순서대로 추가
-    [[nodiscard]] bool   LoadAtlasPagesParallel(const AnimationLibrary& _library, int _numWorkers);
-    [[nodiscard]] size_t GetAtlasPageCount() const;
-
+    [[nodiscard]] bool        LoadAtlasPagesParallel(const AnimationLibrary& _library, int _numWorkers);
+    [[nodiscard]] size_t      GetAtlasPageCount() const;
     [[nodiscard]] Result<int> LoadStandaloneTexture(const FilePath& _pngPath);
     [[nodiscard]] Result<int> AddStandaloneTextureFromRgba(int _width, int _height, Span<const uint8_t> _rgba);
     [[nodiscard]] Result<int> AddStandaloneTexture(const DecodedImage& _image);
     [[nodiscard]] Vector<int> LoadStandaloneTexturesParallel(Span<const FilePath> _paths, int _numWorkers);
-
-    void DrawTexture(int _handle, VECTOR2 _texWorldPos, VECTOR2 _cameraPos, int _viewW, int _viewH, RGBA _tint = { 255, 255, 255, 255 }) const;
-    void DrawTextureRepeatX(int _handle, VECTOR2 _texWorldPos, VECTOR2 _cameraPos, int _viewW, int _viewH, float _fromX, int _tileX, int _tileW) const;
-
-    void              SetAssetRoot(const FilePath& _root);
-    [[nodiscard]] int FindStandalone(const String& _relativeFile);
-    void              SubmitStandalone(int _depth, int _sortKey, int _handle, const IntRect& _src, VECTOR2 _worldCenter, const SpriteDrawOptions& _options = {});
-
-    void DrawFrame(const AnimFrame& _frame, VECTOR2 _worldOrigin, VECTOR2 _cameraPos, const SpriteDrawOptions& _options = {}) const;
-    void DrawFrame(const AnimFrame& _frame, VECTOR2 _worldOrigin, const Camera& _camera, const SpriteDrawOptions& _options = {}) const;
-
-    void DrawFrameRect(const AnimFrame& _frame, const IntRect& _dest, const SpriteDrawOptions& _options = {}) const;
-
-    void Submit(int _depth, int _sortKey, const AnimFrame& _frame, VECTOR2 _worldOrigin, const SpriteDrawOptions& _options = {});
-    void Flush(VECTOR2 _cameraPos);
-    void Flush(const Camera& _camera);
+    void                      DrawTexture(int _handle, VECTOR2 _texWorldPos, VECTOR2 _cameraPos, int _viewW, int _viewH, RGBA _tint = { 255, 255, 255, 255 }) const;
+    void                      DrawTextureRepeatX(int _handle, VECTOR2 _texWorldPos, VECTOR2 _cameraPos, int _viewW, int _viewH, float _fromX, int _tileX, int _tileW) const;
+    void                      SetAssetRoot(const FilePath& _root);
+    [[nodiscard]] int         FindStandalone(const String& _relativeFile);
+    void                      SubmitStandalone(int _depth, int _sortKey, int _handle, const IntRect& _src, VECTOR2 _worldCenter, const SpriteDrawOptions& _options = {});
+    void                      DrawFrame(const AnimFrame& _frame, VECTOR2 _worldOrigin, VECTOR2 _cameraPos, const SpriteDrawOptions& _options = {}) const;
+    void                      DrawFrame(const AnimFrame& _frame, VECTOR2 _worldOrigin, const Camera& _camera, const SpriteDrawOptions& _options = {}) const;
+    void                      DrawFrameRect(const AnimFrame& _frame, const IntRect& _dest, const SpriteDrawOptions& _options = {}) const;
+    void                      Submit(int _depth, int _sortKey, const AnimFrame& _frame, VECTOR2 _worldOrigin, const SpriteDrawOptions& _options = {});
+    void                      Flush(VECTOR2 _cameraPos);
+    void                      Flush(const Camera& _camera);
 
     // depth 가 _depth 보다
-    void FlushBelowDepth(VECTOR2 _cameraPos, int _depth);
-    void Clear();
-
+    void                                       FlushBelowDepth(VECTOR2 _cameraPos, int _depth);
+    void                                       Clear();
     [[nodiscard]] const Vector<SpriteCommand>& GetPendingCommands() const;
 
 private:

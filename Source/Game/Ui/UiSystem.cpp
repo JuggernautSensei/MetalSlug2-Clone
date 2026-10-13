@@ -4,7 +4,6 @@
 #include "Render/Renderer.h"
 #include "Render/SpriteBatch.h"
 #include <algorithm>
-#include <JugX/StringFormat.h>
 #include <utility>
 
 #include "Base/Log.h"
@@ -42,13 +41,13 @@ void UiSystem::Tick()
     m_fade.Tick();
 }
 
-void UiSystem::DrawText(
+void UiSystem::DrawString(
     const int        _x,
     const int        _y,
     const StringView _text,
     const TextStyle& _style) const
 {
-    m_font.DrawText(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), _x, _y, _text, _style);
+    m_font.DrawString(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), _x, _y, _text, _style);
 }
 
 bool UiSystem::DrawSprite(
@@ -110,7 +109,7 @@ void UiSystem::DrawHud(
         switch (item.kind)
         {
             case eHudItemKind::Text:
-                m_font.DrawText(renderer, sprites, item.x, item.y, item.text, item.style);
+                m_font.DrawString(renderer, sprites, item.x, item.y, item.text, item.style);
                 break;
             case eHudItemKind::Sprite:
                 (void)DrawSprite(item.text, item.x, item.y, item.scale);
@@ -221,11 +220,11 @@ void UiSystem::DrawMissionResults() const
     white.color = eFontColor::White;
     white.align = eTextAlign::Center;
     white.alpha = a;
-    m_font.DrawText(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), m_layout.resultsTitleX, m_layout.resultsTitleY - kGlyphSize / 2, "RECAPTURED PRISONER", white);
+    m_font.DrawString(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), m_layout.resultsTitleX, m_layout.resultsTitleY - kGlyphSize / 2, "RECAPTURED PRISONER", white);
 
     TextStyle yellow = white;
     yellow.color     = eFontColor::Yellow;
-    m_font.DrawText(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), cx, m_layout.resultsPlayerY - kGlyphSize / 2, "1P", yellow);
+    m_font.DrawString(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), cx, m_layout.resultsPlayerY - kGlyphSize / 2, "1P", yellow);
 
     ARRAY<char, 8> countBuf = {};
     jug::Format(countBuf, "{:02}", Clamp(m_results.rescued, 0, 99));
@@ -234,7 +233,7 @@ void UiSystem::DrawMissionResults() const
     {
         TextStyle label = white;
         label.align     = eTextAlign::Left;
-        m_font.DrawText(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), cx + 36, m_layout.resultsCountTopY + 12, "X10000", label);
+        m_font.DrawString(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), cx + 36, m_layout.resultsCountTopY + 12, "X10000", label);
     }
 
     ARRAY<char, 16> scoreBuf = {};
@@ -243,7 +242,7 @@ void UiSystem::DrawMissionResults() const
 
     if (m_results.bRankVisible)
     {
-        m_font.DrawText(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), cx, m_layout.resultsRankY - kGlyphSize / 2, m_results.rankText, yellow);
+        m_font.DrawString(Renderer::GetSingleton(), SpriteBatch::GetSingleton(), cx, m_layout.resultsRankY - kGlyphSize / 2, m_results.rankText, yellow);
     }
 }
 

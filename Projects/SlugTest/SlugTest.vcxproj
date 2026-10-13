@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- 프로젝트 파일: 새 소스는 직접 추가한다. -->
   <ItemGroup Label="ProjectConfigurations">
@@ -130,17 +130,20 @@
     <ClCompile Include="..\..\Source\Audio\SoundBank.cpp" />
     <ClCompile Include="..\..\Source\Audio\StbVorbisImpl.cpp"><PrecompiledHeader>NotUsing</PrecompiledHeader><ForcedIncludeFiles></ForcedIncludeFiles><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
     <ClCompile Include="..\..\Source\Base\SlugError.cpp" />
-    <ClCompile Include="..\..\Source\Base\Json.cpp" />
+    <ClCompile Include="..\..\Source\Base\JsonFields.cpp" />
     <ClCompile Include="..\..\Source\Base\Log.cpp" />
-    <ClCompile Include="..\..\Source\Base\PhaseTimer.cpp" />
     <ClCompile Include="..\..\Source\Core\App.cpp" />
     <ClCompile Include="..\..\Source\Editor\AnimEditor.cpp" />
+    <ClCompile Include="..\..\Source\Editor\AnimDocument.cpp" />
     <ClCompile Include="..\..\Source\Editor\GroundEditor.cpp" />
     <ClCompile Include="..\..\Source\Editor\EnemyLab.cpp" />
     <ClCompile Include="..\..\Source\Editor\StageEditor.cpp" />
+    <ClCompile Include="..\..\Source\Editor\StageDocument.cpp" />
     <ClCompile Include="..\..\Source\Editor\DepthEditor.cpp" />
     <ClCompile Include="..\..\Source\Editor\HitboxEditor.cpp" />
+    <ClCompile Include="..\..\Source\Editor\HitboxDocument.cpp" />
     <ClCompile Include="..\..\Source\Editor\MotionEditor.cpp" />
+    <ClCompile Include="..\..\Source\Editor\MotionDocument.cpp" />
     <ClCompile Include="..\..\Source\Editor\JsonScan.cpp" />
     <ClCompile Include="..\..\Source\Editor\Editor.cpp" />
     <ClCompile Include="..\..\Source\Editor\ImGuiSdlRendererViewports.cpp" />
@@ -154,7 +157,7 @@
     <ClCompile Include="..\..\Source\Game\Enemies\BigShiee.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\Bus.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\Bzk.cpp" />
-    <ClCompile Include="..\..\Source\Game\Enemies\EnemyBehaviors.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\Enemy.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\EnemyCommon.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\EnemyDef.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\EnemyDefLoader.cpp" />
@@ -169,9 +172,11 @@
     <ClCompile Include="..\..\Source\Game\Enemies\VehicleBTank.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\VehicleCommon.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\VehicleJeep.cpp" />
-    <ClCompile Include="..\..\Source\Game\Enemies\VehicleMissleTank.cpp" />
+    <ClCompile Include="..\..\Source\Game\Enemies\VehicleMissileTank.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\VehicleSarubia.cpp" />
     <ClCompile Include="..\..\Source\Game\Player\PlayerController.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\PlayerMovement.cpp" />
+    <ClCompile Include="..\..\Source\Game\Player\PlayerAttack.cpp" />
     <ClCompile Include="..\..\Source\Game\Player\PlayerHitboxes.cpp" />
     <ClCompile Include="..\..\Source\Game\Player\PlayerInput.cpp" />
     <ClCompile Include="..\..\Source\Game\Player\PlayerRig.cpp" />
@@ -189,6 +194,7 @@
     <ClCompile Include="..\..\Source\Game\SandboxState.cpp" />
     <ClCompile Include="..\..\Source\Game\SimRunner.cpp" />
     <ClCompile Include="..\..\Source\Game\Stage\StageData.cpp" />
+    <ClCompile Include="..\..\Source\Game\Stage\StageParams.cpp" />
     <ClCompile Include="..\..\Source\Game\Stage\StageMapping.cpp"><PrecompiledHeader Condition="'$(Configuration)'=='Debug'">NotUsing</PrecompiledHeader><Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization><InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion><BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks><SupportJustMyCode Condition="'$(Configuration)'=='Debug'">false</SupportJustMyCode></ClCompile>
     <ClCompile Include="..\..\Source\Game\Stage\StageRunner.cpp" />
     <ClCompile Include="..\..\Source\Game\Stage\StageState.cpp" />
@@ -265,21 +271,21 @@
     <ClInclude Include="..\..\Source\Audio\SoundBank.h" />
     <ClInclude Include="..\..\Source\Audio\VoiceAllocator.h" />
     <ClInclude Include="..\..\Source\Base\SlugError.h" />
-    <ClInclude Include="..\..\Source\Base\Handle.h" />
-    <ClInclude Include="..\..\Source\Base\Json.h" />
+    <ClInclude Include="..\..\Source\Base\JsonFields.h" />
     <ClInclude Include="..\..\Source\Base\Log.h" />
-    <ClInclude Include="..\..\Source\Base\PhaseTimer.h" />
-    <ClInclude Include="..\..\Source\Base\Math.h" />
-    <ClInclude Include="..\..\Source\Base\RGBA.h" />
     <ClInclude Include="..\..\Source\Base\Types.h" />
     <ClInclude Include="..\..\Source\Core\App.h" />
     <ClInclude Include="..\..\Source\Editor\AnimEditor.h" />
+    <ClInclude Include="..\..\Source\Editor\AnimDocument.h" />
     <ClInclude Include="..\..\Source\Editor\GroundEditor.h" />
     <ClInclude Include="..\..\Source\Editor\EnemyLab.h" />
     <ClInclude Include="..\..\Source\Editor\StageEditor.h" />
+    <ClInclude Include="..\..\Source\Editor\StageDocument.h" />
     <ClInclude Include="..\..\Source\Editor\DepthEditor.h" />
     <ClInclude Include="..\..\Source\Editor\HitboxEditor.h" />
+    <ClInclude Include="..\..\Source\Editor\HitboxDocument.h" />
     <ClInclude Include="..\..\Source\Editor\MotionEditor.h" />
+    <ClInclude Include="..\..\Source\Editor\MotionDocument.h" />
     <ClInclude Include="..\..\Source\Editor\JsonScan.h" />
     <ClInclude Include="..\..\Source\Editor\Editor.h" />
     <ClInclude Include="..\..\Source\Editor\ImGuiSdlRendererViewports.h" />
@@ -293,8 +299,22 @@
     <ClInclude Include="..\..\Source\Game\Combat\Projectiles.h" />
     <ClInclude Include="..\..\Source\Game\DemoState.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\BigShiee.h" />
-    <ClInclude Include="..\..\Source\Game\Enemies\BigShieeCfg.h" />
-    <ClInclude Include="..\..\Source\Game\Enemies\EnemyBehaviors.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\BigShieeConfig.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\Enemy.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\BigShieeEnemy.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\BusEnemy.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\BzkEnemy.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\FlyingBzkEnemy.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\HangEnemy.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\HeliEnemy.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\HeliBombEnemy.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\PowEnemy.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\ShielderEnemy.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\SoldierEnemy.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\BTankEnemy.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\JeepEnemy.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\MissileTankEnemy.h" />
+    <ClInclude Include="..\..\Source\Game\Enemies\SarubiaEnemy.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyCommon.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyDef.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\EnemyDefParse.h" />
@@ -322,6 +342,7 @@
     <ClInclude Include="..\..\Source\Game\SandboxState.h" />
     <ClInclude Include="..\..\Source\Game\SimRunner.h" />
     <ClInclude Include="..\..\Source\Game\Stage\StageData.h" />
+    <ClInclude Include="..\..\Source\Game\Stage\StageParams.h" />
     <ClInclude Include="..\..\Source\Game\Stage\StageHost.h" />
     <ClInclude Include="..\..\Source\Game\Stage\StageMapping.h" />
     <ClInclude Include="..\..\Source\Game\Stage\StageRunner.h" />

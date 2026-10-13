@@ -2,7 +2,6 @@
 #include <cstdint>
 #include <vector>
 
-#include "Base/Math.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
@@ -33,7 +32,7 @@ public:
         const float   _camLeft = 0.f);
 
     [[nodiscard]] bool          IsLoaded() const;
-    [[nodiscard]] const String& GetMessage() const;
+    [[nodiscard]] const String& GetLoadMessage() const;
 
     [[nodiscard]] EnemyWorld&         World();
     [[nodiscard]] EnemyDefLibrary&    Lib();
@@ -72,7 +71,7 @@ public:
     [[nodiscard]] int CountShots(
         const EnemyHandle _owner) const;
 
-    [[nodiscard]] const Enemy* E(
+    [[nodiscard]] const EnemyState* E(
         const EnemyHandle _handle) const;
 
     [[nodiscard]] int PlayerHits() const;

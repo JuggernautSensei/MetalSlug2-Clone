@@ -2,8 +2,7 @@
 #include <cstdint>
 #include <optional>
 
-#include "Base/Json.h"
-#include "Base/Math.h"
+#include "Base/JsonFields.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Core/Tuning.h"
@@ -14,7 +13,7 @@ inline constexpr int kPropDepthFront = 38;
 class AnimationLibrary;
 class SpriteLibrary;
 
-enum class ePropRole : uint8_t
+enum class ePropRole
 {
     Hurt,
     Wall,
@@ -22,21 +21,21 @@ enum class ePropRole : uint8_t
     EnemyPlatform
 };
 
-enum class ePropWhen : uint8_t
+enum class ePropWhen
 {
     Intact,
     Destroyed,
     Always
 };
 
-enum class eVisualRef : uint8_t
+enum class eVisualRef
 {
     None,
     Anim,
     Sprite
 };
 
-enum class eDebrisSet : uint8_t
+enum class eDebrisSet
 {
     Wood,
     Metal,
@@ -174,14 +173,14 @@ struct PropSpawnParams
     int                            z               = kDefaultZ;
 };
 
-enum class eItemKind : uint8_t
+enum class eItemKind
 {
     Gun,
     Supply,
     Score
 };
 
-enum class eSupplyKind : uint8_t
+enum class eSupplyKind
 {
     Bomb,
     Bullet
@@ -213,22 +212,17 @@ class PropDefLibrary
 
 public:
     PropDefLibrary() = default;
-
     [[nodiscard]] static Result<PropDefLibrary> Load(const FilePath& _path, String* _pMessageOrNull = nullptr);
     [[nodiscard]] static Result<PropDefLibrary> Parse(StringView _json, String* _pMessageOrNull = nullptr);
     [[nodiscard]] const PropDef*                Find(StringView _name) const;
     [[nodiscard]] int                           FindIndex(StringView _name) const;
     [[nodiscard]] Span<const PropDef>           GetDefs() const;
-
-    [[nodiscard]] const PropItemDef*      FindItem(StringView _name) const;
-    [[nodiscard]] int                     FindItemIndex(StringView _name) const;
-    [[nodiscard]] Span<const PropItemDef> GetItems() const;
-
-    [[nodiscard]] const PropItemGroup* FindGroup(StringView _name) const;
-
-    [[nodiscard]] bool ParseSpawnParams(StringView _defName, const JsonReader& _params, PropSpawnParams& _out, String& _error) const;
-
-    [[nodiscard]] String FindMissingAsset(const AnimationLibrary& _anims, const SpriteLibrary& _sprites) const;
+    [[nodiscard]] const PropItemDef*            FindItem(StringView _name) const;
+    [[nodiscard]] int                           FindItemIndex(StringView _name) const;
+    [[nodiscard]] Span<const PropItemDef>       GetItems() const;
+    [[nodiscard]] const PropItemGroup*          FindGroup(StringView _name) const;
+    [[nodiscard]] bool                          ParseSpawnParams(StringView _defName, const JsonReader& _params, PropSpawnParams& _out, String& _error) const;
+    [[nodiscard]] String                        FindMissingAsset(const AnimationLibrary& _anims, const SpriteLibrary& _sprites) const;
 
 private:
     Vector<PropDef>           m_defs       = {};

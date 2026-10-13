@@ -3,7 +3,6 @@
 #include <SDL3/SDL.h>
 #include <gtest/gtest.h>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
 #include "Render/SpriteBatch.h"

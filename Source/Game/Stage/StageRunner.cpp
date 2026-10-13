@@ -1,10 +1,9 @@
-﻿#include "Game/Stage/StageRunner.h"
+#include "Game/Stage/StageRunner.h"
 
 #include <algorithm>
 #include <cmath>
 #include <cstring>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "World/Constants.h"
 

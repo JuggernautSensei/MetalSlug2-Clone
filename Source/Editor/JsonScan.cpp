@@ -1,4 +1,6 @@
 #include "Editor/JsonScan.h"
+#include <charconv>
+#include <cmath>
 
 JsonScanner::JsonScanner(
     const StringView _text)
@@ -142,4 +144,20 @@ int JsonScanner::Value_(
     }
     nodes[static_cast<size_t>(idx)].end = static_cast<int>(m_pos);
     return idx;
+}
+
+String FormatJsonNumber(
+    const double _value)
+{
+    ARRAY<char, 64>      buf = {};
+    std::to_chars_result r   = {};
+    if (_value == std::floor(_value) && Abs(_value) < 1e9)
+    {
+        r = std::to_chars(buf.data(), buf.data() + buf.size(), static_cast<long long>(_value));
+    }
+    else
+    {
+        r = std::to_chars(buf.data(), buf.data() + buf.size(), _value);
+    }
+    return String { buf.data(), r.ptr };
 }

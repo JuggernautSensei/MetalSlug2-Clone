@@ -1,6 +1,5 @@
 #include "Game/Player/SlugSystem.h"
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 
 void SlugSystem::Reset(

@@ -2,15 +2,14 @@
 #include <cstdint>
 #include <optional>
 
-#include "Base/Math.h"
 #include "Base/SlugError.h"
 #include "Base/Types.h"
 #include "Game/Combat/HitFlash.h"
-#include "Game/Enemies/BigShieeCfg.h"
+#include "Game/Enemies/BigShieeConfig.h"
 #include "World/Combat.h"
 #include "World/Geometry.h"
 
-enum class eEnemyBehavior : uint8_t
+enum class eEnemyBehavior
 {
     Soldier,
     Bzk,
@@ -20,7 +19,7 @@ enum class eEnemyBehavior : uint8_t
     Pow,
     Jeep,
     BTank,
-    MissleTank,
+    MissileTank,
     Sarubia,
     Bus,
     Heli,
@@ -70,7 +69,6 @@ struct ClipDef
     }
 
     [[nodiscard]] int TickOfFrame(int _frame) const;
-
     [[nodiscard]] int GetDurationTicks() const;
 
     [[nodiscard]] bool IsFinished(int _ticks) const
@@ -130,7 +128,7 @@ struct ProjectileDef
     bool    bRotate         = false;
 };
 
-enum class eWeaponAim : uint8_t
+enum class eWeaponAim
 {
     Facing,
     Given
@@ -209,14 +207,14 @@ struct PhysicsDef
     bool  bGravity      = true;
 };
 
-enum class eSoldierAi : uint8_t
+enum class eSoldierAi
 {
     Bomb,
     Sword,
     Missile
 };
 
-struct SoldierCfg
+struct SoldierConfig
 {
     eSoldierAi ai = eSoldierAi::Bomb;
 
@@ -254,7 +252,7 @@ struct SoldierCfg
     int weaponJumpSlash = -1;
 };
 
-struct BzkCfg
+struct BzkConfig
 {
     int             cooldownTicks = 60;
     float           detect        = 400.f;
@@ -288,7 +286,7 @@ struct BzkCfg
     int weaponRocket = -1;
 };
 
-struct HangCfg
+struct HangConfig
 {
     float detectX    = 500.f;
     int   throwTicks = 120;   // 2.0 s
@@ -298,7 +296,7 @@ struct HangCfg
     int   weaponBomb = -1;
 };
 
-struct FlyingBzkCfg
+struct FlyingBzkConfig
 {
     float           descendSpeed      = 40.f;
     float           driftSpeed        = 20.f;
@@ -326,7 +324,7 @@ struct FlyingBzkCfg
     FxDef   paraDestroy = {};
 };
 
-struct ShielderCfg
+struct ShielderConfig
 {
     int   cooldownTicks = 60;
     float detect        = 250.f;
@@ -382,7 +380,7 @@ struct ShielderCfg
     int weaponDown    = -1;
 };
 
-struct PowCfg
+struct PowConfig
 {
     float walkSpeed          = 75.f;
     int   firstFlipTicks     = 120;   // 첫 방향 반전 간격
@@ -416,7 +414,7 @@ struct PowCfg
     ARRAY<ARRAY<int, kSlotCount>, kVariantCount> clipVariants  = {};
 };
 
-struct JeepCfg
+struct JeepConfig
 {
     float speed          = 200.f;
     float targetTol      = 10.f;
@@ -440,7 +438,7 @@ struct JeepCfg
     int weaponRocket  = -1;
 };
 
-struct BTankCfg
+struct BTankConfig
 {
     float activateDx    = 500.f;
     int   idleTicks     = 180;   // 열린 뒤 발사 대기
@@ -454,7 +452,7 @@ struct BTankCfg
     int weaponShell = -1;
 };
 
-struct MissleTankCfg
+struct MissileTankConfig
 {
     float rangeDx     = 600.f;
     float farDx       = 300.f;
@@ -478,7 +476,7 @@ struct MissleTankCfg
     int weaponDown      = -1;
 };
 
-struct SarubiaCfg
+struct SarubiaConfig
 {
     int   cooldownTicks  = 120;   // Idle 2 s
     float chaseDx        = 500.f;
@@ -530,7 +528,7 @@ struct BusWindowDef
 };
 
 // 더블데커 버스 중간보스
-struct BusCfg
+struct BusConfig
 {
     static constexpr int kStageCount = 7;
 
@@ -630,7 +628,7 @@ struct BusCfg
     VECTOR2 roofSpan          = { 0.f, 0.f };
 };
 
-struct HeliCfg
+struct HeliConfig
 {
     float   enterSpeedY       = 40.f;
     float   hoverDy           = 78.f;
@@ -690,7 +688,7 @@ struct HeliCfg
     String bombDef       = {};
 };
 
-struct HeliBombCfg
+struct HeliBombConfig
 {
     float   startVy      = 100.f;
     float   gravity      = 80.f;
@@ -708,7 +706,7 @@ struct HeliBombCfg
 inline constexpr int kHitFlashMinHp       = 20;
 inline constexpr int kEnemyFlashPartCount = 8;
 
-enum class eExtraBoxKind : int
+enum class eExtraBoxKind
 {
     Hurt,
     Attack
@@ -724,7 +722,7 @@ struct ExtraBoxDef
     int           damage    = 1;
 };
 
-enum class eArtFacing : uint8_t
+enum class eArtFacing
 {
     None,
     Left,
@@ -757,20 +755,20 @@ struct EnemyDef
     EnemyPartDepth partBody    = { 15, 0 };
     EnemyPartDepth partOverlay = { 14, 0 };
 
-    SoldierCfg    soldier    = {};
-    BzkCfg        bzk        = {};
-    HangCfg       hang       = {};
-    FlyingBzkCfg  flyingBzk  = {};
-    ShielderCfg   shielder   = {};
-    PowCfg        pow        = {};
-    JeepCfg       jeep       = {};
-    BTankCfg      btank      = {};
-    MissleTankCfg missleTank = {};
-    SarubiaCfg    sarubia    = {};
-    BusCfg        bus        = {};
-    HeliCfg       heli       = {};
-    HeliBombCfg   heliBomb   = {};
-    BigShieeCfg   bigShiee   = {};
+    SoldierConfig     soldier     = {};
+    BzkConfig         bzk         = {};
+    HangConfig        hang        = {};
+    FlyingBzkConfig   flyingBzk   = {};
+    ShielderConfig    shielder    = {};
+    PowConfig         pow         = {};
+    JeepConfig        jeep        = {};
+    BTankConfig       btank       = {};
+    MissileTankConfig missileTank = {};
+    SarubiaConfig     sarubia     = {};
+    BusConfig         bus         = {};
+    HeliConfig        heli        = {};
+    HeliBombConfig    heliBomb    = {};
+    BigShieeConfig    bigShiee    = {};
 
     bool bNoDespawn = false;
 
@@ -785,9 +783,8 @@ struct EnemyDef
         return clips[static_cast<size_t>(_index)].clip;
     }
 
-    [[nodiscard]] int FindClip(StringView _logicalName) const;
-    [[nodiscard]] int FindWeapon(StringView _name) const;
-
+    [[nodiscard]] int  FindClip(StringView _logicalName) const;
+    [[nodiscard]] int  FindWeapon(StringView _name) const;
     [[nodiscard]] bool ShouldFlipArt(int _facing) const;
 };
 
@@ -803,27 +800,21 @@ class EnemyDefLibrary
 {
 public:
     [[nodiscard]] static Result<EnemyDefLibrary> Parse(StringView _json, String* _pMessage = nullptr);
-
     [[nodiscard]] static Result<EnemyDefLibrary> Load(const FilePath& _path, String* _pMessage = nullptr);
-
     [[nodiscard]] static Result<EnemyDefLibrary> LoadDirectory(const FilePath& _dir, String* _pMessage = nullptr);
-
-    [[nodiscard]] static FilePath GetDefaultDirectory(const FilePath& _assetRoot);
-
-    [[nodiscard]] const EnemyDef* Find(StringView _name) const;
-    [[nodiscard]] EnemyDef*       FindMutable(StringView _name);
-    [[nodiscard]] int             FindIndex(StringView _name) const;
-    [[nodiscard]] const EnemyDef& Get(int _index) const;
-
-    [[nodiscard]] const ProjectileDef* FindProjectile(StringView _name) const;
-    [[nodiscard]] int                  FindProjectileIndex(StringView _name) const;
-    [[nodiscard]] const ProjectileDef& GetProjectile(int _index) const;
-
-    [[nodiscard]] size_t                    GetDefCount() const;
-    [[nodiscard]] size_t                    GetProjectileCount() const;
-    [[nodiscard]] Span<const EnemyDef>      GetDefs() const;
-    [[nodiscard]] Span<const ProjectileDef> GetProjectiles() const;
-    [[nodiscard]] const EnemyGlobals&       GetGlobals() const;
+    [[nodiscard]] static FilePath                GetDefaultDirectory(const FilePath& _assetRoot);
+    [[nodiscard]] const EnemyDef*                Find(StringView _name) const;
+    [[nodiscard]] EnemyDef*                      FindMutable(StringView _name);
+    [[nodiscard]] int                            FindIndex(StringView _name) const;
+    [[nodiscard]] const EnemyDef&                Get(int _index) const;
+    [[nodiscard]] const ProjectileDef*           FindProjectile(StringView _name) const;
+    [[nodiscard]] int                            FindProjectileIndex(StringView _name) const;
+    [[nodiscard]] const ProjectileDef&           GetProjectile(int _index) const;
+    [[nodiscard]] size_t                         GetDefCount() const;
+    [[nodiscard]] size_t                         GetProjectileCount() const;
+    [[nodiscard]] Span<const EnemyDef>           GetDefs() const;
+    [[nodiscard]] Span<const ProjectileDef>      GetProjectiles() const;
+    [[nodiscard]] const EnemyGlobals&            GetGlobals() const;
 
 private:
     friend class EnemyDefParser;

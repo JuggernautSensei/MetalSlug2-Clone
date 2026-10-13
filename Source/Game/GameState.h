@@ -26,16 +26,12 @@ class IGameState
 {
 public:
     virtual ~IGameState() = default;
-
-    virtual void OnEnter();
-    virtual void OnExit();
-
-    virtual void Tick(const InputHistory& _input) = 0;
-    virtual void Render(float _alpha)             = 0;
-
+    virtual void                             OnEnter();
+    virtual void                             OnExit();
+    virtual void                             Tick(const InputHistory& _input) = 0;
+    virtual void                             Render(float _alpha)             = 0;
     [[nodiscard]] virtual Scoped<IGameState> TakeNextState();
-
-    [[nodiscard]] virtual bool IsFinished() const;
+    [[nodiscard]] virtual bool               IsFinished() const;
 
     // 회귀 기준선용 상태 해시
     [[nodiscard]] virtual uint64_t DebugHash() const;

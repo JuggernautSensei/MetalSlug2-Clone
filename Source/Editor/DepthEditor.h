@@ -12,7 +12,7 @@ struct DepthRow
     int    end   = 0;
 };
 
-class DepthEditor final
+class DepthEditor
 {
 public:
     void Draw(EnemyLab& _lab);

@@ -6,7 +6,6 @@
 
 #include <gtest/gtest.h>
 
-#include "Base/Math.h"
 #include "StageTestUtil.h"
 
 namespace

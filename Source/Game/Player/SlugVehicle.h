@@ -1,5 +1,4 @@
 #pragma once
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Core/Input.h"
 #include "Core/Tuning.h"
@@ -32,7 +31,7 @@ struct SlugEjectRequest
     int     invincibleTicks = 0;
 };
 
-enum class eSlugFxKind : uint8_t
+enum class eSlugFxKind
 {
     CannonMuzzle,
     Smoke,
@@ -65,20 +64,15 @@ struct SlugStats
 class SlugVehicle
 {
 public:
-    void Init(const SlugTuning& _tuning, VECTOR2 _feet, int _facing, uint32_t _ownerId, int _hp = -1);
-
-    void Tick(const SlugContext& _ctx, const InputHistory& _input);
-
+    void               Init(const SlugTuning& _tuning, VECTOR2 _feet, int _facing, uint32_t _ownerId, int _hp = -1);
+    void               Tick(const SlugContext& _ctx, const InputHistory& _input);
     [[nodiscard]] bool CanBoard() const;
     void               BeginBoarding();
-
-    void OnHitEvents(Span<const HitEvent> _events, Span<const Hitbox> _hitboxes);
+    void               OnHitEvents(Span<const HitEvent> _events, Span<const Hitbox> _hitboxes);
 
     // 호스트가 매 틱 Tick 뒤에 한 번 읽어 간다
-    [[nodiscard]] SlugEjectRequest TakeEjectRequest();
-
-    void AddCannonAmmo(int _count);
-
+    [[nodiscard]] SlugEjectRequest   TakeEjectRequest();
+    void                             AddCannonAmmo(int _count);
     [[nodiscard]] eSlugMode          GetMode() const;
     [[nodiscard]] bool               IsAlive() const;
     [[nodiscard]] VECTOR2            GetFeet() const;
@@ -111,31 +105,28 @@ public:
     [[nodiscard]] const SlugStats&   GetStats() const;
     [[nodiscard]] Span<const SlugFx> GetFx() const;
     [[nodiscard]] const Body&        GetBody() const;
-
-    [[nodiscard]] uint64_t HashState() const;
+    [[nodiscard]] uint64_t           HashState() const;
 
 private:
-    void TickParked_(const SlugContext& _ctx);
-    void TickBoarding_(const SlugContext& _ctx);
-    void TickDriven_(const SlugContext& _ctx, const InputHistory& _input);
-    void TickExploding_(const SlugContext& _ctx);
-    void TickCommon_(const SlugContext& _ctx);
-
-    void Move_(const SlugContext& _ctx, const PlayerCommand& _command);
-    void UpdateCrouch_(bool _bWantCrouch);
-    void UpdateVulcan_(const SlugContext& _ctx, const PlayerCommand& _command);
-    void UpdateCannon_(const SlugContext& _ctx, const PlayerCommand& _command);
-    void UpdateCrush_(const SlugContext& _ctx);
-    void UpdatePose_();
-    void UpdateDamageFx_();
-    void FireVulcan_(const SlugContext& _ctx);
-    void FireCannon_(const SlugContext& _ctx, const PlayerCommand& _command);
-    void BeginExit_(const SlugContext& _ctx);
-    void BeginDestroy_(bool _bEjectPlayer);
-    void ReleaseCrushId_(const SlugContext& _ctx);
-    void ApplyHit_(int _damage, bool _bFromFront);
-    void SpawnFx_(eSlugFxKind _kind, VECTOR2 _position, int _variant, int _maxTicks);
-
+    void                  TickParked_(const SlugContext& _ctx);
+    void                  TickBoarding_(const SlugContext& _ctx);
+    void                  TickDriven_(const SlugContext& _ctx, const InputHistory& _input);
+    void                  TickExploding_(const SlugContext& _ctx);
+    void                  TickCommon_(const SlugContext& _ctx);
+    void                  Move_(const SlugContext& _ctx, const PlayerCommand& _command);
+    void                  UpdateCrouch_(bool _bWantCrouch);
+    void                  UpdateVulcan_(const SlugContext& _ctx, const PlayerCommand& _command);
+    void                  UpdateCannon_(const SlugContext& _ctx, const PlayerCommand& _command);
+    void                  UpdateCrush_(const SlugContext& _ctx);
+    void                  UpdatePose_();
+    void                  UpdateDamageFx_();
+    void                  FireVulcan_(const SlugContext& _ctx);
+    void                  FireCannon_(const SlugContext& _ctx, const PlayerCommand& _command);
+    void                  BeginExit_(const SlugContext& _ctx);
+    void                  BeginDestroy_(bool _bEjectPlayer);
+    void                  ReleaseCrushId_(const SlugContext& _ctx);
+    void                  ApplyHit_(int _damage, bool _bFromFront);
+    void                  SpawnFx_(eSlugFxKind _kind, VECTOR2 _position, int _variant, int _maxTicks);
     [[nodiscard]] VECTOR2 MountOffset_() const;
 
     SlugTuning m_tuning  = {};

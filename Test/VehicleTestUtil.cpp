@@ -36,7 +36,7 @@ bool VehicleRig::IsLoaded() const
     return m_bLoaded;
 }
 
-const String& VehicleRig::GetMessage() const
+const String& VehicleRig::GetLoadMessage() const
 {
     return m_message;
 }
@@ -187,7 +187,7 @@ int VehicleRig::CountShots(
     return count;
 }
 
-const Enemy* VehicleRig::E(
+const EnemyState* VehicleRig::E(
     const EnemyHandle _handle) const
 {
     return m_world.Get(_handle);

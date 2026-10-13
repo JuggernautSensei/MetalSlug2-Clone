@@ -5,13 +5,11 @@
 #include <format>
 
 #include "Base/Log.h"
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Sandbox/Effects.h"
 #include "Render/SpriteBatch.h"
 
 constexpr float kFaceDeadzone = 4.f;
-
 
 enum class eDeathPhase
 {
@@ -33,7 +31,7 @@ namespace
 }
 
 void EnterDeathLand_(
-    Enemy&          _e,
+    EnemyState&     _e,
     const DeathDef& _death)
 {
     _e.deathPhase = static_cast<int>(eDeathPhase::Land);
@@ -43,8 +41,8 @@ void EnterDeathLand_(
 }   // namespace
 
 float DistToPlayer(
-    const Enemy&    _e,
-    const EnemyEnv& _env)
+    const EnemyState& _e,
+    const EnemyEnv&   _env)
 {
     const float dx = DxToPlayer(_e, _env);
     const float dy = DyToPlayer(_e, _env);
@@ -52,8 +50,8 @@ float DistToPlayer(
 }
 
 int SideToPlayer(
-    const Enemy&    _e,
-    const EnemyEnv& _env)
+    const EnemyState& _e,
+    const EnemyEnv&   _env)
 {
     const float dx = DxToPlayer(_e, _env);
     if (Abs(dx) <= kFaceDeadzone)
@@ -64,24 +62,24 @@ int SideToPlayer(
 }
 
 void FacePlayer(
-    Enemy&          _e,
+    EnemyState&     _e,
     const EnemyEnv& _env)
 {
     _e.facing = SideToPlayer(_e, _env);
 }
 
 void EnterState(
-    Enemy&    _e,
-    const int _state)
+    EnemyState& _e,
+    const int   _state)
 {
     _e.state      = _state;
     _e.stateTicks = 0;
 }
 
 void SetClip(
-    Enemy&     _e,
-    const int  _clip,
-    const bool _bRestart)
+    EnemyState& _e,
+    const int   _clip,
+    const bool  _bRestart)
 {
     if (_clip != _e.clip || _bRestart)
     {
@@ -91,9 +89,9 @@ void SetClip(
 }
 
 bool ClipReachedFrame(
-    const Enemy&    _e,
-    const EnemyDef& _def,
-    const int       _frame)
+    const EnemyState& _e,
+    const EnemyDef&   _def,
+    const int         _frame)
 {
     if (_e.clip < 0)
     {
@@ -103,22 +101,22 @@ bool ClipReachedFrame(
 }
 
 bool ClipFinished(
-    const Enemy&    _e,
-    const EnemyDef& _def)
+    const EnemyState& _e,
+    const EnemyDef&   _def)
 {
     return _e.clip >= 0 && _def.GetClip(_e.clip).IsFinished(_e.clipTicks);
 }
 
 bool ClimbStep(
-    Enemy&          _e,
+    EnemyState&     _e,
     const EnemyDef& _def)
 {
     VECTOR2 target = _e.arena.max;
-    if (_e.aux == 0)
+    if (_e.climbSegment == 0)
     {
         target = _e.arena.min;
     }
-    else if (_e.aux == 2)
+    else if (_e.climbSegment == 2)
     {
         target = _e.climbEnd;
     }
@@ -140,16 +138,16 @@ bool ClimbStep(
 
     _e.body.position   = target;
     const bool bHasEnd = _e.climbEnd.y != 0.f;
-    if (_e.aux == 0 || (_e.aux == 1 && bHasEnd))
+    if (_e.climbSegment == 0 || (_e.climbSegment == 1 && bHasEnd))
     {
-        ++_e.aux;
+        ++_e.climbSegment;
         return false;
     }
     return true;
 }
 
 void ClimbLeap(
-    Enemy&          _e,
+    EnemyState&     _e,
     const EnemyDef& _def)
 {
     _e.body.velocity = { static_cast<float>(_e.facing) * _def.physics.speed, _def.physics.jumpVy };
@@ -160,13 +158,13 @@ constexpr float kRoofEdgeMargin = 4.f;
 constexpr float kRoofLeaveZone  = 30.f;
 
 bool OnRoof(
-    const Enemy& _e)
+    const EnemyState& _e)
 {
     return _e.roofSpan.y > _e.roofSpan.x && _e.bGrounded && Abs(_e.body.position.y - _e.climbEnd.y) < 2.f;
 }
 
 bool AtRoofEdge(
-    const Enemy& _e)
+    const EnemyState& _e)
 {
     if (!OnRoof(_e))
     {
@@ -176,7 +174,7 @@ bool AtRoofEdge(
 }
 
 bool CanLeaveRoof(
-    const Enemy& _e)
+    const EnemyState& _e)
 {
     if (!OnRoof(_e))
     {
@@ -186,7 +184,7 @@ bool CanLeaveRoof(
 }
 
 void HoldOnRoof(
-    Enemy& _e)
+    EnemyState& _e)
 {
     if (!OnRoof(_e))
     {
@@ -201,7 +199,7 @@ void HoldOnRoof(
 }
 
 void PrepareBody(
-    Enemy&          _e,
+    EnemyState&     _e,
     const EnemyDef& _def)
 {
     _e.body.size          = { _def.body.w, _def.body.h };
@@ -209,7 +207,7 @@ void PrepareBody(
 }
 
 MoveResult StepPhysics(
-    Enemy&          _e,
+    EnemyState&     _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
@@ -225,12 +223,12 @@ MoveResult StepPhysics(
 }
 
 bool WallAhead(
-    const Enemy&    _e,
-    const EnemyEnv& _env,
-    const float     _w,
-    const float     _h,
-    const float     _x,
-    const float     _y)
+    const EnemyState& _e,
+    const EnemyEnv&   _env,
+    const float       _w,
+    const float       _h,
+    const float       _x,
+    const float       _y)
 {
     const float         dir   = static_cast<float>(_e.facing < 0 ? -1 : 1);
     const Aabb          probe = Aabb::FromCenterSize({ _e.body.position.x + _x * dir, _e.body.position.y + _y }, { _w, _h });
@@ -261,10 +259,10 @@ bool WallAhead(
 }
 
 bool FloorAhead(
-    const Enemy&    _e,
-    const EnemyEnv& _env,
-    const float     _dist,
-    const float     _drop)
+    const EnemyState& _e,
+    const EnemyEnv&   _env,
+    const float       _dist,
+    const float       _drop)
 {
     Body probe = _e.body;
     probe.position.x += static_cast<float>(_e.facing < 0 ? -1 : 1) * _dist;
@@ -315,18 +313,18 @@ void RequestFx(
 }
 
 VECTOR2 GetMuzzleWorld(
-    const Enemy&    _e,
-    const EnemyDef& _def,
-    const int       _weapon)
+    const EnemyState& _e,
+    const EnemyDef&   _def,
+    const int         _weapon)
 {
     const WeaponDef& weapon = _def.weapons[static_cast<size_t>(_weapon)];
     return { _e.body.position.x + weapon.muzzle.x * static_cast<float>(_e.facing < 0 ? -1 : 1), _e.body.position.y + weapon.muzzle.y };
 }
 
 void TickWeaponEffects(
-    const Enemy&    _e,
-    const EnemyDef& _def,
-    EnemyEnv&       _env)
+    const EnemyState& _e,
+    const EnemyDef&   _def,
+    EnemyEnv&         _env)
 {
     for (const WeaponDef& weapon: _def.weapons)
     {
@@ -351,7 +349,7 @@ void TickWeaponEffects(
 }
 
 bool FireWeapon(
-    Enemy&          _e,
+    EnemyState&     _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
     const int       _weapon,
@@ -463,7 +461,7 @@ bool FireWeapon(
 }
 
 void StartMelee(
-    Enemy&          _e,
+    EnemyState&     _e,
     const EnemyDef& _def,
     EnemyEnv&       _env,
     const int       _weapon)
@@ -477,7 +475,7 @@ void StartMelee(
 }
 
 void TickMelee(
-    Enemy&          _e,
+    EnemyState&     _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
@@ -512,8 +510,8 @@ void TickMelee(
 }
 
 void CancelMelee(
-    Enemy&    _e,
-    EnemyEnv& _env)
+    EnemyState& _e,
+    EnemyEnv&   _env)
 {
     if (_e.meleeHitId != kNoHitId && _env.ctx.pCombat)
     {
@@ -524,7 +522,7 @@ void CancelMelee(
 }
 
 void BeginSoldierDeath(
-    Enemy&          _e,
+    EnemyState&     _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
@@ -539,8 +537,9 @@ void BeginSoldierDeath(
     {
         const float away = SideToPlayer(_e, _env) < 0 ? 1.f : -1.f;
 
-        _e.deathPhase = static_cast<int>(eDeathPhase::Bomb);
-        _e.aux        = static_cast<int>(_e.body.position.y);
+        _e.deathPhase   = static_cast<int>(eDeathPhase::Bomb);
+        _e.deathStart   = eDeathStart::Blast;
+        _e.deathLaunchY = static_cast<int>(_e.body.position.y);
         _e.body.position.y -= 30.f;
         _e.body.velocity       = { away * death.bombVelocity.x, death.bombVelocity.y };
         _e.body.bCollideGround = false;
@@ -559,7 +558,8 @@ void BeginSoldierDeath(
     {
         const bool bFirst = death.clipStand2 < 0 || _env.world.Roll(2) == 0;
         _e.deathPhase     = static_cast<int>(eDeathPhase::Stand);
-        _e.aux            = bFirst ? death.fallAt1 : death.fallAt2;
+        _e.deathStart     = eDeathStart::Standing;
+        _e.deathFallFrame = bFirst ? death.fallAt1 : death.fallAt2;
         SetClip(_e, bFirst ? death.clipStand1 : death.clipStand2, true);
     }
     else
@@ -586,7 +586,7 @@ void BeginSoldierDeath(
 }
 
 void TickSoldierDeath(
-    Enemy&          _e,
+    EnemyState&     _e,
     const EnemyDef& _def,
     EnemyEnv&       _env)
 {
@@ -604,7 +604,7 @@ void TickSoldierDeath(
         ++_e.deathTicks;
         constexpr float kSpriteHeight = 90.f;
         const Aabb&     view          = _env.ctx.cameraView;
-        const bool      bFell         = _e.body.velocity.y > 0.f && _e.body.position.y > static_cast<float>(_e.aux) + 60.f;
+        const bool      bFell         = _e.body.velocity.y > 0.f && _e.body.position.y > static_cast<float>(_e.deathLaunchY) + 60.f;
         if (view.max.y > view.min.y)
         {
             const bool bOut = _e.body.velocity.y > 0.f && _e.body.position.y - kSpriteHeight > view.max.y;
@@ -635,7 +635,7 @@ void TickSoldierDeath(
     {
         case eDeathPhase::Stand:
         {
-            const int fallTicks = _def.GetClip(_e.clip).TickOfFrame(_e.aux);
+            const int fallTicks = _def.GetClip(_e.clip).TickOfFrame(_e.deathFallFrame);
             if (_e.clipTicks >= fallTicks)
             {
                 if (_e.bGrounded)
@@ -748,15 +748,15 @@ int GetNamedPartTicks(
 }
 
 float DxToPlayer(
-    const Enemy&    _e,
-    const EnemyEnv& _env)
+    const EnemyState& _e,
+    const EnemyEnv&   _env)
 {
     return _env.ctx.player.feet.x - _e.body.position.x;
 }
 
 float DyToPlayer(
-    const Enemy&    _e,
-    const EnemyEnv& _env)
+    const EnemyState& _e,
+    const EnemyEnv&   _env)
 {
     return _env.ctx.player.feet.y - _e.body.position.y;
 }

@@ -1,14 +1,11 @@
 #pragma once
-#include "Base/Handle.h"
-#include "Base/Math.h"
-#include "Base/RGBA.h"
 #include "Base/Types.h"
 #include "Core/Tuning.h"
 #include "Game/Player/PlayerTypes.h"
 #include "Render/Animation.h"
 #include "Render/SpriteBatch.h"
 
-enum class eRigClip : uint8_t
+enum class eRigClip
 {
     Idle,
     Move,
@@ -76,24 +73,18 @@ public:
         Vector<String> missingNames    = {};
     };
 
-    BindReport Bind(const AnimationLibrary& _library, const RigTuning& _tuning);
-
-    void Update(const RigState& _state);
-
-    void Submit(SpriteBatch& _sprites, VECTOR2 _feet, int _depth, int _sortKey, RGBA _tint = { 255, 255, 255, 255 }) const;
-
-    [[nodiscard]] AnimId  GetUpperClip() const;
-    [[nodiscard]] AnimId  GetLowerClip() const;
-    [[nodiscard]] int     GetUpperFrame() const;
-    [[nodiscard]] int     GetLowerFrame() const;
-    [[nodiscard]] float   GetOriginLift() const;
-    [[nodiscard]] VECTOR2 GetOrigin(VECTOR2 _feet) const;
-
-    [[nodiscard]] AnimId GetSlotClip(eWeapon _weapon, int _facing, eRigClip _slot) const;
-
+    BindReport                  Bind(const AnimationLibrary& _library, const RigTuning& _tuning);
+    void                        Update(const RigState& _state);
+    void                        Submit(SpriteBatch& _sprites, VECTOR2 _feet, int _depth, int _sortKey, RGBA _tint = { 255, 255, 255, 255 }) const;
+    [[nodiscard]] AnimId        GetUpperClip() const;
+    [[nodiscard]] AnimId        GetLowerClip() const;
+    [[nodiscard]] int           GetUpperFrame() const;
+    [[nodiscard]] int           GetLowerFrame() const;
+    [[nodiscard]] float         GetOriginLift() const;
+    [[nodiscard]] VECTOR2       GetOrigin(VECTOR2 _feet) const;
+    [[nodiscard]] AnimId        GetSlotClip(eWeapon _weapon, int _facing, eRigClip _slot) const;
     [[nodiscard]] static String ResolveClipName(const AnimationLibrary& _library, eRigClip _slot, eWeapon _weapon, int _facing);
-
-    [[nodiscard]] static bool IsSlotRequired(eRigClip _slot);
+    [[nodiscard]] static bool   IsSlotRequired(eRigClip _slot);
 
 private:
     struct Slot
@@ -110,7 +101,7 @@ private:
     const AnimationLibrary* m_pLibrary = nullptr;
     RigTuning               m_tuning   = {};
 
-    ARRAY<ARRAY<SlotTable, 2>, kWeaponCount> m_tables = {};
+    ARRAY<ARRAY<SlotTable, 2>, (CountOf<eWeapon>() - 1)> m_tables = {};
 
     AnimPlayer m_upper     = {};
     AnimPlayer m_lower     = {};

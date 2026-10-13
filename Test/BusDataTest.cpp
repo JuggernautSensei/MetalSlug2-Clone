@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <cmath>
 
-#include "Base/Math.h"
 #include "Render/SpriteBatch.h"
 #include "VehicleTestUtil.h"
 
@@ -56,10 +55,10 @@ void ExpectBursts_(
 TEST(BusData, LoadedTablesEqualTheOldHardCodedValues)
 {
     VehicleRig rig;
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     const int index = rig.Lib().FindIndex("bus");
     ASSERT_GE(index, 0);
-    const BusCfg& c = rig.Lib().Get(index).bus;
+    const BusConfig& c = rig.Lib().Get(index).bus;
 
     EXPECT_FLOAT_EQ(c.pxPerSheetPx, 2.f);
     EXPECT_FLOAT_EQ(c.anchor.x, 52.f);
@@ -145,10 +144,10 @@ TEST(BusData, SoldierIsDrawnBetweenTheBusBodyAndItsCover)
 {
     SLUG_REQUIRE_BAKED(anims);
     VehicleRig rig({ 2700.f, 378.f }, 2496.f);
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     const int index = rig.Lib().FindIndex("bus");
     ASSERT_GE(index, 0);
-    const BusCfg& c = rig.Lib().Get(index).bus;
+    const BusConfig& c = rig.Lib().Get(index).bus;
 
     SpawnParams busParams;
     busParams.facing = -1;

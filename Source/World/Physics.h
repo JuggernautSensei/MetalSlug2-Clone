@@ -1,5 +1,4 @@
 #pragma once
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "World/Constants.h"
 #include "World/Geometry.h"
@@ -42,8 +41,7 @@ struct Body
     int  dropThroughSteps = 0;   // > 0 이면 남은 틱 동안 원웨이를 무시
 
     [[nodiscard]] Aabb GetBox() const;
-
-    void RequestDropThrough(int _steps = PhysicsTuning {}.dropThroughSteps);
+    void               RequestDropThrough(int _steps = PhysicsTuning {}.dropThroughSteps);
 };
 
 struct MoveResult
@@ -66,6 +64,5 @@ class Physics
 {
 public:
     [[nodiscard]] static MoveResult Step(Body& _body, const PhysicsWorld& _world, const PhysicsTuning& _tuning = {}, float _dt = kStepSec);
-
-    static bool SnapToGround(Body& _body, const PhysicsWorld& _world, float _maxDist);
+    static bool                     SnapToGround(Body& _body, const PhysicsWorld& _world, float _maxDist);
 };

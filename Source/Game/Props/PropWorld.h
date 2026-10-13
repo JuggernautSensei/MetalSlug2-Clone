@@ -1,7 +1,6 @@
 #pragma once
 #include <cstdint>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Combat/CombatSystem.h"
 #include "Game/Props/DecorWorld.h"
@@ -26,7 +25,7 @@ inline constexpr int kPropEffectDepth = 50;
 
 inline constexpr int kBuildingDepthXScale = 4096;
 
-enum class ePropEventKind : uint8_t
+enum class ePropEventKind
 {
     Damaged,
     Destroyed,
@@ -47,7 +46,7 @@ struct PropEvent
     String         name     = {};
 };
 
-enum class ePropVisual : uint8_t
+enum class ePropVisual
 {
     Idle,
     Damaged,
@@ -132,29 +131,22 @@ class PropWorld
 
 public:
     explicit PropWorld(const PropDefLibrary* _pLibrary, uint64_t _seed = 1);
-
     void                                SetLibrary(const PropDefLibrary* _pLibrary);
     [[nodiscard]] const PropDefLibrary* GetLibrary() const;
-
-    void Reset(uint64_t _seed = 1);
-
-    PropHandle Spawn(StringView _defName, VECTOR2 _center, const PropSpawnParams& _params = {});
-    PropHandle SpawnByIndex(int _defIndex, VECTOR2 _center, const PropSpawnParams& _params = {});
-
-    uint32_t SpawnItem(StringView _name, VECTOR2 _feet, bool _bBounce = false, int _z = kDefaultZ);
-
-    void Tick(const PropTickContext& _ctx);
+    void                                Reset(uint64_t _seed = 1);
+    PropHandle                          Spawn(StringView _defName, VECTOR2 _center, const PropSpawnParams& _params = {});
+    PropHandle                          SpawnByIndex(int _defIndex, VECTOR2 _center, const PropSpawnParams& _params = {});
+    uint32_t                            SpawnItem(StringView _name, VECTOR2 _feet, bool _bBounce = false, int _z = kDefaultZ);
+    void                                Tick(const PropTickContext& _ctx);
 
     // 스프라이트 크기 조회용
-    void               SetSpriteLibrary(const SpriteLibrary* _pSprites);
-    [[nodiscard]] bool GetVisualBounds(const PropInstance& _inst, const AnimationLibrary* _pAnims, Aabb& _out) const;
-    void               RegisterHurtboxes(CombatSystem& _combat) const;
-    void               OnHitEvents(Span<const HitEvent> _events);
-
-    [[nodiscard]] Span<const Platform> GetPlatforms() const;
-    [[nodiscard]] Span<const Platform> GetEnemyPlatforms() const;
-    [[nodiscard]] Span<const Wall>     GetWalls() const;
-
+    void                                      SetSpriteLibrary(const SpriteLibrary* _pSprites);
+    [[nodiscard]] bool                        GetVisualBounds(const PropInstance& _inst, const AnimationLibrary* _pAnims, Aabb& _out) const;
+    void                                      RegisterHurtboxes(CombatSystem& _combat) const;
+    void                                      OnHitEvents(Span<const HitEvent> _events);
+    [[nodiscard]] Span<const Platform>        GetPlatforms() const;
+    [[nodiscard]] Span<const Platform>        GetEnemyPlatforms() const;
+    [[nodiscard]] Span<const Wall>            GetWalls() const;
     [[nodiscard]] bool                        IsDestroyed(PropHandle _handle) const;
     [[nodiscard]] bool                        IsDestroyFinished(PropHandle _handle) const;
     [[nodiscard]] bool                        IsAlive(PropHandle _handle) const;
@@ -163,35 +155,27 @@ public:
     [[nodiscard]] Span<const PropInstance>    GetProps() const;
     [[nodiscard]] size_t                      GetCount() const;
     [[nodiscard]] Span<const PropDebrisPiece> GetDebris() const;
-
-    [[nodiscard]] Vector<PropEvent> TakeEvents();
-
-    [[nodiscard]] ItemWorld&       GetItems();
-    [[nodiscard]] const ItemWorld& GetItems() const;
+    [[nodiscard]] Vector<PropEvent>           TakeEvents();
+    [[nodiscard]] ItemWorld&                  GetItems();
+    [[nodiscard]] const ItemWorld&            GetItems() const;
 
     // 시각 전용 장식
-    uint32_t SpawnDecor(const DecorSpawn& _spawn);
-    void     ClearDecorByLayerMask(uint32_t _layerMask);
-
-    void ClearAll();
-
-    void Submit(SpriteBatch& _sprites, const AnimationLibrary& _anims, const SpriteLibrary& _spriteLib, const BitmapFont* _pFont = nullptr);
-
+    uint32_t                 SpawnDecor(const DecorSpawn& _spawn);
+    void                     ClearDecorByLayerMask(uint32_t _layerMask);
+    void                     ClearAll();
+    void                     Submit(SpriteBatch& _sprites, const AnimationLibrary& _anims, const SpriteLibrary& _spriteLib, const BitmapFont* _pFont = nullptr);
     [[nodiscard]] static int SortKey(const PropInstance& _inst);
-
-    [[nodiscard]] uint64_t HashState() const;
+    [[nodiscard]] uint64_t   HashState() const;
 
 private:
-    [[nodiscard]] size_t FindIndex_(PropHandle _id) const;
-    [[nodiscard]] float  RollFloat_(float _lo, float _hi);
-    [[nodiscard]] int    RollInt_(int _n);
-
-    void Destroy_(PropInstance& _inst, const PropDef& _def, VECTOR2 _center);
-    void Detonate_(const PropBurst& _burst, VECTOR2 _center);
-    void QueueDrops_(const PropDef& _def, VECTOR2 _center);
-    void UpdateVisual_(PropInstance& _inst, const AnimationLibrary* _pAnims, float _dt);
-    void RebuildCollision_();
-
+    [[nodiscard]] size_t      FindIndex_(PropHandle _id) const;
+    [[nodiscard]] float       RollFloat_(float _lo, float _hi);
+    [[nodiscard]] int         RollInt_(int _n);
+    void                      Destroy_(PropInstance& _inst, const PropDef& _def, VECTOR2 _center);
+    void                      Detonate_(const PropBurst& _burst, VECTOR2 _center);
+    void                      QueueDrops_(const PropDef& _def, VECTOR2 _center);
+    void                      UpdateVisual_(PropInstance& _inst, const AnimationLibrary* _pAnims, float _dt);
+    void                      RebuildCollision_();
     [[nodiscard]] ePropVisual ComputeVisual_(const PropInstance& _inst) const;
     [[nodiscard]] static bool PartActive_(const PropPart& _part, const PropInstance& _inst);
 

@@ -5,7 +5,6 @@
 
 #include "Audio/AudioSystem.h"
 #include "Base/Log.h"
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Core/Tuning.h"
 #include "Game/Enemies/EnemyWorld.h"
@@ -561,7 +560,6 @@ void StageWorldHost::SendCommand(
 {
     if (const SpawnRoute* pRoute = FindRoute(_id); pRoute && pRoute->kind == eRouteKind::Enemy && m_pEnemies)
     {
-        m_pEnemies->SendCommand(EnemyHandle { pRoute->handle }, _command);
         return;
     }
     static bool bWarnedOnce = false;

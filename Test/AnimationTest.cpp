@@ -1,7 +1,6 @@
 
 #include <gtest/gtest.h>
 
-#include "Base/Handle.h"
 #include "Base/SlugError.h"
 #include "Render/Animation.h"
 #include "World/Constants.h"

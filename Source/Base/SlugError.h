@@ -16,7 +16,7 @@ enum class eError
     PropDefInvalid
 };
 
-class SlugErrorCategory final : public jug::IErrorCategory
+class SlugErrorCategory : public jug::IErrorCategory
 {
 public:
     [[nodiscard]] StringView GetName() const noexcept override;

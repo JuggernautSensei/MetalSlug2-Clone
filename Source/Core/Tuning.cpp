@@ -6,9 +6,8 @@
 #include <string>
 
 #include "Base/SlugError.h"
-#include "Base/Json.h"
+#include "Base/JsonFields.h"
 #include "Base/Log.h"
-#include "Base/Math.h"
 #include "Base/Types.h"
 
 namespace
@@ -428,7 +427,7 @@ Result<Tuning> ParseTuning(
 Result<Tuning> LoadTuning(
     const FilePath& _path)
 {
-    Result<JsonDeserializer> doc = LoadJsonFile(_path, kJsonBomComments);
+    Result<JsonDeserializer> doc = JsonDeserializer::LoadFromFile(_path, kJsonBomComments);
     if (!doc)
     {
         return Error { eError::FileOpen };

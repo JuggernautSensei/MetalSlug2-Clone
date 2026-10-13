@@ -8,7 +8,7 @@ void PlayerInputBuffer::Reset()
 void PlayerInputBuffer::Update(
     const InputHistory& _history)
 {
-    for (size_t i = 0; i < kActionCount; ++i)
+    for (size_t i = 0; i < (CountOf<eAction>() - 1); ++i)
     {
         const eAction action = static_cast<eAction>(i);
         if (_history.WasPressed(action))

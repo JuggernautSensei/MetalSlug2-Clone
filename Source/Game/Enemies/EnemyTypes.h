@@ -1,7 +1,6 @@
 #pragma once
 #include <cstdint>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Core/Tuning.h"
 #include "Game/Combat/CombatSystem.h"
@@ -26,8 +25,7 @@ struct EnemyHandle
 {
     uint32_t id = 0;
 
-    [[nodiscard]] bool IsNull() const;
-
+    [[nodiscard]] bool           IsNull() const;
     [[nodiscard]] constexpr bool operator==(const EnemyHandle&) const = default;
 };
 
@@ -46,7 +44,7 @@ struct SpawnParams
     int      z          = kDefaultZ;
 };
 
-enum class eEnemyEventKind : uint8_t
+enum class eEnemyEventKind
 {
     Died,
     ItemDropped,
@@ -88,7 +86,7 @@ struct EnemyContext
     const AnimationLibrary* pAnims       = nullptr;
 };
 
-enum class eEnemyLife : uint8_t
+enum class eEnemyLife
 {
     Pending,
     Alive,
@@ -96,8 +94,18 @@ enum class eEnemyLife : uint8_t
     Gone
 };
 
-struct Enemy
+enum class eDeathStart
 {
+    None,
+    Standing,
+    Blast
+};
+
+struct EnemyState
+{
+    [[nodiscard]] VECTOR2 GetFeet() const;
+    [[nodiscard]] bool    IsAlive() const;
+
     uint32_t       id         = 0;
     int            defIndex   = -1;
     eEnemyBehavior behavior   = eEnemyBehavior::Soldier;
@@ -114,16 +122,11 @@ struct Enemy
     bool    bOnOneWay = false;
     bool    bGrounded = false;
 
-    int            state        = 0;
-    int            stateTicks   = 0;
-    int            counter      = 0;
-    int            aux          = 0;
-    int            aux2         = 0;
-    int            aux3         = 0;
-    int            aux4         = 0;
-    bool           bTransformed = false;
-    ARRAY<int, 48> ext          = {};
-    Aabb           arena        = {};
+    int  state        = 0;
+    int  stateTicks   = 0;
+    bool bTransformed = false;
+
+    Aabb arena = {};
 
     int  clip      = -1;
     int  clipTicks = 0;
@@ -137,6 +140,11 @@ struct Enemy
     int      meleeWeapon    = -1;
     VECTOR2  meleeOrigin    = { 0.f, 0.f };
     uint32_t boxHitId       = kNoHitId;
+
+    int         climbSegment   = 0;
+    eDeathStart deathStart     = eDeathStart::None;
+    int         deathLaunchY   = 0;
+    int         deathFallFrame = 0;
 
     int      deathPhase  = 0;
     int      deathTicks  = 0;
@@ -153,18 +161,14 @@ struct Enemy
     VECTOR2  climbEnd  = { 0.f, 0.f };
     VECTOR2  roofSpan  = { 0.f, 0.f };
     bool     bLeap     = false;
-
-    [[nodiscard]] VECTOR2 GetFeet() const;
-
-    [[nodiscard]] bool IsAlive() const;
 };
 
 // 전체 스프라이트 플래시 양
-[[nodiscard]] float HitFlashAmount(const Enemy& _e);
+[[nodiscard]] float HitFlashAmount(const EnemyState& _e);
 
-[[nodiscard]] float PartFlashAmount(const Enemy& _e, int _part);
+[[nodiscard]] float PartFlashAmount(const EnemyState& _e, int _part);
 
-void TriggerPartHitFlash(Enemy& _e, int _part);
+void TriggerPartHitFlash(EnemyState& _e, int _part);
 
 struct EnemyFilter
 {

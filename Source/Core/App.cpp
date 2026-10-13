@@ -38,7 +38,6 @@ int App::Run(
     const int _argc,
     char**    _argv)
 {
-    m_processTimer.Start();
     m_cmdArgs.reserve(static_cast<size_t>(_argc));
     for (int i = 0; i < _argc; ++i)
     {
@@ -130,7 +129,7 @@ void App::ParseArgs_()
         }
         else if (args[i] == "--seed" && bHasValue)
         {
-            m_seed = std::strtoull(args[++i].c_str(), nullptr, 10);
+            ++i;
         }
         else if (args[i] == "--editor")
         {
@@ -271,7 +270,7 @@ void App::Init_()
 
     const FilePath assetRoot  = FindAssetRoot();
     const int      numWorkers = m_bNoAsyncLoad ? 1 : Clamp(static_cast<int>(std::thread::hardware_concurrency()) - 1, 1, 8);
-    SLUG_LOG_INFO("[load] workers {}", numWorkers);
+
     bool bAnimsLoaded = false;
     if (Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(assetRoot))
     {
@@ -317,9 +316,6 @@ void App::Init_()
         m_editor.SelectTab(m_editorTab.c_str());
     }
 
-    m_processTimer.Lap();
-    const double rendererMs = TimeCast(m_processTimer.GetTotalCount(), eTimeUnit::Milli);
-    SLUG_LOG_INFO("[load] renderer-init since-run-start {:.1f} ms", rendererMs);
     SpriteBatch::GetSingleton().Init(Renderer::GetSingleton().GetNative());
     SpriteBatch::GetSingleton().SetAssetRoot(assetRoot);
     if (bAnimsLoaded)
@@ -506,12 +502,6 @@ void App::Render_(
     }
 
     ++m_renderFrameCount;
-    if (m_renderFrameCount == 1)
-    {
-        m_processTimer.Lap();
-        const double ms = TimeCast(m_processTimer.GetTotalCount(), eTimeUnit::Milli);
-        SLUG_LOG_INFO("[load] first-frame since-run-start {:.1f} ms", ms);
-    }
     if (!m_capturePath.empty() && !m_captureTicks.empty())
     {
         while (m_captureTickHead < m_captureTicks.size() && m_pRunner->GetTickCount() >= m_captureTicks[m_captureTickHead])

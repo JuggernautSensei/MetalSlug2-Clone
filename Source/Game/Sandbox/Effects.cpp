@@ -2,7 +2,6 @@
 
 #include <algorithm>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 
 namespace

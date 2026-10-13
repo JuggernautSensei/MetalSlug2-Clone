@@ -4,7 +4,6 @@
 #include <cstdint>
 
 #include "Base/SlugError.h"
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "World/Geometry.h"
 #include "World/GroundMap.h"
@@ -232,9 +231,9 @@ TEST(Geometry, CircleOverlaps)
 {
     const Circle c      = MakeCircle_(0.f, 0.f, 5.f);
     const Circle nearby = MakeCircle_(6.f, 0.f, 2.f);
-    const Circle far    = MakeCircle_(7.f, 0.f, 2.f);
+    const Circle distantCircle    = MakeCircle_(7.f, 0.f, 2.f);
     EXPECT_TRUE(c.Overlaps(nearby));
-    EXPECT_FALSE(c.Overlaps(far));
+    EXPECT_FALSE(c.Overlaps(distantCircle));
     EXPECT_TRUE(c.Overlaps(Aabb::FromMinMax({ 4.f, -1.f }, { 10.f, 1.f })));
     EXPECT_FALSE(c.Overlaps(Aabb::FromMinMax({ 4.f, 4.f }, { 10.f, 10.f })));
 }

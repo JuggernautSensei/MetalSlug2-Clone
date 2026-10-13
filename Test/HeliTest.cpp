@@ -3,8 +3,7 @@
 #include <set>
 #include <vector>
 
-#include "Base/Math.h"
-#include "Game/Enemies/EnemyBehaviors.h"
+#include "Game/Enemies/Enemy.h"
 #include "Render/Animation.h"
 #include "VehicleTestUtil.h"
 
@@ -48,15 +47,16 @@ namespace
     for (int i = 0; i < _ticks; ++i)
     {
         _rig.Step(1);
-        const Enemy* pHeli = _rig.E(_heli);
+        const EnemyState* pHeli = _rig.E(_heli);
         if (pHeli)
         {
             log.states.push_back(pHeli->state);
             log.ys.push_back(pHeli->body.position.y);
             log.xs.push_back(pHeli->body.position.x);
         }
-        for (const Enemy& enemy: _rig.World().GetEnemies())
+        for (const Scoped<Enemy>& pEnemy: _rig.World().GetEnemies())
         {
+            const EnemyState& enemy = pEnemy->GetState();
             if (enemy.behavior == eEnemyBehavior::HeliBomb && enemy.life != eEnemyLife::Gone && seenBombs.insert(enemy.id).second)
             {
                 log.bombTicks.push_back(_rig.Ticks());
@@ -85,7 +85,7 @@ namespace
 TEST(Heli, DefinitionLoadsWithHeliAndBombDefs)
 {
     VehicleRig rig;
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage();
     EXPECT_GE(rig.Lib().FindIndex("heli"), 0);
     EXPECT_GE(rig.Lib().FindIndex("heli_bomb"), 0);
 }
@@ -93,21 +93,21 @@ TEST(Heli, DefinitionLoadsWithHeliAndBombDefs)
 TEST(Heli, HighPhaseDropsThreeBombsThenRestsThenThreeAgain)
 {
     VehicleRig rig({ 300.f, kGround });
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage();
-    const HeliCfg     cfg  = HeliDef_(rig).heli;
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage();
+    const HeliConfig     config  = HeliDef_(rig).heli;
     const EnemyHandle heli = rig.Spawn("heli", { 507.f, -30.f }, HeliParams_());
     ASSERT_FALSE(heli.IsNull());
 
-    const HeliLog log = RunHeli_(rig, heli, cfg.firstBombTicks + 2 * cfg.burstCount * cfg.bombIntervalTicks + cfg.burstRestTicks + 60);
+    const HeliLog log = RunHeli_(rig, heli, config.firstBombTicks + 2 * config.burstCount * config.bombIntervalTicks + config.burstRestTicks + 60);
     ASSERT_GE(log.bombTicks.size(), 6u);
     for (size_t i = 0; i < 6; ++i)
     {
         EXPECT_EQ(log.bombStates[i], kStateBomb) << "고공 구간 안에서 투하";
     }
-    const int interval = cfg.bombIntervalTicks;
+    const int interval = config.bombIntervalTicks;
     EXPECT_EQ(log.bombTicks[1] - log.bombTicks[0], interval);
     EXPECT_EQ(log.bombTicks[2] - log.bombTicks[1], interval);
-    EXPECT_EQ(log.bombTicks[3] - log.bombTicks[2], interval + cfg.burstRestTicks) << "3발 뒤 휴지";
+    EXPECT_EQ(log.bombTicks[3] - log.bombTicks[2], interval + config.burstRestTicks) << "3발 뒤 휴지";
     EXPECT_EQ(log.bombTicks[4] - log.bombTicks[3], interval);
     EXPECT_EQ(log.bombTicks[5] - log.bombTicks[4], interval);
 }
@@ -115,12 +115,12 @@ TEST(Heli, HighPhaseDropsThreeBombsThenRestsThenThreeAgain)
 TEST(Heli, LowPhaseCrossesTheScreenDroppingThreeAndRest)
 {
     VehicleRig rig({ 300.f, kGround });
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage();
-    const HeliCfg     cfg  = HeliDef_(rig).heli;
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage();
+    const HeliConfig     config  = HeliDef_(rig).heli;
     const EnemyHandle heli = rig.Spawn("heli", { 507.f, -30.f }, HeliParams_());
 
-    const int     highEnd = cfg.firstBombTicks + cfg.highBursts * (cfg.burstCount * cfg.bombIntervalTicks + cfg.burstRestTicks);
-    const int     lowEnd  = cfg.reBombTicks + cfg.lowBursts * (cfg.burstCount * cfg.bombIntervalTicks + cfg.burstRestTicks);
+    const int     highEnd = config.firstBombTicks + config.highBursts * (config.burstCount * config.bombIntervalTicks + config.burstRestTicks);
+    const int     lowEnd  = config.reBombTicks + config.lowBursts * (config.burstCount * config.bombIntervalTicks + config.burstRestTicks);
     const HeliLog log     = RunHeli_(rig, heli, highEnd + lowEnd + 20);
 
     int firstLow = -1;
@@ -135,7 +135,7 @@ TEST(Heli, LowPhaseCrossesTheScreenDroppingThreeAndRest)
     }
     ASSERT_GE(firstLow, 0) << "저공 구간에 들어가지 않았다";
     EXPECT_NEAR(static_cast<float>(firstLow), static_cast<float>(highEnd), 3.f);
-    EXPECT_GT(log.ys[static_cast<size_t>(lastLow)], cfg.lowDy - 2.f) << "저공 높이까지 내려온다";
+    EXPECT_GT(log.ys[static_cast<size_t>(lastLow)], config.lowDy - 2.f) << "저공 높이까지 내려온다";
     EXPECT_GT(Abs(log.xs[static_cast<size_t>(lastLow)] - log.xs[static_cast<size_t>(firstLow)]), 150.f) << "x 축으로 크게 가로지른다";
 
     int lowBombs = 0;
@@ -143,13 +143,13 @@ TEST(Heli, LowPhaseCrossesTheScreenDroppingThreeAndRest)
     {
         lowBombs += state == kStateLow ? 1 : 0;
     }
-    EXPECT_EQ(lowBombs, cfg.lowBursts * cfg.burstCount) << "저공 구간 폭탄 수";
+    EXPECT_EQ(lowBombs, config.lowBursts * config.burstCount) << "저공 구간 폭탄 수";
 }
 
 TEST(Heli, CycleFiresMissilesThenReturnsToTheHighPhase)
 {
     VehicleRig rig({ 300.f, kGround });
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage();
     const EnemyHandle heli = rig.Spawn("heli", { 507.f, -30.f }, HeliParams_());
 
     const HeliLog log = RunHeli_(rig, heli, 60 * 30);
@@ -172,7 +172,7 @@ TEST(Heli, CycleFiresMissilesThenReturnsToTheHighPhase)
 TEST(Heli, StartLowParamSkipsTheHighPhase)
 {
     VehicleRig rig({ 300.f, kGround });
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage();
     EnemyDefLibrary lib;
     ASSERT_TRUE(LoadVehicleLib(lib));
     EXPECT_EQ(lib.Get(lib.FindIndex("heli")).heli.startLow, 0);
@@ -181,7 +181,7 @@ TEST(Heli, StartLowParamSkipsTheHighPhase)
 TEST(Heli, HurtboxCoversTheSprite)
 {
     VehicleRig rig({ 300.f, kGround });
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage();
     const EnemyHandle heli = rig.Spawn("heli", { 507.f, 120.f }, HeliParams_());
     rig.Step(2);
     bool bFound = false;
@@ -286,7 +286,7 @@ TEST(HeliFx, DestructionSpawnsALargeExplosionAndStaggeredBursts)
 TEST(Heli, HoverIdleCyclesPitchFramesWithoutTouchingSimState)
 {
     VehicleRig rig({ 300.f, kGround });
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage();
     Result<AnimationLibrary> anims = AnimationLibrary::LoadFromDirectory(FindAssetRoot());
     ASSERT_TRUE(anims) << "Assets 가 없다";
     const AnimationLibrary lib = anims.Take();
@@ -294,18 +294,16 @@ TEST(Heli, HoverIdleCyclesPitchFramesWithoutTouchingSimState)
     const EnemyDef&   def  = HeliDef_(rig);
     const EnemyHandle heli = rig.Spawn("heli", { 507.f, -30.f }, HeliParams_());
     ASSERT_GT(def.heli.idlePitchTo, def.heli.idlePitchFrom);
-    const BehaviorOps& ops = GetBehaviorOps(eEnemyBehavior::Heli);
-    ASSERT_NE(ops.bodyFrame, nullptr);
 
     RbSet<const AnimFrame*> shown;
     for (int i = 0; i < 6 * def.heli.idleStepTicks * (def.heli.idlePitchTo - def.heli.idlePitchFrom); ++i)
     {
         rig.Step(1);
-        const Enemy* pHeli = rig.E(heli);
+        const EnemyState* pHeli = rig.E(heli);
         ASSERT_NE(pHeli, nullptr);
         if (pHeli->clip == def.heli.clipFly)
         {
-            const AnimFrame* pFrame = ops.bodyFrame(*pHeli, def, lib);
+            const AnimFrame* pFrame = rig.World().FindEnemy(heli)->BodyFrame(def, lib);
             ASSERT_NE(pFrame, nullptr);
             shown.insert(pFrame);
         }

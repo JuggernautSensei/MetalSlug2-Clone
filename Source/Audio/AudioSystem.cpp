@@ -2,10 +2,8 @@
 
 #include <algorithm>
 
-#include "Base/Math.h"
 #include "Base/SlugError.h"
 #include "Base/Log.h"
-#include "Base/PhaseTimer.h"
 #include "Base/Types.h"
 
 // miniaudio 구현부는 이 파일에서만 만든다
@@ -153,8 +151,8 @@ void AudioSystem::Init(
     pBackend->voices.resize(static_cast<size_t>(m_voices.GetCapacity()));
     pBackend->voiceInit.assign(static_cast<size_t>(m_voices.GetCapacity()), 0);
 
-    int                    preloaded = 0;
-    const ScopedPhaseTimer timer { "sound-decode", "all" };
+    int preloaded = 0;
+
     for (const SoundEntry& entry: m_bank.GetEntries())
     {
         if (entry.bBgm)

@@ -6,231 +6,9 @@
 #include <utility>
 
 #include "Base/SlugError.h"
-#include "Base/Json.h"
-#include "Base/Math.h"
+#include "Base/JsonFields.h"
 #include "Base/Types.h"
 #include "Core/AssetPath.h"
-
-ParamValue ParamValue::MakeBool(
-    const bool _bValue)
-{
-    ParamValue value = {};
-    value.m_type     = eType::Bool;
-    value.m_bValue   = _bValue;
-    return value;
-}
-
-ParamValue ParamValue::MakeNumber(
-    const double _value)
-{
-    ParamValue value = {};
-    value.m_type     = eType::Number;
-    value.m_number   = _value;
-    return value;
-}
-
-ParamValue ParamValue::MakeString(
-    String _value)
-{
-    ParamValue value = {};
-    value.m_type     = eType::String;
-    value.m_string   = std::move(_value);
-    return value;
-}
-
-ParamValue ParamValue::MakeArray()
-{
-    ParamValue value = {};
-    value.m_type     = eType::Array;
-    return value;
-}
-
-ParamValue ParamValue::MakeObject()
-{
-    ParamValue value = {};
-    value.m_type     = eType::Object;
-    return value;
-}
-
-void ParamValue::PushBack(
-    ParamValue _value)
-{
-    JUG_ASSERT(
-        m_type == eType::Array,
-        "PushBack requires an array value");
-    m_items.push_back(std::move(_value));
-}
-
-void ParamValue::Set(
-    String     _key,
-    ParamValue _value)
-{
-    JUG_ASSERT(
-        m_type == eType::Object,
-        "Set requires an object value");
-    for (size_t i = 0; i < m_keys.size(); ++i)
-    {
-        if (m_keys[i] == _key)
-        {
-            m_items[i] = std::move(_value);
-            return;
-        }
-    }
-    m_keys.push_back(std::move(_key));
-    m_items.push_back(std::move(_value));
-}
-
-bool ParamValue::IsNull() const
-{
-    return m_type == eType::Null;
-}
-
-bool ParamValue::IsBool() const
-{
-    return m_type == eType::Bool;
-}
-
-bool ParamValue::IsNumber() const
-{
-    return m_type == eType::Number;
-}
-
-bool ParamValue::IsString() const
-{
-    return m_type == eType::String;
-}
-
-bool ParamValue::IsArray() const
-{
-    return m_type == eType::Array;
-}
-
-bool ParamValue::IsObject() const
-{
-    return m_type == eType::Object;
-}
-
-bool ParamValue::AsBool(
-    const bool _bDefault) const
-{
-    return m_type == eType::Bool ? m_bValue : _bDefault;
-}
-
-float ParamValue::AsFloat(
-    const float _default) const
-{
-    return m_type == eType::Number ? static_cast<float>(m_number) : _default;
-}
-
-int ParamValue::AsInt(
-    const int _default) const
-{
-    return m_type == eType::Number ? static_cast<int>(std::llround(m_number)) : _default;
-}
-
-const String& ParamValue::AsString() const
-{
-    static const String kEmpty = {};
-    return m_type == eType::String ? m_string : kEmpty;
-}
-
-size_t ParamValue::GetSize() const
-{
-    return (m_type == eType::Array || m_type == eType::Object) ? m_items.size() : 0;
-}
-
-const ParamValue& ParamValue::At(
-    const size_t _index) const
-{
-    if (m_type != eType::Array || _index >= m_items.size())
-    {
-        return NullValue();
-    }
-    return m_items[_index];
-}
-
-const ParamValue* ParamValue::Find(
-    const StringView _key) const
-{
-    if (m_type != eType::Object)
-    {
-        return nullptr;
-    }
-    for (size_t i = 0; i < m_keys.size(); ++i)
-    {
-        if (m_keys[i] == _key)
-        {
-            return &m_items[i];
-        }
-    }
-    return nullptr;
-}
-
-bool ParamValue::Has(
-    const StringView _key) const
-{
-    return Find(_key) != nullptr;
-}
-
-bool ParamValue::GetBool(
-    const StringView _key,
-    const bool       _bDefault) const
-{
-    const ParamValue* pValue = Find(_key);
-    return pValue ? pValue->AsBool(_bDefault) : _bDefault;
-}
-
-int ParamValue::GetInt(
-    const StringView _key,
-    const int        _default) const
-{
-    const ParamValue* pValue = Find(_key);
-    return pValue ? pValue->AsInt(_default) : _default;
-}
-
-String ParamValue::GetString(
-    const StringView _key,
-    const StringView _default) const
-{
-    const ParamValue* pValue = Find(_key);
-    return (pValue && pValue->IsString()) ? pValue->m_string : String { _default };
-}
-
-VECTOR2 ParamValue::GetVec2(
-    const StringView _key,
-    const VECTOR2    _default) const
-{
-    const ParamValue* pValue = Find(_key);
-    VECTOR2           out    = _default;
-    if (pValue && pValue->TryGetVec2(out))
-    {
-        return out;
-    }
-    return _default;
-}
-
-bool ParamValue::TryGetVec2(
-    VECTOR2& _out) const
-{
-    if (m_type != eType::Array || m_items.size() != 2 || !m_items[0].IsNumber() || !m_items[1].IsNumber())
-    {
-        return false;
-    }
-    _out = { m_items[0].AsFloat(), m_items[1].AsFloat() };
-    return true;
-}
-
-const ParamValue& ParamValue::EmptyObject()
-{
-    static const ParamValue kEmpty = ParamValue::MakeObject();
-    return kEmpty;
-}
-
-const ParamValue& ParamValue::NullValue()
-{
-    static const ParamValue kNull = {};
-    return kNull;
-}
 
 bool CameraAnchor::IsRandomX() const
 {
@@ -633,10 +411,10 @@ namespace
 }
 }   // namespace
 
-class Parser
+class StageParser
 {
 public:
-    explicit Parser(
+    explicit StageParser(
         StageData& _out)
         : m_out(_out)
     {
@@ -802,12 +580,12 @@ private:
     Vector<String> m_gateIds  = {};
 };
 
-const String& Parser::GetError() const
+const String& StageParser::GetError() const
 {
     return m_error;
 }
 
-bool Parser::Fail_(
+bool StageParser::Fail_(
     const String& _where,
     const String& _message)
 {
@@ -818,7 +596,7 @@ bool Parser::Fail_(
     return false;
 }
 
-bool Parser::GetField_(
+bool StageParser::GetField_(
     const JsonReader&          _obj,
     const String&              _where,
     const StringView           _key,
@@ -834,7 +612,7 @@ bool Parser::GetField_(
     return true;
 }
 
-bool Parser::GetNumber_(
+bool StageParser::GetNumber_(
     const JsonReader& _obj,
     const String&     _where,
     const StringView  _key,
@@ -846,7 +624,7 @@ bool Parser::GetNumber_(
     return ReadNumberField(_obj, _key, _bRequired, _out, reason, _pFound) || Fail_(_where, std::format("{}: {}", _key, reason));
 }
 
-bool Parser::GetFloat_(
+bool StageParser::GetFloat_(
     const JsonReader& _obj,
     const String&     _where,
     const StringView  _key,
@@ -863,7 +641,7 @@ bool Parser::GetFloat_(
     return true;
 }
 
-bool Parser::GetInt_(
+bool StageParser::GetInt_(
     const JsonReader& _obj,
     const String&     _where,
     const StringView  _key,
@@ -892,7 +670,7 @@ bool Parser::GetInt_(
     return true;
 }
 
-bool Parser::GetBool_(
+bool StageParser::GetBool_(
     const JsonReader& _obj,
     const String&     _where,
     const StringView  _key,
@@ -904,7 +682,7 @@ bool Parser::GetBool_(
     return ReadBoolField(_obj, _key, _bRequired, _out, reason, _pFound) || Fail_(_where, std::format("{}: {}", _key, reason));
 }
 
-bool Parser::GetString_(
+bool StageParser::GetString_(
     const JsonReader& _obj,
     const String&     _where,
     const StringView  _key,
@@ -916,7 +694,7 @@ bool Parser::GetString_(
     return ReadStringField(_obj, _key, _bRequired, _out, reason, _pFound) || Fail_(_where, std::format("{}: {}", _key, reason));
 }
 
-bool Parser::GetVec2_(
+bool StageParser::GetVec2_(
     const JsonReader& _obj,
     const String&     _where,
     const StringView  _key,
@@ -928,7 +706,7 @@ bool Parser::GetVec2_(
     return ReadVec2Field(_obj, _key, _bRequired, _out, reason, _pFound) || Fail_(_where, std::format("{}: {}", _key, reason));
 }
 
-bool Parser::GetObject_(
+bool StageParser::GetObject_(
     const JsonReader&          _obj,
     const String&              _where,
     const StringView           _key,
@@ -946,7 +724,7 @@ bool Parser::GetObject_(
     return true;
 }
 
-bool Parser::GetArray_(
+bool StageParser::GetArray_(
     const JsonReader&          _obj,
     const String&              _where,
     const StringView           _key,
@@ -964,7 +742,7 @@ bool Parser::GetArray_(
     return true;
 }
 
-bool Parser::ExpectObject_(
+bool StageParser::ExpectObject_(
     const JsonReader& _json,
     const String&     _where)
 {
@@ -975,7 +753,7 @@ bool Parser::ExpectObject_(
     return true;
 }
 
-bool Parser::CheckKeys_(
+bool StageParser::CheckKeys_(
     const JsonReader&                       _obj,
     const String&                           _where,
     const std::initializer_list<StringView> _allowed)
@@ -992,7 +770,7 @@ bool Parser::CheckKeys_(
     return true;
 }
 
-bool Parser::Parse(
+bool StageParser::Parse(
     const JsonReader& _root)
 {
     const String where = "root";
@@ -1017,7 +795,7 @@ bool Parser::Parse(
     return Validate_();
 }
 
-bool Parser::ParseWorld_(
+bool StageParser::ParseWorld_(
     const JsonReader& _root)
 {
     const String              where = "world";
@@ -1051,7 +829,7 @@ bool Parser::ParseWorld_(
     return true;
 }
 
-bool Parser::ParseBgm_(
+bool StageParser::ParseBgm_(
     const JsonReader& _root)
 {
     std::optional<JsonReader> bgm = std::nullopt;
@@ -1063,7 +841,7 @@ bool Parser::ParseBgm_(
     return CheckKeys_(*bgm, where, { "name", "loop" }) && GetString_(*bgm, where, "name", true, m_out.bgmName) && GetBool_(*bgm, where, "loop", false, m_out.bBgmLoop);
 }
 
-bool Parser::ParseGround_(
+bool StageParser::ParseGround_(
     const JsonReader& _root)
 {
     const String              where  = "ground";
@@ -1097,7 +875,7 @@ bool Parser::ParseGround_(
     return true;
 }
 
-bool Parser::ParseBackdrop_(
+bool StageParser::ParseBackdrop_(
     const JsonReader& _root)
 {
     std::optional<JsonReader> backdrop = std::nullopt;
@@ -1143,7 +921,7 @@ bool Parser::ParseBackdrop_(
     return true;
 }
 
-bool Parser::ParseRectArray_(
+bool StageParser::ParseRectArray_(
     const JsonReader& _array,
     const String&     _where,
     const StringView  _key,
@@ -1171,7 +949,7 @@ bool Parser::ParseRectArray_(
     return true;
 }
 
-bool Parser::ParseRects_(
+bool StageParser::ParseRects_(
     const JsonReader& _root)
 {
     std::optional<JsonReader> rects = std::nullopt;
@@ -1206,7 +984,7 @@ bool Parser::ParseRects_(
     return true;
 }
 
-bool Parser::ParseRect_(
+bool StageParser::ParseRect_(
     const JsonReader& _obj,
     const String&     _where,
     const StringView  _key,
@@ -1245,7 +1023,7 @@ bool Parser::ParseRect_(
     return ParseRectArray_(*field, _where, _key, _out.rect);
 }
 
-bool Parser::ParseCamera_(
+bool StageParser::ParseCamera_(
     const JsonReader& _root)
 {
     m_out.camera.initialBounds = Aabb::FromMinMax({ 0.f, 0.f }, m_out.worldSize);
@@ -1363,7 +1141,7 @@ bool Parser::ParseCamera_(
     return true;
 }
 
-bool Parser::ParsePlayer_(
+bool StageParser::ParsePlayer_(
     const JsonReader& _root)
 {
     std::optional<JsonReader> player = std::nullopt;
@@ -1397,7 +1175,7 @@ bool Parser::ParsePlayer_(
     return true;
 }
 
-bool Parser::ParseCameraAnchor_(
+bool StageParser::ParseCameraAnchor_(
     const JsonReader& _obj,
     const String&     _where,
     CameraAnchor&     _out)
@@ -1456,7 +1234,7 @@ bool Parser::ParseCameraAnchor_(
     return true;
 }
 
-bool Parser::ParseSpawn_(
+bool StageParser::ParseSpawn_(
     const JsonReader&   _obj,
     const String&       _where,
     const eSpawnContext _context,
@@ -1697,7 +1475,7 @@ bool Parser::ParseSpawn_(
     return true;
 }
 
-bool Parser::ParseActionList_(
+bool StageParser::ParseActionList_(
     const JsonReader&    _array,
     const String&        _where,
     Vector<StageAction>& _out)
@@ -1725,7 +1503,7 @@ bool Parser::ParseActionList_(
     return true;
 }
 
-bool Parser::ParseAction_(
+bool StageParser::ParseAction_(
     const JsonReader& _obj,
     const String&     _where,
     StageAction&      _out)
@@ -2002,7 +1780,7 @@ bool Parser::ParseAction_(
     return true;
 }
 
-bool Parser::ParseSections_(
+bool StageParser::ParseSections_(
     const JsonReader& _root)
 {
     std::optional<JsonReader> sections = std::nullopt;
@@ -2056,7 +1834,7 @@ bool Parser::ParseSections_(
     return true;
 }
 
-bool Parser::AddSpawnId_(
+bool StageParser::AddSpawnId_(
     const SpawnSpec& _spawn,
     const String&    _at)
 {
@@ -2075,7 +1853,7 @@ bool Parser::AddSpawnId_(
     return true;
 }
 
-bool Parser::HasSpawnId_(
+bool StageParser::HasSpawnId_(
     const String& _id) const
 {
     for (const String& existing: m_spawnIds)
@@ -2088,7 +1866,7 @@ bool Parser::HasSpawnId_(
     return false;
 }
 
-bool Parser::CollectIds_(
+bool StageParser::CollectIds_(
     const Vector<StageAction>& _actions,
     const String&              _where)
 {
@@ -2134,7 +1912,7 @@ bool Parser::CollectIds_(
     return true;
 }
 
-bool Parser::CheckRefs_(
+bool StageParser::CheckRefs_(
     const Vector<StageAction>& _actions,
     const String&              _where)
 {
@@ -2164,7 +1942,7 @@ bool Parser::CheckRefs_(
     return true;
 }
 
-bool Parser::Validate_()
+bool StageParser::Validate_()
 {
     for (const StageSection& section: m_out.sections)
     {
@@ -2232,8 +2010,8 @@ Result<StageData> LoadStageFromJson(
         return MakeFailure_(_pMessage, "JSON syntax error", eError::Parse);
     }
 
-    StageData data = {};
-    Parser    parser { data };
+    StageData   data = {};
+    StageParser parser { data };
     if (!parser.Parse(doc->GetReader()))
     {
         return MakeFailure_(_pMessage, parser.GetError(), eError::StageInvalid);

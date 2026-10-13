@@ -3,8 +3,6 @@
 #include <cmath>
 #include <format>
 
-#include "Base/Math.h"
-#include "Base/RGBA.h"
 #include "Base/Types.h"
 #include "Game/Combat/HitFlash.h"
 #include "Render/Animation.h"

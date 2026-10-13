@@ -17,13 +17,10 @@ struct PlayerCommand
 class PlayerInputBuffer
 {
 public:
-    void Reset();
-
-    void Update(const InputHistory& _history);
-
-    [[nodiscard]] bool IsBuffered(eAction _action, int _windowTicks) const;
-    void               Consume(eAction _action);
-
+    void                        Reset();
+    void                        Update(const InputHistory& _history);
+    [[nodiscard]] bool          IsBuffered(eAction _action, int _windowTicks) const;
+    void                        Consume(eAction _action);
     [[nodiscard]] PlayerCommand Read(const InputHistory& _history, const MoveTuning& _move) const;
 
 private:

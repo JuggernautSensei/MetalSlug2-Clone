@@ -33,7 +33,7 @@ constexpr ARRAY<GravityCase, 15> kCases = {
 TEST(GravityTrait, DefFlagFollowsTheRule)
 {
     VehicleRig rig;
-    ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+    ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
     for (const GravityCase& c: kCases)
     {
         const EnemyDef* pDef = rig.Lib().Find(c.name);
@@ -51,11 +51,11 @@ TEST(GravityTrait, AirSpawnFallsToGroundOnlyWhenGravityIsOn)
             continue;
         }
         VehicleRig rig;
-        ASSERT_TRUE(rig.IsLoaded()) << rig.GetMessage().c_str();
+        ASSERT_TRUE(rig.IsLoaded()) << rig.GetLoadMessage().c_str();
         const float       startY = kVehicleGroundY - 80.f;
         const EnemyHandle handle = rig.Spawn(c.name, { 300.f, startY });
         rig.Step(120);
-        const Enemy* pEnemy = rig.E(handle);
+        const EnemyState* pEnemy = rig.E(handle);
         ASSERT_NE(pEnemy, nullptr) << c.name;
         if (c.bGravity)
         {

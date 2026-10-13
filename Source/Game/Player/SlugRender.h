@@ -1,5 +1,4 @@
 #pragma once
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Combat/Projectiles.h"
 #include "Game/Player/SlugClips.h"

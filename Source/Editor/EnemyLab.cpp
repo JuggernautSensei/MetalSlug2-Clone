@@ -8,7 +8,6 @@
 #include <imgui.h>
 
 #include "Base/Log.h"
-#include "Base/RGBA.h"
 #include "Game/Enemies/EnemyDef.h"
 #include "Game/SandboxState.h"
 #include "Game/SimRunner.h"
@@ -44,9 +43,10 @@ void LabDrawText_(
 }
 
 [[nodiscard]] String LabMakeStateText_(
-    const Enemy& _e)
+    const Enemy& _enemy)
 {
-    return std::format("st{} t{} c{} hp{}", _e.state, _e.stateTicks, _e.counter, _e.health.hp);
+    const EnemyState& state = _enemy.GetState();
+    return std::format("st{} t{} c{} hp{}", state.state, state.stateTicks, _enemy.GetShotCounter(), state.health.hp);
 }
 }   // namespace
 
@@ -213,8 +213,9 @@ void EnemyLab::SelectAt(
 {
     m_selected                 = {};
     const EnemyDefLibrary& lib = _state.GetEnemyLib();
-    for (const Enemy& e: _state.GetEnemies().GetEnemies())
+    for (const Scoped<Enemy>& pEnemy: _state.GetEnemies().GetEnemies())
     {
+        const EnemyState& e = pEnemy->GetState();
         if (e.life == eEnemyLife::Pending || e.life == eEnemyLife::Gone)
         {
             continue;
@@ -486,7 +487,7 @@ void EnemyLab::DrawInspector_(
     {
         return;
     }
-    const Enemy* pEnemy = _state.GetEnemies().Get(m_selected);
+    const EnemyState* pEnemy = _state.GetEnemies().Get(m_selected);
     if (!pEnemy)
     {
         ImGui::TextUnformatted("Click an enemy in the world.");
@@ -504,8 +505,8 @@ void EnemyLab::DrawInspector_(
     {
         (void)_state.GetEnemies().SetZ(m_selected, z);
     }
-    ImGui::Text("state %d  stateTicks %d  counter %d", pEnemy->state, pEnemy->stateTicks, pEnemy->counter);
-    ImGui::Text("aux %d %d %d %d", pEnemy->aux, pEnemy->aux2, pEnemy->aux3, pEnemy->aux4);
+    ImGui::Text("state %d  stateTicks %d  counter %d", pEnemy->state, pEnemy->stateTicks, _state.GetEnemies().FindEnemy(m_selected)->GetShotCounter());
+    ImGui::Text("climb segment %d  death phase %d", pEnemy->climbSegment, pEnemy->deathPhase);
     ImGui::Text("delay %d  shots %d  melee %d  flash %d", pEnemy->delayTicks, pEnemy->shotsFired, pEnemy->meleeTicksLeft, pEnemy->hitFlashTicks);
     if (pEnemy->clip >= 0 && pEnemy->clip < static_cast<int>(def.clips.size()))
     {
@@ -624,8 +625,9 @@ void EnemyLab::DrawOverlay(
 
     const EnemyDefLibrary& lib    = pState->GetEnemyLib();
     const GroundMap&       ground = pState->GetGround();
-    for (const Enemy& e: pState->GetEnemies().GetEnemies())
+    for (const Scoped<Enemy>& pEnemy: pState->GetEnemies().GetEnemies())
     {
+        const EnemyState& e = pEnemy->GetState();
         if (e.life == eEnemyLife::Pending || e.life == eEnemyLife::Gone)
         {
             continue;
@@ -688,7 +690,7 @@ void EnemyLab::DrawOverlay(
             const VECTOR2   top  = ToScreen({ center.x, body.min.y }, camera);
             const float     half = static_cast<float>(def.name.size() * Renderer::kDebugCharSize) * 0.5f;
             LabDrawText_(_renderer, { top.x - half, top.y - 20.f }, def.name, { 255, 255, 255, 255 });
-            const String text = LabMakeStateText_(e);
+            const String text = LabMakeStateText_(*pEnemy);
             LabDrawText_(_renderer, { top.x - static_cast<float>(text.size() * Renderer::kDebugCharSize) * 0.5f, top.y - 10.f }, text, { 255, 255, 120, 255 });
         }
     }

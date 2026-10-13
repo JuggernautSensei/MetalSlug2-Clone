@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cmath>
 
-#include "Base/Math.h"
 #include "Base/Types.h"
 #include "Game/Combat/HitFlash.h"
 #include "Game/Player/SlugClips.h"
@@ -757,7 +756,7 @@ void SlugVehicle::UpdatePose_()
 
     if (m_mode == eSlugMode::Boarding)
     {
-        m_pose = eSlugPose::BoardingIn;
+        m_pose          = eSlugPose::BoardingIn;
         const int third = Max(1, m_tuning.board.boardTicks / 3);
         m_poseFrame     = 3 + Min(2, m_modeTicks / third);
         return;
@@ -1071,7 +1070,8 @@ uint64_t SlugVehicle::HashState() const
     hasher.Mix(m_body.position.y);
     hasher.Mix(m_body.velocity.x);
     hasher.Mix(m_body.velocity.y);
-    hasher.Mix(m_mode);
+    const uint8_t mode = static_cast<uint8_t>(m_mode);
+    hasher.Mix(mode);
     hasher.Mix(m_hp);
     hasher.Mix(m_cannonAmmo);
     hasher.Mix(m_vulcanAngle);

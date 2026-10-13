@@ -26,7 +26,7 @@ TEST(DataMigrationA, LoadedDefsKeepTheOldHardCodedValues)
     ASSERT_NE(pHeliBomb, nullptr);
     ASSERT_NE(pBoss, nullptr);
 
-    const BigShieeCfg& boss = pBoss->bigShiee;
+    const BigShieeConfig& boss = pBoss->bigShiee;
 
     const Vector<MigrationRow> rows = {
         {           "death.bloodOffsetY",   pSoldier->death.bloodOffsetY, -27.5f },

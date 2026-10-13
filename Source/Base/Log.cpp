@@ -3,8 +3,6 @@
 #include <cstdio>
 #include <format>
 
-#include <JugX/CoreLogger.h>
-
 void LogMessage(
     const eLogLevel  _level,
     const StringView _message)
@@ -24,7 +22,7 @@ void LogMessage(
 namespace
 {
 
-class SlugCoreLogger final : public jug::Logger
+class SlugCoreLogger : public jug::Logger
 {
 public:
     SlugCoreLogger()

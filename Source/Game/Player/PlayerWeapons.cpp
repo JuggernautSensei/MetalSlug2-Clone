@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <cmath>
 
-#include "Base/Math.h"
-
 constexpr float kDiagonalRatio = 0.6f;
 
 namespace
@@ -28,53 +26,49 @@ namespace
 }
 }   // namespace
 
-void ResetWeapons(
-    WeaponState&  _state,
+void WeaponState::Reset(
     const Tuning& _tuning)
 {
-    _state                = {};
-    _state.weapon         = eWeapon::Pistol;
-    _state.bombs          = _tuning.bomb.initial;
-    _state.ticksSinceShot = WeaponState::kLongAgo;
+    *this          = {};
+    weapon         = eWeapon::Pistol;
+    bombs          = _tuning.bomb.initial;
+    ticksSinceShot = WeaponState::kLongAgo;
 }
 
-void GiveWeapon(
-    WeaponState&  _state,
+void WeaponState::Give(
     const eWeapon _weapon,
     const int     _ammo)
 {
     if (_weapon == eWeapon::Pistol)
     {
-        _state.weapon = eWeapon::Pistol;
-        _state.ammo   = 0;
+        weapon = eWeapon::Pistol;
+        ammo   = 0;
         return;
     }
 
-    _state.ammo   = _state.weapon == _weapon ? _state.ammo + _ammo : _ammo;
-    _state.weapon = _weapon;
+    ammo   = weapon == _weapon ? ammo + _ammo : _ammo;
+    weapon = _weapon;
 }
 
-void TickWeapon(
-    WeaponState& _state)
+void WeaponState::Tick()
 {
-    if (_state.ticksSinceShot < WeaponState::kLongAgo)
+    if (ticksSinceShot < WeaponState::kLongAgo)
     {
-        ++_state.ticksSinceShot;
+        ++ticksSinceShot;
     }
 }
 
-bool ShouldFire(
-    const WeaponState&  _state,
+bool WeaponState::ShouldFire(
     const WeaponTuning& _tuning,
     const int           _aliveBullets,
     const bool          _bShotBuffered,
-    const bool          _bShotHeld)
+    const bool          _bShotHeld) const
 {
     if (_tuning.maxAlive > 0 && _aliveBullets >= _tuning.maxAlive)
     {
         return false;
     }
-    if (_state.ticksSinceShot < _tuning.fireIntervalTicks)
+    if (ticksSinceShot < _tuning.fireIntervalTicks)
     {
         return false;
     }
@@ -82,17 +76,16 @@ bool ShouldFire(
     {
         return true;
     }
-    return _bShotHeld && _tuning.holdRepeatTicks > 0 && _state.ticksSinceShot >= Max(_tuning.fireIntervalTicks, _tuning.holdRepeatTicks);
+    return _bShotHeld && _tuning.holdRepeatTicks > 0 && ticksSinceShot >= Max(_tuning.fireIntervalTicks, _tuning.holdRepeatTicks);
 }
 
-void OnFired(
-    WeaponState& _state)
+void WeaponState::OnFired()
 {
-    _state.ticksSinceShot = 0;
-    if (_state.HasFiniteAmmo() && --_state.ammo <= 0)
+    ticksSinceShot = 0;
+    if (HasFiniteAmmo() && --ammo <= 0)
     {
-        _state.weapon = eWeapon::Pistol;
-        _state.ammo   = 0;
+        weapon = eWeapon::Pistol;
+        ammo   = 0;
     }
 }
 
@@ -141,21 +134,70 @@ BulletSpawn MakeBulletSpawn(
     return spawn;
 }
 
-BulletSpawn MakeFlameParticleSpawn(
+bool WeaponState::HasFiniteAmmo() const
+{
+    return weapon != eWeapon::Pistol;
+}
+
+Weapon::Weapon(const eWeapon _kind)
+    : m_kind(_kind)
+{
+}
+
+BulletSpawn Weapon::MakeShot(const WeaponTuning& _tuning, const ShotAim& _aim, RngMt19937&) const
+{
+    return MakeBulletSpawn(m_kind, _tuning, _aim.owner, _aim.muzzle, _aim.sweepFrom, _aim.direction);
+}
+
+namespace
+{
+class HmgWeapon : public Weapon
+{
+    JUG_CLASS(HmgWeapon, NO_COPY, NO_MOVE)
+
+public:
+    HmgWeapon()
+        : Weapon(eWeapon::Hmg)
+    {}
+    [[nodiscard]] BulletSpawn MakeShot(const WeaponTuning& _tuning, const ShotAim& _aim, RngMt19937& _rng) const override;
+};
+
+class FlameWeapon : public Weapon
+{
+    JUG_CLASS(FlameWeapon, NO_COPY, NO_MOVE)
+
+public:
+    FlameWeapon()
+        : Weapon(eWeapon::Flame)
+    {}
+    [[nodiscard]] BulletSpawn MakeShot(const WeaponTuning& _tuning, const ShotAim& _aim, RngMt19937& _rng) const override;
+};
+
+BulletSpawn HmgWeapon::MakeShot(const WeaponTuning& _tuning, const ShotAim& _aim, RngMt19937& _rng) const
+{
+    const float   rad       = _aim.degrees * kDeg2Rad;
+    const VECTOR2 direction = { static_cast<float>(_aim.facing) * std::cos(rad), -std::sin(rad) };
+    VECTOR2       muzzle    = _aim.muzzle;
+    if (_tuning.muzzleJitter.y > 0.f)
+    {
+        const float offset = Random<float>(_rng, -_tuning.muzzleJitter.y, _tuning.muzzleJitter.y);
+        muzzle.x += -direction.y * offset;
+        muzzle.y += direction.x * offset;
+    }
+    return MakeBulletSpawn(eWeapon::Hmg, _tuning, _aim.owner, muzzle, _aim.sweepFrom, direction);
+}
+
+BulletSpawn FlameWeapon::MakeShot(
     const WeaponTuning& _tuning,
-    const uint32_t      _owner,
-    const VECTOR2       _muzzle,
-    const VECTOR2       _sweepFrom,
-    const VECTOR2       _direction,
-    const uint32_t      _hitId,
-    RngMt19937&         _rng)
+    const ShotAim&      _aim,
+    RngMt19937&         _rng) const
 {
     const float   spreadRad = Random<float>(_rng, -_tuning.spreadDeg, _tuning.spreadDeg) * kDeg2Rad;
     const float   c         = std::cos(spreadRad);
     const float   s         = std::sin(spreadRad);
-    const VECTOR2 direction = { _direction.x * c - _direction.y * s, _direction.x * s + _direction.y * c };
+    const VECTOR2 direction = { _aim.direction.x * c - _aim.direction.y * s, _aim.direction.x * s + _aim.direction.y * c };
 
-    VECTOR2 muzzle = _muzzle;
+    VECTOR2 muzzle = _aim.muzzle;
     if (_tuning.muzzleJitter.y > 0.f)
     {
         muzzle.y += Random<float>(_rng, -_tuning.muzzleJitter.y, _tuning.muzzleJitter.y);
@@ -163,15 +205,32 @@ BulletSpawn MakeFlameParticleSpawn(
     const float speed = Random<float>(_rng, _tuning.particleSpeedMin, _tuning.particleSpeedMax);
     const int   life  = Random<int>(_rng, _tuning.particleLifeMinTicks, _tuning.particleLifeMaxTicks);
 
-    BulletSpawn spawn = MakeBulletSpawn(eWeapon::Flame, _tuning, _owner, muzzle, _sweepFrom, direction);
+    BulletSpawn spawn = MakeBulletSpawn(eWeapon::Flame, _tuning, _aim.owner, muzzle, _aim.sweepFrom, direction);
     spawn.speed       = speed;
     spawn.range       = speed * static_cast<float>(life) / 60.f;
     spawn.sizeEnd     = OrientSize_(_tuning.particleHitSizeEnd, direction);
-    spawn.hitId       = _hitId;
+    spawn.hitId       = _aim.hitId;
     return spawn;
 }
 
-bool WeaponState::HasFiniteAmmo() const
+}   // namespace
+
+const Weapon& GetWeaponBehavior(const eWeapon _kind)
 {
-    return weapon != eWeapon::Pistol;
+    static const Weapon      pistol { eWeapon::Pistol };
+    static const HmgWeapon   hmg;
+    static const Weapon      shotgun { eWeapon::Shotgun };
+    static const Weapon      rocket { eWeapon::Rocket };
+    static const FlameWeapon flame;
+    switch (_kind)
+    {
+        case eWeapon::Pistol: return pistol;
+        case eWeapon::Hmg: return hmg;
+        case eWeapon::Shotgun: return shotgun;
+        case eWeapon::Rocket: return rocket;
+        case eWeapon::Flame: return flame;
+        case eWeapon::Count: break;
+    }
+    JUG_ASSERT(false, "Invalid weapon.\n");
+    return pistol;
 }

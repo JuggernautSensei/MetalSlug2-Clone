@@ -26,25 +26,25 @@ bool EnemyHandle::IsNull() const
     return id == 0;
 }
 
-VECTOR2 Enemy::GetFeet() const
+VECTOR2 EnemyState::GetFeet() const
 {
     return body.position;
 }
 
-bool Enemy::IsAlive() const
+bool EnemyState::IsAlive() const
 {
     return life == eEnemyLife::Alive;
 }
 
 float HitFlashAmount(
-    const Enemy& _e)
+    const EnemyState& _e)
 {
     return IsHitFlashOn(_e.hitFlashTicks) ? 1.f : 0.f;
 }
 
 float PartFlashAmount(
-    const Enemy& _e,
-    const int    _part)
+    const EnemyState& _e,
+    const int         _part)
 {
     if (_part < 0 || _part >= kEnemyFlashPartCount)
     {
@@ -54,8 +54,8 @@ float PartFlashAmount(
 }
 
 void TriggerPartHitFlash(
-    Enemy&    _e,
-    const int _part)
+    EnemyState& _e,
+    const int   _part)
 {
     if (_part >= 0 && _part < kEnemyFlashPartCount)
     {
