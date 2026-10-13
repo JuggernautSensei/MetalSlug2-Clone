@@ -102,6 +102,8 @@ public:
     explicit AudioSystem(bool _bRecord = false);
     ~AudioSystem();
 
+    [[nodiscard]] static AudioSystem& GetSingleton();
+
     AudioSystem(const AudioSystem&)            = delete;
     AudioSystem& operator=(const AudioSystem&) = delete;
 

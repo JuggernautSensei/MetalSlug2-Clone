@@ -16,6 +16,8 @@ public:
 
     ~Renderer();
 
+    [[nodiscard]] static Renderer& GetSingleton();
+
     [[nodiscard]] Result<void> Init(const char* _title, int _windowScale);
     void                       Shutdown();
 

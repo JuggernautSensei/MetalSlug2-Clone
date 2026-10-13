@@ -92,6 +92,8 @@ public:
     SpriteBatch() = default;
     ~SpriteBatch();
 
+    [[nodiscard]] static SpriteBatch& GetSingleton();
+
     SpriteBatch(const SpriteBatch&)            = delete;
     SpriteBatch& operator=(const SpriteBatch&) = delete;
 

@@ -341,7 +341,7 @@ void App::Init_()
     bool bAnimsLoaded = false;
     if (Result<AnimationLibrary> library = AnimationLibrary::LoadFromDirectory(assetRoot))
     {
-        m_anims      = library.Take();
+        AnimationLibrary::GetSingleton()      = library.Take();
         bAnimsLoaded = true;
     }
     else
@@ -349,7 +349,7 @@ void App::Init_()
         SLUG_LOG_WARN("에셋 없음 ({}): manifest.json 확인", assetRoot.string());
     }
 
-    if (const Result<void> result = m_renderer.Init("MetalSlug2 (Clone)", ChooseWindowScale_()); !result)
+    if (const Result<void> result = Renderer::GetSingleton().Init("MetalSlug2 (Clone)", ChooseWindowScale_()); !result)
     {
         SLUG_LOG_FATAL("렌더러 초기화 실패: {}", result.GetError().MakeMessage());
         m_returnCode = 1;
@@ -357,7 +357,7 @@ void App::Init_()
         return;
     }
 
-    if (m_bEditor && !m_editor.Init(m_renderer.GetWindow(), m_renderer.GetNative()))
+    if (m_bEditor && !m_editor.Init(Renderer::GetSingleton().GetWindow(), Renderer::GetSingleton().GetNative()))
     {
         SLUG_LOG_WARN("ImGui 초기화 실패: 에디터 없이 계속합니다");
         m_bEditor = false;
@@ -385,30 +385,30 @@ void App::Init_()
 
     const double rendererMs = std::chrono::duration<double, std::milli>(SteadyClock::now() - m_processStart).count();
     SLUG_LOG_INFO("[load] renderer-init since-run-start {:.1f} ms", rendererMs);
-    m_sprites.Init(m_renderer.GetNative());
-    m_sprites.SetAssetRoot(assetRoot);
+    SpriteBatch::GetSingleton().Init(Renderer::GetSingleton().GetNative());
+    SpriteBatch::GetSingleton().SetAssetRoot(assetRoot);
     if (bAnimsLoaded && !m_bHash)
     {
-        (void)m_sprites.LoadAtlasPagesParallel(m_anims, numWorkers);
+        (void)SpriteBatch::GetSingleton().LoadAtlasPagesParallel(AnimationLibrary::GetSingleton(), numWorkers);
     }
 
     m_recording.seed      = m_seed;
     m_recording.stateName = m_stateName;
 
-    m_ctx.pRenderer   = &m_renderer;
-    m_ctx.pSprites    = &m_sprites;
-    m_ctx.pAnims      = &m_anims;
+    m_ctx.pRenderer   = &Renderer::GetSingleton();
+    m_ctx.pSprites    = &SpriteBatch::GetSingleton();
+    m_ctx.pAnims      = &AnimationLibrary::GetSingleton();
     m_ctx.loadWorkers = numWorkers;
-    m_editor.SetAnimLibrary(m_bEditor ? &m_anims : nullptr);
+    m_editor.SetAnimLibrary(m_bEditor ? &AnimationLibrary::GetSingleton() : nullptr);
     m_ctx.assetRoot       = FindAssetRoot();
     g_debug.bInfiniteAmmo = m_bEditor;
 
     {
         AudioConfig audioConfig;
         audioConfig.bEnabled = !m_bNoAudio && !m_bHash && m_capturePath.empty();
-        if (const Result<void> audio = m_audio.InitFromDirectory(assetRoot, audioConfig); audio)
+        if (const Result<void> audio = AudioSystem::GetSingleton().InitFromDirectory(assetRoot, audioConfig); audio)
         {
-            m_ctx.pAudio = &m_audio;
+            m_ctx.pAudio = &AudioSystem::GetSingleton();
         }
         else
         {
@@ -439,10 +439,10 @@ void App::Shutdown_()
     SaveRecording_();
     m_pRunner.Reset();
     m_ctx.pAudio = nullptr;
-    m_audio.Shutdown();
-    m_sprites.Shutdown();
+    AudioSystem::GetSingleton().Shutdown();
+    SpriteBatch::GetSingleton().Shutdown();
     m_editor.Shutdown();
-    m_renderer.Shutdown();
+    Renderer::GetSingleton().Shutdown();
 }
 
 void App::SaveRecording_() const
@@ -519,7 +519,7 @@ void App::OnFocusLost_()
 void App::Update_(
     const float _deltaTimeSec)
 {
-    m_audio.Update(_deltaTimeSec);
+    AudioSystem::GetSingleton().Update(_deltaTimeSec);
 
     if (!m_pRunner)
     {
@@ -631,7 +631,7 @@ void App::Render_(
     m_pRunner->Render(_alpha);
     if (m_bEditor)
     {
-        m_editor.DrawLabOverlay(m_renderer);
+        m_editor.DrawLabOverlay(Renderer::GetSingleton());
         m_editor.Frame(g_debug.fps, m_pRunner->GetTickCount());
     }
 
@@ -647,7 +647,7 @@ void App::Render_(
         {
             const uint64_t tick = m_captureTicks[m_captureTickHead++];
             const FilePath path = FilePath { std::format("{}_{:05}.bmp", m_capturePath.string(), tick) };
-            if (const Result<void> result = m_renderer.SaveScreenshotBmp(path); !result)
+            if (const Result<void> result = Renderer::GetSingleton().SaveScreenshotBmp(path); !result)
             {
                 SLUG_LOG_ERROR("스크린샷 저장 실패: {}", result.GetError().MakeMessage());
                 m_returnCode = 2;
@@ -660,7 +660,7 @@ void App::Render_(
     }
     else if (!m_capturePath.empty() && m_renderFrameCount == m_captureFrame)
     {
-        if (const Result<void> result = m_renderer.SaveScreenshotBmp(m_capturePath); !result)
+        if (const Result<void> result = Renderer::GetSingleton().SaveScreenshotBmp(m_capturePath); !result)
         {
             SLUG_LOG_ERROR("스크린샷 저장 실패: {}", result.GetError().MakeMessage());
             m_returnCode = 2;
@@ -668,5 +668,5 @@ void App::Render_(
         m_bRunning = false;
     }
 
-    m_renderer.EndFrame();
+    Renderer::GetSingleton().EndFrame();
 }

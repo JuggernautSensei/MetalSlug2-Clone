@@ -188,6 +188,12 @@ Result<AnimationLibrary> AnimationLibrary::LoadFromJson(
     return ParseAnimDocument_(doc->GetReader());
 }
 
+AnimationLibrary& AnimationLibrary::GetSingleton()
+{
+    static AnimationLibrary s_instance;
+    return s_instance;
+}
+
 Result<AnimationLibrary> AnimationLibrary::LoadFromDirectory(
     const FilePath& _bakedRoot)
 {

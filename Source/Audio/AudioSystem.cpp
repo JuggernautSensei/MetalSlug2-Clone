@@ -108,6 +108,12 @@ AudioSystem::AudioSystem(const bool _bRecord)
 {
 }
 
+AudioSystem& AudioSystem::GetSingleton()
+{
+    static AudioSystem s_instance;
+    return s_instance;
+}
+
 AudioSystem::~AudioSystem()
 {
     Shutdown();

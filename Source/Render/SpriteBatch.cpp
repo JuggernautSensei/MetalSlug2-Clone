@@ -321,6 +321,12 @@ RGBA ApplyHitFlashRamp(
     return { 255, 255, 235, _color.a };
 }
 
+SpriteBatch& SpriteBatch::GetSingleton()
+{
+    static SpriteBatch s_instance;
+    return s_instance;
+}
+
 SpriteBatch::~SpriteBatch()
 {
     Shutdown();

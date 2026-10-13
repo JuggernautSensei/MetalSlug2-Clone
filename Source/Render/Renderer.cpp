@@ -9,6 +9,12 @@
 #include "Base/RGBA.h"
 #include "Base/Types.h"
 
+Renderer& Renderer::GetSingleton()
+{
+    static Renderer s_instance;
+    return s_instance;
+}
+
 Renderer::~Renderer()
 {
     Shutdown();

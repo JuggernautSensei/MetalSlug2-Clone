@@ -39,13 +39,9 @@ private:
     int            m_returnCode = 0;
     Vector<String> m_cmdArgs    = {};
 
-    Renderer         m_renderer = {};
-    SpriteBatch      m_sprites  = {};
-    AnimationLibrary m_anims    = {};
-    GameContext      m_ctx      = {};
-    AudioSystem      m_audio;
-    InputSystem      m_input = {};
-    FixedStepClock   m_clock = {};
+    GameContext    m_ctx   = {};
+    InputSystem    m_input = {};
+    FixedStepClock m_clock = {};
 
     Scoped<SimRunner> m_pRunner = nullptr;
 

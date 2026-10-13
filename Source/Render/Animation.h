@@ -47,6 +47,8 @@ struct AnimClip
 class AnimationLibrary
 {
 public:
+    [[nodiscard]] static AnimationLibrary& GetSingleton();
+
     [[nodiscard]] static Result<AnimationLibrary> LoadFromDirectory(const FilePath& _bakedRoot);
 
     [[nodiscard]] static Result<AnimationLibrary> LoadFromJson(StringView _animJson);
