@@ -9,7 +9,9 @@
 // 디코더와 miniaudio 구현은 이 파일에서만 만든다.
 #pragma warning(push)
 #pragma warning(disable : 4244 4245 4456 4457 4701)
+#define Floor StbVorbisFloor   // JugX Floor()와 stb_vorbis 내부 타입 이름이 겹친다
 #include <stb_vorbis.c>
+#undef Floor
 #define MINIAUDIO_IMPLEMENTATION
 #include <miniaudio.h>
 #pragma warning(pop)

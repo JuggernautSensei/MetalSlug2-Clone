@@ -150,9 +150,6 @@
     <ClCompile Include="..\..\Source\Game\Combat\Projectiles.cpp">
       <Filter>Source\Game\Combat</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Game\DemoState.cpp">
-      <Filter>Source\Game</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\Game\Enemies\BigShiee.cpp">
       <Filter>Source\Game\Enemies</Filter>
     </ClCompile>
@@ -297,9 +294,6 @@
     <ClCompile Include="..\..\Source\Game\Ui\ScreenFlow.cpp">
       <Filter>Source\Game\Ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Game\Ui\UiDemoState.cpp">
-      <Filter>Source\Game\Ui</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\Game\Ui\UiSystem.cpp">
       <Filter>Source\Game\Ui</Filter>
     </ClCompile>
@@ -418,9 +412,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Combat\Projectiles.h">
       <Filter>Source\Game\Combat</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Game\DemoState.h">
-      <Filter>Source\Game</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Enemies\BigShiee.h">
       <Filter>Source\Game\Enemies</Filter>
@@ -576,9 +567,6 @@
       <Filter>Source\Game\Ui</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Ui\ScreenFlow.h">
-      <Filter>Source\Game\Ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Game\Ui\UiDemoState.h">
       <Filter>Source\Game\Ui</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Game\Ui\UiLayout.h">

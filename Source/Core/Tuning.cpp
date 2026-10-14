@@ -1,7 +1,6 @@
 #include "Core/Tuning.h"
 
 #include <cmath>
-#include <format>
 #include <optional>
 #include <string>
 
@@ -333,70 +332,6 @@ private:
     bool                              m_bError = false;
 };
 
-class DumpVisitor
-{
-public:
-    void Begin(
-        const StringView _key)
-    {
-        m_path.push_back(String { _key });
-    }
-
-    void End()
-    {
-        m_path.pop_back();
-    }
-
-    void Field(
-        const StringView _key,
-        const float      _value)
-    {
-        Line_(_key, std::format("{:.4f}", _value));
-    }
-
-    void Field(
-        const StringView _key,
-        const int        _value)
-    {
-        Line_(_key, std::to_string(_value));
-    }
-
-    void Field(
-        const StringView _key,
-        const bool       _value)
-    {
-        Line_(_key, _value ? "true" : "false");
-    }
-
-    void Field(
-        const StringView _key,
-        const VECTOR2    _value)
-    {
-        Line_(_key, std::format("[{:.4f}, {:.4f}]", _value.x, _value.y));
-    }
-
-    [[nodiscard]] const String& GetText() const { return m_text; }
-
-private:
-    void Line_(
-        const StringView _key,
-        const String&    _value)
-    {
-        for (const String& part: m_path)
-        {
-            m_text += part;
-            m_text += '.';
-        }
-        m_text += _key;
-        m_text += " = ";
-        m_text += _value;
-        m_text += '\n';
-    }
-
-    Vector<String> m_path = {};
-    String         m_text = {};
-};
-
 namespace
 {
 [[nodiscard]] Result<Tuning> ParseRoot_(
@@ -433,14 +368,6 @@ Result<Tuning> LoadTuning(
         return Error { eError::FileOpen };
     }
     return ParseRoot_(doc->GetReader());
-}
-
-String DumpTuning(
-    const Tuning& _tuning)
-{
-    DumpVisitor visitor;
-    Visit_(visitor, _tuning);
-    return visitor.GetText();
 }
 
 FilePath GetDefaultTuningPath(

@@ -289,7 +289,6 @@ struct Tuning
 [[nodiscard]] Result<Tuning> ParseTuning(StringView _json);
 [[nodiscard]] Result<Tuning> LoadTuning(const FilePath& _path);
 
-[[nodiscard]] String DumpTuning(const Tuning& _tuning);
 
 [[nodiscard]] FilePath GetDefaultTuningPath(const FilePath& _assetRoot);
 

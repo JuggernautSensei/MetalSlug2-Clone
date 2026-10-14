@@ -155,7 +155,6 @@
     <ClCompile Include="..\..\Source\Game\Combat\BulletVisual.cpp" />
     <ClCompile Include="..\..\Source\Game\Combat\CombatSystem.cpp" />
     <ClCompile Include="..\..\Source\Game\Combat\Projectiles.cpp" />
-    <ClCompile Include="..\..\Source\Game\DemoState.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\BigShiee.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\Bus.cpp" />
     <ClCompile Include="..\..\Source\Game\Enemies\Bzk.cpp" />
@@ -194,7 +193,7 @@
     <ClCompile Include="..\..\Source\Game\Stage\StageData.cpp" />
     <ClCompile Include="..\..\Source\Game\Stage\StageParams.cpp" />
     <ClCompile Include="..\..\Source\Game\Stage\StageMapping.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)'=='Debug'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization>
       <InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion>
       <BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks>
@@ -210,13 +209,12 @@
     <ClCompile Include="..\..\Source\Game\Ui\FadeController.cpp" />
     <ClCompile Include="..\..\Source\Game\Ui\Hud.cpp" />
     <ClCompile Include="..\..\Source\Game\Ui\ScreenFlow.cpp" />
-    <ClCompile Include="..\..\Source\Game\Ui\UiDemoState.cpp" />
     <ClCompile Include="..\..\Source\Game\Ui\UiSystem.cpp" />
     <ClCompile Include="..\..\Source\Render\Animation.cpp" />
     <ClCompile Include="..\..\Source\Render\Camera.cpp" />
     <ClCompile Include="..\..\Source\Render\Renderer.cpp" />
     <ClCompile Include="..\..\Source\Render\SpriteBatch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)'=='Debug'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization Condition="'$(Configuration)'=='Debug'">MaxSpeed</Optimization>
       <InlineFunctionExpansion Condition="'$(Configuration)'=='Debug'">AnySuitable</InlineFunctionExpansion>
       <BasicRuntimeChecks Condition="'$(Configuration)'=='Debug'">Default</BasicRuntimeChecks>
@@ -259,7 +257,6 @@
     <ClInclude Include="..\..\Source\Game\Combat\CombatSystem.h" />
     <ClInclude Include="..\..\Source\Game\Combat\HitFlash.h" />
     <ClInclude Include="..\..\Source\Game\Combat\Projectiles.h" />
-    <ClInclude Include="..\..\Source\Game\DemoState.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\BigShiee.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\BigShieeConfig.h" />
     <ClInclude Include="..\..\Source\Game\Enemies\Enemy.h" />
@@ -312,7 +309,6 @@
     <ClInclude Include="..\..\Source\Game\Ui\FadeController.h" />
     <ClInclude Include="..\..\Source\Game\Ui\Hud.h" />
     <ClInclude Include="..\..\Source\Game\Ui\ScreenFlow.h" />
-    <ClInclude Include="..\..\Source\Game\Ui\UiDemoState.h" />
     <ClInclude Include="..\..\Source\Game\Ui\UiLayout.h" />
     <ClInclude Include="..\..\Source\Game\Ui\UiSystem.h" />
     <ClInclude Include="..\..\Source\Render\Animation.h" />

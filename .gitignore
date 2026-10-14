@@ -2,11 +2,6 @@ Output/
 Intermediate/
 .vs/
 vcpkg_installed/
-Captures/
 *.user
 *.suo
-build/
-.claude/worktrees/
-Backup/
-
-Trash/
+.claude/
