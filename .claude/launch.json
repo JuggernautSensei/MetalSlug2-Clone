@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "video-editor",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["Video/edit/server.mjs"],
+      "port": 4100
+    }
+  ]
+}

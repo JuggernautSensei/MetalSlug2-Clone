@@ -1,0 +1,173 @@
+{
+  "sources": {
+    "s1": "C:/Users/Ahnjiwoo/Desktop/My/포폴자료/메탈슬러그/Source1 (play with bug).mp4",
+    "s2": "C:/Users/Ahnjiwoo/Desktop/My/포폴자료/메탈슬러그/Source2 (play).mp4",
+    "s3": "C:/Users/Ahnjiwoo/Desktop/My/포폴자료/메탈슬러그/Source3 (editor + play).mp4"
+  },
+  "gameCrop": [477, 192, 960, 669],
+  "scenes": [
+    {
+      "type": "trailer",
+      "src": "s1",
+      "cuts": [88, 96, 110, 124, 145, 159, 177, 201, 213, 232, 248, 264],
+      "cutLen": 3,
+      "cards": [
+        { "at": 3.5, "dur": 4.5, "label": "C++ 2D 엔진 위에서", "title": "CUSTOM ENGINE" },
+        { "at": 15.5, "dur": 4.5, "label": "스테이지 · 적 · 충돌을 데이터로", "title": "DATA DRIVEN" },
+        { "at": 27.5, "dur": 4.5, "label": "부위를 맞춰 조립한 보스", "title": "BOSS QA" }
+      ],
+      "titleCard": { "dur": 6, "title": "METAL SLUG 2 CLONE", "sub": "C++ 2D 게임 · 자체 엔진과 에디터" }
+    },
+    { "type": "chapter", "num": "01", "name": "플레이", "sub": "한 판을 컷 없이" },
+    {
+      "type": "play",
+      "src": "s2",
+      "in": 133,
+      "out": 399,
+      "badge": "플레이 · 원본 속도",
+      "captions": [
+        [22, 5.5, "게임은 고정 60Hz 틱으로 돌고, 화면은 틱 사이를 보간해 그립니다"],
+        [40, 5.5, "스테이지는 22개 섹션 — 플레이어가 triggerX를 넘으면 실행됩니다"],
+        [58, 5.5, "발판 판정은 Ground 마스크 PNG의 픽셀을 검사합니다"],
+        [78, 5.5, "적의 행동은 클래스로, 속도·상자·애니메이션은 Defs JSON으로"],
+        [103, 5.5, "카메라 경계는 boundsCurves로 위치에 따라 보간합니다"],
+        [125, 5.5, "공격 상자와 피격 상자를 맞대고, hit ID로 중복 피해를 막습니다"],
+        [150, 5.5, "그리는 순서는 depth → sortKey → 제출 순서입니다"],
+        [180, 5.5, "보스는 몸체 · 안테나 · 주포 · 포탑 7기를 조립한 것입니다"],
+        [205, 5.5, "포탑마다 체력이 따로 있고, 모두 부서지면 주포가 열립니다"],
+        [232, 5.5, "같은 소리는 동시에 4개까지 — 넘치면 가장 오래된 소리를 교체합니다"]
+      ]
+    },
+    { "type": "chapter", "num": "02", "name": "애니메이션 편집기", "sub": "프레임 단위로 기준점 맞추기" },
+    {
+      "type": "editor",
+      "src": "s3",
+      "in": 25,
+      "out": 67,
+      "crop": [385, 180, 1215, 670],
+      "title": "Animation 편집기",
+      "sub": "pivot · frameDuration · onion skin",
+      "captions": [
+        [3, 7, "프레임마다 기준점(pivot)과 재생 시간을 편집합니다"],
+        [14, 8, "화살표 키로 1px씩, 이전 프레임을 겹쳐 보며 맞춥니다"],
+        [27, 9, "밖에서 파일이 바뀌면 다시 읽고, 저장 안 한 편집은 지킵니다"]
+      ]
+    },
+    { "type": "chapter", "num": "03", "name": "맵 편집기", "sub": "배치와 충돌을 데이터로" },
+    {
+      "type": "editor",
+      "src": "s3",
+      "in": 100,
+      "out": 128,
+      "crop": [40, 150, 1320, 700],
+      "title": "Stage Map 편집기",
+      "sub": "섹션 · triggerX · Place mode",
+      "captions": [
+        [3, 9, "섹션과 triggerX를 화면 위에서 확인합니다"],
+        [15, 10, "Place mode로 X · Y · Z와 groundSnap을 정해 배치합니다"]
+      ]
+    },
+    {
+      "type": "editor",
+      "src": "s3",
+      "in": 148,
+      "out": 170,
+      "crop": [40, 150, 1320, 700],
+      "title": "Stage Map 편집기",
+      "sub": "섹션 · triggerX · Place mode",
+      "captions": [
+        [2, 9, "위치를 바꿔도 다시 빌드하지 않습니다"],
+        [12, 8, "저장한 JSON은 다음 로드 때 사용됩니다"]
+      ]
+    },
+    { "type": "concept-layers", "dur": 5.7 },
+    {
+      "type": "editor",
+      "src": "s3",
+      "in": 240,
+      "out": 252,
+      "crop": [380, 140, 980, 720],
+      "title": "Ground Mask 편집기",
+      "sub": "Pencil · Rect · Line · Fill",
+      "captions": [
+        [0.6, 5.4, "충돌은 마스크를 직접 칠해서 고칩니다"],
+        [6.2, 5.6, "사각형·선·채우기로 그리고, 코드는 건드리지 않습니다"]
+      ]
+    },
+    {
+      "type": "play",
+      "src": "s3",
+      "in": 849,
+      "out": 856,
+      "badge": "플레이 화면",
+      "captions": [[0.6, 6.2, "칠한 빨간 영역이 그대로 캐릭터가 밟는 바닥이 됩니다"]]
+    },
+    { "type": "chapter", "num": "04", "name": "보스 QA", "sub": "여러 부위를 하나처럼" },
+    { "type": "concept-parts", "dur": 5.7 },
+    {
+      "type": "editor",
+      "src": "s3",
+      "in": 315,
+      "out": 355,
+      "crop": [40, 150, 1840, 760],
+      "title": "보스 부위 정렬",
+      "sub": "Depth 표 · 부위별 스프라이트",
+      "captions": [
+        [3, 9, "부위별 스프라이트의 위치와 타이밍을 하나처럼 맞춥니다"],
+        [15, 9, "Depth 표로 부위마다 그리는 순서를 정합니다"],
+        [27, 9, "그림 시간(clip)과 공격 틱(config)은 따로 설정합니다"]
+      ]
+    },
+    {
+      "type": "editor",
+      "src": "s3",
+      "in": 480,
+      "out": 510,
+      "crop": [40, 150, 1840, 760],
+      "title": "보스 동작 관찰",
+      "sub": "Pause · Step · Fire now",
+      "captions": [
+        [3, 10, "Pause · Step 1 · Step 10 · 0.25x로 한 프레임씩 관찰합니다"],
+        [16, 10, "총구 위치를 옮기고 Fire now로 바로 쏴 봅니다"]
+      ]
+    },
+    { "type": "chapter", "num": "05", "name": "샌드박스", "sub": "작은 변경을 반복해서 확인" },
+    {
+      "type": "editor",
+      "src": "s3",
+      "in": 630,
+      "out": 656,
+      "crop": [40, 150, 1840, 760],
+      "title": "Hitbox · Tuning",
+      "sub": "몸통 · 피격 상자 · Tuning.json",
+      "captions": [
+        [3, 9, "몸통·피격 상자는 값을 바꾸면 바로 적용됩니다"],
+        [14, 10, "나머지 수치는 Tuning.json에 저장하면 샌드박스가 다시 읽습니다"]
+      ]
+    },
+    {
+      "type": "editor",
+      "src": "s3",
+      "in": 675,
+      "out": 692,
+      "crop": [40, 150, 1840, 760],
+      "title": "Enemy Lab",
+      "sub": "Spawn · Kill all · Respawn",
+      "captions": [[3, 11, "적 스폰 · 전부 제거 · 마지막 세트 다시 스폰"]]
+    },
+    {
+      "type": "editor",
+      "src": "s3",
+      "in": 721,
+      "out": 739,
+      "crop": [40, 150, 1840, 760],
+      "title": "Enemy Lab",
+      "sub": "Defs 감시 · 재로드",
+      "captions": [[3, 12, "Defs가 바뀌면 적을 최대한 유지한 채 다시 읽습니다"]]
+    },
+    { "type": "statement", "dur": 4.5, "label": "돌아보며 1", "lines": ["데이터로 바꾸자", "1px 수정에 빌드가 필요 없어졌다"], "hl": "빌드" },
+    { "type": "statement", "dur": 4.5, "label": "돌아보며 2", "lines": ["AI는 계획이", "구체적일수록 잘 만든다"], "hl": "구체적" },
+    { "type": "statement", "dur": 4.5, "label": "돌아보며 3", "lines": ["QA 환경은 함께 만들고", "손맛은 직접 확인한다"], "hl": "직접" },
+    { "type": "end", "dur": 6, "title": "METAL SLUG 2 CLONE", "sub": "[초안] 자막은 정리 중입니다" }
+  ]
+}
