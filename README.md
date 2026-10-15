@@ -1,16 +1,21 @@
+<div align="center">
+
 # MetalSlug2 Clone
 
 **C++20과 SDL3로 바닥부터 만든 메탈슬러그 2 Mission 4 모작과, 런타임 에디터**
+
+![MetalSlug2 Clone](Media/hero.gif)
 
 ![C++20](https://img.shields.io/badge/C%2B%2B-20-00599C?logo=cplusplus&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-x64-0078D6?logo=windows&logoColor=white)
 ![MSVC](https://img.shields.io/badge/MSVC-Visual%20Studio-5C2D91?logo=visualstudio&logoColor=white)
 ![SDL3](https://img.shields.io/badge/SDL-3-1D4F91)
 ![Dear ImGui](https://img.shields.io/badge/Dear%20ImGui-docking-3DDBB4)
+[![YouTube](https://img.shields.io/badge/YouTube-플레이%20영상-FF0000?logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=3DOms4Vg5p4)
 
-[프로젝트 소개](#프로젝트-소개) · [코드 둘러보기](#코드-둘러보기) · [런타임 에디터](#4-런타임-에디터) · [빌드 및 실행](#빌드-및-실행) · [회고](#회고)
+[프로젝트 소개](#프로젝트-소개) · [플레이 영상](#플레이-영상) · [코드 둘러보기](#코드-둘러보기) · [런타임 에디터](#4-런타임-에디터) · [빌드 및 실행](#빌드-및-실행) · [회고](#회고)
 
-![MetalSlug2 Clone](Media/banner.jpg)
+</div>
 
 ## 프로젝트 소개
 
@@ -21,9 +26,9 @@
 
 시작부터 보스전 클리어까지 한 판을 플레이할 수 있고, 실행 인자 `--editor`로 켜면 게임을 돌리면서 애니메이션, 맵, 충돌, 적 데이터를 고칠 수 있습니다.
 
-| 플레이 | 최종 보스 |
-|---|---|
-| ![플레이](Media/gameplay.jpg) | ![빅 셰이](Media/boss.jpg) |
+| 근접 공격과 사격 | 중간 보스 버스 | 최종 보스 빅 셰이 |
+|---|---|---|
+| ![전투](Media/combat.gif) | ![버스](Media/bus.gif) | ![빅 셰이](Media/boss.gif) |
 
 | 구분 | 내용 |
 |---|---|
@@ -32,6 +37,16 @@
 | 스테이지 | 시내 → 버스 → 지하 → 강가 → 다운타운 → 사막 → 보스, 섹션 단위 진행, 카메라 고정·보간 |
 | 오브젝트 | 부서지는 건물·구조물, 아이템 드롭, 포로 |
 | 에디터 | 애니메이션, 맵, 픽셀 충돌, 게임 플레이(히트박스·모션·적 AI) 4종 |
+
+## 플레이 영상
+
+시작부터 보스전 클리어까지의 플레이와 에디터 사용 장면, 설계 설명은 유튜브 영상에 자세히 담았습니다.
+
+<div align="center">
+
+[![MetalSlug2 Clone 플레이 영상](Media/banner.jpg)](https://www.youtube.com/watch?v=3DOms4Vg5p4)
+
+</div>
 
 ## 코드 둘러보기
 
@@ -112,11 +127,11 @@ void SimRunner::Step(const InputFrame _input)
 
 게임을 `--editor`로 실행하면 Dear ImGui 에디터가 함께 뜹니다. 게임의 상당 부분을 데이터 중심으로 만들어서, 수치와 배치를 JSON으로 저장하고 다시 읽습니다.
 
-| 애니메이션 에디터 | 맵 에디터 |
+| 애니메이션 에디터: 어니언 스킨으로 프레임 맞추기 | 맵 에디터: 섹션 시작선 드래그 |
 |---|---|
-| ![애니메이션](Media/editor_animation.jpg) | ![맵](Media/editor_map.jpg) |
-| **픽셀 충돌체 에디터** | **게임 플레이 에디터** |
-| ![충돌](Media/editor_collision.jpg) | ![게임 플레이](Media/editor_gameplay.jpg) |
+| ![애니메이션](Media/editor_anim.gif) | ![맵](Media/editor_map.gif) |
+| **픽셀 충돌체 에디터: 맵 위에 충돌 마스크 칠하기** | **게임 플레이 에디터: 히트박스·AI 확인, 적 대량 스폰** |
+| ![충돌](Media/editor_collision.gif) | ![게임 플레이](Media/editor_ai.gif) |
 
 | 탭 | 대상 파일 | 할 수 있는 것 |
 |---|---|---|
@@ -145,7 +160,7 @@ void SimRunner::Step(const InputFrame _input)
 2. JugX 서브모듈을 함께 받습니다.
 
 ```bash
-git clone --recursive https://github.com/JuggernautSensei/MetalSlug2_Clone.git
+git clone --recursive https://github.com/JuggernautSensei/MetalSlug2-Clone.git
 ```
 
 ### 빌드와 실행
