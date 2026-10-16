@@ -11,7 +11,7 @@
 ![MSVC](https://img.shields.io/badge/MSVC-Visual%20Studio-5C2D91?logo=visualstudio&logoColor=white)
 ![SDL3](https://img.shields.io/badge/SDL-3-1D4F91)
 ![Dear ImGui](https://img.shields.io/badge/Dear%20ImGui-docking-3DDBB4)
-[![YouTube](https://img.shields.io/badge/YouTube-플레이%20영상-FF0000?logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=3DOms4Vg5p4)
+[![YouTube](https://img.shields.io/badge/YouTube-플레이%20영상-FF0000?logo=youtube&logoColor=white)](https://youtu.be/OR9MWsp2wJE?si=LrJh8pS69VRLul2Z)
 
 [프로젝트 소개](#프로젝트-소개) · [플레이 영상](#플레이-영상) · [코드 둘러보기](#코드-둘러보기) · [런타임 에디터](#4-런타임-에디터) · [빌드 및 실행](#빌드-및-실행) · [회고](#회고)
 
@@ -44,7 +44,7 @@
 
 <div align="center">
 
-[![MetalSlug2 Clone 플레이 영상](Media/banner.jpg)](https://www.youtube.com/watch?v=3DOms4Vg5p4)
+[![MetalSlug2 Clone 플레이 영상](Media/banner.jpg)](https://youtu.be/OR9MWsp2wJE?si=LrJh8pS69VRLul2Z)
 
 </div>
 
