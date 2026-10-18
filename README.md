@@ -9,7 +9,7 @@
 ![SDL3](https://img.shields.io/badge/SDL-3-183A61)
 ![Dear ImGui](https://img.shields.io/badge/Dear_ImGui-Editor-38BFA3)
 
-<img src="Media/banner.jpg" alt="메탈슬러그 2 모작의 보스전과 개발 화면" width="960">
+<img src="Media/opening.gif" alt="시가지 전투와 보스전 하이라이트에 이어 MetalSlug2 Clone 타이틀이 나오는 오프닝 장면" width="720">
 
 </div>
 
@@ -36,8 +36,8 @@
 
 현재 게임은 `MISSION 4` 배너로 시작해 시가지, 버스 전투, 차량과 공중 적이 등장하는 구간을 지나 Big Shiee 보스전으로 이어집니다. 스테이지 데이터는 하나이며 내부 파일명은 `Stage0.json`입니다. 원작 전체를 구현한 프로젝트는 아닙니다.
 
-<p align="center"><img src="Media/hero.gif" alt="시가지에서 지형을 따라 이동하고 적과 싸우는 플레이 장면" width="840"></p>
-<p align="center"><sub>지형을 따라 이동하고 적과 싸우는 동안 배경 오브젝트 파괴와 아이템 습득도 함께 진행됩니다.</sub></p>
+<p align="center"><img src="Media/hero.gif" alt="시가지에서 앉아 쏘기, 점프 중 앞·아래 사격, 서서 위로 쏘기를 이어가는 플레이어 동작" width="840"></p>
+<p align="center"><sub>앉기·점프·위아래 조준이 바뀔 때마다 상하체 동작과 사격 방향이 함께 바뀝니다.</sub></p>
 
 플레이에서 눈에 보이는 동작은 여러 시스템이 함께 만든 결과입니다. 달리며 위를 쏠 때는 이동과 조준, 공격 판정과 상하체 애니메이션이 맞물리고, 버스가 파괴된 뒤에는 연출 완료와 카메라 해제, 다음 구간의 적 생성이 이어집니다. 이 문서는 그 연결을 조작과 전투에서부터 적·데이터·카메라·제작 도구 순서로 설명합니다.
 
