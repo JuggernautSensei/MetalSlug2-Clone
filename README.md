@@ -10,7 +10,7 @@
 ![Dear ImGui](https://img.shields.io/badge/Dear_ImGui-Editor-38BFA3)
 [![YouTube](https://img.shields.io/badge/YouTube-플레이_영상-FF0000?logo=youtube&logoColor=white)](https://youtu.be/OR9MWsp2wJE)
 
-<p align="center"><img src="Media/opening.gif" alt="시가지 전투와 보스전 하이라이트에 이어 MetalSlug2 Clone 타이틀이 나오는 오프닝 장면" width="720"></p>
+<p align="center"><img src="Media/opening.gif" alt="시가지 전투부터 보스 파괴까지 이어지는 오프닝 하이라이트" width="720"></p>
 
 </div>
 
