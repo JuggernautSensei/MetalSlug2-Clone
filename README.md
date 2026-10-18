@@ -2,7 +2,7 @@
 
 # MetalSlug2-Clone
 
-**C++20 · SDL3로 구현한 메탈슬러그 2 모작과 ImGui 제작 도구**
+**C++로 만든 메탈슬러그 2 모작**
 
 ![C++20](https://img.shields.io/badge/C%2B%2B-20-00599C?logo=cplusplus&logoColor=white)
 ![Windows x64](https://img.shields.io/badge/Windows-x64-0078D6)
