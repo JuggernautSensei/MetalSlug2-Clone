@@ -55,8 +55,6 @@
 
 선택한 클립의 재생 시점도 조작 상태에 맞춥니다. 걷는 상체와 하체는 전체 재생 길이에서 얼마나 진행했는지를 나타내는 위상을 맞춰 같은 걸음으로 보이게 합니다.
 
-관련 구현: [`PlayerController.cpp`](Source/Game/Player/PlayerController.cpp), [`PlayerInput.cpp`](Source/Game/Player/PlayerInput.cpp), [`PlayerMovement.cpp`](Source/Game/Player/PlayerMovement.cpp), [`PlayerRig.cpp`](Source/Game/Player/PlayerRig.cpp).
-
 <a id="weapons"></a>
 ## 무기와 공격
 
@@ -71,8 +69,6 @@
 <p align="center"><img src="Media/combat.gif" alt="앉기와 점프 중 사격, 병사와 아이템을 포함한 시가지 전투" width="760"></p>
 
 사격 버튼이 항상 총을 발사하지는 않습니다. 근접 가능한 대상이 칼의 감지 범위 안에 있으면 칼 공격으로 전환합니다. 수류탄은 투척 시작 순간이 아니라 지정된 행동 틱에 생성하며, 플레이어 이동 속도의 일부를 물려받은 뒤 중력·튕김·신관·폭발 규칙을 따릅니다.
-
-관련 구현: [`PlayerAttack.cpp`](Source/Game/Player/PlayerAttack.cpp), [`PlayerWeapons.cpp`](Source/Game/Player/PlayerWeapons.cpp), [`Projectiles.cpp`](Source/Game/Combat/Projectiles.cpp), [`Tuning.json`](Assets/Tuning/Tuning.json).
 
 <a id="collision"></a>
 ## 충돌과 지형 물리
@@ -90,8 +86,6 @@
 <p align="center"><img src="Media/collision-editor.png" alt="실제 지형 편집 화면에서 배경 위에 빨간 고체 마스크를 겹쳐 본 모습" width="840"></p>
 
 파괴 가능한 오브젝트는 정상·손상·파괴 상태와 함께 피격 범위, 벽, 발판 역할을 가집니다. 파괴되면 충돌 목록을 다시 만들고, 지정된 경우에는 패치 마스크로 지형 일부를 제거합니다.
-
-관련 구현: [`Combat.cpp`](Source/World/Combat.cpp), [`Geometry.h`](Source/World/Geometry.h), [`GroundMap.cpp`](Source/World/GroundMap.cpp), [`Physics.cpp`](Source/World/Physics.cpp), [`PropWorld.cpp`](Source/Game/Props/PropWorld.cpp).
 
 <a id="enemies"></a>
 ## 적 시스템과 보스전
@@ -117,8 +111,6 @@ Big Shiee는 입장, 포탑전, 주포 전개, 주포전으로 나뉩니다. 포
 <p align="center"><img src="Media/boss.gif" alt="Big Shiee의 포탑·주포와 다중 폭발이 이어지는 최종 보스전" width="840"></p>
 
 보스전에는 포탑 일제사격, 플레이어 각도에 따른 주포 조준과 발사, 자동 스크롤, 낙하산 지원 병력과 아이템 투하가 연결됩니다. 마지막에는 다중 폭발과 대폭발, 잔해·연기가 이어지고 파괴 완료를 스테이지에 전달합니다.
-
-관련 구현: [`Enemy.h`](Source/Game/Enemies/Enemy.h), [`EnemyWorld.cpp`](Source/Game/Enemies/EnemyWorld.cpp), [`EnemyCommon.cpp`](Source/Game/Enemies/EnemyCommon.cpp), [`Bus.cpp`](Source/Game/Enemies/Bus.cpp), [`BigShiee.cpp`](Source/Game/Enemies/BigShiee.cpp).
 
 <a id="data"></a>
 ## JSON 데이터와 스테이지
@@ -148,8 +140,6 @@ Big Shiee는 입장, 포탑전, 주포 전개, 주포전으로 나뉩니다. 포
 
 분리한 범위는 적과 스테이지에 그치지 않습니다. `Tuning.json`에는 이동·점프·입력 버퍼, 몸체와 피격 크기, 총구, 무기와 플레이어·아이템·카메라 관련 설정을 둡니다. `anim.json`은 클립과 프레임·피벗, `sprites.json`은 스프라이트 자원, `sounds.json`은 사운드 이름과 파일을 연결합니다.
 
-관련 데이터와 구현: [`Stage0.json`](Assets/Stage/Stage0.json), [`Enemies.json`](Assets/Defs/Enemies.json), [`Props.json`](Assets/Defs/Props/Props.json), [`StageRunner.cpp`](Source/Game/Stage/StageRunner.cpp), [`EnemyDefLoader.cpp`](Source/Game/Enemies/EnemyDefLoader.cpp), [`ItemWorld.cpp`](Source/Game/Props/ItemWorld.cpp), [`DecorWorld.cpp`](Source/Game/Props/DecorWorld.cpp).
-
 <a id="camera"></a>
 ## 카메라
 
@@ -160,8 +150,6 @@ Big Shiee는 입장, 포탑전, 주포 전개, 주포전으로 나뉩니다. 포
 가로 추적에서는 플레이어가 추적 방향으로 움직인 양에 따라 밀어내는 속도를 키웁니다. 멈추거나 반대로 움직이면 속도를 줄이고, 틱 사이 속도 증가량과 목표까지 남은 거리에 따른 감속을 제한합니다. 목표와 크게 벌어진 경우에는 별도의 글라이드 상태로 가속·감속하며 따라잡습니다.
 
 지정 위치로 이동하는 연출은 시작 위치와 기존 속도를 사용한 3차 보간으로 이어가고, 이동이 끝난 뒤 잠금을 적용할 수 있습니다. 보스전에서는 잠금 영역 자체를 오른쪽으로 옮겨 자동 스크롤을 진행합니다. 이러한 동작을 스테이지 액션이 호출하므로 평소 추적과 전투 연출을 같은 카메라에서 처리합니다.
-
-관련 구현: [`Camera.cpp`](Source/Render/Camera.cpp), [`StageRunner.cpp`](Source/Game/Stage/StageRunner.cpp), [`StageState.cpp`](Source/Game/Stage/StageState.cpp).
 
 <a id="loading"></a>
 ## 이미지 로딩 최적화
@@ -186,8 +174,6 @@ Big Shiee는 입장, 포탑전, 주포 전개, 주포전으로 나뉩니다. 포
 > 측정 환경: 2026-10-18, AMD Ryzen 9 7945HX(16코어·32논리 프로세서), Windows 빌드 26200, x64 Release, 기본 묶음 설정 8. [반복별 원시 결과와 측정 조건](Media/loading-benchmark.json)을 함께 남겼습니다. 다른 저장장치·캐시 상태·컴퓨터에서는 시간이 달라질 수 있습니다.
 
 긴 배경은 로딩 이후 표시 방식도 다릅니다. 가로 길이가 큰 이미지는 폭 2048 이하의 텍스처 조각으로 나누고, 카메라에서 보이는 구간에 해당하는 부분을 그립니다.
-
-관련 구현: [`SpriteBatch.cpp`](Source/Render/SpriteBatch.cpp), [`App.cpp`](Source/Core/App.cpp), [`StageState.cpp`](Source/Game/Stage/StageState.cpp).
 
 <a id="editors"></a>
 ## ImGui 편집기
@@ -226,8 +212,6 @@ AI 탭은 EnemyLab을 중심으로 샌드박스에 적을 소환하고 동작을
 
 <p align="center"><img src="Media/ai-inspector.png" alt="실제 AI 편집 화면의 적 상태와 공격·피격 범위, 추적 대상선" width="960"></p>
 
-관련 구현: [`Editor.cpp`](Source/Editor/Editor.cpp), [`AnimEditor.cpp`](Source/Editor/AnimEditor.cpp), [`StageEditor.cpp`](Source/Editor/StageEditor.cpp), [`GroundEditor.cpp`](Source/Editor/GroundEditor.cpp), [`EnemyLab.cpp`](Source/Editor/EnemyLab.cpp), [`HitboxEditor.cpp`](Source/Editor/HitboxEditor.cpp), [`MotionEditor.cpp`](Source/Editor/MotionEditor.cpp), [`DepthEditor.cpp`](Source/Editor/DepthEditor.cpp).
-
 <a id="runtime"></a>
 ## 게임 루프와 화면·오디오
 
@@ -238,8 +222,6 @@ AI 탭은 EnemyLab을 중심으로 샌드박스에 적을 소환하고 동작을
 그리기는 깊이, 정렬 키, 제출 순서로 정리합니다. 애니메이션 프레임에는 피벗·반전·회전·배율·색조를 적용하고, 개별 텍스처는 화면에 보이는 구간을 잘라 배율과 색조를 적용합니다. 논리 해상도 640×448을 정수 배율과 최근접 샘플링으로 표시합니다. HUD는 비트맵 글꼴과 스프라이트로 목숨·점수·탄약·수류탄·보스 체력을 보여줍니다.
 
 오디오는 `sounds.json`의 이름으로 자원을 찾습니다. 효과음은 디코딩된 자원을 사용하고 BGM은 스트리밍하며, 전체와 같은 소리의 동시 재생 수를 제한합니다.
-
-관련 구현: [`FixedStep.cpp`](Source/Core/FixedStep.cpp), [`SimRunner.cpp`](Source/Game/SimRunner.cpp), [`SpriteBatch.cpp`](Source/Render/SpriteBatch.cpp), [`Hud.cpp`](Source/Game/Ui/Hud.cpp), [`ScreenFlow.cpp`](Source/Game/Ui/ScreenFlow.cpp), [`AudioSystem.cpp`](Source/Audio/AudioSystem.cpp), [`VoiceAllocator.cpp`](Source/Audio/VoiceAllocator.cpp).
 
 <a id="build"></a>
 ## 빌드 및 실행
