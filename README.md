@@ -10,7 +10,7 @@
 ![Dear ImGui](https://img.shields.io/badge/Dear_ImGui-Editor-38BFA3)
 [![YouTube](https://img.shields.io/badge/YouTube-플레이_영상-FF0000?logo=youtube&logoColor=white)](https://youtu.be/OR9MWsp2wJE)
 
-<p align="center"><img src="Media/opening.gif" alt="시가지 전투부터 보스 파괴까지 이어지는 오프닝 하이라이트" width="720"></p>
+<p align="center"><img src="Media/intro-highlight.gif" alt="시가지 전투부터 보스 파괴까지 이어지는 오프닝 하이라이트" width="720"></p>
 
 </div>
 
@@ -36,7 +36,7 @@
 
 게임은 `MISSION 4` 배너로 시작합니다. 시가지에서 병사와 부서지는 건물을 지나면 병사를 쏟아내는 버스와 싸우는 구간이 나오고, 차량과 헬기가 등장하는 구간을 거쳐 Big Shiee 보스전으로 이어집니다. 보스를 파괴하면 결과 화면이 나옵니다. 스테이지는 하나이며 원작 전체를 구현하지는 않았습니다.
 
-<p align="center"><img src="Media/hero.gif" alt="시가지에서 앉아 쏘기, 점프 중 앞·아래 사격, 서서 위로 쏘기를 이어가는 플레이어 동작" width="840"></p>
+<p align="center"><img src="Media/player-motion.gif" alt="시가지에서 앉아 쏘기, 점프 중 앞·아래 사격, 서서 위로 쏘기를 이어가는 플레이어 동작" width="840"></p>
 
 처음에는 2024년 2월 5일부터 두 달 동안 혼자 개발해 게임을 완성했습니다. 그 뒤 2026년 10월 9일부터 일주일 동안 AI 활용 경험을 쌓기 위해 Claude Code와 함께 당시 코드를 리팩터링했고, 아래에서 설명하는 구조는 리팩터링을 마친 현재 코드 기준입니다. 처음부터 보스전까지의 플레이는 [유튜브 영상](https://youtu.be/OR9MWsp2wJE)에서 볼 수 있습니다.
 
