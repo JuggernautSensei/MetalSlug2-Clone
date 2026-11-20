@@ -1,18 +1,16 @@
-<div align="center">
+<h1 align="center">MetalSlug2-Clone</h1>
 
-# MetalSlug2-Clone
+<p align="center">C++20과 SDL3로 만든 메탈슬러그 2 Mission 4 모작</p>
 
-**C++20과 SDL3로 만든 메탈슬러그 2 Mission 4 모작**
-
-![C++20](https://img.shields.io/badge/C%2B%2B-20-00599C?logo=cplusplus&logoColor=white)
-![Windows x64](https://img.shields.io/badge/Windows-x64-0078D6)
-![SDL3](https://img.shields.io/badge/SDL-3-183A61)
-![Dear ImGui](https://img.shields.io/badge/Dear_ImGui-Editor-38BFA3)
-[![YouTube](https://img.shields.io/badge/YouTube-플레이_영상-FF0000?logo=youtube&logoColor=white)](https://youtu.be/OR9MWsp2wJE)
+<p align="center">
+  <img src="https://img.shields.io/badge/C%2B%2B-20-00599C?logo=cplusplus&logoColor=white" alt="C++20">
+  <img src="https://img.shields.io/badge/Windows-x64-0078D6" alt="Windows x64">
+  <img src="https://img.shields.io/badge/SDL-3-183A61" alt="SDL3">
+  <img src="https://img.shields.io/badge/Dear_ImGui-Editor-38BFA3" alt="Dear ImGui">
+  <a href="https://youtu.be/OR9MWsp2wJE"><img src="https://img.shields.io/badge/YouTube-플레이_영상-FF0000?logo=youtube&logoColor=white" alt="YouTube"></a>
+</p>
 
 <p align="center"><img src="Media/intro-highlight.gif" alt="시가지 전투부터 보스 파괴까지 이어지는 오프닝 하이라이트" width="720"></p>
-
-</div>
 
 ## Contents
 
@@ -26,20 +24,17 @@
 - [오디오](#오디오)
 - [이미지 로딩](#이미지-로딩)
 - [GUI 에디터](#gui-에디터)
-
-<br>
+- [빌드 및 실행](#빌드-및-실행)
 
 ## 프로젝트 소개
 
 메탈슬러그 2의 Mission 4를 학습 목적으로 모작한 횡스크롤 액션 게임입니다. 게임 엔진 없이 SDL3 위에 게임 루프, 물리와 충돌, 스프라이트 렌더링, 애니메이션, 사운드를 직접 만들었고, 애니메이션·맵·지형 충돌·적 AI를 고치는 ImGui 편집기를 같은 실행 파일에 넣었습니다.
 
-게임은 `MISSION 4` 배너로 시작합니다. 시가지에서 병사와 부서지는 건물을 지나면 병사를 쏟아내는 버스와 싸우는 구간이 나오고, 차량과 헬기가 등장하는 구간을 거쳐 Big Shiee 보스전으로 이어집니다. 보스를 파괴하면 결과 화면이 나옵니다. 스테이지는 하나이며 원작 전체를 구현하지는 않았습니다.
+게임은 `MISSION 4` 배너로 시작합니다. 시가지에서 병사와 부서지는 건물을 지나면 병사를 쏟아내는 버스와 싸우는 구간이 나오고, 차량과 헬기가 등장하는 구간을 거쳐 Big Shiee 보스전으로 이어집니다. 보스를 파괴하면 결과 화면이 나옵니다.
 
 <p align="center"><img src="Media/play-riverside-full.gif" alt="강가 감시탑 앞에서 헬기와 병사를 상대로 사격하는 전투" width="840"></p>
 
 처음에는 2024년 2월 5일부터 두 달 동안 혼자 개발해 게임을 완성했습니다. 그 뒤 2026년 10월 9일부터 일주일 동안 AI 활용 경험을 쌓기 위해 Claude Code와 함께 당시 코드를 리팩터링했고, 아래에서 설명하는 구조는 리팩터링을 마친 현재 코드 기준입니다. 처음부터 보스전까지의 플레이는 [유튜브 영상](https://youtu.be/OR9MWsp2wJE)에서 볼 수 있습니다.
-
-<br>
 
 ## 게임 루프와 틱 순서
 
@@ -62,7 +57,7 @@ const VECTOR2 pos  = Lerp(bullet.renderPrev, bullet.position, _alpha);          
 
 ### 판정 일괄 처리
 
-스테이지 한 틱에서 가장 중요하게 정한 것은 순서입니다. 플레이어, 적, 프롭(부서지는 건물·오브젝트), 발사체가 서로를 직접 때리게 하면 누가 먼저 갱신되느냐에 따라 결과가 달라지고, 공격하는 쪽이 맞는 쪽의 체력 규칙까지 알아야 합니다. 그래서 [`StageState::Tick()`](Source/Game/Stage/StageState.cpp)은 판정 상자를 먼저 모두 등록하고, 판정은 한 곳에서 한 번에 내린 뒤, 결과를 각자 가져가게 했습니다.
+스테이지 한 틱에서 가장 중요하게 정한 것은 순서입니다. 플레이어, 적, 프롭(부서지는 건물·오브젝트), 발사체가 서로를 직접 때리게 하면 누가 먼저 갱신되느냐에 따라 결과가 달라지고, 공격하는 쪽이 맞는 쪽의 체력 규칙까지 알아야 합니다. 그래서 [`StageState::Tick()`](Source/Game/Stage/StageState.cpp)은 판정 상자를 먼저 모두 등록하고, 판정은 한 곳에서 한 번에 내린 뒤, 결과를 각자 가져가게 했습니다. 아래는 호출 순서만 남겨 옮긴 것입니다.
 
 ```cpp
 m_combat.BeginTick();                    // 지난 틱의 판정 상자를 비웁니다.
@@ -87,11 +82,9 @@ m_runner->Tick();                        // 마지막으로 스테이지 진행�
 
 여러 틱 동안 남는 칼이나 화염은 공격마다 ID를 받아 명중 이력을 남깁니다. 칼 판정 상자가 몇 틱 동안 겹쳐도 같은 대상에게는 한 번만 피해를 주고, 화염처럼 일정 간격마다 다시 피해를 주는 공격도 같은 ID 규칙으로 처리합니다.
 
-<br>
-
 ## 플레이어
 
-메탈슬러그의 캐릭터는 달리면서 위를 쏘고, 점프하면서 아래로 수류탄을 던집니다. 이동과 조준과 공격을 동작 하나로 묶으면 조합마다 애니메이션 상태가 필요해집니다. 그래서 플레이어를 **무엇을 하고 있는가**와 **어떻게 보이는가** 두 단계로 나눴습니다.
+메탈슬러그의 캐릭터는 달리면서 위를 쏘고, 점프하면서 아래로 수류탄을 던집니다. 이동과 조준과 공격을 동작 하나로 묶으면 조합마다 애니메이션 상태가 필요해집니다. 그래서 플레이어를 무엇을 하고 있는가와 어떻게 보이는가 두 단계로 나눴습니다.
 
 [`PlayerController`](Source/Game/Player/PlayerController.cpp)는 입력을 해석해 이동, 자세, 조준 방향, 무기, 공격 동작을 정하고, 그 결과를 `RigState`라는 작은 구조체로 내보냅니다. [`PlayerRig`](Source/Game/Player/PlayerRig.cpp)는 이 구조체만 보고 그릴 클립을 고릅니다.
 
@@ -117,8 +110,6 @@ struct RigState
 무기마다 다른 부분은 발사체의 규칙입니다. 로켓은 느리게 출발해 최대 속도까지 가속하고, 명중하면 날아가던 탄을 끝내는 대신 폭발 범위를 가진 판정을 따로 만들어 주변 대상에게 피해를 줍니다. 화염방사기는 탄 한 발이 아니라 각도와 속도가 조금씩 다른 입자를 시간차로 뿌리고, 입자가 커질수록 판정도 커집니다. 한 번 분출한 입자들은 공격 ID를 공유해서, 여러 입자가 겹쳐도 피해가 한꺼번에 쌓이지 않고 정해진 간격마다 다시 들어갑니다.
 
 HUD는 플레이어 상태로 `HudModel`을 만들고, [`UiSystem`](Source/Game/Ui/UiSystem.cpp)이 비트맵 글꼴과 스프라이트로 목숨, 점수, 탄약, 수류탄, 보스 체력을 그립니다. 미션 시작 배너, 페이드, 결과 화면은 [`ScreenFlow`](Source/Game/Ui/ScreenFlow.cpp)가 맡습니다. 화면 흐름이 진행되는 동안 `StageState::Tick()`은 UI와 화면 흐름만 갱신하고 월드 갱신을 건너뛰므로, 결과 화면 뒤에서 적이 계속 움직이지 않습니다.
-
-<br>
 
 ## 적과 보스
 
@@ -182,15 +173,13 @@ Big Shiee는 포탑 여러 개와 주포로 이루어진 보스입니다. 부위
 
 <p align="center"><img src="Media/boss.gif" alt="Big Shiee의 포탑과 주포를 부수고 연속 폭발이 이어지는 보스전" width="840"></p>
 
-<br>
-
 ## 데이터 기반 설계
 
 점프 높이를 조금 낮추거나 적을 몇 픽셀 옮길 때마다 빌드를 다시 하지 않도록, 값과 배치는 JSON에 두고 C++은 그 값을 해석하는 규칙만 갖게 했습니다. 앞에서 본 [적 정의](#적-정의-json)도 같은 방식입니다.
 
 ### 튜닝 값
 
-[`Tuning.json`](Assets/Tuning/Tuning.json)에는 플레이어 이동과 몸체, 총구, 무기, 칼, 수류탄, 아이템, 카메라 수치가 들어 있습니다. 예를 들어 이동 항목은 다음과 같습니다.
+[`Tuning.json`](Assets/Tuning/Tuning.json)에는 플레이어 이동과 몸체, 총구, 무기, 칼, 수류탄, 아이템, 카메라 수치가 들어 있습니다. 예를 들어 이동 항목의 일부는 다음과 같습니다.
 
 ```json
 "move": {
@@ -224,8 +213,6 @@ Big Shiee는 포탑 여러 개와 주포로 이루어진 보스입니다. 부위
 
 웨이브(`spawnWave`)는 지연 시간, 반복 간격과 횟수를 가지고, 예약된 생성은 실행할 틱과 등록 순서로 정렬해 처리합니다. 카메라는 평소에는 플레이어 주변의 데드존을 벗어날 때만 따라가고, 이 잠금·이동 액션이 들어오면 지정한 영역으로 옮겨 갑니다. 보스전의 자동 스크롤은 잠금 영역 자체를 오른쪽으로 밀어서 만들었습니다.
 
-<br>
-
 ## 지형 충돌
 
 메탈슬러그의 배경은 계단, 경사, 무너진 지붕처럼 모양이 불규칙합니다. 이를 사각형으로 하나씩 덮으면 칸 수가 너무 많아지고 경사도 표현하기 어렵습니다. 그래서 충돌을 두 가지로 나눴습니다. 전투는 앞에서 본 축 정렬 사각형(AABB) `Hitbox`·`Hurtbox`로 판정하고, 지형은 배경 픽셀마다 고체인지 아닌지만 담은 비트 배열 [`GroundMap`](Source/World/GroundMap.cpp)으로 판정합니다.
@@ -235,8 +222,6 @@ Big Shiee는 포탑 여러 개와 주포로 이루어진 보스입니다. 부위
 빨간 부분이 고체 픽셀입니다. 스프라이트 색이나 알파를 매번 읽지 않고 미리 만든 1비트 마스크만 보므로, 한 점이 막혔는지는 비트 하나를 읽는 것으로 끝납니다. [`Physics`](Source/World/Physics.cpp)는 이동을 작은 구간으로 나눠 벽·천장·바닥을 검사하고, 발 아래 몇 픽셀을 탐색해 작은 단차는 오르내리게 합니다. 그래서 계단마다 따로 경사 데이터를 만들지 않아도 캐릭터가 그림에 맞춰 걷습니다.
 
 빠른 발사체는 한 틱에 수십 픽셀을 움직여 얇은 벽을 건너뛸 수 있습니다. 지형에 대해서는 이동 선분을 일정 간격으로 나눠 검사하고, 다른 개체에 대해서는 이전 위치와 현재 위치를 덮는 상자로 판정합니다. 부서지는 건물은 파괴될 때 지정된 패치 마스크로 지형 일부를 지워서, 무너진 자리로 지나갈 수 있게 했습니다.
-
-<br>
 
 ## 렌더링
 
@@ -284,14 +269,26 @@ const int last  = Min(static_cast<int>(_texture.strips.size()) - 1,
 
 <p align="center"><img src="Media/loading-comparison.png" alt="순차 23.34초, 병렬 12.21초의 초기 실행 시간 중앙값 비교" width="840"></p>
 
-| 실행 모드 | 5회 중앙값 |
-|---|---:|
-| 순차 디코딩 (`--no-async-load`) | 23.34초 |
-| 병렬 디코딩 (기본) | 12.21초 |
+<table width="100%">
+  <thead>
+    <tr>
+      <th align="left">실행 모드</th>
+      <th align="right">5회 중앙값</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="left">순차 디코딩 (<code>--no-async-load</code>)</td>
+      <td align="right">23.34초</td>
+    </tr>
+    <tr>
+      <td align="left">병렬 디코딩 (기본)</td>
+      <td align="right">12.21초</td>
+    </tr>
+  </tbody>
+</table>
 
 전체 실행 시간이 약 47.7% 줄어 약 1.91배 빨라졌습니다. 디코딩 함수만 따로 잰 값이 아니므로 디코딩 자체가 몇 배 빨라졌는지는 이 표로 알 수 없습니다. 예열을 포함한 12회 실행 모두에서 텍스처 20개의 등록 순서·크기·RGBA 해시가 같아, 병렬로 바꾼 뒤에도 같은 데이터가 같은 순서로 등록되는 것을 함께 확인했습니다.
-
-<br>
 
 ## GUI 에디터
 
@@ -315,4 +312,55 @@ AI 탭은 샌드박스에 적을 원하는 위치와 방향으로 소환해 행�
 
 <p align="center"><img src="Media/ai-inspector.png" alt="적의 상태값과 공격·피격 범위, 추적 대상선을 표시한 AI 편집 화면" width="840"></p>
 
-<br>
+## 빌드 및 실행
+
+Windows x64에서 C++20으로 빌드합니다. Visual Studio 2026의 "C++를 사용한 데스크톱 개발" 워크로드가 필요하고(프로젝트 도구 집합 `v145`), 의존 라이브러리는 `vcpkg.json` 매니페스트에 있습니다. vcpkg 경로는 `VCPKG_ROOT` 환경 변수를 읽고, 설정이 없으면 `C:\vcpkg\`를 사용합니다.
+
+1. 저장소를 받습니다.
+
+   ```powershell
+   git clone https://github.com/JuggernautSensei/MetalSlug2-Clone.git
+   ```
+
+2. 저장소 폴더에서 `Play.cmd`를 실행합니다. Release로 증분 빌드한 뒤 게임을 시작합니다.
+
+`Play.cmd --editor`처럼 인자를 붙이면 게임에 그대로 전달됩니다.
+
+<table width="100%">
+  <thead>
+    <tr>
+      <th align="left">동작</th>
+      <th align="left">키</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>이동</td>
+      <td>A, D 또는 ←, →</td>
+    </tr>
+    <tr>
+      <td>위, 아래 입력</td>
+      <td>W, S 또는 ↑, ↓</td>
+    </tr>
+    <tr>
+      <td>사격</td>
+      <td>J 또는 Z</td>
+    </tr>
+    <tr>
+      <td>점프</td>
+      <td>K 또는 X</td>
+    </tr>
+    <tr>
+      <td>수류탄</td>
+      <td>L 또는 C</td>
+    </tr>
+    <tr>
+      <td>시작, 결정</td>
+      <td>Enter 또는 Space</td>
+    </tr>
+    <tr>
+      <td>일시정지</td>
+      <td>Esc</td>
+    </tr>
+  </tbody>
+</table>
