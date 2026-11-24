@@ -10,7 +10,7 @@
   <a href="https://youtu.be/OR9MWsp2wJE"><img src="https://img.shields.io/badge/YouTube-플레이_영상-FF0000?logo=youtube&logoColor=white" alt="YouTube"></a>
 </p>
 
-![시가지 전투부터 Big Shiee 파괴까지 이어지는 플레이 하이라이트](Media/intro-highlight.gif)
+<p align="center"><img src="Media/intro-highlight.gif" alt="시가지 전투부터 Big Shiee 파괴까지 이어지는 플레이 하이라이트"></p>
 
 ## Contents
 
@@ -35,7 +35,7 @@
 - 적, 스테이지 진행, 스프라이트 깊이, 플레이어 수치를 JSON 데이터로 정의해 빌드 없이 조정합니다.
 - 애니메이션, 맵, 지형 충돌, 적 AI를 편집하는 Dear ImGui 에디터를 같은 실행 파일에 넣었습니다.
 
-![강가 감시탑 앞에서 헬기와 병사를 상대로 사격하는 전투](Media/play-riverside-full.gif)
+<p align="center"><img src="Media/play-riverside-full.gif" alt="강가 감시탑 앞에서 헬기와 병사를 상대로 사격하는 전투"></p>
 
 `MISSION 4` 배너로 시작해 시가지의 병사와 부서지는 건물, 병사를 쏟아내는 버스, 차량과 헬기 구간을 지나 Big Shiee 보스전으로 이어집니다. 무기는 권총, HMG, 샷건, 로켓, 화염방사기이고, 적에게 가까이 붙어 사격하면 칼 공격으로 바뀝니다. 전체 플레이는 [유튜브 영상](https://youtu.be/OR9MWsp2wJE)에서 볼 수 있습니다.
 
@@ -62,13 +62,13 @@ m_player.OnHitEvents(events);
 m_runner->Tick();                        // 마지막으로 스테이지 진행을 확인
 ```
 
-![적마다 공격·피격 범위, AI 상태값, 플레이어를 향한 추적선을 겹쳐 표시한 디버그 화면](Media/ai-inspector.png)
+<p align="center"><img src="Media/ai-inspector.png" alt="적마다 공격·피격 범위, AI 상태값, 플레이어를 향한 추적선을 겹쳐 표시한 디버그 화면"></p>
 
 [`CombatSystem`](Source/Game/Combat/CombatSystem.h)은 `Hitbox`와 `Hurtbox`의 겹침, 팀, 무적 여부만 보고 `HitEvent`를 만듭니다. 체력을 깎을지, 방패로 막을지는 이벤트를 받은 쪽이 정합니다. 그래서 새 무기를 만들 때 적 코드를 고치지 않고, 특이한 적을 만들 때 판정기를 고치지 않습니다. 칼이나 화염처럼 여러 틱 동안 남는 공격은 명중 이력을 남겨, 같은 대상에게 한 번만 또는 정해진 간격마다 피해를 줍니다.
 
 ## 플레이어의 상체와 하체
 
-![앉아 쏘기, 점프 중 앞·아래 사격, 서서 위로 쏘기를 이어가는 플레이어 동작](Media/player-motion.gif)
+<p align="center"><img src="Media/player-motion.gif" alt="앉아 쏘기, 점프 중 앞·아래 사격, 서서 위로 쏘기를 이어가는 플레이어 동작"></p>
 
 메탈슬러그의 캐릭터는 달리면서 위를 쏘고, 점프하면서 아래로 쏩니다. 이동, 조준, 공격을 동작 하나로 묶으면 모든 조합마다 애니메이션이 필요합니다. 그래서 입력 해석과 애니메이션 선택을 분리했습니다.
 
@@ -104,7 +104,7 @@ struct RigState
 }
 ```
 
-![Big Shiee의 포탑과 주포를 부수고 연속 폭발이 이어지는 보스전](Media/boss.gif)
+<p align="center"><img src="Media/boss.gif" alt="Big Shiee의 포탑과 주포를 부수고 연속 폭발이 이어지는 보스전"></p>
 
 부위 판정도 같은 `Hurtbox` 구조로 처리합니다. 방패병은 방패와 몸통을 따로 등록해, 방패에 맞은 공격은 피해 없이 막습니다. Big Shiee는 적 하나가 포탑 여러 개와 주포를 갖고, 각 부위의 `Hurtbox`에 부위 번호를 담은 소유자 ID를 붙여 어느 부위가 맞았는지 구분합니다. 포탑을 모두 부수면 주포가 열리고, 열린 동안에만 주포의 `Hurtbox`를 등록해 공격 가능한 시간을 패턴으로 만듭니다.
 
@@ -124,7 +124,7 @@ struct RigState
 }
 ```
 
-![손상 단계에 따라 모습이 바뀌고 파괴 후 폭발과 잔해가 남는 버스](Media/bus.gif)
+<p align="center"><img src="Media/bus.gif" alt="손상 단계에 따라 모습이 바뀌고 파괴 후 폭발과 잔해가 남는 버스"></p>
 
 `gate`는 지정한 개체가 파괴 연출을 마칠 때까지 안쪽 액션을 미룹니다. 버스 구간은 카메라를 잠근 뒤, 버스가 `destroyFinished`를 알리면 잠금을 풀고 이동 범위를 넓힙니다. 버스는 연출이 끝났다는 신호만 보내고 다음 진행은 데이터가 정하므로, 적 코드는 카메라를 모릅니다. 보스 파괴 후 결과 화면으로 넘어가는 것도 같은 방식입니다.
 
@@ -148,7 +148,7 @@ std::sort(_commands.begin(), _commands.end(), [](const SpriteCommand& _a, const 
 
 ## 픽셀 마스크 지형
 
-![배경 위에 빨간 고체 마스크를 겹쳐 본 지형](Media/collision-editor.png)
+<p align="center"><img src="Media/collision-editor.png" alt="배경 위에 빨간 고체 마스크를 겹쳐 본 지형"></p>
 
 메탈슬러그의 배경은 계단, 경사, 무너진 지붕처럼 모양이 불규칙해서 사각형으로 덮기 어렵습니다. 그래서 전투 판정은 사각형으로 하고, 지형은 배경 픽셀마다 고체 여부를 1비트로 담은 [`GroundMap`](Source/World/GroundMap.cpp)으로 판정합니다. 위 그림의 빨간 부분이 고체 픽셀입니다.
 
@@ -168,7 +168,7 @@ std::sort(_commands.begin(), _commands.end(), [](const SpriteCommand& _a, const 
 
 [`DecodeImages`](Source/Render/SpriteBatch.cpp)는 작업자 수만큼 묶어서 디코딩하고, 묶음마다 원래 경로 순서대로 등록합니다. 끝난 순서대로 등록하면 아틀라스 페이지 번호가 실행마다 바뀌어 애니메이션 프레임이 엉뚱한 페이지를 가리키기 때문입니다. 묶음 단위로 처리해 모든 이미지의 RGBA를 한꺼번에 메모리에 들고 있지 않습니다.
 
-![순차 23.34초, 병렬 12.21초의 초기 실행 시간 중앙값 비교](Media/loading-comparison.png)
+<p align="center"><img src="Media/loading-comparison.png" alt="순차 23.34초, 병렬 12.21초의 초기 실행 시간 중앙값 비교"></p>
 
 | 실행 모드 | 5회 중앙값 |
 | --- | ---: |
