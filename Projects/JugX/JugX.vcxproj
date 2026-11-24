@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Vendor/JugX (서브모듈) 를 MetalSlug2 의 vcpkg 트리플렛/런타임에 맞춰 정적 라이브러리로 빌드한다. 소스는 직접 나열. -->
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{5B1E3A6C-7D42-4F0B-9C58-2E9A4D7B1F63}</ProjectGuid>
+    <RootNamespace>JugX</RootNamespace>
+    <ProjectName>JugX</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SolutionDir Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)..\..\</SolutionDir>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == '' And '$(VCPKG_ROOT)' != ''">$([MSBuild]::EnsureTrailingSlash('$(VCPKG_ROOT)'))</VcpkgRoot>
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == ''">C:\vcpkg\</VcpkgRoot>
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgManifestRoot>$(SolutionDir)</VcpkgManifestRoot>
+    <VcpkgTriplet>x64-windows-static-md</VcpkgTriplet>
+  </PropertyGroup>
+  <Import Project="$(VcpkgRoot)scripts\buildsystems\msbuild\vcpkg.props" Condition="Exists('$(VcpkgRoot)scripts\buildsystems\msbuild\vcpkg.props') And !Exists('$(LOCALAPPDATA)\vcpkg\vcpkg.user.targets')" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)Output\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_LIB;NOMINMAX;WIN32_LEAN_AND_MEAN;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\JugX;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_LIB;NOMINMAX;WIN32_LEAN_AND_MEAN;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\JugX;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Vendor\JugX\JugX\pch.cpp"><PrecompiledHeader>Create</PrecompiledHeader></ClCompile>
+    <ClCompile Include="..\..\Vendor\JugX\JugX\AABB.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Align.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Alloc.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Application.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\ApplicationEvent.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Assert.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\AxisAngle.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Buffer.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Callable.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Collision.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Config.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\ConsoleLogger.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\CoreLogger.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Corner.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\EnumArray.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\EnumFlags.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\EnumRefl.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Error.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Event.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\EventDispatcher.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Fatal.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\FileLogger.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\FileReader.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\FileReaderWriter.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\FileWriter.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\FixedBlockMemoryPool.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Float16.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Frustum.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\GroupLogger.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Handle.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\HandleAllocator.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\HandleStorage.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Interval.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\JsonAdlSerializer.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\JsonDeserializer.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\JsonSerializer.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\JsonString.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\KeyCode.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Logger.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\LruCache.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Macro.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Math.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Matrix.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\MemoryArena.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\MemoryHasher.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\MemoryLogger.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\MemoryView.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\NoopHasher.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\OBB.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\OS.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\ObjectPool.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\OsInclude.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Plane.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Platform.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Quaternion.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\RGBA.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Random.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Ray.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Ref.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\RefCount.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\ResourcePool.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Result.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\RingBuffer.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\SIMD.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Scoped.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\SerializeError.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Sphere.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\StringEncoder.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\StringFormat.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\StringHasher.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\StringParser.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\SystemError.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Tag.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\TimeStamp.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Timer.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Triangle.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\TypeRefl.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\TypeTraits.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Typedef.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Vector.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Vector2.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Vector3.cpp" />
+    <ClCompile Include="..\..\Vendor\JugX\JugX\Vector4.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

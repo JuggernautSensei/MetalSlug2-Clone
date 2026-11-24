@@ -1,0 +1,169 @@
+{
+  "measured_date": "2026-10-18",
+  "source_commit": "b5a4cf7537e2c5ddf64dbd1f3b4b0fd240a2d8eb",
+  "executable_sha256": "28e47eed03ce7f8e9e8b7ee505702f27b5593d0b9d7d8a639af49adb22a50745",
+  "command_common": [
+    "--state",
+    "stage0",
+    "--capture",
+    "<run>.bmp",
+    "--capture-frame",
+    "1",
+    "--trace-load",
+    "--no-audio"
+  ],
+  "sequential_extra": [
+    "--no-async-load"
+  ],
+  "parallel_extra": [],
+  "environment": {
+    "CPU": {
+      "Name": "AMD Ryzen 9 7945HX with Radeon Graphics        ",
+      "NumberOfCores": 16,
+      "NumberOfLogicalProcessors": 32
+    },
+    "OS": "Microsoft Windows NT 10.0.26200.0",
+    "Workers": 8,
+    "Configuration": "Release x64",
+    "Metric": "Process launch through first-frame BMP capture and process exit; includes startup, image loading, render, capture, cleanup",
+    "Cache": "Warm file cache after one excluded run per mode",
+    "Rounds": 5,
+    "Order": "Alternating modes by round"
+  },
+  "runs": [
+    {
+      "Round": 0,
+      "Warmup": true,
+      "Mode": "sequential",
+      "Milliseconds": 28356.63,
+      "ExitCode": 0
+    },
+    {
+      "Round": 0,
+      "Warmup": true,
+      "Mode": "parallel",
+      "Milliseconds": 13019.03,
+      "ExitCode": 0
+    },
+    {
+      "Round": 1,
+      "Warmup": false,
+      "Mode": "parallel",
+      "Milliseconds": 12211.57,
+      "ExitCode": 0
+    },
+    {
+      "Round": 1,
+      "Warmup": false,
+      "Mode": "sequential",
+      "Milliseconds": 23343.05,
+      "ExitCode": 0
+    },
+    {
+      "Round": 2,
+      "Warmup": false,
+      "Mode": "sequential",
+      "Milliseconds": 23260.36,
+      "ExitCode": 0
+    },
+    {
+      "Round": 2,
+      "Warmup": false,
+      "Mode": "parallel",
+      "Milliseconds": 12062.07,
+      "ExitCode": 0
+    },
+    {
+      "Round": 3,
+      "Warmup": false,
+      "Mode": "parallel",
+      "Milliseconds": 12211.14,
+      "ExitCode": 0
+    },
+    {
+      "Round": 3,
+      "Warmup": false,
+      "Mode": "sequential",
+      "Milliseconds": 23724.56,
+      "ExitCode": 0
+    },
+    {
+      "Round": 4,
+      "Warmup": false,
+      "Mode": "sequential",
+      "Milliseconds": 23784.08,
+      "ExitCode": 0
+    },
+    {
+      "Round": 4,
+      "Warmup": false,
+      "Mode": "parallel",
+      "Milliseconds": 12478.97,
+      "ExitCode": 0
+    },
+    {
+      "Round": 5,
+      "Warmup": false,
+      "Mode": "parallel",
+      "Milliseconds": 12287.62,
+      "ExitCode": 0
+    },
+    {
+      "Round": 5,
+      "Warmup": false,
+      "Mode": "sequential",
+      "Milliseconds": 22438.21,
+      "ExitCode": 0
+    }
+  ],
+  "summary": {
+    "samples_ms": {
+      "sequential": [
+        23343.05,
+        23260.36,
+        23724.56,
+        23784.08,
+        22438.21
+      ],
+      "parallel": [
+        12211.57,
+        12062.07,
+        12211.14,
+        12478.97,
+        12287.62
+      ]
+    },
+    "median_ms": {
+      "sequential": 23343.05,
+      "parallel": 12211.57
+    },
+    "ratio": 1.9115519134722234,
+    "reduction_percent": 47.68648484238349
+  },
+  "texture_validation": {
+    "count": 20,
+    "all_12_runs_identical": true,
+    "records": [
+      "[tex] atlas page=0 file=atlas_000.png 2048x2048 rgba=c29cfe12d36363a5",
+      "[tex] atlas page=1 file=atlas_001.png 2048x2048 rgba=fc04dce0b277a8e5",
+      "[tex] atlas page=2 file=atlas_002.png 2048x2048 rgba=ccb7b740973dfbd5",
+      "[tex] atlas page=3 file=atlas_003.png 2048x2048 rgba=fd264958d8dacf98",
+      "[tex] atlas page=4 file=atlas_004.png 2048x2048 rgba=4cd62cc653c33740",
+      "[tex] atlas page=5 file=atlas_005.png 2048x2048 rgba=7979988ad144641d",
+      "[tex] atlas page=6 file=atlas_006.png 2048x2048 rgba=7e8b2efe474e6835",
+      "[tex] atlas page=7 file=atlas_007.png 2048x2048 rgba=4ec4651ad52ed870",
+      "[tex] atlas page=8 file=atlas_008.png 2048x2048 rgba=0092d42c8255c9ed",
+      "[tex] atlas page=9 file=atlas_009.png 2048x2048 rgba=b25f0c9e46623d7f",
+      "[tex] atlas page=10 file=atlas_010.png 2048x2048 rgba=79bfda99afa4a1dc",
+      "[tex] atlas page=11 file=atlas_011.png 2048x2048 rgba=8f4380508002e5f4",
+      "[tex] atlas page=12 file=atlas_012.png 2048x2048 rgba=5b58f92bcb939875",
+      "[tex] atlas page=13 file=atlas_013.png 2048x2048 rgba=8d9d12c8ff5fc58e",
+      "[tex] atlas page=14 file=atlas_014.png 2048x2048 rgba=835a210180ca52a5",
+      "[tex] atlas page=15 file=atlas_015.png 2048x2048 rgba=b3822fd4ae482b18",
+      "[tex] standalone handle=0 file=Stage0_Main.png 14094x1328 rgba=d466377941e24148",
+      "[tex] standalone handle=1 file=Stage0_Background_0.png 1178x320 rgba=2316c125751a5ba5",
+      "[tex] standalone handle=2 file=Stage0_Background_0.png 1178x320 rgba=2316c125751a5ba5",
+      "[tex] standalone handle=3 file=Stage0_Background_1.png 2048x512 rgba=8ffd93228ac8cf25"
+    ]
+  }
+}

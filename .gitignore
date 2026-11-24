@@ -1,0 +1,7 @@
+Output/
+Intermediate/
+.vs/
+vcpkg_installed/
+*.user
+*.suo
+.claude/

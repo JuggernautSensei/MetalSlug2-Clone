@@ -1,0 +1,204 @@
+{
+    "move": {
+        "runSpeed": 250,
+        "crouchSpeed": 125,
+        "airSpeed": 250,
+        "jumpSpeed": 600,
+        "gravity": 1400,
+        "terminalVelocity": 1000,
+        "coyoteTicks": 4,
+        "jumpBufferTicks": 4,
+        "shotBufferTicks": 6,
+        "bombBufferTicks": 6,
+        "maxStepUp": 4,
+        "maxSnapDown": 4,
+        "jumpHeadroom": 6
+    },
+    "body": {
+        "standSize": [20, 58],
+        "crouchSize": [20, 36],
+        "hurtStand": [16, 54],
+        "hurtCrouch": [16, 32],
+        "footHalfWidth": 4
+    },
+    "muzzle": {
+        "stand": {
+            "forward": [44, -51],
+            "up": [0, -106],
+            "diagUp": [40, -62],
+            "down": [2, -2],
+            "diagDown": [20, -10]
+        },
+        "crouch": {
+            "forward": [38, -36],
+            "up": [0, -80],
+            "diagUp": [34, -50],
+            "down": [2, -2],
+            "diagDown": [20, -10]
+        },
+        "air": {
+            "forward": [44, -50],
+            "up": [0, -104],
+            "diagUp": [40, -60],
+            "down": [2, -2],
+            "diagDown": [20, -10]
+        }
+    },
+    "weapons": {
+        "pistol": {
+            "damage": 3,
+            "fireIntervalTicks": 5,
+            "holdRepeatTicks": 0,
+            "ammo": 0,
+            "projectileSpeed": 800,
+            "maxAlive": 4,
+            "pierce": false,
+            "hitSize": [14, 10],
+            "range": 420,
+            "shotOverlayTicks": 14
+        },
+        "hmg": {
+            "damage": 2,
+            "fireIntervalTicks": 4,
+            "holdRepeatTicks": 0,
+            "ammo": 200,
+            "projectileSpeed": 640,
+            "maxAlive": 0,
+            "pierce": false,
+            "hitSize": [14, 10],
+            "range": 460,
+            "shotOverlayTicks": 20,
+            "burstShotsMin": 3,
+            "burstShotsMax": 5,
+            "burstIntervalTicks": 4,
+            "muzzleJitter": [0, 6],
+            "muzzleAdjust": [6, 10]
+        },
+        "shotgun": {
+            "damage": 14,
+            "fireIntervalTicks": 16,
+            "holdRepeatTicks": 0,
+            "ammo": 30,
+            "projectileSpeed": 560,
+            "maxAlive": 0,
+            "pierce": true,
+            "hitSize": [90, 70],
+            "range": 240,
+            "shotOverlayTicks": 16
+        },
+        "rocket": {
+            "damage": 0,
+            "fireIntervalTicks": 24,
+            "holdRepeatTicks": 0,
+            "ammo": 20,
+            "projectileSpeed": 200,
+            "speedAccel": 1600,
+            "speedMax": 900,
+            "maxAlive": 2,
+            "pierce": false,
+            "hitSize": [16, 12],
+            "range": 420,
+            "shotOverlayTicks": 20,
+            "blastSize": [96, 96],
+            "blastDamage": 15,
+            "blastTicks": 6
+        },
+        "flame": {
+            "damage": 3,
+            "fireIntervalTicks": 24,
+            "holdRepeatTicks": 0,
+            "ammo": 30,
+            "projectileSpeed": 300,
+            "maxAlive": 0,
+            "pierce": true,
+            "hitSize": [60, 50],
+            "range": 220,
+            "shotOverlayTicks": 24,
+            "spreadDeg": 8,
+            "muzzleJitter": [0, 4],
+            "particleCount": 12,
+            "particleIntervalTicks": 2,
+            "particleSpeedMin": 260,
+            "particleSpeedMax": 340,
+            "particleLifeMinTicks": 22,
+            "particleLifeMaxTicks": 30,
+            "hitReleaseTicks": 6,
+            "particleHitSizeEnd": [110, 90],
+            "particleScaleStart": 0.6,
+            "particleScaleEnd": 1.6
+        },
+        "hmgPickupAmmo": 200,
+        "shotgunPickupAmmo": 30,
+        "rocketPickupAmmo": 20,
+        "flamePickupAmmo": 30
+    },
+    "knife": {
+        "range": 34,
+        "damage": 8,
+        "reach": 52,
+        "back": 6,
+        "bottom": 4,
+        "top": 60,
+        "durationTicks": 18,
+        "activeFirstTick": 2,
+        "activeLastTick": 11,
+        "chainWindowTicks": 6
+    },
+    "bomb": {
+        "initial": 10,
+        "maxInFlight": 3,
+        "throwTicks": 12,
+        "releaseTick": 3,
+        "releaseOffset": [14, -36],
+        "speedX": 260,
+        "speedY": -330,
+        "fuseTicks": 72,
+        "inheritMoveX": 0.35,
+        "gravity": 900,
+        "hitSize": [12, 12],
+        "damage": 20,
+        "blastSize": [110, 130],
+        "blastUp": 40,
+        "blastTicks": 10
+    },
+    "player": {
+        "lives": 3,
+        "deathTicks": 110,
+        "respawnInvincible": 120,
+        "blinkPeriodTicks": 4,
+        "respawnOffsetX": 100,
+        "respawnDropY": 160,
+        "gameOverTicks": 180,
+        "idleActionTicks": 480,
+        "idleActionLength": 100,
+        "chuteStartHeightPx": 260,
+        "chuteFallSpeedPxSec": 110,
+        "chuteBlinkTicks": 24,
+        "chuteBlinkPeriodTicks": 3,
+        "chuteOffset": [0, -110]
+    },
+    "camera": {
+        "deadzoneHalf": [24, 16],
+        "smoothTime": 0.14,
+        "lookAheadX": 0
+    },
+    "sandbox": {
+        "gruntHp": 1,
+        "jeepHp": 20,
+        "busHp": 60,
+        "dummyRespawnTicks": 240,
+        "shooterIntervalTicks": 150,
+        "enemyBulletSpeed": 220,
+        "enemyBulletDamage": 1,
+        "shooterRange": 380
+    },
+    "items": {
+        "rollFrictionPerSec": 0.5,
+        "rollSpinRefSpeed": 50,
+        "rollStopSpeed": 1
+    },
+    "rig": {
+        "airBaseline": 40,
+        "diagUpVariant": 4
+    }
+}

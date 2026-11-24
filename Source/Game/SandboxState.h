@@ -1,0 +1,132 @@
+#pragma once
+#include "Base/Types.h"
+#include "Core/Tuning.h"
+#include "Game/Combat/CombatSystem.h"
+#include "Game/Combat/Projectiles.h"
+#include "Game/Enemies/EnemyDef.h"
+#include "Game/Enemies/EnemyTypes.h"
+#include "Game/Enemies/EnemyWorld.h"
+#include "Game/GameState.h"
+#include "Game/Player/PlayerController.h"
+#include "Game/Player/PlayerRig.h"
+#include "Game/Props/PropWorld.h"
+#include "Game/Sandbox/Effects.h"
+#include "Game/Sandbox/TrainingTargets.h"
+#include "Game/Ui/UiSystem.h"
+#include "Render/Camera.h"
+#include "Render/SpriteLibrary.h"
+#include "World/GroundMap.h"
+#include "World/Physics.h"
+
+struct SandboxConfig
+{
+    bool             bLoadGround     = true;
+    GroundMap        ground          = {};
+    Vector<Platform> platforms       = {};
+    Aabb             cameraBounds    = Aabb::FromMinMax({ 0.f, 0.f }, { 3520.f, 448.f });
+    VECTOR2          spawnFeet       = { 100.f, 378.f };
+    bool             bSpawnTargets   = true;
+    bool             bLoadTuningFile = true;
+    Tuning           tuning          = {};
+    bool             bBackground     = true;
+    FilePath         enemyDefPath    = {};
+    bool             bEnemyLab       = false;
+    bool             bVehicleLab     = false;
+    bool             bPropLab        = false;
+    bool             bBusLab         = false;
+    bool             bBusBot         = false;
+    bool             bHeliLab        = false;
+    bool             bHeliBot        = false;
+    int              heliHp          = -1;
+    bool             bGodMode        = false;
+};
+
+class SandboxState : public IGameState
+{
+public:
+    SandboxState();
+    explicit SandboxState(SandboxConfig _config);
+    void                                  OnEnter() override;
+    void                                  OnExit() override;
+    void                                  Tick(const InputHistory& _input) override;
+    void                                  Render(float _alpha) override;
+    [[nodiscard]] PlayerController&       GetPlayer();
+    [[nodiscard]] const PlayerController& GetPlayer() const;
+    [[nodiscard]] TrainingTargets&        GetTargets();
+    [[nodiscard]] ProjectileSystem&       GetProjectiles();
+    [[nodiscard]] CombatSystem&           GetCombat();
+    [[nodiscard]] Tuning&                 GetTuning();
+    [[nodiscard]] const Camera&           GetCamera() const;
+    [[nodiscard]] PlayerRig&              GetRig();
+    [[nodiscard]] const PlayerRig&        GetRig() const;
+    [[nodiscard]] uint64_t                GetTickCount() const;
+    [[nodiscard]] EnemyWorld&             GetEnemies();
+    [[nodiscard]] const EnemyWorld&       GetEnemies() const;
+    [[nodiscard]] const EnemyDefLibrary&  GetEnemyLib() const;
+    [[nodiscard]] EnemyDefLibrary&        GetEnemyLibMutable();
+    uint32_t                              AddTarget(eDummyKind _kind, VECTOR2 _feet, bool _bShooter = false);
+    EnemyHandle                           SpawnEnemy(StringView _defName, VECTOR2 _feet, const SpawnParams& _params = {});
+    void                                  RestartGame();
+    [[nodiscard]] bool                    ReloadEnemyDefs(const FilePath& _assetRoot);
+    [[nodiscard]] bool                    ReloadEnemyDefsKeep(const FilePath& _assetRoot);
+    [[nodiscard]] const GroundMap&        GetGround() const;
+    [[nodiscard]] uint64_t                HashState() const;
+    [[nodiscard]] uint64_t                DebugHash() const override;
+
+private:
+    void                       BuildWorld_();
+    void                       AddDefaultTargets_();
+    void                       UpdateWalls_();
+    void                       UpdatePropCollision_();
+    [[nodiscard]] PhysicsWorld MakePhysicsWorld_() const;
+    [[nodiscard]] VECTOR2      GetRespawnFeet_() const;
+    [[nodiscard]] PhysicsWorld MakeEnemyPhysicsWorld_() const;
+    void                       SpawnDebugEnemy_(int _slot, float _aheadPx = 180.f);
+    void                       TickBusLab_();
+    [[nodiscard]] bool         LoadEnemyDefs_(const FilePath& _assetRoot, EnemyDefLibrary& _out) const;
+    void                       DrawWorld_(VECTOR2 _cameraPos, float _alpha);
+    void                       DrawDebugBoxes_(Renderer& _renderer, VECTOR2 _cameraPos) const;
+    void                       DrawHud_();
+    void                       RequestSounds_(const Vector<FxRequest>& _fx);
+
+    SandboxConfig m_config  = {};
+    Tuning        m_tuning  = {};
+    TuningWatcher m_watcher = {};
+    bool          m_bWatch  = false;
+
+    GroundMap        m_ground    = {};
+    Vector<Wall>     m_walls     = {};
+    Vector<Platform> m_platforms = {};
+    PropDefLibrary   m_propDefs  = {};
+    PropWorld        m_props { &m_propDefs, 1 };
+    Camera           m_camera        = {};
+    VECTOR2          m_prevCameraPos = { 0.f, 0.f };
+
+    PlayerController m_player      = {};
+    PlayerRig        m_rig         = {};
+    CombatSystem     m_combat      = {};
+    ProjectileSystem m_projectiles = {};
+    TrainingTargets  m_targets     = {};
+    EnemyDefLibrary  m_enemyLib    = {};
+    EnemyWorld       m_enemies { &m_enemyLib };
+    EnemyHandle      m_busHandle     = {};
+    bool             m_bBusUnlocked  = false;
+    int              m_vehicleCursor = 0;
+    EffectList       m_effects       = {};
+    AnimPlayer       m_bombAnim      = {};
+    Vector<Wall>     m_enemyWalls    = {};
+
+    SpriteLibrary m_spriteLib = {};
+    int           m_bgHandle  = -1;
+    bool          m_bRigBound = false;
+    AnimId        m_bombClip  = kNullHandle;
+
+    UiSystem    m_ui                 = {};
+    PlayerStats m_prevStats          = {};
+    eWeapon     m_prevWeapon         = eWeapon::Pistol;
+    int         m_prevScore          = 0;
+    bool        m_bGameOverAnnounced = false;
+
+    uint64_t     m_tickCount = 0;
+    InputHistory m_botInput  = {};
+};
