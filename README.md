@@ -7,96 +7,199 @@
   <img src="https://img.shields.io/badge/Windows-x64-0078D6" alt="Windows x64">
   <img src="https://img.shields.io/badge/SDL-3-183A61" alt="SDL3">
   <img src="https://img.shields.io/badge/Dear_ImGui-Editor-38BFA3" alt="Dear ImGui">
+  <a href="https://youtu.be/OR9MWsp2wJE"><img src="https://img.shields.io/badge/YouTube-플레이_영상-FF0000?logo=youtube&logoColor=white" alt="YouTube"></a>
 </p>
 
 ![시가지 전투부터 Big Shiee 파괴까지 이어지는 플레이 하이라이트](Media/intro-highlight.gif)
 
 ## Contents
 
-- [프로젝트 소개](#프로젝트-소개)
-- [고정 스텝과 전투 판정](#고정-스텝과-전투-판정)
-- [플레이어의 상체와 하체](#플레이어의-상체와-하체)
-- [적과 보스의 부위 판정](#적과-보스의-부위-판정)
-- [데이터로 구성한 스테이지](#데이터로-구성한-스테이지)
-- [병렬 이미지 로딩](#병렬-이미지-로딩)
-- [GUI 에디터](#gui-에디터)
-- [빌드 및 실행](#빌드-및-실행)
+* [프로젝트 소개](#프로젝트-소개)
+* [고정 스텝과 전투 판정](#고정-스텝과-전투-판정)
+* [플레이어의 상체와 하체](#플레이어의-상체와-하체)
+* [적과 보스](#적과-보스)
+* [데이터로 구성한 스테이지](#데이터로-구성한-스테이지)
+* [스프라이트 깊이 정렬](#스프라이트-깊이-정렬)
+* [픽셀 마스크 지형](#픽셀-마스크-지형)
+* [그 밖의 구현](#그-밖의-구현)
+* [병렬 이미지 로딩](#병렬-이미지-로딩)
+* [GUI 에디터](#gui-에디터)
+* [빌드 및 실행](#빌드-및-실행)
 
 ## 프로젝트 소개
 
-메탈슬러그 2의 Mission 4를 학습 목적으로 모작한 횡스크롤 액션 게임입니다. SDL3 위에 게임 루프, 물리와 충돌, 스프라이트 렌더링, 애니메이션, 사운드를 구현했습니다. 시가지 전투에서 시작해 버스, 차량과 헬기 구간을 지나 Big Shiee 보스전까지 진행됩니다. 애니메이션, 맵, 지형 충돌, 적 AI를 확인하고 수정할 수 있는 Dear ImGui 편집기도 같은 실행 파일에 넣었습니다. [전체 플레이 영상](https://youtu.be/OR9MWsp2wJE)
+메탈슬러그 2의 Mission 4를 학습 목적으로 모작한 횡스크롤 액션 게임입니다. 2024년 2월부터 두 달 동안 혼자 개발했고, 2026년 10월에 Claude Code와 함께 일주일 동안 리팩터링했습니다. 아래 설명은 리팩터링 이후 코드 기준입니다.
 
-2024년 2월부터 두 달 동안 혼자 개발했고, 2026년 10월에는 Claude Code와 함께 일주일 동안 코드를 리팩터링했습니다. 아래 내용은 리팩터링 이후의 구현을 설명합니다.
+- 게임 엔진 없이 SDL3 위에 게임 루프, 물리와 충돌, 스프라이트 렌더링, 애니메이션, 사운드를 구현했습니다.
+- 60Hz 고정 스텝과 중앙 집중식 전투 판정으로, 갱신 순서와 관계없이 같은 결과가 나옵니다.
+- 적, 스테이지 진행, 스프라이트 깊이, 플레이어 수치를 JSON 데이터로 정의해 빌드 없이 조정합니다.
+- 애니메이션, 맵, 지형 충돌, 적 AI를 편집하는 Dear ImGui 에디터를 같은 실행 파일에 넣었습니다.
+
+![강가 감시탑 앞에서 헬기와 병사를 상대로 사격하는 전투](Media/play-riverside-full.gif)
+
+`MISSION 4` 배너로 시작해 시가지의 병사와 부서지는 건물, 병사를 쏟아내는 버스, 차량과 헬기 구간을 지나 Big Shiee 보스전으로 이어집니다. 무기는 권총, HMG, 샷건, 로켓, 화염방사기이고, 적에게 가까이 붙어 사격하면 칼 공격으로 바뀝니다. 전체 플레이는 [유튜브 영상](https://youtu.be/OR9MWsp2wJE)에서 볼 수 있습니다.
 
 ## 고정 스텝과 전투 판정
 
-물리와 전투는 60Hz 고정 스텝으로 갱신합니다. 실제 경과 시간을 누적해 프레임마다 실행할 틱 수를 정합니다. 창을 끌어 이동할 때처럼 게임이 잠시 멈춰도 밀린 틱이 한꺼번에 실행되지 않도록, 한 프레임에서 누적할 시간은 0.25초, 실행할 틱은 5개로 제한합니다. 그리기에서는 플레이어, 발사체, 카메라의 이전·현재 틱 위치를 보간해 움직임이 고르게 보이도록 했습니다. [고정 스텝 구현](Source/Core/FixedStep.cpp)
+물리와 전투는 60Hz 고정 스텝으로 갱신합니다. [`FixedStepClock`](Source/Core/FixedStep.h)이 경과 시간을 누적해 프레임마다 실행할 틱 수를 정하므로, 모니터 주사율이 달라도 점프 높이나 탄 속도가 같습니다. 창을 끌다 돌아왔을 때 밀린 틱이 한꺼번에 실행되지 않도록 한 프레임은 0.25초, 5틱으로 제한했습니다. 렌더링은 이전 틱과 현재 틱의 위치를 보간해 그리고, 판정은 틱 위치로만 합니다.
 
-틱마다 적과 오브젝트가 피격 범위(`Hurtbox`)를 등록하고, 플레이어와 적의 공격 및 발사체를 갱신합니다. `CombatSystem`은 등록된 공격 범위(`Hitbox`)와 피격 범위의 겹침, 팀과 무적 조건을 검사해 `HitEvent`를 만듭니다. 각 개체는 받은 이벤트에 따라 피해나 방어, 파괴 연출을 처리하고, 스테이지는 마지막에 진행 조건을 확인합니다. 여러 틱에 걸쳐 판정되는 공격은 명중 이력을 기록해 같은 대상에 한 번만 피해를 주거나 다음 피해까지 간격을 둡니다. [스테이지 틱](Source/Game/Stage/StageState.cpp) · [전투 판정](Source/Game/Combat/CombatSystem.h)
+플레이어, 적, 건물, 발사체가 서로를 직접 때리게 하면 갱신 순서에 따라 결과가 달라지고, 공격하는 쪽이 맞는 쪽의 체력 규칙까지 알아야 합니다. 그래서 [`StageState::Tick()`](Source/Game/Stage/StageState.cpp)은 한 틱을 다음 순서로 고정했습니다. 아래는 호출 순서만 남긴 것입니다.
+
+```cpp
+m_combat.BeginTick();                    // 지난 틱의 판정 상자를 비웁니다.
+m_enemies.RegisterHurtboxes(m_combat);   // 맞을 수 있는 범위를 먼저 등록
+m_props.RegisterHurtboxes(m_combat);
+
+m_player.Tick(playerCtx, _input);        // 이동하고 공격 범위(Hitbox)를 등록
+m_enemies.Tick(enemyCtx);
+m_projectiles.Step(ground, m_combat, kStepSec, m_enemyPlatforms);
+
+const Vector<HitEvent>& events = m_combat.Resolve();   // 겹침 판정은 여기서 한 번만
+m_props.OnHitEvents(events);             // 각 시스템이 자기 몫의 결과를 처리
+m_enemies.OnHitEvents(events);
+m_player.OnHitEvents(events);
+
+m_runner->Tick();                        // 마지막으로 스테이지 진행을 확인
+```
+
+![적마다 공격·피격 범위, AI 상태값, 플레이어를 향한 추적선을 겹쳐 표시한 디버그 화면](Media/ai-inspector.png)
+
+[`CombatSystem`](Source/Game/Combat/CombatSystem.h)은 `Hitbox`와 `Hurtbox`의 겹침, 팀, 무적 여부만 보고 `HitEvent`를 만듭니다. 체력을 깎을지, 방패로 막을지는 이벤트를 받은 쪽이 정합니다. 그래서 새 무기를 만들 때 적 코드를 고치지 않고, 특이한 적을 만들 때 판정기를 고치지 않습니다. 칼이나 화염처럼 여러 틱 동안 남는 공격은 명중 이력을 남겨, 같은 대상에게 한 번만 또는 정해진 간격마다 피해를 줍니다.
 
 ## 플레이어의 상체와 하체
 
-![앉아 쏘기와 점프 중 사격 등 자세와 조준을 조합한 플레이어 동작](Media/player-motion.gif)
+![앉아 쏘기, 점프 중 앞·아래 사격, 서서 위로 쏘기를 이어가는 플레이어 동작](Media/player-motion.gif)
 
-달리면서 위를 조준하는 동작을 만들기 위해 상체와 하체 애니메이션을 따로 고릅니다. `PlayerController`는 입력을 이동, 자세, 조준, 무기, 공격 상태로 해석해 `RigState`로 전달합니다. `PlayerRig`는 이동과 자세로 하체를, 무기와 조준 방향, 공격 동작으로 상체를 선택합니다. 걷기는 두 클립의 재생 위치를 맞추고, 앉기나 사망처럼 몸 전체가 함께 움직이는 동작에는 전신 클립을 사용합니다. [플레이어 컨트롤러](Source/Game/Player/PlayerController.cpp) · [애니메이션 조합](Source/Game/Player/PlayerRig.cpp)
+메탈슬러그의 캐릭터는 달리면서 위를 쏘고, 점프하면서 아래로 쏩니다. 이동, 조준, 공격을 동작 하나로 묶으면 모든 조합마다 애니메이션이 필요합니다. 그래서 입력 해석과 애니메이션 선택을 분리했습니다.
 
-## 적과 보스의 부위 판정
+[`PlayerController`](Source/Game/Player/PlayerController.cpp)는 입력을 해석해 결과를 `RigState`로만 내보내고, [`PlayerRig`](Source/Game/Player/PlayerRig.cpp)는 이 구조체만 보고 클립을 고릅니다.
 
-`EnemyWorld`는 적의 생성과 갱신, 사망 연출을 관리합니다. 적 클래스는 각각의 행동과 공격을 구현하고, 체력, 클립, 총구 위치, 감지 거리 같은 값은 JSON에서 읽습니다. 비슷한 적은 `extends`로 공통 정의를 상속합니다. 예를 들어 투척 병사는 공통 병사 정의에 투척 클립과 발사체를 추가합니다. [적 정의](Assets/Defs/Enemies.json) · [적 관리](Source/Game/Enemies/EnemyWorld.cpp)
+```cpp
+struct RigState
+{
+    eWeapon      weapon  = eWeapon::Pistol;
+    ePlayerState state   = ePlayerState::Idle;   // 달리기, 점프, 사망 등
+    ePose        pose    = ePose::Stand;         // 서기, 앉기
+    eAim         aim     = eAim::Forward;        // 앞, 위, 아래
+    eOverlay     overlay = eOverlay::None;       // 사격, 칼, 투척처럼 상체에 겹치는 동작
+    int          facing  = 1;
+    // ...
+};
+```
 
-![Big Shiee의 포탑과 주포를 파괴하는 보스전](Media/boss.gif)
+하체 클립은 `state`와 `pose`로, 상체 클립은 `weapon`, `aim`, `overlay`로 고릅니다. 그래서 달리는 하체 위에 위를 조준한 상체를 얹을 수 있고, 필요한 클립 수가 조합의 곱이 아니라 합으로 늘어납니다. 걸을 때는 상체와 하체의 재생 위치를 맞추고, 앉기나 사망처럼 몸 전체가 움직이는 동작만 전신 클립을 씁니다.
 
-방패병은 방패와 몸통의 피격 범위를 따로 등록해 방패에 맞은 공격을 막습니다. Big Shiee는 적 하나에 포탑과 주포를 두고, 피격 범위의 소유자 ID에 부위 번호를 담아 어느 부위가 맞았는지 구분합니다. 포탑을 모두 파괴한 뒤 주포가 열린 동안에만 주포의 피격 범위를 등록해, 공격할 수 있는 시점을 보스 패턴에 맞췄습니다. [Big Shiee 구현](Source/Game/Enemies/BigShiee.cpp)
+## 적과 보스
+
+병사, 방패병, 바주카병, 차량, 헬기, 버스, 보스는 행동이 크게 다르지만 생성, 활성화, 피격 깜빡임, 사망 연출의 흐름은 같습니다. 이 공통 흐름은 [`EnemyWorld`](Source/Game/Enemies/EnemyWorld.cpp)가 맡고, 종류마다 다른 행동만 [`Enemy`](Source/Game/Enemies/Enemy.h)의 파생 클래스가 구현합니다.
+
+체력, 클립, 총구 위치, 감지 거리는 [`Enemies.json`](Assets/Defs/Enemies.json)에 있습니다. 비슷한 적이 많아 정의끼리 상속할 수 있습니다. 아래 투척 병사는 기본 병사 정의에 투척 클립과 발사체만 더했습니다.
+
+```json
+"soldier_bomb": {
+  "extends": "soldier_base",
+  "params":  { "ai": "bomb", "detect": 350, "closeStop": 200, "fireFrame": 10 },
+  "clips":   { "throw": { "name": "SD_Throw_Bomb_{side}", "frames": 14, "sec": 0.08 } },
+  "weapons": { "attack": { "projectile": "soldier_bomb_proj", "muzzle": [0, -37], "aim": "facing" } }
+}
+```
+
+![Big Shiee의 포탑과 주포를 부수고 연속 폭발이 이어지는 보스전](Media/boss.gif)
+
+부위 판정도 같은 `Hurtbox` 구조로 처리합니다. 방패병은 방패와 몸통을 따로 등록해, 방패에 맞은 공격은 피해 없이 막습니다. Big Shiee는 적 하나가 포탑 여러 개와 주포를 갖고, 각 부위의 `Hurtbox`에 부위 번호를 담은 소유자 ID를 붙여 어느 부위가 맞았는지 구분합니다. 포탑을 모두 부수면 주포가 열리고, 열린 동안에만 주포의 `Hurtbox`를 등록해 공격 가능한 시간을 패턴으로 만듭니다.
 
 ## 데이터로 구성한 스테이지
 
-스테이지에는 구간 22개와 개체 생성 액션 176개가 있습니다. `StageRunner`는 플레이어가 구간의 `triggerX`를 넘으면 JSON에 정의한 배치, 배경 전환, 카메라 제어 등을 실행합니다. 적 배치나 카메라 영역은 게임을 다시 빌드하지 않고 데이터에서 수정할 수 있습니다. 샌드박스에서는 이동과 무기 수치가 담긴 `Tuning.json`의 변경도 실행 중에 반영합니다. [스테이지 데이터](Assets/Stage/Stage0.json) · [스테이지 실행기](Source/Game/Stage/StageRunner.cpp) · [조정 데이터](Assets/Tuning/Tuning.json)
+적 배치와 카메라 제어를 코드로 쓰면 적 하나를 옮길 때마다 다시 빌드해야 합니다. 그래서 스테이지 진행은 [`Stage0.json`](Assets/Stage/Stage0.json)에 구간 목록으로 적고 [`StageRunner`](Source/Game/Stage/StageRunner.cpp)가 실행합니다. 플레이어가 구간의 `triggerX`를 넘으면 그 구간의 액션이 차례로 실행됩니다. 현재 스테이지는 구간 22개, 개체 생성 액션 176개입니다.
 
-![버스의 손상 단계와 파괴 연출](Media/bus.gif)
+```json
+{
+  "id": "bus", "triggerX": 2605,
+  "actions": [
+    { "type": "clear", "waves": true },
+    { "type": "lockCamera", "rect": [2457, 0, 3097, 448], "glide": 2.5 },
+    { "type": "gate", "id": "bus_clear", "waitFor": ["bus"], "until": "destroyFinished",
+      "actions": [ { "type": "unlockCamera" }, { "type": "setBounds", "rect": [-89, 0, 4111, 448] } ] }
+  ]
+}
+```
 
-버스 구간에서는 카메라를 잠그고, `gate`가 버스의 파괴 연출 종료 신호(`destroyFinished`)를 기다립니다. 신호가 오면 카메라 잠금을 풀고 이동 가능 영역을 넓힙니다. 보스가 파괴된 뒤 결과 화면으로 넘어갈 때도 같은 방식으로 연출이 끝나기를 기다립니다.
+![손상 단계에 따라 모습이 바뀌고 파괴 후 폭발과 잔해가 남는 버스](Media/bus.gif)
 
-### 스프라이트 깊이 정렬
+`gate`는 지정한 개체가 파괴 연출을 마칠 때까지 안쪽 액션을 미룹니다. 버스 구간은 카메라를 잠근 뒤, 버스가 `destroyFinished`를 알리면 잠금을 풀고 이동 범위를 넓힙니다. 버스는 연출이 끝났다는 신호만 보내고 다음 진행은 데이터가 정하므로, 적 코드는 카메라를 모릅니다. 보스 파괴 후 결과 화면으로 넘어가는 것도 같은 방식입니다.
 
-버스의 창문과 몸체, 내부 병사, 잔해처럼 서로 겹치는 스프라이트는 깊이, 같은 층의 정렬 값, 명령 제출 순서를 차례로 비교해 그립니다. 버스 부위별 깊이와 정렬 값은 JSON에서 조정할 수 있습니다. 같은 깊이의 적은 발의 Y좌표를 정렬 값에 반영해 화면 아래에 있는 적이 앞에 그려집니다. [스프라이트 정렬](Source/Render/SpriteBatch.cpp) · [버스 정의](Assets/Defs/Bus.json)
+이동 속도, 점프, 무기 수치는 [`Tuning.json`](Assets/Tuning/Tuning.json)에 있습니다. 샌드박스 모드에서는 [`TuningWatcher`](Source/Core/Tuning.h)가 이 파일의 수정 시각을 주기적으로 확인해 다시 읽으므로, 게임을 켠 채 값을 고치고 바로 확인할 수 있습니다.
 
-### 픽셀 마스크 지형
+## 스프라이트 깊이 정렬
 
-![배경 위에 빨간색으로 표시한 고체 픽셀](Media/collision-editor.png)
+버스는 뒷면, 계단, 안에 탄 병사, 몸체, 겉 프레임, 창문, 잔해가 겹친 그림입니다. 손상 단계마다 일부가 바뀌고 병사도 오가므로, 그리는 코드의 호출 순서로 앞뒤를 정하면 부위를 추가할 때마다 순서를 다시 맞춰야 합니다. 그래서 앞뒤를 값으로만 정했습니다.
 
-계단과 경사, 무너진 지붕은 배경 픽셀마다 통과 가능 여부를 1비트로 기록한 `GroundMap`으로 표현합니다. 물리는 이동을 작은 구간으로 나눠 벽과 바닥을 검사하고, 발 아래를 탐색해 작은 단차를 오르내리게 합니다. 빠른 발사체는 이동 선분을 따라 검사해 얇은 지형을 건너뛰지 않도록 했습니다. 건물이 파괴되면 해당 마스크를 지워 그 자리를 지나갈 수 있습니다. [지형 마스크](Source/World/GroundMap.cpp) · [물리 구현](Source/World/Physics.cpp)
+월드의 모든 그리기는 [`SpriteBatch`](Source/Render/SpriteBatch.cpp)에 명령으로 쌓이고, 프레임 끝에서 정렬한 뒤 그립니다.
+
+```cpp
+std::sort(_commands.begin(), _commands.end(), [](const SpriteCommand& _a, const SpriteCommand& _b) {
+    if (_a.depth != _b.depth)     return _a.depth < _b.depth;       // 1. 깊이 (층)
+    if (_a.sortKey != _b.sortKey) return _a.sortKey < _b.sortKey;   // 2. 같은 층 안의 순서
+    return _a.seq < _b.seq;                                         // 3. 제출 순서
+});
+```
+
+버스 부위의 깊이와 정렬 값은 [`Bus.json`](Assets/Defs/Bus.json)에 있어 에디터에서 값만 바꿔 확인합니다. 같은 깊이의 적은 정렬 값에 발의 Y좌표를 더해 화면 아래쪽 캐릭터가 앞에 그려집니다. `std::sort`는 같은 값끼리의 순서를 보장하지 않으므로, 마지막 기준인 제출 순서로 프레임마다 앞뒤가 바뀌는 깜빡임을 막습니다.
+
+## 픽셀 마스크 지형
+
+![배경 위에 빨간 고체 마스크를 겹쳐 본 지형](Media/collision-editor.png)
+
+메탈슬러그의 배경은 계단, 경사, 무너진 지붕처럼 모양이 불규칙해서 사각형으로 덮기 어렵습니다. 그래서 전투 판정은 사각형으로 하고, 지형은 배경 픽셀마다 고체 여부를 1비트로 담은 [`GroundMap`](Source/World/GroundMap.cpp)으로 판정합니다. 위 그림의 빨간 부분이 고체 픽셀입니다.
+
+- [`Physics`](Source/World/Physics.cpp)는 이동을 작은 구간으로 나눠 벽, 천장, 바닥을 검사하고, 발 아래 몇 픽셀을 탐색해 작은 단차를 오르내립니다. 계단마다 경사 데이터를 만들지 않아도 캐릭터가 그림을 따라 걷습니다.
+- 한 틱에 수십 픽셀을 움직이는 탄은 이동 선분을 일정 간격으로 나눠 검사해 얇은 벽을 건너뛰지 않습니다.
+- 건물이 파괴되면 지정된 영역의 마스크를 지워 무너진 자리를 지나갈 수 있습니다.
+
+## 그 밖의 구현
+
+- 입력 버퍼: [`PlayerInputBuffer`](Source/Game/Player/PlayerInput.h)가 최근 입력을 틱 단위로 기억합니다. 착지 직전에 누른 점프(4틱)와 사격·수류탄(6틱)도 처리하고, 발판에서 떨어진 직후 4틱 동안은 점프를 허용해 조작이 씹히지 않게 했습니다. 수치는 `Tuning.json`에서 조정합니다.
+- 오디오: [`AudioSystem`](Source/Audio/AudioSystem.h)은 효과음을 미리 로드하고 BGM은 스트리밍합니다. 동시 발음은 16개, 같은 효과음은 4개로 제한하고, [`VoiceAllocator`](Source/Audio/VoiceAllocator.h)가 슬롯을 배분합니다. 같은 소리가 반복돼도 단조롭지 않도록 재생마다 피치를 조금씩 바꿉니다.
+- 오브젝트와 아이템: [`PropWorld`](Source/Game/Props/PropWorld.h)는 부서지는 건물과 파편, [`ItemWorld`](Source/Game/Props/ItemWorld.h)는 무기·점수 아이템과 획득 시 점수 표시를 관리합니다.
 
 ## 병렬 이미지 로딩
 
-시작할 때 아틀라스와 배경 PNG를 순서대로 읽으면서 첫 화면을 보기까지 20초 넘게 걸렸습니다. 파일 읽기, RGBA 디코딩, 피격 깜빡임에 쓸 이미지 생성은 여러 작업자에 나누고, SDL 텍스처 생성은 렌더러가 있는 스레드에서 처리했습니다. 작업자 수만큼 묶어 처리해 디코딩한 이미지를 한꺼번에 메모리에 쌓지 않고, 묶음마다 원래 경로 순서로 등록해 아틀라스 페이지 번호를 유지합니다. [이미지 로딩 구현](Source/Render/SpriteBatch.cpp)
+시작할 때 스프라이트 아틀라스와 배경 PNG를 하나씩 읽으면 첫 화면까지 20초가 넘게 걸렸습니다. 로딩은 PNG를 RGBA로 디코딩하는 단계와 SDL 텍스처를 만드는 단계로 나뉩니다. 디코딩은 이미지끼리 독립적이지만, 텍스처 생성은 SDL 렌더러를 만든 스레드에서만 할 수 있습니다. 그래서 읽기, 디코딩, 피격 깜빡임용 색상 변환본 생성만 작업자 스레드로 병렬화했습니다.
 
-![초기 실행 시간 중앙값 비교. 순차 23.34초, 병렬 12.21초](Media/loading-comparison.png)
+[`DecodeImages`](Source/Render/SpriteBatch.cpp)는 작업자 수만큼 묶어서 디코딩하고, 묶음마다 원래 경로 순서대로 등록합니다. 끝난 순서대로 등록하면 아틀라스 페이지 번호가 실행마다 바뀌어 애니메이션 프레임이 엉뚱한 페이지를 가리키기 때문입니다. 묶음 단위로 처리해 모든 이미지의 RGBA를 한꺼번에 메모리에 들고 있지 않습니다.
 
-Ryzen 9 7945HX에서 작업자 8개로 측정했습니다. 같은 Release x64 실행 파일에서 `--no-async-load` 옵션으로 모드를 바꾸고, 예열 뒤 각 모드를 번갈아 5회씩 실행했습니다. 프로세스 시작부터 첫 스테이지 프레임 저장과 종료까지 걸린 시간의 중앙값은 **23.34초에서 12.21초로 줄었습니다.** 예열을 포함한 12회 실행에서 텍스처 20개의 등록 순서, 크기와 RGBA 해시가 모두 일치했습니다. [측정 원본](Media/loading-benchmark.json)
+![순차 23.34초, 병렬 12.21초의 초기 실행 시간 중앙값 비교](Media/loading-comparison.png)
+
+| 실행 모드 | 5회 중앙값 |
+| --- | ---: |
+| 순차 디코딩 (`--no-async-load`) | 23.34초 |
+| 병렬 디코딩 (기본) | 12.21초 |
+
+Ryzen 9 7945HX, 작업자 8개 환경에서 프로세스 시작부터 첫 스테이지 프레임까지 측정했고, 약 1.91배 빨라졌습니다. 12회 실행 모두에서 텍스처 20개의 등록 순서, 크기, RGBA 해시가 같아, 병렬화 후에도 같은 결과가 등록됨을 확인했습니다. [측정 원본](Media/loading-benchmark.json)
 
 ## GUI 에디터
 
-`--editor`로 실행하면 게임 화면 옆에 Dear ImGui 편집기가 열립니다. 게임이 읽는 JSON과 지형 마스크를 불러와 수정하고, 변경 사항을 실행 취소하거나 저장해 게임에 반영할 수 있습니다.
+`--editor`로 실행하면 게임 화면 옆에 Dear ImGui 에디터가 열립니다. 게임이 실제로 읽는 JSON과 지형 마스크를 열어 수정하고, 실행 취소와 저장 후 게임에 바로 반영합니다.
 
-| 탭 | 주요 작업 |
+<p align="center">
+  <img src="Media/editor_anim.gif" width="49%" alt="클립의 프레임과 피벗을 확인하고 어니언 스킨으로 인접 프레임을 겹쳐 보는 애니메이션 편집기">
+  <img src="Media/editor_map.gif" width="49%" alt="개체를 배치하고 구간의 트리거와 카메라 영역을 확인하는 맵 편집기">
+</p>
+<p align="center">
+  <img src="Media/editor_collision.gif" width="49%" alt="배경 위에 고체 마스크를 그리고 지우는 지형 충돌 편집기">
+  <img src="Media/editor_ai.gif" width="49%" alt="샌드박스에 적을 소환하고 상태와 판정 상자, 대상선을 표시하는 AI 편집기">
+</p>
+
+| 탭 | 기능 |
 | --- | --- |
-| Animation | 앞뒤 프레임을 겹쳐 보며 클립의 프레임 시간과 피벗을 수정합니다. |
-| Map | 지도에서 개체 배치, 구간 트리거와 카메라 영역을 수정합니다. |
-| Collision | 배경에 고체 마스크를 픽셀 단위로 그리거나 지웁니다. |
-| AI | 샌드박스에 적을 소환하고, 일시정지와 1틱 진행으로 상태와 판정 상자, 지면 탐색을 확인합니다. |
-
-<p align="center">
-  <img src="Media/editor_anim.gif" width="49%" alt="앞뒤 프레임을 겹쳐 보는 애니메이션 편집기">
-  <img src="Media/editor_map.gif" width="49%" alt="개체 배치와 카메라 영역을 표시한 맵 편집기">
-</p>
-<p align="center">
-  <img src="Media/editor_collision.gif" width="49%" alt="고체 픽셀을 그리고 지우는 지형 충돌 편집기">
-  <img src="Media/editor_ai.gif" width="49%" alt="적의 상태와 판정 상자를 표시한 AI 편집기">
-</p>
+| Animation | 어니언 스킨으로 앞뒤 프레임을 겹쳐 보며 클립의 프레임 시간과 피벗을 수정 |
+| Map | 지도 위에서 개체 배치, 구간 트리거, 카메라 영역을 수정 |
+| Collision | 지형 마스크를 픽셀 단위로 그리고 지움 |
+| AI | 샌드박스에 적을 소환해 AI 상태, 판정 상자, 대상선, 지면 탐색 결과를 표시. 일시정지와 1틱 진행으로 판단이 바뀌는 순간을 확인 |
 
 ## 빌드 및 실행
 
-Windows x64, Visual Studio 2026의 “C++를 사용한 데스크톱 개발” 워크로드와 vcpkg가 필요합니다. 프로젝트는 C++20과 플랫폼 도구 집합 `v145`를 사용합니다. 의존 라이브러리는 매니페스트에서 설치하며, vcpkg는 `VCPKG_ROOT`를 읽고 값이 없으면 `C:\vcpkg\`를 사용합니다. [의존 라이브러리 설정](vcpkg.json)
+Windows x64, C++20 환경에서 빌드합니다. Visual Studio 2026(플랫폼 도구 집합 `v145`)의 "C++를 사용한 데스크톱 개발" 워크로드와 vcpkg가 필요합니다. 의존 라이브러리는 [`vcpkg.json`](vcpkg.json) 매니페스트로 설치되며, vcpkg 경로는 `VCPKG_ROOT` 환경 변수를 읽고 없으면 `C:\vcpkg\`를 사용합니다.
 
 ```powershell
 git clone https://github.com/JuggernautSensei/MetalSlug2-Clone.git
@@ -104,9 +207,9 @@ cd MetalSlug2-Clone
 .\Play.cmd
 ```
 
-`Play.cmd`는 Release 구성을 증분 빌드한 뒤 게임을 실행합니다. 편집기를 열려면 `.\Play.cmd --editor`를 실행합니다.
+`Play.cmd`는 Release 구성으로 증분 빌드한 뒤 게임을 실행합니다. 에디터는 `.\Play.cmd --editor`로 엽니다.
 
-| 조작 | 키 |
+| 동작 | 키 |
 | --- | --- |
 | 이동 | A, D 또는 ←, → |
 | 위, 아래 입력 | W, S 또는 ↑, ↓ |
